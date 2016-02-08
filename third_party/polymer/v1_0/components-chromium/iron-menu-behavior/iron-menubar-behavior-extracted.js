@@ -24,12 +24,24 @@
       event.detail.keyboardEvent.preventDefault();
     },
 
+    get _isRTL() {
+      return window.getComputedStyle(this)['direction'] === 'rtl';
+    },
+
     _onLeftKey: function() {
-      this._focusPrevious();
+      if (this._isRTL) {
+        this._focusNext();
+      } else {
+        this._focusPrevious();
+      }
     },
 
     _onRightKey: function() {
-      this._focusNext();
+      if (this._isRTL) {
+        this._focusPrevious();
+      } else {
+        this._focusNext();
+      }
     },
 
     _onKeydown: function(event) {

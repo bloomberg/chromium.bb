@@ -393,6 +393,7 @@ this._marshalBehavior(this);
 });
 Polymer.Base._behaviorProperties = {
 hostAttributes: true,
+beforeRegister: true,
 registered: true,
 properties: true,
 observers: true,
@@ -644,31 +645,7 @@ return value != null ? value : undefined;
 }
 }
 });
-Polymer.Base._addFeature({
-_setupDebouncers: function () {
-this._debouncers = {};
-},
-debounce: function (jobName, callback, wait) {
-return this._debouncers[jobName] = Polymer.Debounce.call(this, this._debouncers[jobName], callback, wait);
-},
-isDebouncerActive: function (jobName) {
-var debouncer = this._debouncers[jobName];
-return debouncer && debouncer.finish;
-},
-flushDebouncer: function (jobName) {
-var debouncer = this._debouncers[jobName];
-if (debouncer) {
-debouncer.complete();
-}
-},
-cancelDebouncer: function (jobName) {
-var debouncer = this._debouncers[jobName];
-if (debouncer) {
-debouncer.stop();
-}
-}
-});
-Polymer.version = '1.2.3';
+Polymer.version = '1.2.4';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -683,7 +660,6 @@ _marshalBehavior: function (b) {
 },
 _initFeatures: function () {
 this._marshalHostAttributes();
-this._setupDebouncers();
 this._marshalBehaviors();
 }
 });

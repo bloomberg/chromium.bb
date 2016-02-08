@@ -48,7 +48,7 @@ cr.define('settings_reset_page', function() {
       //  - the reset profile dialog is closed after reset is done.
       test(TestNames.ResetBannerReset, function() {
         var dialog = resetBanner.$$('settings-reset-profile-dialog');
-        assertEquals(undefined, dialog);
+        assert(!dialog);
         MockInteractions.tap(resetBanner.$['reset']);
         Polymer.dom.flush();
         dialog = resetBanner.$$('settings-reset-profile-dialog');
@@ -67,7 +67,7 @@ cr.define('settings_reset_page', function() {
         var whenOnHideResetProfileBanner = whenChromeSendCalled(
             'onHideResetProfileBanner');
         MockInteractions.tap(resetBanner.$['close']);
-        assertEquals(null, resetBanner.parentNode);
+        assert(!resetBanner.parentNode);
         return whenOnHideResetProfileBanner;
       });
     });

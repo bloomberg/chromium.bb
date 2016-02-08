@@ -7,6 +7,9 @@ paper-dropdown-menu.html
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
 
+The bot does some handling of markdown. Please file a bug if it does the wrong
+thing! https://github.com/PolymerLabs/tedium/issues
+
 -->
 
 [![Build Status](https://travis-ci.org/PolymerElements/paper-dropdown-menu.svg?branch=master)](https://travis-ci.org/PolymerElements/paper-dropdown-menu)
@@ -15,7 +18,6 @@ _[Demo and API Docs](https://elements.polymer-project.org/elements/paper-dropdow
 
 
 ##&lt;paper-dropdown-menu&gt;
-
 
 Material design: [Dropdown menus](https://www.google.com/design/spec/components/buttons.html#buttons-dropdown-buttons)
 
@@ -30,14 +32,16 @@ selecting its children.
 
 Example:
 
-    <paper-dropdown-menu label="Your favourite pastry">
-      <paper-menu class="dropdown-content">
-        <paper-item>Croissant</paper-item>
-        <paper-item>Donut</paper-item>
-        <paper-item>Financier</paper-item>
-        <paper-item>Madeleine</paper-item>
-      </paper-menu>
-    </paper-dropdown-menu>
+```html
+<paper-dropdown-menu label="Your favourite pastry">
+  <paper-menu class="dropdown-content">
+    <paper-item>Croissant</paper-item>
+    <paper-item>Donut</paper-item>
+    <paper-item>Financier</paper-item>
+    <paper-item>Madeleine</paper-item>
+  </paper-menu>
+</paper-dropdown-menu>
+```
 
 This example renders a dropdown menu with 4 options.
 
@@ -48,14 +52,14 @@ current selection of the `paper-dropdown-menu` to be cleared.
 
 The following custom properties and mixins are also available for styling:
 
-Custom property | Description | Default
-----------------|-------------|----------
-`--paper-dropdown-menu` | A mixin that is applied to the element host | `{}`
-`--paper-dropdown-menu-disabled` | A mixin that is applied to the element host when disabled | `{}`
-`--paper-dropdown-menu-ripple` | A mixin that is applied to the internal ripple | `{}`
-`--paper-dropdown-menu-button` | A mixin that is applied to the internal menu button | `{}`
-`--paper-dropdown-menu-input` | A mixin that is applied to the internal paper input | `{}`
-`--paper-dropdown-menu-icon` | A mixin that is applied to the internal icon | `{}`
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--paper-dropdown-menu` | A mixin that is applied to the element host | `{}` |
+| `--paper-dropdown-menu-disabled` | A mixin that is applied to the element host when disabled | `{}` |
+| `--paper-dropdown-menu-ripple` | A mixin that is applied to the internal ripple | `{}` |
+| `--paper-dropdown-menu-button` | A mixin that is applied to the internal menu button | `{}` |
+| `--paper-dropdown-menu-input` | A mixin that is applied to the internal paper input | `{}` |
+| `--paper-dropdown-menu-icon` | A mixin that is applied to the internal icon | `{}` |
 
 You can also use any of the `paper-input-container` and `paper-menu-button`
 style mixins and custom properties to style the internal input and menu button

@@ -21,6 +21,7 @@
           '../../../../third_party/polymer/v1_0/components-chromium/iron-behaviors/iron-control-state-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-list/iron-list-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/iron-resizable-behavior-extracted.js',
+          '../../../../third_party/polymer/v1_0/components-chromium/iron-scroll-target-behavior/iron-scroll-target-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-inky-focus-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-ripple-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-ripple/paper-ripple-extracted.js',

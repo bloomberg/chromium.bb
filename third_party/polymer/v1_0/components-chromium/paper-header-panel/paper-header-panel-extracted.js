@@ -102,6 +102,7 @@
           atTop: {
             type: Boolean,
             value: true,
+            notify: true,
             readOnly: true
           }
         },

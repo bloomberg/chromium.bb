@@ -152,7 +152,7 @@
     },
 
     _notifyPageResize: function() {
-      var selectedPage = this.selectedItem;
+      var selectedPage = this.selectedItem || this._valueToItem(this.selected);
       this.resizerShouldNotify = function(element) {
         return element == selectedPage;
       }

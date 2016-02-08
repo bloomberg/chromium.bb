@@ -44,7 +44,7 @@
     },
 
     _computeKeyboardClass: function(receivedFocusFromKeyboard) {
-      this.classList.toggle('keyboard-focus', receivedFocusFromKeyboard);
+      this.toggleClass('keyboard-focus', receivedFocusFromKeyboard);
     },
 
     /**
@@ -55,7 +55,8 @@
      */
     _spaceKeyDownHandler: function(event) {
       Polymer.IronButtonStateImpl._spaceKeyDownHandler.call(this, event);
-      if (this.hasRipple()) {
+      // Ensure that there is at most one ripple when the space key is held down.
+      if (this.hasRipple() && this.getRipple().ripples.length < 1) {
         this._ripple.uiDownAction();
       }
     },

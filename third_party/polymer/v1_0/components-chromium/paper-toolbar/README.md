@@ -7,6 +7,9 @@ paper-toolbar.html
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
 
+The bot does some handling of markdown. Please file a bug if it does the wrong
+thing! https://github.com/PolymerLabs/tedium/issues
+
 -->
 
 [![Build Status](https://travis-ci.org/PolymerElements/paper-toolbar.svg?branch=master)](https://travis-ci.org/PolymerElements/paper-toolbar)
@@ -15,7 +18,6 @@ _[Demo and API Docs](https://elements.polymer-project.org/elements/paper-toolbar
 
 
 ##&lt;paper-toolbar&gt;
-
 
 Material design: [Toolbars](https://www.google.com/design/spec/components/toolbars.html)
 
@@ -36,7 +38,7 @@ Example:
 ```
 
 `paper-toolbar` has a standard height, but can made be taller by setting `tall`
-class on the `paper-toolbar`.  This will make the toolbar 3x the normal height.
+class on the `paper-toolbar`. This will make the toolbar 3x the normal height.
 
 ```html
 <paper-toolbar class="tall">
@@ -77,20 +79,25 @@ with `bottom`.
 </paper-toolbar>
 ```
 
+When inside a `paper-header-panel` element, the class `.animate` is toggled to animate
+the height change in the toolbar.
+
 ### Styling
 
 The following custom properties and mixins are available for styling:
 
-Custom property | Description | Default
-----------------|-------------|----------
-`--paper-toolbar-title`      | Mixin applied to the title of the toolbar | `{}`
-`--paper-toolbar-background` | Toolbar background color     | `--default-primary-color`
-`--paper-toolbar-color`      | Toolbar foreground color     | `--text-primary-color`
-`--paper-toolbar-height`     | Custom height for toolbar    | `64px`
-`--paper-toolbar-sm-height`  | Custom height for small screen toolbar | `56px`
-`--paper-toolbar`            | Mixin applied to the toolbar | `{}`
-`--paper-toolbar-medium`     | Mixin applied to medium height toolbar | `{}`
-`--paper-toolbar-tall`       | Mixin applied to tall height toolbar | `{}`
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--paper-toolbar-title` | Mixin applied to the title of the toolbar | `{}` |
+| `--paper-toolbar-background` | Toolbar background color | `--primary-color` |
+| `--paper-toolbar-color` | Toolbar foreground color | `--primary-text-color` |
+| `--paper-toolbar-height` | Custom height for toolbar | `64px` |
+| `--paper-toolbar-sm-height` | Custom height for small screen toolbar | `56px` |
+| `--paper-toolbar` | Mixin applied to the toolbar | `{}` |
+| `--paper-toolbar-content` | Mixin applied to the content section of the toolbar | `{}` |
+| `--paper-toolbar-medium` | Mixin applied to medium height toolbar | `{}` |
+| `--paper-toolbar-tall` | Mixin applied to tall height toolbar | `{}` |
+| `--paper-toolbar-transition` | Transition applied to the `.animate` class | `height 0.18s ease-in` |
 
 ### Accessibility
 

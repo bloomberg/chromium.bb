@@ -52,6 +52,7 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
+| `--paper-card-background-color` | The background color of the card | `--primary-background-color` |
 | `--paper-card-header-color` | The color of the header text | `#000` |
 | `--paper-card-header` | Mixin applied to the card header section | `{}` |
 | `--paper-card-header-text` | Mixin applied to the title in the card header section | `{}` |

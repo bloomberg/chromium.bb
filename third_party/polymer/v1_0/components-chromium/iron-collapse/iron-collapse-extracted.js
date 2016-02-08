@@ -2,6 +2,10 @@ Polymer({
 
     is: 'iron-collapse',
 
+    behaviors: [
+      Polymer.IronResizableBehavior
+    ],
+
     properties: {
 
       /**
@@ -36,6 +40,10 @@ Polymer({
         type: Boolean
       },
 
+    },
+
+    get dimension() {
+      return this.horizontal ? 'width' : 'height';
     },
 
     hostAttributes: {
@@ -116,8 +124,10 @@ Polymer({
     },
 
     _horizontalChanged: function() {
-      this.dimension = this.horizontal ? 'width' : 'height';
       this.style.transitionProperty = this.dimension;
+      var otherDimension = this.dimension === 'width' ? 'height' : 'width';
+      this.style[otherDimension] = '';
+      this.updateSize(this.opened ? 'auto' : '0px', false);
     },
 
     _openedChanged: function() {
@@ -144,6 +154,7 @@ Polymer({
       this.toggleClass('iron-collapse-closed', !this.opened);
       this.toggleClass('iron-collapse-opened', this.opened);
       this._updateTransition(false);
+      this.notifyResize();
     },
 
     _calcSize: function() {

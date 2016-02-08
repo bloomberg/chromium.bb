@@ -109,7 +109,8 @@ Polymer({
       },
 
       listeners: {
-        'iron-resize': '_onResize',
+        'iron-resize': '_onTabSizingChanged',
+        'iron-items-changed': '_onTabSizingChanged',
         'iron-select': '_onIronSelect',
         'iron-deselect': '_onIronDeselect'
       },
@@ -163,8 +164,8 @@ Polymer({
 
       // TODO(cdata): Add `track` response back in when gesture lands.
 
-      _onResize: function() {
-        this.debounce('_onResize', function() {
+      _onTabSizingChanged: function() {
+        this.debounce('_onTabSizingChanged', function() {
           this._scroll();
           this._tabChanged(this.selectedItem);
         }, 10);

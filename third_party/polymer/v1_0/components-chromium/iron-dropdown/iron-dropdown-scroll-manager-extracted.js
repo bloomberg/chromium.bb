@@ -65,6 +65,11 @@
        * @param {HTMLElement} element The element that should lock scroll.
        */
       pushScrollLock: function(element) {
+        // Prevent pushing the same element twice
+        if (this._lockingElements.indexOf(element) >= 0) {
+          return;
+        }
+
         if (this._lockingElements.length === 0) {
           this._lockScrollInteractions();
         }
@@ -158,7 +163,7 @@
       _scrollInteractionHandler: function(event) {
         if (Polymer
               .IronDropdownScrollManager
-              .elementIsScrollLocked(event.target)) {
+              .elementIsScrollLocked(Polymer.dom(event).rootTarget)) {
           if (event.type === 'keydown' &&
               !Polymer.IronDropdownScrollManager._isScrollingKeypress(event)) {
             return;
@@ -185,13 +190,13 @@
         document.body.style.overflowY = 'hidden';
 
         // Modern `wheel` event for mouse wheel scrolling:
-        window.addEventListener('wheel', this._scrollInteractionHandler, true);
+        document.addEventListener('wheel', this._scrollInteractionHandler, true);
         // Older, non-standard `mousewheel` event for some FF:
-        window.addEventListener('mousewheel', this._scrollInteractionHandler, true);
+        document.addEventListener('mousewheel', this._scrollInteractionHandler, true);
         // IE:
-        window.addEventListener('DOMMouseScroll', this._scrollInteractionHandler, true);
+        document.addEventListener('DOMMouseScroll', this._scrollInteractionHandler, true);
         // Mobile devices can scroll on touch move:
-        window.addEventListener('touchmove', this._scrollInteractionHandler, true);
+        document.addEventListener('touchmove', this._scrollInteractionHandler, true);
         // Capture keydown to prevent scrolling keys (pageup, pagedown etc.)
         document.addEventListener('keydown', this._scrollInteractionHandler, true);
       },
@@ -201,10 +206,10 @@
         document.body.style.overflowX = this._originalBodyStyles.overflowX;
         document.body.style.overflowY = this._originalBodyStyles.overflowY;
 
-        window.removeEventListener('wheel', this._scrollInteractionHandler, true);
-        window.removeEventListener('mousewheel', this._scrollInteractionHandler, true);
-        window.removeEventListener('DOMMouseScroll', this._scrollInteractionHandler, true);
-        window.removeEventListener('touchmove', this._scrollInteractionHandler, true);
+        document.removeEventListener('wheel', this._scrollInteractionHandler, true);
+        document.removeEventListener('mousewheel', this._scrollInteractionHandler, true);
+        document.removeEventListener('DOMMouseScroll', this._scrollInteractionHandler, true);
+        document.removeEventListener('touchmove', this._scrollInteractionHandler, true);
         document.removeEventListener('keydown', this._scrollInteractionHandler, true);
       }
     };

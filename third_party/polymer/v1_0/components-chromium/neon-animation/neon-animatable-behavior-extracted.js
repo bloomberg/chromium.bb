@@ -81,6 +81,11 @@
         return;
       }
 
+      if(this.animationConfig.value && typeof this.animationConfig.value === 'function') {
+      	this._warn(this._logf('playAnimation', "Please put 'animationConfig' inside of your components 'properties' object instead of outside of it."));
+      	return;
+      }
+
       // type is optional
       var thisConfig;
       if (type) {

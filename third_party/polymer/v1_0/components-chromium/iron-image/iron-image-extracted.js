@@ -171,7 +171,7 @@ Polymer({
         }
         this.$.sizedImgDiv.style.backgroundImage = src ? 'url("' + src + '")' : '';
 
-        this._setLoading(true);
+        this._setLoading(!!src);
         this._setLoaded(false);
         this._setError(false);
       },

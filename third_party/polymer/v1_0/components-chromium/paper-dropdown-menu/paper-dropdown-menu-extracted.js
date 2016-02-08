@@ -74,6 +74,13 @@
           },
 
           /**
+           * The error message to display when invalid.
+           */
+          errorMessage: {
+              type: String
+          },
+
+          /**
            * True if the dropdown is open. Otherwise, false.
            */
           opened: {

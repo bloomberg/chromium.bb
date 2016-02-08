@@ -35,6 +35,9 @@ Custom property | Description | Default
 `--paper-tab-content` | Mixin applied to the tab content | `{}`
 `--paper-tab-content-unselected` | Mixin applied to the tab content when the tab is not selected | `{}`
 
+This element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.
+In order to apply the `Roboto` font to this element, make sure you've imported `paper-styles/typography.html`.
+
 -->
 
 </head><body><dom-module id="paper-tab">
@@ -44,13 +47,14 @@ Custom property | Description | Default
         @apply(--layout-inline);
         @apply(--layout-center);
         @apply(--layout-center-justified);
-        @apply(--layout-flex);
+        @apply(--layout-flex-auto);
 
         position: relative;
         padding: 0 12px;
         overflow: hidden;
         cursor: pointer;
 
+        @apply(--paper-font-common-base);
         @apply(--paper-tab);
       }
 
@@ -89,7 +93,7 @@ Custom property | Description | Default
       }
 
       .tab-content > ::content > a {
-        @apply(--layout-flex)
+        @apply(--layout-flex-auto)
 
         height: 100%;
       }

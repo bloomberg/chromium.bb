@@ -23,13 +23,18 @@
 
     },
 
+    listeners: {
+      'transitionend' : '_onTransitionend'
+    },
+
     /**
      * Appends the backdrop to document body and sets its `z-index` to be below the latest overlay.
      */
     prepare: function() {
+      // Always update z-index
+      this.style.zIndex = this._manager.backdropZ();
       if (!this.parentNode) {
         Polymer.dom(document.body).appendChild(this);
-        this.style.zIndex = this._manager.currentOverlayZ() - 1;
       }
     },
 
@@ -47,9 +52,18 @@
      * Hides the backdrop if needed.
      */
     close: function() {
-      // only need to make the backdrop invisible if this is called by the last overlay with a backdrop
-      if (this._manager.getBackdrops().length < 2) {
+      // Always update z-index
+      this.style.zIndex = this._manager.backdropZ();
+      // close only if no element with backdrop is left
+      if (this._manager.getBackdrops().length === 0) {
+        // Read style before setting opened.
+        var cs = getComputedStyle(this);
+        var noAnimation = (cs.transitionDuration === '0s' || cs.opacity == 0);
         this._setOpened(false);
+        // In case of no animations, complete
+        if (noAnimation) {
+          this.complete();
+        }
       }
     },
 
@@ -60,6 +74,12 @@
       // only remove the backdrop if there are no more overlays with backdrops
       if (this._manager.getBackdrops().length === 0 && this.parentNode) {
         Polymer.dom(this.parentNode).removeChild(this);
+      }
+    },
+
+    _onTransitionend: function (event) {
+      if (event && event.target === this) {
+        this.complete();
       }
     }
 

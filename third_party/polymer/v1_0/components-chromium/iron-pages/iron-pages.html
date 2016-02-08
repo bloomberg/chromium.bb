@@ -30,32 +30,25 @@ Example:
     </script>
 
 @group Iron Elements
-@class iron-pages
 @hero hero.svg
 @demo demo/index.html
-@extends iron-selector
 -->
 
 </head><body><dom-module id="iron-pages">
 
-  <style>
-
-    :host {
-      display: block;
-    }
-
-    :host > ::content > :not(.iron-selected) {
-      display: none !important;
-    }
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      :host > ::content > :not(.iron-selected) {
+        display: none !important;
+      }
+    </style>
 
     <content></content>
-
   </template>
 
-</dom-module>
-
+  </dom-module>
 <script src="iron-pages-extracted.js"></script></body></html>

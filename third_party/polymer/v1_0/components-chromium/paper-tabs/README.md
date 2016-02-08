@@ -94,4 +94,7 @@ The following custom properties and mixins are available for styling:
 | `--paper-tab-content` | Mixin applied to the tab content | `{}` |
 | `--paper-tab-content-unselected` | Mixin applied to the tab content when the tab is not selected | `{}` |
 
+This element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.
+In order to apply the `Roboto` font to this element, make sure you've imported `paper-styles/typography.html`.
+
 

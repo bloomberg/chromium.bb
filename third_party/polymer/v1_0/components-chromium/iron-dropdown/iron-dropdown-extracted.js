@@ -158,6 +158,7 @@
 
         /**
          * The element that should be focused when the dropdown opens.
+         * @deprecated
          */
         get _focusTarget() {
           return this.focusTarget || this.containedElement;
@@ -257,10 +258,6 @@
             this._prepareDropdown();
             Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
           }
-
-          if (this.opened) {
-            this._focusContent();
-          }
         },
 
         /**
@@ -315,7 +312,7 @@
           var scrollTop;
           var scrollLeft;
 
-          if (containedElement) {
+          if (this.opened && containedElement) {
             scrollTop = containedElement.scrollTop;
             scrollLeft = containedElement.scrollLeft;
           }
@@ -326,7 +323,7 @@
 
           Polymer.IronOverlayBehaviorImpl._onIronResize.apply(this, arguments);
 
-          if (containedElement) {
+          if (this.opened && containedElement) {
             containedElement.scrollTop = scrollTop;
             containedElement.scrollLeft = scrollLeft;
           }
@@ -411,16 +408,15 @@
         },
 
         /**
-         * Focuses the configured focus target.
+         * Apply focus to focusTarget or containedElement
          */
-        _focusContent: function() {
-          // NOTE(cdata): This is async so that it can attempt the focus after
-          // `display: none` is removed from the element.
-          this.async(function() {
-            if (this._focusTarget) {
-              this._focusTarget.focus();
-            }
-          });
+        _applyFocus: function () {
+          var focusTarget = this.focusTarget || this.containedElement;
+          if (focusTarget && this.opened && !this.noAutoFocus) {
+            focusTarget.focus();
+          } else {
+            Polymer.IronOverlayBehaviorImpl._applyFocus.apply(this, arguments);
+          }
         }
       });
     })();

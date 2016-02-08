@@ -16,8 +16,8 @@ Polymer({
       }
 
       this._effect = new KeyframeEffect(node, [
-        {'transform': 'translateY(-100%)'},
-        {'transform': 'none'}
+        {'transform': 'translateY(0%)'},
+        {'transform': 'translateY(100%)'}
       ], this.timingFromConfig(config));
 
       return this._effect;

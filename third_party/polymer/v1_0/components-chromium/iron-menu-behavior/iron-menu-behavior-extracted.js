@@ -58,7 +58,7 @@
      * Selects the given value. If the `multi` property is true, then the selected state of the
      * `value` will be toggled; otherwise the `value` will be selected.
      *
-     * @param {string} value the value to select.
+     * @param {string|number} value the value to select.
      */
     select: function(value) {
       if (this._defaultFocusAsync) {
