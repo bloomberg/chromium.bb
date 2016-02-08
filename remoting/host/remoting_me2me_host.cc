@@ -338,6 +338,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   void ReportPolicyErrorAndRestartHost();
   void ApplyHostDomainPolicy();
   void ApplyUsernamePolicy();
+  bool OnClientDomainPolicyUpdate(base::DictionaryValue* policies);
   bool OnHostDomainPolicyUpdate(base::DictionaryValue* policies);
   bool OnUsernamePolicyUpdate(base::DictionaryValue* policies);
   bool OnNatPolicyUpdate(base::DictionaryValue* policies);
@@ -412,6 +413,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   scoped_ptr<PolicyWatcher> policy_watcher_;
   PolicyState policy_state_;
+  std::string client_domain_;
   std::string host_domain_;
   bool host_username_match_required_;
   bool allow_nat_traversal_;
@@ -794,7 +796,7 @@ void HostProcess::CreateAuthenticatorFactory() {
 
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
         use_service_account_, host_owner_, local_certificate, key_pair_,
-        host_secret_hash_, pairing_registry);
+        client_domain_, host_secret_hash_, pairing_registry);
 
     host_->set_pairing_registry(pairing_registry);
   } else {
@@ -807,7 +809,7 @@ void HostProcess::CreateAuthenticatorFactory() {
             key_pair_, context_->url_request_context_getter()));
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
         use_service_account_, host_owner_, local_certificate, key_pair_,
-        std::move(token_validator_factory));
+        client_domain_, std::move(token_validator_factory));
   }
 
 #if defined(OS_POSIX)
@@ -1104,6 +1106,7 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   }
 
   bool restart_required = false;
+  restart_required |= OnClientDomainPolicyUpdate(policies.get());
   restart_required |= OnHostDomainPolicyUpdate(policies.get());
   restart_required |= OnCurtainPolicyUpdate(policies.get());
   // Note: UsernamePolicyUpdate must run after OnCurtainPolicyUpdate.
@@ -1189,6 +1192,13 @@ bool HostProcess::OnHostDomainPolicyUpdate(base::DictionaryValue* policies) {
 
   ApplyHostDomainPolicy();
   return false;
+}
+
+bool HostProcess::OnClientDomainPolicyUpdate(base::DictionaryValue* policies) {
+  // Returns true if the host has to be restarted after this policy update.
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  return policies->GetString(policy::key::kRemoteAccessHostClientDomain,
+                             &client_domain_);
 }
 
 void HostProcess::ApplyUsernamePolicy() {

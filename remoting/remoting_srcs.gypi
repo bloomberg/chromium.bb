@@ -177,6 +177,8 @@
       'protocol/pseudotcp_adapter.h',
       'protocol/pseudotcp_channel_factory.cc',
       'protocol/pseudotcp_channel_factory.h',
+      'protocol/rejecting_authenticator.cc',
+      'protocol/rejecting_authenticator.h',
       'protocol/secure_channel_factory.cc',
       'protocol/secure_channel_factory.h',
       'protocol/session.h',

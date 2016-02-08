@@ -332,6 +332,11 @@ void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   if (policies->GetString(policy::key::kRemoteAccessHostDomain, &host_domain)) {
     UpdateHostDomainPolicy(host_domain);
   }
+  std::string client_domain;
+  if (policies->GetString(policy::key::kRemoteAccessHostClientDomain,
+                          &client_domain)) {
+    UpdateClientDomainPolicy(client_domain);
+  }
 
   policy_received_ = true;
 
@@ -375,6 +380,19 @@ void It2MeHost::UpdateHostDomainPolicy(const std::string& host_domain) {
   }
 
   required_host_domain_ = host_domain;
+}
+
+void It2MeHost::UpdateClientDomainPolicy(const std::string& client_domain) {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+
+  VLOG(2) << "UpdateClientDomainPolicy: " << client_domain;
+
+  // When setting a client  domain policy, disconnect any existing session.
+  if (!client_domain.empty() && IsConnected()) {
+    Shutdown();
+  }
+
+  required_client_domain_ = client_domain;
 }
 
 It2MeHost::~It2MeHost() {
@@ -459,7 +477,8 @@ void It2MeHost::OnReceivedSupportID(
 
   scoped_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::It2MeHostAuthenticatorFactory(
-          local_certificate, host_key_pair_, access_code));
+          local_certificate, host_key_pair_, access_code,
+          required_client_domain_));
   host_->SetAuthenticatorFactory(std::move(factory));
 
   // Pass the Access Code to the script object before changing state.

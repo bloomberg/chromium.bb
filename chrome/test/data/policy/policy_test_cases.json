@@ -204,6 +204,9 @@
   "RemoteAccessClientFirewallTraversal": {
   },
 
+  "RemoteAccessHostClientDomain": {
+  },
+
   "RemoteAccessHostFirewallTraversal": {
   },
 

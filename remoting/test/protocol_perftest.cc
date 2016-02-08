@@ -353,7 +353,7 @@ class ProtocolPerfTest
     host_secret.value = "123456";
     scoped_ptr<protocol::AuthenticatorFactory> auth_factory =
         protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
-            true, kHostOwner, host_cert, key_pair, host_secret, nullptr);
+            true, kHostOwner, host_cert, key_pair, "", host_secret, nullptr);
     host_->SetAuthenticatorFactory(std::move(auth_factory));
 
     host_->AddStatusObserver(this);

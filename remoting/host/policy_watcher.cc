@@ -179,6 +179,7 @@ PolicyWatcher::PolicyWatcher(
   default_values_->SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
   default_values_->SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
   default_values_->SetBoolean(key::kRemoteAccessHostMatchUsername, false);
+  default_values_->SetString(key::kRemoteAccessHostClientDomain, std::string());
   default_values_->SetString(key::kRemoteAccessHostDomain, std::string());
   default_values_->SetString(key::kRemoteAccessHostTalkGadgetPrefix,
                              kDefaultHostTalkGadgetPrefix);

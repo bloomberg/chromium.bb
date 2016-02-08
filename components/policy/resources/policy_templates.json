@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 315
+#   For your editing convenience: highest ID currently used: 316
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -701,6 +701,27 @@
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.''',
         },
         {
+          'name': 'RemoteAccessHostClientDomain',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:22-', 'chrome_os:41-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 'my-awesome-domain.com',
+          'id': 316,
+          'caption': '''Configure the required domain name for remote access clients''',
+          'tags': [],
+          'desc': '''Configures the required client domain name that will be imposed on remote access clients and prevents users from changing it.
+
+          If this setting is enabled, then only clients from the specified domain can connect to the host.
+
+          If this setting is disabled or not set, then the default policy for the connection type is applied. For remote assistance, this allows clients from any domain can connect to the host; for anytime remote access, only the host owner can connect.
+
+          See also RemoteAccessHostDomain.''',
+        },
+        {
           'name': 'RemoteAccessHostFirewallTraversal',
           'type': 'main',
           'schema': { 'type': 'boolean' },
@@ -738,7 +759,9 @@
 
           If this setting is enabled, then hosts can be shared only using accounts registered on the specified domain name.
 
-          If this setting is disabled or not set, then hosts can be shared using any account.''',
+          If this setting is disabled or not set, then hosts can be shared using any account.
+
+          See also RemoteAccessHostClientDomain.''',
         },
         {
           'name': 'RemoteAccessHostRequireTwoFactor',

@@ -133,9 +133,10 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Called when malformed policies are detected.
   void OnPolicyError();
 
-  // Handlers for NAT traversal and host domain policies.
+  // Handlers for NAT traversal and domain policies.
   void UpdateNatPolicy(bool nat_traversal_enabled);
   void UpdateHostDomainPolicy(const std::string& host_domain);
+  void UpdateClientDomainPolicy(const std::string& client_domain);
 
   void Shutdown();
 
@@ -165,7 +166,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Host the current nat traversal policy setting.
   bool nat_traversal_enabled_;
 
-  // The host domain policy setting.
+  // The client and host domain policy setting.
+  std::string required_client_domain_;
   std::string required_host_domain_;
 
   // Indicates whether or not a policy has ever been read. This is to ensure

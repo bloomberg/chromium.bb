@@ -32,6 +32,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& host_owner,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
+      const std::string& required_client_domain,
       const SharedSecretHash& shared_secret_hash,
       scoped_refptr<PairingRegistry> pairing_registry);
 
@@ -41,6 +42,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& host_owner,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
+      const std::string& required_client_domain,
       scoped_ptr<TokenValidatorFactory> token_validator_factory);
 
   Me2MeHostAuthenticatorFactory();
@@ -58,6 +60,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   std::string host_owner_;
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;
+  std::string required_client_domain_;
 
   // Used only for shared secret host authenticators.
   SharedSecretHash shared_secret_hash_;
