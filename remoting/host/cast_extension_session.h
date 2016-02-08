@@ -66,8 +66,6 @@ class CastExtensionSession : public HostExtensionSession,
   // webrtc::PeerConnectionObserver interface.
   void OnSignalingChange(
       webrtc::PeerConnectionInterface::SignalingState new_state) override;
-  void OnStateChange(
-      webrtc::PeerConnectionObserver::StateType state_changed) override;
   void OnAddStream(webrtc::MediaStreamInterface* stream) override;
   void OnRemoveStream(webrtc::MediaStreamInterface* stream) override;
   void OnDataChannel(webrtc::DataChannelInterface* data_channel) override;
@@ -77,7 +75,6 @@ class CastExtensionSession : public HostExtensionSession,
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
   void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
-  void OnIceComplete() override;
 
  private:
   CastExtensionSession(

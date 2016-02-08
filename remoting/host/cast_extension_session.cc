@@ -577,11 +577,6 @@ void CastExtensionSession::OnSignalingChange(
   VLOG(1) << "PeerConnectionObserver: SignalingState changed to:" << new_state;
 }
 
-void CastExtensionSession::OnStateChange(
-    webrtc::PeerConnectionObserver::StateType state_changed) {
-  VLOG(1) << "PeerConnectionObserver: StateType changed to: " << state_changed;
-}
-
 void CastExtensionSession::OnAddStream(webrtc::MediaStreamInterface* stream) {
   VLOG(1) << "PeerConnectionObserver: stream added: " << stream->label();
 }
@@ -621,10 +616,6 @@ void CastExtensionSession::OnIceGatheringChange(
     webrtc::PeerConnectionInterface::IceGatheringState new_state) {
   VLOG(1) << "PeerConnectionObserver: IceGatheringState changed to: "
           << new_state;
-}
-
-void CastExtensionSession::OnIceComplete() {
-  VLOG(1) << "PeerConnectionObserver: all ICE candidates found.";
 }
 
 void CastExtensionSession::OnIceCandidate(
