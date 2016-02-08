@@ -75,6 +75,11 @@ public:
     // Get the highest-level LocalFrame in this frame's in-process subtree.
     virtual WebLocalFrame* localRoot() = 0;
 
+    // Returns the previous/next local frame in "frame traversal order",
+    // optionally wrapping around.
+    virtual WebLocalFrame* traversePreviousLocal(bool wrap) const = 0;
+    virtual WebLocalFrame* traverseNextLocal(bool wrap) const = 0;
+
     // Navigation Ping --------------------------------------------------------
 
     virtual void sendPings(const WebNode& contextNode, const WebURL& destinationURL) = 0;

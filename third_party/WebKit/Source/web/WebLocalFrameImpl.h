@@ -221,6 +221,8 @@ public:
     WebDevToolsAgent* devToolsAgent() override;
     void setFrameOwnerProperties(const WebFrameOwnerProperties&) override;
     WebLocalFrameImpl* localRoot() override;
+    WebLocalFrame* traversePreviousLocal(bool wrap) const override;
+    WebLocalFrame* traverseNextLocal(bool wrap) const override;
     void sendPings(const WebNode& contextNode, const WebURL& destinationURL) override;
     WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebURLRequest::CachePolicy)
         const override;

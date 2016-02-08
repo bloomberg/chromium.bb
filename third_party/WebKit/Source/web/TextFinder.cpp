@@ -542,7 +542,7 @@ WebFloatRect TextFinder::activeFindMatchRect()
 void TextFinder::findMatchRects(WebVector<WebFloatRect>& outputRects)
 {
     Vector<WebFloatRect> matchRects;
-    for (WebLocalFrameImpl* frame = &ownerFrame(); frame; frame = toWebLocalFrameImpl(frame->traverseNext(false)))
+    for (WebLocalFrameImpl* frame = &ownerFrame(); frame; frame = toWebLocalFrameImpl(frame->traverseNextLocal(false)))
         frame->ensureTextFinder().appendFindMatchRects(matchRects);
 
     outputRects = matchRects;
@@ -564,7 +564,7 @@ int TextFinder::selectNearestFindMatch(const WebFloatPoint& point, WebRect* sele
     int indexInBestFrame = -1;
     float distanceInBestFrame = FLT_MAX;
 
-    for (WebLocalFrameImpl* frame = &ownerFrame(); frame; frame = toWebLocalFrameImpl(frame->traverseNext(false))) {
+    for (WebLocalFrameImpl* frame = &ownerFrame(); frame; frame = toWebLocalFrameImpl(frame->traverseNextLocal(false))) {
         float distanceInFrame;
         TextFinder& finder = frame->ensureTextFinder();
         int indexInFrame = finder.nearestFindMatch(point, distanceInFrame);
@@ -711,7 +711,7 @@ int TextFinder::ordinalOfFirstMatchForFrame(WebLocalFrameImpl* frame) const
     WebLocalFrameImpl* mainFrameImpl = ownerFrame().viewImpl()->mainFrameImpl();
     // Iterate from the main frame up to (but not including) |frame| and
     // add up the number of matches found so far.
-    for (WebLocalFrameImpl* it = mainFrameImpl; it != frame; it = toWebLocalFrameImpl(it->traverseNext(true))) {
+    for (WebLocalFrameImpl* it = mainFrameImpl; it != frame; it = toWebLocalFrameImpl(it->traverseNextLocal(true))) {
         TextFinder& finder = it->ensureTextFinder();
         if (finder.m_lastMatchCount > 0)
             ordinal += finder.m_lastMatchCount;

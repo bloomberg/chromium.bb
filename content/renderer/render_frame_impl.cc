@@ -5057,10 +5057,11 @@ void RenderFrameImpl::OnFind(int request_id,
   // Start searching in the focused frame.
   WebLocalFrame* search_frame = focused_frame;
 
-  bool multi_frame = (main_frame->traverseNext(true) != main_frame);
+  // Check for multiple searchable frames.
+  bool multi_frame = (main_frame->traverseNextLocal(true) != main_frame);
 
   // If we have multiple frames, we don't want to wrap the search within the
-  // frame, so we check here if we only have main_frame in the chain.
+  // frame, so we check here if we only have |main_frame| in the chain.
   bool wrap_within_frame = !multi_frame;
 
   WebRect selection_rect;
@@ -5083,10 +5084,9 @@ void RenderFrameImpl::OnFind(int request_id,
       do {
         // What is the next frame to search (we might be going backwards)? Note
         // that we specify wrap=true so that search_frame never becomes NULL.
-        search_frame =
-            options.forward
-                ? search_frame->traverseNext(true)->toWebLocalFrame()
-                : search_frame->traversePrevious(true)->toWebLocalFrame();
+        search_frame = options.forward
+                ? search_frame->traverseNextLocal(true)
+                : search_frame->traversePreviousLocal(true);
       } while (!search_frame->hasVisibleContent() &&
                search_frame != focused_frame);
 
@@ -5146,7 +5146,7 @@ void RenderFrameImpl::OnFind(int request_id,
 
       // Iterate to the next frame. The frame will not necessarily scope, for
       // example if it is not visible.
-      search_frame = search_frame->traverseNext(true)->toWebLocalFrame();
+      search_frame = search_frame->traverseNextLocal(true);
     } while (search_frame != main_frame);
   }
 }
@@ -5175,10 +5175,10 @@ void RenderFrameImpl::OnStopFinding(StopFindAction action) {
                                          GetFocusedElement());
   }
 
-  WebFrame* frame = GetWebFrame();
+  WebLocalFrame* frame = GetWebFrame();
   while (frame) {
-    frame->toWebLocalFrame()->stopFinding(clear_selection);
-    frame = frame->traverseNext(false);
+    frame->stopFinding(clear_selection);
+    frame = frame->traverseNextLocal(false);
   }
 
   if (action == STOP_FIND_ACTION_ACTIVATE_SELECTION) {
