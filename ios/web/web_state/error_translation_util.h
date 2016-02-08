@@ -9,10 +9,10 @@
 
 namespace web {
 
-// Translates iOS-specific errors into their net error equivalent.  If a valid
-// translation is found, a copy of |error| is returned with the translation as
-// its final underlying error.  If there is no viable translation, the original
-// error is returned.
+// Translates an iOS-specific error into its net error equivalent and returns
+// a copy of |error| with the translation as its final underlying error.  The
+// underlying net error will have an error code of net::ERR_FAILED if no
+// specific translation of the iOS error is found.
 NSError* NetErrorFromError(NSError* error);
 
 }  // namespace web
