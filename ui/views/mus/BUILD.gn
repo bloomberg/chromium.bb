@@ -132,21 +132,24 @@ group("tests") {
   testonly = true
 
   deps = [
-    ":views_apptests",
+    ":views_mus_unittests",
   ]
 }
 
-mojo_native_application("views_apptests") {
+test("views_mus_unittests") {
   testonly = true
 
-  configs = [ "//build/config:precompiled_headers" ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   # TODO(sky): add more files.
   sources = [
+    "../run_all_unittests.cc",
+    "../run_all_unittests.h",
     "../widget/native_widget_unittest.cc",
     "../widget/root_view_unittest.cc",
     "../widget/widget_unittest.cc",
     "platform_test_helper_mus.cc",
+    "run_all_unittests_mus.cc",
   ]
 
   deps = [
@@ -155,7 +158,9 @@ mojo_native_application("views_apptests") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc",
-    "//mojo/shell/public/cpp:test_support",
+    "//mojo/shell/background:lib",
+    "//mojo/shell/background:main",
+    "//mojo/shell/public/cpp:sources",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",

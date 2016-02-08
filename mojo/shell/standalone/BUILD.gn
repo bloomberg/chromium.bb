@@ -54,6 +54,7 @@ source_set("main_lib") {
 
     deps += [
       ":jni_headers",
+      "//base:i18n",
       "//components/mus",
       "//components/mus/ws:lib",
       "//mojo/shell",

@@ -22,3 +22,9 @@ include_rules = [
   "+ui/platform_window",
   "+ui/wm",
 ]
+
+specific_include_rules = {
+  "platform_test_helper_mus.cc": [
+    "+mojo/shell/background"
+  ],
+}

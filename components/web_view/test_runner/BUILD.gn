@@ -18,6 +18,7 @@ executable("test_runner") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//build/config/sanitizers:deps",
     "//mojo/common",
     "//mojo/environment:chromium",

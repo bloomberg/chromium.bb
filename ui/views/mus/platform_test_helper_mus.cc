@@ -4,45 +4,54 @@
 
 #include "ui/views/test/platform_test_helper.h"
 
-#include "base/path_service.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
-#include "mojo/shell/public/cpp/shell.h"
-#include "ui/aura/env.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
-#include "ui/gl/test/gl_surface_test_support.h"
+#include "base/command_line.h"
+#include "mojo/shell/background/background_shell.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "ui/views/mus/window_manager_connection.h"
+#include "url/gurl.h"
 
 namespace views {
 namespace {
 
+class DefaultShellClient : public mojo::ShellClient {
+ public:
+  DefaultShellClient() {}
+  ~DefaultShellClient() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
+};
+
 class PlatformTestHelperMus : public PlatformTestHelper {
  public:
   PlatformTestHelperMus() {
-    gfx::GLSurfaceTestSupport::InitializeOneOff();
+    // Force the new edk.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch("use-new-edk");
 
-    // TODO(sky): We really shouldn't need to configure ResourceBundle.
-    ui::RegisterPathProvider();
-    base::FilePath ui_test_pak_path;
-    CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-    aura::Env::CreateInstance(true);
-
-    mojo_test_helper_.reset(new mojo::test::TestHelper(nullptr));
+    background_shell_.reset(new mojo::shell::BackgroundShell);
+    background_shell_->Init();
+    shell_client_.reset(new DefaultShellClient);
+    app_.reset(new mojo::ApplicationImpl(
+        shell_client_.get(),
+        background_shell_->CreateApplication(GURL("mojo://test-app"))));
+    app_->WaitForInitialize();
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
-    mojo_test_helper_->shell()->Connect("mojo:desktop_wm");
-    WindowManagerConnection::Create(mojo_test_helper_->shell());
+    app_->Connect("mojo:desktop_wm");
+    WindowManagerConnection::Create(app_.get());
   }
 
   ~PlatformTestHelperMus() override {
-    mojo_test_helper_.reset(nullptr);
-    aura::Env::DeleteInstance();
-    ui::ResourceBundle::CleanupSharedInstance();
+    WindowManagerConnection::Reset();
+    // |app_| has a reference to us, destroy it while we are still valid.
+    app_.reset();
   }
 
  private:
-  scoped_ptr<mojo::test::TestHelper> mojo_test_helper_;
+  scoped_ptr<mojo::shell::BackgroundShell> background_shell_;
+  scoped_ptr<mojo::ApplicationImpl> app_;
+  scoped_ptr<DefaultShellClient> shell_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);
 };

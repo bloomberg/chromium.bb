@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -198,10 +197,6 @@ void Context::Init(const base::FilePath& shell_file_root) {
         command_line.GetSwitchValueASCII(switches::kTraceStartupDuration),
         "mojo_runner.trace");
   }
-
-  // ICU data is a thing every part of the system needs. This here warms
-  // up the copy of ICU in the mojo runner.
-  CHECK(base::i18n::InitializeICU());
 
   EnsureEmbedderIsInitialized();
   task_runners_.reset(

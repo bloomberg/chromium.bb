@@ -14,6 +14,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -135,6 +136,8 @@ static void Init(JNIEnv* env,
 
   g_java_message_loop.Get().reset(new base::MessageLoopForUI);
   base::MessageLoopForUI::current()->Start();
+
+  CHECK(base::i18n::InitializeICU());
 
   shell_context->Init(shell_file_root);
   ConfigureAndroidServices(shell_context);

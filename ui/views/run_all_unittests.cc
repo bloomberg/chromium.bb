@@ -17,6 +17,8 @@
 #include "ui/aura/env.h"
 #endif
 
+namespace views {
+
 class ViewTestSuite : public base::TestSuite {
  public:
   ViewTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
@@ -47,10 +49,12 @@ class ViewTestSuite : public base::TestSuite {
   DISALLOW_COPY_AND_ASSIGN(ViewTestSuite);
 };
 
-int main(int argc, char** argv) {
+int RunAllUnittests(int argc, char** argv) {
   ViewTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&ViewTestSuite::Run,
                              base::Unretained(&test_suite)));
 }
+
+}  // namespace views

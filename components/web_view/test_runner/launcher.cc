@@ -5,6 +5,7 @@
 #include "components/web_view/test_runner/launcher.h"
 
 #include "base/bind.h"
+#include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "mojo/shell/standalone/context.h"
@@ -20,6 +21,7 @@ int LaunchTestRunner(int argc, char** argv) {
     base::MessageLoop message_loop;
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
+    CHECK(base::i18n::InitializeICU());
     shell_context.Init(shell_dir);
 
     message_loop.PostTask(FROM_HERE,

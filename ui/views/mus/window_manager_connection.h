@@ -40,6 +40,9 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   static void Create(mojo::Shell* shell);
   static WindowManagerConnection* Get();
 
+  // Destroys the singleton instance.
+  static void Reset();
+
   mojo::Shell* shell() { return shell_; }
 
   mus::Window* NewWindow(const std::map<std::string,

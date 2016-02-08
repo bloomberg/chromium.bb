@@ -43,6 +43,12 @@ WindowManagerConnection* WindowManagerConnection::Get() {
   return connection;
 }
 
+// static
+void WindowManagerConnection::Reset() {
+  delete Get();
+  lazy_tls_ptr.Pointer()->Set(nullptr);
+}
+
 mus::Window* WindowManagerConnection::NewWindow(
     const std::map<std::string, std::vector<uint8_t>>& properties) {
   return window_tree_connection_->NewTopLevelWindow(&properties);

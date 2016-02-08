@@ -582,6 +582,8 @@
       'layout/grid_layout_unittest.cc',
       'rect_based_targeting_utils_unittest.cc',
       'run_all_unittests.cc',
+      'run_all_unittests.h',
+      'run_all_unittests_main.cc',
       'style/mac/dialog_button_border_mac_unittest.cc',
       'view_model_unittest.cc',
       'view_model_utils_unittest.cc',
@@ -953,6 +955,8 @@
           'sources': [
             'cocoa/bridged_native_widget_interactive_uitest.mm',
             'run_all_unittests.cc',
+            'run_all_unittests.h',
+            'run_all_unittests_main.cc',
             'widget/native_widget_mac_interactive_uitest.mm',
           ],
           'conditions': [
