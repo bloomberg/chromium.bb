@@ -312,10 +312,10 @@ public class OverlayPanelContent {
     }
 
     /**
-     * Notifies that the Panel has been touched. Calling this method will turn the Content
+     * Notifies that the panel's bar has been touched. Calling this method will turn the Content
      * visible, causing it to be rendered.
      */
-    public void notifyPanelTouched() {
+    public void notifyBarTouched() {
         setVisibility(true);
     }
 

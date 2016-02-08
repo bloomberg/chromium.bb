@@ -310,6 +310,13 @@ public class ContextualSearchPanel extends OverlayPanel {
         return mManagementDelegate != null && !mManagementDelegate.isRunningInCompatibilityMode();
     }
 
+    @Override
+    public void notifyBarTouched(float x) {
+        // Directly notify the content that it was touched since the close button is not displayed
+        // when Contextual Search is peeking.
+        getOverlayPanelContent().notifyBarTouched();
+    }
+
     // ============================================================================================
     // Animation Handling
     // ============================================================================================

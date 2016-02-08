@@ -373,17 +373,19 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                     boolean isMainFrame, String validatedUrl, boolean isErrorPage,
                     boolean isIframeSrcdoc) {
                 if (!isMainFrame) return;
+                // If there is a navigation in the current tab, hide the bar. It will show again
+                // once the distillability test is successful.
+                if (readerTabId == mTabModelSelector.getCurrentTabId()) {
+                    closeReaderPanel(StateChangeReason.TAB_NAVIGATION, false);
+                }
 
                 // Make sure the tab was not destroyed.
                 ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
                 if (tabInfo == null) return;
-                // Reset closed state of reader mode in this tab.
-                tabInfo.setIsDismissed(false);
 
                 tabInfo.setUrl(validatedUrl);
                 if (DomDistillerUrlUtils.isDistilledPage(validatedUrl)) {
                     tabInfo.setStatus(STARTED);
-                    closeReaderPanel(StateChangeReason.UNKNOWN, true);
                     mReaderModePageUrl = validatedUrl;
                 }
             }
@@ -400,8 +402,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 // Make sure the tab was not destroyed.
                 ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
                 if (tabInfo == null) return;
-                // Reset closed state of reader mode in this tab.
-                tabInfo.setIsDismissed(false);
 
                 tabInfo.setStatus(POSSIBLE);
                 if (!TextUtils.equals(url,
@@ -420,10 +420,12 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
             }
 
             @Override
-            public void didStartLoading(String url) {
+            public void navigationEntryCommitted() {
+                // Make sure the tab was not destroyed.
                 ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
                 if (tabInfo == null) return;
-                // Reset closed state of reader mode in this tab.
+                // Reset closed state of reader mode in this tab once we know a navigation is
+                // happening.
                 tabInfo.setIsDismissed(false);
             }
         };

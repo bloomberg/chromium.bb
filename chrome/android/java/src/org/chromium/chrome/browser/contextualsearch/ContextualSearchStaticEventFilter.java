@@ -86,7 +86,7 @@ public class ContextualSearchStaticEventFilter extends EventFilter {
             // TODO(pedrosimonetti): Once we implement "side-swipe to dismiss"
             // we'll have to revisit this because we don't want to set the
             // Content View visibility to true when the side-swipe is detected.
-            activePanel.notifyPanelTouched();
+            activePanel.notifyBarTouched(event.getX() * mPxToDp);
         }
 
         mSwipeRecognizer.onTouchEvent(event);
