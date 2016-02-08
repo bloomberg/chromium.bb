@@ -6,6 +6,7 @@
 #define CC_QUADS_RENDER_PASS_ID_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <tuple>
 
@@ -17,10 +18,11 @@ namespace cc {
 class CC_EXPORT RenderPassId {
  public:
   int layer_id;
-  size_t index;
+  uint32_t index;
 
   RenderPassId() : layer_id(-1), index(0) {}
-  RenderPassId(int layer_id, size_t index) : layer_id(layer_id), index(index) {}
+  RenderPassId(int layer_id, uint32_t index)
+      : layer_id(layer_id), index(index) {}
   void* AsTracingId() const;
 
   bool IsValid() const { return layer_id >= 0; }

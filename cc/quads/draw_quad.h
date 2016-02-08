@@ -124,7 +124,7 @@ class CC_EXPORT DrawQuad {
       return ids + count;
     }
 
-    size_t count;
+    uint32_t count;
     ResourceId ids[kMaxResourceIdCount];
   };
 

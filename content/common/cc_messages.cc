@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/draw_quad.h"
@@ -186,7 +187,7 @@ void ParamTraits<cc::FilterOperation>::Log(
 
 void ParamTraits<cc::FilterOperations>::Write(base::Pickle* m,
                                               const param_type& p) {
-  WriteParam(m, p.size());
+  WriteParam(m, base::checked_cast<uint32_t>(p.size()));
   for (std::size_t i = 0; i < p.size(); ++i) {
     WriteParam(m, p.at(i));
   }
@@ -195,7 +196,7 @@ void ParamTraits<cc::FilterOperations>::Write(base::Pickle* m,
 bool ParamTraits<cc::FilterOperations>::Read(const base::Pickle* m,
                                              base::PickleIterator* iter,
                                              param_type* r) {
-  size_t count;
+  uint32_t count;
   if (!ReadParam(m, iter, &count))
     return false;
 
@@ -301,7 +302,7 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.damage_rect);
   WriteParam(m, p.transform_to_root_target);
   WriteParam(m, p.has_transparent_background);
-  WriteParam(m, p.quad_list.size());
+  WriteParam(m, base::checked_cast<uint32_t>(p.quad_list.size()));
 
   cc::SharedQuadStateList::ConstIterator shared_quad_state_iter =
       p.shared_quad_state_list.begin();
@@ -405,7 +406,7 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
   gfx::Rect damage_rect;
   gfx::Transform transform_to_root_target;
   bool has_transparent_background;
-  size_t quad_list_size;
+  uint32_t quad_list_size;
 
   if (!ReadParam(m, iter, &id) || !ReadParam(m, iter, &output_rect) ||
       !ReadParam(m, iter, &damage_rect) ||
@@ -420,7 +421,7 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
             transform_to_root_target,
             has_transparent_background);
 
-  for (size_t i = 0; i < quad_list_size; ++i) {
+  for (uint32_t i = 0; i < quad_list_size; ++i) {
     cc::DrawQuad::Material material;
     base::PickleIterator temp_iter = *iter;
     if (!ReadParam(m, &temp_iter, &material))
@@ -679,10 +680,11 @@ void ParamTraits<cc::DelegatedFrameData>::Write(base::Pickle* m,
 
   WriteParam(m, p.device_scale_factor);
   WriteParam(m, p.resource_list);
-  WriteParam(m, p.render_pass_list.size());
+  WriteParam(m, base::checked_cast<uint32_t>(p.render_pass_list.size()));
   for (const auto& pass : p.render_pass_list) {
-    WriteParam(m, pass->quad_list.size());
-    WriteParam(m, pass->shared_quad_state_list.size());
+    WriteParam(m, base::checked_cast<uint32_t>(pass->quad_list.size()));
+    WriteParam(m, base::checked_cast<uint32_t>(
+        pass->shared_quad_state_list.size()));
     WriteParam(m, *pass);
   }
 }
@@ -699,21 +701,23 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const base::Pickle* m,
 
   std::set<cc::RenderPassId> pass_set;
 
-  size_t num_render_passes;
+  uint32_t num_render_passes;
   if (!ReadParam(m, iter, &p->resource_list) ||
       !ReadParam(m, iter, &num_render_passes) ||
       num_render_passes > kMaxRenderPasses || num_render_passes == 0)
     return false;
-  for (size_t i = 0; i < num_render_passes; ++i) {
-    size_t quad_list_size;
-    size_t shared_quad_state_list_size;
+  for (uint32_t i = 0; i < num_render_passes; ++i) {
+    uint32_t quad_list_size;
+    uint32_t shared_quad_state_list_size;
     if (!ReadParam(m, iter, &quad_list_size) ||
         !ReadParam(m, iter, &shared_quad_state_list_size) ||
         quad_list_size > kMaxQuadListSize ||
         shared_quad_state_list_size > kMaxSharedQuadStateListSize)
       return false;
     scoped_ptr<cc::RenderPass> render_pass =
-        cc::RenderPass::Create(shared_quad_state_list_size, quad_list_size);
+        cc::RenderPass::Create(
+            static_cast<size_t>(shared_quad_state_list_size),
+            static_cast<size_t>(quad_list_size));
     if (!ReadParam(m, iter, render_pass.get()))
       return false;
     // Validate that each RenderPassDrawQuad points at a valid RenderPass
