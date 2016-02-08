@@ -265,6 +265,7 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const Strin
         return nullptr;
 
     if (m_context->is3d()) {
+        document().updateLayoutTreeForNodeIfNeeded(this);
         const ComputedStyle* style = ensureComputedStyle();
         if (style)
             m_context->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
