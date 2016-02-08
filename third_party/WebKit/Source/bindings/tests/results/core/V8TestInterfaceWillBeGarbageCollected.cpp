@@ -47,9 +47,7 @@ static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info
 
 static void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceWillBeGarbageCollectedV8Internal::attr1AttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -69,9 +67,7 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
 static void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestInterfaceWillBeGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -94,9 +90,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestInterfaceWillBeGarbageCollectedV8Internal::funcMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -173,7 +167,6 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceWillBeGarbageCollectedConstructor
     if (!result.IsEmpty())
         return result;
 
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
     result = v8::FunctionTemplate::New(isolate, V8TestInterfaceWillBeGarbageCollectedConstructorCallback);
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(V8TestInterfaceWillBeGarbageCollected::internalFieldCount);
@@ -185,7 +178,6 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceWillBeGarbageCollectedConstructor
 
 void V8TestInterfaceWillBeGarbageCollected::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     if (!info.IsConstructCall()) {
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceWillBeGarbageCollected"));
         return;

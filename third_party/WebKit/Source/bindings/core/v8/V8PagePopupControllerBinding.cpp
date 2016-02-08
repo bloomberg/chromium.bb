@@ -27,9 +27,7 @@ void pagePopupControllerAttributeGetter(const v8::PropertyCallbackInfo<v8::Value
 
 void pagePopupControllerAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     pagePopupControllerAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 } // namespace

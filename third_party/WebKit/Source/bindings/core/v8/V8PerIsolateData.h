@@ -111,9 +111,6 @@ public:
     v8::Local<v8::Context> ensureScriptRegexpContext();
     void clearScriptRegexpContext();
 
-    const char* previousSamplingState() const { return m_previousSamplingState; }
-    void setPreviousSamplingState(const char* name) { m_previousSamplingState = name; }
-
     // EndOfScopeTasks are run by V8RecursionScope when control is returning
     // to C++ from script, after executing a script task (e.g. callback,
     // event) or microtasks (e.g. promise). This is explicitly needed for
@@ -142,8 +139,6 @@ private:
     OwnPtr<V8HiddenValue> m_hiddenValue;
     ScopedPersistent<v8::Value> m_liveRoot;
     RefPtr<ScriptState> m_scriptRegexpScriptState;
-
-    const char* m_previousSamplingState;
 
     bool m_constructorMode;
     friend class ConstructorMode;

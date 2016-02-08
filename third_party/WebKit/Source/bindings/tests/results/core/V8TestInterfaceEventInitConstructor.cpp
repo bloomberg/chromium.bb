@@ -47,9 +47,7 @@ static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInf
 
 static void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventInitConstructorV8Internal::readonlyStringAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void isTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -61,9 +59,7 @@ static void isTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void isTrustedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventInitConstructorV8Internal::isTrustedAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -103,7 +99,6 @@ const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitConstruc
 
 void V8TestInterfaceEventInitConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     if (!info.IsConstructCall()) {
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceEventInitConstructor"));
         return;

@@ -4,7 +4,6 @@
 {% macro constant_getter_callback(constant) %}
 static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if constant.deprecate_as %}
     UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
     {% endif %}
@@ -21,7 +20,6 @@ static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v
     {% else %}
     v8SetReturnValueInt(info, {{constant.value}});
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 {% endmacro %}
 

@@ -267,16 +267,7 @@ void objectGroupingForMajorGC(v8::Isolate* isolate, bool constructRetainedObject
 
 void gcPrologueForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
-    if (isMainThread()) {
-        {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMajorGC");
-            objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
-        }
-        V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
-        TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MajorGC");
-    } else {
-        objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
-    }
+    objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
 }
 
 } // namespace
@@ -299,14 +290,7 @@ void V8GCController::gcPrologue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
             ThreadState::current()->willStartV8GC(BlinkGC::V8MinorGC);
 
         TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
-        if (isMainThread()) {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
-        }
         visitWeakHandlesForMinorGC(isolate);
-        if (isMainThread()) {
-            V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
-            TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MinorGC");
-        }
         break;
     case v8::kGCTypeMarkSweepCompact:
         if (ThreadState::current())
@@ -324,10 +308,6 @@ void V8GCController::gcPrologue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
         break;
     case v8::kGCTypeProcessWeakCallbacks:
         TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC", "usedHeapSizeBefore", usedHeapSize(isolate), "type", "weak processing");
-        if (isMainThread()) {
-            V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
-            TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMajorGC");
-        }
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -339,32 +319,20 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
     switch (type) {
     case v8::kGCTypeScavenge:
         TRACE_EVENT_END1("devtools.timeline,v8", "MinorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
-        if (isMainThread()) {
-            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
-        }
         // TODO(haraken): Remove this. See the comment in gcPrologue.
         if (ThreadState::current())
             ThreadState::current()->scheduleV8FollowupGCIfNeeded(BlinkGC::V8MinorGC);
         break;
     case v8::kGCTypeMarkSweepCompact:
         TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
-        if (isMainThread()) {
-            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
-        }
         if (ThreadState::current())
             ThreadState::current()->scheduleV8FollowupGCIfNeeded(BlinkGC::V8MajorGC);
         break;
     case v8::kGCTypeIncrementalMarking:
         TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
-        if (isMainThread()) {
-            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
-        }
         break;
     case v8::kGCTypeProcessWeakCallbacks:
         TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
-        if (isMainThread()) {
-            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
-        }
         break;
     default:
         ASSERT_NOT_REACHED();

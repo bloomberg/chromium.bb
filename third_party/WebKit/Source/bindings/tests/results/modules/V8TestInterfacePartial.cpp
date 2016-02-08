@@ -244,7 +244,6 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
 
 static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     String errorMessage;
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
@@ -255,7 +254,6 @@ static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::Function
          return;
     }
     TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -297,7 +295,6 @@ static void unscopeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     String errorMessage;
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
@@ -308,7 +305,6 @@ static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
          return;
     }
     TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 } // namespace TestInterfaceImplementationPartialV8Internal
