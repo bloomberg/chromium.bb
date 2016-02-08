@@ -340,7 +340,12 @@ AudioManager* AudioManager::Get() {
 
 // static
 std::string AudioManager::GetDefaultDeviceName() {
+#if !defined(OS_IOS)
   return GetLocalizedStringUTF8(DEFAULT_AUDIO_DEVICE_NAME);
+#else
+  NOTREACHED();
+  return "";
+#endif
 }
 
 // static
