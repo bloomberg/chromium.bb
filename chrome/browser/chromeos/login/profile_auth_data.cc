@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_network_session.h"
@@ -183,10 +182,8 @@ void ProfileAuthDataTransferer::BeginTransferOnIOThread() {
     // Retrieve the contents of |to_context_|'s cookie jar.
     net::CookieStore* to_store =
         to_context_->GetURLRequestContext()->cookie_store();
-    net::CookieMonster* to_monster = to_store->GetCookieMonster();
-    to_monster->GetAllCookiesAsync(
-        base::Bind(
-            &ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved,
+    to_store->GetAllCookiesAsync(base::Bind(
+        &ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved,
         base::Unretained(this)));
   } else {
     Finish();
@@ -233,8 +230,7 @@ void ProfileAuthDataTransferer::RetrieveCookiesToTransfer() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* from_store =
       from_context_->GetURLRequestContext()->cookie_store();
-  net::CookieMonster* from_monster = from_store->GetCookieMonster();
-  from_monster->GetAllCookiesAsync(
+  from_store->GetAllCookiesAsync(
       base::Bind(&ProfileAuthDataTransferer::OnCookiesToTransferRetrieved,
                  base::Unretained(this)));
 }
