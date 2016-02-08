@@ -614,6 +614,18 @@ TELEMETRY_TESTS = {
       '--use-angle=gl',
     ],
   },
+  'webgl_conformance_angle_tests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        'os_types': ['linux']
+      }
+    ],
+    'target_name': 'webgl_conformance',
+    'extra_browser_args': [
+      '--use-gl=angle',
+    ],
+  },
   'webgl2_conformance_tests': {
     'tester_configs': [
       {
