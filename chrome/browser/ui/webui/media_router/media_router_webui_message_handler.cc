@@ -231,11 +231,21 @@ void MediaRouterWebUIMessageHandler::UpdateCastModes(
 
 void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
     const MediaSink::Id& sink_id,
-    const MediaRoute::Id& route_id) {
+    const MediaRoute* route) {
   DVLOG(2) << "OnCreateRouteResponseReceived";
-  web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
-                                   base::StringValue(sink_id),
-                                   base::StringValue(route_id));
+  if (route) {
+    scoped_ptr<base::DictionaryValue> route_value(RouteToValue(*route, false,
+        media_router_ui_->GetRouteProviderExtensionId()));
+    web_ui()->CallJavascriptFunction(
+        kOnCreateRouteResponseReceived,
+        base::StringValue(sink_id), *route_value,
+        base::FundamentalValue(route->for_display()));
+  } else {
+    web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
+                                     base::StringValue(sink_id),
+                                     *base::Value::CreateNullValue(),
+                                     base::FundamentalValue(false));
+  }
 }
 
 void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {

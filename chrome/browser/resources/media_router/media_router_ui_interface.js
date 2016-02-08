@@ -15,11 +15,12 @@ cr.define('media_router.ui', function() {
    *
    * @param {string} sinkId The ID of the sink to which the Media Route was
    *     creating a route.
-   * @param {string} routeId The ID of the newly created route that corresponds
-   *     to the sink if route creation succeeded; empty otherwise.
+   * @param {?media_router.Route} route The newly created route that
+   *     corresponds to the sink if route creation succeeded; null otherwise.
+   * @param {boolean} isForDisplay Whether or not |route| is for display.
    */
-  function onCreateRouteResponseReceived(sinkId, routeId) {
-    container.onCreateRouteResponseReceived(sinkId, routeId);
+  function onCreateRouteResponseReceived(sinkId, route, isForDisplay) {
+    container.onCreateRouteResponseReceived(sinkId, route, isForDisplay);
   }
 
   /**

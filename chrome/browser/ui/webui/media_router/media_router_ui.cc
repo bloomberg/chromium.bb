@@ -485,8 +485,7 @@ void MediaRouterUI::OnRouteResponseReceived(int route_request_id,
     DVLOG(1) << "MediaRouteResponse returned error: " << result.error();
   }
 
-  std::string route_id = route ? route->media_route_id() : std::string();
-  handler_->OnCreateRouteResponseReceived(sink_id, route_id);
+  handler_->OnCreateRouteResponseReceived(sink_id, route);
   current_route_request_id_ = -1;
 
   if (result.result_code() == RouteRequestResult::TIMED_OUT)

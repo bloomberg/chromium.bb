@@ -73,7 +73,10 @@ void TestWebUI::CallJavascriptFunction(const std::string& function_name,
                                        const base::Value& arg1,
                                        const base::Value& arg2,
                                        const base::Value& arg3) {
-  NOTREACHED();
+  call_data_.push_back(new CallData(function_name));
+  call_data_.back()->TakeAsArg1(arg1.DeepCopy());
+  call_data_.back()->TakeAsArg2(arg2.DeepCopy());
+  call_data_.back()->TakeAsArg3(arg3.DeepCopy());
 }
 
 void TestWebUI::CallJavascriptFunction(const std::string& function_name,
@@ -103,6 +106,10 @@ void TestWebUI::CallData::TakeAsArg1(base::Value* arg) {
 
 void TestWebUI::CallData::TakeAsArg2(base::Value* arg) {
   arg2_.reset(arg);
+}
+
+void TestWebUI::CallData::TakeAsArg3(base::Value* arg) {
+  arg3_.reset(arg);
 }
 
 }  // namespace content

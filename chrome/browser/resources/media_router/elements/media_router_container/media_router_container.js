@@ -919,21 +919,30 @@ Polymer({
    *
    * @param {string} sinkId The ID of the sink to which the Media Route was
    *     creating a route.
-   * @param {string} routeId The ID of the newly created route for the sink if
-   *     succeeded; empty otherwise.
+   * @param {?media_router.Route} route The newly created route that
+   *     corresponds to the sink if route creation succeeded; null otherwise.
+   * @param {boolean} isForDisplay Whether or not |route| is for display.
    */
-  onCreateRouteResponseReceived: function(sinkId, routeId) {
-    // Check that |sinkId| exists and corresponds to |currentLaunchingSinkId_|.
-    if (!this.sinkMap_[sinkId] || this.currentLaunchingSinkId_ != sinkId)
-      return;
-
+  onCreateRouteResponseReceived: function(sinkId, route, isForDisplay) {
     // The provider will handle sending an issue for a failed route request.
-    if (this.isEmptyOrWhitespace_(routeId)) {
+    if (!route) {
       this.resetRouteCreationProperties_(false);
       return;
     }
 
-    this.pendingCreatedRouteId_ = routeId;
+    // Check that |sinkId| exists and corresponds to |currentLaunchingSinkId_|.
+    // TODO(apacible): Add metrics for when |route| is resolved for an invalid
+    // |sinkId|. See http://crbug.com/584993
+    if (!this.sinkMap_[sinkId] || this.currentLaunchingSinkId_ != sinkId)
+      return;
+
+    if (isForDisplay) {
+      this.showRouteDetails_(route);
+      this.startTapTimer_();
+      this.resetRouteCreationProperties_(true);
+    } else {
+      this.pendingCreatedRouteId_ = route.id;
+    }
   },
 
   /**

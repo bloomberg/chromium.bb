@@ -70,15 +70,18 @@ class TestWebUI : public WebUI {
 
     void TakeAsArg1(base::Value* arg);
     void TakeAsArg2(base::Value* arg);
+    void TakeAsArg3(base::Value* arg);
 
     const std::string& function_name() const { return function_name_; }
     const base::Value* arg1() const { return arg1_.get(); }
     const base::Value* arg2() const { return arg2_.get(); }
+    const base::Value* arg3() const { return arg3_.get(); }
 
    private:
     std::string function_name_;
     scoped_ptr<base::Value> arg1_;
     scoped_ptr<base::Value> arg2_;
+    scoped_ptr<base::Value> arg3_;
   };
 
   const ScopedVector<CallData>& call_data() const { return call_data_; }
