@@ -2378,7 +2378,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   ExtensionErrorReporter::GetInstance()->ClearErrors();
   extensions::UnpackedInstaller::Create(service())
       ->Load(extension_no_plugin_path);
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(1u, loaded_.size());
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
@@ -2393,7 +2393,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   ExtensionErrorReporter::GetInstance()->ClearErrors();
   extensions::UnpackedInstaller::Create(service())
       ->Load(extension_with_plugin_path);
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(2u, loaded_.size());
   EXPECT_EQ(2u, registry()->enabled_extensions().size());
@@ -2404,6 +2404,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   // Make sure the granted permissions have been setup.
   scoped_ptr<const PermissionSet> permissions =
       ExtensionPrefs::Get(profile())->GetGrantedPermissions(good1);
+  ASSERT_TRUE(permissions);
   EXPECT_FALSE(permissions->IsEmpty());
   EXPECT_TRUE(permissions->HasEffectiveFullAccess());
   EXPECT_FALSE(permissions->apis().empty());

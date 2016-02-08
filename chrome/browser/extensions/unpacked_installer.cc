@@ -19,7 +19,6 @@
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/extension_install_ui.h"
@@ -82,24 +81,12 @@ SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {
 }
 
 void SimpleExtensionLoadPrompt::ShowPrompt() {
-  // TODO(devlin): The AutoConfirm values should work from the
-  // ExtensionInstallPrompt code, so these should be unnecessary.
-  switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
-    case extensions::ScopedTestDialogAutoConfirm::NONE:
-      // Unretained() is safe because this object manages its own lifetime.
-      install_ui_->ShowDialog(
-          base::Bind(&SimpleExtensionLoadPrompt::OnInstallPromptDone,
-                     base::Unretained(this)),
-          extension_.get(), nullptr,
-          ExtensionInstallPrompt::GetDefaultShowDialogCallback());
-      break;
-    case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
-      OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
-      break;
-    case extensions::ScopedTestDialogAutoConfirm::CANCEL:
-      OnInstallPromptDone(ExtensionInstallPrompt::Result::ABORTED);
-      break;
-  }
+  // Unretained() is safe because this object manages its own lifetime.
+  install_ui_->ShowDialog(
+      base::Bind(&SimpleExtensionLoadPrompt::OnInstallPromptDone,
+                 base::Unretained(this)),
+      extension_.get(), nullptr,
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 
 void SimpleExtensionLoadPrompt::OnInstallPromptDone(
