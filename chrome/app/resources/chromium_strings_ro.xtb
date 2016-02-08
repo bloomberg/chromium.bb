@@ -83,9 +83,9 @@
 <translation id="358997566136285270">Sigla Chromium</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3748537968684000502">Acum afișați o pagină Chromium securizată.</translation>
-<translation id="378917192836375108">Chromium vă permite să faceți clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
+<translation id="378917192836375108">Chromium vă permite să dați clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3849925841547750267">Ne pare rău, setările dvs. Mozilla Firefox nu sunt disponibile cât timp browserul respectiv rulează. Pentru a importa aceste setări în Chromium, salvați ceea ce lucrați și închideți toate ferestrele Firefox. Apoi faceți clic pe Continuați.</translation>
+<translation id="3849925841547750267">Ne pare rău, setările dvs. Mozilla Firefox nu sunt disponibile cât timp browserul respectiv rulează. Pentru a importa aceste setări în Chromium, salvați ceea ce lucrați și închideți toate ferestrele Firefox. Apoi dați clic pe Continuați.</translation>
 <translation id="3883381313049582448">Folosește parola generată de Chromium</translation>
 <translation id="3889543394854987837">Dați clic pe numele dvs. pentru a deschide Chromium și a începe să navigați.</translation>
 <translation id="390894725198123737">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chromium care folosesc același cont de OS X.</translation>
@@ -106,7 +106,6 @@
 <translation id="457845228957001925">Informații importante cu privire la datele dvs. Chromium</translation>
 <translation id="459535195905078186">Aplicații Chromium</translation>
 <translation id="4677944499843243528">Profilul pare să fie utilizat de alt proces Chromium (<ph name="PROCESS_ID" />), pe alt computer (<ph name="HOST_NAME" />). Chromium a blocat profilul pentru a nu se deteriora. Dacă aveți certitudinea că profilul nu este utilizat de alte procese, puteți să îl deblocați și să relansați Chromium.</translation>
-<translation id="473775607612524610">Actualizează</translation>
 <translation id="4743926867934016338">Acceptă și caută</translation>
 <translation id="4888717733111232871">Regula de intrare pentru Chromium pentru a permite traficul mDNS.</translation>
 <translation id="4943838377383847465">Chromium este în modul fundal.</translation>
@@ -140,7 +139,6 @@
 <translation id="6334986366598267305">Acum este mai ușor să folosiți Chromium cu Contul Google și pe computerele utilizate în comun.</translation>
 <translation id="6373523479360886564">Sigur doriți să dezinstalați Chromium?</translation>
 <translation id="6403826409255603130">Chromium este un browser web care rulează pagini web și aplicații cu viteza fulgerului. Este rapid, stabil și ușor de utilizat. Navigați pe web în condiții de mai multă siguranță, beneficiind de o protecție sporită, încorporată în Chromium, împotriva programelor malware și a tentativelor de phishing.</translation>
-<translation id="6424492062988593837">Chromium a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
 <translation id="6475912303565314141">Stabilește și ce pagină se afișează când porniți Chromium.</translation>
 <translation id="6485906693002546646">În prezent, folosiți <ph name="PROFILE_EMAIL" /> pentru a sincroniza datele Chromium. Pentru a actualiza preferințele de sincronizare sau pentru a folosi Chromium fără un Cont Google, accesați <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Dezinstalați Chromium</translation>

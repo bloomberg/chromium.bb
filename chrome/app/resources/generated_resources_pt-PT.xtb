@@ -607,6 +607,7 @@
 <translation id="1864111464094315414">Início de sessão</translation>
 <translation id="1864676585353837027">Alterar a forma como estes ficheiros são partilhados</translation>
 <translation id="1864756863218646478">Não foi possível encontrar o ficheiro.</translation>
+<translation id="1865769994591826607">Apenas ligações do mesmo site</translation>
 <translation id="186612162884103683">A extensão "<ph name="EXTENSION" />" consegue ler e escrever em imagens, em ficheiros de vídeo e de som nas localizações confirmadas.</translation>
 <translation id="1867780286110144690">O <ph name="PRODUCT_NAME" /> está preparado para concluir a instalação</translation>
 <translation id="1873879463550486830">Isolamento de processos SUID</translation>
@@ -1196,6 +1197,7 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2743387203779672305">Copiar para a área de transferência</translation>
 <translation id="2744221223678373668">Partilhadas</translation>
 <translation id="2745080116229976798">Subordinação qualificada Microsoft</translation>
+<translation id="2745576239403924641">Permitir que as aplicações Android sejam executadas no Chromebook.</translation>
 <translation id="2747990718031257077">Ativa o novo design da barra de ferramentas de extensões (em desenvolvimento).</translation>
 <translation id="2749756011735116528">Iniciar sessão no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Verificar gramática com a ortografia</translation>
@@ -1410,6 +1412,7 @@ Pretende pará-lo?</translation>
 <translation id="3011284594919057757">Acerca do Flash</translation>
 <translation id="3011362742078013760">Abrir Todos os Marcadores na Janela de &amp;Navegação Anónima</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">Apenas ligações seguras do mesmo site</translation>
 <translation id="3012890944909934180">Reiniciar o Chrome no computador</translation>
 <translation id="3012917896646559015">Contacte o seu fabricante de hardware imediatamente para enviar o seu computador para reparação.</translation>
 <translation id="3015992588037997514">Este código é apresentado no ecrã do Chromebox?</translation>
@@ -1642,6 +1645,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="331752765902890099">Botão de <ph name="PROFILE_NAME" />: erro de início de sessão</translation>
 <translation id="3319048459796106952">&amp;Nova janela sem registo</translation>
 <translation id="331915893283195714">Permitir que todos os Web sites desativem o cursor do rato</translation>
+<translation id="3319364804843246307">Aplicações Android</translation>
 <translation id="3320859581025497771">a sua operadora</translation>
 <translation id="3323235640813116393">Permite guardar páginas como MHTML: um ficheiro de texto único que contém HTML e todos os recursos secundários.</translation>
 <translation id="3323447499041942178">Caixa de texto</translation>
@@ -1746,6 +1750,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Clique com o botão direito do rato para reproduzir o <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Continuar a permitir que <ph name="HOST" /> aceda à sua câmara e microfone</translation>
 <translation id="3478315065074101056">O XPS ativa opções avançadas para as impressoras clássicas ligadas ao Cloud Print com o Chrome. As impressoras têm de ser novamente ligadas após alterar esta sinalização.</translation>
+<translation id="3479539252931486093">Esta ação foi inesperada? <ph name="BEGIN_LINK" />Informe-nos<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Agora não</translation>
 <translation id="3480892288821151001">Colocar janela à esquerda</translation>
 <translation id="3481915276125965083">Os seguintes pop-ups foram bloqueados nesta página:</translation>
@@ -2719,6 +2724,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4941246025622441835">Utilizar a requisição deste dispositivo ao inscrever o dispositivo para gestão empresarial:</translation>
 <translation id="4942394808693235155">Verificar a existência de atualizações e aplicá-las</translation>
 <translation id="494286511941020793">Ajuda de configuração de proxy</translation>
+<translation id="4945378551914476156">Os marcadores, histórico, palavras-passe e outras definições são sincronizados com a sua Conta Google para estarem disponíveis sempre que utilizar o Chrome. Pode alterar esta opção em <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Opções...</translation>
 <translation id="4952186391360931024">Não material</translation>
 <translation id="4954544650880561668">Controlo do dispositivo</translation>
@@ -2853,7 +2859,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
    <ph name="LINE_BREAKS" />
    Remover o dispositivo enquanto está a ser utilizado pode provocar perda de dados. Aguarde pela conclusão da operação e, em seguida, ejete o dispositivo através da aplicação Ficheiros.</translation>
 <translation id="5159488553889181171">A transferência de <ph name="PLUGIN_NAME" /> foi cancelada.</translation>
-<translation id="5159628598068481063">Preferência de redirecionamento da pesquisa no ambiente de trabalho do Windows</translation>
 <translation id="5160857336552977725">Inicie sessão no <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Falha ao partilhar. Verifique a ligação e tente novamente mais tarde.</translation>
 <translation id="516592729076796170">Dvorak de programador americano</translation>
@@ -3222,7 +3227,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="567881659373499783">Versão <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Ler os seus dados em <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">Filtragem de texto no Modo de vista geral</translation>
-<translation id="568428328938709143">Conta removida</translation>
 <translation id="5684661240348539843">Identificador de recursos</translation>
 <translation id="569068482611873351">Importar...</translation>
 <translation id="56907980372820799">Associar dados</translation>
@@ -3462,6 +3466,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="604001903249547235">Cópia de segurança na nuvem</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="604124094241169006">Automático</translation>
+<translation id="6042308850641462728">Mais</translation>
 <translation id="604257181445267932">O Smart Lock ajuda-o a iniciar sessão rapidamente em aplicações e sites com palavras-passe que guardou com o Google.</translation>
 <translation id="6049065490165456785">Fotografia tirada com a câmara interna</translation>
 <translation id="6051028581720248124">Ao imprimir para a FedEx Office, aceita os seus <ph name="START_LINK" />termos de utilização<ph name="END_LINK" />.</translation>
@@ -3493,7 +3498,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6089481419520884864">Página de destilação</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">A cancelar a atualização...</translation>
-<translation id="6095149522260432647">Ativa uma preferência que permite o redirecionamento das pesquisas no ambiente de trabalho do Windows para o motor de pesquisa predefinido.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Abrir maximizada</translation>
 <translation id="6096326118418049043">Nome X.500</translation>
@@ -4674,6 +4678,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7926906273904422255">Marque as origens não seguras como não seguras ou como "duvidosas".</translation>
 <translation id="7928710562641958568">Ejetar aparelho</translation>
 <translation id="7938594894617528435">Atualmente offline</translation>
+<translation id="7939374455203157513">Ativar serviços na nuvem</translation>
 <translation id="7939412583708276221">Manter na mesma</translation>
 <translation id="7939997691108949385">O gestor poderá configurar restrições e definições para este utilizador supervisionado em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">EUA Colemak</translation>
@@ -5224,6 +5229,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="872537912056138402">Croata</translation>
 <translation id="8726206820263995930">Erro ao obter as definições da política do servidor: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Apresenta opções de extensões como um elemento incorporado em chrome://extensions em vez de abrir um novo separador.</translation>
+<translation id="8727142376512517020">Não voltar a mostrar</translation>
 <translation id="8728672262656704056">Está anónimo</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8731332457891046104">Anular inscrição de <ph name="DEVICE_TYPE" /></translation>
@@ -5386,7 +5392,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="8986494364107987395">Enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
 <translation id="8987927404178983737">Mês</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">URL base do certificado Netscape</translation>
 <translation id="8994845581478641365">Criador de cache de tipos de letra do DirectWrite</translation>
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>

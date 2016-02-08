@@ -113,7 +113,6 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Rất tiếc, hệ thống không hoạt động giữa hai màn hình. (Màn hình đó không được hỗ trợ)</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4527045527269911712">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"muốn được phép ghép nối.</translation>
@@ -182,7 +181,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"đã được ghép nối và hiện khả dụng với tất cả người dùng. Bạn có thể xóa ghép nối này bằng Cài đặt.</translation>
 <translation id="6785414152754474415">Pin đầy <ph name="PERCENTAGE" />% và đang sạc.</translation>
-<translation id="6803622936009808957">Không thể phản chiếu màn hình do không tìm thấy độ phân giải được hỗ trợ. Thay vào đó, đã chuyển sang chế độ màn hình mở rộng.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (Phản hồi bằng giọng nói)</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>

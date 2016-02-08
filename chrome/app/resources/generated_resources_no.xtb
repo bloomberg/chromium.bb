@@ -603,6 +603,7 @@
 <translation id="1864111464094315414">Pålogging</translation>
 <translation id="1864676585353837027">Endre hvordan disse filene deles</translation>
 <translation id="1864756863218646478">Kunne ikke finne filen.</translation>
+<translation id="1865769994591826607">Bare tilkoblinger til samme nettsted</translation>
 <translation id="186612162884103683">«<ph name="EXTENSION" />» kan lese og redigere bilder, videofiler og lydfiler i de avmerkede mappene.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> er klar til å fullføre installasjonen</translation>
 <translation id="1873879463550486830">SUID-sandkasse</translation>
@@ -1191,6 +1192,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2743387203779672305">Kopiér til utklippstavlen</translation>
 <translation id="2744221223678373668">Delte</translation>
 <translation id="2745080116229976798">Microsoft kvalifisert underordning</translation>
+<translation id="2745576239403924641">La Android-apper kjøre på Chromebooken din.</translation>
 <translation id="2747990718031257077">Aktiverer den nye utformingen av verktøylinjen for utvidelser, som er i utviklingsfasen.</translation>
 <translation id="2749756011735116528">Logg på <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Kontroller·grammatikk·og·staving</translation>
@@ -1404,6 +1406,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="3011284594919057757">Om Flash</translation>
 <translation id="3011362742078013760">Åpne alle bokmerker i &amp;inkognitovindu</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">Bare sikre tilkoblinger til samme nettsted</translation>
 <translation id="3012890944909934180">Start Chrome på nytt via skrivebordet</translation>
 <translation id="3012917896646559015">Kontakt maskinvareprodusenten umiddelbart for å sende datamaskinen til et verksted.</translation>
 <translation id="3015992588037997514">Ser du denne koden på Chromebox-skjermen din?</translation>
@@ -1635,6 +1638,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="331752765902890099"><ph name="PROFILE_NAME" />-knapp: påloggingsfeil</translation>
 <translation id="3319048459796106952">Nytt &amp;inkognitovindu</translation>
 <translation id="331915893283195714">Tillat alle nettsteder å deaktivere markøren</translation>
+<translation id="3319364804843246307">Android-apper</translation>
 <translation id="3320859581025497771">din operatør</translation>
 <translation id="3323235640813116393">Gjør det mulig å lagre sider som MHTML – én enkelt tekstfil som inneholder HTML og alle underressurser.</translation>
 <translation id="3323447499041942178">Tekstboks</translation>
@@ -1739,6 +1743,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Høyreklikk for å aktivere <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Fortsett å gi <ph name="HOST" /> tillatelse til å bruke kameraet og mikrofonen</translation>
 <translation id="3478315065074101056">XPS aktiverer avanserte alternativer for klassiske skrivere som er tilkoblet Cloud Print med Chrome. Skriverne må kobles til på nytt når dette flagget endres.</translation>
+<translation id="3479539252931486093">Var dette uventet? <ph name="BEGIN_LINK" />Si fra til oss<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3480892288821151001">Forankre vinduet til venstre</translation>
 <translation id="3481915276125965083">Følgende forgrunnsvinduer er blokkert på siden:</translation>
@@ -2710,6 +2715,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4941246025622441835">Bruk denne enhetsrekvisisjonen når du registrerer enheten for bedriftsadministrering.</translation>
 <translation id="4942394808693235155">Se etter og installer oppdateringer</translation>
 <translation id="494286511941020793">Hjelp for konfigurering av mellomtjenere</translation>
+<translation id="4945378551914476156">Bokmerkene, loggen, passordene og de andre innstillingene dine blir synkronisert til Google-kontoen din, slik at du kan bruke dem uansett hvor du bruker Chrome. Du kan forandre dette i <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Alternativer</translation>
 <translation id="4952186391360931024">Ikke-materielt</translation>
 <translation id="4954544650880561668">Enhetskontroll</translation>
@@ -2841,7 +2847,6 @@ Trykk på en tast for å fortsette økten.</translation>
        <ph name="LINE_BREAKS" />
        Fjerning av enheten mens den er i bruk kan resultere i tap av data. Vent til handlingen er utført før du mater ut enheten ved bruk av Filer-appen.</translation>
 <translation id="5159488553889181171"><ph name="PLUGIN_NAME" />-nedlastingen ble avbrutt.</translation>
-<translation id="5159628598068481063">Innstilling for omdirigering av PC-søk i Windows</translation>
 <translation id="5160857336552977725">Logg på <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Delingen mislyktes. Sjekk tilkoblingen din og prøv på nytt senere.</translation>
 <translation id="516592729076796170">Amerikansk programmeringstastatur (Dvorak)</translation>
@@ -3209,7 +3214,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="567881659373499783">Versjon <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Les dataene dine på <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">Tekstfiltrering i oversiktsmodus</translation>
-<translation id="568428328938709143">Kontoen er fjernet</translation>
 <translation id="5684661240348539843">Ressursidentifikator</translation>
 <translation id="569068482611873351">Importer</translation>
 <translation id="56907980372820799">Koble sammen data</translation>
@@ -3449,6 +3453,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="604001903249547235">Skybasert sikkerhetskopiering</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="604124094241169006">Automatisk</translation>
+<translation id="6042308850641462728">Mer</translation>
 <translation id="604257181445267932">Med Smart Lock kan du raskt logge på apper og nettsteder som bruker passord du har lagret hos Google.</translation>
 <translation id="6049065490165456785">Bilde fra internt kamera</translation>
 <translation id="6051028581720248124">Ved utskrift til FedEx-kontorer, godtar du <ph name="START_LINK" />vilkårene<ph name="END_LINK" /> deres.</translation>
@@ -3480,7 +3485,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6089481419520884864">Destiller siden</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Avbryter oppdatering …</translation>
-<translation id="6095149522260432647">Slår på en innstilling som gjør at PC-søk i Windows kan omdirigeres til en standardsøkemotor.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Maksimer ved åpning</translation>
 <translation id="6096326118418049043">X.500 navn</translation>
@@ -4653,6 +4657,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7926906273904422255">Merk usikre opprinnelser som usikret eller «tvilsomme».</translation>
 <translation id="7928710562641958568">Utløserenhet</translation>
 <translation id="7938594894617528435">Frakoblet for øyeblikket</translation>
+<translation id="7939374455203157513">Slå på nettskytjenester</translation>
 <translation id="7939412583708276221">Behold uansett</translation>
 <translation id="7939997691108949385">Administratoren kan konfigurere begrensninger og innstillinger for denne administrerte brukeren på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">USA Colemak</translation>
@@ -5203,6 +5208,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="872537912056138402">Kroatisk</translation>
 <translation id="8726206820263995930">Feil under henting av innstillingsangivelser fra tjeneren: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Viser alternativer for utvidelser som et innebygd element i chrome://extensions fremfor å åpne en ny fane.</translation>
+<translation id="8727142376512517020">Ikke vis dette igjen</translation>
 <translation id="8728672262656704056">Du er nå i inkognitomodus</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8731332457891046104">Avregistrer <ph name="DEVICE_TYPE" /></translation>
@@ -5365,7 +5371,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8986362086234534611">Glem</translation>
 <translation id="8986494364107987395">Send bruksstatistikk og programstopprapporter automatisk til Google</translation>
 <translation id="8987927404178983737">Måned</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Primære nettadresse for Netscape-sertifikat</translation>
 <translation id="8994845581478641365">DirectWrite Font Cache Builder</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>

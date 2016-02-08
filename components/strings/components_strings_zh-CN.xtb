@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1015255576907412255">有关详情，请联系您的系统管理员。</translation>
+<translation id="1015730422737071372">提供其他详细信息</translation>
 <translation id="1032854598605920125">顺时针旋转</translation>
 <translation id="1055184225775184556">撤消添加(&amp;U)</translation>
 <translation id="1064422015032085147">托管该网页的服务器可能已超负荷或正在维护。
@@ -424,6 +425,7 @@
 <translation id="6637478299472506933">下载失败</translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
 <translation id="6646897916597483132">输入信用卡正面显示的 4 位数银行卡验证码 (CVC)</translation>
+<translation id="6660210980321319655">自动报告时间：<ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">要从 Chromium 中移除表单填写建议吗？</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6711464428925977395">代理服务器出现问题，或者地址有误。</translation>
@@ -607,6 +609,7 @@
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8988760548304185580">输入信用卡背面显示的到期日期和 3 位数银行卡验证码 (CVC)</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">SSL 客户端身份验证证书出错。</translation>
 <translation id="901974403500617787">应用于整个系统的设置只能由以下所有者设定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020142588544155172">服务器拒绝了连接。</translation>

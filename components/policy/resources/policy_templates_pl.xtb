@@ -2032,7 +2032,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Wartość zasady powinna być określona w milisekundach. Wartości muszą być mniejsze niż opóźnienie bezczynności.</translation>
 <translation id="891435090623616439">zakodowane jako ciąg JSON – więcej szczegółów znajdziesz na <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Zgłoś lokalizację urządzenia</translation>
-<translation id="89493502583189945">Określa flagi stosowane przy uruchamianiu <ph name="PRODUCT_NAME" />. Wybrane flagi zaczynają obowiązywać w <ph name="PRODUCT_NAME" /> jeszcze przed wyświetleniem ekranu logowania.</translation>
 <translation id="8951350807133946005">Ustaw katalog podręcznej pamięci dyskowej</translation>
 <translation id="8955719471735800169">Powrót do góry</translation>
 <translation id="8960850473856121830">Wzorce na tej liście są porównywane ze źródłem zabezpieczeń

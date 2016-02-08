@@ -106,7 +106,6 @@
 <translation id="457845228957001925">Важлива інформація про ваші дані Chromium</translation>
 <translation id="459535195905078186">Програми Chromium</translation>
 <translation id="4677944499843243528">Схоже, профіль використовується іншим процесом Chromium (<ph name="PROCESS_ID" />) на іншому комп’ютері (<ph name="HOST_NAME" />). Chromium заблокував профіль, щоб запобігти його спотворенню. Якщо ви впевнені, що жоден інший процес не використовує цей профіль, розблокуйте профіль і перезапустіть Chromium.</translation>
-<translation id="473775607612524610">Оновити</translation>
 <translation id="4743926867934016338">Прийняти й шукати</translation>
 <translation id="4888717733111232871">Вхідне правило для Chromium дозволяє трафік mDNS.</translation>
 <translation id="4943838377383847465">Chromium у фоновому режимі.</translation>
@@ -140,7 +139,6 @@
 <translation id="6334986366598267305">Користуватися Chromium у своєму обліковому записі Google на спільних комп’ютерах стало легше.</translation>
 <translation id="6373523479360886564">Дійсно видалити Chromium?</translation>
 <translation id="6403826409255603130">Chromium – це веб-переглядач, який запускає веб-сторінки та програми з блискавичною швидкістю. Він швидкий, надійний і зручний у користуванні. Вбудований у Chromium захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
-<translation id="6424492062988593837">Chromium став ще кращим! Доступна нова версія.</translation>
 <translation id="6475912303565314141">Також указує сторінку, яка відкривається під час запуску Chromium.</translation>
 <translation id="6485906693002546646">Ви синхронізуєте дані Chromium через обліковий запис <ph name="PROFILE_EMAIL" />. Щоб оновити параметри синхронізації або використовувати Chromium без облікового запису Google, перейдіть на сторінку <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Видалити Chromium</translation>

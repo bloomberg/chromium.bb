@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1015255576907412255">За дополнительной информацией обращайтесь к системному администратору.</translation>
+<translation id="1015730422737071372">Сообщить дополнительную информацию</translation>
 <translation id="1032854598605920125">Повернуть по часовой стрелке</translation>
 <translation id="1055184225775184556">&amp;Отменить добавление</translation>
 <translation id="1064422015032085147">Возможно, сервер, на котором размещена веб-страница, перегружен или на нем ведутся работы.
@@ -436,6 +437,7 @@
 <translation id="6637478299472506933">Ошибка при скачивании</translation>
 <translation id="6644283850729428850">Правило устарело.</translation>
 <translation id="6646897916597483132">Введите четырехзначный CVC-код, указанный на лицевой стороне карты.</translation>
+<translation id="6660210980321319655">Отчет о сбое отправлен автоматически. Время возникновения сбоя: <ph name="CRASH_TIME" />.</translation>
 <translation id="6671697161687535275">Удалить подсказку из Chromium?</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="6711464428925977395">На прокси-сервере возникла проблема или адрес указан неверно.</translation>
@@ -631,6 +633,7 @@
 <translation id="8971063699422889582">Сертификат сервера устарел.</translation>
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="8988760548304185580">Введите срок действия и трехзначный CVC-код, указанный на обратной стороне карты.</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Недопустимый сертификат SSL для аутентификации клиента.</translation>
 <translation id="901974403500617787">Системные флаги может устанавливать только владелец (<ph name="OWNER_EMAIL" />).</translation>
 <translation id="9020142588544155172">Сервер отказал в подключении.</translation>

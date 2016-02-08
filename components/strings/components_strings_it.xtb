@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1015255576907412255">Per ulteriori informazioni contatta il tuo amministratore di sistema.</translation>
+<translation id="1015730422737071372">Fornisci ulteriori dettagli</translation>
 <translation id="1032854598605920125">Ruota in senso orario</translation>
 <translation id="1055184225775184556">&amp;Annulla aggiunta</translation>
 <translation id="1064422015032085147">Il server che ospita la pagina web potrebbe essere sovraccarico o in fase di manutenzione. Per evitare di generare troppo traffico e di peggiorare la situazione, le richieste relative all'URL in questione sono state temporaneamente disattivate.</translation>
@@ -421,6 +422,7 @@
 <translation id="6637478299472506933">Download non riuscito</translation>
 <translation id="6644283850729428850">Questa norma è obsoleta.</translation>
 <translation id="6646897916597483132">Inserisci il codice CVC di quattro cifre indicato sulla parte anteriore della carta</translation>
+<translation id="6660210980321319655">Data/ora arresto anomalo: <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Rimuovere il suggerimento per i moduli da Chromium?</translation>
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6711464428925977395">Si è verificato un problema con il server proxy oppure l'indirizzo non è corretto.</translation>
@@ -604,6 +606,7 @@ Puoi comunque utilizzare lo strumento di diagnostica presentato qui per risolver
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>
 <translation id="8987927404178983737">Mese</translation>
 <translation id="8988760548304185580">Inserisci la data di scadenza e il codice CVC di tre cifre indicato sul retro della carta</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Certificato di autenticazione client SSL non corretto.</translation>
 <translation id="901974403500617787">I contrassegni che si applicano a livello di sistema possono essere impostati solo dal proprietario: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Il server ha rifiutato la connessione.</translation>

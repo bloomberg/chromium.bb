@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1015255576907412255">برای کسب اطلاعات بیشتر با سرپرست سیستم خود تماس بگیرید.</translation>
+<translation id="1015730422737071372">جزئیات بیشتری ارائه دهید</translation>
 <translation id="1032854598605920125">چرخش در جهت عقربه‌های ساعت</translation>
 <translation id="1055184225775184556">&amp;واگرد افزودن</translation>
 <translation id="1064422015032085147">سروری که این صفحه وب را میزبانی می‌کند ممکن است بیش از حد بار داشته باشد یا تحت سرویس و نگهداری باشد.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">بارگیری نشد</translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
 <translation id="6646897916597483132">‏کد تأیید چهار رقمی CVC را از روی کارت‌تان وارد کنید</translation>
+<translation id="6660210980321319655">به‌صورت خودکار در <ph name="CRASH_TIME" /> گزارش داده شد</translation>
 <translation id="6671697161687535275">‏پیشنهاد فرم از Chromium پاک شود؟</translation>
 <translation id="6710213216561001401">قبلی</translation>
 <translation id="6711464428925977395">مشکلی در سرور پروکسی وجود دارد یا این آدرس درست نیست.</translation>
@@ -633,6 +635,7 @@
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8987927404178983737">ماه</translation>
 <translation id="8988760548304185580">‏تاریخ انقضا و کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">‏گواهی تأیید اعتبار سرویس گیرنده SSL نادرست است.</translation>
 <translation id="901974403500617787">پرچم‌هایی که در تمام سیستم اعمال می‌شوند فقط توسط مالک قابل تنظیم هستند: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">سرور اتصال را رد کرد.</translation>

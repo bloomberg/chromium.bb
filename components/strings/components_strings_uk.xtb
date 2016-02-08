@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1015255576907412255">Зв’яжіться зі своїм системним адміністратором, щоб дізнатися більше.</translation>
+<translation id="1015730422737071372">Надати додаткову інформацію</translation>
 <translation id="1032854598605920125">Обернути за годинниковою стрілкою</translation>
 <translation id="1055184225775184556">&amp;Відмінити додавання</translation>
 <translation id="1064422015032085147">Сервер, на якому розміщено цю веб-сторінку, перевантажений або проходить технічне обслуговування.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Помилка завантаження</translation>
 <translation id="6644283850729428850">Це правило більше не використовується.</translation>
 <translation id="6646897916597483132">Введіть код CVC з 4 цифр, розташований на звороті вашої картки</translation>
+<translation id="6660210980321319655">Автоматичне повідомлення: <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Видалити пропозицію автозаповнення форм із Chromium?</translation>
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="6711464428925977395">Помилка проксі-сервера або неправильна адреса.</translation>
@@ -632,6 +634,7 @@
 <translation id="8971063699422889582">Термін дії сертифіката сервера завершився.</translation>
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="8988760548304185580">Введіть дату закінчення терміну дії та код CVC з 3 цифр, розташований на звороті вашої картки</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Неправильний сертифікат перевірки автентичності клієнта SSL.</translation>
 <translation id="901974403500617787">Позначки, які застосовуються до всієї системи, може встановлювати лише власник: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Сервер відмовив у з’єднанні.</translation>

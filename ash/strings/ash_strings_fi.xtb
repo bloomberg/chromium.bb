@@ -112,7 +112,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4279490309300973883">Peilaus päällä</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Arvoisa näyttö, suhteemme ei toimi. (Näyttöä ei tueta)</translation>
 <translation id="4421231901400348175">Näyttösi hallinta jaetaan käyttäjän <ph name="HELPER_NAME" /> kanssa Etätuen kautta.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
 <translation id="4527045527269911712">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen.</translation>
@@ -181,7 +180,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="6650933572246256093">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Anna tämä avain kyseisellä laitteella: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Bluetooth-laitteeseen <ph name="DEVICE_NAME" /> on nyt muodostettu laitepariyhteys, ja se on kaikkien käyttäjien saatavilla. Voit poistaa laiteparin Asetuksien kautta.</translation>
 <translation id="6785414152754474415">Akussa on virtaa <ph name="PERCENTAGE" /> %, ja laite on kytketty laturiin.</translation>
-<translation id="6803622936009808957">Näyttöjen peilaaminen ei onnistunut, sillä tuettua resoluutiota ei löytynyt. Sen sijaan valittiin työpöydän laajennus.</translation>
 <translation id="683971173229319003">Haku+L</translation>
 <translation id="68610848741840742">ChromeVox (äänipalaute)</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>

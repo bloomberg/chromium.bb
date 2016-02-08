@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1015255576907412255">اتصل بمشرف النظام للحصول على المزيد من المعلومات.</translation>
+<translation id="1015730422737071372">تقديم تفاصيل إضافية</translation>
 <translation id="1032854598605920125">تدوير في اتجاه عقارب الساعة</translation>
 <translation id="1055184225775184556">تراجع عن الإ&amp;ضافة</translation>
 <translation id="1064422015032085147">‏قد يكون الخادم الذي يستضيف صفحة الويب زائد التحميل أو قيد الصيانة.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">إخفاق التنزيل</translation>
 <translation id="6644283850729428850">تم تجاهل هذه السياسة.</translation>
 <translation id="6646897916597483132">‏أدخل رمز التحقق من البطاقة (CVC) المكون من أربعة أرقام من الجزء الأمامي من بطاقتك</translation>
+<translation id="6660210980321319655">تم الإبلاغ عنه تلقائيًا <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">‏هل تريد إزالة اقتراح النموذج من Chromium؟</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6711464428925977395">هناك خطأ ما في الخادم الوكيل، أو العنوان غير صحيح.</translation>
@@ -632,6 +634,7 @@
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8987927404178983737">شهر</translation>
 <translation id="8988760548304185580">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) المكوّن من ثلاثة أرقام من الجزء الخلفي من بطاقتك.</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" />‏ [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">‏شهادة تالفة لمصادقة عميل SSL (طبقة المقابس الآمنة).</translation>
 <translation id="901974403500617787">لا يمكن تعيين العلامات التي تسري عبر النظام إلا من قِبل المالك: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">رفض الخادم الاتصال.</translation>

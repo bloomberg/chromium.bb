@@ -113,7 +113,6 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Estimat monitor, això no funciona. (El monitor no és compatible)</translation>
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME" /> mitjançant l'Assistència remota.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4527045527269911712">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se.</translation>
@@ -182,7 +181,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>
 <translation id="6713285437468012787">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" s'ha emparellat i ja està disponible per a tots els usuaris. Podeu eliminar l'emparellament a la Configuració.</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE" />% i s'està carregant.</translation>
-<translation id="6803622936009808957">No s'han pogut reflectir les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>
 <translation id="683971173229319003">Cerca + L</translation>
 <translation id="68610848741840742">ChromeVox (comentaris de veu)</translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>

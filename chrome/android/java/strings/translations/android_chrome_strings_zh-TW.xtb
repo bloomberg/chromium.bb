@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">伺服器發生問題，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="1506061864768559482">搜尋引擎</translation>
 <translation id="1513352483775369820">書籤與網頁紀錄</translation>
+<translation id="1546112724822176246">找不到您的裝置嗎？建議您<ph name="BEGIN_LINK" />尋求協助<ph name="END_LINK" />。</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自動偵測編碼</translation>
 <translation id="1568822834048182062">系統會將您的書籤、歷史紀錄、密碼和其他設定與您的 Google 帳戶同步處理。</translation>
@@ -213,9 +214,6 @@
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198229475320555619">已儲存離線書籤 (大小：<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="423410644998903704">Chrome 需要存取權限，才能與這個網站分享。</translation>
-<translation id="424696723690217687">偵測附近裝置傳送的網頁。
-
-Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Google 服務處理過後，可讓網頁搜尋結果的品質更臻完善。</translation>
 <translation id="4254813446494774748">翻譯語言：</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6112702117600201073">重新整理網頁</translation>
 <translation id="6127379762771434464">已移除項目</translation>
+<translation id="6134870457258083164">找不到您的裝置嗎？建議您<ph name="BEGIN_LINK1" />尋求協助<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新搜尋<ph name="END_LINK2" />。</translation>
 <translation id="6138140242378429169">讓網頁適合透過行動裝置瀏覽</translation>
 <translation id="6140912465461743537">國家/地區</translation>
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據流量</translation>
@@ -459,6 +458,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="7191430249889272776">已在背景開啟分頁。</translation>
 <translation id="7208788139759694678">已停用 Data Saver</translation>
+<translation id="721331389620694978">部分可能反映瀏覽偏好的設定不會遭到清除。</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />說明<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 
 如要取得新授權，請先連線至網際網路，然後再播放您已下載的內容。</translation>
 <translation id="8660471606262461360">來自 Google Payments</translation>
-<translation id="8675945939500569406">要開啟實體化網路嗎？</translation>
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="869891660844655955">到期日</translation>
 <translation id="8699799819461268362">Google 安全網站篩選器</translation>
 <translation id="8701537995684343047">造訪書籤即可儲存離線複本</translation>
 <translation id="8719023831149562936">無法傳輸目前的分頁</translation>
 <translation id="8725066075913043281">再試一次</translation>
-<translation id="8727142376512517020">不要再顯示這個對話方塊</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8737542153238017984">儲存空間即將用盡，因此無法離線存取您剛儲存的網頁。</translation>
 <translation id="8793430725658173476">複製網址</translation>

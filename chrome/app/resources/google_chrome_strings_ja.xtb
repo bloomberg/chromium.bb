@@ -51,7 +51,6 @@
 <translation id="2397416548179033562">Chrome メニューを表示</translation>
 <translation id="2429317896000329049">お使いのドメインでは同期を利用できないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
-<translation id="2576431527583832481">Chrome のアップデートが見つかりました。新しいバージョンが利用可能です。</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="2582790009689336987">この Linux システムはサポートが終了するため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="2588322182880276190">Chrome ロゴ</translation>
@@ -111,7 +110,6 @@
 <translation id="4633000520311261472">Chrome をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="4700157086864140907">Google Chrome ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されているスペルチェック テクノロジーを活用できます。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
-<translation id="473775607612524610">アップデート</translation>
 <translation id="4743926867934016338">承諾して検索</translation>
 <translation id="4751441238232965030">このパソコンはまもなく 32 ビットの Google Chrome アップデートの受信を停止します。64 ビットの Google Chrome にアップグレードしてください。</translation>
 <translation id="4754614261631455953">Google Chrome Canary（mDNS インバウンド）</translation>

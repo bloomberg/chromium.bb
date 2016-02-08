@@ -606,6 +606,7 @@
 <translation id="1864111464094315414">Prijava</translation>
 <translation id="1864676585353837027">Promjena načina dijeljenja ovih datoteka</translation>
 <translation id="1864756863218646478">Nije bilo moguće pronaći datoteku.</translation>
+<translation id="1865769994591826607">Samo veze iste web-lokacije</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" može čitati i zapisivati slikovne, video i audiodatoteke na označenim lokacijama.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> je spreman za dovršetak instalacije</translation>
 <translation id="1873879463550486830">Sigurna okolina SUID</translation>
@@ -1195,6 +1196,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2743387203779672305">Kopiraj u međuspremnik</translation>
 <translation id="2744221223678373668">Dijeljeno</translation>
 <translation id="2745080116229976798">Microsoftova kvalificirana podređenost</translation>
+<translation id="2745576239403924641">Omogući izvođenje Android aplikacija na Chromebooku.</translation>
 <translation id="2747990718031257077">Omogućuje novi dizajn proširenja alatne trake (u razvoju).</translation>
 <translation id="2749756011735116528">Prijava na uslugu <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Uz pravopis provjeri i gramatiku</translation>
@@ -1408,6 +1410,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="3011284594919057757">O Flashu</translation>
 <translation id="3011362742078013760">Otvori sve oznake u &amp;anonimnom prozoru</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">Samo sigurne veze iste web-lokacije</translation>
 <translation id="3012890944909934180">Ponovo pokrenite Chrome na radnoj površini</translation>
 <translation id="3012917896646559015">Odmah se obratite proizvođaču hardvera radi slanja svojeg računala na servis.</translation>
 <translation id="3015992588037997514">Pojavljuje li se ovaj kôd na zaslonu Chromeboxa?</translation>
@@ -1640,6 +1643,7 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="331752765902890099"><ph name="PROFILE_NAME" /> gumb: pogreška prijave</translation>
 <translation id="3319048459796106952">&amp;Novi anonimni prozor</translation>
 <translation id="331915893283195714">Dopusti svim web-lokacijama onemogućivanje pokazivača miša</translation>
+<translation id="3319364804843246307">Android aplikacije</translation>
 <translation id="3320859581025497771">vaš davatelj usluge</translation>
 <translation id="3323235640813116393">Omogućuje spremanje stranica u MHTML obliku: jedna tekstna datoteka koja sadrži HTML i sve podređene resurse.</translation>
 <translation id="3323447499041942178">Tekstni okvir</translation>
@@ -1744,6 +1748,7 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Kliknite desnom tipkom da biste pokrenuli <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Nastavi dopuštati hostu <ph name="HOST" /> pristup kameri i mikrofonu</translation>
 <translation id="3478315065074101056">XPS omogućuje napredne opcije za klasične pisače povezane s Cloud Printom putem Chromea. Pisači se moraju ponovo povezati nakon promjene te oznake.</translation>
+<translation id="3479539252931486093">Niste to očekivali? <ph name="BEGIN_LINK" />Javite nam<ph name="END_LINK" />.</translation>
 <translation id="3479552764303398839">Ne sada</translation>
 <translation id="3480892288821151001">Usidri prozor ulijevo</translation>
 <translation id="3481915276125965083">Na ovoj su stranici blokirani sljedeći skočni prozori:</translation>
@@ -2718,6 +2723,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4941246025622441835">Upotrijebite taj zahtjev uređaja kada prijavljujete uređaj za poslovno upravljanje:</translation>
 <translation id="4942394808693235155">Provjerite i primijenite ažuriranja</translation>
 <translation id="494286511941020793">Pomoć za proxy konfiguraciju</translation>
+<translation id="4945378551914476156">Vaše oznake, povijest, zaporke i ostale postavke sinkronizirat će se s vašim Google računom kako biste ih mogli upotrebljavati na svim uređajima na kojima upotrebljavate Chrome. To možete promijeniti na ovoj vezi <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Opcije...</translation>
 <translation id="4952186391360931024">Nematerijalno</translation>
 <translation id="4954544650880561668">Kontrola uređaja</translation>
@@ -2852,7 +2858,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
        <ph name="LINE_BREAKS" />
        Uklanjanje uređaja dok je još u upotrebi može uzrokovati gubitak podataka. Pričekajte da uređaj dovrši radnju, a potom ga izbacite pomoću aplikacije Datoteke.</translation>
 <translation id="5159488553889181171">Preuzimanje dodatka <ph name="PLUGIN_NAME" /> otkazano je.</translation>
-<translation id="5159628598068481063">Postavka preusmjeravanja pretraživanja računala sa sustavom Windows</translation>
 <translation id="5160857336552977725">Prijavite se na uređaj <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Dijeljenje nije uspjelo. Provjerite vezu i pokušajte ponovo kasnije.</translation>
 <translation id="516592729076796170">Američka programerska Dvorak</translation>
@@ -3220,7 +3225,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="567881659373499783">Verzija <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">čitati vaše podatke s web-lokacije <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">Filtriranje teksta u načinu pregleda</translation>
-<translation id="568428328938709143">Račun je uklonjen</translation>
 <translation id="5684661240348539843">Identifikator uređaja</translation>
 <translation id="569068482611873351">Uvezi...</translation>
 <translation id="56907980372820799">Povežite podatke</translation>
@@ -3460,6 +3464,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="604001903249547235">Sigurnosno kopiranje u oblaku</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="604124094241169006">Automatski</translation>
+<translation id="6042308850641462728">Više</translation>
 <translation id="604257181445267932">Smart Lock omogućuje brzu prijavu u aplikacije i na web-lokacije pomoću zaporki koje ste spremili na Google.</translation>
 <translation id="6049065490165456785">Fotografija iz internog fotoaparata</translation>
 <translation id="6051028581720248124">Ispisom putem usluge FedEx Office prihvaćate njene <ph name="START_LINK" />uvjete pružanja usluge<ph name="END_LINK" />.</translation>
@@ -3491,7 +3496,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="6089481419520884864">Sažmi stranicu</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Otkazivanje ažuriranja...</translation>
-<translation id="6095149522260432647">Omogućuje postavku kojom se pretraživanja računala sa sustavom Windows preusmjeravaju na zadanu tražilicu.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Otvori maksimalno</translation>
 <translation id="6096326118418049043">X.500 naziv</translation>
@@ -4670,6 +4674,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7926906273904422255">Označi nesigurne izvore kao nesigurne ili "sumnjive".</translation>
 <translation id="7928710562641958568">Izbaci uređaj</translation>
 <translation id="7938594894617528435">Trenutačno izvan mreže</translation>
+<translation id="7939374455203157513">Omogući usluge u oblaku</translation>
 <translation id="7939412583708276221">Svejedno zadrži</translation>
 <translation id="7939997691108949385">Upravitelj će moći konfigurirati ograničenja i postavke za tog nadziranog korisnika na adresi <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">američka (SAD Colemak)</translation>
@@ -5220,6 +5225,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="872537912056138402">Hrvatski</translation>
 <translation id="8726206820263995930">Pogreška pri dohvaćanju postavki pravila s poslužitelja: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Prikaži opcije proširenja kao ugrađeni element u chrome://extensions umjesto otvaranja nove kartice.</translation>
+<translation id="8727142376512517020">Ne prikazuj to ponovo</translation>
 <translation id="8728672262656704056">Radite u anonimnom načinu</translation>
 <translation id="8730621377337864115">Gotovo</translation>
 <translation id="8731332457891046104">Poništavanje registracije uređaja <ph name="DEVICE_TYPE" /></translation>
@@ -5382,7 +5388,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8986362086234534611">Zaboravi</translation>
 <translation id="8986494364107987395">Automatski usluzi Google šalje statistiku o upotrebi i izvješća o padu programa</translation>
 <translation id="8987927404178983737">Mjesec</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Osnovni URL Netscape certifikata</translation>
 <translation id="8994845581478641365">Predmemoriranje fontova za DirectWrite</translation>
 <translation id="8995603266996330174">Upravlja <ph name="DOMAIN" /></translation>

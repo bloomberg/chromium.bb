@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στον διακομιστή.</translation>
 <translation id="1506061864768559482">Μηχανή αναζήτησης</translation>
 <translation id="1513352483775369820">Σελιδοδείκτες και ιστορικό ιστού</translation>
+<translation id="1546112724822176246">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
 <translation id="1557201757634521564">Αυτόματος εντοπισμός κωδικοποίησης</translation>
 <translation id="1568822834048182062">Οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις θα συγχρονιστούν με το Λογαριασμό σας Google</translation>
@@ -213,9 +214,6 @@
 <translation id="4195643157523330669">Άνοιγμα σε νέα καρτέλα</translation>
 <translation id="4198229475320555619">Ο σελιδοδείκτης μεγέθους <ph name="PAGE_SIZE_STRING" /> αποθηκεύτηκε εκτός σύνδεσης</translation>
 <translation id="423410644998903704">Το Chrome θα πρέπει να έχει πρόσβαση στις άδειες προκειμένου να τις μοιραστεί με αυτόν τον ιστότοπο.</translation>
-<translation id="424696723690217687">Ανακαλύψτε ιστοσελίδες που έχουν σταλεί από κοντινά αντικείμενα.
-
-Το Chrome θα σαρώσει τις κοντινές σελίδες όταν ξεκλειδωθεί η συσκευή σας. Αυτές οι σελίδες θα περάσουν από μια υπηρεσία Google για τη βελτίωση της ποιότητας των αποτελεσμάτων σελίδων.</translation>
 <translation id="4254813446494774748">Γλώσσα μετάφρασης:</translation>
 <translation id="4256782883801055595">Άδειες λογισμικού ανοικτού κώδικα</translation>
 <translation id="4259722352634471385">Αποκλείστηκε η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
@@ -374,6 +372,7 @@
 <translation id="6108923351542677676">Ρύθμιση σε εξέλιξη…</translation>
 <translation id="6112702117600201073">Ανανέωση σελίδας</translation>
 <translation id="6127379762771434464">Το στοιχείο καταργήθηκε</translation>
+<translation id="6134870457258083164">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK1" />Λάβετε βοήθεια<ph name="END_LINK1" /> ή <ph name="BEGIN_LINK2" />αναζητήστε την ξανά<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Ρύθμιση σελίδας ώστε να είναι φιλική προς κινητά</translation>
 <translation id="6140912465461743537">Χώρα/Περιοχή</translation>
 <translation id="6159335304067198720">Εξοικονόμηση δεδομένων κατά <ph name="PERCENT" /></translation>
@@ -460,6 +459,7 @@
 <translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>
 <translation id="7208788139759694678">Η Εξοικονόμηση δεδομένων είναι απενεργοποιημένη</translation>
+<translation id="721331389620694978">Ορισμένες ρυθμίσεις που ενδέχεται να αντανακλούν τις συνήθειες περιήγησης δεν θα διαγραφούν.</translation>
 <translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
 <translation id="7244362611678346589">Το <ph name="SEARCH_ENGINE_URL" /> χρησιμοποιεί την τοποθεσία σας για την εμφάνιση τοπικών αποτελεσμάτων αναζήτησης</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Βοήθεια<ph name="END_LINK" /></translation>
@@ -566,14 +566,12 @@
 
 Για απόκτηση νέων αδειών, συνδεθείτε στο διαδίκτυο και κάντε αναπαραγωγή των λήψεων περιεχομένου.</translation>
 <translation id="8660471606262461360">Από το Google Payments</translation>
-<translation id="8675945939500569406">Να ενεργοποιηθεί το Φυσικό δίκτυο;</translation>
 <translation id="8676374126336081632">Εκκαθάριση καταχώρισης</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
 <translation id="8699799819461268362">Φίλτρο Google SafeSites</translation>
 <translation id="8701537995684343047">Επισκεφτείτε το σελιδοδείκτη για να τον αποθηκεύσετε εκτός σύνδεσης</translation>
 <translation id="8719023831149562936">Δεν είναι δυνατή η ζεύξη της τρέχουσας καρτέλας</translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
-<translation id="8727142376512517020">Να μην εμφανιστεί ξανά</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
 <translation id="8737542153238017984">Η αποθηκευμένη σελίδα δεν είναι διαθέσιμη εκτός σύνδεσης. Ο χώρος αποθήκευσης είναι σχεδόν πλήρης.</translation>
 <translation id="8793430725658173476">Αντιγραφή διεύθυνσης URL</translation>

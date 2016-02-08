@@ -104,7 +104,7 @@
 <translation id="1426410128494586442">አዎ</translation>
 <translation id="1427655258943162134">የተኪ አገልጋይ አድራሻ ወይም ዩአርኤል</translation>
 <translation id="1435659902881071157">የመሣሪያ ደረጃ አውታረ መረብ ውቅር</translation>
-<translation id="1438739959477268107">ነባሪ የቁፍም ማመንጫ ቅንብር</translation>
+<translation id="1438739959477268107">ነባሪ የቁልፍ ማመንጫ ቅንብር</translation>
 <translation id="1454846751303307294">የትኛዎቹ ጣቢያዎች JavaScriptን እንዲያሂዱ የማይፈቀድላቸው ጣቢያዎች የሚገልጽ የዩ አር ኤል ስርዓተ ጥለቶች ዝርዝር እንዲያስቀምጡ ያስችልዎታል።
 
           ይህ መመሪያ እንዳልተዋቀረ ከተተወ ከተዋቀረ የ«DefaultJavaScriptSetting» መመሪያ፣ አለበለዚያ ደግሞ የተጠቃሚው የግል ውቅር ሁለንተናዊ ነባሪ ዋጋ ስራ ላይ ይውላል።</translation>
@@ -2303,7 +2303,6 @@
           የመመሪያ ዋጋው በሚሊሰከንዶች ነው መገለጽ ያለበት። ዋጋዎች ከስራ ፈትቶ መዘግየቱ ያነሱ ነው የሚሆኑት።</translation>
 <translation id="891435090623616439">እንደ JSON ሕብረ ቁምፊ በኮድ ተቀምጧል፣ ለዝርዝሩ <ph name="COMPLEX_POLICIES_URL" />ን ይመልከቱ</translation>
 <translation id="8947415621777543415">የመሣሪያ አካባቢ ሪፖርት አድርግ</translation>
-<translation id="89493502583189945"><ph name="PRODUCT_NAME" /> ሲጀመር የሚተገብሩበት ዕልባቶችን ይገልጻል። የተገለጹት ዕልባቶች <ph name="PRODUCT_NAME" /> ከመጀመሩ በፊት የሚተገበሩ ናቸው፣ ለመግቢያ ገጹም እንኳ።</translation>
 <translation id="8951350807133946005">የዲስክ መሸጎጫ አቃፊ አዋቅር</translation>
 <translation id="8955719471735800169">ወደ ላይ ተመለስ</translation>
 <translation id="8960850473856121830">በዚህ ዝርዝር ውስጥ ያሉ ስርዓተ ጥለቶች ከሚጠይቀው ዩአርኤል የደህንነት መነሻ

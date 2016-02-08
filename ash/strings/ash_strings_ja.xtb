@@ -113,7 +113,6 @@
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="4279490309300973883">ミラーリングしています</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Dear Monitor, it's not working out between us.（このモニターはサポートされていません）</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。</translation>
@@ -182,7 +181,6 @@
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
 <translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE" />%、充電しています。</translation>
-<translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox（音声フィードバック）</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>

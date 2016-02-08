@@ -113,7 +113,6 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Moniteur non compatible.</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer.</translation>
@@ -182,7 +181,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
-<translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="683971173229319003">Recherche+L</translation>
 <translation id="68610848741840742">ChromeVox (commentaires audio)</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>

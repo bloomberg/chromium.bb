@@ -673,7 +673,7 @@
       如果您启用了此设置，YouTube 中将始终启用安全模式。
 
       如果您停用了此设置或未指定值，YouTube 中将不会强制启用安全模式。</translation>
-<translation id="3750220015372671395">禁止在这些网站上生成密钥</translation>
+<translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>
 <translation id="3756011779061588474">禁止开发者模式</translation>
 <translation id="3758249152301468420">停用开发者工具</translation>
 <translation id="3765260570442823273">待机退出警告讯息的持续时间</translation>
@@ -1643,7 +1643,7 @@
       如果此政策未设置或设为True，已注册的设备将定期报告操作系统和固件版本。如果此政策设为False，则不报告版本信息。</translation>
 <translation id="7511361072385293666">如果此政策设为 true 或未设置，则允许在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 协议。
       如果此政策设为 false，则禁止使用 QUIC 协议。</translation>
-<translation id="7519251620064708155">允许在这些网站上生成密钥</translation>
+<translation id="7519251620064708155">允许在这些网站上使用密钥生成功能</translation>
 <translation id="7523476810162382273">将监测信息发送到管理服务器</translation>
 <translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7529144158022474049">自动更新分配因素</translation>
@@ -1998,7 +1998,6 @@
           指定的政策值应以毫秒为单位，并且必须少于闲置延迟时间。</translation>
 <translation id="891435090623616439">已编码为 JSON 字符串。有关详情，请访问 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">报告设备位置</translation>
-<translation id="89493502583189945">指定应在 <ph name="PRODUCT_NAME" /> 启动时应用于它的选项。指定的选项在 <ph name="PRODUCT_NAME" /> 尚未启动进入登录屏幕之前就会应用。</translation>
 <translation id="8951350807133946005">设置磁盘缓存目录</translation>
 <translation id="8955719471735800169">返回页首</translation>
 <translation id="8960850473856121830">如果有网址请求使用音频捕获设备，系统会将此列表中的网址格式与该网址的安全来源进行比对。如果找到了匹配项，系统将允许该网址使用音频捕获设备，并且不会提示用户。

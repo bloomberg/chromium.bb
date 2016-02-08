@@ -42,6 +42,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1477626028522505441">A következő fájl letöltése szerverproblémák miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
 <translation id="1506061864768559482">Keresőmotor</translation>
 <translation id="1513352483775369820">Könyvjelzők és webes előzmények</translation>
+<translation id="1546112724822176246">Nem látja eszközét? <ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
 <translation id="1557201757634521564">Kódolás automatikus felismerése</translation>
 <translation id="1568822834048182062">A könyvjelzők, előzmények, jelszavak és más beállítások szinkronizálódnak Google-fiókjával.</translation>
@@ -213,9 +214,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="4198229475320555619">Könyvjelző (<ph name="PAGE_SIZE_STRING" />) mentve offline</translation>
 <translation id="423410644998903704">A Chrome-nak rendelkeznie kell hozzáférési engedélyekkel, hogy megoszthassa őket ezzel a webhellyel.</translation>
-<translation id="424696723690217687">Felfedezheti a közeli objektumok által küldött weboldalakat.
-
-A Chrome megkeresi a közeli oldalakat, ha az eszköz lezárása fel van oldva. Ezek az oldalak egy Google-szolgáltatáson keresztül érkeznek, hogy javuljon a találatok minősége.</translation>
 <translation id="4254813446494774748">A fordítás nyelve</translation>
 <translation id="4256782883801055595">Nyílt forráskódú licencek</translation>
 <translation id="4259722352634471385">Le van tiltva az ide vezető navigáció: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="6108923351542677676">A telepítés folyamatban...</translation>
 <translation id="6112702117600201073">Oldal frissítése</translation>
 <translation id="6127379762771434464">Elem eltávolítva</translation>
+<translation id="6134870457258083164">Nem látja eszközét? <ph name="BEGIN_LINK1" />Kérjen segítséget<ph name="END_LINK1" />, vagy <ph name="BEGIN_LINK2" />végezzen új keresést<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Az oldal mobilbaráttá alakítása</translation>
 <translation id="6140912465461743537">Ország/régió</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" />-os adatmegtakarítás</translation>
@@ -459,6 +458,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7180611975245234373">Frissítés</translation>
 <translation id="7191430249889272776">A lap megnyílt a háttérben.</translation>
 <translation id="7208788139759694678">Az Adatforgalom-csökkentő ki van kapcsolva</translation>
+<translation id="721331389620694978">Bizonyos beállítások, amelyek a böngészési szokásokat tükrözhetik, nem lesznek törölve.</translation>
 <translation id="7243308994586599757">A beállítások a képernyő alsó részén találhatók</translation>
 <translation id="7244362611678346589">A(z) <ph name="SEARCH_ENGINE_URL" /> az Ön tartózkodási helye alapján jelenít meg helyi keresési eredményeket</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Súgó<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 
 Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le a letöltött tartalmat.</translation>
 <translation id="8660471606262461360">A Google Payments szolgáltatásból</translation>
-<translation id="8675945939500569406">Bekapcsolja a fizikai webet?</translation>
 <translation id="8676374126336081632">Beírt szöveg törlése</translation>
 <translation id="869891660844655955">Lejárati dátum</translation>
 <translation id="8699799819461268362">Biztonságos webhelyek Google-szűrő</translation>
 <translation id="8701537995684343047">Nyissa meg a könyvjelzőt az offline mentéshez</translation>
 <translation id="8719023831149562936">Nem lehet átsugározni a jelenlegi lapot</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
-<translation id="8727142376512517020">Ez ne jelenjen meg többé</translation>
 <translation id="8730621377337864115">Kész</translation>
 <translation id="8737542153238017984">A mentett oldal nem érhető el offline módban. A tárhely már majdnem megtelt.</translation>
 <translation id="8793430725658173476">URL másolása</translation>

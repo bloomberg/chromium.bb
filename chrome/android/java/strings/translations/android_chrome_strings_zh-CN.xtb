@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">未能成功下载 <ph name="FILE_NAME" />，因为服务器出现了问题。</translation>
 <translation id="1506061864768559482">搜索引擎</translation>
 <translation id="1513352483775369820">书签和网络历史记录</translation>
+<translation id="1546112724822176246">没看到您的设备？<ph name="BEGIN_LINK" />寻求帮助<ph name="END_LINK" />。</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自动检测编码</translation>
 <translation id="1568822834048182062">系统会将您保存的书签、历史记录、密码和其他设置同步到您的 Google 帐户。</translation>
@@ -211,11 +212,8 @@
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4193864812412988973">正在查看的是此书签的离线副本</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
-<translation id="4198229475320555619">书签已离线保存 (<ph name="PAGE_SIZE_STRING" />)</translation>
+<translation id="4198229475320555619">书签已离线保存（大小：<ph name="PAGE_SIZE_STRING" />）</translation>
 <translation id="423410644998903704">Chrome 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
-<translation id="424696723690217687">发现附近物体传送的网页。
-
-当您的设备处于解锁状态时，Chrome 会检测附近的网页。然后，相关 Google 服务处理这些网页，以提高网页搜索结果的质量。</translation>
 <translation id="4254813446494774748">翻译语言：</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
@@ -373,6 +371,7 @@
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6112702117600201073">正在刷新页面</translation>
 <translation id="6127379762771434464">条目已移除</translation>
+<translation id="6134870457258083164">没看到您的设备？<ph name="BEGIN_LINK1" />寻求帮助<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新搜索<ph name="END_LINK2" />。</translation>
 <translation id="6138140242378429169">使网页适合移动设备</translation>
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
@@ -459,6 +458,7 @@
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="7208788139759694678">流量节省程序已停用</translation>
+<translation id="721331389620694978">一些可能反映浏览习惯的设置不会遭到清除。</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />帮助<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@
 
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>
 <translation id="8660471606262461360">来自 Google Payments</translation>
-<translation id="8675945939500569406">要启用实物网吗？</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="869891660844655955">截止日期</translation>
 <translation id="8699799819461268362">Google SafeSites 过滤功能</translation>
 <translation id="8701537995684343047">访问书签以离线保存</translation>
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8725066075913043281">重试</translation>
-<translation id="8727142376512517020">不要再显示此对话框</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8737542153238017984">存储空间即将用尽，因此无法为保存的页面创建离线副本。</translation>
 <translation id="8793430725658173476">复制网址</translation>

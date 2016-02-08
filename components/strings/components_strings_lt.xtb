@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1015255576907412255">Jei reikia daugiau informacijos, susisiekite su sistemos administratoriumi.</translation>
+<translation id="1015730422737071372">Pateikti papildomos išsamios informacijos</translation>
 <translation id="1032854598605920125">Pasukti pagal laikrodžio rodyklę</translation>
 <translation id="1055184225775184556">&amp;Anuliuoti pridėjimą</translation>
 <translation id="1064422015032085147">Serveris, priglobiantis tinklalapį, gali būti perkrautas arba vykdomi jo techninės priežiūros darbai.
@@ -438,6 +439,7 @@
 <translation id="6637478299472506933">Atsisiun. įv. klaida</translation>
 <translation id="6644283850729428850">Ši politika nepatvirtinta.</translation>
 <translation id="6646897916597483132">Įveskite 4 skaitmenų kortelės saugos kodą (CVC), nurodytą kortelės priekyje</translation>
+<translation id="6660210980321319655">Automatiškai pranešta <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Pašalinti formos pasiūlymą iš „Chromium“?</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6711464428925977395">Kažkas negerai su tarpiniu serveriu arba adresas netinkamas.</translation>
@@ -635,6 +637,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8971063699422889582">Baigėsi serverio sertifikato galiojimo laikas.</translation>
 <translation id="8987927404178983737">Mėnuo</translation>
 <translation id="8988760548304185580">Įveskite galiojimo pabaigos datą ir 3 skaitmenų kortelės saugos kodą (CVC), nurodytą kitoje kortelės pusėje</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Blogas SSL kliento tapatybės nustatymo sertifikatas.</translation>
 <translation id="901974403500617787">Visoje sistemoje taikomas žymas gali nustatyti tik savininkas: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Serveris atmetė ryšį.</translation>

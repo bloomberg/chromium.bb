@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">Falha no download do arquivo <ph name="FILE_NAME" /> devido a problemas de servidor.</translation>
 <translation id="1506061864768559482">Mecanismo de pesquisa</translation>
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
+<translation id="1546112724822176246">Não está vendo seu dispositivo? <ph name="BEGIN_LINK" />Receba ajuda<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
 <translation id="1557201757634521564">Detectar codificação automaticamente</translation>
 <translation id="1568822834048182062">Seus favoritos, histórico, senhas e outras configurações serão sincronizados com sua Conta do Google.</translation>
@@ -213,9 +214,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4198229475320555619">Favorito de <ph name="PAGE_SIZE_STRING" /> salvo off-line</translation>
 <translation id="423410644998903704">O Chrome precisa ter acesso às permissões para compartilhá-las com este site.</translation>
-<translation id="424696723690217687">Descubra páginas da Web enviadas por objetos próximos.
-
-O Chrome verificará páginas nas proximidades quando o dispositivo estiver desbloqueado. Essas páginas passarão por um serviço do Google para melhorar a qualidade dos resultados de página.</translation>
 <translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4259722352634471385">A Navegação GPS está bloqueada: <ph name="URL" /></translation>
@@ -372,6 +370,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="6108923351542677676">Configuração em andamento...</translation>
 <translation id="6112702117600201073">Atualizando página</translation>
 <translation id="6127379762771434464">Item removido</translation>
+<translation id="6134870457258083164">Não está vendo seu dispositivo? <ph name="BEGIN_LINK1" />Receba ajuda<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />procure novamente<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Tornar a página otimizada para dispositivos móveis</translation>
 <translation id="6140912465461743537">País/região</translation>
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
@@ -458,6 +457,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7191430249889272776">Guia aberta no plano de fundo.</translation>
 <translation id="7208788139759694678">Economia de dados desativada</translation>
+<translation id="721331389620694978">Algumas configurações que podem refletir os hábitos de navegação não serão limpas.</translation>
 <translation id="7243308994586599757">Opções disponíveis perto da parte inferior da tela</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa sua localização para mostrar resultados de pesquisa locais</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
@@ -563,14 +563,12 @@ No entanto, você não fica invisível. O modo anônimo não oculta sua navegaç
 <translation id="862875433388403934">Conteúdo (filmes, música, etc.) baixado em outros aplicativos pode não ser cobrado até que esses aplicativos readquiram licenças baseadas em uma nova credencial do dispositivo.
 Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado.</translation>
 <translation id="8660471606262461360">Do Google Payments</translation>
-<translation id="8675945939500569406">Ativar a Web física?</translation>
 <translation id="8676374126336081632">Limpar entrada</translation>
 <translation id="869891660844655955">Validade</translation>
 <translation id="8699799819461268362">Filtro do Google SafeSites</translation>
 <translation id="8701537995684343047">Visitar favorito para salvar off-line</translation>
 <translation id="8719023831149562936">Não é possível enviar a guia atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
-<translation id="8727142376512517020">Não mostrar isto novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8737542153238017984">Página salva não disponível off-line. Armazenamento quase cheio.</translation>
 <translation id="8793430725658173476">Copiar URL</translation>

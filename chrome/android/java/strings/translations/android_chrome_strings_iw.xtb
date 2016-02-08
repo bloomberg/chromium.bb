@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">הורדת <ph name="FILE_NAME" /> נכשלה עקב בעיות בשרת.</translation>
 <translation id="1506061864768559482">מנוע חיפוש</translation>
 <translation id="1513352483775369820">סימניות והיסטוריית אתרים</translation>
+<translation id="1546112724822176246">אינך רואה את המכשיר? <ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">‏עדכן את Chrome</translation>
 <translation id="1557201757634521564">זיהוי אוטומטי של קידוד</translation>
 <translation id="1568822834048182062">‏הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות יסונכרנו עם חשבון Google שלך.</translation>
@@ -213,9 +214,6 @@
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="4198229475320555619">סימניה בגודל <ph name="PAGE_SIZE_STRING" /> נשמרה במצב לא מקוון</translation>
 <translation id="423410644998903704">‏Chrome זקוק לגישה אל ההרשאות כדי לשתף אותן עם האתר הזה.</translation>
-<translation id="424696723690217687">‏מצא דפי אינטרנט שנשלחו בידי עצמים שנמצאים בקרבת מקום.
-
-Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול. דפים אלה יעברו דרך שירות Google כדי לשפר את איכות התוצאות.</translation>
 <translation id="4254813446494774748">שפת התרגום:</translation>
 <translation id="4256782883801055595">רישיונות קוד פתוח</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
 <translation id="6112702117600201073">מרענן את הדף</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
+<translation id="6134870457258083164">אינך רואה את המכשיר? <ph name="BEGIN_LINK1" />קבל עזרה<ph name="END_LINK1" /> או <ph name="BEGIN_LINK2" />חפש שוב<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">הפוך את הדף לידידותי לנייד</translation>
 <translation id="6140912465461743537">ארץ/אזור</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="7180611975245234373">רענן</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="7208788139759694678">‏חוסך הנתונים (Data Saver) מושבת</translation>
+<translation id="721331389620694978">חלק מההגדרות שעשויות לשקף את הרגלי הגלישה לא ינוקו.</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> משתמש במיקום שלך כדי להציג תוצאות חיפוש מקומיות</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />עזרה<ph name="END_LINK" /></translation>
@@ -563,14 +563,12 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="8627706565932943526">שגיאת סנכרון</translation>
 <translation id="862875433388403934">ייתכן שלא תוכל עוד להפעיל תוכן (סרטים, מוזיקה וכו') שהורדת באפליקציות אחרות עד לרכישה מחדש של רישיונות באפליקציות אלה עם פרטי כניסה למכשיר חדש. כדי להשיג רישיונות חדשים, התחבר לאינטרנט והפעל את התוכן שהורדת.</translation>
 <translation id="8660471606262461360">‏מ-Google Payments</translation>
-<translation id="8675945939500569406">האם להפעיל את האינטרנט הווירטופיזי?</translation>
 <translation id="8676374126336081632">נקה קלט</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
 <translation id="8699799819461268362">‏מסנן Google SafeSites</translation>
 <translation id="8701537995684343047">עבור לסימניה כדי לשמור אותה במצב לא מקוון</translation>
 <translation id="8719023831149562936">לא ניתן להעביר תוכן מהכרטיסייה הנוכחית</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
-<translation id="8727142376512517020">אל תציג הודעה זו שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>
 <translation id="8737542153238017984">הדף שנשמר אינו זמין במצב לא מקוון. מיצית כמעט את כל נפח האחסון.</translation>
 <translation id="8793430725658173476">העתק כתובת אתר</translation>

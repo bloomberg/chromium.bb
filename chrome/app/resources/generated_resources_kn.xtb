@@ -607,6 +607,7 @@
 <translation id="1864111464094315414">ಲಾಗಿನ್</translation>
 <translation id="1864676585353837027">ಈ ಫೈಲ್‌ಗಳು ಹಂಚಿಕೆಯಾಗಿರುವ ಬಗೆಯನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="1864756863218646478">ಫೈಲ್ ಅನ್ನು ಕಂಡುಹಿಡಿಯಲಾಗಲಿಲ್ಲ.</translation>
+<translation id="1865769994591826607">ಅದೇ-ಸೈಟ್ ಸಂಪರ್ಕಗಳು ಮಾತ್ರ</translation>
 <translation id="186612162884103683">ಗುರುತಿಸಿದ ಸ್ಥಳಗಳಲ್ಲಿ "<ph name="EXTENSION" />"  ಚಿತ್ರಗಳು, ವಿಡಿಯೋ, ಮತ್ತು ಧ್ವನಿ ಫೈಲ್‌ಗಳನ್ನು ಓದಬಹುದು ಮತ್ತು ಬರೆಯಬಹುದು.</translation>
 <translation id="1867780286110144690">ನಿಮ್ಮ ಸ್ಥಾಪನೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು <ph name="PRODUCT_NAME" /> ಸಿದ್ದವಾಗಿದೆ</translation>
 <translation id="1873879463550486830">SUID Sandbox</translation>
@@ -1196,6 +1197,7 @@
 <translation id="2743387203779672305">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಿ</translation>
 <translation id="2744221223678373668">ಹಂಚಿಕೊಳ್ಳಲಾಗಿರುವುದು</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2745576239403924641">ನಿಮ್ಮ Chromebook ನಲ್ಲಿ ರನ್ ಮಾಡಲು Android Apps ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="2747990718031257077">ಪರಿಕರಪಟ್ಟಿ ವಿನ್ಯಾಸವನ್ನು ಹೊಸ ವಿಸ್ತರಣೆ ಪರಿಕರಪಟ್ಟಿ ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ (ಅಭಿವೃದ್ಧಿಯಲ್ಲಿರುವ).</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" /> ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
 <translation id="2749881179542288782">ವ್ಯಾಕರಣವನ್ನು ಕಾಗುಣಿತದೊಂದಿಗೆ ಪರಿಶೀಲಿಸಿ</translation>
@@ -1409,6 +1411,7 @@
 <translation id="3011284594919057757">Flash ಬಗ್ಗೆ </translation>
 <translation id="3011362742078013760">&amp;ಎಲ್ಲ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">ಅದೇ-ಸೈಟ್ ಸಂಪರ್ಕಗಳನ್ನು ಮಾತ್ರ ಸುರಕ್ಷಿತವಾಗಿರಿಸಿ</translation>
 <translation id="3012890944909934180">ಡೆಸ್ಕ್‌ಟಾಪ್‌ನಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="3012917896646559015">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ದುರಸ್ತಿ ಸೌಲಭ್ಯಕ್ಕೆ ಕಳುಹಿಸಲು ದಯವಿಟ್ಟು ನಿಮ್ಮ ಹಾರ್ಡ್‌ವೇರ್ ತಯಾರಕರನ್ನು ತಕ್ಷಣವೇ ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="3015992588037997514">ಈ ಕೋಡ್ ನಿಮ್ಮ Chromebox ನ ಪರದೆಯಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತದೆಯೇ?</translation>
@@ -1640,6 +1643,7 @@
 <translation id="331752765902890099"><ph name="PROFILE_NAME" />  ಬಟನ್‌‌: ಸೈನ್‌ ಇನ್‌ ದೋಷ</translation>
 <translation id="3319048459796106952">ಹೊಸ &amp;ಅಜ್ಞಾತ ವಿಂಡೋ</translation>
 <translation id="331915893283195714">ಮೌಸ್ ಕರ್ಸರ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಎಲ್ಲ ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
+<translation id="3319364804843246307">Android Apps</translation>
 <translation id="3320859581025497771">ನಿಮ್ಮ ಕ್ಯಾರಿಯರ್</translation>
 <translation id="3323235640813116393">MHTML ನಂತೆ ಉಳಿಸಿರುವ ಪುಟಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ: HTML ಮತ್ತು ಎಲ್ಲಾ ಉಪ-ಸಂಪನ್ಮೂಲಗಳನ್ನು ಹೊಂದಿರುವ ಏಕೈಕ ಪಠ್ಯದ ಫೈಲ್.</translation>
 <translation id="3323447499041942178">ಪಠ್ಯ ಪೆಟ್ಟಿಗೆ</translation>
@@ -1744,6 +1748,7 @@
 <translation id="347719495489420368"><ph name="PLUGIN_NAME" /> ಪ್ಲೇ ಮಾಡಲು ರೈಟ್ ಕ್ಲಿಕ್‌ ಮಾಡಿ.</translation>
 <translation id="347785443197175480">ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಹಾಗೂ ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ಪ್ರವೇಶಿಸಲು <ph name="HOST" /> ಗೆ ಅನುಮತಿಸುವುದನ್ನು ಮುಂದುವರೆಸಿ</translation>
 <translation id="3478315065074101056">Chrome ಜೊತೆಗೆ ಮೇಘ ಮುದ್ರಣಕ್ಕೆ ಸಂಪರ್ಕಗೊಂಡಿರುವ ಕ್ಲಾಸಿಕ್ ಮುದ್ರಕಗಳಿಗಾಗಿ ಸುಧಾರಿತ ಆಯ್ಕೆಗಳನ್ನು XPS ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ. ಈ ಫ್ಲ್ಯಾಗ್ ಬದಲಾಯಿಸಿದ ನಂತರ ಮುದ್ರಕಗಳನ್ನು ಮರು-ಸಂಪರ್ಕಗೊಳಿಸಬೇಕು.</translation>
+<translation id="3479539252931486093">ಇದು ಅನಿರೀಕ್ಷಿತವೇ? <ph name="BEGIN_LINK" />ನಮಗೆ ತಿಳಿಸಿ<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
 <translation id="3480892288821151001">ವಿಂಡೋದ ಎಡಕ್ಕೆ ಡಾಕ್ ಮಾಡಿ</translation>
 <translation id="3481915276125965083">ಕೆಳಗಿನ ಪಾಪ್-ಅಪ್‌ಗಳನ್ನು ಈ ಪುಟದಲ್ಲಿ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ:</translation>
@@ -2719,6 +2724,7 @@
 <translation id="4941246025622441835">ಎಂಟರ್‌ಪ್ರೈಸ್ ನಿರ್ವಹಣೆಗಾಗಿ ಸಾಧನವನ್ನು ದಾಖಲಿಸುತ್ತಿರುವಾಗ ಈ ಸಾಧನದ ನಿಯೋಜನೆಯನ್ನು ಬಳಸಿ:</translation>
 <translation id="4942394808693235155">ಪರಿಶೀಲಿಸಿ ಮತ್ತು ನವೀಕರಣಗಳನ್ನು ಅನ್ವಯಿಸಿ</translation>
 <translation id="494286511941020793">ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಸಹಾಯ</translation>
+<translation id="4945378551914476156">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತದೆ ಈ ಮೂಲಕ ನೀವು Chrome ಬಳಸುವಾಗ ನೀವು  ಅವುಗಳನ್ನು ಬಳಸಬಹುದಾಗಿರುತ್ತದೆ. ನೀವು ಇದನ್ನು <ph name="BEGIN_LINK" /> ನಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು.</translation>
 <translation id="4950138595962845479">ಆಯ್ಕೆಗಳು...</translation>
 <translation id="4952186391360931024">ವಸ್ತು ಅಲ್ಲದ</translation>
 <translation id="4954544650880561668">ಸಾಧನದ ನಿಯಂತ್ರಣ</translation>
@@ -2855,7 +2861,6 @@
        <ph name="LINE_BREAKS" />
        ಬಳಕೆಯಲ್ಲಿರುವ ಸಂದರ್ಭದಲ್ಲಿಯೇ ನಿಮ್ಮ ಸಾಧನವನ್ನು ತೆಗೆಯುವುದರಿಂದ ಡೇಟಾ ನಾಶವಾಗಲು ಕಾರಣವಾಗಬಹುದು.  ದಯವಿಟ್ಟು ಕಾರ್ಯಾಚರಣೆ ಮುಗಿಯುವವರೆಗೂ ನಿರೀಕ್ಷಿಸಿ, ನಂತರ ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸಿಕೊಂಡು ಸಾಧನವನ್ನು ಹೊರಹಾಕಿ.</translation>
 <translation id="5159488553889181171"><ph name="PLUGIN_NAME" /> ಡೌನ್‌ಲೋಡ್ ರದ್ದು ಮಾಡಲಾಗಿದೆ.</translation>
-<translation id="5159628598068481063">Windows ಡೆಸ್ಕ್‌ಟಾಪ್ ಹುಡುಕಾಟ ಮರುನಿರ್ದೇಶನ ಪ್ರಾಶಸ್ತ್ಯ</translation>
 <translation id="5160857336552977725">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಸಾಧನದಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="5163869187418756376">ಹಂಚಿಕೆ ವಿಫಲಗೊಂಡಿದೆ. ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="516592729076796170">US ಪ್ರೊಗ್ರಾಮರ್ ಡಿವೊರಾಕ್</translation>
@@ -3224,7 +3229,6 @@
 <translation id="567881659373499783">ಆವೃತ್ತಿ <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">ನಿಮ್ಮ ಡೇಟಾವನ್ನು <ph name="WEBSITE_1" /> ನಲ್ಲಿ ಓದಿ</translation>
 <translation id="5680928275846978395">ಸಮಗ್ರ ನೋಟ ಮೋಡ್‌ನಲ್ಲಿ ಪಠ್ಯ ಫಿಲ್ಟರ್‌ ಮಾಡುವಿಕೆ</translation>
-<translation id="568428328938709143">ಖಾತೆ ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
 <translation id="5684661240348539843">ಸ್ವತ್ತು ಗುರುತಿಸುವಿಕೆ</translation>
 <translation id="569068482611873351">ಆಮದು...</translation>
 <translation id="56907980372820799">ಲಿಂಕ್ ಡೇಟಾ</translation>
@@ -3464,6 +3468,7 @@
 <translation id="604001903249547235">ಮೇಘ ಬ್ಯಾಕಪ್</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚು</translation>
 <translation id="604124094241169006">ಸ್ವಯಂಚಾಲಿತ</translation>
+<translation id="6042308850641462728">ಇನ್ನಷ್ಟು</translation>
 <translation id="604257181445267932">Google ಮೂಲಕ ನೀವು ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಬಳಸಿಕೊಂಡು ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ಸೈಟ್‌ಗಳಿಗೆ ತ್ವರಿತವಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮಗೆ Smart Lock ಸಹಾಯ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="6049065490165456785">ಆಂತರಿಕ ಕ್ಯಾಮರಾದಿಂದ ಫೋಟೋ</translation>
 <translation id="6051028581720248124">FedEx Office ಗೆ ಮುದ್ರಿಸುವ ಮೂಲಕ, ನೀವು ಅವರ <ph name="START_LINK" />ಬಳಕೆಯ ನಿಯಮಗಳನ್ನು<ph name="END_LINK" /> ಸಮ್ಮತಿಸುತ್ತೀರಿ.</translation>
@@ -3495,7 +3500,6 @@
 <translation id="6089481419520884864">ಪುಟವನ್ನು ಶೋಧಿಸು</translation>
 <translation id="6092270396854197260">ಎಮ್‌ಎಸ್‌ಪಿವೈ</translation>
 <translation id="6093888419484831006">ನವೀಕರಣವನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
-<translation id="6095149522260432647">Windows ಡೆಸ್ಕ್‌ಟಾಪ್ ಹುಡುಕಾಟಗಳ ಮರುನಿರ್ದೇಶನವನ್ನು ಡೀಫಾಲ್ಟ್ ಹುಡುಕಾಟ ಎಂಜಿನ್‌ಗೆ ಅನುಮತಿಸುವ ಪ್ರಾಶಸ್ತ್ಯವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">ಗರಿಷ್ಠಗೊಳಿಸುವಿಕೆಯಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="6096326118418049043">X.500 ಹೆಸರು</translation>
@@ -4677,6 +4681,7 @@
 <translation id="7926906273904422255">ಅಸುರಕ್ಷಿತ ಮೂಲಗಳನ್ನು ಅಸುರಕ್ಷಿತ ಅಥವಾ "ಸಂಶಯಾಸ್ಪದ" ಎಂದು ಗುರುತಿಸಿ.</translation>
 <translation id="7928710562641958568">ಸಾಧನ ತೆಗೆದುಹಾಕು</translation>
 <translation id="7938594894617528435">ಪ್ರಸ್ತುತ ಆಫ್‌ಲೈನ್</translation>
+<translation id="7939374455203157513">ಮೇಘ ಸೇವೆಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="7939412583708276221">ಹೇಗಾದರೂ ಇರಿಸಿ</translation>
 <translation id="7939997691108949385"><ph name="MANAGEMENT_URL" /> ನಲ್ಲಿ ನಿರ್ವಾಹಕರಿಗೆ ಈ ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರಿಗಾಗಿ ನಿರ್ಬಂಧಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ.</translation>
 <translation id="7943385054491506837">US ಕೋಲ್‌ಮ್ಯಾಕ್</translation>
@@ -5224,6 +5229,7 @@
 <translation id="872537912056138402">ಕ್ರೋಯೇಶಿಯನ್</translation>
 <translation id="8726206820263995930">ಸರ್ವರ್‌ನಿಂದ ನೀತಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪಡೆಯುತ್ತಿರುವಾಗ ದೋಷ: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">ಹೊಸ ಟ್ಯಾಬ್ ತೆರೆಯುವ ಬದಲಾಗಿ chrome://extensions ನಲ್ಲಿ ವಿಸ್ತರಣೆ ಆಯ್ಕೆಗಳನ್ನು ಎಂಬೆಡ್ ಮಾಡಲಾದ ಅಂಶದಂತೆ ಪ್ರದರ್ಶಿಸಿ.</translation>
+<translation id="8727142376512517020">ಇದನ್ನು ಮತ್ತೆ ತೋರಿಸಬೇಡ</translation>
 <translation id="8728672262656704056">ನೀವು ಅಜ್ಞಾತ ವಿಂಡೋಗೆ ಹೋಗಿರುವಿರಿ</translation>
 <translation id="8730621377337864115">ಮುಗಿದಿದೆ</translation>
 <translation id="8731332457891046104"><ph name="DEVICE_TYPE" /> ನೋಂದಣಿ ರದ್ದುಮಾಡಿ</translation>
@@ -5386,7 +5392,6 @@
 <translation id="8986362086234534611">ಮರೆತುಹೋಗು</translation>
 <translation id="8986494364107987395">ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳನ್ನು ಮತ್ತು Google ಗೆ ಕ್ರಾಶ್ ವರದಿಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸು</translation>
 <translation id="8987927404178983737">ತಿಂಗಳು</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Netscape ಪ್ರಮಾಣಪತ್ರ ಆಧಾರ URL</translation>
 <translation id="8994845581478641365">ನೇರಬರವಣಿಗೆ ಫಾಂಟ್ ಸಂಗ್ರಹ ಬಿಲ್ಡರ್</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ನಿಂದ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>

@@ -42,6 +42,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la localizzaz
 <translation id="1477626028522505441">Download di <ph name="FILE_NAME" /> non riuscito a causa di problemi del server.</translation>
 <translation id="1506061864768559482">Motore di ricerca</translation>
 <translation id="1513352483775369820">Preferiti e cronologia web</translation>
+<translation id="1546112724822176246">Non trovi il tuo dispositivo? <ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
 <translation id="1557201757634521564">Rileva automaticamente la codifica</translation>
 <translation id="1568822834048182062">I Preferiti, la cronologia, le password e altre impostazioni verranno sincronizzate con il tuo account Google.</translation>
@@ -213,9 +214,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="4198229475320555619">Preferito salvato offline: <ph name="PAGE_SIZE_STRING" /></translation>
 <translation id="423410644998903704">Chrome deve avere accesso alle autorizzazioni per condividerle con questo sito.</translation>
-<translation id="424696723690217687">Consente di trovare le pagine web inviate da oggetti vicini.
-
-Chrome cerca pagine nelle vicinanze quando il dispositivo è sbloccato. Tali pagine passeranno da un servizio di Google per migliorare la qualità dei risultati di pagine.</translation>
 <translation id="4254813446494774748">Lingua della traduzione:</translation>
 <translation id="4256782883801055595">Licenze open source</translation>
 <translation id="4259722352634471385">Navigazione bloccata: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6108923351542677676">Configurazione in corso…</translation>
 <translation id="6112702117600201073">Aggiornamento della pagina in corso</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
+<translation id="6134870457258083164">Non trovi il tuo dispositivo? <ph name="BEGIN_LINK1" />Richiedi assistenza<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />esegui di nuovo la ricerca<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Ottimizza la pagina per i dispositivi mobili</translation>
 <translation id="6140912465461743537">Paese/regione</translation>
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="7191430249889272776">Scheda aperta in background.</translation>
 <translation id="7208788139759694678">Funzione Risparmio dati disattivata</translation>
+<translation id="721331389620694978">Alcune impostazioni che potrebbero rispecchiare le abitudini di navigazione non verranno cancellate.</translation>
 <translation id="7243308994586599757">Opzioni disponibili nella parte inferiore dello schermo</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilizza la tua posizione per mostrare i risultati della ricerca locale.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Guida<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 
 Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaricati.</translation>
 <translation id="8660471606262461360">Da Google Payments</translation>
-<translation id="8675945939500569406">Attivare il Physical Web?</translation>
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="869891660844655955">Data di scadenza</translation>
 <translation id="8699799819461268362">Filtro Google SafeSites</translation>
 <translation id="8701537995684343047">Visita il preferito per salvarlo offline</translation>
 <translation id="8719023831149562936">Impossibile trasmettere scheda corrente</translation>
 <translation id="8725066075913043281">Riprova</translation>
-<translation id="8727142376512517020">Non visualizzare più</translation>
 <translation id="8730621377337864115">Fine</translation>
 <translation id="8737542153238017984">Pagina salvata non disponibile offline. Spazio di archiviazione quasi pieno.</translation>
 <translation id="8793430725658173476">Copia URL</translation>

@@ -42,6 +42,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1477626028522505441">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z serwerem.</translation>
 <translation id="1506061864768559482">Wyszukiwarka</translation>
 <translation id="1513352483775369820">Zakładki i historia online</translation>
+<translation id="1546112724822176246">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK" />Skorzystaj z pomocy<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
 <translation id="1557201757634521564">Automatycznie wykrywaj kodowanie</translation>
 <translation id="1568822834048182062">Twoje zakładki, historia, hasła i inne ustawienia będą synchronizowane z kontem Google.</translation>
@@ -213,9 +214,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="4198229475320555619">Zakładka o rozmiarze <ph name="PAGE_SIZE_STRING" /> została zapisana offline</translation>
 <translation id="423410644998903704">Aby zezwolić stronie na wykorzystanie uprawnień, Chrome musi je mieć.</translation>
-<translation id="424696723690217687">Poznawaj strony internetowe z pobliskich obiektów.
-
-Gdy Twoje urządzenie jest odblokowane, Chrome wyszukuje strony wysyłane przez obiekty w pobliżu. Następnie strony te trafiają do usługi Google, która zwiększa trafność wyników.</translation>
 <translation id="4254813446494774748">Język tłumaczenia:</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
 <translation id="6112702117600201073">Odświeżam stronę</translation>
 <translation id="6127379762771434464">Element został usunięty</translation>
+<translation id="6134870457258083164">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK1" />Skorzystaj z pomocy<ph name="END_LINK1" /> lub <ph name="BEGIN_LINK2" />wyszukaj ponownie<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Otwórz wersję na urządzenia mobilne</translation>
 <translation id="6140912465461743537">Kraj/region</translation>
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
 <translation id="7208788139759694678">Oszczędzanie danych wyłączone</translation>
+<translation id="721331389620694978">Niektóre ustawienia, które mogą odzwierciedlać typowe zachowania związane z przeglądaniem stron, nie zostaną wyczyszczone.</translation>
 <translation id="7243308994586599757">Opcje dostępne u dołu ekranu</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> korzysta z danych o Twojej lokalizacji, by pokazywać wyniki wyszukiwania lokalnego</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 
 Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treści.</translation>
 <translation id="8660471606262461360">Z Google Payments</translation>
-<translation id="8675945939500569406">Włączyć internet rzeczy?</translation>
 <translation id="8676374126336081632">Wyczyść wpisany tekst</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8699799819461268362">Filtr Google SafeSites</translation>
 <translation id="8701537995684343047">Otwórz zakładkę, by zapisać ją offline</translation>
 <translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
-<translation id="8727142376512517020">Nie pokazuj ponownie</translation>
 <translation id="8730621377337864115">Gotowe</translation>
 <translation id="8737542153238017984">Zapisana strona nie jest dostępna w trybie offline. Pamięć jest prawie pełna.</translation>
 <translation id="8793430725658173476">Kopiuj URL</translation>

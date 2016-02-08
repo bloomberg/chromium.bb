@@ -112,7 +112,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Prezado monitor, as coisas não estão dando certo entre nós (este monitor não é suportado).</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento.</translation>
@@ -181,7 +180,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite esta senha no dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" está pareado e disponível para todos os usuários. Para cancelar o pareamento, vá para "Configurações".</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e carregando.</translation>
-<translation id="6803622936009808957">Não foi possível espelhar os displays porque não foram encontradas resoluções suportadas. Em vez disso, foi ativada a área de trabalho estendida.</translation>
 <translation id="683971173229319003">Pesquisa+L</translation>
 <translation id="68610848741840742">ChromeVox (feedback falado)</translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>

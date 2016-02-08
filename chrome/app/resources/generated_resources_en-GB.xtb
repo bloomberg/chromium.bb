@@ -607,6 +607,7 @@
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864676585353837027">Change how these files are shared</translation>
 <translation id="1864756863218646478">The file could not be found.</translation>
+<translation id="1865769994591826607">Same-site connections only</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" can read and write images, video and sound files in the ticked locations.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is ready to complete your installation</translation>
 <translation id="1873879463550486830">SUID Sandbox</translation>
@@ -1196,6 +1197,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2743387203779672305">Copy to clipboard</translation>
 <translation id="2744221223678373668">Shared</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2745576239403924641">Enable Android Apps to run on your Chromebook.</translation>
 <translation id="2747990718031257077">Enables the (in development) new extension toolbar toolbar design.</translation>
 <translation id="2749756011735116528">Sign in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Check Grammar With Spelling</translation>
@@ -1409,6 +1411,7 @@ I don't think this site should be blocked!</translation>
 <translation id="3011284594919057757">About Flash</translation>
 <translation id="3011362742078013760">Open All Bookmarks in &amp;Incognito Window</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">Secure same-site connections only</translation>
 <translation id="3012890944909934180">Relaunch Chrome on the desktop</translation>
 <translation id="3012917896646559015">Please contact your hardware manufacturer immediately to send your computer to a repair facility.</translation>
 <translation id="3015992588037997514">Does this code appear on your Chromebox screen?</translation>
@@ -1642,6 +1645,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="331752765902890099"><ph name="PROFILE_NAME" />  button: sign in error</translation>
 <translation id="3319048459796106952">New &amp;incognito window</translation>
 <translation id="331915893283195714">Allow all sites to disable the mouse cursor</translation>
+<translation id="3319364804843246307">Android Apps</translation>
 <translation id="3320859581025497771">your operator</translation>
 <translation id="3323235640813116393">Enables saving pages as MHTML: a single text file containing HTML and all sub-resources.</translation>
 <translation id="3323447499041942178">Text box</translation>
@@ -1746,6 +1750,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Right-click to play <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Continue allowing <ph name="HOST" /> to access your camera and microphone</translation>
 <translation id="3478315065074101056">XPS enables advanced options for classic printers connected to the Cloud Print with Chrome. Printers must be re-connected after changing this flag.</translation>
+<translation id="3479539252931486093">Was this unexpected? <ph name="BEGIN_LINK" />Let us know<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3480892288821151001">Dock window left</translation>
 <translation id="3481915276125965083">The following pop-ups were blocked on this page:</translation>
@@ -2720,6 +2725,7 @@ Press any key to continue exploring.</translation>
 <translation id="4941246025622441835">Use this device requisition when enrolling the device for enterprise management:</translation>
 <translation id="4942394808693235155">Check for and apply updates</translation>
 <translation id="494286511941020793">Proxy Configuration Help</translation>
+<translation id="4945378551914476156">Your bookmarks, history, passwords and other settings will be synced to your Google Account so you can use them wherever you use Chrome. You can change this in <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Options...</translation>
 <translation id="4952186391360931024">Non-material</translation>
 <translation id="4954544650880561668">Device control</translation>
@@ -2854,7 +2860,6 @@ Press any key to continue exploring.</translation>
    <ph name="LINE_BREAKS" />
    Removing your device while it is in use may cause data loss. Please wait until the operation is over, then eject the device using the Files app.</translation>
 <translation id="5159488553889181171"><ph name="PLUGIN_NAME" /> download was cancelled.</translation>
-<translation id="5159628598068481063">Windows desktop search redirection preference</translation>
 <translation id="5160857336552977725">Sign in to your <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Sharing failed. Please check your connection and try again later.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
@@ -3222,7 +3227,6 @@ Press any key to continue exploring.</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Read your data on <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">Text filtering in Overview Mode</translation>
-<translation id="568428328938709143">Account removed</translation>
 <translation id="5684661240348539843">Asset Identifier</translation>
 <translation id="569068482611873351">Import...</translation>
 <translation id="56907980372820799">Link data</translation>
@@ -3464,6 +3468,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="604001903249547235">Cloud backup</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="604124094241169006">Automatic</translation>
+<translation id="6042308850641462728">More</translation>
 <translation id="604257181445267932">Smart Lock helps you quickly sign in to apps and sites using passwords you have saved with Google.</translation>
 <translation id="6049065490165456785">Photo from internal camera</translation>
 <translation id="6051028581720248124">By printing to FedEx Office, you accept their <ph name="START_LINK" />terms of use<ph name="END_LINK" />.</translation>
@@ -3495,7 +3500,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6089481419520884864">Distill page</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Cancelling update...</translation>
-<translation id="6095149522260432647">Enables a preference that allows redirection of Windows desktop searches to the default search engine.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Open maximised</translation>
 <translation id="6096326118418049043">X.500 Name</translation>
@@ -4679,6 +4683,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7926906273904422255">Mark non-secure origins as non-secure or "dubious".</translation>
 <translation id="7928710562641958568">Eject device</translation>
 <translation id="7938594894617528435">Currently offline</translation>
+<translation id="7939374455203157513">Enable Cloud Services</translation>
 <translation id="7939412583708276221">Keep anyway</translation>
 <translation id="7939997691108949385">The manager will be able to configure restrictions and settings for this supervised user at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">US Colemak</translation>
@@ -5231,6 +5236,7 @@ Calculating time until full</translation>
 <translation id="872537912056138402">Croatian</translation>
 <translation id="8726206820263995930">Error when fetching policy settings from the server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Display extension options as an embedded element in chrome://extensions rather than opening a new tab.</translation>
+<translation id="8727142376512517020">Don’t show this again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
 <translation id="8730621377337864115">Finished</translation>
 <translation id="8731332457891046104">Unenrol <ph name="DEVICE_TYPE" /></translation>
@@ -5393,7 +5399,6 @@ Calculating time until full</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8987927404178983737">Month</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Netscape Certificate Base URL</translation>
 <translation id="8994845581478641365">DirectWrite Font Cache Builder</translation>
 <translation id="8995603266996330174">Managed by <ph name="DOMAIN" /></translation>

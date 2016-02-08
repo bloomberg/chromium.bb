@@ -2084,7 +2084,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end inaktivitetsforsinkelsen.</translation>
 <translation id="891435090623616439">kodet som en JSON-streng. Få flere oplysninger på <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Rapportér enhedens placering</translation>
-<translation id="89493502583189945">Angiver de markeringer, der skal anvendes for <ph name="PRODUCT_NAME" /> ved opstart. De angivne markeringer anvendes, før <ph name="PRODUCT_NAME" /> startes, selv på loginskærmen.</translation>
 <translation id="8951350807133946005">Angiv mappen for diskens cache</translation>
 <translation id="8955719471735800169">Tilbage til toppen</translation>
 <translation id="8960850473856121830">Mønstre på denne liste sammenlignes med sikkerhedskilden

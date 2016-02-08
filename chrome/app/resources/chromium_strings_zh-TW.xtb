@@ -106,7 +106,6 @@
 <translation id="457845228957001925">Chromium 資料的相關重要資訊</translation>
 <translation id="459535195905078186">Chromium 應用程式</translation>
 <translation id="4677944499843243528">另一台電腦 (<ph name="HOST_NAME" />) 的 Chromium 處理程序 (<ph name="PROCESS_ID" />) 正在使用這個設定檔。Chromium 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chromium。</translation>
-<translation id="473775607612524610">更新</translation>
 <translation id="4743926867934016338">接受並搜尋</translation>
 <translation id="4888717733111232871">允許 mDNS 流量的 Chromium 輸入規則。</translation>
 <translation id="4943838377383847465">Chromium 正在背景模式中執行。</translation>
@@ -140,7 +139,6 @@
 <translation id="6334986366598267305">無論是登入 Google 帳戶使用 Chromium，還是以 Google 帳戶使用共用電腦，現在都變得更容易了。</translation>
 <translation id="6373523479360886564">您確定要解除安裝 Chromium 嗎？</translation>
 <translation id="6403826409255603130">Chromium 網路瀏覽器開啟網頁和執行應用程式的速度十分迅速。除了迅速、穩定且易於使用之外，Chromium 的內建惡意軟體與網路釣魚防護功能，可讓您安心悠遊網路。</translation>
-<translation id="6424492062988593837">Chromium 現在變得更進步了！歡迎您升級使用新版本。</translation>
 <translation id="6475912303565314141">這個擴充功能也會控管您啟動 Chromium 時所顯示的網頁。</translation>
 <translation id="6485906693002546646">您正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理您的 Chromium 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chromium，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>

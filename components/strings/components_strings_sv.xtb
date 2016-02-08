@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1015255576907412255">Kontakta systemadministratören om du vill ha mer information.</translation>
+<translation id="1015730422737071372">Ange ytterligare information</translation>
 <translation id="1032854598605920125">Rotera medurs</translation>
 <translation id="1055184225775184556">&amp;Ångra Lägg till</translation>
 <translation id="1064422015032085147">Eventuellt pågår underhåll på servern som webbsidan finns på, eller så kan servern vara överbelastad.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Nedladdningen misslyckades</translation>
 <translation id="6644283850729428850">Policyn är föråldrad.</translation>
 <translation id="6646897916597483132">Ange den fyrsiffriga CVC-koden från kortets framsida</translation>
+<translation id="6660210980321319655">Rapporterades automatiskt <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Vill du ta bort formulärförslaget från Chromium?</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6711464428925977395">Något är fel med proxyservern eller så är adressen felaktig.</translation>
@@ -633,6 +635,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8971063699422889582">Servercertifikatet har gått ut.</translation>
 <translation id="8987927404178983737">Månad</translation>
 <translation id="8988760548304185580">Ange utgångsdatum och den tresiffriga CVC-koden på kreditkortets baksida</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Felaktigt SSL-klientautentiseringscertifikat.</translation>
 <translation id="901974403500617787">Flaggor som gäller hela systemet kan endast ställas in av ägaren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Servern vägrade ansluta.</translation>

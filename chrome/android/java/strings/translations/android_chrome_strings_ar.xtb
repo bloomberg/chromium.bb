@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب مشكلات بالخادم.</translation>
 <translation id="1506061864768559482">محرك البحث</translation>
 <translation id="1513352483775369820">الإشارات المرجعية وسجل بحث الويب</translation>
+<translation id="1546112724822176246">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
 <translation id="1557201757634521564">الاكتشاف التلقائي للتشفير</translation>
 <translation id="1568822834048182062">‏ستتم مزامنة الإشارات المرجعية والسجل وكلمات المرور وغير ذلك من الإعدادات مع حسابك على Google.</translation>
@@ -211,9 +212,6 @@
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="4198229475320555619">حُفظَت الإشارة المرجعية <ph name="PAGE_SIZE_STRING" /> بلا اتصال</translation>
 <translation id="423410644998903704">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الأذونات لمشاركتها مع موقع الويب هذا.</translation>
-<translation id="424696723690217687">‏اكتشف صفحات الويب التي تم إرسالها عن طريق الأجهزة المجاورة.
-
-سيبحث Chrome عن صفحات الأجهزة المجاورة عند إلغاء قفل جهازك. وستمر هذه الصفحات عبر خدمة Google لتحسين جودة نتائج الصفحات.</translation>
 <translation id="4254813446494774748">لغة الترجمة:</translation>
 <translation id="4256782883801055595">تراخيص البرامج مفتوحة المصدر</translation>
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
@@ -371,6 +369,7 @@
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
+<translation id="6134870457258083164">ألا ترى جهازك؟ <ph name="BEGIN_LINK1" />احصل على المساعدة<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />ابحث مرة أخرى<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">جعل الصفحة متوافقة مع الجوّال</translation>
 <translation id="6140912465461743537">الدولة/الإقليم</translation>
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
@@ -457,6 +456,7 @@
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
 <translation id="7208788139759694678">تعطيل توفير البيانات</translation>
+<translation id="721331389620694978">لن يتم محو بعض الإعدادات التي قد تعكس عادات التصفح.</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />مساعدة<ph name="END_LINK" /></translation>
@@ -563,14 +563,12 @@
 
 للحصول على تراخيص جديدة، عليك الاتصال بالإنترنت ثم تشغيل المحتوى الذي تم تنزيله.</translation>
 <translation id="8660471606262461360">‏من Google Payments</translation>
-<translation id="8675945939500569406">هل تريد تشغيل الشبكة المادية؟</translation>
 <translation id="8676374126336081632">محو الإرسال</translation>
 <translation id="869891660844655955">تاريخ انتهاء الصلاحية</translation>
 <translation id="8699799819461268362">‏فلتر Google SafeSites</translation>
 <translation id="8701537995684343047">انتقل إلى الإشارة المرجعية للحفظ بلا اتصال</translation>
 <translation id="8719023831149562936">تعذر إرسال علامة التبويب الحالية باستخدام الشعاع</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
-<translation id="8727142376512517020">عدم إظهار ذلك مرة أخرى</translation>
 <translation id="8730621377337864115">تم</translation>
 <translation id="8737542153238017984">الصفحة المحفوظة غير متوفرة في وضع عدم الاتصال. سعة التخزين ممتلئة.</translation>
 <translation id="8793430725658173476">‏نسخ عنوان URL</translation>

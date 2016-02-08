@@ -2034,7 +2034,6 @@ Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgele
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner als der Wert für die Inaktivitätsverzögerung sein.</translation>
 <translation id="891435090623616439">Als JSON-String codiert, weitere Informationen unter <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Gerätestandort melden</translation>
-<translation id="89493502583189945">Hiermit werden die Parameter angegeben, die beim Starten von <ph name="PRODUCT_NAME" /> angewendet werden sollen. Diese gelten bereits vor dem eigentlichen Starten von <ph name="PRODUCT_NAME" />, also auch auf dem Anmeldebildschirm.</translation>
 <translation id="8951350807133946005">Datenträger-Cache-Verzeichnis festlegen</translation>
 <translation id="8955719471735800169">Zurück nach oben</translation>
 <translation id="8960850473856121830">Muster in dieser Liste werden mit der Sicherheitsherkunft

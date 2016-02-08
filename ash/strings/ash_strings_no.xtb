@@ -114,7 +114,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Kjære skjerm, det går ikke så bra mellom oss. (Skjermen støttes ikke)</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4527045527269911712">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til.</translation>
@@ -183,7 +182,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Nå er Bluetooth-enheten «<ph name="DEVICE_NAME" />» koblet til og tilgjengelig for alle brukere. Du kan oppheve denne tilkoblingen via Innstillinger.</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
-<translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="683971173229319003">Søk+L</translation>
 <translation id="68610848741840742">ChromeVox (muntlig tilbakemelding)</translation>
 <translation id="6911468394164995108">Koble til annet</translation>

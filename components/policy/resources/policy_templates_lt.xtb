@@ -2325,7 +2325,6 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
           Politikos vertė turėtų būti nurodoma milisekundėmis. Vertės sumažinamos, kad neviršytų neveikos delsos laiko.</translation>
 <translation id="891435090623616439">koduojama JSON eilute, daugiau informacijos pateikiama apsilankius adresu <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Pranešti įrenginio vietą</translation>
-<translation id="89493502583189945">Nurodomos žymos, kurios turėtų būti pritaikytos, kai paleidžiama „<ph name="PRODUCT_NAME" />“. Nurodytos žymos pritaikomos iki „<ph name="PRODUCT_NAME" />“ paleidimo (net ir prisijungimo) ekrane.</translation>
 <translation id="8951350807133946005">Nustatyti disko talpyklos katalogą</translation>
 <translation id="8955719471735800169">Į pradžią</translation>
 <translation id="8960850473856121830">Šiame sąraše pateikti šablonai bus palyginti su užklausą pateikusio

@@ -42,6 +42,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1477626028522505441">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui palvelinongelman vuoksi.</translation>
 <translation id="1506061864768559482">Hakukone</translation>
 <translation id="1513352483775369820">Kirjanmerkit ja verkkohistoria</translation>
+<translation id="1546112724822176246">Etkö näe laitettasi? <ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Päivitä Chrome</translation>
 <translation id="1557201757634521564">Havaitse merkistökoodaus automaattisesti</translation>
 <translation id="1568822834048182062">Kirjanmerkkisi, historiasi, salasanasi ja muut asetukset synkronoidaan Google-tilillesi.</translation>
@@ -213,9 +214,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> kirjanmerkki tallennettu offline-tilassa</translation>
 <translation id="423410644998903704">Chrome tarvitsee käyttöoikeuksien käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
-<translation id="424696723690217687">Löydä lähellä olevien kohteiden lähettämiä verkkosivuja.
-
-Kun laitteesi lukitus avataan, Chrome etsii lähistöllä olevia sivuja. Google käsittelee sivut palvelussaan parantaakseen tuloksien laatua.</translation>
 <translation id="4254813446494774748">Käännöksen kieli:</translation>
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="6108923351542677676">Synkronointia valmistellaan…</translation>
 <translation id="6112702117600201073">Sivun päivittäminen</translation>
 <translation id="6127379762771434464">Kohde poistettu</translation>
+<translation id="6134870457258083164">Etkö näe laitettasi? <ph name="BEGIN_LINK1" />Tutustu ohjeisiin<ph name="END_LINK1" /> tai <ph name="BEGIN_LINK2" />hae uudelleen<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Tee sivusta mobiililaitteisiin sopiva</translation>
 <translation id="6140912465461743537">Maa/alue</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> vähemmän tiedonsiirtoa</translation>
@@ -459,6 +458,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7180611975245234373">Päivitä</translation>
 <translation id="7191430249889272776">Välilehti avattiin taustalla.</translation>
 <translation id="7208788139759694678">Data Saver on poistettu käytöstä.</translation>
+<translation id="721331389620694978">Kaikkia selaustapoihin mahdollisesti viittaavia asetuksia ei poisteta.</translation>
 <translation id="7243308994586599757">Asetukset löytyvät näytön alalaidasta.</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> käyttää sijaintiasi paikallisten hakutulosten näyttämiseen.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ohjeita<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 
 Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisältö.</translation>
 <translation id="8660471606262461360">Google Paymentsista</translation>
-<translation id="8675945939500569406">Otetaanko Fyysinen web käyttöön?</translation>
 <translation id="8676374126336081632">Tyhjennä teksti</translation>
 <translation id="869891660844655955">Vanhenemispäivämäärä</translation>
 <translation id="8699799819461268362">Google SafeSites -suodatin</translation>
 <translation id="8701537995684343047">Tallenna kirjanmerkki offline-tilassa siirtymällä sivulle.</translation>
 <translation id="8719023831149562936">Nykyistä välilehteä ei voi jakaa</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
-<translation id="8727142376512517020">Älä näytä tätä uudelleen.</translation>
 <translation id="8730621377337864115">Valmis</translation>
 <translation id="8737542153238017984">Tallennettu sivu ei ole käytettävissä offline-tilassa. Tallennustila on lähes täysi.</translation>
 <translation id="8793430725658173476">Kopioi URL-osoite</translation>

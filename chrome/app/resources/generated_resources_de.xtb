@@ -603,6 +603,7 @@
 <translation id="1864111464094315414">Anmeldung</translation>
 <translation id="1864676585353837027">Angeben, wie die Dateien geteilt werden sollen</translation>
 <translation id="1864756863218646478">Die Datei wurde nicht gefunden.</translation>
+<translation id="1865769994591826607">Nur bei Verbindungen zur gleichen Website</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" kann Bilder, Video- und Sounddateien an den geprüften Orten lesen und schreiben.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> ist zum Abschließen der Installation bereit.</translation>
 <translation id="1873879463550486830">SUID-Sandbox</translation>
@@ -1191,6 +1192,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2743387203779672305">In Zwischenablage kopieren</translation>
 <translation id="2744221223678373668">Freigegeben</translation>
 <translation id="2745080116229976798">Microsoft - Qualifizierte Unterordnung</translation>
+<translation id="2745576239403924641">Verwendung von Android-Apps auf Ihrem Chromebook aktivieren.</translation>
 <translation id="2747990718031257077">Aktivierung des neuen Designs für die Erweiterungssymbolleiste (in Entwicklung)</translation>
 <translation id="2749756011735116528">In <ph name="PRODUCT_NAME" /> anmelden</translation>
 <translation id="2749881179542288782">Grammatik zusammen mit Rechtschreibung prüfen</translation>
@@ -1404,6 +1406,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3011284594919057757">Über Flash</translation>
 <translation id="3011362742078013760">Alle Lesezeichen in &amp;Inkognito-Fenster öffnen</translation>
 <translation id="3012631534724231212">(Iframe)</translation>
+<translation id="3012804260437125868">Nur bei sicheren Verbindungen zur gleichen Website</translation>
 <translation id="3012890944909934180">Chrome auf dem Desktop neu starten</translation>
 <translation id="3012917896646559015">Wenden Sie sich bitte umgehend an Ihren Hardware-Hersteller, um Ihren Computer an eine Reparaturwerkstatt zu senden.</translation>
 <translation id="3015992588037997514">Erscheint dieser Code auf Ihrem Chromebox-Bildschirm?</translation>
@@ -1637,6 +1640,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="331752765902890099">Schaltfläche für <ph name="PROFILE_NAME" />: Anmeldefehler</translation>
 <translation id="3319048459796106952">Neues &amp;Inkognito-Fenster</translation>
 <translation id="331915893283195714">Allen Websites erlauben, den Mauszeiger zu deaktivieren</translation>
+<translation id="3319364804843246307">Android-Apps</translation>
 <translation id="3320859581025497771">Ihr Mobilfunkanbieter</translation>
 <translation id="3323235640813116393">Bei Aktivierung werden Seiten als MHTML gespeichert: eine einzelne Textdatei mit HTML und allen Unterressourcen.</translation>
 <translation id="3323447499041942178">Textfeld</translation>
@@ -1741,6 +1745,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Klicken Sie zum Abspielen von <ph name="PLUGIN_NAME" /> mit der rechten Maustaste.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> weiterhin Zugriff auf Kamera und Mikrofon gestatten</translation>
 <translation id="3478315065074101056">XPS aktiviert erweiterte Optionen für klassische Drucker, die über Chrome mit Google Cloud Print verbunden sind. Drucker müssen nach Änderung dieses Attributs wieder neu verbunden werden.</translation>
+<translation id="3479539252931486093">Geschah dies unerwartet? <ph name="BEGIN_LINK" />Informieren Sie uns<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3480892288821151001">Fenster links verankern</translation>
 <translation id="3481915276125965083">Die folgenden Pop-ups wurden auf dieser Seite blockiert:</translation>
@@ -2712,6 +2717,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4941246025622441835">Diese Geräteanforderung beim Registrieren des Geräts für die Unternehmensverwaltung verwenden:</translation>
 <translation id="4942394808693235155">Updates suchen und installieren</translation>
 <translation id="494286511941020793">Proxy-Konfigurationshilfe</translation>
+<translation id="4945378551914476156">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie mit Chrome überall nutzen können. Sie können diese Einstellung unter dem folgenden Link ändern: <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Optionen...</translation>
 <translation id="4952186391360931024">Non-Material</translation>
 <translation id="4954544650880561668">Gerätesteuerung</translation>
@@ -2844,7 +2850,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
    <ph name="LINE_BREAKS" />
    Wenn Sie Ihr Gerät entfernen, während es verwendet wird, können Daten verloren gehen. Warten Sie, bis der Vorgang abgeschlossen ist, und werfen Sie das Gerät dann über die App "Dateien" aus.</translation>
 <translation id="5159488553889181171"><ph name="PLUGIN_NAME" />-Download wurde abgebrochen.</translation>
-<translation id="5159628598068481063">Weiterleitungseinstellung der Windows-Desktopsuche</translation>
 <translation id="5160857336552977725">Auf Ihrem <ph name="DEVICE_TYPE" /> anmelden</translation>
 <translation id="5163869187418756376">Fehler bei der Freigabe. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es später erneut.</translation>
 <translation id="516592729076796170">USA – Programmer Dvorak</translation>
@@ -3212,7 +3217,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Ihre Daten auf <ph name="WEBSITE_1" /> lesen</translation>
 <translation id="5680928275846978395">Textfilterung im Übersichtsmodus</translation>
-<translation id="568428328938709143">Konto entfernt</translation>
 <translation id="5684661240348539843">Geräte-ID</translation>
 <translation id="569068482611873351">Importieren...</translation>
 <translation id="56907980372820799">Daten verknüpfen</translation>
@@ -3452,6 +3456,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="604001903249547235">Cloud-Sicherung</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="604124094241169006">Automatisch</translation>
+<translation id="6042308850641462728">Mehr</translation>
 <translation id="604257181445267932">Über Smart Lock können Sie sich mit Passwörtern, die Sie bei Google gespeichert haben, schnell in Apps und Websites anmelden.</translation>
 <translation id="6049065490165456785">Foto von interner Kamera</translation>
 <translation id="6051028581720248124">Durch das Drucken über FedEx Office akzeptieren Sie deren <ph name="START_LINK" />Nutzungsbedingungen<ph name="END_LINK" />.</translation>
@@ -3483,7 +3488,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6089481419520884864">Seite konvertieren</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Aktualisierung wird abgebrochen...</translation>
-<translation id="6095149522260432647">Mit dieser Einstellung werden Anfragen in der Windows-Desktopsuche an die standardmäßig eingerichtete Suchmaschine umgeleitet.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Maximiert öffnen</translation>
 <translation id="6096326118418049043">X.500-Name</translation>
@@ -4666,6 +4670,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7926906273904422255">Nicht sicheren Ursprung als nicht sicher oder als "zweifelhaft" markieren</translation>
 <translation id="7928710562641958568">Gerät auswerfen</translation>
 <translation id="7938594894617528435">Derzeit offline</translation>
+<translation id="7939374455203157513">Clouddienste aktivieren</translation>
 <translation id="7939412583708276221">Trotzdem beibehalten</translation>
 <translation id="7939997691108949385">Der Manager kann unter <ph name="MANAGEMENT_URL" /> Beschränkungen und Einstellungen für diesen betreuten Nutzer konfigurieren.</translation>
 <translation id="7943385054491506837">USA – Colemak</translation>
@@ -5216,6 +5221,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="872537912056138402">Kroatisch</translation>
 <translation id="8726206820263995930">Fehler beim Übertragen von Richtlinieneinstellungen vom Server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Erweiterungsoptionen als eingebettetes Element unter "chrome://extensions" anzeigen, statt einen neuen Tab zu öffnen</translation>
+<translation id="8727142376512517020">Nicht mehr anzeigen</translation>
 <translation id="8728672262656704056">Sie haben den Inkognitomodus aktiviert</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8731332457891046104">Registrierung von <ph name="DEVICE_TYPE" /> aufheben</translation>
@@ -5378,7 +5384,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8986362086234534611">Entfernen</translation>
 <translation id="8986494364107987395">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
 <translation id="8987927404178983737">Monat</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Basis-URL für Netscape-Zertifikate</translation>
 <translation id="8994845581478641365">Generator für den DirectWrite-Schriftartencache</translation>
 <translation id="8995603266996330174">Verwaltet von <ph name="DOMAIN" /></translation>

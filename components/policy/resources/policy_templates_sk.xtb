@@ -2292,7 +2292,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie ako oneskorenie režimu nečinnosti.</translation>
 <translation id="891435090623616439">kódované ako reťazec JSON, podrobnosti nájdete na adrese <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Nahlasovať polohu zariadenia</translation>
-<translation id="89493502583189945">Určuje príznaky, ktoré sa použijú pri spúšťaní prehliadača <ph name="PRODUCT_NAME" />. Určené príznaky sa pred spustením prehliadača <ph name="PRODUCT_NAME" /> použijú aj na prihlasovacej obrazovke.</translation>
 <translation id="8951350807133946005">Nastaviť adresár diskovej vyrovnávacej pamäte</translation>
 <translation id="8955719471735800169">Späť na začiatok</translation>
 <translation id="8960850473856121830">Vzory v tomto zozname sa porovnajú s pôvodom

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1015255576907412255">Obratite se administratoru sustava za više informacija.</translation>
+<translation id="1015730422737071372">Navedite dodatne pojedinosti</translation>
 <translation id="1032854598605920125">Zakretanje u smjeru kazaljke na satu</translation>
 <translation id="1055184225775184556">&amp;Poništi dodavanje</translation>
 <translation id="1064422015032085147">Poslužitelj web-stranice možda je preopterećen ili je u tijeku održavanje.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Preuzimanje nije uspjelo</translation>
 <translation id="6644283850729428850">Ovo je pravilo zastarjelo.</translation>
 <translation id="6646897916597483132">Unesite četveroznamenkasti CVC s prednje strane kartice</translation>
+<translation id="6660210980321319655">Automatski prijavljeno <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Želite li ukloniti prijedlog iz Chromiuma?</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="6711464428925977395">Nešto nije u redu s proxy poslužiteljem ili adresa nije točna.</translation>
@@ -633,6 +635,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8971063699422889582">Istekao je certifikat poslužitelja.</translation>
 <translation id="8987927404178983737">Mjesec</translation>
 <translation id="8988760548304185580">Unesite datum isteka i troznamenkasti CVC s poleđine kartice</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Loš certifikat SSL klijentske provjere autentičnosti.</translation>
 <translation id="901974403500617787">Oznake koje se primjenjuju na razini sustava može postaviti samo vlasnik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Web-poslužitelj uskratio je vezu.</translation>

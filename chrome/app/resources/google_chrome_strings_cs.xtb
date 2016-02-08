@@ -55,7 +55,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2397416548179033562">Zobrazit nabídku Chrome</translation>
 <translation id="2429317896000329049">Google Chrome nemohl synchronizovat vaše data, protože Synchronizace ve vaší doméně není k dispozici.</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
-<translation id="2576431527583832481">Chrome je opět o něco lepší. K dispozici je nová verze.</translation>
 <translation id="2580411288591421699">Nelze nainstalovat verzi aplikace Google Chrome, která je právě spuštěná. Ukončete aplikaci Google Chrome a opakujte akci.</translation>
 <translation id="2582790009689336987">Google Chrome se v tomto počítači již brzy přestane aktualizovat, protože tento systém Linux již nebude podporován.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
@@ -115,7 +114,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="4633000520311261472">Aby byl Chrome bezpečnější, deaktivovali jsme některá rozšíření, která nejsou uvedena na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohla být přidána bez vašeho vědomí.</translation>
 <translation id="4700157086864140907">Google Chrome může poskytovat lepší kontrolu pravopisu tím, že text zadaný do prohlížeče odešle na servery Google. Umožňuje vám tak používat stejnou technologii kontroly pravopisu, jakou používá Vyhledávání Google.</translation>
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
-<translation id="473775607612524610">Aktualizovat</translation>
 <translation id="4743926867934016338">Přijmout a vyhledat</translation>
 <translation id="4751441238232965030">Tento počítač brzy přestane dostávat aktualizace pro 32bitovou verzi prohlížeče Google Chrome. Nainstalujte prosím 64bitovou verzi Chromu.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

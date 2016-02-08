@@ -606,6 +606,7 @@
 <translation id="1864111464094315414">Aanmelden</translation>
 <translation id="1864676585353837027">Wijzig de manier waarop deze bestanden worden gedeeld</translation>
 <translation id="1864756863218646478">Het bestand kan niet worden gevonden.</translation>
+<translation id="1865769994591826607">Alleen verbindingen binnen dezelfde site</translation>
 <translation id="186612162884103683">'<ph name="EXTENSION" />' kan afbeeldingen, video- en geluidsbestanden lezen en schrijven op de gecontroleerde locaties.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is gereed voor het voltooien van je installatie.</translation>
 <translation id="1873879463550486830">SUID-sandbox</translation>
@@ -1196,6 +1197,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2743387203779672305">Kopiëren naar klembord</translation>
 <translation id="2744221223678373668">Gedeeld</translation>
 <translation id="2745080116229976798">Gekwalificeerde ondergeschiktheid van Microsoft</translation>
+<translation id="2745576239403924641">Android-apps inschakelen om uit te voeren op je Chromebook.</translation>
 <translation id="2747990718031257077">Schakelt het nieuwe ontwerp van de extensiewerkbalk (in ontwikkeling) in.</translation>
 <translation id="2749756011735116528">Inloggen op <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Controleer grammatica met spelling</translation>
@@ -1409,6 +1411,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3011284594919057757">Over Flash</translation>
 <translation id="3011362742078013760">Alle bladwijzers openen in &amp;incognitovenster</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">Alleen beveiligde verbindingen binnen dezelfde site</translation>
 <translation id="3012890944909934180">Chrome opnieuw openen op het bureaublad</translation>
 <translation id="3012917896646559015">Neem onmiddellijk contact op met je hardwarefabrikant om je computer op te sturen voor reparatie.</translation>
 <translation id="3015992588037997514">Wordt deze code weergegeven op het scherm van je Chromebox?</translation>
@@ -1642,6 +1645,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="331752765902890099">Knop <ph name="PROFILE_NAME" />: inlogfout</translation>
 <translation id="3319048459796106952">Nieuw &amp;incognitovenster</translation>
 <translation id="331915893283195714">Alle sites toestaan de muisaanwijzer uit te schakelen</translation>
+<translation id="3319364804843246307">Android-apps</translation>
 <translation id="3320859581025497771">je provider</translation>
 <translation id="3323235640813116393">Schakelt het opslaan van pagina's als MHTML uit: één tekstbestand dat HTML en alle subbronnen bevat.</translation>
 <translation id="3323447499041942178">Tekstvak</translation>
@@ -1746,6 +1750,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Klik met de rechtermuisknop om <ph name="PLUGIN_NAME" /> af te spelen.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> toegang blijven geven tot je camera en microfoon</translation>
 <translation id="3478315065074101056">XPS schakelt geavanceerde opties in voor klassieke printers die via Chrome zijn gekoppeld aan Cloudprinter. Printers moeten opnieuw worden gekoppeld nadat deze markering is gewijzigd.</translation>
+<translation id="3479539252931486093">Wat dit onverwacht? <ph name="BEGIN_LINK" />Laat het ons weten<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="3480892288821151001">Venster links koppelen</translation>
 <translation id="3481915276125965083">De volgende pop-ups zijn op deze pagina geblokkeerd:</translation>
@@ -2719,6 +2724,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4941246025622441835">Gebruik deze apparaataanvraag wanneer het apparaat wordt geactiveerd voor bedrijfsbeheer:</translation>
 <translation id="4942394808693235155">Controleren op updates en deze uitvoeren</translation>
 <translation id="494286511941020793">Ondersteuning voor proxyconfiguratie</translation>
+<translation id="4945378551914476156">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden gesynchroniseerd met je Google-account, zodat je ze overal met Chrome kunt gebruiken. Je kunt dit wijzigen in <ph name="BEGIN_LINK" />.</translation>
 <translation id="4950138595962845479">Opties...</translation>
 <translation id="4952186391360931024">Immaterieel</translation>
 <translation id="4954544650880561668">Apparaatbeheer</translation>
@@ -2852,7 +2858,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
    
        Als je je apparaat verwijdert terwijl het wordt gebruikt, raak je mogelijk gegevens kwijt. Wacht totdat de bewerking is voltooid en werp het apparaat vervolgens uit via de app Bestanden.</translation>
 <translation id="5159488553889181171">Download van <ph name="PLUGIN_NAME" /> is geannuleerd.</translation>
-<translation id="5159628598068481063">Voorkeur voor omleiding van Windows-desktopzoekopdrachten</translation>
 <translation id="5160857336552977725">Log in bij je <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Delen mislukt. Controleer de verbinding en probeer het later opnieuw.</translation>
 <translation id="516592729076796170">Amerikaans Programmer Dvorak</translation>
@@ -3220,7 +3225,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="567881659373499783">Versie <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Je gegevens voor <ph name="WEBSITE_1" /> lezen</translation>
 <translation id="5680928275846978395">Tekst filteren in Overzichtsmodus</translation>
-<translation id="568428328938709143">Account verwijderd</translation>
 <translation id="5684661240348539843">Item-ID</translation>
 <translation id="569068482611873351">Importeren...</translation>
 <translation id="56907980372820799">Gegevens koppelen</translation>
@@ -3462,6 +3466,7 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="604001903249547235">Cloudback-up</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="604124094241169006">Automatisch</translation>
+<translation id="6042308850641462728">Meer</translation>
 <translation id="604257181445267932">Met Smart Lock kun je snel inloggen bij apps en op sites met de wachtwoorden die je hebt opgeslagen via Google.</translation>
 <translation id="6049065490165456785">Foto via interne camera</translation>
 <translation id="6051028581720248124">Je gaat akkoord met de <ph name="START_LINK" />gebruiksvoorwaarden<ph name="END_LINK" /> door af te drukken naar FedEx Office.</translation>
@@ -3493,7 +3498,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="6089481419520884864">Pagina omzetten</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Update annuleren...</translation>
-<translation id="6095149522260432647">Schakelt een voorkeur in waarmee Windows-desktopzoekopdrachten kunnen worden omgeleid naar de standaardzoekmachine.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Gemaximaliseerd openen</translation>
 <translation id="6096326118418049043">X.500-naam</translation>
@@ -4677,6 +4681,7 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="7926906273904422255">Niet-beveiligde beginpunten markeren als niet-veilig of 'verdacht'.</translation>
 <translation id="7928710562641958568">Apparaat uitwerpen</translation>
 <translation id="7938594894617528435">Op dit moment offline</translation>
+<translation id="7939374455203157513">Cloudservices inschakelen</translation>
 <translation id="7939412583708276221">Toch bewaren</translation>
 <translation id="7939997691108949385">De beheerder kan de beperkingen en instellingen voor deze gebruiker met beperkte rechten configureren op <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Amerikaans Colemak</translation>
@@ -5229,6 +5234,7 @@ Tijd berekenen tot vol</translation>
 <translation id="872537912056138402">Kroatisch</translation>
 <translation id="8726206820263995930">Fout bij het ophalen van beleidsinstellingen van de server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Geef extensie-opties weer als een ingesloten element in chrome://extensions in plaats van een nieuw tabblad te openen.</translation>
+<translation id="8727142376512517020">Dit bericht niet meer weergeven</translation>
 <translation id="8728672262656704056">Je bent incognito</translation>
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="8731332457891046104"><ph name="DEVICE_TYPE" /> uitschrijven</translation>
@@ -5390,9 +5396,8 @@ Tijd berekenen tot vol</translation>
 <translation id="8982248110486356984">Gebruikers wijzigen</translation>
 <translation id="8986267729801483565">Downloadlocatie:</translation>
 <translation id="8986362086234534611">Vergeten</translation>
-<translation id="8986494364107987395">Automatisch gebruiksstatistieken en crashmeldingen naar Google verzenden</translation>
+<translation id="8986494364107987395">Automatisch gebruiksstatistieken en crashrapporten naar Google verzenden</translation>
 <translation id="8987927404178983737">Maand</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Basis-URL voor Netscape-certificaat</translation>
 <translation id="8994845581478641365">DirectWrite Font Cache Builder</translation>
 <translation id="8995603266996330174">Beheerd door <ph name="DOMAIN" /></translation>

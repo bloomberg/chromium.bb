@@ -55,7 +55,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2397416548179033562">Show Chrome menu</translation>
 <translation id="2429317896000329049">Google Chrome could not sync your data because Sync is not available for your domain.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
-<translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="2582790009689336987">This computer will soon stop receiving Google Chrome updates because this Linux system will no longer be supported.</translation>
 <translation id="2588322182880276190">Chrome logo</translation>
@@ -115,7 +114,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="4700157086864140907">Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
-<translation id="473775607612524610">Update</translation>
 <translation id="4743926867934016338">Accept &amp; Search</translation>
 <translation id="4751441238232965030">This computer will soon stop receiving 32-bit Google Chrome updates. Please upgrade to 64-bit Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

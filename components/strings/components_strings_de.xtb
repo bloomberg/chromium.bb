@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1015255576907412255">Um weitere Informationen zu erhalten, wenden Sie sich an Ihren Systemadministrator.</translation>
+<translation id="1015730422737071372">Weitere Details angeben</translation>
 <translation id="1032854598605920125">Im Uhrzeigersinn drehen</translation>
 <translation id="1055184225775184556">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="1064422015032085147">Der Server, auf dem die Webseite gehostet wird, ist möglicherweise überlastet
@@ -438,6 +439,7 @@
 <translation id="6637478299472506933">Fehler beim Download</translation>
 <translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
 <translation id="6646897916597483132">Geben Sie den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
+<translation id="6660210980321319655">Automatische Meldung zu folgendem Zeitpunkt: <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Vorschlag für das Formular aus Chromium entfernen?</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6711464428925977395">Mit dem Proxyserver ist ein Problem aufgetreten oder die Adresse ist falsch.</translation>
@@ -634,6 +636,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8987927404178983737">Monat</translation>
 <translation id="8988760548304185580">Geben Sie das Ablaufdatum und den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Ungültiges Zertifikat für SSL-Clientauthentifizierung</translation>
 <translation id="901974403500617787">Parameter, die systemweit gelten, können nur vom Eigentümer festgelegt werden: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Server hat die Verbindung abgelehnt.</translation>

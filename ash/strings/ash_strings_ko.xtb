@@ -113,7 +113,6 @@
 <translation id="4250680216510889253">아니요</translation>
 <translation id="4279490309300973883">미러링</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">확장 데스크톱에 어울리지 않는 모니터네요. (지원되지 않는 모니터입니다.)</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4527045527269911712">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다.</translation>
@@ -182,7 +181,6 @@
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">블루투스 기기 '<ph name="DEVICE_NAME" />'이(가) 페어링되어 이제 모든 사용자가 사용할 수 있습니다. 설정에서 이 페어링을 삭제할 수 있습니다.</translation>
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE" />% 충전되었으며 충전 중입니다.</translation>
-<translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox(음성 피드백)</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>

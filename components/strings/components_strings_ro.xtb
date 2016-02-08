@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1015255576907412255">Contactați administratorul de sistem pentru mai multe informații.</translation>
+<translation id="1015730422737071372">Specifică detalii suplimentare</translation>
 <translation id="1032854598605920125">Rotește în sensul acelor de ceasornic</translation>
 <translation id="1055184225775184556">&amp;Anulați adăugarea</translation>
 <translation id="1064422015032085147">Serverul care găzduiește pagina web poate fi supraîncărcat sau în curs de întreținere.
@@ -83,7 +84,7 @@
 <translation id="1958820272620550857">Blocați elementele</translation>
 <translation id="1962204205936693436">Marcaje <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Eroare de serializare</translation>
-<translation id="1974060860693918893">Avansat</translation>
+<translation id="1974060860693918893">Avansate</translation>
 <translation id="201192063813189384">Eroare la citirea datelor din memoria cache.</translation>
 <translation id="2025186561304664664">Proxy-ul este setat la Configurat automat.</translation>
 <translation id="2025623846716345241">Confirmați reîncărcarea</translation>
@@ -436,6 +437,7 @@
 <translation id="6637478299472506933">Descărc. nu a reușit</translation>
 <translation id="6644283850729428850">Această politică este învechită.</translation>
 <translation id="6646897916597483132">Introdu codul CVC alcătuit din 4 cifre înscris pe fața a cardului</translation>
+<translation id="6660210980321319655">Raportată automat <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Elimini sugestia pentru formular din Chromium?</translation>
 <translation id="6710213216561001401">Înapoi</translation>
 <translation id="6711464428925977395">A apărut o problemă la serverul proxy sau adresa nu este corectă.</translation>
@@ -631,6 +633,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
 <translation id="8987927404178983737">Lună</translation>
 <translation id="8988760548304185580">Introdu data de expirare și codul CVC alcătuit din 3 cifre înscris pe spatele cardului</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Certificat de autentificare client SSL nevalid.</translation>
 <translation id="901974403500617787">Marcajele care se aplică la nivel de sistem pot fi create numai de proprietar: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Serverul a refuzat conexiunea.</translation>

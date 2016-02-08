@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="1015255576907412255">Контактирајте администратора система за више информација.</translation>
+<translation id="1015730422737071372">Наведите додатне детаље</translation>
 <translation id="1032854598605920125">Окрените у смеру казаљке на сату</translation>
 <translation id="1055184225775184556">&amp;Опозови додавање</translation>
 <translation id="1064422015032085147">Сервер на ком се хостује веб-страница је вероватно преоптерећен или се поправља.
@@ -434,6 +435,7 @@
 <translation id="6637478299472506933">Преузимање није успело</translation>
 <translation id="6644283850729428850">Ове смернице су застареле.</translation>
 <translation id="6646897916597483132">Унесите четвороцифрени CVC који се налази на предњој страни картице</translation>
+<translation id="6660210980321319655">Аутоматски пријављено <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Желите ли да уклоните предлог из Chromium-а?</translation>
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="6711464428925977395">Нешто није у реду са прокси сервером или је адреса нетачна.</translation>
@@ -622,6 +624,7 @@
 <translation id="8971063699422889582">Сертификат сервера је истекао.</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="8988760548304185580">Унесите датум истека и троцифрени CVC који се налази на полеђини картице</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Неисправaн сертификат за потврду идентитета SSL клијента.</translation>
 <translation id="901974403500617787">Ознаке које се примењују у целом систему може да подеси само власник: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Сервер је одбио повезивање.</translation>

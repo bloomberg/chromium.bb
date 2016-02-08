@@ -607,6 +607,7 @@
 <translation id="1864111464094315414">تسجيل الدخول</translation>
 <translation id="1864676585353837027">تغيير كيفية مشاركة هذه الملفات</translation>
 <translation id="1864756863218646478">تعذر العثور على الملف.</translation>
+<translation id="1865769994591826607">اتصالات من نفس الموقع فقط</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" يمكنها قراءة ملفات الصور والفيديو والصوت وكتابتها في المواقع المحددة.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> جاهز لإكمال عملية التثبيت</translation>
 <translation id="1873879463550486830">‏صندوق حماية SUID</translation>
@@ -1195,6 +1196,7 @@
 <translation id="2743387203779672305">نسخ إلى الحافظة</translation>
 <translation id="2744221223678373668">مشتركة</translation>
 <translation id="2745080116229976798">‏إخضاع مؤهل لـ Microsoft</translation>
+<translation id="2745576239403924641">‏تمكين تشغيل تطبيقات Android على جهاز Chromebook</translation>
 <translation id="2747990718031257077">تمكين تصميم شريط أدوات الإضافة الجديدة (قيد التطوير).</translation>
 <translation id="2749756011735116528">تسجيل الدخول إلى <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">تحقق من التدقيق النحوي مع التدقيق الإملائي</translation>
@@ -1408,6 +1410,7 @@
 <translation id="3011284594919057757">‏حول Flash</translation>
 <translation id="3011362742078013760">فتح كل الإشارات المرجعية &amp;في نافذة التصفح المتخفي</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">الاتصالات الآمنة من نفس الموقع فقط</translation>
 <translation id="3012890944909934180">‏إعادة تشغيل Chrome على سطح المكتب</translation>
 <translation id="3012917896646559015">الرجاء الاتصال بجهة تصنيع الجهاز على الفور لإرسال جهاز الكمبيوتر إلى أحد مرافق الإصلاح.</translation>
 <translation id="3015992588037997514">‏هل يظهر هذا الرمز على شاشة Chromebox؟</translation>
@@ -1638,6 +1641,7 @@
 <translation id="331752765902890099">زر <ph name="PROFILE_NAME" />:  خطأ في تسجيل الدخول</translation>
 <translation id="3319048459796106952">نافذة &amp; جديدة للتصفح المتخفي</translation>
 <translation id="331915893283195714">السماح لجميع المواقع بتعطيل مؤشر الماوس</translation>
+<translation id="3319364804843246307">‏تطبيقات Android</translation>
 <translation id="3320859581025497771">شركة الاتصالات</translation>
 <translation id="3323235640813116393">‏يُمكِّن من حفظ الصفحات بصيغة MHTML: ملف نصي واحد يحتوي على HTML وجميع الموارد الفرعية.</translation>
 <translation id="3323447499041942178">مربع نص</translation>
@@ -1742,6 +1746,7 @@
 <translation id="347719495489420368">انقر بزر الماوس الأيمن لتشغيل <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">مواصلة إتاحة دخول <ph name="HOST" /> إلى الكاميرا والميكروفون التابعين لك</translation>
 <translation id="3478315065074101056">‏تمكّن نقاط الخبرة الخيارات المتقدمة للطابعات الكلاسيكية المرتبطة بـ Cloud Print مع Chrome. تجب إعادة ربط الطابعات بعد تغيير هذه العلامة.</translation>
+<translation id="3479539252931486093">ألم تتوقَّع هذا؟ <ph name="BEGIN_LINK" />أطلِعنا على الأمر<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="3480892288821151001">إرساء النافذة لليسار</translation>
 <translation id="3481915276125965083">تم منع عرض النوافذ المنبثقة التالية في هذه الصفحة:</translation>
@@ -2712,6 +2717,7 @@
 <translation id="4941246025622441835">استخدام طلب الجهاز عند تسجيل الجهاز في إدارة المؤسسات:</translation>
 <translation id="4942394808693235155">تحقق من وجود التحديثات وتطبيقها</translation>
 <translation id="494286511941020793">مساعدة تهيئة الخادم الوكيل</translation>
+<translation id="4945378551914476156">‏ستتلقَى الإشارات المرجعية والسجل وكلمات المرور والإعدادات الأخرى المزامنة مع حسابك في Google حتى يتسنَّى لك استخدامها مع Chrome. يمكنك تغيير هذا في <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">خيارات...</translation>
 <translation id="4952186391360931024">غير متعدد الأبعاد</translation>
 <translation id="4954544650880561668">التحكم في الجهاز</translation>
@@ -2845,7 +2851,6 @@
    <ph name="LINE_BREAKS" />
    قد تؤدي إزالة جهازك أثناء وجوده قيد الاستخدام إلى فقدان البيانات.  الرجاء الانتظار حتى انتهاء العملية، ثم إخراج الجهاز باستخدام تطبيق الملفات.</translation>
 <translation id="5159488553889181171">تم إلغاء تنزيل <ph name="PLUGIN_NAME" />.</translation>
-<translation id="5159628598068481063">‏تفضيل إعادة توجيه بحث سطح مكتب Windows</translation>
 <translation id="5160857336552977725">سجّل الدخول إلى <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">أخفقت المشاركة. تحقق من اتصالك وأعد المحاولة لاحقًا.</translation>
 <translation id="516592729076796170">‏لوحة مفاتيح المطور الأمريكية Dvorak</translation>
@@ -3213,7 +3218,6 @@
 <translation id="567881659373499783">الإصدار <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">قراءة بياناتك على <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">تصفية النص في وضع نظرة عامة</translation>
-<translation id="568428328938709143">تمت إزالة الحساب</translation>
 <translation id="5684661240348539843">معرّف الأصول</translation>
 <translation id="569068482611873351">استيراد...</translation>
 <translation id="56907980372820799">ربط البيانات</translation>
@@ -3453,6 +3457,7 @@
 <translation id="604001903249547235">النسخ الاحتياطي عبر السحاب.</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="604124094241169006">تلقائي</translation>
+<translation id="6042308850641462728">المزيد</translation>
 <translation id="604257181445267932">‏يساعدك Smart Lock على تسجيل الدخول بسرعة إلى التطبيقات والمواقع باستخدام كلمات المرور التي حفظتها مع Google.</translation>
 <translation id="6049065490165456785">صور من الكاميرا الداخلية</translation>
 <translation id="6051028581720248124">‏من خلال الطباعة إلى مكتب FedEx، فإنك توافق على <ph name="START_LINK" />بنود الاستخدام<ph name="END_LINK" /> الخاصة بهم.</translation>
@@ -3484,7 +3489,6 @@
 <translation id="6089481419520884864">صفحة التنقية</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">جارٍ إلغاء التحديث...</translation>
-<translation id="6095149522260432647">‏يمكن تمكين تفضيل يسمح بإعادة توجيه عمليات بحث سطح مكتب Windows إلى محرك البحث الافتراضي.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">فتح في وضع التكبير</translation>
 <translation id="6096326118418049043">‏اسم X.500</translation>
@@ -4669,6 +4673,7 @@
 <translation id="7926906273904422255">وضع علامة على الأصول غير الآمنة كغير آمنة، أو "مشكوك فيها".</translation>
 <translation id="7928710562641958568">إخراج الجهاز</translation>
 <translation id="7938594894617528435">في وضع عدم الاتصال حاليًا</translation>
+<translation id="7939374455203157513">تمكين خدمات السحاب</translation>
 <translation id="7939412583708276221">المتابعة على أية حال</translation>
 <translation id="7939997691108949385">سيتمكن المشرف من تهيئة القيود والإعدادات لهذا المستخدم الذي يخضع للإشراف على <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">‏الأمريكية Colemak</translation>
@@ -5220,6 +5225,7 @@
 <translation id="872537912056138402">الكرواتية</translation>
 <translation id="8726206820263995930">حدث خطأ عند جلب إعدادات السياسة من الخادم: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">‏عرض خيارات الإضافة كعنصر مضمن في chrome://extensions بدلاً من فتح علامة تبويب جديدة.</translation>
+<translation id="8727142376512517020">عدم إظهار ذلك مرة أخرى</translation>
 <translation id="8728672262656704056">لقد انتقلت إلى وضع التصفح المتخفي</translation>
 <translation id="8730621377337864115">تم</translation>
 <translation id="8731332457891046104">إلغاء تسجيل <ph name="DEVICE_TYPE" /></translation>
@@ -5382,7 +5388,6 @@
 <translation id="8986362086234534611">حذف</translation>
 <translation id="8986494364107987395">‏إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="8987927404178983737">شهر</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" />‏ [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">‏عنوان URL الأساسي لشهادة Netscape</translation>
 <translation id="8994845581478641365">‏أداة إنشاء ذاكرة التخزين المؤقت للخطوط DirectWrite</translation>
 <translation id="8995603266996330174">مدار بواسطة <ph name="DOMAIN" /></translation>

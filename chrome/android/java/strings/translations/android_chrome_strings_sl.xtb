@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi težav s strežnikom.</translation>
 <translation id="1506061864768559482">Iskalnik</translation>
 <translation id="1513352483775369820">Zaznamki in spletna zgodovina</translation>
+<translation id="1546112724822176246">Vaša naprava ni prikazana? <ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Posodobi Chrome</translation>
 <translation id="1557201757634521564">Samodejno zaznavanje kodiranja</translation>
 <translation id="1568822834048182062">Vaši zaznamki, zgodovina, gesla in druge nastavitve bodo sinhronizirani z Google Računom.</translation>
@@ -213,9 +214,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
 <translation id="4198229475320555619">Zaznamek velikosti <ph name="PAGE_SIZE_STRING" /> je shranjen za uporabo brez povezave</translation>
 <translation id="423410644998903704">Chrome potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
-<translation id="424696723690217687">Odkrivanje spletnih strani, ki jih pošljejo predmeti v bližini.
-
-Ko je naprava odklenjena, bo Chrome iskal strani v bližini. Te strani bo zaradi izboljšanja kakovosti rezultatov iskanja strani obdelala Googlova storitev.</translation>
 <translation id="4254813446494774748">Jezik prevoda:</translation>
 <translation id="4256782883801055595">Odprtokodne licence</translation>
 <translation id="4259722352634471385">Krmarjenje je blokirano: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6108923351542677676">Poteka nastavitev …</translation>
 <translation id="6112702117600201073">Osveževanje strani</translation>
 <translation id="6127379762771434464">Element odstranjen</translation>
+<translation id="6134870457258083164">Vaša naprava ni prikazana? <ph name="BEGIN_LINK1" />Poiščite pomoč<ph name="END_LINK1" /> ali <ph name="BEGIN_LINK2" />iščite znova<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Prikaži stran v pogledu, prilagojenem mobilnim napravam</translation>
 <translation id="6140912465461743537">Država/regija</translation>
 <translation id="6159335304067198720">Prihranek pri prenosu podatkov: <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7180611975245234373">Osveži</translation>
 <translation id="7191430249889272776">Zavihek se je odprl v ozadju.</translation>
 <translation id="7208788139759694678">Varčevanje s podatki je onemogočeno</translation>
+<translation id="721331389620694978">Nekatere nastavitve, ki morda odražajo brskalne navade, ne bodo izbrisane.</translation>
 <translation id="7243308994586599757">Možnosti so na voljo pri dnu zaslona</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uporablja vašo lokacijo za prikaz lokalnih rezultatov iskanja</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoč<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, brsk
 
 Nove licence dobite tako, da se povežete v internet in predvajate preneseno vsebino.</translation>
 <translation id="8660471606262461360">Iz storitve Google Payments</translation>
-<translation id="8675945939500569406">Želite vklopiti Fizični splet?</translation>
 <translation id="8676374126336081632">Izbriši vnos</translation>
 <translation id="869891660844655955">Datum izteka</translation>
 <translation id="8699799819461268362">Googlov filter SafeSites</translation>
 <translation id="8701537995684343047">Odprite zaznamek, če ga želite shraniti za uporabo brez povezave</translation>
 <translation id="8719023831149562936">Trenutnega zavihka ni mogoče prenesti</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
-<translation id="8727142376512517020">Ne prikaži več tega</translation>
 <translation id="8730621377337864115">Končano</translation>
 <translation id="8737542153238017984">Shranjena stran ni na voljo brez povezave. Shramba je skoraj polna.</translation>
 <translation id="8793430725658173476">Kopiraj URL</translation>

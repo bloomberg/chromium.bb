@@ -113,7 +113,6 @@
 <translation id="4250680216510889253">ні</translation>
 <translation id="4279490309300973883">Дзеркальне відображення</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Прикро, але контакту з монітором немає. (Цей монітор не підтримується)</translation>
 <translation id="4421231901400348175">Спільний доступ до екрана для користувача <ph name="HELPER_NAME" /> через віддалену допомогу.</translation>
 <translation id="4430019312045809116">Гучність</translation>
 <translation id="4527045527269911712">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення.</translation>
@@ -182,7 +181,6 @@
 <translation id="6650933572246256093">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей ключ доступу: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Пристрій Bluetooth "<ph name="DEVICE_NAME" />" підключено. Він доступний для всіх користувачів. Відключити пристрій можна в Налаштуваннях.</translation>
 <translation id="6785414152754474415">Акумулятор заряджений на <ph name="PERCENTAGE" />% і заряджається.</translation>
-<translation id="6803622936009808957">Не вдалося дублювати зображення екранів, оскільки не знайдено підтримувані значення роздільної здатності. Натомість запущено режим розширеного робочого столу.</translation>
 <translation id="683971173229319003">Search (Пошук)+L</translation>
 <translation id="68610848741840742">ChromeVox (голосові підказки)</translation>
 <translation id="6911468394164995108">Під’єднатися до іншої...</translation>

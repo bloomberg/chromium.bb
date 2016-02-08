@@ -112,7 +112,6 @@
 <translation id="4250680216510889253">لا</translation>
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">الشاشة لا تعمل. (هذه الشاشة غير متوافقة)</translation>
 <translation id="4421231901400348175">مشاركة التحكم في شاشتك مع <ph name="HELPER_NAME" /> عن طريق المساعدة عن بُعد.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
 <translation id="4527045527269911712">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران.</translation>
@@ -181,7 +180,6 @@
 <translation id="6650933572246256093">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. الرجاء إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">تم إقران جهاز بلوتوث "<ph name="DEVICE_NAME" />" وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>
-<translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">‏ChromeVox (التعليق المنطوق)</translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>

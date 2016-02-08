@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="1015255576907412255">Lisateabe saamiseks võtke ühendust oma süsteemiadministraatoriga.</translation>
+<translation id="1015730422737071372">Esitage lisateavet</translation>
 <translation id="1032854598605920125">Pööra päripäeva</translation>
 <translation id="1055184225775184556">&amp;Võta lisamine tagasi</translation>
 <translation id="1064422015032085147">Veebilehte hostiv server võib olla üle koormatud või seda hooldatakse.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Allalaadimine nurjus</translation>
 <translation id="6644283850729428850">See reegel on aegunud.</translation>
 <translation id="6646897916597483132">Sisestage 4-kohaline CVC kaardi tagaküljelt</translation>
+<translation id="6660210980321319655">Automaatne teavitamine: <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Kas eemaldada Chromiumist vormi soovitus?</translation>
 <translation id="6710213216561001401">Eelmine</translation>
 <translation id="6711464428925977395">Puhverserveriga on midagi valesti või aadress on vale.</translation>
@@ -633,6 +635,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8971063699422889582">Serveri sertifikaat on aegunud.</translation>
 <translation id="8987927404178983737">kuu</translation>
 <translation id="8988760548304185580">Sisestage aegumiskuupäev ja 3-kohaline CVC kaardi tagaküljelt</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Halb SSL-kliendi autentimise sertifikaat.</translation>
 <translation id="901974403500617787">Kogu süsteemis kehtivaid märgiseid saab määrata ainult omanik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Server keeldus ühendusest.</translation>

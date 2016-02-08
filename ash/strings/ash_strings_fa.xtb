@@ -112,7 +112,6 @@
 <translation id="4250680216510889253">نه</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
 <translation id="4321179778687042513">مهار</translation>
-<translation id="4379753398862151997">نمایشگر عزیز، ما برای هم ساخته نشده‌ایم. (این نمایشگر پشتیبانی نمی‌شود)</translation>
 <translation id="4421231901400348175">به اشتراک گذاشتن کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی از راه دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4527045527269911712">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد.</translation>
@@ -180,7 +179,6 @@
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» مرتبط شده است و اکنون برای همه کاربران در دسترس است. می‌توانید این مرتبط‌سازی را با استفاده از تنظیمات حذف کنید.</translation>
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
-<translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">‏ChromeVox (بازخورد گفتاری)</translation>
 <translation id="6911468394164995108">پیوستن به شبکه دیگر…</translation>

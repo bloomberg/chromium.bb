@@ -42,6 +42,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1477626028522505441">Nepavyko atsisiųsti „<ph name="FILE_NAME" />“ dėl serverio problemų.</translation>
 <translation id="1506061864768559482">Paieškos variklis</translation>
 <translation id="1513352483775369820">Žymių ir žiniatinklio istorija</translation>
+<translation id="1546112724822176246">Nematote įrenginio? <ph name="BEGIN_LINK" />Gaukite pagalbos<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Atnaujinkite „Chrome“</translation>
 <translation id="1557201757634521564">Automatiškai aptikti koduotę</translation>
 <translation id="1568822834048182062">Žymės, istorija, slaptažodžiai ir kiti nustatymai bus sinchronizuojami su „Google“ paskyra.</translation>
@@ -213,9 +214,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> žymė išsaugota naudoti neprisijungus</translation>
 <translation id="423410644998903704">„Chrome“ reikia pasiekiamumo leidimų, kad juos būtų galima bendrinti su šia svetaine.</translation>
-<translation id="424696723690217687">Atraskite tinklalapius, kurios išsiuntė netoliese esantys objektai.
-
-Kai įrenginys bus atrakintas, „Chrome“ nuskaitys netoliese esančių objektų puslapius. Šie puslapiai bus siunčiami naudojant „Google“ paslaugą siekiant patobulinti puslapių rezultatų kokybę.</translation>
 <translation id="4254813446494774748">Vertimo kalba:</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
 <translation id="4259722352634471385">Naršymas užblokuotas: <ph name="URL" /></translation>
@@ -374,6 +372,7 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="6108923351542677676">Nustatoma…</translation>
 <translation id="6112702117600201073">Puslapio atnaujinimas</translation>
 <translation id="6127379762771434464">Elementas pašalintas</translation>
+<translation id="6134870457258083164">Nematote įrenginio? <ph name="BEGIN_LINK1" />Gaukite pagalbos<ph name="END_LINK1" /> arba <ph name="BEGIN_LINK2" />ieškokite dar kartą<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Pritaikykite puslapį mobiliesiems</translation>
 <translation id="6140912465461743537">Šalis / regionas</translation>
 <translation id="6159335304067198720">Sutaupyta duomenų: <ph name="PERCENT" /></translation>
@@ -460,6 +459,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7191430249889272776">Skirtuko lapas atidarytas fone.</translation>
 <translation id="7208788139759694678">Duomenų taupymo priemonė išjungta</translation>
+<translation id="721331389620694978">Kai kurie nustatymai, kurie gali atspindėti naršymo įpročius, nebus išvalyti.</translation>
 <translation id="7243308994586599757">Parinktys pasiekiamos netoli ekrano apačios</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> naudoja vietovės informaciją vietinės paieškos rezultatams rodyti</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pagalba<ph name="END_LINK" /></translation>
@@ -566,14 +566,12 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 
 Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsisiųsti turinį.</translation>
 <translation id="8660471606262461360">Iš „Google Payments“</translation>
-<translation id="8675945939500569406">Įjungti Fizinį žiniatinklį?</translation>
 <translation id="8676374126336081632">Išvalyti įvestą tekstą</translation>
 <translation id="869891660844655955">Galiojimo data</translation>
 <translation id="8699799819461268362">„Google SafeSites“ filtras</translation>
 <translation id="8701537995684343047">Spustelėkite žymę, kad išsaugotumėte neprisijungus naudotiną kopiją</translation>
 <translation id="8719023831149562936">Negalima perduoti esamo skirtuko</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
-<translation id="8727142376512517020">Daugiau nerodyti</translation>
 <translation id="8730621377337864115">Atlikta</translation>
 <translation id="8737542153238017984">Išsaugotas puslapis nepasiekiamas neprisijungus. Saugykla beveik pilna.</translation>
 <translation id="8793430725658173476">Kopijuoti URL</translation>

@@ -42,6 +42,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1477626028522505441">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av serverfel.</translation>
 <translation id="1506061864768559482">Sökmotor</translation>
 <translation id="1513352483775369820">Bokmärken och webbhistorik</translation>
+<translation id="1546112724822176246">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
 <translation id="1557201757634521564">Identifiera teckenkodning automatiskt</translation>
 <translation id="1568822834048182062">Bokmärken, historik, lösenord och andra inställningar synkroniseras till ditt Google-konto.</translation>
@@ -213,9 +214,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4198229475320555619">Ett bokmärke på <ph name="PAGE_SIZE_STRING" /> har sparats offline</translation>
 <translation id="423410644998903704">Chrome behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
-<translation id="424696723690217687">Upptäck webbsidor som har skickats av objekt i närheten.
-
-Chrome söker efter sidor i närheten när enheten är olåst. Sidorna skickas via en tjänst från Google för att förbättra kvaliteten på sidresultaten.</translation>
 <translation id="4254813446494774748">Översättningsspråk:</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
 <translation id="6112702117600201073">Uppdaterar sidan</translation>
 <translation id="6127379762771434464">Objektet har tagits bort</translation>
+<translation id="6134870457258083164">Visas inte enheten? <ph name="BEGIN_LINK1" />Få hjälp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />sök igen<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Mobilanpassa sidan</translation>
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
 <translation id="7208788139759694678">Databesparing har inaktiverats</translation>
+<translation id="721331389620694978">En del inställningar som kan visa surfvanor rensas inte.</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjälp<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 
 Du hämtar nya licenser genom att ansluta till internet och spela upp det nedladdade innehållet.</translation>
 <translation id="8660471606262461360">Från Google Payments</translation>
-<translation id="8675945939500569406">Vill du aktivera den fysiska webben?</translation>
 <translation id="8676374126336081632">Radera inmatning</translation>
 <translation id="869891660844655955">Utgångsdatum</translation>
 <translation id="8699799819461268362">Google SafeSites-filter</translation>
 <translation id="8701537995684343047">Öppna bokmärket om du vill spara det offline</translation>
 <translation id="8719023831149562936">Den aktuella fliken kan inte överföras</translation>
 <translation id="8725066075913043281">Försök igen</translation>
-<translation id="8727142376512517020">Visa inte det här igen</translation>
 <translation id="8730621377337864115">Klart</translation>
 <translation id="8737542153238017984">Sidan som sparades är inte tillgänglig offline. Lagringsutrymmet är nästan fullt.</translation>
 <translation id="8793430725658173476">Kopiera webbadress</translation>

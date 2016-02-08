@@ -606,6 +606,7 @@
 <translation id="1864111464094315414">登入</translation>
 <translation id="1864676585353837027">變更這些檔案的共用方式</translation>
 <translation id="1864756863218646478">找不到檔案。</translation>
+<translation id="1865769994591826607">僅限同網站連線</translation>
 <translation id="186612162884103683">「<ph name="EXTENSION" />」對於勾選位置中的圖片、影片和聲音檔，具有讀取和寫入權限。</translation>
 <translation id="1867780286110144690">「<ph name="PRODUCT_NAME" />」已準備好完成安裝程序</translation>
 <translation id="1873879463550486830">SUID 沙箱</translation>
@@ -1195,6 +1196,7 @@
 <translation id="2743387203779672305">複製到剪貼簿</translation>
 <translation id="2744221223678373668">共用</translation>
 <translation id="2745080116229976798">Microsoft 合格分類</translation>
+<translation id="2745576239403924641">允許 Android 應用程式在您的 Chromebook 上運作。</translation>
 <translation id="2747990718031257077">啟用新的擴充功能工具列設計 (仍處於開發階段)。</translation>
 <translation id="2749756011735116528">登入 <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">檢查拼字及文法</translation>
@@ -1408,6 +1410,7 @@
 <translation id="3011284594919057757">關於 Flash</translation>
 <translation id="3011362742078013760">在無痕式視窗中開啟所有書籤(&amp;I)</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">僅限安全的同網站連線</translation>
 <translation id="3012890944909934180">在電腦上重新啟動 Chrome</translation>
 <translation id="3012917896646559015">請立即與您的硬體製造商聯絡，將電腦送返維修中心。</translation>
 <translation id="3015992588037997514">您的 Chromebox 螢幕上是否顯示這段代碼？</translation>
@@ -1640,6 +1643,7 @@
 <translation id="331752765902890099"><ph name="PROFILE_NAME" />按鈕：登入錯誤</translation>
 <translation id="3319048459796106952">新增無痕式視窗(&amp;I)</translation>
 <translation id="331915893283195714">允許所有網站停用滑鼠游標</translation>
+<translation id="3319364804843246307">Android 應用程式</translation>
 <translation id="3320859581025497771">您的系統業者</translation>
 <translation id="3323235640813116393">將網頁另存為 MHTML (包含 HTML 和所有子資源的單一文字檔案)。</translation>
 <translation id="3323447499041942178">文字框</translation>
@@ -1744,6 +1748,7 @@
 <translation id="347719495489420368">按一下滑鼠右鍵即可播放 <ph name="PLUGIN_NAME" />。</translation>
 <translation id="347785443197175480">繼續允許 <ph name="HOST" /> 存取您的攝影機和麥克風</translation>
 <translation id="3478315065074101056">XPS 會為透過 Chrome 連線至雲端列印的傳統印表機啟用進階選項。如果變更這個標記，必須為印表機重新建立連線。</translation>
+<translation id="3479539252931486093">這是未預期的情況嗎？<ph name="BEGIN_LINK" />通知我們<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">現在不要</translation>
 <translation id="3480892288821151001">靠左固定視窗</translation>
 <translation id="3481915276125965083">系統已封鎖此網頁的下列彈出式視窗：</translation>
@@ -2714,6 +2719,7 @@
 <translation id="4941246025622441835">為企業管理服務註冊裝置時使用這個裝置申請單：</translation>
 <translation id="4942394808693235155">檢查並套用更新</translation>
 <translation id="494286511941020793">Proxy 設定說明</translation>
+<translation id="4945378551914476156">您的書籤、歷史紀錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，讓您在 Chrome 中使用。您可以在 [<ph name="BEGIN_LINK" />] 中變更這項設定</translation>
 <translation id="4950138595962845479">選項...</translation>
 <translation id="4952186391360931024">非質感</translation>
 <translation id="4954544650880561668">裝置管理</translation>
@@ -2846,7 +2852,6 @@
    <ph name="LINE_BREAKS" />
    您的裝置仍在運作中，如果立即移除裝置，您的資料很可能會遺失。請耐心等候作業結束，再使用「檔案」應用程式退出裝置。</translation>
 <translation id="5159488553889181171"><ph name="PLUGIN_NAME" /> 下載作業已取消。</translation>
-<translation id="5159628598068481063">Windows 電腦搜尋重新導向偏好設定</translation>
 <translation id="5160857336552977725">登入您的 <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">共用失敗。請檢查連線狀態，然後再試一次。</translation>
 <translation id="516592729076796170">Programmer Dvorak 美式配置</translation>
@@ -3214,7 +3219,6 @@
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">讀取您在 <ph name="WEBSITE_1" /> 上產生的資料</translation>
 <translation id="5680928275846978395">總覽模式的文字篩選功能</translation>
-<translation id="568428328938709143">帳戶已遭移除</translation>
 <translation id="5684661240348539843">資產識別碼</translation>
 <translation id="569068482611873351">匯入...</translation>
 <translation id="56907980372820799">連結資料</translation>
@@ -3454,6 +3458,7 @@
 <translation id="604001903249547235">雲端備份</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="604124094241169006">自動</translation>
+<translation id="6042308850641462728">詳細資訊</translation>
 <translation id="604257181445267932">有了 Smart Lock，您就可以透過儲存在 Google 系統中的密碼快速登入應用程式和網站。</translation>
 <translation id="6049065490165456785">內部相機中的相片</translation>
 <translation id="6051028581720248124">透過 FedEx Office 進行列印，即表示您接受其<ph name="START_LINK" />使用條款<ph name="END_LINK" />。</translation>
@@ -3485,7 +3490,6 @@
 <translation id="6089481419520884864">提取頁面</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">正在取消更新...</translation>
-<translation id="6095149522260432647">啟用搜尋引擎偏好設定，將 Windows 電腦上的搜尋指令重新導向到預設的搜尋引擎。</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">最大化開啟</translation>
 <translation id="6096326118418049043">X.500 姓名</translation>
@@ -4662,6 +4666,7 @@
 <translation id="7926906273904422255">將不安全的來源標示為不安全或「可疑」。</translation>
 <translation id="7928710562641958568">退出裝置</translation>
 <translation id="7938594894617528435">目前離線</translation>
+<translation id="7939374455203157513">啟用雲端服務</translation>
 <translation id="7939412583708276221">保留</translation>
 <translation id="7939997691108949385">管理員可以前往 <ph name="MANAGEMENT_URL" /> 修改這位受監管使用者的限制和設定。</translation>
 <translation id="7943385054491506837">Colemak 美式配置</translation>
@@ -5212,6 +5217,7 @@
 <translation id="872537912056138402">克羅埃西亞文</translation>
 <translation id="8726206820263995930">從伺服器擷取政策設定時發生錯誤：<ph name="CLIENT_ERROR" />。</translation>
 <translation id="8726888928275282477">在 chrome://extensions 中嵌入元素來顯示擴充功能選項，而非開啟新分頁。</translation>
+<translation id="8727142376512517020">不要再顯示這個對話方塊</translation>
 <translation id="8728672262656704056">您已啟用無痕模式。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8731332457891046104">取消註冊 <ph name="DEVICE_TYPE" /></translation>
@@ -5374,7 +5380,6 @@
 <translation id="8986362086234534611">清除</translation>
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
 <translation id="8987927404178983737">月</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Netscape 憑證基底網址</translation>
 <translation id="8994845581478641365">DirectWrite 字型快取產生器</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>

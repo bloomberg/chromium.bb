@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="1015255576907412255">Saat lisätietoja ottamalla yhteyttä järjestelmänvalvojaan.</translation>
+<translation id="1015730422737071372">Lisätietoja</translation>
 <translation id="1032854598605920125">Käännä myötäpäivään</translation>
 <translation id="1055184225775184556">K&amp;umoa lisäys</translation>
 <translation id="1064422015032085147">Verkkosivua isännöivä palvelin voi olla ylikuormitettu tai huollettavana.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Lataus epäonnistui</translation>
 <translation id="6644283850729428850">Tämä käytäntö on vanhentunut.</translation>
 <translation id="6646897916597483132">Anna nelinumeroinen CVC luottokortin etupuolelta.</translation>
+<translation id="6660210980321319655">Ilmoitus tehtiin automaattisesti <ph name="CRASH_TIME" />.</translation>
 <translation id="6671697161687535275">Poistetaanko lomake-ehdotus Chromiumista?</translation>
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="6711464428925977395">Välityspalvelimessa on jotain vikaa tai osoite on virheellinen.</translation>
@@ -631,6 +633,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8971063699422889582">Palvelimen varmenne on vanhentunut.</translation>
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="8988760548304185580">Anna vanhenemispäivä ja kolminumeroinen CVC luottokortin takapuolelta.</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Virheellinen SSL-asiakkaan todennusvarmenne.</translation>
 <translation id="901974403500617787">Koko järjestelmään vaikuttavat merkinnät voi tehdä vain omistaja: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Palvelin esti yhteyden.</translation>

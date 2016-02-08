@@ -113,7 +113,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Monitor, kahjuks ei tule meie koostööst midagi välja. (Seda monitori ei toetata)</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4527045527269911712">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks.</translation>
@@ -182,7 +181,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME" />” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
-<translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
 <translation id="683971173229319003">Otsing + L</translation>
 <translation id="68610848741840742">ChromeVox (kõnena esitatud tagasiside)</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>

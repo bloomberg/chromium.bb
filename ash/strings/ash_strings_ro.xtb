@@ -113,7 +113,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4279490309300973883">Oglindire</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Dear Monitor, it's not working out between us. (Monitorul respectiv nu este acceptat)</translation>
 <translation id="4421231901400348175">În prezent, <ph name="HELPER_NAME" /> îți poate controla ecranul prin Asistență la distanță.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4527045527269911712">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta.</translation>
@@ -182,7 +181,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” a fost conectat și este disponibil acum pentru toți utilizatorii. Puteți elimina această conexiune din Setări.</translation>
 <translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE" />% și se încarcă.</translation>
-<translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
 <translation id="683971173229319003">Tasta de căutare + L</translation>
 <translation id="68610848741840742">ChromeVox (feedback rostit)</translation>
 <translation id="6911468394164995108">Conectați-vă la altă rețea...</translation>

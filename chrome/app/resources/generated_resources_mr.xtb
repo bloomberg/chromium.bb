@@ -605,6 +605,7 @@
 <translation id="1864111464094315414">लॉगिन</translation>
 <translation id="1864676585353837027">या फायली कशा सामायिक केल्या जातात ते बदला</translation>
 <translation id="1864756863218646478">फाइल आढळू शकली नाही.</translation>
+<translation id="1865769994591826607">केवळ समान-साइट वरील कनेक्शनसाठी</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" प्रतिमा, व्हिडिओ आणि चेक केलेल्या स्थानांमधील ध्वनी फायली वाचू आणि लिहू शकते.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> आपली स्थापना पूर्ण करण्यासाठी सज्ज आहे</translation>
 <translation id="1873879463550486830">SUID Sandbox</translation>
@@ -1194,6 +1195,7 @@
 <translation id="2743387203779672305">क्लिपबोर्डवर कॉपी करा</translation>
 <translation id="2744221223678373668">सामायिक</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2745576239403924641">आपल्या Chromebook वर चालविण्यासाठी Android Apps सक्षम करा.</translation>
 <translation id="2747990718031257077">नवीन विस्तार टूलबार टूलबार डिझाइन (विकासामध्ये) सक्षम करतो.</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" /> मध्ये साइन इन करा</translation>
 <translation id="2749881179542288782">शुद्धलेखनासह व्याकरण तपासा</translation>
@@ -1407,6 +1409,7 @@
 <translation id="3011284594919057757">फ्लॅश बद्दल</translation>
 <translation id="3011362742078013760">सर्व बुकमार्क &amp;गुप्त विंडोमध्ये उघडा</translation>
 <translation id="3012631534724231212">(आयफ्रेम)</translation>
+<translation id="3012804260437125868">केवळ सुरक्षित समान-साइट कनेक्शनसाठी</translation>
 <translation id="3012890944909934180">डेस्कटॉपवर Chrome पुन्हा लाँच करा</translation>
 <translation id="3012917896646559015">कृपया आपल्या संगणकास एक दुरुस्ती सुविधा पाठविण्यासाठी आपल्या हार्डवेअर निर्मात्याशी तात्काळ संपर्क साधा.</translation>
 <translation id="3015992588037997514">आपल्या Chromebox स्क्रीनवर हा कोड दिसतो?</translation>
@@ -1640,6 +1643,7 @@
 <translation id="331752765902890099"><ph name="PROFILE_NAME" /> बटण: साइन इन त्रुटी</translation>
 <translation id="3319048459796106952">नवीन &amp;गुप्त विंडो</translation>
 <translation id="331915893283195714">सर्व साइट्सनां माउस कर्सर अक्षम करण्‍याची अनुमती द्या</translation>
+<translation id="3319364804843246307">Android Apps</translation>
 <translation id="3320859581025497771">आपले कॅरियर</translation>
 <translation id="3323235640813116393">MHTML म्हणून पृष्ठे जतन करणे सक्षम करते: HTML आणि सर्व उप-संसाधने असलेली एक एकल मजकूर फाईल.</translation>
 <translation id="3323447499041942178">मजकूर बॉक्स</translation>
@@ -1744,6 +1748,7 @@
 <translation id="347719495489420368"><ph name="PLUGIN_NAME" /> प्ले करण्यासाठी उजवीकडे-क्लिक करा.</translation>
 <translation id="347785443197175480">आपल्या कॅमेरा आणि मायक्रोफोनवर प्रवेश करण्यासाठी <ph name="HOST" /> ला अनुमती देणे सुरू ठेवा</translation>
 <translation id="3478315065074101056">Chrome सह मेघ मुद्रणशी कनेक्ट केलेल्या क्लासिक प्रिंटरसाठी XPS  प्रगत पर्याय सक्षम करते. हे ध्वजांकन बदलल्यानतर प्रिंटर पुन्हा कनेक्ट करणे आवश्यक आहे.</translation>
+<translation id="3479539252931486093">हे अनपेक्षित होते? <ph name="BEGIN_LINK" />आम्हाला कळवा<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="3480892288821151001">विंडो डावीकडे आणा</translation>
 <translation id="3481915276125965083">खालील पॉप-अप या पृष्ठावर अवरोधित केलेली आहेत:</translation>
@@ -2716,6 +2721,7 @@
 <translation id="4941246025622441835">एंटरप्राइज व्यवस्थापनासाठी डिव्हाइसची नोंदणी करताना ही डिव्हाइस मागणी वापरा:</translation>
 <translation id="4942394808693235155">अद्यतने तपासा आणि लागू करा</translation>
 <translation id="494286511941020793">प्रॉक्सी कॉन्फिगरेशन मदत</translation>
+<translation id="4945378551914476156">आपले बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज आपल्या Google खात्यात संकालित केल्या जातील जेणेकरून आपण जिथेही Chrome वापरता तिथे त्यांचा वापर करू शकाल. आपण हे <ph name="BEGIN_LINK" /> मध्ये बदलू शकता</translation>
 <translation id="4950138595962845479">पर्याय...</translation>
 <translation id="4952186391360931024">वस्तू-नसलेले</translation>
 <translation id="4954544650880561668">डिव्हाइस नियंत्रण</translation>
@@ -2851,7 +2857,6 @@
        <ph name="LINE_BREAKS" />
        आपला डिव्हाइस वापरात असताना तो काढण्यामुळे डेटा गमावू शकतो. कृपया ऑपरेशन पूर्ण होईपर्यंत प्रतीक्षा करा, नंतर फाईल अ‍ॅप वापरून डिव्हाइस बाहेर काढा.</translation>
 <translation id="5159488553889181171"><ph name="PLUGIN_NAME" /> डाउनलोड रद्द केले होते.</translation>
-<translation id="5159628598068481063">Windows डेस्कटॉप शोध पुनर्निदेशन प्राधान्य</translation>
 <translation id="5160857336552977725">आपल्या <ph name="DEVICE_TYPE" /> वर साइन इन करा</translation>
 <translation id="5163869187418756376">सामायिकरण अयशस्वी. आपले कनेक्शन तपासा आणि नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="516592729076796170">यूएस प्रोग्रामर द्वोराक</translation>
@@ -3219,7 +3224,6 @@
 <translation id="567881659373499783">आवृत्ती <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1" /> वर आपला डेटा वाचा</translation>
 <translation id="5680928275846978395">विहंगावलोकन मोड मध्ये मजकूर फिल्टरिंग</translation>
-<translation id="568428328938709143">खाते काढले</translation>
 <translation id="5684661240348539843">मालमत्ता अभिज्ञापक</translation>
 <translation id="569068482611873351">आयात...</translation>
 <translation id="56907980372820799">डेटा चा दुवा जोडा</translation>
@@ -3459,6 +3463,7 @@
 <translation id="604001903249547235">मेघ बॅकअप</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="604124094241169006">स्वयंचलित</translation>
+<translation id="6042308850641462728">अधिक</translation>
 <translation id="604257181445267932">आपण Google सह जतन केलेल्या संकेतशब्दांचा वापर करून अॅप्स आणि साइटमध्ये द्रुतपणे साइन इन करण्यास Smart Lock आपल्याला मदत करेल.</translation>
 <translation id="6049065490165456785">अंतर्गत कॅमेर्‍यातील फोटो</translation>
 <translation id="6051028581720248124">FedEx Office वर मुद्रण करून, आपण त्यांच्या <ph name="START_LINK" />वापर अटी<ph name="END_LINK" /> स्वीकारता.</translation>
@@ -3490,7 +3495,6 @@
 <translation id="6089481419520884864">Distill पृष्ठ</translation>
 <translation id="6092270396854197260">एमएसपीवाय</translation>
 <translation id="6093888419484831006">अद्यतन रद्द करत आहे...</translation>
-<translation id="6095149522260432647">Windows डेस्कटॉप शोधांच्या डीफॉल्ट शोध इंजिन वरील पुनर्निर्देशनास अनुमती देणारे प्राधान्य सक्षम करते.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">वाढवलेले उघडा</translation>
 <translation id="6096326118418049043">X.500 नाव</translation>
@@ -4671,6 +4675,7 @@
 <translation id="7926906273904422255">सुरक्षित नसलेले मूळ हे सुरक्षित-नसलेले म्हणून किंवा "अनिश्चित" म्हणून चिन्हांकित करा.</translation>
 <translation id="7928710562641958568">डिव्हाइस काढून टाका</translation>
 <translation id="7938594894617528435">सध्या ऑफलाइन</translation>
+<translation id="7939374455203157513">मेघ सेवा सक्षम करा</translation>
 <translation id="7939412583708276221">तरीही राहू द्या</translation>
 <translation id="7939997691108949385">व्यवस्थापक <ph name="MANAGEMENT_URL" /> वर या पर्यवेक्षी वापरकर्त्यासाठी प्रतिबंध आणि सेटिंग्ज कॉन्फिगर करण्यात सक्षम असेल.</translation>
 <translation id="7943385054491506837">यूएस कोलमॅक</translation>
@@ -5221,6 +5226,7 @@
 <translation id="872537912056138402">क्रोएशियन</translation>
 <translation id="8726206820263995930">सर्व्हरवरून धोरण सेटिंग्ज आणताना त्रुटी: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">एक नवीन टॅब उघडण्याऐवजी chrome://extensions मधील अंतःस्थापित घटक म्हणून विस्तार पर्याय प्रदर्शित करा.</translation>
+<translation id="8727142376512517020">हे पुन्हा दर्शवू नका</translation>
 <translation id="8728672262656704056">आपण गुप्त झाला आहात</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8731332457891046104"><ph name="DEVICE_TYPE" /> ची नोंदणी रद्द करा</translation>
@@ -5384,7 +5390,6 @@
 <translation id="8986362086234534611">विसरा</translation>
 <translation id="8986494364107987395">Google ला वापर आकडेवारी आणि क्रॅश अहवाल स्वयंचलितपणे पाठवा</translation>
 <translation id="8987927404178983737">महिना</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Netscape प्रमाणपत्र मूळ URL</translation>
 <translation id="8994845581478641365">DirectWrite फॉन्ट कॅशे बिल्डर</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारे व्यवस्थापित</translation>

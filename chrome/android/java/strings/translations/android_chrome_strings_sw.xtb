@@ -42,6 +42,7 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="1477626028522505441">Kipakuliwa cha <ph name="FILE_NAME" /> hakijafaulu kwa sababu ya matatizo ya seva.</translation>
 <translation id="1506061864768559482">Mtambo wa utafutaji</translation>
 <translation id="1513352483775369820">Alamisho na historia ya wavuti</translation>
+<translation id="1546112724822176246">Je, huoni kifaa chako? <ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Sasisha Chrome</translation>
 <translation id="1557201757634521564">Gundua usimbaji fiche kiotomatiki</translation>
 <translation id="1568822834048182062">Alamisho, historia, manenosiri, na mipangilio yako mingine itasawazishwa pamoja na Akaunti yako ya Google.</translation>
@@ -213,9 +214,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4195643157523330669">Fungua katika kichupo kipya</translation>
 <translation id="4198229475320555619">Alamisho ya ukubwa wa <ph name="PAGE_SIZE_STRING" /> imehifadhiwa nje ya mtandao</translation>
 <translation id="423410644998903704">Chrome inahitaji idhini ya kufikia ruhusa ili izishiriki na tovuti hii.</translation>
-<translation id="424696723690217687">Gundua kurasa za wavuti zilizotumwa na vifaa vilivyo karibu.
-
-Chrome itachanganua kurasa zilizo karibu kifaa chako kitakapofunguliwa. Kurasa hizi zitapitia huduma ya Google ili kuimarisha ubora wa matokeo ya ukurasa.</translation>
 <translation id="4254813446494774748">Lugha ya Tafsiri:</translation>
 <translation id="4256782883801055595">Leseni za programu huria</translation>
 <translation id="4259722352634471385">Kudurusu kumezuiwa: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="6108923351542677676">Usanidi unaendelea...</translation>
 <translation id="6112702117600201073">Inaonyesha upya ukurasa</translation>
 <translation id="6127379762771434464">Kipengee kimeondolewa</translation>
+<translation id="6134870457258083164">Je, huoni kifaa chako? <ph name="BEGIN_LINK1" />Pata usaidizi<ph name="END_LINK1" /> au <ph name="BEGIN_LINK2" />utafute tena<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Fanya ukurasa usomeke vizuri kwenye kifaa cha mkononi</translation>
 <translation id="6140912465461743537">Nchi/Eneo</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ya data imeokolewa</translation>
@@ -459,6 +458,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7180611975245234373">Onyesha upya</translation>
 <translation id="7191430249889272776">Kichupo kimefunguliwa chini chini.</translation>
 <translation id="7208788139759694678">Kiokoa Data kimezimwa</translation>
+<translation id="721331389620694978">Baadhi ya mipangilio ambayo inaweza kuonyesha tabia ya kuvinjari haitafutwa.</translation>
 <translation id="7243308994586599757">Chaguo zinapatikana karibu na sehemu ya chini ya skrini</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> hutumia mahali ulipo ili kuonyesha matokeo ya utafutaji wa karibu</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Usaidizi<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Hata hivyo, unaonekana. Kuvinjari katika hali fiche hakufichi kuvinjari kwako ku
 
 Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyopakuliwa.</translation>
 <translation id="8660471606262461360">Kutoka Google Payments</translation>
-<translation id="8675945939500569406">Ungependa kuwasha Wavuti kila Mahali?</translation>
 <translation id="8676374126336081632">Futa uingizaji wa maandishi</translation>
 <translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
 <translation id="8699799819461268362">Kichujio cha Google SafeSites</translation>
 <translation id="8701537995684343047">Tembelea alamisho ili uhifadhi nje ya mtandao</translation>
 <translation id="8719023831149562936">Haiwezi kusambaza kichupo cha sasa</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
-<translation id="8727142376512517020">Usionyeshe hii tena</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
 <translation id="8737542153238017984">Ukurasa uliohifadhiwa haupatikani nje ya mtandao. Hifadhi inakaribia kujaa.</translation>
 <translation id="8793430725658173476">Nakili url</translation>

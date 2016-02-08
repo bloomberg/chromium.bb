@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="1015255576907412255">अधिक माहितीसाठी आपल्या सिस्टीम प्रशासकाशी संपर्क साधा.</translation>
+<translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
 <translation id="1032854598605920125">घड्याळाच्या दिशेने फिरवा</translation>
 <translation id="1055184225775184556">&amp;जोडा पूर्ववत करा</translation>
 <translation id="1064422015032085147">वेबपृष्‍ठ होस्ट करणार्‍या सर्व्‍हरवर कदाचित अत्याधिक भार आहे किंवा त्याची देखरेख केली जात असावी.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">डाउनलोड अयशस्वी</translation>
 <translation id="6644283850729428850">हे धोरण नापसंत आहे.</translation>
 <translation id="6646897916597483132">आपल्या कार्डच्या पुढील भागावर असलेले 4-अंकी CVC प्रविष्ट करा</translation>
+<translation id="6660210980321319655">स्वयंचलितपणे <ph name="CRASH_TIME" /> वाजता अहवाल दिला</translation>
 <translation id="6671697161687535275">Chromium वरून फॉर्म सूचना काढायच्या?</translation>
 <translation id="6710213216561001401">मागील</translation>
 <translation id="6711464428925977395">प्रॉक्सी सर्व्हरमध्ये काहीतरी चुकीचे आहे किंवा पत्ता चुकीचा आहे.</translation>
@@ -630,6 +632,7 @@
 <translation id="8971063699422889582">सर्व्हरचे प्रमाणपत्र कालबाह्य झाले आहे.</translation>
 <translation id="8987927404178983737">महिना</translation>
 <translation id="8988760548304185580">आपल्या कार्डच्या पाठीमागे असलेली कालबाह्यता तारीख आणि 3-अंकी CVC प्रविष्ट करा</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">खराब SSL क्लायंट प्रमाणीकरण प्रमाणपत्र.</translation>
 <translation id="901974403500617787">सिस्टीम-व्याप्त लागू होणारी ध्वजांकने केवळ मालकाद्वारे सेट केली जाऊ शकतात: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">सर्व्हरने कनेक्शनला नकार दिला.</translation>

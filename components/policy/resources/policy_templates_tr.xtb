@@ -2300,7 +2300,6 @@ politikayı geçersiz kılamaz.
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinden daha az olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="891435090623616439">JSON dizesi olarak kodlanmıştır, ayrıntılar için <ph name="COMPLEX_POLICIES_URL" /> sayfasına bakın</translation>
 <translation id="8947415621777543415">Cihaz konumunu bildir</translation>
-<translation id="89493502583189945">Başlatıldığında <ph name="PRODUCT_NAME" /> ürününe uygulanacak işaretleri belirtir. Belirtilen işaretler, <ph name="PRODUCT_NAME" /> başlatılmadan önce daha oturum açma ekranı bile gelmeden uygulanır.</translation>
 <translation id="8951350807133946005">Disk önbellek dizinini ayarla</translation>
 <translation id="8955719471735800169">Başa dön</translation>
 <translation id="8960850473856121830">Bu listedeki kalıplar, istek yapan URL'nin güvenlik kaynağı ile karşılaştırılır. Bir eşleşme bulunursa, herhangi bir istemde bulunulmadan ses yakalama cihazlarına erişim izni verilir.

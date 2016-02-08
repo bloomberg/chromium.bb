@@ -112,7 +112,6 @@
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4279490309300973883">Spegling</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Det fungerar inte med den här skärmen. (Skärmen stöds inte.)</translation>
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4527045527269911712">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling.</translation>
@@ -181,7 +180,6 @@
 <translation id="6650933572246256093">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange denna lösenordsnyckel på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Bluetooth-enheten <ph name="DEVICE_NAME" /> har kopplats och är nu tillgänglig för alla användare. Du kan ta bort kopplingen i Inställningar.</translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>
-<translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
 <translation id="683971173229319003">Sök+L</translation>
 <translation id="68610848741840742">ChromeVox (talad feedback)</translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>

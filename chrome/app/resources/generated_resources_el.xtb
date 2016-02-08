@@ -608,6 +608,7 @@
 <translation id="1864111464094315414">Σύνδεση</translation>
 <translation id="1864676585353837027">Αλλάξτε τον τρόπο με τον οποίο κοινοποιούνται αυτά τα αρχεία</translation>
 <translation id="1864756863218646478">Δεν ήταν δυνατή η εύρεση του αρχείου.</translation>
+<translation id="1865769994591826607">Μόνο συνδέσεις στον ίδιο ιστότοπο</translation>
 <translation id="186612162884103683">Η επέκταση "<ph name="EXTENSION" />" μπορεί να διαβάσει και να εγγράψει εικόνες, βίντεο και αρχεία ήχου στις επιλεγμένες τοποθεσίες.</translation>
 <translation id="1867780286110144690">Το <ph name="PRODUCT_NAME" /> είναι έτοιμο για την ολοκλήρωση της εγκατάστασής σας</translation>
 <translation id="1873879463550486830">Περιβάλλον δοκιμών SUID</translation>
@@ -1199,6 +1200,7 @@
 <translation id="2743387203779672305">Αντιγραφή στο πρόχειρο</translation>
 <translation id="2744221223678373668">Κοινόχρηστο</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2745576239403924641">Ενεργοποίηση εφαρμογών Android για εκτέλεση στο Chromebook σας.</translation>
 <translation id="2747990718031257077">Ενεργοποιεί την υπό κατασκευή σχεδίαση νέας γραμμής εργαλείων επεκτάσεων.</translation>
 <translation id="2749756011735116528">Συνδεθείτε στο <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Γραμματικός Έλεγχος Μαζί με τον Ορθογραφικό</translation>
@@ -1414,6 +1416,7 @@
 <translation id="3011284594919057757">Σχετικά με το Flash</translation>
 <translation id="3011362742078013760">Άνοιγμα Όλων των Σελιδοδεικτών σε Παράθυρο για &amp;Ανώνυμη Περιήγηση</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">Μόνο ασφαλείς συνδέσεις στον ίδιο ιστότοπο</translation>
 <translation id="3012890944909934180">Επανεκκίνηση του Chrome στην επιφάνεια εργασίας</translation>
 <translation id="3012917896646559015">Επικοινωνήστε με τον κατασκευαστή του υλικού σας άμεσα για να στείλει τον υπολογιστή σας για επισκευή.</translation>
 <translation id="3015992588037997514">Αυτός ο κωδικός εμφανίζεται στην οθόνη του Chromebox σας;</translation>
@@ -1649,6 +1652,7 @@
 <translation id="331752765902890099"><ph name="PROFILE_NAME" />  κουμπί: σφάλμα σύνδεσης</translation>
 <translation id="3319048459796106952">Νέο &amp;παράθυρο ανώνυμης περιήγησης</translation>
 <translation id="331915893283195714">Να επιτρέπεται σε όλους τους ιστότοπους η απενεργοποίηση του δείκτη του ποντικιού</translation>
+<translation id="3319364804843246307">Εφαρμογές Android</translation>
 <translation id="3320859581025497771">ο πάροχος σας κινητής τηλεφωνίας</translation>
 <translation id="3323235640813116393">Ενεργοποιεί την αποθήκευση σελίδων ως MHTML: ένα μεμονωμένο αρχείο κειμένου που περιέχει HTML και όλους τους δευτερεύοντες πόρους.</translation>
 <translation id="3323447499041942178">Πλαίσιο κειμένου </translation>
@@ -1753,6 +1757,7 @@
 <translation id="347719495489420368">Κάντε δεξί κλικ για να επιτρέψετε την εκτέλεση της προσθήκης <ph name="PLUGIN_NAME" /> .</translation>
 <translation id="347785443197175480">Να συνεχίσει να επιτρέπεται στο <ph name="HOST" /> η πρόσβαση στην κάμερα και στο μικρόφωνό σας</translation>
 <translation id="3478315065074101056">Το XPS ενεργοποιεί σύνθετες επιλογές για τυπικούς εκτυπωτές με σύνδεση στο Cloud Print μέσω του Chrome. Οι εκτυπωτές θα πρέπει να συνδεθούν εκ νέου μετά από την αλλαγή αυτής της επισήμανσης.</translation>
+<translation id="3479539252931486093">Δεν το περιμένατε; <ph name="BEGIN_LINK" />Ενημερώστε μας<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="3480892288821151001">Αγκύρωση παραθύρου αριστερά</translation>
 <translation id="3481915276125965083">Έγινε αποκλεισμός των ακόλουθων αναδυόμενων παραθύρων σε αυτήν τη σελίδα:</translation>
@@ -2731,6 +2736,7 @@
 <translation id="4941246025622441835">Χρησιμοποιήστε αυτήν την επίταξη συσκευής κατά την εγγραφή της συσκευής στο πρόγραμμα εταιρικής διαχείρισης:</translation>
 <translation id="4942394808693235155">Έλεγχος και εφαρμογή ενημερώσεων</translation>
 <translation id="494286511941020793">Βοήθεια για τη διαμόρφωση διακομιστή μεσολάβησης</translation>
+<translation id="4945378551914476156">Οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις θα συγχρονιστούν με το Λογαριασμό σας Google, για να μπορείτε από οπουδήποτε χρησιμοποιείτε το Chrome. Μπορείτε να αλλάξετε αυτήν τη ρύθμιση στην ενότητα <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Επιλογές...</translation>
 <translation id="4952186391360931024">Non-material</translation>
 <translation id="4954544650880561668">Έλεγχος συσκευής</translation>
@@ -2867,7 +2873,6 @@
    <ph name="LINE_BREAKS" />
    Η αφαίρεση της συσκευής σας ενώ εξακολουθεί να χρησιμοποιείται μπορεί να οδηγήσει σε απώλεια δεδομένων. Περιμένετε έως ότου ολοκληρωθεί η λειτουργία και έπειτα αφαιρέστε τη συσκευή χρησιμοποιώντας την εφαρμογή Αρχεία.</translation>
 <translation id="5159488553889181171">Η λήψη του <ph name="PLUGIN_NAME" /> ακυρώθηκε.</translation>
-<translation id="5159628598068481063">Προτίμηση ανακατεύθυνσης για τις αναζητήσεις επιφάνειας εργασίας των Windows</translation>
 <translation id="5160857336552977725">Συνδεθείτε στη συσκευή σας <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Αποτυχία κοινής χρήσης. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά αργότερα.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
@@ -3237,7 +3242,6 @@
 <translation id="567881659373499783">Έκδοση <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Ανάγνωση των δεδομένων σας στο <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">Φιλτράρισμα κειμένου στη λειτουργία επισκόπησης</translation>
-<translation id="568428328938709143">Ο λογαριασμός καταργήθηκε</translation>
 <translation id="5684661240348539843">Αναγνωριστικό στοιχείου</translation>
 <translation id="569068482611873351">Εισαγωγή...</translation>
 <translation id="56907980372820799">Σύνδεση δεδομένων</translation>
@@ -3477,6 +3481,7 @@
 <translation id="604001903249547235">Αντίγραφο ασφαλείας στο cloud</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="604124094241169006">Αυτόματη</translation>
+<translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="604257181445267932">Το Smart Lock σας βοηθά να συνδεθείτε γρήγορα σε εφαρμογές και ιστότοπους που χρησιμοποιούν κωδικούς πρόσβασης που έχετε αποθηκεύσει στο Google.</translation>
 <translation id="6049065490165456785">Φωτογραφία από την εσωτερική φωτογραφική μηχανή</translation>
 <translation id="6051028581720248124">Πραγματοποιώντας εκτύπωση στο FedEx Office, αποδέχεστε τους αντίστοιχους <ph name="START_LINK" />όρους παροχής υπρεσιών<ph name="END_LINK" />.</translation>
@@ -3508,7 +3513,6 @@
 <translation id="6089481419520884864">Φιλτράρισμα σελίδας</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Ακύρωση ενημέρωσης...</translation>
-<translation id="6095149522260432647">Ενεργοποιεί μια προτίμηση που επιτρέπει την ανακατεύθυνση των αναζητήσεων επιφάνειας εργασίας των Windows στην προεπιλεγμένη μηχανή αναζήτησης.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Άνοιγμα μεγιστοποιημένης εφαρμογής</translation>
 <translation id="6096326118418049043">Όνομα X.500</translation>
@@ -4696,6 +4700,7 @@
 <translation id="7926906273904422255">Επισημάνετε μη ασφαλείς προελεύσεις ως μη ασφαλείς ή ως "αμφίβολες".</translation>
 <translation id="7928710562641958568">Εξαγωγή συσκευής</translation>
 <translation id="7938594894617528435">Αυτήν τη στιγμή εκτός σύνδεσης</translation>
+<translation id="7939374455203157513">Ενεργοποίηση υπηρεσιών cloud</translation>
 <translation id="7939412583708276221">Να συνεχιστεί</translation>
 <translation id="7939997691108949385">Ο διαχειριστής θα έχει τη δυνατότητα να διαμορφώνει τους περιορισμούς και τις ρυθμίσεις για αυτόν τον εποπτευόμενη χρήστη στη διεύθυνση <ph name="MANAGEMENT_URL" /> .</translation>
 <translation id="7943385054491506837">Colemak ΗΠΑ</translation>
@@ -5253,6 +5258,7 @@
 </translation>
 <translation id="8726206820263995930">Σφάλμα ανάκτησης ρυθμίσεων πολιτικής από το διακομιστή: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Προβάλετε επιλογές επεκτάσεων ως ενσωματωμένο στοιχείο στο chrome://extensions, αντί να ανοίξετε μια νέα καρτέλα.</translation>
+<translation id="8727142376512517020">Να μην εμφανιστεί ξανά</translation>
 <translation id="8728672262656704056">Πραγματοποιείτε ανώνυμη περιήγηση</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
 <translation id="8731332457891046104">Κατάργηση συσκευής <ph name="DEVICE_TYPE" /></translation>
@@ -5415,7 +5421,6 @@
 <translation id="8986362086234534611">Διαγραφή από τη μνήμη</translation>
 <translation id="8986494364107987395">Αυτόματη αποστολή στατιστικών στοιχείων χρήσης και αναφορών σφαλμάτων στην Google</translation>
 <translation id="8987927404178983737">Μήνας</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Βασική διεύθυνση URL πιστοποιητικού Netscape</translation>
 <translation id="8994845581478641365">Εργαλείο δημιουργίας κρυφής μνήμης γραμματοσειράς DirectWrite</translation>
 <translation id="8995603266996330174">Έγινε διαχείριση από <ph name="DOMAIN" /></translation>

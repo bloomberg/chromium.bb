@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">서버 문제로 인해 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="1506061864768559482">검색엔진</translation>
 <translation id="1513352483775369820">북마크 및 방문 기록</translation>
+<translation id="1546112724822176246">기기가 표시되지 않나요? <ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="1553358976309200471">Chrome 업데이트</translation>
 <translation id="1557201757634521564">인코딩 자동 감지</translation>
 <translation id="1568822834048182062">북마크, 방문 기록, 비밀번호, 기타 설정이 Google 계정에 동기화됩니다.</translation>
@@ -213,9 +214,6 @@
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> 북마크가 오프라인에 저장됨</translation>
 <translation id="423410644998903704">이 사이트에 공유하려면 Chrome에 액세스 권한이 있어야 합니다.</translation>
-<translation id="424696723690217687">가까운 물체에서 전송된 웹페이지 확인
-
-Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔합니다. 이 페이지는 페이지 결과의 품질을 높이기 위해 Google 서비스를 거칩니다.</translation>
 <translation id="4254813446494774748">번역 언어:</translation>
 <translation id="4256782883801055595">오픈소스 라이선스</translation>
 <translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6112702117600201073">페이지 새로고침</translation>
 <translation id="6127379762771434464">항목 삭제됨</translation>
+<translation id="6134870457258083164">기기가 표시되지 않나요? <ph name="BEGIN_LINK1" />도움 받기<ph name="END_LINK1" /> 또는 <ph name="BEGIN_LINK2" />다시 검색<ph name="END_LINK2" /></translation>
 <translation id="6138140242378429169">페이지를 모바일 친화적으로 바꾸세요.</translation>
 <translation id="6140912465461743537">국가/지역</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> 데이터 절약</translation>
@@ -459,6 +458,7 @@ Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7191430249889272776">탭이 백그라운드에 열림</translation>
 <translation id="7208788139759694678">데이터 세이버 사용 안함</translation>
+<translation id="721331389620694978">인터넷 사용 습관이 반영될 수 있는 일부 설정은 삭제되지 않습니다.</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />도움말<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔
 
 새로운 라이선스를 취득하려면 인터넷에 연결하고 다운로드한 콘텐츠를 재생하세요.</translation>
 <translation id="8660471606262461360">출처: Google Payments</translation>
-<translation id="8675945939500569406">피지컬 웹 사용하기</translation>
 <translation id="8676374126336081632">입력내용 지우기</translation>
 <translation id="869891660844655955">유효기간</translation>
 <translation id="8699799819461268362">Google SafeSites 필터</translation>
 <translation id="8701537995684343047">북마크를 방문하여 오프라인에 저장</translation>
 <translation id="8719023831149562936">현재 탭을 공유할 수 없습니다.</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
-<translation id="8727142376512517020">이 메시지를 다시 표시하지 않음</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="8737542153238017984">저장한 페이지를 오프라인에서 사용할 수 없습니다. 저장용량이 얼마 남지 않았습니다.</translation>
 <translation id="8793430725658173476">URL 복사</translation>

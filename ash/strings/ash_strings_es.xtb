@@ -113,7 +113,6 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Querido monitor, lo nuestro no funciona... (No se admite el uso de ese monitor).</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4527045527269911712">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse.</translation>
@@ -182,7 +181,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>
 <translation id="6713285437468012787">Se ha vinculado el dispositivo Bluetooth "<ph name="DEVICE_NAME" />" y ya está disponible para todos los usuarios. Para eliminar esta vinculación, accede a Configuración.</translation>
 <translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE" />%.</translation>
-<translation id="6803622936009808957">No se han podido duplicar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
 <translation id="683971173229319003">Buscar+L</translation>
 <translation id="68610848741840742">ChromeVox (mensajes de voz)</translation>
 <translation id="6911468394164995108">Conectarse a otra red...</translation>

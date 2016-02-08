@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="1015255576907412255">अधिक जानकारी के लिए अपने सिस्टम व्यवस्थापक से संपर्क करें.</translation>
+<translation id="1015730422737071372">अतिरिक्त विवरण प्रदान करें</translation>
 <translation id="1032854598605920125">घड़ी की दिशा में घुमाएं</translation>
 <translation id="1055184225775184556">&amp;जोड़ना वापस लाएं</translation>
 <translation id="1064422015032085147">वेबपृष्ठ को होस्ट करने वाले सर्वर पर अत्यधिक लोड हो सकता है या हो सकता है उसका रखरखाव चल रहा हो.
@@ -435,6 +436,7 @@
 <translation id="6637478299472506933">डाउनलोड विफल</translation>
 <translation id="6644283850729428850">यह नीति हटा दी गई है.</translation>
 <translation id="6646897916597483132">अपने कार्ड के सामने की ओर दिया गया 4 अंकों वाला CVC डालें</translation>
+<translation id="6660210980321319655"><ph name="CRASH_TIME" /> बजे अपने आप रिपोर्ट की गई</translation>
 <translation id="6671697161687535275">क्रोमियम से फ़ॉर्म सुझाव निकालें?</translation>
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6711464428925977395">प्रॉक्सी सर्वर के साथ कुछ गलत है या पता गलत है.</translation>
@@ -628,6 +630,7 @@
 <translation id="8971063699422889582">सर्वर के प्रमाणपत्र की समय-सीमा समाप्त हो चुकी है.</translation>
 <translation id="8987927404178983737">माह</translation>
 <translation id="8988760548304185580">अवधि समाप्‍ति दिनांक और अपने कार्ड के पीछे दिया गया 3 अंकों वाला CVC डालें</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">ख़राब SSL क्लाइंट प्रमाणीकरण प्रमाणपत्र.</translation>
 <translation id="901974403500617787">सिस्टम-व्यापी रूप से लागू होने वाले फ़्लैग केवल स्वामी द्वारा ही सेट किए जा सकते हैं: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">सर्वर ने कनेक्‍शन अस्‍वीकार कर दिया है.</translation>

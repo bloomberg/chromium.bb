@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">सर्वर संबधी समस्‍याओं के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="1506061864768559482">खोज इंजन</translation>
 <translation id="1513352483775369820">बुकमार्क और वेब इतिहास</translation>
+<translation id="1546112724822176246">आपका डिवाइस नहीं दिखाई दे रहा है? <ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
 <translation id="1557201757634521564">एन्कोडिंग का स्वत: पता लगाना</translation>
 <translation id="1568822834048182062">आपके बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग को आपके Google खाते में समन्वयित किया जाएगा.</translation>
@@ -171,7 +172,7 @@
 <translation id="3435896845095436175">सक्षम करें</translation>
 <translation id="3485544713029068372">पासवर्ड के लिए Smart Lock</translation>
 <translation id="3492207499832628349">नया गुप्त टैब</translation>
-<translation id="3501331331116143684">पृष्‍ठ <ph name="FOLDER_NAME" /> में ऑफ़लाइन सहेजा गया</translation>
+<translation id="3501331331116143684">पृष्ठ <ph name="FOLDER_NAME" /> में ऑफ़लाइन सहेजा गया</translation>
 <translation id="3518985090088779359">स्‍वीकार करें और जारी रखें</translation>
 <translation id="3527085408025491307">फ़ोल्डर</translation>
 <translation id="360480449234699036">पृष्‍ठ को छोड़े बिना वेबसाइटों पर मौजूद विषयों के बारे में जानें. स्‍पर्श करने के लिए खोजें, Google खोज को एक शब्‍द और उसके आस-पास का संदर्भ भेजता है, जिससे वह परिभाषाएं, चित्र, खोज परिणाम और अन्‍य विवरण लौटाता है.
@@ -213,9 +214,6 @@
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> बुकमार्क ऑफ़लाइन सहेजा गया</translation>
 <translation id="423410644998903704">Chrome को अनुमति ऐक्सेस की आवश्यकता है ताकि अनुमति को इस साइट के साथ साझा किया जा सके.</translation>
-<translation id="424696723690217687">आस-पास के ऑब्‍जेक्‍ट द्वारा भेजे गए वेब पृष्‍ठ खोजें.
-
-आपका डिवाइस अनलॉक होने पर Chrome आस-पास के पृष्‍ठों के लिए स्‍कैन करेगा. पृष्‍ठ के परिणामों की गुणवत्‍ता बेहतर बनाने के लिए ये पृष्‍ठ एक Google सेवा से गुज़रेंगे.</translation>
 <translation id="4254813446494774748">अनुवाद की भाषा:</translation>
 <translation id="4256782883801055595">ओपन सोर्स लाइसेंस</translation>
 <translation id="4259722352634471385">मार्गदर्शक अवरोधित है: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@
 <translation id="6108923351542677676">सेटअप प्रगति में है…</translation>
 <translation id="6112702117600201073">पृष्‍ठ रीफ्रेश किया जा रहा है</translation>
 <translation id="6127379762771434464">आइटम निकाला गया</translation>
+<translation id="6134870457258083164">आपका डिवाइस नहीं दिखाई दे रहा है? <ph name="BEGIN_LINK1" />सहायता प्राप्त करें<ph name="END_LINK1" /> या <ph name="BEGIN_LINK2" />पुन: खोजें<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">पृष्‍ठ को मोबाइल के अनुकूल बनाएं</translation>
 <translation id="6140912465461743537">देश/क्षेत्र</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
@@ -395,7 +394,7 @@
 <translation id="6406506848690869874">समन्वय</translation>
 <translation id="6409731863280057959">पॉप-अप</translation>
 <translation id="641643625718530986">प्रिंट करें…</translation>
-<translation id="6447570251829705777">बुकमार्क ऑफ़लाइन उपलब्‍ध नहीं है</translation>
+<translation id="6447570251829705777">बुकमार्क ऑफ़लाइन उपलब्ध नहीं है</translation>
 <translation id="6447842834002726250">कुकी</translation>
 <translation id="6448273550210938826">खोज और URL सुझाव</translation>
 <translation id="6458785801851713928">आपके डोमेन के लिए समन्‍वयन उपलब्‍ध नहीं है.</translation>
@@ -459,6 +458,7 @@
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7191430249889272776">पृष्ठभूमि में टैब खोला गया.</translation>
 <translation id="7208788139759694678">डेटा बचतकर्ता अक्षम किया गया है</translation>
+<translation id="721331389620694978">कुछ सेटिंग जो ब्राउज़िंग आदतों को प्रदर्शित कर सकती हैं उन्हें साफ़ नहीं किया जाएगा.</translation>
 <translation id="7243308994586599757">विकल्‍प स्‍क्रीन के नीचे उपलब्‍ध हैं</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, स्थानीय खोज परिणाम दिखाने के लिए आपके स्थान का उपयोग करता है</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />सहायता<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@
 
 नए लाइसेंस प्राप्त करने के लिए, इंटरनेट से कनेक्ट करें और अपनी डाउनलोड की गई सामग्री चलाएं.</translation>
 <translation id="8660471606262461360">Google पेमेंट्स से</translation>
-<translation id="8675945939500569406">शारीरिक वेब चालू करें?</translation>
 <translation id="8676374126336081632">इनपुट साफ़ करें</translation>
 <translation id="869891660844655955">समय समाप्ति दिनांक</translation>
 <translation id="8699799819461268362">Google सुरक्षित साइट फ़िल्‍टर</translation>
 <translation id="8701537995684343047">ऑफ़लाइन सहेजने के लिए बुकमार्क पर जाएं</translation>
 <translation id="8719023831149562936">वर्तमान टैब को बीम नहीं किया जा सकता</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
-<translation id="8727142376512517020">इसे दोबारा ना दिखाएं</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
 <translation id="8737542153238017984">सहेजा गया पृष्‍ठ ऑफ़लाइन उपलब्‍ध नहीं है. मेमोरी लगभग भर गई है.</translation>
 <translation id="8793430725658173476">url की कॉपी करें</translation>
@@ -610,7 +608,7 @@
 <translation id="932327136139879170">मुख्यपृष्ठ</translation>
 <translation id="938850635132480979">त्रुटि: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">अपना माइक्रोफ़ोन एक्सेस करें</translation>
-<translation id="954352821720225055">बुकमार्क ऑफ़लाइन उपलब्‍ध नहीं है. मेमोरी लगभग भर गई है.</translation>
+<translation id="954352821720225055">बुकमार्क ऑफ़लाइन उपलब्ध नहीं है. मेमोरी लगभग भर गई है.</translation>
 <translation id="969096075394517431">भाषाएं बदलें</translation>
 <translation id="983192555821071799">सभी टैब बंद करें</translation>
 </translationbundle>

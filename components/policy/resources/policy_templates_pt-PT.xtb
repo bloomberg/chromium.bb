@@ -2053,7 +2053,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ao atraso de inatividade.</translation>
 <translation id="891435090623616439">codificado como uma string JSON; para mais detalhes, consulte <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Comunicar localização do dispositivo</translation>
-<translation id="89493502583189945">Especifica os sinalizadores que devem ser aplicados ao <ph name="PRODUCT_NAME" /> quando este inicia. Os sinalizadores especificados são aplicados antes de o <ph name="PRODUCT_NAME" /> iniciar, mesmo para o ecrã de início de sessão.</translation>
 <translation id="8951350807133946005">Definir o diretório de cache do disco</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="8960850473856121830">Os padrões nesta lista vão ser comparados com a origem

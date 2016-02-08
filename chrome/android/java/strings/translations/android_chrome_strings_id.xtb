@@ -42,10 +42,11 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1477626028522505441">Unduhan <ph name="FILE_NAME" /> gagal karena masalah server.</translation>
 <translation id="1506061864768559482">Mesin telusur</translation>
 <translation id="1513352483775369820">Bookmark dan riwayat web</translation>
+<translation id="1546112724822176246">Tidak melihat perangkat Anda? <ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
 <translation id="1557201757634521564">Deteksi otomatis enkode</translation>
 <translation id="1568822834048182062">Bookmark, riwayat, sandi, dan setelan lainnya akan disinkronkan ke Akun Google.</translation>
-<translation id="1592483623187843893">Bookmark disimpan untuk offline</translation>
+<translation id="1592483623187843893">Bookmark disimpan secara offline</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari laman ini.</translation>
 <translation id="1641113438599504367">Penelusuran Aman</translation>
@@ -111,7 +112,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2498359688066513246">Bantuan &amp; masukan</translation>
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="2512222046227390255">Isi Otomatis formulir</translation>
-<translation id="2521102375070725336">Bookmark disimpan untuk offline di <ph name="FOLDER_NAME" /></translation>
+<translation id="2521102375070725336">Bookmark disimpan secara offline di <ph name="FOLDER_NAME" /></translation>
 <translation id="2526148617758225454">Penghemat Data aktif. Kelola di Setelan.</translation>
 <translation id="2532336938189706096">Tampilan Web</translation>
 <translation id="2536728043171574184">Melihat salinan offline laman ini</translation>
@@ -171,7 +172,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="3435896845095436175">Aktifkan</translation>
 <translation id="3485544713029068372">Smart Lock untuk Sandi</translation>
 <translation id="3492207499832628349">Tab penyamaran baru</translation>
-<translation id="3501331331116143684">Laman disimpan untuk offline di <ph name="FOLDER_NAME" /></translation>
+<translation id="3501331331116143684">Laman disimpan secara offline di <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Terima &amp; lanjutkan</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="360480449234699036">Pelajari tentang topik di situs web tanpa meninggalkan laman. Sentuh untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, serta detail lainnya.
@@ -211,11 +212,8 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
 <translation id="4193864812412988973">Melihat salinan offline bookmark ini</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
-<translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> bookmark disimpan untuk offline</translation>
+<translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> bookmark disimpan secara offline</translation>
 <translation id="423410644998903704">Chrome memerlukan akses izin untuk berbagi dengan situs ini.</translation>
-<translation id="424696723690217687">Temukan laman web yang dikirim oleh obyek di sekitar.
-
-Chrome akan memindai laman di sekitar saat perangkat Anda dibuka kuncinya. Laman ini akan melalui layanan Google untuk meningkatkan kualitas hasil laman.</translation>
 <translation id="4254813446494774748">Bahasa Terjemahan:</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6108923351542677676">Penyiapan sedang berlangsung...</translation>
 <translation id="6112702117600201073">Menyegarkan laman</translation>
 <translation id="6127379762771434464">Item dihapus</translation>
+<translation id="6134870457258083164">Tidak melihat perangkat Anda? <ph name="BEGIN_LINK1" />Dapatkan bantuan<ph name="END_LINK1" /> atau <ph name="BEGIN_LINK2" />telusuri lagi<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Buat laman mobile-friendly</translation>
 <translation id="6140912465461743537">Negara/Wilayah</translation>
 <translation id="6159335304067198720">Penghematan data <ph name="PERCENT" /></translation>
@@ -395,7 +394,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6406506848690869874">Sinkronisasi</translation>
 <translation id="6409731863280057959">Munculan</translation>
 <translation id="641643625718530986">Cetak...</translation>
-<translation id="6447570251829705777">Bookmark tidak tersedia untuk offline</translation>
+<translation id="6447570251829705777">Bookmark tidak tersedia saat offline</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Penelusuran dan saran URL</translation>
 <translation id="6458785801851713928">Sinkronisasi tidak tersedia untuk domain Anda.</translation>
@@ -459,6 +458,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7180611975245234373">Segarkan</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
 <translation id="7208788139759694678">Penghemat Data dinonaktifkan</translation>
+<translation id="721331389620694978">Beberapa setelan yang mungkin mencerminkan kebiasaan penjelajahan tidak akan dihapus.</translation>
 <translation id="7243308994586599757">Opsi terdapat di dekat bagian bawah layar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> menggunakan lokasi Anda untuk menampilkan hasil penelusuran lokal</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Bantuan<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 
 Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diunduh.</translation>
 <translation id="8660471606262461360">Dari Google Payments</translation>
-<translation id="8675945939500569406">Aktifkan Web Fisik?</translation>
 <translation id="8676374126336081632">Hapus masukan</translation>
 <translation id="869891660844655955">Tanggal kedaluwarsa</translation>
 <translation id="8699799819461268362">Filter Google SitusAman</translation>
-<translation id="8701537995684343047">Kunjungi bookmark untuk menyimpan secara offline</translation>
+<translation id="8701537995684343047">Kunjungi bookmark untuk menyimpannya secara offline</translation>
 <translation id="8719023831149562936">Tidak dapat memancarkan tab ini</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
-<translation id="8727142376512517020">Jangan tampilkan ini lagi</translation>
 <translation id="8730621377337864115">Selesai</translation>
 <translation id="8737542153238017984">Laman tersimpan tidak tersedia offline. Penyimpanan hampir penuh.</translation>
 <translation id="8793430725658173476">Salin URL</translation>
@@ -602,7 +600,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9133515669113036225">Menyetel ulang kredensial perangkat</translation>
 <translation id="9137013805542155359">Perlihatkan laman asli</translation>
-<translation id="9151532766011674069">Bookmark disimpan untuk offline. Penyimpanan hampir penuh.</translation>
+<translation id="9151532766011674069">Bookmark disimpan secara offline. Penyimpanan hampir penuh.</translation>
 <translation id="917685106653909562">Laman Web fisik di sekitar</translation>
 <translation id="9187199695613236444">Tampilan mobile-friendly</translation>
 <translation id="9192643434065497760">Aktifkan Bluetooth di <ph name="BEGIN_LINK" />setelan perangkat<ph name="END_LINK" /> untuk melakukan penyandingan.</translation>
@@ -610,7 +608,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="932327136139879170">Beranda</translation>
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Akses mikrofon Anda</translation>
-<translation id="954352821720225055">Bookmark tidak tersedia untuk offline. Penyimpanan hampir penuh.</translation>
+<translation id="954352821720225055">Bookmark tidak tersedia saat offline. Penyimpanan hampir penuh.</translation>
 <translation id="969096075394517431">Ubah bahasa</translation>
 <translation id="983192555821071799">Tutup semua tab</translation>
 </translationbundle>

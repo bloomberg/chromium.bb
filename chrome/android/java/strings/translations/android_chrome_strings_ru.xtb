@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неполадок на сервере.</translation>
 <translation id="1506061864768559482">Поисковая система</translation>
 <translation id="1513352483775369820">Закладки и история поиска</translation>
+<translation id="1546112724822176246">Не можете найти свое устройство? <ph name="BEGIN_LINK" />Узнайте<ph name="END_LINK" />, как это исправить.</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1557201757634521564">Определять кодировку</translation>
 <translation id="1568822834048182062">Ваши закладки, история, пароли и другие настройки синхронизируются с аккаунтом Google.</translation>
@@ -213,9 +214,6 @@
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4198229475320555619">Размер сохраненной закладки: <ph name="PAGE_SIZE_STRING" /></translation>
 <translation id="423410644998903704">Предоставьте браузеру Chrome разрешения, чтобы продолжить работу на этом сайте.</translation>
-<translation id="424696723690217687">Просматривайте веб-страницы, связанные с объектами вокруг вас.
-
-Chrome будет искать их, когда ваше устройство разблокировано. Чтобы улучшить работу функции, страницы будут отправляться через сервис Google.</translation>
 <translation id="4254813446494774748">Перевести на:</translation>
 <translation id="4256782883801055595">Лицензии на ПО с открытым кодом</translation>
 <translation id="4259722352634471385">Навигация заблокирована: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="6108923351542677676">Настройка…</translation>
 <translation id="6112702117600201073">Обновление страницы</translation>
 <translation id="6127379762771434464">Быстрая ссылка удалена</translation>
+<translation id="6134870457258083164">Не можете найти свое устройство? <ph name="BEGIN_LINK1" />Узнайте<ph name="END_LINK1" />, как это исправить, или запустите поиск <ph name="BEGIN_LINK2" />ещё раз<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Адаптировать страницу для мобильных устройств</translation>
 <translation id="6140912465461743537">Страна/регион</translation>
 <translation id="6159335304067198720">Сжатие данных: <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
 <translation id="7208788139759694678">Расширение "Экономия трафика" отключено</translation>
+<translation id="721331389620694978">Некоторые данные о работе в Интернете не будут удалены.</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Chrome будет искать их, когда ваше устройство р
 
 Чтобы получить новые лицензии, подключитесь к Интернету и воспроизведите скачанный контент.</translation>
 <translation id="8660471606262461360">Из Google Payments</translation>
-<translation id="8675945939500569406">Включить Интернет вокруг нас?</translation>
 <translation id="8676374126336081632">Очистить</translation>
 <translation id="869891660844655955">Срок действия</translation>
 <translation id="8699799819461268362">Безопасный поиск</translation>
 <translation id="8701537995684343047">Посетите сайт, чтобы сохранить закладку в офлайн-режиме</translation>
 <translation id="8719023831149562936">Не удалось передать текущую вкладку</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
-<translation id="8727142376512517020">Больше не показывать</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8737542153238017984">Страница недоступна в офлайн-режиме: свободное пространство заканчивается.</translation>
 <translation id="8793430725658173476">Копировать URL</translation>

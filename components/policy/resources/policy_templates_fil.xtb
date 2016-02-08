@@ -2306,7 +2306,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa idle delay ang mga halaga.</translation>
 <translation id="891435090623616439">naka-encode bilang JSON string, para sa mga detalye, tingnan ang <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">I-ulat ang lokasyon ng device</translation>
-<translation id="89493502583189945">Tinutukoy ang mga flag na dapat mailapat sa <ph name="PRODUCT_NAME" /> kapag nagsimula ito. Inilalapat ang mga natukoy na flag bago simulan ang <ph name="PRODUCT_NAME" /> kahit para sa screen sa pag-sign in.</translation>
 <translation id="8951350807133946005">Itakda ang direktoryo ng cache ng disk</translation>
 <translation id="8955719471735800169">Bumalik sa tuktok</translation>
 <translation id="8960850473856121830">Itutugma ang mga pattern sa listahang ito sa security

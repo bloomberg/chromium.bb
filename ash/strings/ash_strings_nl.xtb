@@ -113,7 +113,6 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Het lijkt erop dat dit niet werkt. Het beeldscherm wordt niet ondersteund.</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME" /> via externe ondersteuning.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen.</translation>
@@ -182,7 +181,6 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' is gekoppeld en is nu beschikbaar voor alle gebruikers. Je kunt deze koppeling verwijderen via 'Instellingen'.</translation>
 <translation id="6785414152754474415">De accu is <ph name="PERCENTAGE" />% vol en wordt opgeladen.</translation>
-<translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
 <translation id="683971173229319003">Zoeken+L</translation>
 <translation id="68610848741840742">ChromeVox (gesproken feedback)</translation>
 <translation id="6911468394164995108">Verbinding met ander netwerk maken...</translation>

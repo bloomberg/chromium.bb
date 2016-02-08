@@ -42,6 +42,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1477626028522505441">Sunucu sorunları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="1506061864768559482">Arama motoru</translation>
 <translation id="1513352483775369820">Yer işaretleri ve web geçmişi</translation>
+<translation id="1546112724822176246">Cihazınızı görmüyor musunuz? <ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Chrome'u güncelle</translation>
 <translation id="1557201757634521564">Kodlamayı otomatik olarak algıla</translation>
 <translation id="1568822834048182062">Yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız Google Hesabınızla senkronize edilecek.</translation>
@@ -197,7 +198,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3988213473815854515">Konuma izin veriliyor</translation>
 <translation id="3992315671621218278">Bağlantıyı kaydet</translation>
 <translation id="4002066346123236978">Başlık</translation>
-<translation id="4035611068038188272">Yer işaretleri geçerli olarak <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> yer kaplıyor.</translation>
+<translation id="4035611068038188272">Yer işaretleri şu anda <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> yer kaplıyor.</translation>
 <translation id="4042870126885713738">Bir web adresi çözümlenemezse veya bağlantı yapılamazsa öneriler göster</translation>
 <translation id="4056223980640387499">Sepya Tonu</translation>
 <translation id="4059119910594077751">Tam ekrandan çıkmak için geri düğmesine dokunun.</translation>
@@ -213,9 +214,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> boyutunda yer işareti çevrimdışı olarak kaydedildi</translation>
 <translation id="423410644998903704">Chrome'un bu siteyle paylaşımda bulunabilmesi için izin erişimine ihtiyacı var.</translation>
-<translation id="424696723690217687">Yakındaki nesneler tarafından gönderilen web sayfalarını keşfedin.
-
-Cihazınız kiliti olmadığında Chrome yakındaki sayfaları tarar. Bu sayfalar, sayfa sonuçlarının kalitesini iyileştirmek amacıyla bir Google hizmeti üzerinden gönderilir.</translation>
 <translation id="4254813446494774748">Çeviri Dili:</translation>
 <translation id="4256782883801055595">Açık kaynak lisansları</translation>
 <translation id="4259722352634471385">Gezinme engellendi: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6112702117600201073">Sayfa yenileniyor</translation>
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
+<translation id="6134870457258083164">Cihazınızı görmüyor musunuz? <ph name="BEGIN_LINK1" />Yardım alın<ph name="END_LINK1" /> veya <ph name="BEGIN_LINK2" />tekrar arayın<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Sayfayı mobil uyumlu hale getir</translation>
 <translation id="6140912465461743537">Ülke/Bölge</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> veri tasarrufu</translation>
@@ -459,6 +458,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7180611975245234373">Yenile</translation>
 <translation id="7191430249889272776">Sekme arka planda açıldı.</translation>
 <translation id="7208788139759694678">Veri Tasarrufu devre dışı bırakıldı</translation>
+<translation id="721331389620694978">Göz atma alışkanlıklarını yansıtabilecek bazı ayarlar temizlenmeyecek.</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, yerel arama sonuçlarını göstermek için konumunuzu kullanır</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Yardım<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Yine de, görünmez değilsiniz. Gizli moda geçmeniz web'de yaptıklarınızı 
 
 Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği oynatın.</translation>
 <translation id="8660471606262461360">Google Payments'tan</translation>
-<translation id="8675945939500569406">Fiziksel Web açılsın mı?</translation>
 <translation id="8676374126336081632">Girişi temizle</translation>
 <translation id="869891660844655955">Son kullanma tarihi</translation>
 <translation id="8699799819461268362">Google SafeSites filtresi</translation>
 <translation id="8701537995684343047">Çevrimdışı olarak kaydetmek için yer işaretini ziyaret edin</translation>
 <translation id="8719023831149562936">Geçerli sekme ışınlanamıyor</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
-<translation id="8727142376512517020">Bu iletiyi tekrar gösterme</translation>
 <translation id="8730621377337864115">Bitti</translation>
 <translation id="8737542153238017984">Kaydedilen sayfa çevrimdışı olarak kullanılamıyor. Depolama alanı neredeyse dolu.</translation>
 <translation id="8793430725658173476">URL'yi kopyala</translation>

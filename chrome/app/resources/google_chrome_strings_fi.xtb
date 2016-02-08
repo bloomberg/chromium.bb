@@ -51,7 +51,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="2397416548179033562">Näytä Chrome-valikko</translation>
 <translation id="2429317896000329049">Google Chrome ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="2485422356828889247">Poista</translation>
-<translation id="2576431527583832481">Chromesta tuli juuri entistä parempi! Uusi versio on saatavilla.</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="2582790009689336987">Google Chromen päivitykset eivät pian ole saatavilla tällä tietokoneella, koska tämän Linux-järjestelmän tuki loppuu.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
@@ -112,7 +111,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="4633000520311261472">Paransimme Chromen turvallisuutta poistamalla käytöstä sovelluksia, joita ei löydy kohteesta <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja jotka on voitu lisätä ilman lupaasi.</translation>
 <translation id="4700157086864140907">Google Chrome voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksentarkistustekniikkaa.</translation>
 <translation id="4728575227883772061">Asennus epäonnistui tuntemattoman virheen takia. Jos Google Chrome on tällä hetkellä käynnissä, sulje ohjelma ja yritä uudelleen.</translation>
-<translation id="473775607612524610">Päivitä</translation>
 <translation id="4743926867934016338">Hyväksy ja hae</translation>
 <translation id="4751441238232965030">Tämän tietokoneen 32-bittistä Google Chromea ei pian enää päivitetä. Päivitä Google Chrome 64-bittiseen versioon.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (saapuva mDNS)</translation>

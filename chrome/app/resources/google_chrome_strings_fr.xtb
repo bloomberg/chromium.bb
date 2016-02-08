@@ -54,7 +54,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2397416548179033562">Afficher le menu Chrome</translation>
 <translation id="2429317896000329049">Impossible de synchroniser vos données dans Google Chrome, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
-<translation id="2576431527583832481">Google Chrome s'est amélioré ! Une nouvelle version est désormais disponible.</translation>
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
 <translation id="2582790009689336987">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur ce système Linux.</translation>
 <translation id="2588322182880276190">Logo Google Chrome</translation>
@@ -115,7 +114,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="4633000520311261472">Afin de rendre Chrome plus sûr, nous avons désactivé certaines extensions qui ne sont pas répertoriées sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui ont pu être ajoutées à votre insu.</translation>
 <translation id="4700157086864140907">Google Chrome peut fournir une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
 <translation id="4728575227883772061">Échec de l'installation suite à une erreur non spécifiée. Si Google Chrome est en cours d'exécution, fermez-le puis réessayez.</translation>
-<translation id="473775607612524610">Mettre à jour</translation>
 <translation id="4743926867934016338">Accepter et rechercher</translation>
 <translation id="4751441238232965030">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome 32 bits. Veuillez passer à Google Chrome 64 bits.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

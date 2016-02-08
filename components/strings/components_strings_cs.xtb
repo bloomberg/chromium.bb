@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1015255576907412255">Další informace získáte u správce systému.</translation>
+<translation id="1015730422737071372">Zadejte další podrobnosti</translation>
 <translation id="1032854598605920125">Otočit ve směru hodinových ručiček</translation>
 <translation id="1055184225775184556">&amp;Vrátit přidání zpět</translation>
 <translation id="1064422015032085147">Server hostující webovou stránku je pravděpodobně přetížen nebo probíhá jeho údržba. Aby bylo zabráněno generování nadměrného provozu, který by situaci dále zhoršil, jsou požadavky na tuto adresu URL dočasně zakázány.</translation>
@@ -421,6 +422,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6637478299472506933">Stažení se nezdařilo</translation>
 <translation id="6644283850729428850">Tato zásada se již nepoužívá.</translation>
 <translation id="6646897916597483132">Zadejte čtyřmístný kód CVC z přední strany karty</translation>
+<translation id="6660210980321319655">Automaticky zaznamenáno <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Odstranit návrh položky formuláře z prohlížeče Chromium?</translation>
 <translation id="6710213216561001401">Předchozí</translation>
 <translation id="6711464428925977395">Došlo k chybě proxy serveru nebo jste zadali nesprávnou adresu.</translation>
@@ -600,6 +602,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8971063699422889582">Platnost certifikátu serveru vypršela.</translation>
 <translation id="8987927404178983737">Měsíc</translation>
 <translation id="8988760548304185580">Zadejte datum vypršení platnosti a třímístný kód CVC ze zadní strany karty</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Špatný ověřovací certifikát klienta SSL</translation>
 <translation id="901974403500617787">Příznaky, které platí v celém systému, může nastavit pouze vlastník: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Server odmítl připojení.</translation>

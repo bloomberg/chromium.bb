@@ -2290,7 +2290,6 @@
           Reegli väärtus tuleb määrata millisekundites. Väärtused tuleb kinnitada väiksematena kui jõudeoleku viiteaeg.</translation>
 <translation id="891435090623616439">kodeeritud JSON-stringina. Lisateavet vaadake saidilt <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Esita seadme asukoht</translation>
-<translation id="89493502583189945">Määrab märgistused, mis tuleb rakendada tootes <ph name="PRODUCT_NAME" /> selle käivitamisel. Määratud märgistused rakendatakse enne toote <ph name="PRODUCT_NAME" /> käivitamist isegi sisselogimisekraanil.</translation>
 <translation id="8951350807133946005">Vahemälu kataloogi seadmine</translation>
 <translation id="8955719471735800169">Tagasi üles</translation>
 <translation id="8960850473856121830">Selles loendis olevaid mustreid võrreldakse taotleva URL-i

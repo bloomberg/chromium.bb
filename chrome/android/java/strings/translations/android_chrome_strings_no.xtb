@@ -42,6 +42,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1477626028522505441">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av tjenerproblemer.</translation>
 <translation id="1506061864768559482">Søkemotor</translation>
 <translation id="1513352483775369820">Bokmerker og nettlogg</translation>
+<translation id="1546112724822176246">Ser du ikke enheten din? <ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
 <translation id="1557201757634521564">Gjenkjenn omgjøring til kode automatisk</translation>
 <translation id="1568822834048182062">Bokmerkene, loggen, passordene og de andre innstillingene dine blir synkronisert til Google-kontoen din.</translation>
@@ -213,9 +214,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="4198229475320555619">Et bokmerke på <ph name="PAGE_SIZE_STRING" /> er lagret lokalt</translation>
 <translation id="423410644998903704">Chrome må ha tilgang til tillatelsene for å kunne dele dem med dette nettstedet.</translation>
-<translation id="424696723690217687">Oppdag nettsider som sendes fra objekter i nærheten.
-
-Chrome skanner etter sider i nærheten når enheten er låst opp. Disse sidene går gjennom en Google-tjeneste som forbedrer kvaliteten på sideresultatene.</translation>
 <translation id="4254813446494774748">Språket siden skal oversettes til:</translation>
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
 <translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6108923351542677676">Konfigurasjon pågår …</translation>
 <translation id="6112702117600201073">Oppdaterer siden.</translation>
 <translation id="6127379762771434464">Elementet ble fjernet</translation>
+<translation id="6134870457258083164">Ser du ikke enheten din? <ph name="BEGIN_LINK1" />Få hjelp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />søk igjen<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Gjør siden mobilvennlig</translation>
 <translation id="6140912465461743537">Land/område</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> datasparing</translation>
@@ -459,6 +458,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
 <translation id="7208788139759694678">Datasparing er slått av</translation>
+<translation id="721331389620694978">Enkelte innstillinger som muligens gjenspeiler nettleservaner, blir ikke fjernet.</translation>
 <translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> bruker posisjonen din for å vise lokale søkeresultater</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjelp<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 
 For å få nye lisenser må du koble deg til Internett og spille av innholdet du har lastet ned.</translation>
 <translation id="8660471606262461360">Fra Google Payments</translation>
-<translation id="8675945939500569406">Vil du slå på det fysiske nettet?</translation>
 <translation id="8676374126336081632">Slett teksten</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
 <translation id="8699799819461268362">Google SafeSites-filter</translation>
 <translation id="8701537995684343047">Besøk bokmerket for å lagre det lokalt</translation>
 <translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
-<translation id="8727142376512517020">Ikke vis dette igjen</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8737542153238017984">Den lagrede siden er ikke tilgjengelig uten nett. Lagringsplassen er nesten full.</translation>
 <translation id="8793430725658173476">Kopiér nettadressen</translation>

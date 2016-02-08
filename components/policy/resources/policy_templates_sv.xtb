@@ -2329,7 +2329,6 @@
           Policyns värde anges i millisekunder. Värdet måste vara mindre än inaktivitetstiden.</translation>
 <translation id="891435090623616439">kodad som en JSON-sträng. Mer information finns i <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Rapportera enhetsplats</translation>
-<translation id="89493502583189945">Anger de flaggor som ska användas i <ph name="PRODUCT_NAME" /> när den startas. De angivna flaggorna används innan <ph name="PRODUCT_NAME" /> startas även för inloggningsskärmen.</translation>
 <translation id="8951350807133946005">Ange katalog för diskcache</translation>
 <translation id="8955719471735800169">Tillbaka till början</translation>
 <translation id="8960850473856121830">Mönster på den här listan kommer att matchas mot

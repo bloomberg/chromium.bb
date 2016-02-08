@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1015255576907412255">Kontakt systemadministratoren din for mer informasjon.</translation>
+<translation id="1015730422737071372">Oppgi flere detaljer</translation>
 <translation id="1032854598605920125">Rotér med klokken</translation>
 <translation id="1055184225775184556">&amp;Angre tilleggingen</translation>
 <translation id="1064422015032085147">Det kan hende tjeneren som er vert for nettsiden, er overbelastet, eller at det utføres vedlikehold på den.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Nedlastingen mislyktes</translation>
 <translation id="6644283850729428850">Denne retningslinjen er foreldet.</translation>
 <translation id="6646897916597483132">Skriv inn den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
+<translation id="6660210980321319655">Automatisk rapportert <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Vil du fjerne forslaget fra Chromium?</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6711464428925977395">Det er noe galt med proxy-tjeneren, eller adressen er feil.</translation>
@@ -635,6 +637,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
 <translation id="8987927404178983737">Måned</translation>
 <translation id="8988760548304185580">Skriv inn utløpsdatoen og den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Ugyldig autentiseringssertifikat for SSL-klient.</translation>
 <translation id="901974403500617787">Rapporteringer som gjelder for hele systemet kan bare angis av eieren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Tjeneren tillot ikke tilkoblingen.</translation>

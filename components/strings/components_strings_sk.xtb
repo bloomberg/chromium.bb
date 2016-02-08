@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1015255576907412255">Ak chcete získať viac informácií, kontaktujte správcu systému.</translation>
+<translation id="1015730422737071372">Poskytnite ďalšie podrobnosti</translation>
 <translation id="1032854598605920125">Otočiť v smere hodinových ručičiek</translation>
 <translation id="1055184225775184556">&amp;Vrátiť späť pridanie</translation>
 <translation id="1064422015032085147">Server, ktorý hostí túto webovú stránku, môže byť preťažený alebo na ňom prebieha údržba. S cieľom zabrániť vytváraniu príliš veľkej návštevnosti, ktorá by situáciu ešte zhoršila, boli žiadosti na túto webovú adresu dočasne zakázané.</translation>
@@ -421,6 +422,7 @@
 <translation id="6637478299472506933">Stiahnutie zlyhalo</translation>
 <translation id="6644283850729428850">Toto pravidlo bolo označené ako zastarané.</translation>
 <translation id="6646897916597483132">Zadajte štvormiestny kód CVC z prednej strany svojej karty</translation>
+<translation id="6660210980321319655">Automaticky nahlásené <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Chcete návrh položky formulára odstrániť z prehliadača Chromium?</translation>
 <translation id="6710213216561001401">Dozadu</translation>
 <translation id="6711464428925977395">Vyskytol sa problém s proxy serverom alebo je adresa nesprávna.</translation>
@@ -600,6 +602,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8971063699422889582">Platnosť certifikátu servera vypršala.</translation>
 <translation id="8987927404178983737">Mesiac</translation>
 <translation id="8988760548304185580">Zadajte dátum vypršania platnosti a trojmiestny kód CVC zo zadnej strany svojej karty</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Chybný certifikát SSL overenia klienta.</translation>
 <translation id="901974403500617787">Príznaky, ktoré platia v celom systéme, môže nastaviť iba vlastník: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Server odmietol spojenie.</translation>

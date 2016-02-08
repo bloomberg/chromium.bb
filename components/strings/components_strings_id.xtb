@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1015255576907412255">Hubungi administrator sistem Anda untuk informasi selengkapnya.</translation>
+<translation id="1015730422737071372">Berikan detail tambahan</translation>
 <translation id="1032854598605920125">Putar searah jarum jam</translation>
 <translation id="1055184225775184556">&amp;Urungkan Penambahan</translation>
 <translation id="1064422015032085147">Server yang menghosting laman web mungkin kelebihan muatan atau sedang diperbaiki.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Unduhan Gagal</translation>
 <translation id="6644283850729428850">Kebijakan ini telah usang.</translation>
 <translation id="6646897916597483132">Masukkan 4 digit CVC di depan kartu Anda</translation>
+<translation id="6660210980321319655">Otomatis dilaporkan pada <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Hapus saran formulir dari Chromium?</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6711464428925977395">Ada yang salah dengan server proxy, atau alamat tidak benar.</translation>
@@ -633,6 +635,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8971063699422889582">Sertifikat server telah kedaluwarsa.</translation>
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="8988760548304185580">Masukkan tanggal masa berlaku habis dan 3 digit CVC di belakang kartu Anda</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Sertifikat autentikasi klien SSL gagal.</translation>
 <translation id="901974403500617787">Tanda yang berlaku bagi sistem secara luas hanya dapat disetel oleh pemilik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Server menolak sambungan.</translation>

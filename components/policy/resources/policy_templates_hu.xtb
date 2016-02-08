@@ -2046,7 +2046,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           A házirend értékét ezredmásodpercben kell megadni. Az értéknek kisebbnek kell lennie a tétlenségi késleltetésnél.</translation>
 <translation id="891435090623616439">JSON-karakterláncként kódolva; a részletekért lásd: <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Eszköz helyének jelentése</translation>
-<translation id="89493502583189945">Azokat a jelölőket adja meg, amelyeket a <ph name="PRODUCT_NAME" />-ra kell alkalmazni annak elindításakor. A megadott jelölők alkalmazása már az előtt megtörténik, hogy a <ph name="PRODUCT_NAME" /> elindulna (már a bejelentkezési képernyőn is).</translation>
 <translation id="8951350807133946005">A lemez gyorsítótár-könyvtárának beállítása</translation>
 <translation id="8955719471735800169">Vissza az oldal tetejére</translation>
 <translation id="8960850473856121830">A listában szereplő mintákat a böngésző egyezteti a kérelmező URL

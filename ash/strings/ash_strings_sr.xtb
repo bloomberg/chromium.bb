@@ -113,7 +113,6 @@
 <translation id="4250680216510889253">Не</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Драги мониторе, не иде нам. (Тај монитор није подржан)</translation>
 <translation id="4421231901400348175">Делите контролу над екраном са особом <ph name="HELPER_NAME" /> преко Даљинске помоћи.</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
 <translation id="4527045527269911712">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање.</translation>
@@ -182,7 +181,6 @@
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Bluetooth уређај „<ph name="DEVICE_NAME" />“ је упарен и сада је доступан свим корисницима. Можете да уклоните то упаривање помоћу Подешавања.</translation>
 <translation id="6785414152754474415">Батерија је <ph name="PERCENTAGE" />% пуна и још увек се пуни.</translation>
-<translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (говорне повратне информације)</translation>
 <translation id="6911468394164995108">Придружи ме другој...</translation>

@@ -51,7 +51,6 @@
 <translation id="2397416548179033562">显示 Chrome 菜单</translation>
 <translation id="2429317896000329049">由于您的网域停用了同步功能，Google Chrome无法同步您的数据。</translation>
 <translation id="2485422356828889247">卸载</translation>
-<translation id="2576431527583832481">Chrome 浏览器刚刚经过了改进！新版本已推出。</translation>
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
 <translation id="2582790009689336987">Google Chrome 将不再支持此 Linux 系统，因此这台计算机很快将停止接收 Google Chrome 更新。</translation>
 <translation id="2588322182880276190">Chrome 徽标</translation>
@@ -112,7 +111,6 @@
 <translation id="4633000520311261472">为了提高 Chrome 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
 <translation id="4700157086864140907">Google Chrome会将您在浏览器中输入的内容发送到Google服务器，并使用Google搜索所用的拼写检查技术，因而可为您提供更智能的拼写检查功能。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
-<translation id="473775607612524610">更新</translation>
 <translation id="4743926867934016338">接受并搜索</translation>
 <translation id="4751441238232965030">此计算机很快将停止接收 32 位 Google Chrome 更新。请升级到 64 位 Google Chrome。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

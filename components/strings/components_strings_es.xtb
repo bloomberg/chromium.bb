@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1015255576907412255">Ponte en contacto con el administrador del sistema para obtener más información.</translation>
+<translation id="1015730422737071372">Proporciónanos más detalles</translation>
 <translation id="1032854598605920125">Girar hacia la derecha</translation>
 <translation id="1055184225775184556">&amp;Deshacer acción de añadir</translation>
 <translation id="1064422015032085147">El servidor que aloja la página web puede estar sobrecargado o en mantenimiento.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Error de descarga</translation>
 <translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="6646897916597483132">Introduce el código CVC de cuatro dígitos que aparece en el anverso de tu tarjeta</translation>
+<translation id="6660210980321319655">Notificado automáticamente el <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">¿Quitar sugerencia de formulario de Chromium?</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6711464428925977395">Se ha producido un error con el servidor proxy o la dirección es incorrecta.</translation>
@@ -633,6 +635,7 @@
 <translation id="8971063699422889582">El certificado del servidor ha caducado.</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8988760548304185580">Introduce la fecha de caducidad y el código CVC de tres dígitos que aparece en el reverso de tu tarjeta</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Certificado de autenticación de cliente SSL no válido</translation>
 <translation id="901974403500617787">Las opciones que se aplican a todo el sistema solo las puede establecer el propietario: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">El servidor ha rechazado la conexión.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1015255576907412255">Ha további információra van szüksége, vegye fel a kapcsolatot rendszergazdájával.</translation>
+<translation id="1015730422737071372">További részletek megadása</translation>
 <translation id="1032854598605920125">Forgatás jobbra</translation>
 <translation id="1055184225775184556">&amp;Hozzáadás visszavonása</translation>
 <translation id="1064422015032085147">A weboldalt tároló szerver túlterhelt, vagy javítás alatt lehet.
@@ -434,6 +435,7 @@
 <translation id="6637478299472506933">Letöltés sikertelen</translation>
 <translation id="6644283850729428850">Ez a házirend már elavult.</translation>
 <translation id="6646897916597483132">Adja meg a kártya elején szereplő négyjegyű CVC-kódot</translation>
+<translation id="6660210980321319655">Automatikusan jelentve ekkor: <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Eltávolítja az űrlapjavaslatot a Chromiumból?</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6711464428925977395">Valami gond van a proxyszerverrel, vagy a cím nem megfelelő.</translation>
@@ -630,6 +632,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>
 <translation id="8987927404178983737">hónap</translation>
 <translation id="8988760548304185580">Adja meg a lejárati dátumot, és a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Rossz SSL-ügyfélhitelesítési tanúsítvány.</translation>
 <translation id="901974403500617787">Rendszerszinten érvényes jelölőket csak a tulajdonos (<ph name="OWNER_EMAIL" />) állíthat be.</translation>
 <translation id="9020142588544155172">A szerver visszautasította a kapcsolatot.</translation>

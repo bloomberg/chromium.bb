@@ -113,7 +113,6 @@
 <translation id="4250680216510889253">Όχι</translation>
 <translation id="4279490309300973883">Κατοπτρισμός</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Αγαπητή οθόνη, κάτι δεν πάει καλά με εμάς. (Αυτή η οθόνη δεν υποστηρίζεται)</translation>
 <translation id="4421231901400348175">Κοινόχρηστος έλεγχος της οθόνης σας με το χρήστη <ph name="HELPER_NAME" /> μέσω της απομακρυσμένης βοήθειας.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="4527045527269911712">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης.</translation>
@@ -182,7 +181,6 @@
 <translation id="6650933572246256093">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτό το κλειδί πρόσβασης στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" έχει συζευχθεί και είναι πλέον διαθέσιμη σε όλους τους χρήστες. Μπορείτε να καταργήσετε αυτήν τη σύζευξη μέσω των Ρυθμίσεων.</translation>
 <translation id="6785414152754474415">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE" />% και φορτίζει.</translation>
-<translation id="6803622936009808957">Δεν ήταν δυνατός ο αντικατοπτρισμός των οθονών καθώς δεν βρέθηκαν υποστηριζόμενες αναλύσεις. Έχει ενεργοποιηθεί εναλλακτικά η εκτεταμένη επιφάνεια εργασίας.</translation>
 <translation id="683971173229319003">Πλήκτρο αναζήτησης+L</translation>
 <translation id="68610848741840742">ChromeVox (προφορικά σχόλια)</translation>
 <translation id="6911468394164995108">Συμμετοχή σε άλλο…</translation>

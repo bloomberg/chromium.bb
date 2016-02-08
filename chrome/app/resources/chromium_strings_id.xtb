@@ -106,7 +106,6 @@
 <translation id="457845228957001925">Informasi penting terkait data Chromium Anda</translation>
 <translation id="459535195905078186">Aplikasi Chromium</translation>
 <translation id="4677944499843243528">Profil tersebut mungkin digunakan pada proses Chromium lainnya (<ph name="PROCESS_ID" />) pada komputer lain (<ph name="HOST_NAME" />). Chromium telah mengunci profil tersebut agar tidak rusak. Jika yakin tidak ada proses lain yang menggunakan profil tersebut, Anda dapat membuka profil dan meluncurkan Chromium kembali.</translation>
-<translation id="473775607612524610">Mutakhirkan</translation>
 <translation id="4743926867934016338">Terima &amp; Telusuri</translation>
 <translation id="4888717733111232871">Inbound rule untuk Chromium guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="4943838377383847465">Chromium berjalan di mode latar belakang.</translation>
@@ -140,7 +139,6 @@
 <translation id="6334986366598267305">Kini, menggunakan Chromium dengan Akun Google Anda dan di komputer bersama jadi lebih mudah.</translation>
 <translation id="6373523479360886564">Anda yakin ingin mencopot pemasangan Chromium?</translation>
 <translation id="6403826409255603130">Chromium adalah browser web yang menjalankan laman web dan aplikasi dengan kecepatan kilat. Browser ini cepat, stabil, dan mudah digunakan. Jelajahi web lebih aman dengan perlindungan dari perangkat lunak perusak dan phishing yang tertanam di dalam Chromium.</translation>
-<translation id="6424492062988593837">Chromium jadi semakin baik! Versi baru telah tersedia.</translation>
 <translation id="6475912303565314141">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chromium.</translation>
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyinkronkan barang-barang Chromium. Untuk memperbarui preferensi sinkronisasi atau menggunakan Chromium tanpa akun Google, kunjungi <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Copot Pemasangan Chromium</translation>

@@ -42,6 +42,7 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="1477626028522505441">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo radās servera problēmas.</translation>
 <translation id="1506061864768559482">Meklētājprogramma</translation>
 <translation id="1513352483775369820">Grāmatzīmes un tīmekļa vēsture</translation>
+<translation id="1546112724822176246">Vai jūsu ierīce netiek rādīta? <ph name="BEGIN_LINK" />Saņemiet palīdzību<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
 <translation id="1557201757634521564">Kodējuma automātiska noteikšana</translation>
 <translation id="1568822834048182062">Jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi tiks sinhronizēti ar jūsu Google kontu.</translation>
@@ -213,9 +214,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> grāmatzīme ir saglabāta bezsaistē</translation>
 <translation id="423410644998903704">Pārlūkam Chrome ir nepieciešama piekļuve atļaujām, lai kopīgotu tās ar šo vietni.</translation>
-<translation id="424696723690217687">Atklājiet tīmekļa lapas, ko nosūtījuši tuvumā esoši objekti.
-
-Kad jūsu ierīce būs atbloķēta, Chrome meklēs tuvumā esošas lapas. Šīs lapas tiks ievietotas Google pakalpojumā, lai uzlabotu lapu rezultātu kvalitāti.</translation>
 <translation id="4254813446494774748">Tulkojuma valoda:</translation>
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="6108923351542677676">Notiek iestatīšana...</translation>
 <translation id="6112702117600201073">Lapas atsvaidzināšana</translation>
 <translation id="6127379762771434464">Vienums ir noņemts</translation>
+<translation id="6134870457258083164">Vai jūsu ierīce netiek rādīta? <ph name="BEGIN_LINK1" />Saņemiet palīdzību<ph name="END_LINK1" /> vai <ph name="BEGIN_LINK2" />meklējiet vēlreiz<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Padarīt lapu piemērotu mobilajām ierīcēm</translation>
 <translation id="6140912465461743537">Valsts/reģions</translation>
 <translation id="6159335304067198720">Datu lietojuma samazinājums: <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="7191430249889272776">Cilne tika atvērta fonā.</translation>
 <translation id="7208788139759694678">Datu lietojuma samazinātājs ir atspējots.</translation>
+<translation id="721331389620694978">Netiks dzēsti daži iestatījumi, kas var atspoguļot pārlūkošanas paradumus.</translation>
 <translation id="7243308994586599757">Opcijas, kas pieejamas ekrāna apakšējā daļā</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> izmanto jūsu atrašanās vietas informāciju, lai rādītu vietējās meklēšanas rezultātus</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Palīdzība<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 
 Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojiet lejupielādēto saturu.</translation>
 <translation id="8660471606262461360">No Google Payments</translation>
-<translation id="8675945939500569406">Vai ieslēgt fizisko tīmekli?</translation>
 <translation id="8676374126336081632">Notīrīt ievadi</translation>
 <translation id="869891660844655955">Derīguma termiņš</translation>
 <translation id="8699799819461268362">Google SafeSites filtrs</translation>
 <translation id="8701537995684343047">Lai saglabātu grāmatzīmi bezsaistē, atveriet to</translation>
 <translation id="8719023831149562936">Nevar kopīgot šo cilni, izmantojot Beam.</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
-<translation id="8727142376512517020">Vairs nerādīt šo paziņojumu</translation>
 <translation id="8730621377337864115">Gatavs</translation>
 <translation id="8737542153238017984">Saglabātā lapa nav pieejama bezsaistē. Krātuvē ir maz vietas.</translation>
 <translation id="8793430725658173476">Kopēt URL</translation>

@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">サーバーで問題が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="1506061864768559482">検索エンジン</translation>
 <translation id="1513352483775369820">ブックマークとウェブ履歴</translation>
+<translation id="1546112724822176246">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
 <translation id="1557201757634521564">エンコードを自動検出する</translation>
 <translation id="1568822834048182062">ブックマーク、履歴、パスワード、その他の設定が Google アカウントに同期されます。</translation>
@@ -213,9 +214,6 @@
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> のブックマークをオフライン保存しました</translation>
 <translation id="423410644998903704">このサイトと機能を共有するには Chrome にアクセスを許可する必要があります。</translation>
-<translation id="424696723690217687">近くのオブジェクトから送信されているウェブページを検出します。
-
-Chrome では端末のロックが解除されている場合に、近くで送信されているページをスキャンします。検出されたページは、Google のサービスを使用して精度が高められます。</translation>
 <translation id="4254813446494774748">翻訳言語:</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
@@ -373,6 +371,7 @@ Chrome では端末のロックが解除されている場合に、近くで送�
 <translation id="6108923351542677676">設定しています...</translation>
 <translation id="6112702117600201073">ページを更新しています</translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
+<translation id="6134870457258083164">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK1" />ヘルプ<ph name="END_LINK1" />をご覧になるか、<ph name="BEGIN_LINK2" />もう一度検索<ph name="END_LINK2" />してください。</translation>
 <translation id="6138140242378429169">ページをモバイル向け画面で表示</translation>
 <translation id="6140912465461743537">国 / 地域</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
@@ -459,6 +458,7 @@ Chrome では端末のロックが解除されている場合に、近くで送�
 <translation id="7180611975245234373">更新</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
 <translation id="7208788139759694678">データセーバーは無効です</translation>
+<translation id="721331389620694978">閲覧行動を反映した設定は、場合によっては消去されません。</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Chrome では端末のロックが解除されている場合に、近くで送�
 
 新しいライセンスを取得するには、インターネットに接続し、ダウンロードしたコンテンツを再生してください。</translation>
 <translation id="8660471606262461360">Google ペイメントから取得</translation>
-<translation id="8675945939500569406">フィジカル ウェブを有効にしますか？</translation>
 <translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="869891660844655955">有効期限</translation>
 <translation id="8699799819461268362">Google セーフサイト フィルタ</translation>
 <translation id="8701537995684343047">オフライン保存するブックマークを開いてください</translation>
 <translation id="8719023831149562936">現在のタブはビームできません</translation>
 <translation id="8725066075913043281">やり直し</translation>
-<translation id="8727142376512517020">今後このメッセージを表示しない</translation>
 <translation id="8730621377337864115">完了</translation>
 <translation id="8737542153238017984">ストレージの空き容量がないため、保存したページはオフラインで表示できません。</translation>
 <translation id="8793430725658173476">URLをコピー</translation>

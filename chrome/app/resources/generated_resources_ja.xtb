@@ -607,6 +607,7 @@
 <translation id="1864111464094315414">ログイン</translation>
 <translation id="1864676585353837027">これらのファイルの共有方法を変更してください</translation>
 <translation id="1864756863218646478">ファイルが見つかりませんでした。</translation>
+<translation id="1865769994591826607">同一サイトの接続のみ</translation>
 <translation id="186612162884103683">「<ph name="EXTENSION" />」はチェックした場所にある画像、動画、音声の各ファイルの読み込みと書き込みが可能です。</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> をインストールする準備ができました</translation>
 <translation id="1873879463550486830">SUID サンドボックス</translation>
@@ -1196,6 +1197,7 @@
 <translation id="2743387203779672305">クリップボードにコピー</translation>
 <translation id="2744221223678373668">共有</translation>
 <translation id="2745080116229976798">Microsoft 限定従属</translation>
+<translation id="2745576239403924641">Android アプリを Chromebook で使えるようにする。</translation>
 <translation id="2747990718031257077">（開発中の）拡張機能ツールバーの新しいデザインを有効にします。</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" /> にログイン</translation>
 <translation id="2749881179542288782">スペルと一緒に文法をチェック</translation>
@@ -1409,6 +1411,7 @@
 <translation id="3011284594919057757">Flash について</translation>
 <translation id="3011362742078013760">すべてのブックマークをシークレット ウィンドウで開く(&amp;I)</translation>
 <translation id="3012631534724231212">（iframe）</translation>
+<translation id="3012804260437125868">同一サイトの保護された接続のみ</translation>
 <translation id="3012890944909934180">デスクトップで Chrome を再起動する</translation>
 <translation id="3012917896646559015">すぐにハードウェアの製造元に連絡し、パソコンを修理センターに送るよう手配してください。</translation>
 <translation id="3015992588037997514">このコードが Chromebox の画面に表示されていますか？</translation>
@@ -1642,6 +1645,7 @@
 <translation id="331752765902890099"><ph name="PROFILE_NAME" /> ボタン: ログインエラー</translation>
 <translation id="3319048459796106952">シークレット ウィンドウを開く(&amp;I)</translation>
 <translation id="331915893283195714">すべてのサイトに対してマウス カーソルの無効化を許可する</translation>
+<translation id="3319364804843246307">Android アプリ</translation>
 <translation id="3320859581025497771">携帯通信会社</translation>
 <translation id="3323235640813116393">ページを MHTML 形式で保存できるようにします。MHTML は、HTML とすべてのサブリソースを含む単一のテキスト ファイルです。</translation>
 <translation id="3323447499041942178">テキスト ボックス</translation>
@@ -1746,6 +1750,7 @@
 <translation id="347719495489420368">右クリックして <ph name="PLUGIN_NAME" /> を再生します。</translation>
 <translation id="347785443197175480"><ph name="HOST" /> によるカメラとマイクへのアクセスを引き続き許可する</translation>
 <translation id="3478315065074101056">XPS を使用すると、Chrome でクラウド プリントに接続している従来のプリンタに対し、詳細オプションを有効にできます。このフラグの設定を変更した場合は、プリンタを接続し直す必要があります。</translation>
+<translation id="3479539252931486093">想定外の動作である場合は、<ph name="BEGIN_LINK" />問題を報告<ph name="END_LINK" />してください。</translation>
 <translation id="3479552764303398839">後で</translation>
 <translation id="3480892288821151001">ウィンドウを左に固定</translation>
 <translation id="3481915276125965083">このページの次のポップアップがブロックされました:</translation>
@@ -2720,6 +2725,7 @@
 <translation id="4941246025622441835">エンタープライズ管理のためにデバイスを登録するときにこのデバイス利用申請を使用する:</translation>
 <translation id="4942394808693235155">アップデートを確認して適用</translation>
 <translation id="494286511941020793">プロキシ設定ヘルプ</translation>
+<translation id="4945378551914476156">ブックマーク、履歴、パスワードなどの設定が Google アカウントに同期され、どの端末の Chrome でも利用できるようになります。この設定は次の場所で変更できます: <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">オプション...</translation>
 <translation id="4952186391360931024">マテリアルを使用しない</translation>
 <translation id="4954544650880561668">デバイス制御</translation>
@@ -2854,7 +2860,6 @@
    <ph name="LINE_BREAKS" />
    使用中のデバイスを取り外すと、データが失われる恐れがあります。操作が完了してから、ファイル アプリを使ってデバイスを取り外してください。</translation>
 <translation id="5159488553889181171"><ph name="PLUGIN_NAME" /> のダウンロードをキャンセルしました。</translation>
-<translation id="5159628598068481063">Windows デスクトップ検索のリダイレクト設定</translation>
 <translation id="5160857336552977725"><ph name="DEVICE_TYPE" /> にログインしてください</translation>
 <translation id="5163869187418756376">共有できませんでした。接続を確認し、しばらくしてからもう一度お試しください。</translation>
 <translation id="516592729076796170">US Programmer Dvorak 配列</translation>
@@ -3222,7 +3227,6 @@
 <translation id="567881659373499783">バージョン <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1" /> でのユーザーデータの読み取り</translation>
 <translation id="5680928275846978395">概観モードでのテキストの絞り込み</translation>
-<translation id="568428328938709143">アカウントは削除されました</translation>
 <translation id="5684661240348539843">アセット ID</translation>
 <translation id="569068482611873351">インポート...</translation>
 <translation id="56907980372820799">データをリンク</translation>
@@ -3462,6 +3466,7 @@
 <translation id="604001903249547235">クラウド バックアップ</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="604124094241169006">自動設定</translation>
+<translation id="6042308850641462728">詳細表示</translation>
 <translation id="604257181445267932">スマートロックを使用すると、Google に保存したパスワードを使ってアプリやサイトにすばやくログインできます。</translation>
 <translation id="6049065490165456785">内蔵カメラの写真</translation>
 <translation id="6051028581720248124">FedEx Office で印刷すると、<ph name="START_LINK" />利用規約<ph name="END_LINK" />に同意したことになります。</translation>
@@ -3493,7 +3498,6 @@
 <translation id="6089481419520884864">ページを抽出</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">更新をキャンセルしています...</translation>
-<translation id="6095149522260432647">設定を有効にした場合、Windows デスクトップ検索でデフォルトの検索エンジンにリダイレクトできるようになります。</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">最大化して開く</translation>
 <translation id="6096326118418049043">X.500 名</translation>
@@ -4677,6 +4681,7 @@
 <translation id="7926906273904422255">保護されていない発行元に、「保護されていない発行元」または「保護されていない可能性のある発行元」のマークを付けます。</translation>
 <translation id="7928710562641958568">デバイスの取り出し</translation>
 <translation id="7938594894617528435">現在オフライン</translation>
+<translation id="7939374455203157513">クラウド サービスを有効にする</translation>
 <translation id="7939412583708276221">続行する</translation>
 <translation id="7939997691108949385">管理者は、この監視対象ユーザーの制限と設定を <ph name="MANAGEMENT_URL" /> で指定できます。</translation>
 <translation id="7943385054491506837">US Colemak 配列</translation>
@@ -5227,6 +5232,7 @@
 <translation id="872537912056138402">クロアチア語</translation>
 <translation id="8726206820263995930">サーバーからポリシー設定を取得するときにエラーが発生しました: <ph name="CLIENT_ERROR" />。</translation>
 <translation id="8726888928275282477">拡張機能のオプションを、新しいタブを開いたときではなく chrome://extensions の埋め込み要素として表示します。</translation>
+<translation id="8727142376512517020">今後このメッセージを表示しない</translation>
 <translation id="8728672262656704056">シークレット モードです</translation>
 <translation id="8730621377337864115">完了</translation>
 <translation id="8731332457891046104"><ph name="DEVICE_TYPE" /> の登録解除</translation>
@@ -5389,7 +5395,6 @@
 <translation id="8986362086234534611">切断</translation>
 <translation id="8986494364107987395">使用統計データや障害レポートを自動的に Google に送信する</translation>
 <translation id="8987927404178983737">月</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Netscape 証明書基本 URL</translation>
 <translation id="8994845581478641365">DirectWrite フォント キャッシュ ビルダー</translation>
 <translation id="8995603266996330174">管理ドメイン: <ph name="DOMAIN" /></translation>

@@ -111,7 +111,6 @@
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4279490309300973883">Zrcadlení</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Drahý monitore, nějak to mezi námi nefunguje. (Monitor není podporován.)</translation>
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
 <translation id="4527045527269911712">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování.</translation>
@@ -179,7 +178,6 @@
 <translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je nyní k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
-<translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
 <translation id="683971173229319003">Hledat+L</translation>
 <translation id="68610848741840742">ChromeVox (hlasová odezva)</translation>
 <translation id="6911468394164995108">Připojit k jiné...</translation>

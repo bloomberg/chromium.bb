@@ -2319,7 +2319,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="891435090623616439">encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Report device location</translation>
-<translation id="89493502583189945">Specifies the flags that should be applied to <ph name="PRODUCT_NAME" /> when it starts. The specified flags are applied before <ph name="PRODUCT_NAME" /> is started even for the sign-in screen.</translation>
 <translation id="8951350807133946005">Set disk cache directory</translation>
 <translation id="8955719471735800169">Back to top</translation>
 <translation id="8960850473856121830">Patterns in this list will be matched against the security

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="1015255576907412255">Če želite več informacij, se obrnite na skrbnika sistema.</translation>
+<translation id="1015730422737071372">Navedite dodatne podrobnosti</translation>
 <translation id="1032854598605920125">Sukanje v smeri urnega kazalca</translation>
 <translation id="1055184225775184556">&amp;Razveljavi dodajanje</translation>
 <translation id="1064422015032085147">Strežnik, ki gosti spletno stran, je morda preobremenjen ali poteka njegovo vzdrževanje.
@@ -438,6 +439,7 @@
 <translation id="6637478299472506933">Prenos ni uspel</translation>
 <translation id="6644283850729428850">Ta pravilnik je zastarel.</translation>
 <translation id="6646897916597483132">Vnesite štirimestno kodo CVC na sprednji strani kartice</translation>
+<translation id="6660210980321319655">Samodejno sporočeno: <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Želite predlog obrazca odstraniti iz Chromiuma?</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6711464428925977395">Nekaj je narobe s strežnikom proxy ali pa naslov ni pravilen.</translation>
@@ -634,6 +636,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8971063699422889582">Potrdilo strežnika je poteklo.</translation>
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="8988760548304185580">Vnesite datum poteka in trimestno kodo CVC na hrbtni strani kartice</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Napačno potrdilo preverjanja pristnosti odjemalca SSL.</translation>
 <translation id="901974403500617787">Zastavice, ki se uporabijo v celotnem sistemu, lahko nastavi samo lastnik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Strežnik je zavrnil povezavo.</translation>

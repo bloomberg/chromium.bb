@@ -2247,7 +2247,6 @@ Pokud toto nastavení deaktivujete nebo nenastavíte žádnou hodnotu, Bezpečn�
           Hodnotu zásady zadávejte v milisekundách. Maximální hodnota je nižší než prodleva režimu spánku.</translation>
 <translation id="891435090623616439">Zakódováno jako řetězec JSON, podrobnosti naleznete zde: <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Oznamovat polohu zařízení</translation>
-<translation id="89493502583189945">Udává příznaky, které mají být na aplikaci <ph name="PRODUCT_NAME" /> použity při spuštění. Zadané příznaky se použijí ještě před spuštěním prohlížeče <ph name="PRODUCT_NAME" /> k zobrazení přihlašovací obrazovky.</translation>
 <translation id="8951350807133946005">Nastavit adresář mezipaměti na disku</translation>
 <translation id="8955719471735800169">Zpět na začátek</translation>
 <translation id="8960850473856121830">Vzory v tomto seznamu budou porovnány s bezpečnostními údaji o původu požadované adresy URL. Pokud bude nalezena shoda, přístup k zařízením pro záznam zvuku bude udělen bez vyzvání.

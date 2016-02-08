@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1015255576907412255">Aby uzyskać więcej informacji, skontaktuj się z administratorem systemu.</translation>
+<translation id="1015730422737071372">Podaj dodatkowe informacje</translation>
 <translation id="1032854598605920125">Obróć w prawo</translation>
 <translation id="1055184225775184556">&amp;Cofnij dodanie</translation>
 <translation id="1064422015032085147">Serwer hostujący tę stronę może być przeciążony lub w trakcie konserwacji.
@@ -436,6 +437,7 @@
 <translation id="6637478299472506933">Pobieranie nie powiodło się</translation>
 <translation id="6644283850729428850">Zasada jest przestarzała.</translation>
 <translation id="6646897916597483132">Wpisz czterocyfrowy kod CVC widoczny na przodzie karty</translation>
+<translation id="6660210980321319655">Automatyczne zgłoszenie: <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Usunąć tę podpowiedź do formularza z Chromium?</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6711464428925977395">Serwer proxy działa nieprawidłowo albo adres jest błędny.</translation>
@@ -631,6 +633,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>
 <translation id="8987927404178983737">Miesiąc</translation>
 <translation id="8988760548304185580">Wpisz datę ważności i trzycyfrowy kod CVC widoczny na odwrocie karty</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Błędny certyfikat uwierzytelniania klienta SSL.</translation>
 <translation id="901974403500617787">Flagi stosowane w całym systemie może ustawić tylko właściciel: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Serwer odrzucił połączenie.</translation>

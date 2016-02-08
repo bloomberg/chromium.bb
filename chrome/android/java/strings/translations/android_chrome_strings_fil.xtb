@@ -42,6 +42,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1477626028522505441">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga isyu sa server.</translation>
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmark at history ng web</translation>
+<translation id="1546112724822176246">Hindi mo ba nakikita ang iyong device? <ph name="BEGIN_LINK" />Humingi ng tulong<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
 <translation id="1557201757634521564">Awtomatikong i-detect ang pag-e-encode</translation>
 <translation id="1568822834048182062">Isi-sync ang iyong mga bookmark, history password at iba mga setting sa iyong Google Account.</translation>
@@ -213,9 +214,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> na bookmark ang na-save offline</translation>
 <translation id="423410644998903704">Kailangan ng Chrome ng access sa pahintulot upang maibahagi ang mga ito sa site na ito.</translation>
-<translation id="424696723690217687">Tuklasin ang mga web page na ipinadala ng mga kalapit na bagay.
-
-Magsa-scan ang Chrome para sa mga kalapit na page kapag naka-unlock ang iyong device. Mapapasailalim ang mga page na ito sa isang serbisyo ng Google upang mapahusay ang kalidad ng mga resulta ng page.</translation>
 <translation id="4254813446494774748">Wika ng Pagsasalin:</translation>
 <translation id="4256782883801055595">Mga lisensya ng open source</translation>
 <translation id="4259722352634471385">Naka-block ang navigation: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="6108923351542677676">Kasalukuyang sine-setup…</translation>
 <translation id="6112702117600201073">Nire-refresh ang page</translation>
 <translation id="6127379762771434464">Inalis ang item</translation>
+<translation id="6134870457258083164">Hindi mo ba nakikita ang iyong device? <ph name="BEGIN_LINK1" />Humingi ng tulong<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />muling maghanap<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Gawing pang-mobile ang page</translation>
 <translation id="6140912465461743537">Bansa/Rehiyon</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> natipid sa data</translation>
@@ -459,6 +458,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7180611975245234373">I-refresh</translation>
 <translation id="7191430249889272776">Binuksan ang tab sa background.</translation>
 <translation id="7208788139759694678">Naka-disable ang Data Saver</translation>
+<translation id="721331389620694978">Hindi maki-clear ang ialng setting na maaaring magpakita sa mga gawi sa pagba-browse.</translation>
 <translation id="7243308994586599757">May mga opsyon malapit sa ibaba ng screen</translation>
 <translation id="7244362611678346589">Ginagamit ng <ph name="SEARCH_ENGINE_URL" /> ang iyong lokasyon upang magpakita ng mga lokal na resulta ng paghahanap</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Tulong<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Gayunpaman, hindi ka invisible. Kahit na gumamit ka ng tab na incognito, hindi p
 
 Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong na-download na content.</translation>
 <translation id="8660471606262461360">Mula sa Google Payments</translation>
-<translation id="8675945939500569406">I-on ang Pisikal na Web?</translation>
 <translation id="8676374126336081632">I-clear ang input</translation>
 <translation id="869891660844655955">Expiration date</translation>
 <translation id="8699799819461268362">Filter ng Google SafeSites</translation>
 <translation id="8701537995684343047">Bisitahin ang bookmark upang i-save offline</translation>
 <translation id="8719023831149562936">Hindi ma-beam ang kasalukuyang tab</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
-<translation id="8727142376512517020">Huwag na itong ipakitang muli</translation>
 <translation id="8730621377337864115">Tapos na</translation>
 <translation id="8737542153238017984">Hindi available offline ang na-save na page. Malapit nang mapuno ang storage.</translation>
 <translation id="8793430725658173476">Kopyahin ang url</translation>

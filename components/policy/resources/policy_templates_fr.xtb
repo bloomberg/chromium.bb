@@ -2325,7 +2325,6 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
                       La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures au délai d'inactivité.</translation>
 <translation id="891435090623616439">codée comme une chaîne JSON, pour plus de détails voir <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Indiquer l'emplacement de l'appareil</translation>
-<translation id="89493502583189945">Spécifie les indicateurs à appliquer à <ph name="PRODUCT_NAME" /> au démarrage. Ces indicateurs sont appliqués avant le démarrage de <ph name="PRODUCT_NAME" /> (avant même l'affichage de l'écran de connexion).</translation>
 <translation id="8951350807133946005">Définir le répertoire du cache disque</translation>
 <translation id="8955719471735800169">Haut de page</translation>
 <translation id="8960850473856121830">Les modèles de cette liste sont rapprochés de la source de sécurité

@@ -2323,7 +2323,6 @@
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par aizkavi līdz dīkstāvei.</translation>
 <translation id="891435090623616439">kodēts kā JSON virkne, detalizētu informāciju skatiet vietnē <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Ziņot par ierīces atrašanās vietu</translation>
-<translation id="89493502583189945">Tiek norādītas atzīmes, kas jāizmanto pārlūkā <ph name="PRODUCT_NAME" />, kad tas tiek startēts. Norādītās atzīmes tiek izmantotas pirms pārlūka <ph name="PRODUCT_NAME" /> startēšanas, pat attiecībā uz pierakstīšanās ekrānu.</translation>
 <translation id="8951350807133946005">Iestatīt diska kešatmiņas direktoriju</translation>
 <translation id="8955719471735800169">Augšup</translation>
 <translation id="8960850473856121830">Šajā sarakstā pieejamajiem šabloniem tiek meklēta atbilstība pieprasītā URL

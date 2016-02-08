@@ -713,9 +713,9 @@
       이 설정을 사용하거나 설정하지 않으면 사용자는 Google 계정에서 인증한 클라우드 프린트 프록시를 사용할 수 있습니다.
 
       이 설정을 사용중지하면 사용자는 프록시를 사용할 수 없으며 컴퓨터는 <ph name="CLOUD_PRINT_NAME" />와(과)의 프린터 공유를 허용하지 않습니다.</translation>
-<translation id="3322771899429619102">키 생성 사용이 허용된 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenBlockedForUrls'에 있는 경우 이러한 예외를 재정의합니다.
+<translation id="3322771899429619102">키 생성 사용이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenBlockedForUrls'에 있는 경우 이 예외를 무시합니다.
 
-          이 정책을 설정하지 않은 경우 'DefaultKeygenSetting' 정책이 설정되어 있으면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 글로벌 기본값이 모든 사이트에서 사용됩니다.</translation>
+          이 정책을 설정하지 않은 경우 'DefaultKeygenSetting' 정책이 설정되어 있으면 해당 정책의 글로벌 기본값이, 그렇지 않으면 사용자 개인 설정의 글로벌 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="3381968327636295719">호스트 브라우저를 기본으로 사용</translation>
 <translation id="3417418267404583991">이 정책을 true로 설정하거나 구성하지 않으면 <ph name="PRODUCT_OS_NAME" />은(는) 손님 로그인을 사용합니다. 손님 로그인은 익명 사용자 세션이며 비밀번호가 필요없습니다.
 
@@ -918,9 +918,9 @@
 
           이 정책은 <ph name="PRODUCT_NAME" />에 한해 내부 용도로만 사용합니다.</translation>
 <translation id="4224610387358583899">화면 잠금 지연</translation>
-<translation id="423797045246308574">키 생성 사용이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenAllowedForUrls'에 있는 경우 이 정책은 이러한 예외를 재정의합니다.
+<translation id="423797045246308574">키 생성 사용이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenAllowedForUrls'에 있는 경우 이 정책은 이 예외를 무시합니다.
 
-          이 정책을 설정하지 않은 경우 'DefaultKeygenSetting' 정책이 설정되어 있으면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 글로벌 기본값이 모든 사이트에서 사용됩니다.</translation>
+          이 정책을 설정하지 않은 경우 'DefaultKeygenSetting' 정책이 설정되어 있으면 해당 정책의 글로벌 기본값이, 그렇지 않으면 사용자 개인 설정의 글로벌 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="427632463972968153">POST로 이미지 검색을 할 때 사용될 매개변수를 지정합니다. 쉼표로 구분된 이름/값 쌍으로 구성됩니다. 값이 위의 예에 있는 {imageThumbnail}과 같은 템플릿 매개변수인 경우 실제 이미지 미리보기 데이터로 대체됩니다.
 
@@ -2115,7 +2115,7 @@
 <translation id="8300455783946254851">True로 설정하면 셀룰러 연결을 사용할 때 <ph name="PRODUCT_OS_NAME" /> 파일 앱에서 Google 드라이브 동기화를 사용 중지합니다. 이런 경우 Wi-Fi나 이더넷을 통해 연결되었을 때에만 데이터가 Google 드라이브에 동기화됩니다.
 
           설정하지 않거나 False로 설정한 사용자는 셀룰러 연결을 통해 Google 드라이브에 파일을 전송할 수 있습니다.</translation>
-<translation id="8312129124898414409">웹사이트에서 키 생성을 사용하도록 허용할지 여부를 설정할 수 있습니다. 키 생성 사용은 모든 웹사이트에서 허용 또는 거부하도록 할 수 있습니다.
+<translation id="8312129124898414409">웹사이트에서 키 생성을 사용하도록 허용할지 여부를 설정할 수 있습니다. 키 생성 사용은 모든 웹사이트를 대상으로 허용 또는 거부하도록 설정합니다.
 
           이 정책을 설정하지 않은 경우 'BlockKeygen'이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="8329984337216493753">이 정책은 판매 모드일 때만 사용할 수 있습니다.
@@ -2304,7 +2304,6 @@
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 작도록 값이 잘립니다.</translation>
 <translation id="891435090623616439">JSON 문자열로 인코딩됨, 자세한 내용은 <ph name="COMPLEX_POLICIES_URL" /> 참조</translation>
 <translation id="8947415621777543415">기기 위치 신고</translation>
-<translation id="89493502583189945"><ph name="PRODUCT_NAME" />을(를) 시작할 때 적용할 플래그를 지정합니다. 로그인 화면에서도 <ph name="PRODUCT_NAME" />이(가) 시작하기 전에 지정한 플래그가 적용됩니다.</translation>
 <translation id="8951350807133946005">디스크 캐시 디렉토리 설정</translation>
 <translation id="8955719471735800169">맨위로</translation>
 <translation id="8960850473856121830">이 목록의 패턴을 요청 URL의 보안 출처와 비교합니다.

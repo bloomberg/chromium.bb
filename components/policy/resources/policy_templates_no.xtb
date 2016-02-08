@@ -2228,7 +2228,6 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
           Innstillingsverdien må angis i millisekunder. Verdiene er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
 <translation id="891435090623616439">kodet som en JSON-streng – se <ph name="COMPLEX_POLICIES_URL" /> for nærmere informasjon</translation>
 <translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>
-<translation id="89493502583189945">Spesifiserer flaggene som skal brukes når <ph name="PRODUCT_NAME" /> starter. De spesifiserte flaggene brukes før <ph name="PRODUCT_NAME" /> startes – selv for påloggingsskjermbildet.</translation>
 <translation id="8951350807133946005">Angi katalog for diskbufring</translation>
 <translation id="8955719471735800169">Tilbake til toppen</translation>
 <translation id="8960850473856121830">Mønstrene i denne listen sammenlignes med sikkerhetskilden

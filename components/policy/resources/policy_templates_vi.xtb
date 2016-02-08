@@ -2286,7 +2286,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn độ trễ khi không sử dụng.</translation>
 <translation id="891435090623616439">được mã hóa dưới dạng chuỗi JSON, để biết chi tiết hãy xem <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Báo cáo vị trí thiết bị</translation>
-<translation id="89493502583189945">Chỉ định cờ sẽ được áp dụng cho <ph name="PRODUCT_NAME" /> khi khởi động. Cờ chỉ định được áp dụng trước khi <ph name="PRODUCT_NAME" /> khởi động, ngay cả đối với màn hình đăng nhập.</translation>
 <translation id="8951350807133946005">Thiết lập thư mục bộ nhớ cache trên đĩa</translation>
 <translation id="8955719471735800169">Quay lại đầu trang</translation>
 <translation id="8960850473856121830">Mẫu trong danh sách này sẽ được đối sánh dựa trên nguồn gốc bảo mật

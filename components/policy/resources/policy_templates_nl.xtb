@@ -2298,7 +2298,6 @@ Als dit beleid niet is ingesteld, wordt geen enkele URL op de zwarte lijst van d
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moeten lager zijn dan de inactieve vertraging.</translation>
 <translation id="891435090623616439">gecodeerd als een JSON-tekenreeks. Ga voor meer informatie naar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Apparaatlocatie rapporteren</translation>
-<translation id="89493502583189945">Hiermee worden de markeringen gespecificeerd die bij het starten moeten worden toegepast op <ph name="PRODUCT_NAME" />. De opgegeven markeringen worden toegepast voordat <ph name="PRODUCT_NAME" /> wordt gestart, zelfs voor het inlogscherm.</translation>
 <translation id="8951350807133946005">Directory voor schijfcache instellen</translation>
 <translation id="8955719471735800169">Bovenkant pagina</translation>
 <translation id="8960850473856121830">Patronen in deze lijst worden vergeleken met de beveiligingsoorsprong van de aanvragende URL. Als een overeenkomst wordt gevonden, wordt toegang tot apparaten voor het vastleggen van audio zonder prompt toegestaan.

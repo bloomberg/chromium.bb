@@ -2045,7 +2045,6 @@
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti.</translation>
 <translation id="891435090623616439">kodirano kao JSON niz, pojedinosti potražite na stranici <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Prijava lokacije uređaja</translation>
-<translation id="89493502583189945">Određuje oznake koje se trebaju primijeniti na <ph name="PRODUCT_NAME" /> prilikom njegova pokretanja. Navedene oznake primjenjuju se prije pokretanja preglednika <ph name="PRODUCT_NAME" /> čak i za zaslon za prijavu.</translation>
 <translation id="8951350807133946005">Postavi direktorij predmemorije na disku</translation>
 <translation id="8955719471735800169">Natrag na vrh</translation>
 <translation id="8960850473856121830">Uzorci na tom popisu usporedit će se sa sigurnosnim izvorištem

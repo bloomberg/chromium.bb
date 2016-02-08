@@ -42,6 +42,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1477626028522505441">Download af <ph name="FILE_NAME" /> mislykkedes på grund af serverproblemer.</translation>
 <translation id="1506061864768559482">Søgemaskine</translation>
 <translation id="1513352483775369820">Bogmærker og webhistorik</translation>
+<translation id="1546112724822176246">Kan du ikke se din enhed? <ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
 <translation id="1557201757634521564">Registrer kodning automatisk</translation>
 <translation id="1568822834048182062">Dine bogmærker, din historik og dine andre indstillinger synkroniseres med din Google-konto.</translation>
@@ -213,9 +214,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4195643157523330669">Åbn på ny fane</translation>
 <translation id="4198229475320555619">Et bogmærke på <ph name="PAGE_SIZE_STRING" /> er gemt offline</translation>
 <translation id="423410644998903704">Chrome skal have adgangstilladelse for at kunne dele dem med dette website.</translation>
-<translation id="424696723690217687">Find websider, der udsendes af genstande i nærheden.
-
-Chrome scanner efter sider i nærheden, når din enhed er låst op. Disse sider går gennem en Google-tjeneste for at forbedre kvaliteten af sideresultaterne.</translation>
 <translation id="4254813446494774748">Sprog, der skal oversættes til:</translation>
 <translation id="4256782883801055595">Open source-licenser</translation>
 <translation id="4259722352634471385">Navigationen er blokeret: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6108923351542677676">Konfigurationen er i gang...</translation>
 <translation id="6112702117600201073">Opdaterer siden</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
+<translation id="6134870457258083164">Kan du ikke se din enhed? <ph name="BEGIN_LINK1" />Få hjælp<ph name="END_LINK1" />, eller <ph name="BEGIN_LINK2" />søg igen<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Gør siden mobilvenlig</translation>
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> sparet data</translation>
@@ -459,6 +458,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7191430249889272776">Fanen blev åbnet i baggrunden.</translation>
 <translation id="7208788139759694678">Datasparefunktionen er deaktiveret</translation>
+<translation id="721331389620694978">Visse indstillinger, der kan afspejle dine søgevaner, ryddes ikke.</translation>
 <translation id="7243308994586599757">Du finder indstillingerne nederst på skærmen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> anvender din placering til at vise lokale søgeresultater</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 
 Du kan få nye licenser ved at oprette forbindelse til internettet og afspille det indhold, du har downloadet.</translation>
 <translation id="8660471606262461360">Fra Google Payments</translation>
-<translation id="8675945939500569406">Vil du aktivere Fysisk web?</translation>
 <translation id="8676374126336081632">Ryd indtastning</translation>
 <translation id="869891660844655955">Udløbsdato</translation>
 <translation id="8699799819461268362">Google SafeSites-filter</translation>
 <translation id="8701537995684343047">Gå til bogmærket for at gemme offline</translation>
 <translation id="8719023831149562936">Den aktuelle fane kan ikke overføres</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
-<translation id="8727142376512517020">Vis ikke denne underretning igen</translation>
 <translation id="8730621377337864115">Fuldført</translation>
 <translation id="8737542153238017984">Den gemte side er ikke tilgængelig offline. Der er næsten ikke mere lagerplads.</translation>
 <translation id="8793430725658173476">Kopiér webadresse</translation>

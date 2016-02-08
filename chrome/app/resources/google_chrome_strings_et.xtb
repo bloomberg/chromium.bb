@@ -53,7 +53,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="2397416548179033562">Kuva Chrome'i menüü</translation>
 <translation id="2429317896000329049">Google Chrome ei saa teie andmeid sünkroonida, sest sünkroonimine pole teie domeenil saadaval.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
-<translation id="2576431527583832481">Chrome muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
 <translation id="2580411288591421699">Töötava Google Chrome'i versiooniga sama versiooni ei saa installida. Sulgege Google Chrome ja proovige uuesti.</translation>
 <translation id="2582790009689336987">See arvuti ei saa peagi enam Google Chrome'i värskendusi, kuna seda Linuxi süsteemi enam ei toetata.</translation>
 <translation id="2588322182880276190">Chrome'i logo</translation>
@@ -113,7 +112,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="4633000520311261472">Chrome'i turvalisemaks muutmiseks keelasime mõned laiendused, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mille lisamisest te ei pruugi teadlik olla.</translation>
 <translation id="4700157086864140907">Google Chrome võib õigekirjakontrolli täiustada, saates brauserisse sisestatud teksti Google'i serveritesse ja võimaldades kasutada sama õigekirjakontrolli tehnoloogiat, mida kasutatakse Google'i otsingus.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
-<translation id="473775607612524610">Värskenda</translation>
 <translation id="4743926867934016338">Nõustun, otsi</translation>
 <translation id="4751441238232965030">See arvuti ei saa peagi enam 32-bitise Google Chrome'i värskendusi. Viige Google Chrome üle 64-bitisele versioonile.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

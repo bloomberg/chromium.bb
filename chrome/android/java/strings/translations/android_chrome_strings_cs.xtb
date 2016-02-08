@@ -42,6 +42,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1477626028522505441">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu problémů se serverem.</translation>
 <translation id="1506061864768559482">Vyhledávač</translation>
 <translation id="1513352483775369820">Záložky a webová historie</translation>
+<translation id="1546112724822176246">Nevidíte své zařízení? <ph name="BEGIN_LINK" />Prohlédněte si nápovědu<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
 <translation id="1557201757634521564">Automaticky rozpoznávat kódování</translation>
 <translation id="1568822834048182062">Záložky, historie, hesla a další nastavení budou synchronizována s účtem Google.</translation>
@@ -213,9 +214,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4195643157523330669">Otevřít na nové kartě</translation>
 <translation id="4198229475320555619">Záložka uložená offline (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="423410644998903704">Aby Chrome mohl s těmito webovými stránkami sdílet oprávnění, musí k nim mít přístup.</translation>
-<translation id="424696723690217687">Objevujte webové stránky odesílané objekty v okolí.
-
-Když bude zařízení odemknuto, Chrome bude vyhledávat stránky v okolí. Tyto stránky budou za účelem zlepšení kvality zpracovávány službou Google.</translation>
 <translation id="4254813446494774748">Jazyk překladu:</translation>
 <translation id="4256782883801055595">Licence open source</translation>
 <translation id="4259722352634471385">Navigace je blokována: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
 <translation id="6112702117600201073">Obnovování stránky</translation>
 <translation id="6127379762771434464">Položka byla odstraněna</translation>
+<translation id="6134870457258083164">Nevidíte své zařízení? <ph name="BEGIN_LINK1" />Prohlédněte si nápovědu<ph name="END_LINK1" /> nebo <ph name="BEGIN_LINK2" />zopakujte vyhledávání<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Optimalizovat stránku pro mobily</translation>
 <translation id="6140912465461743537">Země/Region</translation>
 <translation id="6159335304067198720">Úspora dat: <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="7191430249889272776">Karta je otevřena na pozadí.</translation>
 <translation id="7208788139759694678">Spořič dat není aktivní</translation>
+<translation id="721331389620694978">Některá nastavení, která mohou vypovídat o vašich zvycích při prohlížení, nebudou vymazána.</translation>
 <translation id="7243308994586599757">Možnosti jsou k dispozici ve spodní části obrazovky</translation>
 <translation id="7244362611678346589">Stránky <ph name="SEARCH_ENGINE_URL" /> zobrazují lokální výsledky vyhledávání na základě vaší polohy</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Nápověda<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 
 Chcete-li získat nové licence, připojte se k internetu a přehrajte stažený obsah.</translation>
 <translation id="8660471606262461360">Od služby Google Payments</translation>
-<translation id="8675945939500569406">Zapnout fyzický web?</translation>
 <translation id="8676374126336081632">Vymazat vstup</translation>
 <translation id="869891660844655955">Datum vypršení platnosti</translation>
 <translation id="8699799819461268362">Filtrování SafeSites od Googlu</translation>
 <translation id="8701537995684343047">Chcete-li záložku uložit offline, navštivte ji</translation>
 <translation id="8719023831149562936">Aktuální kartu nelze přenést</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
-<translation id="8727142376512517020">Příště tuto zprávu nezobrazovat</translation>
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8737542153238017984">Uložená stránka není k dispozici offline. Úložiště je téměř plné.</translation>
 <translation id="8793430725658173476">Kopírovat adresu URL</translation>

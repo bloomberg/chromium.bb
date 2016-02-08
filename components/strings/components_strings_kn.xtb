@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="1015255576907412255">ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
+<translation id="1015730422737071372">ಹೆಚ್ಚುವರಿ ವಿವರಗಳನ್ನು ಒದಗಿಸಿ</translation>
 <translation id="1032854598605920125">ಪ್ರದಕ್ಷಿಣಾಕಾರದಲ್ಲಿ ತಿರುಗಿಸು</translation>
 <translation id="1055184225775184556">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="1064422015032085147">ವೆಬ್‌ಪುಟವನ್ನು ಹೋಸ್ಟ್ ಮಾಡುತ್ತಿರುವ ಸರ್ವರ್ ಓವರ್‌ಲೋಡ್ ಆಗಿರಬಹುದು ಅಥವಾ ನಿರ್ವಹಣೆಯಲ್ಲಿರಬಹುದು.
@@ -428,6 +429,7 @@
 <translation id="6637478299472506933">ಡೌನ್‌ಲೋಡ್ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="6644283850729428850">ಈ ನೀತಿಯನ್ನು ವಿನಂತಿಸಲಾಗಿದೆ.</translation>
 <translation id="6646897916597483132">ನಿಮ್ಮ ಕಾರ್ಡ್ ಮುಂಭಾಗದಲ್ಲಿರುವ 4-ಅಂಕಿ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
+<translation id="6660210980321319655"><ph name="CRASH_TIME" /> ಸಮಯಕ್ಕೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ವರದಿ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6671697161687535275">Chromium ನಿಂದ ಫಾರ್ಮ್ ಸಲಹೆಯನ್ನು ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="6710213216561001401">ಹಿಂದೆ</translation>
 <translation id="6711464428925977395">ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌‌ನಲ್ಲಿ ಏನೋ ದೋಷವಿದೆ ಅಥವಾ ವಿಳಾಸವು ತಪ್ಪಾಗಿದೆ.</translation>
@@ -621,6 +623,7 @@
 <translation id="8971063699422889582">ಸರ್ವರ್‌ನ ಪ್ರಕಮಾಣಪತ್ರದ ಅವಧಿ ಮುಕ್ತಾಯಗೊಂಡಿದೆ.</translation>
 <translation id="8987927404178983737">ತಿಂಗಳು</translation>
 <translation id="8988760548304185580">ನಿಮ್ಮ ಕಾರ್ಡ್‌ನ ಹಿಂದಿರುವ ಮುಕ್ತಾಯದ ದಿನಾಂಕ ಮತ್ತು 3-ಅಂಕಿಗಳ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">ಕೆಟ್ಟ SSL ಗ್ರಾಹಕ ಪ್ರಮಾಣೀಕರಣ ಪ್ರಮಾಣಪತ್ರ.</translation>
 <translation id="901974403500617787">ಸಿಸ್ಟಂನಾದ್ಯಂತ ಅನ್ವಯವಾಗುವ ಫ್ಲ್ಯಾಗ್‌ಗಳನ್ನು ಮಾಲೀಕರಿಂದ ಮಾತ್ರ ಹೊಂದಿಸಲು ಸಾಧ್ಯ: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">ಸರ್ವರ್ ಸಂಪರ್ಕವನ್ನು ನಿರಾಕರಿಸಿದೆ.</translation>

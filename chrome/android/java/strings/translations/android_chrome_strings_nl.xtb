@@ -42,6 +42,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="1477626028522505441">Downloaden van <ph name="FILE_NAME" /> is mislukt door serverproblemen.</translation>
 <translation id="1506061864768559482">Zoekmachine</translation>
 <translation id="1513352483775369820">Bladwijzers en webgeschiedenis</translation>
+<translation id="1546112724822176246">Wordt je apparaat niet weergegeven? <ph name="BEGIN_LINK" />Raadpleeg de Help<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Chrome updaten</translation>
 <translation id="1557201757634521564">Codering automatisch detecteren</translation>
 <translation id="1568822834048182062">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden gesynchroniseerd met je Google-account.</translation>
@@ -213,9 +214,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> bladwijzer offline opgeslagen</translation>
 <translation id="423410644998903704">Chrome heeft rechten nodig om het item te delen met deze site.</translation>
-<translation id="424696723690217687">Ontdek webpagina's die worden verzonden door objecten in de buurt.
-
-Chrome scant op webpagina's in de buurt wanneer je apparaat is ontgrendeld. Deze pagina's worden verwerkt door een Google-service om de kwaliteit van paginaresultaten te verbeteren.</translation>
 <translation id="4254813446494774748">Doeltaal:</translation>
 <translation id="4256782883801055595">Open-sourcelicenties</translation>
 <translation id="4259722352634471385">Navigatie is geblokkeerd: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="6108923351542677676">Instellen wordt uitgevoerd...</translation>
 <translation id="6112702117600201073">Pagina vernieuwen</translation>
 <translation id="6127379762771434464">Item verwijderd</translation>
+<translation id="6134870457258083164">Wordt je apparaat niet weergegeven? <ph name="BEGIN_LINK1" />Raadpleeg de Help<ph name="END_LINK1" /> of <ph name="BEGIN_LINK2" />zoek nogmaals<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Pagina geschikt maken voor mobiele apparaten</translation>
 <translation id="6140912465461743537">Land/regio</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> besparing van data</translation>
@@ -459,6 +458,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="7191430249889272776">Tabblad op de achtergrond geopend.</translation>
 <translation id="7208788139759694678">Databesparing uitgeschakeld</translation>
+<translation id="721331389620694978">Bepaalde instellingen die browsegedrag kunnen weerspiegelen, worden niet gewist.</translation>
 <translation id="7243308994586599757">Opties beschikbaar onder aan het scherm</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> gebruikt je locatie om lokale zoekresultaten weer te geven</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Help<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 
 Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenties te krijgen.</translation>
 <translation id="8660471606262461360">Van Google Payments</translation>
-<translation id="8675945939500569406">Het Fysieke web inschakelen?</translation>
 <translation id="8676374126336081632">Invoer wissen</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
 <translation id="8699799819461268362">Google SafeSites-filter</translation>
 <translation id="8701537995684343047">Bladwijzer bezoeken om offline op te slaan</translation>
 <translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
-<translation id="8727142376512517020">Dit bericht niet meer weergeven</translation>
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="8737542153238017984">Opgeslagen pagina niet offline beschikbaar. Opslagruimte is bijna vol.</translation>
 <translation id="8793430725658173476">URL kopiëren</translation>

@@ -2013,7 +2013,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem inferiores ao intervalo de inatividade.</translation>
 <translation id="891435090623616439">codificado como um string JSON, para ver mais detalhes consulte <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Informar a localização do dispositivo</translation>
-<translation id="89493502583189945">Especifica as sinalizações a serem aplicadas ao <ph name="PRODUCT_NAME" />, quando iniciado. As sinalizações especificadas são aplicadas antes de o <ph name="PRODUCT_NAME" /> ser iniciado mesmo para telas em que já o login já tenha sido feito.</translation>
 <translation id="8951350807133946005">Definir o diretório de cache de disco</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="8960850473856121830">Os padrões desta lista são comparados com a origem de

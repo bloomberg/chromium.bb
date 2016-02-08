@@ -42,6 +42,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1477626028522505441">Tải xuống <ph name="FILE_NAME" /> không thành công do sự cố máy chủ.</translation>
 <translation id="1506061864768559482">Công cụ tìm kiếm</translation>
 <translation id="1513352483775369820">Dấu trang và lịch sử web</translation>
+<translation id="1546112724822176246">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
 <translation id="1557201757634521564">Tự động phát hiện mã hóa</translation>
 <translation id="1568822834048182062">Dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ được đồng bộ hóa với Tài khoản Google của bạn.</translation>
@@ -213,9 +214,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="4198229475320555619">Đã lưu dấu trang <ph name="PAGE_SIZE_STRING" /> ngoại tuyến</translation>
 <translation id="423410644998903704">Chrome cần quyền truy cập quyền để chia sẻ quyền với trang web này.</translation>
-<translation id="424696723690217687">Khám phá trang web do đối tượng lân cận gửi.
-
-Chrome sẽ quét tìm các trang lân cận khi thiết bị của bạn được mở khóa. Các trang này sẽ được chuyển tới một dịch vụ của Google để cải thiện chất lượng của kết quả trang.</translation>
 <translation id="4254813446494774748">Ngôn ngữ dịch:</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
 <translation id="4259722352634471385">Điều hướng bị chặn: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6108923351542677676">Đang thiết lập…</translation>
 <translation id="6112702117600201073">Làm mới trang</translation>
 <translation id="6127379762771434464">Đã xóa mục</translation>
+<translation id="6134870457258083164">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK1" />Nhận trợ giúp<ph name="END_LINK1" /> hoặc <ph name="BEGIN_LINK2" />tìm kiếm lại<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Đặt trang ở chế độ thân thiện với thiết bị di động</translation>
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>
@@ -459,6 +458,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
 <translation id="7208788139759694678">Đã tắt Trình tiết kiệm dữ liệu</translation>
+<translation id="721331389620694978">Một số cài đặt có thể phản ánh thói quen duyệt web sẽ không bị xóa.</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Trợ giúp<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 
 Để nhận được giấy phép mới, hãy kết nối Internet và phát nội dung đã tải xuống của bạn.</translation>
 <translation id="8660471606262461360">Từ Google Payments</translation>
-<translation id="8675945939500569406">Bật Web trong cuộc sống?</translation>
 <translation id="8676374126336081632">Xóa văn bản nhập</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>
 <translation id="8699799819461268362">Bộ lọc Trang web an toàn của Google</translation>
 <translation id="8701537995684343047">Truy cập dấu trang để lưu ngoại tuyến</translation>
 <translation id="8719023831149562936">Không thể chiếu tab hiện tại</translation>
 <translation id="8725066075913043281">Thử lại</translation>
-<translation id="8727142376512517020">Không hiển thị lại hộp thoại này</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
 <translation id="8737542153238017984">Trang đã lưu không khả dụng khi ngoại tuyến. Bộ nhớ gần đầy.</translation>
 <translation id="8793430725658173476">Sao chép url</translation>

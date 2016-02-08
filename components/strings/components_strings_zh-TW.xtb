@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="1015255576907412255">如需詳細資訊，請與您的系統管理員聯絡。</translation>
+<translation id="1015730422737071372">提供其他詳細資訊</translation>
 <translation id="1032854598605920125">順時針旋轉</translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
 <translation id="1064422015032085147">代管這個網頁的伺服器可能已超載或正在進行維護。
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">下載失敗</translation>
 <translation id="6644283850729428850">這項政策已遭取代。</translation>
 <translation id="6646897916597483132">請輸入信用卡正面的四位數信用卡安全碼</translation>
+<translation id="6660210980321319655">已自動回報 (<ph name="CRASH_TIME" />)</translation>
 <translation id="6671697161687535275">要從 Chromium 中移除表單填寫建議嗎？</translation>
 <translation id="6710213216561001401">返回</translation>
 <translation id="6711464428925977395">Proxy 伺服器發生錯誤，或是位址不正確。</translation>
@@ -633,6 +635,7 @@
 <translation id="8971063699422889582">伺服器憑證已過期。</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8988760548304185580">請輸入有效期限和信用卡背面的三位數信用卡安全碼</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">SSL 用戶端授權憑證錯誤。</translation>
 <translation id="901974403500617787">這些設定會套用至整個系統，只有以下使用者可設定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020142588544155172">伺服器拒絕連線。</translation>

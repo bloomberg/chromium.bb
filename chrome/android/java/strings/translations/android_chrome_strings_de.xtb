@@ -42,6 +42,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> konnte aufgrund von Serverproblemen nicht heruntergeladen werden.</translation>
 <translation id="1506061864768559482">Suchmaschine</translation>
 <translation id="1513352483775369820">Lesezeichen und Webprotokoll</translation>
+<translation id="1546112724822176246">Ihr Gerät ist nicht zu sehen? <ph name="BEGIN_LINK" />Rufen Sie die Hilfe auf.<ph name="END_LINK" /></translation>
 <translation id="1553358976309200471">Chrome aktualisieren</translation>
 <translation id="1557201757634521564">Codierung automatisch erkennen</translation>
 <translation id="1568822834048182062">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert.</translation>
@@ -213,9 +214,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="4198229475320555619">Lesezeichen mit einer Größe von <ph name="PAGE_SIZE_STRING" /> offline gespeichert</translation>
 <translation id="423410644998903704">Chrome benötigt Zugriff auf die Berechtigungen, um sie für diese Website freizugeben.</translation>
-<translation id="424696723690217687">Entdecken Sie Webseiten, die von Objekten in Ihrer Nähe übermittelt werden.
-
-Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Seiten werden durch einen Google-Dienst überprüft, um die Qualität der Seitenergebnisse zu verbessern.</translation>
 <translation id="4254813446494774748">Zielsprache:</translation>
 <translation id="4256782883801055595">Open Source-Lizenzen</translation>
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
@@ -373,6 +371,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
 <translation id="6112702117600201073">Aktualisierung der Seite</translation>
 <translation id="6127379762771434464">Eintrag entfernt</translation>
+<translation id="6134870457258083164">Ihr Gerät ist nicht zu sehen? <ph name="BEGIN_LINK1" />Rufen Sie die Hilfe auf<ph name="END_LINK1" /> oder <ph name="BEGIN_LINK2" />wiederholen Sie die Suche<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Für Mobilgeräte optimierte Seite</translation>
 <translation id="6140912465461743537">Land/Region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
@@ -459,6 +458,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="7208788139759694678">Datenkomprimierung deaktiviert</translation>
+<translation id="721331389620694978">Einige Einstellungen, in denen möglicherweise Surfgewohnheiten dargestellt werden, werden nicht gelöscht.</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> zeigt Ihnen lokale Suchergebnisse basierend auf Ihrem Standort.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hilfe<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 
 Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spielen Sie die heruntergeladenen Inhalte ab.</translation>
 <translation id="8660471606262461360">Aus Google Payments</translation>
-<translation id="8675945939500569406">Physical Web aktivieren?</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="869891660844655955">Ablaufdatum</translation>
 <translation id="8699799819461268362">Google SafeSites-Filter</translation>
 <translation id="8701537995684343047">Lesezeichen öffnen, um es offline zu speichern</translation>
 <translation id="8719023831149562936">Aktueller Tab kann nicht gebeamt werden.</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
-<translation id="8727142376512517020">Nicht mehr anzeigen</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8737542153238017984">Gespeicherte Seite nicht offline verfügbar. Speicher fast voll</translation>
 <translation id="8793430725658173476">URL kopieren</translation>

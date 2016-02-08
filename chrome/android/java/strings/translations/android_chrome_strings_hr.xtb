@@ -42,6 +42,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1477626028522505441">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog poteškoća s poslužiteljem.</translation>
 <translation id="1506061864768559482">Tražilica</translation>
 <translation id="1513352483775369820">Oznake i Google povijest</translation>
+<translation id="1546112724822176246">Ne vidite svoj uređaj? <ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
 <translation id="1557201757634521564">Automatski otkrij kodiranje</translation>
 <translation id="1568822834048182062">Vaše oznake, povijest, zaporke i ostale postavke sinkronizirat će se s vašim Google računom.</translation>
@@ -213,9 +214,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="4198229475320555619">Oznaka od <ph name="PAGE_SIZE_STRING" /> spremljena offline</translation>
 <translation id="423410644998903704">Chrome treba imati pristup dopuštenjima da bi ih dijelio s ovom web-lokacijom.</translation>
-<translation id="424696723690217687">Otkrijte web-stranice koje šalju objekti u blizini.
-
-Chrome će tražiti stranice u blizini kad je uređaj otključan. Googleova služba obradit će te stranice radi poboljšanja kvalitete rezultata stranica.</translation>
 <translation id="4254813446494774748">Jezik prijevoda:</translation>
 <translation id="4256782883801055595">Licence otvorenog koda</translation>
 <translation id="4259722352634471385">Otvaranje je blokirano: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="6108923351542677676">Postavljanje je u tijeku…</translation>
 <translation id="6112702117600201073">Osvježavanje stranice</translation>
 <translation id="6127379762771434464">Stavka je uklonjena</translation>
+<translation id="6134870457258083164">Ne vidite svoj uređaj? <ph name="BEGIN_LINK1" />Potražite pomoć<ph name="END_LINK1" /> ili <ph name="BEGIN_LINK2" />pretražite ponovo<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Prilagodite stranicu mobilnim uređajima</translation>
 <translation id="6140912465461743537">Država/regija</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> manji podatkovni promet</translation>
@@ -459,6 +458,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7180611975245234373">Osvježi</translation>
 <translation id="7191430249889272776">Kartica je otvorena u pozadini.</translation>
 <translation id="7208788139759694678">Ušteda podataka nije omogućena</translation>
+<translation id="721331389620694978">Neke postavke koje mogu odražavati navike tijekom pregledavanja neće se izbrisati.</translation>
 <translation id="7243308994586599757">Opcije dostupne pri dnu zaslona</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> upotrebljava vašu lokaciju za prikazivanje lokalnih rezultata pretraživanja</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoć<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@ No niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od poslod
 
 Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzeti sadržaj.</translation>
 <translation id="8660471606262461360">S Google Paymentsa</translation>
-<translation id="8675945939500569406">Želite li uključiti Fizički web?</translation>
 <translation id="8676374126336081632">Brisanje unosa</translation>
 <translation id="869891660844655955">Datum isteka</translation>
 <translation id="8699799819461268362">Filtar Google SafeSites</translation>
 <translation id="8701537995684343047">Idite na oznaku da biste je spremili offline</translation>
 <translation id="8719023831149562936">Trenutačnu karticu nije moguće emitirati</translation>
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
-<translation id="8727142376512517020">Ne prikazuj to ponovo</translation>
 <translation id="8730621377337864115">Gotovo</translation>
 <translation id="8737542153238017984">Spremljena stranica nije dostupna izvanmrežno. Pohrana je gotovo puna.</translation>
 <translation id="8793430725658173476">Kopiraj URL</translation>

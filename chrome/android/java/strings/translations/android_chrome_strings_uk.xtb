@@ -42,6 +42,7 @@
 <translation id="1477626028522505441">Файл <ph name="FILE_NAME" /> не завантажено через проблеми із сервером.</translation>
 <translation id="1506061864768559482">Пошукова система</translation>
 <translation id="1513352483775369820">Закладки й історія веб-пошуку</translation>
+<translation id="1546112724822176246">Не бачите свого пристрою? <ph name="BEGIN_LINK" />Перегляньте довідку<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
 <translation id="1557201757634521564">Автоматично визначати кодування</translation>
 <translation id="1568822834048182062">Ваші закладки, історія, паролі й інші налаштування синхронізуватимуться з обліковим записом Google.</translation>
@@ -213,9 +214,6 @@
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4198229475320555619">Закладку обсягом <ph name="PAGE_SIZE_STRING" /> збережено офлайн</translation>
 <translation id="423410644998903704">Chrome потрібен доступ до дозволів, щоб дозволити цьому сайту використовувати їх.</translation>
-<translation id="424696723690217687">Переглядайте веб-сторінки, які надсилають об’єкти поруч.
-
-Коли ваш пристрій розблоковано, Chrome шукатиме сторінки, які надсилають об’єкти поруч. Google оброблятиме ці сторінки, щоб покращити якість результатів.</translation>
 <translation id="4254813446494774748">Мова перекладу:</translation>
 <translation id="4256782883801055595">Ліцензії ПЗ з відкритим кодом</translation>
 <translation id="4259722352634471385">Веб-сторінку <ph name="URL" /> заблоковано</translation>
@@ -373,6 +371,7 @@
 <translation id="6108923351542677676">Виконується налаштування…</translation>
 <translation id="6112702117600201073">Оновлення сторінки</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
+<translation id="6134870457258083164">Не бачите свого пристрою? <ph name="BEGIN_LINK1" />Перегляньте довідку<ph name="END_LINK1" /> або <ph name="BEGIN_LINK2" />пошукайте ще раз<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Налаштувати сторінку для мобільних пристроїв</translation>
 <translation id="6140912465461743537">Країна або регіон</translation>
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
@@ -459,6 +458,7 @@
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
 <translation id="7208788139759694678">Заощадження трафіку вимкнено</translation>
+<translation id="721331389620694978">Деякі налаштування, які стосуються ваших зацікавлень в Інтернеті, не буде видалено.</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> використовує ваші геодані, щоб показувати результати місцевого пошуку</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /></translation>
@@ -565,14 +565,12 @@
 
 Щоб отримати нові ліцензії, під’єднайте пристрій до Інтернету та відтворіть завантажений вміст.</translation>
 <translation id="8660471606262461360">З Google Payments</translation>
-<translation id="8675945939500569406">Увімкнути Інтернет навколо нас?</translation>
 <translation id="8676374126336081632">Видалити введений текст</translation>
 <translation id="869891660844655955">Діє до</translation>
 <translation id="8699799819461268362">Фільтр Google SafeSites</translation>
 <translation id="8701537995684343047">Відкрийте закладку, щоб зберегти її офлайн</translation>
 <translation id="8719023831149562936">Неможливо передати дані поточної вкладки</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
-<translation id="8727142376512517020">Більше не показувати</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8737542153238017984">Збережена сторінка недоступна в режимі офлайн. Пам’ять майже заповнена.</translation>
 <translation id="8793430725658173476">Копіювати URL-адресу</translation>

@@ -51,7 +51,6 @@
 <translation id="2397416548179033562">‏הצג את תפריט Chrome</translation>
 <translation id="2429317896000329049">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שהסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
-<translation id="2576431527583832481">‏‫Chrome ממשיך להשתפר! קיימת גירסה חדשה.</translation>
 <translation id="2580411288591421699">‏אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
 <translation id="2582790009689336987">‏בקרוב המחשב הזה יפסיק לקבל עדכונים של Google Chrome בשל הפסקת התמיכה במערכת Linux זו.</translation>
 <translation id="2588322182880276190">‏הלוגו של Chrome</translation>
@@ -111,7 +110,6 @@
 <translation id="4633000520311261472">‏כדי לשפר את האבטחה של Chrome, השבתנו חלק מהתוספים שלא רשומים ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוספו ללא ידיעתך.</translation>
 <translation id="4700157086864140907">‏Google Chrome יכול לספק בדיקת איות חכמה יותר על ידי כך שהוא שולח את מה שאתה מקליד בדפדפן לשרתי Google, ומאפשר לך להשתמש באותה טכנולוגיית בדיקת איות ש'חיפוש Google' משתמש בה.</translation>
 <translation id="4728575227883772061">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
-<translation id="473775607612524610">עדכן</translation>
 <translation id="4743926867934016338">אשר וחפש</translation>
 <translation id="4751441238232965030">‏מחשב זה יפסיק בקרוב לקבל עדכוני Google Chrome ב-32 סיביות. שדרג ל-Google Chrome ב-64 סיביות.</translation>
 <translation id="4754614261631455953">‏גרסה ניסיונית של Google Chrome‏ (mDNS-In)</translation>

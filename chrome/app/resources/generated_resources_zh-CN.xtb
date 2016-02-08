@@ -110,7 +110,7 @@
 <translation id="1155759005174418845">加泰罗尼亚语</translation>
 <translation id="1156185823432343624">音量：静音</translation>
 <translation id="1156689104822061371">键盘布局：</translation>
-<translation id="1158054703003659942">作为书签启用</translation>
+<translation id="1158054703003659942">启用为书签</translation>
 <translation id="1158274711289833876">安全的 TLS 连接</translation>
 <translation id="1160536908808547677">放大后，位置固定的元素和缩放滚动条会附加到此视口。</translation>
 <translation id="1161575384898972166">请登录“<ph name="TOKEN_NAME" />”，导出客户端证书。</translation>
@@ -603,6 +603,7 @@
 <translation id="1864111464094315414">登录</translation>
 <translation id="1864676585353837027">更改这些文件的分享方式</translation>
 <translation id="1864756863218646478">找不到该文件。</translation>
+<translation id="1865769994591826607">仅限同一网站的连接</translation>
 <translation id="186612162884103683">“<ph name="EXTENSION" />”对于选中位置中的图片、视频及声音文件具有读取和写入权限。</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" />已准备就绪，可以进行安装。</translation>
 <translation id="1873879463550486830">SUID 沙盒</translation>
@@ -1190,6 +1191,7 @@
 <translation id="2743387203779672305">复制到剪贴板</translation>
 <translation id="2744221223678373668">已共享</translation>
 <translation id="2745080116229976798">Microsoft 合格的部署</translation>
+<translation id="2745576239403924641">允许在您的 Chromebook 中运行 Android 应用。</translation>
 <translation id="2747990718031257077">启用新增的扩展程序工具栏设计功能（仍处于开发阶段）。</translation>
 <translation id="2749756011735116528">登录<ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">检查拼写和语法</translation>
@@ -1403,6 +1405,7 @@
 <translation id="3011284594919057757">关于 Flash</translation>
 <translation id="3011362742078013760">在隐身窗口中打开所有书签(&amp;I)</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">仅限同一网站的安全连接</translation>
 <translation id="3012890944909934180">重新启动桌面版 Chrome</translation>
 <translation id="3012917896646559015">请立即与您的硬件制造商联系，将您的计算机送至维修机构。</translation>
 <translation id="3015992588037997514">您的 Chromebox 屏幕上显示有此确认码吗？</translation>
@@ -1633,6 +1636,7 @@
 <translation id="331752765902890099"><ph name="PROFILE_NAME" />按钮：登录错误</translation>
 <translation id="3319048459796106952">打开新的隐身窗口(&amp;I)</translation>
 <translation id="331915893283195714">允许所有网站隐藏鼠标指针</translation>
+<translation id="3319364804843246307">Android 应用</translation>
 <translation id="3320859581025497771">您的运营商</translation>
 <translation id="3323235640813116393">将网页保存为MHTML（即包含HTML和所有子资源的单个文本文件）。</translation>
 <translation id="3323447499041942178">文本框</translation>
@@ -1737,6 +1741,7 @@
 <translation id="347719495489420368">右键点击即可播放 <ph name="PLUGIN_NAME" />。</translation>
 <translation id="347785443197175480">继续允许 <ph name="HOST" /> 使用您的摄像头和麦克风</translation>
 <translation id="3478315065074101056">XPS用于在Chrome中为连接到云打印的传统打印机启用高级选项。更改此项后，您必须重新连接打印机。</translation>
+<translation id="3479539252931486093">不应该出现这种情况？请<ph name="BEGIN_LINK" />告诉我们<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3480892288821151001">将窗口固定到左侧</translation>
 <translation id="3481915276125965083">已拦截此网页上的下列弹出式窗口：</translation>
@@ -2706,6 +2711,7 @@
 <translation id="4941246025622441835">将设备登记到企业管理目录下时使用此设备前提条件：</translation>
 <translation id="4942394808693235155">检查并应用更新</translation>
 <translation id="494286511941020793">代理配置帮助</translation>
+<translation id="4945378551914476156">您的书签、历史记录、密码和其他设置将同步到您的 Google 帐户，这样您便可以在使用 Chrome 时随时使用这些内容。如果要更改此设置，请前往 <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">选项...</translation>
 <translation id="4952186391360931024">非 Material</translation>
 <translation id="4954544650880561668">设备控制</translation>
@@ -2837,7 +2843,6 @@
    <ph name="LINE_BREAKS" />
    取出使用中的设备可能会导致数据丢失。请等待操作完成，然后使用“文件”菜单弹出设备。</translation>
 <translation id="5159488553889181171">已取消下载<ph name="PLUGIN_NAME" />。</translation>
-<translation id="5159628598068481063">Windows 桌面搜索重定向偏好设置</translation>
 <translation id="5160857336552977725">登录您的<ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">共享失败。请检查连接是否正常，然后重试。</translation>
 <translation id="516592729076796170">美式 Programmer Dvorak 键盘</translation>
@@ -3205,7 +3210,6 @@
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">读取您在 <ph name="WEBSITE_1" /> 上的数据</translation>
 <translation id="5680928275846978395">概览模式下的文字过滤功能</translation>
-<translation id="568428328938709143">帐户已移除</translation>
 <translation id="5684661240348539843">资产标识符</translation>
 <translation id="569068482611873351">导入...</translation>
 <translation id="56907980372820799">关联数据</translation>
@@ -3305,7 +3309,7 @@
 <translation id="5819442873484330149">韩语（3 Set，终极版）</translation>
 <translation id="5819484510464120153">创建应用快捷方式(&amp;S)...</translation>
 <translation id="5822838715583768518">启动应用</translation>
-<translation id="5824480603702411398">作为已保存的网页启用</translation>
+<translation id="5824480603702411398">启用为已保存的网页</translation>
 <translation id="5826507051599432481">公用名 (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828228029189342317">您已选择在下载后自动打开特定类型的文件。</translation>
@@ -3445,6 +3449,7 @@
 <translation id="604001903249547235">云端备份</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="604124094241169006">自动</translation>
+<translation id="6042308850641462728">更多</translation>
 <translation id="604257181445267932">借助 Smart Lock，您可以使用 Google 为您保存的密码快速登录应用和网站。</translation>
 <translation id="6049065490165456785">内部相机中的照片</translation>
 <translation id="6051028581720248124">通过 FedEx Office 进行打印即表示您接受其<ph name="START_LINK" />使用条款<ph name="END_LINK" />。</translation>
@@ -3476,7 +3481,6 @@
 <translation id="6089481419520884864">提取页面</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">正在取消更新...</translation>
-<translation id="6095149522260432647">启用使 Windows 桌面搜索重定向到默认搜索引擎的偏好设置。</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">以最大化模式打开</translation>
 <translation id="6096326118418049043">X.500 名称</translation>
@@ -4647,6 +4651,7 @@
 <translation id="7926906273904422255">将不安全的来源标为“不安全”或“可疑”。</translation>
 <translation id="7928710562641958568">卸载设备</translation>
 <translation id="7938594894617528435">当前处于离线状态</translation>
+<translation id="7939374455203157513">启用云服务</translation>
 <translation id="7939412583708276221">仍然保留</translation>
 <translation id="7939997691108949385">管理员可以转到 <ph name="MANAGEMENT_URL" />，配置针对此受监管用户的限制和设置。</translation>
 <translation id="7943385054491506837">美国英语(Colemak)</translation>
@@ -5197,6 +5202,7 @@
 <translation id="872537912056138402">克罗地亚语</translation>
 <translation id="8726206820263995930">从服务器抓取策略设置时出错：<ph name="CLIENT_ERROR" />。</translation>
 <translation id="8726888928275282477">使扩展程序选项在chrome://extensions中显示为嵌入式元素，而不是打开新的标签页。</translation>
+<translation id="8727142376512517020">不要再显示此对话框</translation>
 <translation id="8728672262656704056">您已进入隐身模式</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8731332457891046104">取消注册<ph name="DEVICE_TYPE" /></translation>
@@ -5359,7 +5365,6 @@
 <translation id="8986362086234534611">不保存</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8987927404178983737">月</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Netscape 证书基本网址</translation>
 <translation id="8994845581478641365">DirectWrite 字体缓存构建工具</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>

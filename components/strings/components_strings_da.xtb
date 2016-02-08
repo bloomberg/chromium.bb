@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1015255576907412255">Kontakt systemadministratoren for at få flere oplysninger.</translation>
+<translation id="1015730422737071372">Angiv yderligere oplysninger</translation>
 <translation id="1032854598605920125">Rotér med uret</translation>
 <translation id="1055184225775184556">&amp;Fortryd tilføjelse</translation>
 <translation id="1064422015032085147">Den server, der hoster websiden, kan være overbelastet eller under vedligeholdelse.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Download mislykkedes</translation>
 <translation id="6644283850729428850">Denne politik er forældet.</translation>
 <translation id="6646897916597483132">Indtast den firecifrede kontrolkode, som ses på forsiden af dit kort</translation>
+<translation id="6660210980321319655">Rapporteret automatisk <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Vil du fjerne formularforslag fra Chromium?</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6711464428925977395">Der er noget galt med proxyserveren, eller adressen er forkert.</translation>
@@ -633,6 +635,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8971063699422889582">Serverens certifikat er udløbet.</translation>
 <translation id="8987927404178983737">Måned</translation>
 <translation id="8988760548304185580">Indtast udløbsdatoen og den trecifrede kontrolkode, som ses på bagsiden af dit kort</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Ugyldigt certifikat til SSL-klientgodkendelse.</translation>
 <translation id="901974403500617787">Markeringer, der gælder for hele systemet, kan kun indstilles af ejeren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Serveren afviste forbindelsen.</translation>

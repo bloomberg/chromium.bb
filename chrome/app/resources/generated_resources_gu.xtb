@@ -602,6 +602,7 @@
 <translation id="1864111464094315414">લૉગિન</translation>
 <translation id="1864676585353837027">આ ફાઇલો જે રીતે શેર કરેલી છે તે બદલો</translation>
 <translation id="1864756863218646478">ફાઇલ શોધી શકાઈ નથી.</translation>
+<translation id="1865769994591826607">માત્ર સમાન-સાઇટ કનેક્શન્સ</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" આ તપાસાયેલા સ્થાનોમાં છબીઓ, વિડિઓ અને સાઉન્ડ ફાઇલોને વાંચી અને લખી શકે છે.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" />  તમારું ઇન્સ્ટોલેશન પૂર્ણ કરવાની તૈયારીમાં છે</translation>
 <translation id="1873879463550486830">SUID sandbox</translation>
@@ -1192,6 +1193,7 @@
 <translation id="2743387203779672305">ક્લિપબોર્ડ પર કૉપિ કરો</translation>
 <translation id="2744221223678373668">શેર કરેલી</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2745576239403924641">તમારી Chromebook પર શરૂ કરવા માટે Android ઍપ્લિકેશનો સક્ષમ કરો</translation>
 <translation id="2747990718031257077">(વિકાસમાં) નવી એક્સ્ટેન્શન ટૂલબાર, ટૂલબાર ડિઝાઇનને સક્ષમ કરે છે.</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" /> પર સાઇન ઇન કરો</translation>
 <translation id="2749881179542288782">જોડણી સાથે વ્યાકરણ તપાસો</translation>
@@ -1405,6 +1407,7 @@
 <translation id="3011284594919057757">ફ્લેશ વિશે </translation>
 <translation id="3011362742078013760">બધા બુકમાર્ક્સને &amp;છુપી વિંડોમાં ખોલો</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">માત્ર સુરક્ષિત સમાન-સાઇટ કનેક્શન્સ</translation>
 <translation id="3012890944909934180">ડેસ્કટૉપ પર Chrome ફરીથી લૉંચ કરો</translation>
 <translation id="3012917896646559015">તમારા કમ્પ્યુટરને સમારકામ સગવડ પર મોકલવા માટે તુરંત તમારા હાર્ડવેર નિર્માતાનો સંપર્ક કરો.</translation>
 <translation id="3015992588037997514">શું આ કોડ તમારી Chromebox સ્ક્રીન પર દેખાયો?</translation>
@@ -1638,6 +1641,7 @@
 <translation id="331752765902890099"><ph name="PROFILE_NAME" /> બટન: સાઇન ઇન ભૂલ</translation>
 <translation id="3319048459796106952">નવી &amp;છુપી વિંડો</translation>
 <translation id="331915893283195714">તમામ સાઇટ્સને તમારા માઉસ કર્સરને અક્ષમ કરવાની મંજૂરી આપો</translation>
+<translation id="3319364804843246307">Android ઍપ્લિકેશનો</translation>
 <translation id="3320859581025497771">તમારો વાહક</translation>
 <translation id="3323235640813116393">પૃષ્ઠોને MHTML તરીકે સાચવવાનું પસંદ કરે છે: જે HTML અને તમામ પેટા-સંસાધનો ધરાવતી એકલ ટેક્સ્ટ ફાઇલ છે.</translation>
 <translation id="3323447499041942178">ટેક્સ્ટ બૉક્સ</translation>
@@ -1742,6 +1746,7 @@
 <translation id="347719495489420368"><ph name="PLUGIN_NAME" /> ચલાવવા માટે જમણી-ક્લિક કરો.</translation>
 <translation id="347785443197175480">તમારા કૅમેરા અને માઇક્રોફોનને ઍક્સેસ કરવા માટે <ph name="HOST" /> ને સતત મંજૂરી આપે છે </translation>
 <translation id="3478315065074101056">XPS, Chrome સાથે મેઘ મુદ્રણ પર કનેક્ટ કરેલા ક્લાસિક પ્રિન્ટર્સ માટે વિગતવાર વિકલ્પોને સક્ષમ કરે છે. આ ફ્લેગ બદલ્યાં પછી પ્રિન્ટર્સ ફરીથી કનેક્ટ કરવા આવશ્યક છે.</translation>
+<translation id="3479539252931486093">શું આ અનપેક્ષિત હતું? <ph name="BEGIN_LINK" />અમને જણાવો<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="3480892288821151001">વિન્ડો ડાબે ડૉક કરો</translation>
 <translation id="3481915276125965083">આ પૃષ્ઠ પર નીચેના પૉપ-અપ્સ અવરોધિત હતા:</translation>
@@ -2715,6 +2720,7 @@
 <translation id="4941246025622441835">જ્યારે ઉપકરણની એન્ટરપ્રાઇઝ મેનેજમેન્ટ માટે નોંધણી કરાવો ત્યારે આ ઉપકરણ માગણીનો ઉપયોગ કરો:</translation>
 <translation id="4942394808693235155">અપડેટ્સ માટે તપાસો અને લાગુ કરો</translation>
 <translation id="494286511941020793">Proxy ગોઠવણી સહાય</translation>
+<translation id="4945378551914476156">તમારા Google એકાઉન્ટ પર તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ સમન્વયિત કરવામાં આવશે જેથી તમે જ્યાં પણ Chrome નો ઉપયોગ કરો ત્યાં તેમનો ઉપયોગ કરી શકો. તમે આને <ph name="BEGIN_LINK" /> માં બદલી શકો છો</translation>
 <translation id="4950138595962845479">વિકલ્પો...</translation>
 <translation id="4952186391360931024">બિન-સામગ્રી</translation>
 <translation id="4954544650880561668">ઉપકરણ નિયંત્રણ</translation>
@@ -2847,7 +2853,6 @@
        <ph name="LINE_BREAKS" />
        ઉપયોગમાં રહેલા તમારા ઉપકરણને દૂર કરવાથી ડેટાનું નુકસાન થઈ શકે છે. ક્રિયા પૂર્ણ થાય ત્યાં સુધી કૃપા કરીને રાહ જુઓ, તે પછી ફાઇલ્સ એપ્લિકેશનનો ઉપયોગ કરીને ઉપકરણને કાઢી નાખો.</translation>
 <translation id="5159488553889181171"><ph name="PLUGIN_NAME" /> ડાઉનલોડ રદ કરવામાં આવ્યું હતું.</translation>
-<translation id="5159628598068481063">Windows ડેસ્કટૉપ શોધ રીડાયરેક્શન પસંદગી</translation>
 <translation id="5160857336552977725">તમારા <ph name="DEVICE_TYPE" /> પર સાઇન ઇન કરો</translation>
 <translation id="5163869187418756376">શેરિંગ નિષ્ફળ થયું. તમારું કનેક્શન તપાસો અને થોડીવાર પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="516592729076796170">યુએસ પ્રોગ્રામર ડ્વોરેક</translation>
@@ -3216,7 +3221,6 @@
 <translation id="567881659373499783">સંસ્કરણ <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1" /> પર તમારો ડેટા વાંચી શકે છે</translation>
 <translation id="5680928275846978395">વિહંગાવલોકન મોડમાં ટેક્સ્ટ ફિલ્ટરિંગ</translation>
-<translation id="568428328938709143">એકાઉન્ટ દૂર કર્યું</translation>
 <translation id="5684661240348539843">સંપત્તિ ઓળખકર્તા</translation>
 <translation id="569068482611873351">આયાત કરો...</translation>
 <translation id="56907980372820799">ડેટાને લિંક કરો</translation>
@@ -3456,6 +3460,7 @@
 <translation id="604001903249547235">મેઘ બેકઅપ</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="604124094241169006">સ્વચલિત</translation>
+<translation id="6042308850641462728">વધુ</translation>
 <translation id="604257181445267932">Smart Lock તમને તમે Google પર સાચવેલા પાસવર્ડ્સનો ઉપયોગ કરીને ઍપ્લિકેશનો અને સાઇટ્સ પર ઝડપથી સાઇન ઇન કરવામાં સહાય કરે છે.</translation>
 <translation id="6049065490165456785">આંતરિક કૅમેરાથી ફોટો</translation>
 <translation id="6051028581720248124">FedEx Office પર પ્રિંટ કરીને, તમે તેમની <ph name="START_LINK" />ઉપયોગની શરતો<ph name="END_LINK" />ને સ્વીકારો છો.</translation>
@@ -3487,7 +3492,6 @@
 <translation id="6089481419520884864">Distill પૃષ્ઠ</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">અપડેટને રદ કરી રહ્યું છે...</translation>
-<translation id="6095149522260432647">એક પસંદગી સક્ષમ કરે છે જે Windows ડેસ્કટૉપ શોધના રીડાયરેક્શનને ડિફોલ્ટ શોધ એંજિન પર મંજૂરી આપે છે.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">મહત્તમ ખોલો</translation>
 <translation id="6096326118418049043">X.500 નામ</translation>
@@ -4670,6 +4674,7 @@
 <translation id="7926906273904422255">બિન-સુરક્ષિત મૂળને બિન-સુરક્ષિત તરીકે અથવા "શંકાસ્પદ" તરીકે ચિહ્નિત કરો.</translation>
 <translation id="7928710562641958568">ઉપકરણ હટાવો</translation>
 <translation id="7938594894617528435">હાલમાં ઑફલાઇન</translation>
+<translation id="7939374455203157513">મેઘ સેવાઓ સક્ષમ કરો</translation>
 <translation id="7939412583708276221">તો પણ રાખો</translation>
 <translation id="7939997691108949385">સંચાલક <ph name="MANAGEMENT_URL" /> પર આ નિરીક્ષણ કરેલા વપરાશકર્તા માટે પ્રતિબંધો અને સેટિંગ્સને ગોઠવવામાં સમર્થ હશે.</translation>
 <translation id="7943385054491506837">યુએસ કોલમેક</translation>
@@ -5218,6 +5223,7 @@
 <translation id="872537912056138402">ક્રોએશિયન</translation>
 <translation id="8726206820263995930">સર્વરમાંથી નીતિ સેટિંગ્સનું આનયન કરતી વખતે ભૂલ: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">એક નવું ટેબ ખોલવાને બદલે એક્સ્ટેંશન વિકલ્પોને chrome://extensions માં એમ્બેડ કરેલ ઘટક તરીકે પ્રદર્શિત કરો.</translation>
+<translation id="8727142376512517020">આ ફરી બતાવશો નહીં</translation>
 <translation id="8728672262656704056">તમે છુપા મોડમાં ગયા છો</translation>
 <translation id="8730621377337864115">થઈ ગયું</translation>
 <translation id="8731332457891046104"><ph name="DEVICE_TYPE" /> ની નોંધણી રદ કરો</translation>
@@ -5380,7 +5386,6 @@
 <translation id="8986362086234534611">ભૂલી ગયા</translation>
 <translation id="8986494364107987395">ઉપયોગિતા આંકડાઓ અને ક્રેશ રિપોર્ટ્સ Google ને આપમેળે મોકલો</translation>
 <translation id="8987927404178983737">મહિનો</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">નેટસ્કેપ પ્રમાણપત્ર બેઝ URL</translation>
 <translation id="8994845581478641365">DirectWrite ફોન્ટ કેશ બિલ્ડર</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> દ્વારા સંચાલિત</translation>

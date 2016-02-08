@@ -113,7 +113,6 @@
 <translation id="4250680216510889253">Не</translation>
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Уважаеми мониторе, нещата между нас не се получават. (Този монитор не се поддържа)</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване.</translation>
@@ -182,7 +181,6 @@
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ е сдвоено и сега е налице за всички потребители. Може да премахнете това сдвояване посредством „Настройки“.</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>
-<translation id="6803622936009808957">Дисплеите не можаха да се дублират, тъй като не бяха намерени поддържани разделителни способности. Вместо това влязохте в режима за разширен работен плот.</translation>
 <translation id="683971173229319003">търсене + L</translation>
 <translation id="68610848741840742">ChromeVox (обратна връзка с говор)</translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>

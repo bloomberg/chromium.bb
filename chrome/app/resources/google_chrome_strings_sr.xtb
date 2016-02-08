@@ -55,7 +55,6 @@
 <translation id="2397416548179033562">Приказ Chrome менија</translation>
 <translation id="2429317896000329049">Google Chrome не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
-<translation id="2576431527583832481">Chrome је управо постао бољи! Доступна је нова верзија.</translation>
 <translation id="2580411288591421699">Није могуће инсталирати верзију Google Chrome прегледача која је иста као тренутно покренута верзија. Затворите Google Chrome и покушајте поново.</translation>
 <translation id="2582790009689336987">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер овај Linux систем више неће бити подржан.</translation>
 <translation id="2588322182880276190">Chrome логотип</translation>
@@ -115,7 +114,6 @@
 <translation id="4633000520311261472">Да бисмо учинили Chrome безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
 <translation id="4700157086864140907">Google Chrome може да пружи паметнију проверу правописа тако што оно што куцате у прегледач шаље Google серверима, што вам омогућава да користите исту технологију провере правописа коју користи Google претрага.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
-<translation id="473775607612524610">Ажурирај</translation>
 <translation id="4743926867934016338">Прихватам, претражи</translation>
 <translation id="4751441238232965030">Овај рачунар ће ускоро престати да добија ажурирања за 32-битни Google Chrome. Надоградите Google Chrome на 64-битну верзију.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

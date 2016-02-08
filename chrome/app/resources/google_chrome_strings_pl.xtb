@@ -51,7 +51,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2397416548179033562">Pokaż menu Chrome</translation>
 <translation id="2429317896000329049">Google Chrome nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
-<translation id="2576431527583832481">Chrome jest teraz jeszcze lepszy! Dostępna jest nowa wersja.</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
 <translation id="2582790009689336987">Google Chrome wkrótce przestanie aktualizować się na tym komputerze, bo ten system Linux nie będzie już obsługiwany.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
@@ -112,7 +111,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4633000520311261472">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
 <translation id="4700157086864140907">Google Chrome może lepiej sprawdzać pisownię, przesyłając do serwerów Google tekst, który wpisujesz w przeglądarce. Dzięki temu możesz korzystać z technologii sprawdzania pisowni używanej przez wyszukiwarkę Google.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
-<translation id="473775607612524610">Aktualizuj</translation>
 <translation id="4743926867934016338">Zaakceptuj i szukaj</translation>
 <translation id="4751441238232965030">Ten komputer wkrótce przestanie otrzymywać aktualizacje Google Chrome w wersji 32-bitowej. Uaktualnij Chrome do wersji 64-bitowej.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1015255576907412255">Comunícate con el administrador del sistema para obtener más información.</translation>
+<translation id="1015730422737071372">Proporciona más detalles</translation>
 <translation id="1032854598605920125">Girar a la derecha</translation>
 <translation id="1055184225775184556">&amp;Deshacer Agregar</translation>
 <translation id="1064422015032085147">El servidor que aloja la página web podría estar sobrecargado o en mantenimiento.
@@ -435,6 +436,7 @@
 <translation id="6637478299472506933">Error en la descarga</translation>
 <translation id="6644283850729428850">Esta política no ha sido aprobada.</translation>
 <translation id="6646897916597483132">Ingresa el CVC de 4 dígitos que figura en el frente de la tarjeta.</translation>
+<translation id="6660210980321319655">Se denunció automáticamente el <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">¿Confirmas que quieres quitar la sugerencia de formulario de Chromium?</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6711464428925977395">Hay un error en el servidor proxy o la dirección es incorrecta.</translation>
@@ -630,6 +632,7 @@
 <translation id="8971063699422889582">El certificado del servidor ha caducado.</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8988760548304185580">Ingresa la fecha de vencimiento y el CVC de 3 dígitos que figura en el dorso de la tarjeta.</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Certificado de autenticación de cliente SSL incorrecto</translation>
 <translation id="901974403500617787">El propietario es el único que puede especificar las marcas que se aplican a todo el sistema: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">El servidor ha rechazado la conexión.</translation>

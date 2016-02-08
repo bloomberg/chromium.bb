@@ -42,6 +42,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1477626028522505441">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de problèmes liés au serveur.</translation>
 <translation id="1506061864768559482">Moteur de recherche</translation>
 <translation id="1513352483775369820">Favoris et historique Web</translation>
+<translation id="1546112724822176246">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1557201757634521564">Détecter automatiquement l'encodage</translation>
 <translation id="1568822834048182062">Vos favoris, votre historique, vos mots de passe et d'autres paramètres seront synchronisés avec votre compte Google.</translation>
@@ -213,9 +214,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="4198229475320555619">Une copie du favori accessible hors connexion (<ph name="PAGE_SIZE_STRING" />) a bien été enregistrée.</translation>
 <translation id="423410644998903704">Chrome doit disposer de l'accès à certaines autorisations pour les partager avec ce site.</translation>
-<translation id="424696723690217687">Découvrez des pages Web envoyées par des objets à proximité.
-
-Chrome recherche les pages à proximité lorsque l'appareil est déverrouillé. Ces pages sont analysées par un service Google pour améliorer la qualité des résultats.</translation>
 <translation id="4254813446494774748">Langue de traduction :</translation>
 <translation id="4256782883801055595">Licences Open Source</translation>
 <translation id="4259722352634471385">La navigation sur <ph name="URL" /> est bloquée.</translation>
@@ -374,6 +372,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="6108923351542677676">Configuration en cours…</translation>
 <translation id="6112702117600201073">Actualisation de la page</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
+<translation id="6134870457258083164">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK1" />Obtenir de l'aide<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />effectuer une nouvelle recherche<ph name="END_LINK2" /></translation>
 <translation id="6138140242378429169">Ouvrir la page adaptée aux mobiles</translation>
 <translation id="6140912465461743537">Pays/Région</translation>
 <translation id="6159335304067198720">Économies de données de <ph name="PERCENT" /></translation>
@@ -460,6 +459,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
 <translation id="7208788139759694678">Économiseur de données désactivé</translation>
+<translation id="721331389620694978">Certains paramètres qui peuvent refléter vos habitudes de navigation ne seront pas effacés.</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Aide<ph name="END_LINK" /></translation>
@@ -566,14 +566,12 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 
 Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le contenu que vous avez téléchargé.</translation>
 <translation id="8660471606262461360">Informations issues de Google Payments</translation>
-<translation id="8675945939500569406">Activer le Web physique ?</translation>
 <translation id="8676374126336081632">Effacer la saisie</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
 <translation id="8699799819461268362">Filtre Google SafeSites</translation>
 <translation id="8701537995684343047">Accédez au favori pour enregistrer une copie accessible hors connexion.</translation>
 <translation id="8719023831149562936">Impossible de partager l'onglet actuel.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
-<translation id="8727142376512517020">Ne plus afficher ce message</translation>
 <translation id="8730621377337864115">OK</translation>
 <translation id="8737542153238017984">La page enregistrée n'est pas disponible hors connexion. La mémoire de stockage est presque pleine.</translation>
 <translation id="8793430725658173476">Copier l'URL</translation>

@@ -42,6 +42,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
+<translation id="1546112724822176246">Not seeing your device? <ph name="BEGIN_LINK" />Get help<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1557201757634521564">Auto-detect encoding</translation>
 <translation id="1568822834048182062">Your bookmarks, history, passwords and other settings will be synced to your Google Account.</translation>
@@ -213,9 +214,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> bookmark saved offline</translation>
 <translation id="423410644998903704">Chrome needs permissions access to share them with this site.</translation>
-<translation id="424696723690217687">Discover web pages sent by nearby objects.
-
-Chrome will scan for nearby pages when your device is unlocked. These pages will go through a Google service to improve the quality of page results.</translation>
 <translation id="4254813446494774748">Translation language:</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
@@ -373,6 +371,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6108923351542677676">Setup in progress…</translation>
 <translation id="6112702117600201073">Refreshing page</translation>
 <translation id="6127379762771434464">Item removed</translation>
+<translation id="6134870457258083164">Not seeing your device? <ph name="BEGIN_LINK1" />Get help<ph name="END_LINK1" /> or <ph name="BEGIN_LINK2" />search again<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Make page mobile-friendly</translation>
 <translation id="6140912465461743537">Country/Region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
@@ -459,6 +458,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
 <translation id="7208788139759694678">Data Saver disabled</translation>
+<translation id="721331389620694978">Some settings that may reflect browsing habits will not be cleared.</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Help<ph name="END_LINK" /></translation>
@@ -563,14 +563,12 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8627706565932943526">Sync error</translation>
 <translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>
 <translation id="8660471606262461360">From Google Payments</translation>
-<translation id="8675945939500569406">Turn on the Physical Web?</translation>
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8699799819461268362">Google SafeSites filter</translation>
 <translation id="8701537995684343047">Visit bookmark to save offline</translation>
 <translation id="8719023831149562936">Can’t beam current tab</translation>
 <translation id="8725066075913043281">Try again</translation>
-<translation id="8727142376512517020">Don’t show this again</translation>
 <translation id="8730621377337864115">Finished</translation>
 <translation id="8737542153238017984">Saved page not available offline. Storage almost full.</translation>
 <translation id="8793430725658173476">Copy url</translation>

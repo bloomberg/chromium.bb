@@ -603,6 +603,7 @@
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864676585353837027">Rediger, hvordan disse filer deles</translation>
 <translation id="1864756863218646478">Filen blev ikke fundet.</translation>
+<translation id="1865769994591826607">Kun forbindelser på samme website</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" har læse- og skriverettigheder til billed-, video- og lydfiler på de markerede placeringer.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> er klar til at færdiggøre din installation</translation>
 <translation id="1873879463550486830">SUID-sandkasse</translation>
@@ -1193,6 +1194,7 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2743387203779672305">Kopiér til udklipsholderen</translation>
 <translation id="2744221223678373668">Delte</translation>
 <translation id="2745080116229976798">Microsoft-kvalificeret delegering</translation>
+<translation id="2745576239403924641">Aktivér Android-apps, som skal køre på din Chromebook.</translation>
 <translation id="2747990718031257077">Aktiverer det nye (under udvikling) design for udvidelsesværktøjslinjen.</translation>
 <translation id="2749756011735116528">Log ind på <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Kontrollér grammatik med stavning</translation>
@@ -1406,6 +1408,7 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="3011284594919057757">Om Flash</translation>
 <translation id="3011362742078013760">Åbn alle bogmærker i &amp;inkognitovindue</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">Kun sikre forbindelser på samme website</translation>
 <translation id="3012890944909934180">Genstart Chrome på skrivebordet</translation>
 <translation id="3012917896646559015">Kontakt straks din hardwareproducent, og send din computer til reparation.</translation>
 <translation id="3015992588037997514">Vises denne kode på din Chromebox-skærm?</translation>
@@ -1639,6 +1642,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="331752765902890099">Knappen <ph name="PROFILE_NAME" />: loginfejl</translation>
 <translation id="3319048459796106952">Nyt &amp;inkognito-vindue</translation>
 <translation id="331915893283195714">Tillad, at alle websites kan deaktivere musemarkøren</translation>
+<translation id="3319364804843246307">Android-apps</translation>
 <translation id="3320859581025497771">dit telefonselskab</translation>
 <translation id="3323235640813116393">Aktiverer lagring af sider som MHTML: en enkelt tekstfil, der indeholder HTML, og alle underressourcer.</translation>
 <translation id="3323447499041942178">Tekstfelt</translation>
@@ -1743,6 +1747,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Højreklik for at afspille <ph name="PLUGIN_NAME" /> .</translation>
 <translation id="347785443197175480">Tillad fortsat, at <ph name="HOST" /> har adgang til dit kamera og din mikrofon</translation>
 <translation id="3478315065074101056">XPS giver avancerede muligheder for klassiske printere, som er tilsluttet Cloudprinter med Chrome. Printere skal tilsluttes igen, når dette flag er ændret.</translation>
+<translation id="3479539252931486093">Var dette uventet? <ph name="BEGIN_LINK" />Giv os gerne feedback<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ikke nu</translation>
 <translation id="3480892288821151001">Fastgør vinduet til venstre</translation>
 <translation id="3481915276125965083">Følgende pop op-vinduer blev blokeret på denne side:</translation>
@@ -2715,6 +2720,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4941246025622441835">Anvend denne enhedsrekvisition, når du tilmelder enheden til virksomhedsadministration.</translation>
 <translation id="4942394808693235155">Søg efter og anvend opdateringer</translation>
 <translation id="494286511941020793">Hjælp til proxykonfiguration</translation>
+<translation id="4945378551914476156">Dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres til din Google-konto, så du kan bruge dem, der hvor du bruger Chrome. Du kan ændre dette under <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Indstillinger...</translation>
 <translation id="4952186391360931024">Ikke-material</translation>
 <translation id="4954544650880561668">Enhedskontrol</translation>
@@ -2848,7 +2854,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
    <ph name="LINE_BREAKS" />
    Hvis du fjerner din enhed, mens den er i brug, kan det medføre datatab. Vent, indtil handlingen er gennemført, og fjern derefter enheden ved hjælp af appen Filer.</translation>
 <translation id="5159488553889181171">Download af <ph name="PLUGIN_NAME" /> blev annulleret.</translation>
-<translation id="5159628598068481063">Præference for omdirigering af søgning på Windows-skrivebord</translation>
 <translation id="5160857336552977725">Log ind på din <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Deling mislykkedes. Kontrollér din forbindelse, og prøv igen senere.</translation>
 <translation id="516592729076796170">Amerikansk (Programmer Dvorak) tastatur</translation>
@@ -3216,7 +3221,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Læs dine data på <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">Tekstfiltrering i oversigtstilstand</translation>
-<translation id="568428328938709143">Kontoen er blevet fjernet</translation>
 <translation id="5684661240348539843">Aktiv-id</translation>
 <translation id="569068482611873351">Importer...</translation>
 <translation id="56907980372820799">Tilknyt data</translation>
@@ -3456,6 +3460,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="604001903249547235">Sikkerhedskopiering i skyen</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="604124094241169006">Automatisk</translation>
+<translation id="6042308850641462728">Mere</translation>
 <translation id="604257181445267932">Med Smart Lock kan du hurtigt logge ind på apps og websites, der anvender adgangskoder, du har gemt med Google.</translation>
 <translation id="6049065490165456785">Billede fra internt kamera</translation>
 <translation id="6051028581720248124">Ved udskrivning til FedEx Office accepterer du deres <ph name="START_LINK" />servicevilkår<ph name="END_LINK" />.</translation>
@@ -3487,7 +3492,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="6089481419520884864">Destiller side</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Annullerer opdatering...</translation>
-<translation id="6095149522260432647">Aktiverer en præference, der tillader omdirigering af søgninger på Windows-skrivebordet til standardsøgemaskinen.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Åbn maksimeret</translation>
 <translation id="6096326118418049043">X.500-navn</translation>
@@ -4669,6 +4673,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7926906273904422255">Markér usikre kilder som "usikre" eller "tvivlsomme".</translation>
 <translation id="7928710562641958568">Skub enheden ud</translation>
 <translation id="7938594894617528435">I øjeblikket offline</translation>
+<translation id="7939374455203157513">Aktivér Cloud-tjenester</translation>
 <translation id="7939412583708276221">Behold alligevel</translation>
 <translation id="7939997691108949385">Administratoren kan konfigurere begrænsninger og indstillinger for den administrerede bruger på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Amerikansk (Colemak)</translation>
@@ -5220,6 +5225,7 @@ Beregner resterende tid</translation>
 <translation id="872537912056138402">Kroatisk</translation>
 <translation id="8726206820263995930">Fejl ved hentning af politikindstillinger fra serveren: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Vis udvidelsesmuligheder som et integreret elementet i chrome://extensions i stedet for at åbne en ny fane.</translation>
+<translation id="8727142376512517020">Vis ikke denne underretning igen</translation>
 <translation id="8728672262656704056">Du er nu i inkognitotilstand</translation>
 <translation id="8730621377337864115">Fuldført</translation>
 <translation id="8731332457891046104">Frameld <ph name="DEVICE_TYPE" /></translation>
@@ -5383,7 +5389,6 @@ Beregner resterende tid</translation>
 <translation id="8986362086234534611">Glem</translation>
 <translation id="8986494364107987395">Send automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
 <translation id="8987927404178983737">Måned</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">Webadresse for Netscape-certifikatbase</translation>
 <translation id="8994845581478641365">Værktøj til oprettelse af skrifttypecache til DirectWrite</translation>
 <translation id="8995603266996330174">Administreres af <ph name="DOMAIN" /></translation>

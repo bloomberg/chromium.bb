@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1015255576907412255">Για περισσότερες πληροφορίες, επικοινωνήστε με το διαχειριστή του συστήματός σας.</translation>
+<translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
 <translation id="1032854598605920125">Περιστροφή προς τα δεξιά</translation>
 <translation id="1055184225775184556">&amp;Αναίρεση προσθήκης</translation>
 <translation id="1064422015032085147">O διακομιστής που φιλοξενεί την ιστοσελίδα ενδέχεται να είναι υπερφορτωμένος ή να υποβάλλεται σε συντήρηση.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Αποτυχία λήψης</translation>
 <translation id="6644283850729428850">Αυτή η πολιτική έχει αποσυρθεί.</translation>
 <translation id="6646897916597483132">Εισαγάγετε τον τετραψήφιο κωδικό CVC από το μπροστινό μέρος της κάρτας σας</translation>
+<translation id="6660210980321319655">Αυτόματη αναφορά <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Να καταργηθεί η πρόταση φόρμας από το Chromium;</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="6711464428925977395">Υπάρχει κάποιο πρόβλημα με το διακομιστή μεσολάβησης ή η διεύθυνση είναι εσφαλμένη.</translation>
@@ -633,6 +635,7 @@
 <translation id="8971063699422889582">Το πιστοποιητικό του διακομιστή έχει λήξει.</translation>
 <translation id="8987927404178983737">Μήνας</translation>
 <translation id="8988760548304185580">Εισαγάγετε την ημερομηνία λήξης και τον τριψήφιο κωδικό CVC από το πίσω μέρος της κάρτας σας</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Ακατάλληλο πιστοποιητικό ελέγχου ταυτότητας πελάτη SSL.</translation>
 <translation id="901974403500617787">Οι επισημάνσεις που ισχύουν για ολόκληρο το σύστημα μπορούν να οριστούν μόνο από τον κάτοχο: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Ο διακομιστής απέρριψε τη σύνδεση.</translation>

@@ -51,7 +51,6 @@
 <translation id="2397416548179033562">Отображение меню Chrome</translation>
 <translation id="2429317896000329049">Google Chrome не удалось синхронизировать данные, поскольку служба Sync недоступна для вашего домена.</translation>
 <translation id="2485422356828889247">Удалить</translation>
-<translation id="2576431527583832481">Chrome становится лучше! Доступна новая версия.</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="2582790009689336987">Google Chrome скоро перестанет обновляться на этом компьютере, поскольку поддержка этой системы Linux будет прекращена.</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
@@ -111,7 +110,6 @@
 <translation id="4633000520311261472">Чтобы обеспечить безопасность ваших данных, некоторые расширения Chrome были отключены, так как <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений о них, то есть эти компоненты могли быть установлены без вашего ведома.</translation>
 <translation id="4700157086864140907">В браузере Chrome для проверки правописания вводимый вами текст передается на серверы Google. Та же технология используется в Google Поиске.</translation>
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
-<translation id="473775607612524610">Обновление</translation>
 <translation id="4743926867934016338">Принимаю</translation>
 <translation id="4751441238232965030">Обновление 32-разрядной версии Google Chrome на этом компьютере скоро будет прекращено. Установите 64-разрядную версию браузера.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

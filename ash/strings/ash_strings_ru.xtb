@@ -113,7 +113,6 @@
 <translation id="4250680216510889253">Нет</translation>
 <translation id="4279490309300973883">Отражение</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Не удалось выполнить операцию.</translation>
 <translation id="4421231901400348175">Доступ к экрану для <ph name="HELPER_NAME" /> с помощью удаленного помощника</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="4527045527269911712">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth.</translation>
@@ -182,7 +181,6 @@
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY" />.</translation>
 <translation id="6713285437468012787">Устройство <ph name="DEVICE_NAME" /> подключено через Bluetooth и доступно всем пользователям. Вы можете отключить его на странице настроек.</translation>
 <translation id="6785414152754474415">Батарея заряжена на <ph name="PERCENTAGE" />% и подключена к источнику питания.</translation>
-<translation id="6803622936009808957">Не удалось дублировать изображение экрана, т. к. указанное разрешение не поддерживается. Включен режим расширенного рабочего стола.</translation>
 <translation id="683971173229319003">Клавиша поиска + L</translation>
 <translation id="68610848741840742">ChromeVox (голосовое сопровождение)</translation>
 <translation id="6911468394164995108">Подключиться к другой сети...</translation>

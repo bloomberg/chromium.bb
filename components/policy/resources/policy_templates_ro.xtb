@@ -2072,7 +2072,6 @@ nu poate fi stabilit de utilizator din setările browserului.
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici decât intervalul de inactivitate.</translation>
 <translation id="891435090623616439">codificat(ă) ca un șir JSON, pentru detalii vezi <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Raportați locația dispozitivului</translation>
-<translation id="89493502583189945">Specifică semnalizatoarele care trebuie aplicate pentru <ph name="PRODUCT_NAME" /> la pornirea acestuia. Semnalizatoarele specificate se aplică înainte ca <ph name="PRODUCT_NAME" /> să pornească, chiar și pentru ecranul de conectare.</translation>
 <translation id="8951350807133946005">Setează directorul pentru memorare în cache pe disc</translation>
 <translation id="8955719471735800169">Înapoi sus</translation>
 <translation id="8960850473856121830">Șabloanele din această listă vor fi comparate cu originea

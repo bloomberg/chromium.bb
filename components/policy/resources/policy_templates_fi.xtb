@@ -2043,7 +2043,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan käyttämättömyysajan arvoa pienemmäksi.</translation>
 <translation id="891435090623616439">koodattu JSON-merkkijonoksi; lisätietoja on osoitteessa <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Ilmoita laitteen sijainti</translation>
-<translation id="89493502583189945">Määrittää käytännöt, joita tuotteen <ph name="PRODUCT_NAME" /> tulee käyttää käynnistyessään. Määritettyjä käytäntöjä käytetään jo ennen tuotteen <ph name="PRODUCT_NAME" /> käynnistystä kirjautumisruudulla.</translation>
 <translation id="8951350807133946005">Aseta levyn välimuistihakemisto</translation>
 <translation id="8955719471735800169">Sivun alkuun</translation>
 <translation id="8960850473856121830">Tähän luetteloon merkittyjä osoitemalleja verrataan pyytävän URL-osoitteen suojaustiedon

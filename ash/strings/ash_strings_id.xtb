@@ -113,7 +113,6 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Monitor, sayang sekali kita tidak bisa bekerja sama. (Monitor tersebut tidak didukung)</translation>
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding.</translation>
@@ -182,7 +181,6 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6650933572246256093">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukkan kunci sandi ini pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" telah disandingkan dan kini tersedia bagi semua pengguna. Anda dapat menghapus penyandingan ini menggunakan Setelan.</translation>
 <translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
-<translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (Masukan lisan)</translation>
 <translation id="6911468394164995108">Bergabung dengan lainnya...</translation>

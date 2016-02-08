@@ -51,7 +51,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="2397416548179033562">A Chrome-menü megjelenítése</translation>
 <translation id="2429317896000329049">A Google Chrome nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
-<translation id="2576431527583832481">A Chrome most még jobb lett! Új verzió áll rendelkezésre.</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
 <translation id="2582790009689336987">Ez a számítógép hamarosan nem fog több Google Chrome-frissítést kapni, mert a böngésző többé nem fogja támogatni ezt a Linux rendszert.</translation>
 <translation id="2588322182880276190">Chrome embléma</translation>
@@ -111,7 +110,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="4633000520311261472">A Chrome biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
 <translation id="4700157086864140907">A Google Chrome pontosabb helyesírás-ellenőrzést tud biztosítani azáltal, hogy a böngészőbe beírt szöveget elküldi a Google szervereinek, ami lehetővé teszi, hogy ugyanazt a helyesírás-ellenőrző technológiát használja, amelyet a Google-keresés is.</translation>
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
-<translation id="473775607612524610">Frissítés</translation>
 <translation id="4743926867934016338">Elfogadás és keresés</translation>
 <translation id="4751441238232965030">Ez a számítógép hamarosan nem kap további frissítéseket a Google Chrome 32 bites változatához. Kérjük, frissítsen a Google Chrome 64 bites változatára.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

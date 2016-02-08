@@ -607,6 +607,7 @@
 <translation id="1864111464094315414">Mag-login</translation>
 <translation id="1864676585353837027">Baguhin kung paano ibinabahagi ang mga file na ito</translation>
 <translation id="1864756863218646478">Hindi mahanap ang file.</translation>
+<translation id="1865769994591826607">Mga koneksyon sa iisang site lang</translation>
 <translation id="186612162884103683">Ang "<ph name="EXTENSION" />" ay nakakabasa at nakakapagsulat ng mga larawan, video, file ng tunog sa mga may check na lokasyon.</translation>
 <translation id="1867780286110144690">Ang <ph name="PRODUCT_NAME" /> ay handa nang kumpletuhin ang iyong pag-install</translation>
 <translation id="1873879463550486830">SUID Sandbox</translation>
@@ -1198,6 +1199,7 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2743387203779672305">Kopyahin sa clipboard</translation>
 <translation id="2744221223678373668">Nakabahagi</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2745576239403924641">I-enable ang mga Android App na tumakbo sa iyong Chromebook.</translation>
 <translation id="2747990718031257077">Ine-enable ang (kasalukuyang dine-develop) bagong disenyo ng toolbar ng extension.</translation>
 <translation id="2749756011735116528">Mag-sign in sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Check Grammar With Spelling</translation>
@@ -1411,6 +1413,7 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="3011284594919057757">Tungkol sa Flash</translation>
 <translation id="3011362742078013760">Buksan ang Lahat ng Bookmark sa &amp;Incognito Window</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">Mga ligtas na koneksyon sa iisang site lang</translation>
 <translation id="3012890944909934180">Muling ilunsad ang Chrome sa desktop</translation>
 <translation id="3012917896646559015">Mangyaring makipag-ugnay agad sa manufacturer ng iyong hardware upang ipadala ang iyong computer sa pasilidad sa pagkumpuni.</translation>
 <translation id="3015992588037997514">Lumalabas ba ang code na ito sa screen ng iyong Chromebox?</translation>
@@ -1644,6 +1647,7 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="331752765902890099">Button ng <ph name="PROFILE_NAME" />: error sa pag-sign in</translation>
 <translation id="3319048459796106952">Bagong &amp;incognito window</translation>
 <translation id="331915893283195714">Payagan ang lahat ng site na i-disable ang cursor ng mouse</translation>
+<translation id="3319364804843246307">Mga Android App</translation>
 <translation id="3320859581025497771">ang iyong carrier</translation>
 <translation id="3323235640813116393">Pinapagana ang pag-save ng mga page bilang MHTML: iisang text file na naglalaman ng HTML at ng lahat ng sub-resource.</translation>
 <translation id="3323447499041942178">Text box</translation>
@@ -1748,6 +1752,7 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">I-right-click upang i-play ang <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Magpatuloy sa pagpayag sa <ph name="HOST" /> na i-access ang iyong camera at mikropono</translation>
 <translation id="3478315065074101056">Ine-enable ng XPS ang mga advanced na opsyon para sa mga classic na printer na nakakonekta sa Cloud Print sa Chrome. Dapat ay muling ikonekta ang mga printer pagkatapos baguhin ang flag na ito.</translation>
+<translation id="3479539252931486093">Hindi mo ba ito inaasahan? <ph name="BEGIN_LINK" />Ipaalam sa amin<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Hindi ngayon</translation>
 <translation id="3480892288821151001">I-dock ang window sa kaliwa</translation>
 <translation id="3481915276125965083">Hinarang ang mga sumusunod na pop-up sa pahinang ito:</translation>
@@ -2723,6 +2728,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4941246025622441835">Gamitin ang paghihingi sa device na ito kapag ine-enroll ang device para sa enterprise management:</translation>
 <translation id="4942394808693235155">Suriin para sa at maglapat ng mga update</translation>
 <translation id="494286511941020793">Tulong sa Configuration ng Proxy</translation>
+<translation id="4945378551914476156">Masi-sync ang iyong mga bookmark, history, password at iba pang mga setting sa iyong Google Account nang sa gayon ay magamit mo ang mga ito sa tuwing gagamitin mo ang Chrome. Mababago mo ito sa <ph name="BEGIN_LINK" /></translation>
 <translation id="4950138595962845479">Mga Pagpipilian...</translation>
 <translation id="4952186391360931024">Hindi material</translation>
 <translation id="4954544650880561668">Pagkontrol sa device</translation>
@@ -2857,7 +2863,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
    <ph name="LINE_BREAKS" />
    Maaaring magsanhi ng pagkawala ng data ang pag-aalis sa iyong device habang ginagamit ito.  Mangyaring maghintay hanggang matapos ang operasyon, pagkatapos ay i-eject ang device gamit ang Files app.</translation>
 <translation id="5159488553889181171">Kinansela ang pag-download ng <ph name="PLUGIN_NAME" />.</translation>
-<translation id="5159628598068481063">Kagustuhan sa pag-redirect ng paghahanap sa Windows desktop</translation>
 <translation id="5160857336552977725">Mag-sign in sa iyong <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Nabigo ang pagbabahagi. Suriin ang iyong koneksyon at subukang muli sa ibang pagkakataon.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
@@ -3225,7 +3230,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="567881659373499783">Bersyon <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Basahin ang iyong data sa <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">Pagfi-filter ng text sa Overview Mode</translation>
-<translation id="568428328938709143">Inalis ang account</translation>
 <translation id="5684661240348539843">Identifier ng Asset</translation>
 <translation id="569068482611873351">I-import...</translation>
 <translation id="56907980372820799">I-link ang data</translation>
@@ -3467,6 +3471,7 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="604001903249547235">Pag-back up sa Cloud</translation>
 <translation id="6040143037577758943">Isara</translation>
 <translation id="604124094241169006">Awtomatiko</translation>
+<translation id="6042308850641462728">Higit pa</translation>
 <translation id="604257181445267932">Nakakatulong sa iyo ang Smart Lock na mabilisang mag-sign in sa mga app at site gamit ang mga password na na-save mo sa Google.</translation>
 <translation id="6049065490165456785">Larawan mula sa panloob na camera</translation>
 <translation id="6051028581720248124">Sa pamamagitan ng pag-print sa FedEx Office, tinatanggap mo ang kanilang <ph name="START_LINK" />mga tuntunin ng paggamit<ph name="END_LINK" />.</translation>
@@ -3498,7 +3503,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="6089481419520884864">Distill page</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Kinakansela ang pag-update...</translation>
-<translation id="6095149522260432647">Nag-e-enable ng kagustuhang nagbibigay-daan sa pag-redirect ng mga paghahanap sa Windows desktop sa default na search engine.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Buksan ang naka-maximize</translation>
 <translation id="6096326118418049043">Pangalan na X.500</translation>
@@ -4683,6 +4687,7 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7926906273904422255">Markahan ang mga hindi secure na pinagmulan bilang hindi secure o bilang "kahina-hinala."</translation>
 <translation id="7928710562641958568">I-eject ang device</translation>
 <translation id="7938594894617528435">Kasalukuyang offline</translation>
+<translation id="7939374455203157513">I-enable ang Mga Serbisyo sa Cloud</translation>
 <translation id="7939412583708276221">Panatilihin pa rin</translation>
 <translation id="7939997691108949385">Mako-configure ng manager ang mga paghihigpit at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">US Colemak</translation>
@@ -5237,6 +5242,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="872537912056138402">Croatian</translation>
 <translation id="8726206820263995930">Error kapag kumukuha ng mga setting ng patakaran mula sa server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Ipakita ang mga opsyon sa extension bilang naka-embed na elemento sa chrome://extensions sa halip na magbukas ng bagong tab.</translation>
+<translation id="8727142376512517020">Huwag na itong ipakitang muli</translation>
 <translation id="8728672262656704056">Naging incognito ka</translation>
 <translation id="8730621377337864115">Tapos na</translation>
 <translation id="8731332457891046104">I-unenroll ang <ph name="DEVICE_TYPE" /></translation>
@@ -5400,7 +5406,6 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="8986362086234534611">Kalimutan</translation>
 <translation id="8986494364107987395">Awtomatikong ipadala ang mga istatistika ng paggamit at mga ulat ng pag-crash sa Google</translation>
 <translation id="8987927404178983737">Buwan</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">URL ng Netscape Certificate Base</translation>
 <translation id="8994845581478641365">Panggawa ng Cache ng Font para sa DirectWrite</translation>
 <translation id="8995603266996330174">Pinamamahalaan ni <ph name="DOMAIN" /></translation>

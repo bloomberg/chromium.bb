@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1015255576907412255">詳しくは、システム管理者にお問い合わせください。</translation>
+<translation id="1015730422737071372">詳細を報告する</translation>
 <translation id="1032854598605920125">時計回りに回転</translation>
 <translation id="1055184225775184556">追加の取り消し（&amp;U）</translation>
 <translation id="1064422015032085147">ウェブページのホストサーバーがビジーであるかメンテナンス中の可能性があります。
@@ -436,6 +437,7 @@
 <translation id="6637478299472506933">ダウンロードの失敗</translation>
 <translation id="6644283850729428850">このポリシーは廃止されました。</translation>
 <translation id="6646897916597483132">カードの表側に記載されている 4 桁の CVC を入力します</translation>
+<translation id="6660210980321319655"><ph name="CRASH_TIME" /> にレポートを自動送信しました</translation>
 <translation id="6671697161687535275">Chromium から候補を削除してもよろしいですか？</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
@@ -627,6 +629,7 @@
 <translation id="8971063699422889582">サーバーの証明書の有効期限が切れています。</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8988760548304185580">カードの裏面に記載されている有効期限と 3 桁の CVC を入力します</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">SSL クライアント認証証明書が不正です。</translation>
 <translation id="901974403500617787">システム全体に適用されるフラグは所有者（<ph name="OWNER_EMAIL" />）のみが設定できます。</translation>
 <translation id="9020142588544155172">サーバーが接続を拒否しました。</translation>

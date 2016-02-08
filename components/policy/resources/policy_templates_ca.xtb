@@ -645,7 +645,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3322771899429619102">Us permet definir una llista de patrons d'URL que especifiquin els llocs que estan autoritzats a utilitzar la generació de claus. Si un patró d'URL està configurat com a "KeygenBlockedForUrls", la política substitueix aquestes excepcions.
 
 
-          Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat per a tots els llocs, bé des de la política "DefaultKeygenSetting" (si està configurada), o bé des de la configuració personal definida per l'usuari.</translation>
+          Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
@@ -693,7 +693,7 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
       Si activeu aquesta opció, el mode de seguretat de YouTube està sempre activat.
 
       Si la desactiveu o no hi establiu cap valor, el mode de seguretat de YouTube no s'aplica.</translation>
-<translation id="3750220015372671395">No permetis que aquests llocs utilitzin la generació de claus</translation>
+<translation id="3750220015372671395">Bloqueja la generació de claus en aquests llocs web</translation>
 <translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
 <translation id="3758249152301468420">Desactiva les eines per a desenvolupadors</translation>
 <translation id="3765260570442823273">Durada del missatge d'advertència de tancament de la sessió per inactivitat</translation>
@@ -826,7 +826,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="423797045246308574">Us permet definir una llista de patrons d'URL que especifiquin els llocs que no estan autoritzats a utilitzar la generació de claus. Si un patró d'URL està configurat com a "KeygenAllowedForUrls", la política substitueix aquestes excepcions.
 
 
-          Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat per a tots els llocs, bé des de la política "DefaultKeygenSetting" (si està configurada), o bé des de la configuració personal definida per l'usuari.</translation>
+          Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="427632463972968153">Especifica els paràmetres utilitzats en cercar imatges amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {imageThumbnail} a l'exemple anterior, se substituirà per dades de la miniatura de la imatge real.
 
@@ -1877,7 +1877,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8300455783946254851">Si s'utilitza el valor true per a aquesta política, es desactiva la sincronització de Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /> quan s'utilitza una connexió mòbil. En aquest cas, les dades només se sincronitzen amb Google Drive quan hi ha connexió Wi-Fi o Ethernet.
 
           Si aquesta política no es defineix o si es defineix com a false, els usuaris podran transferir fitxers a Google Drive mitjançant connexions mòbils.</translation>
-<translation id="8312129124898414409">Us permet definir si els llocs web estan autoritzats a utilitzar la generació de claus. L'ús de la generació de claus es pot autoritzar o denegar per al conjunt total de llocs web.
+<translation id="8312129124898414409">Us permet definir si els llocs web estan autoritzats a utilitzar la generació de claus. L'ús de la generació de claus es pot autoritzar o denegar per a tots els llocs web.
 
           Si aquesta política es deixa sense establir, s'utilitzarà "BlockKeygen" i l'usuari podrà canviar-la.</translation>
 <translation id="8329984337216493753">Aquesta política només està activa en mode de venta.
@@ -2059,7 +2059,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior al retard d'inactivitat.</translation>
 <translation id="891435090623616439">codificat com a cadena JSON; per obtenir informació detallada, consulteu <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Informa de la ubicació d'un dispositiu</translation>
-<translation id="89493502583189945">Especifica les opcions que s'han d'aplicar a <ph name="PRODUCT_NAME" /> quan s'inicia. Les opcions especificades s'apliquen abans que s'iniciï <ph name="PRODUCT_NAME" />, fins i tot per a la pantalla d'inici de sessió.</translation>
 <translation id="8951350807133946005">Defineix el directori de la memòria cau del disc</translation>
 <translation id="8955719471735800169">Torna a dalt</translation>
 <translation id="8960850473856121830">Els patrons d'aquesta llista es compararan amb l'origen de seguretat

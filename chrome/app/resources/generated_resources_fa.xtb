@@ -604,6 +604,7 @@
 <translation id="1864111464094315414">ورود به سیستم</translation>
 <translation id="1864676585353837027">نحوه اشتراک‌گذاری این فایل‌ها را تغییر دهید</translation>
 <translation id="1864756863218646478">این فایل پیدا نشد.</translation>
+<translation id="1865769994591826607">‏فقط اتصالات same-site</translation>
 <translation id="186612162884103683">«<ph name="EXTENSION" />» می‌تواند تصاویر، ویدیوها و فایل‌های صوتی را از مکان‌های انتخاب شده  بخوانید یا بنویسید.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> آماده تکمیل نصب است</translation>
 <translation id="1873879463550486830">SUID Sandbox</translation>
@@ -1192,6 +1193,7 @@
 <translation id="2743387203779672305">کپی در بریده‌دان</translation>
 <translation id="2744221223678373668">اشتراک‌گذاری شده</translation>
 <translation id="2745080116229976798">‏وابستگی مشروط Microsoft</translation>
+<translation id="2745576239403924641">‏برنامه‌های Android را قادر به اجرا در Chromebook شما می‌کند.</translation>
 <translation id="2747990718031257077">طرح نوار ابزار برنامه افزودنی جدید (در حال توسعه) را فعال می‌کند.</translation>
 <translation id="2749756011735116528">ورود به سیستم <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">بررسی گرامر با املا</translation>
@@ -1405,6 +1407,7 @@
 <translation id="3011284594919057757">‏درباره Flash</translation>
 <translation id="3011362742078013760">باز کردن همه نشانک‌ها در &amp;پنجره حالت ناشناس</translation>
 <translation id="3012631534724231212">(iframe)</translation>
+<translation id="3012804260437125868">‏فقط اتصالات ایمن same-site</translation>
 <translation id="3012890944909934180">‏راه‌اندازی مجدد Chrome در دسک‌تاپ</translation>
 <translation id="3012917896646559015">لطفاً برای ارسال رایانه خود به مرکز تعمیر، فوراً با سازنده سخت‌افزار خود تماس بگیرید.</translation>
 <translation id="3015992588037997514">‏آیا این کد در صفحه نمایش Chromebox شما نشان داده می‌شود؟</translation>
@@ -1638,6 +1641,7 @@
 <translation id="331752765902890099"><ph name="PROFILE_NAME" />  دکمه: خطای ورود به سیستم</translation>
 <translation id="3319048459796106952">&amp;پنجره جدید حالت ناشناس</translation>
 <translation id="331915893283195714">به همه سایت‌ها اجازه داده شود مکان‌نمای موشواره را غیرفعال کنند</translation>
+<translation id="3319364804843246307">‏برنامه‌های Android</translation>
 <translation id="3320859581025497771">شرکت مخابراتی شما</translation>
 <translation id="3323235640813116393">‏ذخیره صفحات را به‌عنوان MHTML فعال می‌کند: یک فایل نوشتاری واحد شامل HTML و همه منابع فرعی.</translation>
 <translation id="3323447499041942178">کادر متنی</translation>
@@ -1742,6 +1746,7 @@
 <translation id="347719495489420368">برای اجرای <ph name="PLUGIN_NAME" />، کلیک راست کنید.</translation>
 <translation id="347785443197175480">همچنان دسترسی به دوربین و میکروفون شما، توسط <ph name="HOST" /> مجاز باشد</translation>
 <translation id="3478315065074101056">‏XPS گزینه‌های پیشرفته برای چاپگرهای کلاسیک مرتبط شده با Cloud Print از طریق Chrome را فعال می‌کند. چاپگرها بعد از تغییر این پرچم باید دوباره متصل شوند.</translation>
+<translation id="3479539252931486093">غیرمنتظره بود؟ <ph name="BEGIN_LINK" />به ما اطلاع دهید<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="3480892288821151001">قراردادن پنجره در چپ</translation>
 <translation id="3481915276125965083">پنجره‌های بازشوی زیر در این صفحه مسدود شده‌اند:</translation>
@@ -2714,6 +2719,7 @@
 <translation id="4941246025622441835">هنگام ثبت‌نام دستگاه برای مدیریت سازمانی، از این درخواست دستگاه استفاده کنید:</translation>
 <translation id="4942394808693235155">به‌روزرسانی‌ها را بررسی کرده و آن‌ها را اعمال کنید</translation>
 <translation id="494286511941020793">راهنمای پیکربندی پراکسی</translation>
+<translation id="4945378551914476156">‏نشانک‌ها، سابقه، گذرواژه و سایر تنظیماتتان در حساب Google شما همگام‌سازی می‌شود، بنابراین می‌توانید هرجا که از Chrome استفاده می‌کنید از آن‌ها استفاده کنید. این تنظیم را می‌توانید در <ph name="BEGIN_LINK" /> تغییر دهید.</translation>
 <translation id="4950138595962845479">گزینه‌ها...</translation>
 <translation id="4952186391360931024">غیرسه‌بعدی</translation>
 <translation id="4954544650880561668">کنترل دستگاه</translation>
@@ -2849,7 +2855,6 @@
  <ph name="LINE_BREAKS" />
  جداکردن دستگاه هنگامی که در حال استفاده است ممکن است باعث از دست رفتن داده‌ها شود.  لطفاً تا به پایان رسیدن عملیات صبر کنید، سپس دستگاه را با استفاده از برنامه Files خارج نمایید.</translation>
 <translation id="5159488553889181171">دانلود <ph name="PLUGIN_NAME" /> لغو شد.</translation>
-<translation id="5159628598068481063">‏اولویت هدایت جستجوی دسک‌تاپ Windows</translation>
 <translation id="5160857336552977725">وارد سیستم <ph name="DEVICE_TYPE" /> خودتان شوید</translation>
 <translation id="5163869187418756376">اشتراک‌گذاری انجام نشد. اتصال خود را بررسی کرده، بعداً دوباره امتحان کنید.</translation>
 <translation id="516592729076796170">دووراک آمریکایی برنامه‌نویس‌ها</translation>
@@ -3217,7 +3222,6 @@
 <translation id="567881659373499783">نسخه <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">خواندن داده‌های شما در <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">فیلتر کردن نوشتار در حالت نمای کلی</translation>
-<translation id="568428328938709143">حساب برداشته شد</translation>
 <translation id="5684661240348539843">شناسه دارایی</translation>
 <translation id="569068482611873351">وارد کردن...</translation>
 <translation id="56907980372820799">داده‌های پیوند</translation>
@@ -3457,6 +3461,7 @@
 <translation id="604001903249547235">‏پشتیبان‌گیری Cloud</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="604124094241169006">خودکار</translation>
+<translation id="6042308850641462728">بیشتر</translation>
 <translation id="604257181445267932">‏Smart Lock به شما کمک می‌کند با استفاده از گذرواژه‌هایی که با Google ذخیره کرده‌اید، سریع به سیستم برنامه‌ها و سایت‌ها وارد شوید.</translation>
 <translation id="6049065490165456785">عکس از دوربین داخلی</translation>
 <translation id="6051028581720248124">‏با چاپ در دفتر FedEx شما <ph name="START_LINK" />شرایط استفاده<ph name="END_LINK" /> آن‌ها را می‌پذیرید.</translation>
@@ -3488,7 +3493,6 @@
 <translation id="6089481419520884864">صفحه فشرده</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">در حال لغو به‌روزرسانی...</translation>
-<translation id="6095149522260432647">‏اولویتی را فعال می کند که اجازه می‌دهد جستجوهای دسک‌تاپ Windows به موتور جستجوی پیش‌فرض هدایت شود.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">باز کردن در حداکثر اندازه</translation>
 <translation id="6096326118418049043">‏نام X.500</translation>
@@ -4670,6 +4674,7 @@
 <translation id="7926906273904422255">علامتگذاری منبع اصلی غیرایمن به عنوان «غیرایمن» یا به عنوان «مشکوک».</translation>
 <translation id="7928710562641958568">خارج کردن دستگاه</translation>
 <translation id="7938594894617528435">در حال حاضر آفلاین</translation>
+<translation id="7939374455203157513">فعال کردن سرویس‌های ابری</translation>
 <translation id="7939412583708276221">درهر حال حفظ شود</translation>
 <translation id="7939997691108949385">مدیر قادر خواهد بود محدودیت‌ها و تنظیمات این کاربر نظارت‌شده را در <ph name="MANAGEMENT_URL" /> پیکربندی کند.</translation>
 <translation id="7943385054491506837">کلماک آمریکایی</translation>
@@ -5220,6 +5225,7 @@
 <translation id="872537912056138402">کرواسی</translation>
 <translation id="8726206820263995930">خطا هنگام واکشی تنظیمات خط‌مشی از سرور: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">‏به‌جای باز کردن برگه جدید، گزینه‌های برنامه‌ افزودنی را به صورت عنصر جاسازی‌شده در chrome://extensions نشان دهید.</translation>
+<translation id="8727142376512517020">دیگر نشان داده نشود</translation>
 <translation id="8728672262656704056">به صورت ناشناس وارد شدید</translation>
 <translation id="8730621377337864115">تمام</translation>
 <translation id="8731332457891046104">لغو ثبت <ph name="DEVICE_TYPE" /></translation>
@@ -5382,7 +5388,6 @@
 <translation id="8986362086234534611">فراموش شود</translation>
 <translation id="8986494364107987395">‏ارسال خودکار آمار مصرف و گزارش‌های خرابی به Google</translation>
 <translation id="8987927404178983737">ماه</translation>
-<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="899403249577094719">‏نشانی وب گواهی Netscape</translation>
 <translation id="8994845581478641365">‏سازنده حافظه نهان قلم DirectWrite</translation>
 <translation id="8995603266996330174">مدیریت شده توسط <ph name="DOMAIN" /></translation>

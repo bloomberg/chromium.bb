@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="1015255576907412255">Wasiliana na msimamizi wako wa mtandao kwa maelezo zaidi.</translation>
+<translation id="1015730422737071372">Toa maelezo ya ziada</translation>
 <translation id="1032854598605920125">Zungusha kwenye mwendo wa saa</translation>
 <translation id="1055184225775184556">Tendua Kuongeza</translation>
 <translation id="1064422015032085147">Huenda seva inayopangisha ukurasa huo wa wavuti imejaa au inakarabatiwa.
@@ -436,6 +437,7 @@
 <translation id="6637478299472506933">Upakuaji Umeshindwa</translation>
 <translation id="6644283850729428850">Sera hii imepingwa.</translation>
 <translation id="6646897916597483132">Weka CVC yenye tarakimu 4 kutoka mbele ya kadi yako</translation>
+<translation id="6660210980321319655">Imeripoti kiotomatiki <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Je, ungependa kuondoa pendekezo la fomu kwenye Chromium?</translation>
 <translation id="6710213216561001401">Iliyotangulia</translation>
 <translation id="6711464428925977395">Kuna hitilafu katika seva mbadala, au anwani siyo sahihi.</translation>
@@ -632,6 +634,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8971063699422889582">Cheti cha seva kimechina.</translation>
 <translation id="8987927404178983737">Mwezi</translation>
 <translation id="8988760548304185580">Weka tarehe kuisha muda na CVC yenye tarakimu 3 kutoka nyuma ya kadi yako</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Cheti kibaya cha uthibitishaji wa teja ya SSL</translation>
 <translation id="901974403500617787">Alama zinazotumika katika mfumo mzima zinaweza kuwekwa na mmiliki pekee: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Seva ilikataa muunganisho.</translation>

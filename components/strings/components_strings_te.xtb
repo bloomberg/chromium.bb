@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="1015255576907412255">మరింత సమాచారం కోసం మీ సిస్టమ్ నిర్వాహకుడిని సంప్రదించండి.</translation>
+<translation id="1015730422737071372">అదనపు వివరాలను అందించండి</translation>
 <translation id="1032854598605920125">సవ్యదిశలో తిప్పు</translation>
 <translation id="1055184225775184556">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="1064422015032085147">వెబ్‌పేజీని హోస్ట్ చేస్తున్న సర్వర్‌పై అధిక భారం పడి ఉండవచ్చు లేదా నిర్వహణలో భాగంగా దాన్ని తాత్కాలికంగా నిలిపివేసి ఉండవచ్చు.
@@ -436,6 +437,7 @@
 <translation id="6637478299472506933">డౌన్‌లోడ్ చేయడం విఫలమైంది</translation>
 <translation id="6644283850729428850">ఈ విధానం విలువ తగ్గించబడింది.</translation>
 <translation id="6646897916597483132">మీ కార్డ్ ముందువైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
+<translation id="6660210980321319655">స్వయంచాలకంగా నివేదించబడిన సమయం <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Chromium నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
 <translation id="6711464428925977395">ప్రాక్సీ సర్వర్‌లో ఏదో తప్పు ఉంది లేదా చిరునామా సరైనది కాదు.</translation>
@@ -631,6 +633,7 @@
 <translation id="8971063699422889582">సర్వర్ యొక్క ప్రమాణపత్రం గడువు ముగిసింది.</translation>
 <translation id="8987927404178983737">నెల</translation>
 <translation id="8988760548304185580">మీ కార్డ్ గడువు ముగింపు తేదీ మరియు దాని వెనుకవైపు ఉండే 3 అంకెల CVCని నమోదు చేయండి</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">తప్పుడు SSL క్లయింట్ ప్రామాణీకరణ సర్టిఫికెట్.</translation>
 <translation id="901974403500617787">సిస్టమ్ వ్యాప్తంగా వర్తింపజేయబడే ఫ్లాగ్‌లు యజమాని ద్వారా మాత్రమే సెట్ చేయబడతాయి: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">సర్వర్ కనెక్షన్‌ని తిరస్కరించింది.</translation>

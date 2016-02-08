@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1015255576907412255">Hubungi pentadbir sistem anda untuk mendapatkan maklumat lanjut.</translation>
+<translation id="1015730422737071372">Berikan butiran tambahan</translation>
 <translation id="1032854598605920125">Putar ikut arah jam</translation>
 <translation id="1055184225775184556">&amp;Buat Asal Tambahkan</translation>
 <translation id="1064422015032085147">Pelayan yang mengehos halaman web mungkin sarat atau sedang diselenggara.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Muat Turun Gagal</translation>
 <translation id="6644283850729428850">Dasar ini telah dikecam.</translation>
 <translation id="6646897916597483132">Masukkan CVC 4 digit dari bahagian depan kad anda</translation>
+<translation id="6660210980321319655">Dilaporkan secara automatik pada <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Alih keluar cadangan borang daripada Chromium?</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6711464428925977395">Ada sesuatu yang tidak kena dengan pelayan proksi atau alamat tidak betul.</translation>
@@ -633,6 +635,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8971063699422889582">Sijil pelayan telah tamat tempoh.</translation>
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="8988760548304185580">Masukkan tarikh tamat tempoh dan CVC 3 digit dari bahagian belakang kad anda</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Sijil pengesahan klien SSL tidak sah.</translation>
 <translation id="901974403500617787">Bendera yang diguna pakai di seluruh sistem hanya boleh ditetapkan oleh pemilik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Pelayan menolak sambungan.</translation>

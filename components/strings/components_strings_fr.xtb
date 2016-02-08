@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1015255576907412255">Pour plus d'informations, contactez votre administrateur système.</translation>
+<translation id="1015730422737071372">Fournir des informations supplémentaires</translation>
 <translation id="1032854598605920125">Faire pivoter vers la droite</translation>
 <translation id="1055184225775184556">&amp;Annuler l'ajout</translation>
 <translation id="1064422015032085147">Le serveur qui héberge la page Web peut être surchargé ou en cours de maintenance.
@@ -437,6 +438,7 @@
 <translation id="6637478299472506933">Échec téléchargement</translation>
 <translation id="6644283850729428850">Cette règle est obsolète.</translation>
 <translation id="6646897916597483132">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte.</translation>
+<translation id="6660210980321319655">Signalé automatiquement le <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Supprimer la suggestion de saisie de formulaire de Chromium ?</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6711464428925977395">Le serveur proxy présente une erreur, ou l'adresse est incorrecte.</translation>
@@ -633,6 +635,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
 <translation id="8987927404178983737">Mois</translation>
 <translation id="8988760548304185580">Saisissez la date d'expiration et le code CVC à trois chiffres figurant au dos de votre carte.</translation>
+<translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9013589315497579992">Certificat d'authentification de client SSL incorrect</translation>
 <translation id="901974403500617787">Seul le propriétaire suivant peut définir les options qui s'appliquent à tout le système : <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Le serveur a refusé la connexion.</translation>

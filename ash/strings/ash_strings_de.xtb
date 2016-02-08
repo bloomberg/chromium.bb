@@ -113,7 +113,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4321179778687042513">Strg</translation>
-<translation id="4379753398862151997">Der Monitor wird nicht unterstützt.</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing.</translation>
@@ -182,7 +181,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
 <translation id="6713285437468012787">Das Pairing für das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde durchgeführt und das Gerät ist nun für alle Nutzer verfügbar. Sie können das Pairing unter "Einstellungen" entfernen.</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
-<translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
 <translation id="683971173229319003">Suche + L</translation>
 <translation id="68610848741840742">ChromeVox (gesprochenes Feedback)</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>

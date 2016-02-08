@@ -113,7 +113,6 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4279490309300973883">Odbicie lustrzane</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4379753398862151997">Drogi monitorze, nie układa się między nami. (Ten monitor jest nieobsługiwany)</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
@@ -182,7 +181,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
 <translation id="6713285437468012787">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” zostało sparowane i jest teraz dostępne dla wszystkich użytkowników. Możesz usunąć to sparowanie w Ustawieniach.</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
-<translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
 <translation id="683971173229319003">Szukaj+L</translation>
 <translation id="68610848741840742">ChromeVox (potwierdzenia głosowe)</translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>

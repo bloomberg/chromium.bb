@@ -55,7 +55,6 @@
 <translation id="2397416548179033562">Chrome 메뉴 표시</translation>
 <translation id="2429317896000329049">도메인에서 동기화를 사용할 수 없어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2485422356828889247">제거</translation>
-<translation id="2576431527583832481">한층 개선된 Chrome의 최신 버전이 출시되었습니다.</translation>
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
 <translation id="2582790009689336987">이 Linux 시스템이 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="2588322182880276190">Chrome 로고</translation>
@@ -115,7 +114,6 @@
 <translation id="4633000520311261472">Google에서는 Chrome의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="4700157086864140907">Chrome은 사용자가 브라우저에 입력한 내용을 Google 서버에 보내어 Google 검색에서 사용하는 기술과 동일한 맞춤법 검사 기술을 사용할 수 있게 함으로써 더욱 뛰어난 맞춤법 검사 기능을 제공할 수 있습니다.</translation>
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Chrome이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
-<translation id="473775607612524610">업데이트</translation>
 <translation id="4743926867934016338">동의 및 검색</translation>
 <translation id="4751441238232965030">이 컴퓨터에서 32비트 Chrome 업데이트가 곧 중단됩니다. 64비트 Chrome으로 업그레이드하세요.</translation>
 <translation id="4754614261631455953">Chrome Canary(mDNS-In)</translation>
