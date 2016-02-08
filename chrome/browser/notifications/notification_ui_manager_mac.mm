@@ -17,6 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
 @class NSUserNotification;
@@ -29,17 +31,13 @@
 // notification#context_message in NSUserNotification.informativeText
 // notification#tag in NSUserNotification.identifier (10.9)
 // notification#icon in NSUserNotification.contentImage (10.9)
+// Site settings button is implemented as NSUserNotification's action button
+// notification.requireInteraction cannot be implemented
 
 // TODO(miguelg) implement the following features
 // - Sound names can be implemented by setting soundName in NSUserNotification
 //   NSUserNotificationDefaultSoundName gives you the platform default.
-// - notification.requireInteraction can be implemented by removing the
-//   notification and adding it again in "notification center only mode" in
-//   the shouldPresentNotification delegate method.
-//   This also requires refactoring the popup_timer class so it does not require
-//   a notification center.
-// - One Action can be implemented using the actionButton
-// - more than one action is only possible in 10.10 and using a private API.
+// - Actions are only possible in 10.10.
 
 namespace {
 
@@ -116,15 +114,24 @@ void NotificationUIManagerMac::Add(const Notification& notification,
           : base::SysUTF16ToNSString(notification.context_message());
   [toast setInformativeText:informativeText];
 
-  // TODO(miguelg): Implement support for buttons
-  toast.get().hasActionButton = NO;
-
   // Some functionality is only available in 10.9+ or requires private APIs
   // Icon
   if ([toast respondsToSelector:@selector(_identityImage)] &&
       !notification.icon().IsEmpty()) {
     [toast setValue:notification.icon().ToNSImage() forKey:@"_identityImage"];
     [toast setValue:@NO forKey:@"_identityImageHasBorder"];
+  }
+
+  // Buttons
+  if ([toast respondsToSelector:@selector(_showsButtons)]) {
+    [toast setValue:@YES forKey:@"_showsButtons"];
+    [toast setActionButtonTitle:l10n_util::GetNSString(
+                                    IDS_NOTIFICATION_BUTTON_SETTINGS)];
+    // A default close button label is provided by the platform but we
+    // explicitly override it in case the user decides to not
+    // use the OS language in Chrome.
+    [toast setOtherButtonTitle:l10n_util::GetNSString(
+                                   IDS_NOTIFICATION_BUTTON_CLOSE)];
   }
 
   // Tag
@@ -261,11 +268,17 @@ void NotificationUIManagerMac::CancelAll() {
 
   GURL origin(notificationOrigin);
 
+  PlatformNotificationServiceImpl::NotificationOperation operation =
+      notification.activationType ==
+              NSUserNotificationActivationTypeActionButtonClicked
+          ? PlatformNotificationServiceImpl::NOTIFICATION_SETTINGS
+          : PlatformNotificationServiceImpl::NOTIFICATION_CLICK;
+
   PlatformNotificationServiceImpl::GetInstance()
       ->ProcessPersistentNotificationOperation(
-          PlatformNotificationServiceImpl::NOTIFICATION_CLICK,
-          base::SysNSStringToUTF8(persistentProfileId), [isIncognito boolValue],
-          origin, persistentNotificationId.longLongValue,
+          operation, base::SysNSStringToUTF8(persistentProfileId),
+          [isIncognito boolValue], origin,
+          persistentNotificationId.longLongValue,
           -1 /* buttons not yet implemented */);
 }
 

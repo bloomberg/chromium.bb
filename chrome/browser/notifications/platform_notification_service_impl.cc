@@ -127,10 +127,10 @@ void ProfileLoadedCallback(
                                           origin, true);
       break;
     case PlatformNotificationServiceImpl::NOTIFICATION_SETTINGS:
-      LOG(WARNING) << "NOTIFICATION_SETTINGS action not implemented";
+      PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
+          profile);
       break;
   }
-  // TODO(miguelg) Implement the site settings operation.
 }
 
 }  // namespace

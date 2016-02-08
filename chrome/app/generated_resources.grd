@@ -11724,6 +11724,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_NOTIFICATION_WELCOME_TITLE" desc="Notification title for the Welcome Notification">
           Google Now for Chrome!
         </message>
+        <message name="IDS_NOTIFICATION_BUTTON_SETTINGS" desc="Short button label to go to the notification settings panel">
+          Settings
+        </message>
+        <message name="IDS_NOTIFICATION_BUTTON_CLOSE" desc="Button label to close a notification">
+          Close
+        </message>
         <message name="IDS_NOTIFICATION_SETTINGS" desc="Button label to go to the notification settings panel">
           Notification settings
         </message>
