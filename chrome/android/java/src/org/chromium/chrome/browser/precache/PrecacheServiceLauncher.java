@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Build;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.SystemClock;
@@ -91,7 +92,13 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
             // Stop any running PrecacheService. If PrecacheService is not running, then this does
             // nothing.
             Intent serviceIntent = new Intent(null, null, context, PrecacheService.class);
-            context.stopService(serviceIntent);
+            try {
+                context.stopService(serviceIntent);
+            } catch (SecurityException e) {
+                // A bug in KitKat causes a SecurityException to be thrown in some cases. Ignore the
+                // exception if running KitKat, else rethrow. See http://crbug.com/539515.
+                if (Build.VERSION.SDK_INT != Build.VERSION_CODES.KITKAT) throw e;
+            }
         }
     }
 
