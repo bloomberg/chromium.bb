@@ -51,23 +51,25 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
       env, ConvertUTF8ToJavaString(env, profile.guid()).obj(),
       ConvertUTF8ToJavaString(env, profile.origin()).obj(),
       profile.record_type() == AutofillProfile::LOCAL_PROFILE,
-      ConvertUTF16ToJavaString(env, profile.GetRawInfo(NAME_FULL)).obj(),
+      ConvertUTF16ToJavaString(env, profile.GetInfo(
+          AutofillType(NAME_FULL),
+          g_browser_process->GetApplicationLocale())).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(COMPANY_NAME)).obj(),
       ConvertUTF16ToJavaString(
           env, profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)).obj(),
-      ConvertUTF16ToJavaString(env, profile.GetRawInfo(ADDRESS_HOME_STATE))
-          .obj(),
-      ConvertUTF16ToJavaString(env, profile.GetRawInfo(ADDRESS_HOME_CITY))
-          .obj(),
+      ConvertUTF16ToJavaString(
+          env, profile.GetRawInfo(ADDRESS_HOME_STATE)).obj(),
+      ConvertUTF16ToJavaString(
+          env, profile.GetRawInfo(ADDRESS_HOME_CITY)).obj(),
       ConvertUTF16ToJavaString(
           env, profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY)).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(ADDRESS_HOME_ZIP)).obj(),
       ConvertUTF16ToJavaString(
           env, profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)).obj(),
-      ConvertUTF16ToJavaString(env, profile.GetRawInfo(ADDRESS_HOME_COUNTRY))
-          .obj(),
-      ConvertUTF16ToJavaString(env, profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER))
-          .obj(),
+      ConvertUTF16ToJavaString(
+          env, profile.GetRawInfo(ADDRESS_HOME_COUNTRY)).obj(),
+      ConvertUTF16ToJavaString(
+          env, profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(EMAIL_ADDRESS)).obj(),
       ConvertUTF8ToJavaString(env, profile.language_code()).obj());
 }
