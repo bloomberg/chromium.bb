@@ -429,7 +429,6 @@ public class DocumentActivity extends ChromeActivity {
     public void onStartWithNative() {
         super.onStartWithNative();
         handleDocumentUma();
-        ChromeLauncherActivity.sendExceptionCount();
     }
 
     @Override

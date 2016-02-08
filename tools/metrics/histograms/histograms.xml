@@ -17716,6 +17716,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Launch.IntentFlags" enum="LaunchIntentFlags">
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    Records flags (and combinations of flags) that were attached to the Intent
+    that started ChromeLauncherActivity.
+  </summary>
+</histogram>
+
 <histogram name="Launch.InvalidIntent" enum="BooleanHit">
   <owner>dfalcantara@chromium.org</owner>
   <summary>
@@ -69864,6 +69872,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="App banner"/>
   <int value="3" label="Bookmark navigator widget"/>
   <int value="4" label="Bookmark shortcut widget"/>
+</enum>
+
+<enum name="LaunchIntentFlags" type="int">
+  <int value="0" label="No flags"/>
+  <int value="524288" label="NEW_DOCUMENT"/>
+  <int value="268435456" label="NEW_TASK"/>
+  <int value="268959744" label="NEW_TASK | NEW_DOCUMENT"/>
 </enum>
 
 <enum name="LevelDBCorruptionRestoreValue" type="int">

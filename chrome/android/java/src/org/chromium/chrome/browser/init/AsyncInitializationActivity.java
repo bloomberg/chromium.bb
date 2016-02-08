@@ -26,7 +26,7 @@ import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.metrics.LaunchHistogram;
+import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.MemoryUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -39,8 +39,8 @@ import java.lang.reflect.Field;
 public abstract class AsyncInitializationActivity extends AppCompatActivity implements
         ChromeActivityNativeDelegate, BrowserParts {
 
-    private static final LaunchHistogram sBadIntentMetric =
-            new LaunchHistogram("Launch.InvalidIntent");
+    private static final LaunchMetrics.BooleanEvent sBadIntentMetric =
+            new LaunchMetrics.BooleanEvent("Launch.InvalidIntent");
 
     protected final Handler mHandler;
 
@@ -270,9 +270,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     public void onStartWithNative() { }
 
     @Override
-    public void onResumeWithNative() {
-        sBadIntentMetric.commitHistogram();
-    }
+    public void onResumeWithNative() { }
 
     @Override
     public void onPauseWithNative() { }

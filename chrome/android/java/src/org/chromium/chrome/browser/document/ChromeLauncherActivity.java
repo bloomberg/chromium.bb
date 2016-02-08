@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.metrics.LaunchHistogram;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -111,8 +110,10 @@ public class ChromeLauncherActivity extends Activity
      */
     private static final int INITIAL_DOCUMENT_ACTIVITY_LAUNCH_TIMEOUT_MS = 500;
 
-    private static final LaunchHistogram sMoveToFrontExceptionHistogram =
-            new LaunchHistogram("DocumentActivity.MoveToFrontFailed");
+    private static final LaunchMetrics.BooleanEvent sMoveToFrontExceptionHistogram =
+            new LaunchMetrics.BooleanEvent("DocumentActivity.MoveToFrontFailed");
+    private static final LaunchMetrics.SparseHistogramSample sIntentFlagsHistogram =
+            new LaunchMetrics.SparseHistogramSample("Launch.IntentFlags");
 
     private IntentHandler mIntentHandler;
     private boolean mIsInMultiInstanceMode;
@@ -154,11 +155,11 @@ public class ChromeLauncherActivity extends Activity
         // show homepage, which might require reading PartnerBrowserCustomizations provider.
         PartnerBrowserCustomizations.initializeAsync(getApplicationContext(),
                 PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
+        maybePerformMigrationTasks();
+        recordIntentMetrics();
 
         mIsInMultiInstanceMode = MultiWindowUtils.getInstance().shouldRunInMultiInstanceMode(this);
         mIntentHandler = new IntentHandler(this, getPackageName());
-        maybePerformMigrationTasks();
-
         mIsCustomTabIntent = isCustomTabIntent();
 
         Intent intent = getIntent();
@@ -822,9 +823,9 @@ public class ChromeLauncherActivity extends Activity
     }
 
     /**
-     * Attempt to move a task back to the front.  This can FAIL for some reason because the UID
+     * Attempt to move a task back to the front.  This can fail for some reason because the UID
      * of the DocumentActivity we try to bring back to the front doesn't match the
-     * ChromeLauncherActivities.
+     * ChromeLauncherActivity's.
      * @param task Task to attempt to bring back to the foreground.
      * @return Whether or not this succeeded.
      */
@@ -864,9 +865,16 @@ public class ChromeLauncherActivity extends Activity
     }
 
     /**
-     * Send the number of times an exception was caught when trying to move a task back to front.
+     * Records metrics gleaned from the Intent.
      */
-    public static void sendExceptionCount() {
-        sMoveToFrontExceptionHistogram.commitHistogram();
+    private void recordIntentMetrics() {
+        Intent intent = getIntent();
+        IntentHandler.ExternalAppId source =
+                IntentHandler.determineExternalIntentSource(getPackageName(), intent);
+        if (intent.getPackage() == null && source != IntentHandler.ExternalAppId.CHROME) {
+            int flagsOfInterest = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
+            int maskedFlags = intent.getFlags() & flagsOfInterest;
+            sIntentFlagsHistogram.record(maskedFlags);
+        }
     }
 }
