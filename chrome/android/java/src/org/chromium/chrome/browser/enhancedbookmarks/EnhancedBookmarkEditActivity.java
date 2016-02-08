@@ -345,7 +345,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             setResult(RESULT_OK, intent);
         } else {
             EnhancedBookmarkUtils.openBookmark(
-                    mModel, this, mBookmarkId, LaunchLocation.BOOKMARK_EDITOR);
+                    mModel, this, mBookmarkId, BookmarkLaunchLocation.BOOKMARK_EDITOR);
         }
         finish();
     }

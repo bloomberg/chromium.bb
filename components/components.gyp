@@ -31,7 +31,6 @@
     'data_use_measurement.gypi',
     'device_event_log.gypi',
     'dom_distiller.gypi',
-    'enhanced_bookmarks.gypi',
     'error_page.gypi',
     'favicon.gypi',
     'favicon_base.gypi',

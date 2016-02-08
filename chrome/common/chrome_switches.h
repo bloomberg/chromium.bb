@@ -192,8 +192,6 @@ extern const char kLoadExtension[];
 extern const char kLocalNtpReload[];
 #endif
 extern const char kMakeDefaultBrowser[];
-extern const char kManualEnhancedBookmarks[];
-extern const char kManualEnhancedBookmarksOptout[];
 extern const char kMediaCacheSize[];
 extern const char kMediaRouter[];
 extern const char kMessageLoopHistogrammer[];

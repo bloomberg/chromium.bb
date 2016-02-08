@@ -340,10 +340,6 @@
                   'media/cdm/|' \
                   'third_party/widevine/cdm/'
     },
-    'enhanced_bookmarks': {
-      'filepath': 'chrome/browser/enhanced_bookmarks/' \
-                  '|components/enhanced_bookmarks/'
-    },
     'enhanced_bookmarks_android': {
       'filepath': 'chrome/android/java/src/org/chromium/'\
                     'chrome/browser/enhancedbookmarks/|'\
@@ -1345,7 +1341,6 @@
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
-    'enhanced_bookmarks': ['noyau+watch@chromium.org'],
     'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],

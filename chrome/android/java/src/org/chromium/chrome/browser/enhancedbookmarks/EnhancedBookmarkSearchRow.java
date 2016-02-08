@@ -54,7 +54,7 @@ public class EnhancedBookmarkSearchRow extends EnhancedBookmarkBookmarkRow {
 
     @Override
     public void onClick() {
-        mDelegate.openBookmark(mBookmarkId, LaunchLocation.SEARCH);
+        mDelegate.openBookmark(mBookmarkId, BookmarkLaunchLocation.SEARCH);
         mHistoryDelegate.saveSearchHistory();
     }
 

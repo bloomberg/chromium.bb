@@ -60,13 +60,13 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
         int launchLocation = -1;
         switch (mDelegate.getCurrentState()) {
             case EnhancedBookmarkUIState.STATE_ALL_BOOKMARKS:
-                launchLocation = LaunchLocation.ALL_ITEMS;
+                launchLocation = BookmarkLaunchLocation.ALL_ITEMS;
                 break;
             case EnhancedBookmarkUIState.STATE_FOLDER:
-                launchLocation = LaunchLocation.FOLDER;
+                launchLocation = BookmarkLaunchLocation.FOLDER;
                 break;
             case EnhancedBookmarkUIState.STATE_FILTER:
-                launchLocation = LaunchLocation.FILTER;
+                launchLocation = BookmarkLaunchLocation.FILTER;
                 break;
             case EnhancedBookmarkUIState.STATE_LOADING:
                 assert false :

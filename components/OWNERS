@@ -123,10 +123,6 @@ per-file drive.gypi=kinaba@chromium.org
 per-file drive.gypi=mtomasz@chromium.org
 per-file drive.gypi=yoshiki@chromium.org
 
-per-file enhanced_bookmarks*=kkimlabs@chromium.org
-per-file enhanced_bookmarks*=noyau@chromium.org
-per-file enhanced_bookmarks*=sky@chromium.org
-
 per-file error_page*=mmenke@chromium.org
 per-file error_page*=ttuttle@chromium.org
 

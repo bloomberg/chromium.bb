@@ -418,10 +418,10 @@ public class EnhancedBookmarkUtils {
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARK);
         if (url.startsWith("file:")) {
             RecordHistogram.recordEnumeratedHistogram(
-                    "OfflinePages.LaunchLocation", launchLocation, LaunchLocation.COUNT);
+                    "OfflinePages.LaunchLocation", launchLocation, BookmarkLaunchLocation.COUNT);
         } else {
             RecordHistogram.recordEnumeratedHistogram(
-                    "Stars.LaunchLocation", launchLocation, LaunchLocation.COUNT);
+                    "Stars.LaunchLocation", launchLocation, BookmarkLaunchLocation.COUNT);
         }
 
         openUrl(activity, url);

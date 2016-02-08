@@ -107,7 +107,7 @@ interface EnhancedBookmarkDelegate {
      * Closes the EnhancedBookmark UI (if on phone) and opens the given bookmark.
      * @param bookmark       bookmark to open.
      * @param launchLocation The UI location where user tried to open bookmark. It is one of
-     *                       {@link LaunchLocation} values
+     *                       {@link BookmarkLaunchLocation} values
      */
     void openBookmark(BookmarkId bookmark, int launchLocation);
 
