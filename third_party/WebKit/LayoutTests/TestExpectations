@@ -938,8 +938,6 @@ crbug.com/524596 virtual/spv2/paint/invalidation/fixed-position-descendant-paint
 
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
-crbug.com/585102 fast/transforms/mirror-transform-tiled-scaled-background.html   [ NeedsRebaseline ]
-
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Failure ]
 crbug.com/480769 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass Timeout ]
 
