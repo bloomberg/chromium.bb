@@ -200,7 +200,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '9cc4f2f799887e5d64bd28c159ea34b413f6be31', # from svn revision 295151
 
   'src/third_party/yasm/source/patched-yasm':
-   Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + '4671120cd8558ce62ee8672ebf3eb6f5216f909b',
+   Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + '7da28c6c7c6a1387217352ce02b31754deb54d2a',
 
   'src/third_party/libjpeg_turbo':
    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'e4e75037f29745f1546b6ebf5cf532e841c04c2c',

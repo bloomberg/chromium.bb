@@ -13,7 +13,7 @@ With these patches merged:
 * https://github.com/yasm/yasm/commit/2bd66514b6b100887c19d8598da38347b3cff40e
 * https://github.com/yasm/yasm/commit/ab19547382660d81e0b4a0232dccb38f44c52a36
 * https://github.com/yasm/yasm/commit/9728322335cba96500861ef766b1546d096e5600
-* CHROMIUM.diff
+* CHROMIUM.diff: this patch makes yasm deterministic.
 
 
 See also the yasm.gyp file for a description of the yasm build process.
