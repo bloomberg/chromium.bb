@@ -149,9 +149,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
     // Gethash attempted during error backoff, no request sent.
     GET_HASH_BACKOFF_ERROR,
 
-    // Gethash attempted before min wait duration elapsed, no request sent.
-    GET_HASH_MIN_WAIT_DURATION_ERROR,
-
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
     GET_HASH_RESULT_MAX
