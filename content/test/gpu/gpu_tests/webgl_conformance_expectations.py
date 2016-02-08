@@ -227,6 +227,21 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-image.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
+        'with-image-bitmap-rgb-rgb-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
+        'with-image-bitmap-rgba-rgba-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
+        'with-image-bitmap-rgb-rgb-unsigned_short_5_6_5.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
+        'with-image-bitmap-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
+        'with-image-bitmap-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
     self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
         'video-rgb-rgb-unsigned_byte.html',
         ['android', 'android-content-shell',
