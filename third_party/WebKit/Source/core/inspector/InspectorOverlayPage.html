@@ -407,6 +407,7 @@ body.platform-linux {
 .element-description {
     flex: 1 1;
     word-wrap: break-word;
+    word-break: break-all;
 }
 
 .dimensions {
@@ -752,7 +753,7 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
     var boxY = bounds.minY - arrowRadius - titleHeight;
     var onTop = true;
     if (boxY < 0) {
-        boxY = bounds.maxY + arrowRadius;
+        boxY = Math.min(canvasHeight - titleHeight, bounds.maxY + arrowRadius);
         onTop = false;
     } else if (bounds.minY > canvasHeight) {
         boxY = canvasHeight - arrowRadius - titleHeight;
