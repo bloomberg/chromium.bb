@@ -68,7 +68,7 @@ struct PersistentHistogramData {
   int flags;
   int minimum;
   int maximum;
-  size_t bucket_count;
+  uint32_t bucket_count;
   PersistentMemoryAllocator::Reference ranges_ref;
   uint32_t ranges_checksum;
   PersistentMemoryAllocator::Reference counts_ref;
@@ -197,7 +197,8 @@ HistogramBase* CreatePersistentHistogram(
                                                     kTypeIdRangesArray);
   if (!ranges_data || histogram_data.bucket_count < 2 ||
       histogram_data.bucket_count + 1 >
-          std::numeric_limits<size_t>::max() / sizeof(HistogramBase::Sample) ||
+          std::numeric_limits<uint32_t>::max() /
+              sizeof(HistogramBase::Sample) ||
       allocator->GetAllocSize(histogram_data.ranges_ref) <
           (histogram_data.bucket_count + 1) * sizeof(HistogramBase::Sample)) {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_RANGES_ARRAY);
@@ -379,7 +380,7 @@ HistogramBase* AllocatePersistentHistogram(
     histogram_data->flags = flags;
     histogram_data->minimum = minimum;
     histogram_data->maximum = maximum;
-    histogram_data->bucket_count = bucket_count;
+    histogram_data->bucket_count = static_cast<uint32_t>(bucket_count);
     histogram_data->ranges_ref = ranges_ref;
     histogram_data->ranges_checksum = bucket_ranges->checksum();
     histogram_data->counts_ref = counts_ref;

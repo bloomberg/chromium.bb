@@ -39,13 +39,13 @@ bool ReadHistogramArguments(PickleIterator* iter,
                             int* flags,
                             int* declared_min,
                             int* declared_max,
-                            size_t* bucket_count,
+                            uint32_t* bucket_count,
                             uint32_t* range_checksum) {
   if (!iter->ReadString(histogram_name) ||
       !iter->ReadInt(flags) ||
       !iter->ReadInt(declared_min) ||
       !iter->ReadInt(declared_max) ||
-      !iter->ReadSizeT(bucket_count) ||
+      !iter->ReadUInt32(bucket_count) ||
       !iter->ReadUInt32(range_checksum)) {
     DLOG(ERROR) << "Pickle error decoding Histogram: " << *histogram_name;
     return false;
@@ -84,14 +84,14 @@ typedef HistogramBase::Count Count;
 typedef HistogramBase::Sample Sample;
 
 // static
-const size_t Histogram::kBucketCount_MAX = 16384u;
+const uint32_t Histogram::kBucketCount_MAX = 16384u;
 
 class Histogram::Factory {
  public:
   Factory(const std::string& name,
           HistogramBase::Sample minimum,
           HistogramBase::Sample maximum,
-          size_t bucket_count,
+          uint32_t bucket_count,
           int32_t flags)
     : Factory(name, HISTOGRAM, minimum, maximum, bucket_count, flags) {}
 
@@ -104,7 +104,7 @@ class Histogram::Factory {
           HistogramType histogram_type,
           HistogramBase::Sample minimum,
           HistogramBase::Sample maximum,
-          size_t bucket_count,
+          uint32_t bucket_count,
           int32_t flags)
     : name_(name),
       histogram_type_(histogram_type),
@@ -139,7 +139,7 @@ class Histogram::Factory {
   const HistogramType histogram_type_;
   HistogramBase::Sample minimum_;
   HistogramBase::Sample maximum_;
-  size_t bucket_count_;
+  uint32_t bucket_count_;
   int32_t flags_;
 
  private:
@@ -166,7 +166,7 @@ HistogramBase* Histogram::Factory::Build() {
     // at run-time. In the latter case, those ctor parameters are zero and
     // the results extracted from the result of CreateRanges().
     if (bucket_count_ == 0) {
-      bucket_count_ = registered_ranges->bucket_count();
+      bucket_count_ = static_cast<uint32_t>(registered_ranges->bucket_count());
       minimum_ = registered_ranges->range(1);
       maximum_ = registered_ranges->range(bucket_count_ - 1);
     }
@@ -231,7 +231,7 @@ HistogramBase* Histogram::Factory::Build() {
 HistogramBase* Histogram::FactoryGet(const std::string& name,
                                      Sample minimum,
                                      Sample maximum,
-                                     size_t bucket_count,
+                                     uint32_t bucket_count,
                                      int32_t flags) {
   bool valid_arguments =
       InspectConstructionArguments(name, &minimum, &maximum, &bucket_count);
@@ -243,7 +243,7 @@ HistogramBase* Histogram::FactoryGet(const std::string& name,
 HistogramBase* Histogram::FactoryTimeGet(const std::string& name,
                                          TimeDelta minimum,
                                          TimeDelta maximum,
-                                         size_t bucket_count,
+                                         uint32_t bucket_count,
                                          int32_t flags) {
   return FactoryGet(name, static_cast<Sample>(minimum.InMilliseconds()),
                     static_cast<Sample>(maximum.InMilliseconds()), bucket_count,
@@ -253,7 +253,7 @@ HistogramBase* Histogram::FactoryTimeGet(const std::string& name,
 HistogramBase* Histogram::FactoryGet(const char* name,
                                      Sample minimum,
                                      Sample maximum,
-                                     size_t bucket_count,
+                                     uint32_t bucket_count,
                                      int32_t flags) {
   return FactoryGet(std::string(name), minimum, maximum, bucket_count, flags);
 }
@@ -261,7 +261,7 @@ HistogramBase* Histogram::FactoryGet(const char* name,
 HistogramBase* Histogram::FactoryTimeGet(const char* name,
                                          TimeDelta minimum,
                                          TimeDelta maximum,
-                                         size_t bucket_count,
+                                         uint32_t bucket_count,
                                          int32_t flags) {
   return FactoryTimeGet(std::string(name), minimum, maximum, bucket_count,
                         flags);
@@ -272,7 +272,7 @@ HistogramBase* Histogram::PersistentGet(const std::string& name,
                                         Sample maximum,
                                         const BucketRanges* ranges,
                                         HistogramBase::AtomicCount* counts,
-                                        size_t counts_size,
+                                        uint32_t counts_size,
                                         HistogramSamples::Metadata* meta) {
   return new Histogram(name, minimum, maximum, ranges, counts, counts_size,
                        meta);
@@ -323,7 +323,7 @@ const int Histogram::kCommonRaceBasedCountMismatch = 5;
 int Histogram::FindCorruption(const HistogramSamples& samples) const {
   int inconsistencies = NO_INCONSISTENCIES;
   Sample previous_range = -1;  // Bottom range is always 0.
-  for (size_t index = 0; index < bucket_count(); ++index) {
+  for (uint32_t index = 0; index < bucket_count(); ++index) {
     int new_range = ranges(index);
     if (previous_range >= new_range)
       inconsistencies |= BUCKET_ORDER_ERROR;
@@ -352,19 +352,19 @@ int Histogram::FindCorruption(const HistogramSamples& samples) const {
   return inconsistencies;
 }
 
-Sample Histogram::ranges(size_t i) const {
+Sample Histogram::ranges(uint32_t i) const {
   return bucket_ranges_->range(i);
 }
 
-size_t Histogram::bucket_count() const {
-  return bucket_ranges_->bucket_count();
+uint32_t Histogram::bucket_count() const {
+  return static_cast<uint32_t>(bucket_ranges_->bucket_count());
 }
 
 // static
 bool Histogram::InspectConstructionArguments(const std::string& name,
                                              Sample* minimum,
                                              Sample* maximum,
-                                             size_t* bucket_count) {
+                                             uint32_t* bucket_count) {
   // Defensive code for backward compatibility.
   if (*minimum < 1) {
     DVLOG(1) << "Histogram: " << name << " has bad minimum: " << *minimum;
@@ -384,7 +384,7 @@ bool Histogram::InspectConstructionArguments(const std::string& name,
     return false;
   if (*bucket_count < 3)
     return false;
-  if (*bucket_count > static_cast<size_t>(*maximum - *minimum + 2))
+  if (*bucket_count > static_cast<uint32_t>(*maximum - *minimum + 2))
     return false;
   return true;
 }
@@ -399,7 +399,7 @@ HistogramType Histogram::GetHistogramType() const {
 
 bool Histogram::HasConstructionArguments(Sample expected_minimum,
                                          Sample expected_maximum,
-                                         size_t expected_bucket_count) const {
+                                         uint32_t expected_bucket_count) const {
   return ((expected_minimum == declared_min_) &&
           (expected_maximum == declared_max_) &&
           (expected_bucket_count == bucket_count()));
@@ -456,7 +456,7 @@ bool Histogram::SerializeInfoImpl(Pickle* pickle) const {
       pickle->WriteInt(flags()) &&
       pickle->WriteInt(declared_min()) &&
       pickle->WriteInt(declared_max()) &&
-      pickle->WriteSizeT(bucket_count()) &&
+      pickle->WriteUInt32(bucket_count()) &&
       pickle->WriteUInt32(bucket_ranges()->checksum());
 }
 
@@ -477,7 +477,7 @@ Histogram::Histogram(const std::string& name,
                      Sample maximum,
                      const BucketRanges* ranges,
                      HistogramBase::AtomicCount* counts,
-                     size_t counts_size,
+                     uint32_t counts_size,
                      HistogramSamples::Metadata* meta)
   : HistogramBase(name),
     bucket_ranges_(ranges),
@@ -492,7 +492,7 @@ Histogram::Histogram(const std::string& name,
 Histogram::~Histogram() {
 }
 
-bool Histogram::PrintEmptyBucket(size_t index) const {
+bool Histogram::PrintEmptyBucket(uint32_t index) const {
   return true;
 }
 
@@ -501,7 +501,7 @@ bool Histogram::PrintEmptyBucket(size_t index) const {
 // get so big so fast (and we don't expect to see a lot of entries in the large
 // buckets), so we need this to make it possible to see what is going on and
 // not have 0-graphical-height buckets.
-double Histogram::GetBucketSize(Count current, size_t i) const {
+double Histogram::GetBucketSize(Count current, uint32_t i) const {
   DCHECK_GT(ranges(i + 1), ranges(i));
   static const double kTransitionWidth = 5;
   double denominator = ranges(i + 1) - ranges(i);
@@ -510,7 +510,7 @@ double Histogram::GetBucketSize(Count current, size_t i) const {
   return current/denominator;
 }
 
-const std::string Histogram::GetAsciiBucketRange(size_t i) const {
+const std::string Histogram::GetAsciiBucketRange(uint32_t i) const {
   return GetSimpleAsciiBucketRange(ranges(i));
 }
 
@@ -523,7 +523,7 @@ HistogramBase* Histogram::DeserializeInfoImpl(PickleIterator* iter) {
   int flags;
   int declared_min;
   int declared_max;
-  size_t bucket_count;
+  uint32_t bucket_count;
   uint32_t range_checksum;
 
   if (!ReadHistogramArguments(iter, &histogram_name, &flags, &declared_min,
@@ -567,7 +567,7 @@ void Histogram::WriteAsciiImpl(bool graph_it,
 
   // Calculate space needed to print bucket range numbers.  Leave room to print
   // nearly the largest bucket range without sliding over the histogram.
-  size_t largest_non_empty_bucket = bucket_count() - 1;
+  uint32_t largest_non_empty_bucket = bucket_count() - 1;
   while (0 == snapshot->GetCountAtIndex(largest_non_empty_bucket)) {
     if (0 == largest_non_empty_bucket)
       break;  // All buckets are empty.
@@ -576,7 +576,7 @@ void Histogram::WriteAsciiImpl(bool graph_it,
 
   // Calculate largest print width needed for any of our bucket range displays.
   size_t print_width = 1;
-  for (size_t i = 0; i < bucket_count(); ++i) {
+  for (uint32_t i = 0; i < bucket_count(); ++i) {
     if (snapshot->GetCountAtIndex(i)) {
       size_t width = GetAsciiBucketRange(i).size() + 1;
       if (width > print_width)
@@ -587,7 +587,7 @@ void Histogram::WriteAsciiImpl(bool graph_it,
   int64_t remaining = sample_count;
   int64_t past = 0;
   // Output the actual histogram graph.
-  for (size_t i = 0; i < bucket_count(); ++i) {
+  for (uint32_t i = 0; i < bucket_count(); ++i) {
     Count current = snapshot->GetCountAtIndex(i);
     if (!current && !PrintEmptyBucket(i))
       continue;
@@ -618,7 +618,7 @@ void Histogram::WriteAsciiImpl(bool graph_it,
 
 double Histogram::GetPeakBucketSize(const SampleVector& samples) const {
   double max = 0;
-  for (size_t i = 0; i < bucket_count() ; ++i) {
+  for (uint32_t i = 0; i < bucket_count() ; ++i) {
     double current_size = GetBucketSize(samples.GetCountAtIndex(i), i);
     if (current_size > max)
       max = current_size;
@@ -647,7 +647,7 @@ void Histogram::WriteAsciiHeader(const SampleVector& samples,
 void Histogram::WriteAsciiBucketContext(const int64_t past,
                                         const Count current,
                                         const int64_t remaining,
-                                        const size_t i,
+                                        const uint32_t i,
                                         std::string* output) const {
   double scaled_sum = (past + current + remaining) / 100.0;
   WriteAsciiBucketValue(current, scaled_sum, output);
@@ -670,8 +670,8 @@ void Histogram::GetCountAndBucketData(Count* count,
   scoped_ptr<SampleVector> snapshot = SnapshotSampleVector();
   *count = snapshot->TotalCount();
   *sum = snapshot->sum();
-  size_t index = 0;
-  for (size_t i = 0; i < bucket_count(); ++i) {
+  uint32_t index = 0;
+  for (uint32_t i = 0; i < bucket_count(); ++i) {
     Sample count_at_index = snapshot->GetCountAtIndex(i);
     if (count_at_index > 0) {
       scoped_ptr<DictionaryValue> bucket_value(new DictionaryValue());
@@ -695,7 +695,7 @@ class LinearHistogram::Factory : public Histogram::Factory {
   Factory(const std::string& name,
           HistogramBase::Sample minimum,
           HistogramBase::Sample maximum,
-          size_t bucket_count,
+          uint32_t bucket_count,
           int32_t flags,
           const DescriptionPair* descriptions)
     : Histogram::Factory(name, LINEAR_HISTOGRAM, minimum, maximum,
@@ -737,7 +737,7 @@ LinearHistogram::~LinearHistogram() {}
 HistogramBase* LinearHistogram::FactoryGet(const std::string& name,
                                            Sample minimum,
                                            Sample maximum,
-                                           size_t bucket_count,
+                                           uint32_t bucket_count,
                                            int32_t flags) {
   return FactoryGetWithRangeDescription(
       name, minimum, maximum, bucket_count, flags, NULL);
@@ -746,7 +746,7 @@ HistogramBase* LinearHistogram::FactoryGet(const std::string& name,
 HistogramBase* LinearHistogram::FactoryTimeGet(const std::string& name,
                                                TimeDelta minimum,
                                                TimeDelta maximum,
-                                               size_t bucket_count,
+                                               uint32_t bucket_count,
                                                int32_t flags) {
   return FactoryGet(name, static_cast<Sample>(minimum.InMilliseconds()),
                     static_cast<Sample>(maximum.InMilliseconds()), bucket_count,
@@ -756,7 +756,7 @@ HistogramBase* LinearHistogram::FactoryTimeGet(const std::string& name,
 HistogramBase* LinearHistogram::FactoryGet(const char* name,
                                            Sample minimum,
                                            Sample maximum,
-                                           size_t bucket_count,
+                                           uint32_t bucket_count,
                                            int32_t flags) {
   return FactoryGet(std::string(name), minimum, maximum, bucket_count, flags);
 }
@@ -764,7 +764,7 @@ HistogramBase* LinearHistogram::FactoryGet(const char* name,
 HistogramBase* LinearHistogram::FactoryTimeGet(const char* name,
                                                TimeDelta minimum,
                                                TimeDelta maximum,
-                                               size_t bucket_count,
+                                               uint32_t bucket_count,
                                                int32_t flags) {
   return FactoryTimeGet(std::string(name),  minimum, maximum, bucket_count,
                         flags);
@@ -776,7 +776,7 @@ HistogramBase* LinearHistogram::PersistentGet(
     Sample maximum,
     const BucketRanges* ranges,
     HistogramBase::AtomicCount* counts,
-    size_t counts_size,
+    uint32_t counts_size,
     HistogramSamples::Metadata* meta) {
   return new LinearHistogram(name, minimum, maximum, ranges, counts,
                              counts_size, meta);
@@ -786,7 +786,7 @@ HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
     const std::string& name,
     Sample minimum,
     Sample maximum,
-    size_t bucket_count,
+    uint32_t bucket_count,
     int32_t flags,
     const DescriptionPair descriptions[]) {
   bool valid_arguments = Histogram::InspectConstructionArguments(
@@ -813,7 +813,7 @@ LinearHistogram::LinearHistogram(const std::string& name,
                                  Sample maximum,
                                  const BucketRanges* ranges,
                                  HistogramBase::AtomicCount* counts,
-                                 size_t counts_size,
+                                 uint32_t counts_size,
                                  HistogramSamples::Metadata* meta)
     : Histogram(name,
                 minimum,
@@ -823,7 +823,7 @@ LinearHistogram::LinearHistogram(const std::string& name,
                 counts_size,
                 meta) {}
 
-double LinearHistogram::GetBucketSize(Count current, size_t i) const {
+double LinearHistogram::GetBucketSize(Count current, uint32_t i) const {
   DCHECK_GT(ranges(i + 1), ranges(i));
   // Adjacent buckets with different widths would have "surprisingly" many (few)
   // samples in a histogram if we didn't normalize this way.
@@ -831,7 +831,7 @@ double LinearHistogram::GetBucketSize(Count current, size_t i) const {
   return current/denominator;
 }
 
-const std::string LinearHistogram::GetAsciiBucketRange(size_t i) const {
+const std::string LinearHistogram::GetAsciiBucketRange(uint32_t i) const {
   int range = ranges(i);
   BucketDescriptionMap::const_iterator it = bucket_description_.find(range);
   if (it == bucket_description_.end())
@@ -839,7 +839,7 @@ const std::string LinearHistogram::GetAsciiBucketRange(size_t i) const {
   return it->second;
 }
 
-bool LinearHistogram::PrintEmptyBucket(size_t index) const {
+bool LinearHistogram::PrintEmptyBucket(uint32_t index) const {
   return bucket_description_.find(ranges(index)) == bucket_description_.end();
 }
 
@@ -865,7 +865,7 @@ HistogramBase* LinearHistogram::DeserializeInfoImpl(PickleIterator* iter) {
   int flags;
   int declared_min;
   int declared_max;
-  size_t bucket_count;
+  uint32_t bucket_count;
   uint32_t range_checksum;
 
   if (!ReadHistogramArguments(iter, &histogram_name, &flags, &declared_min,
@@ -942,7 +942,7 @@ HistogramBase* BooleanHistogram::DeserializeInfoImpl(PickleIterator* iter) {
   int flags;
   int declared_min;
   int declared_max;
-  size_t bucket_count;
+  uint32_t bucket_count;
   uint32_t range_checksum;
 
   if (!ReadHistogramArguments(iter, &histogram_name, &flags, &declared_min,
@@ -982,7 +982,7 @@ class CustomHistogram::Factory : public Histogram::Factory {
     ranges.erase(std::unique(ranges.begin(), ranges.end()), ranges.end());
 
     BucketRanges* bucket_ranges = new BucketRanges(ranges.size());
-    for (size_t i = 0; i < ranges.size(); i++) {
+    for (uint32_t i = 0; i < ranges.size(); i++) {
       bucket_ranges->set_range(i, ranges[i]);
     }
     bucket_ranges->ResetChecksum();
@@ -1019,7 +1019,7 @@ HistogramBase* CustomHistogram::PersistentGet(
     const std::string& name,
     const BucketRanges* ranges,
     HistogramBase::AtomicCount* counts,
-    size_t counts_size,
+    uint32_t counts_size,
     HistogramSamples::Metadata* meta) {
   return new CustomHistogram(name, ranges, counts, counts_size, meta);
 }
@@ -1030,9 +1030,9 @@ HistogramType CustomHistogram::GetHistogramType() const {
 
 // static
 std::vector<Sample> CustomHistogram::ArrayToCustomRanges(
-    const Sample* values, size_t num_values) {
+    const Sample* values, uint32_t num_values) {
   std::vector<Sample> all_values;
-  for (size_t i = 0; i < num_values; ++i) {
+  for (uint32_t i = 0; i < num_values; ++i) {
     Sample value = values[i];
     all_values.push_back(value);
 
@@ -1053,7 +1053,7 @@ CustomHistogram::CustomHistogram(const std::string& name,
 CustomHistogram::CustomHistogram(const std::string& name,
                                  const BucketRanges* ranges,
                                  HistogramBase::AtomicCount* counts,
-                                 size_t counts_size,
+                                 uint32_t counts_size,
                                  HistogramSamples::Metadata* meta)
     : Histogram(name,
                 ranges->range(1),
@@ -1069,14 +1069,14 @@ bool CustomHistogram::SerializeInfoImpl(Pickle* pickle) const {
 
   // Serialize ranges. First and last ranges are alwasy 0 and INT_MAX, so don't
   // write them.
-  for (size_t i = 1; i < bucket_ranges()->bucket_count(); ++i) {
+  for (uint32_t i = 1; i < bucket_ranges()->bucket_count(); ++i) {
     if (!pickle->WriteInt(bucket_ranges()->range(i)))
       return false;
   }
   return true;
 }
 
-double CustomHistogram::GetBucketSize(Count current, size_t i) const {
+double CustomHistogram::GetBucketSize(Count current, uint32_t i) const {
   return 1;
 }
 
@@ -1086,7 +1086,7 @@ HistogramBase* CustomHistogram::DeserializeInfoImpl(PickleIterator* iter) {
   int flags;
   int declared_min;
   int declared_max;
-  size_t bucket_count;
+  uint32_t bucket_count;
   uint32_t range_checksum;
 
   if (!ReadHistogramArguments(iter, &histogram_name, &flags, &declared_min,
@@ -1097,7 +1097,7 @@ HistogramBase* CustomHistogram::DeserializeInfoImpl(PickleIterator* iter) {
   // First and last ranges are not serialized.
   std::vector<Sample> sample_ranges(bucket_count - 1);
 
-  for (size_t i = 0; i < sample_ranges.size(); ++i) {
+  for (uint32_t i = 0; i < sample_ranges.size(); ++i) {
     if (!iter->ReadInt(&sample_ranges[i]))
       return NULL;
   }
@@ -1115,7 +1115,7 @@ HistogramBase* CustomHistogram::DeserializeInfoImpl(PickleIterator* iter) {
 bool CustomHistogram::ValidateCustomRanges(
     const std::vector<Sample>& custom_ranges) {
   bool has_valid_range = false;
-  for (size_t i = 0; i < custom_ranges.size(); i++) {
+  for (uint32_t i = 0; i < custom_ranges.size(); i++) {
     Sample sample = custom_ranges[i];
     if (sample < 0 || sample > HistogramBase::kSampleType_MAX - 1)
       return false;

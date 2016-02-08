@@ -47,7 +47,7 @@ HistogramType SparseHistogram::GetHistogramType() const {
 bool SparseHistogram::HasConstructionArguments(
     Sample expected_minimum,
     Sample expected_maximum,
-    size_t expected_bucket_count) const {
+    uint32_t expected_bucket_count) const {
   // SparseHistogram never has min/max/bucket_count limit.
   return false;
 }

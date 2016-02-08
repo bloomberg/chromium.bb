@@ -565,9 +565,9 @@ TEST_F(HistogramTest, HistogramSerializeInfo) {
   EXPECT_TRUE(iter.ReadInt(&max));
   EXPECT_EQ(64, max);
 
-  int64_t bucket_count;
-  EXPECT_TRUE(iter.ReadInt64(&bucket_count));
-  EXPECT_EQ(8, bucket_count);
+  uint32_t bucket_count;
+  EXPECT_TRUE(iter.ReadUInt32(&bucket_count));
+  EXPECT_EQ(8u, bucket_count);
 
   uint32_t checksum;
   EXPECT_TRUE(iter.ReadUInt32(&checksum));
@@ -594,12 +594,12 @@ TEST_F(HistogramTest, CustomHistogramSerializeInfo) {
 
   int i;
   std::string s;
-  int64_t bucket_count;
+  uint32_t bucket_count;
   uint32_t ui32;
   EXPECT_TRUE(iter.ReadInt(&i) && iter.ReadString(&s) && iter.ReadInt(&i) &&
               iter.ReadInt(&i) && iter.ReadInt(&i) &&
-              iter.ReadInt64(&bucket_count) && iter.ReadUInt32(&ui32));
-  EXPECT_EQ(3, bucket_count);
+              iter.ReadUInt32(&bucket_count) && iter.ReadUInt32(&ui32));
+  EXPECT_EQ(3u, bucket_count);
 
   int range;
   EXPECT_TRUE(iter.ReadInt(&range));

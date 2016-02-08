@@ -42,7 +42,7 @@ struct HistogramArgs {
   const char* name;
   int minimum;
   int maximum;
-  size_t bucket_count;
+  uint32_t bucket_count;
 };
 
 // List of metrics to collect using a GroupedHistogram.
@@ -123,7 +123,7 @@ class GroupedHistogram : public base::Histogram {
   std::string metric_to_group_;
   Sample minimum_;
   Sample maximum_;
-  size_t bucket_count_;
+  uint32_t bucket_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GroupedHistogram);
 };
@@ -135,7 +135,7 @@ class GroupedHistogram : public base::Histogram {
 void PreregisterHistogram(const std::string& name,
                           GroupedHistogram::Sample minimum,
                           GroupedHistogram::Sample maximum,
-                          size_t bucket_count,
+                          uint32_t bucket_count,
                           int32_t flags) {
   DCHECK(base::StatisticsRecorder::IsActive());
   DCHECK(base::Histogram::InspectConstructionArguments(

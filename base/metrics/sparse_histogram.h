@@ -65,7 +65,7 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   HistogramType GetHistogramType() const override;
   bool HasConstructionArguments(Sample expected_minimum,
                                 Sample expected_maximum,
-                                size_t expected_bucket_count) const override;
+                                uint32_t expected_bucket_count) const override;
   void Add(Sample value) override;
   void AddCount(Sample value, int count) override;
   void AddSamples(const HistogramSamples& samples) override;
