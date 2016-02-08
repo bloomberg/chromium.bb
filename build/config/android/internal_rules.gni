@@ -2100,6 +2100,7 @@ template("test_runner_script") {
         "--enable-device-cache",
         "--extract-test-list-from-filter",
         "--num_retries=0",
+        "--skip-clear-data",  # Clearing wipes optimized dex files.
       ]
     }
     if (is_asan) {

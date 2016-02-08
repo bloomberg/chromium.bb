@@ -135,6 +135,7 @@ class GtestTestInstance(test_instance.TestInstance):
       raise ValueError('Platform mode currently supports only 1 gtest suite')
     self._extract_test_list_from_filter = args.extract_test_list_from_filter
     self._shard_timeout = args.shard_timeout
+    self._skip_clear_data = args.skip_clear_data
     self._suite = args.suite_name[0]
 
     incremental_part = '_incremental' if args.incremental_install else ''
@@ -246,6 +247,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def shard_timeout(self):
     return self._shard_timeout
+
+  @property
+  def skip_clear_data(self):
+    return self._skip_clear_data
 
   @property
   def suite(self):

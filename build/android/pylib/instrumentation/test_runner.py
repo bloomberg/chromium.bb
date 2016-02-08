@@ -229,11 +229,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
             self.coverage_device_file, self.coverage_host_file)
         self.device.RunShellCommand(
             'rm -f %s' % self.coverage_device_file)
-    elif self.package_info:
+    elif self.package_info and not self.options.skip_clear_data:
       apk_under_test = self.test_pkg.GetApkUnderTest()
       permissions = apk_under_test.GetPermissions() if apk_under_test else None
       self.device.ClearApplicationState(
           self.package_info.package, permissions=permissions)
+      self.device.ClearApplicationState(self.package_info.package)
 
   def TearDownPerfMonitoring(self, test):
     """Cleans up performance monitoring if the specified test required it.

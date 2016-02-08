@@ -28,4 +28,5 @@ InstrumentationOptions = collections.namedtuple('InstrumentationOptions', [
     'timeout_scale',
     'apk_under_test',
     'additional_apks',
-    'strict_mode'])
+    'strict_mode',
+    'skip_clear_data'])

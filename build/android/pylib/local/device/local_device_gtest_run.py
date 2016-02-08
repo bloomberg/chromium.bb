@@ -345,9 +345,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     if self._test_instance.app_files:
       self._delegate.PullAppFiles(device, self._test_instance.app_files,
                                   self._test_instance.app_file_dir)
-    # Clearing data when using incremental install wipes out cached optimized
-    # dex files (and shouldn't be necessary by tests anyways).
-    if not self._env.incremental_install:
+    if not self._test_instance.skip_clear_data:
       self._delegate.Clear(device)
 
     # Parse the output.

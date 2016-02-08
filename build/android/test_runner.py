@@ -216,6 +216,10 @@ def AddDeviceOptions(parser):
   group.add_argument('--enable-concurrent-adb', action='store_true',
                      help='Run multiple adb commands at the same time, even '
                           'for the same device.')
+  group.add_argument('--skip-clear-data', action='store_true',
+                     help='Do not wipe app data between tests. Use this to '
+                     'speed up local development and never on bots '
+                     '(increases flakiness)')
 
 
 def AddGTestOptions(parser):
@@ -467,7 +471,8 @@ def ProcessInstrumentationOptions(args):
       args.timeout_scale,
       args.apk_under_test,
       args.additional_apks,
-      args.strict_mode)
+      args.strict_mode,
+      args.skip_clear_data)
 
 
 def AddUIAutomatorTestOptions(parser):
