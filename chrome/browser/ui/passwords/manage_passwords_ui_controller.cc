@@ -288,7 +288,7 @@ void ManagePasswordsUIController::UpdatePassword(
 }
 
 void ManagePasswordsUIController::ChooseCredential(
-    const autofill::PasswordForm& form,
+    autofill::PasswordForm form,
     password_manager::CredentialType credential_type) {
   DCHECK(dialog_controller_);
   dialog_controller_.reset();

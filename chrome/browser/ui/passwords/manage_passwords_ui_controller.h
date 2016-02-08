@@ -88,7 +88,7 @@ class ManagePasswordsUIController
   void SavePassword() override;
   void UpdatePassword(const autofill::PasswordForm& password_form) override;
   void ChooseCredential(
-      const autofill::PasswordForm& form,
+      autofill::PasswordForm form,
       password_manager::CredentialType credential_type) override;
   void NavigateToExternalPasswordManager() override;
   void NavigateToSmartLockHelpPage() override;

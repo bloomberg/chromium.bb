@@ -75,9 +75,11 @@ class PasswordsModelDelegate {
   // Called from the model when the user chooses to update a password.
   virtual void UpdatePassword(const autofill::PasswordForm& password_form) = 0;
 
-  // Called from the model when the user chooses a credential.
+  // Called from the dialog controller when the user chooses a credential.
+  // Everything is passed by value because the controller can be destroyed
+  // inside the method.
   virtual void ChooseCredential(
-      const autofill::PasswordForm& form,
+      autofill::PasswordForm form,
       password_manager::CredentialType credential_type) = 0;
 
   // Open a new tab pointing to passwords.google.com.

@@ -480,12 +480,14 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
   EXPECT_EQ(origin, controller()->GetOrigin());
   EXPECT_THAT(controller()->GetCurrentForms(),
               ElementsAre(Pointee(test_local_form())));
-
+  ASSERT_THAT(dialog_controller->GetLocalForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(dialog_controller->GetFederationsForms(), testing::IsEmpty());
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 
   EXPECT_CALL(dialog_prompt(), ControllerGone());
   dialog_controller->OnChooseCredentials(
-      test_local_form(),
+      *dialog_controller->GetLocalForms()[0],
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
   ASSERT_TRUE(credential_info());
@@ -515,12 +517,14 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
   EXPECT_EQ(origin, controller()->GetOrigin());
   EXPECT_THAT(controller()->GetCurrentForms(),
               ElementsAre(Pointee(test_federated_form())));
-
+  ASSERT_THAT(dialog_controller->GetLocalForms(),
+              ElementsAre(Pointee(test_federated_form())));
+  EXPECT_THAT(dialog_controller->GetFederationsForms(), testing::IsEmpty());
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 
   EXPECT_CALL(dialog_prompt(), ControllerGone());
   dialog_controller->OnChooseCredentials(
-      test_federated_form(),
+      *dialog_controller->GetLocalForms()[0],
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
   ASSERT_TRUE(credential_info());
@@ -550,12 +554,14 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialFederated) {
             controller()->GetState());
   EXPECT_EQ(0u, controller()->GetCurrentForms().size());
   EXPECT_EQ(origin, controller()->GetOrigin());
-
+  EXPECT_THAT(dialog_controller->GetLocalForms(), testing::IsEmpty());
+  ASSERT_THAT(dialog_controller->GetFederationsForms(),
+              ElementsAre(Pointee(test_local_form())));
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 
   EXPECT_CALL(dialog_prompt(), ControllerGone());
   dialog_controller->OnChooseCredentials(
-     test_local_form(),
+      *dialog_controller->GetFederationsForms()[0],
       password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED);
   controller()->OnBubbleHidden();
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
