@@ -16,8 +16,8 @@ namespace scheduler {
 WebSchedulerImpl::WebSchedulerImpl(
     ChildScheduler* child_scheduler,
     scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner)
+    scoped_refptr<TaskQueue> loading_task_runner,
+    scoped_refptr<TaskQueue> timer_task_runner)
     : child_scheduler_(child_scheduler),
       idle_task_runner_(idle_task_runner),
       timer_task_runner_(timer_task_runner),

@@ -29,7 +29,7 @@ class SCHEDULER_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   ~WorkerSchedulerImpl() override;
 
   // WorkerScheduler implementation:
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   bool ShouldYieldForHighPriorityWork() override;

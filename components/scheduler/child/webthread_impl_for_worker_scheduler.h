@@ -20,6 +20,7 @@ class WebScheduler;
 namespace scheduler {
 class SchedulerTqmDelegate;
 class SingleThreadIdleTaskRunner;
+class TaskQueue;
 class WebSchedulerImpl;
 class WebTaskRunnerImpl;
 class WorkerScheduler;
@@ -65,7 +66,7 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
   scoped_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   scoped_ptr<scheduler::WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<TaskQueue> task_runner_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<SchedulerTqmDelegate> task_runner_delegate_;
   scoped_ptr<WebTaskRunnerImpl> web_task_runner_;

@@ -24,7 +24,7 @@ class SCHEDULER_EXPORT CompositorWorkerScheduler : public WorkerScheduler {
   void Init() override;
 
   // ChildScheduler:
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> IdleTaskRunner()
       override;
   bool ShouldYieldForHighPriorityWork() override;

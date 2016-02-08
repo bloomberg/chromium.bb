@@ -11,22 +11,14 @@
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace scheduler {
+class TaskQueue;
 
 class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
  public:
-  explicit WebTaskRunnerImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  explicit WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue);
 
   ~WebTaskRunnerImpl() override;
-
-  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() const {
-    return task_runner_;
-  }
 
   // blink::WebTaskRunner implementation:
   void postTask(const blink::WebTraceLocation& web_location,
@@ -44,7 +36,7 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   static void runTask(scoped_ptr<blink::WebTaskRunner::Task>);
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<TaskQueue> task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTaskRunnerImpl);
 };

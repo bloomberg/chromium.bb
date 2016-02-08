@@ -153,13 +153,11 @@ scoped_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
   return make_scoped_ptr(new WebThreadImplForRendererScheduler(this));
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererSchedulerImpl::DefaultTaskRunner() {
+scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskRunner() {
   return helper_.DefaultTaskRunner();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererSchedulerImpl::CompositorTaskRunner() {
+scoped_refptr<TaskQueue> RendererSchedulerImpl::CompositorTaskRunner() {
   helper_.CheckOnValidThread();
   return compositor_task_runner_;
 }
@@ -169,8 +167,7 @@ RendererSchedulerImpl::IdleTaskRunner() {
   return idle_helper_.IdleTaskRunner();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererSchedulerImpl::LoadingTaskRunner() {
+scoped_refptr<TaskQueue> RendererSchedulerImpl::LoadingTaskRunner() {
   helper_.CheckOnValidThread();
   return default_loading_task_runner_;
 }

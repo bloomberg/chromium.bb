@@ -292,13 +292,9 @@ blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
-  scoped_ptr<scheduler::WebTaskRunnerImpl> task_runner(
-      new scheduler::WebTaskRunnerImpl(
-        loading_task_runner_->BelongsToCurrentThread()
-            ? loading_task_runner_ : base::ThreadTaskRunnerHandle::Get()));
   return new content::WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : NULL,
-      std::move(task_runner));
+      make_scoped_ptr(currentThread()->taskRunner()->clone()));
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {

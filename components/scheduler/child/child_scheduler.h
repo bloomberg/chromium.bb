@@ -16,13 +16,14 @@ class MessageLoop;
 }
 
 namespace scheduler {
+class TaskQueue;
 
 class SCHEDULER_EXPORT ChildScheduler {
  public:
   virtual ~ChildScheduler() {}
 
   // Returns the default task runner.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() = 0;
+  virtual scoped_refptr<TaskQueue> DefaultTaskRunner() = 0;
 
   // Returns the idle task runner. Tasks posted to this runner may be reordered
   // relative to other task types and may be starved for an arbitrarily long

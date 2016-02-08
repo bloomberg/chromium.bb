@@ -14,8 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "components/scheduler/child/web_task_runner_impl.h"
+#include "components/scheduler/child/worker_scheduler.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
@@ -105,13 +108,11 @@ class TestResourceDispatcher : public ResourceDispatcher {
 
 class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
  public:
-  TestWebURLLoaderClient(
-      ResourceDispatcher* dispatcher,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : loader_(
-          new WebURLLoaderImpl(
-              dispatcher,
-              make_scoped_ptr(new scheduler::WebTaskRunnerImpl(task_runner)))),
+  TestWebURLLoaderClient(ResourceDispatcher* dispatcher,
+                         scoped_refptr<scheduler::TaskQueue> task_runner)
+      : loader_(new WebURLLoaderImpl(
+            dispatcher,
+            make_scoped_ptr(new scheduler::WebTaskRunnerImpl(task_runner)))),
         expect_multipart_response_(false),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
@@ -260,7 +261,15 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 class WebURLLoaderImplTest : public testing::Test {
  public:
   explicit WebURLLoaderImplTest()
-      : client_(&dispatcher_, message_loop_.task_runner()) {}
+      : worker_scheduler_(scheduler::WorkerScheduler::Create(
+            scheduler::SchedulerTqmDelegateImpl::Create(
+                &message_loop_,
+                make_scoped_ptr(new base::DefaultTickClock())))) {
+    worker_scheduler_->Init();
+    client_.reset(new TestWebURLLoaderClient(
+        &dispatcher_, worker_scheduler_->DefaultTaskRunner()));
+  }
+
   ~WebURLLoaderImplTest() override {}
 
   void DoStartAsyncRequest() {
@@ -367,15 +376,18 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_NE(kMultipartResponse, client()->received_data());
   }
 
-  TestWebURLLoaderClient* client() { return &client_; }
+  TestWebURLLoaderClient* client() { return client_.get(); }
   TestResourceDispatcher* dispatcher() { return &dispatcher_; }
   RequestPeer* peer() { return dispatcher()->peer(); }
   base::MessageLoop* message_loop() { return &message_loop_; }
 
  private:
   base::MessageLoop message_loop_;
+  // WorkerScheduler is needed because WebURLLoaderImpl needs a
+  // scheduler::TaskQueue.
+  scoped_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   TestResourceDispatcher dispatcher_;
-  TestWebURLLoaderClient client_;
+  scoped_ptr<TestWebURLLoaderClient> client_;
 };
 
 TEST_F(WebURLLoaderImplTest, Success) {
