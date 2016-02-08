@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.content.Context;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -28,6 +29,8 @@ import org.chromium.sync.signin.ChromeSigninController;
  * ForcedSigninProcessor.start(appContext).
  */
 public final class ForcedSigninProcessor {
+    private static final String TAG = "ForcedSignin";
+
     /*
      * Only for static usage.
      */
@@ -60,25 +63,30 @@ public final class ForcedSigninProcessor {
      */
     private static void processForcedSignIn(final Context appContext) {
         final SigninManager signinManager = SigninManager.get(appContext);
+        // By definition we have finished all the checks for first run.
+        signinManager.onFirstRunCheckDone();
         if (!FeatureUtilities.canAllowSync(appContext) || !signinManager.isSignInAllowed()) {
+            Log.d(TAG, "Sign in disallowed");
             return;
         }
         AccountManagerHelper.get(appContext).getGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
-                if (accounts.length == 1) {
-                    signinManager.signIn(accounts[0], null, new SigninManager.SignInCallback() {
-                        @Override
-                        public void onSignInComplete() {
-                            // Since this is a forced signin, signout is not allowed.
-                            AccountManagementFragment.setSignOutAllowedPreferenceValue(
-                                    appContext, false);
-                        }
-
-                        @Override
-                        public void onSignInAborted() {}
-                    });
+                if (accounts.length != 1) {
+                    Log.d(TAG, "Incorrect number of accounts (%d)", accounts.length);
+                    return;
                 }
+                signinManager.signIn(accounts[0], null, new SigninManager.SignInCallback() {
+                    @Override
+                    public void onSignInComplete() {
+                        // Since this is a forced signin, signout is not allowed.
+                        AccountManagementFragment.setSignOutAllowedPreferenceValue(
+                                appContext, false);
+                    }
+
+                    @Override
+                    public void onSignInAborted() {}
+                });
             }
         });
     }
