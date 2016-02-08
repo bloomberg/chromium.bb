@@ -224,9 +224,6 @@ static opt_option options[] =
 /* version message */
 /*@observer@*/ static const char *version_msg[] = {
     PACKAGE_STRING,
-#if !defined(DONT_EMBED_BUILD_METADATA) || defined(OFFICIAL_BUILD)
-    "Compiled on " __DATE__ ".",
-#endif
     "Copyright (c) 2001-2010 Peter Johnson and other Yasm developers.",
     "Run yasm --license for licensing overview and summary."
 };
