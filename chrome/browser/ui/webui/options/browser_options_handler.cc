@@ -2117,7 +2117,7 @@ void BrowserOptionsHandler::HandleMetricsReportingChange(
   InitiateMetricsReportingChange(
       enable,
       base::Bind(&BrowserOptionsHandler::NotifyUIOfMetricsReportingChange,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BrowserOptionsHandler::NotifyUIOfMetricsReportingChange(bool enabled) {
