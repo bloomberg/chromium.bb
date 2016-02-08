@@ -43,3 +43,6 @@ html {
   background: rgb(239, 243, 255);
 }
 
+#json-value {
+  font-size: 75%;
+}

@@ -70,6 +70,8 @@ class PopularSites {
 
   const std::vector<Site>& sites() const { return sites_; }
 
+  const base::FilePath& local_path() const { return popular_sites_local_path_; }
+
   // Register preferences used by this class.
   static void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* user_prefs);

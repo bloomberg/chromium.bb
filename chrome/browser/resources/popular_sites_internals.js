@@ -16,6 +16,14 @@ cr.define('chrome.popular_sites_internals', function() {
 
     $('submit-download').addEventListener('click', submitDownload);
 
+    function viewJson(event) {
+      $('json-value').textContent = '';
+      chrome.send('viewJson');
+      event.preventDefault();
+    }
+
+    $('view-json').addEventListener('click', viewJson);
+
     chrome.send('registerForEvents');
   }
 
@@ -25,6 +33,12 @@ cr.define('chrome.popular_sites_internals', function() {
 
   function receiveSites(sites) {
     jstProcess(new JsEvalContext(sites), $('sites'));
+    // Also clear the json string, since it's likely stale now.
+    $('json-value').textContent = '';
+  }
+
+  function receiveJson(json) {
+    $('json-value').textContent = json;
   }
 
   // Return an object with all of the exports.
@@ -32,6 +46,7 @@ cr.define('chrome.popular_sites_internals', function() {
     initialize: initialize,
     receiveDownloadResult: receiveDownloadResult,
     receiveSites: receiveSites,
+    receiveJson: receiveJson,
   };
 });
 

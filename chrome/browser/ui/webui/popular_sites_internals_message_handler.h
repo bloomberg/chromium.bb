@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_POPULAR_SITES_INTERNALS_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_POPULAR_SITES_INTERNALS_MESSAGE_HANDLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -28,13 +31,17 @@ class PopularSitesInternalsMessageHandler
 
   void HandleRegisterForEvents(const base::ListValue* args);
   void HandleDownload(const base::ListValue* args);
+  void HandleViewJson(const base::ListValue* args);
 
   void SendDownloadResult(bool success);
   void SendSites();
+  void SendJson(const std::string& json);
 
   void OnPopularSitesAvailable(bool explicit_request, bool success);
 
   scoped_ptr<PopularSites> popular_sites_;
+
+  base::WeakPtrFactory<PopularSitesInternalsMessageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PopularSitesInternalsMessageHandler);
 };
