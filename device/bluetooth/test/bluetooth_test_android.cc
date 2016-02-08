@@ -81,6 +81,11 @@ BluetoothDevice* BluetoothTestAndroid::DiscoverLowEnergyDevice(
   return observer.last_device();
 }
 
+void BluetoothTestAndroid::ForceIllegalStateException() {
+  Java_FakeBluetoothAdapter_forceIllegalStateException(
+      AttachCurrentThread(), j_fake_bluetooth_adapter_.obj());
+}
+
 void BluetoothTestAndroid::SimulateGattConnection(BluetoothDevice* device) {
   BluetoothDeviceAndroid* device_android =
       static_cast<BluetoothDeviceAndroid*>(device);

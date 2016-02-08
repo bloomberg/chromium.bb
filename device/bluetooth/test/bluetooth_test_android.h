@@ -71,6 +71,10 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
       BluetoothGattDescriptor* descriptor) override;
 
+  // Instruct the fake adapter to throw an IllegalStateException for
+  // startScan and stopScan.
+  void ForceIllegalStateException();
+
   // Records that Java FakeBluetoothDevice connectGatt was called.
   void OnFakeBluetoothDeviceConnectGattCalled(
       JNIEnv* env,

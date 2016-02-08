@@ -479,6 +479,43 @@ TEST_F(BluetoothTest, DiscoverySession) {
 }
 #endif  // defined(OS_ANDROID)
 
+// Android only: this test is specific for Android and should not be
+// enabled for other platforms.
+#if defined(OS_ANDROID)
+TEST_F(BluetoothTest, AdapterIllegalStateBeforeStartScan) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  ForceIllegalStateException();
+  StartLowEnergyDiscoverySessionExpectedToFail();
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_FALSE(adapter_->IsDiscovering());
+}
+#endif  // defined(OS_ANDROID)
+
+// Android only: this test is specific for Android and should not be
+// enabled for other platforms.
+#if defined(OS_ANDROID)
+TEST_F(BluetoothTest, AdapterIllegalStateBeforeStopScan) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(adapter_->IsDiscovering());
+  ForceIllegalStateException();
+  discovery_sessions_[0]->Stop(GetCallback(Call::EXPECTED),
+                               GetErrorCallback(Call::NOT_EXPECTED));
+  EXPECT_FALSE(adapter_->IsDiscovering());
+}
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Checks that discovery fails (instead of hanging) when permissions are denied.
 TEST_F(BluetoothTest, NoPermissions) {
@@ -615,5 +652,53 @@ TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
+#if defined(OS_ANDROID)
+TEST_F(BluetoothTest, TogglePowerFakeAdapter) {
+  InitWithFakeAdapter();
+  ASSERT_TRUE(adapter_->IsPresent());
+  ASSERT_TRUE(adapter_->IsPowered());
+
+  // Check if power can be turned off.
+  adapter_->SetPowered(false, GetCallback(Call::EXPECTED),
+                       GetErrorCallback(Call::NOT_EXPECTED));
+  EXPECT_FALSE(adapter_->IsPowered());
+
+  // Check if power can be turned on again.
+  adapter_->SetPowered(true, GetCallback(Call::EXPECTED),
+                       GetErrorCallback(Call::NOT_EXPECTED));
+  EXPECT_TRUE(adapter_->IsPowered());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+TEST_F(BluetoothTest, TogglePowerBeforeScan) {
+  InitWithFakeAdapter();
+  ASSERT_TRUE(adapter_->IsPresent());
+  ASSERT_TRUE(adapter_->IsPowered());
+
+  // Turn off adapter.
+  adapter_->SetPowered(false, GetCallback(Call::EXPECTED),
+                       GetErrorCallback(Call::NOT_EXPECTED));
+  ASSERT_FALSE(adapter_->IsPowered());
+
+  // Try to perform a scan.
+  StartLowEnergyDiscoverySessionExpectedToFail();
+
+  // Turn on adapter.
+  adapter_->SetPowered(true, GetCallback(Call::EXPECTED),
+                       GetErrorCallback(Call::NOT_EXPECTED));
+  ASSERT_TRUE(adapter_->IsPowered());
+
+  // Try to perform a scan again.
+  ResetEventCounts();
+  StartLowEnergyDiscoverySession();
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[0]->IsActive());
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace device

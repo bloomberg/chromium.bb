@@ -111,6 +111,16 @@ final class ChromeBluetoothAdapter {
         return isPresent() && mAdapter.isEnabled();
     }
 
+    // Implements BluetoothAdapterAndroid::SetPowered.
+    @CalledByNative
+    private boolean setPowered(boolean powered) {
+        if (powered) {
+            return isPresent() && mAdapter.enable();
+        } else {
+            return isPresent() && mAdapter.disable();
+        }
+    }
+
     // Implements BluetoothAdapterAndroid::IsDiscoverable.
     @CalledByNative
     private boolean isDiscoverable() {
@@ -184,6 +194,10 @@ final class ChromeBluetoothAdapter {
     private boolean startScan() {
         Wrappers.BluetoothLeScannerWrapper scanner = mAdapter.getBluetoothLeScanner();
 
+        if (scanner == null) {
+            return false;
+        }
+
         if (!canScan()) {
             return false;
         }
@@ -199,6 +213,11 @@ final class ChromeBluetoothAdapter {
             scanner.startScan(null /* filters */, scanMode, mScanCallback);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Cannot start scan: " + e);
+            mScanCallback = null;
+            return false;
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Adapter is off. Cannot start scan: " + e);
+            mScanCallback = null;
             return false;
         }
         return true;
@@ -212,12 +231,16 @@ final class ChromeBluetoothAdapter {
         if (mScanCallback == null) {
             return false;
         }
+
         try {
-            mAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
+            Wrappers.BluetoothLeScannerWrapper scanner = mAdapter.getBluetoothLeScanner();
+            if (scanner != null) {
+                scanner.stopScan(mScanCallback);
+            }
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Cannot stop scan: " + e);
-            mScanCallback = null;
-            return false;
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Adapter is off. Cannot stop scan: " + e);
         }
         mScanCallback = null;
         return true;

@@ -43,6 +43,7 @@ class Fakes {
     static class FakeBluetoothAdapter extends Wrappers.BluetoothAdapterWrapper {
         private final FakeContext mFakeContext;
         private final FakeBluetoothLeScanner mFakeScanner;
+        private boolean mPowered = true;
         final long mNativeBluetoothTestAndroid;
 
         /**
@@ -55,10 +56,10 @@ class Fakes {
         }
 
         private FakeBluetoothAdapter(long nativeBluetoothTestAndroid) {
-            super(null, new FakeContext(), new FakeBluetoothLeScanner());
+            super(null, new FakeContext());
             mNativeBluetoothTestAndroid = nativeBluetoothTestAndroid;
             mFakeContext = (FakeContext) mContext;
-            mFakeScanner = (FakeBluetoothLeScanner) mScanner;
+            mFakeScanner = new FakeBluetoothLeScanner();
         }
 
         @CalledByNative("FakeBluetoothAdapter")
@@ -71,6 +72,10 @@ class Fakes {
          */
         @CalledByNative("FakeBluetoothAdapter")
         public void discoverLowEnergyDevice(int deviceOrdinal) {
+            if (mFakeScanner == null) {
+                return;
+            }
+
             switch (deviceOrdinal) {
                 case 1: {
                     ArrayList<ParcelUuid> uuids = new ArrayList<ParcelUuid>(2);
@@ -115,17 +120,39 @@ class Fakes {
             }
         }
 
+        @CalledByNative("FakeBluetoothAdapter")
+        public void forceIllegalStateException() {
+            if (mFakeScanner != null) {
+                mFakeScanner.forceIllegalStateException();
+            }
+        }
+
         // -----------------------------------------------------------------------------------------
         // BluetoothAdapterWrapper overrides:
 
         @Override
-        public boolean isEnabled() {
+        public boolean disable() {
+            mPowered = false;
+            return true;
+        }
+
+        @Override
+        public boolean enable() {
+            mPowered = true;
             return true;
         }
 
         @Override
         public String getAddress() {
             return "A1:B2:C3:D4:E5:F6";
+        }
+
+        @Override
+        public Wrappers.BluetoothLeScannerWrapper getBluetoothLeScanner() {
+            if (isEnabled()) {
+                return mFakeScanner;
+            }
+            return null;
         }
 
         @Override
@@ -136,6 +163,11 @@ class Fakes {
         @Override
         public int getScanMode() {
             return android.bluetooth.BluetoothAdapter.SCAN_MODE_NONE;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return mPowered;
         }
 
         @Override
@@ -166,6 +198,7 @@ class Fakes {
      */
     static class FakeBluetoothLeScanner extends Wrappers.BluetoothLeScannerWrapper {
         public Wrappers.ScanCallbackWrapper mScanCallback;
+        private boolean mThrowException;
 
         private FakeBluetoothLeScanner() {
             super(null);
@@ -178,6 +211,9 @@ class Fakes {
                 throw new IllegalArgumentException(
                         "FakeBluetoothLeScanner does not support multiple scans.");
             }
+            if (mThrowException) {
+                throw new IllegalStateException("Adapter is off.");
+            }
             mScanCallback = callback;
         }
 
@@ -186,7 +222,14 @@ class Fakes {
             if (mScanCallback != callback) {
                 throw new IllegalArgumentException("No scan in progress.");
             }
+            if (mThrowException) {
+                throw new IllegalStateException("Adapter is off.");
+            }
             mScanCallback = null;
+        }
+
+        void forceIllegalStateException() {
+            mThrowException = true;
         }
     }
 
@@ -288,7 +331,7 @@ class Fakes {
 
         @Override
         public int getBluetoothClass_getDeviceClass() {
-            return 0x1F00; // Unspecified Device Class
+            return Wrappers.DEVICE_CLASS_UNSPECIFIED;
         }
 
         @Override
