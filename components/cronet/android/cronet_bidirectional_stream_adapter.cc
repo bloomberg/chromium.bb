@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
+#include "components/cronet/android/io_buffer_with_byte_buffer.h"
 #include "components/cronet/android/url_request_error.h"
 #include "jni/CronetBidirectionalStream_jni.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/bidirectional_stream_request_info.h"
@@ -47,47 +47,6 @@ static jlong CreateBidirectionalStream(
 
   return reinterpret_cast<jlong>(adapter);
 }
-
-// TODO(mef): Extract this and its original from cronet_url_request_adapter.cc
-// into separate module.
-// net::WrappedIOBuffer subclass for a buffer owned by a Java ByteBuffer. Keeps
-// the ByteBuffer alive until destroyed. Uses WrappedIOBuffer because data() is
-// owned by the embedder.
-class CronetBidirectionalStreamAdapter::IOBufferWithByteBuffer
-    : public net::WrappedIOBuffer {
- public:
-  // Creates a buffer wrapping the Java ByteBuffer |jbyte_buffer|.
-  // |byte_buffer_data| points to the memory backed by the ByteBuffer, and
-  // |position| is the index of the first byte of data inside of the buffer.
-  // |limit| is the the index of the first element that should not be read or
-  // written, preserved to verify that buffer is not changed externally during
-  // networking operations.
-  IOBufferWithByteBuffer(JNIEnv* env,
-                         const JavaParamRef<jobject>& jbyte_buffer,
-                         void* byte_buffer_data,
-                         int position,
-                         int limit)
-      : net::WrappedIOBuffer(static_cast<char*>(byte_buffer_data) + position),
-        byte_buffer_(env, jbyte_buffer),
-        initial_position_(position),
-        initial_limit_(limit) {
-    DCHECK(byte_buffer_data);
-    DCHECK_EQ(env->GetDirectBufferAddress(jbyte_buffer), byte_buffer_data);
-  }
-
-  int initial_position() const { return initial_position_; }
-  int initial_limit() const { return initial_limit_; }
-
-  jobject byte_buffer() const { return byte_buffer_.obj(); }
-
- private:
-  ~IOBufferWithByteBuffer() override {}
-
-  base::android::ScopedJavaGlobalRef<jobject> byte_buffer_;
-
-  const int initial_position_;
-  const int initial_limit_;
-};
 
 // static
 bool CronetBidirectionalStreamAdapter::RegisterJni(JNIEnv* env) {

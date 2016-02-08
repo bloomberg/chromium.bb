@@ -134,8 +134,8 @@ class CronetUrlRequestContext extends CronetEngine {
                     metricsCollectionEnabled = !mFinishedListenerList.isEmpty();
                 }
             }
-            return new CronetUrlRequest(this, mUrlRequestContextAdapter, url, priority, callback,
-                    executor, requestAnnotations, metricsCollectionEnabled);
+            return new CronetUrlRequest(this, url, priority, callback, executor, requestAnnotations,
+                    metricsCollectionEnabled);
         }
     }
 

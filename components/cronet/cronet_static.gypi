@@ -32,6 +32,8 @@
     'android/cronet_url_request_adapter.h',
     'android/cronet_url_request_context_adapter.cc',
     'android/cronet_url_request_context_adapter.h',
+    'android/io_buffer_with_byte_buffer.cc',
+    'android/io_buffer_with_byte_buffer.h',
     'android/url_request_adapter.cc',
     'android/url_request_adapter.h',
     'android/url_request_context_adapter.cc',

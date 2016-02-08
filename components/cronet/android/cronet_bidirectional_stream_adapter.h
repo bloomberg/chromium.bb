@@ -25,6 +25,7 @@ class SpdyHeaderBlock;
 namespace cronet {
 
 class CronetURLRequestContextAdapter;
+class IOBufferWithByteBuffer;
 
 // An adapter from Java BidirectionalStream object to net::BidirectionalStream.
 // Created and configured from a Java thread. Start, ReadData, WriteData and
@@ -88,8 +89,6 @@ class CronetBidirectionalStreamAdapter
                jboolean jsend_on_canceled);
 
  private:
-  class IOBufferWithByteBuffer;
-
   // net::BidirectionalStream::Delegate implementations:
   void OnHeadersSent() override;
   void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers) override;
