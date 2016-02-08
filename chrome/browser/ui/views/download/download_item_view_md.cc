@@ -860,7 +860,6 @@ void DownloadItemViewMd::ClearWarningDialog() {
   delete dangerous_download_label_;
   dangerous_download_label_ = NULL;
   dangerous_download_label_sized_ = false;
-  cached_button_size_.SetSize(0, 0);
 
   // We need to load the icon now that the download has the real path.
   LoadIcon();
@@ -944,25 +943,9 @@ gfx::ImageSkia DownloadItemViewMd::GetWarningIcon() {
 
 gfx::Size DownloadItemViewMd::GetButtonSize() const {
   DCHECK(discard_button_ && (mode_ == MALICIOUS_MODE || save_button_));
-  gfx::Size size;
-
-  // We cache the size when successfully retrieved, not for performance reasons
-  // but because if this DownloadItemViewMd is being animated while the tab is
-  // not showing, the native buttons are not parented and their preferred size
-  // is 0, messing-up the layout.
-  if (cached_button_size_.width() != 0)
-    return cached_button_size_;
-
+  gfx::Size size = discard_button_->GetPreferredSize();
   if (save_button_)
-    size = save_button_->GetMinimumSize();
-  gfx::Size discard_size = discard_button_->GetMinimumSize();
-
-  size.SetSize(std::max(size.width(), discard_size.width()),
-               std::max(size.height(), discard_size.height()));
-
-  if (size.width() != 0)
-    cached_button_size_ = size;
-
+    size.SetToMax(save_button_->GetPreferredSize());
   return size;
 }
 

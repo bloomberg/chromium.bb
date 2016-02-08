@@ -292,9 +292,6 @@ class DownloadItemViewMd : public views::ButtonListener,
   // Whether the dangerous mode label has been sized yet.
   bool dangerous_download_label_sized_;
 
-  // The size of the buttons.  Cached so animation works when hidden.
-  mutable gfx::Size cached_button_size_;
-
   // Whether we are currently disabled as part of opening the downloaded file.
   bool disabled_while_opening_;
 
