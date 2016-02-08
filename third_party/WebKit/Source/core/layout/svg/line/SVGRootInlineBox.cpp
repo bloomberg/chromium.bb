@@ -23,6 +23,8 @@
 
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 
+#include "core/layout/api/LineLayoutAPIShim.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
@@ -46,7 +48,7 @@ void SVGRootInlineBox::markDirty()
 
 void SVGRootInlineBox::computePerCharacterLayoutInformation()
 {
-    LayoutSVGText& textRoot = toLayoutSVGText(block());
+    LayoutSVGText& textRoot = toLayoutSVGText(*LineLayoutAPIShim::layoutObjectFrom(block()));
 
     Vector<SVGTextLayoutAttributes*>& layoutAttributes = textRoot.layoutAttributes();
     if (layoutAttributes.isEmpty())
@@ -103,7 +105,7 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, LayoutRect* childR
 
 void SVGRootInlineBox::layoutRootBox(const LayoutRect& childRect)
 {
-    LayoutBlockFlow& parentBlock = block();
+    LineLayoutBlockFlow parentBlock = block();
 
     // Finally, assign the root block position, now that all content is laid out.
     LayoutRect boundingRect = childRect;

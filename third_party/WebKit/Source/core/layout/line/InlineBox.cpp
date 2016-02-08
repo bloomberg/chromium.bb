@@ -22,6 +22,7 @@
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BlockPainter.h"
@@ -340,7 +341,7 @@ LayoutPoint InlineBox::logicalPositionToPhysicalPoint(const LayoutPoint& point, 
     if (!UNLIKELY(lineLayoutItem().hasFlippedBlocksWritingMode()))
         return LayoutPoint(point.x(), point.y());
 
-    LayoutBlockFlow& block = root().block();
+    LineLayoutBlockFlow block = root().block();
     if (block.style()->isHorizontalWritingMode())
         return LayoutPoint(point.x(), block.size().height() - size.height() - point.y());
 

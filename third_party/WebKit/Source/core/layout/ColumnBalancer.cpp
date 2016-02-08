@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSet.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 
 namespace blink {
 

@@ -51,6 +51,7 @@
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/page/AutoscrollController.h"
@@ -1817,7 +1818,7 @@ void LayoutBox::positionLineBox(InlineBox* box)
             // our object was inline originally, since otherwise it would have ended up underneath
             // the inlines.
             RootInlineBox& root = box->root();
-            root.block().setStaticInlinePositionForChild(*this, box->logicalLeft());
+            root.block().setStaticInlinePositionForChild(LineLayoutBox(this), box->logicalLeft());
         } else {
             // Our object was a block originally, so we make our normal flow position be
             // just below the line box (as though all the inlines that came before us got

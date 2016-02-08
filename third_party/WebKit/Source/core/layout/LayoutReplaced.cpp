@@ -29,6 +29,7 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ReplacedPainter.h"

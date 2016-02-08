@@ -1270,7 +1270,7 @@ bool isLogicalEndOfLine(const VisiblePositionInFlatTree& p)
 static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, LayoutUnit lineDirectionPoint)
 {
     ASSERT(root);
-    LayoutBlockFlow& containingBlock = root->block();
+    LineLayoutBlockFlow containingBlock = root->block();
     FloatPoint absoluteBlockPoint = containingBlock.localToAbsolute(FloatPoint());
     if (containingBlock.hasOverflowClip())
         absoluteBlockPoint -= FloatSize(containingBlock.scrolledContentOffset());

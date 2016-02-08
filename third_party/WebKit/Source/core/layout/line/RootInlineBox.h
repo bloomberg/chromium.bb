@@ -31,6 +31,7 @@ namespace blink {
 class EllipsisBox;
 class HitTestResult;
 class LayoutBlockFlow;
+class LineLayoutBlockFlow;
 
 struct BidiStatus;
 struct GapRects;
@@ -116,7 +117,7 @@ public:
     InlineBox* firstSelectedBox() const;
     InlineBox* lastSelectedBox() const;
 
-    LayoutBlockFlow& block() const;
+    LineLayoutBlockFlow block() const;
 
     InlineBox* closestLeafChildForPoint(const LayoutPoint&, bool onlyEditableLeaves);
     InlineBox* closestLeafChildForLogicalLeftPosition(LayoutUnit, bool onlyEditableLeaves = false);

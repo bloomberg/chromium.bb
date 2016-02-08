@@ -56,6 +56,26 @@ public:
         return toBox()->flipForWritingMode(unit);
     }
 
+    void flipForWritingMode(FloatRect& rect) const
+    {
+        toBox()->flipForWritingMode(rect);
+    }
+
+    FloatPoint flipForWritingMode(const FloatPoint& point) const
+    {
+        return toBox()->flipForWritingMode(point);
+    }
+
+    void flipForWritingMode(LayoutRect& rect) const
+    {
+        toBox()->flipForWritingMode(rect);
+    }
+
+    LayoutPoint flipForWritingMode(const LayoutPoint& point) const
+    {
+        return toBox()->flipForWritingMode(point);
+    }
+
     void moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal)
     {
         toBox()->moveWithEdgeOfInlineContainerIfNecessary(isHorizontal);
@@ -72,6 +92,21 @@ public:
     LayoutRect logicalLayoutOverflowRectForPropagation(const ComputedStyle& style) const
     {
         return toBox()->logicalLayoutOverflowRectForPropagation(style);
+    }
+
+    void setLocation(const LayoutPoint& location)
+    {
+        return toBox()->setLocation(location);
+    }
+
+    void setSize(const LayoutSize& size)
+    {
+        return toBox()->setSize(size);
+    }
+
+    IntSize scrolledContentOffset() const
+    {
+        return toBox()->scrolledContentOffset();
     }
 
 private:

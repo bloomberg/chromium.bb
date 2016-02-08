@@ -28,6 +28,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/TextRunConstructor.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/fonts/Font.h"
 #include "wtf/StdLibExtras.h"
@@ -902,8 +903,8 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         float totalWidth = font.width(constructTextRun(font, &horizontalEllipsisCharacter, 1, styleRef(), style()->direction()));
 
         // See if this width can be accommodated on the last visible line
-        LayoutBlockFlow& destBlock = lastVisibleLine->block();
-        LayoutBlockFlow& srcBlock = lastLine->block();
+        LineLayoutBlockFlow destBlock = lastVisibleLine->block();
+        LineLayoutBlockFlow srcBlock = lastLine->block();
 
         // FIXME: Directions of src/destBlock could be different from our direction and from one another.
         if (!srcBlock.style()->isLeftToRightDirection())

@@ -26,6 +26,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/VerticalPositionCache.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/GlyphOverflow.h"
@@ -403,9 +404,9 @@ LayoutUnit RootInlineBox::blockDirectionPointInLine() const
     return !block().style()->isFlippedBlocksWritingMode() ? std::max(lineTop(), selectionTop()) : std::min(lineBottom(), selectionBottom());
 }
 
-LayoutBlockFlow& RootInlineBox::block() const
+LineLayoutBlockFlow RootInlineBox::block() const
 {
-    return toLayoutBlockFlow(layoutObject());
+    return LineLayoutBlockFlow(lineLayoutItem());
 }
 
 static bool isEditableLeaf(InlineBox* leaf)

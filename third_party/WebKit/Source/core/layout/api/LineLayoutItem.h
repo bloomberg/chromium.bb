@@ -364,6 +364,16 @@ public:
         return m_layoutObject->nextOffset(current);
     }
 
+    FloatPoint localToAbsolute(const FloatPoint& localPoint = FloatPoint(), MapCoordinatesFlags flags = 0) const
+    {
+        return m_layoutObject->localToAbsolute(localPoint, flags);
+    }
+
+    bool hasOverflowClip() const
+    {
+        return m_layoutObject->hasOverflowClip();
+    }
+
 #ifndef NDEBUG
 
     const char* name() const

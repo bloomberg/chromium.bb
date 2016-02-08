@@ -178,6 +178,31 @@ public:
         return toBlockFlow()->logicalLeftOffsetForLine(position, indentText, logicalHeight);
     }
 
+    void setHasMarkupTruncation(bool b)
+    {
+        toBlockFlow()->setHasMarkupTruncation(b);
+    }
+
+    LayoutUnit logicalWidth()
+    {
+        return toBlockFlow()->logicalWidth();
+    }
+
+    LineBoxList* lineBoxes()
+    {
+        return toBlockFlow()->lineBoxes();
+    }
+
+    bool containsFloats() const
+    {
+        return toBlockFlow()->containsFloats();
+    }
+
+    LayoutBlock* blockBeforeWithinSelectionRoot(LayoutSize& offset) const
+    {
+        return toBlockFlow()->blockBeforeWithinSelectionRoot(offset);
+    }
+
 private:
     LayoutBlockFlow* toBlockFlow() { return toLayoutBlockFlow(layoutObject()); };
     const LayoutBlockFlow* toBlockFlow() const { return toLayoutBlockFlow(layoutObject()); };
