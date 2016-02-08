@@ -59,7 +59,7 @@ public:
     void animationEnded() override;
     bool needsSynchronizeAttribute() override;
 
-    SVGParsingError setBaseValueAsString(const String&);
+    SVGParsingError setBaseValueAsString(const String&) override;
 
     SVGStringList* value() { return m_value.get(); }
     SVGStringListTearOff* tearOff();
