@@ -2030,7 +2030,7 @@ resolveEmphasisWords(
 			{				
 				/*   check if emphasis ended inside a word   */
 				word_stop = bit_end | bit_word;
-				if(i < srcmax && wordBuffer[i] & WORD_CHAR)
+				if(wordBuffer[i] & WORD_CHAR)
 					word_whole = 0;
 				else
 					word_stop = 0;
@@ -2062,7 +2062,7 @@ resolveEmphasisWords(
 		
 		/*   check if at end of word   */
 		if(in_word)
-		if(i == srcmax || !(wordBuffer[i] & WORD_CHAR))
+		if(!(wordBuffer[i] & WORD_CHAR))
 		{			
 			/*   made it through whole word   */
 			if(in_emp && word_start >= 0)
@@ -2212,7 +2212,7 @@ resolveEmphasisPassages(
 		
 		/*   check if at end of word   */
 		if(in_word)
-		if(i == srcmax || !(wordBuffer[i] & WORD_CHAR))
+		if(!(wordBuffer[i] & WORD_CHAR))
 		{
 			in_word = 0;
 			if(in_pass)
@@ -2338,7 +2338,7 @@ resolveEmphasisResets(
 			if(in_word)
 			
 			/*   at end of word   */
-			if(i == srcmax || !(wordBuffer[i] & WORD_CHAR)
+			if(!(wordBuffer[i] & WORD_CHAR)
 			   || (buffer[i] & bit_word && buffer[i] & bit_end))
 			{
 				in_word = 0;
