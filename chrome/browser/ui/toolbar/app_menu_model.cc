@@ -361,18 +361,10 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
 }
 
 bool AppMenuModel::GetIconForCommandId(int command_id, gfx::Image* icon) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  switch (command_id) {
-    case IDC_UPGRADE_DIALOG: {
-      if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-        *icon = rb.GetNativeImageNamed(
-            UpgradeDetector::GetInstance()->GetIconResourceID());
-        return true;
-      }
-      return false;
-    }
-    default:
-      break;
+  if (command_id == IDC_UPGRADE_DIALOG &&
+      UpgradeDetector::GetInstance()->notify_upgrade()) {
+    *icon = UpgradeDetector::GetInstance()->GetIcon();
+    return true;
   }
   return false;
 }
