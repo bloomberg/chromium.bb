@@ -10,6 +10,7 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
 
@@ -112,8 +113,9 @@ public class Clipboard {
      *
      * @param text will become the content of the clipboard's primary clip
      */
+    @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
     @CalledByNative
-    public void setText(final String text) {
+    private void setText(final String text) {
         setText(null, text);
     }
 
@@ -125,7 +127,7 @@ public class Clipboard {
      * @param label The Plain-text label for the HTML content.
      * @param text  Plain-text representation of the HTML content.
      */
-    public void setHTMLText(final String html, final String label, final String text) {
+    private void setHTMLText(final String html, final String label, final String text) {
         setPrimaryClipNoException(ClipData.newHtmlText(label, text, html));
     }
 
@@ -136,8 +138,9 @@ public class Clipboard {
      * @param html The HTML content to be pasted to the clipboard.
      * @param text Plain-text representation of the HTML content.
      */
+    @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
     @CalledByNative
-    public void setHTMLText(final String html, final String text) {
+    private void setHTMLText(final String html, final String text) {
         setHTMLText(html, null, text);
     }
 
