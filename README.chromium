@@ -5,9 +5,9 @@ License: MIT
 Security Critical: yes
 
 ***NOTE***
-ICU is in the middle of being updated to 56.1 and does not work, yet.
-If you have an urgent fix to apply, contact jshin@chromium.org to
-create a branch for 54.1 to apply a fix on top of.
+ICU is being updated to 56.1 pending one last adjustment on the Chromium-side.
+If you have an urgent fix to apply to ICU 54.1 used for branches,
+file a bug and contact jshin@chromium.org.
 
 Description:
 This directory contains the source code of ICU 56.1 for C/C++.
@@ -253,9 +253,9 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of Jan 20 2016, the latest version is 2015g and the above files
+  As of Feb 8, 2016, the latest version is 2016a and the above files
   are available at
-  http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2015g/44/
+  http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2016a/44/
 
 5. Build-related changes
 
