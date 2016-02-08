@@ -51572,6 +51572,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TrafficStatsAmortizer.ConcurrentTabs" units="count">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The number of unique tabs seen across all DataUse objects buffered for a
+    single amortization run by the TrafficStatsAmortizer. This is recorded even
+    if TrafficStats byte counts are unavailable, but not recorded if no DataUse
+    objects have been buffered.
+  </summary>
+</histogram>
+
 <histogram name="TrafficStatsAmortizer.PostAmortizationRunDataUseBytes"
     units="bytes">
   <owner>sclittle@chromium.org</owner>

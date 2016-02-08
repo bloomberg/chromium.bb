@@ -6,6 +6,7 @@
 
 #include <algorithm>  // For std::min.
 #include <cmath>      // For std::modf.
+#include <set>
 #include <utility>
 
 #include "base/location.h"
@@ -161,6 +162,14 @@ int64_t GetTotalRxBytes(const DataUseBuffer& data_use_sequence) {
   for (const auto& data_use_buffer_pair : data_use_sequence)
     sum += data_use_buffer_pair.first->rx_bytes;
   return sum;
+}
+
+void RecordConcurrentTabsHistogram(const DataUseBuffer& data_use_buffer) {
+  std::set<int32_t> unique_tabs;
+  for (const auto& data_use_buffer_pair : data_use_buffer)
+    unique_tabs.insert(data_use_buffer_pair.first->tab_id);
+  UMA_HISTOGRAM_COUNTS_100("TrafficStatsAmortizer.ConcurrentTabs",
+                           unique_tabs.size());
 }
 
 }  // namespace
@@ -332,6 +341,7 @@ void TrafficStatsAmortizer::AmortizeNow() {
     UMA_HISTOGRAM_COUNTS(
         "TrafficStatsAmortizer.PostAmortizationRunDataUseBytes.Rx",
         GetByteCountAsHistogramSample(GetTotalRxBytes(buffered_data_use_)));
+    RecordConcurrentTabsHistogram(buffered_data_use_);
   }
 
   UMA_HISTOGRAM_TIMES(

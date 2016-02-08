@@ -57,6 +57,7 @@ const char kAmortizationDelayHistogram[] =
     "TrafficStatsAmortizer.AmortizationDelay";
 const char kBufferSizeOnFlushHistogram[] =
     "TrafficStatsAmortizer.BufferSizeOnFlush";
+const char kConcurrentTabs[] = "TrafficStatsAmortizer.ConcurrentTabs";
 
 // The maximum sample value that can be recorded in a histogram.
 const base::HistogramBase::Sample kMaxRecordableSample =
@@ -68,16 +69,34 @@ base::HistogramBase::Sample GetDelaySample(const base::TimeDelta& delay) {
   return static_cast<base::HistogramBase::Sample>(delay.InMilliseconds());
 }
 
+// Synthesizes a fake scoped_ptr<DataUse> with the given |url|, |tab_id|,
+// |tx_bytes| and |rx_bytes|, using arbitrary values for all other fields.
+scoped_ptr<DataUse> CreateDataUseWithURLAndTab(const GURL& url,
+                                               int32_t tab_id,
+                                               int64_t tx_bytes,
+                                               int64_t rx_bytes) {
+  return scoped_ptr<DataUse>(
+      new DataUse(url, base::TimeTicks() /* request_start */,
+                  GURL("http://examplefirstparty.com"), tab_id,
+                  net::NetworkChangeNotifier::CONNECTION_2G, "example_mcc_mnc",
+                  tx_bytes, rx_bytes));
+}
+
 // Synthesizes a fake scoped_ptr<DataUse> with the given |url|, |tx_bytes| and
 // |rx_bytes|, using arbitrary values for all other fields.
 scoped_ptr<DataUse> CreateDataUseWithURL(const GURL& url,
                                          int64_t tx_bytes,
                                          int64_t rx_bytes) {
-  return scoped_ptr<DataUse>(
-      new DataUse(url, base::TimeTicks() /* request_start */,
-                  GURL("http://examplefirstparty.com"), 10 /* tab_id */,
-                  net::NetworkChangeNotifier::CONNECTION_2G, "example_mcc_mnc",
-                  tx_bytes, rx_bytes));
+  return CreateDataUseWithURLAndTab(url, 10, tx_bytes, rx_bytes);
+}
+
+// Synthesizes a fake scoped_ptr<DataUse> with the given |tab_id|, |tx_bytes|
+// and |rx_bytes|, using arbitrary values for all other fields.
+scoped_ptr<DataUse> CreateDataUseWithTab(int32_t tab_id,
+                                         int64_t tx_bytes,
+                                         int64_t rx_bytes) {
+  return CreateDataUseWithURLAndTab(GURL("http://example.com"), tab_id,
+                                    tx_bytes, rx_bytes);
 }
 
 // Synthesizes a fake scoped_ptr<DataUse> with the given |tx_bytes| and
@@ -296,6 +315,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithTrafficStatsAlwaysUnavailable) {
                                         GetDelaySample(kTrafficStatsQueryDelay),
                                         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 }
 
@@ -325,6 +345,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeDataUse) {
                                         GetDelaySample(kTrafficStatsQueryDelay),
                                         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 2, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 
   // Simulate the second amortization run.
@@ -362,6 +383,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeDataUse) {
         GetDelaySample(kTrafficStatsQueryDelay + kTrafficStatsQueryDelay / 2),
         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 2, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 }
 
@@ -384,6 +406,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithExtraBytes) {
   histogram_tester.ExpectUniqueSample(
       kAmortizationDelayHistogram, GetDelaySample(kTrafficStatsQueryDelay), 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+  histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
 }
 
 TEST_F(TrafficStatsAmortizerTest, AmortizeWithNegativeOverhead) {
@@ -404,6 +427,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithNegativeOverhead) {
   histogram_tester.ExpectUniqueSample(
       kAmortizationDelayHistogram, GetDelaySample(kTrafficStatsQueryDelay), 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+  histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
 }
 
 TEST_F(TrafficStatsAmortizerTest, AmortizeWithMaxIntByteCounts) {
@@ -431,6 +455,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithMaxIntByteCounts) {
   histogram_tester.ExpectUniqueSample(
       kAmortizationDelayHistogram, GetDelaySample(kTrafficStatsQueryDelay), 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+  histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
 }
 
 TEST_F(TrafficStatsAmortizerTest, AmortizeWithMaxIntScaleFactor) {
@@ -456,6 +481,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithMaxIntScaleFactor) {
   histogram_tester.ExpectUniqueSample(
       kAmortizationDelayHistogram, GetDelaySample(kTrafficStatsQueryDelay), 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+  histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
 }
 
 TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroScaleFactor) {
@@ -480,6 +506,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroScaleFactor) {
   histogram_tester.ExpectUniqueSample(
       kAmortizationDelayHistogram, GetDelaySample(kTrafficStatsQueryDelay), 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+  histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
 }
 
 TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroPreAmortizationBytes) {
@@ -505,6 +532,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroPreAmortizationBytes) {
                                         GetDelaySample(kTrafficStatsQueryDelay),
                                         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 
   {
@@ -526,6 +554,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroPreAmortizationBytes) {
                                         GetDelaySample(kTrafficStatsQueryDelay),
                                         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 }
 
@@ -552,6 +581,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroTxPreAmortizationBytes) {
                                         GetDelaySample(kTrafficStatsQueryDelay),
                                         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 
   {
@@ -572,6 +602,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroTxPreAmortizationBytes) {
                                         GetDelaySample(kTrafficStatsQueryDelay),
                                         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 }
 
@@ -598,6 +629,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroRxPreAmortizationBytes) {
                                         GetDelaySample(kTrafficStatsQueryDelay),
                                         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 
   {
@@ -618,6 +650,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroRxPreAmortizationBytes) {
                                         GetDelaySample(kTrafficStatsQueryDelay),
                                         1);
     histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
   }
 }
 
@@ -656,6 +689,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeAtMaxDelay) {
   histogram_tester.ExpectUniqueSample(kAmortizationDelayHistogram,
                                       GetDelaySample(kMaxAmortizationDelay), 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 1, 1);
+  histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
 }
 
 TEST_F(TrafficStatsAmortizerTest, AmortizeAtMaxBufferSize) {
@@ -687,6 +721,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeAtMaxBufferSize) {
   histogram_tester.ExpectUniqueSample(kAmortizationDelayHistogram, 0, 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram,
                                       kExpectedBufSize, 1);
+  histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
 }
 
 TEST_F(TrafficStatsAmortizerTest, AmortizeCombinedDataUse) {
@@ -752,6 +787,50 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeCombinedDataUse) {
   histogram_tester.ExpectUniqueSample(
       kAmortizationDelayHistogram, GetDelaySample(kTrafficStatsQueryDelay), 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 4, 1);
+  histogram_tester.ExpectUniqueSample(kConcurrentTabs, 1, 1);
+}
+
+TEST_F(TrafficStatsAmortizerTest, ConcurrentTabsHistogram) {
+  SkipFirstAmortizationRun();
+
+  {
+    // Test data usage reported multiple times for two tabs.
+    base::HistogramTester histogram_tester;
+    amortizer()->SetNextTrafficStats(true, 0, 0);
+    amortizer()->AmortizeDataUse(
+        CreateDataUseWithTab(1, 50, 500),
+        ExpectDataUseCallback(CreateDataUseWithTab(1, 100, 1000)));
+    amortizer()->AmortizeDataUse(
+        CreateDataUseWithTab(2, 100, 1000),
+        ExpectDataUseCallback(CreateDataUseWithTab(2, 200, 2000)));
+    amortizer()->AmortizeDataUse(
+        CreateDataUseWithTab(1, 50, 500),
+        ExpectDataUseCallback(CreateDataUseWithTab(1, 100, 1000)));
+    amortizer()->AmortizeDataUse(
+        CreateDataUseWithTab(2, 100, 1000),
+        ExpectDataUseCallback(CreateDataUseWithTab(2, 200, 2000)));
+    amortizer()->SetNextTrafficStats(true, 600, 6000);
+    AdvanceTime(kTrafficStatsQueryDelay);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, 2, 1);
+    histogram_tester.ExpectUniqueSample(kPreAmortizationTxHistogram, 300, 1);
+    histogram_tester.ExpectUniqueSample(kPreAmortizationRxHistogram, 3000, 1);
+    histogram_tester.ExpectUniqueSample(kPostAmortizationTxHistogram, 600, 1);
+    histogram_tester.ExpectUniqueSample(kPostAmortizationRxHistogram, 6000, 1);
+  }
+
+  // Test data usage for 1-5 tabs.
+  for (int32_t total_tabs = 1; total_tabs <= 5; ++total_tabs) {
+    base::HistogramTester histogram_tester;
+
+    for (int32_t i = 1; i <= total_tabs; ++i) {
+      amortizer()->AmortizeDataUse(
+          CreateDataUseWithTab(i, 100, 1000),
+          ExpectDataUseCallback(CreateDataUseWithTab(i, 200, 2000)));
+    }
+    amortizer()->AddTrafficStats(total_tabs * 200, total_tabs * 2000);
+    AdvanceTime(kTrafficStatsQueryDelay);
+    histogram_tester.ExpectUniqueSample(kConcurrentTabs, total_tabs, 1);
+  }
 }
 
 }  // namespace
