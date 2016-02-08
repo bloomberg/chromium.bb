@@ -8,18 +8,14 @@
 
 #include "third_party/zlib/zlib.h"
 
+static Bytef buffer[256 * 1024] = { 0 };
+
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  const int NUM_ITEMS = 1024 * 1024;
-  const int BUF_SIZE  = NUM_ITEMS * sizeof(uint8_t);
-  uint8_t *buffer = new uint8_t[NUM_ITEMS];
-  uLongf buffer_length = (uLongf)BUF_SIZE;
-  memset(buffer, 0, BUF_SIZE);
+  uLongf buffer_length = static_cast<uLongf>(sizeof(buffer));
   if (Z_OK != uncompress(buffer, &buffer_length, data,
                          static_cast<uLong>(size))) {
-    delete[] buffer;
     return 0;
   }
-  delete[] buffer;
   return 0;
 }
