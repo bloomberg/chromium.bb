@@ -5,7 +5,10 @@
 import contextlib
 import logging
 import os
+import shutil
+import subprocess
 import sys
+import tempfile
 import time
 
 _SRC_DIR = os.path.abspath(os.path.join(
@@ -24,6 +27,18 @@ import devtools_monitor
 DEVTOOLS_PORT = 9222
 DEVTOOLS_HOSTNAME = 'localhost'
 DEFAULT_CHROME_PACKAGE = 'chrome'
+
+
+@contextlib.contextmanager
+def TemporaryDirectory():
+  """Returns a freshly-created directory that gets automatically deleted after
+  usage.
+  """
+  name = tempfile.mkdtemp()
+  try:
+    yield name
+  finally:
+    shutil.rmtree(name)
 
 
 class DeviceSetupException(Exception):
@@ -92,7 +107,9 @@ def _SetUpDevice(device, package_info):
 def DeviceConnection(device,
                      package=DEFAULT_CHROME_PACKAGE,
                      hostname=DEVTOOLS_HOSTNAME,
-                     port=DEVTOOLS_PORT):
+                     port=DEVTOOLS_PORT,
+                     host_exe='out/Release/chrome',
+                     host_profile_dir=None):
   """Context for starting recording on a device.
 
   Sets up and restores any device and tracing appropriately
@@ -100,7 +117,11 @@ def DeviceConnection(device,
   Args:
     device: Android device, or None for a local run (in which case chrome needs
       to have been started with --remote-debugging-port=XXX).
-    package: the key for chrome package info.
+    package: The key for chrome package info.
+    port: The port on which to enable remote debugging.
+    host_exe: The binary to execute when running on the host.
+    host_profile_dir: The profile dir to use when running on the host (if None,
+      a fresh profile dir will be used).
 
   Returns:
     A context manager type which evaluates to a DevToolsConnection.
@@ -113,16 +134,35 @@ def DeviceConnection(device,
   if device:
     _SetUpDevice(device, package_info)
   with FlagReplacer(device, command_line_path, new_flags):
+    host_process = None
     if device:
       start_intent = intent.Intent(
           package=package_info.package, activity=package_info.activity,
           data='about:blank')
       device.StartActivity(start_intent, blocking=True)
+    else:
+      # Run on the host.
+      assert os.path.exists(host_exe)
+
+      user_data_dir = host_profile_dir
+      if not user_data_dir:
+        user_data_dir = TemporaryDirectory()
+
+      new_flags += ['--user-data-dir=%s' % user_data_dir]
+      host_process = subprocess.Popen([host_exe] + new_flags,
+                                      shell=False)
+    if device:
       time.sleep(2)
+    else:
+      # TODO(blundell): Figure out why a lower sleep time causes an assertion
+      # in request_track.py to fire.
+      time.sleep(10)
     # If no device, we don't care about chrome startup so skip the about page.
     with ForwardPort(device, 'tcp:%d' % port,
                      'localabstract:chrome_devtools_remote'):
       yield devtools_monitor.DevToolsConnection(hostname, port)
+    if host_process:
+      host_process.kill()
 
 
 def SetUpAndExecute(device, package, fn):

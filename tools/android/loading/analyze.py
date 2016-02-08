@@ -95,29 +95,36 @@ def _GetPrefetchHtml(graph, name=None):
   return '\n'.join(output)
 
 
-def _LogRequests(url, clear_cache=True, local=False):
+def _LogRequests(url, clear_cache=True, local=False,
+                 host_exe="out/Release/chrome", host_profile_dir=None):
   """Log requests for a web page.
 
   Args:
     url: url to log as string.
     clear_cache: optional flag to clear the cache.
     local: log from local (desktop) chrome session.
+    host_exe: Binary to execute when running locally.
+    host_profile_dir: Profile dir to use when running locally (if None, a
+      fresh profile dir will be used).
 
   Returns:
     JSON dict of logged information (ie, a dict that describes JSON).
   """
   device = device_setup.GetFirstDevice() if not local else None
-  with device_setup.DeviceConnection(device) as connection:
+  with device_setup.DeviceConnection(device, host_exe=host_exe,
+      host_profile_dir=host_profile_dir) as connection:
     trace = trace_recorder.MonitorUrl(connection, url, clear_cache=clear_cache)
     return trace.ToJsonDict()
 
 
-def _FullFetch(url, json_output, prefetch, local, prefetch_delay_seconds):
+def _FullFetch(url, json_output, prefetch, local, prefetch_delay_seconds,
+               host_exe, host_profile_dir):
   """Do a full fetch with optional prefetching."""
   if not url.startswith('http'):
     url = 'http://' + url
   logging.warning('Cold fetch')
-  cold_data = _LogRequests(url, local=local)
+  cold_data = _LogRequests(url, local=local,
+                           host_exe=host_exe, host_profile_dir=host_profile_dir)
   assert cold_data, 'Cold fetch failed to produce data. Check your phone.'
   if prefetch:
     assert not local
@@ -258,12 +265,16 @@ def DoLogRequests(arg_str):
   parser.add_argument('--prefetch', action='store_true')
   parser.add_argument('--prefetch_delay_seconds', type=int, default=5)
   parser.add_argument('--local', action='store_true')
+  parser.add_argument('--host_exe', default='out/Release/chrome')
+  parser.add_argument('--host_profile_dir', default=None)
   args = parser.parse_args(arg_str)
   _FullFetch(url=args.url,
              json_output=args.output,
              prefetch=args.prefetch,
              prefetch_delay_seconds=args.prefetch_delay_seconds,
-             local=args.local)
+             local=args.local,
+             host_exe=args.host_exe,
+             host_profile_dir=args.host_profile_dir)
 
 
 def DoFetch(arg_str):
@@ -284,7 +295,9 @@ def DoFetch(arg_str):
              json_output=os.path.join(args.dir, args.site + '.json'),
              prefetch=True,
              prefetch_delay_seconds=args.prefetch_delay_seconds,
-             local=False)
+             local=False,
+             host_exe=None,
+             host_profile_dir=None)
 
 
 def DoLongPole(arg_str):
