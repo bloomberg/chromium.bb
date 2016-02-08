@@ -20,9 +20,6 @@ if env.Bit('build_mips32'):
 # The sandboxed translator does not support translating PSOs yet.
 if env.Bit('use_sandboxed_translator'):
   Return()
-# The PNaCl dynamic loader currently only supports SFI NaCl's memory layout.
-if env.Bit('nonsfi_nacl'):
-  Return()
 
 
 def MakeAndTranslatePso(dest, bitcode_file, llvm_passes):

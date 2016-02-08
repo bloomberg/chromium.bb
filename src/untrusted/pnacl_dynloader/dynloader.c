@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 #include "native_client/src/include/elf.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -24,8 +25,8 @@
 /* Only need to handle PHDRs produced by the PNaCl translator's linker. */
 #define MAX_PHNUM 20
 
+#if !defined(__native_client_nonsfi__)
 static struct nacl_irt_code_data_alloc irt_alloc_interface;
-
 
 static void init_irt_alloc_interface(void) {
   /*
@@ -46,13 +47,14 @@ static int allocate_code_data(uintptr_t hint, size_t code_size,
   return irt_alloc_interface.allocate_code_data(hint, code_size, data_offset,
                                                 data_size, begin);
 }
+#endif
 
 static uintptr_t page_size_round_down(uintptr_t addr) {
-  return addr & ~(NACL_MAP_PAGESIZE - 1);
+  return addr & ~(getpagesize() - 1);
 }
 
 static uintptr_t page_size_round_up(uintptr_t addr) {
-  return page_size_round_down(addr + NACL_MAP_PAGESIZE - 1);
+  return page_size_round_down(addr + getpagesize() - 1);
 }
 
 static int elf_flags_to_mmap_flags(int pflags) {
@@ -196,10 +198,7 @@ static int load_elf_file_from_fd(int fd, void **pso_root) {
   CHECK(code_segment != NULL);
   CHECK(code_segment->p_vaddr == 0);
   CHECK(code_segment->p_filesz == code_segment->p_memsz);
-  size_t code_size = code_segment->p_filesz;
   CHECK(first_data != NULL);
-  size_t data_offset = first_data->p_vaddr;
-  size_t data_size = last_data->p_vaddr + last_data->p_memsz - data_offset;
 
   /*
    * load_bias is the offset to add to PT_LOAD segments' load addresses to
@@ -207,7 +206,25 @@ static int load_elf_file_from_fd(int fd, void **pso_root) {
    * but would be zero for ET_EXEC objects.
    */
   uintptr_t load_bias;
+#if defined(__native_client_nonsfi__)
+  /*
+   * For Non-SFI mode, data and code may be allocated together in one
+   * continuous chunk of memory (without a call to allocate_code_data to
+   * allocate each separately). However, there may still be a gap between the
+   * code and data segments, so the full span is calculated prior to mmap-ing.
+   */
+  size_t span = last_data->p_vaddr + last_data->p_memsz;
+  void *map_result = mmap(NULL, span, PROT_NONE,
+                          MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  if (map_result == MAP_FAILED)
+    return errno;
+  load_bias = (uintptr_t) map_result;
+#else  /* SFI */
+  size_t code_size = code_segment->p_filesz;
+  size_t data_offset = first_data->p_vaddr;
+  size_t data_size = last_data->p_vaddr + last_data->p_memsz - data_offset;
   if (code_size == 0) {
+    CHECK(data_offset == 0);
     /*
      * The IRT's allocate_code_data() does not accept code_size == 0,
      * so use a data-only mmap() for this case.
@@ -216,13 +233,14 @@ static int load_elf_file_from_fd(int fd, void **pso_root) {
                             MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (map_result == MAP_FAILED)
       return errno;
-    load_bias = ((uintptr_t) map_result) - data_offset;
+    load_bias = (uintptr_t) map_result;
   } else {
     int err = allocate_code_data(0, code_size, data_offset,
                                  page_size_round_up(data_size), &load_bias);
     if (err != 0)
       return err;
   }
+#endif
 
   /* Map the PT_LOAD segments. */
   Elf32_Dyn *pt_dynamic = 0;
