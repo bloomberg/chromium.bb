@@ -1471,6 +1471,8 @@ void LayerTreeHostImpl::SetExternalTilePriorityConstraints(
 
   if (tile_priority_params_changed) {
     active_tree_->set_needs_update_draw_properties();
+    if (pending_tree_)
+      pending_tree_->set_needs_update_draw_properties();
 
     // Compositor, not OutputSurface, is responsible for setting damage and
     // triggering redraw for constraint changes.

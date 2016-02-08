@@ -9009,6 +9009,40 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
   EXPECT_FALSE(did_request_prepare_tiles_);
 }
 
+TEST_F(LayerTreeHostImplTest, ExternalTileConstraintReflectedInPendingTree) {
+  EXPECT_FALSE(host_impl_->CommitToActiveTree());
+  const gfx::Size layer_size(100, 100);
+  host_impl_->SetViewportSize(layer_size);
+  bool update_lcd_text = false;
+
+  // Set up active and pending tree.
+  host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl_->pending_tree(), 1));
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->UpdateDrawProperties(update_lcd_text);
+
+  host_impl_->ActivateSyncTree();
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+
+  host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()->UpdateDrawProperties(update_lcd_text);
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+
+  EXPECT_FALSE(host_impl_->pending_tree()->needs_update_draw_properties());
+  EXPECT_FALSE(host_impl_->active_tree()->needs_update_draw_properties());
+
+  // Update external constraints should set_needs_update_draw_properties on
+  // both trees.
+  gfx::Transform external_transform;
+  gfx::Rect external_viewport(10, 20);
+  host_impl_->SetExternalTilePriorityConstraints(external_viewport,
+                                                 external_transform);
+  EXPECT_TRUE(host_impl_->pending_tree()->needs_update_draw_properties());
+  EXPECT_TRUE(host_impl_->active_tree()->needs_update_draw_properties());
+}
+
 TEST_F(LayerTreeHostImplTest, ExternalViewportAffectsVisibleRects) {
   const gfx::Size layer_size(100, 100);
   SetupScrollAndContentsLayers(layer_size);
