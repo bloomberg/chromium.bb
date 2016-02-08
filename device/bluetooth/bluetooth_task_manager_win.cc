@@ -140,9 +140,9 @@ BluetoothTaskManagerWin::DeviceState::~DeviceState() {
 BluetoothTaskManagerWin::BluetoothTaskManagerWin(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
     : ui_task_runner_(ui_task_runner),
+      adapter_handle_(NULL),
       discovering_(false),
-      current_logging_batch_count_(0),
-      adapter_handle_(NULL) {}
+      current_logging_batch_count_(0) {}
 
 BluetoothTaskManagerWin::~BluetoothTaskManagerWin() {
   win::BluetoothLowEnergyWrapper::DeleteInstance();
