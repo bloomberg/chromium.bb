@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 scrollHeight 616
+layer at (0,0) size 800x600 scrollHeight 617
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x615.88
-    LayoutBlockFlow {BODY} at (8,8) size 784x599.88
+layer at (0,0) size 800x617 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x616.88
+    LayoutBlockFlow {BODY} at (8,8) size 784x600.88
       LayoutBlockFlow {H1} at (0,0) size 784x37
         LayoutText {#text} at (0,0) size 420x37
           text run at (0,0) width 420: "Form Element Geometry Tests"
@@ -83,14 +83,14 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (1,1) size 16x16 [border: (2px solid #0000FF)]
                 LayoutInline {FONT} at (0,0) size 12x13
                   LayoutBlockFlow {INPUT} at (2,2) size 12x12
-      LayoutTable {TABLE} at (0,228.25) size 539x68
-        LayoutTableSection {TBODY} at (0,0) size 539x68
-          LayoutTableRow {TR} at (0,2) size 539x64
+      LayoutTable {TABLE} at (0,228.25) size 539x69
+        LayoutTableSection {TBODY} at (0,0) size 539x69
+          LayoutTableRow {TR} at (0,2) size 539x65
             LayoutTableCell {TD} at (2,2) size 79x25 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 77x23 [border: (2px solid #0000FF)]
                 LayoutTextControl {INPUT} at (2,2) size 73x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-            LayoutTableCell {TD} at (83,2) size 40x64 [r=0 c=1 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (1,1) size 38x62 [border: (2px solid #0000FF)]
+            LayoutTableCell {TD} at (83,2) size 40x65 [r=0 c=1 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (1,1) size 38x63 [border: (2px solid #0000FF)]
             LayoutTableCell {TD} at (125,2) size 243x24 [r=0 c=2 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 241x22 [border: (2px solid #0000FF)]
                 LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
@@ -100,10 +100,10 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                         text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (370,2) size 167x38 [r=0 c=3 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 165x36 [border: (2px solid #0000FF)]
-      LayoutBlockFlow {H2} at (0,316.16) size 784x28
+      LayoutBlockFlow {H2} at (0,317.16) size 784x28
         LayoutText {#text} at (0,0) size 200x28
           text run at (0,0) width 200: "Baseline Alignment"
-      LayoutBlockFlow {DIV} at (0,364.06) size 784x28
+      LayoutBlockFlow {DIV} at (0,365.06) size 784x28
         LayoutInline {FONT} at (0,0) size 210x28
           LayoutText {#text} at (0,0) size 42x28
             text run at (0,0) width 42: "text "
@@ -124,7 +124,7 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (185,0) width 7: " "
           LayoutBlockFlow {INPUT} at (194.27,12) size 12x12
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,392.06) size 784x19
+      LayoutBlockFlow {DIV} at (0,393.06) size 784x19
         LayoutText {#text} at (0,0) size 28x18
           text run at (0,0) width 28: "text "
         LayoutButton {INPUT} at (27.98,1) size 51.56x18 [bgcolor=#C0C0C0]
@@ -144,7 +144,7 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (167,0) width 5: " "
         LayoutBlockFlow {INPUT} at (174.27,4) size 12x12
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,411.06) size 784x19
+      LayoutBlockFlow {DIV} at (0,412.06) size 784x19
         LayoutInline {FONT} at (0,0) size 175x13
           LayoutText {#text} at (0,4) size 18x13
             text run at (0,4) width 18: "text "
@@ -165,7 +165,7 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (153,4) width 4: " "
           LayoutBlockFlow {INPUT} at (159.27,4) size 12x12
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,430.06) size 784x37
+      LayoutBlockFlow {DIV} at (0,431.06) size 784x37
         LayoutText {#text} at (0,18) size 28x18
           text run at (0,18) width 28: "text "
         LayoutTextControl {INPUT} at (27.98,18) size 73x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -179,10 +179,10 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutText {#text} at (341,18) size 5x18
           text run at (341,18) width 5: " "
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {H2} at (0,486.97) size 784x28
+      LayoutBlockFlow {H2} at (0,487.97) size 784x28
         LayoutText {#text} at (0,0) size 198x28
           text run at (0,0) width 198: "Pop-up Menu Sizes"
-      LayoutBlockFlow {DIV} at (0,534.88) size 784x28
+      LayoutBlockFlow {DIV} at (0,535.88) size 784x28
         LayoutInline {FONT} at (0,0) size 169x28
           LayoutText {#text} at (0,0) size 0x0
           LayoutMenuList {SELECT} at (0,9) size 36x18 [bgcolor=#F8F8F8]
@@ -202,7 +202,7 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutText (anonymous) at (8,2) size 54x13
                 text run at (8,2) width 54: "xxxxxxxx"
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,562.88) size 784x19
+      LayoutBlockFlow {DIV} at (0,563.88) size 784x19
         LayoutMenuList {SELECT} at (0,1) size 36x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 36x18
             LayoutText (anonymous) at (8,2) size 4x13
@@ -220,7 +220,7 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutText (anonymous) at (8,2) size 54x13
               text run at (8,2) width 54: "xxxxxxxx"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,581.88) size 784x18
+      LayoutBlockFlow {DIV} at (0,582.88) size 784x18
         LayoutInline {FONT} at (0,0) size 162x13
           LayoutText {#text} at (0,0) size 0x0
           LayoutMenuList {SELECT} at (0,0) size 36x18 [bgcolor=#F8F8F8]
@@ -266,11 +266,11 @@ layer at (381,241) size 161x32 clip at (382,242) size 159x30
     LayoutBlockFlow {DIV} at (3,3) size 155x13
       LayoutText {#text} at (0,0) size 44x13
         text run at (0,0) width 44: "textarea"
-layer at (39,459) size 67x13
+layer at (39,460) size 67x13
   LayoutBlockFlow {DIV} at (3,3) size 67x13
     LayoutText {#text} at (0,0) size 48x13
       text run at (0,0) width 48: "text field"
-layer at (354,438) size 161x32 clip at (355,439) size 159x30
+layer at (354,439) size 161x32 clip at (355,440) size 159x30
   LayoutTextControl {TEXTAREA} at (345.98,0) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 155x13
       LayoutText {#text} at (0,0) size 44x13

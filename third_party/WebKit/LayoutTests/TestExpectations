@@ -293,31 +293,6 @@ crbug.com/495750 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/stati
 crbug.com/495750 virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 crbug.com/495750 virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 
-crbug.com/573055 [ Mac ] fast/forms/date/date-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/date/date-appearance-l10n.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/date/date-appearance-pseudo-elements.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/datetimelocal/datetimelocal-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/form-element-geometry.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/month/month-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/month/month-appearance-pseudo-elements.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/select/listbox-scrollbar-incremental-load.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/select/listbox-with-display-none-option.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/select/select-overflow-scroll-inherited.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/time/time-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/time/time-appearance-pseudo-elements.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/week/week-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/forms/week/week-appearance-pseudo-elements.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac ] fast/replaced/replaced-breaking.html [ NeedsRebaseline ]
-crbug.com/573055 [ Mac Win ] fast/text/updateNewFont.html [ NeedsRebaseline ]
-crbug.com/573055 [ Win ] svg/W3C-SVG-1.1/pservers-grad-06-b.svg [ NeedsRebaseline ]
-crbug.com/573055 [ Win ] svg/custom/nested-pattern-boundingBoxModeContent.svg [ NeedsRebaseline ]
-crbug.com/573055 [ Win ] svg/custom/non-scaling-stroke.svg [ NeedsRebaseline ]
-crbug.com/573055 [ Win ] svg/custom/pattern-skew-transformed.svg [ NeedsRebaseline ]
-crbug.com/573055 [ Win ] svg/custom/pattern-with-transformation.svg [ NeedsRebaseline ]
-crbug.com/573055 [ Win ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
-
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
@@ -485,13 +460,6 @@ crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/020
 crbug.com/580355 virtual/spv2/fast/block/positioning/height-change.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/positioning/relayout-on-position-change.html [ Pass ]
 crbug.com/537409 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Pass ]
-
-crbug.com/573055 css3/flexbox/flexbox-baseline.html [ NeedsRebaseline ]
-crbug.com/573055 fast/forms/basic-buttons.html [ NeedsRebaseline ]
-crbug.com/573055 fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ NeedsRebaseline ]
-crbug.com/573055 fast/forms/color/color-suggestion-picker-appearance-zoom125.html [ NeedsRebaseline ]
-crbug.com/573055 fast/forms/select/select-item-background-clip.html [ NeedsRebaseline ]
-crbug.com/573055 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ NeedsRebaseline ]
 
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure

@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x127
-  LayoutBlockFlow {HTML} at (0,0) size 800x127
-    LayoutBlockFlow {BODY} at (8,8) size 784x111
+layer at (0,0) size 800x128
+  LayoutBlockFlow {HTML} at (0,0) size 800x128
+    LayoutBlockFlow {BODY} at (8,8) size 784x112
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 37x112 clip at (9,9) size 20x110
   LayoutListBox {SELECT} at (0,0.31) size 37x111.69 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]

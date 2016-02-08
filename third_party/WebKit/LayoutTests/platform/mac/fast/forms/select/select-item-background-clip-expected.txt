@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
             text run at (0,18) width 163: "not clipped to the list box"
         LayoutText {#text} at (162,18) size 5x18
           text run at (162,18) width 5: "."
-      LayoutBlockFlow (anonymous) at (0,52) size 784x59
+      LayoutBlockFlow (anonymous) at (0,52) size 784x60
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,60) size 52x59 clip at (11,63) size 35x53 scrollHeight 62

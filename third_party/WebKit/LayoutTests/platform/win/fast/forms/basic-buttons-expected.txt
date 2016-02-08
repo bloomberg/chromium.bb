@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x345
-  LayoutBlockFlow {HTML} at (0,0) size 800x345
-    LayoutBlockFlow {BODY} at (8,8) size 784x329
+layer at (0,0) size 800x346
+  LayoutBlockFlow {HTML} at (0,0) size 800x346
+    LayoutBlockFlow {BODY} at (8,8) size 784x330
       LayoutBlockFlow (anonymous) at (0,0) size 784x72
         LayoutText {#text} at (0,0) size 547x17
           text run at (0,0) width 547: "Tests for basic button rendering. Creates a table with seven columns and seven rows. "
@@ -14,8 +14,8 @@ layer at (0,0) size 800x345
           text run at (0,36) width 660: "with text (\"foo\") and then uses six different paddings to make sure each of the buttons render properly. "
         LayoutBR {BR} at (659,36) size 1x17
         LayoutBR {BR} at (0,54) size 0x17
-      LayoutTable {TABLE} at (0,72) size 697x257
-        LayoutTableSection {TBODY} at (0,0) size 697x257
+      LayoutTable {TABLE} at (0,72) size 697x258
+        LayoutTableSection {TBODY} at (0,0) size 697x258
           LayoutTableRow {TR} at (0,0) size 697x20
             LayoutTableCell {TD} at (0,0) size 170x20 [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 44x17
@@ -70,18 +70,18 @@ layer at (0,0) size 800x345
             LayoutTableCell {TD} at (527,45) size 170x20 [r=2 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(20, 21) (16, 17)"
-          LayoutTableRow {TR} at (0,66) size 697x48
+          LayoutTableRow {TR} at (0,66) size 697x49
             LayoutTableCell {TD} at (0,80) size 170x20 [r=3 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 90x17
                 text run at (1,1) width 90: "padding: 10%"
-            LayoutTableCell {TD} at (170,73) size 61x33 [r=3 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (170,73) size 61x34 [r=3 c=1 rs=1 cs=1]
               LayoutButton {BUTTON} at (1,1) size 25.78x31.78 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (7.89,7.89) size 10x16
                   LayoutImage {IMG} at (0,3) size 10x10
             LayoutTableCell {TD} at (231,80) size 161x20 [r=3 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(32, 26) (28, 22)"
-            LayoutTableCell {TD} at (392,66) size 135x48 [r=3 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (392,66) size 135x49 [r=3 c=3 rs=1 cs=1]
               LayoutButton {INPUT} at (1,1) size 47.59x46.59 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (15.30,15.30) size 17x16
                   LayoutText {#text} at (0,0) size 17x16
@@ -89,79 +89,79 @@ layer at (0,0) size 800x345
             LayoutTableCell {TD} at (527,80) size 170x20 [r=3 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(47, 48) (43, 44)"
-          LayoutTableRow {TR} at (0,114) size 697x26
-            LayoutTableCell {TD} at (0,117) size 170x20 [r=4 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,115) size 697x26
+            LayoutTableCell {TD} at (0,118) size 170x20 [r=4 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 84x17
                 text run at (1,1) width 84: "padding: 2px"
-            LayoutTableCell {TD} at (170,114) size 61x26 [r=4 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (170,115) size 61x26 [r=4 c=1 rs=1 cs=1]
               LayoutButton {BUTTON} at (1,1) size 18x24 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (4,4) size 10x16
                   LayoutImage {IMG} at (0,3) size 10x10
-            LayoutTableCell {TD} at (231,117) size 161x20 [r=4 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (231,118) size 161x20 [r=4 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(24, 18) (20, 14)"
-            LayoutTableCell {TD} at (392,114) size 135x26 [r=4 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (392,115) size 135x26 [r=4 c=3 rs=1 cs=1]
               LayoutButton {INPUT} at (1,1) size 25x24 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (4,4) size 17x16
                   LayoutText {#text} at (0,0) size 17x16
                     text run at (0,0) width 17: "foo"
-            LayoutTableCell {TD} at (527,117) size 170x20 [r=4 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (527,118) size 170x20 [r=4 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(24, 25) (20, 21)"
-          LayoutTableRow {TR} at (0,140) size 697x27
-            LayoutTableCell {TD} at (0,143) size 170x20 [r=5 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,141) size 697x27
+            LayoutTableCell {TD} at (0,144) size 170x20 [r=5 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 168x17
                 text run at (1,1) width 168: "padding: 2px 6px 3px 6px"
-            LayoutTableCell {TD} at (170,140) size 61x27 [r=5 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (170,141) size 61x27 [r=5 c=1 rs=1 cs=1]
               LayoutButton {BUTTON} at (1,1) size 26x25 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (8,4) size 10x16
                   LayoutImage {IMG} at (0,3) size 10x10
-            LayoutTableCell {TD} at (231,143) size 161x20 [r=5 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (231,144) size 161x20 [r=5 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(25, 26) (21, 22)"
-            LayoutTableCell {TD} at (392,140) size 135x27 [r=5 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (392,141) size 135x27 [r=5 c=3 rs=1 cs=1]
               LayoutButton {INPUT} at (1,1) size 33x25 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (8,4) size 17x16
                   LayoutText {#text} at (0,0) size 17x16
                     text run at (0,0) width 17: "foo"
-            LayoutTableCell {TD} at (527,143) size 170x20 [r=5 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (527,144) size 170x20 [r=5 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(25, 33) (21, 29)"
-          LayoutTableRow {TR} at (0,167) size 697x28
-            LayoutTableCell {TD} at (0,171) size 170x20 [r=6 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,168) size 697x28
+            LayoutTableCell {TD} at (0,172) size 170x20 [r=6 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 112x17
                 text run at (1,1) width 112: "padding: 3px 7px"
-            LayoutTableCell {TD} at (170,167) size 61x28 [r=6 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (170,168) size 61x28 [r=6 c=1 rs=1 cs=1]
               LayoutButton {BUTTON} at (1,1) size 28x26 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (9,5) size 10x16
                   LayoutImage {IMG} at (0,3) size 10x10
-            LayoutTableCell {TD} at (231,171) size 161x20 [r=6 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (231,172) size 161x20 [r=6 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(26, 28) (22, 24)"
-            LayoutTableCell {TD} at (392,167) size 135x28 [r=6 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (392,168) size 135x28 [r=6 c=3 rs=1 cs=1]
               LayoutButton {INPUT} at (1,1) size 35x26 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (9,5) size 17x16
                   LayoutText {#text} at (0,0) size 17x16
                     text run at (0,0) width 17: "foo"
-            LayoutTableCell {TD} at (527,171) size 170x20 [r=6 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (527,172) size 170x20 [r=6 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(26, 35) (22, 31)"
-          LayoutTableRow {TR} at (0,195) size 697x62
-            LayoutTableCell {TD} at (0,216) size 170x20 [r=7 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,196) size 697x62
+            LayoutTableCell {TD} at (0,217) size 170x20 [r=7 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 92x17
                 text run at (1,1) width 92: "padding: 20px"
-            LayoutTableCell {TD} at (170,195) size 61x62 [r=7 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (170,196) size 61x62 [r=7 c=1 rs=1 cs=1]
               LayoutButton {BUTTON} at (1,1) size 54x60 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (22,22) size 10x16
                   LayoutImage {IMG} at (0,3) size 10x10
-            LayoutTableCell {TD} at (231,216) size 161x20 [r=7 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (231,217) size 161x20 [r=7 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(60, 54) (56, 50)"
-            LayoutTableCell {TD} at (392,195) size 135x62 [r=7 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (392,196) size 135x62 [r=7 c=3 rs=1 cs=1]
               LayoutButton {INPUT} at (1,1) size 61x60 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (22,22) size 17x16
                   LayoutText {#text} at (0,0) size 17x16
                     text run at (0,0) width 17: "foo"
-            LayoutTableCell {TD} at (527,216) size 170x20 [r=7 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (527,217) size 170x20 [r=7 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x17
                 text run at (1,1) width 106: "(60, 61) (56, 57)"

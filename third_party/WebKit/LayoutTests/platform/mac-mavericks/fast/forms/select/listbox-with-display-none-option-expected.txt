@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x173
-  LayoutBlockFlow {HTML} at (0,0) size 800x173
-    LayoutBlockFlow {BODY} at (8,16) size 784x149
+layer at (0,0) size 800x174
+  LayoutBlockFlow {HTML} at (0,0) size 800x174
+    LayoutBlockFlow {BODY} at (8,16) size 784x150
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 608x18
           text run at (0,0) width 608: "The select list box should not display items (options and optgroups) with style \"display: none\"."
-      LayoutBlockFlow (anonymous) at (0,34) size 784x115
+      LayoutBlockFlow (anonymous) at (0,34) size 784x116
         LayoutText {#text} at (47,97) size 5x18
           text run at (47,97) width 5: " "
         LayoutText {#text} at (114,97) size 4x18
