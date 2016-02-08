@@ -19,7 +19,7 @@ void InitCommandBufferSkiaGLBinding(GrGLInterface* interface) {
   interface->fStandard = kGLES_GrGLStandard;
   interface->fExtensions.init(kGLES_GrGLStandard,
                               glGetString,
-                              NULL,
+                              nullptr,
                               glGetIntegerv);
 
   GrGLInterface::Functions* functions = &interface->fFunctions;
