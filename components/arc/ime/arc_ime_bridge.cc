@@ -26,6 +26,10 @@ bool IsArcWindow(const aura::Window* window) {
   return window->name() == "ExoSurface";
 }
 
+bool IsArcTopLevelWindow(const aura::Window* window) {
+  return window->name() == "ExoShellSurface";
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +102,13 @@ void ArcImeBridge::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void ArcImeBridge::OnWindowFocused(aura::Window* gained_focus,
                                    aura::Window* lost_focus) {
+  // The Aura focus may or may not be on sub-window of the toplevel ARC++ frame.
+  // To handle all cases, judge the state by always climbing up to the toplevel.
+  gained_focus = gained_focus ? gained_focus->GetToplevelWindow() : nullptr;
+  lost_focus = lost_focus ? lost_focus->GetToplevelWindow() : nullptr;
+  if (lost_focus == gained_focus)
+    return;
+
   if (lost_focus && focused_arc_window_.Contains(lost_focus)) {
     ui::InputMethod* const input_method = GetInputMethod();
     if (input_method)
@@ -105,7 +116,7 @@ void ArcImeBridge::OnWindowFocused(aura::Window* gained_focus,
     focused_arc_window_.Remove(lost_focus);
   }
 
-  if (gained_focus && IsArcWindow(gained_focus)) {
+  if (gained_focus && IsArcTopLevelWindow(gained_focus)) {
     focused_arc_window_.Add(gained_focus);
     ui::InputMethod* const input_method = GetInputMethod();
     if (input_method)
