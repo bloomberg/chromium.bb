@@ -77,7 +77,12 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   const std::string& name() const { return name_; }
   const GURL& update_url() const { return update_url_; }
   const gfx::ImageSkia& icon() const { return icon_; }
+  const std::string& required_platform_version() const {
+    return required_platform_version_;
+  }
   Status status() const { return status_; }
+
+  void SetStatusForTest(Status status);
 
  private:
   class CrxLoader;
@@ -93,10 +98,14 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   bool LoadFromCache();
 
   // Sets the cached data.
-  void SetCache(const std::string& name, const base::FilePath& icon_path);
+  void SetCache(const std::string& name,
+                const base::FilePath& icon_path,
+                const std::string& required_platform_version);
 
   // Helper to set the cached data using a SkBitmap icon.
-  void SetCache(const std::string& name, const SkBitmap& icon);
+  void SetCache(const std::string& name,
+                const SkBitmap& icon,
+                const std::string& required_platform_version);
 
   // Callback for extensions::ImageLoader.
   void OnExtensionIconLoaded(const gfx::Image& icon);
@@ -106,7 +115,8 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   void OnIconLoadFailure();
 
   // Callbacks for WebstoreDataParser
-  void OnWebstoreParseSuccess(const SkBitmap& icon);
+  void OnWebstoreParseSuccess(const SkBitmap& icon,
+                              const std::string& required_platform_version);
   void OnWebstoreParseFailure();
 
   // Starts to fetch data from web store.
@@ -139,6 +149,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   std::string name_;
   GURL update_url_;
   gfx::ImageSkia icon_;
+  std::string required_platform_version_;
 
   scoped_ptr<extensions::WebstoreDataFetcher> webstore_fetcher_;
   base::FilePath icon_path_;

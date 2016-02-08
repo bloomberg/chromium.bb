@@ -72,6 +72,7 @@ class KioskAppManager : public KioskAppDataDelegate,
     std::string user_id;
     std::string name;
     gfx::ImageSkia icon;
+    std::string required_platform_version;
     bool is_loading;
     bool was_auto_launched_with_zero_delay;
   };
@@ -135,6 +136,9 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // Enable auto launch setter.
   void SetEnableAutoLaunch(bool value);
+
+  // Returns the cached required platform version of the auto launch kiosk app.
+  std::string GetAutoLaunchAppRequiredPlatformVersion() const;
 
   // Adds/removes a kiosk app by id. When removed, all locally cached data
   // will be removed as well.

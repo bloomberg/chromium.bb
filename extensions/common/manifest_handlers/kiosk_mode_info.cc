@@ -13,17 +13,6 @@
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/manifest_constants.h"
 
-namespace {
-
-// Whether the given |version_string| is a valid ChromeOS platform version.
-// The acceptable format is major[.minor[.micro]].
-bool IsValidPlatformVersion(const std::string& version_string) {
-  const base::Version version(version_string);
-  return version.IsValid() && version.components().size() <= 3u;
-}
-
-}  // namespace
-
 namespace extensions {
 
 namespace keys = manifest_keys;
@@ -62,6 +51,12 @@ bool KioskModeInfo::IsKioskOnly(const Extension* extension) {
 bool KioskModeInfo::HasSecondaryApps(const Extension* extension) {
   KioskModeInfo* info = Get(extension);
   return info && !info->secondary_app_ids.empty();
+}
+
+// static
+bool KioskModeInfo::IsValidPlatformVersion(const std::string& version_string) {
+  const base::Version version(version_string);
+  return version.IsValid() && version.components().size() <= 3u;
 }
 
 KioskModeHandler::KioskModeHandler() {
@@ -135,7 +130,7 @@ bool KioskModeHandler::Parse(Extension* extension, base::string16* error) {
   if (manifest->HasPath(keys::kKioskRequiredPlatformVersion) &&
       (!manifest->GetString(keys::kKioskRequiredPlatformVersion,
                             &required_platform_version) ||
-       !IsValidPlatformVersion(required_platform_version))) {
+       !KioskModeInfo::IsValidPlatformVersion(required_platform_version))) {
     *error = base::ASCIIToUTF16(
         manifest_errors::kInvalidKioskRequiredPlatformVersion);
     return false;

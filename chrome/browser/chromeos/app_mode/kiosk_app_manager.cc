@@ -72,7 +72,7 @@ void ScheduleDelayedCryptohomeRemoval(const std::string& user_id,
 void CancelDelayedCryptohomeRemoval(const std::string& user_id) {
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate dict_update(local_state, kKioskUsersToRemove);
-  dict_update->RemoveWithoutPathExpansion(user_id, NULL);
+  dict_update->RemoveWithoutPathExpansion(user_id, nullptr);
   local_state->CommitPendingWrite();
 }
 
@@ -147,7 +147,7 @@ KioskAppManager* KioskAppManager::Get() {
 
 // static
 void KioskAppManager::Shutdown() {
-  if (instance == NULL)
+  if (instance == nullptr)
     return;
 
   instance.Pointer()->CleanUp();
@@ -167,17 +167,16 @@ void KioskAppManager::RemoveObsoleteCryptohomes() {
       base::Bind(&PerformDelayedCryptohomeRemovals));
 }
 
-KioskAppManager::App::App(
-    const KioskAppData& data,
-    bool is_extension_pending,
-    bool auto_launched_with_zero_delay)
+KioskAppManager::App::App(const KioskAppData& data,
+                          bool is_extension_pending,
+                          bool auto_launched_with_zero_delay)
     : app_id(data.app_id()),
       user_id(data.user_id()),
       name(data.name()),
       icon(data.icon()),
+      required_platform_version(data.required_platform_version()),
       is_loading(data.IsLoading() || is_extension_pending),
-      was_auto_launched_with_zero_delay(auto_launched_with_zero_delay) {
-}
+      was_auto_launched_with_zero_delay(auto_launched_with_zero_delay) {}
 
 KioskAppManager::App::App() : is_loading(false),
                               was_auto_launched_with_zero_delay(false) {}
@@ -345,6 +344,14 @@ bool KioskAppManager::IsAutoLaunchEnabled() const {
   return GetAutoLoginState() == AUTOLOGIN_APPROVED;
 }
 
+std::string KioskAppManager::GetAutoLaunchAppRequiredPlatformVersion() const {
+  if (!IsAutoLaunchEnabled())
+    return std::string();
+
+  const KioskAppData* data = GetAppData(GetAutoLaunchApp());
+  return data == nullptr ? std::string() : data->required_platform_version();
+}
+
 void KioskAppManager::AddApp(const std::string& app_id,
                              OwnerSettingsServiceChromeOS* service) {
   std::vector<policy::DeviceLocalAccount> device_local_accounts =
@@ -500,7 +507,7 @@ KioskAppManager::CreateSecondaryAppExternalLoader() {
 }
 
 void KioskAppManager::InstallFromCache(const std::string& id) {
-  const base::DictionaryValue* extension = NULL;
+  const base::DictionaryValue* extension = nullptr;
   if (external_cache_->cached_extensions()->GetDictionary(id, &extension)) {
     scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
     base::DictionaryValue* extension_copy = extension->DeepCopy();
@@ -603,7 +610,7 @@ const KioskAppData* KioskAppManager::GetAppData(
       return data;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 KioskAppData* KioskAppManager::GetAppDataMutable(const std::string& app_id) {
