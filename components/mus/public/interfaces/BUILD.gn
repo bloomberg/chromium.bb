@@ -12,7 +12,6 @@ mojom("interfaces") {
     "cursor.mojom",
     "display.mojom",
     "gpu.mojom",
-    "gpu_capabilities.mojom",
     "input_event_constants.mojom",
     "input_event_matcher.mojom",
     "input_events.mojom",
@@ -33,7 +32,11 @@ mojom("interfaces") {
   ]
 
   deps = [
+    "//gpu/command_buffer/common:interfaces",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/ime:interfaces",
   ]
+
+  typemaps = [ "//gpu/command_buffer/common/mojo.typemap" ]
+  typemap_deps = [ "//gpu/ipc" ]
 }

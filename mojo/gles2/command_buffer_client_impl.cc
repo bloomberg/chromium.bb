@@ -47,8 +47,14 @@ bool CreateMapAndDupSharedBuffer(size_t size,
   return true;
 }
 
-template <typename T>
-void Copy(T* output, T input) {
+void MakeProgressCallback(
+    gpu::CommandBuffer::State* output,
+    const gpu::CommandBuffer::State& input) {
+  *output = input;
+}
+
+void InitializeCallback(mus::mojom::CommandBufferInitializeResultPtr* output,
+                        mus::mojom::CommandBufferInitializeResultPtr input) {
   *output = std::move(input);
 }
 
@@ -98,11 +104,12 @@ bool CommandBufferClientImpl::Initialize() {
 
   mus::mojom::CommandBufferLostContextObserverPtr observer_ptr;
   observer_binding_.Bind(GetProxy(&observer_ptr), async_waiter_);
-  mus::mojom::CommandBufferInfoPtr info;
+
+  mus::mojom::CommandBufferInitializeResultPtr initialize_result;
   command_buffer_->Initialize(
       std::move(observer_ptr), std::move(duped),
       mojo::Array<int32_t>::From(attribs_),
-      base::Bind(&Copy<mus::mojom::CommandBufferInfoPtr>, &info));
+      base::Bind(&InitializeCallback, &initialize_result));
 
   base::ThreadRestrictions::ScopedAllowWait wait;
   if (!command_buffer_.WaitForIncomingResponse()) {
@@ -110,14 +117,15 @@ bool CommandBufferClientImpl::Initialize() {
     return false;
   }
 
-  if (!info) {
+  if (!initialize_result) {
     VLOG(1) << "Command buffer cannot be initialized successfully.";
     return false;
   }
 
-  DCHECK_EQ(gpu::CommandBufferNamespace::MOJO, info->command_buffer_namespace);
-  command_buffer_id_ = info->command_buffer_id;
-  capabilities_ = info->capabilities.To<gpu::Capabilities>();
+  DCHECK_EQ(gpu::CommandBufferNamespace::MOJO,
+            initialize_result->command_buffer_namespace);
+  command_buffer_id_ = initialize_result->command_buffer_id;
+  capabilities_ = initialize_result->capabilities;
   return true;
 }
 
@@ -290,10 +298,10 @@ void CommandBufferClientImpl::TryUpdateState() {
 }
 
 void CommandBufferClientImpl::MakeProgressAndUpdateState() {
-  mus::mojom::CommandBufferStatePtr state;
+  gpu::CommandBuffer::State state;
   command_buffer_->MakeProgress(
       last_state_.get_offset,
-      base::Bind(&Copy<mus::mojom::CommandBufferStatePtr>, &state));
+      base::Bind(&MakeProgressCallback, &state));
 
   base::ThreadRestrictions::ScopedAllowWait wait;
   if (!command_buffer_.WaitForIncomingResponse()) {
@@ -303,8 +311,8 @@ void CommandBufferClientImpl::MakeProgressAndUpdateState() {
     return;
   }
 
-  if (state->generation - last_state_.generation < 0x80000000U)
-    last_state_ = state.To<State>();
+  if (state.generation - last_state_.generation < 0x80000000U)
+    last_state_ = state;
 }
 
 void CommandBufferClientImpl::SetLock(base::Lock* lock) {

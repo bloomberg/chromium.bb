@@ -4,29 +4,19 @@
 
 module mus.mojom;
 
-import "components/mus/public/interfaces/gpu_capabilities.mojom";
+import "gpu/command_buffer/common/capabilities.mojom";
+import "gpu/command_buffer/common/command_buffer.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
-struct CommandBufferInfo {
-    int32 command_buffer_namespace;
-    uint64 command_buffer_id;
-    GpuCapabilities capabilities;
-};
-
-struct CommandBufferState {
-  int32 num_entries;
-  int32 get_offset;
-  int32 put_offset;
-  int32 token;
-  int32 error;  // TODO(piman): enum
-  int32 context_lost_reason;  // TODO(piman): enum
-  uint32 generation;
+struct CommandBufferInitializeResult {
+  int32 command_buffer_namespace;
+  uint64 command_buffer_id;
+  gpu.mojom.Capabilities capabilities;
 };
 
 interface CommandBufferLostContextObserver {
   DidLoseContext(int32 context_lost_reason);
 };
-
 
 interface CommandBuffer {
   // Initialize attempts to initialize the command buffer.
@@ -35,10 +25,10 @@ interface CommandBuffer {
   // closed.
   Initialize(CommandBufferLostContextObserver lost_observer,
              handle<shared_buffer> shared_state,
-             array<int32> attribs) => (CommandBufferInfo? info);
+             array<int32> attribs) => (CommandBufferInitializeResult? result);
   SetGetBuffer(int32 buffer);
   Flush(int32 put_offset);
-  MakeProgress(int32 last_get_offset) => (CommandBufferState state);
+  MakeProgress(int32 last_get_offset) => (gpu.mojom.CommandBufferState state);
   RegisterTransferBuffer(
       int32 id, handle<shared_buffer> transfer_buffer, uint32 size);
   DestroyTransferBuffer(int32 id);

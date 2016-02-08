@@ -21,14 +21,14 @@ uint64_t g_next_command_buffer_id = 0;
 
 void RunInitializeCallback(
     const mojom::CommandBuffer::InitializeCallback& callback,
-    mojom::CommandBufferInfoPtr info) {
-  callback.Run(std::move(info));
+    mojom::CommandBufferInitializeResultPtr result) {
+  callback.Run(std::move(result));
 }
 
 void RunMakeProgressCallback(
     const mojom::CommandBuffer::MakeProgressCallback& callback,
     const gpu::CommandBuffer::State& state) {
-  callback.Run(mojom::CommandBufferState::From(state));
+  callback.Run(state);
 }
 
 }  // namespace
@@ -157,7 +157,8 @@ void CommandBufferImpl::InitializeOnGpuThread(
     mojom::CommandBufferLostContextObserverPtr loss_observer,
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs,
-    const base::Callback<void(mojom::CommandBufferInfoPtr)>& callback) {
+    const base::Callback<
+        void(mojom::CommandBufferInitializeResultPtr)>& callback) {
   DCHECK(!driver_);
   driver_.reset(new CommandBufferDriver(
       gpu::CommandBufferNamespace::MOJO, ++g_next_command_buffer_id,
@@ -166,16 +167,15 @@ void CommandBufferImpl::InitializeOnGpuThread(
   loss_observer_ = mojo::MakeProxy(loss_observer.PassInterface());
   bool result =
       driver_->Initialize(std::move(shared_state), std::move(attribs));
-  mojom::CommandBufferInfoPtr info;
+  mojom::CommandBufferInitializeResultPtr initialize_result;
   if (result) {
-    info = mojom::CommandBufferInfo::New();
-    info->command_buffer_namespace = driver_->GetNamespaceID();
-    info->command_buffer_id = driver_->GetCommandBufferID();
-    info->capabilities =
-        mojom::GpuCapabilities::From(driver_->GetCapabilities());
+    initialize_result = mojom::CommandBufferInitializeResult::New();
+    initialize_result->command_buffer_namespace = driver_->GetNamespaceID();
+    initialize_result->command_buffer_id = driver_->GetCommandBufferID();
+    initialize_result->capabilities = driver_->GetCapabilities();
   }
   gpu_state_->control_task_runner()->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(&info)));
+      FROM_HERE, base::Bind(callback, base::Passed(&initialize_result)));
 }
 
 bool CommandBufferImpl::SetGetBufferOnGpuThread(int32_t buffer) {

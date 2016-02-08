@@ -67,7 +67,8 @@ class CommandBufferImpl : public mojom::CommandBuffer {
       mojom::CommandBufferLostContextObserverPtr loss_observer,
       mojo::ScopedSharedBufferHandle shared_state,
       mojo::Array<int32_t> attribs,
-      const base::Callback<void(mojom::CommandBufferInfoPtr)>& callback);
+      const base::Callback<
+          void(mojom::CommandBufferInitializeResultPtr)>& callback);
   bool SetGetBufferOnGpuThread(int32_t buffer);
   bool FlushOnGpuThread(int32_t put_offset, uint32_t order_num);
   bool MakeProgressOnGpuThread(

@@ -1,0 +1,36 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{
+  "c++": {
+    "gpu.mojom.Capabilities": {
+      "typename": "gpu::Capabilities",
+      "headers": [
+        "gpu/command_buffer/common/capabilities.h",
+        "gpu/ipc/gpu_command_buffer_traits.h"
+      ]
+    },
+    "gpu.mojom.CommandBufferState": {
+      "typename": "gpu::CommandBuffer::State",
+      "headers": [
+        "gpu/command_buffer/common/command_buffer.h",
+        "gpu/ipc/gpu_command_buffer_traits.h"
+      ]
+    },
+    "gpu.mojom.Mailbox": {
+      "typename": "gpu::Mailbox",
+      "headers": [
+        "gpu/command_buffer/common/mailbox.h",
+        "gpu/ipc/gpu_command_buffer_traits.h"
+      ]
+    },
+    "gpu.mojom.SyncToken": {
+      "typename": "gpu::SyncToken",
+      "headers": [
+        "gpu/command_buffer/common/sync_token.h",
+        "gpu/ipc/gpu_command_buffer_traits.h"
+      ]
+    }
+  }
+}
