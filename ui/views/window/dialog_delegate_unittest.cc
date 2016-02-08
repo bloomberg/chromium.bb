@@ -18,6 +18,10 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_nswindow_focus.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -118,6 +122,12 @@ class DialogTest : public ViewsTestBase {
 
  private:
   TestDialog* dialog_;
+
+#if defined(OS_MACOSX)
+  // Causes Widget::Show() to transfer focus synchronously and become immune to
+  // losing focus to processes running in parallel.
+  ui::test::ScopedFakeNSWindowFocus fake_focus;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(DialogTest);
 };
