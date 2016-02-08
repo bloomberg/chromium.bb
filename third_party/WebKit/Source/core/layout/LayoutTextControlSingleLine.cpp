@@ -95,28 +95,14 @@ void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
 void LayoutTextControlSingleLine::layout()
 {
     LayoutAnalyzer::Scope analyzer(*this);
-    SubtreeLayoutScope layoutScope(*this);
 
-    LayoutBox* innerEditorLayoutObject = innerEditorElement()->layoutBox();
-    bool innerEditorLayoutObjectHadLayout = innerEditorLayoutObject && innerEditorLayoutObject->needsLayout();
-
-    // This is the measuring phase. Thus we force children to be relayout so
-    // that the checks below are executed consistently.
     LayoutBlockFlow::layoutBlock(true);
 
+    LayoutBox* innerEditorLayoutObject = innerEditorElement()->layoutBox();
     Element* container = containerElement();
-    LayoutBox* containerLayoutObject = container ? container->layoutBox() : 0;
-
-    // We ensure that the inner editor layoutObject is laid out at least once. This is
-    // required as the logic below assumes that we don't carry over previous layout values.
-    if (innerEditorLayoutObject && !innerEditorLayoutObjectHadLayout)
-        layoutScope.setNeedsLayout(innerEditorLayoutObject, LayoutInvalidationReason::TextControlChanged);
-
-    // If we need another layout pass, we have changed one of children's height so we need to relayout them.
-    if (needsLayout())
-        LayoutBlockFlow::layoutBlock(true);
-
-    // Center the child block in the block progression direction (vertical centering for horizontal text fields).
+    LayoutBox* containerLayoutObject = container ? container->layoutBox() : nullptr;
+    // Center the child block in the block progression direction (vertical
+    // centering for horizontal text fields).
     if (!container && innerEditorLayoutObject && innerEditorLayoutObject->size().height() != contentLogicalHeight()) {
         LayoutUnit logicalHeightDiff = innerEditorLayoutObject->logicalHeight() - contentLogicalHeight();
         innerEditorLayoutObject->setLogicalTop(innerEditorLayoutObject->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
