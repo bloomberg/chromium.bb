@@ -184,7 +184,6 @@ vs-chromium-project.txt
 /internal_gyp
 /ios/build/util/CANARY_VERSION
 /ios/third_party/gcdwebserver/src
-/ios_internal/
 /llvm
 /media/cast/logging/cast_logging_proto_lib.xml
 /media/cdm/api
@@ -245,7 +244,6 @@ vs-chromium-project.txt
 /remoting/appengine/
 /remoting/host/installer/linux/internal/
 /remoting/internal/
-/remoting/ios/
 /remoting/proto/chromotocol_proto_lib.xml
 /remoting/remoting_core_resources.xml
 /remoting/remoting_elevated_controller.xml
