@@ -20,6 +20,30 @@ def _escape(str):
     result = result.replace(c, '%' + _hex(c))
   return result
 
+def _FindDuplicates(entries):
+  seen = set()
+  duplicates = set()
+  for entry in entries:
+    if entry in seen:
+      duplicates.add(entry)
+    else:
+      seen.add(entry)
+  return duplicates
+
+def _CheckForDuplicateFeatures(enable_features, disable_features):
+  enable_features_set = set(enable_features)
+  if len(enable_features_set) != len(enable_features):
+    raise Exception('Duplicate feature(s) in enable_features: ' +
+                    ', '.join(_FindDuplicates(enable_features)))
+  disable_features_set = set(disable_features)
+  if len(disable_features_set) != len(disable_features):
+    raise Exception('Duplicate feature(s) in disable_features: ' +
+                    ', '.join(_FindDuplicates(disable_features)))
+  features_in_both = enable_features_set.intersection(disable_features_set)
+  if len(features_in_both) > 0:
+    raise Exception('Conflicting features set as both enabled and disabled: ' +
+                    ', '.join(features_in_both))
+
 # Generate a list of command-line switches to enable field trials defined in
 # fieldtrial_testing_config_*.json.
 def GenerateArgs(config_path):
@@ -31,6 +55,8 @@ def GenerateArgs(config_path):
 
   field_trials = []
   params = []
+  enable_features = []
+  disable_features = []
   for trial, groups in variations.iteritems():
     if not len(groups):
       continue
@@ -49,11 +75,20 @@ def GenerateArgs(config_path):
        param_list = [_escape(x) for x in param_list]
        param = '%s:%s' % ('.'.join(trial_group), '/'.join(param_list))
        params.append(param)
+    if 'enable_features' in group:
+      enable_features.extend(group['enable_features'])
+    if 'disable_features' in group:
+      disable_features.extend(group['disable_features'])
   if not len(field_trials):
     return []
+  _CheckForDuplicateFeatures(enable_features, disable_features)
   args = ['--force-fieldtrials=%s' % '/'.join(field_trials)]
   if len(params):
     args.append('--force-fieldtrial-params=%s' % ','.join(params))
+  if len(enable_features):
+    args.append('--enable-features=%s' % ','.join(enable_features))
+  if len(disable_features):
+    args.append('--disable-features=%s' % ','.join(disable_features))
   return args
 
 def main():
