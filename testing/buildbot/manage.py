@@ -50,6 +50,12 @@ SKIP = {
   'Marshmallow 64 bit Tester',
   'Marshmallow Tablet Tester',
 
+  # Android bots need custom dimension_sets entries for swarming, and capacity
+  # is not there yet -- so don't let manage.py add swarming automatically there.
+  'Android GN',
+  'Android Tests',
+  'Android Tests (dbg)',
+
   # http://crbug.com/472205
   'Chromium Mac 10.10',
   'Chromium Mac 10.11',
@@ -60,6 +66,14 @@ SKIP = {
   # http://crbug.com/480053
   'Linux GN',
   'Linux GN (dbg)',
+
+  # The memory.fyi waterfall is in the process of being converted to recipes,
+  # and swarming doesn't work yet.
+  'Linux Tests (valgrind)(1)',
+  'Linux Tests (valgrind)(2)',
+  'Linux Tests (valgrind)(3)',
+  'Linux Tests (valgrind)(4)',
+  'Linux Tests (valgrind)(5)',
 
   # This builder is fine, but win8_chromium_ng uses GN and this configuration,
   # which breaks everything.
