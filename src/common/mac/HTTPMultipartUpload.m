@@ -30,6 +30,23 @@
 #import "HTTPMultipartUpload.h"
 #import "GTMDefines.h"
 
+// As -[NSString stringByAddingPercentEscapesUsingEncoding:] has been
+// deprecated with iOS 9.0 / OS X 10.11 SDKs, this function re-implements it
+// using -[NSString stringByAddingPercentEncodingWithAllowedCharacters:] when
+// using those SDKs.
+static NSString *PercentEncodeNSString(NSString *key) {
+#if (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && defined(__IPHONE_9_0) &&     \
+     __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0) ||                      \
+    (defined(MAC_OS_X_VERSION_MIN_REQUIRED) &&                                 \
+     defined(MAC_OS_X_VERSION_10_11) &&                                        \
+     MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_11)
+  return [key stringByAddingPercentEncodingWithAllowedCharacters:
+                  [NSCharacterSet URLQueryAllowedCharacterSet]];
+#else
+  return [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+#endif
+}
+
 @interface HTTPMultipartUpload(PrivateMethods)
 - (NSString *)multipartBoundary;
 // Each of the following methods will append the starting multipart boundary,
@@ -52,8 +69,7 @@
 
 //=============================================================================
 - (NSData *)formDataForKey:(NSString *)key value:(NSString *)value {
-  NSString *escaped =
-    [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+  NSString *escaped = PercentEncodeNSString(key);
   NSString *fmt =
     @"--%@\r\nContent-Disposition: form-data; name=\"%@\"\r\n\r\n%@\r\n";
   NSString *form = [NSString stringWithFormat:fmt, boundary_, escaped, value];
@@ -64,8 +80,7 @@
 //=============================================================================
 - (NSData *)formDataForFileContents:(NSData *)contents name:(NSString *)name {
   NSMutableData *data = [NSMutableData data];
-  NSString *escaped =
-    [name stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+  NSString *escaped = PercentEncodeNSString(name);
   NSString *fmt = @"--%@\r\nContent-Disposition: form-data; name=\"%@\"; "
     "filename=\"minidump.dmp\"\r\nContent-Type: application/octet-stream\r\n\r\n";
   NSString *pre = [NSString stringWithFormat:fmt, boundary_, escaped];
