@@ -822,6 +822,13 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
   // SiteInstance URL - "chrome-guest://app_id/persist?partition".
   if (site.SchemeIs(content::kGuestScheme))
     partition_id = site.spec();
+#if defined(ENABLE_EXTENSIONS)
+  // The partition ID for extensions with isolated storage is treated similarly
+  // to the above.
+  else if (site.SchemeIs(extensions::kExtensionScheme) &&
+           extensions::util::SiteHasIsolatedStorage(site, browser_context))
+    partition_id = site.spec();
+#endif
 
   DCHECK(IsValidStoragePartitionId(browser_context, partition_id));
   return partition_id;
