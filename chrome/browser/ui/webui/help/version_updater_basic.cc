@@ -9,7 +9,8 @@
 #include "chrome/browser/upgrade_detector.h"
 
 void VersionUpdaterBasic::CheckForUpdate(
-    const StatusCallback& status_callback) {
+    const StatusCallback& status_callback,
+    const PromoteCallback&) {
   if (UpgradeDetector::GetInstance()->notify_upgrade())
     status_callback.Run(NEARLY_UPDATED, 0, base::string16());
   else

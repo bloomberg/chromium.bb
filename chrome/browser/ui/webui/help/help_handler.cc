@@ -527,7 +527,8 @@ void HelpHandler::SetChannel(const base::ListValue* args) {
   if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
     // Check for update after switching release channel.
     version_updater_->CheckForUpdate(base::Bind(&HelpHandler::SetUpdateStatus,
-                                                base::Unretained(this)));
+                                                base::Unretained(this)),
+                                     VersionUpdater::PromoteCallback());
   }
 }
 
@@ -549,12 +550,14 @@ void HelpHandler::RelaunchAndPowerwash(const base::ListValue* args) {
 #endif  // defined(OS_CHROMEOS)
 
 void HelpHandler::RequestUpdate(const base::ListValue* args) {
+  VersionUpdater::PromoteCallback promote_callback;
   version_updater_->CheckForUpdate(
-      base::Bind(&HelpHandler::SetUpdateStatus, base::Unretained(this))
+      base::Bind(&HelpHandler::SetUpdateStatus, base::Unretained(this)),
 #if defined(OS_MACOSX)
-      , base::Bind(&HelpHandler::SetPromotionState, base::Unretained(this))
-#endif
-      );
+      base::Bind(&HelpHandler::SetPromotionState, base::Unretained(this)));
+#else
+      VersionUpdater::PromoteCallback());
+#endif  // OS_MACOSX
 }
 
 void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
