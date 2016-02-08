@@ -234,7 +234,6 @@ void ProfileAuthDataTransferer::RetrieveCookiesToTransfer() {
   net::CookieStore* from_store =
       from_context_->GetURLRequestContext()->cookie_store();
   net::CookieMonster* from_monster = from_store->GetCookieMonster();
-  from_monster->SetKeepExpiredCookies();
   from_monster->GetAllCookiesAsync(
       base::Bind(&ProfileAuthDataTransferer::OnCookiesToTransferRetrieved,
                  base::Unretained(this)));
