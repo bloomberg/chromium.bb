@@ -92,7 +92,9 @@ SharedMemoryHandle SharedMemoryHandle::Duplicate() const {
       kern_return_t kr = mach_port_mod_refs(mach_task_self(), memory_object_,
                                             MACH_PORT_RIGHT_SEND, 1);
       DCHECK_EQ(kr, KERN_SUCCESS);
-      return SharedMemoryHandle(*this);
+      SharedMemoryHandle handle(*this);
+      handle.SetOwnershipPassesToIPC(true);
+      return handle;
     }
   }
 }
