@@ -4,27 +4,27 @@
 
 <script>
 var values = [
-  {input: new MatrixTransformComponent(0, 0, 0, 0, 0, 0),
+  {input: new Matrix(0, 0, 0, 0, 0, 0),
     a: 0, b: 0, c: 0, d: 0, e: 0, f: 0,
     is2DComponent: true, cssString: "matrix(0, 0, 0, 0, 0, 0)"},
-  {input: new MatrixTransformComponent(2, 4, 6, 8, 10, 12),
+  {input: new Matrix(2, 4, 6, 8, 10, 12),
     a: 2, b: 4, c: 6, d: 8, e: 10, f: 12,
     is2DComponent: true, cssString: "matrix(2, 4, 6, 8, 10, 12)"},
-  {input: new MatrixTransformComponent(-2, -4, -6, -8, -10, -12),
+  {input: new Matrix(-2, -4, -6, -8, -10, -12),
     a: -2, b: -4, c: -6, d: -8, e: -10, f: -12,
     is2DComponent: true, cssString: "matrix(-2, -4, -6, -8, -10, -12)"},
-  {input: new MatrixTransformComponent(1.1, -2.2, 3.3, -4.4, 5.5, 0.6),
+  {input: new Matrix(1.1, -2.2, 3.3, -4.4, 5.5, 0.6),
     a: 1.1, b: -2.2, c: 3.3, d: -4.4, e: 5.5, f: 0.6,
     is2DComponent: true, cssString: "matrix(1.1, -2.2, 3.3, -4.4, 5.5, 0.6)"},
-  {input: new MatrixTransformComponent(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  {input: new Matrix(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     m11: 0, m12: 0, m13: 0, m14: 0, m21: 0, m22: 0, m23: 0, m24: 0,
     m31: 0, m32: 0, m33: 0, m34: 0, m41: 0, m42: 0, m43: 0, m44: 0,
     is2DComponent: false, cssString: "matrix3d(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)"},
-  {input: new MatrixTransformComponent(11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44),
+  {input: new Matrix(11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44),
     m11: 11, m12: 12, m13: 13, m14: 14, m21: 21, m22: 22, m23: 23, m24: 24,
     m31: 31, m32: 32, m33: 33, m34: 34, m41: 41, m42: 42, m43: 43, m44: 44,
     is2DComponent: false, cssString: "matrix3d(11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44)"},
-  {input: new MatrixTransformComponent(1.1, 1.2, -13, -1.4, 2, 0, -2, 4, 3.1, 3, 3, 3.4, -4.1, 42, 43, 4.4),
+  {input: new Matrix(1.1, 1.2, -13, -1.4, 2, 0, -2, 4, 3.1, 3, 3, 3.4, -4.1, 42, 43, 4.4),
     m11: 1.1, m12: 1.2, m13: -13, m14: -1.4, m21: 2, m22: 0, m23: -2, m24: 4,
     m31: 3.1, m32: 3, m33: 3, m34: 3.4, m41: -4.1, m42: 42, m43: 43, m44: 4.4,
     is2DComponent: false, cssString: "matrix3d(1.1, 1.2, -13, -1.4, 2, 0, -2, 4, 3.1, 3, 3, 3.4, -4.1, 42, 43, 4.4)"},
@@ -41,27 +41,27 @@ test(function() {
       assert_equals(values[i].input[attribute], values[i][attribute]);
     }
   }
-}, "Test that the (a, ... , f) and (m11, ... , m44) attributes for MatrixTransformComponent are correct.");
+}, "Test that the (a, ... , f) and (m11, ... , m44) attributes for Matrix are correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.is2DComponent(), values[i].is2DComponent);
   }
-}, "Test that the is2DComponent values for MatrixTransformComponent is correct.");
+}, "Test that the is2DComponent values for Matrix is correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.cssString, values[i].cssString);
   }
-}, "Test that the cssString for MatrixTransformComponent is correct.");
+}, "Test that the cssString for Matrix is correct.");
 
 test(function() {
-  assert_throws(null, function() { new MatrixTransformComponent(); });
-  assert_throws(null, function() { new MatrixTransformComponent(0); });
-  assert_throws(null, function() { new MatrixTransformComponent(0, 1, 2, 3, 4); });
-  assert_throws(null, function() { new MatrixTransformComponent(0, 1, 2, 3, 4, 5, 6); });
-  assert_throws(null, function() { new MatrixTransformComponent(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14); });
-}, "Test that invalid number of arguments for MatrixTransformComponent throws an exception.");
+  assert_throws(null, function() { new Matrix(); });
+  assert_throws(null, function() { new Matrix(0); });
+  assert_throws(null, function() { new Matrix(0, 1, 2, 3, 4); });
+  assert_throws(null, function() { new Matrix(0, 1, 2, 3, 4, 5, 6); });
+  assert_throws(null, function() { new Matrix(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14); });
+}, "Test that invalid number of arguments for Matrix throws an exception.");
 
 </script>
 

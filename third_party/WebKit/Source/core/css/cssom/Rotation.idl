@@ -5,8 +5,9 @@
 [
     Constructor(double angle),
     Constructor(double angle, double x, double y, double z),
+    ImplementedAs=RotationTransformComponent,
     RuntimeEnabled=CSSTypedOM
-] interface RotationTransformComponent : TransformComponent {
+] interface Rotation : TransformComponent {
     readonly attribute double angle;
     readonly attribute double x;
     readonly attribute double y;

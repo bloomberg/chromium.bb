@@ -4,19 +4,19 @@
 
 <script>
 var values = [
-  {input: new ScaleTransformComponent(0, 0), x: 0, y: 0, z: 1, is2DComponent: true,
+  {input: new Scale(0, 0), x: 0, y: 0, z: 1, is2DComponent: true,
     cssString: "scale(0, 0)"},
-  {input: new ScaleTransformComponent(1, 2), x: 1, y: 2, z: 1, is2DComponent: true,
+  {input: new Scale(1, 2), x: 1, y: 2, z: 1, is2DComponent: true,
     cssString: "scale(1, 2)"},
-  {input: new ScaleTransformComponent(-2, -4), x: -2, y: -4, z: 1, is2DComponent: true,
+  {input: new Scale(-2, -4), x: -2, y: -4, z: 1, is2DComponent: true,
     cssString: "scale(-2, -4)"},
-  {input: new ScaleTransformComponent(3.4, 2.7), x: 3.4, y: 2.7, z: 1, is2DComponent: true,
+  {input: new Scale(3.4, 2.7), x: 3.4, y: 2.7, z: 1, is2DComponent: true,
     cssString: "scale(3.4, 2.7)"},
-  {input: new ScaleTransformComponent(0, 0, 0), x: 0, y: 0, z: 0, is2DComponent: false,
+  {input: new Scale(0, 0, 0), x: 0, y: 0, z: 0, is2DComponent: false,
     cssString: "scale3d(0, 0, 0)"},
-  {input: new ScaleTransformComponent(1, 2, 3), x: 1, y: 2, z: 3, is2DComponent: false,
+  {input: new Scale(1, 2, 3), x: 1, y: 2, z: 3, is2DComponent: false,
     cssString: "scale3d(1, 2, 3)"},
-  {input: new ScaleTransformComponent(3.5, -2.7, -2), x: 3.5, y: -2.7, z: -2, is2DComponent: false,
+  {input: new Scale(3.5, -2.7, -2), x: 3.5, y: -2.7, z: -2, is2DComponent: false,
     cssString: "scale3d(3.5, -2.7, -2)"}
 ];
 
@@ -26,50 +26,50 @@ test(function() {
     assert_equals(values[i].input.y, values[i].y);
     assert_equals(values[i].input.z, values[i].z);
   }
-}, "Test that the (x, y, z) values for ScaleTransformComponent are correct.");
+}, "Test that the (x, y, z) values for Scale are correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.is2DComponent(), values[i].is2DComponent);
   }
-}, "Test that the is2DComponent values for ScaleTransformComponent is correct.");
+}, "Test that the is2DComponent values for Scale is correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.cssString, values[i].cssString);
   }
-}, "Test that the cssString for ScaleTransformComponent is correct.");
+}, "Test that the cssString for Scale is correct.");
 
 test(function() {
-  assert_throws(null, () => { new ScaleTransformComponent(); });
-  assert_throws(null, () => { new ScaleTransformComponent(1); });
-}, "Test that invalid number of arguments for ScaleTransformComponent throws an exception.");
+  assert_throws(null, () => { new Scale(); });
+  assert_throws(null, () => { new Scale(1); });
+}, "Test that invalid number of arguments for Scale throws an exception.");
 
 test(function() {
-  assert_throws(null, () => { new ScaleTransformComponent(NaN, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, NaN); });
-  assert_throws(null, () => { new ScaleTransformComponent(NaN, NaN); });
-  assert_throws(null, () => { new ScaleTransformComponent(Infinity, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent(-Infinity, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent("hello", 0); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, "world"); });
-  assert_throws(null, () => { new ScaleTransformComponent(undefined, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent({}, {}); });
+  assert_throws(null, () => { new Scale(NaN, 0); });
+  assert_throws(null, () => { new Scale(0, NaN); });
+  assert_throws(null, () => { new Scale(NaN, NaN); });
+  assert_throws(null, () => { new Scale(Infinity, 0); });
+  assert_throws(null, () => { new Scale(-Infinity, 0); });
+  assert_throws(null, () => { new Scale("hello", 0); });
+  assert_throws(null, () => { new Scale(0, "world"); });
+  assert_throws(null, () => { new Scale(undefined, 0); });
+  assert_throws(null, () => { new Scale({}, {}); });
 
-  assert_throws(null, () => { new ScaleTransformComponent("hello", 0, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, NaN, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, Infinity, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, 0, NaN); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, 0, Infinity); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, 0, -Infinity); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, 0, undefined); });
-  assert_throws(null, () => { new ScaleTransformComponent(undefined, undefined, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent(NaN, undefined, 0); });
-  assert_throws(null, () => { new ScaleTransformComponent(NaN, 0, NaN); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, "hello", "world"); });
-  assert_throws(null, () => { new ScaleTransformComponent(0, {}, {}); });
-  assert_throws(null, () => { new ScaleTransformComponent({}, {}, {}); });
-  assert_throws(null, () => { new ScaleTransformComponent(NaN, NaN, NaN); });
+  assert_throws(null, () => { new Scale("hello", 0, 0); });
+  assert_throws(null, () => { new Scale(0, NaN, 0); });
+  assert_throws(null, () => { new Scale(0, Infinity, 0); });
+  assert_throws(null, () => { new Scale(0, 0, NaN); });
+  assert_throws(null, () => { new Scale(0, 0, Infinity); });
+  assert_throws(null, () => { new Scale(0, 0, -Infinity); });
+  assert_throws(null, () => { new Scale(0, 0, undefined); });
+  assert_throws(null, () => { new Scale(undefined, undefined, 0); });
+  assert_throws(null, () => { new Scale(NaN, undefined, 0); });
+  assert_throws(null, () => { new Scale(NaN, 0, NaN); });
+  assert_throws(null, () => { new Scale(0, "hello", "world"); });
+  assert_throws(null, () => { new Scale(0, {}, {}); });
+  assert_throws(null, () => { new Scale({}, {}, {}); });
+  assert_throws(null, () => { new Scale(NaN, NaN, NaN); });
 }, "Test that invalid input throws an exception.");
 
 </script>

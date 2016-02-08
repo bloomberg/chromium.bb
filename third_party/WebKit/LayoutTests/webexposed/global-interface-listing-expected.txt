@@ -3249,7 +3249,7 @@ interface MIDIPort : EventTarget
     method constructor
     method open
     setter onstatechange
-interface MatrixTransformComponent : TransformComponent
+interface Matrix : TransformComponent
     getter a
     getter b
     getter c
@@ -3867,7 +3867,7 @@ interface Permissions
     method request
     method requestAll
     method revoke
-interface PerspectiveTransformComponent : TransformComponent
+interface Perspective : TransformComponent
     getter length
     method constructor
 interface Plugin
@@ -4065,7 +4065,7 @@ interface Response
     method constructor
     method json
     method text
-interface RotationTransformComponent : TransformComponent
+interface Rotation : TransformComponent
     getter angle
     getter x
     getter y
@@ -5070,7 +5070,7 @@ interface SVGZoomEvent : UIEvent
     getter previousTranslate
     getter zoomRectScreen
     method constructor
-interface ScaleTransformComponent : TransformComponent
+interface Scale : TransformComponent
     getter x
     getter y
     getter z
@@ -5219,7 +5219,7 @@ interface SimpleLength : LengthValue
     getter value
     method constructor
     setter value
-interface SkewTransformComponent : TransformComponent
+interface Skew : TransformComponent
     getter ax
     getter ay
     method constructor

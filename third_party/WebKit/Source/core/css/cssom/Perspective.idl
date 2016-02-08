@@ -4,8 +4,9 @@
 
 [
     Constructor(LengthValue length),
+    ImplementedAs=PerspectiveTransformComponent,
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
-] interface PerspectiveTransformComponent : TransformComponent {
+] interface Perspective : TransformComponent {
     readonly attribute LengthValue length;
 };

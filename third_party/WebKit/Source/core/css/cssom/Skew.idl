@@ -4,8 +4,9 @@
 
 [
     Constructor(double ax, double ay),
+    ImplementedAs=SkewTransformComponent,
     RuntimeEnabled=CSSTypedOM
-] interface SkewTransformComponent : TransformComponent {
+] interface Skew : TransformComponent {
     readonly attribute double ax;
     readonly attribute double ay;
 };
