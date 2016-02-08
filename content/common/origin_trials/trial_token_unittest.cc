@@ -157,6 +157,10 @@ TEST_F(TrialTokenTest, ValidateValidToken) {
   EXPECT_FALSE(ValidateOrigin(token.get(), kInsecureOrigin));
   EXPECT_TRUE(ValidateFeatureName(token.get(), kExpectedFeatureName));
   EXPECT_FALSE(ValidateFeatureName(token.get(), kInvalidFeatureName));
+  EXPECT_FALSE(ValidateFeatureName(
+      token.get(), base::ToUpperASCII(kExpectedFeatureName).c_str()));
+  EXPECT_FALSE(ValidateFeatureName(
+      token.get(), base::ToLowerASCII(kExpectedFeatureName).c_str()));
   EXPECT_TRUE(
       ValidateDate(token.get(), base::Time::FromDoubleT(kValidTimestamp)));
   EXPECT_FALSE(
@@ -167,10 +171,10 @@ TEST_F(TrialTokenTest, TokenIsAppropriateForOriginAndFeature) {
   scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
   EXPECT_TRUE(token->IsAppropriate(kExpectedOrigin, kExpectedFeatureName));
-  EXPECT_TRUE(token->IsAppropriate(kExpectedOrigin,
-                                   base::ToUpperASCII(kExpectedFeatureName)));
-  EXPECT_TRUE(token->IsAppropriate(kExpectedOrigin,
-                                   base::ToLowerASCII(kExpectedFeatureName)));
+  EXPECT_FALSE(token->IsAppropriate(kExpectedOrigin,
+                                    base::ToUpperASCII(kExpectedFeatureName)));
+  EXPECT_FALSE(token->IsAppropriate(kExpectedOrigin,
+                                    base::ToLowerASCII(kExpectedFeatureName)));
   EXPECT_FALSE(token->IsAppropriate(kInvalidOrigin, kExpectedFeatureName));
   EXPECT_FALSE(token->IsAppropriate(kInsecureOrigin, kExpectedFeatureName));
   EXPECT_FALSE(token->IsAppropriate(kExpectedOrigin, kInvalidFeatureName));

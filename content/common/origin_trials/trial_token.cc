@@ -129,7 +129,7 @@ bool TrialToken::ValidateOrigin(const std::string& origin) const {
 }
 
 bool TrialToken::ValidateFeatureName(const std::string& feature_name) const {
-  return base::EqualsCaseInsensitiveASCII(feature_name, feature_name_);
+  return feature_name == feature_name_;
 }
 
 bool TrialToken::ValidateDate(const base::Time& now) const {
