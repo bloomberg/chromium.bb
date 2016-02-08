@@ -1191,6 +1191,8 @@ template("android_java_prebuilt") {
 #   android_manifest: Path to AndroidManifest.xml.
 #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
+#   create_dist_ijar: Whether to define the "${target_name}_dist_ijar" target
+#     (used by instrumentation_test_apk).
 #   data_deps: List of dependencies needed at runtime. These will be built but
 #     won't change the generated .apk in any way (in fact they may be built
 #     after the .apk is).
@@ -1282,11 +1284,6 @@ template("android_apk") {
   } else if (defined(invoker.apk_name)) {
     _final_apk_path = "$root_build_dir/apks/" + invoker.apk_name + ".apk"
   }
-  _dist_jar_path_list =
-      process_file_template(
-          [ _final_apk_path ],
-          "$root_build_dir/test.lib.java/{{source_name_part}}.jar")
-  _dist_jar_path = _dist_jar_path_list[0]
   _final_apk_path_no_ext_list =
       process_file_template([ _final_apk_path ],
                             "{{source_dir}}/{{source_name_part}}")
@@ -1530,14 +1527,13 @@ template("android_apk") {
     }
   }
 
-  if (_dist_jar_path != "") {
-    create_dist_target = "${_template_name}__create_dist_jar"
-    _final_deps += [ ":$create_dist_target" ]
-
-    # TODO(cjhopman): This is only ever needed to calculate the list of tests to
-    # run. See build/android/pylib/instrumentation/test_jar.py. We should be
-    # able to just do that calculation at build time instead.
-    action(create_dist_target) {
+  # TODO(cjhopman): This is only ever needed to calculate the list of tests to
+  # run. See build/android/pylib/instrumentation/test_jar.py. We should be
+  # able to just do that calculation at build time instead.
+  if (defined(invoker.create_dist_ijar) && invoker.create_dist_ijar) {
+    _dist_ijar_path = "$root_build_dir/test.lib.java/" +
+                      get_path_info(_final_apk_path, "name") + ".jar"
+    action("${_template_name}_dist_ijar") {
       script = "//build/android/gyp/create_dist_jar.py"
       depfile = "$target_gen_dir/$target_name.d"
       inputs = [
@@ -1545,13 +1541,14 @@ template("android_apk") {
       ]
       outputs = [
         depfile,
-        _dist_jar_path,
+        "${_dist_ijar_path}",
       ]
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
         "--output",
-        rebase_path(_dist_jar_path, root_build_dir),
+        rebase_path("${_dist_ijar_path}", root_build_dir),
+        "--use-ijars",
         "--inputs=@FileArg($_rebased_build_config:dist_jar:dependency_jars)",
       ]
       inputs += [ _jar_path ]
@@ -1962,6 +1959,7 @@ template("instrumentation_test_apk") {
       data_deps += invoker.additional_apks
     }
 
+    create_dist_ijar = true
     run_findbugs =
         defined(invoker.run_findbugs) && invoker.run_findbugs &&
         (defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir))
@@ -1971,6 +1969,9 @@ template("instrumentation_test_apk") {
     public_deps = [
       ":$_apk_target_name",
       ":$_test_runner_target_name",
+
+      # Required by test runner to enumerate test list.
+      ":${_apk_target_name}_dist_ijar",
     ]
   }
 }

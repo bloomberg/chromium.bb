@@ -326,14 +326,18 @@ def MergeZips(output, inputs, exclude_patterns=None, path_transform=None):
   with zipfile.ZipFile(output, 'w') as out_zip:
     for in_file in inputs:
       with zipfile.ZipFile(in_file, 'r') as in_zip:
-        for name in in_zip.namelist():
+        in_zip._expected_crc = None
+        for info in in_zip.infolist():
           # Ignore directories.
-          if name[-1] == '/':
+          if info.filename[-1] == '/':
             continue
-          dst_name = path_transform(name, in_file)
+          # Don't validate CRCs. ijar sets them all to 0.
+          if hasattr(info, 'CRC'):
+            del info.CRC
+          dst_name = path_transform(info.filename, in_file)
           already_added = dst_name in added_names
           if not already_added and not MatchesGlob(dst_name, exclude_patterns):
-            AddToZipHermetic(out_zip, dst_name, data=in_zip.read(name))
+            AddToZipHermetic(out_zip, dst_name, data=in_zip.read(info))
             added_names.add(dst_name)
 
 
