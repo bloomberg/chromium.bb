@@ -51,6 +51,7 @@ source_set("generated") {
     ":prerequisites",
     "inspector:instrumentation_sources",
     "inspector:protocol_sources",
+    "inspector/v8:injected_script_sources",
     "//gin",
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
@@ -99,6 +100,7 @@ source_set("prerequisites") {
     ":make_core_generated",
     "inspector:instrumentation_sources",
     "inspector:protocol_sources",
+    "inspector/v8:injected_script_sources",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
 
     # FIXME: don't depend on bindings_modules http://crbug.com/358074
@@ -398,6 +400,10 @@ source_set("core_generated") {
     "$blink_core_output_dir/InspectorOverridesInl.h",
     "$blink_core_output_dir/InstrumentingAgentsInl.h",
 
+    # Additional files from injected_script_sources list.
+    "$blink_core_output_dir/inspector/v8/DebuggerScript.h",
+    "$blink_core_output_dir/inspector/v8/InjectedScriptSource.h",
+
     # Additional .cpp files for SVG.
     "$blink_core_output_dir/SVGElementFactory.cpp",
 
@@ -422,6 +428,7 @@ source_set("core_generated") {
     ":prerequisites",
     "inspector:instrumentation_sources",
     "inspector:protocol_sources",
+    "inspector/v8:injected_script_sources",
     "//gin",
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",

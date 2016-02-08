@@ -34,8 +34,6 @@
       <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../Source/core/css/viewportAndroid.css" type="BINDATA"/>
 
       <include name="IDR_INSPECTOR_OVERLAY_PAGE_HTML" file="../Source/core/inspector/InspectorOverlayPage.html" type="BINDATA"/>
-      <include name="IDR_INSPECTOR_INJECTED_SCRIPT_SOURCE_JS" file="../Source/core/inspector/v8/InjectedScriptSource.js" type="BINDATA"/>
-      <include name="IDR_INSPECTOR_DEBUGGER_SCRIPT_SOURCE_JS" file="../Source/core/inspector/v8/DebuggerScript.js" type="BINDATA"/>
       <include name="IDR_PRIVATE_SCRIPT_DOCUMENTEXECCOMMAND_JS" file="../Source/core/editing/js/DocumentExecCommand.js" type="BINDATA"/>
       <include name="IDR_PRIVATE_SCRIPT_DOCUMENTXMLTREEVIEWER_CSS" file="../Source/core/xml/DocumentXMLTreeViewer.css" type="BINDATA"/>
       <include name="IDR_PRIVATE_SCRIPT_DOCUMENTXMLTREEVIEWER_JS" file="../Source/core/xml/DocumentXMLTreeViewer.js" type="BINDATA"/>

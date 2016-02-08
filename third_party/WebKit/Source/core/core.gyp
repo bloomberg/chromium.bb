@@ -169,8 +169,9 @@
       'dependencies': [
         'webcore_prerequisites',
         'core_generated.gyp:make_core_generated',
-        'inspector_protocol_sources',
         'inspector_instrumentation_sources',
+        'inspector_protocol_sources',
+        'inspector/v8/v8_inspector.gyp:injected_script_sources',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
         '../bindings/modules/generated.gyp:modules_event_generated',
@@ -234,8 +235,9 @@
       'target_name': 'webcore_prerequisites',
       'type': 'none',
       'dependencies': [
-        'inspector_protocol_sources',
         'inspector_instrumentation_sources',
+        'inspector_protocol_sources',
+        'inspector/v8/v8_inspector.gyp:injected_script_sources',
         'core_generated.gyp:make_core_generated',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
@@ -649,8 +651,9 @@
 
         # webcore_generated dependency
         'core_generated.gyp:make_core_generated',
-        'inspector_protocol_sources',
         'inspector_instrumentation_sources',
+        'inspector_protocol_sources',
+        'inspector/v8/v8_inspector.gyp:injected_script_sources',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
         '../bindings/modules/generated.gyp:modules_event_generated',
