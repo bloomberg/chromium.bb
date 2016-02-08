@@ -98,7 +98,9 @@ var image;
 var testBitmap; // this is an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
 var d;          // image.imageData
 var elements;
-var options;
+var imageOrientationOptions;
+var premultiplyAlphaOptions;
+var optionIndexArray;
 
 var imageWidth = 20;
 var imageHeight = 20;
@@ -158,10 +160,13 @@ xhr.onload = function() {
 
 function loaded() {
     if (imageLoaded && imageBitmapLoaded && blobLoaded) {
-        // check all elements and all options
+        // check all elements
         elements = [image, aCanvas, d, testBitmap, blob];
-        options = ["none", "flipY"];
-        // elements = [image, aCanvas, d, testBitmap, blob];
+        imageOrientationOptions = ["none", "flipY", "invalid"];
+        premultiplyAlphaOptions = ["default", "none", "invalid"];
+        optionIndexArray = [[0, 0], [0, 1], [0, 2],
+                            [1, 0], [1, 1], [1, 2],
+                            [2, 0], [2, 1], [2, 2]];
         // wait for callback to finish before each check to ensure synchronous behavior
         nextCheck(0, 0);
     }
@@ -173,32 +178,46 @@ function nextCheck(elementIndex, optionIndex) {
         return;
     }
     var element = elements[elementIndex];
+    var optionIndex1 = optionIndexArray[optionIndex][0];
+    var optionIndex2 = optionIndexArray[optionIndex][1];
     imageBitmaps = {};
-    debug("Checking " + jsWrapperClass(element) + " with imageOrientation: " + options[optionIndex] + ".");
-    var p1 = createImageBitmap(element, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.noCrop = image });
-    var p2 = createImageBitmap(element, 0, 0, 10, 10, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.crop = image });
-    var p3 = createImageBitmap(element, 5, 5, 10, 10, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.cropCenter = image });
-    var p4 = createImageBitmap(element, 10, 10, 10, 10, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.cropRight = image });
-    var p5 = createImageBitmap(element, -10, -10, 60, 60, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.overCrop = image });
-    var p6 = createImageBitmap(element, 10, 10, 50, 50, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.overCropRight = image });
-    var p7 = createImageBitmap(element, 10, 10, -10, -10, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.negativeCrop = image });
-    var p8 = createImageBitmap(element, -30, -30, 30, 30, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.empty = image });
-    var p9 = createImageBitmap(element, 40, 30, 30, 30, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.emptyTwo = image });
+    debug("Checking " + jsWrapperClass(element) + " with imageOrientation: " + imageOrientationOptions[optionIndex1] + " with premultiplyAlphaOption: " + premultiplyAlphaOptions[optionIndex2] + ".");
+    var p1 = createImageBitmap(element, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.noCrop = image });
+    var p2 = createImageBitmap(element, 0, 0, 10, 10, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.crop = image });
+    var p3 = createImageBitmap(element, 5, 5, 10, 10, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.cropCenter = image });
+    var p4 = createImageBitmap(element, 10, 10, 10, 10, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.cropRight = image });
+    var p5 = createImageBitmap(element, -10, -10, 60, 60, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.overCrop = image });
+    var p6 = createImageBitmap(element, 10, 10, 50, 50, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.overCropRight = image });
+    var p7 = createImageBitmap(element, 10, 10, -10, -10, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.negativeCrop = image });
+    var p8 = createImageBitmap(element, -30, -30, 30, 30, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.empty = image });
+    var p9 = createImageBitmap(element, 40, 30, 30, 30, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.emptyTwo = image });
     Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
-        checkNoCrop(imageBitmaps.noCrop, options[optionIndex]);
-        checkCrop(imageBitmaps.crop, options[optionIndex]);
-        checkCropCenter(imageBitmaps.cropCenter, options[optionIndex]);
-        checkCropRight(imageBitmaps.cropRight, options[optionIndex]);
-        checkOverCrop(imageBitmaps.overCrop, options[optionIndex]);
-        checkOverCropRight(imageBitmaps.overCropRight, options[optionIndex]);
-        checkCrop(imageBitmaps.negativeCrop, options[optionIndex]);
-        checkEmpty(imageBitmaps.empty, options[optionIndex]);
-        checkEmpty(imageBitmaps.emptyTwo, options[optionIndex]);
-        if (optionIndex == 3)
+        checkNoCrop(imageBitmaps.noCrop, imageOrientationOptions[optionIndex1]);
+        checkCrop(imageBitmaps.crop, imageOrientationOptions[optionIndex1]);
+        checkCropCenter(imageBitmaps.cropCenter, imageOrientationOptions[optionIndex1]);
+        checkCropRight(imageBitmaps.cropRight, imageOrientationOptions[optionIndex1]);
+        checkOverCrop(imageBitmaps.overCrop, imageOrientationOptions[optionIndex1]);
+        checkOverCropRight(imageBitmaps.overCropRight, imageOrientationOptions[optionIndex1]);
+        checkCrop(imageBitmaps.negativeCrop, imageOrientationOptions[optionIndex1]);
+        checkEmpty(imageBitmaps.empty, imageOrientationOptions[optionIndex1]);
+        checkEmpty(imageBitmaps.emptyTwo, imageOrientationOptions[optionIndex1]);
+        if (optionIndex == optionIndexArray.length - 1)
             nextCheck(elementIndex + 1, 0);
         else
             nextCheck(elementIndex, optionIndex + 1);
-    }, shouldNotBeCalled);
+    }, function() {
+        // when the options are invalid, we expect the promise to be rejected.
+        if ((imageOrientationOptions[optionIndex1] != "none" && imageOrientationOptions[optionIndex1] != "flipY") ||
+            (premultiplyAlphaOptions[optionIndex2] != "default" && premultiplyAlphaOptions[optionIndex2] != "none")) {
+            testPassed("createImageBitmap with invalid options are rejected");
+            if (optionIndex == optionIndexArray.length - 1)
+                nextCheck(elementIndex + 1, 0);
+            else
+                nextCheck(elementIndex, optionIndex + 1);
+        } else {
+            shouldNotBeCalled();
+        }
+    });
 }
 
 function checkNoCrop(imageBitmap, option) {
@@ -421,17 +440,17 @@ function checkOverCrop(imageBitmap, option) {
     if (option == "flipY" || option == "bottomLeft") {
         shouldBeClear(1, 59);
         shouldBeClear(9, 51);
-        shouldBeBlue(10, 30);
+        shouldBeBlue(11, 31);
         shouldBeBlue(19, 39);
-        shouldBeBlack(20, 30);
+        shouldBeBlack(21, 31);
         shouldBeBlack(29, 39);
-        shouldBeRed(10, 40);
+        shouldBeRed(11, 41);
         shouldBeRed(19, 49);
-        shouldBeGreen(20, 40);
+        shouldBeGreen(21, 41);
         shouldBeGreen(29, 49);
         shouldBeClear(31, 59);
         shouldBeClear(1, 29);
-        shouldBeClear(30, 30);
+        shouldBeClear(31, 31);
     } else {
         shouldBeClear(1, 1);
         shouldBeClear(9, 9);
@@ -446,7 +465,8 @@ function checkOverCrop(imageBitmap, option) {
         shouldBeClear(32, 32);
     }
 
-    clearContext(ctx);
+    // comment out this part for now due to crbug.com/578889
+    /*clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0, 30, 30);
     if (option == "flipY" || option == "bottomLeft") {
         shouldBeClear(1, 29);
@@ -474,7 +494,7 @@ function checkOverCrop(imageBitmap, option) {
         shouldBeClear(16, 1);
         shouldBeClear(1, 16);
         shouldBeClear(16, 16);
-    }
+    }*/
 }
 
 function checkOverCropRight(imageBitmap, option) {
@@ -499,7 +519,8 @@ function checkOverCropRight(imageBitmap, option) {
         shouldBeClear(11, 1);
     }
 
-    clearContext(ctx);
+    // comment out this part for now due to crbug.com/578889
+    /*clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0, 20, 20);
     if (option == "flipY" || option == "bottomLeft") {
         shouldBeBlack(0, 16);
@@ -513,7 +534,7 @@ function checkOverCropRight(imageBitmap, option) {
         shouldBeClear(5, 5);
         shouldBeClear(1, 5);
         shouldBeClear(5, 1);
-    }
+    }*/
 
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 10, 10, 20, 20, 0, 0, 20, 20);

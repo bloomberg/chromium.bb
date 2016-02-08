@@ -81,21 +81,22 @@ protected:
 
 TEST_F(ImageBitmapTest, ImageResourceConsistency)
 {
+    const ImageBitmapOptions defaultOptions;
     RefPtrWillBeRawPtr<HTMLImageElement> imageElement = HTMLImageElement::create(*Document::create().get());
     imageElement->setImageResource(new ImageResource(StaticBitmapImage::create(m_image).get()));
 
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(),
         IntRect(0, 0, m_image->width(), m_image->height()),
-        &(imageElement->document()));
+        &(imageElement->document()), defaultOptions);
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(),
         IntRect(m_image->width() / 2, m_image->height() / 2, m_image->width() / 2, m_image->height() / 2),
-        &(imageElement->document()));
+        &(imageElement->document()), defaultOptions);
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageElement.get(),
         IntRect(-m_image->width() / 2, -m_image->height() / 2, m_image->width(), m_image->height()),
-        &(imageElement->document()));
+        &(imageElement->document()), defaultOptions);
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageElement.get(),
         IntRect(-m_image->width(), -m_image->height(), m_image->width(), m_image->height()),
-        &(imageElement->document()));
+        &(imageElement->document()), defaultOptions);
 
     ASSERT_EQ(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->image()->imageForCurrentFrame());
     ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->image()->imageForCurrentFrame());
@@ -149,22 +150,23 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
     ASSERT_EQ(memoryCache()->priority(imageExteriorCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
     ASSERT_EQ(memoryCache()->priority(imageOutsideCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
 
+    const ImageBitmapOptions defaultOptions;
     RefPtrWillBePersistent<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageInteriorCrop.get(),
         IntRect(m_image->width() / 2, m_image->height() / 2, m_image->width(), m_image->height()),
-        &(imageInteriorCrop->document()));
+        &(imageInteriorCrop->document()), defaultOptions);
     {
         RefPtrWillBePersistent<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageNoCrop.get(),
             IntRect(0, 0, m_image->width(), m_image->height()),
-            &(imageNoCrop->document()));
+            &(imageNoCrop->document()), defaultOptions);
         RefPtrWillBePersistent<ImageBitmap> imageBitmapInteriorCrop2 = ImageBitmap::create(imageInteriorCrop.get(),
             IntRect(m_image->width() / 2, m_image->height() / 2, m_image->width(), m_image->height()),
-            &(imageInteriorCrop->document()));
+            &(imageInteriorCrop->document()), defaultOptions);
         RefPtrWillBePersistent<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageExteriorCrop.get(),
             IntRect(-m_image->width() / 2, -m_image->height() / 2, m_image->width(), m_image->height()),
-            &(imageExteriorCrop->document()));
+            &(imageExteriorCrop->document()), defaultOptions);
         RefPtrWillBePersistent<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageOutsideCrop.get(),
             IntRect(-m_image->width(), -m_image->height(), m_image->width(), m_image->height()),
-            &(imageOutsideCrop->document()));
+            &(imageOutsideCrop->document()), defaultOptions);
 
         // Images are not referenced by ImageBitmap anymore, so always CacheLiveResourcePriorityLow
         ASSERT_EQ(memoryCache()->priority(imageNoCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
@@ -195,9 +197,10 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
         StaticBitmapImage::create(m_image).get());
     image->setImageResource(originalImageResource.get());
 
+    const ImageBitmapOptions defaultOptions;
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(),
         IntRect(0, 0, m_image->width(), m_image->height()),
-        &(image->document()));
+        &(image->document()), defaultOptions);
     ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->image()->imageForCurrentFrame());
 
     ResourcePtr<ImageResource> newImageResource = new ImageResource(

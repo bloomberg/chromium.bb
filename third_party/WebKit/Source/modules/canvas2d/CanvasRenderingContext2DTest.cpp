@@ -10,6 +10,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/ImageData.h"
+#include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/canvas2d/CanvasGradient.h"
@@ -452,8 +453,9 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit)
     OwnPtr<UnacceleratedImageBufferSurface> sourceSurface = adoptPtr(new UnacceleratedImageBufferSurface(sourceSize, NonOpaque));
     sourceCanvas->createImageBufferUsingSurfaceForTesting(sourceSurface.release());
 
+    const ImageBitmapOptions defaultOptions;
     // Go through an ImageBitmap to avoid triggering a display list fallback
-    RefPtrWillBeRawPtr<ImageBitmap> sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize));
+    RefPtrWillBeRawPtr<ImageBitmap> sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
 
     context2d()->drawImage(sourceImageBitmap.get(), 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -475,8 +477,9 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit)
     OwnPtr<UnacceleratedImageBufferSurface> sourceSurface = adoptPtr(new UnacceleratedImageBufferSurface(sourceSize, NonOpaque));
     sourceCanvas->createImageBufferUsingSurfaceForTesting(sourceSurface.release());
 
+    const ImageBitmapOptions defaultOptions;
     // Go through an ImageBitmap to avoid triggering a display list fallback
-    RefPtrWillBeRawPtr<ImageBitmap> sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize));
+    RefPtrWillBeRawPtr<ImageBitmap> sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
 
     context2d()->drawImage(sourceImageBitmap.get(), 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -664,8 +667,9 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
     canvas->setWidth(40);
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapDerived = nullptr;
     {
-        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvas, IntRect(0, 0, canvas->width(), canvas->height()));
-        imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));
+        const ImageBitmapOptions defaultOptions;
+        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvas, IntRect(0, 0, canvas->width(), canvas->height()), defaultOptions);
+        imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20), defaultOptions);
     }
     CanvasContextCreationAttributes attributes;
     CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvas->getCanvasRenderingContext("2d", attributes));
