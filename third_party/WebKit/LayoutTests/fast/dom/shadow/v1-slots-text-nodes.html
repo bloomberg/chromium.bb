@@ -14,6 +14,7 @@
   <div id='child2'></div>
   World
   <div id='child3' slot='nonexistent'></div>
+  <!-- comment node  -->
 </div>
 <script>
 'use strict';
@@ -28,12 +29,16 @@ const shadowChild2 = host.shadowRoot.querySelector('#shadow-child2');
 
 const textHello = host.childNodes[1];
 const textWorld = host.childNodes[3];
+const commentNode = child3.nextSibling;
 
 test(() => {
   assert_equals(textHello.nodeValue.trim(), 'Hello');
   assert_equals(textWorld.nodeValue.trim(), 'World');
+  assert_equals(commentNode.nodeType, Node.COMMENT_NODE);
+
   assert_equals(textHello.assignedSlot, defaultSlot);
   assert_equals(textWorld.assignedSlot, defaultSlot);
+  assert_equals(commentNode.assignedSlot, undefined, "Comment Node does not define assignedSlot");
   assert_equals(child1.assignedSlot, slot1);
   assert_equals(child2.assignedSlot, defaultSlot);
   assert_equals(child3.assignedSlot, null);
@@ -42,7 +47,7 @@ test(() => {
 test(() => {
   assert_array_equals(defaultSlot.getAssignedNodes({flatten: true}), [textHello, child2, textWorld]);
   assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child1]);
-}, "getDistributedNodes");
+}, "getAssignedNodes");
 
 add_completion_callback(() => {
   if (window.testRunner)

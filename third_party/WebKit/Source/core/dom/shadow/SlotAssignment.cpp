@@ -65,7 +65,7 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
                 else
                     detachNotAssignedNode(child);
             }
-        } else if (defaultSlot) {
+        } else if (defaultSlot && child.isTextNode()) {
             assign(child, *defaultSlot);
         } else {
             detachNotAssignedNode(child);
@@ -79,6 +79,7 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
 
 void SlotAssignment::assign(Node& hostChild, HTMLSlotElement& slot)
 {
+    ASSERT(hostChild.isSlotAssignable());
     m_assignment.add(&hostChild, &slot);
     slot.appendAssignedNode(hostChild);
     if (isHTMLSlotElement(hostChild))

@@ -598,7 +598,6 @@ interface ChannelMergerNode : AudioNode
 interface ChannelSplitterNode : AudioNode
     method constructor
 interface CharacterData : Node
-    getter assignedSlot
     getter data
     getter length
     getter nextElementSibling
@@ -5330,6 +5329,7 @@ interface SyncManager
     method getTags
     method register
 interface Text : CharacterData
+    getter assignedSlot
     getter wholeText
     method constructor
     method getDestinationInsertionPoints

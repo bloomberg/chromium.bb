@@ -29,4 +29,5 @@
     // Shadow DOM
     // http://w3c.github.io/webcomponents/spec/shadow/#extensions-to-text-interface
     NodeList getDestinationInsertionPoints();
+    [RuntimeEnabled=ShadowDOMV1, ImplementedAs=assignedSlotForBinding] readonly attribute HTMLSlotElement assignedSlot;
 };

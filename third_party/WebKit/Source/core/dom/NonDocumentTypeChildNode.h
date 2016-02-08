@@ -21,11 +21,6 @@ public:
     {
         return ElementTraversal::nextSibling(node);
     }
-
-    static HTMLSlotElement* assignedSlotForBinding(Node& node)
-    {
-        return node.assignedSlotForBinding();
-    }
 };
 
 } // namespace blink

@@ -68,6 +68,8 @@ const WillBeHeapVector<RefPtrWillBeMember<Node>>& HTMLSlotElement::getDistribute
     // update the distribution code so it considers a document tree too.
     clearDistribution();
     for (Node& child : NodeTraversal::childrenOf(*this)) {
+        if (!child.isSlotAssignable())
+            continue;
         if (isHTMLSlotElement(child))
             m_distributedNodes.appendVector(toHTMLSlotElement(child).getDistributedNodes());
         else
@@ -204,6 +206,8 @@ void HTMLSlotElement::updateDistributedNodesWithFallback()
     if (!m_distributedNodes.isEmpty())
         return;
     for (auto& child : NodeTraversal::childrenOf(*this)) {
+        if (!child.isSlotAssignable())
+            continue;
         // Insertion points are not supported as slots fallback
         if (isActiveInsertionPoint(child))
             continue;
