@@ -5,10 +5,13 @@
 #include "mojo/edk/test/multiprocess_test_helper.h"
 
 #include <functional>
+#include <set>
 #include <utility>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/kill.h"
@@ -54,7 +57,6 @@ void RunHandler(std::function<int(MojoHandle)> handler,
 }
 
 int RunClientFunction(std::function<int(MojoHandle)> handler) {
-  base::MessageLoop message_loop;
   base::RunLoop run_loop;
   int exit_code = 0;
   CHECK(!MultiprocessTestHelper::primordial_pipe_token.empty());
@@ -90,8 +92,23 @@ void MultiprocessTestHelper::StartChildWithExtraSwitch(
 
   std::string test_child_main = test_child_name + "TestChildMain";
 
+  // Manually construct the new child's commandline to avoid copying unwanted
+  // values.
   base::CommandLine command_line(
-      base::GetMultiProcessTestChildBaseCommandLine());
+      base::GetMultiProcessTestChildBaseCommandLine().GetProgram());
+
+  std::set<std::string> uninherited_args;
+  uninherited_args.insert("mojo-platform-channel-handle");
+  uninherited_args.insert(switches::kTestChildProcess);
+
+  // Copy commandline switches from the parent process, except for the
+  // multiprocess client name and mojo message pipe handle; this allows test
+  // clients to spawn other test clients.
+  for (const auto& entry :
+          base::CommandLine::ForCurrentProcess()->GetSwitches()) {
+    if (uninherited_args.find(entry.first) == uninherited_args.end())
+      command_line.AppendSwitchNative(entry.first, entry.second);
+  }
 
   PlatformChannelPair channel;
   HandlePassingInformation handle_passing_info;

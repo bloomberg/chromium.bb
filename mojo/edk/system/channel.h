@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/process/process_handle.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -66,6 +67,18 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     // handles().
     void SetHandles(ScopedPlatformHandleVectorPtr new_handles);
     ScopedPlatformHandleVectorPtr TakeHandles();
+
+#if defined(OS_WIN)
+    // Prepares the handles in this message for use in a different process.
+    // Upon calling this the handles should belong to |from_process|; after the
+    // call they'll belong to |to_process|. The source handles are always
+    // closed by this call. Returns false iff one or more handles failed
+    // duplication.
+    static bool RewriteHandles(base::ProcessHandle from_process,
+                               base::ProcessHandle to_process,
+                               PlatformHandle* handles,
+                               size_t num_handles);
+#endif
 
    private:
     size_t size_;

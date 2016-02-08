@@ -34,6 +34,15 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
     virtual void OnAcceptParent(const ports::NodeName& from_node,
                                 const ports::NodeName& token,
                                 const ports::NodeName& child_name) = 0;
+    virtual void OnAddBrokerClient(const ports::NodeName& from_node,
+                                   const ports::NodeName& client_name,
+                                   ScopedPlatformHandle process_handle) = 0;
+    virtual void OnBrokerClientAdded(const ports::NodeName& from_node,
+                                     const ports::NodeName& client_name,
+                                     ScopedPlatformHandle broker_channel) = 0;
+    virtual void OnAcceptBrokerClient(const ports::NodeName& from_node,
+                                      const ports::NodeName& broker_name,
+                                      ScopedPlatformHandle broker_channel) = 0;
     virtual void OnPortsMessage(Channel::MessagePtr message) = 0;
     virtual void OnRequestPortConnection(
         const ports::NodeName& from_node,
@@ -77,6 +86,8 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void ShutDown();
 
   void SetRemoteProcessHandle(base::ProcessHandle process_handle);
+  bool HasRemoteProcessHandle();
+  ScopedPlatformHandle CopyRemoteProcessHandle();
 
   // Used for context in Delegate calls (via |from_node| arguments.)
   void SetRemoteNodeName(const ports::NodeName& name);
@@ -85,13 +96,20 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                    const ports::NodeName& token);
   void AcceptParent(const ports::NodeName& token,
                     const ports::NodeName& child_name);
+  void AddBrokerClient(const ports::NodeName& client_name,
+                       ScopedPlatformHandle process_handle);
+  void BrokerClientAdded(const ports::NodeName& client_name,
+                         ScopedPlatformHandle broker_channel);
+  void AcceptBrokerClient(const ports::NodeName& broker_name,
+                          ScopedPlatformHandle broker_channel);
   void PortsMessage(Channel::MessagePtr message);
   void RequestPortConnection(const ports::PortName& connector_port_name,
                              const std::string& token);
   void ConnectToPort(const ports::PortName& connector_port_name,
                      const ports::PortName& connectee_port_name);
   void RequestIntroduction(const ports::NodeName& name);
-  void Introduce(const ports::NodeName& name, ScopedPlatformHandle handle);
+  void Introduce(const ports::NodeName& name,
+                 ScopedPlatformHandle channel_handle);
 
 #if defined(OS_WIN)
   // Relay the message to the specified node via this channel.  This is used to

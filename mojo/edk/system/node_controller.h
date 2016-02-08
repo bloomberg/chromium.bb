@@ -136,7 +136,7 @@ class NodeController : public ports::NodeDelegate,
 
   using NodeMap = std::unordered_map<ports::NodeName,
                                      scoped_refptr<NodeChannel>>;
-  using OutgoingMessageQueue = std::queue<ports::ScopedMessage>;
+  using OutgoingMessageQueue = std::queue<Channel::MessagePtr>;
 
   // Tracks a pending token-based connection to a parent port.
   struct PendingPortRequest {
@@ -179,6 +179,7 @@ class NodeController : public ports::NodeDelegate,
 
   scoped_refptr<NodeChannel> GetPeerChannel(const ports::NodeName& name);
   scoped_refptr<NodeChannel> GetParentChannel();
+  scoped_refptr<NodeChannel> GetBrokerChannel();
 
   void AddPeer(const ports::NodeName& name,
                scoped_refptr<NodeChannel> channel,
@@ -204,6 +205,15 @@ class NodeController : public ports::NodeDelegate,
   void OnAcceptParent(const ports::NodeName& from_node,
                       const ports::NodeName& token,
                       const ports::NodeName& child_name) override;
+  void OnAddBrokerClient(const ports::NodeName& from_node,
+                         const ports::NodeName& client_name,
+                         ScopedPlatformHandle process_handle) override;
+  void OnBrokerClientAdded(const ports::NodeName& from_node,
+                           const ports::NodeName& client_name,
+                           ScopedPlatformHandle broker_channel) override;
+  void OnAcceptBrokerClient(const ports::NodeName& from_node,
+                            const ports::NodeName& broker_name,
+                            ScopedPlatformHandle broker_channel) override;
   void OnPortsMessage(Channel::MessagePtr message) override;
   void OnRequestPortConnection(const ports::NodeName& from_node,
                                const ports::PortName& connector_port_name,
@@ -264,6 +274,20 @@ class NodeController : public ports::NodeDelegate,
 
   // A temporary reference to the parent channel before we know their name.
   scoped_refptr<NodeChannel> bootstrap_parent_channel_;
+
+  // Guards |broker_name_|, |pending_broker_clients_|, and
+  // |pending_relay_messages_|.
+  base::Lock broker_lock_;
+
+  // The name of our broker node, if any.
+  ports::NodeName broker_name_;
+
+  // A queue of pending child names waiting to be connected to a broker.
+  std::queue<ports::NodeName> pending_broker_clients_;
+
+  // Messages waiting to be relayed by the broker once it's known.
+  std::unordered_map<ports::NodeName, OutgoingMessageQueue>
+      pending_relay_messages_;
 
   // Guards |incoming_messages_|.
   base::Lock messages_lock_;

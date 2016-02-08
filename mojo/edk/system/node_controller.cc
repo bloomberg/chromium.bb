@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_handle.h"
 #include "crypto/random.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -271,17 +272,21 @@ void NodeController::ConnectToChildOnIOThread(
       NodeChannel::Create(this, std::move(platform_handle), io_task_runner_);
 #endif
 
+  // We set up the child channel with a temporary name so it can be identified
+  // as a pending child if it writes any messages to the channel. We may start
+  // receiving messages from it (though we shouldn't) as soon as Start() is
+  // called below.
   ports::NodeName token;
   GenerateRandomName(&token);
+
+  pending_children_.insert(std::make_pair(token, channel));
+  RecordPendingChildCount(pending_children_.size());
 
   channel->SetRemoteNodeName(token);
   channel->SetRemoteProcessHandle(process_handle);
   channel->Start();
+
   channel->AcceptChild(name_, token);
-
-  pending_children_.insert(std::make_pair(token, channel));
-
-  RecordPendingChildCount(pending_children_.size());
 }
 
 void NodeController::ConnectToParentOnIOThread(
@@ -334,7 +339,7 @@ void NodeController::ConnectToRemotePortOnIOThread(
     return;
   }
 
-  // Save this for later. We'll initialize the port once this:: peer is added.
+  // Save this for later. We'll initialize the port once this peer is added.
   pending_remote_port_connections_[connection.remote_node_name].push_back(
       connection);
 }
@@ -355,6 +360,15 @@ scoped_refptr<NodeChannel> NodeController::GetParentChannel() {
     parent_name = parent_name_;
   }
   return GetPeerChannel(parent_name);
+}
+
+scoped_refptr<NodeChannel> NodeController::GetBrokerChannel() {
+  ports::NodeName broker_name;
+  {
+    base::AutoLock lock(broker_lock_);
+    broker_name = broker_name_;
+  }
+  return GetPeerChannel(broker_name);
 }
 
 void NodeController::AddPeer(const ports::NodeName& name,
@@ -397,9 +411,7 @@ void NodeController::AddPeer(const ports::NodeName& name,
 
   // Flush any queued message we need to deliver to this node.
   while (!pending_messages.empty()) {
-    ports::ScopedMessage message = std::move(pending_messages.front());
-    channel->PortsMessage(
-        static_cast<PortsMessage*>(message.get())->TakeChannelMessage());
+    channel->PortsMessage(std::move(pending_messages.front()));
     pending_messages.pop();
   }
 
@@ -442,28 +454,35 @@ void NodeController::DropPeer(const ports::NodeName& name) {
 
 void NodeController::SendPeerMessage(const ports::NodeName& name,
                                      ports::ScopedMessage message) {
-  PortsMessage* ports_message = static_cast<PortsMessage*>(message.get());
+  Channel::MessagePtr channel_message =
+      static_cast<PortsMessage*>(message.get())->TakeChannelMessage();
 
+  scoped_refptr<NodeChannel> peer = GetPeerChannel(name);
 #if defined(OS_WIN)
-  // If we're sending a message with handles and we're not the parent,
-  // relay the message through the parent.
-  if (ports_message->has_handles()) {
-    scoped_refptr<NodeChannel> parent = GetParentChannel();
-    if (parent) {
-      parent->RelayPortsMessage(name, ports_message->TakeChannelMessage());
+  if (channel_message->has_handles()) {
+    // If we're sending a message with handles we aren't the destination
+    // node's parent or broker (i.e. we don't know its process handle), ask
+    // the broker to relay for us.
+    scoped_refptr<NodeChannel> broker = GetBrokerChannel();
+    if (!peer || !peer->HasRemoteProcessHandle()) {
+      if (broker) {
+        broker->RelayPortsMessage(name, std::move(channel_message));
+      } else {
+        base::AutoLock lock(broker_lock_);
+        pending_relay_messages_[name].emplace(std::move(channel_message));
+      }
       return;
     }
   }
 #endif
 
-  scoped_refptr<NodeChannel> peer = GetPeerChannel(name);
   if (peer) {
-    peer->PortsMessage(ports_message->TakeChannelMessage());
+    peer->PortsMessage(std::move(channel_message));
     return;
   }
 
   // If we don't know who the peer is, queue the message for delivery. If this
-  // is the first message queued for the peer, we also ask the parent to
+  // is the first message queued for the peer, we also ask the broker to
   // introduce us to them.
 
   bool needs_introduction = false;
@@ -471,16 +490,16 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
     base::AutoLock lock(peers_lock_);
     auto& queue = pending_peer_messages_[name];
     needs_introduction = queue.empty();
-    queue.emplace(std::move(message));
+    queue.emplace(std::move(channel_message));
   }
 
   if (needs_introduction) {
-    scoped_refptr<NodeChannel> parent = GetParentChannel();
-    if (!parent) {
+    scoped_refptr<NodeChannel> broker = GetBrokerChannel();
+    if (!broker) {
       DVLOG(1) << "Dropping message for unknown peer: " << name;
       return;
     }
-    parent->RequestIntroduction(name);
+    broker->RequestIntroduction(name);
   }
 }
 
@@ -589,20 +608,14 @@ void NodeController::OnAcceptChild(const ports::NodeName& from_node,
 
     parent_name_ = parent_name;
     parent = bootstrap_parent_channel_;
-    bootstrap_parent_channel_ = nullptr;
   }
 
+  parent->SetRemoteNodeName(parent_name);
   parent->AcceptParent(token, name_);
-  for (const auto& request : pending_port_requests_) {
-    pending_parent_port_connections_.insert(
-        std::make_pair(request.local_port.name(), request.callback));
-    parent->RequestPortConnection(request.local_port.name(), request.token);
-  }
-  pending_port_requests_.clear();
 
-  DVLOG(1) << "Child " << name_ << " accepting parent " << parent_name;
-
-  AddPeer(parent_name_, parent, false /* start_channel */);
+  // NOTE: The child does not actually add its parent as a peer until
+  // receiving an AcceptBrokerClient message from the broker. The parent
+  // will request that said message be sent upon receiving AcceptParent.
 }
 
 void NodeController::OnAcceptParent(const ports::NodeName& from_node,
@@ -625,26 +638,163 @@ void NodeController::OnAcceptParent(const ports::NodeName& from_node,
 
   DVLOG(1) << "Parent " << name_ << " accepted child " << child_name;
 
-  // If the child has a grandparent, we want to make sure they're introduced
-  // as well. The grandparent will be sent a named channel handle, then we'll
-  // add the child as our peer, then we'll introduce the child to the parent.
-
-  scoped_refptr<NodeChannel> parent = GetParentChannel();
-  ports::NodeName parent_name;
-  scoped_ptr<PlatformChannelPair> grandparent_channel;
-  if (parent) {
-    base::AutoLock lock(parent_lock_);
-    parent_name = parent_name_;
-    grandparent_channel.reset(new PlatformChannelPair);
-  }
-
-  if (grandparent_channel)
-    parent->Introduce(child_name, grandparent_channel->PassServerHandle());
-
   AddPeer(child_name, channel, false /* start_channel */);
 
-  if (grandparent_channel)
-    channel->Introduce(parent_name, grandparent_channel->PassClientHandle());
+  // TODO(rockot/amistry): We could simplify child initialization if we could
+  // synchronously get a new async broker channel from the broker. For now we do
+  // it asynchronously since it's only used to facilitate handle passing, not
+  // handle creation.
+  scoped_refptr<NodeChannel> broker = GetBrokerChannel();
+  if (broker) {
+    // Inform the broker of this new child.
+    broker->AddBrokerClient(child_name, channel->CopyRemoteProcessHandle());
+  } else {
+    // If we have no broker, either we need to wait for one, or we *are* the
+    // broker.
+    scoped_refptr<NodeChannel> parent = GetParentChannel();
+    if (!parent) {
+      base::AutoLock lock(parent_lock_);
+      parent = bootstrap_parent_channel_;
+    }
+
+    if (!parent) {
+      // Yes, we're the broker. We can initialize the child directly.
+      channel->AcceptBrokerClient(name_, ScopedPlatformHandle());
+    } else {
+      // We aren't the broker, so wait for a broker connection.
+      base::AutoLock lock(broker_lock_);
+      pending_broker_clients_.push(child_name);
+    }
+  }
+}
+
+void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
+                                       const ports::NodeName& client_name,
+                                       ScopedPlatformHandle process_handle) {
+  scoped_refptr<NodeChannel> sender = GetPeerChannel(from_node);
+  if (!sender) {
+    DLOG(ERROR) << "Ignoring AddBrokerClient from unknown sender.";
+    return;
+  }
+
+  if (GetPeerChannel(client_name)) {
+    DLOG(ERROR) << "Ignoring AddBrokerClient for known client.";
+    DropPeer(from_node);
+    return;
+  }
+
+  PlatformChannelPair broker_channel;
+  scoped_refptr<NodeChannel> client = NodeChannel::Create(
+      this, broker_channel.PassServerHandle(), io_task_runner_);
+
+#if defined(OS_WIN)
+  // The broker must have a working handle to the client process in order to
+  // properly copy other handles to and from the client.
+  if(!process_handle.is_valid()) {
+    DLOG(ERROR) << "Broker rejecting client with invalid process handle.";
+    return;
+  }
+  client->SetRemoteProcessHandle(process_handle.release().handle);
+#endif
+
+  AddPeer(client_name, client, true /* start_channel */);
+
+  DVLOG(1) << "Broker " << name_ << " accepting client " << client_name
+           << " from peer " << from_node;
+
+  sender->BrokerClientAdded(client_name, broker_channel.PassClientHandle());
+}
+
+void NodeController::OnBrokerClientAdded(const ports::NodeName& from_node,
+                                         const ports::NodeName& client_name,
+                                         ScopedPlatformHandle broker_channel) {
+  scoped_refptr<NodeChannel> client = GetPeerChannel(client_name);
+  if (!client) {
+    DLOG(ERROR) << "BrokerClientAdded for unknown child " << client_name;
+    return;
+  }
+
+  // This should have come from our own broker.
+  if(GetBrokerChannel() != GetPeerChannel(from_node)) {
+    DLOG(ERROR) << "BrokerClientAdded from non-broker node " << from_node;
+    return;
+  }
+
+  DVLOG(1) << "Child " << client_name << " accepted by broker " << from_node;
+
+  client->AcceptBrokerClient(from_node, std::move(broker_channel));
+}
+
+void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
+                                          const ports::NodeName& broker_name,
+                                          ScopedPlatformHandle broker_channel) {
+  // This node should already have a parent in bootstrap mode.
+  ports::NodeName parent_name;
+  scoped_refptr<NodeChannel> parent;
+  {
+    base::AutoLock lock(parent_lock_);
+    parent_name = parent_name_;
+    parent = bootstrap_parent_channel_;
+    bootstrap_parent_channel_ = nullptr;
+  }
+  DCHECK(parent_name == from_node);
+  DCHECK(parent);
+
+  std::queue<ports::NodeName> pending_broker_clients;
+  std::unordered_map<ports::NodeName, OutgoingMessageQueue>
+      pending_relay_messages;
+  {
+    base::AutoLock lock(broker_lock_);
+    broker_name_ = broker_name;
+    std::swap(pending_broker_clients, pending_broker_clients_);
+    std::swap(pending_relay_messages, pending_relay_messages_);
+  }
+  DCHECK(broker_name != ports::kInvalidNodeName);
+
+  // It's now possible to add both the broker and the parent as peers.
+  // Note that the broker and parent may be the same node.
+  scoped_refptr<NodeChannel> broker;
+  if (broker_name == parent_name) {
+    DCHECK(!broker_channel.is_valid());
+    broker = parent;
+  } else {
+    DCHECK(broker_channel.is_valid());
+    broker = NodeChannel::Create(this, std::move(broker_channel),
+                                 io_task_runner_);
+    AddPeer(broker_name, broker, true /* start_channel */);
+  }
+  AddPeer(parent_name, parent, false /* start_channel */);
+
+  // Resolve any pending port connections to the parent.
+  for (const auto& request : pending_port_requests_) {
+    pending_parent_port_connections_.insert(
+        std::make_pair(request.local_port.name(), request.callback));
+    parent->RequestPortConnection(request.local_port.name(), request.token);
+  }
+  pending_port_requests_.clear();
+
+  // Feed the broker any pending children of our own.
+  while (!pending_broker_clients.empty()) {
+    const ports::NodeName& child_name = pending_broker_clients.front();
+    auto it = pending_children_.find(child_name);
+    DCHECK(it != pending_children_.end());
+    broker->AddBrokerClient(child_name, it->second->CopyRemoteProcessHandle());
+    pending_broker_clients.pop();
+  }
+
+#if defined(OS_WIN)
+  // Have the broker relay any messages we have waiting.
+  for (auto& entry : pending_relay_messages) {
+    const ports::NodeName& destination = entry.first;
+    auto& message_queue = entry.second;
+    while (!message_queue.empty()) {
+      broker->RelayPortsMessage(destination, std::move(message_queue.front()));
+      message_queue.pop();
+    }
+  }
+#endif
+
+  DVLOG(1) << "Child " << name_ << " accepted by broker " << broker_name;
 }
 
 void NodeController::OnPortsMessage(Channel::MessagePtr channel_message) {
@@ -800,10 +950,9 @@ void NodeController::OnRelayPortsMessage(const ports::NodeName& from_node,
                                          base::ProcessHandle from_process,
                                          const ports::NodeName& destination,
                                          Channel::MessagePtr message) {
-  scoped_refptr<NodeChannel> parent = GetParentChannel();
-  if (parent) {
-    // Only the parent should be asked to relay a message.
-    DLOG(ERROR) << "Non-parent refusing to relay message.";
+  if (GetBrokerChannel()) {
+    // Only the broker should be asked to relay a message.
+    LOG(ERROR) << "Non-broker refusing to relay message.";
     DropPeer(from_node);
     return;
   }
@@ -811,19 +960,18 @@ void NodeController::OnRelayPortsMessage(const ports::NodeName& from_node,
   // The parent should always know which process this came from.
   DCHECK(from_process != base::kNullProcessHandle);
 
-  // Duplicate the handles to this (the parent) process. If the message is
-  // destined for another child process, the handles will be duplicated to
-  // that process before going out (see NodeChannel::WriteChannelMessage).
+  // Rewrite the handles to this (the parent) process. If the message is
+  // destined for another child process, the handles will be rewritten to that
+  // process before going out (see NodeChannel::WriteChannelMessage).
   //
   // TODO: We could avoid double-duplication.
-  for (size_t i = 0; i < message->num_handles(); ++i) {
-    BOOL result = DuplicateHandle(
-        from_process, message->handles()[i].handle,
-        base::GetCurrentProcessHandle(),
-        reinterpret_cast<HANDLE*>(message->handles() + i),
-        0, FALSE, DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-    DCHECK(result);
+  if (!Channel::Message::RewriteHandles(from_process,
+                                        base::GetCurrentProcessHandle(),
+                                        message->handles(),
+                                        message->num_handles())) {
+    DLOG(ERROR) << "Failed to relay one or more handles.";
   }
+
   if (destination == name_) {
     // Great, we can deliver this message locally.
     OnPortsMessage(std::move(message));

@@ -111,6 +111,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBuffer, SharedBufferTest, h) {
   WriteMessageWithHandles(other_child, "", &dupe, 1);
 
   EXPECT_EQ("quit", ReadMessage(h));
+  WriteMessage(h, "ok");
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBuffer, SharedBufferTest, h) {
@@ -125,8 +126,9 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBuffer, SharedBufferTest, h) {
 
   // Write the message from the parent into the buffer and exit.
   WriteToBuffer(b, 0, message);
-
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
   EXPECT_EQ("quit", ReadMessage(h));
+  WriteMessage(h, "ok");
 }
 
 TEST_F(SharedBufferTest, PassSharedBufferFromChildToChild) {
@@ -147,11 +149,80 @@ TEST_F(SharedBufferTest, PassSharedBufferFromChildToChild) {
       ReadMessageWithHandles(h0, &b, 1);
 
       WriteMessage(h1, "quit");
-      WriteMessage(h0, "quit");
+      EXPECT_EQ("ok", ReadMessage(h1));
     END_CHILD()
+    WriteMessage(h0, "quit");
+    EXPECT_EQ("ok", ReadMessage(h0));
   END_CHILD()
 
   // The second child should have written this message.
+  ExpectBufferContents(b, 0, message);
+}
+
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBufferParent, SharedBufferTest,
+                                  parent) {
+  RUN_CHILD_ON_PIPE(CreateAndPassBuffer, child)
+    // Read a pipe from the parent and forward it to our child.
+    MojoHandle pipe;
+    std::string message = ReadMessageWithHandles(parent, &pipe, 1);
+
+    WriteMessageWithHandles(child, message, &pipe, 1);
+
+    // Read a buffer handle from the child and pass it back to the parent.
+    MojoHandle buffer;
+    EXPECT_EQ("", ReadMessageWithHandles(child, &buffer, 1));
+    WriteMessageWithHandles(parent, "", &buffer, 1);
+
+    EXPECT_EQ("quit", ReadMessage(parent));
+    WriteMessage(child, "quit");
+    EXPECT_EQ("ok", ReadMessage(child));
+    WriteMessage(parent, "ok");
+  END_CHILD()
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBufferParent, SharedBufferTest,
+                                  parent) {
+  RUN_CHILD_ON_PIPE(ReceiveAndEditBuffer, child)
+    // Read a pipe from the parent and forward it to our child.
+    MojoHandle pipe;
+    std::string message = ReadMessageWithHandles(parent, &pipe, 1);
+    WriteMessageWithHandles(child, message, &pipe, 1);
+
+    EXPECT_EQ("quit", ReadMessage(parent));
+    WriteMessage(child, "quit");
+    EXPECT_EQ("ok", ReadMessage(child));
+    WriteMessage(parent, "ok");
+  END_CHILD()
+}
+
+TEST_F(SharedBufferTest, PassHandleBetweenCousins) {
+  const std::string message = "hello";
+  MojoHandle p0, p1;
+  CreateMessagePipe(&p0, &p1);
+
+  // Spawn two children who will each spawn their own child. Make sure the
+  // grandchildren (cousins to each other) can pass platform handles.
+  MojoHandle b;
+  RUN_CHILD_ON_PIPE(CreateAndPassBufferParent, child1)
+    RUN_CHILD_ON_PIPE(ReceiveAndEditBufferParent, child2)
+      MojoHandle pipe[2];
+      CreateMessagePipe(&pipe[0], &pipe[1]);
+
+      WriteMessageWithHandles(child1, message, &pipe[0], 1);
+      WriteMessageWithHandles(child2, message, &pipe[1], 1);
+
+      // Receive the buffer back from the first child.
+      ReadMessageWithHandles(child1, &b, 1);
+
+      WriteMessage(child2, "quit");
+      EXPECT_EQ("ok", ReadMessage(child2));
+    END_CHILD()
+    WriteMessage(child1, "quit");
+    EXPECT_EQ("ok", ReadMessage(child1));
+  END_CHILD()
+
+  // The second grandchild should have written this message.
   ExpectBufferContents(b, 0, message);
 }
 

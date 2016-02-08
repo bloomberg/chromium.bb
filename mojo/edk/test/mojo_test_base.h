@@ -196,40 +196,46 @@ class MojoTestBase : public testing::Test {
 // will be the process's exit code (but see the comment about
 // WaitForChildShutdown()).
 //
-// The function is defined as a static member of a subclass of |test_base|
-// to facilitate shared code between test clients.
+// The function is defined as a subclass of |test_base| to facilitate shared
+// code between test clients and to allow clients to spawn children themselves.
 //
 // |pipe_name| will be bound to the MojoHandle of a message pipe connected
 // to the parent process (see RUN_CHILD_ON_PIPE above.) This pipe handle is
 // automatically closed on test client teardown.
 #define DEFINE_TEST_CLIENT_WITH_PIPE(client_name, test_base, pipe_name)     \
   class client_name##_MainFixture : public test_base {                      \
+    void TestBody() override {}                                             \
    public:                                                                  \
-    static int ClientMain(MojoHandle pipe);                                 \
+    int Main(MojoHandle);                                                   \
   };                                                                        \
   MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                        \
       client_name##TestChildMain,                                           \
       test::MultiprocessTestHelper::ChildSetup) {                           \
+        client_name##_MainFixture test;                                     \
         return test::MultiprocessTestHelper::RunClientMain(                 \
-            base::Bind(&client_name##_MainFixture::ClientMain));            \
+            base::Bind(&client_name##_MainFixture::Main,                    \
+                       base::Unretained(&test)));                           \
       }                                                                     \
-      int client_name##_MainFixture::ClientMain(MojoHandle pipe_name)
+      int client_name##_MainFixture::Main(MojoHandle pipe_name)
 
 
 // This is a version of DEFINE_TEST_CLIENT_WITH_PIPE which can be used with
 // gtest ASSERT/EXPECT macros.
 #define DEFINE_TEST_CLIENT_TEST_WITH_PIPE(client_name, test_base, pipe_name) \
   class client_name##_MainFixture : public test_base {                       \
+    void TestBody() override {}                                              \
    public:                                                                   \
-    static void ClientMain(MojoHandle pipe);                                 \
+    void Main(MojoHandle);                                                   \
   };                                                                         \
   MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                         \
       client_name##TestChildMain,                                            \
       test::MultiprocessTestHelper::ChildSetup) {                            \
+        client_name##_MainFixture test;                                      \
         return test::MultiprocessTestHelper::RunClientTestMain(              \
-            base::Bind(&client_name##_MainFixture::ClientMain));             \
+            base::Bind(&client_name##_MainFixture::Main,                     \
+                       base::Unretained(&test)));                            \
       }                                                                      \
-      void client_name##_MainFixture::ClientMain(MojoHandle pipe_name)
+      void client_name##_MainFixture::Main(MojoHandle pipe_name)
 
 
 

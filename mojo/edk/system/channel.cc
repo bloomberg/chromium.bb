@@ -158,6 +158,29 @@ ScopedPlatformHandleVectorPtr Channel::Message::TakeHandles() {
 #endif
 }
 
+#if defined(OS_WIN)
+// static
+bool Channel::Message::RewriteHandles(base::ProcessHandle from_process,
+                                      base::ProcessHandle to_process,
+                                      PlatformHandle* handles,
+                                      size_t num_handles) {
+  bool success = true;
+  for (size_t i = 0; i < num_handles; ++i) {
+    if (!handles[i].is_valid()) {
+      DLOG(ERROR) << "Refusing to duplicate invalid handle.";
+      continue;
+    }
+    BOOL result = DuplicateHandle(
+        from_process, handles[i].handle, to_process,
+        reinterpret_cast<HANDLE*>(handles + i), 0, FALSE,
+        DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
+    if (!result)
+      success = false;
+  }
+  return success;
+}
+#endif
+
 // Helper class for managing a Channel's read buffer allocations. This maintains
 // a single contiguous buffer with the layout:
 //
