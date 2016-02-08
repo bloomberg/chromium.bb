@@ -7,8 +7,17 @@
 
 #include "device/bluetooth/bluetooth_classic_win.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+
 namespace device {
 namespace win {
+
+struct BluetoothRadio {
+  BLUETOOTH_RADIO_INFO radio_info;
+  BOOL is_connectable;
+};
+
 // Fake implementation of BluetoothClassicWrapper. Used for BluetoothTestWin.
 class BluetoothClassicWrapperFake : public BluetoothClassicWrapper {
  public:
@@ -30,6 +39,14 @@ class BluetoothClassicWrapperFake : public BluetoothClassicWrapper {
   BOOL FindDeviceClose(HBLUETOOTH_DEVICE_FIND handle) override;
   BOOL EnableDiscovery(HANDLE handle, BOOL is_enable) override;
   BOOL EnableIncomingConnections(HANDLE handle, BOOL is_enable) override;
+  DWORD LastError() override;
+
+  BluetoothRadio* SimulateARadio(base::string16 name,
+                                 BLUETOOTH_ADDRESS address);
+
+ private:
+  scoped_ptr<BluetoothRadio> simulated_radios_;
+  DWORD last_error_;
 };
 
 }  // namespace device

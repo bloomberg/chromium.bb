@@ -217,8 +217,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   // List of observers interested in event notifications.
   base::ObserverList<Observer> observers_;
 
-  // Adapter handle owned by bluetooth task runner.
-  base::win::ScopedHandle adapter_handle_;
+  // Weak reference of the adapter handle, let BluetoothClassicWrapper handle
+  // the close of |adapter_handle_|.
+  HANDLE adapter_handle_;
 
   // indicates whether the adapter is in discovery mode or not.
   bool discovering_;

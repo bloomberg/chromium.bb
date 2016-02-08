@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_CLASSIC_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_CLASSIC_WIN_H_
 
+#include "base/win/scoped_handle.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_init_win.h"
 
@@ -35,10 +36,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothClassicWrapper {
   virtual BOOL FindDeviceClose(HBLUETOOTH_DEVICE_FIND handle);
   virtual BOOL EnableDiscovery(HANDLE handle, BOOL is_enable);
   virtual BOOL EnableIncomingConnections(HANDLE handle, BOOL is_enable);
+  virtual DWORD LastError();
 
  protected:
   BluetoothClassicWrapper();
   virtual ~BluetoothClassicWrapper();
+
+ private:
+  base::win::ScopedHandle opened_radio_handle_;
 };
 
 }  // namespace win

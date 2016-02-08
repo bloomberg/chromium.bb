@@ -10,6 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
+#include "device/bluetooth/bluetooth_classic_win_fake.h"
+#include "device/bluetooth/bluetooth_low_energy_win_fake.h"
 
 namespace device {
 class BluetoothAdapterWin;
@@ -31,6 +33,9 @@ class BluetoothTestWin : public BluetoothTestBase {
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> bluetooth_task_runner_;
   BluetoothAdapterWin* adapter_win_;
+
+  win::BluetoothClassicWrapperFake* fake_bt_classic_wrapper_;
+  win::BluetoothLowEnergyWrapperFake* fake_bt_le_wrapper_;
 
   void AdapterInitCallback();
 };

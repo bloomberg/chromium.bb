@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/win/scoped_handle.h"
 #include "device/bluetooth/bluetooth_classic_win.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_init_win.h"
@@ -142,8 +141,8 @@ BluetoothTaskManagerWin::BluetoothTaskManagerWin(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
     : ui_task_runner_(ui_task_runner),
       discovering_(false),
-      current_logging_batch_count_(0) {
-}
+      current_logging_batch_count_(0),
+      adapter_handle_(NULL) {}
 
 BluetoothTaskManagerWin::~BluetoothTaskManagerWin() {
   win::BluetoothLowEnergyWrapper::DeleteInstance();
@@ -297,15 +296,13 @@ void BluetoothTaskManagerWin::PollAdapter() {
   if (!discovering_) {
     const BLUETOOTH_FIND_RADIO_PARAMS adapter_param =
         { sizeof(BLUETOOTH_FIND_RADIO_PARAMS) };
-    if (adapter_handle_.IsValid())
-      adapter_handle_.Close();
     HANDLE temp_adapter_handle;
     HBLUETOOTH_RADIO_FIND handle =
         win::BluetoothClassicWrapper::GetInstance()->FindFirstRadio(
             &adapter_param, &temp_adapter_handle);
 
     if (handle) {
-      adapter_handle_.Set(temp_adapter_handle);
+      adapter_handle_ = temp_adapter_handle;
       GetKnownDevices();
       win::BluetoothClassicWrapper::GetInstance()->FindRadioClose(handle);
     }
@@ -324,7 +321,7 @@ void BluetoothTaskManagerWin::PollAdapter() {
 void BluetoothTaskManagerWin::PostAdapterStateToUi() {
   DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
   AdapterState* state = new AdapterState();
-  GetAdapterState(adapter_handle_.Get(), state);
+  GetAdapterState(adapter_handle_, state);
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BluetoothTaskManagerWin::OnAdapterStateChanged,
@@ -338,13 +335,13 @@ void BluetoothTaskManagerWin::SetPowered(
     const BluetoothAdapter::ErrorCallback& error_callback) {
   DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
   bool success = false;
-  if (adapter_handle_.IsValid()) {
+  if (adapter_handle_) {
     if (!powered) {
       win::BluetoothClassicWrapper::GetInstance()->EnableDiscovery(
-          adapter_handle_.Get(), false);
+          adapter_handle_, false);
     }
     success = !!win::BluetoothClassicWrapper::GetInstance()
-                    ->EnableIncomingConnections(adapter_handle_.Get(), powered);
+                    ->EnableIncomingConnections(adapter_handle_, powered);
   }
 
   if (success) {
@@ -358,11 +355,9 @@ void BluetoothTaskManagerWin::SetPowered(
 void BluetoothTaskManagerWin::StartDiscovery() {
   DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
   ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&BluetoothTaskManagerWin::OnDiscoveryStarted,
-                 this,
-                 adapter_handle_.IsValid()));
-  if (!adapter_handle_.IsValid())
+      FROM_HERE, base::Bind(&BluetoothTaskManagerWin::OnDiscoveryStarted, this,
+                            !!adapter_handle_));
+  if (!adapter_handle_)
     return;
   discovering_ = true;
 
@@ -379,7 +374,7 @@ void BluetoothTaskManagerWin::StopDiscovery() {
 
 void BluetoothTaskManagerWin::DiscoverDevices(int timeout_multiplier) {
   DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
-  if (!discovering_ || !adapter_handle_.IsValid()) {
+  if (!discovering_ || !adapter_handle_) {
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&BluetoothTaskManagerWin::OnDiscoveryStopped, this));
@@ -448,7 +443,7 @@ bool BluetoothTaskManagerWin::SearchClassicDevices(
       win::BluetoothClassicWrapper::GetInstance()->FindFirstDevice(
           &device_search_params, &device_info);
   if (!handle) {
-    int last_error = GetLastError();
+    int last_error = win::BluetoothClassicWrapper::GetInstance()->LastError();
     if (last_error == ERROR_NO_MORE_ITEMS) {
       return true;  // No devices is not an error.
     }
@@ -466,7 +461,7 @@ bool BluetoothTaskManagerWin::SearchClassicDevices(
     device_info.dwSize = sizeof(BLUETOOTH_DEVICE_INFO);
     if (!win::BluetoothClassicWrapper::GetInstance()->FindNextDevice(
             handle, &device_info)) {
-      int last_error = GetLastError();
+      int last_error = win::BluetoothClassicWrapper::GetInstance()->LastError();
       if (last_error == ERROR_NO_MORE_ITEMS) {
         break;  // No more items is expected error when done enumerating.
       }
@@ -477,7 +472,8 @@ bool BluetoothTaskManagerWin::SearchClassicDevices(
   }
 
   if (!win::BluetoothClassicWrapper::GetInstance()->FindDeviceClose(handle)) {
-    LogPollingError("Error calling BluetoothFindDeviceClose", GetLastError());
+    LogPollingError("Error calling BluetoothFindDeviceClose",
+                    win::BluetoothClassicWrapper::GetInstance()->LastError());
     return false;
   }
   return true;
