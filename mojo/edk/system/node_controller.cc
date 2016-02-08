@@ -17,6 +17,8 @@
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_support.h"
+#include "mojo/edk/system/broker.h"
+#include "mojo/edk/system/broker_host.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/ports_message.h"
 
@@ -136,6 +138,14 @@ void NodeController::ConnectToChild(base::ProcessHandle process_handle,
 }
 
 void NodeController::ConnectToParent(ScopedPlatformHandle platform_handle) {
+// TODO(amistry): Consider the need for a broker on Windows.
+#if defined(OS_POSIX)
+  // On posix, use the bootstrap channel for the broker and receive the node's
+  // channel synchronously as the first message from the broker.
+  broker_.reset(new Broker(std::move(platform_handle)));
+  platform_handle = broker_->GetParentPlatformHandle();
+#endif
+
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NodeController::ConnectToParentOnIOThread,
@@ -187,8 +197,16 @@ void NodeController::ReservePort(const std::string& token,
 
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
-  // TODO: Broker through the parent over a sync channel. :(
-  return internal::g_platform_support->CreateSharedBuffer(num_bytes);
+  scoped_refptr<PlatformSharedBuffer> buffer =
+      internal::g_platform_support->CreateSharedBuffer(num_bytes);
+#if defined(OS_POSIX)
+  if (!buffer && broker_) {
+    // On POSIX, creating a shared buffer in a sandboxed process will fail, so
+    // fall back to the broker if there is one.
+    buffer = broker_->GetSharedBuffer(num_bytes);
+  }
+#endif
+  return buffer;
 }
 
 void NodeController::ConnectToParentPort(const ports::PortRef& local_port,
@@ -241,8 +259,16 @@ void NodeController::ConnectToChildOnIOThread(
     ScopedPlatformHandle platform_handle) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
+#if defined(OS_POSIX)
+  PlatformChannelPair node_channel;
+  broker_host_.reset(new BrokerHost(std::move(platform_handle)));
+  broker_host_->SendChannel(node_channel.PassClientHandle());
+  scoped_refptr<NodeChannel> channel = NodeChannel::Create(
+      this, node_channel.PassServerHandle(), io_task_runner_);
+#else
   scoped_refptr<NodeChannel> channel =
       NodeChannel::Create(this, std::move(platform_handle), io_task_runner_);
+#endif
 
   ports::NodeName token;
   GenerateRandomName(&token);

@@ -28,6 +28,8 @@
 namespace mojo {
 namespace edk {
 
+class Broker;
+class BrokerHost;
 class Core;
 class PortsMessage;
 
@@ -296,6 +298,14 @@ class NodeController : public ports::NodeDelegate,
   // Indicates whether this object should delete itself on IO thread shutdown.
   // Must only be accessed from the IO thread.
   bool destroy_on_io_thread_shutdown_ = false;
+
+#if defined(OS_POSIX)
+  // Broker for sync shared buffer creation (posix-only) in children.
+  scoped_ptr<Broker> broker_;
+
+  // Broker host for sync shared buffer creation (posix-only).
+  scoped_ptr<BrokerHost> broker_host_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(NodeController);
 };
