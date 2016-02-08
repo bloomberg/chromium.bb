@@ -6,11 +6,10 @@ package org.chromium.chrome.browser.ntp.interests;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.FlakyTest;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.interests.InterestsService.Interest;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
@@ -90,8 +89,12 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
         super.tearDown();
     }
 
-    @SmallTest
-    @Feature({"NewTabPage"})
+    /**
+     * http://crbug.com/585173
+     * @SmallTest
+     * @Feature({"NewTabPage"})
+     */
+    @FlakyTest
     public void testEmptyInterests() throws Exception {
         String response = "{\n"
                 + "  \"interests\": []\n"
@@ -102,8 +105,12 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
         assertEquals(0, result.length);
     }
 
-    @SmallTest
-    @Feature({"NewTabPage"})
+    /**
+     * http://crbug.com/585173
+     * @SmallTest
+     * @Feature({"NewTabPage"})
+     */
+    @FlakyTest
     public void testInterests() throws Exception {
         String response = "{\n"
                 + "  \"interests\": [\n"
@@ -126,8 +133,12 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
         assertEquals(new Interest("Google Chrome", "https://fake.com/fake.png", 0.98), result[1]);
     }
 
-    @SmallTest
-    @Feature({"NewTabPage"})
+    /**
+     * http://crbug.com/585173
+     * @SmallTest
+     * @Feature({"NewTabPage"})
+     */
+    @FlakyTest
     public void testBadlyFormedInterests() throws Exception {
         String response = "{\n"
                 + "  \"interests\": [";
@@ -136,8 +147,12 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
         assertTrue(NULL_RESPONSE == result);
     }
 
-    @SmallTest
-    @Feature({"NewTabPage"})
+    /**
+     * http://crbug.com/585173
+     * @SmallTest
+     * @Feature({"NewTabPage"})
+     */
+    @FlakyTest
     public void testEmptyResponse() throws Exception {
         Interest[] result = serveResponseAndRequestInterests("");
 
