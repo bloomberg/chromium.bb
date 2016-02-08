@@ -176,9 +176,6 @@
   <message name="IDS_BOOKMARK_AX_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
     Bookmark folder
   </message>
-  <message name="IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK" desc="Title of the button for removing the bookmark">
-    Remove
-  </message>
   <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to edit details of the bookmark">
     Edit...
   </message>
@@ -224,14 +221,8 @@
   <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM" desc="Text on the new folder context menu item.">
     &amp;New folder
   </message>
-  <message name="IDS_BOOKMARK_EDITOR_TITLE" desc="Title of the window the bookmark editor is in.">
-    Edit Bookmark
-  </message>
   <message name="IDS_BOOKMARK_EDITOR_CONFIRM_DELETE" desc="The message shown in the dialog asking the user to confirm deleting a folder.">
     This folder contains <ph name="COUNT">$1<ex>5</ex></ph> bookmarks. Are you sure you want to delete it?
-  </message>
-  <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME" desc="Name for newly created groups">
-    New folder
   </message>
   <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE" desc="Window title of editor for bookmark folders">
     Edit folder name
@@ -239,20 +230,6 @@
   <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="Window title of editor for new bookmark folders">
     New folder
   </message>
-  <if expr="is_ios">
-    <message name="IDS_BOOKMARK_FOLDER_CHOOSER_TITLE" desc="Title of the window the bookmark folder chooser is in.">
-      Choose Folder
-    </message>
-    <message name="IDS_BOOKMARK_ADD_EDITOR_TITLE" desc="Title of the window the bookmark editor is in when adding a bookmark. [Length: 10em]">
-      Add Bookmark
-    </message>
-    <message name="IDS_BOOKMARK_NEW_FOLDER_BUTTON_TITLE" desc="Title for button to create a new folder in Bookmarks [Length: 14em]">
-      New Folder
-    </message>
-    <message name="IDS_BOOKMARK_FOLDER_EDITOR_TITLE" desc="Title of the window the bookmark folder editor is in.">
-      Edit Folder
-    </message>
-  </if>
   <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_ALL_TABS_DIALOG_TITLE" desc="The title of the Bookmark All Tabs dialog.">
       Bookmark all tabs
@@ -294,12 +271,6 @@
     <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="Title of the export menu item in the bookmark manager.">
       Export bookmarks to HTML file...
     </message>
-    <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
-      Name
-    </message>
-    <message name="IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
-      URL
-    </message>
     <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="Error message to display when the user tries to edit or create a bookmark with an invalid URL.">
       Invalid URL.
     </message>
@@ -332,12 +303,6 @@
     <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="In Title Case: Title of the export menu item in the bookmark manager.">
       Export Bookmarks to HTML File...
     </message>
-    <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="In Title Case: Text to show in the URL input field when editing or creating bookmarks.">
-      Name
-    </message>
-    <message name="IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER" desc="In Title Case: Text to show in the URL input field when editing or creating bookmarks.">
-      URL
-    </message>
     <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="In Title Case: Error message to display when the user tries to edit or create a bookmark with an invalid URL.">
       Invalid URL.
     </message>
@@ -346,17 +311,6 @@
     </message>
     <message name="IDS_BOOKMARK_MANAGER_SEARCH" desc="In Title Case: The label for the tree item that shows the search results for the bookmarks.">
       Search
-    </message>
-  </if>
-  <if expr="is_ios">
-    <message name="IDS_BOOKMARK_MANAGER_FOLDER_SECTION" desc="The label for the folder section when editing or creating bookmarks on a phone.">
-      In Folder:
-    </message>
-    <message name="IDS_BOOKMARK_MANAGER_FOLDER_TITLE" desc="The label for the folder selector field when editing or creating bookmarks.">
-      Folder
-    </message>
-    <message name="IDS_BOOKMARK_MANAGER_REMOVE_TITLE" desc="The label for the remove button when editing bookmarks.">
-      Remove
     </message>
   </if>
   <message name="IDS_EXPORT_BOOKMARKS_DEFAULT_FILENAME" desc="Filename that pre-populates the filename field when user attempts to export his bookmarks from Bookmark Manager.">
@@ -390,10 +344,7 @@
   </if>
   <!-- End of Bookmarks Menu (in the Main Menu) strings. -->
 
-  <!-- Being of Bookmark Star button strings. -->
-  <message name="IDS_TOOLTIP_STAR" desc="The tooltip shown when you hover the star button in the right side of the location bar.">
-    Bookmark this page
-  </message>
+  <!-- Begin of Bookmark Star button strings. -->
   <message name="IDS_TOOLTIP_STARRED" desc="The tooltip shown when you hover the star button in the right side of the location bar and the current page is bookmarked.">
     Edit bookmark for this page
   </message>

@@ -185,6 +185,7 @@
       <part file="app_modal_strings.grdp" />
       <part file="autofill_strings.grdp" />
       <part file="bookmark_bar_strings.grdp" />
+      <part file="bookmark_component_strings.grdp" />
       <part file="browser_sync_strings.grdp" />
       <part file="components_settings_strings.grdp" />
       <part file="crash_strings.grdp" />
