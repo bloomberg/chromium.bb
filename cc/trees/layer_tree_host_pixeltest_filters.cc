@@ -587,6 +587,69 @@ TEST_F(EnlargedTextureWithCropOffsetFilter, Software) {
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
 }
 
+class FilterWithGiantCropRectPixelTest : public LayerTreeHostFiltersPixelTest {
+ protected:
+  scoped_refptr<SolidColorLayer> BuildFilterWithGiantCropRect(
+      bool masks_to_bounds) {
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+    scoped_refptr<SolidColorLayer> filter_layer =
+        CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), SK_ColorRED);
+
+    // This matrix swaps the red and green channels, and has a slight
+    // translation in the alpha component, so that it affects transparent
+    // pixels.
+    SkScalar matrix[20] = {
+        0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 20.0f,
+    };
+
+    skia::RefPtr<SkColorFilter> color_filter(
+        skia::AdoptRef(SkColorFilter::CreateMatrixFilterRowMajor255(matrix)));
+
+    FilterOperations filters;
+    SkImageFilter::CropRect cropRect(
+        SkRect::MakeXYWH(-40000, -40000, 80000, 80000));
+    skia::RefPtr<SkImageFilter> filter(
+        skia::AdoptRef(SkColorFilterImageFilter::Create(color_filter.get(),
+                                                        nullptr, &cropRect)));
+    filters.Append(FilterOperation::CreateReferenceFilter(filter));
+    filter_layer->SetFilters(filters);
+    background->SetMasksToBounds(masks_to_bounds);
+    background->AddChild(filter_layer);
+
+    return background;
+  }
+};
+
+class FilterWithGiantCropRect : public FilterWithGiantCropRectPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    scoped_refptr<SolidColorLayer> tree = BuildFilterWithGiantCropRect(true);
+    RunPixelTest(test_type, tree, image_name);
+  }
+};
+
+TEST_F(FilterWithGiantCropRect, GL) {
+  RunPixelTestType(
+      PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("filter_with_giant_crop_rect.png")));
+}
+
+class FilterWithGiantCropRectNoClip : public FilterWithGiantCropRectPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    scoped_refptr<SolidColorLayer> tree = BuildFilterWithGiantCropRect(false);
+    RunPixelTest(test_type, tree, image_name);
+  }
+};
+
+TEST_F(FilterWithGiantCropRectNoClip, GL) {
+  RunPixelTestType(
+      PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("filter_with_giant_crop_rect.png")));
+}
+
 }  // namespace
 }  // namespace cc
 
