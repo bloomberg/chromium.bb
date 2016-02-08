@@ -2697,14 +2697,6 @@ void WebContentsImpl::DidGetRedirectForResourceRequest(
       NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       Source<WebContents>(this),
       Details<const ResourceRedirectDetails>(&details));
-
-  if (IsResourceTypeFrame(details.resource_type)) {
-    NavigationHandleImpl* navigation_handle =
-        static_cast<RenderFrameHostImpl*>(render_frame_host)
-            ->navigation_handle();
-    if (navigation_handle)
-      navigation_handle->DidRedirectNavigation(details.new_url);
-  }
 }
 
 void WebContentsImpl::NotifyWebContentsFocused() {

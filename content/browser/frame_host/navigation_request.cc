@@ -327,7 +327,6 @@ void NavigationRequest::OnRedirectChecksComplete(
   }
 
   loader_->FollowRedirect();
-  navigation_handle_->DidRedirectNavigation(common_params_.url);
 }
 
 void NavigationRequest::InitializeServiceWorkerHandleIfNeeded() {

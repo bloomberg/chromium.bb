@@ -154,6 +154,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the URLRequest will be redirected in the network stack.
   // |callback| will be called when all throttles check have completed. This
   // will allow the caller to cancel the navigation or let it proceed.
+  // This will also inform the delegate that the request was redirected.
   void WillRedirectRequest(
       const GURL& new_url,
       bool new_method_is_post,
@@ -176,10 +177,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Returns the FrameTreeNode this navigation is happening in.
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
-
-  // Called when the navigation was redirected. This will update the |url_| and
-  // inform the delegate.
-  void DidRedirectNavigation(const GURL& new_url);
 
   // Called when the navigation is ready to be committed in
   // |render_frame_host|. This will update the |state_| and inform the
