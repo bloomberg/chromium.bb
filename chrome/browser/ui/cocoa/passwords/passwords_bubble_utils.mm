@@ -13,6 +13,48 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
+namespace {
+
+HyperlinkTextView* LabelWithLink(const base::string16& text,
+                                 SkColor color,
+                                 ui::ResourceBundle::FontStyle fontSize,
+                                 gfx::Range range,
+                                 id<NSTextViewDelegate> delegate) {
+  base::scoped_nsobject<HyperlinkTextView> textView(
+      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+  NSColor* textColor = skia::SkColorToCalibratedNSColor(color);
+  NSFont* font = ResourceBundle::GetSharedInstance()
+                     .GetFontList(fontSize)
+                     .GetPrimaryFont()
+                     .GetNativeFont();
+  [textView setMessage:base::SysUTF16ToNSString(text)
+              withFont:font
+          messageColor:textColor];
+  NSRange brandRange = range.ToNSRange();
+  if (brandRange.length) {
+    NSColor* linkColor =
+        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
+    [textView addLinkRange:brandRange
+                    withURL:nil
+                  linkColor:linkColor];
+    [textView setDelegate:delegate];
+
+    // Create the link with no underlining.
+    [textView setLinkTextAttributes:nil];
+    NSTextStorage* text = [textView textStorage];
+    [text addAttribute:NSUnderlineStyleAttributeName
+                 value:@(NSUnderlineStyleNone)
+                 range:brandRange];
+  } else {
+    // TODO(vasilii): remove if crbug.com/515189 is fixed.
+    [textView setRefusesFirstResponder:YES];
+  }
+
+  return textView.autorelease();
+}
+
+}  // namespace
+
 NSFont* LabelFont() {
   return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 }
@@ -72,35 +114,13 @@ NSButton* DialogButton(NSString* title) {
 HyperlinkTextView* TitleLabelWithLink(const base::string16& text,
                                       gfx::Range range,
                                       id<NSTextViewDelegate> delegate) {
-  base::scoped_nsobject<HyperlinkTextView> titleView(
-      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
-  NSColor* textColor = [NSColor blackColor];
-  NSFont* font = ResourceBundle::GetSharedInstance()
-                     .GetFontList(ResourceBundle::MediumFont)
-                     .GetPrimaryFont()
-                     .GetNativeFont();
-  [titleView setMessage:base::SysUTF16ToNSString(text)
-               withFont:font
-           messageColor:textColor];
-  NSRange titleBrandLinkRange = range.ToNSRange();
-  if (titleBrandLinkRange.length) {
-    NSColor* linkColor =
-        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
-    [titleView addLinkRange:titleBrandLinkRange
-                    withURL:nil
-                  linkColor:linkColor];
-    [titleView setDelegate:delegate];
+  return LabelWithLink(text, SK_ColorBLACK, ResourceBundle::MediumFont, range,
+                       delegate);
+}
 
-    // Create the link with no underlining.
-    [titleView setLinkTextAttributes:nil];
-    NSTextStorage* text = [titleView textStorage];
-    [text addAttribute:NSUnderlineStyleAttributeName
-                 value:@(NSUnderlineStyleNone)
-                 range:titleBrandLinkRange];
-  } else {
-    // TODO(vasilii): remove if crbug.com/515189 is fixed.
-    [titleView setRefusesFirstResponder:YES];
-  }
-
-  return titleView.autorelease();
+HyperlinkTextView* LabelWithLink(const base::string16& text,
+                                 SkColor color,
+                                 gfx::Range range,
+                                 id<NSTextViewDelegate> delegate) {
+  return LabelWithLink(text, color, ResourceBundle::SmallFont, range, delegate);
 }

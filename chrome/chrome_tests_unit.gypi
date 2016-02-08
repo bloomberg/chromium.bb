@@ -1284,6 +1284,7 @@
       'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
       'browser/ui/cocoa/panels/panel_cocoa_unittest.mm',
       'browser/ui/cocoa/passwords/account_chooser_view_controller_unittest.mm',
+      'browser/ui/cocoa/passwords/autosignin_prompt_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/base_passwords_controller_test.h',
       'browser/ui/cocoa/passwords/base_passwords_controller_test.mm',
       'browser/ui/cocoa/passwords/confirmation_password_saved_view_controller_unittest.mm',

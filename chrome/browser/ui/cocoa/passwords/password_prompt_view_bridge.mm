@@ -8,6 +8,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/autosignin_prompt_view_controller.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "content/public/browser/web_contents.h"
 
@@ -25,19 +26,18 @@ PasswordPromptViewBridge::~PasswordPromptViewBridge() {
 void PasswordPromptViewBridge::ShowAccountChooser() {
   view_controller_.reset(
       [[AccountChooserViewController alloc] initWithBridge:this]);
-  // Setup the constrained window that will show the view.
-  base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
-      initWithContentRect:[[view_controller_ view] bounds]]);
-  [window setContentView:[view_controller_ view]];
-  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
-      [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
-  constrained_window_.reset(
-      new ConstrainedWindowMac(this, web_contents_, sheet));
+  ShowWindow();
 }
 
 void PasswordPromptViewBridge::ControllerGone() {
   controller_ = nullptr;
   PerformClose();
+}
+
+void PasswordPromptViewBridge::ShowAutoSigninPrompt() {
+  view_controller_.reset(
+      [[AutoSigninPromptViewController alloc] initWithBridge:this]);
+  ShowWindow();
 }
 
 void PasswordPromptViewBridge::OnConstrainedWindowClosed(
@@ -62,6 +62,17 @@ PasswordPromptViewBridge::GetRequestContext() const {
       GetRequestContext();
 }
 
+void PasswordPromptViewBridge::ShowWindow() {
+  // Setup the constrained window that will show the view.
+  base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
+      initWithContentRect:[[view_controller_ view] bounds]]);
+  [window setContentView:[view_controller_ view]];
+  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
+  constrained_window_.reset(
+      new ConstrainedWindowMac(this, web_contents_, sheet));
+}
+
 AccountChooserPrompt* CreateAccountChooserPromptView(
     PasswordDialogController* controller, content::WebContents* web_contents) {
   return new PasswordPromptViewBridge(controller, web_contents);
@@ -69,7 +80,6 @@ AccountChooserPrompt* CreateAccountChooserPromptView(
 
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
     PasswordDialogController* controller, content::WebContents* web_contents) {
-  // TODO(vasilii): return PasswordPromptViewBridge.
-  return nullptr;
+  return new PasswordPromptViewBridge(controller, web_contents);
 }
 

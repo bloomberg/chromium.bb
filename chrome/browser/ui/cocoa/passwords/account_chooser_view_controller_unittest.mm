@@ -9,7 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
@@ -71,8 +71,8 @@ class PasswordDialogControllerMock : public PasswordDialogController {
 };
 
 // Tests for the account chooser dialog view.
-class AccountChooserViewControllerTest : public CocoaProfileTest,
-                                         public AccountChooserBridge {
+class AccountChooserViewControllerTest : public CocoaTest,
+                                         public PasswordPromptBridgeInterface {
  public:
   void SetUp() override;
 
@@ -94,7 +94,7 @@ class AccountChooserViewControllerTest : public CocoaProfileTest,
 
   MOCK_METHOD0(OnPerformClose, void());
 
-  // AccountChooserBridge:
+  // PasswordPromptBridgeInterface:
   void PerformClose() override;
   PasswordDialogController* GetDialogController() override;
   net::URLRequestContextGetter* GetRequestContext() const override;
@@ -106,7 +106,7 @@ class AccountChooserViewControllerTest : public CocoaProfileTest,
 };
 
 void AccountChooserViewControllerTest::SetUp() {
-  CocoaProfileTest::SetUp();
+  CocoaTest::SetUp();
   avatar_manager_.reset([[AccountAvatarFetcherTestManager alloc] init]);
 }
 

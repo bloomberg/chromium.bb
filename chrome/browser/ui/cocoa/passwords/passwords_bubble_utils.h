@@ -10,6 +10,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/range/range.h"
 
 @class HyperlinkTextView;
@@ -45,10 +46,16 @@ NSSecureTextField* PasswordLabel(const base::string16& text);
 // Returns a button of the standard style for the bubble.
 NSButton* DialogButton(NSString* title);
 
-// Returns the title label with |text|. Nonempty |range| may specify a link
-// range.
+// Returns a title label with |text|. Nonempty |range| may specify a link range.
 HyperlinkTextView* TitleLabelWithLink(const base::string16& text,
                                       gfx::Range range,
                                       id<NSTextViewDelegate> delegate);
+
+// Returns a label with |text| and small font. Nonempty |range| may specify a
+// link range.
+HyperlinkTextView* LabelWithLink(const base::string16& text,
+                                 SkColor color,
+                                 gfx::Range range,
+                                 id<NSTextViewDelegate> delegate);
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORDS_BUBBLE_UTILS_H_

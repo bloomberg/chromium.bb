@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_DIALOG_PROMPTS_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_DIALOG_PROMPTS_H_
 
+#include "third_party/skia/include/core/SkColor.h"
+
 namespace content {
 class WebContents;
 }
@@ -16,6 +18,9 @@ const int kDesiredWidth = 370;
 
 // The default inset from BubbleFrameView.
 const int kTitleTopInset = 12;
+
+// The color of the content in the autosign-in first run prompt.
+const SkColor kAutoSigninTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
 // A platform-independent interface for the account chooser dialog.
 class AccountChooserPrompt {

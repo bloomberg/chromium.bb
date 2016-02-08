@@ -37,14 +37,14 @@
 
 @interface AccountChooserViewController()
 - (void)onCancelClicked:(id)sender;
-+ (NSArray*)credentialItemsFromBridge:(AccountChooserBridge*)bridge
++ (NSArray*)credentialItemsFromBridge:(PasswordPromptBridgeInterface*)bridge
                             delegate:(id<CredentialItemDelegate>)delegate;
 @end
 
 @implementation AccountChooserViewController
 @synthesize bridge = bridge_;
 
-- (instancetype)initWithBridge:(AccountChooserBridge*)bridge {
+- (instancetype)initWithBridge:(PasswordPromptBridgeInterface*)bridge {
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager(
       [[AccountAvatarFetcherManager alloc]
            initWithRequestContext:bridge->GetRequestContext()]);
@@ -149,7 +149,7 @@
   [avatarManager_ fetchAvatar:avatarURL forView:view];
 }
 
-+ (NSArray*)credentialItemsFromBridge:(AccountChooserBridge*)bridge
++ (NSArray*)credentialItemsFromBridge:(PasswordPromptBridgeInterface*)bridge
                              delegate:(id<CredentialItemDelegate>)delegate {
   base::scoped_nsobject<NSMutableArray> items([[NSMutableArray alloc] init]);
   PasswordDialogController* controller = bridge->GetDialogController();
@@ -210,7 +210,7 @@
 
 @implementation AccountChooserViewController(Testing)
 
-- (instancetype)initWithBridge:(AccountChooserBridge*)bridge
+- (instancetype)initWithBridge:(PasswordPromptBridgeInterface*)bridge
                  avatarManager:(AccountAvatarFetcherManager*)avatarManager {
   DCHECK(bridge);
   if (self = [super initWithNibName:nil bundle:nil]) {

@@ -1148,6 +1148,8 @@
       'browser/ui/cocoa/passwords/account_avatar_fetcher_manager.mm',
       'browser/ui/cocoa/passwords/account_chooser_view_controller.h',
       'browser/ui/cocoa/passwords/account_chooser_view_controller.mm',
+      'browser/ui/cocoa/passwords/autosignin_prompt_view_controller.h',
+      'browser/ui/cocoa/passwords/autosignin_prompt_view_controller.mm',
       'browser/ui/cocoa/passwords/auto_signin_view_controller.h',
       'browser/ui/cocoa/passwords/auto_signin_view_controller.mm',
       'browser/ui/cocoa/passwords/base_passwords_content_view_controller.h',

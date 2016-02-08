@@ -9,10 +9,12 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/passwords/credential_item_view.h"
+#import "chrome/browser/ui/cocoa/passwords/password_prompt_bridge_interface.h"
 
 @class AccountAvatarFetcherManager;
 
 class PasswordDialogController;
+class PasswordPromptBridgeInterface;
 
 namespace net {
 class URLRequestContextGetter;
@@ -24,32 +26,16 @@ class URLRequestContextGetter;
 @property(nonatomic, readonly) CredentialItemView* view;
 @end
 
-// An interface for the bridge between AccountChooserViewController and platform
-// independent UI code.
-class AccountChooserBridge {
- public:
-  // Closes the dialog.
-  virtual void PerformClose() = 0;
-
-  // Returns the controller containing the data.
-  virtual PasswordDialogController* GetDialogController() = 0;
-
-  // Returns the request context for fetching the avatars.
-  virtual net::URLRequestContextGetter* GetRequestContext() const = 0;
-
- protected:
-  virtual ~AccountChooserBridge() = default;
-};
-
 // Manages a view that shows a list of credentials that can be used for
 // authentication to a site.
 @interface AccountChooserViewController
     : NSViewController<CredentialItemDelegate,
+                       PasswordPromptViewInterface,
                        NSTableViewDataSource,
                        NSTableViewDelegate,
                        NSTextViewDelegate> {
  @private
-  AccountChooserBridge* bridge_;  // Weak.
+  PasswordPromptBridgeInterface* bridge_;  // Weak.
   NSButton* cancelButton_;  // Weak.
   NSTableView* credentialsView_;  // Weak.
   NSTextView* titleView_;  //  Weak.
@@ -59,13 +45,13 @@ class AccountChooserBridge {
 
 // Initializes a new account chooser and populates it with the credentials
 // stored in |bridge->controller()|.
-- (instancetype)initWithBridge:(AccountChooserBridge*)bridge;
+- (instancetype)initWithBridge:(PasswordPromptBridgeInterface*)bridge;
 
-@property(nonatomic) AccountChooserBridge* bridge;
+@property(nonatomic) PasswordPromptBridgeInterface* bridge;
 @end
 
 @interface AccountChooserViewController(Testing)
-- (instancetype)initWithBridge:(AccountChooserBridge*)bridge
+- (instancetype)initWithBridge:(PasswordPromptBridgeInterface*)bridge
                  avatarManager:(AccountAvatarFetcherManager*)avatarManager;
 @property(nonatomic, readonly) NSButton* cancelButton;
 @property(nonatomic, readonly) NSTableView* credentialsView;
