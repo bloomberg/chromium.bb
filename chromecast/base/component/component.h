@@ -271,9 +271,9 @@ class ComponentBase {
 };
 
 template <typename C>
-class Dependency : public subtle::DependencyBase {
+class StrongDependency : public subtle::DependencyBase {
  public:
-  Dependency(const WeakReference<C>& dependency, ComponentBase* dependent)
+  StrongDependency(const WeakReference<C>& dependency, ComponentBase* dependent)
       : subtle::DependencyBase(dependency, dependent) {}
 
   C* operator->() const {
@@ -282,14 +282,14 @@ class Dependency : public subtle::DependencyBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Dependency);
+  DISALLOW_COPY_AND_ASSIGN(StrongDependency);
 };
 
 template <typename C>
 class WeakReference : public subtle::WeakReferenceBase {
  public:
   explicit WeakReference(const C& dependency) : WeakReferenceBase(dependency) {}
-  explicit WeakReference(const Dependency<C>& dependency)
+  explicit WeakReference(const StrongDependency<C>& dependency)
       : subtle::WeakReferenceBase(dependency) {}
 
   // Explicitly allow copy.
@@ -312,7 +312,7 @@ template <typename C>
 class Component : public ComponentBase {
  public:
   using WeakRef = WeakReference<C>;
-  using Dependency = Dependency<C>;
+  using Dependency = StrongDependency<C>;
 
   Component() = default;
 
