@@ -212,7 +212,19 @@ void MediaStreamTrack::stop()
 
 bool MediaStreamTrack::hasPendingActivity() const
 {
-    return !m_stopped && hasEventListeners();
+    // If 'ended' listeners exist and the object hasn't yet reached
+    // that state, keep the object alive.
+    //
+    // An otherwise unreachable MediaStreamTrack object in an non-ended
+    // state will otherwise indirectly be transitioned to the 'ended' state
+    // while finalizing m_component. Which dispatches an 'ended' event,
+    // referring to this object as the target. If this object is then GCed
+    // at the same time, v8 objects will retain (wrapper) references to
+    // this dead MediaStreamTrack object. Bad.
+    //
+    // Hence insisting on keeping this object alive until the 'ended'
+    // state has been reached & handled.
+    return !ended() && hasEventListeners(EventTypeNames::ended);
 }
 
 PassOwnPtr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource()
