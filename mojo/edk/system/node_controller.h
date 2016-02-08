@@ -29,7 +29,6 @@ namespace mojo {
 namespace edk {
 
 class Broker;
-class BrokerHost;
 class Core;
 class PortsMessage;
 
@@ -302,9 +301,6 @@ class NodeController : public ports::NodeDelegate,
 #if defined(OS_POSIX)
   // Broker for sync shared buffer creation (posix-only) in children.
   scoped_ptr<Broker> broker_;
-
-  // Broker host for sync shared buffer creation (posix-only).
-  scoped_ptr<BrokerHost> broker_host_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(NodeController);

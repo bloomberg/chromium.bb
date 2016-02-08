@@ -261,8 +261,9 @@ void NodeController::ConnectToChildOnIOThread(
 
 #if defined(OS_POSIX)
   PlatformChannelPair node_channel;
-  broker_host_.reset(new BrokerHost(std::move(platform_handle)));
-  broker_host_->SendChannel(node_channel.PassClientHandle());
+  // BrokerHost owns itself.
+  BrokerHost* broker_host = new BrokerHost(std::move(platform_handle));
+  broker_host->SendChannel(node_channel.PassClientHandle());
   scoped_refptr<NodeChannel> channel = NodeChannel::Create(
       this, node_channel.PassServerHandle(), io_task_runner_);
 #else

@@ -31,12 +31,17 @@ const size_t kMaxSharedBufferSize = 16 * 1024 * 1024;
 BrokerHost::BrokerHost(ScopedPlatformHandle platform_handle) {
   CHECK(platform_handle.is_valid());
 
+  base::MessageLoop::current()->AddDestructionObserver(this);
+
   channel_ = Channel::Create(this, std::move(platform_handle),
                              base::MessageLoop::current()->task_runner());
   channel_->Start();
 }
 
 BrokerHost::~BrokerHost() {
+  // We're always destroyed on the creation thread, which is the IO thread.
+  base::MessageLoop::current()->RemoveDestructionObserver(this);
+
   if (channel_)
     channel_->ShutDown();
 }
@@ -98,6 +103,12 @@ void BrokerHost::OnChannelError() {
     channel_->ShutDown();
     channel_ = nullptr;
   }
+
+  delete this;
+}
+
+void BrokerHost::WillDestroyCurrentMessageLoop() {
+  delete this;
 }
 
 }  // namespace edk
