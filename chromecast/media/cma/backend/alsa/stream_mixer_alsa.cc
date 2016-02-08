@@ -421,12 +421,16 @@ StreamMixerAlsa::~StreamMixerAlsa() {
 
 void StreamMixerAlsa::FinalizeOnMixerThread() {
   RUN_ON_MIXER_THREAD(&StreamMixerAlsa::FinalizeOnMixerThread);
-  retry_write_frames_timer_.reset();
-  check_close_timer_.reset();
-
   Stop();
   ClosePcm();
 
+  // Post a task to allow any pending input deletions to run.
+  POST_TASK_TO_MIXER_THREAD(&StreamMixerAlsa::FinishFinalize);
+}
+
+void StreamMixerAlsa::FinishFinalize() {
+  retry_write_frames_timer_.reset();
+  check_close_timer_.reset();
   inputs_.clear();
   ignored_inputs_.clear();
 }
@@ -632,6 +636,8 @@ void StreamMixerAlsa::CheckClose() {
 }
 
 void StreamMixerAlsa::OnFramesQueued() {
+  if (state_ != kStateNormalPlayback)
+    return;
   if (retry_write_frames_timer_->IsRunning())
     return;
   retry_write_frames_timer_->Start(

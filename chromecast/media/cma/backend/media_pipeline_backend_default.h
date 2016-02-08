@@ -35,7 +35,7 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   bool SetPlaybackRate(float rate) override;
 
  private:
-  base::TimeDelta start_pts_;
+  int64_t start_pts_;
   base::TimeTicks start_clock_;
   bool running_;
   float rate_;

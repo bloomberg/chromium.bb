@@ -75,6 +75,7 @@ bool AudioDecoderAlsa::Initialize() {
   DCHECK(delegate_);
   stats_ = Statistics();
   is_eos_ = false;
+  last_buffer_pts_ = std::numeric_limits<int64_t>::min();
 
   struct timespec now;
   if (clock_gettime(CLOCK_MONOTONIC, &now) == 0) {
@@ -135,8 +136,10 @@ AudioDecoderAlsa::BufferStatus AudioDecoderAlsa::PushBuffer(
   uint64_t input_bytes = buffer->end_of_stream() ? 0 : buffer->data_size();
   scoped_refptr<DecoderBufferBase> buffer_base(
       static_cast<DecoderBufferBase*>(buffer));
-  if (!buffer->end_of_stream())
+  if (!buffer->end_of_stream()) {
     last_buffer_pts_ = buffer->timestamp();
+    current_pts_ = std::min(current_pts_, last_buffer_pts_);
+  }
 
   // If the buffer is already decoded, do not attempt to decode. Call
   // OnBufferDecoded asynchronously on the main thread.
@@ -278,7 +281,7 @@ void AudioDecoderAlsa::OnWritePcmCompletion(BufferStatus status,
                                             const RenderingDelay& delay) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (status == MediaPipelineBackendAlsa::kBufferSuccess)
+  if (status == MediaPipelineBackendAlsa::kBufferSuccess && !is_eos_)
     current_pts_ = last_buffer_pts_;
   if (delay.timestamp_microseconds != kInvalidDelayTimestamp)
     last_known_delay_ = delay;

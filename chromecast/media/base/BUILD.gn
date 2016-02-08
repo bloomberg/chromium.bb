@@ -100,7 +100,9 @@ source_set("libcast_media_1.0_default_core") {
   ]
 
   deps = [
+    "//base",
     "//build/config/sanitizers:deps",
+    "//chromecast/base",
     "//chromecast/media/cma/backend",
   ]
 }
@@ -121,7 +123,9 @@ shared_library("libcast_media_1.0_default") {
   ]
 
   deps = [
+    "//base",
     "//build/config/sanitizers:deps",
+    "//chromecast/base",
     "//chromecast/media/cma/backend",
   ]
 }

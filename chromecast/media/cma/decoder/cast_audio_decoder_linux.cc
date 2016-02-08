@@ -170,7 +170,10 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     }
     decoded_chunks_.clear();
     decoded->set_timestamp(buffer_timestamp);
+    base::WeakPtr<CastAudioDecoderImpl> self = weak_factory_.GetWeakPtr();
     decode_callback.Run(result_status, decoded);
+    if (!self.get())
+      return;  // Return immediately if the decode callback deleted this.
 
     // Do not reset decode_pending_ to false until after the callback has
     // finished running because the callback may call Decode().

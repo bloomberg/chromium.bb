@@ -146,6 +146,7 @@ class StreamMixerAlsa {
  private:
   void ResetTaskRunnerForTest();
   void FinalizeOnMixerThread();
+  void FinishFinalize();
 
   // Reads the buffer size, period size, start threshold, and avail min value
   // from the provided command line flags or uses default values if no flags are

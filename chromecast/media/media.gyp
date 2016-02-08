@@ -16,6 +16,18 @@
       '../..',  # Root of Chromium checkout
       '../public/',  # Public APIs
     ],
+    'target_conditions': [
+      ['_type=="executable"', {
+        'ldflags': [
+          # Allow  OEMs to override default libraries that are shipped with
+          # cast receiver package by installed OEM-specific libraries in
+          # /oem_cast_shlib.
+          '-Wl,-rpath=/oem_cast_shlib',
+          # Some shlibs are built in same directory of executables.
+          '-Wl,-rpath=\$$ORIGIN',
+        ],
+      }],
+    ],
   },
   'targets': [
     {
@@ -291,14 +303,6 @@
         'cma/test/mock_frame_provider.h',
         'cma/test/run_all_unittests.cc',
       ],
-      'ldflags': [
-        # Allow  OEMs to override default libraries that are shipped with
-        # cast receiver package by installed OEM-specific libraries in
-        # /oem_cast_shlib.
-        '-Wl,-rpath=/oem_cast_shlib',
-        # Some shlibs are built in same directory of executables.
-        '-Wl,-rpath=\$$ORIGIN',
-      ],
       'conditions': [
         ['chromecast_branding=="public"', {
           'dependencies': [
@@ -326,6 +330,8 @@
       'target_name': 'libcast_media_1.0_default_core',
       'type': '<(component)',
       'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/chromecast/chromecast.gyp:cast_base',
         '../../chromecast/chromecast.gyp:cast_public_api',
         'default_cma_backend'
       ],
