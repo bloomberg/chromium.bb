@@ -131,7 +131,7 @@ IPC_MESSAGE_ROUTED1(WebSocketMsg_NotifyFailure,
 // Indicates tbat the current Blob has finished sending. The renderer can
 // release its reference on the Blob, and may now use SendFrame or SendBlob to
 // send more messages.
-IPC_MESSAGE_ROUTED0(WebSocketMsg_BlobSendComplete);
+IPC_MESSAGE_ROUTED0(WebSocketMsg_BlobSendComplete)
 
 // WebSocket messages that can be sent in either direction.
 
