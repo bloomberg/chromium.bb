@@ -581,9 +581,6 @@
         'content/renderer/notification_|' \
         'ui/message_center/'
     },
-    'npapi_headers': {
-      'filepath': 'third_party/npapi/bindings/',
-    },
     'ntp': {
       'filepath': 'chrome/browser/resources/ntp4/|'\
         'chrome/browser/resources/ntp_android/|'\
@@ -1422,7 +1419,6 @@
     'network_quality': ['rdsmith@chromium.org'],
     'notifications': ['peter@chromium.org',
                       'mlamouri+watch-notifications@chromium.org'],
-    'npapi_headers': ['stuartmorgan@chromium.org'],
     'ntp': ['dbeam+watch-ntp@chromium.org',
             'pedrosimonetti+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
