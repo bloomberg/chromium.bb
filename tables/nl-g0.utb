@@ -179,5 +179,5 @@ lencapsphrase 4
 begcapsword 45
 endcapsword 6
 begcapsphrase 45-45
-lastwordcaps before 45
+endcapsphrase before 45
 capsletter 46

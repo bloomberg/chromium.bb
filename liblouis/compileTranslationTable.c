@@ -230,7 +230,7 @@ static const char *opcodeNames[CTO_None] = {
   "begcaps",
   "endcaps",
   "begcapsphrase",
-  "lastwordcaps",
+  "endcapsphrase",
   "lencapsphrase",
   "letsign",
   "noletsignbefore",
