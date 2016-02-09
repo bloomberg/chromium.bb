@@ -73,4 +73,59 @@ void BluetoothTestWin::InitWithFakeAdapter() {
 bool BluetoothTestWin::DenyPermission() {
   return false;
 }
+
+void BluetoothTestWin::StartLowEnergyDiscoverySession() {
+  __super ::StartLowEnergyDiscoverySession();
+  bluetooth_task_runner_->RunPendingTasks();
+  ui_task_runner_->RunPendingTasks();
+}
+
+BluetoothDevice* BluetoothTestWin::DiscoverLowEnergyDevice(int device_ordinal) {
+  if (device_ordinal > 4 || device_ordinal < 1)
+    return nullptr;
+
+  std::string device_name = kTestDeviceName;
+  std::string device_address = kTestDeviceAddress1;
+  std::string service_uuid_1;
+  std::string service_uuid_2;
+
+  switch (device_ordinal) {
+    case 1: {
+      service_uuid_1 = kTestUUIDGenericAccess;
+      service_uuid_2 = kTestUUIDGenericAttribute;
+    } break;
+    case 2: {
+      service_uuid_1 = kTestUUIDImmediateAlert;
+      service_uuid_2 = kTestUUIDLinkLoss;
+    } break;
+    case 3: {
+      device_name = kTestDeviceNameEmpty;
+    } break;
+    case 4: {
+      device_name = kTestDeviceNameEmpty;
+      device_address = kTestDeviceAddress2;
+    } break;
+  }
+
+  win::BLEDevice* simulated_device = fake_bt_le_wrapper_->SimulateBLEDevice(
+      device_name, CanonicalStringToBLUETOOTH_ADDRESS(device_address));
+  if (simulated_device != nullptr) {
+    if (!service_uuid_1.empty())
+      fake_bt_le_wrapper_->SimulateBLEGattService(simulated_device,
+                                                  service_uuid_1);
+    if (!service_uuid_2.empty())
+      fake_bt_le_wrapper_->SimulateBLEGattService(simulated_device,
+                                                  service_uuid_2);
+  }
+  bluetooth_task_runner_->RunPendingTasks();
+  ui_task_runner_->RunPendingTasks();
+
+  std::vector<BluetoothDevice*> devices = adapter_win_->GetDevices();
+  for (auto device : devices) {
+    if (device->GetAddress() == device_address)
+      return device;
+  }
+
+  return nullptr;
+}
 }

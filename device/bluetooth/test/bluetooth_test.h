@@ -58,7 +58,7 @@ class BluetoothTestBase : public testing::Test {
   // Calls adapter_->StartDiscoverySessionWithFilter with Low Energy transport,
   // and this fixture's callbacks expecting success.
   // Then RunLoop().RunUntilIdle().
-  void StartLowEnergyDiscoverySession();
+  virtual void StartLowEnergyDiscoverySession();
 
   // Calls adapter_->StartDiscoverySessionWithFilter with Low Energy transport,
   // and this fixture's callbacks expecting error.

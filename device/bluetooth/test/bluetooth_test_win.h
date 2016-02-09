@@ -28,6 +28,8 @@ class BluetoothTestWin : public BluetoothTestBase {
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
   bool DenyPermission() override;
+  void StartLowEnergyDiscoverySession() override;
+  BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
