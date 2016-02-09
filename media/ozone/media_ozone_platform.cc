@@ -61,6 +61,10 @@ MediaOzonePlatform* CreateMediaOzonePlatformWayland() {
   return new MediaOzonePlatformStub;
 }
 
+MediaOzonePlatform* CreateMediaOzonePlatformX11() {
+  return new MediaOzonePlatformStub;
+}
+
 MediaOzonePlatform::MediaOzonePlatform() {
   CHECK(!instance_) << "There should only be a single MediaOzonePlatform.";
   instance_ = this;
