@@ -374,8 +374,6 @@
       'bubble/tray_bubble_view.cc',
       'bubble/tray_bubble_view.h',
       'controls/menu/display_change_listener_aura.cc',
-      'controls/menu/menu_event_dispatcher.cc',
-      'controls/menu/menu_event_dispatcher.h',
       'controls/menu/menu_key_event_handler.cc',
       'controls/menu/menu_key_event_handler.h',
       'controls/menu/menu_message_loop_aura.cc',

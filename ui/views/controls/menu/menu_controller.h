@@ -52,7 +52,6 @@ class MenuKeyEventHandler;
 
 namespace internal {
 class MenuControllerDelegate;
-class MenuEventDispatcher;
 class MenuRunnerImpl;
 }
 
@@ -202,7 +201,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   static void TurnOffMenuSelectionHoldForTest();
 
  private:
-  friend class internal::MenuEventDispatcher;
   friend class internal::MenuRunnerImpl;
   friend class test::MenuControllerTest;
   friend class MenuKeyEventHandler;

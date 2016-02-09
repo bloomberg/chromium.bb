@@ -36,7 +36,6 @@ class EventHandler;
 
 namespace views {
 class DesktopDragDropClientAuraX11;
-class DesktopDispatcherClient;
 class DesktopWindowTreeHostObserverX11;
 class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
