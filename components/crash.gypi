@@ -220,6 +220,9 @@
             '../base/base.gyp:base',
             '../third_party/kasko/kasko.gyp:kasko',
           ],
+          'export_dependent_settings': [
+            '../third_party/kasko/kasko.gyp:kasko',
+          ],
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
