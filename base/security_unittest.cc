@@ -86,7 +86,7 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
-#if defined(OS_IOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_IOS) || defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_NewOverflow DISABLED_NewOverflow
 #else
 #define MAYBE_NewOverflow NewOverflow
@@ -95,6 +95,8 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
 // IOS doesn't honor nothrow, so disable the test there.
 // Crashes on Windows Dbg builds, disable there as well.
 // Fails on Mac 10.8 http://crbug.com/227092
+// Disabled on Linux because failing Linux Valgrind bot, and Valgrind exclusions
+// are not currently read. See http://crbug.com/582398
 TEST(SecurityTest, MAYBE_NewOverflow) {
   const size_t kArraySize = 4096;
   // We want something "dynamic" here, so that the compiler doesn't
