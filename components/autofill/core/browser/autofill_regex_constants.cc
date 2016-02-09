@@ -137,7 +137,7 @@ const char kNameOnCardRe[] =
 const char kNameOnCardContextualRe[] =
     "name";
 const char kCardNumberRe[] =
-    "(?:card|cc|acct).?(?:number|#|no|num)"
+    "(add)?(?:card|cc|acct).?(?:number|#|no|num)"
     "|nummer"  // de-DE
     "|credito|numero|número"  // es
     "|numéro"  // fr-FR
@@ -164,7 +164,7 @@ const char kCardCvcRe[] =
 //   https://rps.fidelity.com/ftgw/rps/RtlCust/CreatePIN/Init.
 // Instead, we match only words beginning with "month".
 const char kExpirationMonthRe[] =
-    "expir|exp.*mo|exp.*date|ccmonth|cardmonth"
+    "expir|exp.*mo|exp.*date|ccmonth|cardmonth|addmonth"
     "|gueltig|gültig|monat"  // de-DE
     "|fecha"  // es
     "|date.*exp"  // fr-FR
@@ -174,7 +174,7 @@ const char kExpirationMonthRe[] =
     "|Срок действия карты"  // ru
     "|月";  // zh-CN
 const char kExpirationYearRe[] =
-    "exp|^/|year"
+    "exp|^/|(add)?year"
     "|ablaufdatum|gueltig|gültig|jahr"  // de-DE
     "|fecha"  // es
     "|scadenza"  // it-IT
