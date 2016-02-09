@@ -13,13 +13,26 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
-// Maps an ID representing each BrowsingInstance to a set of site URLs.
-using BrowsingInstanceSiteMap = base::hash_map<int32_t, std::set<GURL>>;
+// Collects information for a browsing instance assuming some alternate
+// isolation scenario.
+struct ScenarioBrowsingInstanceInfo {
+  ScenarioBrowsingInstanceInfo();
+  ~ScenarioBrowsingInstanceInfo();
 
-// Maps a SiteInstance to a set of all SiteInstances in the same
-// BrowsingInstance.
-using SiteInstanceMap =
-    base::hash_map<content::SiteInstance*, std::set<content::SiteInstance*>>;
+  std::set<GURL> sites;
+};
+using ScenarioBrowsingInstanceMap =
+    base::hash_map<int32_t, ScenarioBrowsingInstanceInfo>;
+
+// Collects metrics about an actual browsing instance in the current session.
+struct BrowsingInstanceInfo {
+  BrowsingInstanceInfo();
+  ~BrowsingInstanceInfo();
+
+  std::set<content::SiteInstance*> site_instances;
+};
+using BrowsingInstanceMap =
+    base::hash_map<content::SiteInstance*, BrowsingInstanceInfo>;
 
 // This enum represents various alternative process model policies that we want
 // to evaluate. We'll estimate the process cost of each scenario.
@@ -38,8 +51,8 @@ struct IsolationScenario {
   ~IsolationScenario();
 
   IsolationScenarioType policy;
-  std::set<GURL> sites;
-  BrowsingInstanceSiteMap browsing_instance_site_map;
+  std::set<GURL> all_sites;
+  ScenarioBrowsingInstanceMap browsing_instances;
 };
 
 // Information about the sites and SiteInstances in each BrowsingInstance, for
@@ -51,10 +64,10 @@ struct SiteData {
   // One IsolationScenario object per IsolationScenarioType.
   IsolationScenario scenarios[ISOLATION_SCENARIO_LAST + 1];
 
-  // Global list of all SiteInstances, used for de-duping related instances.
-  // It also keeps a set of all SiteInstances in the BrowsingInstance identified
-  // by the SiteInstance used as the key.
-  SiteInstanceMap instances;
+  // This map groups related SiteInstances together into BrowsingInstances. The
+  // first SiteInstance we see in a BrowsingInstance is designated as the
+  // 'primary' SiteInstance, and becomes the key of this map.
+  BrowsingInstanceMap browsing_instances;
 
   // A count of all RenderFrameHosts, which are in a different SiteInstance from
   // their parents.

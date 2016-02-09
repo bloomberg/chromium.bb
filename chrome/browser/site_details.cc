@@ -58,25 +58,37 @@ bool ShouldIsolate(BrowserContext* browser_context,
 }
 
 content::SiteInstance* DeterminePrimarySiteInstance(
-    content::SiteInstance* instance,
+    content::SiteInstance* site_instance,
     SiteData* site_data) {
   // Find the BrowsingInstance this WebContents belongs to by iterating over
   // the "primary" SiteInstances of each BrowsingInstance we've seen so far.
-  for (auto& existing_site_instance : site_data->instances) {
-    if (instance->IsRelatedSiteInstance(existing_site_instance.first)) {
-      existing_site_instance.second.insert(instance);
-      return existing_site_instance.first;
+  for (auto& entry : site_data->browsing_instances) {
+    BrowsingInstanceInfo* browsing_instance = &entry.second;
+    content::SiteInstance* primary_for_browsing_instance = entry.first;
+
+    if (site_instance->IsRelatedSiteInstance(primary_for_browsing_instance)) {
+      browsing_instance->site_instances.insert(site_instance);
+      return primary_for_browsing_instance;
     }
   }
 
   // Add |instance| as the "primary" SiteInstance of a new BrowsingInstance.
-  site_data->instances[instance].clear();
-  site_data->instances[instance].insert(instance);
+  BrowsingInstanceInfo* browsing_instance =
+      &site_data->browsing_instances[site_instance];
+  browsing_instance->site_instances.insert(site_instance);
 
-  return instance;
+  return site_instance;
 }
 
 }  // namespace
+
+ScenarioBrowsingInstanceInfo::ScenarioBrowsingInstanceInfo() {}
+
+ScenarioBrowsingInstanceInfo::~ScenarioBrowsingInstanceInfo() {}
+
+BrowsingInstanceInfo::BrowsingInstanceInfo() {}
+
+BrowsingInstanceInfo::~BrowsingInstanceInfo() {}
 
 IsolationScenario::IsolationScenario() : policy(ISOLATE_ALL_SITES) {}
 
@@ -135,8 +147,8 @@ void SiteDetails::CollectSiteInfo(WebContents* contents,
 
       // We model process-per-site by only inserting those sites into the first
       // browsing instance in which they appear.
-      if (scenario.sites.insert(site).second || !process_per_site)
-        scenario.browsing_instance_site_map[primary->GetId()].insert(site);
+      if (scenario.all_sites.insert(site).second || !process_per_site)
+        scenario.browsing_instances[primary->GetId()].sites.insert(site);
 
       // Record our result in |frame_urls| for use by children.
       frame_urls[frame] = site;
@@ -165,22 +177,24 @@ void SiteDetails::UpdateHistograms(
   int num_isolated_site_instances[ISOLATION_SCENARIO_LAST + 1] = {};
   int num_browsing_instances = 0;
   int num_oopifs = 0;
-  for (BrowserContextSiteDataMap::const_iterator i = site_data_map.begin();
-       i != site_data_map.end(); ++i) {
-    for (const IsolationScenario& scenario : i->second.scenarios) {
-      num_sites[scenario.policy] += scenario.sites.size();
-      for (auto& browsing_instance : scenario.browsing_instance_site_map) {
+  for (auto& site_data_map_entry : site_data_map) {
+    const SiteData& site_data = site_data_map_entry.second;
+    for (const IsolationScenario& scenario : site_data.scenarios) {
+      num_sites[scenario.policy] += scenario.all_sites.size();
+      for (auto& entry : scenario.browsing_instances) {
+        const ScenarioBrowsingInstanceInfo& scenario_browsing_instance_info =
+            entry.second;
         num_isolated_site_instances[scenario.policy] +=
-            browsing_instance.second.size();
+            scenario_browsing_instance_info.sites.size();
       }
     }
-    num_browsing_instances += i->second.scenarios[ISOLATE_ALL_SITES]
-                                  .browsing_instance_site_map.size();
-    for (const auto& site_instance : i->second.instances) {
+    for (const auto& entry : site_data.browsing_instances) {
+      const BrowsingInstanceInfo& browsing_instance_info = entry.second;
       UMA_HISTOGRAM_COUNTS_100("SiteIsolation.SiteInstancesPerBrowsingInstance",
-                               site_instance.second.size());
+                               browsing_instance_info.site_instances.size());
     }
-    num_oopifs += i->second.out_of_process_frames;
+    num_browsing_instances += site_data.browsing_instances.size();
+    num_oopifs += site_data.out_of_process_frames;
   }
 
   // Predict the number of processes needed when isolating all sites, when
