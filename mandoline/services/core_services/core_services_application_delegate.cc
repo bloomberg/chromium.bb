@@ -25,7 +25,7 @@
 
 namespace core_services {
 
-// A helper class for hosting a mojo::ApplicationImpl on its own thread.
+// A helper class for hosting a mojo::ShellConnection on its own thread.
 class ApplicationThread : public base::SimpleThread {
  public:
   ApplicationThread(
@@ -33,7 +33,7 @@ class ApplicationThread : public base::SimpleThread {
           core_services_application,
       const std::string& url,
       scoped_ptr<mojo::ShellClient> delegate,
-      mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
+      mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request,
       const mojo::Callback<void()>& destruct_callback)
       : base::SimpleThread(url),
         core_services_application_(core_services_application),
@@ -73,7 +73,7 @@ class ApplicationThread : public base::SimpleThread {
       core_services_application_task_runner_;
   std::string url_;
   scoped_ptr<mojo::ShellClient> delegate_;
-  mojo::InterfaceRequest<mojo::shell::mojom::Application> request_;
+  mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request_;
   mojo::Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
@@ -124,7 +124,7 @@ void CoreServicesApplicationDelegate::Create(
 }
 
 void CoreServicesApplicationDelegate::StartApplication(
-    mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
+    mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request,
     mojo::URLResponsePtr response,
     const mojo::Callback<void()>& destruct_callback) {
   const std::string url = response->url;

@@ -29,13 +29,13 @@ class ApplicationThread : public base::PlatformThread::Delegate {
       scoped_refptr<base::SingleThreadTaskRunner> handler_thread,
       const base::Callback<void(ApplicationThread*)>& termination_callback,
       ContentHandlerFactory::Delegate* handler_delegate,
-      InterfaceRequest<shell::mojom::Application> application_request,
+      InterfaceRequest<shell::mojom::ShellClient> request,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback)
       : handler_thread_(handler_thread),
         termination_callback_(termination_callback),
         handler_delegate_(handler_delegate),
-        application_request_(std::move(application_request)),
+        request_(std::move(request)),
         response_(std::move(response)),
         destruct_callback_(destruct_callback) {}
 
@@ -45,7 +45,7 @@ class ApplicationThread : public base::PlatformThread::Delegate {
 
  private:
   void ThreadMain() override {
-    handler_delegate_->RunApplication(std::move(application_request_),
+    handler_delegate_->RunApplication(std::move(request_),
                                       std::move(response_));
     handler_thread_->PostTask(FROM_HERE,
                               base::Bind(termination_callback_, this));
@@ -54,7 +54,7 @@ class ApplicationThread : public base::PlatformThread::Delegate {
   scoped_refptr<base::SingleThreadTaskRunner> handler_thread_;
   base::Callback<void(ApplicationThread*)> termination_callback_;
   ContentHandlerFactory::Delegate* handler_delegate_;
-  InterfaceRequest<shell::mojom::Application> application_request_;
+  InterfaceRequest<shell::mojom::ShellClient> request_;
   URLResponsePtr response_;
   Callback<void()> destruct_callback_;
 
@@ -82,15 +82,14 @@ class ContentHandlerImpl : public shell::mojom::ContentHandler {
 
  private:
   // Overridden from ContentHandler:
-  void StartApplication(
-      InterfaceRequest<shell::mojom::Application> application_request,
-      URLResponsePtr response,
-      const Callback<void()>& destruct_callback) override {
+  void StartApplication(InterfaceRequest<shell::mojom::ShellClient> request,
+                        URLResponsePtr response,
+                        const Callback<void()>& destruct_callback) override {
     ApplicationThread* thread =
         new ApplicationThread(base::ThreadTaskRunnerHandle::Get(),
                               base::Bind(&ContentHandlerImpl::OnThreadEnd,
                                          weak_factory_.GetWeakPtr()),
-                              delegate_, std::move(application_request),
+                              delegate_, std::move(request),
                               std::move(response), destruct_callback);
     base::PlatformThreadHandle handle;
     bool launched = base::PlatformThread::Create(0, thread, &handle);
@@ -124,11 +123,11 @@ ContentHandlerFactory::~ContentHandlerFactory() {
 }
 
 void ContentHandlerFactory::ManagedDelegate::RunApplication(
-    InterfaceRequest<shell::mojom::Application> application_request,
+    InterfaceRequest<shell::mojom::ShellClient> request,
     URLResponsePtr response) {
   base::MessageLoop loop(common::MessagePumpMojo::Create());
-  auto application = this->CreateApplication(std::move(application_request),
-                                             std::move(response));
+  auto application =
+      this->CreateApplication(std::move(request), std::move(response));
   if (application)
     loop.Run();
 }

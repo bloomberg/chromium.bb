@@ -27,7 +27,7 @@
 #include "components/mus/ws/ids.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "ui/gfx/geometry/dip_util.h"

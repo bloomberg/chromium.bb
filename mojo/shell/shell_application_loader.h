@@ -9,7 +9,7 @@
 #include "mojo/shell/application_loader.h"
 
 namespace mojo {
-class ApplicationImpl;
+class ShellConnection;
 namespace shell {
 
 class ShellApplicationLoader : public ApplicationLoader {
@@ -19,11 +19,10 @@ class ShellApplicationLoader : public ApplicationLoader {
 
  private:
   // Overridden from ApplicationLoader:
-  void Load(
-      const GURL& url,
-      InterfaceRequest<mojom::Application> application_request) override;
+  void Load(const GURL& url,
+            InterfaceRequest<mojom::ShellClient> request) override;
 
-  scoped_ptr<ApplicationImpl> app_;
+  scoped_ptr<ShellConnection> shell_connection_;
 
   ApplicationManager* manager_;
 

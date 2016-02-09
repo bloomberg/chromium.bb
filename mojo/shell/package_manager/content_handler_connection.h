@@ -35,7 +35,7 @@ class ContentHandlerConnection {
                            uint32_t id,
                            const ClosedCallback& connection_closed_callback);
 
-  void StartApplication(InterfaceRequest<mojom::Application> request,
+  void StartApplication(InterfaceRequest<mojom::ShellClient> request,
                         URLResponsePtr response);
 
   // Closes the connection and destroys |this| object.

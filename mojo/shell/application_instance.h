@@ -17,9 +17,9 @@
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -36,7 +36,7 @@ class ApplicationInstance : public mojom::Shell,
   // |requesting_content_handler_id| is the id of the content handler that
   // loaded this app. If the app was not loaded by a content handler the id
   // is kInvalidContentHandlerID.
-  ApplicationInstance(mojom::ApplicationPtr application,
+  ApplicationInstance(mojom::ShellClientPtr shell_client,
                       ApplicationManager* manager,
                       const Identity& identity,
                       uint32_t requesting_content_handler_id,
@@ -53,7 +53,7 @@ class ApplicationInstance : public mojom::Shell,
 
   void BindPIDReceiver(InterfaceRequest<mojom::PIDReceiver> pid_receiver);
 
-  mojom::Application* application() { return application_.get(); }
+  mojom::ShellClient* shell_client() { return shell_client_.get(); }
   const Identity& identity() const { return identity_; }
   uint32_t id() const { return id_; }
   base::ProcessId pid() const { return pid_; }
@@ -98,7 +98,7 @@ class ApplicationInstance : public mojom::Shell,
   const bool allow_any_application_;
   uint32_t requesting_content_handler_id_;
   base::Closure on_application_end_;
-  mojom::ApplicationPtr application_;
+  mojom::ShellClientPtr shell_client_;
   Binding<mojom::Shell> binding_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
   bool queue_requests_;

@@ -7,7 +7,7 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 
-MojoResult MojoMain(MojoHandle application_request) {
+MojoResult MojoMain(MojoHandle request) {
   mojo::ApplicationRunner runner(new filesystem::FileSystemApp());
-  return runner.Run(application_request);
+  return runner.Run(request);
 }

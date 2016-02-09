@@ -16,8 +16,8 @@
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/standalone/context.h"
 #include "url/gurl.h"
 
@@ -36,20 +36,20 @@ class BackgroundApplicationLoader : public ApplicationLoader {
   ~BackgroundApplicationLoader() override {}
 
   bool got_request() const { return got_request_; }
-  InterfaceRequest<mojom::Application> TakeApplicationRequest() {
-    return std::move(application_request_);
+  InterfaceRequest<mojom::ShellClient> TakeApplicationRequest() {
+    return std::move(request_);
   }
 
   // ApplicationLoader:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override {
+            InterfaceRequest<mojom::ShellClient> request) override {
     got_request_ = true;
-    application_request_ = std::move(application_request);
+    request_ = std::move(request);
   }
 
  private:
   bool got_request_ = false;
-  InterfaceRequest<mojom::Application> application_request_;
+  InterfaceRequest<mojom::ShellClient> request_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundApplicationLoader);
 };
@@ -75,9 +75,9 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   MojoThread() : SimpleThread("mojo-background-shell") {}
   ~MojoThread() override {}
 
-  void CreateApplicationImpl(base::WaitableEvent* signal,
-                             scoped_ptr<ConnectToApplicationParams> params,
-                             InterfaceRequest<mojom::Application>* request) {
+  void CreateShellClientRequest(base::WaitableEvent* signal,
+                                scoped_ptr<ConnectToApplicationParams> params,
+                                InterfaceRequest<mojom::ShellClient>* request) {
     // Only valid to call this on the background thread.
     DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
@@ -158,15 +158,15 @@ void BackgroundShell::Init() {
   thread_->Start();
 }
 
-InterfaceRequest<mojom::Application> BackgroundShell::CreateApplication(
+InterfaceRequest<mojom::ShellClient> BackgroundShell::CreateShellClientRequest(
     const GURL& url) {
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->SetTarget(
       Identity(url, std::string(), GetPermissiveCapabilityFilter()));
-  InterfaceRequest<mojom::Application> request;
+  InterfaceRequest<mojom::ShellClient> request;
   base::WaitableEvent signal(true, false);
   thread_->message_loop()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MojoThread::CreateApplicationImpl,
+      FROM_HERE, base::Bind(&MojoThread::CreateShellClientRequest,
                             base::Unretained(thread_.get()), &signal,
                             base::Passed(&params), &request));
   signal.Wait();

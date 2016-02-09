@@ -54,7 +54,7 @@ class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
 };
 
 HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
-    mojo::ApplicationRequest request,
+    mojo::ShellClientRequest request,
     mojo::URLResponsePtr response,
     GlobalState* global_state,
     scoped_ptr<mojo::AppRefCount> parent_app_refcount,

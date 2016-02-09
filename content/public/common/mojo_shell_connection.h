@@ -45,7 +45,7 @@ class CONTENT_EXPORT MojoShellConnection {
   virtual mojo::Shell* GetShell() = 0;
 
   // [De]Register an impl of Listener that will be consulted when the wrapped
-  // ApplicationImpl exposes services to inbound connections.
+  // ShellConnection exposes services to inbound connections.
   // Registered listeners are owned by this MojoShellConnection.
   virtual void AddListener(Listener* listener) = 0;
   virtual void RemoveListener(Listener* listener) = 0;

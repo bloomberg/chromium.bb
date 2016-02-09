@@ -23,7 +23,7 @@ ContentHandlerImpl::~ContentHandlerImpl() {
 }
 
 void ContentHandlerImpl::StartApplication(
-    mojo::ApplicationRequest request,
+    mojo::ShellClientRequest request,
     mojo::URLResponsePtr response,
     const mojo::Callback<void()>& destruct_callback) {
   // HTMLDocumentApplicationDelegate deletes itself.

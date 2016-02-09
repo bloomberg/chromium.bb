@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 
 namespace mojo {
 
@@ -63,7 +63,7 @@ scoped_ptr<AppRefCount> AppRefCount::Clone() {
       app_lifetime_helper_, app_task_runner_));
 }
 
-AppLifetimeHelper::AppLifetimeHelper(ApplicationImpl* app)
+AppLifetimeHelper::AppLifetimeHelper(ShellConnection* app)
     : app_(app), ref_count_(0) {
 }
 

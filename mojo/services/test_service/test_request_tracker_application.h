@@ -11,7 +11,7 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
-class ApplicationImpl;
+class ShellConnection;
 namespace test {
 class TestTimeService;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_PUBLIC_CPP_APPLICATION_IMPL_H_
-#define MOJO_SHELL_PUBLIC_CPP_APPLICATION_IMPL_H_
+#ifndef MOJO_SHELL_PUBLIC_CPP_SHELL_CONNECTION_H_
+#define MOJO_SHELL_PUBLIC_CPP_SHELL_CONNECTION_H_
 
 #include <utility>
 #include <vector>
@@ -17,8 +17,8 @@
 #include "mojo/shell/public/cpp/app_lifetime_helper.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
 
@@ -47,48 +47,43 @@ namespace mojo {
 //   BarImpl(ApplicationContext* app_context, BarContext* service_context)
 //          : app_context_(app_context), servicecontext_(context) {}
 //
-// Create an ApplicationImpl instance that collects any service implementations.
+// Create an ShellConnection instance that collects any service implementations.
 //
-// ApplicationImpl app(service_provider_handle);
+// ShellConnection app(service_provider_handle);
 // app.AddService<FooImpl>();
 //
 // BarContext context;
 // app.AddService<BarImpl>(&context);
 //
 //
-class ApplicationImpl : public Shell, public shell::mojom::Application {
+class ShellConnection : public Shell, public shell::mojom::ShellClient {
  public:
   class TestApi {
    public:
-    explicit TestApi(ApplicationImpl* application)
-        : application_(application) {}
+    explicit TestApi(ShellConnection* shell_connection)
+        : shell_connection_(shell_connection) {}
 
     void UnbindConnections(
-        InterfaceRequest<shell::mojom::Application>* application_request,
+        InterfaceRequest<shell::mojom::ShellClient>* request,
         shell::mojom::ShellPtr* shell) {
-      application_->UnbindConnections(application_request, shell);
+      shell_connection_->UnbindConnections(request, shell);
     }
 
    private:
-    ApplicationImpl* application_;
+    ShellConnection* shell_connection_;
   };
 
   // Does not take ownership of |delegate|, which must remain valid for the
-  // lifetime of ApplicationImpl.
-  ApplicationImpl(ShellClient* client,
-                  InterfaceRequest<shell::mojom::Application> request);
-  // Constructs an ApplicationImpl with a custom termination closure. This
+  // lifetime of ShellConnection.
+  ShellConnection(mojo::ShellClient* client,
+                  InterfaceRequest<shell::mojom::ShellClient> request);
+  // Constructs an ShellConnection with a custom termination closure. This
   // closure is invoked on Quit() instead of the default behavior of quitting
   // the current base::MessageLoop.
-  ApplicationImpl(ShellClient* client,
-                  InterfaceRequest<shell::mojom::Application> request,
+  ShellConnection(mojo::ShellClient* client,
+                  InterfaceRequest<shell::mojom::ShellClient> request,
                   const Closure& termination_closure);
-  ~ApplicationImpl() override;
-
-  // The Mojo shell. This will return a valid pointer after Initialize() has
-  // been invoked. It will remain valid until UnbindConnections() is invoked or
-  // the ApplicationImpl is destroyed.
-  shell::mojom::Shell* shell() const { return shell_.get(); }
+  ~ShellConnection() override;
 
   // Block the calling thread until the Initialize() method is called by the
   // shell.
@@ -120,26 +115,25 @@ class ApplicationImpl : public Shell, public shell::mojom::Application {
   void QuitNow();
 
   // Unbinds the Shell and Application connections. Can be used to re-bind the
-  // handles to another implementation of ApplicationImpl, for instance when
+  // handles to another implementation of ShellConnection, for instance when
   // running apptests.
-  void UnbindConnections(
-      InterfaceRequest<shell::mojom::Application>* application_request,
-      shell::mojom::ShellPtr* shell);
+  void UnbindConnections(InterfaceRequest<shell::mojom::ShellClient>* request,
+                         shell::mojom::ShellPtr* shell);
 
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.
   ScopedVector<Connection> incoming_connections_;
-  ShellClient* client_;
-  Binding<shell::mojom::Application> binding_;
+  mojo::ShellClient* client_;
+  Binding<shell::mojom::ShellClient> binding_;
   shell::mojom::ShellPtr shell_;
   Closure termination_closure_;
   AppLifetimeHelper app_lifetime_helper_;
   bool quit_requested_;
-  base::WeakPtrFactory<ApplicationImpl> weak_factory_;
+  base::WeakPtrFactory<ShellConnection> weak_factory_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ShellConnection);
 };
 
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_PUBLIC_CPP_APPLICATION_IMPL_H_
+#endif  // MOJO_SHELL_PUBLIC_CPP_SHELL_CONNECTION_H_

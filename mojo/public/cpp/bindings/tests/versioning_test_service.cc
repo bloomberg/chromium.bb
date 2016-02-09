@@ -118,9 +118,9 @@ class HumanResourceSystemServer
 }  // namespace test
 }  // namespace mojo
 
-MojoResult MojoMain(MojoHandle application_request) {
+MojoResult MojoMain(MojoHandle request) {
   mojo::ApplicationRunner runner(
       new mojo::test::versioning::HumanResourceSystemServer());
 
-  return runner.Run(application_request);
+  return runner.Run(request);
 }

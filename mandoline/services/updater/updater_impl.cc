@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "mandoline/services/updater/updater_app.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "url/gurl.h"
 
 namespace updater {

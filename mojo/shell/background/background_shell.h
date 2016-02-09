@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 class GURL;
 
@@ -27,7 +27,8 @@ class BackgroundShell {
   void Init();
 
   // Obtains an InterfaceRequest for the specified url.
-  InterfaceRequest<mojom::Application> CreateApplication(const GURL& url);
+  InterfaceRequest<mojom::ShellClient> CreateShellClientRequest(
+      const GURL& url);
 
  private:
   class MojoThread;

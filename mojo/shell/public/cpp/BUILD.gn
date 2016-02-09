@@ -21,7 +21,6 @@ source_set("cpp_for_chromium") {
 source_set("sources") {
   sources = [
     "app_lifetime_helper.h",
-    "application_impl.h",
     "application_runner.h",
     "connect.h",
     "connection.h",
@@ -29,15 +28,16 @@ source_set("sources") {
     "interface_factory.h",
     "interface_factory_impl.h",
     "lib/app_lifetime_helper.cc",
-    "lib/application_impl.cc",
     "lib/application_runner.cc",
     "lib/connection_impl.cc",
     "lib/connection_impl.h",
     "lib/interface_factory_connector.h",
     "lib/shell_client.cc",
+    "lib/shell_connection.cc",
     "service_connector.h",
     "shell.h",
     "shell_client.h",
+    "shell_connection.h",
   ]
 
   deps = [

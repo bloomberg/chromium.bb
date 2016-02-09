@@ -19,9 +19,9 @@
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "mojo/shell/public/interfaces/service_provider.mojom.h"
 #include "mojo/shell/test_package_manager.h"
@@ -72,7 +72,7 @@ void QuitClosure(bool* value) {
 }
 
 class TestContentHandler : public mojom::ContentHandler,
-                           public ShellClient{
+                           public ShellClient {
  public:
   TestContentHandler(Connection* connection,
                      InterfaceRequest<mojom::ContentHandler> request)
@@ -80,16 +80,16 @@ class TestContentHandler : public mojom::ContentHandler,
 
   // ContentHandler:
   void StartApplication(
-      InterfaceRequest<mojom::Application> application_request,
+      InterfaceRequest<mojom::ShellClient> request,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
-    apps_.push_back(new ApplicationImpl(this, std::move(application_request)));
+    shell_connections_.push_back(new ShellConnection(this, std::move(request)));
     destruct_callback.Run();
   }
 
  private:
   StrongBinding<mojom::ContentHandler> binding_;
-  ScopedVector<ApplicationImpl> apps_;
+  ScopedVector<ShellConnection> shell_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
 };
@@ -107,9 +107,9 @@ class TestApplicationLoader : public ApplicationLoader,
  private:
   // ApplicationLoader implementation.
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override {
+            InterfaceRequest<mojom::ShellClient> request) override {
     ++num_loads_;
-    test_app_.reset(new ApplicationImpl(this, std::move(application_request)));
+    shell_connection_.reset(new ShellConnection(this, std::move(request)));
   }
 
   // mojo::ShellClient implementation.
@@ -124,7 +124,7 @@ class TestApplicationLoader : public ApplicationLoader,
     new TestContentHandler(connection, std::move(request));
   }
 
-  scoped_ptr<ApplicationImpl> test_app_;
+  scoped_ptr<ShellConnection> shell_connection_;
   int num_loads_;
   GURL last_requestor_url_;
 

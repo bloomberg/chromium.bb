@@ -29,7 +29,7 @@ class UIApplicationLoader : public ApplicationLoader {
 
   // ApplicationLoader overrides:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override;
+            InterfaceRequest<mojom::ShellClient> request) override;
 
  private:
   class UILoader;
@@ -39,7 +39,7 @@ class UIApplicationLoader : public ApplicationLoader {
   // TODO: having this code take a |manager| is fragile (as ApplicationManager
   // isn't thread safe).
   void LoadOnUIThread(const GURL& url,
-                      InterfaceRequest<mojom::Application> application_request);
+                      InterfaceRequest<mojom::ShellClient> request);
   void ShutdownOnUIThread();
 
   scoped_ptr<ApplicationLoader> loader_;

@@ -17,9 +17,9 @@
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/service_provider.mojom.h"
 #include "mojo/shell/test.mojom.h"
 #include "mojo/shell/test_package_manager.h"
@@ -103,7 +103,7 @@ class TestApplicationLoader : public ApplicationLoader,
   ~TestApplicationLoader() override {
     if (context_)
       ++context_->num_loader_deletes;
-    test_app_.reset();
+    shell_connection_.reset();
   }
 
   void set_context(TestContext* context) { context_ = context; }
@@ -113,9 +113,9 @@ class TestApplicationLoader : public ApplicationLoader,
  private:
   // ApplicationLoader implementation.
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override {
+            InterfaceRequest<mojom::ShellClient> request) override {
     ++num_loads_;
-    test_app_.reset(new ApplicationImpl(this, std::move(application_request)));
+    shell_connection_.reset(new ShellConnection(this, std::move(request)));
   }
 
   // mojo::ShellClient implementation.
@@ -131,7 +131,7 @@ class TestApplicationLoader : public ApplicationLoader,
     new TestServiceImpl(context_, std::move(request));
   }
 
-  scoped_ptr<ApplicationImpl> test_app_;
+  scoped_ptr<ShellConnection> shell_connection_;
   TestContext* context_;
   int num_loads_;
   GURL last_requestor_url_;
@@ -143,7 +143,7 @@ class ClosingApplicationLoader : public ApplicationLoader {
  private:
   // ApplicationLoader implementation.
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override {
+            InterfaceRequest<mojom::ShellClient> request) override {
   }
 };
 
@@ -245,7 +245,7 @@ class TesterContext {
 // Used to test that the requestor url will be correctly passed.
 class TestAImpl : public TestA {
  public:
-  TestAImpl(ApplicationImpl* app_impl,
+  TestAImpl(ShellConnection* app_impl,
             TesterContext* test_context,
             InterfaceRequest<TestA> request,
             InterfaceFactory<TestC>* factory)
@@ -345,8 +345,8 @@ class Tester : public ShellClient,
 
  private:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override {
-    app_.reset(new ApplicationImpl(this, std::move(application_request)));
+            InterfaceRequest<mojom::ShellClient> request) override {
+    app_.reset(new ShellConnection(this, std::move(request)));
   }
 
   bool AcceptConnection(Connection* connection) override {
@@ -382,7 +382,7 @@ class Tester : public ShellClient,
   }
 
   TesterContext* context_;
-  scoped_ptr<ApplicationImpl> app_;
+  scoped_ptr<ShellConnection> app_;
   std::string requestor_url_;
   ScopedVector<TestAImpl> a_bindings_;
 };

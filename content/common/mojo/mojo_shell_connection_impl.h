@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 
 namespace mojo {
 namespace shell {
@@ -67,7 +67,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
 
   bool initialized_;
   scoped_ptr<mojo::shell::RunnerConnection> runner_connection_;
-  scoped_ptr<mojo::ApplicationImpl> application_impl_;
+  scoped_ptr<mojo::ShellConnection> shell_connection_;
   std::vector<Listener*> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellConnectionImpl);

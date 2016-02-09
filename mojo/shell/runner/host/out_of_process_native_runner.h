@@ -33,12 +33,12 @@ class OutOfProcessNativeRunner : public NativeRunner {
   void Start(
       const base::FilePath& app_path,
       bool start_sandboxed,
-      InterfaceRequest<mojom::Application> application_request,
+      InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) override;
   void InitHost(
       ScopedHandle channel,
-      InterfaceRequest<mojom::Application> application_request) override;
+      InterfaceRequest<mojom::ShellClient> request) override;
 
  private:
   // |ChildController::StartApp()| callback:
@@ -46,7 +46,7 @@ class OutOfProcessNativeRunner : public NativeRunner {
 
   // Callback run when the child process has launched.
   void OnProcessLaunched(
-      InterfaceRequest<mojom::Application> application_request,
+      InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       base::ProcessId pid);
 

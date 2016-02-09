@@ -11,7 +11,7 @@
 
 namespace mojo {
 
-class ApplicationImpl;
+class ShellConnection;
 class AppLifetimeHelper;
 
 // A service implementation should keep this object as a member variable to hold
@@ -54,10 +54,10 @@ class AppRefCount {
 // creates an instance of a service, it gives it a refcount using
 // CreateAppRefCount. The service implementation then keeps that object as a
 // member variable. When all the service implemenations go away, the app will be
-// quit with a call to mojo::ApplicationImpl::Terminate().
+// quit with a call to mojo::ShellConnection::Terminate().
 class AppLifetimeHelper {
  public:
-  explicit AppLifetimeHelper(ApplicationImpl* app);
+  explicit AppLifetimeHelper(ShellConnection* app);
   ~AppLifetimeHelper();
 
   scoped_ptr<AppRefCount> CreateAppRefCount();
@@ -67,10 +67,10 @@ class AppLifetimeHelper {
   void AddRef();
   void Release();
 
-  friend ApplicationImpl;
+  friend ShellConnection;
   void OnQuit();
 
-  ApplicationImpl* app_;
+  ShellConnection* app_;
   int ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLifetimeHelper);

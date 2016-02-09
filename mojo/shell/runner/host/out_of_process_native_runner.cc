@@ -31,7 +31,7 @@ OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
 void OutOfProcessNativeRunner::Start(
     const base::FilePath& app_path,
     bool start_sandboxed,
-    InterfaceRequest<mojom::Application> application_request,
+    InterfaceRequest<mojom::ShellClient> request,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
@@ -43,15 +43,15 @@ void OutOfProcessNativeRunner::Start(
       new ChildProcessHost(launch_process_runner_, start_sandboxed, app_path));
   child_process_host_->Start(base::Bind(
       &OutOfProcessNativeRunner::OnProcessLaunched, base::Unretained(this),
-      base::Passed(&application_request), pid_available_callback));
+      base::Passed(&request), pid_available_callback));
 }
 
 void OutOfProcessNativeRunner::InitHost(
     ScopedHandle channel,
-    InterfaceRequest<mojom::Application> application_request) {
+    InterfaceRequest<mojom::ShellClient> request) {
   child_process_host_.reset(new ChildProcessHost(std::move(channel)));
   child_process_host_->StartApp(
-      std::move(application_request),
+      std::move(request),
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,
                  base::Unretained(this)));
 }
@@ -69,12 +69,12 @@ void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
 }
 
 void OutOfProcessNativeRunner::OnProcessLaunched(
-    InterfaceRequest<mojom::Application> application_request,
+    InterfaceRequest<mojom::ShellClient> request,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
     base::ProcessId pid) {
   DCHECK(child_process_host_);
   child_process_host_->StartApp(
-      std::move(application_request),
+      std::move(request),
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,
                  base::Unretained(this)));
   pid_available_callback.Run(pid);

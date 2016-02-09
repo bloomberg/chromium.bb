@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "mojo/shell/background/background_shell.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "url/gurl.h"
 
@@ -32,25 +32,25 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     background_shell_.reset(new mojo::shell::BackgroundShell);
     background_shell_->Init();
     shell_client_.reset(new DefaultShellClient);
-    app_.reset(new mojo::ApplicationImpl(
+    shell_connection_.reset(new mojo::ShellConnection(
         shell_client_.get(),
-        background_shell_->CreateApplication(GURL("mojo://test-app"))));
-    app_->WaitForInitialize();
+        background_shell_->CreateShellClientRequest(GURL("mojo://test-app"))));
+    shell_connection_->WaitForInitialize();
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
-    app_->Connect("mojo:desktop_wm");
-    WindowManagerConnection::Create(app_.get());
+    shell_connection_->Connect("mojo:desktop_wm");
+    WindowManagerConnection::Create(shell_connection_.get());
   }
 
   ~PlatformTestHelperMus() override {
     WindowManagerConnection::Reset();
     // |app_| has a reference to us, destroy it while we are still valid.
-    app_.reset();
+    shell_connection_.reset();
   }
 
  private:
   scoped_ptr<mojo::shell::BackgroundShell> background_shell_;
-  scoped_ptr<mojo::ApplicationImpl> app_;
+  scoped_ptr<mojo::ShellConnection> shell_connection_;
   scoped_ptr<DefaultShellClient> shell_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);

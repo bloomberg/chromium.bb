@@ -27,10 +27,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
@@ -242,7 +242,7 @@ class PDFViewerApplicationDelegate
       public mojo::InterfaceFactory<mus::mojom::WindowTreeClient> {
  public:
   PDFViewerApplicationDelegate(
-      mojo::ApplicationRequest request,
+      mojo::ShellClientRequest request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback)
       : app_(this,
@@ -305,7 +305,7 @@ class PDFViewerApplicationDelegate
         mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
   }
 
-  mojo::ApplicationImpl app_;
+  mojo::ShellConnection app_;
   std::string data_;
   std::vector<PDFView*> pdf_views_;
   FPDF_DOCUMENT doc_;
@@ -325,7 +325,7 @@ class ContentHandlerImpl : public mojo::shell::mojom::ContentHandler {
  private:
   // mojo::shell::mojom::ContentHandler:
   void StartApplication(
-      mojo::ApplicationRequest request,
+      mojo::ShellClientRequest request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback) override {
     new PDFViewerApplicationDelegate(std::move(request), std::move(response),
@@ -374,7 +374,7 @@ class PDFViewer
 }  // namespace
 }  // namespace pdf_viewer
 
-MojoResult MojoMain(MojoHandle application_request) {
+MojoResult MojoMain(MojoHandle request) {
   mojo::ApplicationRunner runner(new pdf_viewer::PDFViewer());
-  return runner.Run(application_request);
+  return runner.Run(request);
 }

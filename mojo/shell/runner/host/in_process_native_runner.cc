@@ -35,13 +35,13 @@ InProcessNativeRunner::~InProcessNativeRunner() {
 void InProcessNativeRunner::Start(
     const base::FilePath& app_path,
     bool start_sandboxed,
-    InterfaceRequest<mojom::Application> application_request,
+    InterfaceRequest<mojom::ShellClient> request,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
 
-  DCHECK(!application_request_.is_pending());
-  application_request_ = std::move(application_request);
+  DCHECK(!request_.is_pending());
+  request_ = std::move(request);
 
   DCHECK(app_completed_callback_runner_.is_null());
   app_completed_callback_runner_ = base::Bind(
@@ -56,7 +56,7 @@ void InProcessNativeRunner::Start(
 
 void InProcessNativeRunner::InitHost(
     ScopedHandle channel,
-    InterfaceRequest<mojom::Application> application_request) {
+    InterfaceRequest<mojom::ShellClient> request) {
   NOTREACHED();  // Can't host another process in this runner.
 }
 
@@ -73,7 +73,7 @@ void InProcessNativeRunner::Run() {
 #if !(defined(COMPONENT_BUILD) && defined(OS_WIN))
   CallLibraryEarlyInitialization(app_library);
 #endif
-  RunNativeApplication(app_library, std::move(application_request_));
+  RunNativeApplication(app_library, std::move(request_));
   app_completed_callback_runner_.Run();
   app_completed_callback_runner_.Reset();
 }

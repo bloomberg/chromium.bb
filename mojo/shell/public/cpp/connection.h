@@ -43,7 +43,7 @@ class ServiceConnector;
 //
 // Just as with InterfaceFactory, ServiceConnector must outlive Connection.
 //
-// An Connection's lifetime is managed by an ApplicationImpl. To close a
+// An Connection's lifetime is managed by an ShellConnection. To close a
 // connection, call CloseConnection which will destroy this object.
 class Connection {
  public:

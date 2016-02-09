@@ -15,8 +15,8 @@
 #include "build/build_config.h"
 #include "mash/example/window_type_launcher/window_type_launcher.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "mojo/shell/runner/child/runner_connection.h"
 #include "mojo/shell/runner/init.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
@@ -65,13 +65,13 @@ int main(int argc, char** argv) {
                                    io_thread.task_runner().get(),
                                    mojo::embedder::ScopedPlatformHandle());
 
-    mojo::ApplicationRequest application_request;
+    mojo::ShellClientRequest request;
     scoped_ptr<mojo::shell::RunnerConnection> connection(
         mojo::shell::RunnerConnection::ConnectToRunner(
-            &application_request, mojo::ScopedMessagePipeHandle()));
+            &request, mojo::ScopedMessagePipeHandle()));
     base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
     WindowTypeLauncher delegate;
-    mojo::ApplicationImpl impl(&delegate, std::move(application_request));
+    mojo::ShellConnection impl(&delegate, std::move(request));
     loop.Run();
 
     mojo::embedder::ShutdownIPCSupport();

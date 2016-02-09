@@ -67,7 +67,7 @@ class DefaultApplicationLoader : public mojo::shell::ApplicationLoader {
  private:
   // mojo::shell::ApplicationLoader:
   void Load(const GURL& url,
-            mojo::InterfaceRequest<mojo::shell::mojom::Application> request)
+            mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request)
                 override {}
 
   DISALLOW_COPY_AND_ASSIGN(DefaultApplicationLoader);
@@ -85,7 +85,7 @@ class UtilityProcessLoader : public mojo::shell::ApplicationLoader {
  private:
   // mojo::shell::ApplicationLoader:
   void Load(const GURL& url,
-            mojo::InterfaceRequest<mojo::shell::mojom::Application> request)
+            mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request)
                 override {
     ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
@@ -130,7 +130,7 @@ class GpuProcessLoader : public mojo::shell::ApplicationLoader {
  private:
   // mojo::shell::ApplicationLoader:
   void Load(const GURL& url,
-            mojo::InterfaceRequest<mojo::shell::mojom::Application> request)
+            mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request)
                 override {
     ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);

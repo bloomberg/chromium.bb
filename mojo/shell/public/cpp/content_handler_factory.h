@@ -28,7 +28,7 @@ class ContentHandlerFactory
     // Implement this method to create the Application. This method will be
     // called on a new thread. Leaving this method will quit the application.
     virtual void RunApplication(
-        InterfaceRequest<shell::mojom::Application> application_request,
+        InterfaceRequest<shell::mojom::ShellClient> request,
         URLResponsePtr response) = 0;
   };
 
@@ -40,13 +40,12 @@ class ContentHandlerFactory
     // on this new thread, and the returned value will be kept alive until the
     // application ends.
     virtual scoped_ptr<HandledApplicationHolder> CreateApplication(
-        InterfaceRequest<shell::mojom::Application> application_request,
+        InterfaceRequest<shell::mojom::ShellClient> request,
         URLResponsePtr response) = 0;
 
    private:
-    void RunApplication(
-        InterfaceRequest<shell::mojom::Application> application_request,
-        URLResponsePtr response) override;
+    void RunApplication(InterfaceRequest<shell::mojom::ShellClient> request,
+                        URLResponsePtr response) override;
   };
 
   explicit ContentHandlerFactory(Delegate* delegate);

@@ -140,12 +140,12 @@ void ApplicationManager::CreateInstanceForHandle(
   CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
   Identity target_id(url, std::string(), local_filter);
   ApplicationInstance* instance = nullptr;
-  InterfaceRequest<mojom::Application> application_request =
+  InterfaceRequest<mojom::ShellClient> request =
       CreateInstance(target_id, base::Closure(), &instance);
   instance->BindPIDReceiver(std::move(pid_receiver));
   scoped_ptr<NativeRunner> runner =
       native_runner_factory_->Create(base::FilePath());
-  runner->InitHost(std::move(channel), std::move(application_request));
+  runner->InitHost(std::move(channel), std::move(request));
   instance->SetNativeRunner(runner.get());
   native_runners_.push_back(std::move(runner));
 }
@@ -175,28 +175,27 @@ void ApplicationManager::ApplicationPIDAvailable(
       });
 }
 
-InterfaceRequest<mojom::Application>
+InterfaceRequest<mojom::ShellClient>
     ApplicationManager::CreateAndConnectToInstance(
         scoped_ptr<ConnectToApplicationParams> params,
         ApplicationInstance** resulting_instance) {
   ApplicationInstance* instance = nullptr;
-  InterfaceRequest<mojom::Application> application_request =
+  InterfaceRequest<mojom::ShellClient> request =
       CreateInstance(params->target(), params->on_application_end(), &instance);
   instance->ConnectToClient(std::move(params));
   if (resulting_instance)
     *resulting_instance = instance;
-  return application_request;
+  return request;
 }
 
-InterfaceRequest<mojom::Application> ApplicationManager::CreateInstance(
+InterfaceRequest<mojom::ShellClient> ApplicationManager::CreateInstance(
     const Identity& target_id,
     const base::Closure& on_application_end,
     ApplicationInstance** resulting_instance) {
-  mojom::ApplicationPtr application;
-  InterfaceRequest<mojom::Application> application_request =
-      GetProxy(&application);
+  mojom::ShellClientPtr shell_client;
+  InterfaceRequest<mojom::ShellClient> request = GetProxy(&shell_client);
   ApplicationInstance* instance = new ApplicationInstance(
-      std::move(application), this, target_id,
+      std::move(shell_client), this, target_id,
       mojom::Shell::kInvalidApplicationID, on_application_end);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
@@ -210,7 +209,7 @@ InterfaceRequest<mojom::Application> ApplicationManager::CreateInstance(
   instance->InitializeApplication();
   if (resulting_instance)
     *resulting_instance = instance;
-  return application_request;
+  return request;
 }
 
 void ApplicationManager::HandleFetchCallback(
@@ -250,7 +249,7 @@ void ApplicationManager::HandleFetchCallback(
       params->connect_callback();
   params->set_connect_callback(EmptyConnectCallback());
   ApplicationInstance* app = nullptr;
-  InterfaceRequest<mojom::Application> request(
+  InterfaceRequest<mojom::ShellClient> request(
       CreateAndConnectToInstance(std::move(params), &app));
 
   uint32_t content_handler_id = package_manager_->HandleWithContentHandler(
@@ -282,7 +281,7 @@ void ApplicationManager::HandleFetchCallback(
 }
 
 void ApplicationManager::RunNativeApplication(
-    InterfaceRequest<mojom::Application> application_request,
+    InterfaceRequest<mojom::ShellClient> request,
     bool start_sandboxed,
     scoped_ptr<Fetcher> fetcher,
     ApplicationInstance* instance,
@@ -291,7 +290,7 @@ void ApplicationManager::RunNativeApplication(
   // We only passed fetcher to keep it alive. Done with it now.
   fetcher.reset();
 
-  DCHECK(application_request.is_pending());
+  DCHECK(request.is_pending());
 
   if (!path_exists) {
     LOG(ERROR) << "Library not started because library path '" << path.value()
@@ -302,7 +301,7 @@ void ApplicationManager::RunNativeApplication(
   TRACE_EVENT1("mojo_shell", "ApplicationManager::RunNativeApplication", "path",
                path.AsUTF8Unsafe());
   scoped_ptr<NativeRunner> runner = native_runner_factory_->Create(path);
-  runner->Start(path, start_sandboxed, std::move(application_request),
+  runner->Start(path, start_sandboxed, std::move(request),
                 base::Bind(&ApplicationManager::ApplicationPIDAvailable,
                            weak_ptr_factory_.GetWeakPtr(), instance->id()),
                 base::Bind(&ApplicationManager::CleanupRunner,

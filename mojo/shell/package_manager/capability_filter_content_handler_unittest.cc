@@ -12,9 +12,9 @@
 #include "mojo/shell/capability_filter_test.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,20 +98,19 @@ class TestContentHandler : public ShellClient,
   }
 
   // Overridden from mojom::ContentHandler:
-  void StartApplication(
-      InterfaceRequest<mojom::Application> application,
-      URLResponsePtr response,
-      const Callback<void()>& destruct_callback) override {
+  void StartApplication(InterfaceRequest<mojom::ShellClient> request,
+                        URLResponsePtr response,
+                        const Callback<void()>& destruct_callback) override {
     scoped_ptr<ShellClient> delegate(new test::TestApplication);
     embedded_apps_.push_back(
-        new ApplicationImpl(delegate.get(), std::move(application)));
+        new ShellConnection(delegate.get(), std::move(request)));
     embedded_app_delegates_.push_back(std::move(delegate));
     destruct_callback.Run();
   }
 
   WeakBindingSet<mojom::ContentHandler> bindings_;
   ScopedVector<ShellClient> embedded_app_delegates_;
-  ScopedVector<ApplicationImpl> embedded_apps_;
+  ScopedVector<ShellConnection> embedded_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
 };

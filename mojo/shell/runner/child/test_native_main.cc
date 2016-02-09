@@ -13,8 +13,8 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/runner/child/runner_connection.h"
 #include "mojo/shell/runner/init.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
@@ -37,7 +37,7 @@ class ProcessDelegate : public mojo::embedder::ProcessDelegate {
 
 }  // namespace
 
-int TestNativeMain(mojo::ShellClient* application_delegate) {
+int TestNativeMain(mojo::ShellClient* shell_client) {
   mojo::shell::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)
@@ -60,13 +60,12 @@ int TestNativeMain(mojo::ShellClient* application_delegate) {
         mojo::embedder::ProcessType::NONE, &process_delegate,
         io_thread.task_runner().get(), mojo::embedder::ScopedPlatformHandle());
 
-    mojo::ApplicationRequest application_request;
+    mojo::ShellClientRequest request;
     scoped_ptr<mojo::shell::RunnerConnection> connection(
         mojo::shell::RunnerConnection::ConnectToRunner(
-            &application_request, ScopedMessagePipeHandle()));
+            &request, ScopedMessagePipeHandle()));
     base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
-    mojo::ApplicationImpl impl(application_delegate,
-                               std::move(application_request));
+    mojo::ShellConnection impl(shell_client, std::move(request));
     loop.Run();
 
     mojo::embedder::ShutdownIPCSupport();

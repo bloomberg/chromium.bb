@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "content/common/process_control.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 class GURL;
 
@@ -37,7 +37,7 @@ class ProcessControlImpl : public ProcessControl {
   // ProcessControl:
   void LoadApplication(
       const mojo::String& url,
-      mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
+      mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request,
       const LoadApplicationCallback& callback) override;
 
  private:

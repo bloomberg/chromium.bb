@@ -235,14 +235,14 @@ class ChildControllerImpl : public mojom::ChildController {
   }
 
   // |ChildController| methods:
-  void StartApp(InterfaceRequest<mojom::Application> application_request,
+  void StartApp(InterfaceRequest<mojom::ShellClient> request,
                 const StartAppCallback& on_app_complete) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     on_app_complete_ = on_app_complete;
     unblocker_.Unblock(base::Bind(&ChildControllerImpl::StartAppOnMainThread,
                                   base::Unretained(app_library_),
-                                  base::Passed(&application_request)));
+                                  base::Passed(&request)));
   }
 
   void ExitNow(int32_t exit_code) override {
@@ -258,8 +258,8 @@ class ChildControllerImpl : public mojom::ChildController {
 
   static void StartAppOnMainThread(
       base::NativeLibrary app_library,
-      InterfaceRequest<mojom::Application> application_request) {
-    if (!RunNativeApplication(app_library, std::move(application_request))) {
+      InterfaceRequest<mojom::ShellClient> request) {
+    if (!RunNativeApplication(app_library, std::move(request))) {
       LOG(ERROR) << "Failure to RunNativeApplication()";
     }
   }

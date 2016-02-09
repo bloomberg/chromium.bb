@@ -46,7 +46,7 @@ class CoreServicesApplicationDelegate
 
   // Overridden from mojo::shell::mojom::ContentHandler:
   void StartApplication(
-      mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
+      mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback) override;
 

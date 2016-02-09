@@ -7,7 +7,7 @@
 
 #include "base/native_library.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace base {
 class FilePath;
@@ -33,9 +33,8 @@ base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path);
 // true if |MojoMain()| was called (even if it returns an error), and false
 // otherwise.
 // TODO(vtl): Maybe this should also have a |MojoResult| as an out parameter?
-bool RunNativeApplication(
-    base::NativeLibrary app_library,
-    InterfaceRequest<mojom::Application> application_request);
+bool RunNativeApplication(base::NativeLibrary app_library,
+                          InterfaceRequest<mojom::ShellClient> request);
 
 }  // namespace shell
 }  // namespace mojo

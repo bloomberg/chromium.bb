@@ -113,7 +113,7 @@ void ChildProcessHost::Start(const ProcessReadyCallback& callback) {
     // while this boostrap is pending, resulting in OnMessagePipeCreated() never
     // being called.
     //
-    // A typical child process (i.e. one using ApplicationImpl to bind the other
+    // A typical child process (i.e. one using ShellConnection to bind the other
     // end of this pipe) may hang forever waiting for an Initialize() message
     // unless the pipe is closed. This in turn means that Join() could hang
     // waiting for the process to exit. Deadlock!
@@ -156,13 +156,13 @@ int ChildProcessHost::Join() {
 }
 
 void ChildProcessHost::StartApp(
-    InterfaceRequest<mojom::Application> application_request,
+    InterfaceRequest<mojom::ShellClient> request,
     const mojom::ChildController::StartAppCallback& on_app_complete) {
   DCHECK(controller_);
 
   on_app_complete_ = on_app_complete;
   controller_->StartApp(
-      std::move(application_request),
+      std::move(request),
       base::Bind(&ChildProcessHost::AppCompleted, weak_factory_.GetWeakPtr()));
 }
 

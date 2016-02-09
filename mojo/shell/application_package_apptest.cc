@@ -36,7 +36,7 @@ class ProvidedApplicationDelegate
       public base::SimpleThread {
  public:
   ProvidedApplicationDelegate(const std::string& name,
-                              InterfaceRequest<mojom::Application> request,
+                              InterfaceRequest<mojom::ShellClient> request,
                               const Callback<void()>& destruct_callback)
       : base::SimpleThread(name),
         name_(name),
@@ -78,7 +78,7 @@ class ProvidedApplicationDelegate
   }
 
   const std::string name_;
-  InterfaceRequest<mojom::Application> request_;
+  InterfaceRequest<mojom::ShellClient> request_;
   const Callback<void()> destruct_callback_;
   WeakBindingSet<test::mojom::ApplicationPackageApptestService> bindings_;
 
@@ -118,7 +118,7 @@ class ApplicationPackageApptestDelegate
   }
 
   // mojom::ContentHandler:
-  void StartApplication(InterfaceRequest<mojom::Application> request,
+  void StartApplication(InterfaceRequest<mojom::ShellClient> request,
                         URLResponsePtr response,
                         const Callback<void()>& destruct_callback) override {
     const std::string url = response->url;

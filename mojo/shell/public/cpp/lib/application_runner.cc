@@ -10,8 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 
 namespace mojo {
 
@@ -36,7 +36,7 @@ void ApplicationRunner::set_message_loop_type(base::MessageLoop::Type type) {
   message_loop_type_ = type;
 }
 
-MojoResult ApplicationRunner::Run(MojoHandle application_request_handle,
+MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
                                   bool init_base) {
   DCHECK(!has_run_);
   has_run_ = true;
@@ -54,10 +54,10 @@ MojoResult ApplicationRunner::Run(MojoHandle application_request_handle,
     else
       loop.reset(new base::MessageLoop(message_loop_type_));
 
-    ApplicationImpl impl(client_.get(),
-                         MakeRequest<shell::mojom::Application>(
+    ShellConnection impl(client_.get(),
+                         MakeRequest<shell::mojom::ShellClient>(
                             MakeScopedHandle(MessagePipeHandle(
-                                application_request_handle))));
+                                shell_client_request_handle))));
     loop->Run();
     // It's very common for the client to cache the app and terminate on errors.
     // If we don't delete the client before the app we run the risk of the
@@ -71,8 +71,8 @@ MojoResult ApplicationRunner::Run(MojoHandle application_request_handle,
   return MOJO_RESULT_OK;
 }
 
-MojoResult ApplicationRunner::Run(MojoHandle application_request_handle) {
-  return Run(application_request_handle, true);
+MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle) {
+  return Run(shell_client_request_handle, true);
 }
 
 }  // namespace mojo

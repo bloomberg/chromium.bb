@@ -204,11 +204,11 @@
       'type': 'none',
       'variables': {
         'mojom_files': [
-          'shell/public/interfaces/application.mojom',
           'shell/public/interfaces/application_manager.mojom',
           'shell/public/interfaces/content_handler.mojom',
           'shell/public/interfaces/service_provider.mojom',
           'shell/public/interfaces/shell.mojom',
+          'shell/public/interfaces/shell_client.mojom',
         ],
       },
       'dependencies': [
@@ -225,7 +225,6 @@
       'type': 'static_library',
       'sources': [
         'shell/public/cpp/app_lifetime_helper.h',
-        'shell/public/cpp/application_impl.h',
         'shell/public/cpp/application_runner.h',
         'shell/public/cpp/connect.h',
         'shell/public/cpp/connection.h',
@@ -234,15 +233,16 @@
         'shell/public/cpp/interface_factory.h',
         'shell/public/cpp/interface_factory_impl.h',
         'shell/public/cpp/lib/app_lifetime_helper.cc',
-        'shell/public/cpp/lib/application_impl.cc',
         'shell/public/cpp/lib/application_runner.cc',
         'shell/public/cpp/lib/connection_impl.cc',
         'shell/public/cpp/lib/connection_impl.h',
         'shell/public/cpp/lib/interface_factory_connector.h',
         'shell/public/cpp/lib/shell_client.cc',
+        'shell/public/cpp/lib/shell_connection.cc',
         'shell/public/cpp/service_connector.h',
         'shell/public/cpp/shell.h',
         'shell/public/cpp/shell_client.h',
+        'shell/public/cpp/shell_connection.h',
       ],
       'dependencies': [
         '../base/base.gyp:base_i18n',

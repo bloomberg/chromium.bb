@@ -181,7 +181,7 @@ uint32_t PackageManagerImpl::HandleWithContentHandler(
     const Identity& source,
     const GURL& target_url,
     const CapabilityFilter& target_filter,
-    InterfaceRequest<mojom::Application>* application_request) {
+    InterfaceRequest<mojom::ShellClient>* request) {
   Identity content_handler_identity;
   URLResponsePtr response;
   if (ShouldHandleWithContentHandler(fetcher,
@@ -191,8 +191,7 @@ uint32_t PackageManagerImpl::HandleWithContentHandler(
                                      &response)) {
     ContentHandlerConnection* connection =
         GetContentHandler(content_handler_identity, source);
-    connection->StartApplication(std::move(*application_request),
-                                 std::move(response));
+    connection->StartApplication(std::move(*request), std::move(response));
     return connection->id();
   }
   return mojom::Shell::kInvalidApplicationID;

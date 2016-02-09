@@ -10,9 +10,9 @@
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/environment/logging.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/lib/connection_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 
 namespace mojo {
 
@@ -26,25 +26,25 @@ void DefaultTerminationClosure() {
 
 }  // namespace
 
-ApplicationImpl::ConnectParams::ConnectParams(const std::string& url)
+ShellConnection::ConnectParams::ConnectParams(const std::string& url)
     : ConnectParams(URLRequest::From(url)) {}
-ApplicationImpl::ConnectParams::ConnectParams(URLRequestPtr request)
+ShellConnection::ConnectParams::ConnectParams(URLRequestPtr request)
     : request_(std::move(request)),
       filter_(shell::mojom::CapabilityFilter::New()) {
   filter_->filter.mark_non_null();
 }
-ApplicationImpl::ConnectParams::~ConnectParams() {}
+ShellConnection::ConnectParams::~ConnectParams() {}
 
-ApplicationImpl::ApplicationImpl(
-    ShellClient* client,
-    InterfaceRequest<shell::mojom::Application> request)
-    : ApplicationImpl(client,
+ShellConnection::ShellConnection(
+    mojo::ShellClient* client,
+    InterfaceRequest<shell::mojom::ShellClient> request)
+    : ShellConnection(client,
                       std::move(request),
                       base::Bind(&DefaultTerminationClosure)) {}
 
-ApplicationImpl::ApplicationImpl(
-    ShellClient* client,
-    InterfaceRequest<shell::mojom::Application> request,
+ShellConnection::ShellConnection(
+    mojo::ShellClient* client,
+    InterfaceRequest<shell::mojom::ShellClient> request,
     const Closure& termination_closure)
     : client_(client),
       binding_(this, std::move(request)),
@@ -53,22 +53,22 @@ ApplicationImpl::ApplicationImpl(
       quit_requested_(false),
       weak_factory_(this) {}
 
-ApplicationImpl::~ApplicationImpl() {
+ShellConnection::~ShellConnection() {
   app_lifetime_helper_.OnQuit();
 }
 
-void ApplicationImpl::WaitForInitialize() {
+void ShellConnection::WaitForInitialize() {
   DCHECK(!shell_.is_bound());
   binding_.WaitForIncomingMethodCall();
 }
 
-scoped_ptr<Connection> ApplicationImpl::Connect(const std::string& url) {
+scoped_ptr<Connection> ShellConnection::Connect(const std::string& url) {
   ConnectParams params(url);
   params.set_filter(CreatePermissiveCapabilityFilter());
   return Connect(&params);
 }
 
-scoped_ptr<Connection> ApplicationImpl::Connect(ConnectParams* params) {
+scoped_ptr<Connection> ShellConnection::Connect(ConnectParams* params) {
   if (!shell_)
     return nullptr;
   DCHECK(params);
@@ -96,7 +96,7 @@ scoped_ptr<Connection> ApplicationImpl::Connect(ConnectParams* params) {
   return std::move(registry);
 }
 
-void ApplicationImpl::Quit() {
+void ShellConnection::Quit() {
   // We can't quit immediately, since there could be in-flight requests from the
   // shell. So check with it first.
   if (shell_) {
@@ -107,11 +107,11 @@ void ApplicationImpl::Quit() {
   }
 }
 
-scoped_ptr<AppRefCount> ApplicationImpl::CreateAppRefCount() {
+scoped_ptr<AppRefCount> ShellConnection::CreateAppRefCount() {
   return app_lifetime_helper_.CreateAppRefCount();
 }
 
-void ApplicationImpl::Initialize(shell::mojom::ShellPtr shell,
+void ShellConnection::Initialize(shell::mojom::ShellPtr shell,
                                  const mojo::String& url,
                                  uint32_t id) {
   shell_ = std::move(shell);
@@ -119,7 +119,7 @@ void ApplicationImpl::Initialize(shell::mojom::ShellPtr shell,
   client_->Initialize(this, url, id);
 }
 
-void ApplicationImpl::AcceptConnection(
+void ShellConnection::AcceptConnection(
     const String& requestor_url,
     uint32_t requestor_id,
     InterfaceRequest<ServiceProvider> services,
@@ -140,7 +140,7 @@ void ApplicationImpl::AcceptConnection(
   incoming_connections_.push_back(std::move(registry));
 }
 
-void ApplicationImpl::OnQuitRequested(const Callback<void(bool)>& callback) {
+void ShellConnection::OnQuitRequested(const Callback<void(bool)>& callback) {
   // If by the time we got the reply from the shell, more requests had come in
   // then we don't want to quit the app anymore so we return false. Otherwise
   // |quit_requested_| is true so we tell the shell to proceed with the quit.
@@ -149,8 +149,8 @@ void ApplicationImpl::OnQuitRequested(const Callback<void(bool)>& callback) {
     QuitNow();
 }
 
-void ApplicationImpl::OnConnectionError() {
-  base::WeakPtr<ApplicationImpl> ptr(weak_factory_.GetWeakPtr());
+void ShellConnection::OnConnectionError() {
+  base::WeakPtr<ShellConnection> ptr(weak_factory_.GetWeakPtr());
 
   // We give the client notice first, since it might want to do something on
   // shell connection errors other than immediate termination of the run
@@ -164,15 +164,15 @@ void ApplicationImpl::OnConnectionError() {
   shell_ = nullptr;
 }
 
-void ApplicationImpl::QuitNow() {
+void ShellConnection::QuitNow() {
   client_->Quit();
   termination_closure_.Run();
 }
 
-void ApplicationImpl::UnbindConnections(
-    InterfaceRequest<shell::mojom::Application>* application_request,
+void ShellConnection::UnbindConnections(
+    InterfaceRequest<shell::mojom::ShellClient>* request,
     shell::mojom::ShellPtr* shell) {
-  *application_request = binding_.Unbind();
+  *request = binding_.Unbind();
   shell->Bind(shell_.PassInterface());
 }
 

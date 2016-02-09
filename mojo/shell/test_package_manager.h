@@ -30,7 +30,7 @@ class TestPackageManager : public PackageManager {
       const Identity& source,
       const GURL& target_url,
       const CapabilityFilter& target_filter,
-      InterfaceRequest<shell::mojom::Application>* application_request)
+      InterfaceRequest<shell::mojom::ShellClient>* request)
           override;
   bool IsURLInCatalog(const std::string& url) const override;
   std::string GetApplicationName(const std::string& url) const override;

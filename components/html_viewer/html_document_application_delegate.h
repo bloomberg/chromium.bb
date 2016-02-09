@@ -13,9 +13,9 @@
 #include "components/html_viewer/html_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 
 namespace html_viewer {
 
@@ -27,7 +27,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ShellClient,
                                         public HTMLFactory {
  public:
   HTMLDocumentApplicationDelegate(
-      mojo::ApplicationRequest request,
+      mojo::ShellClientRequest request,
       mojo::URLResponsePtr response,
       GlobalState* global_state,
       scoped_ptr<mojo::AppRefCount> parent_app_refcount,
@@ -64,7 +64,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ShellClient,
   HTMLWidgetRootLocal* CreateHTMLWidgetRootLocal(
       HTMLWidgetRootLocal::CreateParams* params) override;
 
-  mojo::ApplicationImpl app_;
+  mojo::ShellConnection app_;
   // AppRefCount of the parent (HTMLViewer).
   scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
   const mojo::String url_;

@@ -4,7 +4,7 @@
 
 module mojo.shell.mojom;
 
-import "mojo/shell/public/interfaces/application.mojom";
+import "mojo/shell/public/interfaces/shell_client.mojom";
 import "network/public/interfaces/url_loader.mojom";
 
 // Interface implemented by content handlers. To avoid race conditions with
@@ -16,5 +16,5 @@ import "network/public/interfaces/url_loader.mojom";
 // implementation to self destruct and release the app reference.
 interface ContentHandler {
   // The callback should be called when the application is destructed.
-  StartApplication(Application& application, mojo.URLResponse response) => ();
+  StartApplication(ShellClient& shell_client, mojo.URLResponse response) => ();
 };

@@ -31,7 +31,7 @@ class AndroidHandler : public ShellClient,
   bool AcceptConnection(Connection* connection) override;
 
   // ContentHandlerFactory::Delegate:
-  void RunApplication(InterfaceRequest<mojom::Application> application_request,
+  void RunApplication(InterfaceRequest<mojom::ShellClient> request,
                       URLResponsePtr response) override;
 
   ContentHandlerFactory content_handler_factory_;

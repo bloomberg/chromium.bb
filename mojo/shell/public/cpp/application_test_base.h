@@ -9,22 +9,22 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 
-class ApplicationImpl;
+class ShellConnection;
 
 namespace test {
 
 // Run all application tests. This must be called after the environment is
 // initialized, to support construction of a default run loop.
-MojoResult RunAllTests(MojoHandle application_request_handle);
+MojoResult RunAllTests(MojoHandle shell_client_request_handle);
 
-// Used to configure the ApplicationImpl. This is used internally by
+// Used to configure the ShellConnection. This is used internally by
 // ApplicationTestBase, but useful if you do not want to subclass
 // ApplicationTestBase.
 class TestHelper {
@@ -32,7 +32,7 @@ class TestHelper {
   explicit TestHelper(ShellClient* client);
   ~TestHelper();
 
-  Shell* shell() { return application_impl_.get(); }
+  Shell* shell() { return shell_connection_.get(); }
   std::string shell_url() { return url_; }
 
  private:
@@ -40,7 +40,7 @@ class TestHelper {
   ShellClient default_shell_client_;
 
   // The application implementation instance, reconstructed for each test.
-  scoped_ptr<ApplicationImpl> application_impl_;
+  scoped_ptr<ShellConnection> shell_connection_;
 
   std::string url_;
 

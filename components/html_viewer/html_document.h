@@ -20,7 +20,7 @@
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/public/cpp/app_lifetime_helper.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/shell_application_delegate.h"
 
 namespace mojo {
@@ -18,10 +18,10 @@ ShellApplicationLoader::~ShellApplicationLoader() {}
 
 void ShellApplicationLoader::Load(
     const GURL& url,
-    InterfaceRequest<mojom::Application> application_request) {
-  DCHECK(application_request.is_pending());
-  app_.reset(new ApplicationImpl(new ShellApplicationDelegate(manager_),
-                                 std::move(application_request)));
+    InterfaceRequest<mojom::ShellClient> request) {
+  DCHECK(request.is_pending());
+  shell_connection_.reset(new ShellConnection(
+      new ShellApplicationDelegate(manager_), std::move(request)));
 }
 
 }  // namespace shell

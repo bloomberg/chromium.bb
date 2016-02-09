@@ -54,7 +54,7 @@ base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path) {
 
 bool RunNativeApplication(
     base::NativeLibrary app_library,
-    InterfaceRequest<mojom::Application> application_request) {
+    InterfaceRequest<mojom::ShellClient> request) {
   // Tolerate |app_library| being null, to make life easier for callers.
   if (!app_library)
     return false;
@@ -120,7 +120,7 @@ bool RunNativeApplication(
     return false;
   }
   // |MojoMain()| takes ownership of the service handle.
-  MojoHandle handle = application_request.PassMessagePipe().release().value();
+  MojoHandle handle = request.PassMessagePipe().release().value();
   MojoResult result = main_function(handle);
   if (result != MOJO_RESULT_OK) {
     LOG(ERROR) << "MojoMain returned error (result: " << result << ")";

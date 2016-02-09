@@ -66,7 +66,7 @@ class ChildProcessHost {
 
   // See |mojom::ChildController|:
   void StartApp(
-      InterfaceRequest<mojom::Application> application_request,
+      InterfaceRequest<mojom::ShellClient> request,
       const mojom::ChildController::StartAppCallback& on_app_complete);
   void ExitNow(int32_t exit_code);
 

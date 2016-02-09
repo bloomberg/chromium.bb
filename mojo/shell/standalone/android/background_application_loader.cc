@@ -29,12 +29,12 @@ BackgroundApplicationLoader::~BackgroundApplicationLoader() {
 
 void BackgroundApplicationLoader::Load(
     const GURL& url,
-    InterfaceRequest<mojom::Application> application_request) {
-  DCHECK(application_request.is_pending());
+    InterfaceRequest<mojom::ShellClient> request) {
+  DCHECK(request.is_pending());
   if (!thread_) {
     // TODO(tim): It'd be nice if we could just have each Load call
     // result in a new thread like DynamicService{Loader, Runner}. But some
-    // loaders are creating multiple ApplicationImpls (NetworkApplicationLoader)
+    // loaders are creating multiple ShellConnections (NetworkApplicationLoader)
     // sharing a delegate (etc). So we have to keep it single threaded, wait
     // for the thread to initialize, and post to the TaskRunner for subsequent
     // Load calls for now.
@@ -47,8 +47,7 @@ void BackgroundApplicationLoader::Load(
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BackgroundApplicationLoader::LoadOnBackgroundThread,
-                 base::Unretained(this), url,
-                 base::Passed(&application_request)));
+                 base::Unretained(this), url, base::Passed(&request)));
 }
 
 void BackgroundApplicationLoader::Run() {
@@ -65,9 +64,9 @@ void BackgroundApplicationLoader::Run() {
 
 void BackgroundApplicationLoader::LoadOnBackgroundThread(
     const GURL& url,
-    InterfaceRequest<mojom::Application> application_request) {
+    InterfaceRequest<mojom::ShellClient> request) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  loader_->Load(url, std::move(application_request));
+  loader_->Load(url, std::move(request));
 }
 
 }  // namespace shell

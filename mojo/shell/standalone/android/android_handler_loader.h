@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/application_loader.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/standalone/android/android_handler.h"
 
 namespace mojo {
@@ -23,10 +23,10 @@ class AndroidHandlerLoader : public ApplicationLoader {
  private:
   // ApplicationLoader overrides:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override;
+            InterfaceRequest<mojom::ShellClient> request) override;
 
   AndroidHandler android_handler_;
-  scoped_ptr<ApplicationImpl> application_;
+  scoped_ptr<ShellConnection> shell_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidHandlerLoader);
 };

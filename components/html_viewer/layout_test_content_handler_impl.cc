@@ -62,7 +62,7 @@ LayoutTestContentHandlerImpl::~LayoutTestContentHandlerImpl() {
 }
 
 void LayoutTestContentHandlerImpl::StartApplication(
-    mojo::ApplicationRequest request,
+    mojo::ShellClientRequest request,
     mojo::URLResponsePtr response,
     const mojo::Callback<void()>& destruct_callback) {
   test_interfaces_->SetTestIsRunning(true);

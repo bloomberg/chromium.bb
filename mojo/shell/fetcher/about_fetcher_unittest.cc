@@ -18,9 +18,9 @@
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +55,7 @@ class TestContentHandler : public ShellClient,
 
   // Overridden from mojom::ContentHandler:
   void StartApplication(
-      InterfaceRequest<mojom::Application> application,
+      InterfaceRequest<mojom::ShellClient> request,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
     response_number_++;
@@ -84,12 +84,12 @@ class TestLoader : public ApplicationLoader {
  private:
   // Overridden from ApplicationLoader:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> request) override {
-    app_.reset(new ApplicationImpl(delegate_, std::move(request)));
+            InterfaceRequest<mojom::ShellClient> request) override {
+    app_.reset(new ShellConnection(delegate_, std::move(request)));
   }
 
   ShellClient* delegate_;
-  scoped_ptr<ApplicationImpl> app_;
+  scoped_ptr<ShellConnection> app_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLoader);
 };

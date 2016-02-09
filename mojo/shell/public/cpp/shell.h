@@ -7,14 +7,14 @@
 
 #include "mojo/shell/public/cpp/app_lifetime_helper.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
 
 shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter();
 
-using ApplicationRequest = InterfaceRequest<shell::mojom::Application>;
+using ShellClientRequest = InterfaceRequest<shell::mojom::ShellClient>;
 
 class Shell {
  public:

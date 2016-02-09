@@ -10,7 +10,7 @@
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/fetcher.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 class GURL;
 
@@ -44,7 +44,7 @@ class PackageManager {
   // content handler.
   // |target_filter| is a CapabilityFilter that should be applied if a content
   // handler is started to handle |target_url|.
-  // |application_request| is a request for an Application implementation that
+  // |request| is a request for an Application implementation that
   // will be taken by ContentHandler::StartApplication if a content handler ends
   // up handling |target_url|.
   virtual uint32_t HandleWithContentHandler(
@@ -52,7 +52,7 @@ class PackageManager {
       const Identity& source,
       const GURL& target_url,
       const CapabilityFilter& target_filter,
-      InterfaceRequest<shell::mojom::Application>* application_request) = 0;
+      InterfaceRequest<shell::mojom::ShellClient>* request) = 0;
 
   // Returns true if a manifest for |url| exists within the PackageManager's
   // application catalog.

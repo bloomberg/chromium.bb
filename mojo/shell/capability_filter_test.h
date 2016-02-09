@@ -9,8 +9,8 @@
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/capability_filter_unittest.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -51,10 +51,10 @@ class TestLoader : public ApplicationLoader {
  private:
   // Overridden from ApplicationLoader:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> request) override;
+            InterfaceRequest<mojom::ShellClient> request) override;
 
   scoped_ptr<ShellClient> delegate_;
-  scoped_ptr<ApplicationImpl> app_;
+  scoped_ptr<ShellConnection> app_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLoader);
 };

@@ -24,20 +24,19 @@ UIApplicationLoader::~UIApplicationLoader() {
                             base::Unretained(this)));
 }
 
-void UIApplicationLoader::Load(
-    const GURL& url,
-    InterfaceRequest<mojom::Application> application_request) {
-  DCHECK(application_request.is_pending());
+void UIApplicationLoader::Load(const GURL& url,
+                               InterfaceRequest<mojom::ShellClient> request) {
+  DCHECK(request.is_pending());
   ui_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&UIApplicationLoader::LoadOnUIThread, base::Unretained(this),
-                 url, base::Passed(&application_request)));
+                 url, base::Passed(&request)));
 }
 
 void UIApplicationLoader::LoadOnUIThread(
     const GURL& url,
-    InterfaceRequest<mojom::Application> application_request) {
-  loader_->Load(url, std::move(application_request));
+    InterfaceRequest<mojom::ShellClient> request) {
+  loader_->Load(url, std::move(request));
 }
 
 void UIApplicationLoader::ShutdownOnUIThread() {

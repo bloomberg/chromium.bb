@@ -7,13 +7,14 @@ module mojo.shell.mojom;
 import "mojo/shell/public/interfaces/service_provider.mojom";
 import "mojo/shell/public/interfaces/shell.mojom";
 
+// TODO(beng): rewrite these comments.
 // This is the primary interface implemented by every Mojo application. It
 // allows the application to receive its startup arguments from the shell, and
 // to be notified of events that occur during its execution.
 //
 // TODO(aa): It would be good to reorder the parameters once we have interface
 // versioning.
-interface Application {
+interface ShellClient {
   // Initializes the application with the specified arguments. This method is
   // guaranteed to be called before any other method is called, and will only be
   // called once.

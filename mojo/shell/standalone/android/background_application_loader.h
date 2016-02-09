@@ -26,7 +26,7 @@ class BackgroundApplicationLoader
 
   // ApplicationLoader overrides:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override;
+            InterfaceRequest<mojom::ShellClient> request) override;
 
  private:
   // |base::DelegateSimpleThread::Delegate| method:
@@ -34,9 +34,8 @@ class BackgroundApplicationLoader
 
   // These functions are exected on the background thread. They call through
   // to |background_loader_| to do the actual loading.
-  void LoadOnBackgroundThread(
-      const GURL& url,
-      InterfaceRequest<mojom::Application> application_request);
+  void LoadOnBackgroundThread(const GURL& url,
+                              InterfaceRequest<mojom::ShellClient> request);
   bool quit_on_shutdown_;
   scoped_ptr<ApplicationLoader> loader_;
 

@@ -35,7 +35,7 @@ class ApplicationRunner {
   void set_message_loop_type(base::MessageLoop::Type type);
 
   // Once the various parameters have been set above, use Run to initialize an
-  // ApplicationImpl wired to the provided delegate, and run a MessageLoop until
+  // ShellConnection wired to the provided delegate, and run a MessageLoop until
   // the application exits.
   //
   // Iff |init_base| is true, the runner will perform some initialization of

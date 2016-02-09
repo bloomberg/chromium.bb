@@ -33,19 +33,19 @@ class InProcessNativeRunner : public NativeRunner,
   void Start(
       const base::FilePath& app_path,
       bool start_sandboxed,
-      InterfaceRequest<mojom::Application> application_request,
+      InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) override;
   void InitHost(
       ScopedHandle channel,
-      InterfaceRequest<mojom::Application> application_request) override;
+      InterfaceRequest<mojom::ShellClient> request) override;
 
  private:
   // |base::DelegateSimpleThread::Delegate| method:
   void Run() override;
 
   base::FilePath app_path_;
-  InterfaceRequest<mojom::Application> application_request_;
+  InterfaceRequest<mojom::ShellClient> request_;
   base::Callback<bool(void)> app_completed_callback_runner_;
 
   base::ScopedNativeLibrary app_library_;

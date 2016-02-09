@@ -46,7 +46,7 @@ ContentHandlerConnection::ContentHandlerConnection(
 }
 
 void ContentHandlerConnection::StartApplication(
-    InterfaceRequest<mojom::Application> request,
+    InterfaceRequest<mojom::ShellClient> request,
     URLResponsePtr response) {
   content_handler_->StartApplication(
       std::move(request), std::move(response),

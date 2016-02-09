@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -26,9 +26,8 @@ class ApplicationLoader {
  public:
   virtual ~ApplicationLoader() {}
 
-  virtual void Load(
-      const GURL& url,
-      InterfaceRequest<mojom::Application> application_request) = 0;
+  virtual void Load(const GURL& url,
+                    InterfaceRequest<mojom::ShellClient> request) = 0;
 
  protected:
   ApplicationLoader() {}

@@ -13,9 +13,9 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/package_manager.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 
 namespace mojo {
 namespace shell {
@@ -50,8 +50,8 @@ class ConnectionValidator : public ApplicationLoader,
  private:
   // Overridden from ApplicationLoader:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> request) override {
-    app_.reset(new ApplicationImpl(this, std::move(request)));
+            InterfaceRequest<mojom::ShellClient> request) override {
+    app_.reset(new ShellConnection(this, std::move(request)));
   }
 
   // Overridden from ShellClient:
@@ -94,7 +94,7 @@ class ConnectionValidator : public ApplicationLoader,
     }
   }
 
-  scoped_ptr<ApplicationImpl> app_;
+  scoped_ptr<ShellConnection> app_;
   std::set<std::string> expectations_;
   std::set<std::string> unexpected_;
   base::MessageLoop* loop_;
@@ -194,8 +194,8 @@ TestLoader::TestLoader(ShellClient* delegate) : delegate_(delegate) {}
 TestLoader::~TestLoader() {}
 
 void TestLoader::Load(const GURL& url,
-                      InterfaceRequest<mojom::Application> request) {
-  app_.reset(new ApplicationImpl(delegate_.get(), std::move(request)));
+                      InterfaceRequest<mojom::ShellClient> request) {
+  app_.reset(new ShellConnection(delegate_.get(), std::move(request)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

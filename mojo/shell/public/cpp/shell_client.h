@@ -16,7 +16,7 @@ namespace mojo {
 class Shell;
 
 // An abstract class that the application may subclass to control various
-// behaviors of ApplicationImpl.
+// behaviors of ShellConnection.
 class ShellClient {
  public:
   ShellClient();
@@ -38,10 +38,10 @@ class ShellClient {
   //
   // Return true to shutdown the application. Return false to skip shutting
   // down the connection, but user is then required to call
-  // ApplicationImpl::QuitNow() when done. Default implementation returns true.
+  // ShellConnection::QuitNow() when done. Default implementation returns true.
   virtual bool ShellConnectionLost();
 
-  // Called before ApplicationImpl::Terminate(). After returning from this call
+  // Called before ShellConnection::Terminate(). After returning from this call
   // the delegate can no longer rely on the main run loop still running.
   virtual void Quit();
 

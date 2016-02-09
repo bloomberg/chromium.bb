@@ -4,7 +4,7 @@
 
 #include "mojo/shell/standalone/android/background_application_loader.h"
 
-#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -18,7 +18,7 @@ class DummyLoader : public ApplicationLoader {
 
   // ApplicationLoader overrides:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::Application> application_request) override {
+            InterfaceRequest<mojom::ShellClient> request) override {
     if (simulate_app_quit_)
       base::MessageLoop::current()->QuitWhenIdle();
   }

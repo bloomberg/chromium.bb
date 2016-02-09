@@ -7,11 +7,11 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # GYP version: mojo/mojo_base.gyp:mojo_application_bindings
 mojom("interfaces") {
   sources = [
-    "application.mojom",
     "application_manager.mojom",
     "content_handler.mojom",
     "service_provider.mojom",
     "shell.mojom",
+    "shell_client.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

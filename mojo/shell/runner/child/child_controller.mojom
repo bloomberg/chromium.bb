@@ -4,11 +4,11 @@
 
 module mojo.shell.mojom;
 
-import "mojo/shell/public/interfaces/application.mojom";
+import "mojo/shell/public/interfaces/shell_client.mojom";
 
 interface ChildController {
   // Starts the app.
-  StartApp(Application& application_request) => (int32 result);
+  StartApp(ShellClient& request) => (int32 result);
 
   // Exits the child process now (with no cleanup), with the given exit code.
   ExitNow(int32 exit_code);

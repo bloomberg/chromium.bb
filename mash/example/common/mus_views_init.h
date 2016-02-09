@@ -13,7 +13,7 @@
 #include "ui/views/views_delegate.h"
 
 namespace mojo {
-class ApplicationImpl;
+class ShellConnection;
 }
 
 namespace views {
@@ -24,7 +24,7 @@ class AuraInit;
 class MUSViewsInit : public views::ViewsDelegate,
                      public mus::WindowTreeDelegate {
  public:
-  explicit MUSViewsInit(mojo::ApplicationImpl* app);
+  explicit MUSViewsInit(mojo::ShellConnection* app);
   ~MUSViewsInit() override;
 
  private:
@@ -44,7 +44,7 @@ class MUSViewsInit : public views::ViewsDelegate,
   HICON GetSmallWindowIcon() const override;
 #endif
 
-  mojo::ApplicationImpl* app_;
+  mojo::ShellConnection* app_;
   scoped_ptr<views::AuraInit> aura_init_;
   mus::mojom::WindowManagerPtr window_manager_;
 

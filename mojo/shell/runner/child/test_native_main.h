@@ -9,7 +9,7 @@ namespace mojo {
 class ShellClient;
 namespace shell {
 
-int TestNativeMain(mojo::ShellClient* application_delegate);
+int TestNativeMain(mojo::ShellClient* shell_client);
 
 }  // namespace shell
 }  // namespace mojo
