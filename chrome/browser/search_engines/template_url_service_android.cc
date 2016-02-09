@@ -229,14 +229,17 @@ TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jquery,
     const JavaParamRef<jstring>& jalternate_term,
-    jboolean jshould_prefetch) {
+    jboolean jshould_prefetch,
+    const JavaParamRef<jstring>& jprotocol_version) {
   base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
   std::string url;
 
   if (!query.empty()) {
     GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
     if (google_util::IsGoogleSearchUrl(gurl)) {
-      gurl = net::AppendQueryParameter(gurl, "ctxs", "2");
+      std::string protocol_version(
+          base::android::ConvertJavaStringToUTF8(env, jprotocol_version));
+      gurl = net::AppendQueryParameter(gurl, "ctxs", protocol_version);
       if (jshould_prefetch) {
         // Indicate that the search page is being prefetched.
         gurl = net::AppendQueryParameter(gurl, "pf", "c");

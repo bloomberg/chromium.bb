@@ -33,7 +33,8 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
     private static final String ALTERNATIVE_VALUE = "lion";
 
     private static final String VERSION_PARAMETER = "ctxs";
-    private static final String VERSION_VALUE = "2";
+    private static final String VERSION_VALUE_TWO_REQUEST_PROTOCOL = "2";
+    private static final String VERSION_VALUE_SINGLE_REQUEST_PROTOCOL = "3";
 
     private static final String PREFETCH_PARAMETER = "pf";
     private static final String PREFETCH_VALUE = "c";
@@ -58,26 +59,28 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
             }
         }));
 
-        validateQuery(QUERY_VALUE, ALTERNATIVE_VALUE, true);
-        validateQuery(QUERY_VALUE, ALTERNATIVE_VALUE, false);
-        validateQuery(QUERY_VALUE, null, true);
-        validateQuery(QUERY_VALUE, null, false);
+        validateQuery(QUERY_VALUE, ALTERNATIVE_VALUE, true, VERSION_VALUE_TWO_REQUEST_PROTOCOL);
+        validateQuery(QUERY_VALUE, ALTERNATIVE_VALUE, false, VERSION_VALUE_TWO_REQUEST_PROTOCOL);
+        validateQuery(QUERY_VALUE, null, true, VERSION_VALUE_TWO_REQUEST_PROTOCOL);
+        validateQuery(QUERY_VALUE, null, false, VERSION_VALUE_TWO_REQUEST_PROTOCOL);
+        validateQuery(QUERY_VALUE, null, true, VERSION_VALUE_SINGLE_REQUEST_PROTOCOL);
     }
 
-    private void validateQuery(final String query, final String alternative, final boolean prefetch)
+    private void validateQuery(final String query, final String alternative, final boolean prefetch,
+            final String protocolVersion)
             throws ExecutionException {
         String result = ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return TemplateUrlService.getInstance()
-                        .getUrlForContextualSearchQuery(query, alternative, prefetch);
+                return TemplateUrlService.getInstance().getUrlForContextualSearchQuery(
+                        query, alternative, prefetch, protocolVersion);
             }
         });
         assertNotNull(result);
         Uri uri = Uri.parse(result);
         assertEquals(query, uri.getQueryParameter(QUERY_PARAMETER));
         assertEquals(alternative, uri.getQueryParameter(ALTERNATIVE_PARAMETER));
-        assertEquals(VERSION_VALUE, uri.getQueryParameter(VERSION_PARAMETER));
+        assertEquals(protocolVersion, uri.getQueryParameter(VERSION_PARAMETER));
         if (prefetch) {
             assertEquals(PREFETCH_VALUE, uri.getQueryParameter(PREFETCH_PARAMETER));
         } else {

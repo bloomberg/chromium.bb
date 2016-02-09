@@ -79,13 +79,14 @@ class TemplateURLRef {
       ContextualSearchParams();
       // Used when the content is sent in the HTTP header instead of as CGI
       // parameters.
-      // TODO(jeremycho): Remove base_page_url and selection parameters once
+      // TODO(donnd): Remove base_page_url and selection parameters once
       // they are logged from the HTTP header.
       ContextualSearchParams(const int version,
                              const std::string& selection,
                              const std::string& base_page_url,
                              const bool resolve);
-      // TODO(jeremycho): Delete constructor once Clank no longer depends on it.
+      // TODO(donnd): Delete constructor once Clank, iOS, and tests no
+      // longer depend on it.
       ContextualSearchParams(const int version,
                              const size_t start,
                              const size_t end,

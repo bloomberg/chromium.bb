@@ -282,14 +282,15 @@ public class TemplateUrlService {
      * @param query The search term to use as the main query in the returned search url.
      * @param alternateTerm The alternate search term to use as an alternate suggestion.
      * @param shouldPrefetch Whether the returned url should include a prefetch parameter.
+     * @param protocolVersion The version of the Contextual Search API protocol to use.
      * @return      A {@link String} that contains the url of the default search engine with
      *              {@code query} and {@code alternateTerm} inserted as parameters and contextual
      *              search and prefetch parameters conditionally set.
      */
-    public String getUrlForContextualSearchQuery(String query, String alternateTerm,
-            boolean shouldPrefetch) {
-        return nativeGetUrlForContextualSearchQuery(
-            mNativeTemplateUrlServiceAndroid, query, alternateTerm, shouldPrefetch);
+    public String getUrlForContextualSearchQuery(
+            String query, String alternateTerm, boolean shouldPrefetch, String protocolVersion) {
+        return nativeGetUrlForContextualSearchQuery(mNativeTemplateUrlServiceAndroid, query,
+                alternateTerm, shouldPrefetch, protocolVersion);
     }
 
     /**
@@ -320,7 +321,7 @@ public class TemplateUrlService {
     private native String nativeReplaceSearchTermsInUrl(long nativeTemplateUrlServiceAndroid,
             String query, String currentUrl);
     private native String nativeGetUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
-            String query, String alternateTerm, boolean shouldPrefetch);
+            String query, String alternateTerm, boolean shouldPrefetch, String protocolVersion);
     private native String nativeGetSearchEngineUrlFromTemplateUrl(
             long nativeTemplateUrlServiceAndroid, int index);
 }

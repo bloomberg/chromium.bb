@@ -35,6 +35,7 @@ class ContextualSearchRequest {
     private static final String GWS_QUERY_PARAM = "q";
     private static final String CTXS_PARAM_PATTERN = "(ctxs=[^&]+)";
     private static final String CTXR_PARAM = "ctxr";
+    private static final String CTXS_TWO_REQUEST_PROTOCOL = "2";
     private static final String CTXSL_TRANS_PARAM = "ctxsl_trans";
     private static final String CTXSL_TRANS_PARAM_VALUE = "1";
     @VisibleForTesting static final String TLITE_SOURCE_LANGUAGE_PARAM = "tlitesl";
@@ -190,7 +191,7 @@ class ContextualSearchRequest {
     protected Uri getUriTemplate(String query, @Nullable String alternateTerm,
             boolean shouldPrefetch) {
         return Uri.parse(TemplateUrlService.getInstance().getUrlForContextualSearchQuery(
-                query, alternateTerm, shouldPrefetch));
+                query, alternateTerm, shouldPrefetch, CTXS_TWO_REQUEST_PROTOCOL));
     }
 
     /**

@@ -65,7 +65,8 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jquery,
       const base::android::JavaParamRef<jstring>& jalternate_term,
-      jboolean jshould_prefetch);
+      jboolean jshould_prefetch,
+      const base::android::JavaParamRef<jstring>& jprotocol_version);
   base::android::ScopedJavaLocalRef<jstring> GetSearchEngineUrlFromTemplateUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
