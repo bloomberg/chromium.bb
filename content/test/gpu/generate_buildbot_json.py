@@ -601,12 +601,23 @@ TELEMETRY_TESTS = {
       '--use-angle=d3d9',
     ],
   },
-  # TODO(jmadill): run this on the optional tryservers once AMD/Win is fixed.
   'webgl_conformance_gl_tests': {
     'tester_configs': [
       {
         'fyi_only': True,
+        'run_on_optional': True,
         'os_types': ['win']
+      }
+    ],
+    'disabled_tester_configs': [
+      {
+        # BUG 555545: Disable webgl_conformance_gl_tests on Win/AMD
+        'swarming_dimension_sets': [
+          {
+            'gpu': '1002:6779',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+        ],
       }
     ],
     'target_name': 'webgl_conformance',
@@ -657,7 +668,7 @@ def matches_swarming_dimensions(tester_config, dimension_sets):
       return True
   return False
 
-def should_run_on_tester_impl(tester_name, tester_config, tc, is_fyi):
+def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi):
   if tc.get('fyi_only', False) and not is_fyi:
     return False
   # Handle the optional tryservers with the 'run_on_optional' flag.
@@ -688,8 +699,13 @@ def should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
       return False
     # Otherwise, if unspecified, run on all testers.
     return True
+  # Check if this config is disabled on this tester
+  if 'disabled_tester_configs' in test_config:
+    for dtc in test_config['disabled_tester_configs']:
+      if tester_config_matches_tester(tester_name, tester_config, dtc, is_fyi):
+        return False
   for tc in test_config['tester_configs']:
-    if should_run_on_tester_impl(tester_name, tester_config, tc, is_fyi):
+    if tester_config_matches_tester(tester_name, tester_config, tc, is_fyi):
       return True
   return False
 

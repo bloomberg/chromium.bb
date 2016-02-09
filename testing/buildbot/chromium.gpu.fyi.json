@@ -5482,6 +5482,29 @@
             }
           ]
         }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "webgl_conformance_gl_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6779",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
       }
     ]
   },
@@ -5552,6 +5575,29 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_d3d9_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "webgl_conformance_gl_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -6443,29 +6489,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6779",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "webgl_conformance_gl_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
