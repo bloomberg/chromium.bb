@@ -227,8 +227,13 @@ void NavigationRequest::BeginNavigation() {
 }
 
 void NavigationRequest::CreateNavigationHandle() {
-  navigation_handle_ = NavigationHandleImpl::Create(
-      common_params_.url, frame_tree_node_, common_params_.navigation_start);
+  // TODO(nasko): Update the NavigationHandle creation to ensure that the
+  // proper values are specified for is_synchronous and is_srcdoc.
+  navigation_handle_ =
+      NavigationHandleImpl::Create(common_params_.url, frame_tree_node_,
+                                   false,  // is_synchronous
+                                   false,  // is_srcdoc
+                                   common_params_.navigation_start);
 }
 
 void NavigationRequest::TransferNavigationHandleOwnership(

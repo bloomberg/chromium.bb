@@ -70,12 +70,20 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   static scoped_ptr<NavigationHandleImpl> Create(
       const GURL& url,
       FrameTreeNode* frame_tree_node,
+      bool is_synchronous,
+      bool is_srcdoc,
       const base::TimeTicks& navigation_start);
   ~NavigationHandleImpl() override;
 
   // NavigationHandle implementation:
   const GURL& GetURL() override;
   bool IsInMainFrame() override;
+  bool IsParentMainFrame() override;
+  bool IsSynchronousNavigation() override;
+  bool IsSrcdoc() override;
+  bool WasServerRedirect() override;
+  int GetFrameTreeNodeId() override;
+  int GetParentFrameTreeNodeId() override;
   const base::TimeTicks& NavigationStart() override;
   bool IsPost() override;
   const Referrer& GetReferrer() override;
@@ -212,6 +220,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   NavigationHandleImpl(const GURL& url,
                        FrameTreeNode* frame_tree_node,
+                       bool is_synchronous,
+                       bool is_srcdoc,
                        const base::TimeTicks& navigation_start);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
@@ -235,6 +245,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   net::Error net_error_code_;
   RenderFrameHostImpl* render_frame_host_;
   bool is_same_page_;
+  const bool is_synchronous_;
+  const bool is_srcdoc_;
+  bool was_redirected_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
   // The state the navigation is in.

@@ -1014,8 +1014,11 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // DidCommitProvisionalLoad IPC without a prior DidStartProvisionalLoad
   // message.
   if (!navigation_handle_) {
-    navigation_handle_ = NavigationHandleImpl::Create(
-        validated_params.url, frame_tree_node_, base::TimeTicks::Now());
+    navigation_handle_ =
+        NavigationHandleImpl::Create(validated_params.url, frame_tree_node_,
+                                     true,   // is_synchronous
+                                     false,  // is_srcdoc
+                                     base::TimeTicks::Now());
   }
 
   accessibility_reset_count_ = 0;

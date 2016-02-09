@@ -152,7 +152,10 @@ void NavigatorImpl::DidStartProvisionalLoad(
   }
 
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
-      validated_url, render_frame_host->frame_tree_node(), navigation_start));
+      validated_url, render_frame_host->frame_tree_node(),
+      false,             // is_synchronous
+      is_iframe_srcdoc,  // is_srcdoc
+      navigation_start));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
