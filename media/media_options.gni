@@ -30,22 +30,6 @@ declare_args() {
   # Override to dynamically link the cras (ChromeOS audio) library.
   use_cras = false
 
-  # Enables runtime selection of PulseAudio library.
-  use_pulseaudio = false
-
-  # Enables runtime selection of ALSA library for audio.
-  use_alsa = false
-
-  # Alsa should be used on non-Android, non-Mac POSIX systems, and Chromecast
-  # builds for desktop Linux.
-  if (is_posix && !is_headless && !is_android && !is_mac &&
-      (!is_chromecast || is_cast_desktop_build)) {
-    use_alsa = true
-    if (!use_cras) {
-      use_pulseaudio = true
-    }
-  }
-
   # Use low-memory buffers on non-Android builds of Chromecast.
   use_low_memory_buffer = is_chromecast && !is_android
 
@@ -70,4 +54,22 @@ declare_args() {
 
   # TODO(GYP): This should be a platform define.
   is_openbsd = false
+}
+
+declare_args() {
+  # Enables runtime selection of PulseAudio library.
+  use_pulseaudio = false
+
+  # Enables runtime selection of ALSA library for audio.
+  use_alsa = false
+
+  # Alsa should be used on non-Android, non-Mac POSIX systems, and Chromecast
+  # builds for desktop Linux.
+  if (is_posix && !is_headless && !is_android && !is_mac &&
+      (!is_chromecast || is_cast_desktop_build)) {
+    use_alsa = true
+    if (!use_cras) {
+      use_pulseaudio = true
+    }
+  }
 }
