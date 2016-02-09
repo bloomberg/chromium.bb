@@ -165,12 +165,6 @@ int NaClAppWithEmptySyscallTableCtor(struct NaClApp *nap) {
   nap->dynamic_mapcache_size = 0;
   nap->dynamic_mapcache_ret = 0;
 
-  nap->service_port = NULL;
-  nap->service_address = NULL;
-  nap->secure_service_port = NULL;
-  nap->secure_service_address = NULL;
-  nap->bootstrap_channel = NULL;
-  nap->secure_service = NULL;
   nap->main_exe_prevalidated = 0;
 
   if (!NaClResourceNaClAppInit(&nap->resources, nap)) {

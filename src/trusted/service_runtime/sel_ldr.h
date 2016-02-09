@@ -187,19 +187,6 @@ struct NaClApp {
 #endif
 
   /*
-   * The socket at which the app should be accepting connections.  The
-   * corresponding socket address are made available by the JavaScript
-   * bridge to other NaCl modules.
-   */
-  struct NaClDesc           *service_port;
-  struct NaClDesc           *service_address;
-
-  struct NaClDesc           *secure_service_port;
-  struct NaClDesc           *secure_service_address;
-
-  struct NaClDesc           *bootstrap_channel;
-
-  /*
    * The main NaCl executable may already be validated during ELF
    * loading, where after a validation cache hit the code gets mmapped
    * into memory if the file descriptor is "blessed" as referring to a
@@ -232,8 +219,6 @@ struct NaClApp {
 
   /* Array of NaCl syscall handlers. */
   struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS];
-
-  struct NaClSecureService          *secure_service;
 
   struct NaClResourceNaClApp        resources;
 
