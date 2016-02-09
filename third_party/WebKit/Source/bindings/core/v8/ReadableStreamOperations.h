@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class UnderlyingSourceBase;
 class ExceptionState;
 class ScriptState;
 
@@ -21,6 +22,14 @@ class ScriptState;
 class CORE_EXPORT ReadableStreamOperations {
     STATIC_ONLY(ReadableStreamOperations);
 public:
+    // createReadableStreamWithExternalController
+    // If the caller supplies an invalid strategy (e.g. one that returns
+    // negative sizes, or doesn't have appropriate properties), this will crash.
+    static ScriptValue createReadableStream(ScriptState*, UnderlyingSourceBase*, ScriptValue strategy);
+
+    // createBuiltInCountQueuingStrategy
+    static ScriptValue createCountQueuingStrategy(ScriptState*, size_t highWaterMark);
+
     // AcquireReadableStreamReader
     // This function assumes |isReadableStream(stream)|.
     // Returns an empty value and throws an error via the ExceptionState when

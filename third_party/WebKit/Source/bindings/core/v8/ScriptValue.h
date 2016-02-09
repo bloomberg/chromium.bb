@@ -45,11 +45,9 @@ namespace blink {
 class CORE_EXPORT ScriptValue final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
+    // Defined in ToV8.h due to circular dependency
     template<typename T>
-    static ScriptValue from(ScriptState* scriptState, T value)
-    {
-        return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
-    }
+    static ScriptValue from(ScriptState*, T&& value);
 
     template<typename T, typename... Arguments>
     static inline T to(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, Arguments const&... arguments)

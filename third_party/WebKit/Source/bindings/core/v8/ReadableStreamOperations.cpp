@@ -6,9 +6,33 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "core/streams/UnderlyingSourceBase.h"
 
 namespace blink {
+
+ScriptValue ReadableStreamOperations::createReadableStream(ScriptState* scriptState, UnderlyingSourceBase* underlyingSource, ScriptValue strategy)
+{
+    ScriptState::Scope scope(scriptState);
+
+    v8::Local<v8::Value> jsUnderlyingSource = toV8(underlyingSource, scriptState);
+    v8::Local<v8::Value> jsStrategy = strategy.v8Value();
+    v8::Local<v8::Value> args[] = { jsUnderlyingSource, jsStrategy };
+    v8::Local<v8::Value> jsStream = V8ScriptRunner::callExtraOrCrash(scriptState, "createReadableStreamWithExternalController", args);
+
+    return ScriptValue(scriptState, jsStream);
+}
+
+ScriptValue ReadableStreamOperations::createCountQueuingStrategy(ScriptState* scriptState, size_t highWaterMark)
+{
+    ScriptState::Scope scope(scriptState);
+
+    v8::Local<v8::Value> args[] = { v8::Number::New(scriptState->isolate(), highWaterMark) };
+    v8::Local<v8::Value> jsStrategy = V8ScriptRunner::callExtraOrCrash(scriptState, "createBuiltInCountQueuingStrategy", args);
+
+    return ScriptValue(scriptState, jsStrategy);
+}
 
 ScriptValue ReadableStreamOperations::getReader(ScriptState* scriptState, ScriptValue stream, ExceptionState& es)
 {

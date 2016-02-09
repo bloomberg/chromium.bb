@@ -16,6 +16,7 @@
         writable: true
       });
     }
+
     size(chunk) { return 1; }
   }
 
@@ -25,4 +26,17 @@
     configurable: true,
     writable: true
   });
+
+  // Export a separate copy that doesn't need options objects and can't be
+  // interfered with.
+  class BuiltInCountQueuingStrategy {
+    constructor(highWaterMark) {
+      defineProperty(this, 'highWaterMark', {value: highWaterMark});
+    }
+
+    size(chunk) { return 1; }
+  }
+
+  binding.createBuiltInCountQueuingStrategy = highWaterMark =>
+      new BuiltInCountQueuingStrategy(highWaterMark);
 });

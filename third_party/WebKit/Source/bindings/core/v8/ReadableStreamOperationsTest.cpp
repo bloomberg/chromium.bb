@@ -14,6 +14,8 @@
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
+#include "core/streams/ReadableStreamController.h"
+#include "core/streams/UnderlyingSourceBase.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <v8.h>
@@ -108,6 +110,20 @@ private:
     }
 
     Member<Iteration> m_iteration;
+};
+
+class TestUnderlyingSource final : public UnderlyingSourceBase {
+public:
+    explicit TestUnderlyingSource(ScriptState* scriptState)
+        : UnderlyingSourceBase(scriptState)
+    {
+    }
+
+    // Just expose the controller methods for easy testing
+    void enqueue(ScriptValue value) { controller()->enqueue(value); }
+    void close() { controller()->close(); }
+    void error(ScriptValue value) { controller()->error(value); }
+    double desiredSize() { return controller()->desiredSize(); }
 };
 
 class ReadableStreamOperationsTest : public ::testing::Test {
@@ -258,6 +274,63 @@ TEST_F(ReadableStreamOperationsTest, Read)
     EXPECT_TRUE(it2->isSet());
     EXPECT_TRUE(it2->isValid());
     EXPECT_TRUE(it2->isDone());
+}
+
+TEST_F(ReadableStreamOperationsTest, CreateReadableStreamWithCustomUnderlyingSourceAndStrategy)
+{
+    auto underlyingSource = new TestUnderlyingSource(scriptState());
+
+    ScriptValue strategy = ReadableStreamOperations::createCountQueuingStrategy(scriptState(), 10);
+    ASSERT_FALSE(strategy.isEmpty());
+
+    ScriptValue stream = ReadableStreamOperations::createReadableStream(scriptState(), underlyingSource, strategy);
+    ASSERT_FALSE(stream.isEmpty());
+
+    EXPECT_EQ(10, underlyingSource->desiredSize());
+
+    underlyingSource->enqueue(ScriptValue::from(scriptState(), "a"));
+    EXPECT_EQ(9, underlyingSource->desiredSize());
+
+    underlyingSource->enqueue(ScriptValue::from(scriptState(), "b"));
+    EXPECT_EQ(8, underlyingSource->desiredSize());
+
+    ScriptValue reader;
+    {
+        TrackExceptionState es;
+        reader = ReadableStreamOperations::getReader(scriptState(), stream, es);
+        ASSERT_FALSE(es.hadException());
+    }
+    ASSERT_FALSE(reader.isEmpty());
+
+    Iteration* it1 = new Iteration();
+    Iteration* it2 = new Iteration();
+    Iteration* it3 = new Iteration();
+    ReadableStreamOperations::read(scriptState(), reader).then(Function::createFunction(scriptState(), it1), NotReached::createFunction(scriptState()));
+    ReadableStreamOperations::read(scriptState(), reader).then(Function::createFunction(scriptState(), it2), NotReached::createFunction(scriptState()));
+    ReadableStreamOperations::read(scriptState(), reader).then(Function::createFunction(scriptState(), it3), NotReached::createFunction(scriptState()));
+
+    isolate()->RunMicrotasks();
+
+    EXPECT_EQ(10, underlyingSource->desiredSize());
+
+    EXPECT_TRUE(it1->isSet());
+    EXPECT_TRUE(it1->isValid());
+    EXPECT_FALSE(it1->isDone());
+    EXPECT_EQ("a", it1->value());
+
+    EXPECT_TRUE(it2->isSet());
+    EXPECT_TRUE(it2->isValid());
+    EXPECT_FALSE(it2->isDone());
+    EXPECT_EQ("b", it2->value());
+
+    EXPECT_FALSE(it3->isSet());
+
+    underlyingSource->close();
+    isolate()->RunMicrotasks();
+
+    EXPECT_TRUE(it3->isSet());
+    EXPECT_TRUE(it3->isValid());
+    EXPECT_TRUE(it3->isDone());
 }
 
 } // namespace

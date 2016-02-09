@@ -24,6 +24,9 @@ implementation. They are currently shipping in Chrome.
 - CountQueuingStrategy.js
 - ReadableStream.js
 - ReadableStreamTempStub.js
+- ReadableStreamController.h
+- UnderlyingSourceBase.{cpp,h,idl}
+- bindings/core/v8/ReadableStreamOperations.{cpp,h}
 
 These files are an in-progress implementation of the current streams spec,
 using [V8 extras][1]. They allow author construction. We hope eventually to

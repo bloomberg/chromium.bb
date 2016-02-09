@@ -27,6 +27,9 @@
   const readableStreamReaderReadRequests =
       v8.createPrivateSymbol('[[readRequests]]');
 
+  const createWithExternalControllerSentinel =
+      v8.createPrivateSymbol('flag for UA-created ReadableStream to pass');
+
   const STATE_READABLE = 0;
   const STATE_CLOSED = 1;
   const STATE_ERRORED = 2;
@@ -119,11 +122,24 @@
       this[readableStreamStrategySize] = normalizedStrategy.size;
       this[readableStreamStrategyHWM] = normalizedStrategy.highWaterMark;
 
-      const controller = new ReadableStreamController(this);
+      // Avoid allocating the controller if the stream is going to be controlled
+      // externally (i.e. from C++) anyway. All calls to underlyingSource
+      // methods will disregard their controller argument in such situations
+      // (but see below).
+
+      const isControlledExternally =
+          arguments[2] === createWithExternalControllerSentinel;
+      const controller =
+          isControlledExternally ? null : new ReadableStreamController(this);
       this[readableStreamController] = controller;
 
+      // We need to pass ourself to the underlyingSource start method for
+      // externally-controlled streams. We use the now-useless controller
+      // argument to do so.
+      const argToStart = isControlledExternally ? this : controller;
+
       const startResult = CallOrNoop(
-          underlyingSource, 'start', controller, 'underlyingSource.start');
+          underlyingSource, 'start', argToStart, 'underlyingSource.start');
       thenPromise(Promise_resolve(startResult),
           () => {
             this[readableStreamBits] |= STARTED;
@@ -330,8 +346,8 @@
         v8.rejectPromise(this[readableStreamReaderClosedPromise],
             new TypeError(errReleasedReaderClosedPromise));
       } else {
-        this[readableStreamReaderClosedPromise] = Promise_reject(new TypeError(
-            errReleasedReaderClosedPromise));
+        this[readableStreamReaderClosedPromise] =
+            Promise_reject(new TypeError(errReleasedReaderClosedPromise));
       }
 
       this[readableStreamReaderOwnerReadableStream][readableStreamReader] =
@@ -771,4 +787,15 @@
   binding.IsReadableStreamLocked = IsReadableStreamLocked;
   binding.IsReadableStreamReader = IsReadableStreamReader;
   binding.ReadFromReadableStreamReader = ReadFromReadableStreamReader;
+
+  binding.CloseReadableStream = CloseReadableStream;
+  binding.GetReadableStreamDesiredSize = GetReadableStreamDesiredSize;
+  binding.EnqueueInReadableStream = EnqueueInReadableStream;
+  binding.ErrorReadableStream = ErrorReadableStream;
+
+  binding.createReadableStreamWithExternalController =
+      (underlyingSource, strategy) => {
+        return new ReadableStream(
+            underlyingSource, strategy, createWithExternalControllerSentinel);
+      };
 });
