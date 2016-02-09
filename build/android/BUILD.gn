@@ -79,6 +79,8 @@ action("cpplib_stripped") {
 group("devil_py") {
   data = [
     "devil_chromium.py",
+    "//third_party/catapult/catapult_base/",
+    "//third_party/catapult/dependency_manager/",
     "//third_party/catapult/devil/",
   ]
 }
