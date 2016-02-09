@@ -18,7 +18,7 @@ DOMMatrix* DOMMatrix::create(DOMMatrixReadOnly* other)
 
 DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2D)
 {
-    m_matrix = adoptPtr(new TransformationMatrix(matrix));
+    m_matrix = TransformationMatrix::create(matrix);
     m_is2D = is2D;
 }
 

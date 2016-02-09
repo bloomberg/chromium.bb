@@ -60,7 +60,7 @@ public:
 private:
     MatrixTransformComponent(double a, double b, double c, double d, double e, double f)
         : TransformComponent()
-        , m_matrix(adoptPtr(new TransformationMatrix(a, b, c, d, e, f)))
+        , m_matrix(TransformationMatrix::create(a, b, c, d, e, f))
         , m_is2D(true)
     { }
 
@@ -69,7 +69,7 @@ private:
         double m31, double m32, double m33, double m34,
         double m41, double m42, double m43, double m44)
         : TransformComponent()
-        , m_matrix(adoptPtr(new TransformationMatrix(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)))
+        , m_matrix(TransformationMatrix::create(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44))
         , m_is2D(false)
     { }
 

@@ -47,12 +47,12 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::create(ExecutionContext* executionC
 }
 
 CSSMatrix::CSSMatrix(const TransformationMatrix& m)
-    : m_matrix(adoptPtr(new TransformationMatrix(m)))
+    : m_matrix(TransformationMatrix::create(m))
 {
 }
 
 CSSMatrix::CSSMatrix(const String& s, ExceptionState& exceptionState)
-    : m_matrix(adoptPtr(new TransformationMatrix))
+    : m_matrix(TransformationMatrix::create())
 {
     setMatrixValue(s, exceptionState);
 }
@@ -82,7 +82,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
         // if a param has a percentage ('%')
         if (operations.dependsOnBoxSize())
             exceptionState.throwDOMException(SyntaxError, "The transformation depends on the box size, which is not supported.");
-        m_matrix = adoptPtr(new TransformationMatrix);
+        m_matrix = TransformationMatrix::create();
         operations.apply(FloatSize(0, 0), *m_matrix);
     } else { // There is something there but parsing failed.
         exceptionState.throwDOMException(SyntaxError, "Failed to parse '" + string + "'.");

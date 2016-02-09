@@ -411,7 +411,7 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle, const ComputedSt
     bool hadTransform = transform();
     if (hasTransform != hadTransform) {
         if (hasTransform)
-            ensureRareData().transform = adoptPtr(new TransformationMatrix);
+            ensureRareData().transform = TransformationMatrix::create();
         else
             m_rareData->transform.clear();
 

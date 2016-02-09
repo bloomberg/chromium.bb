@@ -247,7 +247,7 @@ void LayoutGeometryMap::push(const LayoutObject* layoutObject, const Transformat
     step.m_offsetForFixedPosition = offsetForFixedPosition;
 
     if (!t.isIntegerTranslation())
-        step.m_transform = adoptPtr(new TransformationMatrix(t));
+        step.m_transform = TransformationMatrix::create(t);
     else
         step.m_offset = LayoutSize(t.e(), t.f());
 
