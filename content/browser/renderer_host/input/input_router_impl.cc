@@ -19,6 +19,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
+#include "content/common/input/input_event_utils.h"
 #include "content/common/input/touch_action.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/common/input_messages.h"
@@ -55,11 +56,6 @@ const char* GetEventAckName(InputEventAckState ack_result) {
   }
   DLOG(WARNING) << "Unhandled InputEventAckState in GetEventAckName.";
   return "";
-}
-
-bool UseGestureBasedWheelScrolling() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWheelGestures);
 }
 
 } // namespace
