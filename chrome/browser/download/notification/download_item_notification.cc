@@ -916,8 +916,7 @@ base::string16 DownloadItemNotification::GetStatusString() const {
 }
 
 Browser* DownloadItemNotification::GetBrowser() const {
-  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-      profile(), chrome::GetActiveDesktop());
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(profile());
   DCHECK(browser_displayer.browser());
   return browser_displayer.browser();
 }

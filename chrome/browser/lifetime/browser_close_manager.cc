@@ -31,8 +31,7 @@ void ShowInProgressDownloads(Profile* profile) {
   DownloadService* download_service =
       DownloadServiceFactory::GetForBrowserContext(profile);
   if (download_service->NonMaliciousDownloadCount() > 0) {
-    chrome::ScopedTabbedBrowserDisplayer displayer(profile,
-                                                   chrome::GetActiveDesktop());
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile);
     chrome::ShowDownloads(displayer.browser());
   }
 }

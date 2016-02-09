@@ -225,8 +225,7 @@ void ChromeShellDelegate::Observe(int type,
         }
 
         chrome::ScopedTabbedBrowserDisplayer displayer(
-            ProfileManager::GetActiveUserProfile(),
-            chrome::HOST_DESKTOP_TYPE_ASH);
+            ProfileManager::GetActiveUserProfile());
         chrome::AddTabAt(displayer.browser(), GURL(), -1, true);
       }
       break;

@@ -936,7 +936,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchMaximized) {
   content::WindowedNotificationObserver open_observer(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
-  chrome::NewEmptyWindow(browser()->profile(), chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::NewEmptyWindow(browser()->profile());
   open_observer.Wait();
   Browser* browser2 = content::Source<Browser>(open_observer.source()).ptr();
   aura::Window* window2 = browser2->window()->GetNativeWindow();
@@ -1605,8 +1605,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
   ash::ShelfID shortcut_id = CreateShortcut("app1");
 
   // Create a new browser - without activating it - and load an "app" into it.
-  Browser::CreateParams params =
-      Browser::CreateParams(profile(), chrome::GetActiveDesktop());
+  Browser::CreateParams params = Browser::CreateParams(profile());
   params.initial_show_state = ui::SHOW_STATE_INACTIVE;
   Browser* browser2 = new Browser(params);
   controller_->SetRefocusURLPatternForTest(

@@ -585,9 +585,7 @@ void AppListViewDelegate::OpenSettings() {
 }
 
 void AppListViewDelegate::OpenHelp() {
-  chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
-      controller_->GetAppListWindow());
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile_, desktop);
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
   content::OpenURLParams params(GURL(chrome::kAppLauncherHelpURL),
                                 content::Referrer(),
                                 NEW_FOREGROUND_TAB,

@@ -264,8 +264,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
   if (navigator_) {
     navigator_->OpenURL(params);
   } else {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        profile_, chrome::GetActiveDesktop());
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
     displayer.browser()->OpenURL(params);
   }
 

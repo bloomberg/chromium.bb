@@ -82,7 +82,7 @@ base::HourClockType SystemTrayDelegateCommon::GetHourClockType() const {
 void SystemTrayDelegateCommon::ShowChromeSlow() {
 #if defined(OS_LINUX)
   chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetPrimaryUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+      ProfileManager::GetPrimaryUserProfile());
   chrome::ShowSlow(displayer.browser());
 #endif  // defined(OS_LINUX)
 }

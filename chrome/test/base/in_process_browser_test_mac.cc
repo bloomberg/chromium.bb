@@ -30,8 +30,7 @@ Browser* InProcessBrowserTest::OpenURLOffTheRecord(Profile* profile,
   // autorelease pool. Flush the pool when this function returns.
   base::mac::ScopedNSAutoreleasePool pool;
 
-  chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
-  chrome::OpenURLOffTheRecord(profile, url, active_desktop);
+  chrome::OpenURLOffTheRecord(profile, url);
   Browser* browser =
       chrome::FindTabbedBrowser(profile->GetOffTheRecordProfile(), false);
   content::TestNavigationObserver observer(
@@ -47,8 +46,7 @@ Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   // autorelease pool. Flush the pool when this function returns.
   base::mac::ScopedNSAutoreleasePool pool;
 
-  Browser* browser = new Browser(
-      Browser::CreateParams(profile, chrome::GetActiveDesktop()));
+  Browser* browser = new Browser(Browser::CreateParams(profile));
   AddBlankTabAndShow(browser);
   return browser;
 }
@@ -60,8 +58,7 @@ Browser* InProcessBrowserTest::CreateIncognitoBrowser() {
 
   // Create a new browser with using the incognito profile.
   Browser* incognito = new Browser(
-      Browser::CreateParams(browser()->profile()->GetOffTheRecordProfile(),
-                            chrome::GetActiveDesktop()));
+      Browser::CreateParams(browser()->profile()->GetOffTheRecordProfile()));
   AddBlankTabAndShow(incognito);
   return incognito;
 }
@@ -72,8 +69,7 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
   base::mac::ScopedNSAutoreleasePool pool;
 
   Browser* browser =
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile,
-                  chrome::GetActiveDesktop()));
+      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile));
   AddBlankTabAndShow(browser);
   return browser;
 }
@@ -85,10 +81,8 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(
   // autorelease pool. Flush the pool when this function returns.
   base::mac::ScopedNSAutoreleasePool pool;
 
-  Browser* browser = new Browser(
-      Browser::CreateParams::CreateForApp(
-          app_name, false /* trusted_source */, gfx::Rect(), profile,
-          chrome::GetActiveDesktop()));
+  Browser* browser = new Browser(Browser::CreateParams::CreateForApp(
+      app_name, false /* trusted_source */, gfx::Rect(), profile));
   AddBlankTabAndShow(browser);
   return browser;
 }

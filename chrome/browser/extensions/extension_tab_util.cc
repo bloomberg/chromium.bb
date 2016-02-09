@@ -95,14 +95,7 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
 Browser* CreateBrowser(ChromeUIThreadExtensionFunction* function,
                        int window_id,
                        std::string* error) {
-  content::WebContents* web_contents = function->GetAssociatedWebContents();
-  chrome::HostDesktopType desktop_type =
-      web_contents && web_contents->GetNativeView()
-          ? chrome::GetHostDesktopTypeForNativeView(
-                web_contents->GetNativeView())
-          : chrome::GetHostDesktopTypeForNativeView(NULL);
-  Browser::CreateParams params(
-      Browser::TYPE_TABBED, function->GetProfile(), desktop_type);
+  Browser::CreateParams params(Browser::TYPE_TABBED, function->GetProfile());
   Browser* browser = new Browser(params);
   browser->window()->Show();
   return browser;
@@ -221,12 +214,11 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
       !IncognitoInfo::IsSplitMode(function->extension()) &&
       browser->profile()->IsOffTheRecord()) {
     Profile* profile = browser->profile()->GetOriginalProfile();
-    chrome::HostDesktopType desktop_type = browser->host_desktop_type();
 
     browser = chrome::FindTabbedBrowser(profile, false);
     if (!browser) {
-      browser = new Browser(
-          Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
+      browser =
+          new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
       browser->window()->Show();
     }
   }
@@ -590,11 +582,10 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
                                  bool user_gesture) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
-    browser = new Browser(Browser::CreateParams(profile, active_desktop));
+    browser = new Browser(Browser::CreateParams(profile));
   chrome::NavigateParams params(browser, web_contents);
 
   // The extension_app_id parameter ends up as app_name in the Browser
@@ -643,8 +634,7 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
   scoped_ptr<chrome::ScopedTabbedBrowserDisplayer> displayer;
   if (browser->profile()->IsOffTheRecord()) {
     displayer.reset(new chrome::ScopedTabbedBrowserDisplayer(
-        browser->profile()->GetOriginalProfile(),
-        browser->host_desktop_type()));
+        browser->profile()->GetOriginalProfile()));
     browser = displayer->browser();
   }
 

@@ -54,7 +54,7 @@ void RecordNotificationClosure(WebUsbNotificationClosed disposition) {
 
 Browser* GetBrowser() {
   chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-      ProfileManager::GetActiveUserProfile(), chrome::GetActiveDesktop());
+      ProfileManager::GetActiveUserProfile());
   DCHECK(browser_displayer.browser());
   return browser_displayer.browser();
 }

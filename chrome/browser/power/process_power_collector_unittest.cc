@@ -118,8 +118,7 @@ TEST_F(BrowserProcessPowerTest, OneSite) {
 }
 
 TEST_F(BrowserProcessPowerTest, MultipleSites) {
-  Browser::CreateParams native_params(profile(),
-                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams native_params(profile());
   GURL url1("http://www.google.com");
   GURL url2("http://www.example.com");
   GURL url3("https://www.google.com");
@@ -167,8 +166,7 @@ TEST_F(BrowserProcessPowerTest, MultipleSites) {
 }
 
 TEST_F(BrowserProcessPowerTest, IncognitoDoesntRecordPowerUsage) {
-  Browser::CreateParams native_params(profile()->GetOffTheRecordProfile(),
-                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams native_params(profile()->GetOffTheRecordProfile());
   scoped_ptr<Browser> incognito_browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
   GURL url("http://www.google.com");
@@ -205,8 +203,7 @@ TEST_F(BrowserProcessPowerTest, IncognitoDoesntRecordPowerUsage) {
 
 TEST_F(BrowserProcessPowerTest, MultipleProfilesRecordSeparately) {
   scoped_ptr<Profile> other_profile(CreateProfile());
-  Browser::CreateParams native_params(other_profile.get(),
-                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams native_params(other_profile.get());
   scoped_ptr<Browser> other_user(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 

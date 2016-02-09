@@ -140,8 +140,7 @@ class PreferencesPrivateApiTest : public ExtensionApiTest {
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile, &FakeProfileSyncService::BuildFakeProfileSyncService));
 
-    browser_ = new Browser(Browser::CreateParams(
-        profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+    browser_ = new Browser(Browser::CreateParams(profile));
   }
 
   // Calls GetSyncCategoriesWithoutPassphraseFunction and verifies that the

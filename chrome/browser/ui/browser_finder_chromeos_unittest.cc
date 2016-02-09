@@ -95,8 +95,7 @@ TEST_F(BrowserFinderChromeOSTest, IncognitoBrowserMatchTest) {
   set_browser(nullptr);
 
   // Create an incognito browser.
-  Browser::CreateParams params(profile()->GetOffTheRecordProfile(),
-                               chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser::CreateParams params(profile()->GetOffTheRecordProfile());
   scoped_ptr<Browser> incognito_browser(
       chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
   // Incognito windows are excluded in GetBrowserCount() because kMatchAll
@@ -109,8 +108,7 @@ TEST_F(BrowserFinderChromeOSTest, IncognitoBrowserMatchTest) {
 TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
   set_browser(nullptr);
 
-  Browser::CreateParams params(profile()->GetOriginalProfile(),
-                               chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser::CreateParams params(profile()->GetOriginalProfile());
   scoped_ptr<Browser> browser(
       chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
   GetUserWindowManager()->SetWindowOwner(browser->window()->GetNativeWindow(),

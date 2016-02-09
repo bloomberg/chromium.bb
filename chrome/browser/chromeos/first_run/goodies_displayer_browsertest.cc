@@ -30,8 +30,8 @@ class GoodiesDisplayerBrowserTest : public InProcessBrowserTest {
   Browser* CreateBrowserAndDisplayer(int delta_days) {
     // Create a new browser and wait for completion.
     ui_test_utils::BrowserAddedObserver browser_added_observer;
-    Browser* browser = new Browser(Browser::CreateParams(
-        ProfileManager::GetActiveUserProfile(), chrome::GetActiveDesktop()));
+    Browser* browser = new Browser(
+        Browser::CreateParams(ProfileManager::GetActiveUserProfile()));
     browser_added_observer.WaitForSingleNewBrowser();
 
     // Set up Goodies Displayer and set fake age of device.
@@ -109,8 +109,7 @@ IN_PROC_BROWSER_TEST_F(GoodiesDisplayerBrowserTest, DisplayGoodies) {
 
   // Shouldn't show Goodies tab in incognito mode.
   Browser* incognito_browser = new Browser(
-      Browser::CreateParams(browser->profile()->GetOffTheRecordProfile(),
-                            chrome::GetActiveDesktop()));
+      Browser::CreateParams(browser->profile()->GetOffTheRecordProfile()));
   ASSERT_EQ(2u, chrome::GetTotalBrowserCount());
   AddBlankTabAndShow(incognito_browser);
   ExpectTabCounts(incognito_browser, 1, 0);

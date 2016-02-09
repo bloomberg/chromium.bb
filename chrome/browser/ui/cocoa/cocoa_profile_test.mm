@@ -97,6 +97,5 @@ void CocoaProfileTest::CloseBrowserWindow() {
 }
 
 Browser* CocoaProfileTest::CreateBrowser() {
-  return new Browser(Browser::CreateParams(profile(),
-                                           chrome::GetActiveDesktop()));
+  return new Browser(Browser::CreateParams(profile()));
 }

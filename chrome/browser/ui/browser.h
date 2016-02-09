@@ -162,29 +162,21 @@ class Browser : public TabStripModelObserver,
   };
 
   struct CreateParams {
-    CreateParams(Profile* profile, chrome::HostDesktopType host_desktop_type);
-    CreateParams(Type type,
-                 Profile* profile,
-                 chrome::HostDesktopType host_desktop_type);
+    explicit CreateParams(Profile* profile);
+    CreateParams(Type type, Profile* profile);
 
     static CreateParams CreateForApp(const std::string& app_name,
                                      bool trusted_source,
                                      const gfx::Rect& window_bounds,
-                                     Profile* profile,
-                                     chrome::HostDesktopType host_desktop_type);
+                                     Profile* profile);
 
-    static CreateParams CreateForDevTools(
-        Profile* profile,
-        chrome::HostDesktopType host_desktop_type);
+    static CreateParams CreateForDevTools(Profile* profile);
 
     // The browser type.
     Type type;
 
     // The associated profile.
     Profile* profile;
-
-    // The host desktop the browser is created on.
-    chrome::HostDesktopType host_desktop_type;
 
     // Specifies the browser is_trusted_source_ value.
     bool trusted_source;

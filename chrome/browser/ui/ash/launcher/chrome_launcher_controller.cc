@@ -955,13 +955,12 @@ bool ChromeLauncherController::IsLoggedInAsGuest() {
 
 void ChromeLauncherController::CreateNewWindow() {
   // Use the currently active user.
-  chrome::NewEmptyWindow(profile_, chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::NewEmptyWindow(profile_);
 }
 
 void ChromeLauncherController::CreateNewIncognitoWindow() {
   // Use the currently active user.
-  chrome::NewEmptyWindow(profile_->GetOffTheRecordProfile(),
-                         chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::NewEmptyWindow(profile_->GetOffTheRecordProfile());
 }
 
 void ChromeLauncherController::PersistPinnedState() {

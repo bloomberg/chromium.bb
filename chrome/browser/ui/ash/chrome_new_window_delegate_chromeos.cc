@@ -56,9 +56,7 @@ void ChromeNewWindowDelegateChromeos::OpenCrosh() {
       profile);
   if (!crosh_url.is_valid())
     return;
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      profile,
-      chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   Browser* browser = displayer.browser();
   content::WebContents* page = browser->OpenURL(
       content::OpenURLParams(crosh_url,

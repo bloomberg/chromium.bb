@@ -62,12 +62,9 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
                          BrowserWindow* browser_window) override {
     RegisterExtension(profile);
 
-    Browser::CreateParams params(profile, host_desktop_type);
-    params = Browser::CreateParams::CreateForApp("_crx_abc",
-                                                 false /* trusted_source */,
-                                                 gfx::Rect(),
-                                                 profile,
-                                                 host_desktop_type);
+    Browser::CreateParams params(profile);
+    params = Browser::CreateParams::CreateForApp(
+        "_crx_abc", false /* trusted_source */, gfx::Rect(), profile);
     params.window = browser_window;
     return new Browser(params);
   }

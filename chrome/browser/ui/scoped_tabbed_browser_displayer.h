@@ -13,13 +13,13 @@ class Profile;
 
 namespace chrome {
 
-// This class finds the last active tabbed browser matching |profile| and
-// |type|. If there is no tabbed browser, a new non visible browser is created.
+// This class finds the last active tabbed browser matching |profile|. If there
+// is no tabbed browser, a new non visible browser is created.
 // ScopedTabbedBrowserDisplayer ensures that the browser is made visible and is
 // activated by the time that ScopedTabbedBrowserDisplayer goes out of scope.
 class ScopedTabbedBrowserDisplayer {
  public:
-  ScopedTabbedBrowserDisplayer(Profile* profile, HostDesktopType type);
+  explicit ScopedTabbedBrowserDisplayer(Profile* profile);
   ~ScopedTabbedBrowserDisplayer();
 
   Browser* browser() {

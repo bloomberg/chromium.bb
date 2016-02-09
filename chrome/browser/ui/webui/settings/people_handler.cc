@@ -319,8 +319,8 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
   bool force_new_tab = false;
   if (!browser) {
     // Settings is not displayed in a browser window. Open a new window.
-    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile_,
-                                                chrome::GetActiveDesktop()));
+    browser =
+        new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile_));
     force_new_tab = true;
   }
 

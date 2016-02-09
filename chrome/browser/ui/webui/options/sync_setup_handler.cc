@@ -367,8 +367,8 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow(
   bool force_new_tab = false;
   if (!browser) {
     // Settings is not displayed in a browser window. Open a new window.
-    browser = new Browser(Browser::CreateParams(
-        Browser::TYPE_TABBED, GetProfile(), chrome::GetActiveDesktop()));
+    browser =
+        new Browser(Browser::CreateParams(Browser::TYPE_TABBED, GetProfile()));
     force_new_tab = true;
   }
 

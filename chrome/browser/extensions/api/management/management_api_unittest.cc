@@ -88,7 +88,7 @@ void ManagementApiUnitTest::SetUp() {
                                                        &BuildEventRouter);
 
   browser_window_.reset(new TestBrowserWindow());
-  Browser::CreateParams params(profile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams params(profile());
   params.type = Browser::TYPE_TABBED;
   params.window = browser_window_.get();
   browser_.reset(new Browser(params));

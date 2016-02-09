@@ -155,7 +155,7 @@ class BrowserCloseTest : public testing::Test {
     std::vector<Browser*> browsers;
     for (int i = 0; i < num_windows; ++i) {
       TestBrowserWindow* window = new TestBrowserWindow();
-      Browser::CreateParams params(profile, chrome::HOST_DESKTOP_TYPE_FIRST);
+      Browser::CreateParams params(profile);
       params.type = Browser::TYPE_TABBED;
       params.window = window;
       Browser* browser = new Browser(params);

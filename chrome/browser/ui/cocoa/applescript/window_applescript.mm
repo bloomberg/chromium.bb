@@ -75,8 +75,7 @@
   }
 
   if ((self = [super init])) {
-    browser_ = new Browser(
-        Browser::CreateParams(aProfile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+    browser_ = new Browser(Browser::CreateParams(aProfile));
     chrome::NewTab(browser_);
     browser_->window()->Show();
     base::scoped_nsobject<NSNumber> numID(

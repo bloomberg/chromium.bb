@@ -34,8 +34,7 @@ bool DisplayConfigDialog() {
   }
   // The mobile device will be managed by the primary user.
   chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetPrimaryUserProfile(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
+      ProfileManager::GetPrimaryUserProfile());
   chrome::ShowSingletonTab(displayer.browser(), GURL(setup_url));
   return true;
 }

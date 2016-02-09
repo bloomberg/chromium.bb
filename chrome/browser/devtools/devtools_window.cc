@@ -1113,10 +1113,7 @@ void DevToolsWindow::OpenInNewTab(const std::string& url) {
       ui::PAGE_TRANSITION_LINK, false);
   WebContents* inspected_web_contents = GetInspectedWebContents();
   if (!inspected_web_contents || !inspected_web_contents->OpenURL(params)) {
-    chrome::HostDesktopType host_desktop_type =
-        browser_ ? browser_->host_desktop_type() : chrome::GetActiveDesktop();
-
-    chrome::ScopedTabbedBrowserDisplayer displayer(profile_, host_desktop_type);
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
     chrome::AddSelectedTabWithURL(displayer.browser(), GURL(url),
                                   ui::PAGE_TRANSITION_LINK);
   }
@@ -1191,10 +1188,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
     dev_tools_defaults->SetBoolean("always_on_top", false);
   }
 
-  browser_ = new Browser(Browser::CreateParams::CreateForDevTools(
-      profile_,
-      chrome::GetHostDesktopTypeForNativeView(
-          main_web_contents_->GetNativeView())));
+  browser_ = new Browser(Browser::CreateParams::CreateForDevTools(profile_));
   browser_->tab_strip_model()->AddWebContents(
       main_web_contents_, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       TabStripModel::ADD_ACTIVE);

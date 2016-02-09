@@ -56,8 +56,7 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
               browser()->profile()))));
 
   // Create a browser which we can close during the test.
-  Browser::CreateParams params(browser()->profile(),
-                               browser()->host_desktop_type());
+  Browser::CreateParams params(browser()->profile());
   scoped_ptr<Browser> first_browser(
       chrome::CreateBrowserWithTestWindowForParams(&params));
   AddTab(first_browser.get(), GURL(chrome::kChromeUINewTabURL));

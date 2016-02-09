@@ -68,14 +68,12 @@ void WindowPositionerTest::SetUp() {
   dummy_popup->SetBounds(gfx::Rect(16, 32, 128, 256));
 
   // Create a browser for the window.
-  Browser::CreateParams window_params(&profile_,
-                                      chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser::CreateParams window_params(&profile_);
   browser_ = chrome::CreateBrowserWithAuraTestWindowForParams(
       std::move(dummy_window), &window_params);
 
   // Creating a browser for the popup.
-  Browser::CreateParams popup_params(Browser::TYPE_POPUP, &profile_,
-                                     chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser::CreateParams popup_params(Browser::TYPE_POPUP, &profile_);
   browser_popup_ = chrome::CreateBrowserWithAuraTestWindowForParams(
       std::move(dummy_popup), &popup_params);
 

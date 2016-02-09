@@ -568,10 +568,9 @@ bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
     return false;
   }
 
-  chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
   // Only restore one window at a time.
   std::vector<Browser*> browsers = SessionRestore::RestoreForeignSessionWindows(
-      GetProfile(), host_desktop_type, window, window + 1);
+      GetProfile(), window, window + 1);
   // Will always create one browser because we only restore one window per call.
   DCHECK_EQ(1u, browsers.size());
   return SetResultRestoredWindow(ExtensionTabUtil::GetWindowId(browsers[0]));

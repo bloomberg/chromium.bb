@@ -109,12 +109,11 @@ sessions::LiveTabContext* BrowserLiveTabContext::Create(
     const std::string& app_name) {
   Browser* browser;
   if (app_name.empty()) {
-    browser = new Browser(Browser::CreateParams(profile, host_desktop_type));
+    browser = new Browser(Browser::CreateParams(profile));
   } else {
     // Only trusted app popup windows should ever be restored.
     browser = new Browser(Browser::CreateParams::CreateForApp(
-        app_name, true /* trusted_source */, gfx::Rect(), profile,
-        host_desktop_type));
+        app_name, true /* trusted_source */, gfx::Rect(), profile));
   }
   if (browser)
     return browser->live_tab_context();

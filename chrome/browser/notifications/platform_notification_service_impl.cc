@@ -516,8 +516,7 @@ void PlatformNotificationServiceImpl::OpenNotificationSettings(
     chrome::ShowContentSettingsExceptionsInWindow(
         profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   } else {
-    chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-        profile, chrome::GetActiveDesktop());
+    chrome::ScopedTabbedBrowserDisplayer browser_displayer(profile);
     chrome::ShowContentSettingsExceptions(browser_displayer.browser(),
                                           CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   }

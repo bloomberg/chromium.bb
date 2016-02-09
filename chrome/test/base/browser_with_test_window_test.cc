@@ -232,13 +232,10 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
     bool hosted_app,
     chrome::HostDesktopType host_desktop_type,
     BrowserWindow* browser_window) {
-  Browser::CreateParams params(profile, host_desktop_type);
+  Browser::CreateParams params(profile);
   if (hosted_app) {
-    params = Browser::CreateParams::CreateForApp("Test",
-                                                 true /* trusted_source */,
-                                                 gfx::Rect(),
-                                                 profile,
-                                                 host_desktop_type);
+    params = Browser::CreateParams::CreateForApp(
+        "Test", true /* trusted_source */, gfx::Rect(), profile);
   } else {
     params.type = browser_type;
   }

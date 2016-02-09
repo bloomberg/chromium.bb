@@ -114,8 +114,7 @@ void OpenNewTab(Profile* profile, const GURL& url) {
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      profile, chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   chrome::AddSelectedTabWithURL(displayer.browser(), url,
       ui::PAGE_TRANSITION_LINK);
 

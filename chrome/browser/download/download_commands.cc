@@ -319,8 +319,7 @@ void DownloadCommands::ExecuteCommand(Command command) {
 Browser* DownloadCommands::GetBrowser() const {
   Profile* profile =
       Profile::FromBrowserContext(download_item_->GetBrowserContext());
-  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-      profile, chrome::GetActiveDesktop());
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(profile);
   DCHECK(browser_displayer.browser());
   return browser_displayer.browser();
 }

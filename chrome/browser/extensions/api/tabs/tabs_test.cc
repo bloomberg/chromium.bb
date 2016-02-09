@@ -164,8 +164,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
 
   // Popup.
   Browser* popup_browser = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
-                            browser()->host_desktop_type()));
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   function = new WindowsGetFunction();
   function->set_extension(extension.get());
   result.reset(utils::ToDictionary(
@@ -641,8 +640,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
   // a new tab in it. Tab should not be opened in the popup window, but in a
   // tabbed browser window.
   Browser* popup_browser = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
-                            browser()->host_desktop_type()));
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   int window_id = ExtensionTabUtil::GetWindowId(popup_browser);
   chrome::CloseWindow(popup_browser);
 
@@ -910,11 +908,9 @@ Browser* ExtensionWindowLastFocusedTest::CreateBrowserWithEmptyTab(
   Browser* new_browser;
   if (as_popup)
     new_browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
-                              browser()->host_desktop_type()));
+        Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   else
-    new_browser = new Browser(Browser::CreateParams(
-        browser()->profile(), browser()->host_desktop_type()));
+    new_browser = new Browser(Browser::CreateParams(browser()->profile()));
   AddBlankTabAndShow(new_browser);
   return new_browser;
 }
@@ -1271,8 +1267,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, FilteredEvents) {
       " \"minWidth\": 200, \"minHeight\": 200,"
       " \"maxWidth\": 400, \"maxHeight\": 400}}");
 
-  Browser* browser_window = new Browser(Browser::CreateParams(
-      browser()->profile(), browser()->host_desktop_type()));
+  Browser* browser_window =
+      new Browser(Browser::CreateParams(browser()->profile()));
   AddBlankTabAndShow(browser_window);
 
   DevToolsWindow* devtools_window =

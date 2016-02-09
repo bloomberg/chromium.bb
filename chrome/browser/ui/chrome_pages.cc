@@ -124,8 +124,7 @@ void ShowHelpImpl(Browser* browser,
   }
   scoped_ptr<ScopedTabbedBrowserDisplayer> displayer;
   if (!browser) {
-    displayer.reset(
-        new ScopedTabbedBrowserDisplayer(profile, host_desktop_type));
+    displayer.reset(new ScopedTabbedBrowserDisplayer(profile));
     browser = displayer->browser();
   }
   ShowSingletonTab(browser, url);
@@ -287,8 +286,7 @@ void ShowSettingsSubPageForProfile(Profile* profile,
   }
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser) {
-    browser = new Browser(
-        Browser::CreateParams(profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+    browser = new Browser(Browser::CreateParams(profile));
   }
   ShowSettingsSubPageInTabbedBrowser(browser, sub_page);
 }
@@ -372,8 +370,7 @@ void ShowBrowserSignin(Browser* browser,
   scoped_ptr<ScopedTabbedBrowserDisplayer> displayer;
   if (browser->profile()->IsOffTheRecord()) {
     switched_browser = true;
-    displayer.reset(new ScopedTabbedBrowserDisplayer(
-        original_profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+    displayer.reset(new ScopedTabbedBrowserDisplayer(original_profile));
     browser = displayer->browser();
   }
 

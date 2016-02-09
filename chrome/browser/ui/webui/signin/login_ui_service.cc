@@ -61,8 +61,7 @@ void LoginUIService::ShowLoginPopup() {
 #if defined(OS_CHROMEOS)
   NOTREACHED();
 #else
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      profile_, chrome::GetActiveDesktop());
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
   chrome::ShowBrowserSignin(
       displayer.browser(),
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS);

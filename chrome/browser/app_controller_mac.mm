@@ -139,7 +139,7 @@ Browser* ActivateBrowser(Profile* profile) {
 Browser* CreateBrowser(Profile* profile) {
   {
     base::AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
-    chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+    chrome::NewEmptyWindow(profile);
   }
 
   Browser* browser = chrome::GetLastActiveBrowser();
@@ -851,8 +851,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
         // downloads page if the user chooses to wait.
         Browser* browser = chrome::FindBrowserWithProfile(profiles[i]);
         if (!browser) {
-          browser = new Browser(Browser::CreateParams(
-              profiles[i], chrome::HOST_DESKTOP_TYPE_NATIVE));
+          browser = new Browser(Browser::CreateParams(profiles[i]));
           browser->window()->Show();
         }
         DCHECK(browser);
@@ -1372,8 +1371,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   Browser* browser = chrome::GetLastActiveBrowser();
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
-    browser = new Browser(Browser::CreateParams(
-        [self lastProfile], chrome::HOST_DESKTOP_TYPE_NATIVE));
+    browser = new Browser(Browser::CreateParams([self lastProfile]));
     browser->window()->Show();
   }
 

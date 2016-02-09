@@ -1097,7 +1097,7 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
 
   // Open a second browser window at about:blank.
   ui_test_utils::BrowserAddedObserver browser_added_observer;
-  chrome::NewEmptyWindow(browser()->profile(), chrome::GetActiveDesktop());
+  chrome::NewEmptyWindow(browser()->profile());
   Browser* second_window = browser_added_observer.WaitForSingleNewBrowser();
   ui_test_utils::NavigateToURL(second_window, GURL(url::kAboutBlankURL));
 
@@ -1730,8 +1730,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
   for (size_t i = 0; i < arraysize(types); ++i) {
-    Browser::CreateParams params(types[i], browser()->profile(),
-                                 browser()->host_desktop_type());
+    Browser::CreateParams params(types[i], browser()->profile());
     params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
     AddBlankTabAndShow(new Browser(params));
   }
@@ -1748,8 +1747,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_StartMinimized) {
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
   for (size_t i = 0; i < arraysize(types); ++i) {
-    Browser::CreateParams params(types[i], browser()->profile(),
-                                 browser()->host_desktop_type());
+    Browser::CreateParams params(types[i], browser()->profile());
     params.initial_show_state = ui::SHOW_STATE_MINIMIZED;
     AddBlankTabAndShow(new Browser(params));
   }
@@ -1814,10 +1812,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
 
   // Create a new browser.
-  Browser* new_browser =
-      new Browser(Browser::CreateParams(
-          browser()->profile()->GetOffTheRecordProfile(),
-          browser()->host_desktop_type()));
+  Browser* new_browser = new Browser(
+      Browser::CreateParams(browser()->profile()->GetOffTheRecordProfile()));
   CommandUpdater* new_command_updater =
       new_browser->command_controller()->command_updater();
   // It should have Bookmarks & Settings commands disabled by default.
@@ -1850,8 +1846,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
   // Create a new browser.
   Browser* new_browser =
-      new Browser(Browser::CreateParams(browser()->profile(),
-                                        browser()->host_desktop_type()));
+      new Browser(Browser::CreateParams(browser()->profile()));
   CommandUpdater* new_command_updater =
       new_browser->command_controller()->command_updater();
   EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
@@ -1884,8 +1879,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   // Create a popup (non-main-UI-type) browser. Settings command as well
   // as Extensions should be disabled.
   Browser* popup_browser = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
-                            browser()->host_desktop_type()));
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   CommandUpdater* popup_command_updater =
       popup_browser->command_controller()->command_updater();
   EXPECT_FALSE(popup_command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
@@ -1901,8 +1895,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
                        DisableOptionsAndImportMenuItemsConsistently) {
   // Create a popup browser.
   Browser* popup_browser = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
-                            browser()->host_desktop_type()));
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   CommandUpdater* command_updater =
       popup_browser->command_controller()->command_updater();
   // OPTIONS and IMPORT_SETTINGS are disabled for a non-normal UI.
@@ -2387,7 +2380,7 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   ui_test_utils::BrowserAddedObserver browser_added_observer;
-  chrome::NewEmptyWindow(profile, chrome::GetActiveDesktop());
+  chrome::NewEmptyWindow(profile);
   browser_added_observer.WaitForSingleNewBrowser();
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -3229,8 +3222,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
     // Creates an untrusted popup window and asserts that the eventual height is
     // padded with the toolbar and title bar height (initial height is content
     // height).
-    Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile(),
-                                 chrome::HOST_DESKTOP_TYPE_NATIVE);
+    Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile());
     params.initial_bounds = gfx::Rect(0, 0, 100, 122);
     Browser* browser = new Browser(params);
     gfx::Rect bounds = browser->window()->GetBounds();
@@ -3247,8 +3239,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
   {
     // Creates a trusted popup window and asserts that the eventual height
     // doesn't change (initial height is window height).
-    Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile(),
-                                 chrome::HOST_DESKTOP_TYPE_NATIVE);
+    Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile());
     params.initial_bounds = gfx::Rect(0, 0, 100, 122);
     params.trusted_source = true;
     Browser* browser = new Browser(params);
@@ -3265,8 +3256,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
     // Creates an untrusted app window and asserts that the eventual height
     // doesn't change.
     Browser::CreateParams params = Browser::CreateParams::CreateForApp(
-        "app-name", false, gfx::Rect(0, 0, 100, 122), browser()->profile(),
-        chrome::HOST_DESKTOP_TYPE_NATIVE);
+        "app-name", false, gfx::Rect(0, 0, 100, 122), browser()->profile());
     Browser* browser = new Browser(params);
     gfx::Rect bounds = browser->window()->GetBounds();
 
@@ -3281,8 +3271,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
     // Creates a trusted app window and asserts that the eventual height
     // doesn't change.
     Browser::CreateParams params = Browser::CreateParams::CreateForApp(
-        "app-name", true, gfx::Rect(0, 0, 100, 122), browser()->profile(),
-        chrome::HOST_DESKTOP_TYPE_NATIVE);
+        "app-name", true, gfx::Rect(0, 0, 100, 122), browser()->profile());
     Browser* browser = new Browser(params);
     gfx::Rect bounds = browser->window()->GetBounds();
 
@@ -3296,8 +3285,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
   {
     // Creates a devtools window and asserts that the eventual height
     // doesn't change.
-    Browser::CreateParams params = Browser::CreateParams::CreateForDevTools(
-        browser()->profile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
+    Browser::CreateParams params =
+        Browser::CreateParams::CreateForDevTools(browser()->profile());
     params.initial_bounds = gfx::Rect(0, 0, 100, 122);
     Browser* browser = new Browser(params);
     gfx::Rect bounds = browser->window()->GetBounds();

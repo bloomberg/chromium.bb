@@ -40,7 +40,7 @@ void ArcIntentHelperBridge::OnOpenUrl(const mojo::String& url) {
     return;
 
   chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+      ProfileManager::GetActiveUserProfile());
   chrome::AddSelectedTabWithURL(displayer.browser(), gurl,
                                 ui::PAGE_TRANSITION_LINK);
 

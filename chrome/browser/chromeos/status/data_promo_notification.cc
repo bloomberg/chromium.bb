@@ -167,7 +167,7 @@ void NotificationClicked(const std::string& service_path,
                          const std::string& info_url) {
   if (!info_url.empty()) {
     chrome::ScopedTabbedBrowserDisplayer displayer(
-        ProfileManager::GetPrimaryUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+        ProfileManager::GetPrimaryUserProfile());
     chrome::ShowSingletonTab(displayer.browser(), GURL(info_url));
     if (info_url == kDataSaverExtensionUrl)
       content::RecordAction(base::UserMetricsAction("DataSaverPrompt_Clicked"));

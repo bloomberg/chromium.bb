@@ -158,11 +158,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   // 3) Hosted apps.
   Browser::CreateParams browser_create_params(
-      Browser::CreateParams::CreateForApp("Test",
-                                          true /* trusted_source */,
-                                          gfx::Rect(),
-                                          browser()->profile(),
-                                          chrome::HOST_DESKTOP_TYPE_ASH));
+      Browser::CreateParams::CreateForApp("Test", true /* trusted_source */,
+                                          gfx::Rect(), browser()->profile()));
 
   Browser* app_host_browser = new Browser(browser_create_params);
   ASSERT_TRUE(app_host_browser->is_app());
@@ -181,8 +178,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   EXPECT_TRUE(IsInitialShowState(window_state));
 
   // 4) Popup browser windows.
-  browser_create_params = Browser::CreateParams(
-      Browser::TYPE_POPUP, browser()->profile(), chrome::HOST_DESKTOP_TYPE_ASH);
+  browser_create_params =
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile());
   Browser* popup_browser = new Browser(browser_create_params);
   ASSERT_TRUE(popup_browser->is_type_popup());
   ASSERT_FALSE(popup_browser->is_app());

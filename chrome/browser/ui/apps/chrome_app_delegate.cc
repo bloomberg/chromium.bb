@@ -252,7 +252,7 @@ void ChromeAppDelegate::AddNewContents(content::BrowserContext* context,
     return;
   }
   chrome::ScopedTabbedBrowserDisplayer displayer(
-      Profile::FromBrowserContext(context), chrome::GetActiveDesktop());
+      Profile::FromBrowserContext(context));
   // Force all links to open in a new tab, even if they were trying to open a
   // new window.
   disposition =

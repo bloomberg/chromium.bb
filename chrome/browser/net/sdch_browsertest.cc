@@ -438,8 +438,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
         second_profile_data_dir_.path());
     if (!second_profile_) return false;
 
-    second_browser_ = new Browser(Browser::CreateParams(
-        second_profile_, browser()->host_desktop_type()));
+    second_browser_ = new Browser(Browser::CreateParams(second_profile_));
     if (!second_browser_) return false;
 
     chrome::AddSelectedTabWithURL(second_browser_,

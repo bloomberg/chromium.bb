@@ -233,8 +233,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenURLsPopup) {
   BrowserList::AddObserver(&observer);
 
   Browser* popup = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
-                            browser()->host_desktop_type()));
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   ASSERT_TRUE(popup->is_type_popup());
   ASSERT_EQ(popup, observer.added_browser_);
 
@@ -838,17 +837,15 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   ASSERT_TRUE(profile2);
 
   // Open some urls with the browsers, and close them.
-  Browser* browser1 = new Browser(
-      Browser::CreateParams(Browser::TYPE_TABBED, profile1,
-                            browser()->host_desktop_type()));
+  Browser* browser1 =
+      new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile1));
   chrome::NewTab(browser1);
   ui_test_utils::NavigateToURL(browser1,
                                embedded_test_server()->GetURL("/empty.html"));
   CloseBrowserSynchronously(browser1);
 
   Browser* browser2 = new Browser(
-      Browser::CreateParams(Browser::TYPE_TABBED, profile2,
-                            browser()->host_desktop_type()));
+      Browser::CreateParams(Browser::TYPE_TABBED, profile2));
   chrome::NewTab(browser2);
   ui_test_utils::NavigateToURL(browser2,
                                embedded_test_server()->GetURL("/form.html"));
@@ -992,8 +989,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // Open a page with profile_last.
   Browser* browser_last = new Browser(
-      Browser::CreateParams(Browser::TYPE_TABBED, profile_last,
-                            browser()->host_desktop_type()));
+      Browser::CreateParams(Browser::TYPE_TABBED, profile_last));
   chrome::NewTab(browser_last);
   ui_test_utils::NavigateToURL(browser_last,
                                embedded_test_server()->GetURL("/empty.html"));

@@ -231,7 +231,7 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
 
   // Create a new browser based on the off the record profile.
   Browser::CreateParams profile_params(
-      original_profile->GetOffTheRecordProfile(), chrome::GetActiveDesktop());
+      original_profile->GetOffTheRecordProfile());
   scoped_ptr<Browser> otr_browser(
       chrome::CreateBrowserWithTestWindowForParams(&profile_params));
 
@@ -406,8 +406,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
   EXPECT_EQ(profile2->GetOriginalProfile(), profile1.get());
 
   // Create a new browser based on the off the record profile.
-  Browser::CreateParams profile_params(profile1->GetOffTheRecordProfile(),
-                                       chrome::GetActiveDesktop());
+  Browser::CreateParams profile_params(profile1->GetOffTheRecordProfile());
   scoped_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForParams(&profile_params));
 

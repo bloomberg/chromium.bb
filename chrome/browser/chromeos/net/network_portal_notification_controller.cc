@@ -182,8 +182,7 @@ void NetworkPortalNotificationControllerDelegate::Click() {
   } else {
     if (!profile)
       return;
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        profile, chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile);
     GURL url(captive_portal::CaptivePortalDetector::kDefaultURL);
     chrome::ShowSingletonTab(displayer.browser(), url);
   }

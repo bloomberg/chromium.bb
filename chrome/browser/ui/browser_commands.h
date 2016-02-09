@@ -42,22 +42,20 @@ void RemoveCommandObserver(Browser*, int command, CommandObserver* observer);
 int GetContentRestrictions(const Browser* browser);
 
 // Opens a new window with the default blank tab.
-void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type);
+void NewEmptyWindow(Profile* profile);
 
 // Opens a new window with the default blank tab. This bypasses metrics and
 // various internal bookkeeping; NewEmptyWindow (above) is preferred.
-Browser* OpenEmptyWindow(Profile* profile, HostDesktopType desktop_type);
+Browser* OpenEmptyWindow(Profile* profile);
 
 // Opens a new window with the tabs from |profile|'s TabRestoreService.
 void OpenWindowWithRestoredTabs(Profile* profile,
                                 HostDesktopType host_desktop_type);
 
-// Opens the specified URL in a new browser window in an incognito session on
-// the desktop specified by |desktop_type|. If there is already an existing
-// active incognito session for the specified |profile|, that session is re-
-// used.
-void OpenURLOffTheRecord(Profile* profile, const GURL& url,
-                         chrome::HostDesktopType desktop_type);
+// Opens the specified URL in a new browser window in an incognito session. If
+// there is already an existing active incognito session for the specified
+// |profile|, that session is re- used.
+void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
 bool CanGoBack(const Browser* browser);
 void GoBack(Browser* browser, WindowOpenDisposition disposition);

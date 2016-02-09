@@ -990,7 +990,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
 
   // Background mode should be resumed when a new browser window is opened.
   ui_test_utils::BrowserAddedObserver new_browser_observer;
-  chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+  chrome::NewEmptyWindow(profile);
   new_browser_observer.WaitForSingleNewBrowser();
   chrome::DecrementKeepAliveCount();
   EXPECT_FALSE(IsBackgroundModeSuspended());

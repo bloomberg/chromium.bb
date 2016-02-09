@@ -547,8 +547,7 @@ Browser* OneClickSigninSyncStarter::EnsureBrowser(
     // create a new one.
     browser = chrome::FindLastActiveWithProfile(profile);
     if (!browser) {
-      browser = new Browser(Browser::CreateParams(profile,
-                                                   desktop_type));
+      browser = new Browser(Browser::CreateParams(profile));
       chrome::AddTabAt(browser, GURL(), -1, true);
     }
     browser->window()->Show();

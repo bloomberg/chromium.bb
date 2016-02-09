@@ -459,8 +459,7 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
   scoped_ptr<chrome::ScopedTabbedBrowserDisplayer> browser_displayer;
   if (!browser ||
       !browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
-    browser_displayer.reset(new chrome::ScopedTabbedBrowserDisplayer(
-        profile_, chrome::GetActiveDesktop()));
+    browser_displayer.reset(new chrome::ScopedTabbedBrowserDisplayer(profile_));
     browser = browser_displayer->browser();
   }
   content::OpenURLParams params(

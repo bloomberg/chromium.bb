@@ -93,8 +93,7 @@ void CreatePrintDialog(content::BrowserContext* browser_context,
                        const scoped_refptr<base::RefCountedMemory>& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile,
-                                                 chrome::GetActiveDesktop());
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   GURL url = cloud_devices::GetCloudPrintRelativeURL("client/dialog.html");
   content::WebContents* web_contents =
       displayer.browser()->OpenURL(content::OpenURLParams(

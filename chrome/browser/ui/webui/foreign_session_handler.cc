@@ -183,11 +183,8 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
       window_num == kInvalidId ?
       std::vector<const ::sessions::SessionWindow*>::const_iterator(
           windows.end()) : iter_begin + 1;
-  chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(
-          web_ui->GetWebContents()->GetNativeView());
-  SessionRestore::RestoreForeignSessionWindows(
-      Profile::FromWebUI(web_ui), host_desktop_type, iter_begin, iter_end);
+  SessionRestore::RestoreForeignSessionWindows(Profile::FromWebUI(web_ui),
+                                               iter_begin, iter_end);
 }
 
 // static

@@ -165,8 +165,7 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   ProfileSyncServiceMock* service = static_cast<ProfileSyncServiceMock*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile, &ExtensionSessionsTest::BuildProfileSyncService));
-  browser_ = new Browser(Browser::CreateParams(
-      profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+  browser_ = new Browser(Browser::CreateParams(profile));
 
   syncer::ModelTypeSet preferred_types;
   preferred_types.Put(syncer::SESSIONS);

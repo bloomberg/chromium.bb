@@ -59,8 +59,8 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
 
   Browser::CreateParams CreateParamsForApp(const std::string name,
                                            bool trusted) {
-    return Browser::CreateParams::CreateForApp(
-        name, trusted, gfx::Rect(), profile(), chrome::GetActiveDesktop());
+    return Browser::CreateParams::CreateForApp(name, trusted, gfx::Rect(),
+                                               profile());
   }
 
   // Turn on session restore before we restart.
@@ -82,11 +82,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreBrowserWindows) {
   // One browser window is always created by default.
   EXPECT_TRUE(browser());
   // Create a second normal browser window.
-  CreateBrowserWithParams(
-      Browser::CreateParams(profile(), chrome::GetActiveDesktop()));
+  CreateBrowserWithParams(Browser::CreateParams(profile()));
   // Create a third incognito browser window which should not get restored.
-  CreateBrowserWithParams(Browser::CreateParams(
-      profile()->GetOffTheRecordProfile(), chrome::GetActiveDesktop()));
+  CreateBrowserWithParams(
+      Browser::CreateParams(profile()->GetOffTheRecordProfile()));
   TurnOnSessionRestore();
 }
 
@@ -134,8 +133,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreMaximized) {
   // One browser window is always created by default.
   ASSERT_TRUE(browser());
   // Create a second browser window and maximize it.
-  Browser* browser2 = CreateBrowserWithParams(
-      Browser::CreateParams(profile(), chrome::GetActiveDesktop()));
+  Browser* browser2 = CreateBrowserWithParams(Browser::CreateParams(profile()));
   browser2->window()->Maximize();
 
   // Create two app popup windows and maximize the second one.

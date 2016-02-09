@@ -178,7 +178,7 @@ const Extension* ExtensionContextMenuModelTest::AddExtensionWithHostPermission(
 
 Browser* ExtensionContextMenuModelTest::GetBrowser() {
   if (!browser_) {
-    Browser::CreateParams params(profile(), chrome::GetActiveDesktop());
+    Browser::CreateParams params(profile());
     test_window_.reset(new TestBrowserWindow());
     params.window = test_window_.get();
     browser_.reset(new Browser(params));

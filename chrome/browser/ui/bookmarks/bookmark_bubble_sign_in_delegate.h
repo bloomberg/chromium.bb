@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 
 class Browser;
@@ -38,9 +37,6 @@ class BookmarkBubbleSignInDelegate : public BubbleSyncPromoDelegate,
 
   // The profile associated with |browser_|.
   Profile* profile_;
-
-  // The host desktop of |browser_|.
-  chrome::HostDesktopType desktop_type_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleSignInDelegate);
 };

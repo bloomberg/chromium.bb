@@ -95,7 +95,6 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
   // show the prompt this time and will wait until the next run of the
   // reporter. We can't use other ways of finding a browser because we don't
   // have a profile.
-  chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   Browser* browser = chrome::FindLastActive();
   if (!browser)
     return;
@@ -108,7 +107,7 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
   if (browser->type() != Browser::TYPE_TABBED) {
     browser = chrome::FindTabbedBrowser(profile, false);
     if (!browser)
-      browser = new Browser(Browser::CreateParams(profile, desktop_type));
+      browser = new Browser(Browser::CreateParams(profile));
   }
   GlobalErrorService* global_error_service =
       GlobalErrorServiceFactory::GetForProfile(profile);

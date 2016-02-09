@@ -1146,8 +1146,7 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
 
   Profile* profile = Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext());
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      profile, chrome::GetActiveDesktop());
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   print_dialog_cloud::CreateCloudPrintSigninTab(
       displayer.browser(),
       add_account,

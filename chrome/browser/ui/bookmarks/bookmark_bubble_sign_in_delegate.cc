@@ -14,8 +14,7 @@
 
 BookmarkBubbleSignInDelegate::BookmarkBubbleSignInDelegate(Browser* browser)
     : browser_(browser),
-      profile_(browser->profile()),
-      desktop_type_(browser->host_desktop_type()) {
+      profile_(browser->profile()) {
   BrowserList::AddObserver(this);
 }
 
@@ -39,8 +38,7 @@ void BookmarkBubbleSignInDelegate::EnsureBrowser() {
     Profile* original_profile = profile_->GetOriginalProfile();
     browser_ = chrome::FindLastActiveWithProfile(original_profile);
     if (!browser_) {
-      browser_ = new Browser(Browser::CreateParams(original_profile,
-                                                   desktop_type_));
+      browser_ = new Browser(Browser::CreateParams(original_profile));
     }
   }
 }

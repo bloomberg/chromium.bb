@@ -58,7 +58,6 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
 // static
 std::vector<Browser*> SessionRestore::RestoreForeignSessionWindows(
     Profile* profile,
-    chrome::HostDesktopType host_desktop_type,
     std::vector<const sessions::SessionWindow*>::const_iterator begin,
     std::vector<const sessions::SessionWindow*>::const_iterator end) {
   NOTREACHED();

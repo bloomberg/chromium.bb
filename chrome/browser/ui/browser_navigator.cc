@@ -82,11 +82,9 @@ bool WindowCanOpenTabs(Browser* browser) {
 
 // Finds an existing Browser compatible with |profile|, making a new one if no
 // such Browser is located.
-Browser* GetOrCreateBrowser(Profile* profile,
-                            chrome::HostDesktopType host_desktop_type) {
+Browser* GetOrCreateBrowser(Profile* profile) {
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
-  return browser ? browser : new Browser(
-      Browser::CreateParams(profile, host_desktop_type));
+  return browser ? browser : new Browser(Browser::CreateParams(profile));
 }
 
 // Change some of the navigation parameters based on the particular URL.
@@ -116,7 +114,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
     }
 
     params->disposition = SINGLETON_TAB;
-    params->browser = GetOrCreateBrowser(profile, params->host_desktop_type);
+    params->browser = GetOrCreateBrowser(profile);
     params->window_action = chrome::NavigateParams::SHOW_WINDOW;
   }
 
@@ -144,7 +142,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(profile, params->host_desktop_type);
+      return GetOrCreateBrowser(profile);
     case SINGLETON_TAB:
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB:
@@ -153,7 +151,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(profile, params->host_desktop_type);
+      return GetOrCreateBrowser(profile);
     case NEW_POPUP: {
       // Make a new popup window.
       // Coerce app-style if |source| represents an app.
@@ -174,29 +172,22 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
       }
 #endif
       if (app_name.empty()) {
-        Browser::CreateParams browser_params(
-            Browser::TYPE_POPUP, profile, params->host_desktop_type);
+        Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile);
         browser_params.trusted_source = params->trusted_source;
         browser_params.initial_bounds = params->window_bounds;
         return new Browser(browser_params);
       }
 
       return new Browser(Browser::CreateParams::CreateForApp(
-          app_name,
-          params->trusted_source,
-          params->window_bounds,
-          profile,
-          params->host_desktop_type));
+          app_name, params->trusted_source, params->window_bounds, profile));
     }
     case NEW_WINDOW: {
       // Make a new normal browser window.
-      return new Browser(Browser::CreateParams(profile,
-                                               params->host_desktop_type));
+      return new Browser(Browser::CreateParams(profile));
     }
     case OFF_THE_RECORD:
       // Make or find an incognito window.
-      return GetOrCreateBrowser(profile->GetOffTheRecordProfile(),
-                                params->host_desktop_type);
+      return GetOrCreateBrowser(profile->GetOffTheRecordProfile());
     // The following types all result in no navigation.
     case SUPPRESS_OPEN:
     case SAVE_TO_DISK:

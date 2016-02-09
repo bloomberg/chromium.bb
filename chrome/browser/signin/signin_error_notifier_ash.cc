@@ -103,8 +103,7 @@ void SigninNotificationDelegate::FixSignIn() {
   }
 
   // Find a browser instance or create one.
-  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-      profile_, chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(profile_);
 
   // Navigate to the sync setup subpage, which will launch a login page.
   chrome::ShowSettingsSubPage(browser_displayer.browser(),

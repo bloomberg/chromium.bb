@@ -136,7 +136,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     ui_test_utils::BrowserAddedObserver window_observer;
     SessionRestoreTestHelper restore_observer;
     if (url.is_empty()) {
-      chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+      chrome::NewEmptyWindow(profile);
     } else {
       chrome::NavigateParams params(profile,
                                     url,
@@ -483,8 +483,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   // Create a new popup.
   Profile* profile = browser()->profile();
   Browser* popup =
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile,
-                                        browser()->host_desktop_type()));
+      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile));
   popup->window()->Show();
 
   // Close the browser.
@@ -815,10 +814,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
 
   session.push_back(static_cast<const sessions::SessionWindow*>(&window));
   ui_test_utils::BrowserAddedObserver window_observer;
-  std::vector<Browser*> browsers =
-      SessionRestore::RestoreForeignSessionWindows(
-          profile, browser()->host_desktop_type(), session.begin(),
-          session.end());
+  std::vector<Browser*> browsers = SessionRestore::RestoreForeignSessionWindows(
+      profile, session.begin(), session.end());
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(2u, active_browser_list_->size());
@@ -1265,7 +1262,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   // Restore the session again, clobbering the existing tab.
   SessionRestore::RestoreSession(
       profile, new_browser,
-      new_browser->host_desktop_type(),
       SessionRestore::CLOBBER_CURRENT_TAB | SessionRestore::SYNCHRONOUS,
       std::vector<GURL>());
 
@@ -1324,7 +1320,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClobberRestoreTest) {
   // Restore the session again, clobbering the existing tab.
   SessionRestore::RestoreSession(
       profile, new_browser,
-      new_browser->host_desktop_type(),
       SessionRestore::CLOBBER_CURRENT_TAB | SessionRestore::SYNCHRONOUS,
       std::vector<GURL>());
 
@@ -1423,7 +1418,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
 
   // Create a new window, which should trigger session restore.
   ui_test_utils::BrowserAddedObserver window_observer;
-  chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+  chrome::NewEmptyWindow(profile);
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
   ASSERT_TRUE(new_browser);
   WaitForAllTabsToStartLoading();
@@ -1467,7 +1462,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
 
   // Create a new window, which should trigger session restore.
   ui_test_utils::BrowserAddedObserver window_observer;
-  chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+  chrome::NewEmptyWindow(profile);
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
   ASSERT_TRUE(new_browser);
   WaitForAllTabsToStartLoading();

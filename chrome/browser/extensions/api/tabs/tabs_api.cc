@@ -627,27 +627,21 @@ bool WindowsCreateFunction::RunSync() {
   }
 
   // Create a new BrowserWindow.
-  chrome::HostDesktopType host_desktop_type = chrome::GetActiveDesktop();
   if (create_panel)
     window_type = Browser::TYPE_POPUP;
-  Browser::CreateParams create_params(window_type, window_profile,
-                                      host_desktop_type);
+  Browser::CreateParams create_params(window_type, window_profile);
   if (extension_id.empty()) {
     create_params.initial_bounds = window_bounds;
   } else {
     create_params = Browser::CreateParams::CreateForApp(
         web_app::GenerateApplicationNameFromExtensionId(extension_id),
-        false /* trusted_source */,
-        window_bounds,
-        window_profile,
-        host_desktop_type);
+        false /* trusted_source */, window_bounds, window_profile);
   }
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
   if (create_data && create_data->state) {
     create_params.initial_show_state =
         ConvertToWindowShowState(create_data->state);
   }
-  create_params.host_desktop_type = chrome::GetActiveDesktop();
 
   Browser* new_window = new Browser(create_params);
 

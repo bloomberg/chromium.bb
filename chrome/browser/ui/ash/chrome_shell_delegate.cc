@@ -170,8 +170,7 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
 
   if (!browser) {
-    browser = new Browser(
-        Browser::CreateParams(profile, chrome::HOST_DESKTOP_TYPE_ASH));
+    browser = new Browser(Browser::CreateParams(profile));
     browser->window()->Show();
   }
 

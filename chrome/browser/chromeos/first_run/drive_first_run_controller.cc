@@ -105,9 +105,7 @@ void DriveOfflineNotificationDelegate::ButtonClick(int button_index) {
   // The support page will be localized based on the user's GAIA account.
   const GURL url = GURL(kDriveOfflineSupportUrl);
 
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-       profile_,
-       chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
   chrome::ShowSingletonTabOverwritingNTP(
       displayer.browser(),
       chrome::GetSingletonTabNavigateParams(displayer.browser(), url));

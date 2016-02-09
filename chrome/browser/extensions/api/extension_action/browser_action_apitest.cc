@@ -506,8 +506,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   base::RunLoop().RunUntilIdle();  // Wait for profile initialization.
   Browser* incognito_browser =
-      new Browser(Browser::CreateParams(incognito_profile,
-                                        browser()->host_desktop_type()));
+      new Browser(Browser::CreateParams(incognito_profile));
 
   ASSERT_EQ(0,
             BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
@@ -541,8 +540,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
   // Open an incognito window.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser =
-      new Browser(Browser::CreateParams(incognito_profile,
-                                        browser()->host_desktop_type()));
+      new Browser(Browser::CreateParams(incognito_profile));
   base::RunLoop().RunUntilIdle();  // Wait for profile initialization.
   // Navigate just to have a tab in this window, otherwise wonky things happen.
   OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));

@@ -210,7 +210,7 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
 
 TEST_F(BrowserInstantControllerTest, BrowserWindowLifecycle) {
   scoped_ptr<BrowserWindow> window(CreateBrowserWindow());
-  Browser::CreateParams params(profile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams params(profile());
   params.window = window.get();
   scoped_ptr<Browser> browser(new Browser(params));
   InstantServiceObserver* bic;

@@ -583,7 +583,6 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
     if (pref.type == SessionStartupPref::LAST) {
       SessionRestore::RestoreSession(
           profile(), browser,
-          browser ? browser->host_desktop_type() : chrome::GetActiveDesktop(),
           browser ? 0 : SessionRestore::ALWAYS_CREATE_TABBED_BROWSER,
           urls_to_open);
       return true;

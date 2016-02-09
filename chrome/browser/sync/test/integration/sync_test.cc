@@ -484,8 +484,7 @@ void SyncTest::InitializeInstance(int index) {
                                           << index << ".";
 
   // CheckInitialState() assumes that no windows are open at startup.
-  browsers_[index] = new Browser(Browser::CreateParams(
-      GetProfile(index), chrome::GetActiveDesktop()));
+  browsers_[index] = new Browser(Browser::CreateParams(GetProfile(index)));
 
   EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
                                           << index << ".";

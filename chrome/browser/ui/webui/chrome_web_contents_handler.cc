@@ -38,18 +38,10 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
 
   Profile* profile = Profile::FromBrowserContext(context);
 
-  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-  if (source) {
-    Browser* source_browser = chrome::FindBrowserWithWebContents(source);
-    if (source_browser)
-      desktop_type = source_browser->host_desktop_type();
-  }
-
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
-    browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
+    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
   chrome::NavigateParams nav_params(browser, params.url, params.transition);
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
@@ -88,18 +80,10 @@ void ChromeWebContentsHandler::AddNewContents(
 
   Profile* profile = Profile::FromBrowserContext(context);
 
-  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-  if (source) {
-    Browser* source_browser = chrome::FindBrowserWithWebContents(source);
-    if (source_browser)
-      desktop_type = source_browser->host_desktop_type();
-  }
-
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
-    browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
+    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
   chrome::NavigateParams params(browser, new_contents);
   params.source_contents = source;
   params.disposition = disposition;

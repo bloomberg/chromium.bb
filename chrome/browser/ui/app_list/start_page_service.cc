@@ -180,8 +180,7 @@ class StartPageService::StartPageWebContentsDelegate
                       const gfx::Rect& initial_pos,
                       bool user_gesture,
                       bool* was_blocked) override {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        profile_, chrome::GetActiveDesktop());
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
     // Force all links to open in a new tab, even if they were trying to open a
     // new window.
     disposition =

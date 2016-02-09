@@ -707,8 +707,7 @@ void SetUp() override {
 };
 
 Browser* FindOrCreateVisibleBrowser(Profile* profile) {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      profile, chrome::GetActiveDesktop());
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   Browser* browser = displayer.browser();
   if (browser->tab_strip_model()->count() == 0)
     chrome::AddTabAt(browser, GURL(), -1, true);

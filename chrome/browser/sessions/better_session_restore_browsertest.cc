@@ -332,7 +332,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
 
     // Create a new window, which should trigger session restore.
     ui_test_utils::BrowserAddedObserver window_observer;
-    chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+    chrome::NewEmptyWindow(profile);
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
     chrome::DecrementKeepAliveCount();
 
@@ -486,10 +486,8 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   // Set the startup preference to "continue where I left off" and visit a page
   // which stores a session cookie.
   StoreDataWithPage("session_cookies.html");
-  Browser* popup = new Browser(Browser::CreateParams(
-      Browser::TYPE_POPUP,
-      browser()->profile(),
-      chrome::HOST_DESKTOP_TYPE_NATIVE));
+  Browser* popup = new Browser(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   popup->window()->Show();
 
   Browser* new_browser = QuitBrowserAndRestore(browser(), false);
@@ -771,10 +769,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, SessionCookiesBrowserClose) {
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
                        SessionCookiesBrowserCloseWithPopupOpen) {
   StoreDataWithPage("session_cookies.html");
-  Browser* popup = new Browser(Browser::CreateParams(
-      Browser::TYPE_POPUP,
-      browser()->profile(),
-      chrome::HOST_DESKTOP_TYPE_NATIVE));
+  Browser* popup = new Browser(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   popup->window()->Show();
   Browser* new_browser = QuitBrowserAndRestore(browser(), false);
   NavigateAndCheckStoredData(new_browser, "session_cookies.html");
@@ -785,10 +781,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
                        SessionCookiesBrowserClosePopupLast) {
   StoreDataWithPage("session_cookies.html");
-  Browser* popup = new Browser(Browser::CreateParams(
-      Browser::TYPE_POPUP,
-      browser()->profile(),
-      chrome::HOST_DESKTOP_TYPE_NATIVE));
+  Browser* popup = new Browser(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   popup->window()->Show();
   CloseBrowserSynchronously(browser());
   Browser* new_browser = QuitBrowserAndRestore(popup, false);

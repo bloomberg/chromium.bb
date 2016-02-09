@@ -377,9 +377,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Open a new browser window.
-  Browser* browser2 =
-      new Browser(Browser::CreateParams(browser()->profile(),
-                                        browser()->host_desktop_type()));
+  Browser* browser2 = new Browser(Browser::CreateParams(browser()->profile()));
+
   ASSERT_TRUE(browser2);
   chrome::AddTabAt(browser2, GURL(), -1, true);
   browser2->window()->Show();

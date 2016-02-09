@@ -88,7 +88,7 @@ void ChromeNewWindowDelegate::NewTab() {
   // Display a browser, setting the focus to the location bar after it is shown.
   {
     chrome::ScopedTabbedBrowserDisplayer displayer(
-        ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+        ProfileManager::GetActiveUserProfile());
     browser = displayer.browser();
     chrome::NewTab(browser);
   }
@@ -98,9 +98,8 @@ void ChromeNewWindowDelegate::NewTab() {
 
 void ChromeNewWindowDelegate::NewWindow(bool is_incognito) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  chrome::NewEmptyWindow(
-      is_incognito ? profile->GetOffTheRecordProfile() : profile,
-      chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::NewEmptyWindow(is_incognito ? profile->GetOffTheRecordProfile()
+                                      : profile);
 }
 
 void ChromeNewWindowDelegate::RestoreTab() {

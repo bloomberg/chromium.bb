@@ -195,12 +195,8 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params,
         extensions::AppLaunchInfo::GetLaunchHeight(extension));
   }
 
-  Browser::CreateParams browser_params(
-      Browser::CreateParams::CreateForApp(app_name,
-                                          true /* trusted_source */,
-                                          initial_bounds,
-                                          profile,
-                                          params.desktop_type));
+  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
+      app_name, true /* trusted_source */, initial_bounds, profile));
 
   browser_params.initial_show_state = DetermineWindowShowState(profile,
                                                                params.container,
@@ -235,9 +231,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
   WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.
-    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED,
-                                                profile,
-                                                launch_params.desktop_type));
+    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
     disposition = NEW_FOREGROUND_TAB;

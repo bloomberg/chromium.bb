@@ -92,8 +92,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 - (void)openURLForNode:(const BookmarkNode*)node {
   Browser* browser = chrome::FindTabbedBrowser(bridge_->GetProfile(), true);
   if (!browser) {
-    browser = new Browser(Browser::CreateParams(
-        bridge_->GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE));
+    browser = new Browser(Browser::CreateParams(bridge_->GetProfile()));
   }
   WindowOpenDisposition disposition =
       ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
@@ -113,8 +112,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
   Browser* browser = chrome::FindTabbedBrowser(bridge_->GetProfile(), true);
   if (!browser) {
-    browser = new Browser(Browser::CreateParams(
-        bridge_->GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE));
+    browser = new Browser(Browser::CreateParams(bridge_->GetProfile()));
   }
   DCHECK(browser);
 

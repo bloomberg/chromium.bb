@@ -140,8 +140,8 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, PreferenceWorks) {
 // uninitialized preference member. Verify that it no longer does.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, IncognitoTest) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
-  Browser* incognito_browser = new Browser(
-      Browser::CreateParams(incognito_profile, browser()->host_desktop_type()));
+  Browser* incognito_browser =
+      new Browser(Browser::CreateParams(incognito_profile));
 
   // Navigate just to have a tab in this window, otherwise there is no
   // WebContents for the incognito browser.

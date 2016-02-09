@@ -44,8 +44,7 @@ class FileTaskExecutorDelegateImpl : public FileTaskExecutorDelegate {
   }
 
   void OpenBrowserWindow(const GURL& open_link) override {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-         profile_, chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
     chrome::AddSelectedTabWithURL(displayer.browser(), open_link,
                                   ui::PAGE_TRANSITION_LINK);
     // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
