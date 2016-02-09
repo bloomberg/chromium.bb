@@ -15,6 +15,7 @@
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/uio.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 
@@ -22,6 +23,7 @@
 // Work-around for buggy headers in Android's NDK
 #define __user
 #endif
+#include <linux/elf.h>
 #include <linux/futex.h>
 
 #include "base/bind.h"
@@ -1876,15 +1878,24 @@ BPF_TEST_C(SandboxBPF, PthreadBitMask, PthreadPolicyBitMask) {
 #endif
 #endif
 
-#if defined(__aarch64__)
-#ifndef PTRACE_GETREGS
-#define PTRACE_GETREGS 12
+#if defined(OS_ANDROID)
+#define PtraceRequest int
+#else
+#define PtraceRequest __ptrace_request
 #endif
+// While this is available since 2.6.34, the enum in ptrace.h may not
+// provide it.
+#ifndef PTRACE_GETREGSET
+#define PTRACE_GETREGSET static_cast<PtraceRequest>(0x4204)
+#endif
+
+#ifndef PTRACE_SETREGSET
+#define PTRACE_SETREGSET static_cast<PtraceRequest>(0x4205)
 #endif
 
 #if defined(__aarch64__)
-#ifndef PTRACE_SETREGS
-#define PTRACE_SETREGS 13
+#ifndef NT_ARM_SYSTEM_CALL
+#define NT_ARM_SYSTEM_CALL 0x404
 #endif
 #endif
 
@@ -1893,20 +1904,25 @@ BPF_TEST_C(SandboxBPF, PthreadBitMask, PthreadPolicyBitMask) {
 // PTRACE_EVENT_SECCOMP.
 //
 // regs should contain the current set of registers of the child, obtained using
-// PTRACE_GETREGS.
+// PTRACE_GETREGSSET.
 //
 // Depending on the architecture, this may modify regs, so the caller is
-// responsible for committing these changes using PTRACE_SETREGS.
+// responsible for committing these changes using PTRACE_SETREGSET.
 long SetSyscall(pid_t pid, regs_struct* regs, int syscall_number) {
 #if defined(__arm__)
   // On ARM, the syscall is changed using PTRACE_SET_SYSCALL.  We cannot use the
   // libc ptrace call as the request parameter is an enum, and
   // PTRACE_SET_SYSCALL may not be in the enum.
   return syscall(__NR_ptrace, PTRACE_SET_SYSCALL, pid, NULL, syscall_number);
-#endif
-
+#elif defined(__aarch64__)
+  struct iovec iov;
+  iov.iov_base = &syscall_number;
+  iov.iov_len = sizeof(syscall_number);
+  return ptrace(PTRACE_SETREGSET, pid, NT_ARM_SYSTEM_CALL, &iov);
+#else
   SECCOMP_PT_SYSCALL(*regs) = syscall_number;
   return 0;
+#endif
 }
 
 const uint16_t kTraceData = 0xcc;
@@ -1929,13 +1945,6 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
           SandboxBPF::SeccompLevel::SINGLE_THREADED)) {
     return;
   }
-
-// This test is disabled on arm due to a kernel bug.
-// See https://code.google.com/p/chromium/issues/detail?id=383977
-#if defined(__arm__) || defined(__aarch64__)
-  printf("This test is currently disabled on ARM32/64 due to a kernel bug.");
-  return;
-#endif
 
 #if defined(__mips__)
   // TODO: Figure out how to support specificity of handling indirect syscalls
@@ -1996,7 +2005,10 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
     BPF_ASSERT_EQ(kTraceData, data);
 
     regs_struct regs;
-    BPF_ASSERT_NE(-1, ptrace(PTRACE_GETREGS, pid, NULL, &regs));
+    struct iovec iov;
+    iov.iov_base = &regs;
+    iov.iov_len = sizeof(regs);
+    BPF_ASSERT_NE(-1, ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &iov));
     switch (SECCOMP_PT_SYSCALL(regs)) {
       case __NR_write:
         // Skip writes to stdout, make it return kExpectedReturnValue.  Allow
@@ -2004,7 +2016,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
         if (SECCOMP_PT_PARM1(regs) == STDOUT_FILENO) {
           BPF_ASSERT_NE(-1, SetSyscall(pid, &regs, -1));
           SECCOMP_PT_RESULT(regs) = kExpectedReturnValue;
-          BPF_ASSERT_NE(-1, ptrace(PTRACE_SETREGS, pid, NULL, &regs));
+          BPF_ASSERT_NE(-1, ptrace(PTRACE_SETREGSET, pid, NT_PRSTATUS, &iov));
         }
         break;
 
@@ -2012,7 +2024,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
         // Rewrite to exit(kExpectedReturnValue).
         BPF_ASSERT_NE(-1, SetSyscall(pid, &regs, __NR_exit));
         SECCOMP_PT_PARM1(regs) = kExpectedReturnValue;
-        BPF_ASSERT_NE(-1, ptrace(PTRACE_SETREGS, pid, NULL, &regs));
+        BPF_ASSERT_NE(-1, ptrace(PTRACE_SETREGSET, pid, NT_PRSTATUS, &iov));
         break;
 
       default:
