@@ -151,18 +151,14 @@ void StreamTextureProxyImpl::OnFrameAvailable() {
 // static
 scoped_refptr<StreamTextureFactorySynchronousImpl>
 StreamTextureFactorySynchronousImpl::Create(
-    const CreateContextProviderCallback& try_create_callback,
-    int frame_id) {
-  return new StreamTextureFactorySynchronousImpl(try_create_callback, frame_id);
+    const CreateContextProviderCallback& try_create_callback) {
+  return new StreamTextureFactorySynchronousImpl(try_create_callback);
 }
 
 StreamTextureFactorySynchronousImpl::StreamTextureFactorySynchronousImpl(
-    const CreateContextProviderCallback& try_create_callback,
-    int frame_id)
+    const CreateContextProviderCallback& try_create_callback)
     : create_context_provider_callback_(try_create_callback),
-      context_provider_(create_context_provider_callback_.Run()),
-      frame_id_(frame_id),
-      observer_(NULL) {}
+      context_provider_(create_context_provider_callback_.Run()) {}
 
 StreamTextureFactorySynchronousImpl::~StreamTextureFactorySynchronousImpl() {}
 
@@ -174,8 +170,10 @@ StreamTextureProxy* StreamTextureFactorySynchronousImpl::CreateProxy() {
   if (!context_provider_.get())
     return NULL;
 
-  if (observer_ && !had_proxy)
-    context_provider_->AddObserver(observer_);
+  if (!observers_.empty() && !had_proxy) {
+    for (auto& observer : observers_)
+      context_provider_->AddObserver(observer);
+  }
   return new StreamTextureProxyImpl(context_provider_.get());
 }
 
@@ -189,7 +187,7 @@ void StreamTextureFactorySynchronousImpl::EstablishPeer(int32_t stream_id,
     SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
         base::GetCurrentProcessHandle(),
         surface_texture,
-        frame_id_,
+        frame_id,
         player_id);
   }
 }
@@ -221,16 +219,16 @@ gpu::gles2::GLES2Interface* StreamTextureFactorySynchronousImpl::ContextGL() {
 
 void StreamTextureFactorySynchronousImpl::AddObserver(
     StreamTextureFactoryContextObserver* obs) {
-  DCHECK(!observer_);
-  observer_ = obs;
+  DCHECK(observers_.find(obs) == observers_.end());
+  observers_.insert(obs);
   if (context_provider_.get())
     context_provider_->AddObserver(obs);
 }
 
 void StreamTextureFactorySynchronousImpl::RemoveObserver(
     StreamTextureFactoryContextObserver* obs) {
-  DCHECK_EQ(observer_, obs);
-  observer_ = NULL;
+  DCHECK(observers_.find(obs) != observers_.end());
+  observers_.erase(obs);
   if (context_provider_.get())
     context_provider_->RemoveObserver(obs);
 }

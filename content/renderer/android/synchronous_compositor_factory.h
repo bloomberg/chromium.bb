@@ -58,14 +58,12 @@ class SynchronousCompositorFactory {
 
   virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) = 0;
-  virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
-      int frame_id) = 0;
 
  protected:
   SynchronousCompositorFactory() {}
   virtual ~SynchronousCompositorFactory() {}
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_FACTORY_H_

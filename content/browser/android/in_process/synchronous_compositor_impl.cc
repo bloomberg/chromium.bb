@@ -108,12 +108,6 @@ void SynchronousCompositorImpl::RegisterWithClient() {
   synchronous_input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(this);
 }
 
-// static
-void SynchronousCompositorImpl::SetGpuServiceInProc(
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
-  g_factory.Get().SetDeferredGpuService(service);
-}
-
 void SynchronousCompositorImpl::DidInitializeRendererObjects(
     SynchronousCompositorOutputSurface* output_surface,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
@@ -221,9 +215,11 @@ void SynchronousCompositorImpl::SetMemoryPolicy(size_t bytes_limit) {
   output_surface_->SetMemoryPolicy(bytes_limit);
 
   if (bytes_limit && !current_bytes_limit) {
-    g_factory.Get().CompositorInitializedHardwareDraw();
+    SynchronousCompositorStreamTextureFactoryImpl::GetInstance()
+        ->CompositorInitializedHardwareDraw();
   } else if (!bytes_limit && current_bytes_limit) {
-    g_factory.Get().CompositorReleasedHardwareDraw();
+    SynchronousCompositorStreamTextureFactoryImpl::GetInstance()
+        ->CompositorReleasedHardwareDraw();
   }
 }
 
