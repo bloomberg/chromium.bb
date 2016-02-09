@@ -262,12 +262,12 @@ void AwRenderFrameExt::OnSetBackgroundColor(SkColor c) {
 
 void AwRenderFrameExt::OnSmoothScroll(int target_x,
                                       int target_y,
-                                      long duration_ms) {
+                                      int duration_ms) {
   blink::WebView* webview = GetWebView();
   if (!webview)
     return;
 
-  webview->smoothScroll(target_x, target_y, duration_ms);
+  webview->smoothScroll(target_x, target_y, static_cast<long>(duration_ms));
 }
 
 blink::WebView* AwRenderFrameExt::GetWebView() {

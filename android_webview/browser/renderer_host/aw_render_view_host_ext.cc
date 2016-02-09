@@ -115,7 +115,8 @@ void AwRenderViewHostExt::SmoothScroll(int target_x,
                                        long duration_ms) {
   Send(
       new AwViewMsg_SmoothScroll(web_contents()->GetMainFrame()->GetRoutingID(),
-                                 target_x, target_y, duration_ms));
+                                 target_x, target_y,
+                                 static_cast<int>(duration_ms)));
 }
 
 void AwRenderViewHostExt::RenderViewCreated(

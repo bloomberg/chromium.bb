@@ -81,7 +81,7 @@ IPC_MESSAGE_CONTROL1(AwViewMsg_SetJsOnlineProperty,
 IPC_MESSAGE_ROUTED3(AwViewMsg_SmoothScroll,
                     int /* target_x */,
                     int /* target_y */,
-                    long /* duration_ms */)
+                    int /* duration_ms */)
 
 //-----------------------------------------------------------------------------
 // RenderView messages
