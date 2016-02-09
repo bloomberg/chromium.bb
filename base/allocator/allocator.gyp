@@ -20,6 +20,7 @@
     # e.g. for profiling (it's more rare to profile Debug builds,
     # but people sometimes need to do that).
     'disable_debugallocation%': 0,
+    'use_experimental_allocator_shim%': 0,
   },
   'targets': [
     # The only targets that should depend on allocator are 'base' and
@@ -340,6 +341,11 @@
                 '<(tcmalloc_dir)/src/profiler.cc',
               ],
             }],
+            ['use_experimental_allocator_shim==1', {
+              'defines': [
+                'TCMALLOC_DONT_REPLACE_SYSTEM_ALLOC',
+              ],
+            }]
           ],
           'configurations': {
             'Debug_Base': {

@@ -47,12 +47,16 @@ config("allocator_shim_define") {
 }
 
 config("tcmalloc_flags") {
+  defines = []
   if (enable_debugallocation) {
-    defines = [
+    defines += [
       # Use debugallocation for Debug builds to catch problems early
       # and cleanly, http://crbug.com/30715 .
       "TCMALLOC_FOR_DEBUGALLOCATION",
     ]
+  }
+  if (use_experimental_allocator_shim) {
+    defines += [ "TCMALLOC_DONT_REPLACE_SYSTEM_ALLOC" ]
   }
   if (is_clang) {
     cflags = [

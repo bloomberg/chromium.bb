@@ -59,12 +59,22 @@
 
 static void ReplaceSystemAlloc();  // defined in the .h files below
 
+#if defined(TCMALLOC_DONT_REPLACE_SYSTEM_ALLOC)
+// TCMALLOC_DONT_REPLACE_SYSTEM_ALLOC has the following semantic:
+//  - tcmalloc with all its tc_* (tc_malloc, tc_free) symbols is being built
+//    and linked as usual.
+//  - the default system allocator symbols (malloc, free, operator new) are NOT
+//    overridden. The embedded must take care of routing them to tc_* symbols.
+// This no-op #if block effectively prevents the inclusion of the
+// libc_override_* headers below.
+static void ReplaceSystemAlloc() {}
+
 // For windows, there are two ways to get tcmalloc.  If we're
 // patching, then src/windows/patch_function.cc will do the necessary
 // overriding here.  Otherwise, we doing the 'redefine' trick, where
 // we remove malloc/new/etc from mscvcrt.dll, and just need to define
 // them now.
-#if defined(_WIN32) && defined(WIN32_DO_PATCHING)
+#elif defined(_WIN32) && defined(WIN32_DO_PATCHING)
 void PatchWindowsFunctions();   // in src/windows/patch_function.cc
 static void ReplaceSystemAlloc() { PatchWindowsFunctions(); }
 

@@ -14,8 +14,15 @@ if (is_android || current_cpu == "mipsel" || is_mac || is_ios || is_asan ||
 declare_args() {
   # Memory allocator to use. Set to "none" to use default allocator.
   use_allocator = _default_allocator
+
+  # TODO(primiano): this should just become the default without having a flag,
+  # but we need to get there first. http://crbug.com/550886 .
+  # Causes all the allocations to be routed via allocator_shim.cc.
+  use_experimental_allocator_shim = false
 }
 
 assert(use_allocator == "none" || use_allocator == "tcmalloc")
 
 assert(!is_win || use_allocator == "none", "Tcmalloc doesn't work on Windows.")
+assert(!use_experimental_allocator_shim || is_linux,
+       "use_experimental_allocator_shim supported only on Linux")
