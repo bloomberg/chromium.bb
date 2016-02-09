@@ -286,10 +286,8 @@ void ChromePasswordManagerClient::OnCredentialsChosen(
     const password_manager::CredentialInfo& credential) {
   callback.Run(credential);
   if (credential.type !=
-          password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY &&
-      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
-          GetPrefs())) {
-    PromptUserToEnableAutosignin();
+          password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY) {
+    PromptUserToEnableAutosigninIfNecessary();
   }
 }
 
@@ -327,16 +325,13 @@ void ChromePasswordManagerClient::NotifyUserAutoSigninBlockedOnFirstRun(
 
 void ChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
     const autofill::PasswordForm& form) {
-  if (!password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
-          GetPrefs()) ||
-      !form_blocked_on_first_run_) {
+  if (!form_blocked_on_first_run_)
     return;
-  }
 
   if (form_blocked_on_first_run_->username_value == form.username_value &&
       form_blocked_on_first_run_->password_value == form.password_value &&
       form_blocked_on_first_run_->origin == form.origin) {
-    PromptUserToEnableAutosignin();
+    PromptUserToEnableAutosigninIfNecessary();
   }
   form_blocked_on_first_run_.reset();
 }
@@ -528,7 +523,14 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
   popup_controller_->Show(false /* display_password */);
 }
 
-void ChromePasswordManagerClient::PromptUserToEnableAutosignin() {
+void ChromePasswordManagerClient::PromptUserToEnableAutosigninIfNecessary() {
+  if (!password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          GetPrefs()) ||
+      !GetPrefs()->GetBoolean(
+          password_manager::prefs::kCredentialsEnableAutosignin) ||
+      IsOffTheRecord())
+    return;
+
 #if BUILDFLAG(ANDROID_JAVA_UI)
   // TODO(crbug.com/532876): pop up the dialog.
 #else

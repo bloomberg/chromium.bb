@@ -5,7 +5,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -14,6 +13,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/widget/widget.h"
@@ -111,6 +112,8 @@ class PasswordDialogViewTest : public InProcessBrowserTest {
       ScopedVector<autofill::PasswordForm> federated_credentials,
       const GURL& origin);
 
+  content::WebContents* SetupTabWithTestController(Browser* browser);
+
   TestManagePasswordsUIController* controller() const { return controller_; }
 
   ChromePasswordManagerClient* client() const {
@@ -126,27 +129,7 @@ class PasswordDialogViewTest : public InProcessBrowserTest {
 };
 
 void PasswordDialogViewTest::SetUpOnMainThread() {
-  // Open a new tab with modified ManagePasswordsUIController.
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* new_tab = content::WebContents::Create(
-      content::WebContents::CreateParams(tab->GetBrowserContext()));
-  ASSERT_TRUE(new_tab);
-
-  // ManagePasswordsUIController needs ChromePasswordManagerClient for logging.
-  // ChromePasswordManagerClient needs ChromeAutofillClient on creation.
-  autofill::ChromeAutofillClient::CreateForWebContents(new_tab);
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      new_tab,
-      autofill::ChromeAutofillClient::FromWebContents(new_tab));
-  ASSERT_TRUE(ChromePasswordManagerClient::FromWebContents(new_tab));
-  controller_ = new TestManagePasswordsUIController(new_tab);
-  browser()->tab_strip_model()->AppendWebContents(new_tab, true);
-
-  // Navigate to a Web URL.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), GURL("http://www.google.com")));
-  ASSERT_EQ(controller_, ManagePasswordsUIController::FromWebContents(new_tab));
+  SetupTabWithTestController(browser());
 }
 
 void PasswordDialogViewTest::SetupChooseCredentials(
@@ -158,6 +141,29 @@ void PasswordDialogViewTest::SetupChooseCredentials(
       base::Bind(&PasswordDialogViewTest::OnChooseCredential, this));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
             controller()->GetState());
+}
+
+content::WebContents* PasswordDialogViewTest::SetupTabWithTestController(
+    Browser* browser) {
+  // Open a new tab with modified ManagePasswordsUIController.
+  content::WebContents* tab =
+      browser->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* new_tab = content::WebContents::Create(
+      content::WebContents::CreateParams(tab->GetBrowserContext()));
+  EXPECT_TRUE(new_tab);
+
+  // ManagePasswordsUIController needs ChromePasswordManagerClient for logging.
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
+      new_tab, nullptr);
+  EXPECT_TRUE(ChromePasswordManagerClient::FromWebContents(new_tab));
+  controller_ = new TestManagePasswordsUIController(new_tab);
+  browser->tab_strip_model()->AppendWebContents(new_tab, true);
+
+  // Navigate to a Web URL.
+  EXPECT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser, GURL("http://www.google.com")));
+  EXPECT_EQ(controller_, ManagePasswordsUIController::FromWebContents(new_tab));
+  return new_tab;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
@@ -286,7 +292,80 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   controller()->ChooseCredential(
       form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
 
+  EXPECT_CALL(*controller(), OnDialogClosed());
   EXPECT_TRUE(controller()->current_autosignin_prompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
+                       PopupAccountChooserWithDisabledAutoSignin) {
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          browser()->profile()->GetPrefs()));
+  GURL origin("https://example.com");
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  autofill::PasswordForm form;
+  form.origin = origin;
+  form.display_name = base::ASCIIToUTF16("Peter");
+  form.username_value = base::ASCIIToUTF16("peter@pan.test");
+  local_credentials.push_back(new autofill::PasswordForm(form));
+
+  SetupChooseCredentials(std::move(local_credentials),
+                         ScopedVector<autofill::PasswordForm>(), origin);
+
+  EXPECT_TRUE(controller()->current_account_chooser());
+
+  // After picking a credential, we should pass it back to the caller via the
+  // callback, and pop up the autosignin prompt iff we should show it.
+  EXPECT_CALL(*this,
+              OnChooseCredential(Field(
+                  &password_manager::CredentialInfo::type,
+                  password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD)));
+  browser()->profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin, false);
+  controller()->ChooseCredential(
+      form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+
+  // The first run experience isn't shown because the setting is off.
+  EXPECT_FALSE(controller()->current_autosignin_prompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
+                       PopupAccountChooserInIncognito) {
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          browser()->profile()->GetPrefs()));
+  EXPECT_TRUE(
+      browser()->profile()->GetPrefs()->GetBoolean(
+          password_manager::prefs::kCredentialsEnableAutosignin));
+  GURL origin("https://example.com");
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  autofill::PasswordForm form;
+  form.origin = origin;
+  form.display_name = base::ASCIIToUTF16("Peter");
+  form.username_value = base::ASCIIToUTF16("peter@pan.test");
+  local_credentials.push_back(new autofill::PasswordForm(form));
+
+  Browser* incognito = CreateIncognitoBrowser();
+  content::WebContents* tab = SetupTabWithTestController(incognito);
+  ChromePasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(tab);
+  client->PromptUserToChooseCredentials(
+      std::move(local_credentials), ScopedVector<autofill::PasswordForm>(),
+      origin,
+      base::Bind(&PasswordDialogViewTest::OnChooseCredential, this));
+  EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
+            controller()->GetState());
+  EXPECT_TRUE(controller()->current_account_chooser());
+
+  EXPECT_CALL(*this,
+              OnChooseCredential(Field(
+                  &password_manager::CredentialInfo::type,
+                  password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD)));
+  controller()->ChooseCredential(
+      form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+
+  // The first run experience isn't shown because of Incognito.
+  EXPECT_FALSE(controller()->current_autosignin_prompt());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
@@ -335,15 +414,26 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   // Successful login with a distinct form after block will not prompt:
   blocked_form.reset(new autofill::PasswordForm(form));
   client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
-
   form.username_value = base::ASCIIToUTF16("notpeter@pan.test");
   client()->NotifySuccessfulLoginWithExistingPassword(form);
   ASSERT_FALSE(controller()->current_autosignin_prompt());
+
+  // Successful login with the same form after block will not prompt if auto
+  // sign-in is off:
+  browser()->profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin, false);
+  blocked_form.reset(new autofill::PasswordForm(form));
+  client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
+  client()->NotifySuccessfulLoginWithExistingPassword(form);
+  ASSERT_FALSE(controller()->current_autosignin_prompt());
+  browser()->profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin, true);
 
   // Successful login with the same form after block will prompt:
   blocked_form.reset(new autofill::PasswordForm(form));
   client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
   client()->NotifySuccessfulLoginWithExistingPassword(form);
+  EXPECT_CALL(*controller(), OnDialogClosed());
   ASSERT_TRUE(controller()->current_autosignin_prompt());
 }
 
