@@ -1910,6 +1910,7 @@
       'android/java/src/org/chromium/chrome/browser/spellchecker/SpellCheckerSessionBridge.java',
       'android/java/src/org/chromium/chrome/browser/superviseduser/SupervisedUserContentProvider.java',
       'android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java',
+      'android/java/src/org/chromium/chrome/browser/sync/SyncSessionsMetrics.java',
       'android/java/src/org/chromium/chrome/browser/tab/Tab.java',
       'android/java/src/org/chromium/chrome/browser/tab/TabWebContentsDelegateAndroid.java',
       'android/java/src/org/chromium/chrome/browser/tabmodel/SingleTabModel.java',
@@ -2956,10 +2957,12 @@
       'browser/sync/glue/synced_tab_delegate_android.h',
       'browser/sync/glue/synced_window_delegate_android.cc',
       'browser/sync/glue/synced_window_delegate_android.h',
-      'browser/sync/profile_sync_service_android.cc',
-      'browser/sync/profile_sync_service_android.h',
       'browser/sync/glue/synced_window_delegates_getter_android.cc',
       'browser/sync/glue/synced_window_delegates_getter_android.h',
+      'browser/sync/profile_sync_service_android.cc',
+      'browser/sync/profile_sync_service_android.h',
+      'browser/sync/sync_sessions_metrics_android.cc',
+      'browser/sync/sync_sessions_metrics_android.h',
     ],
     'chrome_browser_task_manager_sources': [
       # Stats collection for CAPS (uses old task manager):

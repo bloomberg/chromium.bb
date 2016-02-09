@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.sync.SyncSessionsMetrics;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -529,6 +530,8 @@ public class NewTabPage
                 tileTypes[i] = items[i].getTileType();
             }
             mMostVisitedSites.recordTileTypeMetrics(tileTypes);
+
+            SyncSessionsMetrics.recordYoungestForeignTabAgeOnNTP();
         }
     };
 

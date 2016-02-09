@@ -119,6 +119,7 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
 #include "chrome/browser/supervised_user/supervised_user_content_provider_android.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
+#include "chrome/browser/sync/sync_sessions_metrics_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_controller_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_result.h"
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
@@ -351,6 +352,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"StaticTabSceneLayer", chrome::android::RegisterStaticTabSceneLayer},
     {"SupervisedUserContentProvider", SupervisedUserContentProvider::Register},
     {"Sync", syncer::RegisterSyncJni},
+    {"SyncSessionsMetrics", SyncSessionsMetricsAndroid::Register},
     {"TabAndroid", TabAndroid::RegisterTabAndroid},
     {"TabContentManager", chrome::android::RegisterTabContentManager},
     {"TabListSceneLayer", RegisterTabListSceneLayer},
