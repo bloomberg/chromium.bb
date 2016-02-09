@@ -21,8 +21,10 @@ enum LibraryProcessType {
   PROCESS_BROWSER = 1,
   // Shared library is running in child process.
   PROCESS_CHILD = 2,
-  // Shared library is running in webview process.
+  // Shared library is running in the app that uses webview.
   PROCESS_WEBVIEW = 3,
+  // Shared library is running in child process as part of webview.
+  PROCESS_WEBVIEW_CHILD = 4,
 };
 
 // Record any pending renderer histogram value as a histogram.  Pending values

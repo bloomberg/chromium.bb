@@ -58,7 +58,8 @@ public abstract class AwBrowserProcess {
      */
     public static void configureChildProcessLauncher(String packageName, int extraBindFlags) {
         ChildProcessLauncher.setChildProcessCreationParams(
-                new ChildProcessLauncher.ChildProcessCreationParams(packageName, extraBindFlags));
+                new ChildProcessLauncher.ChildProcessCreationParams(packageName, extraBindFlags,
+                        LibraryProcessType.PROCESS_WEBVIEW_CHILD));
     }
 
     /**
