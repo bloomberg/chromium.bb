@@ -144,7 +144,7 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimation
         return nullptr;
     const KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
     Vector<RefPtr<Keyframe>> normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
-    RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>> keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
 
     for (const auto& keyframe : normalizedKeyframes) {
         // Ignore CSS Transitions

@@ -82,7 +82,7 @@ static PassRefPtr<TypeBuilder::LayerTree::ScrollRect> buildScrollRect(const WebR
 
 static PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect>> buildScrollRectsForLayer(GraphicsLayer* graphicsLayer, bool reportWheelScrollers)
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > scrollRects = TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect>> scrollRects = TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect>::create();
     WebLayer* webLayer = graphicsLayer->platformLayer();
     for (size_t i = 0; i < webLayer->nonFastScrollableRegion().size(); ++i) {
         scrollRects->addItem(buildScrollRect(webLayer->nonFastScrollableRegion()[i], TypeBuilder::LayerTree::ScrollRect::Type::RepaintsOnScroll));
@@ -123,7 +123,7 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
     if (!transform.isIdentity()) {
         TransformationMatrix::FloatMatrix4 flattenedMatrix;
         transform.toColumnMajorFloatArray(flattenedMatrix);
-        RefPtr<TypeBuilder::Array<double> > transformArray = TypeBuilder::Array<double>::create();
+        RefPtr<TypeBuilder::Array<double>> transformArray = TypeBuilder::Array<double>::create();
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(flattenedMatrix); ++i)
             transformArray->addItem(flattenedMatrix[i]);
         layerObject->setTransform(transformArray);
@@ -202,14 +202,14 @@ void InspectorLayerTreeAgent::didPaint(LayoutObject*, const GraphicsLayer* graph
     frontend()->layerPainted(idForLayer(graphicsLayer), domRect.release());
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree()
+PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer>> InspectorLayerTreeAgent::buildLayerTree()
 {
     PaintLayerCompositor* compositor = paintLayerCompositor();
     if (!compositor || !compositor->inCompositingMode())
         return nullptr;
 
     LayerIdToNodeIdMap layerIdToNodeIdMap;
-    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer>> layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
     buildLayerIdToNodeIdMap(compositor->rootLayer(), layerIdToNodeIdMap);
     int scrollingLayerId = m_inspectedFrames->root()->view()->layerForScrolling()->platformLayer()->id();
     bool haveBlockingWheelEventHandlers = m_inspectedFrames->root()->chromeClient().eventListenerProperties(WebEventListenerClass::MouseWheel) == WebEventListenerProperties::Blocking;
@@ -301,7 +301,7 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
     return result;
 }
 
-void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const String& layerId, RefPtr<TypeBuilder::Array<String> >& reasonStrings)
+void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const String& layerId, RefPtr<TypeBuilder::Array<String>>& reasonStrings)
 {
     const GraphicsLayer* graphicsLayer = layerById(errorString, layerId);
     if (!graphicsLayer)
@@ -346,7 +346,7 @@ void InspectorLayerTreeAgent::loadSnapshot(ErrorString* errorString, const RefPt
         *errorString = "Invalid argument, no tiles provided";
         return;
     }
-    Vector<RefPtr<PictureSnapshot::TilePictureStream> > decodedTiles;
+    Vector<RefPtr<PictureSnapshot::TilePictureStream>> decodedTiles;
     decodedTiles.grow(tiles->length());
     for (size_t i = 0; i < tiles->length(); ++i) {
         RefPtr<JSONObject> item;
@@ -408,7 +408,7 @@ void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const Str
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    OwnPtr<Vector<char> > base64Data = snapshot->replay(fromStep ? *fromStep : 0, toStep ? *toStep : 0, scale ? *scale : 1.0);
+    OwnPtr<Vector<char>> base64Data = snapshot->replay(fromStep ? *fromStep : 0, toStep ? *toStep : 0, scale ? *scale : 1.0);
     if (!base64Data) {
         *errorString = "Image encoding failed";
         return;
@@ -430,7 +430,7 @@ static bool parseRect(const JSONObject& object, FloatRect* rect)
     return true;
 }
 
-void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const int* minRepeatCount, const double* minDuration, const RefPtr<JSONObject>* clipRect, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >& outTimings)
+void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const int* minRepeatCount, const double* minDuration, const RefPtr<JSONObject>* clipRect, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double>>>& outTimings)
 {
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
@@ -441,17 +441,17 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
         return;
     }
     OwnPtr<PictureSnapshot::Timings> timings = snapshot->profile(minRepeatCount ? *minRepeatCount : 1, minDuration ? *minDuration : 0, clipRect ? &rect : 0);
-    outTimings = TypeBuilder::Array<TypeBuilder::Array<double> >::create();
+    outTimings = TypeBuilder::Array<TypeBuilder::Array<double>>::create();
     for (size_t i = 0; i < timings->size(); ++i) {
         const Vector<double>& row = (*timings)[i];
-        RefPtr<TypeBuilder::Array<double> > outRow = TypeBuilder::Array<double>::create();
+        RefPtr<TypeBuilder::Array<double>> outRow = TypeBuilder::Array<double>::create();
         for (size_t j = 0; j < row.size(); ++j)
             outRow->addItem(row[j]);
         outTimings->addItem(outRow.release());
     }
 }
 
-void InspectorLayerTreeAgent::snapshotCommandLog(ErrorString* errorString, const String& snapshotId, RefPtr<TypeBuilder::Array<JSONObject> >& commandLog)
+void InspectorLayerTreeAgent::snapshotCommandLog(ErrorString* errorString, const String& snapshotId, RefPtr<TypeBuilder::Array<JSONObject>>& commandLog)
 {
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)

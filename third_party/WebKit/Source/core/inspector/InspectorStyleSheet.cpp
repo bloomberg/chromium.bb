@@ -783,8 +783,8 @@ void InspectorStyle::populateAllProperties(WillBeHeapVector<CSSPropertySourceDat
 
 PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties()
 {
-    RefPtr<Array<TypeBuilder::CSS::CSSProperty> > propertiesObject = Array<TypeBuilder::CSS::CSSProperty>::create();
-    RefPtr<Array<TypeBuilder::CSS::ShorthandEntry> > shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
+    RefPtr<Array<TypeBuilder::CSS::CSSProperty>> propertiesObject = Array<TypeBuilder::CSS::CSSProperty>::create();
+    RefPtr<Array<TypeBuilder::CSS::ShorthandEntry>> shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
     HashSet<String> foundShorthands;
 
     WillBeHeapVector<CSSPropertySourceData> properties;

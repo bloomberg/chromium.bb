@@ -163,7 +163,7 @@ private:
     uint32_t m_arrayLimit;
     v8::Isolate* m_isolate;
     StringBuilder m_builder;
-    Vector<v8::Local<v8::Array> > m_visitedArrays;
+    Vector<v8::Local<v8::Array>> m_visitedArrays;
     v8::TryCatch m_tryCatch;
 };
 

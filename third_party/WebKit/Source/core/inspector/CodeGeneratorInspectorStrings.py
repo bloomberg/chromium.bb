@@ -596,12 +596,12 @@ public:
         ArrayItemHelper<T>::Traits::pushRaw(this->openAccessors(), value);
     }
 
-    static PassRefPtr<Array<T> > create()
+    static PassRefPtr<Array<T>> create()
     {
         return adoptRef(new Array<T>());
     }
 
-    static PassRefPtr<Array<T> > runtimeCast(PassRefPtr<JSONValue> value)
+    static PassRefPtr<Array<T>> runtimeCast(PassRefPtr<JSONValue> value)
     {
         RefPtr<JSONArray> array;
         bool castRes = value->asArray(&array);
@@ -613,7 +613,7 @@ public:
         return static_cast<Array<T>*>(static_cast<JSONArrayBase*>(array.get()));
     }
 
-    void concat(PassRefPtr<Array<T> > array)
+    void concat(PassRefPtr<Array<T>> array)
     {
         return ArrayItemHelper<T>::Traits::concat(this->openAccessors(), array->openAccessors());
     }
@@ -771,9 +771,9 @@ struct ArrayItemHelper<JSONArray> {
 };
 
 template<typename T>
-struct ArrayItemHelper<TypeBuilder::Array<T> > {
+struct ArrayItemHelper<TypeBuilder::Array<T>> {
     struct Traits {
-        static void pushRefPtr(JSONArray* array, PassRefPtr<TypeBuilder::Array<T> > value)
+        static void pushRefPtr(JSONArray* array, PassRefPtr<TypeBuilder::Array<T>> value)
         {
             array->pushValue(value);
         }

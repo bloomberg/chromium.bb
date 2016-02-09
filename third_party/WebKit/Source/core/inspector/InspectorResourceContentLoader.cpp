@@ -123,7 +123,7 @@ void InspectorResourceContentLoader::start()
             }
         }
 
-        WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> > styleSheets;
+        WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>> styleSheets;
         InspectorCSSAgent::collectAllDocumentStyleSheets(document, styleSheets);
         for (CSSStyleSheet* styleSheet : styleSheets) {
             if (styleSheet->isInline() || !styleSheet->contents()->loadCompleted())

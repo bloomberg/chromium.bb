@@ -78,7 +78,7 @@ public:
     void reset();
 
 private:
-    WillBeHeapVector<RefPtrWillBeMember<Action> > m_history;
+    WillBeHeapVector<RefPtrWillBeMember<Action>> m_history;
     size_t m_afterLastActionIndex;
 };
 

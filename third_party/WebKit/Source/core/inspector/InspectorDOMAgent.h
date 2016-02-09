@@ -112,7 +112,7 @@ public:
     void disable(ErrorString*) override;
     void restore() override;
 
-    WillBeHeapVector<RawPtrWillBeMember<Document> > documents();
+    WillBeHeapVector<RawPtrWillBeMember<Document>> documents();
     void reset();
 
     // Methods called from the frontend for DOM nodes inspection.
@@ -168,7 +168,7 @@ public:
     void willModifyDOMAttr(Element*, const AtomicString& oldValue, const AtomicString& newValue);
     void didModifyDOMAttr(Element*, const QualifiedName&, const AtomicString& value);
     void didRemoveDOMAttr(Element*, const QualifiedName&);
-    void styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements);
+    void styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element>>& elements);
     void characterDataModified(CharacterData*);
     void didInvalidateStyleAttr(Node*);
     void didPushShadowRoot(Element* host, ShadowRoot*);
@@ -228,9 +228,9 @@ private:
     void invalidateFrameOwnerElement(LocalFrame*);
 
     PassRefPtr<TypeBuilder::DOM::Node> buildObjectForNode(Node*, int depth, NodeToIdMap*);
-    PassRefPtr<TypeBuilder::Array<String> > buildArrayForElementAttributes(Element*);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
+    PassRefPtr<TypeBuilder::Array<String>> buildArrayForElementAttributes(Element*);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
 
     Node* nodeForPath(const String& path);
@@ -251,15 +251,15 @@ private:
     RawPtrWillBeMember<DOMListener> m_domListener;
     OwnPtrWillBeMember<NodeToIdMap> m_documentNodeToIdMap;
     // Owns node mappings for dangling nodes.
-    WillBeHeapVector<OwnPtrWillBeMember<NodeToIdMap> > m_danglingNodeToIdMaps;
-    WillBeHeapHashMap<int, RawPtrWillBeMember<Node> > m_idToNode;
-    WillBeHeapHashMap<int, RawPtrWillBeMember<NodeToIdMap> > m_idToNodesMap;
+    WillBeHeapVector<OwnPtrWillBeMember<NodeToIdMap>> m_danglingNodeToIdMaps;
+    WillBeHeapHashMap<int, RawPtrWillBeMember<Node>> m_idToNode;
+    WillBeHeapHashMap<int, RawPtrWillBeMember<NodeToIdMap>> m_idToNodesMap;
     HashSet<int> m_childrenRequested;
     HashSet<int> m_distributedNodesRequested;
     HashMap<int, int> m_cachedChildCount;
     int m_lastNodeId;
     RefPtrWillBeMember<Document> m_document;
-    typedef WillBeHeapHashMap<String, WillBeHeapVector<RefPtrWillBeMember<Node> > > SearchResults;
+    typedef WillBeHeapHashMap<String, WillBeHeapVector<RefPtrWillBeMember<Node>>> SearchResults;
     SearchResults m_searchResults;
     OwnPtrWillBeMember<InspectorRevalidateDOMTask> m_revalidateTask;
     OwnPtrWillBeMember<InspectorHistory> m_history;

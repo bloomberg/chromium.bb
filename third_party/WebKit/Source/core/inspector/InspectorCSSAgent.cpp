@@ -676,7 +676,7 @@ void InspectorCSSAgent::wasEnabled()
     }
 
     m_instrumentingAgents->setInspectorCSSAgent(this);
-    WillBeHeapVector<RawPtrWillBeMember<Document> > documents = m_domAgent->documents();
+    WillBeHeapVector<RawPtrWillBeMember<Document>> documents = m_domAgent->documents();
     for (Document* document : documents)
         updateActiveStyleSheets(document, InitialFrontendLoad);
 }
@@ -715,24 +715,24 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 
 void InspectorCSSAgent::updateActiveStyleSheets(Document* document, StyleSheetsUpdateType styleSheetsUpdateType)
 {
-    WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> > newSheetsVector;
+    WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>> newSheetsVector;
     InspectorCSSAgent::collectAllDocumentStyleSheets(document, newSheetsVector);
     setActiveStyleSheets(document, newSheetsVector, styleSheetsUpdateType);
 }
 
-void InspectorCSSAgent::setActiveStyleSheets(Document* document, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >& allSheetsVector, StyleSheetsUpdateType styleSheetsUpdateType)
+void InspectorCSSAgent::setActiveStyleSheets(Document* document, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>& allSheetsVector, StyleSheetsUpdateType styleSheetsUpdateType)
 {
     bool isInitialFrontendLoad = styleSheetsUpdateType == InitialFrontendLoad;
 
-    WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet> >* documentCSSStyleSheets = m_documentToCSSStyleSheets.get(document);
+    WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet>>* documentCSSStyleSheets = m_documentToCSSStyleSheets.get(document);
     if (!documentCSSStyleSheets) {
-        documentCSSStyleSheets = new WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet> >();
-        OwnPtrWillBeRawPtr<WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet> > > documentCSSStyleSheetsPtr = adoptPtrWillBeNoop(documentCSSStyleSheets);
+        documentCSSStyleSheets = new WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet>>();
+        OwnPtrWillBeRawPtr<WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet>>> documentCSSStyleSheetsPtr = adoptPtrWillBeNoop(documentCSSStyleSheets);
         m_documentToCSSStyleSheets.set(document, documentCSSStyleSheetsPtr.release());
     }
 
-    WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet> > removedSheets(*documentCSSStyleSheets);
-    WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> > addedSheets;
+    WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet>> removedSheets(*documentCSSStyleSheets);
+    WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>> addedSheets;
     for (CSSStyleSheet* cssStyleSheet : allSheetsVector) {
         if (removedSheets.contains(cssStyleSheet)) {
             removedSheets.remove(cssStyleSheet);
@@ -772,7 +772,7 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const WillBeHea
 void InspectorCSSAgent::documentDetached(Document* document)
 {
     m_invalidatedDocuments.remove(document);
-    setActiveStyleSheets(document, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >(), ExistingFrontendRefresh);
+    setActiveStyleSheets(document, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>(), ExistingFrontendRefresh);
 }
 
 void InspectorCSSAgent::addEditedStyleSheet(const String& url, const String& content)
@@ -829,7 +829,7 @@ bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoTy
     }
 }
 
-void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> >& medias)
+void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>>& medias)
 {
     medias = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
     for (auto& style : m_idToInspectorStyleSheet) {
@@ -1005,7 +1005,7 @@ void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nod
     attributesStyle = attributes ? attributes.release() : nullptr;
 }
 
-void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >& style)
+void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty>>& style)
 {
     Node* node = m_domAgent->assertNode(errorString, nodeId);
     if (!node)
@@ -1356,7 +1356,7 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
     }
 
     const MediaQuerySet* queries = media->queries();
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queryVector = queries->queryVector();
+    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery>>& queryVector = queries->queryVector();
     LocalFrame* frame = nullptr;
     if (parentStyleSheet) {
         if (Document* document = parentStyleSheet->ownerDocument())
@@ -1365,13 +1365,13 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
     OwnPtrWillBeRawPtr<MediaQueryEvaluator> mediaEvaluator = adoptPtrWillBeNoop(new MediaQueryEvaluator(frame));
 
     InspectorStyleSheet* inspectorStyleSheet = parentStyleSheet ? m_cssStyleSheetToInspectorStyleSheet.get(parentStyleSheet) : nullptr;
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::MediaQuery> > mediaListArray = TypeBuilder::Array<TypeBuilder::CSS::MediaQuery>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::MediaQuery>> mediaListArray = TypeBuilder::Array<TypeBuilder::CSS::MediaQuery>::create();
     RefPtrWillBeRawPtr<MediaValues> mediaValues = MediaValues::createDynamicIfFrameExists(frame);
     bool hasMediaQueryItems = false;
     for (size_t i = 0; i < queryVector.size(); ++i) {
         MediaQuery* query = queryVector.at(i).get();
         const ExpressionHeapVector& expressions = query->expressions();
-        RefPtr<TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression> > expressionArray = TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression>::create();
+        RefPtr<TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression>> expressionArray = TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression>::create();
         bool hasExpressionItems = false;
         for (size_t j = 0; j < expressions.size(); ++j) {
             MediaQueryExp* mediaQueryExp = expressions.at(j).get();
@@ -1476,11 +1476,11 @@ void InspectorCSSAgent::collectMediaQueriesFromRule(CSSRule* rule, TypeBuilder::
         mediaArray->addItem(buildMediaObject(mediaList, isMediaRule ? MediaListSourceMediaRule : MediaListSourceImportRule, sourceURL, parentStyleSheet));
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::buildMediaListChain(CSSRule* rule)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>> InspectorCSSAgent::buildMediaListChain(CSSRule* rule)
 {
     if (!rule)
         return nullptr;
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > mediaArray = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>> mediaArray = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
     CSSRule* parentRule = rule;
     while (parentRule) {
         collectMediaQueriesFromRule(parentRule, mediaArray.get());
@@ -1531,7 +1531,7 @@ Element* InspectorCSSAgent::elementForId(ErrorString* errorString, int nodeId)
 }
 
 // static
-void InspectorCSSAgent::collectAllDocumentStyleSheets(Document* document, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >& result)
+void InspectorCSSAgent::collectAllDocumentStyleSheets(Document* document, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>& result)
 {
     const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> activeStyleSheets = document->styleEngine().activeStyleSheetsForInspector();
     for (const auto& style : activeStyleSheets) {
@@ -1541,7 +1541,7 @@ void InspectorCSSAgent::collectAllDocumentStyleSheets(Document* document, WillBe
 }
 
 // static
-void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >& result)
+void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>& result)
 {
     result.append(styleSheet);
     for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
@@ -1704,9 +1704,9 @@ static inline bool matchesPseudoElement(const CSSSelector* selector, PseudoId el
     return selectorPseudoId == elementPseudoId;
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::buildArrayForMatchedRuleList(CSSRuleList* ruleList, Element* element, PseudoId matchesForPseudoId)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>> InspectorCSSAgent::buildArrayForMatchedRuleList(CSSRuleList* ruleList, Element* element, PseudoId matchesForPseudoId)
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > result = TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>> result = TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>::create();
     if (!ruleList)
         return result.release();
 
@@ -1716,7 +1716,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::
         RefPtr<TypeBuilder::CSS::CSSRule> ruleObject = buildObjectForRule(rule);
         if (!ruleObject)
             continue;
-        RefPtr<TypeBuilder::Array<int> > matchingSelectors = TypeBuilder::Array<int>::create();
+        RefPtr<TypeBuilder::Array<int>> matchingSelectors = TypeBuilder::Array<int>::create();
         const CSSSelectorList& selectorList = rule->styleRule()->selectorList();
         long index = 0;
         PseudoId elementPseudoId = matchesForPseudoId ? matchesForPseudoId : element->pseudoId();
@@ -1813,7 +1813,7 @@ void InspectorCSSAgent::didReparseStyleSheet()
 
 void InspectorCSSAgent::resetPseudoStates()
 {
-    WillBeHeapHashSet<RawPtrWillBeMember<Document> > documentsToChange;
+    WillBeHeapHashSet<RawPtrWillBeMember<Document>> documentsToChange;
     for (auto& state : m_nodeIdToForcedPseudoState) {
         Element* element = toElement(m_domAgent->nodeForId(state.key));
         if (element && element->ownerDocument())

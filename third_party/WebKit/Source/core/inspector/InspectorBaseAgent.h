@@ -96,7 +96,7 @@ public:
 private:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     RefPtr<JSONObject> m_state;
-    WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent> > m_agents;
+    WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent>> m_agents;
 };
 
 template<typename AgentClass, typename FrontendClass>

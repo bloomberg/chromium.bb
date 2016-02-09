@@ -275,7 +275,7 @@ void InspectorDOMDebuggerAgent::didRemoveDOMNode(Node* node)
     if (m_domBreakpoints.size()) {
         // Remove subtree breakpoints.
         m_domBreakpoints.remove(node);
-        WillBeHeapVector<RawPtrWillBeMember<Node> > stack(1, InspectorDOMAgent::innerFirstChild(node));
+        WillBeHeapVector<RawPtrWillBeMember<Node>> stack(1, InspectorDOMAgent::innerFirstChild(node));
         do {
             Node* node = stack.last();
             stack.removeLast();

@@ -232,7 +232,7 @@ DOMPatchSupport::diff(const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldLis
         newMap[newIndex].second = oldIndex;
     }
 
-    typedef HashMap<String, Vector<size_t> > DiffTable;
+    typedef HashMap<String, Vector<size_t>> DiffTable;
     DiffTable newTable;
     DiffTable oldTable;
 
@@ -297,7 +297,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const WillBe
 
     // 1. First strip everything except for the nodes that retain. Collect pending merges.
     WillBeHeapHashMap<RawPtrWillBeMember<Digest>, RawPtrWillBeMember<Digest>> merges;
-    HashSet<size_t, WTF::IntHash<size_t>, WTF::UnsignedWithZeroKeyHashTraits<size_t> > usedNewOrdinals;
+    HashSet<size_t, WTF::IntHash<size_t>, WTF::UnsignedWithZeroKeyHashTraits<size_t>> usedNewOrdinals;
     for (size_t i = 0; i < oldList.size(); ++i) {
         if (oldMap[i].first) {
             if (usedNewOrdinals.add(oldMap[i].second).isNewEntry)
@@ -334,7 +334,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const WillBe
     }
 
     // Mark retained nodes as used, do not reuse node more than once.
-    HashSet<size_t, WTF::IntHash<size_t>, WTF::UnsignedWithZeroKeyHashTraits<size_t> >  usedOldOrdinals;
+    HashSet<size_t, WTF::IntHash<size_t>, WTF::UnsignedWithZeroKeyHashTraits<size_t>>  usedOldOrdinals;
     for (size_t i = 0; i < newList.size(); ++i) {
         if (!newMap[i].first)
             continue;

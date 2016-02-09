@@ -181,7 +181,7 @@ private:
 
     RefPtrWillBeMember<XHRReplayData> m_pendingXHRReplayData;
 
-    typedef HashMap<String, RefPtr<TypeBuilder::Network::Initiator> > FrameNavigationInitiatorMap;
+    typedef HashMap<String, RefPtr<TypeBuilder::Network::Initiator>> FrameNavigationInitiatorMap;
     FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
 
     // FIXME: InspectorResourceAgent should now be aware of style recalculation.

@@ -174,7 +174,7 @@ public:
 private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     Timer<InspectorRevalidateDOMTask> m_timer;
-    WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_styleAttrInvalidatedElements;
+    WillBeHeapHashSet<RefPtrWillBeMember<Element>> m_styleAttrInvalidatedElements;
 };
 
 InspectorRevalidateDOMTask::InspectorRevalidateDOMTask(InspectorDOMAgent* domAgent)
@@ -193,7 +193,7 @@ void InspectorRevalidateDOMTask::scheduleStyleAttrRevalidationFor(Element* eleme
 void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
 {
     // The timer is stopped on m_domAgent destruction, so this method will never be called after m_domAgent has been destroyed.
-    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     for (auto& attribute : m_styleAttrInvalidatedElements)
         elements.append(attribute.get());
     m_domAgent->styleAttributeInvalidated(elements);
@@ -296,9 +296,9 @@ void InspectorDOMAgent::restore()
     innerEnable();
 }
 
-WillBeHeapVector<RawPtrWillBeMember<Document> > InspectorDOMAgent::documents()
+WillBeHeapVector<RawPtrWillBeMember<Document>> InspectorDOMAgent::documents()
 {
-    WillBeHeapVector<RawPtrWillBeMember<Document> > result;
+    WillBeHeapVector<RawPtrWillBeMember<Document>> result;
     if (m_document) {
         for (LocalFrame* frame : *m_inspectedFrames) {
             if (Document* document = frame->document())
@@ -583,7 +583,7 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth)
         return;
     }
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = buildArrayForContainerChildren(node, depth, nodeMap);
+    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodeMap);
     frontend()->setChildNodes(nodeId, children.release());
 }
 
@@ -607,7 +607,7 @@ Node* InspectorDOMAgent::nodeForId(int id)
     if (!id)
         return nullptr;
 
-    WillBeHeapHashMap<int, RawPtrWillBeMember<Node> >::iterator it = m_idToNode.find(id);
+    WillBeHeapHashMap<int, RawPtrWillBeMember<Node>>::iterator it = m_idToNode.find(id);
     if (it != m_idToNode.end())
         return it->value;
     return nullptr;
@@ -649,7 +649,7 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
         *elementId = pushNodePathToFrontend(element.get());
 }
 
-void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int> >& result)
+void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int>>& result)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node || !node->isContainerNode())
@@ -683,7 +683,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush, NodeToIdMap* nod
         return result;
 
     Node* node = nodeToPush;
-    WillBeHeapVector<RawPtrWillBeMember<Node> > path;
+    WillBeHeapVector<RawPtrWillBeMember<Node>> path;
 
     while (true) {
         Node* parent = innerParentNode(node);
@@ -720,7 +720,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
     OwnPtrWillBeRawPtr<NodeToIdMap> newMap = adoptPtrWillBeNoop(new NodeToIdMap);
     NodeToIdMap* danglingMap = newMap.get();
     m_danglingNodeToIdMaps.append(newMap.release());
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
     children->addItem(buildObjectForNode(node, 0, danglingMap));
     frontend()->setChildNodes(0, children);
 
@@ -966,8 +966,8 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     if (endQuoteFound)
         attributeQuery = attributeQuery.left(attributeQuery.length() - 1);
 
-    WillBeHeapVector<RawPtrWillBeMember<Document> > docs = documents();
-    WillBeHeapListHashSet<RawPtrWillBeMember<Node> > resultCollector;
+    WillBeHeapVector<RawPtrWillBeMember<Document>> docs = documents();
+    WillBeHeapListHashSet<RawPtrWillBeMember<Node>> resultCollector;
 
     for (Document* document : docs) {
         Node* documentElement = document->documentElement();
@@ -1052,7 +1052,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     }
 
     *searchId = IdentifiersFactory::createIdentifier();
-    WillBeHeapVector<RefPtrWillBeMember<Node> >* resultsIt = &m_searchResults.add(*searchId, WillBeHeapVector<RefPtrWillBeMember<Node> >()).storedValue->value;
+    WillBeHeapVector<RefPtrWillBeMember<Node>>* resultsIt = &m_searchResults.add(*searchId, WillBeHeapVector<RefPtrWillBeMember<Node>>()).storedValue->value;
 
     for (auto& result : resultCollector)
         resultsIt->append(result);
@@ -1060,7 +1060,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     *resultCount = resultsIt->size();
 }
 
-void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String& searchId, int fromIndex, int toIndex, RefPtr<TypeBuilder::Array<int> >& nodeIds)
+void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String& searchId, int fromIndex, int toIndex, RefPtr<TypeBuilder::Array<int>>& nodeIds)
 {
     SearchResults::iterator it = m_searchResults.find(searchId);
     if (it == m_searchResults.end()) {
@@ -1432,7 +1432,7 @@ void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const 
     result = object;
 }
 
-void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<String> >& result)
+void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<String>>& result)
 {
     Element* element = assertElement(errorString, nodeId);
     if (!element)
@@ -1524,7 +1524,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
 
         ElementShadow* shadow = element->shadow();
         if (shadow) {
-            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > shadowRoots = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> shadowRoots = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
             for (ShadowRoot* root = &shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
                 shadowRoots->addItem(buildObjectForNode(root, 0, nodesMap));
             value->setShadowRoots(shadowRoots);
@@ -1548,7 +1548,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             if (InspectorDOMAgent::getPseudoElementType(element->pseudoId(), &pseudoType))
                 value->setPseudoType(pseudoType);
         } else {
-            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > pseudoElements = buildArrayForPseudoElements(element, nodesMap);
+            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> pseudoElements = buildArrayForPseudoElements(element, nodesMap);
             if (pseudoElements) {
                 value->setPseudoElements(pseudoElements.release());
                 forcePushChildren = true;
@@ -1585,7 +1585,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             m_cachedChildCount.set(id, nodeCount);
         if (forcePushChildren && !depth)
             depth = 1;
-        RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = buildArrayForContainerChildren(node, depth, nodesMap);
+        RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodesMap);
         if (children->length() > 0 || depth) // Push children along with shadow in any case.
             value->setChildren(children.release());
     }
@@ -1593,9 +1593,9 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
     return value.release();
 }
 
-PassRefPtr<TypeBuilder::Array<String> > InspectorDOMAgent::buildArrayForElementAttributes(Element* element)
+PassRefPtr<TypeBuilder::Array<String>> InspectorDOMAgent::buildArrayForElementAttributes(Element* element)
 {
-    RefPtr<TypeBuilder::Array<String> > attributesValue = TypeBuilder::Array<String>::create();
+    RefPtr<TypeBuilder::Array<String>> attributesValue = TypeBuilder::Array<String>::create();
     // Go through all attributes and serialize them.
     AttributeCollection attributes = element->attributes();
     for (auto& attribute : attributes) {
@@ -1606,9 +1606,9 @@ PassRefPtr<TypeBuilder::Array<String> > InspectorDOMAgent::buildArrayForElementA
     return attributesValue.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> InspectorDOMAgent::buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap)
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
     if (depth == 0) {
         // Special-case the only text child - pretend that container's children have been requested.
         Node* firstChild = container->firstChild();
@@ -1630,12 +1630,12 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::build
     return children.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
 {
     if (!element->pseudoElement(BEFORE) && !element->pseudoElement(AFTER))
         return nullptr;
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > pseudoElements = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> pseudoElements = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
     if (element->pseudoElement(BEFORE))
         pseudoElements->addItem(buildObjectForNode(element->pseudoElement(BEFORE), 0, nodesMap));
     if (element->pseudoElement(AFTER))
@@ -1845,9 +1845,9 @@ void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const QualifiedName& 
     frontend()->attributeRemoved(id, name.toString());
 }
 
-void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements)
+void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element>>& elements)
 {
-    RefPtr<TypeBuilder::Array<int> > nodeIds = TypeBuilder::Array<int>::create();
+    RefPtr<TypeBuilder::Array<int>> nodeIds = TypeBuilder::Array<int>::create();
     for (unsigned i = 0, size = elements.size(); i < size; ++i) {
         Element* element = elements.at(i);
         int id = boundNodeId(element);
@@ -2031,7 +2031,7 @@ void InspectorDOMAgent::pushNodeByPathToFrontend(ErrorString* errorString, const
         *errorString = "No node with given path found";
 }
 
-void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString, const RefPtr<JSONArray>& backendNodeIds, RefPtr<TypeBuilder::Array<int> >& result)
+void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString, const RefPtr<JSONArray>& backendNodeIds, RefPtr<TypeBuilder::Array<int>>& result)
 {
     result = TypeBuilder::Array<int>::create();
     for (const auto& backendNode : *backendNodeIds) {

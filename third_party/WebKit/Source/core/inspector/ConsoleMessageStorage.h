@@ -44,7 +44,7 @@ private:
     ConsoleMessageStorage();
 
     int m_expiredCount;
-    WillBeHeapDeque<RefPtrWillBeMember<ConsoleMessage> > m_messages;
+    WillBeHeapDeque<RefPtrWillBeMember<ConsoleMessage>> m_messages;
 };
 
 } // namespace blink

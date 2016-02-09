@@ -343,10 +343,6 @@ class RawTypes(object):
             return TypeModel.Array
 
 
-def replace_right_shift(input_str):
-    return input_str.replace(">>", "> >")
-
-
 class CommandReturnPassModel:
     class ByReference:
         def __init__(self, var_type, set_condition):
@@ -431,10 +427,10 @@ class TypeModel:
                 set_condition = "%s"
             else:
                 set_condition = None
-            return CommandReturnPassModel.ByReference(replace_right_shift("RefPtr<%s>" % self.class_name), set_condition)
+            return CommandReturnPassModel.ByReference("RefPtr<%s>" % self.class_name, set_condition)
 
         def get_input_param_type_text(self):
-            return replace_right_shift("PassRefPtr<%s>" % self.class_name)
+            return "PassRefPtr<%s>" % self.class_name
 
         @staticmethod
         def get_event_setter_expression_pattern():
@@ -1303,7 +1299,7 @@ class TypeBindings:
 
                     @classmethod
                     def get_array_item_c_type_text(cls):
-                        return replace_right_shift("TypeBuilder::Array<%s>" % cls.resolve_data_.item_type_binding.get_array_item_c_type_text())
+                        return "TypeBuilder::Array<%s>" % cls.resolve_data_.item_type_binding.get_array_item_c_type_text()
 
                     @staticmethod
                     def get_setter_value_expression_pattern():

@@ -85,7 +85,7 @@ public:
     void snapshotCommandLog(ErrorString*, const String& snapshotId, RefPtr<TypeBuilder::Array<JSONObject>>&) override;
 
     // Called by other agents.
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree();
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer>> buildLayerTree();
 
 private:
     static unsigned s_lastSnapshotId;
@@ -106,7 +106,7 @@ private:
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     Vector<int, 2> m_pageOverlayLayerIds;
 
-    typedef HashMap<String, RefPtr<PictureSnapshot> > SnapshotById;
+    typedef HashMap<String, RefPtr<PictureSnapshot>> SnapshotById;
     SnapshotById m_snapshotById;
 };
 
