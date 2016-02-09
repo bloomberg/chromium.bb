@@ -52,7 +52,8 @@ static struct sigaction wl_shm_old_sigbus_action;
 
 struct wl_shm_pool {
 	struct wl_resource *resource;
-	int refcount;
+	int internal_refcount;
+	int external_refcount;
 	char *data;
 	int32_t size;
 };
@@ -73,10 +74,14 @@ struct wl_shm_sigbus_data {
 };
 
 static void
-shm_pool_unref(struct wl_shm_pool *pool)
+shm_pool_unref(struct wl_shm_pool *pool, bool external)
 {
-	pool->refcount--;
-	if (pool->refcount)
+	if (external)
+		pool->external_refcount--;
+	else
+		pool->internal_refcount--;
+
+	if (pool->internal_refcount + pool->external_refcount)
 		return;
 
 	munmap(pool->data, pool->size);
@@ -89,7 +94,7 @@ destroy_buffer(struct wl_resource *resource)
 	struct wl_shm_buffer *buffer = wl_resource_get_user_data(resource);
 
 	if (buffer->pool)
-		shm_pool_unref(buffer->pool);
+		shm_pool_unref(buffer->pool, false);
 	free(buffer);
 }
 
@@ -162,13 +167,13 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	buffer->stride = stride;
 	buffer->offset = offset;
 	buffer->pool = pool;
-	pool->refcount++;
+	pool->internal_refcount++;
 
 	buffer->resource =
 		wl_resource_create(client, &wl_buffer_interface, 1, id);
 	if (buffer->resource == NULL) {
 		wl_client_post_no_memory(client);
-		shm_pool_unref(pool);
+		shm_pool_unref(pool, false);
 		free(buffer);
 		return;
 	}
@@ -183,7 +188,7 @@ destroy_pool(struct wl_resource *resource)
 {
 	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
 
-	shm_pool_unref(pool);
+	shm_pool_unref(pool, false);
 }
 
 static void
@@ -243,7 +248,8 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 		goto err_close;
 	}
 
-	pool->refcount = 1;
+	pool->internal_refcount = 1;
+	pool->external_refcount = 0;
 	pool->size = size;
 	pool->data = mmap(NULL, size,
 			  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -396,9 +402,10 @@ wl_shm_buffer_get_height(struct wl_shm_buffer *buffer)
 WL_EXPORT struct wl_shm_pool *
 wl_shm_buffer_ref_pool(struct wl_shm_buffer *buffer)
 {
-	assert(buffer->pool->refcount);
+	assert(buffer->pool->internal_refcount +
+	       buffer->pool->external_refcount);
 
-	buffer->pool->refcount++;
+	buffer->pool->external_refcount++;
 	return buffer->pool;
 }
 
@@ -418,7 +425,7 @@ wl_shm_buffer_ref_pool(struct wl_shm_buffer *buffer)
 WL_EXPORT void
 wl_shm_pool_unref(struct wl_shm_pool *pool)
 {
-	shm_pool_unref(pool);
+	shm_pool_unref(pool, true);
 }
 
 static void
