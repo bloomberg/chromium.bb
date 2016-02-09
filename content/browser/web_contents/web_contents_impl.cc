@@ -4281,7 +4281,7 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
       return;
     }
 
-    if (GetBrowserPluginGuest()) {
+    if (this != source_web_contents && GetBrowserPluginGuest()) {
       // We create a swapped out RenderView or RenderFrameProxyHost for the
       // embedder in the guest's render process but we intentionally do not
       // expose the embedder's opener chain to it.
