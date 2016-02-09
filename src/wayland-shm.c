@@ -387,6 +387,11 @@ wl_shm_buffer_get_data(struct wl_shm_buffer *buffer)
 	if (!buffer->pool)
 		return NULL;
 
+	if (buffer->pool->external_refcount &&
+	    (buffer->pool->size != buffer->pool->new_size))
+		wl_log("Buffer address requested when its parent pool "
+		       "has an external reference and a deferred resize "
+		       "pending.\n");
 	return buffer->pool->data + buffer->offset;
 }
 
