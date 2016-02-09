@@ -2339,6 +2339,7 @@ bool WebViewImpl::confirmComposition(ConfirmCompositionBehavior selectionBehavio
 
 bool WebViewImpl::confirmComposition(const WebString& text)
 {
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
     return confirmComposition(text, DoNotKeepSelection);
 }
 

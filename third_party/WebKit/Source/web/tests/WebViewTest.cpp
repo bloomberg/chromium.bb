@@ -3233,4 +3233,19 @@ TEST_F(WebViewTest, WebSubstringUtil)
 }
 #endif
 
+TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_password.html"));
+    MockAutofillClient client;
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_password.html", true);
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+    frame->setAutofillClient(&client);
+    webView->setInitialFocus(false);
+
+    EXPECT_TRUE(webView->confirmComposition(WebString::fromUTF8(std::string("hello").c_str())));
+    EXPECT_EQ(1, client.textChangesFromUserGesture());
+    EXPECT_FALSE(UserGestureIndicator::processingUserGesture());
+    frame->setAutofillClient(0);
+}
+
 } // namespace blink
