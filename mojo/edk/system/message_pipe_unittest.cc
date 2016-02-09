@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/test_utils.h"
+#include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/c/system/types.h"
 
@@ -18,7 +19,7 @@ const MojoHandleSignals kAllSignals = MOJO_HANDLE_SIGNAL_READABLE |
                                       MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 static const char kHelloWorld[] = "hello world";
 
-class MessagePipeTest : public testing::Test {
+class MessagePipeTest : public test::MojoTestBase {
  public:
   MessagePipeTest() {
     CHECK_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &pipe0_, &pipe1_));
@@ -404,6 +405,59 @@ TEST_F(MessagePipeTest, BasicWaiting) {
                      MOJO_DEADLINE_INDEFINITE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
+}
+
+const size_t kPingPongIterations = 50000;
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeHandlePingPong, MessagePipeTest, h) {
+  // Wait for the consumer to become readable.
+  for (size_t i = 0; i < kPingPongIterations; i++) {
+    MojoHandle handle;
+    ReadMessageWithHandles(h, &handle, 1);
+    WriteMessageWithHandles(h, "", &handle, 1);
+  }
+}
+
+// Test that sending a data pipe handle across processes doesn't leak resources.
+TEST_F(MessagePipeTest, DataPipeConsumerHandlePingPong) {
+  MojoHandle p, c;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p, &c));
+  MojoClose(p);
+
+  RUN_CHILD_ON_PIPE(DataPipeHandlePingPong, h)
+  for (size_t i = 0; i < kPingPongIterations; i++) {
+    WriteMessageWithHandles(h, "", &c, 1);
+    ReadMessageWithHandles(h, &c, 1);
+  }
+  END_CHILD()
+  MojoClose(c);
+}
+
+TEST_F(MessagePipeTest, DataPipeProducerHandlePingPong) {
+  MojoHandle p, c;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p, &c));
+  MojoClose(c);
+
+  RUN_CHILD_ON_PIPE(DataPipeHandlePingPong, h)
+    for (size_t i = 0; i < kPingPongIterations; i++) {
+      WriteMessageWithHandles(h, "", &p, 1);
+      ReadMessageWithHandles(h, &p, 1);
+    }
+  END_CHILD()
+  MojoClose(p);
+}
+
+TEST_F(MessagePipeTest, SharedBufferHandlePingPong) {
+  MojoHandle buffer;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateSharedBuffer(nullptr, 1, &buffer));
+
+  RUN_CHILD_ON_PIPE(DataPipeHandlePingPong, h)
+    for (size_t i = 0; i < kPingPongIterations; i++) {
+      WriteMessageWithHandles(h, "", &buffer, 1);
+      ReadMessageWithHandles(h, &buffer, 1);
+    }
+  END_CHILD()
+  MojoClose(buffer);
 }
 
 }  // namespace

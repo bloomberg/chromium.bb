@@ -27,7 +27,9 @@ const size_t kReadBufferSize = 4096;
 const size_t kMaxUnusedReadBufferCapacity = 256 * 1024;
 const size_t kMaxChannelMessageSize = 256 * 1024 * 1024;
 
-Channel::Message::Message(size_t payload_size, size_t num_handles) {
+Channel::Message::Message(size_t payload_size,
+                          size_t num_handles,
+                          Header::MessageType message_type) {
   size_ = payload_size + sizeof(Header);
 #if defined(OS_WIN)
   // On Windows we serialize platform handles directly into the message buffer.
@@ -45,7 +47,7 @@ Channel::Message::Message(size_t payload_size, size_t num_handles) {
   DCHECK_LE(num_handles, std::numeric_limits<uint16_t>::max());
   header_->num_handles = static_cast<uint16_t>(num_handles);
 
-  header_->padding = 0;
+  header_->message_type = message_type;
 
 #if defined(OS_WIN)
   if (num_handles > 0) {
@@ -342,7 +344,11 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
     }
 
     // We've got a complete message! Dispatch it and try another.
-    if (delegate_) {
+    if (header->message_type != Message::Header::MessageType::NORMAL) {
+      OnControlMessage(header->message_type, payload, payload_size,
+                       std::move(handles));
+      did_dispatch_message = true;
+    } else if (delegate_) {
       delegate_->OnChannelMessage(payload, payload_size, std::move(handles));
       did_dispatch_message = true;
     }

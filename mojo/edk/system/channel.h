@@ -30,20 +30,32 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
   // A message to be written to a channel.
   struct Message {
     struct Header {
+      enum class MessageType : uint16_t {
+        // A normal message.
+        NORMAL = 0,
+#if defined(OS_MACOSX)
+        // A control message containing handles to echo back.
+        HANDLES_SENT,
+        // A control message containing handles that can now be closed.
+        HANDLES_SENT_ACK,
+#endif
+      };
+
       // Message size in bytes, including the header.
       uint32_t num_bytes;
 
       // Number of attached handles.
       uint16_t num_handles;
 
-      // Zero
-      uint16_t padding;
+      MessageType message_type;
     };
 
     // Allocates and owns a buffer for message data with enough capacity for
     // |payload_size| bytes plus a header. Takes ownership of |handles|, which
     // may be null.
-    Message(size_t payload_size, size_t num_handles);
+    Message(size_t payload_size,
+            size_t num_handles,
+            Header::MessageType message_type = Header::MessageType::NORMAL);
 
     ~Message();
 
@@ -174,6 +186,11 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
       size_t num_handles,
       void** payload,
       size_t* payload_size) = 0;
+
+  virtual void OnControlMessage(Message::Header::MessageType message_type,
+                                const void* payload,
+                                size_t payload_size,
+                                ScopedPlatformHandleVectorPtr handles) {}
 
  private:
   friend class base::RefCountedThreadSafe<Channel>;

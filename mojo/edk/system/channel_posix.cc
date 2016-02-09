@@ -84,7 +84,12 @@ class ChannelPosix : public Channel,
       : Channel(delegate),
         self_(this),
         handle_(std::move(handle)),
-        io_task_runner_(io_task_runner) {
+        io_task_runner_(io_task_runner)
+#if defined(OS_MACOSX)
+        ,
+        handles_to_close_(new PlatformHandleVector)
+#endif
+  {
   }
 
   void Start() override {
@@ -184,6 +189,9 @@ class ChannelPosix : public Channel,
     read_watcher_.reset();
     write_watcher_.reset();
     handle_.reset();
+#if defined(OS_MACOSX)
+    handles_to_close_.reset();
+#endif
 
     // May destroy the |this| if it was the last reference.
     self_ = nullptr;
@@ -269,7 +277,33 @@ class ChannelPosix : public Channel,
         // TODO: Handle lots of handles.
         result = PlatformChannelSendmsgWithHandles(
             handle_.get(), &iov, 1, handles->data(), handles->size());
+#if defined(OS_MACOSX)
+        // There is a bug on OSX which makes it dangerous to close
+        // a file descriptor while it is in transit. So instead we
+        // store the file descriptor in a set and send a message to
+        // the recipient, which is queued AFTER the message that
+        // sent the FD. The recipient will reply to the message,
+        // letting us know that it is now safe to close the file
+        // descriptor. For more information, see:
+        // http://crbug.com/298276
+        std::vector<int> fds;
+        for (auto& handle : *handles)
+          fds.push_back(handle.handle);
+        {
+          base::AutoLock l(handles_to_close_lock_);
+          for (auto& handle : *handles)
+            handles_to_close_->push_back(handle);
+        }
+        MessagePtr fds_message(
+            new Channel::Message(sizeof(fds[0]) * fds.size(), 0,
+                                 Message::Header::MessageType::HANDLES_SENT));
+        memcpy(fds_message->mutable_payload(), fds.data(),
+               sizeof(fds[0]) * fds.size());
+        outgoing_messages_.emplace_back(std::move(fds_message), 0);
         handles->clear();
+#else
+        handles.reset();
+#endif  // defined(OS_MACOSX)
       } else {
         result = PlatformChannelWrite(handle_.get(), message_view.data(),
                                       message_view.data_num_bytes());
@@ -278,7 +312,7 @@ class ChannelPosix : public Channel,
       if (result < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
           return false;
-        outgoing_messages_.emplace_back(std::move(message_view));
+        outgoing_messages_.emplace_front(std::move(message_view));
         WaitForWriteOnIOThreadNoLock();
         return true;
       }
@@ -286,7 +320,7 @@ class ChannelPosix : public Channel,
       bytes_written = static_cast<size_t>(result);
     } while (bytes_written < message_view.data_num_bytes());
 
-    return true;
+    return FlushOutgoingMessagesNoLock();
   }
 
   bool FlushOutgoingMessagesNoLock() {
@@ -301,16 +335,80 @@ class ChannelPosix : public Channel,
       if (!outgoing_messages_.empty()) {
         // The message was requeued by WriteNoLock(), so we have to wait for
         // pipe to become writable again. Repopulate the message queue and exit.
-        DCHECK_EQ(outgoing_messages_.size(), 1u);
-        MessageView message_view = std::move(outgoing_messages_.front());
+        // If sending the message triggered any control messages, they may be
+        // in |outgoing_messages_| in addition to or instead of the message
+        // being sent.
         std::swap(messages, outgoing_messages_);
-        outgoing_messages_.push_front(std::move(message_view));
+        while (!messages.empty()) {
+          outgoing_messages_.push_front(std::move(messages.back()));
+          messages.pop_back();
+        }
         return true;
       }
     }
 
     return true;
   }
+
+#if defined(OS_MACOSX)
+  void OnControlMessage(Message::Header::MessageType message_type,
+                        const void* payload,
+                        size_t payload_size,
+                        ScopedPlatformHandleVectorPtr handles) override {
+    switch (message_type) {
+      case Message::Header::MessageType::HANDLES_SENT: {
+        MessagePtr message(new Channel::Message(
+            payload_size, 0, Message::Header::MessageType::HANDLES_SENT_ACK));
+        memcpy(message->mutable_payload(), payload, payload_size);
+        Write(std::move(message));
+        break;
+      }
+      case Message::Header::MessageType::HANDLES_SENT_ACK: {
+        const int* fds = reinterpret_cast<const int*>(payload);
+        size_t num_fds = payload_size / sizeof(*fds);
+        if (payload_size % sizeof(*fds) != 0 || !CloseHandles(fds, num_fds)) {
+          io_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(&ChannelPosix::OnError, this));
+        }
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+  }
+
+  // Closes handles referenced by |fds|. Returns false if |num_fds| is 0, or if
+  // |fds| does not match a sequence of handles in |handles_to_close_|.
+  bool CloseHandles(const int* fds, size_t num_fds) {
+    base::AutoLock l(handles_to_close_lock_);
+    if (!num_fds)
+      return false;
+
+    auto start =
+        std::find_if(handles_to_close_->begin(), handles_to_close_->end(),
+                     [&fds](const PlatformHandle& handle) {
+                       return handle.handle == fds[0];
+                     });
+    if (start == handles_to_close_->end())
+      return false;
+
+    auto it = start;
+    size_t i = 0;
+    // The FDs in the message should match a sequence of handles in
+    // |handles_to_close_|.
+    for (; i < num_fds && it != handles_to_close_->end(); i++, ++it) {
+      if (it->handle != fds[i])
+        return false;
+
+      it->CloseIfNecessary();
+    }
+    if (i != num_fds)
+      return false;
+
+    handles_to_close_->erase(start, it);
+    return true;
+  }
+#endif  // defined(OS_MACOSX)
 
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
@@ -329,6 +427,11 @@ class ChannelPosix : public Channel,
   bool pending_write_ = false;
   bool reject_writes_ = false;
   std::deque<MessageView> outgoing_messages_;
+
+#if defined(OS_MACOSX)
+  base::Lock handles_to_close_lock_;
+  ScopedPlatformHandleVectorPtr handles_to_close_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChannelPosix);
 };
