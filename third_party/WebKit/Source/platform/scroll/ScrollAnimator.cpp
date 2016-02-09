@@ -96,10 +96,9 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
     TRACE_EVENT0("blink", "ScrollAnimator::scroll");
 
     if (granularity == ScrollByPrecisePixel) {
-        if (hasRunningAnimation()) {
-            abortAnimation();
-            resetAnimationState();
-        }
+        // Cancel scroll animation because asked to instant scroll.
+        if (hasRunningAnimation())
+            cancelAnimation();
         return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
     }
 
@@ -110,7 +109,7 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
     FloatPoint targetPos = desiredTargetPosition();
     targetPos.moveBy(pixelDelta);
 
-    if (m_animationCurve) {
+    if (m_animationCurve && m_runState != RunState::WaitingToCancelOnCompositor) {
         if ((targetPos - m_targetOffset).isZero()) {
             // Report unused delta only if there is no animation running. See
             // comment below regarding scroll latching.
