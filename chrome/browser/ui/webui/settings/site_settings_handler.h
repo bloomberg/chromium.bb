@@ -19,8 +19,7 @@ class ListValue;
 namespace settings {
 
 // Chrome "ContentSettings" settings page UI handler.
-class SiteSettingsHandler
-     : public SettingsPageUIHandler, StorageInfoFetcher::Observer {
+class SiteSettingsHandler : public SettingsPageUIHandler {
  public:
   explicit SiteSettingsHandler(Profile* profile);
   ~SiteSettingsHandler() override;
@@ -28,9 +27,8 @@ class SiteSettingsHandler
   // SettingsPageUIHandler:
   void RegisterMessages() override;
 
-  // StorageInfoFetcher::Observer:
-  void OnGetUsageInfo(const storage::UsageInfoEntries& entries) override;
-  void OnUsageInfoCleared(storage::QuotaStatusCode code) override;
+  void OnGetUsageInfo(const storage::UsageInfoEntries& entries);
+  void OnUsageInfoCleared(storage::QuotaStatusCode code);
 
  private:
   // Asynchronously fetches the usage for a given origin. Replies back with
@@ -47,9 +45,6 @@ class SiteSettingsHandler
 
   // The origin for which to clear usage.
   std::string clearing_origin_;
-
-  // The helper object asynchronously fetching storage info.
-  scoped_refptr<StorageInfoFetcher> storage_info_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteSettingsHandler);
 };

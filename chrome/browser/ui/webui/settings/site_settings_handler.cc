@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -18,15 +17,9 @@ namespace settings {
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
     : profile_(profile) {
-  storage::QuotaManager* quota_manager =
-      content::BrowserContext::GetDefaultStoragePartition(
-          profile_)->GetQuotaManager();
-  storage_info_fetcher_ = new StorageInfoFetcher(quota_manager);
-  storage_info_fetcher_->AddObserver(this);
 }
 
 SiteSettingsHandler::~SiteSettingsHandler() {
-  storage_info_fetcher_->RemoveObserver(this);
 }
 
 void SiteSettingsHandler::RegisterMessages() {
@@ -52,6 +45,7 @@ void SiteSettingsHandler::OnGetUsageInfo(
          base::StringValue(entry.host),
          base::StringValue(ui::FormatBytes(entry.usage)),
          base::FundamentalValue(entry.type));
+      return;
     }
   }
 }
@@ -70,7 +64,11 @@ void SiteSettingsHandler::HandleFetchUsageTotal(
   std::string host;
   CHECK(args->GetString(0, &host));
   usage_host_ = host;
-  storage_info_fetcher_->FetchStorageInfo();
+
+  scoped_refptr<StorageInfoFetcher> storage_info_fetcher
+      = new StorageInfoFetcher(profile_);
+  storage_info_fetcher->FetchStorageInfo(
+      base::Bind(&SiteSettingsHandler::OnGetUsageInfo, base::Unretained(this)));
 }
 
 void SiteSettingsHandler::HandleClearUsage(
@@ -86,8 +84,13 @@ void SiteSettingsHandler::HandleClearUsage(
     clearing_origin_ = origin;
 
     // Start by clearing the storage data asynchronously.
-    storage_info_fetcher_->ClearStorage(
-        url.host(), static_cast<storage::StorageType>(type));
+    scoped_refptr<StorageInfoFetcher> storage_info_fetcher
+        = new StorageInfoFetcher(profile_);
+    storage_info_fetcher->ClearStorage(
+        url.host(),
+        static_cast<storage::StorageType>(type),
+        base::Bind(&SiteSettingsHandler::OnUsageInfoCleared,
+            base::Unretained(this)));
 
     // Also clear the *local* storage data.
     scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper =

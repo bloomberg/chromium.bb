@@ -8,36 +8,27 @@
 #include "base/memory/ref_counted.h"
 #include "storage/browser/quota/quota_manager.h"
 
+class Profile;
+
 // Asynchronously fetches the amount of storage used by websites.
 class StorageInfoFetcher :
     public base::RefCountedThreadSafe<StorageInfoFetcher> {
  public:
-  // Observer interface for monitoring StorageInfoFetcher.
-  class Observer {
-   public:
-    // Called when the storage has been calculated.
-    virtual void OnGetUsageInfo(const storage::UsageInfoEntries& entries) = 0;
+  using FetchCallback =
+      base::Callback<void(const storage::UsageInfoEntries&)>;
+  using ClearCallback =
+      base::Callback<void(storage::QuotaStatusCode code)>;
 
-    // Called when the storage has been cleared.
-    virtual void OnUsageInfoCleared(storage::QuotaStatusCode code) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
-  explicit StorageInfoFetcher(storage::QuotaManager* quota_manager);
+  explicit StorageInfoFetcher(Profile* profile);
 
   // Asynchronously fetches the StorageInfo.
-  void FetchStorageInfo();
+  void FetchStorageInfo(const FetchCallback& fetch_callback);
 
   // Asynchronously clears storage for the given host.
-  void ClearStorage(const std::string& host, storage::StorageType type);
-
-  // Called when usage has been cleared.
-  void OnUsageCleared(storage::QuotaStatusCode code);
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void ClearStorage(
+      const std::string& host,
+      storage::StorageType type,
+      const ClearCallback& clear_callback);
 
  private:
   virtual ~StorageInfoFetcher();
@@ -51,16 +42,28 @@ class StorageInfoFetcher :
   void OnGetUsageInfoInternal(const storage::UsageInfoEntries& entries);
 
   // Reports back to all observers that information is available.
-  void InvokeCallback();
+  void OnFetchCompleted();
 
-  // All clients observing this class.
-  base::ObserverList<Observer> observers_;
+  // Called when usage has been cleared.
+  void OnUsageClearedInternal(storage::QuotaStatusCode code);
+
+  // Reports back to all observers that storage has been deleted.
+  void OnClearCompleted(storage::QuotaStatusCode code);
 
   // The quota manager to use to calculate the storage usage.
   storage::QuotaManager* quota_manager_;
 
   // Hosts and their usage.
   storage::UsageInfoEntries entries_;
+
+  // The storage type to delete.
+  storage::StorageType type_to_delete_;
+
+  // The callback to use when fetching is complete.
+  FetchCallback fetch_callback_;
+
+  // The callback to use when storage has been cleared.
+  ClearCallback clear_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageInfoFetcher);
 };
