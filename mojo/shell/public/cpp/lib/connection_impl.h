@@ -65,8 +65,8 @@ class ConnectionImpl : public Connection, public ServiceProvider {
                                  const std::string& interface_name) override;
   const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
-  ServiceProvider* GetServiceProvider() override;
-  ServiceProvider* GetLocalServiceProvider() override;
+  ServiceProvider* GetRemoteInterfaces() override;
+  ServiceProvider* GetLocalInterfaces() override;
   void SetRemoteServiceProviderConnectionErrorHandler(
       const Closure& handler) override;
   bool GetRemoteApplicationID(uint32_t* remote_id) const override;

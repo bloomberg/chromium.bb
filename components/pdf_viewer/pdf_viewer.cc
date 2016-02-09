@@ -64,7 +64,7 @@ class PDFView : public mus::WindowTreeDelegate,
         root_(nullptr),
         frame_client_binding_(this),
         delete_callback_(delete_callback) {
-    connection->AddService(this);
+    connection->AddInterface(this);
   }
 
   void Close() {
@@ -287,7 +287,7 @@ class PDFViewerApplicationDelegate
 
   // mojo::ShellClient:
   bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddService<mus::mojom::WindowTreeClient>(this);
+    connection->AddInterface<mus::mojom::WindowTreeClient>(this);
     return true;
   }
 
@@ -356,7 +356,7 @@ class PDFViewer
   }
 
   bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddService(this);
+    connection->AddInterface(this);
     return true;
   }
 

@@ -29,8 +29,8 @@ void TestServiceApplication::Initialize(Shell* shell, const std::string& url,
 }
 
 bool TestServiceApplication::AcceptConnection(Connection* connection) {
-  connection->AddService<TestService>(this);
-  connection->AddService<TestTimeService>(this);
+  connection->AddInterface<TestService>(this);
+  connection->AddInterface<TestTimeService>(this);
   return true;
 }
 

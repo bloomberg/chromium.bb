@@ -56,7 +56,7 @@ class ConnectionValidator : public ApplicationLoader,
 
   // Overridden from ShellClient:
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService<Validator>(this);
+    connection->AddInterface<Validator>(this);
     return true;
   }
 
@@ -145,7 +145,7 @@ class ServiceApplication : public ShellClient,
     validator_->AddServiceCalled(connection->GetRemoteApplicationURL(),
                                  connection->GetConnectionURL(),
                                  Interface::Name_,
-                                 !connection->AddService<Interface>(this));
+                                 !connection->AddInterface<Interface>(this));
   }
 
   Shell* shell_;
@@ -169,7 +169,7 @@ void TestApplication::Initialize(Shell* shell, const std::string& url,
 }
 bool TestApplication::AcceptConnection(Connection* connection) {
   // TestApplications receive their Validator via the inbound connection.
-  connection->ConnectToService(&validator_);
+  connection->GetInterface(&validator_);
 
   connection1_ = shell_->Connect("test:service");
   connection1_->SetRemoteServiceProviderConnectionErrorHandler(

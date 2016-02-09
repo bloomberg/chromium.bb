@@ -94,11 +94,11 @@ const std::string& ConnectionImpl::GetRemoteApplicationURL() {
   return remote_url_;
 }
 
-ServiceProvider* ConnectionImpl::GetServiceProvider() {
+ServiceProvider* ConnectionImpl::GetRemoteInterfaces() {
   return remote_service_provider_.get();
 }
 
-ServiceProvider* ConnectionImpl::GetLocalServiceProvider() {
+ServiceProvider* ConnectionImpl::GetLocalInterfaces() {
   return this;
 }
 

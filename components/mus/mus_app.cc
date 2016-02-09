@@ -91,11 +91,11 @@ void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
 }
 
 bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
-  connection->AddService<Gpu>(this);
-  connection->AddService<mojom::DisplayManager>(this);
-  connection->AddService<mojom::WindowManagerFactoryService>(this);
-  connection->AddService<mojom::WindowTreeFactory>(this);
-  connection->AddService<WindowTreeHostFactory>(this);
+  connection->AddInterface<Gpu>(this);
+  connection->AddInterface<mojom::DisplayManager>(this);
+  connection->AddInterface<mojom::WindowManagerFactoryService>(this);
+  connection->AddInterface<mojom::WindowTreeFactory>(this);
+  connection->AddInterface<WindowTreeHostFactory>(this);
   return true;
 }
 

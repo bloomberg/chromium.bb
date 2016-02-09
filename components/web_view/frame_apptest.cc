@@ -354,8 +354,8 @@ class FrameTest : public mojo::test::ApplicationTestBase,
 
   // mojo::ShellClient implementation.
   bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddService<mus::mojom::WindowTreeClient>(this);
-    connection->AddService<mojom::FrameClient>(this);
+    connection->AddInterface<mus::mojom::WindowTreeClient>(this);
+    connection->AddInterface<mojom::FrameClient>(this);
     return true;
   }
 

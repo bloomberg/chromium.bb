@@ -171,7 +171,7 @@ void AndroidHandler::Initialize(Shell* shell,
                                 uint32_t id) {}
 
 bool AndroidHandler::AcceptConnection(Connection* connection) {
-  connection->AddService(&content_handler_factory_);
+  connection->AddInterface(&content_handler_factory_);
   return true;
 }
 

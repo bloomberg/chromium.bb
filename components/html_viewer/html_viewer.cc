@@ -25,7 +25,7 @@ void HTMLViewer::Initialize(mojo::Shell* shell, const std::string& url,
 }
 
 bool HTMLViewer::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService(this);
+  connection->AddInterface(this);
   return true;
 }
 

@@ -558,8 +558,8 @@ class HttpServerAppTest : public test::ApplicationTestBase {
 
     scoped_ptr<Connection> connection =
         shell()->Connect("mojo:network_service");
-    connection->ConnectToService(&network_service_);
-    connection->ConnectToService(&web_socket_factory_);
+    connection->GetInterface(&network_service_);
+    connection->GetInterface(&web_socket_factory_);
   }
 
   void CreateHttpServer(HttpServerDelegatePtr delegate,

@@ -593,7 +593,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
 
   // mojo::ShellClient implementation.
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService(client_factory_.get());
+    connection->AddInterface(client_factory_.get());
     return true;
   }
 

@@ -106,7 +106,7 @@ void CoreServicesApplicationDelegate::Initialize(mojo::Shell* shell,
 
 bool CoreServicesApplicationDelegate::AcceptConnection(
     mojo::Connection* connection) {
-  connection->AddService(this);
+  connection->AddInterface(this);
   return true;
 }
 

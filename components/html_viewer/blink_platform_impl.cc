@@ -80,11 +80,11 @@ BlinkPlatformImpl::BlinkPlatformImpl(
   if (shell) {
     scoped_ptr<mojo::Connection> connection =
         shell->Connect("mojo:network_service");
-    connection->ConnectToService(&web_socket_factory_);
-    connection->ConnectToService(&url_loader_factory_);
+    connection->GetInterface(&web_socket_factory_);
+    connection->GetInterface(&url_loader_factory_);
 
     mojo::CookieStorePtr cookie_store;
-    connection->ConnectToService(&cookie_store);
+    connection->GetInterface(&cookie_store);
     cookie_jar_.reset(new WebCookieJarImpl(std::move(cookie_store)));
 
     mojo::ClipboardPtr clipboard;

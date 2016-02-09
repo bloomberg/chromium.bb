@@ -22,8 +22,8 @@ TracingApp::~TracingApp() {
 }
 
 bool TracingApp::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<TraceCollector>(this);
-  connection->AddService<StartupPerformanceDataCollector>(this);
+  connection->AddInterface<TraceCollector>(this);
+  connection->AddInterface<StartupPerformanceDataCollector>(this);
 
   // If someone connects to us they may want to use the TraceCollector
   // interface and/or they may want to expose themselves to be traced. Attempt
@@ -31,7 +31,7 @@ bool TracingApp::AcceptConnection(mojo::Connection* connection) {
   // connecting to us wants to be traced. They can refuse the connection or
   // close the pipe if not.
   TraceProviderPtr provider_ptr;
-  connection->ConnectToService(&provider_ptr);
+  connection->GetInterface(&provider_ptr);
   if (tracing_active_) {
     TraceRecorderPtr recorder_ptr;
     recorder_impls_.push_back(

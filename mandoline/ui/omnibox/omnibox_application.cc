@@ -90,7 +90,7 @@ void OmniboxApplication::Initialize(mojo::Shell* shell, const std::string& url,
 }
 
 bool OmniboxApplication::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<Omnibox>(this);
+  connection->AddInterface<Omnibox>(this);
   return true;
 }
 
@@ -112,7 +112,7 @@ OmniboxImpl::OmniboxImpl(mojo::Shell* shell,
       root_(nullptr),
       edit_(nullptr),
       binding_(this, std::move(request)) {
-  connection->ConnectToService(&view_embedder_);
+  connection->GetInterface(&view_embedder_);
 }
 OmniboxImpl::~OmniboxImpl() {}
 

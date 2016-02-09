@@ -120,7 +120,7 @@ class TestApplicationLoader : public ApplicationLoader,
 
   // mojo::ShellClient implementation.
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService<TestService>(this);
+    connection->AddInterface<TestService>(this);
     last_requestor_url_ = GURL(connection->GetRemoteApplicationURL());
     return true;
   }
@@ -251,8 +251,8 @@ class TestAImpl : public TestA {
             InterfaceFactory<TestC>* factory)
       : test_context_(test_context), binding_(this, std::move(request)) {
     connection_ = app_impl->Connect(kTestBURLString);
-    connection_->AddService<TestC>(factory);
-    connection_->ConnectToService(&b_);
+    connection_->AddInterface<TestC>(factory);
+    connection_->GetInterface(&b_);
   }
 
   ~TestAImpl() override {
@@ -288,7 +288,7 @@ class TestBImpl : public TestB {
             TesterContext* test_context,
             InterfaceRequest<TestB> request)
       : test_context_(test_context), binding_(this, std::move(request)) {
-    connection->ConnectToService(&c_);
+    connection->GetInterface(&c_);
   }
 
   ~TestBImpl() override {
@@ -359,9 +359,9 @@ class Tester : public ShellClient,
     }
     // If we're coming from A, then add B, otherwise A.
     if (connection->GetRemoteApplicationURL() == kTestAURLString)
-      connection->AddService<TestB>(this);
+      connection->AddInterface<TestB>(this);
     else
-      connection->AddService<TestA>(this);
+      connection->AddInterface<TestA>(this);
     return true;
   }
 

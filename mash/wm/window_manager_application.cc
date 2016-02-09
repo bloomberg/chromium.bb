@@ -121,8 +121,8 @@ void WindowManagerApplication::Initialize(mojo::Shell* shell,
 }
 
 bool WindowManagerApplication::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<mash::wm::mojom::UserWindowController>(this);
-  connection->AddService<mus::mojom::AcceleratorRegistrar>(this);
+  connection->AddInterface<mash::wm::mojom::UserWindowController>(this);
+  connection->AddInterface<mus::mojom::AcceleratorRegistrar>(this);
   return true;
 }
 

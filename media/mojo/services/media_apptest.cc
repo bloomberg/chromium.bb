@@ -63,7 +63,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
     connection_->SetRemoteServiceProviderConnectionErrorHandler(
         base::Bind(&MediaAppTest::ConnectionClosed, base::Unretained(this)));
 
-    connection_->ConnectToService(&service_factory_);
+    connection_->GetInterface(&service_factory_);
     service_factory_->CreateCdm(mojo::GetProxy(&cdm_));
     service_factory_->CreateRenderer(mojo::GetProxy(&renderer_));
 

@@ -106,12 +106,12 @@ HTMLDocument::HTMLDocument(mojo::Shell* html_document_shell,
       frame_(nullptr),
       delete_callback_(delete_callback),
       factory_(factory) {
-  connection->AddService<web_view::mojom::FrameClient>(this);
-  connection->AddService<AxProvider>(this);
-  connection->AddService<mus::mojom::WindowTreeClient>(this);
-  connection->AddService<devtools_service::DevToolsAgent>(this);
+  connection->AddInterface<web_view::mojom::FrameClient>(this);
+  connection->AddInterface<AxProvider>(this);
+  connection->AddInterface<mus::mojom::WindowTreeClient>(this);
+  connection->AddInterface<devtools_service::DevToolsAgent>(this);
   if (IsTestInterfaceEnabled())
-    connection->AddService<TestHTMLViewer>(this);
+    connection->AddInterface<TestHTMLViewer>(this);
 
   resource_waiter_.reset(
       new DocumentResourceWaiter(global_state_, std::move(response), this));

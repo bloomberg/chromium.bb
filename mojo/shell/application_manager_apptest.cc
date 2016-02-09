@@ -41,7 +41,7 @@ class ApplicationManagerAppTestDelegate
   // mojo::ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService<CreateInstanceForHandleTest>(this);
+    connection->AddInterface<CreateInstanceForHandleTest>(this);
     return true;
   }
 
@@ -175,7 +175,7 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   mojo::shell::test::mojom::DriverPtr driver;
   scoped_ptr<Connection> connection =
       shell()->Connect("exe:application_manager_apptest_driver");
-  connection->ConnectToService(&driver);
+  connection->GetInterface(&driver);
 
   // 2. Wait for the target to connect to us. (via
   //    mojo:application_manager_apptests)

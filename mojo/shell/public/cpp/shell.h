@@ -50,9 +50,8 @@ class Shell {
   template <typename Interface>
   void ConnectToService(ConnectParams* params, InterfacePtr<Interface>* ptr) {
     scoped_ptr<Connection> connection = Connect(params);
-    if (!connection.get())
-      return;
-    connection->ConnectToService(ptr);
+    if (connection)
+      connection->GetInterface(ptr);
   }
   template <typename Interface>
   void ConnectToService(const std::string& url, InterfacePtr<Interface>* ptr) {

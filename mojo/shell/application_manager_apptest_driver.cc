@@ -111,7 +111,7 @@ class TargetApplicationDelegate : public mojo::ShellClient,
   }
 
   bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddService<Driver>(this);
+    connection->AddInterface<Driver>(this);
     return true;
   }
 

@@ -31,7 +31,7 @@ class TargetApplicationDelegate
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override {}
   bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddService<mojo::shell::test::TestNativeService>(this);
+    connection->AddInterface<mojo::shell::test::TestNativeService>(this);
     return true;
   }
 

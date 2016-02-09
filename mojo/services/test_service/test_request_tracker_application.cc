@@ -28,9 +28,9 @@ void TestRequestTrackerApplication::Initialize(Shell* shell,
 bool TestRequestTrackerApplication::AcceptConnection(Connection* connection) {
   // Every instance of the service and recorder shares the context.
   // Note, this app is single-threaded, so this is thread safe.
-  connection->AddService<TestTimeService>(this);
-  connection->AddService<TestRequestTracker>(this);
-  connection->AddService<TestTrackedRequestService>(this);
+  connection->AddInterface<TestTimeService>(this);
+  connection->AddInterface<TestRequestTracker>(this);
+  connection->AddInterface<TestTrackedRequestService>(this);
   return true;
 }
 

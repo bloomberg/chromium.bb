@@ -54,7 +54,7 @@ void TracingImpl::Initialize(Shell* shell, const std::string& url) {
   base::PlatformThread::SetName(url);
 
   connection_ = shell->Connect("mojo:tracing");
-  connection_->AddService(this);
+  connection_->AddInterface(this);
 
 #ifdef NDEBUG
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -32,8 +32,8 @@ class InterfaceBinder;
 // Or, if you have multiple factories implemented by the same type, explicitly
 // specify the interface to register the factory for:
 //
-//   connection->AddService<Foo>(&my_foo_and_bar_factory_);
-//   connection->AddService<Bar>(&my_foo_and_bar_factory_);
+//   connection->AddInterface<Foo>(&my_foo_and_bar_factory_);
+//   connection->AddInterface<Bar>(&my_foo_and_bar_factory_);
 //
 // The InterfaceFactory must outlive the Connection.
 //
@@ -68,7 +68,7 @@ class Connection {
   // Returns true if the service was exposed, false if capability filtering
   // from the shell prevented the service from being exposed.
   template <typename Interface>
-  bool AddService(InterfaceFactory<Interface>* factory) {
+  bool AddInterface(InterfaceFactory<Interface>* factory) {
     return SetInterfaceBinderForName(
         new internal::InterfaceFactoryBinder<Interface>(factory),
         Interface::Name_);
@@ -78,8 +78,8 @@ class Connection {
   // |ptr| can immediately be used to start sending requests to the remote
   // service.
   template <typename Interface>
-  void ConnectToService(InterfacePtr<Interface>* ptr) {
-    if (ServiceProvider* sp = GetServiceProvider()) {
+  void GetInterface(InterfacePtr<Interface>* ptr) {
+    if (ServiceProvider* sp = GetRemoteInterfaces()) {
       MessagePipe pipe;
       ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
       sp->ConnectToService(Interface::Name_, std::move(pipe.handle1));
@@ -104,11 +104,11 @@ class Connection {
   // Returns the raw proxy to the remote application's ServiceProvider
   // interface. Most applications will just use ConnectToService() instead.
   // Caller does not take ownership.
-  virtual ServiceProvider* GetServiceProvider() = 0;
+  virtual ServiceProvider* GetRemoteInterfaces() = 0;
 
   // Returns the local application's ServiceProvider interface. The return
   // value is owned by this connection.
-  virtual ServiceProvider* GetLocalServiceProvider() = 0;
+  virtual ServiceProvider* GetLocalInterfaces() = 0;
 
   // Register a handler to receive an error notification on the pipe to the
   // remote application's service provider.

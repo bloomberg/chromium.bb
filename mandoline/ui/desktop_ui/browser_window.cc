@@ -152,8 +152,8 @@ void BrowserWindow::ShowOmnibox() {
   TRACE_EVENT0("desktop_ui", "BrowserWindow::ShowOmnibox");
   if (!omnibox_.get()) {
     omnibox_connection_ = shell_->Connect("mojo:omnibox");
-    omnibox_connection_->AddService<ViewEmbedder>(this);
-    omnibox_connection_->ConnectToService(&omnibox_);
+    omnibox_connection_->AddInterface<ViewEmbedder>(this);
+    omnibox_connection_->GetInterface(&omnibox_);
     omnibox_connection_->SetRemoteServiceProviderConnectionErrorHandler(
       [this]() {
         // This will cause the connection to be re-established the next time

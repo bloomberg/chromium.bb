@@ -114,7 +114,7 @@ class TestApplicationLoader : public ApplicationLoader,
 
   // mojo::ShellClient implementation.
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService<mojom::ContentHandler>(this);
+    connection->AddInterface<mojom::ContentHandler>(this);
     last_requestor_url_ = GURL(connection->GetRemoteApplicationURL());
     return true;
   }

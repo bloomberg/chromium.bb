@@ -101,7 +101,7 @@ class HumanResourceSystemServer
 
   // mojo::ShellClient implementation.
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService<HumanResourceDatabase>(this);
+    connection->AddInterface<HumanResourceDatabase>(this);
     return true;
   }
 

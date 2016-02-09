@@ -24,7 +24,7 @@ void FileSystemApp::Initialize(mojo::Shell* shell, const std::string& url,
 }
 
 bool FileSystemApp::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<FileSystem>(this);
+  connection->AddInterface<FileSystem>(this);
   return true;
 }
 

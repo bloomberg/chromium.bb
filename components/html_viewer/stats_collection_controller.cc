@@ -87,8 +87,8 @@ tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
     return nullptr;
   tracing::StartupPerformanceDataCollectorPtr collector_for_controller;
   tracing::StartupPerformanceDataCollectorPtr collector_for_caller;
-  connection->ConnectToService(&collector_for_controller);
-  connection->ConnectToService(&collector_for_caller);
+  connection->GetInterface(&collector_for_controller);
+  connection->GetInterface(&collector_for_caller);
 
   gin::Handle<StatsCollectionController> controller = gin::CreateHandle(
       isolate,

@@ -71,7 +71,7 @@ void BrowserManager::Initialize(mojo::Shell* shell, const std::string& url,
 }
 
 bool BrowserManager::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<LaunchHandler>(this);
+  connection->AddInterface<LaunchHandler>(this);
   return true;
 }
 

@@ -76,7 +76,7 @@ mojo::ShellClient* WindowServerTestBase::GetShellClient() {
 }
 
 bool WindowServerTestBase::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<mojom::WindowTreeClient>(this);
+  connection->AddInterface<mojom::WindowTreeClient>(this);
   return true;
 }
 

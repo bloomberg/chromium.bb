@@ -38,7 +38,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
  private:
   // MojoShellConnection::Listener implementation:
   bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddService<mojom::RenderWidgetWindowTreeClientFactory>(this);
+    connection->AddInterface<mojom::RenderWidgetWindowTreeClientFactory>(this);
     return true;
   }
 

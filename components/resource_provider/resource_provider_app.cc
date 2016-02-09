@@ -32,7 +32,7 @@ bool ResourceProviderApp::AcceptConnection(mojo::Connection* connection) {
   if (app_path.empty())
     return false;  // The specified app has no resources.
 
-  connection->AddService<ResourceProvider>(this);
+  connection->AddInterface<ResourceProvider>(this);
   return true;
 }
 

@@ -89,7 +89,7 @@ void DevicesApp::Initialize(mojo::Shell* shell,
 }
 
 bool DevicesApp::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<usb::DeviceManager>(this);
+  connection->AddInterface<usb::DeviceManager>(this);
   return true;
 }
 
@@ -103,7 +103,7 @@ void DevicesApp::Create(mojo::Connection* connection,
   // Bind the new device manager to the connecting application's permission
   // provider.
   usb::PermissionProviderPtr permission_provider;
-  connection->ConnectToService(&permission_provider);
+  connection->GetInterface(&permission_provider);
 
   // Owned by its message pipe.
   usb::DeviceManagerImpl* device_manager = new usb::DeviceManagerImpl(

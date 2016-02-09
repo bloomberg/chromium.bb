@@ -120,14 +120,14 @@ void FrameConnection::Init(mojo::Shell* shell,
   mojo::Shell::ConnectParams params(std::move(request));
   params.set_filter(std::move(filter));
   connection_ = shell->Connect(&params);
-  connection_->ConnectToService(&frame_client_);
+  connection_->GetInterface(&frame_client_);
   connection_->AddRemoteIDCallback(on_got_id_callback);
 }
 
 mus::mojom::WindowTreeClientPtr FrameConnection::GetWindowTreeClient() {
   DCHECK(connection_);
   mus::mojom::WindowTreeClientPtr window_tree_client;
-  connection_->ConnectToService(&window_tree_client);
+  connection_->GetInterface(&window_tree_client);
   return window_tree_client;
 }
 

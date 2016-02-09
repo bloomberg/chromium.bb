@@ -27,7 +27,7 @@ void UpdaterApp::Initialize(mojo::Shell* shell, const std::string& url,
 }
 
 bool UpdaterApp::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<Updater>(this);
+  connection->AddInterface<Updater>(this);
   return true;
 }
 

@@ -43,7 +43,7 @@ class TestContentHandler : public ShellClient,
   // Overridden from ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService<mojom::ContentHandler>(this);
+    connection->AddInterface<mojom::ContentHandler>(this);
     return true;
   }
 

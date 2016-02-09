@@ -133,10 +133,10 @@ void NetworkServiceDelegate::Initialize(Shell* shell, const std::string& url,
 
 bool NetworkServiceDelegate::AcceptConnection(Connection* connection) {
   DCHECK(context_);
-  connection->AddService<CookieStore>(this);
-  connection->AddService<NetworkService>(this);
-  connection->AddService<URLLoaderFactory>(this);
-  connection->AddService<WebSocketFactory>(this);
+  connection->AddInterface<CookieStore>(this);
+  connection->AddInterface<NetworkService>(this);
+  connection->AddInterface<URLLoaderFactory>(this);
+  connection->AddInterface<WebSocketFactory>(this);
   return true;
 }
 

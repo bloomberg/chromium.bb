@@ -39,12 +39,12 @@ void DevToolsServiceDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool DevToolsServiceDelegate::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<DevToolsRegistry>(this);
+  connection->AddInterface<DevToolsRegistry>(this);
 
   // DevToolsCoordinator is a privileged interface and only allowed for the
   // shell.
   if (IsShell(GURL(connection->GetRemoteApplicationURL())))
-    connection->AddService<DevToolsCoordinator>(this);
+    connection->AddInterface<DevToolsCoordinator>(this);
   return true;
 }
 

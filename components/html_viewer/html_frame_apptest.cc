@@ -58,7 +58,7 @@ mojo::Connection* ConnectionForFrame(Frame* frame) {
 
 std::string GetFrameText(Connection* connection) {
   html_viewer::TestHTMLViewerPtr test_html_viewer;
-  connection->ConnectToService(&test_html_viewer);
+  connection->GetInterface(&test_html_viewer);
   std::string result;
   test_html_viewer->GetContentAsText([&result](const String& mojo_string) {
     result = mojo_string;
@@ -73,7 +73,7 @@ std::string GetFrameText(Connection* connection) {
 scoped_ptr<base::Value> ExecuteScript(Connection* connection,
                                       const std::string& script) {
   html_viewer::TestHTMLViewerPtr test_html_viewer;
-  connection->ConnectToService(&test_html_viewer);
+  connection->GetInterface(&test_html_viewer);
   scoped_ptr<base::Value> result;
   test_html_viewer->ExecuteScript(script, [&result](const String& json_string) {
     result = base::JSONReader::Read(json_string.To<std::string>());

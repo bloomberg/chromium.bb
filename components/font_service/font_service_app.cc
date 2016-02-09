@@ -64,7 +64,7 @@ void FontServiceApp::Initialize(mojo::Shell* shell, const std::string& url,
 }
 
 bool FontServiceApp::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService(this);
+  connection->AddInterface(this);
   return true;
 }
 

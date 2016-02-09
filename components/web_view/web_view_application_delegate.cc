@@ -23,7 +23,7 @@ void WebViewApplicationDelegate::Initialize(mojo::Shell* shell,
 
 bool WebViewApplicationDelegate::AcceptConnection(
     mojo::Connection* connection) {
-  connection->AddService<mojom::WebViewFactory>(this);
+  connection->AddInterface<mojom::WebViewFactory>(this);
   return true;
 }
 

@@ -27,7 +27,7 @@ void TestMojoApp::Initialize(mojo::Shell* shell, const std::string& url,
 
 bool TestMojoApp::AcceptConnection(mojo::Connection* connection) {
   requestor_url_ = GURL(connection->GetRemoteApplicationURL());
-  connection->AddService<TestMojoService>(this);
+  connection->AddInterface<TestMojoService>(this);
   return true;
 }
 

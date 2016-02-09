@@ -54,7 +54,7 @@ void PhoneBrowserApplicationDelegate::Initialize(mojo::Shell* shell,
 
 bool PhoneBrowserApplicationDelegate::AcceptConnection(
     mojo::Connection* connection) {
-  connection->AddService<LaunchHandler>(this);
+  connection->AddInterface<LaunchHandler>(this);
   return true;
 }
 

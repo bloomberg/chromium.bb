@@ -53,7 +53,8 @@ class ProvidedApplicationDelegate
   // mojo::ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService<test::mojom::ApplicationPackageApptestService>(this);
+    connection->AddInterface<test::mojom::ApplicationPackageApptestService>(
+        this);
     return true;
   }
 
@@ -99,8 +100,9 @@ class ApplicationPackageApptestDelegate
   // mojo::ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(Connection* connection) override {
-    connection->AddService<ContentHandler>(this);
-    connection->AddService<test::mojom::ApplicationPackageApptestService>(this);
+    connection->AddInterface<ContentHandler>(this);
+    connection->AddInterface<test::mojom::ApplicationPackageApptestService>(
+        this);
     return true;
   }
 

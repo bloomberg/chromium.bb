@@ -38,7 +38,7 @@ void MojoMediaApplication::Initialize(mojo::Shell* shell,
 }
 
 bool MojoMediaApplication::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<interfaces::ServiceFactory>(this);
+  connection->AddInterface<interfaces::ServiceFactory>(this);
   return true;
 }
 
@@ -46,7 +46,7 @@ void MojoMediaApplication::Create(
     mojo::Connection* connection,
     mojo::InterfaceRequest<interfaces::ServiceFactory> request) {
   // The created object is owned by the pipe.
-  new ServiceFactoryImpl(std::move(request), connection->GetServiceProvider(),
+  new ServiceFactoryImpl(std::move(request), connection->GetRemoteInterfaces(),
                          media_log_, shell_->CreateAppRefCount(),
                          mojo_media_client_.get());
 }

@@ -75,7 +75,7 @@ void TestRunnerApplicationDelegate::Initialize(mojo::Shell* shell,
 
 bool TestRunnerApplicationDelegate::AcceptConnection(
     mojo::Connection* connection) {
-  connection->AddService<web_view::LayoutTestRunner>(this);
+  connection->AddInterface<web_view::LayoutTestRunner>(this);
   return true;
 }
 

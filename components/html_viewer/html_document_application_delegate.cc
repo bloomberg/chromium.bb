@@ -28,7 +28,7 @@ class HTMLDocumentApplicationDelegate::InterfaceBinderQueue
     ScopedVector<Request> requests;
     requests_.swap(requests);
     for (Request* request : requests) {
-      connection->GetLocalServiceProvider()->ConnectToService(
+      connection->GetLocalInterfaces()->ConnectToService(
           request->interface_name, std::move(request->handle));
     }
   }

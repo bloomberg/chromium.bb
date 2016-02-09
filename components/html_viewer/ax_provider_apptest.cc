@@ -87,7 +87,7 @@ TEST_F(AXProviderTest, HelloWorld) {
 
   // Embed the html_viewer in a Window.
   mus::mojom::WindowTreeClientPtr tree_client;
-  connection->ConnectToService(&tree_client);
+  connection->GetInterface(&tree_client);
   mus::Window* embed_window = window_manager()->NewWindow();
   embed_window->Embed(std::move(tree_client));
 
@@ -102,7 +102,7 @@ TEST_F(AXProviderTest, HelloWorld) {
   array[0]->parent_id = 0u;
 
   web_view::mojom::FrameClientPtr frame_client;
-  connection->ConnectToService(&frame_client);
+  connection->GetInterface(&frame_client);
   frame_client->OnConnect(
       std::move(frame_ptr), 1u, embed_window->id(),
       web_view::mojom::WindowConnectType::USE_NEW, std::move(array),
@@ -110,7 +110,7 @@ TEST_F(AXProviderTest, HelloWorld) {
 
   // Connect to the AxProvider of the HTML document and get the AxTree.
   AxProviderPtr ax_provider;
-  connection->ConnectToService(&ax_provider);
+  connection->GetInterface(&ax_provider);
   Array<AxNodePtr> ax_tree;
   ax_provider->GetTree([&ax_tree](Array<AxNodePtr> tree) {
     ax_tree = std::move(tree);

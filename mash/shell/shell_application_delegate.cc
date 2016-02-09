@@ -28,7 +28,7 @@ void ShellApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool ShellApplicationDelegate::AcceptConnection(mojo::Connection* connection) {
-  connection->AddService<mash::shell::mojom::Shell>(this);
+  connection->AddInterface<mash::shell::mojom::Shell>(this);
   return true;
 }
 
