@@ -18,7 +18,7 @@ namespace battor {
 namespace {
 
 // The number of seconds that it takes a BattOr to reset.
-const uint8_t kBattOrResetTimeSeconds = 2;
+const uint8_t kBattOrResetTimeSeconds = 5;
 
 // The maximum number of times to retry when reading a message.
 const uint8_t kMaxReadAttempts = 20;
