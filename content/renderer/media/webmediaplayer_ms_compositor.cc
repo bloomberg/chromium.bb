@@ -44,7 +44,8 @@ scoped_refptr<media::VideoFrame> CopyFrameToI420(
     DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
            frame->format() == media::PIXEL_FORMAT_XRGB ||
            frame->format() == media::PIXEL_FORMAT_I420 ||
-           frame->format() == media::PIXEL_FORMAT_UYVY);
+           frame->format() == media::PIXEL_FORMAT_UYVY ||
+           frame->format() == media::PIXEL_FORMAT_NV12);
     SkBitmap bitmap;
     bitmap.allocN32Pixels(frame->visible_rect().width(),
                           frame->visible_rect().height());
