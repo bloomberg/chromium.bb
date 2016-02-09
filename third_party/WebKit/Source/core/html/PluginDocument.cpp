@@ -115,8 +115,7 @@ void PluginDocumentParser::createDocumentStructure()
     // below so flush the layout tasks now instead of waiting on the timer.
     frame->view()->flushAnyPendingPostLayoutTasks();
     // Focus the plugin here, as the line above is where the plugin is created.
-    if (frame->isMainFrame())
-        m_embedElement->focus();
+    m_embedElement->focus();
 
     if (PluginView* view = pluginView())
         view->didReceiveResponse(document()->loader()->response());
