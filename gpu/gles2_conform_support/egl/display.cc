@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
+#include "gpu/gles2_conform_support/egl/test_support.h"
 
 namespace {
 const int32_t kCommandBufferSize = 1024 * 1024;
@@ -40,6 +41,11 @@ int g_exit_manager_use_count;
 base::AtExitManager* g_exit_manager;
 void RefAtExitManager() {
   base::AutoLock lock(g_exit_manager_lock.Get());
+#if defined(COMPONENT_BUILD)
+  if (g_command_buffer_gles_has_atexit_manager) {
+    return;
+  }
+#endif
   if (g_exit_manager_use_count == 0) {
     g_exit_manager = new base::AtExitManager;
   }
@@ -47,6 +53,11 @@ void RefAtExitManager() {
 }
 void ReleaseAtExitManager() {
   base::AutoLock lock(g_exit_manager_lock.Get());
+#if defined(COMPONENT_BUILD)
+  if (g_command_buffer_gles_has_atexit_manager) {
+    return;
+  }
+#endif
   --g_exit_manager_use_count;
   if (g_exit_manager_use_count == 0) {
     delete g_exit_manager;

@@ -619,6 +619,7 @@
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
+	    '../gpu/gpu.gyp:command_buffer_gles2_tests',
             '../third_party/catapult/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
@@ -656,6 +657,7 @@
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
+	    '../gpu/gpu.gyp:command_buffer_gles2_tests',
             '../third_party/catapult/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
@@ -852,6 +854,7 @@
             '../content/content_shell_and_tests.gyp:content_gl_tests_apk',
             '../content/content_shell_and_tests.gyp:content_unittests_apk',
             '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest_apk',
+            '../gpu/gpu.gyp:command_buffer_gles2_tests_apk', 
             '../gpu/gpu.gyp:gl_tests_apk',
             '../gpu/gpu.gyp:gpu_unittests_apk',
             '../ipc/ipc.gyp:ipc_tests_apk',
