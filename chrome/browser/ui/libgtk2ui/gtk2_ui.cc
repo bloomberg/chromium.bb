@@ -538,10 +538,17 @@ gfx::Image Gtk2UI::GetThemeImageNamed(int id) const {
 }
 
 bool Gtk2UI::GetTint(int id, color_utils::HSL* tint) const {
-  // We don't set any tints and the default tints don't work so well so make
-  // sure this is never called by mistake. All colors that might make use of
-  // tint should have an entry in |colors_|.
-  NOTREACHED();
+  switch (id) {
+    case ThemeProperties::TINT_BACKGROUND_TAB:
+      // Tints for which the cross-platform default is fine. Before adding new
+      // values here, specifically verify they work well on Linux.
+      break;
+    default:
+      // Assume any tints not specifically verified on Linux aren't usable.
+      // TODO(pkasting): Try to remove values from |colors_| that could just be
+      // added to the group above instead.
+      NOTREACHED();
+  }
   return false;
 }
 
