@@ -33,6 +33,8 @@ class GLImageRefCountedMemoryTestDelegate {
     EXPECT_TRUE(rv);
     return image;
   }
+
+  unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
 };
 
 using GLImageTestTypes = testing::Types<

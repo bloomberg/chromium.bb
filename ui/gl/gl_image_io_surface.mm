@@ -274,9 +274,8 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
 
   if (format_ != BufferFormat::YUV_420_BIPLANAR)
     return false;
-
-  if (target != GL_TEXTURE_2D) {
-    LOG(ERROR) << "YUV_420_BIPLANAR requires TEXTURE_2D target";
+  if (target != GL_TEXTURE_RECTANGLE_ARB) {
+    LOG(ERROR) << "YUV_420_BIPLANAR requires GL_TEXTURE_RECTANGLE_ARB target";
     return false;
   }
 
@@ -308,10 +307,10 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
       static_cast<CGLContextObj>(gfx::GLContext::GetCurrent()->GetHandle());
 
   GLint target_texture = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_2D, &target_texture);
+  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &target_texture);
   DCHECK(target_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size_.width(), size_.height(), 0,
-               GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+  glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, size_.width(),
+               size_.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
   CGLError cgl_error = kCGLNoError;
   {
@@ -345,7 +344,7 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
       gfx::ScopedViewport viewport(0, 0, size_.width(), size_.height());
       glViewport(0, 0, size_.width(), size_.height());
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                GL_TEXTURE_2D, target_texture, 0);
+                                GL_TEXTURE_RECTANGLE_ARB, target_texture, 0);
       DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
                 glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
 
@@ -353,10 +352,9 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
       glUniform2f(size_location_, size_.width(), size_.height());
 
       gfx::GLHelper::DrawQuad(vertex_buffer_);
-
       // Detach the output texture from the fbo.
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                GL_TEXTURE_2D, 0, 0);
+                                GL_TEXTURE_RECTANGLE_ARB, 0, 0);
     }
   }
   return true;

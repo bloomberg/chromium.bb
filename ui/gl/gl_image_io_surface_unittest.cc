@@ -40,6 +40,8 @@ class GLImageIOSurfaceTestDelegate {
 
     return image;
   }
+
+  unsigned GetTextureTarget() const { return GL_TEXTURE_RECTANGLE_ARB; }
 };
 
 using GLImageTestTypes = testing::Types<

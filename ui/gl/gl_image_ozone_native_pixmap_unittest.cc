@@ -31,6 +31,8 @@ class GLImageOzoneNativePixmapTestDelegate {
     EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));
     return image;
   }
+
+  unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageOzoneNativePixmap,

@@ -38,6 +38,8 @@ class GLImageSharedMemoryTestDelegate {
     EXPECT_TRUE(rv);
     return image;
   }
+
+  unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
 };
 
 using GLImageTestTypes = testing::Types<
@@ -86,6 +88,8 @@ class GLImageSharedMemoryPoolTestDelegate {
     EXPECT_TRUE(rv);
     return image;
   }
+
+  unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemoryPool,

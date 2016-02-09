@@ -26,6 +26,32 @@
 #include "ui/gl/test/gl_test_helper.h"
 
 namespace gl {
+namespace {
+
+std::string PrependFragmentSamplerType(unsigned target,
+                                       std::string shader_string) {
+  switch (target) {
+    case GL_TEXTURE_2D:
+      DCHECK_NE(shader_string.find("SamplerType"), std::string::npos);
+      DCHECK_NE(shader_string.find("TextureLookup"), std::string::npos);
+      return "#define SamplerType sampler2D\n"
+             "#define TextureLookup texture2D\n" +
+             shader_string;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      DCHECK_NE(shader_string.find("SamplerType"), std::string::npos);
+      DCHECK_NE(shader_string.find("TextureLookup"), std::string::npos);
+      return "#extension GL_ARB_texture_rectangle : require\n"
+             "#define SamplerType sampler2DRect\n"
+             "#define TextureLookup texture2DRect\n" +
+             shader_string;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return shader_string;
+}
+
+}  // namespace
 
 template <typename GLImageTestDelegate>
 class GLImageTest : public testing::Test {
@@ -110,7 +136,8 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   ASSERT_TRUE(image);
 
   // Create a solid color blue texture of the same size as |image|.
-  GLuint texture = GLTestHelper::CreateTexture(GL_TEXTURE_2D);
+  unsigned target = this->delegate_.GetTextureTarget();
+  GLuint texture = GLTestHelper::CreateTexture(target);
   scoped_ptr<uint8_t[]> pixels(new uint8_t[BufferSizeForBufferFormat(
       image_size, gfx::BufferFormat::RGBA_8888)]);
   GLImageTestSupport::SetBufferDataToColor(
@@ -118,14 +145,13 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
       static_cast<int>(RowSizeForBufferFormat(image_size.width(),
                                               gfx::BufferFormat::RGBA_8888, 0)),
       0, gfx::BufferFormat::RGBA_8888, texture_color, pixels.get());
-  // Note: This test assume that |image| can be used with GL_TEXTURE_2D but
-  // that might not be the case for some GLImage implementations.
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_size.width(),
-               image_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
+  glBindTexture(target, texture);
+  glTexImage2D(target, 0, GL_RGBA, image_size.width(), image_size.height(), 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
 
   // Copy |image| to |texture|.
-  bool rv = image->CopyTexImage(GL_TEXTURE_2D);
+  bool rv = image->CopyTexImage(target);
+
   EXPECT_TRUE(rv);
 
   // clang-format off
@@ -138,10 +164,10 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
     }
   );
   const char kFragmentShader[] = STRINGIZE(
-    uniform sampler2D a_texture;
+    uniform SamplerType a_texture;
     varying vec2 v_texCoord;
     void main() {
-      gl_FragColor = texture2D(a_texture, v_texCoord);
+      gl_FragColor = TextureLookup(a_texture, v_texCoord);
     }
   );
   const char kShaderFloatPrecision[] = STRINGIZE(
@@ -154,8 +180,9 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
   GLuint fragment_shader = gfx::GLHelper::LoadShader(
       GL_FRAGMENT_SHADER,
-      base::StringPrintf("%s%s", is_gles ? kShaderFloatPrecision : "",
-                         kFragmentShader)
+      base::StringPrintf(
+          "%s\n%s", is_gles ? kShaderFloatPrecision : "",
+          PrependFragmentSamplerType(target, kFragmentShader).c_str())
           .c_str());
   GLuint program = gfx::GLHelper::SetupProgram(vertex_shader, fragment_shader);
   EXPECT_NE(program, 0u);
