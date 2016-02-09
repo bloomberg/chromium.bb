@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/chromecast_build.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
 # Contains the dependencies needed for sanitizers to link into executables and
@@ -215,18 +216,24 @@ config("default_sanitizer_flags") {
         "-fsanitize=unreachable",
         "-fsanitize=vla-bound",
         "-fsanitize-blacklist=$ubsan_blacklist_path",
-
-        # Employ the experimental PBQP register allocator to avoid slow
-        # compilation on files with too many basic blocks.
-        # See http://crbug.com/426271.
-        "-mllvm",
-        "-regalloc=pbqp",
-
-        # Speculatively use coalescing to slightly improve the code generated
-        # by PBQP regallocator. May increase compile time.
-        "-mllvm",
-        "-pbqp-coalescing",
       ]
+
+      # Chromecast ubsan builds fail to compile with these
+      # experimental flags, so only add them to non-chromecast ubsan builds.
+      if (!is_chromecast) {
+        cflags += [
+          # Employ the experimental PBQP register allocator to avoid slow
+          # compilation on files with too many basic blocks.
+          # See http://crbug.com/426271.
+          "-mllvm",
+          "-regalloc=pbqp",
+
+          # Speculatively use coalescing to slightly improve the code generated
+          # by PBQP regallocator. May increase compile time.
+          "-mllvm",
+          "-pbqp-coalescing",
+        ]
+      }
     }
     if (is_ubsan_vptr) {
       ubsan_vptr_blacklist_path =
