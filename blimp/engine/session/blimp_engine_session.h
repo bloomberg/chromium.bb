@@ -57,6 +57,7 @@ class BlimpMessageThreadPipe;
 namespace engine {
 
 class BlimpBrowserContext;
+class BlimpEngineConfig;
 class BlimpFocusClient;
 class BlimpScreen;
 class BlimpUiContextFactory;
@@ -69,8 +70,9 @@ class BlimpEngineSession
       public content::WebContentsObserver,
       public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
  public:
-  explicit BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context,
-                              net::NetLog* net_log);
+  BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context,
+                     net::NetLog* net_log,
+                     BlimpEngineConfig* config);
   ~BlimpEngineSession() override;
 
   // Starts the network stack on the IO thread, and sets default placeholder
@@ -140,8 +142,13 @@ class BlimpEngineSession
   // Sets up and owns |new_contents|.
   void PlatformSetContents(scoped_ptr<content::WebContents> new_contents);
 
+  // Content BrowserContext for this session.
   scoped_ptr<BlimpBrowserContext> browser_context_;
 
+  // Engine configuration including assigned client token.
+  BlimpEngineConfig* engine_config_;
+
+  // Presents the client's single screen.
   scoped_ptr<BlimpScreen> screen_;
 
   // Context factory for compositor.
@@ -175,6 +182,7 @@ class BlimpEngineSession
   // there.
   std::vector<scoped_ptr<BlimpMessageThreadPipe>> incoming_pipes_;
 
+  // Used to send TAB_CONTROL or NAVIGATION messages to client.
   scoped_ptr<BlimpMessageProcessor> tab_control_message_sender_;
   scoped_ptr<BlimpMessageProcessor> navigation_message_sender_;
 

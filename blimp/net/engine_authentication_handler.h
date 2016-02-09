@@ -21,7 +21,11 @@ class BlimpMessage;
 // to |connection_handler|.
 class BLIMP_NET_EXPORT EngineAuthenticationHandler : public ConnectionHandler {
  public:
-  explicit EngineAuthenticationHandler(ConnectionHandler* connection_handler);
+  // |client_token|: used to authenticate incoming connection.
+  // |connection_handler|: a new connection is passed on to it after the
+  //    connection is authenticate this handler.
+  EngineAuthenticationHandler(ConnectionHandler* connection_handler,
+                              const std::string& client_token);
 
   ~EngineAuthenticationHandler() override;
 
@@ -31,6 +35,10 @@ class BLIMP_NET_EXPORT EngineAuthenticationHandler : public ConnectionHandler {
  private:
   // Used to abandon pending authenticated connections if |this| is deleted.
   base::WeakPtrFactory<ConnectionHandler> connection_handler_weak_factory_;
+
+  // Used to authenticate incoming connection. Engine is assigned to one client
+  // only, and all connections from that client shall carry the same token.
+  const std::string client_token_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineAuthenticationHandler);
 };

@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/tab_control.pb.h"
+#include "blimp/engine/app/blimp_engine_config.h"
 #include "blimp/engine/app/ui/blimp_layout_manager.h"
 #include "blimp/engine/app/ui/blimp_screen.h"
 #include "blimp/engine/app/ui/blimp_ui_context_factory.h"
@@ -86,7 +87,7 @@ class EngineNetworkComponents {
   // Sets up network components and starts listening for incoming connection.
   // This should be called after all features have been registered so that
   // received messages can be properly handled.
-  void Initialize();
+  void Initialize(const std::string& client_token);
 
   // Connects message pipes between the specified feature and the network layer,
   // using |incoming_proxy| as the incoming message processor, and connecting
@@ -120,7 +121,7 @@ EngineNetworkComponents::~EngineNetworkComponents() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
-void EngineNetworkComponents::Initialize() {
+void EngineNetworkComponents::Initialize(const std::string& client_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(connection_handler_);
   DCHECK(!authentication_handler_);
@@ -129,7 +130,7 @@ void EngineNetworkComponents::Initialize() {
   // A BlimpConnection flows from
   // connection_manager_ --> authentication_handler_ --> connection_handler_
   authentication_handler_ = make_scoped_ptr(
-      new EngineAuthenticationHandler(connection_handler_.get()));
+      new EngineAuthenticationHandler(connection_handler_.get(), client_token));
   connection_manager_ = make_scoped_ptr(
       new EngineConnectionManager(authentication_handler_.get()));
 
@@ -164,10 +165,13 @@ void EngineNetworkComponents::RegisterFeature(
 
 BlimpEngineSession::BlimpEngineSession(
     scoped_ptr<BlimpBrowserContext> browser_context,
-    net::NetLog* net_log)
+    net::NetLog* net_log,
+    BlimpEngineConfig* engine_config)
     : browser_context_(std::move(browser_context)),
+      engine_config_(engine_config),
       screen_(new BlimpScreen),
       net_components_(new EngineNetworkComponents(net_log)) {
+  DCHECK(engine_config_);
   screen_->UpdateDisplayScaleAndSize(kDefaultScaleFactor,
                                      gfx::Size(kDefaultDisplayWidth,
                                                kDefaultDisplayHeight));
@@ -228,7 +232,8 @@ void BlimpEngineSession::Initialize() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&EngineNetworkComponents::Initialize,
-                 base::Unretained(net_components_.get())));
+                 base::Unretained(net_components_.get()),
+                 engine_config_->client_token()));
 }
 
 scoped_ptr<BlimpMessageProcessor> BlimpEngineSession::RegisterFeature(

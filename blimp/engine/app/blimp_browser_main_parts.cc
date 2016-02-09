@@ -48,8 +48,8 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new net::NetLog());
   scoped_ptr<BlimpBrowserContext> browser_context(
       new BlimpBrowserContext(false, net_log_.get()));
-  engine_session_.reset(
-      new BlimpEngineSession(std::move(browser_context), net_log_.get()));
+  engine_session_.reset(new BlimpEngineSession(
+      std::move(browser_context), net_log_.get(), engine_config_.get()));
   engine_session_->Initialize();
 }
 

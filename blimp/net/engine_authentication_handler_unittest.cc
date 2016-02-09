@@ -27,13 +27,17 @@ using testing::Eq;
 using testing::SaveArg;
 
 namespace blimp {
+namespace {
+static const std::string client_token = "valid token";
+}  // namespace
 
 class EngineAuthenticationHandlerTest : public testing::Test {
  public:
   EngineAuthenticationHandlerTest()
       : runner_(new base::TestMockTimeTaskRunner),
         runner_handle_(runner_),
-        auth_handler_(new EngineAuthenticationHandler(&connection_handler_)),
+        auth_handler_(new EngineAuthenticationHandler(&connection_handler_,
+                                                      client_token)),
         connection_(new testing::StrictMock<MockBlimpConnection>()) {}
 
   ~EngineAuthenticationHandlerTest() override {}
@@ -63,7 +67,20 @@ TEST_F(EngineAuthenticationHandlerTest, AuthenticationSucceeds) {
   EXPECT_NE(nullptr, error_observer_);
   EXPECT_NE(nullptr, incoming_message_processor_);
 
-  scoped_ptr<BlimpMessage> blimp_message = CreateStartConnectionMessage("", 0);
+  scoped_ptr<BlimpMessage> blimp_message =
+      CreateStartConnectionMessage(client_token, 0);
+  net::TestCompletionCallback process_message_cb;
+  incoming_message_processor_->ProcessMessage(std::move(blimp_message),
+                                              process_message_cb.callback());
+  EXPECT_EQ(net::OK, process_message_cb.WaitForResult());
+}
+
+TEST_F(EngineAuthenticationHandlerTest, AuthenticationFailed) {
+  ExpectOnConnection();
+  auth_handler_->HandleConnection(std::move(connection_));
+
+  scoped_ptr<BlimpMessage> blimp_message =
+      CreateStartConnectionMessage("invalid token", 0);
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
@@ -104,7 +121,8 @@ TEST_F(EngineAuthenticationHandlerTest, AuthHandlerDeletedFirst) {
   auth_handler_->HandleConnection(std::move(connection_));
   auth_handler_.reset();
 
-  scoped_ptr<BlimpMessage> blimp_message = CreateStartConnectionMessage("", 0);
+  scoped_ptr<BlimpMessage> blimp_message =
+      CreateStartConnectionMessage(client_token, 0);
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
