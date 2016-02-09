@@ -3740,6 +3740,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>An open bubble was forced to close.</summary>
 </histogram>
 
+<histogram name="Bubbles.Close.FrameDestroyed" enum="BubbleType">
+  <owner>hcarmona@chromium.org</owner>
+  <summary>An open bubble was dismissed because a frame was destroyed.</summary>
+</histogram>
+
 <histogram name="Bubbles.Close.FullscreenToggled" enum="BubbleType">
   <owner>hcarmona@chromium.org</owner>
   <summary>

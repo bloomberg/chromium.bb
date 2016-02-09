@@ -20,7 +20,7 @@ class BluetoothChooserDesktop;
 // access a Bluetooth device.
 class BluetoothChooserBubbleDelegate : public ChooserBubbleDelegate {
  public:
-  explicit BluetoothChooserBubbleDelegate(Browser* browser);
+  explicit BluetoothChooserBubbleDelegate(content::RenderFrameHost* owner);
   ~BluetoothChooserBubbleDelegate() override;
 
   // ChooserBubbleDelegate:

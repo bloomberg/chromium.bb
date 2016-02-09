@@ -97,6 +97,9 @@ static void LogBubbleCloseReason(BubbleReference bubble,
     case BUBBLE_CLOSE_CANCELED:
       UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Canceled", bubble_id);
       return;
+    case BUBBLE_CLOSE_FRAME_DESTROYED:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.FrameDestroyed", bubble_id);
+      return;
   }
 
   NOTREACHED();
@@ -137,6 +140,14 @@ void ChromeBubbleManager::ActiveTabChanged(content::WebContents* old_contents,
                                            int index,
                                            int reason) {
   Observe(new_contents);
+}
+
+void ChromeBubbleManager::FrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  // When a frame is destroyed, bubbles spawned by that frame should default to
+  // being closed, so that they can't traverse any references they hold to the
+  // destroyed frame.
+  CloseBubblesOwnedBy(render_frame_host);
 }
 
 void ChromeBubbleManager::DidToggleFullscreenModeForTab(

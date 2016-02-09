@@ -28,6 +28,7 @@ class ChromeBubbleManager : public BubbleManager,
                         int reason) override;
 
   // content::WebContentsObserver:
+  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
   void NavigationEntryCommitted(

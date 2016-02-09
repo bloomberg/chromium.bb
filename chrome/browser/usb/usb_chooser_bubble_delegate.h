@@ -33,7 +33,7 @@ class UsbChooserBubbleDelegate : public ChooserBubbleDelegate,
                                  public device::UsbService::Observer {
  public:
   UsbChooserBubbleDelegate(
-      Browser* browser,
+      content::RenderFrameHost* owner,
       mojo::Array<device::usb::DeviceFilterPtr> device_filters,
       content::RenderFrameHost* render_frame_host,
       const webusb::WebUsbPermissionBubble::GetPermissionCallback& callback);

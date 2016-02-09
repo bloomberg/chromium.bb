@@ -60,6 +60,12 @@ bool BubbleController::ShouldClose(BubbleCloseReason reason) const {
   return delegate_->ShouldClose(reason) || reason == BUBBLE_CLOSE_FORCED;
 }
 
+bool BubbleController::OwningFrameIs(
+    const content::RenderFrameHost* frame) const {
+  DCHECK(bubble_ui_);
+  return delegate_->OwningFrame() == frame;
+}
+
 void BubbleController::DoClose() {
   DCHECK(bubble_ui_);
   bubble_ui_->Close();

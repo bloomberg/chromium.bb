@@ -6,57 +6,38 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
-#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_manager_mocks.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class ChromeBubbleManagerTest : public testing::Test {
+class ChromeBubbleManagerTest : public BrowserWithTestWindowTest {
  public:
-  ChromeBubbleManagerTest();
-  ~ChromeBubbleManagerTest() override;
+  ChromeBubbleManagerTest() {}
 
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
 
  protected:
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<TestTabStripModelDelegate> delegate_;
-  scoped_ptr<TabStripModel> tabstrip_;
   scoped_ptr<ChromeBubbleManager> manager_;
 
  private:
-  // ChromeBubbleManager expects to be on the UI thread.
-  content::TestBrowserThreadBundle thread_bundle_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBubbleManagerTest);
 };
 
-ChromeBubbleManagerTest::ChromeBubbleManagerTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
-
-ChromeBubbleManagerTest::~ChromeBubbleManagerTest() {}
-
 void ChromeBubbleManagerTest::SetUp() {
-  testing::Test::SetUp();
-
-  profile_.reset(new TestingProfile);
-  delegate_.reset(new TestTabStripModelDelegate);
-  tabstrip_.reset(new TabStripModel(delegate_.get(), profile_.get()));
-  manager_.reset(new ChromeBubbleManager(tabstrip_.get()));
+  BrowserWithTestWindowTest::SetUp();
+  manager_.reset(new ChromeBubbleManager(browser()->tab_strip_model()));
 }
 
 void ChromeBubbleManagerTest::TearDown() {
   manager_.reset();
-  tabstrip_.reset();
-  delegate_.reset();
-  profile_.reset();
-  testing::Test::TearDown();
+  BrowserWithTestWindowTest::TearDown();
 }
 
 TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnDestroy) {
@@ -74,6 +55,55 @@ TEST_F(ChromeBubbleManagerTest, CloseMockBubbleForTwoDifferentReasons) {
 
   ASSERT_FALSE(bubble1);
   ASSERT_FALSE(bubble2);
+}
+
+TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnNavigate) {
+  AddTab(browser(), GURL("https://foo/0"));
+
+  scoped_ptr<MockBubbleDelegate> delegate(new MockBubbleDelegate);
+  EXPECT_CALL(*delegate, ShouldClose(BUBBLE_CLOSE_NAVIGATED))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(*delegate, DidClose());
+  EXPECT_CALL(*delegate, Destroyed());
+
+  BubbleReference bubble_ref = manager_->ShowBubble(std::move(delegate));
+
+  NavigateAndCommitActiveTab(GURL("https://foo/1"));
+
+  ASSERT_FALSE(bubble_ref);
+}
+
+TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnOwningFrameDestroy) {
+  AddTab(browser(), GURL("https://foo/0"));
+
+  content::RenderFrameHostTester* main_frame =
+      content::RenderFrameHostTester::For(
+          browser()->tab_strip_model()->GetWebContentsAt(0)->GetMainFrame());
+
+  content::RenderFrameHost* subframe0 = main_frame->AppendChild("subframe0");
+  content::RenderFrameHostTester* subframe0_tester =
+      content::RenderFrameHostTester::For(subframe0);
+
+  content::RenderFrameHost* subframe1 = main_frame->AppendChild("subframe1");
+  content::RenderFrameHostTester* subframe1_tester =
+      content::RenderFrameHostTester::For(subframe1);
+
+  scoped_ptr<MockBubbleDelegate> delegate(new MockBubbleDelegate);
+  EXPECT_CALL(*delegate, OwningFrame())
+      .WillRepeatedly(testing::Return(subframe0));
+  EXPECT_CALL(*delegate, ShouldClose(BUBBLE_CLOSE_FRAME_DESTROYED))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(*delegate, DidClose());
+  EXPECT_CALL(*delegate, Destroyed());
+
+  BubbleReference bubble_ref = manager_->ShowBubble(std::move(delegate));
+
+  subframe1_tester->Detach();
+  EXPECT_TRUE(bubble_ref) << "The bubble shouldn't be destroyed when a "
+                             "non-owning frame is destroyed.";
+
+  subframe0_tester->Detach();
+  EXPECT_FALSE(bubble_ref);
 }
 
 }  // namespace

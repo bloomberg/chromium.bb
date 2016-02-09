@@ -73,11 +73,11 @@ bool FindInAllowedOrigins(const device::WebUsbAllowedOrigins* allowed_origins,
 }  // namespace
 
 UsbChooserBubbleDelegate::UsbChooserBubbleDelegate(
-    Browser* browser,
+    content::RenderFrameHost* owner,
     mojo::Array<device::usb::DeviceFilterPtr> device_filters,
     content::RenderFrameHost* render_frame_host,
     const webusb::WebUsbPermissionBubble::GetPermissionCallback& callback)
-    : ChooserBubbleDelegate(browser),
+    : ChooserBubbleDelegate(owner),
       render_frame_host_(render_frame_host),
       callback_(callback),
       usb_service_observer_(this),

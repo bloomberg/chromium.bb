@@ -15,6 +15,10 @@ class BubbleDelegate;
 class BubbleManager;
 class BubbleUi;
 
+namespace content {
+class RenderFrameHost;
+}
+
 // BubbleController is responsible for the lifetime of the delegate and its UI.
 class BubbleController : public base::SupportsWeakPtr<BubbleController> {
  public:
@@ -47,6 +51,9 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
 
   // Returns true if the bubble should be closed.
   bool ShouldClose(BubbleCloseReason reason) const;
+
+  // Returns true if |frame| owns this bubble.
+  bool OwningFrameIs(const content::RenderFrameHost* frame) const;
 
   // Cleans up the delegate and its UI.
   void DoClose();

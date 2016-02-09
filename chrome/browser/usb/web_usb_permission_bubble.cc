@@ -34,7 +34,8 @@ void ChromeWebUsbPermissionBubble::GetPermission(
       content::WebContents::FromRenderFrameHost(render_frame_host_);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   scoped_ptr<UsbChooserBubbleDelegate> bubble_delegate(
-      new UsbChooserBubbleDelegate(browser, std::move(device_filters),
+      new UsbChooserBubbleDelegate(render_frame_host_,
+                                   std::move(device_filters),
                                    render_frame_host_, callback));
   UsbChooserBubbleDelegate* bubble_delegate_ptr = bubble_delegate.get();
   BubbleReference bubble_controller =

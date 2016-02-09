@@ -82,6 +82,11 @@ class MockBubbleManagerObserver : public BubbleManager::BubbleManagerObserver {
   DISALLOW_COPY_AND_ASSIGN(MockBubbleManagerObserver);
 };
 
+class BubbleManagerSubclass : public BubbleManager {
+ public:
+  using BubbleManager::CloseBubblesOwnedBy;
+};
+
 class BubbleManagerTest : public testing::Test {
  public:
   BubbleManagerTest();
@@ -91,7 +96,7 @@ class BubbleManagerTest : public testing::Test {
   void TearDown() override;
 
  protected:
-  scoped_ptr<BubbleManager> manager_;
+  scoped_ptr<BubbleManagerSubclass> manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BubbleManagerTest);
@@ -101,7 +106,7 @@ BubbleManagerTest::BubbleManagerTest() {}
 
 void BubbleManagerTest::SetUp() {
   testing::Test::SetUp();
-  manager_.reset(new BubbleManager);
+  manager_.reset(new BubbleManagerSubclass);
 }
 
 void BubbleManagerTest::TearDown() {
@@ -251,6 +256,38 @@ TEST_F(BubbleManagerTest, CloseBubbleShouldOnlylCloseSelf) {
 
   EXPECT_TRUE(ref1);
   EXPECT_FALSE(ref2);
+  EXPECT_TRUE(ref3);
+}
+
+TEST_F(BubbleManagerTest, CloseOwnedByShouldLeaveUnowned) {
+  scoped_ptr<MockBubbleDelegate> delegate1 = MockBubbleDelegate::Default();
+  scoped_ptr<MockBubbleDelegate> delegate2 = MockBubbleDelegate::Default();
+  scoped_ptr<MockBubbleDelegate> delegate3 = MockBubbleDelegate::Default();
+  MockBubbleDelegate& delegate1_ref = *delegate1;
+  MockBubbleDelegate& delegate2_ref = *delegate2;
+  MockBubbleDelegate& delegate3_ref = *delegate3;
+  BubbleReference ref1 = manager_->ShowBubble(std::move(delegate1));
+  BubbleReference ref2 = manager_->ShowBubble(std::move(delegate2));
+  BubbleReference ref3 = manager_->ShowBubble(std::move(delegate3));
+
+  // These pointers are only compared for equality, not dereferenced.
+  const content::RenderFrameHost* const frame1 =
+      reinterpret_cast<const content::RenderFrameHost*>(&ref1);
+  const content::RenderFrameHost* const frame2 =
+      reinterpret_cast<const content::RenderFrameHost*>(&ref2);
+
+  EXPECT_CALL(delegate1_ref, OwningFrame())
+      .WillRepeatedly(testing::Return(frame1));
+  EXPECT_CALL(delegate2_ref, OwningFrame())
+      .WillRepeatedly(testing::Return(frame2));
+  EXPECT_CALL(delegate3_ref, OwningFrame())
+      .WillRepeatedly(testing::Return(nullptr));
+  EXPECT_CALL(delegate1_ref, ShouldClose(BUBBLE_CLOSE_FRAME_DESTROYED))
+      .WillOnce(testing::Return(true));
+
+  manager_->CloseBubblesOwnedBy(frame1);
+  EXPECT_FALSE(ref1);
+  EXPECT_TRUE(ref2);
   EXPECT_TRUE(ref3);
 }
 

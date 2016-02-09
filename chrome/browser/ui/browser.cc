@@ -1420,9 +1420,8 @@ scoped_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
     const url::Origin& origin) {
   scoped_ptr<BluetoothChooserDesktop> bluetooth_chooser_desktop(
       new BluetoothChooserDesktop(event_handler));
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   scoped_ptr<BluetoothChooserBubbleDelegate> bubble_delegate(
-      new BluetoothChooserBubbleDelegate(browser));
+      new BluetoothChooserBubbleDelegate(web_contents->GetMainFrame()));
   BluetoothChooserBubbleDelegate* bubble_delegate_ptr = bubble_delegate.get();
 
   // Wire the ChooserBubbleDelegate to the BluetoothChooser.
@@ -1430,6 +1429,7 @@ scoped_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
       bubble_delegate_ptr);
   bubble_delegate->set_bluetooth_chooser(bluetooth_chooser_desktop.get());
 
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   BubbleReference bubble_controller =
       browser->GetBubbleManager()->ShowBubble(std::move(bubble_delegate));
   bubble_delegate_ptr->set_bubble_controller(bubble_controller);

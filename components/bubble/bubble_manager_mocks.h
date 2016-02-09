@@ -58,6 +58,8 @@ class MockBubbleDelegate : public BubbleDelegate {
   // Will be null after |BubbleManager::ShowBubble| is called.
   MockBubbleUi* bubble_ui() { return bubble_ui_.get(); }
 
+  MOCK_CONST_METHOD0(OwningFrame, const content::RenderFrameHost*());
+
  private:
   scoped_ptr<MockBubbleUi> bubble_ui_;
 

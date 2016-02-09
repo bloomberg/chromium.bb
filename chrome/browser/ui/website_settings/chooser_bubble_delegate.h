@@ -25,7 +25,7 @@ class Browser;
 // into it is not allowed.
 class ChooserBubbleDelegate : public BubbleDelegate {
  public:
-  explicit ChooserBubbleDelegate(Browser* browser);
+  explicit ChooserBubbleDelegate(content::RenderFrameHost* owner);
   ~ChooserBubbleDelegate() override;
 
   // Since the set of options can change while the UI is visible an
@@ -55,6 +55,7 @@ class ChooserBubbleDelegate : public BubbleDelegate {
   // BubbleDelegate:
   std::string GetName() const override;
   scoped_ptr<BubbleUi> BuildBubbleUi() override;
+  const content::RenderFrameHost* OwningFrame() const override;
 
   // The number of options users can pick from. For example, it can be
   // the number of USB/Bluetooth device names which are listed in the
@@ -82,6 +83,7 @@ class ChooserBubbleDelegate : public BubbleDelegate {
 
  private:
   Browser* browser_;
+  const content::RenderFrameHost* const owning_frame_;
   Observer* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleDelegate);

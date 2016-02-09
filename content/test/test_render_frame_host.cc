@@ -90,6 +90,10 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
       child_creation_observer_.last_created_frame());
 }
 
+void TestRenderFrameHost::Detach() {
+  OnDetach();
+}
+
 void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
   if (IsBrowserSideNavigationEnabled()) {
     SendRendererInitiatedNavigationRequest(url, false);

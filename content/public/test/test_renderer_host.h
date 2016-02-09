@@ -79,6 +79,9 @@ class RenderFrameHostTester {
   // RenderFrameHost is owned by the parent RenderFrameHost.
   virtual RenderFrameHost* AppendChild(const std::string& frame_name) = 0;
 
+  // Gives tests access to RenderFrameHostImpl::OnDetach. Destroys |this|.
+  virtual void Detach() = 0;
+
   // Simulates a renderer-initiated navigation to |url| starting in the
   // RenderFrameHost.
   virtual void SimulateNavigationStart(const GURL& url) = 0;

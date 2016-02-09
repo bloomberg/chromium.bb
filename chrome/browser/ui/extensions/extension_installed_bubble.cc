@@ -212,6 +212,10 @@ std::string ExtensionInstalledBubble::GetName() const {
   return "ExtensionInstalled";
 }
 
+const content::RenderFrameHost* ExtensionInstalledBubble::OwningFrame() const {
+  return nullptr;
+}
+
 base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
   int message_id = 0;
   base::string16 extra;

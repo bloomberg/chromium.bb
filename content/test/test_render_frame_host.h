@@ -56,6 +56,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // RenderFrameHostTester implementation.
   void InitializeRenderFrameIfNeeded() override;
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
+  void Detach() override;
   void SimulateNavigationStart(const GURL& url) override;
   void SimulateRedirect(const GURL& new_url) override;
   void SimulateNavigationCommit(const GURL& url) override;

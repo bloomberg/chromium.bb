@@ -47,7 +47,7 @@ bool BubbleManager::CloseBubble(BubbleReference bubble,
                                 BubbleCloseReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(manager_state_, ITERATING_BUBBLES);
-  return CloseAllMatchingBubbles(bubble.get(), reason);
+  return CloseAllMatchingBubbles(bubble.get(), nullptr, reason);
 }
 
 void BubbleManager::CloseAllBubbles(BubbleCloseReason reason) {
@@ -56,7 +56,7 @@ void BubbleManager::CloseAllBubbles(BubbleCloseReason reason) {
   DCHECK_NE(reason, BUBBLE_CLOSE_CANCELED);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(manager_state_, ITERATING_BUBBLES);
-  CloseAllMatchingBubbles(nullptr, reason);
+  CloseAllMatchingBubbles(nullptr, nullptr, reason);
 }
 
 void BubbleManager::UpdateAllBubbleAnchors() {
@@ -89,19 +89,34 @@ void BubbleManager::FinalizePendingRequests() {
   CloseAllBubbles(BUBBLE_CLOSE_FORCED);
 }
 
-bool BubbleManager::CloseAllMatchingBubbles(BubbleController* match,
-                                            BubbleCloseReason reason) {
+void BubbleManager::CloseBubblesOwnedBy(const content::RenderFrameHost* frame) {
+  CloseAllMatchingBubbles(nullptr, frame, BUBBLE_CLOSE_FRAME_DESTROYED);
+}
+
+bool BubbleManager::CloseAllMatchingBubbles(
+    BubbleController* bubble,
+    const content::RenderFrameHost* owner,
+    BubbleCloseReason reason) {
+  // Specifying both an owning frame and a particular bubble to close doesn't
+  // make sense. If we have a frame, all bubbles owned by that frame need to
+  // have the opportunity to close. If we want to close a specific bubble, then
+  // it should get the close event regardless of which frame owns it. On the
+  // other hand, OR'ing the conditions needs a special case in order to be able
+  // to close all bubbles, so we disallow passing both until a need appears.
+  DCHECK(!bubble || !owner);
+
   ScopedVector<BubbleController> close_queue;
 
   // Guard against bubbles being added or removed while iterating the bubbles.
   ManagerState original_state = manager_state_;
   manager_state_ = ITERATING_BUBBLES;
-  for (auto iter = controllers_.begin(); iter != controllers_.end();) {
-    if ((!match || match == *iter) && (*iter)->ShouldClose(reason)) {
-      close_queue.push_back(*iter);
-      iter = controllers_.weak_erase(iter);
+  for (auto i = controllers_.begin(); i != controllers_.end();) {
+    if ((!bubble || bubble == *i) && (!owner || (*i)->OwningFrameIs(owner)) &&
+        (*i)->ShouldClose(reason)) {
+      close_queue.push_back(*i);
+      i = controllers_.weak_erase(i);
     } else {
-      ++iter;
+      ++i;
     }
   }
   manager_state_ = original_state;

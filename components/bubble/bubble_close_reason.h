@@ -36,6 +36,9 @@ enum BubbleCloseReason {
 
   // The user selected a negative response in the bubble.
   BUBBLE_CLOSE_CANCELED,
+
+  // A bubble's owning frame is being destroyed.
+  BUBBLE_CLOSE_FRAME_DESTROYED,
 };
 
 #endif  // COMPONENTS_BUBBLE_BUBBLE_CLOSE_REASON_H_

@@ -13,6 +13,10 @@
 
 class BubbleUi;
 
+namespace content {
+class RenderFrameHost;
+}
+
 // Inherit from this class to define a bubble. A bubble is a small transient UI
 // surface anchored to a parent window. Most bubbles are dismissed when they
 // lose focus.
@@ -40,6 +44,10 @@ class BubbleDelegate {
 
   // Used to identify a bubble for collecting metrics.
   virtual std::string GetName() const = 0;
+
+  // If this returns non-null, the bubble will be closed when the returned frame
+  // is destroyed.
+  virtual const content::RenderFrameHost* OwningFrame() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BubbleDelegate);

@@ -8,8 +8,9 @@
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
 #include "components/bubble/bubble_controller.h"
 
-BluetoothChooserBubbleDelegate::BluetoothChooserBubbleDelegate(Browser* browser)
-    : ChooserBubbleDelegate(browser), bluetooth_chooser_(nullptr) {}
+BluetoothChooserBubbleDelegate::BluetoothChooserBubbleDelegate(
+    content::RenderFrameHost* owner)
+    : ChooserBubbleDelegate(owner), bluetooth_chooser_(nullptr) {}
 
 BluetoothChooserBubbleDelegate::~BluetoothChooserBubbleDelegate() {
   if (bluetooth_chooser_)
