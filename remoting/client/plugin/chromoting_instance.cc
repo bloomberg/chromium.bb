@@ -680,15 +680,6 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       new ChromotingClient(&context_, this, video_renderer_.get(),
                            make_scoped_ptr(new PepperAudioPlayer(this))));
 
-  // Connect the input pipeline to the protocol stub & initialize components.
-  mouse_input_filter_.set_input_stub(client_->input_stub());
-  if (!plugin_view_.is_null()) {
-    webrtc::DesktopSize size(plugin_view_.GetRect().width(),
-                             plugin_view_.GetRect().height());
-    mouse_input_filter_.set_input_size(size);
-    touch_input_scaler_.set_input_size(size);
-  }
-
   // Setup the signal strategy.
   signal_strategy_.reset(new DelegatingSignalStrategy(
       local_jid, base::Bind(&ChromotingInstance::SendOutgoingIq,
@@ -734,6 +725,15 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   // Kick off the connection.
   client_->Start(signal_strategy_.get(), std::move(authenticator),
                  transport_context, host_jid, capabilities);
+
+  // Connect the input pipeline to the protocol stub.
+  mouse_input_filter_.set_input_stub(client_->input_stub());
+  if (!plugin_view_.is_null()) {
+    webrtc::DesktopSize size(plugin_view_.GetRect().width(),
+                             plugin_view_.GetRect().height());
+    mouse_input_filter_.set_input_size(size);
+    touch_input_scaler_.set_input_size(size);
+  }
 
   // Start timer that periodically sends perf stats.
   stats_update_timer_.Start(
