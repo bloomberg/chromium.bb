@@ -327,7 +327,6 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     // inherit an aliased security context.
     DocumentInit init(m_frame->document()->url(), m_frame);
     init.withNewRegistrationContext();
-    init.withoutInheritingSecurityOrigin();
 
     stopAllLoaders();
     // Don't allow any new child frames to load in this frame: attaching a new
