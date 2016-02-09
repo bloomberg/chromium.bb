@@ -232,8 +232,13 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
     return browser->window()->GetLocationBar()->ShowPageActionPopup(
         extension, grant_active_tab_permissions);
   }
-  return browser->window()->GetToolbarActionsBar()->ShowToolbarActionPopup(
-      extension->id(), grant_active_tab_permissions);
+  ToolbarActionsBar* toolbar_actions_bar =
+      browser->window()->GetToolbarActionsBar();
+  // ToolbarActionsBar could be null if, e.g., this is a popup window with no
+  // toolbar.
+  return toolbar_actions_bar &&
+         toolbar_actions_bar->ShowToolbarActionPopup(
+             extension->id(), grant_active_tab_permissions);
 }
 
 bool ExtensionActionAPI::PageActionWantsToRun(
