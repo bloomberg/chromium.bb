@@ -150,6 +150,7 @@ FYI_WATERFALL = {
     'GPU Win Builder',
     'GPU Win Builder (dbg)',
     'GPU Win x64 Builder',
+    'GPU Win x64 Builder (dbg)',
     'GPU Mac Builder',
     'GPU Mac Builder (dbg)',
     'GPU Linux Builder',
@@ -202,6 +203,15 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
+    'Win7 Debug (ATI)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6779',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'win',
+    },
     'Win7 Release dEQP (NVIDIA)': {
       'deqp': True,
       'swarming_dimensions': {
@@ -218,6 +228,15 @@ FYI_WATERFALL = {
         'os': 'Windows-2008ServerR2-SP1'
       },
       'build_config': 'Release_x64',
+      'swarming': True,
+      'os_type': 'win',
+    },
+    'Win7 x64 Debug (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Debug_x64',
       'swarming': True,
       'os_type': 'win',
     },
@@ -612,6 +631,17 @@ TELEMETRY_TESTS = {
     'disabled_tester_configs': [
       {
         # BUG 555545: Disable webgl_conformance_gl_tests on Win/AMD
+        'swarming_dimension_sets': [
+          {
+            'gpu': '1002:6779',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+        ],
+      },
+      {
+        # BUG 555545: Disable webgl_conformance_gl_tests on Win/AMD
+        # Need another entry to match the optional tryservers.
+        'run_on_optional': True,
         'swarming_dimension_sets': [
           {
             'gpu': '1002:6779',
