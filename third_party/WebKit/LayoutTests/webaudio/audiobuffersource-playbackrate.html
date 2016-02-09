@@ -1,101 +1,117 @@
 <!DOCTYPE html>
-
-<!--
-Tests that AudioBufferSourceNode can playback at different rates properly.
-Render 60 notes over a 5 octave range.
--->
-
 <html>
 <head>
-<script type="text/javascript" src="resources/audio-testing.js"></script>
-<script type="text/javascript" src="resources/buffer-loader.js"></script>
-
+  <title>AudioBufferSourceNode - playbackRate test</title>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
 </head>
 <body>
+  <script>
+  description("Test if AudioBufferSourceNode.playbackRate can playback at different rates properly.");
+  window.jsTestIsAsync = true;
 
-<script>
+  // Any sample rate mutiple of 128 is valid for this test, but here it uses
+  // 48000Hz because it is a commonly used number that happens to be multiple
+  // of 128.
+  var sampleRate = 48000;
 
-window.onload = init;
+  // The test iterates over 60 pitches starting from 36. (MIDI pitch of C2)
+  var fundamentalPitch = 36;
+  var numberOfPitches = 60;
 
-var sampleRate = 44100.0;
-var numberOfNotes = 60; // play over a 5 octave range
-var noteDuration = 0.025;
-var noteSpacing = noteDuration + 0.005; // leave 5ms of silence between each "note"
-var lengthInSeconds = numberOfNotes * noteSpacing;
+  var noteDuration = 0.025;
+  var totalDuration = noteDuration * numberOfPitches;
 
-var context = 0;
-var sinWaveBuffer = 0;
+  // Test constraints for each octave.
+  var testConstraints = [{
+    thresholdSNR: 103.8508,
+    thresholdDiffULP: 0.3028
+  }, {
+    thresholdSNR: 103.8657,
+    thresholdDiffULP: 0.3029
+  }, {
+    thresholdSNR: 103.8141,
+    thresholdDiffULP: 0.3047
+  }, {
+    thresholdSNR: 103.6818,
+    thresholdDiffULP: 0.3262
+  }, {
+    thresholdSNR: 103.1514,
+    thresholdDiffULP: 0.3946
+  }];
 
-function createOneCycleSinWaveBuffer(frequency, sampleRate) {
-    var duration = 1 / frequency;
-    var sampleFrameLength = duration * sampleRate;
-    
-    var audioBuffer = context.createBuffer(2, sampleFrameLength, sampleRate);
+  function pitchToFrequency(midiPitch) {
+    return 440 * Math.pow(2, (Math.floor(midiPitch) - 69) / 12);
+  }
 
-    var n = audioBuffer.length;
-    var channelL = audioBuffer.getChannelData(0);
-    var channelR = audioBuffer.getChannelData(1);
+  function pitchDiffToPlaybackRate(midiPitchDiff) {
+    return Math.pow(2, midiPitchDiff / 12);
+  }
 
-    for (var i = 0; i < n; ++i) {
-        channelL[i] = Math.sin(frequency * 2.0*Math.PI * i / sampleRate);
-        channelR[i] = channelL[i];
+  function createSineWaveBuffer(context, frequency, duration) {
+    var buffer = context.createBuffer(1, duration * sampleRate, sampleRate);
+    var data = buffer.getChannelData(0);
+    var omega = 2 * Math.PI * frequency / sampleRate;
+    for (var i = 0; i < data.length; i++)
+      data[i] = Math.sin(omega * i);
+
+    return buffer;
+  }
+
+  var context = new OfflineAudioContext(2, totalDuration * sampleRate, sampleRate);
+
+  // This is the fundamental buffer for playbackRate modulation. The duration of
+  // this buffer is arbitrary but long enough to produce the sound without
+  // running short.
+  var fundamentalBuffer = createSineWaveBuffer(context, pitchToFrequency(fundamentalPitch), totalDuration);
+
+  // A unit test consists of 2 sources: the 'actual' source runs a buffer with
+  // the playback rate modulated and the 'expected' source runs a mathmatically
+  // generated sound buffer.
+  function runUnitTest(context, noteStart, notePitch) {
+    var actualSrc = context.createBufferSource();
+    var expectedSrc = context.createBufferSource();
+    var merger = context.createChannelMerger(2);
+
+    actualSrc.buffer = fundamentalBuffer;
+    expectedSrc.buffer = createSineWaveBuffer(context, pitchToFrequency(notePitch), noteDuration);
+    actualSrc.playbackRate.value = pitchDiffToPlaybackRate(notePitch - fundamentalPitch);
+
+    actualSrc.connect(merger, 0, 0);
+    expectedSrc.connect(merger, 0, 1);
+    merger.connect(context.destination);
+
+    actualSrc.start(noteStart);
+    actualSrc.stop(noteStart + noteDuration);
+    expectedSrc.start(noteStart);
+    expectedSrc.stop(noteStart + noteDuration);
+  }
+
+  // Schedule tests up to 60 pitches above from the fundamental pitch.
+  for (var iteration = 0; iteration < numberOfPitches; iteration++)
+    runUnitTest(context, noteDuration * iteration, fundamentalPitch + iteration);
+
+  // Once the rendering is complete, split the buffer into 5 octaves. Then
+  // perform the SNR and the maximum difference ULP check for each octave with
+  // different constraints.
+  context.startRendering().then(function (renderedBuffer) {
+    var actual = renderedBuffer.getChannelData(0);
+    var expected = renderedBuffer.getChannelData(1);
+    var octaveLength = Math.floor(noteDuration * 12 * sampleRate);
+
+    for (var i = 0; i < numberOfPitches / 12; i++) {
+      var start = i * octaveLength, end = (i + 1) * octaveLength;
+      var octaveActual = actual.subarray(start, end);
+      var octaveExpected = expected.subarray(start, end);
+
+      compareBuffersWithConstraints(octaveActual, octaveExpected, testConstraints[i]);
     }
 
-    return audioBuffer;
-}
+    finishJSTest();
+  });
 
-function playNote(time, duration, playbackRate) {
-    var source = context.createBufferSource();
-    source.buffer = sinWaveBuffer;
-    source.playbackRate.value = playbackRate;
-    
-    var gainNode = context.createGain();
-    source.connect(gainNode);
-    gainNode.connect(context.destination);
-
-    // Loop and play for the given duration.
-    source.loop = true;
-    source.start(time);
-    source.stop(time + duration);
-    
-    // Apply quick fade-in and fade-out to avoid clicks.
-    gainNode.gain.value = 0;
-    gainNode.gain.setValueAtTime(0, time);
-    gainNode.gain.linearRampToValueAtTime(1, time + 0.005);
-    gainNode.gain.setValueAtTime(1, time + duration - 0.005);
-    gainNode.gain.linearRampToValueAtTime(0, time + duration);
-}
-
-function init() {
-    if (!window.testRunner)
-        return;
-
-    // Create offline audio context.
-    context = new OfflineAudioContext(2, sampleRate * lengthInSeconds, sampleRate);
-
-    // Create a single cycle of a sine wave.
-    // We'll loop this to play notes of a given duration, at a given playback rate.
-    sinWaveBuffer = createOneCycleSinWaveBuffer(440.0, sampleRate);
-
-    // Play 60 notes over a 5 octave range.
-    for (var i = 0; i < numberOfNotes; ++i) {
-        var time = i * noteSpacing;
-
-        var semitone = i - numberOfNotes/2; // start three octaves down
-        
-        // Convert from semitone to rate.
-        var playbackRate = Math.pow(2, semitone / 12);
-
-        playNote(time, noteDuration, playbackRate);
-    }
-
-    context.oncomplete = finishAudioTest;
-    context.startRendering();
-
-    testRunner.waitUntilDone();
-}
-
-</script>
-
+  successfullyParsed = true;
+  </script>
 </body>
 </html>

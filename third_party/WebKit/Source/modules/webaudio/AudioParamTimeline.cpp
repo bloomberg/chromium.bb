@@ -41,8 +41,9 @@ namespace blink {
 // For a SetTarget event, if the relative difference between the current value and the target value
 // is less than this, consider them the same and just output the target value.  This value MUST be
 // larger than the single precision epsilon of 5.960465e-8.  Due to round-off, this value is not
-// achievable in general.
-const float kSetTargetThreshold = 5e-7;
+// achievable in general.  This value can vary across the platforms (CPU) and thus it is determined
+// experimentally.
+const float kSetTargetThreshold = 1.5e-6;
 
 // For a SetTarget event, if the target value is 0, and the current value is less than this
 // threshold, consider the curve to have converged to 0.  We need a separate case from

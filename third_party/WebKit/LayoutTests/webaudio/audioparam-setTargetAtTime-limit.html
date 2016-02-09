@@ -35,7 +35,7 @@
             timeConstant: timeConstant,
             eps: limitThreshold,
             // Experimentally determined
-            threshold: 2.4273e-7
+            threshold: 2.4e-5
         }).then(done);
       })
 
@@ -67,7 +67,7 @@
             timeConstant: timeConstant,
             eps: limitThreshold,
             // Experimentally determined
-            threshold: 4.7470e-8
+            threshold: 1.3e-7
         }).then(done);
       });
 
@@ -134,7 +134,7 @@
 
           var success = true;
           success = Should("Initial output of " + tailFrame + " samples for " + message,
-              actual.slice(0, tailFrame))
+              actual.slice(0, tailFrame), { numberOfArrayLog: 8 })
             .beCloseToArray(expected.slice(0, tailFrame), options.threshold) && success;
 
           success = Should("Tail output for " + message,

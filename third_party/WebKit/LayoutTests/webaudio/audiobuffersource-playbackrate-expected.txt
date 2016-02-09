@@ -1,0 +1,24 @@
+Test if AudioBufferSourceNode.playbackRate can playback at different rates properly.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Exceeded SNR threshold of 103.8508 dB.
+PASS Maximum difference below threshold of 0.3028 ulp (16-bits).
+PASS Number of differences between results is 0 out of 14400.
+PASS Exceeded SNR threshold of 103.8657 dB.
+PASS Maximum difference below threshold of 0.3029 ulp (16-bits).
+PASS Number of differences between results is 0 out of 14400.
+PASS Exceeded SNR threshold of 103.8141 dB.
+PASS Maximum difference below threshold of 0.3047 ulp (16-bits).
+PASS Number of differences between results is 0 out of 14400.
+PASS Exceeded SNR threshold of 103.6818 dB.
+PASS Maximum difference below threshold of 0.3262 ulp (16-bits).
+PASS Number of differences between results is 0 out of 14400.
+PASS Exceeded SNR threshold of 103.1514 dB.
+PASS Maximum difference below threshold of 0.3946 ulp (16-bits).
+PASS Number of differences between results is 0 out of 14400.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
