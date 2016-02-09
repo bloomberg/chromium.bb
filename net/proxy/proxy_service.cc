@@ -5,6 +5,7 @@
 #include "net/proxy/proxy_service.h"
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -1378,6 +1380,8 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.ProxyService.GetProxyUsingScriptTime",
                                  diff, base::TimeDelta::FromMicroseconds(100),
                                  base::TimeDelta::FromSeconds(20), 50);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.ProxyService.GetProxyUsingScriptResult",
+                                  std::abs(result_code));
     }
     UMA_HISTOGRAM_BOOLEAN("Net.ProxyService.ResolvedUsingScript",
                           script_executed);

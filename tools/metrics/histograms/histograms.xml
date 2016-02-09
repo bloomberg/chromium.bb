@@ -25705,6 +25705,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ProxyService.GetProxyUsingScriptResult"
+    enum="NetErrorCodes">
+  <owner>eroman@chromium.org</owner>
+  <summary>
+    The network error code of resolving a URL by forwarding the request to the
+    proxy resolver and executing the PAC script.
+  </summary>
+</histogram>
+
 <histogram name="Net.ProxyService.GetProxyUsingScriptTime"
     units="100s of microseconds">
   <owner>eroman@chromium.org</owner>
