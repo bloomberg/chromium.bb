@@ -16,11 +16,13 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -364,7 +366,12 @@ void ReadMainModuleAnnotationsForKasko(
   if (!process_handle.IsValid())
     return;
 
-  HMODULE module = GetModuleInProcess(process_handle.Get(), L"chrome.exe");
+  // The executable name is the same for the browser process and the crash
+  // reporter.
+  base::FilePath exe_path;
+  base::PathService::Get(base::FILE_EXE, &exe_path);
+  HMODULE module = GetModuleInProcess(process_handle.Get(),
+                                      exe_path.BaseName().value().c_str());
   if (!module)
     return;
 
