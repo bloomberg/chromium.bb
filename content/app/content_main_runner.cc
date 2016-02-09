@@ -142,16 +142,6 @@ base::LazyInstance<ContentUtilityClient>
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif  // !OS_IOS && !CHROME_MULTIPLE_DLL_BROWSER
 
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
-#if defined __LP64__
-#define kV8NativesDataDescriptor kV8NativesDataDescriptor64
-#define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor64
-#else
-#define kV8NativesDataDescriptor kV8NativesDataDescriptor32
-#define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor32
-#endif
-#endif
-
 #if defined(OS_POSIX) && !defined(OS_IOS)
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.

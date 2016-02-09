@@ -156,31 +156,6 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #endif
       );
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  bool snapshot_loaded = false;
-#if defined(OS_ANDROID)
-  base::MemoryMappedFile::Region region;
-  auto maybe_register = [&region, &regions, &files_to_register](int key,
-                                                                int fd) {
-    if (fd != -1) {
-      files_to_register->Share(key, fd);
-      regions.insert(std::make_pair(key, region));
-    }
-  };
-  maybe_register(
-      kV8NativesDataDescriptor32,
-      gin::V8Initializer::GetOpenNativesFileForChildProcesses(&region, true));
-  maybe_register(
-      kV8NativesDataDescriptor64,
-      gin::V8Initializer::GetOpenNativesFileForChildProcesses(&region, false));
-  maybe_register(
-      kV8SnapshotDataDescriptor32,
-      gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(&region, true));
-  maybe_register(
-      kV8SnapshotDataDescriptor64,
-      gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(&region, false));
-
-  snapshot_loaded = true;
-#else
   base::PlatformFile natives_pf =
       gin::V8Initializer::GetOpenNativesFileForChildProcesses(
           &regions[kV8NativesDataDescriptor]);
@@ -194,15 +169,13 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   // Failure to load the V8 snapshot is not necessarily an error. V8 can start
   // up (slower) without the snapshot.
   if (snapshot_pf != -1) {
-    snapshot_loaded = true;
     files_to_register->Share(kV8SnapshotDataDescriptor, snapshot_pf);
     regions.insert(std::make_pair(kV8SnapshotDataDescriptor, snapshot_region));
   }
-#endif
 
   if (process_type != switches::kZygoteProcess) {
     cmd_line->AppendSwitch(::switches::kV8NativesPassedByFD);
-    if (snapshot_loaded) {
+    if (snapshot_pf != -1) {
       cmd_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
     }
   }
