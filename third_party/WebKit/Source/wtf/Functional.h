@@ -26,6 +26,7 @@
 #ifndef WTF_Functional_h
 #define WTF_Functional_h
 
+#include "base/tuple.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
@@ -33,6 +34,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/WeakPtr.h"
+#include <tuple>
 
 namespace WTF {
 
@@ -147,209 +149,47 @@ protected:
     Function() = default;
 };
 
-template<int boundArgsCount, typename FunctionWrapper, typename FunctionType>
+template <typename BoundParametersTuple, typename FunctionWrapper, typename... UnboundParameters>
 class PartBoundFunctionImpl;
 
-// Specialization for unbound functions.
-template<typename FunctionWrapper, typename R, typename... UnboundParams>
-class PartBoundFunctionImpl<0, FunctionWrapper, R(UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
+template <typename... BoundParameters, typename FunctionWrapper, typename... UnboundParameters>
+class PartBoundFunctionImpl<std::tuple<BoundParameters...>, FunctionWrapper, UnboundParameters...> final : public Function<typename FunctionWrapper::ResultType(UnboundParameters...)> {
 public:
-    PartBoundFunctionImpl(FunctionWrapper functionWrapper)
+    explicit PartBoundFunctionImpl(FunctionWrapper functionWrapper, const BoundParameters&... bound)
         : m_functionWrapper(functionWrapper)
+        , m_bound(ParamStorageTraits<BoundParameters>::wrap(bound)...)
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
+    typename FunctionWrapper::ResultType operator()(UnboundParameters... unbound) override
     {
-        return m_functionWrapper(params...);
+        // What we really want to do is to call m_functionWrapper(m_bound..., unbound...), but to do that we need to
+        // pass a list of indices to a worker function template.
+        return callInternal(unbound..., base::MakeIndexSequence<sizeof...(BoundParameters)>());
     }
 
 private:
+    template <std::size_t... boundIndices>
+    typename FunctionWrapper::ResultType callInternal(UnboundParameters... unbound, const base::IndexSequence<boundIndices...>&)
+    {
+        // Get each element in m_bound, unwrap them, and call the function with the desired arguments.
+        return m_functionWrapper(ParamStorageTraits<BoundParameters>::unwrap(std::get<boundIndices>(m_bound))..., unbound...);
+    }
+
     FunctionWrapper m_functionWrapper;
-};
-
-template<typename FunctionWrapper, typename R, typename P1, typename... UnboundParams>
-class PartBoundFunctionImpl<1, FunctionWrapper, R(P1, UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
-public:
-    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
-        : m_functionWrapper(functionWrapper)
-        , m_p1(ParamStorageTraits<P1>::wrap(p1))
-    {
-    }
-
-    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
-    {
-        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), params...);
-    }
-
-private:
-    FunctionWrapper m_functionWrapper;
-    typename ParamStorageTraits<P1>::StorageType m_p1;
-};
-
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename... UnboundParams>
-class PartBoundFunctionImpl<2, FunctionWrapper, R(P1, P2, UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
-public:
-    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2)
-        : m_functionWrapper(functionWrapper)
-        , m_p1(ParamStorageTraits<P1>::wrap(p1))
-        , m_p2(ParamStorageTraits<P2>::wrap(p2))
-    {
-    }
-
-    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
-    {
-        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), params...);
-    }
-
-private:
-    FunctionWrapper m_functionWrapper;
-    typename ParamStorageTraits<P1>::StorageType m_p1;
-    typename ParamStorageTraits<P2>::StorageType m_p2;
-};
-
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename... UnboundParams>
-class PartBoundFunctionImpl<3, FunctionWrapper, R(P1, P2, P3, UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
-public:
-    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3)
-        : m_functionWrapper(functionWrapper)
-        , m_p1(ParamStorageTraits<P1>::wrap(p1))
-        , m_p2(ParamStorageTraits<P2>::wrap(p2))
-        , m_p3(ParamStorageTraits<P3>::wrap(p3))
-    {
-    }
-
-    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
-    {
-        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), params...);
-    }
-
-private:
-    FunctionWrapper m_functionWrapper;
-    typename ParamStorageTraits<P1>::StorageType m_p1;
-    typename ParamStorageTraits<P2>::StorageType m_p2;
-    typename ParamStorageTraits<P3>::StorageType m_p3;
-};
-
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename... UnboundParams>
-class PartBoundFunctionImpl<4, FunctionWrapper, R(P1, P2, P3, P4, UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
-public:
-    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4)
-        : m_functionWrapper(functionWrapper)
-        , m_p1(ParamStorageTraits<P1>::wrap(p1))
-        , m_p2(ParamStorageTraits<P2>::wrap(p2))
-        , m_p3(ParamStorageTraits<P3>::wrap(p3))
-        , m_p4(ParamStorageTraits<P4>::wrap(p4))
-    {
-    }
-
-    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
-    {
-        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), params...);
-    }
-
-private:
-    FunctionWrapper m_functionWrapper;
-    typename ParamStorageTraits<P1>::StorageType m_p1;
-    typename ParamStorageTraits<P2>::StorageType m_p2;
-    typename ParamStorageTraits<P3>::StorageType m_p3;
-    typename ParamStorageTraits<P4>::StorageType m_p4;
-};
-
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename... UnboundParams>
-class PartBoundFunctionImpl<5, FunctionWrapper, R(P1, P2, P3, P4, P5, UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
-public:
-    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5)
-        : m_functionWrapper(functionWrapper)
-        , m_p1(ParamStorageTraits<P1>::wrap(p1))
-        , m_p2(ParamStorageTraits<P2>::wrap(p2))
-        , m_p3(ParamStorageTraits<P3>::wrap(p3))
-        , m_p4(ParamStorageTraits<P4>::wrap(p4))
-        , m_p5(ParamStorageTraits<P5>::wrap(p5))
-    {
-    }
-
-    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
-    {
-        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), params...);
-    }
-
-private:
-    FunctionWrapper m_functionWrapper;
-    typename ParamStorageTraits<P1>::StorageType m_p1;
-    typename ParamStorageTraits<P2>::StorageType m_p2;
-    typename ParamStorageTraits<P3>::StorageType m_p3;
-    typename ParamStorageTraits<P4>::StorageType m_p4;
-    typename ParamStorageTraits<P5>::StorageType m_p5;
-};
-
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename... UnboundParams>
-class PartBoundFunctionImpl<6, FunctionWrapper, R(P1, P2, P3, P4, P5, P6, UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
-public:
-    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5, const P6& p6)
-        : m_functionWrapper(functionWrapper)
-        , m_p1(ParamStorageTraits<P1>::wrap(p1))
-        , m_p2(ParamStorageTraits<P2>::wrap(p2))
-        , m_p3(ParamStorageTraits<P3>::wrap(p3))
-        , m_p4(ParamStorageTraits<P4>::wrap(p4))
-        , m_p5(ParamStorageTraits<P5>::wrap(p5))
-        , m_p6(ParamStorageTraits<P6>::wrap(p6))
-    {
-    }
-
-    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
-    {
-        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), ParamStorageTraits<P6>::unwrap(m_p6), params...);
-    }
-
-private:
-    FunctionWrapper m_functionWrapper;
-    typename ParamStorageTraits<P1>::StorageType m_p1;
-    typename ParamStorageTraits<P2>::StorageType m_p2;
-    typename ParamStorageTraits<P3>::StorageType m_p3;
-    typename ParamStorageTraits<P4>::StorageType m_p4;
-    typename ParamStorageTraits<P5>::StorageType m_p5;
-    typename ParamStorageTraits<P6>::StorageType m_p6;
-};
-
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename... UnboundParams>
-class PartBoundFunctionImpl<7, FunctionWrapper, R(P1, P2, P3, P4, P5, P6, P7, UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
-public:
-    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5, const P6& p6, const P7& p7)
-        : m_functionWrapper(functionWrapper)
-        , m_p1(ParamStorageTraits<P1>::wrap(p1))
-        , m_p2(ParamStorageTraits<P2>::wrap(p2))
-        , m_p3(ParamStorageTraits<P3>::wrap(p3))
-        , m_p4(ParamStorageTraits<P4>::wrap(p4))
-        , m_p5(ParamStorageTraits<P5>::wrap(p5))
-        , m_p6(ParamStorageTraits<P6>::wrap(p6))
-        , m_p7(ParamStorageTraits<P7>::wrap(p7))
-    {
-    }
-
-    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
-    {
-        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), ParamStorageTraits<P6>::unwrap(m_p6), ParamStorageTraits<P7>::unwrap(m_p7), params...);
-    }
-
-private:
-    FunctionWrapper m_functionWrapper;
-    typename ParamStorageTraits<P1>::StorageType m_p1;
-    typename ParamStorageTraits<P2>::StorageType m_p2;
-    typename ParamStorageTraits<P3>::StorageType m_p3;
-    typename ParamStorageTraits<P4>::StorageType m_p4;
-    typename ParamStorageTraits<P5>::StorageType m_p5;
-    typename ParamStorageTraits<P6>::StorageType m_p6;
-    typename ParamStorageTraits<P7>::StorageType m_p7;
+    std::tuple<typename ParamStorageTraits<BoundParameters>::StorageType...> m_bound;
 };
 
 
-template<typename... UnboundArgs, typename FunctionType, typename... BoundArgs>
-PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundArgs...)>> bind(FunctionType function, const BoundArgs&... boundArgs)
+template<typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
+PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...)>> bind(FunctionType function, const BoundParameters&... boundParameters)
 {
-    const int boundArgsCount = sizeof...(BoundArgs);
-    using BoundFunctionType = PartBoundFunctionImpl<boundArgsCount, FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType(BoundArgs..., UnboundArgs...)>;
-    return adoptPtr(new BoundFunctionType(FunctionWrapper<FunctionType>(function), boundArgs...));
+    // Bound parameters' types are wrapped with std::tuple so we can pass two template parameter packs (bound
+    // parameters and unbound) to PartBoundFunctionImpl. Note that a tuple of this type isn't actually created;
+    // std::tuple<> is just for carrying the bound parameters' types. Any other class template taking a type parameter
+    // pack can be used instead of std::tuple. std::tuple is used just because it's most convenient for this purpose.
+    using BoundFunctionType = PartBoundFunctionImpl<std::tuple<BoundParameters...>, FunctionWrapper<FunctionType>, UnboundParameters...>;
+    return adoptPtr(new BoundFunctionType(FunctionWrapper<FunctionType>(function), boundParameters...));
 }
 
 typedef Function<void()> Closure;

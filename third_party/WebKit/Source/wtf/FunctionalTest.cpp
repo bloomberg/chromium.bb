@@ -311,6 +311,23 @@ TEST(FunctionalTest, WrapUnwrapInPartialBind)
     EXPECT_EQ(21, (*partiallyBoundFunction)(7));
 }
 
+bool lotsOfArguments(int first, int second, int third, int fourth, int fifth, int sixth, int seventh, int eighth, int ninth, int tenth)
+{
+    return first == 1 && second == 2 && third == 3 && fourth == 4 && fifth == 5 && sixth == 6 && seventh == 7 && eighth == 8 && ninth == 9 && tenth == 10;
+}
+
+TEST(FunctionalTest, LotsOfBoundVariables)
+{
+    OwnPtr<Function<bool(int, int)>> eightBound = bind<int, int>(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8);
+    EXPECT_TRUE((*eightBound)(9, 10));
+
+    OwnPtr<Function<bool(int)>> nineBound = bind<int>(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    EXPECT_TRUE((*nineBound)(10));
+
+    OwnPtr<Function<bool()>> allBound = bind(lotsOfArguments, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    EXPECT_TRUE((*allBound)());
+}
+
 } // anonymous namespace
 
 } // namespace WTF
