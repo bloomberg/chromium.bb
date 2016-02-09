@@ -56,9 +56,11 @@ public abstract class AwBrowserProcess {
      * Configures child process launcher. This is required only if child services are used in
      * WebView.
      */
-    public static void configureChildProcessLauncher(String packageName, int extraBindFlags) {
+    public static void configureChildProcessLauncher(String packageName, int extraBindFlags,
+            int libraryProcessType) {
         ChildProcessLauncher.setChildProcessCreationParams(
-                new ChildProcessLauncher.ChildProcessCreationParams(packageName, extraBindFlags));
+                new ChildProcessLauncher.ChildProcessCreationParams(packageName, extraBindFlags,
+                        libraryProcessType));
     }
 
     /**
