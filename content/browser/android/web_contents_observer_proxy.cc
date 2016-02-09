@@ -13,6 +13,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "jni/WebContentsObserverProxy_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -74,6 +75,17 @@ void WebContentsObserverProxy::RenderProcessGone(
       termination_status == base::TERMINATION_STATUS_OOM_PROTECTED;
   Java_WebContentsObserverProxy_renderProcessGone(env, obj.obj(),
                                                   was_oom_protected);
+}
+
+void WebContentsObserverProxy::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(java_observer_);
+  ScopedJavaLocalRef<jstring> jstring_url(
+      ConvertUTF8ToJavaString(env, web_contents()->GetVisibleURL().spec()));
+  Java_WebContentsObserverProxy_didFinishNavigation(
+      env, obj.obj(), navigation_handle->IsInMainFrame(),
+      navigation_handle->IsErrorPage(), navigation_handle->HasCommitted());
 }
 
 void WebContentsObserverProxy::DidStartLoading() {
@@ -139,6 +151,7 @@ void WebContentsObserverProxy::DidNavigateMainFrame(
   // that would also be valid for a fragment navigation.
   bool is_fragment_navigation =
       urls_same_ignoring_fragment && details.is_in_page;
+
   Java_WebContentsObserverProxy_didNavigateMainFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
       details.is_navigation_to_different_page(), is_fragment_navigation,

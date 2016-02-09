@@ -30,6 +30,19 @@ public abstract class WebContentsObserver {
     public void renderProcessGone(boolean wasOomProtected) {}
 
     /**
+     * Called when the current navigation finishes.
+     *
+     * @param isMainFrame Whether the navigation is for the main frame.
+     * @param isErrorPage Whether the navigation shows an error page.
+     * @param hasCommitted Whether the navigation has committed. This returns true for either
+     *                     successful commits or error pages that replace the previous page
+     *                     (distinguished by |isErrorPage|), and false for errors that leave the
+     *                     user on the previous page.
+     */
+    public void didFinishNavigation(
+            boolean isMainFrame, boolean isErrorPage, boolean hasCommitted) {}
+
+    /**
      * Called when the a page starts loading.
      * @param url The validated url for the loading page.
      */

@@ -88,6 +88,15 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void didFinishNavigation(
+            boolean isMainFrame, boolean isErrorPage, boolean hasCommitted) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().didFinishNavigation(isMainFrame, isErrorPage, hasCommitted);
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void didStartLoading(String url) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().didStartLoading(url);

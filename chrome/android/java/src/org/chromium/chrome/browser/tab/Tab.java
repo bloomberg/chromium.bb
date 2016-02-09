@@ -770,6 +770,16 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * Sets whether the tab is showing an error page.  This is reset whenever the tab finishes a
+     * navigation.
+     *
+     * @param isShowingErrorPage Whether the tab shows an error page.
+     */
+    public void setIsShowingErrorPage(boolean isShowingErrorPage) {
+        mIsShowingErrorPage = isShowingErrorPage;
+    }
+
+    /**
      * @return Whether or not the tab has something valid to render.
      */
     public boolean isReady() {
@@ -1447,8 +1457,6 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(validatedUrl);
-
-        mIsShowingErrorPage = showingErrorPage;
 
         if (mLoFiBarPopupController != null) {
             mLoFiBarPopupController.resetLoFiPopupShownForPageLoad();
