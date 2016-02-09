@@ -334,6 +334,10 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Grap
 
 void VisualViewport::initializeScrollbars()
 {
+    // Do nothing if not attached to layer tree yet - will initialize upon attach.
+    if (!m_innerViewportContainerLayer)
+        return;
+
     if (visualViewportSuppliesScrollbars()) {
         if (!m_overlayScrollbarHorizontal->parent())
             m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
