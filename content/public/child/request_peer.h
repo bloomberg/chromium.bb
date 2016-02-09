@@ -97,26 +97,6 @@ class CONTENT_EXPORT RequestPeer {
                                   const base::TimeTicks& completion_time,
                                   int64_t total_transfer_size) = 0;
 
-  // This is a combined notification of
-  //  - OnReceivedResponse,
-  //  - OnReceivedData and
-  //  - OnCompletedRequest.
-  // Unlike OnReceivedData, |data| can be null.
-  // This method is introduced to avoid repetitive method calls which might
-  // lead to use-after-free issues. See https://crbug.com/485413,
-  // https://crbug.com/507170.
-  // TODO(yhirano): Fix the RequestPeer lifecycle problem and remove this
-  // function.
-  virtual void OnReceivedCompletedResponse(
-      const ResourceResponseInfo& info,
-      scoped_ptr<ReceivedData> data,
-      int error_code,
-      bool was_ignored_by_handler,
-      bool stale_copy_in_cache,
-      const std::string& security_info,
-      const base::TimeTicks& completion_time,
-      int64_t total_transfer_size) = 0;
-
   virtual ~RequestPeer() {}
 };
 

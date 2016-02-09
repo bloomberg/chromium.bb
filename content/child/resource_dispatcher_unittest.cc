@@ -22,7 +22,9 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
+#include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -52,6 +54,7 @@ class TestRequestPeer : public RequestPeer {
 
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const ResourceResponseInfo& info) override {
+    EXPECT_FALSE(context_->cancelled);
     ++context_->seen_redirects;
     if (context_->defer_on_redirect)
       dispatcher_->SetDefersLoading(context_->request_id, true);
@@ -59,18 +62,24 @@ class TestRequestPeer : public RequestPeer {
   }
 
   void OnReceivedResponse(const ResourceResponseInfo& info) override {
+    EXPECT_FALSE(context_->cancelled);
     EXPECT_FALSE(context_->received_response);
     context_->received_response = true;
-    if (context_->cancel_on_receive_response)
+    if (context_->cancel_on_receive_response) {
       dispatcher_->Cancel(context_->request_id);
+      context_->cancelled = true;
+    }
   }
 
   void OnDownloadedData(int len, int encoded_data_length) override {
+    EXPECT_FALSE(context_->cancelled);
     context_->total_downloaded_data_length += len;
     context_->total_encoded_data_length += encoded_data_length;
   }
 
   void OnReceivedData(scoped_ptr<ReceivedData> data) override {
+    if (context_->cancelled)
+      return;
     EXPECT_TRUE(context_->received_response);
     EXPECT_FALSE(context_->complete);
     context_->data.append(data->payload(), data->length());
@@ -83,26 +92,11 @@ class TestRequestPeer : public RequestPeer {
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size) override {
+    if (context_->cancelled)
+      return;
     EXPECT_TRUE(context_->received_response);
     EXPECT_FALSE(context_->complete);
     context_->complete = true;
-  }
-
-  void OnReceivedCompletedResponse(const ResourceResponseInfo& info,
-                                   scoped_ptr<ReceivedData> data,
-                                   int error_code,
-                                   bool was_ignored_by_handler,
-                                   bool stale_copy_in_cache,
-                                   const std::string& security_info,
-                                   const base::TimeTicks& completion_time,
-                                   int64_t total_transfer_size) override {
-    OnReceivedResponse(info);
-    if (context_->cancel_on_receive_response)
-      return;
-    if (data)
-      OnReceivedData(std::move(data));
-    OnCompletedRequest(error_code, was_ignored_by_handler, stale_copy_in_cache,
-                       security_info, completion_time, total_transfer_size);
   }
 
   struct Context {
@@ -127,6 +121,7 @@ class TestRequestPeer : public RequestPeer {
     int total_downloaded_data_length = 0;
 
     bool complete = false;
+    bool cancelled = false;
     int request_id = -1;
   };
 
@@ -459,6 +454,155 @@ TEST_F(ResourceDispatcherTest, CancelDuringCallback) {
 
   // Any future messages related to the request should be ignored.
   NotifySetDataBuffer(id, strlen(kTestPageContents));
+  NotifyDataReceived(id, kTestPageContents);
+  NotifyRequestComplete(id, strlen(kTestPageContents));
+
+  EXPECT_EQ(0u, queued_messages());
+  EXPECT_EQ("", peer_context.data);
+  EXPECT_FALSE(peer_context.complete);
+}
+
+class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
+ public:
+  TestResourceDispatcherDelegate() {}
+  ~TestResourceDispatcherDelegate() override {}
+
+  scoped_ptr<RequestPeer> OnRequestComplete(
+      scoped_ptr<RequestPeer> current_peer,
+      ResourceType resource_type,
+      int error_code) override {
+    return current_peer;
+  }
+
+  scoped_ptr<RequestPeer> OnReceivedResponse(
+      scoped_ptr<RequestPeer> current_peer,
+      const std::string& mime_type,
+      const GURL& url) override {
+    return make_scoped_ptr(new WrapperPeer(std::move(current_peer)));
+  }
+
+  class WrapperPeer : public RequestPeer {
+   public:
+    explicit WrapperPeer(scoped_ptr<RequestPeer> original_peer)
+        : original_peer_(std::move(original_peer)) {}
+
+    void OnUploadProgress(uint64_t position, uint64_t size) override {}
+
+    bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
+                            const ResourceResponseInfo& info) override {
+      return false;
+    }
+
+    void OnReceivedResponse(const ResourceResponseInfo& info) override {
+      response_info_ = info;
+    }
+
+    void OnDownloadedData(int len, int encoded_data_length) override {}
+
+    void OnReceivedData(scoped_ptr<ReceivedData> data) override {
+      data_.append(data->payload(), data->length());
+    }
+
+    void OnCompletedRequest(int error_code,
+                            bool was_ignored_by_handler,
+                            bool stale_copy_in_cache,
+                            const std::string& security_info,
+                            const base::TimeTicks& completion_time,
+                            int64_t total_transfer_size) override {
+      original_peer_->OnReceivedResponse(response_info_);
+      if (!data_.empty()) {
+        original_peer_->OnReceivedData(make_scoped_ptr(
+            new FixedReceivedData(data_.data(), data_.size(), -1)));
+      }
+      original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
+                                         stale_copy_in_cache, security_info,
+                                         completion_time, total_transfer_size);
+    }
+
+   private:
+    scoped_ptr<RequestPeer> original_peer_;
+    ResourceResponseInfo response_info_;
+    std::string data_;
+
+    DISALLOW_COPY_AND_ASSIGN(WrapperPeer);
+  };
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherDelegate);
+};
+
+TEST_F(ResourceDispatcherTest, DelegateTest) {
+  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  TestRequestPeer::Context peer_context;
+  StartAsync(*request_info.get(), nullptr, &peer_context);
+
+  // Set the delegate that inserts a new peer in OnReceivedResponse.
+  TestResourceDispatcherDelegate delegate;
+  dispatcher()->set_delegate(&delegate);
+
+  // Run a simple round-trip.
+  const size_t kFirstReceiveSize = 2;
+  ASSERT_LT(kFirstReceiveSize, strlen(kTestPageContents));
+
+  int id = ConsumeRequestResource();
+  EXPECT_EQ(0u, queued_messages());
+
+  // The wrapper eats all messages until RequestComplete message is sent.
+  NotifyReceivedResponse(id);
+  NotifySetDataBuffer(id, strlen(kTestPageContents));
+  NotifyDataReceived(id, std::string(kTestPageContents, kFirstReceiveSize));
+  ConsumeDataReceived_ACK(id);
+  NotifyDataReceived(id, kTestPageContents + kFirstReceiveSize);
+  ConsumeDataReceived_ACK(id);
+
+  EXPECT_FALSE(peer_context.received_response);
+  EXPECT_EQ(0u, queued_messages());
+
+  // This lets the wrapper peer pass all the messages to the original
+  // peer at once.
+  NotifyRequestComplete(id, strlen(kTestPageContents));
+
+  EXPECT_TRUE(peer_context.received_response);
+  EXPECT_EQ(kTestPageContents, peer_context.data);
+  EXPECT_TRUE(peer_context.complete);
+  EXPECT_EQ(0u, queued_messages());
+}
+
+TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
+  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(false));
+  TestRequestPeer::Context peer_context;
+  StartAsync(*request_info.get(), nullptr, &peer_context);
+  peer_context.cancel_on_receive_response = true;
+
+  // Set the delegate that inserts a new peer in OnReceivedResponse.
+  TestResourceDispatcherDelegate delegate;
+  dispatcher()->set_delegate(&delegate);
+
+  int id = ConsumeRequestResource();
+  EXPECT_EQ(0u, queued_messages());
+
+  // The wrapper eats all messages until RequestComplete message is sent.
+  NotifyReceivedResponse(id);
+  NotifySetDataBuffer(id, strlen(kTestPageContents));
+  NotifyDataReceived(id, kTestPageContents);
+  ConsumeDataReceived_ACK(id);
+
+  EXPECT_FALSE(peer_context.received_response);
+  EXPECT_EQ(0u, queued_messages());
+
+  // This lets the wrapper peer pass all the messages to the original
+  // peer at once, but the original peer cancels right after it receives
+  // the response. (This will remove pending request info from
+  // ResourceDispatcher while the wrapper peer is still running
+  // OnCompletedRequest, but it should not lead to crashes.)
+  NotifyRequestComplete(id, strlen(kTestPageContents));
+
+  EXPECT_TRUE(peer_context.received_response);
+  // Request should have been cancelled.
+  ConsumeCancelRequest(id);
+  EXPECT_TRUE(peer_context.cancelled);
+
+  // Any future messages related to the request should be ignored.
   NotifyDataReceived(id, kTestPageContents);
   NotifyRequestComplete(id, strlen(kTestPageContents));
 

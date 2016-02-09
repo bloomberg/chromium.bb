@@ -39,6 +39,7 @@ class SecurityFilterPeer : public content::RequestPeer {
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const content::ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override {}
+
  protected:
   explicit SecurityFilterPeer(scoped_ptr<content::RequestPeer> peer);
 
@@ -65,14 +66,6 @@ class BufferedPeer : public SecurityFilterPeer {
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size) override;
-  void OnReceivedCompletedResponse(const content::ResourceResponseInfo& info,
-                                   scoped_ptr<ReceivedData> data,
-                                   int error_code,
-                                   bool was_ignored_by_handler,
-                                   bool stale_copy_in_cache,
-                                   const std::string& security_info,
-                                   const base::TimeTicks& completion_time,
-                                   int64_t total_transfer_size) override;
 
  protected:
   // Invoked when the entire request has been processed before the data is sent
@@ -112,14 +105,6 @@ class ReplaceContentPeer : public SecurityFilterPeer {
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size) override;
-  void OnReceivedCompletedResponse(const content::ResourceResponseInfo& info,
-                                   scoped_ptr<ReceivedData> data,
-                                   int error_code,
-                                   bool was_ignored_by_handler,
-                                   bool stale_copy_in_cache,
-                                   const std::string& security_info,
-                                   const base::TimeTicks& completion_time,
-                                   int64_t total_transfer_size) override;
 
  private:
   content::ResourceResponseInfo response_info_;

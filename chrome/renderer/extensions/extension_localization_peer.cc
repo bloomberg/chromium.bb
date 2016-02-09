@@ -95,34 +95,21 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   // Give sub-classes a chance at altering the data.
   if (error_code != net::OK) {
     // We failed to load the resource.
-    original_peer_->OnReceivedCompletedResponse(
-        response_info_, nullptr, net::ERR_ABORTED, false, stale_copy_in_cache,
-        security_info, completion_time, total_transfer_size);
+    original_peer_->OnReceivedResponse(response_info_);
+    original_peer_->OnCompletedRequest(net::ERR_ABORTED, false,
+                                       stale_copy_in_cache, security_info,
+                                       completion_time, total_transfer_size);
     return;
   }
 
   ReplaceMessages();
 
-  scoped_ptr<StringData> data_to_pass(data_.empty() ? nullptr
-                                                    : new StringData(data_));
-  original_peer_->OnReceivedCompletedResponse(
-      response_info_, std::move(data_to_pass), error_code,
-      was_ignored_by_handler, stale_copy_in_cache, security_info,
-      completion_time, total_transfer_size);
-}
-
-void ExtensionLocalizationPeer::OnReceivedCompletedResponse(
-    const content::ResourceResponseInfo& info,
-    scoped_ptr<ReceivedData> data,
-    int error_code,
-    bool was_ignored_by_handler,
-    bool stale_copy_in_cache,
-    const std::string& security_info,
-    const base::TimeTicks& completion_time,
-    int64_t total_transfer_size) {
-  original_peer_->OnReceivedCompletedResponse(
-      info, std::move(data), error_code, was_ignored_by_handler,
-      stale_copy_in_cache, security_info, completion_time, total_transfer_size);
+  original_peer_->OnReceivedResponse(response_info_);
+  if (!data_.empty())
+    original_peer_->OnReceivedData(make_scoped_ptr(new StringData(data_)));
+  original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
+                                     stale_copy_in_cache, security_info,
+                                     completion_time, total_transfer_size);
 }
 
 void ExtensionLocalizationPeer::ReplaceMessages() {

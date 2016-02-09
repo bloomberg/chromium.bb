@@ -316,23 +316,6 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_EQ("", client()->error().domain.utf8());
   }
 
-  void DoReceiveCompletedResponse() {
-    EXPECT_FALSE(client()->did_receive_response());
-    EXPECT_EQ("", client()->received_data());
-    EXPECT_FALSE(client()->did_finish());
-
-    peer()->OnReceivedCompletedResponse(
-        content::ResourceResponseInfo(),
-        make_scoped_ptr(new FixedReceivedData(kTestData, strlen(kTestData),
-                                              strlen(kTestData))),
-        net::OK, false, false, "", base::TimeTicks(), strlen(kTestData));
-
-    EXPECT_TRUE(client()->did_receive_response());
-    EXPECT_EQ(kTestData, client()->received_data());
-    EXPECT_EQ(net::OK, client()->error().reason);
-    EXPECT_EQ("", client()->error().domain.utf8());
-  }
-
   void DoFailRequest() {
     EXPECT_FALSE(client()->did_finish());
     peer()->OnCompletedRequest(net::ERR_FAILED, false, false, "",
@@ -415,13 +398,6 @@ TEST_F(WebURLLoaderImplTest, Failure) {
   DoReceiveData();
   DoFailRequest();
   EXPECT_FALSE(dispatcher()->canceled());
-}
-
-TEST_F(WebURLLoaderImplTest, ReceiveCompletedResponse) {
-  DoStartAsyncRequest();
-  DoReceiveCompletedResponse();
-  EXPECT_FALSE(dispatcher()->canceled());
-  EXPECT_EQ(kTestData, client()->received_data());
 }
 
 // The client may delete the WebURLLoader during any callback from the loader.
