@@ -638,17 +638,6 @@ TELEMETRY_TESTS = {
           },
         ],
       },
-      {
-        # BUG 555545: Disable webgl_conformance_gl_tests on Win/AMD
-        # Need another entry to match the optional tryservers.
-        'run_on_optional': True,
-        'swarming_dimension_sets': [
-          {
-            'gpu': '1002:6779',
-            'os': 'Windows-2008ServerR2-SP1'
-          },
-        ],
-      }
     ],
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
@@ -698,14 +687,16 @@ def matches_swarming_dimensions(tester_config, dimension_sets):
       return True
   return False
 
-def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi):
-  if tc.get('fyi_only', False) and not is_fyi:
-    return False
-  # Handle the optional tryservers with the 'run_on_optional' flag.
-  # Only a subset of the tests run on these tryservers.
-  if tester_name.startswith('Optional') and not tc.get(
-      'run_on_optional', False):
-    return False
+def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
+                                 check_waterfall):
+  if check_waterfall:
+    if tc.get('fyi_only', False) and not is_fyi:
+      return False
+    # Handle the optional tryservers with the 'run_on_optional' flag.
+    # Only a subset of the tests run on these tryservers.
+    if tester_name.startswith('Optional') and not tc.get(
+        'run_on_optional', False):
+      return False
 
   if 'names' in tc:
     if not tester_name in tc['names']:
@@ -732,10 +723,12 @@ def should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
   # Check if this config is disabled on this tester
   if 'disabled_tester_configs' in test_config:
     for dtc in test_config['disabled_tester_configs']:
-      if tester_config_matches_tester(tester_name, tester_config, dtc, is_fyi):
+      if tester_config_matches_tester(tester_name, tester_config, dtc, is_fyi,
+                                      False):
         return False
   for tc in test_config['tester_configs']:
-    if tester_config_matches_tester(tester_name, tester_config, tc, is_fyi):
+    if tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
+                                    True):
       return True
   return False
 
