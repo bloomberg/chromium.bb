@@ -66,6 +66,10 @@
     "type": "raw",
     "args": [],
   },
+  "android_webview_unittests": {
+    "label": "//android_webview/test:android_webview_unittests",
+    "type": "console_test_launcher",
+  },
   "angle_deqp_gles2_tests": {
     "label": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
     "type": "raw",
