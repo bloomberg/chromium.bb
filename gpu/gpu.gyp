@@ -437,8 +437,6 @@
         'gles2_conform_support/egl/egl.cc',
         'gles2_conform_support/egl/surface.cc',
         'gles2_conform_support/egl/surface.h',
-        'gles2_conform_support/egl/test_support.cc',
-        'gles2_conform_support/egl/test_support.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -455,37 +453,7 @@
           ],
         }, ],
       ],
-    },
-    {
-      # GN version: //gpu:command_buffer_gles2_tests
-      'target_name': 'command_buffer_gles2_tests',
-      'type': '<(gtest_target_type)',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        'command_buffer_gles2',
-      ],
-      'sources': [
-        # Note: sources list duplicated in GN build.
-        'command_buffer/tests/command_buffer_gles2_tests_main.cc',
-        'command_buffer/tests/egl_test.cc',
-      ],
-      'defines': [
-        'COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY',
-        'EGLAPIENTRY=',
-        'EGLAPI='
-      ],
-      'conditions': [
-        ['OS == "android"', {
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }],
-      ],
-    },
+    }
   ],
   'conditions': [
     ['component=="static_library"', {
@@ -785,19 +753,6 @@
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
-        {
-          'target_name': 'command_buffer_gles2_tests_apk',
-          'type': 'none',
-          'dependencies': [
-            'command_buffer_gles2_tests',
-          ],
-          'variables': {
-            'test_suite_name': 'command_buffer_gles2_tests',
-          },
-          'includes': [
-            '../build/apk_test.gypi',
-          ],
-        },
       ],
     }],
     ['OS == "win" or (OS == "linux" and use_x11==1) or OS == "mac"', {
@@ -924,19 +879,6 @@
     ['OS == "android" and test_isolation_mode != "noop"',
       {
         'targets': [
-          {
-            'target_name': 'command_buffer_gles2_tests_apk_run',
-            'type': 'none',
-            'dependencies': [
-              'command_buffer_gles2_tests_apk',
-            ],
-            'includes': [
-              '../build/isolate.gypi',
-            ],
-            'sources': [
-              'command_buffer_gles2_apk.isolate',
-            ],
-          },
           {
             'target_name': 'gl_tests_apk_run',
             'type': 'none',

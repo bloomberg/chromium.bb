@@ -60,8 +60,6 @@ shared_library("command_buffer_gles2") {
     "gles2_conform_support/egl/egl.cc",
     "gles2_conform_support/egl/surface.cc",
     "gles2_conform_support/egl/surface.h",
-    "gles2_conform_support/egl/test_support.cc",
-    "gles2_conform_support/egl/test_support.h",
   ]
 
   deps = [
@@ -80,39 +78,6 @@ shared_library("command_buffer_gles2") {
     defines += [ "EGLAPI=__declspec(dllexport)" ]
   } else {
     defines += [ "EGLAPI=__attribute__((visibility(\"default\")))" ]
-  }
-}
-
-# GYP version: //gpu/gpu.gyp:command_buffer_gles2_tests
-test("command_buffer_gles2_tests") {
-  sources = [
-    "command_buffer/tests/command_buffer_gles2_tests_main.cc",
-    "command_buffer/tests/egl_test.cc",
-  ]
-
-  deps = [
-    ":command_buffer_gles2",
-    "//base",
-    "//base/test:test_support",
-    "//base/third_party/dynamic_annotations",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-
-  defines = [
-    "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
-    "EGLAPIENTRY=",
-    "EGLAPI=",
-  ]
-
-  libs = []
-
-  if (is_android) {
-    libs += [ "android" ]
-    deps += [ "//ui/android:ui_java" ]
-  }
-  if (!is_component_build) {
-    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
   }
 }
 
