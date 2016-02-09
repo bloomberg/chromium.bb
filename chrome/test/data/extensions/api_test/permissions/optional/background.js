@@ -206,13 +206,13 @@ chrome.test.getConfig(function(config) {
     // The user shouldn't have to approve permissions that have no warnings.
     function noPromptForNoWarnings() {
       chrome.permissions.request(
-          {permissions: ['notifications']},
+          {permissions: ['cookies']},
           pass(function(granted) {
         assertTrue(granted);
 
-        // Remove the notifications permission to return to normal.
+        // Remove the cookies permission to return to normal.
         chrome.permissions.remove(
-            {permissions: ['notifications']},
+            {permissions: ['cookies']},
             pass(function(removed) { assertTrue(removed); }));
       }));
     },

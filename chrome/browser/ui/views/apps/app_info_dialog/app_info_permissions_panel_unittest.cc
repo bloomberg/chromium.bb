@@ -84,10 +84,10 @@ TEST_F(AppInfoPermissionsPanelTest, RequiredPermissionsObtainedCorrectly) {
                       .Append("desktopCapture")  // A valid permission with a
                                                  // message
                       .Append("bad_perm")        // An invalid permission
-                      .Append("notifications")   // An valid permission with
+                      .Append("cookies")         // An valid permission with
                                                  // no message
-                      .Append("serial"))))  // Another valid permission with
-                                            // a message
+                      .Append("serial"))))       // A valid permission with a
+                                                 // message
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());

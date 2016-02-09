@@ -685,7 +685,7 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
     { "plugin3", true },  // none -> plugin
 #endif
     { "storage", false },  // none -> storage
-    { "notifications", false },  // none -> notifications
+    { "notifications", true },  // none -> notifications
     { "platformapp1", false },  // host permissions for platform apps
     { "platformapp2", true },  // API permissions for platform apps
     { "media_galleries1", true },  // all -> read|all
@@ -758,7 +758,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kInlineInstallPrivate);
   skip.insert(APIPermission::kIdltest);
   skip.insert(APIPermission::kLogPrivate);
-  skip.insert(APIPermission::kNotifications);
   skip.insert(APIPermission::kNotificationProvider);
   skip.insert(APIPermission::kOverrideEscFullscreen);
   skip.insert(APIPermission::kPointerLock);

@@ -3965,6 +3965,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSION_PROMPT_WARNING_U2F_DEVICES" desc="Warning message which indicates that an extension has access to Universal 2nd Factor devices.">
           Access your Universal 2nd Factor devices
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_NOTIFICATIONS" desc="Permission string which indicates that an extension has access to display notifications.">
+          Display notifications
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE" desc="Permission string for access to a specific USB device.">
           Access any <ph name="DEVICE_NAME_AND_VENDOR">$1<ex>SoundKnob from Griffin Technology</ex></ph> via USB
         </message>

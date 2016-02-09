@@ -13,8 +13,8 @@
    ],
    "optional_permissions": [
      "bookmarks",
+     "cookies",
      "management",
-     "notifications",
      "background",
      "http://a.com/*",
      "http://*.c.com/*"

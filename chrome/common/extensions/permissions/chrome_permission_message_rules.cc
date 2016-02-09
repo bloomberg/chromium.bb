@@ -478,6 +478,10 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_U2F_DEVICES,
        {APIPermission::kU2fDevices},
        {}},
+      // Notifications.
+      {IDS_EXTENSION_PROMPT_WARNING_NOTIFICATIONS,
+       {APIPermission::kNotifications},
+       {}},
 
       // Accessibility features.
       {IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ_MODIFY,

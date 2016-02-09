@@ -2,9 +2,6 @@
   "name": "App Test",
   "version": "1",
   "manifest_version": 2,
-  "permissions": [
-    "notifications"
-  ],
   "app": {
     "launch": {
       "web_url": "http://example.com/"
