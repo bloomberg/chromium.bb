@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
-#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/platform/x11/x11_event_source_glib.h"
 
 #include <glib.h>
 #include <X11/Xlib.h>
@@ -48,52 +47,52 @@ GSourceFuncs XSourceFuncs = {
   NULL
 };
 
-class X11EventSourceGlib : public X11EventSource {
- public:
-  explicit X11EventSourceGlib(XDisplay* display)
-      : X11EventSource(display),
-        x_source_(NULL) {
-    InitXSource(ConnectionNumber(display));
-  }
-
-  ~X11EventSourceGlib() override {
-    g_source_destroy(x_source_);
-    g_source_unref(x_source_);
-  }
-
- private:
-  void InitXSource(int fd) {
-    CHECK(!x_source_);
-    CHECK(display()) << "Unable to get connection to X server";
-
-    x_poll_.reset(new GPollFD());
-    x_poll_->fd = fd;
-    x_poll_->events = G_IO_IN;
-    x_poll_->revents = 0;
-
-    GLibX11Source* glib_x_source = static_cast<GLibX11Source*>
-        (g_source_new(&XSourceFuncs, sizeof(GLibX11Source)));
-    glib_x_source->display = display();
-    glib_x_source->poll_fd = x_poll_.get();
-
-    x_source_ = glib_x_source;
-    g_source_add_poll(x_source_, x_poll_.get());
-    g_source_set_can_recurse(x_source_, TRUE);
-    g_source_set_callback(x_source_, NULL, this, NULL);
-    g_source_attach(x_source_, g_main_context_default());
-  }
-
-  // The GLib event source for X events.
-  GSource* x_source_;
-
-  // The poll attached to |x_source_|.
-  scoped_ptr<GPollFD> x_poll_;
-
-  DISALLOW_COPY_AND_ASSIGN(X11EventSourceGlib);
-};
-
 }  // namespace
 
+X11EventSourceGlib::X11EventSourceGlib(XDisplay* display)
+    : event_source_(this, display) {
+  InitXSource(ConnectionNumber(display));
+}
+
+X11EventSourceGlib::~X11EventSourceGlib() {
+  g_source_destroy(x_source_);
+  g_source_unref(x_source_);
+}
+
+void X11EventSourceGlib::ProcessXEvent(XEvent* xevent) {
+  DispatchEvent(xevent);
+}
+
+void X11EventSourceGlib::StopCurrentEventStream() {
+  event_source_.StopCurrentEventStream();
+}
+
+void X11EventSourceGlib::OnDispatcherListChanged() {
+  event_source_.OnDispatcherListChanged();
+}
+
+void X11EventSourceGlib::InitXSource(int fd) {
+  DCHECK(!x_source_);
+  DCHECK(event_source_.display()) << "Unable to get connection to X server";
+
+  x_poll_.reset(new GPollFD());
+  x_poll_->fd = fd;
+  x_poll_->events = G_IO_IN;
+  x_poll_->revents = 0;
+
+  GLibX11Source* glib_x_source = static_cast<GLibX11Source*>(
+      g_source_new(&XSourceFuncs, sizeof(GLibX11Source)));
+  glib_x_source->display = event_source_.display();
+  glib_x_source->poll_fd = x_poll_.get();
+
+  x_source_ = glib_x_source;
+  g_source_add_poll(x_source_, x_poll_.get());
+  g_source_set_can_recurse(x_source_, TRUE);
+  g_source_set_callback(x_source_, NULL, &event_source_, NULL);
+  g_source_attach(x_source_, g_main_context_default());
+}
+
+// static
 scoped_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
   return make_scoped_ptr(new X11EventSourceGlib(gfx::GetXDisplay()));
 }

@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//ui/ozone/ozone.gni")
 
-assert(use_x11)
+assert(use_x11 || ozone_platform_x11)
 
 component("x11") {
   output_name = "x11_events_platform"
@@ -12,8 +13,6 @@ component("x11") {
   sources = [
     "x11_event_source.cc",
     "x11_event_source.h",
-    "x11_event_source_glib.cc",
-    "x11_event_source_libevent.cc",
     "x11_hotplug_event_handler.cc",
     "x11_hotplug_event_handler.h",
   ]
@@ -27,6 +26,7 @@ component("x11") {
     "//ui/events:events_base",
     "//ui/events/devices",
     "//ui/events/platform",
+    "//ui/events/x",
     "//ui/gfx/x",
   ]
 
@@ -34,11 +34,17 @@ component("x11") {
     "//base",
   ]
 
-  if (is_linux) {
-    sources -= [ "x11_event_source_libevent.cc" ]
+  if (use_glib) {
+    sources += [
+      "x11_event_source_glib.cc",
+      "x11_event_source_glib.h",
+    ]
 
     configs += [ "//build/config/linux:glib" ]
   } else {
-    sources -= [ "x11_event_source_glib.cc" ]
+    sources += [
+      "x11_event_source_libevent.cc",
+      "x11_event_source_libevent.h",
+    ]
   }
 }

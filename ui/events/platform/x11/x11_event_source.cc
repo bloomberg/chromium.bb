@@ -4,50 +4,18 @@
 
 #include "ui/events/platform/x11/x11_event_source.h"
 
-#include <X11/extensions/XInput2.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
 #include <X11/XKBlib.h>
+#include <X11/Xlib.h>
 
 #include "base/logging.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
 namespace {
-
-int g_xinput_opcode = -1;
-
-bool InitializeXInput2(XDisplay* display) {
-  if (!display)
-    return false;
-
-  int event, err;
-
-  int xiopcode;
-  if (!XQueryExtension(display, "XInputExtension", &xiopcode, &event, &err)) {
-    DVLOG(1) << "X Input extension not available.";
-    return false;
-  }
-  g_xinput_opcode = xiopcode;
-
-  int major = 2, minor = 2;
-  if (XIQueryVersion(display, &major, &minor) == BadRequest) {
-    DVLOG(1) << "XInput2 not supported in the server.";
-    return false;
-  }
-  if (major < 2 || (major == 2 && minor < 2)) {
-    DVLOG(1) << "XI version on server is " << major << "." << minor << ". "
-            << "But 2.2 is required.";
-    return false;
-  }
-
-  return true;
-}
 
 bool InitializeXkb(XDisplay* display) {
   if (!display)
@@ -74,21 +42,29 @@ bool InitializeXkb(XDisplay* display) {
 
 }  // namespace
 
-X11EventSource::X11EventSource(XDisplay* display)
-    : display_(display),
-      continue_stream_(true) {
-  CHECK(display_);
+X11EventSource* X11EventSource::instance_ = nullptr;
+
+X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
+                               XDisplay* display)
+    : delegate_(delegate), display_(display), continue_stream_(true) {
+  DCHECK(!instance_);
+  instance_ = this;
+
+  DCHECK(delegate_);
+  DCHECK(display_);
   DeviceDataManagerX11::CreateInstance();
-  InitializeXInput2(display_);
   InitializeXkb(display_);
 }
 
 X11EventSource::~X11EventSource() {
+  DCHECK_EQ(this, instance_);
+  instance_ = nullptr;
 }
 
 // static
 X11EventSource* X11EventSource::GetInstance() {
-  return static_cast<X11EventSource*>(PlatformEventSource::GetInstance());
+  DCHECK(instance_);
+  return instance_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,22 +94,21 @@ void X11EventSource::BlockUntilWindowMapped(XID window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// X11EventSource, private
+// X11EventSource, protected
 
-uint32_t X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
+void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
   bool have_cookie = false;
   if (xevent->type == GenericEvent &&
       XGetEventData(xevent->xgeneric.display, &xevent->xcookie)) {
     have_cookie = true;
   }
-  uint32_t action = DispatchEvent(xevent);
+  delegate_->ProcessXEvent(xevent);
+  PostDispatchEvent(xevent);
   if (have_cookie)
     XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);
-  return action;
 }
 
-uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
-  uint32_t action = PlatformEventSource::DispatchEvent(xevent);
+void X11EventSource::PostDispatchEvent(XEvent* xevent) {
   if (xevent->type == GenericEvent &&
       (xevent->xgeneric.evtype == XI_HierarchyChanged ||
        xevent->xgeneric.evtype == XI_DeviceChanged)) {
@@ -147,7 +122,6 @@ uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
     // Clear stored scroll data
     ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses();
   }
-  return action;
 }
 
 void X11EventSource::StopCurrentEventStream() {

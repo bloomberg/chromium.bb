@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/file_info.h"
-#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/platform/x11/x11_event_source_glib.h"
 #include "url/gurl.h"
 
 const char kFileURL[] = "file:///home/user/file.txt";
@@ -39,7 +39,7 @@ class OSExchangeDataProviderAuraX11Test : public testing::Test {
 
  protected:
   base::MessageLoopForUI message_loop;
-  X11EventSource event_source;
+  X11EventSourceGlib event_source;
   ui::OSExchangeDataProviderAuraX11 provider;
 };
 

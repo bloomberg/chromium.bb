@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//ui/ozone/ozone.gni")
 
-assert(use_x11)
+assert(use_x11 || ozone_platform_x11)
 
 component("x11") {
   output_name = "x11_window"
@@ -25,8 +26,20 @@ component("x11") {
   defines = [ "X11_WINDOW_IMPLEMENTATION" ]
 
   sources = [
-    "x11_window.cc",
-    "x11_window.h",
+    "x11_window_base.cc",
+    "x11_window_base.h",
     "x11_window_export.h",
   ]
+
+  if (ozone_platform_x11) {
+    sources += [
+      "x11_window_ozone.cc",
+      "x11_window_ozone.h",
+    ]
+  } else if (use_x11) {
+    sources += [
+      "x11_window.cc",
+      "x11_window.h",
+    ]
+  }
 }

@@ -22,11 +22,13 @@ source_set("x11") {
     "//ui/events/devices",
     "//ui/events/ozone:events_ozone",
     "//ui/events/platform",
+    "//ui/events/platform/x11",
     "//ui/events/x",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/x",
     "//ui/ozone:ozone_base",
+    "//ui/platform_window/x11",
   ]
 
   configs += [ "//build/config/linux:x11" ]

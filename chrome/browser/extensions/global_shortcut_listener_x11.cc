@@ -10,7 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
-#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -71,7 +71,7 @@ void GlobalShortcutListenerX11::StartListening() {
   DCHECK(!registered_hot_keys_.empty());  // Also don't start if no hotkey is
                                           // registered.
 
-  ui::X11EventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 
   is_listening_ = true;
 }
@@ -81,7 +81,7 @@ void GlobalShortcutListenerX11::StopListening() {
   DCHECK(registered_hot_keys_.empty());  // Make sure the set is clean before
                                          // ending.
 
-  ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 
   is_listening_ = false;
 }

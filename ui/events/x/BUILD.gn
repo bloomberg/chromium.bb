@@ -16,8 +16,5 @@ component("x") {
     "//ui/events/devices",
     "//ui/gfx/x",
   ]
-  configs += [
-    "//build/config/linux:glib",
-    "//build/config/linux:x11",
-  ]
+  configs += [ "//build/config/linux:x11" ]
 }

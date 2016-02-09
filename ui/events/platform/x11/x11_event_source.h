@@ -10,11 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/events_export.h"
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_types.h"
 
-typedef struct _GPollFD GPollFD;
-typedef struct _GSource GSource;
 typedef union _XEvent XEvent;
 typedef unsigned long XID;
 
@@ -22,16 +19,30 @@ namespace ui {
 
 class X11HotplugEventHandler;
 
-// A PlatformEventSource implementation for reading events from X11 server and
-// dispatching the events to the appropriate dispatcher.
-class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
+// Responsible for notifying X11EventSource when new XEvents are available and
+// processing/dispatching XEvents. Implementations will likely be a
+// PlatformEventSource.
+class X11EventSourceDelegate {
  public:
-  explicit X11EventSource(XDisplay* display);
-  ~X11EventSource() override;
+  X11EventSourceDelegate() = default;
+
+  // Processes (if necessary) and handles dispatching XEvents.
+  virtual void ProcessXEvent(XEvent* xevent) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(X11EventSourceDelegate);
+};
+
+// Receives X11 events and sends them to X11EventSourceDelegate. Handles
+// receiving, pre-process and post-processing XEvents.
+class EVENTS_EXPORT X11EventSource {
+ public:
+  X11EventSource(X11EventSourceDelegate* delegate, XDisplay* display);
+  ~X11EventSource();
 
   static X11EventSource* GetInstance();
 
-  // Called by the glib source dispatch function. Processes all (if any)
+  // Called when there is a new XEvent available. Processes all (if any)
   // available X events.
   void DispatchXEvents();
 
@@ -46,26 +57,31 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
   // functions which require a mapped window.
   void BlockUntilWindowMapped(XID window);
 
- protected:
   XDisplay* display() { return display_; }
 
- private:
+  void StopCurrentEventStream();
+  void OnDispatcherListChanged();
+
+ protected:
   // Extracts cookie data from |xevent| if it's of GenericType, and dispatches
   // the event. This function also frees up the cookie data after dispatch is
   // complete.
-  uint32_t ExtractCookieDataDispatchEvent(XEvent* xevent);
+  void ExtractCookieDataDispatchEvent(XEvent* xevent);
 
-  // PlatformEventSource:
-  uint32_t DispatchEvent(XEvent* xevent) override;
-  void StopCurrentEventStream() override;
-  void OnDispatcherListChanged() override;
+  // Handles updates after event has been dispatched.
+  void PostDispatchEvent(XEvent* xevent);
+
+ private:
+  static X11EventSource* instance_;
+
+  X11EventSourceDelegate* delegate_;
 
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
 
   // Keeps track of whether this source should continue to dispatch all the
   // available events.
-  bool continue_stream_;
+  bool continue_stream_ = true;
 
   scoped_ptr<X11HotplugEventHandler> hotplug_event_handler_;
 

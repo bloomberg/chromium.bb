@@ -26,6 +26,8 @@
     'sources': [
       'x11_window.cc',
       'x11_window.h',
+      'x11_window_base.cc',
+      'x11_window_base.h',
       'x11_window_export.h',
     ],
   }],

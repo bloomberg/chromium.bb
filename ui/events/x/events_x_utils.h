@@ -16,16 +16,16 @@ typedef union _XEvent XEvent;
 
 namespace ui {
 
-// Get the EventType from a XEvent.
+// Gets the EventType from a XEvent.
 EVENTS_X_EXPORT EventType EventTypeFromXEvent(const XEvent& xev);
 
-// Get the EventFlags from a XEvent.
+// Gets the EventFlags from a XEvent.
 EVENTS_X_EXPORT int EventFlagsFromXEvent(const XEvent& xev);
 
-// Get the timestamp from a XEvent.
+// Gets the timestamp from a XEvent.
 EVENTS_X_EXPORT base::TimeDelta EventTimeFromXEvent(const XEvent& xev);
 
-// Get the location from a XEvent.  The coordinate system of the resultant
+// Gets the location from a XEvent.  The coordinate system of the resultant
 // |Point| has the origin at top-left of the "root window".  The nature of
 // this "root window" and how it maps to platform-specific drawing surfaces is
 // defined in ui/aura/root_window.* and ui/aura/window_tree_host*.

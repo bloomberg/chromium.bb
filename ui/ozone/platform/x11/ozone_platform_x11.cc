@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/events/platform/x11/x11_event_source_libevent.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
@@ -17,6 +18,7 @@
 #include "ui/ozone/public/ozone_platform.h"  // nogncheck
 #include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/x11/x11_window_ozone.h"
 
 namespace ui {
 
@@ -60,9 +62,11 @@ class OzonePlatformX11 : public OzonePlatform {
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    // TODO(kylechar): Add PlatformWindow creation here.
-    NOTREACHED();
-    return nullptr;
+    scoped_ptr<X11WindowOzone> window =
+        make_scoped_ptr(new X11WindowOzone(event_source_.get(), delegate));
+    window->SetBounds(bounds);
+    window->Create();
+    return std::move(window);
   }
 
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
@@ -74,7 +78,7 @@ class OzonePlatformX11 : public OzonePlatform {
   }
 
   void InitializeUI() override {
-    // TODO(kylechar): Add PlatformEventSource creation here.
+    event_source_.reset(new X11EventSourceLibevent(gfx::GetXDisplay()));
     surface_factory_ozone_.reset(new X11SurfaceFactory());
     overlay_manager_.reset(new StubOverlayManager());
     input_controller_ = CreateStubInputController();
@@ -89,6 +93,7 @@ class OzonePlatformX11 : public OzonePlatform {
 
  private:
   // Objects in the Browser process.
+  scoped_ptr<X11EventSourceLibevent> event_source_;
   scoped_ptr<OverlayManagerOzone> overlay_manager_;
   scoped_ptr<InputController> input_controller_;
   scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;

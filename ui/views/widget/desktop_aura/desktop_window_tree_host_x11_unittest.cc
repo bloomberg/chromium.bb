@@ -24,7 +24,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
-#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/platform/x11/x11_event_source_glib.h"
 #include "ui/events/test/platform_event_source_test_api.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
