@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
@@ -61,8 +62,9 @@ public class SyncTest extends SyncTestBase {
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
-    @LargeTest
-    @Feature({"Sync"})
+    // @LargeTest
+    // @Feature({"Sync"})
+    @DisabledTest
     public void testRename() throws InterruptedException {
         // The two accounts object that would represent the account rename.
         final Account oldAccount = setUpTestAccountAndSignInToSync();
