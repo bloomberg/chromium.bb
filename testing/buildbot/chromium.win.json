@@ -444,7 +444,7 @@
       "ipc_tests",
       "jingle_unittests",
       "keyboard_unittests",
-      "mandoline:all",
+      "mash:all",
       "media_unittests",
       "media_blink_unittests",
       "message_center_unittests",
@@ -1320,7 +1320,6 @@
       "ipc_tests",
       "jingle_unittests",
       "keyboard_unittests",
-      "mandoline:all",
       "mash:all",
       "media_unittests",
       "media_blink_unittests",
@@ -1349,9 +1348,6 @@
       },
       {
         "test": "events_unittests"
-      },
-      {
-        "test": "html_viewer_unittests"
       },
       {
         "test": "ipc_mojo_unittests"
@@ -1436,7 +1432,7 @@
       "ipc_tests",
       "jingle_unittests",
       "keyboard_unittests",
-      "mandoline:all",
+      "mash:all",
       "media_unittests",
       "media_blink_unittests",
       "message_center_unittests",

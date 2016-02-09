@@ -44,9 +44,6 @@
         "test": "gpu_unittests"
       },
       {
-        "test": "html_viewer_unittests"
-      },
-      {
         "test": "ipc_mojo_unittests"
       },
       {
@@ -531,7 +528,6 @@
     "additional_compile_targets": [
       "battor_agent",
       "blimp",
-      "mandoline:all",
       "mash:all",
       "remoting_all"
     ]
@@ -735,9 +731,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
-      },
-      {
-        "test": "html_viewer_unittests"
       },
       {
         "swarming": {

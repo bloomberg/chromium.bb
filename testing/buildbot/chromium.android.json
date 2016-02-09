@@ -19,7 +19,6 @@
       "chrome_public_test_apk",
       "content_shell_apk",
       "content_shell_test_apk",
-      "mandoline:all",
       "system_webview_apk"
     ]
   },

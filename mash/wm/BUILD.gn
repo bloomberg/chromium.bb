@@ -164,6 +164,10 @@ mojo_native_application("apptests") {
   data_deps = [
     ":wm",
   ]
+
+  if (use_x11) {
+    deps += [ "//tools/xdisplaycheck" ]
+  }
 }
 
 source_set("unittests") {

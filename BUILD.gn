@@ -613,9 +613,14 @@ group("mojo_apptests") {
 
   if (is_win || is_linux) {
     deps += [
-      "//mandoline:tests",
+      "//components/clipboard:apptests",
+      "//components/filesystem:apptests",
+      "//components/mus/ws:tests",
+      "//components/resource_provider:apptests",
+      "//components/resource_provider:resource_provider_unittests",
       "//mash/wm:tests",
       "//media/mojo/services:tests",
+      "//sql/mojo:apptests",
       "//ui/views/mus:tests",
     ]
   }
@@ -630,10 +635,6 @@ group("gn_only") {
     deps += [ "//mojo/common:mojo_common_perftests" ]
   }
 
-  if (!is_mac && !is_ios && !is_chromecast) {
-    deps += [ "//mandoline:all" ]
-  }
-
   if (!is_android && !is_ios && !is_chromeos) {
     deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
   }
@@ -642,6 +643,7 @@ group("gn_only") {
     deps += [
       ":mojo_apptests",
       "//mash:all",
+      "//mojo",
     ]
   }
 

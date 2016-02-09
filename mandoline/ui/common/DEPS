@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/mus/public/cpp",
-  "+mojo/converters/geometry",
-  "+ui/gfx",
-]

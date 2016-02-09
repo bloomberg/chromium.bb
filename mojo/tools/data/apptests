@@ -58,27 +58,6 @@ if config.target_os != config.OS_ANDROID:
       'type': 'gtest_isolated',
     },
     {
-      'test': 'mojo:html_viewer_apptests',
-      'name': 'mojo:html_viewer_apptests',
-      'type': 'gtest_isolated',
-      'args': ['--enable-html-viewer-test-interface',
-               '--use-x11-test-config',
-               '--override-use-gl-with-osmesa-for-tests']
-    },
-    {
-      'test': 'mojo:html_viewer_apptests',
-      'name': 'mojo:html_viewer_apptests new frame',
-      'type': 'gtest_isolated',
-      'args': ['--oopif-always-create-new-frame-tree',
-               '--enable-html-viewer-test-interface',
-               '--use-x11-test-config',
-               '--override-use-gl-with-osmesa-for-tests']
-    },
-    {
-      'test': 'mojo:mandoline_browser_apptests',
-      'type': 'gtest_isolated',
-    },
-    {
       'test': 'mojo:mash_wm_apptests',
       'type': 'gtest_isolated',
       'args': ['--use-x11-test-config',
@@ -112,10 +91,4 @@ if config.target_os != config.OS_ANDROID:
 #      'args': ['--use-x11-test-config',
 #               '--override-use-gl-with-osmesa-for-tests', '--enable-logging']
 #    },
-    {
-      'test': 'mojo:web_view_apptests',
-      'type': 'gtest_isolated',
-      'args': ['--use-x11-test-config',
-               '--override-use-gl-with-osmesa-for-tests']
-    },
   ]

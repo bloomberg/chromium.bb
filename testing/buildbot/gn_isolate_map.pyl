@@ -291,10 +291,6 @@
     "label": "//gpu:gpu_unittests",
     "type": "windowed_test_launcher",
   },
-  "html_viewer_unittests": {
-    "label": "//components/html_viewer:html_viewer_unittests",
-    "type": "unknown",
-  },
   "installer_util_unittests": {
     "label": "//chrome/installer/util:installer_util_unittests",
     "type": "unknown",

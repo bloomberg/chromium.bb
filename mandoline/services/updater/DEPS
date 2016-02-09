@@ -1,9 +1,0 @@
-include_rules = [
-  "+components/update_client",
-  "+mojo/shell",
-  "+mojo/common",
-  "+mojo/public/c/system",
-  "+mojo/public/cpp/bindings",
-  "+mojo/services/network",
-  "+mojo/services/updater",
-]

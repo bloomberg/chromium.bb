@@ -1208,8 +1208,6 @@
                   '|content/shell/(common|browser|renderer)/layout_test/' \
                   '|content/test/layouttest_support.cc' \
                   '|content/public/test/layouttest_support.h' \
-                  '|components/html_viewer/layout_test*' \
-                  '|components/html_viewer/web_test_delegate_impl.*'
     },
   },
 

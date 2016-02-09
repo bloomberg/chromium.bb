@@ -198,4 +198,8 @@ mojo_native_application("apptests") {
   data_deps = [
     ":lib",
   ]
+
+  if (use_x11) {
+    deps += [ "//tools/xdisplaycheck" ]
+  }
 }
