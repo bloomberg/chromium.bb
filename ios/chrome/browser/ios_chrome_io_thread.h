@@ -134,12 +134,8 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
     uint16_t testing_fixed_https_port;
     Optional<bool> enable_tcp_fast_open_for_ssl;
 
-    Optional<size_t> initial_max_spdy_concurrent_streams;
-    Optional<bool> enable_spdy_compression;
-    Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<bool> enable_spdy31;
     Optional<bool> enable_http2;
-    std::set<net::HostPortPair> forced_spdy_exclusions;
     Optional<bool> parse_alternative_services;
     Optional<bool> enable_alternative_service_with_different_host;
     Optional<double> alternative_service_probability_threshold;

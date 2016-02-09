@@ -258,9 +258,6 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
       if (!HttpStreamFactory::spdy_enabled())
         continue;
 
-      if (session_->HasSpdyExclusion(origin))
-        continue;
-
       // Cache this entry if we don't have a non-broken Alt-Svc yet.
       if (first_alternative_service.protocol ==
           UNINITIALIZED_ALTERNATE_PROTOCOL)

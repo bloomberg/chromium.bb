@@ -59,7 +59,6 @@ class NET_EXPORT SpdySessionPool
       NextProto default_protocol,
       size_t session_max_recv_window_size,
       size_t stream_max_recv_window_size,
-      size_t initial_max_concurrent_streams,
       SpdySessionPool::TimeFunc time_func,
       ProxyDelegate* proxy_delegate);
   ~SpdySessionPool() override;
@@ -215,7 +214,6 @@ class NET_EXPORT SpdySessionPool
   const NextProto default_protocol_;
   size_t session_max_recv_window_size_;
   size_t stream_max_recv_window_size_;
-  size_t initial_max_concurrent_streams_;
   TimeFunc time_func_;
 
   // Determines if a proxy is a trusted SPDY proxy, which is allowed to push

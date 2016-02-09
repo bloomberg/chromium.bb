@@ -245,7 +245,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               NextProto default_protocol,
               size_t session_max_recv_window_size,
               size_t stream_max_recv_window_size,
-              size_t initial_max_concurrent_streams,
               TimeFunc time_func,
               ProxyDelegate* proxy_delegate,
               NetLog* net_log);

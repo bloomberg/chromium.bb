@@ -658,7 +658,6 @@ SpdySession::SpdySession(
     NextProto default_protocol,
     size_t session_max_recv_window_size,
     size_t stream_max_recv_window_size,
-    size_t initial_max_concurrent_streams,
     TimeFunc time_func,
     ProxyDelegate* proxy_delegate,
     NetLog* net_log)
@@ -680,9 +679,7 @@ SpdySession::SpdySession(
       read_state_(READ_STATE_DO_READ),
       write_state_(WRITE_STATE_IDLE),
       error_on_close_(OK),
-      max_concurrent_streams_(initial_max_concurrent_streams == 0
-                                  ? kInitialMaxConcurrentStreams
-                                  : initial_max_concurrent_streams),
+      max_concurrent_streams_(kInitialMaxConcurrentStreams),
       max_concurrent_pushed_streams_(kMaxConcurrentPushedStreams),
       streams_initiated_count_(0),
       streams_pushed_count_(0),

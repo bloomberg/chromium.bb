@@ -203,9 +203,6 @@ class IOThread : public content::BrowserThreadDelegate {
     uint16_t testing_fixed_https_port;
     Optional<bool> enable_tcp_fast_open_for_ssl;
 
-    Optional<size_t> initial_max_spdy_concurrent_streams;
-    Optional<bool> enable_spdy_compression;
-    Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;
     Optional<bool> enable_spdy31;
     Optional<bool> enable_http2;

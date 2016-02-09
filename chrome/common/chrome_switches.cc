@@ -271,6 +271,9 @@ const char kDisableExtensionsHttpThrottling[] =
 // Disable field trial tests configured in fieldtrial_testing_config.json.
 const char kDisableFieldTrialTestingConfig[] = "disable-field-trial-config";
 
+// Disable HTTP/2 and SPDY/3.1 protocols.
+const char kDisableHttp2[]                   = "disable-http2";
+
 // Disables the Material Design version of chrome://downloads.
 const char kDisableMaterialDesignDownloads[] = "disable-md-downloads";
 
@@ -1053,10 +1056,6 @@ const char kUnlimitedStorage[]              = "unlimited-storage";
 // --user-data-dir=/test/only/profile/dir
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely-treat-insecure-origin-as-secure";
-
-// Uses Spdy for the transport protocol instead of HTTP. This is a temporary
-// testing flag.
-const char kUseSpdy[]                       = "use-spdy";
 
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";

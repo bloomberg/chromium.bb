@@ -188,8 +188,8 @@ TEST_F(IOThreadTest, SpdyFieldTrialParametrized) {
   EXPECT_TRUE(params.enable_http2);
 }
 
-TEST_F(IOThreadTest, SpdyCommandLineUseSpdyOff) {
-  command_line_.AppendSwitchASCII("use-spdy", "off");
+TEST_F(IOThreadTest, SpdyCommandLineDisableHttp2) {
+  command_line_.AppendSwitch("disable-http2");
   // Command line should overwrite field trial group.
   field_trial_group_ = "Spdy4Enabled";
   ConfigureSpdyGlobals();

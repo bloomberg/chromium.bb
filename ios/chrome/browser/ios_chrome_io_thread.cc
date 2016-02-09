@@ -630,14 +630,8 @@ void IOSChromeIOThread::InitializeNetworkSessionParamsFromGlobals(
   globals.enable_tcp_fast_open_for_ssl.CopyToIfSet(
       &params->enable_tcp_fast_open_for_ssl);
 
-  globals.initial_max_spdy_concurrent_streams.CopyToIfSet(
-      &params->spdy_initial_max_concurrent_streams);
-  globals.enable_spdy_compression.CopyToIfSet(&params->enable_spdy_compression);
-  globals.enable_spdy_ping_based_connection_checking.CopyToIfSet(
-      &params->enable_spdy_ping_based_connection_checking);
   globals.enable_spdy31.CopyToIfSet(&params->enable_spdy31);
   globals.enable_http2.CopyToIfSet(&params->enable_http2);
-  params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
   globals.parse_alternative_services.CopyToIfSet(
       &params->parse_alternative_services);
   globals.enable_alternative_service_with_different_host.CopyToIfSet(

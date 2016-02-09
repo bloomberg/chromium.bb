@@ -39,7 +39,6 @@ SpdySessionPool::SpdySessionPool(
     NextProto default_protocol,
     size_t session_max_recv_window_size,
     size_t stream_max_recv_window_size,
-    size_t initial_max_concurrent_streams,
     SpdySessionPool::TimeFunc time_func,
     ProxyDelegate* proxy_delegate)
     : http_server_properties_(http_server_properties),
@@ -57,7 +56,6 @@ SpdySessionPool::SpdySessionPool(
                                                             : default_protocol),
       session_max_recv_window_size_(session_max_recv_window_size),
       stream_max_recv_window_size_(stream_max_recv_window_size),
-      initial_max_concurrent_streams_(initial_max_concurrent_streams),
       time_func_(time_func),
       proxy_delegate_(proxy_delegate) {
   DCHECK(default_protocol_ >= kProtoSPDYMinimumVersion &&
@@ -100,8 +98,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
       verify_domain_authentication_, enable_sending_initial_data_,
       enable_compression_, enable_ping_based_connection_checking_,
       default_protocol_, session_max_recv_window_size_,
-      stream_max_recv_window_size_, initial_max_concurrent_streams_, time_func_,
-      proxy_delegate_, net_log.net_log()));
+      stream_max_recv_window_size_, time_func_, proxy_delegate_,
+      net_log.net_log()));
 
   new_session->InitializeWithSocket(std::move(connection), this, is_secure,
                                     certificate_error_code);

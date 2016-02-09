@@ -96,7 +96,6 @@ HttpNetworkSession::Params::Params()
       enable_http2(true),
       spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
       spdy_stream_max_recv_window_size(kSpdyStreamMaxRecvWindowSize),
-      spdy_initial_max_concurrent_streams(0),
       time_func(&base::TimeTicks::Now),
       parse_alternative_services(false),
       enable_alternative_service_with_different_host(false),
@@ -198,7 +197,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                          params.spdy_default_protocol,
                          params.spdy_session_max_recv_window_size,
                          params.spdy_stream_max_recv_window_size,
-                         params.spdy_initial_max_concurrent_streams,
                          params.time_func,
                          params.proxy_delegate),
       http_stream_factory_(new HttpStreamFactoryImpl(this, false)),
@@ -378,12 +376,6 @@ void HttpNetworkSession::GetNpnProtos(NextProtoVector* npn_protos) const {
   } else {
     npn_protos->clear();
   }
-}
-
-bool HttpNetworkSession::HasSpdyExclusion(
-    HostPortPair host_port_pair) const {
-  return params_.forced_spdy_exclusions.find(host_port_pair) !=
-      params_.forced_spdy_exclusions.end();
 }
 
 ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(
