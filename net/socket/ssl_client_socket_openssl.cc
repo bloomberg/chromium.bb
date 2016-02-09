@@ -26,6 +26,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
@@ -220,6 +221,35 @@ scoped_ptr<base::Value> NetLogPrivateKeyOperationCallback(
   value->SetString("type", type_str);
   value->SetString("hash", hash_str);
   return std::move(value);
+}
+
+scoped_ptr<base::Value> NetLogChannelIDLookupCallback(
+    ChannelIDService* channel_id_service,
+    NetLogCaptureMode capture_mode) {
+  ChannelIDStore* store = channel_id_service->GetChannelIDStore();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetBoolean("ephemeral", store->IsEphemeral());
+  dict->SetString("service", base::HexEncode(&channel_id_service,
+                                             sizeof(channel_id_service)));
+  dict->SetString("store", base::HexEncode(&store, sizeof(store)));
+  return std::move(dict);
+}
+
+scoped_ptr<base::Value> NetLogChannelIDLookupCompleteCallback(
+    crypto::ECPrivateKey* key,
+    int result,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetInteger("net_error", result);
+  std::string raw_key;
+  if (result == OK && key && key->ExportRawPublicKey(&raw_key)) {
+    std::string key_to_log = "redacted";
+    if (capture_mode.include_cookies_and_credentials()) {
+      key_to_log = base::HexEncode(raw_key.data(), raw_key.length());
+    }
+    dict->SetString("key", key_to_log);
+  }
+  return std::move(dict);
 }
 
 }  // namespace
@@ -1274,7 +1304,9 @@ int SSLClientSocketOpenSSL::DoHandshakeComplete(int result) {
 }
 
 int SSLClientSocketOpenSSL::DoChannelIDLookup() {
-  net_log_.AddEvent(NetLog::TYPE_SSL_CHANNEL_ID_REQUESTED);
+  NetLog::ParametersCallback callback = base::Bind(
+      &NetLogChannelIDLookupCallback, base::Unretained(channel_id_service_));
+  net_log_.BeginEvent(NetLog::TYPE_SSL_GET_CHANNEL_ID, callback);
   GotoState(STATE_CHANNEL_ID_LOOKUP_COMPLETE);
   return channel_id_service_->GetOrCreateChannelID(
       host_and_port_.host(), &channel_id_key_,
@@ -1284,6 +1316,9 @@ int SSLClientSocketOpenSSL::DoChannelIDLookup() {
 }
 
 int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
+  net_log_.EndEvent(NetLog::TYPE_SSL_GET_CHANNEL_ID,
+                    base::Bind(&NetLogChannelIDLookupCompleteCallback,
+                               channel_id_key_.get(), result));
   if (result < 0)
     return result;
 
@@ -1300,7 +1335,6 @@ int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
 
   // Return to the handshake.
   channel_id_sent_ = true;
-  net_log_.AddEvent(NetLog::TYPE_SSL_CHANNEL_ID_PROVIDED);
   GotoState(STATE_HANDSHAKE);
   return OK;
 }

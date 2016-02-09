@@ -476,12 +476,31 @@ EVENT_TYPE(SSL_PRIVATE_KEY_OPERATION)
 //   {
 //     "net_error": <Net integer error code>,
 //   }
+// TODO(nharper): remove this event.
 EVENT_TYPE(SSL_GET_DOMAIN_BOUND_CERT)
 
+// The start/end of getting a Channel ID key.
+//
+// The START event contains these parameters:
+//   {
+//     "ephemeral": <Whether or not the Channel ID store is ephemeral>,
+//     "service": <Unique identifier for the ChannelIDService used>,
+//     "store": <Unique identifier for the ChannelIDStore used>,
+//   }
+//
+// The END event may contain these parameters:
+//   {
+//     "net_error": <Net error code>,
+//     "key": <Hex-encoded EC point of public key (uncompressed point format)>,
+//   }
+EVENT_TYPE(SSL_GET_CHANNEL_ID)
+
 // The SSL server requested a channel id.
+// TODO(nharper): Remove this event.
 EVENT_TYPE(SSL_CHANNEL_ID_REQUESTED)
 
 // A channel ID was provided to the SSL library to be sent to the SSL server.
+// TODO(nharper): Remove this event.
 EVENT_TYPE(SSL_CHANNEL_ID_PROVIDED)
 
 // A client certificate (or none) was provided to the SSL library to be sent

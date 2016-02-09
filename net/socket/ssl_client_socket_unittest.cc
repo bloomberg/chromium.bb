@@ -655,6 +655,7 @@ class FailingChannelIDStore : public ChannelIDStore {
   void GetAllChannelIDs(const GetChannelIDListCallback& callback) override {}
   int GetChannelIDCount() override { return 0; }
   void SetForceKeepSessionState() override {}
+  bool IsEphemeral() override { return true; }
 };
 
 // A ChannelIDStore that asynchronously returns an error when asked for a
@@ -679,6 +680,7 @@ class AsyncFailingChannelIDStore : public ChannelIDStore {
   void GetAllChannelIDs(const GetChannelIDListCallback& callback) override {}
   int GetChannelIDCount() override { return 0; }
   void SetForceKeepSessionState() override {}
+  bool IsEphemeral() override { return true; }
 };
 
 // A mock CTVerifier that records every call to Verify but doesn't verify

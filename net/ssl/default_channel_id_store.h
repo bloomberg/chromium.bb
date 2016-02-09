@@ -61,6 +61,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   void GetAllChannelIDs(const GetChannelIDListCallback& callback) override;
   int GetChannelIDCount() override;
   void SetForceKeepSessionState() override;
+  bool IsEphemeral() override;
 
  private:
   class Task;

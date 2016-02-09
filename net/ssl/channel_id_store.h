@@ -104,6 +104,10 @@ class NET_EXPORT ChannelIDStore
   // When invoked, instructs the store to keep session related data on
   // destruction.
   virtual void SetForceKeepSessionState() = 0;
+
+  // Returns true if this ChannelIDStore is ephemeral, and false if it is
+  // persistent.
+  virtual bool IsEphemeral() = 0;
 };
 
 }  // namespace net

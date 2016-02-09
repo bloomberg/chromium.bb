@@ -425,6 +425,10 @@ void DefaultChannelIDStore::InternalInsertChannelID(
   channel_ids_[server_identifier] = channel_id.release();
 }
 
+bool DefaultChannelIDStore::IsEphemeral() {
+  return store_.get() == nullptr;
+}
+
 DefaultChannelIDStore::PersistentStore::PersistentStore() {}
 
 DefaultChannelIDStore::PersistentStore::~PersistentStore() {}
