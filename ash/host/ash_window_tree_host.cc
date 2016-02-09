@@ -21,6 +21,12 @@
 
 namespace ash {
 
+namespace {
+
+AshWindowTreeHost::Factory creation_factory;
+
+}  // namespace
+
 AshWindowTreeHost::AshWindowTreeHost() : input_method_handler_(nullptr) {
 }
 
@@ -49,8 +55,12 @@ void AshWindowTreeHost::TranslateLocatedEvent(ui::LocatedEvent* event) {
   }
 }
 
+// static
 AshWindowTreeHost* AshWindowTreeHost::Create(
     const AshWindowTreeHostInitParams& init_params) {
+  if (!creation_factory.is_null())
+    return creation_factory.Run(init_params);
+
   if (init_params.offscreen)
     return new AshWindowTreeHostUnified(init_params.initial_bounds);
 #if defined(USE_OZONE)
@@ -62,6 +72,11 @@ AshWindowTreeHost* AshWindowTreeHost::Create(
 #else
 #error Unsupported platform.
 #endif
+}
+
+// static
+void AshWindowTreeHost::SetFactory(const Factory& factory) {
+  creation_factory = factory;
 }
 
 }  // namespace ash

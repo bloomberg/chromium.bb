@@ -6,6 +6,7 @@
 #define ASH_HOST_ASH_WINDOW_TREE_HOST_H_
 
 #include "ash/ash_export.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {
@@ -31,12 +32,15 @@ class RootWindowTransformer;
 
 class ASH_EXPORT AshWindowTreeHost {
  public:
+  using Factory =
+      base::Callback<AshWindowTreeHost*(const AshWindowTreeHostInitParams&)>;
   AshWindowTreeHost();
   virtual ~AshWindowTreeHost() {}
 
   // Creates a new AshWindowTreeHost. The caller owns the returned value.
   static AshWindowTreeHost* Create(
       const AshWindowTreeHostInitParams& init_params);
+  static void SetFactory(const Factory& factory);
 
   void set_input_method_handler(InputMethodEventHandler* input_method_handler) {
     input_method_handler_ = input_method_handler;

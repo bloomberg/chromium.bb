@@ -84,7 +84,6 @@ class ASH_EXPORT AshPopupAlignmentDelegate
 
   gfx::Screen* screen_;
   gfx::Rect work_area_;
-  aura::Window* root_window_;
   ShelfLayoutManager* shelf_;
   int system_tray_height_;
 
