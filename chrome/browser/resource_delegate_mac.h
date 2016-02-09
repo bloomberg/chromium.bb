@@ -29,7 +29,6 @@ class MacResourceDelegate : public ui::ResourceBundle::Delegate {
                           ui::ScaleFactor scale_factor,
                           base::StringPiece* value) override;
   bool GetLocalizedString(int message_id, base::string16* value) override;
-  scoped_ptr<gfx::Font> GetFont(ui::ResourceBundle::FontStyle style) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MacResourceDelegate);

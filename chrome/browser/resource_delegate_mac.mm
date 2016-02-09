@@ -77,8 +77,3 @@ bool MacResourceDelegate::GetLocalizedString(int message_id,
                                              base::string16* value) {
   return false;
 }
-
-scoped_ptr<gfx::Font> MacResourceDelegate::GetFont(
-    ui::ResourceBundle::FontStyle style) {
-  return nullptr;
-}

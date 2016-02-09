@@ -97,9 +97,4 @@ void CastResourceDelegate::ClearAllExtraLocalizedStrings() {
   extra_localized_strings_.clear();
 }
 
-scoped_ptr<gfx::Font> CastResourceDelegate::GetFont(
-    ui::ResourceBundle::FontStyle style) {
-  return scoped_ptr<gfx::Font>();
-}
-
 }  // namespace chromecast

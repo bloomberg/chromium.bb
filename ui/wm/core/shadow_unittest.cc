@@ -76,9 +76,6 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
   bool GetLocalizedString(int message_id, base::string16* value) override {
     return false;
   }
-  scoped_ptr<gfx::Font> GetFont(ui::ResourceBundle::FontStyle style) override {
-    return nullptr;
-  }
 
   int last_resource_id() const { return last_resource_id_; }
 

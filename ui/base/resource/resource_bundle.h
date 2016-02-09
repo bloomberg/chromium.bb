@@ -108,9 +108,6 @@ class UI_BASE_EXPORT ResourceBundle {
     // false to attempt retrieval of the default string.
     virtual bool GetLocalizedString(int message_id, base::string16* value) = 0;
 
-    // Returns a font or NULL to attempt retrieval of the default resource.
-    virtual scoped_ptr<gfx::Font> GetFont(FontStyle style) = 0;
-
    protected:
     virtual ~Delegate() {}
   };
@@ -347,10 +344,6 @@ class UI_BASE_EXPORT ResourceBundle {
   // Initializes all the gfx::FontList members if they haven't yet been
   // initialized.
   void LoadFontsIfNecessary();
-
-  // Returns a FontList or NULL by calling Delegate::GetFont and converting
-  // scoped_ptr<gfx::Font> to scoped_ptr<gfx::FontList>.
-  scoped_ptr<gfx::FontList> GetFontListFromDelegate(FontStyle style);
 
   // Fills the |bitmap| given the data file to look in and the |resource_id|.
   // Returns false if the resource does not exist.
