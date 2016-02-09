@@ -1693,8 +1693,17 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // Ensure that renderer-side debug URLs don't take effect on crashed renderers,
 // even when going back/forward.
 // See https://crbug.com/477606.
+
+// This test is flaky on Android. crbug.com/585327
+#if defined(OS_ANDROID)
+#define MAYBE_IgnoreForwardToRendererDebugURLsWhenCrashed \
+    DISABLED_IgnoreForwardToRendererDebugURLsWhenCrashed
+#else
+#define MAYBE_IgnoreForwardToRendererDebugURLsWhenCrashed \
+    IgnoreForwardToRendererDebugURLsWhenCrashed
+#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       IgnoreForwardToRendererDebugURLsWhenCrashed) {
+                       MAYBE_IgnoreForwardToRendererDebugURLsWhenCrashed) {
   // Visit a WebUI page with bindings.
   GURL webui_url = GURL(std::string(kChromeUIScheme) + "://" +
                         std::string(kChromeUIGpuHost));
