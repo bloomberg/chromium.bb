@@ -109,9 +109,16 @@ def AddCommonOptions(parser):
                      dest='json_results_file',
                      help='If set, will dump results in JSON form '
                           'to specified file.')
-  group.add_argument('--logcat-output-dir',
-                     help='If set, will dump logcats recorded during test run '
-                          'to directory. File names will be the device ids.')
+
+  logcat_output_group = group.add_mutually_exclusive_group()
+  logcat_output_group.add_argument(
+      '--logcat-output-dir',
+      help='If set, will dump logcats recorded during test run to directory. '
+           'File names will be the device ids with timestamps.')
+  logcat_output_group.add_argument(
+      '--logcat-output-file',
+      help='If set, will merge logcats recorded during test run and dump them '
+           'to the specified file.')
 
 def ProcessCommonOptions(args):
   """Processes and handles all common options."""

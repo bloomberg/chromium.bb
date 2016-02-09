@@ -5,12 +5,15 @@
 import datetime
 import logging
 import os
+import shutil
+import tempfile
 import threading
 
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
 from devil.android import logcat_monitor
+from devil.utils import file_utils
 from devil.utils import parallelizer
 from pylib import constants
 from pylib.base import environment
@@ -37,6 +40,7 @@ class LocalDeviceEnvironment(environment.Environment):
     self._incremental_install = args.incremental_install
     self._concurrent_adb = args.enable_concurrent_adb
     self._logcat_output_dir = args.logcat_output_dir
+    self._logcat_output_file = args.logcat_output_file
     self._logcat_monitors = []
 
   #override
@@ -62,6 +66,8 @@ class LocalDeviceEnvironment(environment.Environment):
           with open(cache_path) as f:
             d.LoadCacheData(f.read())
           os.unlink(cache_path)
+    if self._logcat_output_file:
+      self._logcat_output_dir = tempfile.mkdtemp()
     if self._logcat_output_dir:
       for d in self._devices:
         logcat_file = os.path.join(
@@ -112,6 +118,11 @@ class LocalDeviceEnvironment(environment.Environment):
     for m in self._logcat_monitors:
       m.Stop()
       m.Close()
+    if self._logcat_output_file:
+      file_utils.MergeFiles(
+          self._logcat_output_file,
+          [m.output_file for m in self._logcat_monitors])
+      shutil.rmtree(self._logcat_output_dir)
 
   def BlacklistDevice(self, device, reason='local_device_failure'):
     device_serial = device.adb.GetDeviceSerial()
