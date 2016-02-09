@@ -439,7 +439,7 @@ template("write_build_config") {
     }
 
     if (defined(invoker.apk_under_test)) {
-      deps += [ "${invoker.apk_under_test}__build_config" ]
+      deps += [ invoker.apk_under_test ]
       apk_under_test_gen_dir =
           get_label_info(invoker.apk_under_test, "target_gen_dir")
       apk_under_test_name = get_label_info(invoker.apk_under_test, "name")
