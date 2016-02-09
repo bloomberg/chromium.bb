@@ -45,6 +45,11 @@ per-file remove_stale_pyc_files.py=dtu@chromium.org
 per-file roll_angle.py=kbr@chromium.org
 per-file roll_angle.py=kjellander@chromium.org
 per-file roll_angle.py=geofflang@chromium.org
+per-file roll_webgl_conformance.py=bajones@chromium.org
+per-file roll_webgl_conformance.py=kbr@chromium.org
+per-file roll_webgl_conformance.py=kjellander@chromium.org
+per-file roll_webgl_conformance.py=geofflang@chromium.org
+per-file roll_webgl_conformance.py=zmo@chromium.org
 per-file roll_webrtc.py=kjellander@chromium.org
 
 per-file safely-roll-deps.py=borenet@chromium.org

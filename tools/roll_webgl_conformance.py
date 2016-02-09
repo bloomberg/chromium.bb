@@ -15,7 +15,7 @@ import time
 extra_trybots = [
   {
     "mastername": "tryserver.chromium.win",
-    "buildernames": ["win_clang_dbg", "win_optional_gpu_tests_rel"]
+    "buildernames": ["win_optional_gpu_tests_rel"]
   }
 ]
 
@@ -34,12 +34,12 @@ upload.verbosity = 0  # Errors only.
 CHROMIUM_GIT_URL = 'https://chromium.googlesource.com/chromium/src.git'
 CL_ISSUE_RE = re.compile('^Issue number: ([0-9]+) \((.*)\)$')
 RIETVELD_URL_RE = re.compile('^https?://(.*)/(.*)')
-ROLL_BRANCH_NAME = 'special_angle_roll_branch'
+ROLL_BRANCH_NAME = 'special_webgl_roll_branch'
 TRYJOB_STATUS_SLEEP_SECONDS = 30
 
 # Use a shell for subcommands on Windows to get a PATH search.
 IS_WIN = sys.platform.startswith('win')
-ANGLE_PATH = os.path.join('third_party', 'angle')
+WEBGL_PATH = os.path.join('third_party', 'webgl', 'src')
 
 CommitInfo = collections.namedtuple('CommitInfo', ['git_commit',
                                                    'git_repo_url'])
@@ -78,7 +78,7 @@ def _ParseDepsDict(deps_content):
   return local_scope
 
 
-def _GenerateCLDescriptionCommand(angle_current, angle_new, bugs):
+def _GenerateCLDescriptionCommand(webgl_current, webgl_new, bugs):
   def GetChangeString(current_hash, new_hash):
     return '%s..%s' % (current_hash[0:7], new_hash[0:7]);
 
@@ -91,10 +91,10 @@ def _GenerateCLDescriptionCommand(angle_current, angle_new, bugs):
       bug_str += str(bug) + ','
     return bug_str.rstrip(',')
 
-  if angle_current.git_commit != angle_new.git_commit:
-    change_str = GetChangeString(angle_current.git_commit,
-                                 angle_new.git_commit)
-    changelog_url = GetChangeLogURL(angle_current.git_repo_url,
+  if webgl_current.git_commit != webgl_new.git_commit:
+    change_str = GetChangeString(webgl_current.git_commit,
+                                 webgl_new.git_commit)
+    changelog_url = GetChangeLogURL(webgl_current.git_repo_url,
                                     change_str)
 
   def GetExtraTrybotString():
@@ -111,7 +111,7 @@ def _GenerateCLDescriptionCommand(angle_current, angle_new, bugs):
     extra_trybot_args = ['-m', 'CQ_INCLUDE_TRYBOTS=' + extra_trybot_string]
 
   return [
-    '-m', 'Roll ANGLE ' + change_str,
+    '-m', 'Roll WebGL ' + change_str,
     '-m', '%s' % changelog_url,
     '-m', GetBugString(bugs),
     '-m', 'TEST=bots',
@@ -193,11 +193,13 @@ class AutoRoller(object):
     logging.debug('Dirty/unversioned files:\n%s', '\n'.join(lines))
     return False
 
-  def _GetBugList(self, path_below_src, angle_current, angle_new):
+  def _GetBugList(self, path_below_src, webgl_current, webgl_new):
+    # TODO(kbr): this isn't useful, at least not yet, when run against
+    # the WebGL Github repository.
     working_dir = os.path.join(self._chromium_src, path_below_src)
     lines = self._RunCommand(
         ['git','log',
-            '%s..%s' % (angle_current.git_commit, angle_new.git_commit)],
+            '%s..%s' % (webgl_current.git_commit, webgl_new.git_commit)],
         working_dir=working_dir).split('\n')
     bugs = set()
     for line in lines:
@@ -249,24 +251,24 @@ class AutoRoller(object):
     # Parse current hashes.
     deps_filename = os.path.join(self._chromium_src, 'DEPS')
     deps = _ParseDepsFile(deps_filename)
-    angle_current = self._GetDepsCommitInfo(deps, ANGLE_PATH)
+    webgl_current = self._GetDepsCommitInfo(deps, WEBGL_PATH)
 
     # Find ToT revisions.
-    angle_latest = self._GetCommitInfo(ANGLE_PATH)
+    webgl_latest = self._GetCommitInfo(WEBGL_PATH)
 
     if IS_WIN:
       # Make sure the roll script doesn't use windows line endings
       self._RunCommand(['git', 'config', 'core.autocrlf', 'true'])
 
-    self._UpdateDep(deps_filename, ANGLE_PATH, angle_latest)
+    self._UpdateDep(deps_filename, WEBGL_PATH, webgl_latest)
 
     if self._IsTreeClean():
       logging.debug('Tree is clean - no changes detected.')
       self._DeleteRollBranch()
     else:
-      bugs = self._GetBugList(ANGLE_PATH, angle_current, angle_latest)
+      bugs = self._GetBugList(WEBGL_PATH, webgl_current, webgl_latest)
       description = _GenerateCLDescriptionCommand(
-          angle_current, angle_latest, bugs)
+          webgl_current, webgl_latest, bugs)
       logging.debug('Committing changes locally.')
       self._RunCommand(['git', 'add', '--update', '.'])
       self._RunCommand(['git', 'commit'] + description)
@@ -350,7 +352,7 @@ class AutoRoller(object):
 
 def main():
   parser = argparse.ArgumentParser(
-      description='Auto-generates a CL containing an ANGLE roll.')
+      description='Auto-generates a CL containing a WebGL conformance roll.')
   parser.add_argument('--abort',
     help=('Aborts a previously prepared roll. '
           'Closes any associated issues and deletes the roll branches'),
