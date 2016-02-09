@@ -1894,26 +1894,31 @@ void Document::notifyLayoutTreeOfSubtreeChanges()
     m_lifecycle.advanceTo(DocumentLifecycle::LayoutSubtreeChangeClean);
 }
 
+bool Document::needsLayoutTreeUpdateForNode(const Node& node) const
+{
+    if (!node.canParticipateInFlatTree())
+        return false;
+    if (!needsLayoutTreeUpdate())
+        return false;
+    if (!node.inDocument())
+        return false;
+
+    if (needsFullLayoutTreeUpdate() || node.needsStyleRecalc() || node.needsStyleInvalidation())
+        return true;
+    for (const ContainerNode* ancestor = LayoutTreeBuilderTraversal::parent(node); ancestor; ancestor = LayoutTreeBuilderTraversal::parent(*ancestor)) {
+        if (ancestor->needsStyleRecalc() || ancestor->needsStyleInvalidation() || ancestor->needsAdjacentStyleRecalc())
+            return true;
+    }
+    return false;
+}
+
 void Document::updateLayoutTreeForNodeIfNeeded(Node* node)
 {
-    DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
     ASSERT(node);
-    if (!node->canParticipateInFlatTree())
+    if (!needsLayoutTreeUpdateForNode(*node))
         return;
-    if (!needsLayoutTreeUpdate())
-        return;
-    if (!node->inDocument())
-        return;
-
-    bool needsRecalc = needsFullLayoutTreeUpdate() || node->needsStyleRecalc() || node->needsStyleInvalidation();
-
-    if (!needsRecalc) {
-        for (const ContainerNode* ancestor = LayoutTreeBuilderTraversal::parent(*node); ancestor && !needsRecalc; ancestor = LayoutTreeBuilderTraversal::parent(*ancestor))
-            needsRecalc = ancestor->needsStyleRecalc() || ancestor->needsStyleInvalidation() || ancestor->needsAdjacentStyleRecalc();
-    }
-
-    if (needsRecalc)
-        updateLayoutTreeIfNeeded();
+    DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
+    updateLayoutTreeIfNeeded();
 }
 
 void Document::updateLayout()
@@ -3629,7 +3634,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
     }
 
     if (newFocusedElement)
-        updateLayoutTreeIgnorePendingStylesheets();
+        updateLayoutTreeForNodeIfNeeded(newFocusedElement.get());
     if (newFocusedElement && newFocusedElement->isFocusable()) {
         if (newFocusedElement->isRootEditableElement() && !acceptsEditingFocus(*newFocusedElement)) {
             // delegate blocks focus change

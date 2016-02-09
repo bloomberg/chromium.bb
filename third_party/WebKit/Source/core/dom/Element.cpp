@@ -2431,12 +2431,9 @@ bool Element::supportsSpatialNavigationFocus() const
 
 bool Element::isFocusable() const
 {
-    // We can't just use needsStyleRecalc() because if the node is in a
-    // display:none tree it might say it needs style recalc but the whole
-    // document is actually up to date.
-    // In addition, style cannot be cleared out for non-active documents, so in
-    // that case the childNeedsStyleRecalc check is invalid.
-    ASSERT(!document().isActive() || !document().childNeedsStyleRecalc());
+    // Style cannot be cleared out for non-active documents, so in that case the
+    // needsLayoutTreeUpdateForNode check is invalid.
+    ASSERT(!document().isActive() || !document().needsLayoutTreeUpdateForNode(*this));
     return inDocument() && supportsFocus() && !isInert() && layoutObjectIsFocusable();
 }
 

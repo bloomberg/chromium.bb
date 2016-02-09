@@ -431,6 +431,7 @@ public:
     void setupFontBuilder(ComputedStyle& documentStyle);
 
     bool needsLayoutTreeUpdate() const;
+    bool needsLayoutTreeUpdateForNode(const Node&) const;
     // Update ComputedStyles and attach LayoutObjects if necessary, but don't
     // lay out.
     void updateLayoutTreeIfNeeded() { updateLayoutTree(NoChange); }
