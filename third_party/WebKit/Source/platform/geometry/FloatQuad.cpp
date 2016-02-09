@@ -34,6 +34,10 @@
 #include <cmath>
 #include <limits>
 
+#ifndef NDEBUG
+#include <stdio.h>
+#endif
+
 namespace blink {
 
 static inline float min4(float a, float b, float c, float d)
