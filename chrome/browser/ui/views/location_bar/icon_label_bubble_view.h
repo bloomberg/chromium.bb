@@ -48,6 +48,7 @@ class IconLabelBubbleView : public views::View {
   }
 
   const views::ImageView* GetImageView() const { return image_; }
+  views::ImageView* GetImageView() { return image_; }
 
  protected:
   views::ImageView* image() { return image_; }

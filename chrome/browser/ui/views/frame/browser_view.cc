@@ -1412,7 +1412,7 @@ void BrowserView::ShowWebsiteSettings(
   // the location bar.
   views::View* popup_anchor = frame_->GetLocationIconView();
   if (!popup_anchor)
-    popup_anchor = GetLocationBarView()->location_icon_view();
+    popup_anchor = GetLocationBarView()->location_icon_view()->GetImageView();
 
   WebsiteSettingsPopupView::ShowPopup(popup_anchor, gfx::Rect(), profile,
                                       web_contents, url, security_info);
