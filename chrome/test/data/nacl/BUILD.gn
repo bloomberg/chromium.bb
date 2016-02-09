@@ -19,7 +19,6 @@ group("nacl") {
     ":irt_exception_test($newlib)",
     ":irt_exception_test($pnacl)",
     ":irt_manifest_file($newlib)",
-    ":partly_invalid($newlib)",
     ":pnacl_debug_url_test($pnacl)",
     ":pnacl_dyncode_syscall_disabled_test($pnacl)",
     ":pnacl_error_handling_test($pnacl)",
@@ -72,6 +71,9 @@ group("nacl") {
     ":sysconf_nprocessors_onln_test($newlib)",
     ":sysconf_nprocessors_onln_test($pnacl)",
   ]
+  if (target_cpu != "arm") {
+    data_deps += [ ":partly_invalid($newlib)" ]
+  }
   if (is_linux) {
     nonsfi = "//build/toolchain/nacl:newlib_pnacl_nonsfi"
     data_deps += [
