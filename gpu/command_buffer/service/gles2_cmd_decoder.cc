@@ -9632,7 +9632,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
     Texture::ImageState image_state;
     image = ref->texture()->GetLevelImage(ref->texture()->target(), 0,
                                           &image_state);
-    if (!image || image_state != Texture::BOUND) {
+    if (!image) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleCALayerCHROMIUM",
                          "unsupported texture format");
       return error::kNoError;
