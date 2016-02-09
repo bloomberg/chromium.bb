@@ -112,7 +112,7 @@ class MockAlsaWrapper : public AlsaWrapper {
                int(snd_pcm_t* handle,
                    snd_pcm_hw_params_t* params,
                    snd_pcm_format_t format));
-  MOCK_METHOD4(PcmHwParamsTestRateNear,
+  MOCK_METHOD4(PcmHwParamsTestRate,
                int(snd_pcm_t* handle,
                    snd_pcm_hw_params_t* params,
                    unsigned int rate,

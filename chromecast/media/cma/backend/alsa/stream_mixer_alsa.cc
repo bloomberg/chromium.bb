@@ -261,6 +261,7 @@ void StreamMixerAlsa::DefineAlsaParameters() {
 int StreamMixerAlsa::SetAlsaPlaybackParams() {
   int err = 0;
   // Set hardware parameters.
+  DCHECK(pcm_);
   DCHECK(!pcm_hw_params_);
   RETURN_ERROR_CODE(PcmHwParamsMalloc, &pcm_hw_params_);
   RETURN_ERROR_CODE(PcmHwParamsAny, pcm_, pcm_hw_params_);

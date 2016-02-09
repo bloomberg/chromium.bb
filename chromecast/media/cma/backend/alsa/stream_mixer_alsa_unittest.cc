@@ -29,7 +29,10 @@ namespace {
 const size_t kBytesPerSample = sizeof(int32_t);
 const int kNumChannels = 2;
 const int kTestMaxReadSize = 4096;
-const int kTestSamplesPerSecond = 12345;
+
+// kTestSamplesPerSecond needs to be higher than kLowSampleRateCutoff for the
+// mixer to use it.
+const int kTestSamplesPerSecond = 54321;
 
 // This array holds |NUM_DATA_SETS| sets of arbitrary interleaved float data.
 // Each set holds |NUM_SAMPLES| / kNumChannels frames of data.
