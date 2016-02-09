@@ -847,12 +847,19 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // If this is an error load, we may have already removed the pending entry
   // when we got the notice of the load failure. If so, look at the copy of the
   // pending parameters that were saved.
+  //
+  // TODO(creis): This block should be unnecessary now that we pass
+  // params.should_replace_current_entry.  Remove it once we verify with the
+  // check below.
   if (params.url_is_unreachable && failed_pending_entry_id_ != 0) {
     details->did_replace_entry = failed_pending_entry_should_replace_;
   } else {
     details->did_replace_entry = pending_entry_ &&
                                  pending_entry_->should_replace_entry();
   }
+  CHECK(!details->did_replace_entry || params.should_replace_current_entry);
+  if (params.should_replace_current_entry)
+    details->did_replace_entry = true;
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
@@ -995,6 +1002,18 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
 
     // Valid subframe navigation.
     return NAVIGATION_TYPE_NEW_SUBFRAME;
+  }
+
+  // Cross-process location.replace navigations should be classified as New with
+  // replacement rather than ExistingPage, since it is not safe to reuse the
+  // NavigationEntry.
+  // TODO(creis): Have the renderer classify location.replace as
+  // did_create_new_entry for all cases and eliminate this special case.  This
+  // requires updating several test expectations.  See https://crbug.com/317872.
+  if (!rfh->GetParent() && GetLastCommittedEntry() &&
+      GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance() &&
+      params.should_replace_current_entry) {
+    return NAVIGATION_TYPE_NEW_PAGE;
   }
 
   // We only clear the session history when navigating to a new page.

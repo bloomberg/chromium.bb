@@ -1466,7 +1466,7 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
 
   // Fake a commit response.
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(1, entry_id, true, url1);
+  main_test_rfh()->SendNavigateWithReplacement(1, entry_id, true, url1);
 
   // Certain values that are only used for pending entries get reset after
   // commit.
@@ -3354,7 +3354,7 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   navigator->DidStartProvisionalLoad(main_test_rfh(), url2,
                                      base::TimeTicks::Now());
   EXPECT_TRUE(controller.GetPendingEntry()->should_replace_entry());
-  main_test_rfh()->SendNavigate(0, 0, false, url2);
+  main_test_rfh()->SendNavigateWithReplacement(0, 0, false, url2);
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());
 }
 

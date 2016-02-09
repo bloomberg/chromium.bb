@@ -653,15 +653,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   EXPECT_EQ(3, controller.GetEntryCount());
 
-  // ... and replace it with a failed load. (Note that when you set the
-  // should_replace_current_entry flag, the navigation is classified as NEW_PAGE
-  // because that is a classification of the renderer's behavior, and the flag
-  // is a browser-side flag.)
+  // ... and replace it with a failed load.
+  // TODO(creis): Make this be NEW_PAGE along with the other location.replace
+  // cases.  There isn't much impact to having this be EXISTING_PAGE for now.
+  // See https://crbug.com/317872.
   {
     FrameNavigateParamsCapturer capturer(root);
     NavigateToURLAndReplace(shell(), error_url);
     capturer.Wait();
-    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
     NavigationEntry* entry = controller.GetLastCommittedEntry();
     EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
     EXPECT_EQ(3, controller.GetEntryCount());
@@ -760,6 +760,20 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
               capturer.params().transition);
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
     EXPECT_TRUE(capturer.details().is_in_page);
+  }
+
+  if (AreAllSitesIsolatedForTesting()) {
+    // Cross-process location.replace().
+    FrameNavigateParamsCapturer capturer(root);
+    GURL frame_url(embedded_test_server()->GetURL(
+        "foo.com", "/navigation_controller/simple_page_1.html"));
+    std::string script = "location.replace('" + frame_url.spec() + "')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    EXPECT_FALSE(capturer.details().is_in_page);
   }
 }
 
@@ -884,6 +898,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   {
     // location.replace().
+    // TODO(creis): Change this to be NEW_PAGE with replacement in
+    // https://crbug.com/317872.
     FrameNavigateParamsCapturer capturer(root);
     GURL frame_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_1.html"));

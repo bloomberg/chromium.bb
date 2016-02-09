@@ -79,6 +79,11 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendBeforeUnloadACK(bool proceed) override;
   void SimulateSwapOutACK() override;
 
+  void SendNavigateWithReplacement(int page_id,
+                                   int nav_entry_id,
+                                   bool did_create_new_entry,
+                                   const GURL& url);
+
   using ModificationCallback =
       base::Callback<void(FrameHostMsg_DidCommitProvisionalLoad_Params*)>;
 
@@ -134,6 +139,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendNavigateWithParameters(int page_id,
                                   int nav_entry_id,
                                   bool did_create_new_entry,
+                                  bool should_replace_entry,
                                   const GURL& url,
                                   ui::PageTransition transition,
                                   int response_code,
