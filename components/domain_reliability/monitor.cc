@@ -13,6 +13,7 @@
 #include "base/task_runner.h"
 #include "components/domain_reliability/baked_in_configs.h"
 #include "components/domain_reliability/google_configs.h"
+#include "components/domain_reliability/quic_error_mapping.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

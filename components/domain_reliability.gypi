@@ -44,6 +44,8 @@
         'domain_reliability/google_configs.h',
         'domain_reliability/monitor.cc',
         'domain_reliability/monitor.h',
+        'domain_reliability/quic_error_mapping.cc',
+        'domain_reliability/quic_error_mapping.h',
         'domain_reliability/scheduler.cc',
         'domain_reliability/scheduler.h',
         'domain_reliability/service.cc',

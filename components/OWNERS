@@ -111,8 +111,7 @@ per-file dom_distiller*=nyquist@chromium.org
 per-file dom_distiller*=wychen@chromium.org
 
 per-file domain_reliability.gypi=davidben@chromium.org
-per-file domain_reliability.gypi=mmenke@chromium.org
-per-file domain_reliability.gypi=szym@chromium.org
+per-file domain_reliability.gypi=rdsmith@chromium.org
 per-file domain_reliability.gypi=ttuttle@chromium.org
 
 per-file drive.gypi=fukino@chromium.org

@@ -1,3 +1,6 @@
 davidben@chromium.org
 rdsmith@chromium.org
 ttuttle@chromium.org
+
+per-file quic_error_mapping*=rtc@chromium.org
+per-file quic_error_mapping*=rtenneti@chromium.org

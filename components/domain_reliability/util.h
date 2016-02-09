@@ -19,7 +19,6 @@
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/uploader.h"
 #include "net/http/http_response_info.h"
-#include "net/quic/quic_protocol.h"
 #include "net/url_request/url_request_status.h"
 
 namespace domain_reliability {
@@ -34,13 +33,6 @@ bool GetDomainReliabilityBeaconStatus(
     int net_error,
     int http_response_code,
     std::string* beacon_status_out);
-
-// Attempts to convert a QUIC error into the quic_error string
-// that should be recorded in a beacon. Returns true and parse the QUIC error
-// code in |beacon_quic_error_out| if it could.
-// Returns false and clear |beacon_quic_error_out| otherwise.
-bool GetDomainReliabilityBeaconQuicError(net::QuicErrorCode quic_error,
-                                         std::string* beacon_quic_error_out);
 
 std::string GetDomainReliabilityProtocol(
     net::HttpResponseInfo::ConnectionInfo connection_info,

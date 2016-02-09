@@ -59,6 +59,8 @@ component("domain_reliability") {
     "google_configs.h",
     "monitor.cc",
     "monitor.h",
+    "quic_error_mapping.cc",
+    "quic_error_mapping.h",
     "scheduler.cc",
     "scheduler.h",
     "service.cc",
