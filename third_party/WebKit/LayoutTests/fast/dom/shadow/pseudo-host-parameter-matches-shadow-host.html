@@ -17,7 +17,7 @@ function borderColorOf(node)
 
 function borderColorShouldBe(selector, color)
 {
-    var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var text = 'borderColorOf(getNodeInComposedTree("' + selector + '"))';
     shouldBeEqualToString(text, color);
 }
 

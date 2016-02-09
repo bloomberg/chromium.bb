@@ -18,13 +18,13 @@ function colorOf(node)
 
 function colorShouldBe(selector, color)
 {
-    var text = 'colorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var text = 'colorOf(getNodeInComposedTree("' + selector + '"))';
     shouldBeEqualToString(text, color);
 }
 
 function colorShouldNotBe(selector, color)
 {
-    var text = 'colorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var text = 'colorOf(getNodeInComposedTree("' + selector + '"))';
     var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
     shouldNotBe(text, unevaledString);
 }
@@ -46,7 +46,7 @@ sandbox.appendChild(
             createDOM('div', {'id': 'child2'},
                 document.createTextNode('second div')))));
 document.body.offsetLeft;
-getNodeInTreeOfTrees('host/child1').className = 'target';
+getNodeInComposedTree('host/child1').className = 'target';
 colorShouldBe('host/child2', 'rgb(0, 128, 0)');
 
 cleanUp();
@@ -63,7 +63,7 @@ sandbox.appendChild(
             createDOM('div', {'id': 'child3'},
                 document.createTextNode('third div')))));
 document.body.offsetLeft;
-getNodeInTreeOfTrees('host/child1').className = 'target';
+getNodeInComposedTree('host/child1').className = 'target';
 colorShouldBe('host/child2', 'rgb(0, 128, 0)');
 colorShouldBe('host/child3', 'rgb(0, 128, 0)');
 

@@ -17,7 +17,7 @@
 <pre id="console"></pre>
 <script>
 ['sandbox', 'details', 'details-child', 'summary', 'summary-child'].forEach(function(path) {
-    getNodeInTreeOfTrees(path).addEventListener('click', function(event) {
+    getNodeInComposedTree(path).addEventListener('click', function(event) {
         debug('\nevent.path on node ' + dumpNode(event.currentTarget));
         debug(dumpNodeList(event.path));
     });

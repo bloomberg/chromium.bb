@@ -167,61 +167,61 @@ convertTemplatesToShadowRootsWithin(container);
 // Test dir="rtl" inherits in shadow trees
 
 test(function () {
-    assert_direction("dir=rtl", getNodeInTreeOfTrees("dir-rtl-inherits/target"));
+    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-inherits/target"));
 }, "dir=rtl inherits into shadow trees");
 
 test(function () {
-    assert_direction("dir=rtl", getNodeInTreeOfTrees("dir-rtl-distributed"));
+    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-distributed"));
 }, "dir=rtl applies to the distributed content");
 
 test(function () {
-    assert_direction("dir=rtl", getNodeInTreeOfTrees("dir-rtl-final"));
+    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-final"));
 }, "dir=rtl applies to the distributed content with multiple shadow roots");
 
 test(function () {
-    assert_direction("dir=rtl", getNodeInTreeOfTrees("dir-rtl-redistributed-multilevel"));
+    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-redistributed-multilevel"));
 }, "dir=rtl applies to the distributed content (multiple levels)");
 
 test(function () {
-    assert_direction("dir=rtl", getNodeInTreeOfTrees("dir-rtl-older/target"));
+    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-older/target"));
 }, "dir=rtl applies to the content in older shadow roots");
 
 test(function () {
-    assert_direction("dir=rtl", getNodeInTreeOfTrees("dir-rtl-redistributed"));
+    assert_direction("dir=rtl", getNodeInComposedTree("dir-rtl-redistributed"));
 }, "dir=rtl applies to the re-distributed content through older shadow roots");
 
 // Test dir="auto" inherits in shadow trees
 // dir="auto" calculates the directionality by the first character
 
 test(function () {
-    assert_direction("English text", getNodeInTreeOfTrees("dir-auto-english"));
-    assert_direction("Hebrew text", getNodeInTreeOfTrees("dir-auto-hebrew"));
-    assert_direction("Hebrew text", getNodeInTreeOfTrees("dir-auto-hebrew-span"));
+    assert_direction("English text", getNodeInComposedTree("dir-auto-english"));
+    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-hebrew"));
+    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-hebrew-span"));
 }, "dir=auto the first character in the shadow trees");
 
 test(function () {
-    assert_direction("English text", getNodeInTreeOfTrees("dir-auto-distributed-english"));
-    assert_direction("Hebrew text", getNodeInTreeOfTrees("dir-auto-distributed-hebrew"));
+    assert_direction("English text", getNodeInComposedTree("dir-auto-distributed-english"));
+    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-distributed-hebrew"));
 }, "dir=auto the first character in the distributed content");
 
 test(function () {
-    assert_direction("English text", getNodeInTreeOfTrees("dir-auto-final-english"));
-    assert_direction("Hebrew text", getNodeInTreeOfTrees("dir-auto-final-hebrew"));
+    assert_direction("English text", getNodeInComposedTree("dir-auto-final-english"));
+    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-final-hebrew"));
 }, "dir=auto the first character in the distributed content with multiple shadow roots");
 
 test(function () {
-    assert_direction("English text", getNodeInTreeOfTrees("dir-auto-multilevel-english"));
-    assert_direction("Hebrew text", getNodeInTreeOfTrees("dir-auto-multilevel-hebrew"));
+    assert_direction("English text", getNodeInComposedTree("dir-auto-multilevel-english"));
+    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-multilevel-hebrew"));
 }, "dir=auto the first character in the distributed content with multiple levels of shadow roots");
 
 test(function () {
-    assert_direction("English text", getNodeInTreeOfTrees("dir-auto-older-english"));
-    assert_direction("Hebrew text", getNodeInTreeOfTrees("dir-auto-older-hebrew"));
+    assert_direction("English text", getNodeInComposedTree("dir-auto-older-english"));
+    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-older-hebrew"));
 }, "dir=auto the first character in the distributed content from older shadow roots");
 
 test(function () {
-    assert_direction("English text", getNodeInTreeOfTrees("dir-auto-redistributed-english"));
-    assert_direction("Hebrew text", getNodeInTreeOfTrees("dir-auto-redistributed-hebrew"));
+    assert_direction("English text", getNodeInComposedTree("dir-auto-redistributed-english"));
+    assert_direction("Hebrew text", getNodeInComposedTree("dir-auto-redistributed-hebrew"));
 }, "dir=auto the first character in the re-distributed content through older shadow roots");
 
 function assert_direction(description, elementToTest) {

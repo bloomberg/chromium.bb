@@ -12,13 +12,13 @@ function colorOf(node)
 
 function colorShouldBe(selector, color)
 {
-    var text = 'colorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var text = 'colorOf(getNodeInComposedTree("' + selector + '"))';
     shouldBeEqualToString(text, color);
 }
 
 function colorShouldNotBe(selector, color)
 {
-    var text = 'colorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var text = 'colorOf(getNodeInComposedTree("' + selector + '"))';
     var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
     shouldNotBe(text, unevaledString);
 }

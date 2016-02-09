@@ -27,9 +27,9 @@ document.body.appendChild(
 
 description('crbug.com/337616: test for querySelectorAll with ::shadow and /deep/');
 
-var shadowRoot1 = getNodeInTreeOfTrees('foo-host/');
-var shadowRoot2 = getNodeInTreeOfTrees('foo-host//');
-var shadowRoot3 = getNodeInTreeOfTrees('foo-host///');
+var shadowRoot1 = getNodeInComposedTree('foo-host/');
+var shadowRoot2 = getNodeInComposedTree('foo-host//');
+var shadowRoot3 = getNodeInComposedTree('foo-host///');
 
 shouldBe('document.querySelectorAll("#foo-host::shadow span").length', '6');
 shouldBe('document.querySelectorAll("#foo-host::shadow span")[0].id', '"not-top1"');

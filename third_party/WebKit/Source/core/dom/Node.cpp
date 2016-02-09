@@ -612,7 +612,7 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
 }
 #endif
 
-inline static Node& rootInTreeOfTrees(const Node& node)
+inline static Node& rootInComposedTree(const Node& node)
 {
     if (node.inDocument())
         return node.document();
@@ -628,7 +628,7 @@ inline static Node& rootInTreeOfTrees(const Node& node)
 #if ENABLE(ASSERT)
 bool Node::needsDistributionRecalc() const
 {
-    return rootInTreeOfTrees(*this).childNeedsDistributionRecalc();
+    return rootInComposedTree(*this).childNeedsDistributionRecalc();
 }
 #endif
 
@@ -639,7 +639,7 @@ void Node::updateDistribution()
         return;
     TRACE_EVENT0("blink", "Node::updateDistribution");
     ScriptForbiddenScope forbidScript;
-    Node& root = rootInTreeOfTrees(*this);
+    Node& root = rootInComposedTree(*this);
     if (root.childNeedsDistributionRecalc())
         root.recalcDistribution();
 }

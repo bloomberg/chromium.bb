@@ -21,7 +21,7 @@
         addEventListeners(['top', 'host', 'host/', 'host/div1']);
         showSandboxTree();
 
-        var div1 = getNodeInTreeOfTrees('host/div1');
+        var div1 = getNodeInComposedTree('host/div1');
 
         clearEventRecords();
         var event = document.createEvent("MouseEvents");

@@ -25,7 +25,7 @@ sandbox.appendChild(
                                createDOM('shadow', {'id': 'K'}))));
 
 ['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A//', 'A//H', 'A//I', 'A///', 'A///K'].forEach(function(path) {
-    getNodeInTreeOfTrees(path).addEventListener('click', function(event) {
+    getNodeInComposedTree(path).addEventListener('click', function(event) {
         debug('\nevent.path on node ' + dumpNode(event.currentTarget));
         debug(dumpNodeList(event.path));
     });

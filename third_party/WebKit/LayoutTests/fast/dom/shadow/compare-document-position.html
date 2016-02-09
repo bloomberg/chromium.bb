@@ -29,10 +29,10 @@ function testCompareDocumentPosition()
     a1 = document.getElementById('a1');
     a2 = document.getElementById('a2');
     a3 = document.getElementById('a3');
-    b1 = getNodeInTreeOfTrees('a2/b1');
-    b2 = getNodeInTreeOfTrees('a2/b2');
-    b3 = getNodeInTreeOfTrees('a2/b3');
-    c1 = getNodeInTreeOfTrees('a3/c1');
+    b1 = getNodeInComposedTree('a2/b1');
+    b2 = getNodeInComposedTree('a2/b2');
+    b3 = getNodeInComposedTree('a2/b3');
+    c1 = getNodeInComposedTree('a3/c1');
 
     shouldBe('a1.compareDocumentPosition(a2)', 'Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING');
     shouldBe('a2.compareDocumentPosition(a1)', 'Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING');

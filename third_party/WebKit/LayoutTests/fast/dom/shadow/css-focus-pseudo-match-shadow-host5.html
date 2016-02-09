@@ -44,10 +44,10 @@ function testNestedDistribution() {
 
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
 
-    var outerInput = getNodeInTreeOfTrees('outer-input');
-    var input1 = getNodeInTreeOfTrees('input1');
-    var input2 = getNodeInTreeOfTrees('shadow-host/input2');
-    var input3 = getNodeInTreeOfTrees('shadow-host/inner-shadow-host/input3');
+    var outerInput = getNodeInComposedTree('outer-input');
+    var input1 = getNodeInComposedTree('input1');
+    var input2 = getNodeInComposedTree('shadow-host/input2');
+    var input3 = getNodeInComposedTree('shadow-host/inner-shadow-host/input3');
 
     debug('#input1, #input2 are (re)distributed in the same treescope as #input3, but :focus on shadow host only matches when a focused element is under its shadow tree.');
 
@@ -71,10 +71,10 @@ function testNestedDistribution() {
     debug('(2/4) top shadow delegates, but inner shadow does not.');
     buildNestedDistributionTree(true, false);
 
-    var outerInput = getNodeInTreeOfTrees('outer-input');
-    var input1 = getNodeInTreeOfTrees('input1');
-    var input2 = getNodeInTreeOfTrees('shadow-host/input2');
-    var input3 = getNodeInTreeOfTrees('shadow-host/inner-shadow-host/input3');
+    var outerInput = getNodeInComposedTree('outer-input');
+    var input1 = getNodeInComposedTree('input1');
+    var input2 = getNodeInComposedTree('shadow-host/input2');
+    var input3 = getNodeInComposedTree('shadow-host/inner-shadow-host/input3');
 
     outerInput.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
@@ -95,10 +95,10 @@ function testNestedDistribution() {
     debug('(3/4) top shadow does not delegate, but inner shadow does.');
     buildNestedDistributionTree(false, true);
 
-    var outerInput = getNodeInTreeOfTrees('outer-input');
-    var input1 = getNodeInTreeOfTrees('input1');
-    var input2 = getNodeInTreeOfTrees('shadow-host/input2');
-    var input3 = getNodeInTreeOfTrees('shadow-host/inner-shadow-host/input3');
+    var outerInput = getNodeInComposedTree('outer-input');
+    var input1 = getNodeInComposedTree('input1');
+    var input2 = getNodeInComposedTree('shadow-host/input2');
+    var input3 = getNodeInComposedTree('shadow-host/inner-shadow-host/input3');
 
     outerInput.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
@@ -119,10 +119,10 @@ function testNestedDistribution() {
     debug('(4/4) both shadow hosts delagate focus.');
     buildNestedDistributionTree(true, true);
 
-    var outerInput = getNodeInTreeOfTrees('outer-input');
-    var input1 = getNodeInTreeOfTrees('input1');
-    var input2 = getNodeInTreeOfTrees('shadow-host/input2');
-    var input3 = getNodeInTreeOfTrees('shadow-host/inner-shadow-host/input3');
+    var outerInput = getNodeInComposedTree('outer-input');
+    var input1 = getNodeInComposedTree('input1');
+    var input2 = getNodeInComposedTree('shadow-host/input2');
+    var input3 = getNodeInComposedTree('shadow-host/inner-shadow-host/input3');
 
     outerInput.focus();
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');

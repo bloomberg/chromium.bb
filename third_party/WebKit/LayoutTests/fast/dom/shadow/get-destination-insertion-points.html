@@ -13,7 +13,7 @@ document.body.appendChild(
                         createDOM('div', {'id': 'child-1'}))));
 
 shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
-                     [getNodeInTreeOfTrees('host-1/content-1')]);
+                     [getNodeInComposedTree('host-1/content-1')]);
 
 debug('Insertion points should be inactive in v1 shadow trees.');
 

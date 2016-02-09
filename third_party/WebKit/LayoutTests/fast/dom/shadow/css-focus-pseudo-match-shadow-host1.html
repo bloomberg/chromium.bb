@@ -34,11 +34,11 @@ function testWithoutDelegatesFocus()
 
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
 
-    var host = getNodeInTreeOfTrees('shadow-host');
-    var innerInput = getNodeInTreeOfTrees('shadow-host/inner-input');
-    var lightdomInput = getNodeInTreeOfTrees('lightdom-input');
-    var outerInput1 = getNodeInTreeOfTrees('outer-input1');
-    var outerInput2 = getNodeInTreeOfTrees('outer-input2');
+    var host = getNodeInComposedTree('shadow-host');
+    var innerInput = getNodeInComposedTree('shadow-host/inner-input');
+    var lightdomInput = getNodeInComposedTree('lightdom-input');
+    var outerInput1 = getNodeInComposedTree('outer-input1');
+    var outerInput2 = getNodeInComposedTree('outer-input2');
 
     debug('Test shadow host without tabindex');
     outerInput1.focus();

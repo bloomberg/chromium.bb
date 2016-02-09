@@ -22,29 +22,29 @@ document.getElementById('sandbox').appendChild(
 
 
 // Comparing a document with a node in a shadow tree.
-shouldBeFalse('document.contains(getNodeInTreeOfTrees("shadowHostA/"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/").contains(document)');
-shouldBeFalse('document.contains(getNodeInTreeOfTrees("shadowHostA/divA"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/divA").contains(document)');
+shouldBeFalse('document.contains(getNodeInComposedTree("shadowHostA/"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/").contains(document)');
+shouldBeFalse('document.contains(getNodeInComposedTree("shadowHostA/divA"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/divA").contains(document)');
 
 // Comparing a node in document with a node in a shadow tree.
-shouldBeTrue('getNodeInTreeOfTrees("shadowHostA/").contains(getNodeInTreeOfTrees("shadowHostA/divA"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/divA").contains(getNodeInTreeOfTrees("shadowHostA/"))');
+shouldBeTrue('getNodeInComposedTree("shadowHostA/").contains(getNodeInComposedTree("shadowHostA/divA"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/divA").contains(getNodeInComposedTree("shadowHostA/"))');
 
 // Comparing a node in a shadow tree with a node in a shadow tree enclosing the first tree.
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostB/").contains(getNodeInTreeOfTrees("shadowHostA/"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/divA").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/divB"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostB/divB").contains(getNodeInTreeOfTrees("shadowHostA/divA"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/").contains(getNodeInComposedTree("shadowHostA/shadowHostB/"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/shadowHostB/").contains(getNodeInComposedTree("shadowHostA/"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/divA").contains(getNodeInComposedTree("shadowHostA/shadowHostB/divB"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/shadowHostB/divB").contains(getNodeInComposedTree("shadowHostA/divA"))');
 
 // Comparing a node in a shadow tree with a node in a sibling shadow tree.
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostB/").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostC/"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostC/").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostB/divB").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostC/divC"))');
-shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostC/divC").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/divB"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/shadowHostB/").contains(getNodeInComposedTree("shadowHostA/shadowHostC/"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/shadowHostC/").contains(getNodeInComposedTree("shadowHostA/shadowHostB/"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/shadowHostB/divB").contains(getNodeInComposedTree("shadowHostA/shadowHostC/divC"))');
+shouldBeFalse('getNodeInComposedTree("shadowHostA/shadowHostC/divC").contains(getNodeInComposedTree("shadowHostA/shadowHostB/divB"))');
 
 // Self-comparing a node in a shadow tree.
-shouldBeTrue('getNodeInTreeOfTrees("shadowHostA/shadowHostB").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB"))');
-shouldBeTrue('getNodeInTreeOfTrees("shadowHostA/shadowHostB/").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/"))');
+shouldBeTrue('getNodeInComposedTree("shadowHostA/shadowHostB").contains(getNodeInComposedTree("shadowHostA/shadowHostB"))');
+shouldBeTrue('getNodeInComposedTree("shadowHostA/shadowHostB/").contains(getNodeInComposedTree("shadowHostA/shadowHostB/"))');
 </script>
 </body>

@@ -31,9 +31,9 @@ function testCompareTreeScopePosition()
     var sandbox = document.getElementById('sandbox');
     document.body.offsetLeft;
 
-    sr1 = getNodeInTreeOfTrees('a2/');
-    sr2 = getNodeInTreeOfTrees('a3/');
-    sr3 = getNodeInTreeOfTrees('a3/c2/');
+    sr1 = getNodeInComposedTree('a2/');
+    sr2 = getNodeInComposedTree('a3/');
+    sr3 = getNodeInComposedTree('a3/c2/');
 
     shouldBe('internals.compareTreeScopePosition(document, sr1)', 'Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING');
     shouldBe('internals.compareTreeScopePosition(sr1, document)', 'Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING');
@@ -50,7 +50,7 @@ function testCompareTreeScopePosition()
     shouldBe('internals.compareTreeScopePosition(document, document)', '0');
     shouldBe('internals.compareTreeScopePosition(sr1, sr1)', '0');
 
-    getNodeInTreeOfTrees('a3/c1').removeChild(getNodeInTreeOfTrees('a3/c2'));
+    getNodeInComposedTree('a3/c1').removeChild(getNodeInComposedTree('a3/c2'));
 
     shouldBeNonZero('internals.compareTreeScopePosition(sr3, sr2) & Node.DOCUMENT_POSITION_PRECEDING || internals.compareTreeScopePosition(sr3, sr2) & Node.DOCUMENT_POSITION_FOLLOWING');
     shouldBe('internals.compareTreeScopePosition(sr3, sr2) & Node.DOCUMENT_POSITION_DISCONNECTED', 'Node.DOCUMENT_POSITION_DISCONNECTED');

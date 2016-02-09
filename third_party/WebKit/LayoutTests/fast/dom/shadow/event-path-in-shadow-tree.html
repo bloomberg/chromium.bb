@@ -29,7 +29,7 @@ sandbox.appendChild(
                                                                                                createDOM('content', {'id': 'M'})))))))));
 
 ['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A/E/', 'A/E/H', 'A/E/I', 'A/E/J', 'A/E/H/', 'A/E/H/L', 'A/E/H/M'].forEach(function(path) {
-    getNodeInTreeOfTrees(path).addEventListener('click', function(event) {
+    getNodeInComposedTree(path).addEventListener('click', function(event) {
         debug('\nevent.path on node ' + dumpNode(event.currentTarget));
         debug(dumpNodeList(event.path));
     });

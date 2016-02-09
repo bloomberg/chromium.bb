@@ -27,8 +27,8 @@ document.getElementById('sandbox').appendChild(
                 document.createTextNode('This span should have green border.')))));
 document.body.offsetLeft;
 
-getNodeInTreeOfTrees('host/style').innerHTML = 'span { border: 1px solid green; }';
+getNodeInComposedTree('host/style').innerHTML = 'span { border: 1px solid green; }';
 
-shouldHaveBorderColor(getNodeInTreeOfTrees('host/target'), 'rgb(0, 128, 0)');
+shouldHaveBorderColor(getNodeInComposedTree('host/target'), 'rgb(0, 128, 0)');
 </script>
 </html>

@@ -77,28 +77,28 @@ backgroundColorShouldBe('host_closed_closed/div7b', 'rgba(0, 0, 0, 0)');
 
 debug('(3/6) /deep/ style on shadow tree.');
 styleElement.innerHTML = '';
-var div1 = getNodeInTreeOfTrees('host_open_open/div1');
+var div1 = getNodeInComposedTree('host_open_open/div1');
 div1.insertAdjacentHTML('afterbegin', '<style>div /deep/ div { background-color: blue; }</style>');
 backgroundColorShouldBe('host_open_open/div1', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_open/div1/div2', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_open/div1b', 'rgb(0, 0, 255)');
 div1.removeChild(div1.firstElementChild);
 
-var div3 = getNodeInTreeOfTrees('host_open_closed/div3');
+var div3 = getNodeInComposedTree('host_open_closed/div3');
 div3.insertAdjacentHTML('afterbegin', '<style>div /deep/ div { background-color: blue; }</style>');
 backgroundColorShouldBe('host_open_closed/div3', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_closed/div3/div4', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_closed/div3b', 'rgb(0, 0, 255)');
 div3.removeChild(div3.firstElementChild);
 
-var div5 = getNodeInTreeOfTrees('host_closed_open/div5');
+var div5 = getNodeInComposedTree('host_closed_open/div5');
 div5.insertAdjacentHTML('afterbegin', '<style>div /deep/ div { background-color: blue; }</style>');
 backgroundColorShouldBe('host_closed_open/div5', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open/div5/div6', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open/div5b', 'rgb(0, 0, 255)');
 div5.removeChild(div5.firstElementChild);
 
-var div7 = getNodeInTreeOfTrees('host_closed_closed/div7');
+var div7 = getNodeInComposedTree('host_closed_closed/div7');
 div7.insertAdjacentHTML('afterbegin', '<style>div /deep/ div { background-color: blue; }</style>');
 backgroundColorShouldBe('host_closed_closed/div7', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_closed/div7/div8', 'rgba(0, 0, 0, 0)');

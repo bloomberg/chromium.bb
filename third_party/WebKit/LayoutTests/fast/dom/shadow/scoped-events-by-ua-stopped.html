@@ -34,8 +34,8 @@ input.select();
 
 var sandbox = document.getElementById('sandbox');
 convertTemplatesToShadowRootsWithin(sandbox);
-var target = getNodeInTreeOfTrees('host/target');
-var host = getNodeInTreeOfTrees('host');
+var target = getNodeInComposedTree('host/target');
+var host = getNodeInComposedTree('host');
 
 async_test(function(t) {
     target.onselect = function(e) {

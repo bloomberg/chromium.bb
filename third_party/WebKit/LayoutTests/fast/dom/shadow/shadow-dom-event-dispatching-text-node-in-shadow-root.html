@@ -16,7 +16,7 @@
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'shadow-host'},
                                 createShadowRoot({'id': 'shadow-root'}))));
-        var shadowRoot = getNodeInTreeOfTrees('shadow-host/');
+        var shadowRoot = getNodeInComposedTree('shadow-host/');
         shadowRoot.innerHTML = 'Text Nodes';
         addEventListeners(['top', 'shadow-host', 'shadow-host/']);
         showSandboxTree();

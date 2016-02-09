@@ -44,7 +44,7 @@ function sendTouchEvent(elements)
 {
     eventSender.clearTouchPoints();
     for (var i = 0; i < elements.length; ++i)
-        addTouchPoint(getNodeInTreeOfTrees(elements[i]));
+        addTouchPoint(getNodeInComposedTree(elements[i]));
     eventSender.touchStart();
     eventSender.touchEnd();
 }

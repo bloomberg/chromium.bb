@@ -29,8 +29,8 @@ debug('Event.path should include only unclosed nodes.');
 
 prepareTree();
 
-var targetOpen = getNodeInTreeOfTrees('host_open/inner_open/target_open');
-var targetClosed = getNodeInTreeOfTrees('host_closed/inner_closed/target_closed');
+var targetOpen = getNodeInComposedTree('host_open/inner_open/target_open');
+var targetClosed = getNodeInComposedTree('host_closed/inner_closed/target_closed');
 
 targetOpen.addEventListener('click', clickHandler, false);
 targetClosed.addEventListener('click', clickHandler, false);

@@ -56,7 +56,7 @@ var events = ['abort', 'select', 'change', 'reset', 'resize', 'scroll', 'selects
 function addEventListeners(nodes)
 {
     for (var i = 0; i < nodes.length; ++i) {
-        var node = getNodeInTreeOfTrees(nodes[i]);
+        var node = getNodeInComposedTree(nodes[i]);
         for (var j = 0; j < events.length; ++j)
             node.addEventListener(events[j], recordEvent, false);
     }
@@ -83,7 +83,7 @@ function testEventsShouldNotBeStoppedAtShadowBoundary()
         eventRecords = {};
         var event = document.createEvent('UIEvent');
         event.initEvent(events[i], true, false);
-        getNodeInTreeOfTrees('host/target').dispatchEvent(event);
+        getNodeInComposedTree('host/target').dispatchEvent(event);
         dumpDispatchedEvent(events[i]);
     }
 
@@ -109,7 +109,7 @@ function testEventsFiredOnDistributedNodesShouldNotBeStoppedAtShadowBoundary()
     eventRecords = {};
     var event = document.createEvent('UIEvent');
     event.initEvent('selectstart', true, false);
-    getNodeInTreeOfTrees('host1/distributed-child').dispatchEvent(event);
+    getNodeInComposedTree('host1/distributed-child').dispatchEvent(event);
     dumpDispatchedEvent('selectstart');
 }
 
@@ -132,7 +132,7 @@ function testEventsInMultipleShadowTrees()
     eventRecords = {};
     var event = document.createEvent('UIEvent');
     event.initEvent('selectstart', true, false);
-    getNodeInTreeOfTrees('shadow-host/target').dispatchEvent(event);
+    getNodeInComposedTree('shadow-host/target').dispatchEvent(event);
     dumpDispatchedEvent('selectstart');
 }
 

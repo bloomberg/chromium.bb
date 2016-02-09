@@ -18,11 +18,11 @@ PASS distributedNodes.length is expectedDistributedNodes.length
 
 getDistributedNodes() for "host/shadow" should return [host-child]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
 
 getDistributedNodes() for "host/shadow" should return [host-child]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
 
 getDistributedNodes() for "details//shadow" should return []
 PASS distributedNodes.length is expectedDistributedNodes.length
@@ -30,44 +30,44 @@ Since shadow insertion points don't work for DETAILS elements, this causes a war
 
 getDistributedNodes() for "host//shadow" should return [host/older-child]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
 
 getDistributedNodes() for "host//shadow" should return [host/older-child-1,host-child,host/older-child-2]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
-PASS distributedNodes.item(1) is getNodeInTreeOfTrees(expectedDistributedNodes[1])
-PASS distributedNodes.item(2) is getNodeInTreeOfTrees(expectedDistributedNodes[2])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
+PASS distributedNodes.item(1) is getNodeInComposedTree(expectedDistributedNodes[1])
+PASS distributedNodes.item(2) is getNodeInComposedTree(expectedDistributedNodes[2])
 
 getDistributedNodes() for "host//shadow" should return [host/older-child-1,host-child,host/older-child-2]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
-PASS distributedNodes.item(1) is getNodeInTreeOfTrees(expectedDistributedNodes[1])
-PASS distributedNodes.item(2) is getNodeInTreeOfTrees(expectedDistributedNodes[2])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
+PASS distributedNodes.item(1) is getNodeInComposedTree(expectedDistributedNodes[1])
+PASS distributedNodes.item(2) is getNodeInComposedTree(expectedDistributedNodes[2])
 
 getDistributedNodes() for "host//shadow" should return [host/older-child-1,host/older-child-2]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
-PASS distributedNodes.item(1) is getNodeInTreeOfTrees(expectedDistributedNodes[1])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
+PASS distributedNodes.item(1) is getNodeInComposedTree(expectedDistributedNodes[1])
 
 getDistributedNodes() for "host//shadow" should return [host/older-child-1,host/older-content-child,host/older-child-2]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
-PASS distributedNodes.item(1) is getNodeInTreeOfTrees(expectedDistributedNodes[1])
-PASS distributedNodes.item(2) is getNodeInTreeOfTrees(expectedDistributedNodes[2])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
+PASS distributedNodes.item(1) is getNodeInComposedTree(expectedDistributedNodes[1])
+PASS distributedNodes.item(2) is getNodeInComposedTree(expectedDistributedNodes[2])
 
 getDistributedNodes() for "host//older-shadow" should return [host/oldest-child-1,host-child,host/oldest-child-2]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
-PASS distributedNodes.item(1) is getNodeInTreeOfTrees(expectedDistributedNodes[1])
-PASS distributedNodes.item(2) is getNodeInTreeOfTrees(expectedDistributedNodes[2])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
+PASS distributedNodes.item(1) is getNodeInComposedTree(expectedDistributedNodes[1])
+PASS distributedNodes.item(2) is getNodeInComposedTree(expectedDistributedNodes[2])
 
 getDistributedNodes() for "host///shadow" should return [host//older-child-1,host/oldest-child-1,host-child,host/oldest-child-2,host//older-child-2]
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
-PASS distributedNodes.item(1) is getNodeInTreeOfTrees(expectedDistributedNodes[1])
-PASS distributedNodes.item(2) is getNodeInTreeOfTrees(expectedDistributedNodes[2])
-PASS distributedNodes.item(3) is getNodeInTreeOfTrees(expectedDistributedNodes[3])
-PASS distributedNodes.item(4) is getNodeInTreeOfTrees(expectedDistributedNodes[4])
+PASS distributedNodes.item(0) is getNodeInComposedTree(expectedDistributedNodes[0])
+PASS distributedNodes.item(1) is getNodeInComposedTree(expectedDistributedNodes[1])
+PASS distributedNodes.item(2) is getNodeInComposedTree(expectedDistributedNodes[2])
+PASS distributedNodes.item(3) is getNodeInComposedTree(expectedDistributedNodes[3])
+PASS distributedNodes.item(4) is getNodeInComposedTree(expectedDistributedNodes[4])
 PASS successfullyParsed is true
 
 TEST COMPLETE

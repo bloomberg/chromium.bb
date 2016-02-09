@@ -6,7 +6,7 @@
 <body>
 <div id="root"></div>
 <script>
-function createTreeOfTrees(root, depth, branch, eachTreeHeight)
+function createComposedTree(root, depth, branch, eachTreeHeight)
 {
     var node = root;
     var i;
@@ -21,7 +21,7 @@ function createTreeOfTrees(root, depth, branch, eachTreeHeight)
         var child = document.createElement('div');
         node.appendChild(child);
         var shadowRoot = child.createShadowRoot();
-        createTreeOfTrees(shadowRoot, depth - 1, branch, eachTreeHeight);
+        createComposedTree(shadowRoot, depth - 1, branch, eachTreeHeight);
     }
 }
 
@@ -46,7 +46,7 @@ function rightMostLeaf(root)
 }
 
 var root = document.getElementById('root');
-createTreeOfTrees(root, 10, 2, 50);
+createComposedTree(root, 10, 2, 50);
 var leaf1 = leftMostLeaf(root);
 var leaf2 = rightMostLeaf(root);
 

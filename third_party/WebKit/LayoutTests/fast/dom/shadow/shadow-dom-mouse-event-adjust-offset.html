@@ -37,7 +37,7 @@ function recordEvent(event)
 function addEventListeners(nodes)
 {
     for (var i = 0; i < nodes.length; ++i) {
-        var node = getNodeInTreeOfTrees(nodes[i]);
+        var node = getNodeInComposedTree(nodes[i]);
         node.addEventListener('mouseover', recordEvent, false);
     }
 }
@@ -54,7 +54,7 @@ function testMouseEventOffset()
                                           createDOM('div', {'id': 'target', 'style': 'padding-top: 10px; width: 80px'}))))));
     addEventListeners(['top', 'shadow-host', 'shadow-host/parent']);
     sandbox.offsetLeft;
-    moveMouseOver(getNodeInTreeOfTrees('shadow-host/target'));
+    moveMouseOver(getNodeInComposedTree('shadow-host/target'));
 
     shouldBe("eventRecords['parent']['offsetY']", "5");
     shouldBe("eventRecords['shadow-host']['offsetY']", "5 + 20");

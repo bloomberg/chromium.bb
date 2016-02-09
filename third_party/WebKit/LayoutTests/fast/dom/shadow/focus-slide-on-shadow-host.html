@@ -49,10 +49,10 @@ function runTest() {
     prepareDOMTree(sandbox, false);
     resetFocus();
 
-    host = getNodeInTreeOfTrees('shadowHost');
-    innerDiv = getNodeInTreeOfTrees('shadowHost/innerDiv');
-    inputA = getNodeInTreeOfTrees('shadowHost/inputA');
-    inputB = getNodeInTreeOfTrees('shadowHost/inputB');
+    host = getNodeInComposedTree('shadowHost');
+    innerDiv = getNodeInComposedTree('shadowHost/innerDiv');
+    inputA = getNodeInComposedTree('shadowHost/inputA');
+    inputB = getNodeInComposedTree('shadowHost/inputB');
 
     debug('click on inner div should focus shadow host');
     clickOn(innerDiv);
@@ -71,10 +71,10 @@ function runTest() {
     prepareDOMTree(sandbox, true);
     resetFocus();
 
-    host = getNodeInTreeOfTrees('shadowHost');
-    innerDiv = getNodeInTreeOfTrees('shadowHost/innerDiv');
-    inputA = getNodeInTreeOfTrees('shadowHost/inputA');
-    inputB = getNodeInTreeOfTrees('shadowHost/inputB');
+    host = getNodeInComposedTree('shadowHost');
+    innerDiv = getNodeInComposedTree('shadowHost/innerDiv');
+    inputA = getNodeInComposedTree('shadowHost/inputA');
+    inputB = getNodeInComposedTree('shadowHost/inputB');
 
     inputA.value = 'wonderful';  // len = 9
     inputB.value = 'beautiful';

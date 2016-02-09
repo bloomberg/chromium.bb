@@ -24,7 +24,7 @@ sandbox.appendChild(
                     document.createTextNode(':host { color: red; }')),
                 createDOM('span', {},
                     document.createTextNode('Hello'))))));
-shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("hostChild")).color', '"rgb(0, 128, 0)"');
+shouldBe('window.getComputedStyle(getNodeInComposedTree("hostChild")).color', '"rgb(0, 128, 0)"');
 sandbox.innerHTML = '';
 
 </script>

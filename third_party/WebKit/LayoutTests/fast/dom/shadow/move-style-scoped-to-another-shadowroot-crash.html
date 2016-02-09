@@ -17,8 +17,8 @@ function runTest() {
                     createDOM('style', {'id': 'style', 'scoped': 'scoped'},
                         document.createTextNode('.c3 { display: inherit; transform: rotate3d(0, 1, 1, 45deg); }'))))));
 
-    olderShadowRoot = getNodeInTreeOfTrees("host/");
-    youngerShadowRoot = getNodeInTreeOfTrees("host//");
+    olderShadowRoot = getNodeInComposedTree("host/");
+    youngerShadowRoot = getNodeInComposedTree("host//");
     style = youngerShadowRoot.getElementById('style');
 
     olderShadowRoot.appendChild(youngerShadowRoot.getElementById('child'));

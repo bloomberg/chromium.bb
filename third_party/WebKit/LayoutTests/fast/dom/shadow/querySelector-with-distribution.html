@@ -17,10 +17,10 @@ document.body.appendChild(
                 createDOM('div', {'id': 'bar'},
                      document.createTextNode("bar"))))));
 
-var barShadowRoot = getNodeInTreeOfTrees('child/');
+var barShadowRoot = getNodeInComposedTree('child/');
 shouldBe('barShadowRoot.querySelectorAll(":host-context(.foo)::shadow div")[0].id', '"bar"');
 
-var content = getNodeInTreeOfTrees('host/content');
+var content = getNodeInComposedTree('host/content');
 content.setAttribute('select', '.foobar');
 shouldBe('barShadowRoot.querySelectorAll(":host-context(.foo)::shadow div")[0]', "undefined");
 </script>

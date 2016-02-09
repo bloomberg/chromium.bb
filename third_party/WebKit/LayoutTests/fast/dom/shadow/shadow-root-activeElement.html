@@ -26,15 +26,15 @@ document.getElementById('sandbox').appendChild(
                             createDOM('content', {'select': '#distributed-light-child'})),
                         createDOM('div', {'id': 'distributed-light-child', 'tabindex': 1}))));
 
-var shadowHost1 = getNodeInTreeOfTrees('shadow-host-1');
-var shadowHost2 = getNodeInTreeOfTrees('shadow-host-1/shadow-host-2');
-var shadowRoot1 = getNodeInTreeOfTrees('shadow-host-1/');
-var shadowRoot2 = getNodeInTreeOfTrees('shadow-host-1/shadow-host-2/');
+var shadowHost1 = getNodeInComposedTree('shadow-host-1');
+var shadowHost2 = getNodeInComposedTree('shadow-host-1/shadow-host-2');
+var shadowRoot1 = getNodeInComposedTree('shadow-host-1/');
+var shadowRoot2 = getNodeInComposedTree('shadow-host-1/shadow-host-2/');
 
 var nodeInDocument = document.getElementById('node-in-document');
 var distributedLightChild = document.getElementById('distributed-light-child');
-var childInShadowRoot1 = getNodeInTreeOfTrees('shadow-host-1/child-in-shadow-root-1');
-var childInShadowRoot2 = getNodeInTreeOfTrees('shadow-host-1/shadow-host-2/child-in-shadow-root-2');
+var childInShadowRoot1 = getNodeInComposedTree('shadow-host-1/child-in-shadow-root-1');
+var childInShadowRoot2 = getNodeInComposedTree('shadow-host-1/shadow-host-2/child-in-shadow-root-2');
 
 shouldBeDefined("shadowRoot1.activeElement");
 shouldBeDefined("shadowRoot2.activeElement");

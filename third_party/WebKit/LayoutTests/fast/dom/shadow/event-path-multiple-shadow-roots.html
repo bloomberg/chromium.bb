@@ -16,7 +16,7 @@ function click(path) {
     debug('click #' + path);
     var clickEvent = document.createEvent("MouseEvents");
     clickEvent.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-    getNodeInTreeOfTrees(path).dispatchEvent(clickEvent);
+    getNodeInComposedTree(path).dispatchEvent(clickEvent);
 }
 
 sandbox.appendChild(
@@ -31,7 +31,7 @@ sandbox.appendChild(
                                          createDOM('shadow', {'id': 'I'})))));
 
 ['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A//', 'A//H', 'A//I'].forEach(function(path) {
-    getNodeInTreeOfTrees(path).addEventListener('click', function(event) {
+    getNodeInComposedTree(path).addEventListener('click', function(event) {
         debug('\nevent.path on node ' + dumpNode(event.currentTarget) + ' (target: ' + dumpNode(event.target) + ')');
         debug(dumpNodeList(event.path));
     });

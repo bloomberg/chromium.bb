@@ -10,7 +10,7 @@ jsTestIsAsync = true;
 
 function addTouchEventListeners(name)
 {
-    var node = getNodeInTreeOfTrees(name);
+    var node = getNodeInComposedTree(name);
     node.addEventListener('touchstart', recordEvent, false);
 }
 

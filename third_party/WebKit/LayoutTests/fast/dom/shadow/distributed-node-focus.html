@@ -25,7 +25,7 @@ document.getElementById('non-distributed-node').focus();
 // Focus doesn't change because non-distributed-node can't get focused.
 shouldBeEqualToString('document.activeElement.id', 'input1');
 
-var shadowRoot = getNodeInTreeOfTrees('host/');
+var shadowRoot = getNodeInComposedTree('host/');
 shouldBeNull('shadowRoot.activeElement');
 
 
@@ -43,10 +43,10 @@ var distributedNode = document.getElementById('distributed-node');
 distributedNode.focus();
 
 shouldBeEqualToString('document.activeElement.id', 'distributed-node');
-shadowRoot = getNodeInTreeOfTrees("host/");
+shadowRoot = getNodeInComposedTree("host/");
 shouldBeEqualToString('shadowRoot.activeElement.id', 'distributed-node');
 
-var contentParent = getNodeInTreeOfTrees('host/content-parent');
+var contentParent = getNodeInComposedTree('host/content-parent');
 contentParent.parentNode.removeChild(contentParent);
 // This is a similar case where 'dispaly: none' is set to the focused element. We can't guarantee this case.
 // The current implementation leaves the distributed node as document.activeElement.

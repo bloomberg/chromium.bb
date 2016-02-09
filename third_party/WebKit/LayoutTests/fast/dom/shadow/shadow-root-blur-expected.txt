@@ -4,39 +4,39 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 
-getNodeInTreeOfTrees('shadowHostA/childInTreeOne').focus()
+getNodeInComposedTree('shadowHostA/childInTreeOne').focus()
 PASS document.activeElement.id is "shadowHostA"
-getNodeInTreeOfTrees('shadowHostA').blur();
+getNodeInComposedTree('shadowHostA').blur();
 shadowHostA onblur called!
 PASS document.activeElement is document.body
-PASS getNodeInTreeOfTrees('shadowHostA/').activeElement is null
-PASS getNodeInTreeOfTrees('shadowHostA/shadowHostB/').activeElement is null
-PASS getNodeInTreeOfTrees('shadowHostC/').activeElement is null
-getNodeInTreeOfTrees('shadowHostA/shadowHostB/childInTreeTwo').focus()
+PASS getNodeInComposedTree('shadowHostA/').activeElement is null
+PASS getNodeInComposedTree('shadowHostA/shadowHostB/').activeElement is null
+PASS getNodeInComposedTree('shadowHostC/').activeElement is null
+getNodeInComposedTree('shadowHostA/shadowHostB/childInTreeTwo').focus()
 PASS document.activeElement.id is "shadowHostA"
-getNodeInTreeOfTrees('shadowHostA/shadowHostB').blur();
+getNodeInComposedTree('shadowHostA/shadowHostB').blur();
 shadowHostB onblur called!
 shadowHostA onblur called!
 PASS document.activeElement is document.body
-PASS getNodeInTreeOfTrees('shadowHostA/').activeElement is null
-PASS getNodeInTreeOfTrees('shadowHostA/shadowHostB/').activeElement is null
-PASS getNodeInTreeOfTrees('shadowHostC/').activeElement is null
-getNodeInTreeOfTrees('shadowHostA/shadowHostB/childInTreeTwo').focus()
+PASS getNodeInComposedTree('shadowHostA/').activeElement is null
+PASS getNodeInComposedTree('shadowHostA/shadowHostB/').activeElement is null
+PASS getNodeInComposedTree('shadowHostC/').activeElement is null
+getNodeInComposedTree('shadowHostA/shadowHostB/childInTreeTwo').focus()
 PASS document.activeElement.id is "shadowHostA"
-getNodeInTreeOfTrees('shadowHostA').blur();
+getNodeInComposedTree('shadowHostA').blur();
 shadowHostB onblur called!
 shadowHostA onblur called!
 PASS document.activeElement is document.body
-PASS getNodeInTreeOfTrees('shadowHostA/').activeElement is null
-PASS getNodeInTreeOfTrees('shadowHostA/shadowHostB/').activeElement is null
-PASS getNodeInTreeOfTrees('shadowHostC/').activeElement is null
-getNodeInTreeOfTrees('shadowHostC/childInTreeThree').focus()
+PASS getNodeInComposedTree('shadowHostA/').activeElement is null
+PASS getNodeInComposedTree('shadowHostA/shadowHostB/').activeElement is null
+PASS getNodeInComposedTree('shadowHostC/').activeElement is null
+getNodeInComposedTree('shadowHostC/childInTreeThree').focus()
 PASS document.activeElement.id is "shadowHostC"
-getNodeInTreeOfTrees('shadowHostA').blur();
+getNodeInComposedTree('shadowHostA').blur();
 PASS document.activeElement.id is "shadowHostC"
-PASS getNodeInTreeOfTrees('shadowHostA/').activeElement is null
-PASS getNodeInTreeOfTrees('shadowHostA/shadowHostB/').activeElement is null
-PASS getNodeInTreeOfTrees('shadowHostC/').activeElement.id is "childInTreeThree"
+PASS getNodeInComposedTree('shadowHostA/').activeElement is null
+PASS getNodeInComposedTree('shadowHostA/shadowHostB/').activeElement is null
+PASS getNodeInComposedTree('shadowHostC/').activeElement.id is "childInTreeThree"
 PASS successfullyParsed is true
 
 TEST COMPLETE

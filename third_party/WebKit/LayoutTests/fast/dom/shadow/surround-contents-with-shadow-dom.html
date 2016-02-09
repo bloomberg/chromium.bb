@@ -31,13 +31,13 @@ testSurroundContents("<details>", "details-target", T3);
 
 function testSurroundContents(description, targetPath, newParent) {
     test(function () {
-        var target = getNodeInTreeOfTrees(targetPath);
+        var target = getNodeInComposedTree(targetPath);
         var range = document.createRange();
         range.selectNode(target);
         assert_throws("HierarchyRequestError", function () {
             range.surroundContents(newParent);
         });
-        var targetAfter = getNodeInTreeOfTrees(targetPath);
+        var targetAfter = getNodeInComposedTree(targetPath);
         assert_equals(targetAfter, target, "DOM should not change after HierarchyRequestError");
     }, description);
 }

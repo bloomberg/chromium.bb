@@ -36,7 +36,7 @@ function testSingleShadow() {
 
     var host = document.querySelector('#shadow-host');
     var lightdomInput = document.querySelector('#lightdom-input');
-    var innerInput = getNodeInTreeOfTrees('shadow-host/inner-input');
+    var innerInput = getNodeInComposedTree('shadow-host/inner-input');
     var outerInput = document.querySelector('#outer-input');
 
     outerInput.focus();
@@ -76,7 +76,7 @@ function testSingleShadow() {
 
     var host = document.querySelector('#shadow-host');
     var lightdomInput = document.querySelector('#lightdom-input');
-    var innerInput = getNodeInTreeOfTrees('shadow-host/inner-input');
+    var innerInput = getNodeInComposedTree('shadow-host/inner-input');
     var outerInput = document.querySelector('#outer-input');
 
     outerInput.focus();

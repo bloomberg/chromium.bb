@@ -19,13 +19,13 @@ function prepareTree(root) {
 
 function assertDistributedNodes(insertionPointId, expectedDistributedNodes) {
     debug('\ngetDistributedNodes() for "' + insertionPointId + '" should return [' + expectedDistributedNodes + ']');
-    var insertionPoint = getNodeInTreeOfTrees(insertionPointId);
+    var insertionPoint = getNodeInComposedTree(insertionPointId);
     var distributedNodes = insertionPoint.getDistributedNodes();
     window.distributedNodes = distributedNodes;
     window.expectedDistributedNodes = expectedDistributedNodes;
     shouldBe("distributedNodes.length", "expectedDistributedNodes.length");
     for (var i = 0; i < distributedNodes.length && i < expectedDistributedNodes.length; ++i) {
-        shouldBe("distributedNodes.item(" + i + ")", "getNodeInTreeOfTrees(expectedDistributedNodes[" + i + "])");
+        shouldBe("distributedNodes.item(" + i + ")", "getNodeInComposedTree(expectedDistributedNodes[" + i + "])");
     }
 }
 

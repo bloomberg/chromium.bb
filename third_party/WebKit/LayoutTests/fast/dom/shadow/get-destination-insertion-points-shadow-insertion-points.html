@@ -16,8 +16,8 @@ document.body.appendChild(
                         createShadowRoot(
                             createDOM('shadow', {'id': 'shadow'})))));
 
-shouldBeEqualAsArray(getNodeInTreeOfTrees('host/child').getDestinationInsertionPoints(),
-                     [getNodeInTreeOfTrees('host//shadow')]);
+shouldBeEqualAsArray(getNodeInComposedTree('host/child').getDestinationInsertionPoints(),
+                     [getNodeInComposedTree('host//shadow')]);
 </script>
 </body>
 </html>

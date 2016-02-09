@@ -26,11 +26,11 @@ function prepareDomTree(parent)
 function test()
 {
     prepareDomTree(document.body);
-    shouldBeEqualToString("getNodeInTreeOfTrees('divA/inputB').id", 'inputB');
-    shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC').id", 'divC');
-    shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC/inputD').id", 'inputD');
-    shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC//inputE').id", 'inputE');
-    shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC///inputF').id", 'inputF');
+    shouldBeEqualToString("getNodeInComposedTree('divA/inputB').id", 'inputB');
+    shouldBeEqualToString("getNodeInComposedTree('divA/divC').id", 'divC');
+    shouldBeEqualToString("getNodeInComposedTree('divA/divC/inputD').id", 'inputD');
+    shouldBeEqualToString("getNodeInComposedTree('divA/divC//inputE').id", 'inputE');
+    shouldBeEqualToString("getNodeInComposedTree('divA/divC///inputF').id", 'inputF');
 }
 
 test();

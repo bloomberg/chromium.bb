@@ -71,9 +71,9 @@ testFlatTree(
               createDOM('div', {'id': 'c'})));
 
 debug('Test for traversal, starting with a fallback element which is not used.');
-showFlatTree(getNodeInTreeOfTrees('a/f1'));
-showNextNode(getNodeInTreeOfTrees('a/f1'));
-showNextNode(getNodeInTreeOfTrees('a/f2'));
+showFlatTree(getNodeInComposedTree('a/f1'));
+showNextNode(getNodeInComposedTree('a/f1'));
+showNextNode(getNodeInComposedTree('a/f2'));
 debug('');
 
 debug('Test for Nested ShadowRoots.');
@@ -117,7 +117,7 @@ testFlatTree(
                   createDOM('div', {'id': 'd'}))));
 
 debug('Test for traversal, starting with a node in an orphaned shadow subtree.');
-showFlatTree(getNodeInTreeOfTrees('a/b'));
+showFlatTree(getNodeInComposedTree('a/b'));
 
 debug('Test for a content element which does not select any nodes nor have fallback elements.');
 testFlatTree(

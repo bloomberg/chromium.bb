@@ -14,7 +14,7 @@ description('Test for issue 247275: shadow tree styles selects shadow host.');
 var sandbox = document.getElementById('sandbox');
 
 function borderColorOf(selector) {
-    return window.getComputedStyle(getNodeInTreeOfTrees(selector)).borderColor;
+    return window.getComputedStyle(getNodeInComposedTree(selector)).borderColor;
 }
 
 function shouldHaveBorderColor(selector, color) {

@@ -124,7 +124,7 @@ function isIframeElement(element)
 
 // You can spefify youngerShadowRoot by consecutive slashes.
 // See LayoutTests/fast/dom/shadow/get-element-by-id-in-shadow-root.html for actual usages.
-function getNodeInTreeOfTrees(path)
+function getNodeInComposedTree(path)
 {
     var ids = path.split('/');
     var node = document.getElementById(ids[0]);
@@ -195,7 +195,7 @@ function innermostActiveElement(element)
 
 function isInnermostActiveElement(id)
 {
-    var element = getNodeInTreeOfTrees(id);
+    var element = getNodeInComposedTree(id);
     if (!element) {
         debug('FAIL: There is no such element with id: '+ from);
         return false;
@@ -209,7 +209,7 @@ function isInnermostActiveElement(id)
 function shouldNavigateFocus(from, to, direction)
 {
     debug('Should move from ' + from + ' to ' + to + ' in ' + direction);
-    var fromElement = getNodeInTreeOfTrees(from);
+    var fromElement = getNodeInComposedTree(from);
     if (!fromElement) {
       debug('FAIL: There is no such element with id: '+ from);
       return;
@@ -314,7 +314,7 @@ function showNextNode(node)
 
 function backgroundColorOf(selector)
 {
-    return window.getComputedStyle(getNodeInTreeOfTrees(selector)).backgroundColor;
+    return window.getComputedStyle(getNodeInComposedTree(selector)).backgroundColor;
 }
 
 function backgroundColorShouldBe(selector, expected)

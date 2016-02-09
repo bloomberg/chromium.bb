@@ -4,18 +4,18 @@ Test for ::shadow pseudo element, http://crbug.com/367266.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS colorOf(getNodeInTreeOfTrees("host/target")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host/target")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host/target")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host/first-direct-child")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host/second-direct-child")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host-sibling")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host/first-direct-child")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host/second-direct-child")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host-sibling")) is not "rgb(255, 0, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host/direct-child")) is "rgb(0, 128, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host/not-direct-child")) is not "rgb(0, 128, 0)"
-PASS colorOf(getNodeInTreeOfTrees("host-child")) is not "rgb(0, 128, 0)"
+PASS colorOf(getNodeInComposedTree("host/target")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host/target")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host/target")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host/first-direct-child")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host/second-direct-child")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host-sibling")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host/first-direct-child")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host/second-direct-child")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host-sibling")) is not "rgb(255, 0, 0)"
+PASS colorOf(getNodeInComposedTree("host/direct-child")) is "rgb(0, 128, 0)"
+PASS colorOf(getNodeInComposedTree("host/not-direct-child")) is not "rgb(0, 128, 0)"
+PASS colorOf(getNodeInComposedTree("host-child")) is not "rgb(0, 128, 0)"
 PASS successfullyParsed is true
 
 TEST COMPLETE

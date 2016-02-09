@@ -17,13 +17,13 @@ function borderColorOf(node)
 
 function borderColorShouldBe(selector, color)
 {
-    var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var text = 'borderColorOf(getNodeInComposedTree("' + selector + '"))';
     shouldBeEqualToString(text, color);
 }
 
 function borderColorShouldNotBe(selector, color)
 {
-    var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var text = 'borderColorOf(getNodeInComposedTree("' + selector + '"))';
     var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
     shouldNotBe(text, unevaledString);
 }

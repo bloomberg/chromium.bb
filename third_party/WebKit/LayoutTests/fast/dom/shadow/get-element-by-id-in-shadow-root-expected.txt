@@ -4,11 +4,11 @@ Tests to ensure that ShadowRoot.getElementById can get an element in ShadowRoot 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS getNodeInTreeOfTrees('divA/inputB').id is "inputB"
-PASS getNodeInTreeOfTrees('divA/divC').id is "divC"
-PASS getNodeInTreeOfTrees('divA/divC/inputD').id is "inputD"
-PASS getNodeInTreeOfTrees('divA/divC//inputE').id is "inputE"
-PASS getNodeInTreeOfTrees('divA/divC///inputF').id is "inputF"
+PASS getNodeInComposedTree('divA/inputB').id is "inputB"
+PASS getNodeInComposedTree('divA/divC').id is "divC"
+PASS getNodeInComposedTree('divA/divC/inputD').id is "inputD"
+PASS getNodeInComposedTree('divA/divC//inputE').id is "inputE"
+PASS getNodeInComposedTree('divA/divC///inputF').id is "inputF"
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -27,9 +27,9 @@ var sandbox = document.getElementById('sandbox');
 
 debug('(1/2) DOM mutation across shadow boundary with delegatesFocus=false');
 buildTree(sandbox, false);
-var host = getNodeInTreeOfTrees('host');
-var input = getNodeInTreeOfTrees('host/input');
-var dest = getNodeInTreeOfTrees('dest');
+var host = getNodeInComposedTree('host');
+var input = getNodeInComposedTree('host/input');
+var dest = getNodeInComposedTree('dest');
 
 backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
 input.focus();
@@ -42,9 +42,9 @@ backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
 
 debug('(2/2) DOM mutation across shadow boundary with delegatesFocus=true');
 buildTree(sandbox, true);
-var host = getNodeInTreeOfTrees('host');
-var input = getNodeInTreeOfTrees('host/input');
-var dest = getNodeInTreeOfTrees('dest');
+var host = getNodeInComposedTree('host');
+var input = getNodeInComposedTree('host/input');
+var dest = getNodeInComposedTree('dest');
 
 backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
 input.focus();

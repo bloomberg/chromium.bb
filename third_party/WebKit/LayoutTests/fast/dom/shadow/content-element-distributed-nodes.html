@@ -24,13 +24,13 @@ document.body.appendChild(
                         createDOM('div', {'id': 'child-2'}))));
 
 
-var content1 = getNodeInTreeOfTrees('host-1/content-1');
-var content2 = getNodeInTreeOfTrees('host-2/content-2');
-var content3 = getNodeInTreeOfTrees('host-2/host-3/content-3');
+var content1 = getNodeInComposedTree('host-1/content-1');
+var content2 = getNodeInComposedTree('host-2/content-2');
+var content3 = getNodeInComposedTree('host-2/host-3/content-3');
 
-var child1 = getNodeInTreeOfTrees('child-1');
-var child2 = getNodeInTreeOfTrees('child-2');
-var child3 = getNodeInTreeOfTrees('host-2/child-3');
+var child1 = getNodeInComposedTree('child-1');
+var child2 = getNodeInComposedTree('child-2');
+var child3 = getNodeInComposedTree('host-2/child-3');
 
 var distributedNodes1 = content1.getDistributedNodes();
 var distributedNodes2 = content2.getDistributedNodes();

@@ -14,7 +14,7 @@ function runTest() {
                 createShadowRoot()),
                 createDOM('shadow', {}))));
     document.body.offsetLeft;
-    getNodeInTreeOfTrees('div1//div2').appendChild(
+    getNodeInComposedTree('div1//div2').appendChild(
         createDOM('div', {'id': 'div3'},
             createDOM('shadow', {})));
     document.body.offsetLeft;

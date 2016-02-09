@@ -20,9 +20,9 @@ document.body.appendChild(
                 createDOM('div', {'id': 'bar'},
                      document.createTextNode("bar"))))));
 
-shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("child/bar")).color', '"rgb(0, 128, 0)"');
+shouldBe('window.getComputedStyle(getNodeInComposedTree("child/bar")).color', '"rgb(0, 128, 0)"');
 
-var content = getNodeInTreeOfTrees('host/content');
+var content = getNodeInComposedTree('host/content');
 content.setAttribute('select', '.foobar');
-shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("child/bar")).color', '"rgb(0, 0, 0)"');
+shouldBe('window.getComputedStyle(getNodeInComposedTree("child/bar")).color', '"rgb(0, 0, 0)"');
 </script>

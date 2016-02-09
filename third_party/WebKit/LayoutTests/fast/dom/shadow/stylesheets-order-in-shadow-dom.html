@@ -26,5 +26,5 @@ document.body.appendChild(
             createDOM('span', {'id': 'world', 'class': 'hello world' },
                 document.createTextNode("World")))));
 
-shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("host/world")).color', '"rgb(255, 255, 0)"');
+shouldBe('window.getComputedStyle(getNodeInComposedTree("host/world")).color', '"rgb(255, 255, 0)"');
 </script>

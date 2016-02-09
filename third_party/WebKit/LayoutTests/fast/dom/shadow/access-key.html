@@ -61,7 +61,7 @@ function prepareDOMTree(parent)
                'shadowC/inputD', 'shadowC/inputE',
                'shadowC/shadowF/inputG'];
     for (var i = 0; i < ids.length; ++i) {
-        var element = getNodeInTreeOfTrees(ids[i]);
+        var element = getNodeInComposedTree(ids[i]);
         element.addEventListener('focus', recordEvent, false);
     }
 }
@@ -79,12 +79,12 @@ function test()
     pressAccessKey('a');
     shouldBe('dispatchedEvent("focus")', '["inputE"]');
 
-    getNodeInTreeOfTrees('shadowC/inputD').focus();
+    getNodeInComposedTree('shadowC/inputD').focus();
     clearEventRecords();
     pressAccessKey('a');
     shouldBe('dispatchedEvent("focus")', '["inputE"]');
 
-    getNodeInTreeOfTrees('shadowC/shadowF/inputG').focus();
+    getNodeInComposedTree('shadowC/shadowF/inputG').focus();
     clearEventRecords();
     pressAccessKey('a');
     shouldBe('dispatchedEvent("focus")', '["inputE"]');

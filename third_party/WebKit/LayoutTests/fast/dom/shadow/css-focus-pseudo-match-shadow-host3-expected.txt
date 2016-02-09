@@ -1,4 +1,4 @@
-testing shadow tree of trees
+testing shadow composed tree
 (1/4) both shadow hosts' delegateFocus are false
 PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
 PASS backgroundColorOf('shadow-host/inner-shadow-host') is "rgb(255, 255, 0)"

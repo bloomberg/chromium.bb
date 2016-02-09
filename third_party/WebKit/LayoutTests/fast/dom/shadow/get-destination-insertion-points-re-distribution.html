@@ -19,7 +19,7 @@ document.body.appendChild(
                         createDOM('div', {'id': 'child-1'}))));
 
 shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
-                     [getNodeInTreeOfTrees('host-1/content-1'), getNodeInTreeOfTrees('host-1/host-2/content-2')]);
+                     [getNodeInComposedTree('host-1/content-1'), getNodeInComposedTree('host-1/host-2/content-2')]);
 
 document.body.appendChild(
     createDOM('div', {},
@@ -33,7 +33,7 @@ document.body.appendChild(
                         createDOM('div', {'id': 'child-10'}))));
 
 shouldBeEqualAsArray(document.getElementById('child-10').getDestinationInsertionPoints(),
-                     [getNodeInTreeOfTrees('host-10/content-10')]);
+                     [getNodeInComposedTree('host-10/content-10')]);
 
 document.body.appendChild(
     createDOM('div', {},
@@ -47,7 +47,7 @@ document.body.appendChild(
                         createDOM('div', {'id': 'child-11'}))));
 
 shouldBeEqualAsArray(document.getElementById('child-11').getDestinationInsertionPoints(),
-                     [getNodeInTreeOfTrees('host-11/content-11')]);
+                     [getNodeInComposedTree('host-11/content-11')]);
 
 document.body.appendChild(
     createDOM('div', {},

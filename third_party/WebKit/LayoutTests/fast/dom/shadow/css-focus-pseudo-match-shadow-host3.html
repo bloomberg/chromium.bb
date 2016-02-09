@@ -14,7 +14,7 @@ div#shadow-host:focus {
 <div id="sandbox"></div>
 </body>
 <script>
-function buildShadowTreeOfTrees(delegatesFocus1, delegatesFocus2) {
+function buildShadowComposedTree(delegatesFocus1, delegatesFocus2) {
     var sandbox = document.querySelector('#sandbox');
     sandbox.innerHTML = '';
     sandbox.appendChild(
@@ -37,19 +37,19 @@ function buildShadowTreeOfTrees(delegatesFocus1, delegatesFocus2) {
     sandbox.offsetTop;
 }
 
-function testShadowTreeOfTrees() {
-    debug('testing shadow tree of trees');
+function testShadowComposedTree() {
+    debug('testing shadow composed tree');
 
     debug('(1/4) both shadow hosts\' delegateFocus are false');
-    buildShadowTreeOfTrees(false, false);
+    buildShadowComposedTree(false, false);
 
     backgroundColorShouldBe('shadow-host', 'rgb(255, 255, 255)');
     backgroundColorShouldBe('shadow-host/inner-shadow-host', 'rgb(255, 255, 0)');
 
-    var host = getNodeInTreeOfTrees('shadow-host');
-    var innerHost = getNodeInTreeOfTrees('shadow-host/inner-shadow-host');
-    var input = getNodeInTreeOfTrees('shadow-host/inner-input');
-    var input2 = getNodeInTreeOfTrees('shadow-host/inner-shadow-host/inner-input2');
+    var host = getNodeInComposedTree('shadow-host');
+    var innerHost = getNodeInComposedTree('shadow-host/inner-shadow-host');
+    var input = getNodeInComposedTree('shadow-host/inner-input');
+    var input2 = getNodeInComposedTree('shadow-host/inner-shadow-host/inner-input2');
     var outerInput = document.querySelector('#outer-input');
 
     input.focus()
@@ -70,12 +70,12 @@ function testShadowTreeOfTrees() {
 
 
     debug('(2/4) top-level shadow host\'s delegateFocus is true');
-    buildShadowTreeOfTrees(true, false);
+    buildShadowComposedTree(true, false);
 
-    var host = getNodeInTreeOfTrees('shadow-host');
-    var innerHost = getNodeInTreeOfTrees('shadow-host/inner-shadow-host');
-    var input = getNodeInTreeOfTrees('shadow-host/inner-input');
-    var input2 = getNodeInTreeOfTrees('shadow-host/inner-shadow-host/inner-input2');
+    var host = getNodeInComposedTree('shadow-host');
+    var innerHost = getNodeInComposedTree('shadow-host/inner-shadow-host');
+    var input = getNodeInComposedTree('shadow-host/inner-input');
+    var input2 = getNodeInComposedTree('shadow-host/inner-shadow-host/inner-input2');
     var outerInput = document.querySelector('#outer-input');
 
     input.focus()
@@ -96,12 +96,12 @@ function testShadowTreeOfTrees() {
 
 
     debug('(3/4) lower-level shadow host\'s delegateFocus is true');
-    buildShadowTreeOfTrees(false, true);
+    buildShadowComposedTree(false, true);
 
-    var host = getNodeInTreeOfTrees('shadow-host');
-    var innerHost = getNodeInTreeOfTrees('shadow-host/inner-shadow-host');
-    var input = getNodeInTreeOfTrees('shadow-host/inner-input');
-    var input2 = getNodeInTreeOfTrees('shadow-host/inner-shadow-host/inner-input2');
+    var host = getNodeInComposedTree('shadow-host');
+    var innerHost = getNodeInComposedTree('shadow-host/inner-shadow-host');
+    var input = getNodeInComposedTree('shadow-host/inner-input');
+    var input2 = getNodeInComposedTree('shadow-host/inner-shadow-host/inner-input2');
     var outerInput = document.querySelector('#outer-input');
 
     input.focus()
@@ -122,12 +122,12 @@ function testShadowTreeOfTrees() {
 
 
     debug('(4/4) both shadow hosts\' delegateFocus are true');
-    buildShadowTreeOfTrees(true, true);
+    buildShadowComposedTree(true, true);
 
-    var host = getNodeInTreeOfTrees('shadow-host');
-    var innerHost = getNodeInTreeOfTrees('shadow-host/inner-shadow-host');
-    var input = getNodeInTreeOfTrees('shadow-host/inner-input');
-    var input2 = getNodeInTreeOfTrees('shadow-host/inner-shadow-host/inner-input2');
+    var host = getNodeInComposedTree('shadow-host');
+    var innerHost = getNodeInComposedTree('shadow-host/inner-shadow-host');
+    var input = getNodeInComposedTree('shadow-host/inner-input');
+    var input2 = getNodeInComposedTree('shadow-host/inner-shadow-host/inner-input2');
     var outerInput = document.querySelector('#outer-input');
 
     input.focus()
@@ -147,5 +147,5 @@ function testShadowTreeOfTrees() {
     backgroundColorShouldBe('shadow-host/inner-shadow-host', 'rgb(0, 0, 255)');
 }
 
-testShadowTreeOfTrees();
+testShadowComposedTree();
 </script>
