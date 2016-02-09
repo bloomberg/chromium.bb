@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "remoting/protocol/port_range.h"
 
 namespace remoting {
@@ -44,17 +45,20 @@ struct NetworkSettings {
         NAT_TRAVERSAL_OUTGOING
   };
 
-  NetworkSettings() : flags(NAT_TRAVERSAL_DISABLED) {
-    DCHECK(!(flags & (NAT_TRAVERSAL_STUN | NAT_TRAVERSAL_RELAY)) ||
-           (flags & NAT_TRAVERSAL_OUTGOING));
-  }
+  NetworkSettings() {}
 
   explicit NetworkSettings(uint32_t flags) : flags(flags) {}
 
-  uint32_t flags;
+  uint32_t flags = NAT_TRAVERSAL_DISABLED;
 
   // Range of ports used by P2P sessions.
   PortRange port_range;
+
+  // ICE Timeout.
+  base::TimeDelta ice_timeout = base::TimeDelta::FromSeconds(15);
+
+  // ICE reconnect attempts.
+  int ice_reconnect_attempts = 2;
 };
 
 }  // namespace protocol

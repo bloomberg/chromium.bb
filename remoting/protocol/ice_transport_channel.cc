@@ -27,10 +27,6 @@ namespace protocol {
 
 namespace {
 
-// Try connecting ICE twice with timeout of 15 seconds for each attempt.
-const int kMaxReconnectAttempts = 2;
-const int kReconnectDelaySeconds = 15;
-
 // Utility function to map a cricket::Candidate string type to a
 // TransportRoute::RouteType enum value.
 TransportRoute::RouteType CandidateTypeToTransportRouteType(
@@ -54,7 +50,8 @@ IceTransportChannel::IceTransportChannel(
     : transport_context_(transport_context),
       ice_username_fragment_(
           rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
-      connect_attempts_left_(kMaxReconnectAttempts),
+      connect_attempts_left_(
+          transport_context->network_settings().ice_reconnect_attempts),
       weak_factory_(this) {
   DCHECK(!ice_username_fragment_.empty());
 }
@@ -126,9 +123,9 @@ void IceTransportChannel::Connect(const std::string& name,
   --connect_attempts_left_;
 
   // Start reconnection timer.
-  reconnect_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kReconnectDelaySeconds),
-      this, &IceTransportChannel::TryReconnect);
+  reconnect_timer_.Start(FROM_HERE,
+                         transport_context_->network_settings().ice_timeout,
+                         this, &IceTransportChannel::TryReconnect);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&IceTransportChannel::NotifyConnected,
@@ -202,7 +199,8 @@ void IceTransportChannel::OnWritableState(cricket::TransportChannel* channel) {
   DCHECK_EQ(channel, static_cast<cricket::TransportChannel*>(channel_.get()));
 
   if (channel->writable()) {
-    connect_attempts_left_ = kMaxReconnectAttempts;
+    connect_attempts_left_ =
+        transport_context_->network_settings().ice_reconnect_attempts;
     reconnect_timer_.Stop();
 
     // Route change notifications are ignored when the |channel_| is not
