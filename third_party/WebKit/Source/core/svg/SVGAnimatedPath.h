@@ -36,19 +36,17 @@
 
 namespace blink {
 
-class SVGPathElement;
-
 class SVGAnimatedPath : public SVGAnimatedProperty<SVGPath> {
 public:
     ~SVGAnimatedPath() override;
 
-    static PassRefPtrWillBeRawPtr<SVGAnimatedPath> create(SVGPathElement* contextElement, const QualifiedName& attributeName)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedPath> create(SVGElement* contextElement, const QualifiedName& attributeName)
     {
         return adoptRefWillBeNoop(new SVGAnimatedPath(contextElement, attributeName));
     }
 
 protected:
-    SVGAnimatedPath(SVGPathElement*, const QualifiedName&);
+    SVGAnimatedPath(SVGElement*, const QualifiedName&);
 };
 
 } // namespace blink

@@ -30,11 +30,9 @@
 
 #include "core/svg/SVGAnimatedPath.h"
 
-#include "core/svg/SVGPathElement.h"
-
 namespace blink {
 
-SVGAnimatedPath::SVGAnimatedPath(SVGPathElement* contextElement, const QualifiedName& attributeName)
+SVGAnimatedPath::SVGAnimatedPath(SVGElement* contextElement, const QualifiedName& attributeName)
     : SVGAnimatedProperty<SVGPath>(contextElement, attributeName, SVGPath::create())
 {
 }
