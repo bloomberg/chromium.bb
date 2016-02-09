@@ -438,6 +438,33 @@ TEST_F(ArrayTest, PushBack_MoveOnly) {
   EXPECT_EQ(0u, MoveOnlyType::num_instances());
 }
 
+TEST_F(ArrayTest, MoveFromAndToSTLVector_Copyable) {
+  std::vector<CopyableType> vec1(1);
+  mojo::Array<CopyableType> arr(std::move(vec1));
+  ASSERT_EQ(1u, arr.size());
+  ASSERT_FALSE(arr[0].copied());
+
+  std::vector<CopyableType> vec2(arr.PassStorage());
+  ASSERT_EQ(1u, vec2.size());
+  ASSERT_FALSE(vec2[0].copied());
+
+  ASSERT_EQ(0u, arr.size());
+  ASSERT_TRUE(arr.is_null());
+}
+
+TEST_F(ArrayTest, MoveFromAndToSTLVector_MoveOnly) {
+  std::vector<MoveOnlyType> vec1(1);
+  mojo::Array<MoveOnlyType> arr(std::move(vec1));
+
+  ASSERT_EQ(1u, arr.size());
+
+  std::vector<MoveOnlyType> vec2(arr.PassStorage());
+  ASSERT_EQ(1u, vec2.size());
+
+  ASSERT_EQ(0u, arr.size());
+  ASSERT_TRUE(arr.is_null());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

@@ -493,13 +493,13 @@ TypeConverter<media::AudioDecoderConfig,
               media::interfaces::AudioDecoderConfigPtr>::
     Convert(const media::interfaces::AudioDecoderConfigPtr& input) {
   media::AudioDecoderConfig config;
-  config.Initialize(
-      static_cast<media::AudioCodec>(input->codec),
-      static_cast<media::SampleFormat>(input->sample_format),
-      static_cast<media::ChannelLayout>(input->channel_layout),
-      input->samples_per_second, input->extra_data, input->is_encrypted,
-      base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
-      input->codec_delay);
+  config.Initialize(static_cast<media::AudioCodec>(input->codec),
+                    static_cast<media::SampleFormat>(input->sample_format),
+                    static_cast<media::ChannelLayout>(input->channel_layout),
+                    input->samples_per_second, input->extra_data.storage(),
+                    input->is_encrypted,
+                    base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
+                    input->codec_delay);
   return config;
 }
 
@@ -530,14 +530,14 @@ TypeConverter<media::VideoDecoderConfig,
               media::interfaces::VideoDecoderConfigPtr>::
     Convert(const media::interfaces::VideoDecoderConfigPtr& input) {
   media::VideoDecoderConfig config;
-  config.Initialize(
-      static_cast<media::VideoCodec>(input->codec),
-      static_cast<media::VideoCodecProfile>(input->profile),
-      static_cast<media::VideoPixelFormat>(input->format),
-      static_cast<media::ColorSpace>(input->color_space),
-      input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
-      input->natural_size.To<gfx::Size>(), input->extra_data,
-      input->is_encrypted);
+  config.Initialize(static_cast<media::VideoCodec>(input->codec),
+                    static_cast<media::VideoCodecProfile>(input->profile),
+                    static_cast<media::VideoPixelFormat>(input->format),
+                    static_cast<media::ColorSpace>(input->color_space),
+                    input->coded_size.To<gfx::Size>(),
+                    input->visible_rect.To<gfx::Rect>(),
+                    input->natural_size.To<gfx::Size>(),
+                    input->extra_data.storage(), input->is_encrypted);
   return config;
 }
 

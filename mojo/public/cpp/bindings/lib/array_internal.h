@@ -469,24 +469,6 @@ struct ArrayTraits {};
 
 template <typename T>
 struct ArrayTraits<T, false> {
-  typedef T StorageType;
-  typedef typename std::vector<T>::reference RefType;
-  typedef typename std::vector<T>::const_reference ConstRefType;
-  typedef ConstRefType ForwardType;
-  static inline void Initialize(std::vector<T>* vec) {}
-  static inline void Finalize(std::vector<T>* vec) {}
-  static inline ConstRefType at(const std::vector<T>* vec, size_t offset) {
-    return vec->at(offset);
-  }
-  static inline RefType at(std::vector<T>* vec, size_t offset) {
-    return vec->at(offset);
-  }
-  static inline void Resize(std::vector<T>* vec, size_t size) {
-    vec->resize(size);
-  }
-  static inline void PushBack(std::vector<T>* vec, ForwardType value) {
-    vec->push_back(value);
-  }
   static inline void Clone(const std::vector<T>& src_vec,
                            std::vector<T>* dest_vec) {
     dest_vec->assign(src_vec.begin(), src_vec.end());
@@ -495,56 +477,12 @@ struct ArrayTraits<T, false> {
 
 template <typename T>
 struct ArrayTraits<T, true> {
-  struct StorageType {
-    char buf[sizeof(T) + (8 - (sizeof(T) % 8)) % 8];  // Make 8-byte aligned.
-  };
-  typedef T& RefType;
-  typedef const T& ConstRefType;
-  typedef T ForwardType;
-  static inline void Initialize(std::vector<StorageType>* vec) {
-    for (size_t i = 0; i < vec->size(); ++i)
-      new (vec->at(i).buf) T();
-  }
-  static inline void Finalize(std::vector<StorageType>* vec) {
-    for (size_t i = 0; i < vec->size(); ++i)
-      reinterpret_cast<T*>(vec->at(i).buf)->~T();
-  }
-  static inline ConstRefType at(const std::vector<StorageType>* vec,
-                                size_t offset) {
-    return *reinterpret_cast<const T*>(vec->at(offset).buf);
-  }
-  static inline RefType at(std::vector<StorageType>* vec, size_t offset) {
-    return *reinterpret_cast<T*>(vec->at(offset).buf);
-  }
-  static inline void Resize(std::vector<StorageType>* vec, size_t size) {
-    size_t old_size = vec->size();
-    for (size_t i = size; i < old_size; i++)
-      reinterpret_cast<T*>(vec->at(i).buf)->~T();
-    ResizeStorage(vec, size);
-    for (size_t i = old_size; i < vec->size(); i++)
-      new (vec->at(i).buf) T();
-  }
-  static inline void PushBack(std::vector<StorageType>* vec, RefType value) {
-    size_t old_size = vec->size();
-    ResizeStorage(vec, old_size + 1);
-    new (vec->at(old_size).buf) T(std::move(value));
-  }
-  static inline void ResizeStorage(std::vector<StorageType>* vec, size_t size) {
-    if (size <= vec->capacity()) {
-      vec->resize(size);
-      return;
-    }
-    std::vector<StorageType> new_storage(size);
-    for (size_t i = 0; i < vec->size(); i++)
-      new (new_storage.at(i).buf) T(std::move(at(vec, i)));
-    vec->swap(new_storage);
-    Finalize(&new_storage);
-  }
-  static inline void Clone(const std::vector<StorageType>& src_vec,
-                           std::vector<StorageType>* dest_vec) {
-    Resize(dest_vec, src_vec.size());
-    for (size_t i = 0; i < src_vec.size(); ++i)
-      at(dest_vec, i) = at(&src_vec, i).Clone();
+  static inline void Clone(const std::vector<T>& src_vec,
+                           std::vector<T>* dest_vec) {
+    dest_vec->clear();
+    dest_vec->reserve(src_vec.size());
+    for (const auto& element : src_vec)
+      dest_vec->push_back(element.Clone());
   }
 };
 

@@ -27,14 +27,12 @@ template <typename T>
 class Array {
   MOJO_MOVE_ONLY_TYPE(Array)
  public:
-  typedef internal::ArrayTraits<T, internal::IsMoveOnlyType<T>::value> Traits;
-  typedef typename Traits::ConstRefType ConstRefType;
-  typedef typename Traits::RefType RefType;
-  typedef typename Traits::StorageType StorageType;
-  typedef typename Traits::ForwardType ForwardType;
+  using Traits = internal::ArrayTraits<T, internal::IsMoveOnlyType<T>::value>;
+  using ConstRefType = typename std::vector<T>::const_reference;
+  using RefType = typename std::vector<T>::reference;
 
-  typedef internal::Array_Data<typename internal::WrapperTraits<T>::DataType>
-      Data_;
+  using Data_ =
+      internal::Array_Data<typename internal::WrapperTraits<T>::DataType>;
 
   // Constructs a new array that is null.
   Array() : is_null_(true) {}
@@ -42,13 +40,13 @@ class Array {
   // Constructs a new non-null array of the specified size. The elements will
   // be value-initialized (meaning that they will be initialized by their
   // default constructor, if any, or else zero-initialized).
-  explicit Array(size_t size) : vec_(size), is_null_(false) {
-    Traits::Initialize(&vec_);
-  }
-  ~Array() { Traits::Finalize(&vec_); }
+  explicit Array(size_t size) : vec_(size), is_null_(false) {}
+  ~Array() {}
 
   // Moves the contents of |other| into this array.
+  Array(std::vector<T>&& other) : vec_(std::move(other)), is_null_(false) {}
   Array(Array&& other) : is_null_(true) { Take(&other); }
+
   Array& operator=(Array&& other) {
     Take(&other);
     return *this;
@@ -73,10 +71,7 @@ class Array {
 
   // Resets the contents of this array back to null.
   void reset() {
-    if (!vec_.empty()) {
-      Traits::Finalize(&vec_);
-      vec_.clear();
-    }
+    vec_.clear();
     is_null_ = true;
   }
 
@@ -93,32 +88,42 @@ class Array {
 
   // Returns a reference to the element at zero-based |offset|. Calling this on
   // an array with size less than |offset|+1 causes undefined behavior.
-  ConstRefType at(size_t offset) const { return Traits::at(&vec_, offset); }
+  ConstRefType at(size_t offset) const { return vec_.at(offset); }
   ConstRefType operator[](size_t offset) const { return at(offset); }
-  RefType at(size_t offset) { return Traits::at(&vec_, offset); }
+  RefType at(size_t offset) { return vec_.at(offset); }
   RefType operator[](size_t offset) { return at(offset); }
 
   // Pushes |value| onto the back of the array. If this array was null, it will
   // become non-null with a size of 1.
-  void push_back(ForwardType value) {
+  void push_back(const T& value) {
     is_null_ = false;
-    Traits::PushBack(&vec_, value);
+    vec_.push_back(value);
+  }
+  void push_back(T&& value) {
+    is_null_ = false;
+    vec_.push_back(std::move(value));
   }
 
   // Resizes the array to |size| and makes it non-null. Otherwise, works just
   // like the resize method of |std::vector|.
   void resize(size_t size) {
     is_null_ = false;
-    Traits::Resize(&vec_, size);
+    vec_.resize(size);
   }
 
   // Returns a const reference to the |std::vector| managed by this class. If
   // the array is null, this will be an empty vector.
-  const std::vector<StorageType>& storage() const { return vec_; }
-  operator const std::vector<StorageType>&() const { return vec_; }
+  const std::vector<T>& storage() const { return vec_; }
 
-  // Swaps the contents of this array with the |other| array, including
-  // nullness.
+  // Passes the underlying storage and resets this array to null.
+  //
+  // TODO(yzshen): Consider changing this to a rvalue-ref-qualified conversion
+  // to std::vector<T> after we move to MSVC 2015.
+  std::vector<T> PassStorage() {
+    is_null_ = true;
+    return std::move(vec_);
+  }
+
   void Swap(Array* other) {
     std::swap(is_null_, other->is_null_);
     vec_.swap(other->vec_);
@@ -127,7 +132,7 @@ class Array {
   // Swaps the contents of this array with the specified vector, making this
   // array non-null. Since the vector cannot represent null, it will just be
   // made empty if this array is null.
-  void Swap(std::vector<StorageType>* other) {
+  void Swap(std::vector<T>* other) {
     is_null_ = false;
     vec_.swap(*other);
   }
@@ -166,7 +171,7 @@ class Array {
   }
 
  private:
-  typedef std::vector<StorageType> Array::*Testable;
+  typedef std::vector<T> Array::*Testable;
 
  public:
   operator Testable() const { return is_null_ ? 0 : &Array::vec_; }
@@ -184,7 +189,7 @@ class Array {
     Swap(other);
   }
 
-  std::vector<StorageType> vec_;
+  std::vector<T> vec_;
   bool is_null_;
 };
 
