@@ -9,8 +9,8 @@ from telemetry.testing import tab_test_case
 
 class TabStackTraceTest(tab_test_case.TabTestCase):
 
-  # For now just work on a single platform (mac).
-  @decorators.Enabled('mac')
+  # TODO(dyen): For now this works on a mac & linux but continue to expand this.
+  @decorators.Enabled('mac', 'linux')
   # Stack traces do not currently work on 10.6, but they are also being
   # disabled shortly so just disable it for now.
   @decorators.Disabled('snowleopard')

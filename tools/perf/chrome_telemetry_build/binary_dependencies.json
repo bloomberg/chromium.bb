@@ -56,6 +56,11 @@
           "local_paths": [
             "../../../components/crash/content/tools/generate_breakpad_symbols.py"
           ]
+        },
+        "linux_x86_64": {
+          "local_paths": [
+            "../../../components/crash/content/tools/generate_breakpad_symbols.py"
+          ]
         }
       }
     },

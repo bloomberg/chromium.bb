@@ -24,6 +24,7 @@ group("telemetry_chrome_test") {
 
   if (is_linux) {
     data_deps += [ "//tools/xdisplaycheck" ]
+    data += [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
   }
 
   if (is_win && (symbol_level == 1 || symbol_level == 2)) {
