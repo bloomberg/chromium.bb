@@ -30,8 +30,15 @@ extendedKeyUsage       = serverAuth,clientAuth
 # Extensions to add when signing a request for an intermediate/CA cert
 basicConstraints       = critical, CA:true
 subjectKeyIdentifier   = hash
-#authorityKeyIdentifier = keyid:always
 keyUsage               = critical, keyCertSign, cRLSign
+
+[ca_cert_with_aki]
+# Extensions to add when signing a request for an intermediate/CA cert
+basicConstraints       = critical, CA:true
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid:always
+keyUsage               = critical, keyCertSign, cRLSign
+
 
 [crl_extensions]
 # Extensions to add when signing a CRL

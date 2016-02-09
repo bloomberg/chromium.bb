@@ -4,158 +4,224 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This script generates two chains of test certificates:
+# The following documentation uses the annotation approach from RFC 4158.
+# CAs (entities that share the same name and public key) are denoted in boxes,
+# while the indication that a CA Foo signed a certificate for CA Bar is denoted
+# by directed arrows.
 #
-#     1. A (end-entity) -> B -> C -> D (self-signed root)
-#     2. A (end-entity) -> B -> C2 -> E (self-signed root)
+#   +---+    +-----+
+#   | D |    |  E  |
+#   +---+    +-----+
+#     |       |   |
+#     +--v v--+   |
+#       +---+   +---+
+#       | C |   | F |
+#       +---+   +---+
+#         |       |
+#         v   v---+
+#        +-----+
+#        |  B  |
+#        +-----+
+#           |
+#           v
+#         +---+
+#         | A |
+#         +---+
 #
-# C and C2 have the same subject and keypair.
+# To validate A, there are several possible paths, using A(B) to indicate
+# the certificate A signed by B:
 #
-# We use these cert chains in CertVerifyProcChromeOSTest
-# to ensure that multiple verification paths are properly handled.
+# 1. A(B) -> B(C) -> C(D) -> D(D)
+# 3. A(B) -> B(C) -> C(E) -> E(E)
+# 4. A(B) -> B(F) -> F(E) -> E(E)
+#
+# That is, there are two different versions of C (signed by D and E) and
+# two versions of B (signed by C and F). Possible trust anchors are D and E,
+# which are both self-signed.
+#
+# The goal is to ensure that, as long as at least one of C or F is still valid,
+# clients are able to successfully build a valid path.
 
-try () {
-  echo "$@"
-  "$@" || exit 1
-}
+# Exit script as soon a something fails.
+set -e
 
-try rm -rf out
-try mkdir out
+rm -rf out
+mkdir out
 
-echo Create the serial number files.
+echo Create the serial and index number files.
 serial=1000
-for i in B C C2 D E
+for i in B C D E F
 do
-  try /bin/sh -c "echo $serial > out/$i-serial"
-  serial=$(expr $serial + 1)
+  /bin/sh -c "echo ${serial} > out/${i}-serial"
+  touch "out/${i}-index.txt"
 done
 
 echo Generate the keys.
-try openssl genrsa -out out/A.key 2048
-try openssl genrsa -out out/B.key 2048
-try openssl genrsa -out out/C.key 2048
-try openssl genrsa -out out/D.key 2048
-try openssl genrsa -out out/E.key 2048
-
-echo Generate the D CSR.
-CA_COMMON_NAME="D Root CA" \
-  CERTIFICATE=D \
-  try openssl req \
-    -new \
-    -key out/D.key \
-    -out out/D.csr \
-    -config redundant-ca.cnf
-
-echo D signs itself.
-CA_COMMON_NAME="D Root CA" \
-  try openssl x509 \
-    -req -days 3650 \
-    -in out/D.csr \
-    -extensions ca_cert \
-    -extfile redundant-ca.cnf \
-    -signkey out/D.key \
-    -out out/D.pem \
-    -text
-
-echo Generate the E CSR.
-CA_COMMON_NAME="E Root CA" \
-  CERTIFICATE=E \
-  try openssl req \
-    -new \
-    -key out/E.key \
-    -out out/E.csr \
-    -config redundant-ca.cnf
-
-echo E signs itself.
-CA_COMMON_NAME="E Root CA" \
-  try openssl x509 \
-    -req -days 3650 \
-    -in out/E.csr \
-    -extensions ca_cert \
-    -extfile redundant-ca.cnf \
-    -signkey out/E.key \
-    -out out/E.pem \
-    -text
-
-echo Generate the C2 intermediary CSR.
-CA_COMMON_NAME="C CA" \
-  CERTIFICATE=C2 \
-  try openssl req \
-    -new \
-    -key out/C.key \
-    -out out/C2.csr \
-    -config redundant-ca.cnf
-
-echo Generate the B and C intermediaries\' CSRs.
-for i in B C
+for i in A B C D E F
 do
-  CA_COMMON_NAME="$i CA" \
-    CERTIFICATE="$i" \
-    try openssl req \
-      -new \
-      -key "out/$i.key" \
-      -out "out/$i.csr" \
-      -config redundant-ca.cnf
+  openssl genrsa -out "out/${i}.key" 2048
 done
 
-echo D signs the C intermediate.
-# Make sure the signer's DB file exists.
-touch out/D-index.txt
-CA_COMMON_NAME="D Root CA" \
-  CERTIFICATE=D \
-  try openssl ca \
-    -batch \
-    -extensions ca_cert \
-    -in out/C.csr \
-    -out out/C.pem \
-    -config redundant-ca.cnf
+echo "Generating the self-signed roots"
+for i in D E
+do
+  echo "Generating CSR ${i}"
+  CA_COMMON_NAME="${i} Root CA" \
+  CERTIFICATE="${i}" \
+  openssl req \
+    -config redundant-ca.cnf \
+    -new \
+    -key "out/${i}.key" \
+    -out "out/${i}.csr"
 
-echo E signs the C2 intermediate.
-# Make sure the signer's DB file exists.
-touch out/E-index.txt
-CA_COMMON_NAME="E Root CA" \
-  CERTIFICATE=E \
-  try openssl ca \
+  echo "Generating self-signed ${i}"
+  CA_COMMON_NAME="${i} Root CA" \
+  CERTIFICATE="${i}" \
+  openssl ca \
+    -config redundant-ca.cnf \
     -batch \
+    -startdate 160102000000Z \
+    -enddate 260102000000Z \
     -extensions ca_cert \
-    -in out/C2.csr \
-    -out out/C2.pem \
-    -config redundant-ca.cnf
+    -extfile redundant-ca.cnf \
+    -selfsign \
+    -in "out/${i}.csr" \
+    -out "out/${i}.pem"
+done
 
-echo C signs the B intermediate.
-touch out/C-index.txt
+echo "Generating intermediate CSRs"
+for i in B C F
+do
+  echo "Generating CSR ${i}"
+  CA_COMMON_NAME="${i} CA" \
+  CERTIFICATE="${i}" \
+  openssl req \
+    -config redundant-ca.cnf \
+    -new \
+    -key "out/${i}.key" \
+    -out "out/${i}.csr"
+done
+
+echo D signs C
+CA_COMMON_NAME="D CA" \
+CERTIFICATE=D \
+openssl ca \
+  -config redundant-ca.cnf \
+  -batch \
+  -startdate 160103000000Z \
+  -enddate 260102000000Z \
+  -extensions ca_cert \
+  -extfile redundant-ca.cnf \
+  -in out/C.csr \
+  -out out/C.pem
+
+echo C signs B
 CA_COMMON_NAME="C CA" \
-  CERTIFICATE=C \
-  try openssl ca \
-    -batch \
-    -extensions ca_cert \
-    -in out/B.csr \
-    -out out/B.pem \
-    -config redundant-ca.cnf
+CERTIFICATE=C \
+openssl ca \
+  -config redundant-ca.cnf \
+  -batch \
+  -startdate 160104000000Z \
+  -enddate 260102000000Z \
+  -extensions ca_cert \
+  -extfile redundant-ca.cnf \
+  -in out/B.csr \
+  -out out/B.pem
 
-echo Generate the A end-entity CSR.
-try openssl req \
-  -new \
-  -key out/A.key \
-  -out out/A.csr \
-  -config ee.cnf
+echo E signs C2
+CA_COMMON_NAME="E CA" \
+CERTIFICATE=E \
+openssl ca \
+  -config redundant-ca.cnf \
+  -batch \
+  -startdate 160105000000Z \
+  -enddate 260102000000Z \
+  -extensions ca_cert \
+  -extfile redundant-ca.cnf \
+  -in out/C.csr \
+  -out out/C2.pem
 
-echo B signs A.
-touch out/B-index.txt
+echo E signs F
+CA_COMMON_NAME="E CA" \
+CERTIFICATE=E \
+openssl ca \
+  -config redundant-ca.cnf \
+  -batch \
+  -startdate 160102000000Z \
+  -enddate 260102000000Z \
+  -extensions ca_cert \
+  -extfile redundant-ca.cnf \
+  -in out/F.csr \
+  -out out/F.pem
+
+# Note: The startdate for B-by-F MUST be different than that of B-by-C; to make
+# B-by-F more preferable, the startdate is chosen to be GREATER (later) than
+# B-by-C.
+echo F signs B2
+CA_COMMON_NAME="F CA" \
+CERTIFICATE=F \
+openssl ca \
+  -config redundant-ca.cnf \
+  -batch \
+  -startdate 160105000000Z \
+  -enddate 260102000000Z \
+  -extensions ca_cert \
+  -extfile redundant-ca.cnf \
+  -in out/B.csr \
+  -out out/B2.pem
+
+echo "Generating leaf CSRs"
+for i in A
+do
+  echo "Generating leaf ${i}"
+  openssl req \
+    -config ee.cnf \
+    -new \
+    -key "out/${i}.key" \
+    -out "out/${i}.csr"
+done
+
+echo "Signing leaves"
 CA_COMMON_NAME="B CA" \
-  CERTIFICATE=B \
-  try openssl ca \
-    -batch \
-    -extensions user_cert \
-    -in out/A.csr \
-    -out out/A.pem \
-    -config redundant-ca.cnf
+CERTIFICATE=B \
+openssl ca \
+  -config redundant-ca.cnf \
+  -batch \
+  -days 3650 \
+  -extensions user_cert \
+  -extfile redundant-ca.cnf \
+  -in out/A.csr \
+  -out out/A.pem
 
-echo Create multi-root-chain1.pem
-try /bin/sh -c "cat out/A.key out/A.pem out/B.pem out/C.pem out/D.pem \
+echo "Copying outputs"
+/bin/sh -c "cat out/A.key out/A.pem > ../certificates/multi-root-A-by-B.pem"
+/bin/sh -c "cat out/A.pem out/B.pem out/C.pem out/D.pem \
     > ../certificates/multi-root-chain1.pem"
-
-echo Create multi-root-chain2.pem
-try /bin/sh -c "cat out/A.key out/A.pem out/B.pem out/C2.pem out/E.pem \
+/bin/sh -c "cat out/A.pem out/B.pem out/C2.pem out/E.pem \
     > ../certificates/multi-root-chain2.pem"
+cp out/B.pem ../certificates/multi-root-B-by-C.pem
+cp out/B2.pem ../certificates/multi-root-B-by-F.pem
+cp out/C.pem ../certificates/multi-root-C-by-D.pem
+cp out/C2.pem ../certificates/multi-root-C-by-E.pem
+cp out/F.pem ../certificates/multi-root-F-by-E.pem
+cp out/D.pem ../certificates/multi-root-D-by-D.pem
+cp out/E.pem ../certificates/multi-root-E-by-E.pem
 
+echo "Generating CRLSets"
+# Block C-by-E (serial number 0x1001) by way of serial number.
+python crlsetutil.py -o ../certificates/multi-root-crlset-C-by-E.raw \
+<<CRLSETBYSERIAL
+{
+  "BlockedByHash": {
+    "out/E.pem": [4097]
+  }
+}
+CRLSETBYSERIAL
+
+# Block F (all versions) by way of SPKI
+python crlsetutil.py -o ../certificates/multi-root-crlset-F.raw \
+<<CRLSETBYSPKI
+{
+  "BlockedBySPKI": [ "out/F.pem" ]
+}
+CRLSETBYSPKI

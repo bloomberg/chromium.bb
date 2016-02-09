@@ -11,6 +11,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_local.h"
 #include "crypto/capi_util.h"
 #include "crypto/scoped_capi_types.h"
 #include "crypto/sha2.h"
@@ -385,13 +386,129 @@ void GetCertPoliciesInfo(
     output->reset(policies_info);
 }
 
+// Computes the SHA-256 hash of the SPKI of |cert| and stores it in |hash|,
+// returning true. If an error occurs, returns false and leaves |hash|
+// unmodified.
+bool HashSPKI(PCCERT_CONTEXT cert, std::string* hash) {
+  base::StringPiece der_bytes(
+      reinterpret_cast<const char*>(cert->pbCertEncoded), cert->cbCertEncoded);
+
+  base::StringPiece spki;
+  if (!asn1::ExtractSPKIFromDERCert(der_bytes, &spki))
+    return false;
+
+  *hash = crypto::SHA256HashString(spki);
+  return true;
+}
+
 enum CRLSetResult {
-  kCRLSetOk,
+  // Indicates an error happened while attempting to determine CRLSet status.
+  // For example, if the certificate's SPKI could not be extracted.
+  kCRLSetError,
+
+  // Indicates there is no fresh information about the certificate, or if the
+  // CRLSet has expired.
+  // In the case of certificate chains, this is only returned if the leaf
+  // certificate is not covered by the CRLSet; this is because some
+  // intermediates are fully covered, but after filtering, the issuer's CRL
+  // is empty and thus omitted from the CRLSet. Since online checking is
+  // performed for EV certificates when this status is returned, this would
+  // result in needless online lookups for certificates known not-revoked.
   kCRLSetUnknown,
+
+  // Indicates that the certificate (or a certificate in the chain) has been
+  // revoked.
   kCRLSetRevoked,
+
+  // The certificate (or certificate chain) has no revocations.
+  kCRLSetOk,
 };
 
-// CheckRevocationWithCRLSet attempts to check each element of |chain|
+// Determines if |subject_cert| is revoked within |crl_set|,
+// storing the SubjectPublicKeyInfo hash of |subject_cert| in
+// |*previous_hash|.
+//
+// CRLSets store revocations by both SPKI and by the tuple of Issuer SPKI
+// Hash & Serial. While |subject_cert| contains enough information to check
+// for SPKI revocations, to determine the issuer's SPKI, either |issuer_cert|
+// must be supplied, or the hash of the issuer's SPKI provided in
+// |*previous_hash|. If |issuer_cert| is omitted, and |*previous_hash| is empty,
+// only SPKI checks are performed.
+//
+// To avoid recomputing SPKI hashes, the hash of |subject_cert| is stored in
+// |*previous_hash|. This allows chaining revocation checking, by starting
+// at the root and iterating to the leaf, supplying |previous_hash| each time.
+//
+// In the event of a parsing error, |*previous_hash| is cleared, to prevent the
+// wrong Issuer&Serial tuple from being used.
+CRLSetResult CheckRevocationWithCRLSet(CRLSet* crl_set,
+                                       PCCERT_CONTEXT subject_cert,
+                                       PCCERT_CONTEXT issuer_cert,
+                                       std::string* previous_hash) {
+  DCHECK(crl_set);
+  DCHECK(subject_cert);
+
+  // Check to see if |subject_cert|'s SPKI is revoked. The actual revocation
+  // is handled by the SHA-256 hash of the SPKI, so compute that.
+  std::string subject_hash;
+  if (!HashSPKI(subject_cert, &subject_hash)) {
+    NOTREACHED();  // Indicates Windows accepted something irrecoverably bad.
+    previous_hash->clear();
+    return kCRLSetError;
+  }
+
+  CRLSet::Result result = crl_set->CheckSPKI(subject_hash);
+  if (result == CRLSet::REVOKED)
+    return kCRLSetRevoked;
+
+  // If no issuer cert is provided, nor a hash of the issuer's SPKI, no
+  // further checks can be done.
+  if (!issuer_cert && previous_hash->empty()) {
+    previous_hash->swap(subject_hash);
+    return kCRLSetUnknown;
+  }
+
+  // Compute the subject's serial.
+  const CRYPT_INTEGER_BLOB* serial_blob =
+      &subject_cert->pCertInfo->SerialNumber;
+  scoped_ptr<uint8_t[]> serial_bytes(new uint8_t[serial_blob->cbData]);
+  // The bytes of the serial number are stored little-endian.
+  // Note: While MSDN implies that bytes are stripped from this serial,
+  // they are not - only CertCompareIntegerBlob actually removes bytes.
+  for (DWORD j = 0; j < serial_blob->cbData; j++)
+    serial_bytes[j] = serial_blob->pbData[serial_blob->cbData - j - 1];
+  base::StringPiece serial(reinterpret_cast<const char*>(serial_bytes.get()),
+                           serial_blob->cbData);
+
+  // Compute the issuer's hash. If it was provided (via previous_hash),
+  // use that; otherwise, compute it based on |issuer_cert|.
+  std::string issuer_hash_local;
+  std::string* issuer_hash = previous_hash;
+  if (issuer_hash->empty()) {
+    if (!HashSPKI(issuer_cert, &issuer_hash_local)) {
+      NOTREACHED();  // Indicates Windows accepted something irrecoverably bad.
+      previous_hash->clear();
+      return kCRLSetError;
+    }
+    issuer_hash = &issuer_hash_local;
+  }
+
+  // Look up by serial & issuer SPKI.
+  result = crl_set->CheckSerial(serial, *issuer_hash);
+  if (result == CRLSet::REVOKED)
+    return kCRLSetRevoked;
+
+  previous_hash->swap(subject_hash);
+  if (result == CRLSet::GOOD)
+    return kCRLSetOk;
+  if (result == CRLSet::UNKNOWN)
+    return kCRLSetUnknown;
+
+  NOTREACHED();
+  return kCRLSetError;
+}
+
+// CheckChainRevocationWithCRLSet attempts to check each element of |chain|
 // against |crl_set|. It returns:
 //   kCRLSetRevoked: if any element of the chain is known to have been revoked.
 //   kCRLSetUnknown: if there is no fresh information about the leaf
@@ -403,79 +520,29 @@ enum CRLSetResult {
 //       that some EV sites would otherwise take the hit of an OCSP lookup for
 //       no reason.
 //   kCRLSetOk: otherwise.
-CRLSetResult CheckRevocationWithCRLSet(PCCERT_CHAIN_CONTEXT chain,
-                                       CRLSet* crl_set) {
-  if (chain->cChain == 0)
+CRLSetResult CheckChainRevocationWithCRLSet(PCCERT_CHAIN_CONTEXT chain,
+                                            CRLSet* crl_set) {
+  if (chain->cChain == 0 || chain->rgpChain[0]->cElement == 0)
     return kCRLSetOk;
 
-  const PCERT_SIMPLE_CHAIN first_chain = chain->rgpChain[0];
-  const PCERT_CHAIN_ELEMENT* element = first_chain->rgpElement;
+  PCERT_CHAIN_ELEMENT* elements = chain->rgpChain[0]->rgpElement;
+  DWORD num_elements = chain->rgpChain[0]->cElement;
 
-  const int num_elements = first_chain->cElement;
-  if (num_elements == 0)
-    return kCRLSetOk;
-
-  // error is set to true if any errors are found. It causes such chains to be
-  // considered as not covered.
-  bool error = false;
-  // last_covered is set to the coverage state of the previous certificate. The
-  // certificates are iterated over backwards thus, after the iteration,
-  // |last_covered| contains the coverage state of the leaf certificate.
-  bool last_covered = false;
-
-  // We iterate from the root certificate down to the leaf, keeping track of
-  // the issuer's SPKI at each step.
+  bool had_error = false;
+  CRLSetResult result = kCRLSetError;
   std::string issuer_spki_hash;
-  for (int i = num_elements - 1; i >= 0; i--) {
-    PCCERT_CONTEXT cert = element[i]->pCertContext;
-
-    base::StringPiece der_bytes(
-        reinterpret_cast<const char*>(cert->pbCertEncoded),
-        cert->cbCertEncoded);
-
-    base::StringPiece spki;
-    if (!asn1::ExtractSPKIFromDERCert(der_bytes, &spki)) {
-      NOTREACHED();
-      error = true;
-      continue;
-    }
-
-    const std::string spki_hash = crypto::SHA256HashString(spki);
-
-    const CRYPT_INTEGER_BLOB* serial_blob = &cert->pCertInfo->SerialNumber;
-    scoped_ptr<uint8_t[]> serial_bytes(new uint8_t[serial_blob->cbData]);
-    // The bytes of the serial number are stored little-endian.
-    for (unsigned j = 0; j < serial_blob->cbData; j++)
-      serial_bytes[j] = serial_blob->pbData[serial_blob->cbData - j - 1];
-    base::StringPiece serial(reinterpret_cast<const char*>(serial_bytes.get()),
-                             serial_blob->cbData);
-
-    CRLSet::Result result = crl_set->CheckSPKI(spki_hash);
-
-    if (result != CRLSet::REVOKED && !issuer_spki_hash.empty())
-      result = crl_set->CheckSerial(serial, issuer_spki_hash);
-
-    issuer_spki_hash = spki_hash;
-
-    switch (result) {
-      case CRLSet::REVOKED:
-        return kCRLSetRevoked;
-      case CRLSet::UNKNOWN:
-        last_covered = false;
-        continue;
-      case CRLSet::GOOD:
-        last_covered = true;
-        continue;
-      default:
-        NOTREACHED();
-        error = true;
-        continue;
-    }
+  for (DWORD i = 0; i < num_elements; ++i) {
+    PCCERT_CONTEXT subject = elements[num_elements - i - 1]->pCertContext;
+    result =
+        CheckRevocationWithCRLSet(crl_set, subject, nullptr, &issuer_spki_hash);
+    if (result == kCRLSetRevoked)
+      return result;
+    if (result == kCRLSetError)
+      had_error = true;
   }
-
-  if (error || !last_covered || crl_set->IsExpired())
+  if (had_error || crl_set->IsExpired())
     return kCRLSetUnknown;
-  return kCRLSetOk;
+  return result;
 }
 
 void AppendPublicKeyHashes(PCCERT_CHAIN_CONTEXT chain,
@@ -551,6 +618,243 @@ bool CheckEV(PCCERT_CHAIN_CONTEXT chain_context,
   return metadata->HasEVPolicyOID(fingerprint, policy_oid);
 }
 
+// Custom revocation provider function that compares incoming certificates with
+// those in CRLSets. This is called BEFORE the default CRL & OCSP handling
+// is invoked (which is handled by the revocation provider function
+// "CertDllVerifyRevocation" in cryptnet.dll)
+BOOL WINAPI
+CertDllVerifyRevocationWithCRLSet(DWORD encoding_type,
+                                  DWORD revocation_type,
+                                  DWORD num_contexts,
+                                  void* rgpvContext[],
+                                  DWORD flags,
+                                  PCERT_REVOCATION_PARA revocation_params,
+                                  PCERT_REVOCATION_STATUS revocation_status);
+
+// Helper class that installs the CRLSet-based Revocation Provider as the
+// default revocation provider. Because it is installed as a function address
+// (meaning only scoped to the process, and not stored in the registry), it
+// will be used before any registry-based providers, including Microsoft's
+// default provider.
+class RevocationInjector {
+ public:
+  CRLSet* GetCRLSet() { return thread_local_crlset.Get(); }
+
+  void SetCRLSet(CRLSet* crl_set) { thread_local_crlset.Set(crl_set); }
+
+ private:
+  friend struct base::DefaultLazyInstanceTraits<RevocationInjector>;
+
+  RevocationInjector() {
+    const CRYPT_OID_FUNC_ENTRY kInterceptFunction[] = {
+        {CRYPT_DEFAULT_OID, &CertDllVerifyRevocationWithCRLSet},
+    };
+    BOOL ok = CryptInstallOIDFunctionAddress(
+        NULL, X509_ASN_ENCODING, CRYPT_OID_VERIFY_REVOCATION_FUNC,
+        arraysize(kInterceptFunction), kInterceptFunction,
+        CRYPT_INSTALL_OID_FUNC_BEFORE_FLAG);
+    DCHECK(ok);
+  }
+
+  ~RevocationInjector() {}
+
+  // As the revocation parameters passed to CertVerifyProc::VerifyInternal
+  // cannot be officially smuggled to the Revocation Provider
+  base::ThreadLocalPointer<CRLSet> thread_local_crlset;
+};
+
+// Leaky, as CertVerifyProc workers are themselves leaky.
+base::LazyInstance<RevocationInjector>::Leaky g_revocation_injector =
+    LAZY_INSTANCE_INITIALIZER;
+
+BOOL WINAPI
+CertDllVerifyRevocationWithCRLSet(DWORD encoding_type,
+                                  DWORD revocation_type,
+                                  DWORD num_contexts,
+                                  void* rgpvContext[],
+                                  DWORD flags,
+                                  PCERT_REVOCATION_PARA revocation_params,
+                                  PCERT_REVOCATION_STATUS revocation_status) {
+  PCERT_CONTEXT* cert_contexts = reinterpret_cast<PCERT_CONTEXT*>(rgpvContext);
+  // The dummy CRLSet provider never returns that something is affirmatively
+  // *un*revoked, as this would disable other revocation providers from being
+  // checked for this certificate (much like an OCSP "Good" status would).
+  // Instead, it merely indicates that insufficient information existed to
+  // determine if the certificate was revoked (in the good case), or that a cert
+  // is affirmatively revoked in the event it appears within the CRLSet.
+  // Because of this, set up some basic bookkeeping for the results.
+  CHECK(revocation_status);
+  revocation_status->dwIndex = 0;
+  revocation_status->dwError = static_cast<DWORD>(CRYPT_E_NO_REVOCATION_CHECK);
+  revocation_status->dwReason = 0;
+
+  if (num_contexts == 0 || !cert_contexts[0]) {
+    SetLastError(static_cast<DWORD>(E_INVALIDARG));
+    return FALSE;
+  }
+
+  if ((GET_CERT_ENCODING_TYPE(encoding_type) != X509_ASN_ENCODING) ||
+      revocation_type != CERT_CONTEXT_REVOCATION_TYPE) {
+    SetLastError(static_cast<DWORD>(CRYPT_E_NO_REVOCATION_CHECK));
+    return FALSE;
+  }
+
+  // No revocation checking possible if there is no associated
+  // CRLSet.
+  CRLSet* crl_set = g_revocation_injector.Get().GetCRLSet();
+  if (!crl_set)
+    return FALSE;
+
+  // |revocation_params| is an optional structure; to make life simple and avoid
+  // the need to constantly check whether or not it was supplied, create a local
+  // copy. If the caller didn't supply anything, it will be empty; otherwise,
+  // it will be (non-owning) copies of the caller's original params.
+  CERT_REVOCATION_PARA local_params;
+  memset(&local_params, 0, sizeof(local_params));
+  if (revocation_params) {
+    DWORD bytes_to_copy = std::min(revocation_params->cbSize,
+                                   static_cast<DWORD>(sizeof(local_params)));
+    memcpy(&local_params, revocation_params, bytes_to_copy);
+  }
+  local_params.cbSize = sizeof(local_params);
+
+  PCERT_CONTEXT subject_cert = cert_contexts[0];
+
+  if ((flags & CERT_VERIFY_REV_CHAIN_FLAG) && num_contexts > 1) {
+    // Verifying a chain; first verify from the last certificate in the
+    // chain to the first, and then leave the last certificate (which
+    // is presumably self-issued, although it may simply be a trust
+    // anchor) as the |subject_cert| in order to scan for more
+    // revocations.
+    std::string issuer_hash;
+    PCCERT_CONTEXT issuer_cert = nullptr;
+    for (DWORD i = num_contexts; i > 0; --i) {
+      subject_cert = cert_contexts[i - 1];
+      if (!subject_cert) {
+        SetLastError(static_cast<DWORD>(E_INVALIDARG));
+        return FALSE;
+      }
+      CRLSetResult result = CheckRevocationWithCRLSet(
+          crl_set, subject_cert, issuer_cert, &issuer_hash);
+      if (result == kCRLSetRevoked) {
+        revocation_status->dwIndex = i - 1;
+        revocation_status->dwError = static_cast<DWORD>(CRYPT_E_REVOKED);
+        revocation_status->dwReason = CRL_REASON_UNSPECIFIED;
+        SetLastError(revocation_status->dwError);
+        return FALSE;
+      }
+      issuer_cert = subject_cert;
+    }
+    // Verified all certificates from the trust anchor to the leaf, and none
+    // were explicitly revoked. Now do a second pass to attempt to determine
+    // the issuer for cert_contexts[num_contexts - 1], so that the
+    // Issuer SPKI+Serial can be checked for that certificate.
+    //
+    // This code intentionally ignores the flag
+    subject_cert = cert_contexts[num_contexts - 1];
+    // Reset local_params.pIssuerCert, since it would contain the issuer
+    // for cert_contexts[0].
+    local_params.pIssuerCert = nullptr;
+    // Fixup the revocation index to point to this cert (in the event it is
+    // revoked). If it isn't revoked, this will be done undone later.
+    revocation_status->dwIndex = num_contexts - 1;
+  }
+
+  // Determine the issuer cert for the incoming cert
+  ScopedPCCERT_CONTEXT issuer_cert;
+  if (local_params.pIssuerCert &&
+      CryptVerifyCertificateSignatureEx(
+          NULL, subject_cert->dwCertEncodingType,
+          CRYPT_VERIFY_CERT_SIGN_SUBJECT_CERT, subject_cert,
+          CRYPT_VERIFY_CERT_SIGN_ISSUER_CERT,
+          const_cast<PCERT_CONTEXT>(local_params.pIssuerCert), 0, nullptr)) {
+    // Caller has already supplied the issuer cert via the revocation params;
+    // just use that.
+    issuer_cert.reset(
+        CertDuplicateCertificateContext(local_params.pIssuerCert));
+  } else if (CertCompareCertificateName(subject_cert->dwCertEncodingType,
+                                        &subject_cert->pCertInfo->Subject,
+                                        &subject_cert->pCertInfo->Issuer) &&
+             CryptVerifyCertificateSignatureEx(
+                 NULL, subject_cert->dwCertEncodingType,
+                 CRYPT_VERIFY_CERT_SIGN_SUBJECT_CERT, subject_cert,
+                 CRYPT_VERIFY_CERT_SIGN_ISSUER_CERT, subject_cert, 0,
+                 nullptr)) {
+    // Certificate is self-signed; use it as its own issuer.
+    issuer_cert.reset(CertDuplicateCertificateContext(subject_cert));
+  } else {
+    // Scan the caller-supplied stores first, to try and find the issuer cert.
+    for (DWORD i = 0; i < local_params.cCertStore && !issuer_cert; ++i) {
+      PCCERT_CONTEXT previous_cert = nullptr;
+      for (;;) {
+        DWORD store_search_flags = CERT_STORE_SIGNATURE_FLAG;
+        previous_cert = CertGetIssuerCertificateFromStore(
+            local_params.rgCertStore[i], subject_cert, previous_cert,
+            &store_search_flags);
+        if (!previous_cert)
+          break;
+        // If a cert is found and meets the criteria, the flag will be reset to
+        // zero. Thus NOT having the bit set is equivalent to having found a
+        // matching certificate.
+        if (!(store_search_flags & CERT_STORE_SIGNATURE_FLAG)) {
+          // No need to dupe; reference is held.
+          issuer_cert.reset(previous_cert);
+          break;
+        }
+      }
+      if (issuer_cert)
+        break;
+      if (GetLastError() == CRYPT_E_SELF_SIGNED) {
+        issuer_cert.reset(CertDuplicateCertificateContext(subject_cert));
+        break;
+      }
+    }
+
+    // At this point, the Microsoft provider opens up the "CA", "Root", and
+    // "SPC" stores to search for the issuer certificate, if not found in the
+    // caller-supplied stores. It is unclear whether that is necessary here.
+  }
+
+  if (!issuer_cert) {
+    // Rather than return CRYPT_E_NO_REVOCATION_CHECK (indicating everything
+    // is fine to try the next provider), return CRYPT_E_REVOCATION_OFFLINE.
+    // This propogates up to the caller as an error while checking revocation,
+    // which is the desired intent if there are certificates that cannot
+    // be checked.
+    revocation_status->dwIndex = 0;
+    revocation_status->dwError = static_cast<DWORD>(CRYPT_E_REVOCATION_OFFLINE);
+    SetLastError(revocation_status->dwError);
+    return FALSE;
+  }
+
+  std::string unused;
+  CRLSetResult result = CheckRevocationWithCRLSet(crl_set, subject_cert,
+                                                  issuer_cert.get(), &unused);
+  if (result == kCRLSetRevoked) {
+    revocation_status->dwError = static_cast<DWORD>(CRYPT_E_REVOKED);
+    revocation_status->dwReason = CRL_REASON_UNSPECIFIED;
+    SetLastError(revocation_status->dwError);
+    return FALSE;
+  }
+
+  // The result is ALWAYS FALSE in order to allow the next revocation provider
+  // a chance to examine. The only difference is whether or not an error is
+  // indicated via dwError (and SetLastError()).
+  // Reset the error index so that Windows does not believe this code has
+  // examined the entire chain and found no issues until the last cert (thus
+  // skipping other revocation providers).
+  revocation_status->dwIndex = 0;
+  return FALSE;
+}
+
+class ScopedThreadLocalCRLSet {
+ public:
+  explicit ScopedThreadLocalCRLSet(CRLSet* crl_set) {
+    g_revocation_injector.Get().SetCRLSet(crl_set);
+  }
+  ~ScopedThreadLocalCRLSet() { g_revocation_injector.Get().SetCRLSet(nullptr); }
+};
+
 }  // namespace
 
 CertVerifyProcWin::CertVerifyProcWin() {}
@@ -578,6 +882,10 @@ int CertVerifyProcWin::VerifyInternal(
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
     CertVerifyResult* verify_result) {
+  // Ensure the Revocation Provider has been installed and configured for this
+  // CRLSet.
+  ScopedThreadLocalCRLSet thread_local_crlset(crl_set);
+
   PCCERT_CONTEXT cert_handle = cert->os_cert_handle();
   if (!cert_handle)
     return ERR_UNEXPECTED;
@@ -621,33 +929,41 @@ int CertVerifyProcWin::VerifyInternal(
     }
   }
 
-  // We can set CERT_CHAIN_RETURN_LOWER_QUALITY_CONTEXTS to get more chains.
-  DWORD chain_flags = CERT_CHAIN_CACHE_END_CERT |
-                      CERT_CHAIN_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
+  // Revocation checking is always enabled, in order to enable CRLSets to be
+  // evaluated as part of a revocation provider. However, when the caller did
+  // not explicitly request revocation checking (which is to say, online
+  // revocation checking), then only enable cached results. This disables OCSP
+  // and CRL fetching, but still allows the revocation provider to be called.
+  // Note: The root cert is also checked for revocation status, so that CRLSets
+  // will cover revoked SPKIs.
+  DWORD chain_flags = CERT_CHAIN_REVOCATION_CHECK_CHAIN;
   bool rev_checking_enabled =
       (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED);
-
   if (rev_checking_enabled) {
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
   } else {
     chain_flags |= CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY;
   }
 
-  // For non-test scenarios, use the default HCERTCHAINENGINE, NULL, which
-  // corresponds to HCCE_CURRENT_USER and is is initialized as needed by
-  // crypt32. However, when testing, it is necessary to create a new
-  // HCERTCHAINENGINE and use that instead. This is because each
-  // HCERTCHAINENGINE maintains a cache of information about certificates
-  // encountered, and each test run may modify the trust status of a
-  // certificate.
+  // By default, use the default HCERTCHAINENGINE (aka HCCE_CURRENT_USER). When
+  // running tests, use a dynamic HCERTCHAINENGINE. All of the status and cache
+  // of verified certificates and chains is tied to the HCERTCHAINENGINE. As
+  // each invocation may have changed the set of known roots, invalid the cache
+  // between runs.
+  //
+  // This is not the most efficient means of doing so; it's possible to mark the
+  // Root store used by TestRootCerts as changed, via CertControlStore with the
+  // CERT_STORE_CTRL_NOTIFY_CHANGE / CERT_STORE_CTRL_RESYNC, but that's more
+  // complexity for what is test-only code.
   ScopedHCERTCHAINENGINE chain_engine(NULL);
   if (TestRootCerts::HasInstance())
     chain_engine.reset(TestRootCerts::GetInstance()->GetChainEngine());
 
   ScopedPCCERT_CONTEXT cert_list(cert->CreateOSCertChainForCert());
 
+  // Add stapled OCSP response data, which will be preferred over online checks
+  // and used when in cache-only mode.
   if (!ocsp_response.empty()) {
-    // Attach the OCSP response to the chain.
     CRYPT_DATA_BLOB ocsp_response_blob;
     ocsp_response_blob.cbData = ocsp_response.size();
     ocsp_response_blob.pbData =
@@ -657,10 +973,7 @@ int CertVerifyProcWin::VerifyInternal(
         CERT_SET_PROPERTY_IGNORE_PERSIST_ERROR_FLAG, &ocsp_response_blob);
   }
 
-  PCCERT_CHAIN_CONTEXT chain_context;
-  // IE passes a non-NULL pTime argument that specifies the current system
-  // time.  IE passes CERT_CHAIN_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT as the
-  // chain_flags argument.
+  PCCERT_CHAIN_CONTEXT chain_context = nullptr;
   if (!CertGetCertificateChain(
            chain_engine,
            cert_list.get(),
@@ -674,9 +987,13 @@ int CertVerifyProcWin::VerifyInternal(
     return MapSecurityError(GetLastError());
   }
 
+  // Perform a second check with CRLSets. Although the Revocation Provider
+  // should have prevented invalid paths from being built, the behaviour and
+  // timing of how a Revocation Provider is invoked is not well documented. This
+  // is just defense in depth.
   CRLSetResult crl_set_result = kCRLSetUnknown;
   if (crl_set)
-    crl_set_result = CheckRevocationWithCRLSet(chain_context, crl_set);
+    crl_set_result = CheckChainRevocationWithCRLSet(chain_context, crl_set);
 
   if (crl_set_result == kCRLSetRevoked) {
     verify_result->cert_status |= CERT_STATUS_REVOKED;
