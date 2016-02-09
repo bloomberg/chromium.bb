@@ -33,6 +33,43 @@ class MockPointerDelegate : public PointerDelegate {
   MOCK_METHOD2(OnPointerWheel, void(base::TimeDelta, const gfx::Vector2d&));
 };
 
+TEST_F(PointerTest, SetCursor) {
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  gfx::Size buffer_size(10, 10);
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  scoped_ptr<Pointer> pointer(new Pointer(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
+  generator.MoveMouseTo(surface->GetBoundsInScreen().origin());
+
+  scoped_ptr<Surface> pointer_surface(new Surface);
+  scoped_ptr<Buffer> pointer_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  pointer_surface->Attach(pointer_buffer.get());
+  pointer_surface->Commit();
+
+  // Set pointer surface.
+  pointer->SetCursor(pointer_surface.get(), gfx::Point());
+
+  // Adjust hotspot.
+  pointer->SetCursor(pointer_surface.get(), gfx::Point(1, 1));
+
+  // Unset pointer surface.
+  pointer->SetCursor(nullptr, gfx::Point());
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
 TEST_F(PointerTest, OnPointerEnter) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));

@@ -6,6 +6,8 @@
 #define COMPONENTS_EXO_POINTER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
@@ -16,36 +18,65 @@ class MouseEvent;
 class MouseWheelEvent;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace exo {
 class PointerDelegate;
 class Surface;
 
 // This class implements a client pointer that represents one or more input
 // devices, such as mice, which control the pointer location and pointer focus.
-class Pointer : public ui::EventHandler, public SurfaceObserver {
+class Pointer : public ui::EventHandler,
+                public SurfaceDelegate,
+                public SurfaceObserver {
  public:
   explicit Pointer(PointerDelegate* delegate);
   ~Pointer() override;
+
+  // Set the pointer surface, i.e., the surface that contains the pointer image
+  // (cursor). The |hotspot| argument defines the position of the pointer
+  // surface relative to the pointer location. Its top-left corner is always at
+  // (x, y) - (hotspot.x, hotspot.y), where (x, y) are the coordinates of the
+  // pointer location, in surface local coordinates.
+  void SetCursor(Surface* surface, const gfx::Point& hotspot);
 
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
+  // Overridden from SurfaceDelegate:
+  void OnSurfaceCommit() override;
+  bool IsSurfaceSynchronized() const override;
+
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
 
  private:
+  // Creates the |widget_| for pointer.
+  void CreatePointerWidget();
+
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
 
   // The delegate instance that all events are dispatched to.
   PointerDelegate* delegate_;
 
+  // The widget for the pointer cursor.
+  scoped_ptr<views::Widget> widget_;
+
+  // The current pointer surface.
+  Surface* surface_;
+
   // The current focus surface for the pointer.
   Surface* focus_;
 
   // The location of the pointer in the current focus surface.
   gfx::Point location_;
+
+  // The position of the pointer surface relative to the pointer location.
+  gfx::Point hotspot_;
 
   DISALLOW_COPY_AND_ASSIGN(Pointer);
 };

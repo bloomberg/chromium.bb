@@ -1211,7 +1211,9 @@ void pointer_set_cursor(wl_client* client,
                         wl_resource* surface_resource,
                         int32_t hotspot_x,
                         int32_t hotspot_y) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<Pointer>(resource)->SetCursor(
+      surface_resource ? GetUserDataAs<Surface>(surface_resource) : nullptr,
+      gfx::Point(hotspot_x, hotspot_y));
 }
 
 void pointer_release(wl_client* client, wl_resource* resource) {
