@@ -329,17 +329,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'linux',
     },
-    'Linux Release (Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:041a',
-        'os': 'Linux'
-      },
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'linux',
-    },
     'Linux Release (Intel Graphics Stack)': {
       'swarming_dimensions': {
         'gpu': '8086:041a',
