@@ -20,6 +20,7 @@
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
+#include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
@@ -270,6 +271,15 @@ static bool consumeCommaIncludingWhitespace(CSSParserTokenRange& valueList)
     if (value.type() != CommaToken)
         return false;
     valueList.consumeIncludingWhitespace();
+    return true;
+}
+
+static bool consumeSlashIncludingWhitespace(CSSParserTokenRange& range)
+{
+    CSSParserToken value = range.peek();
+    if (value.type() != DelimiterToken || value.delimiter() != '/')
+        return false;
+    range.consumeIncludingWhitespace();
     return true;
 }
 
@@ -3046,9 +3056,8 @@ static bool consumeRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalRadii[4
             return true;
         }
     } else {
-        if (range.peek().type() != DelimiterToken || range.peek().delimiter() != '/')
+        if (!consumeSlashIncludingWhitespace(range))
             return false;
-        range.consumeIncludingWhitespace();
         for (i = 0; i < 4 && !range.atEnd(); ++i) {
             verticalRadii[i] = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
             if (!verticalRadii[i])
@@ -3280,6 +3289,69 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeBorderImageWidth(CSSParserTokenRa
         return nullptr;
     complete4Sides(widths);
     return CSSQuadValue::create(widths[0].release(), widths[1].release(), widths[2].release(), widths[3].release(), CSSQuadValue::SerializeAsQuad);
+}
+
+static bool consumeBorderImageComponents(CSSPropertyID property, CSSParserTokenRange& range, const CSSParserContext& context, RefPtrWillBeRawPtr<CSSValue>& source,
+    RefPtrWillBeRawPtr<CSSValue>& slice, RefPtrWillBeRawPtr<CSSValue>& width, RefPtrWillBeRawPtr<CSSValue>& outset, RefPtrWillBeRawPtr<CSSValue>& repeat)
+{
+    do {
+        if (!source && (source = consumeImage(range, context)))
+            continue;
+        if (!repeat && (repeat = consumeBorderImageRepeat(range)))
+            continue;
+        if (!slice && (slice = consumeBorderImageSlice(property, range, context.mode()))) {
+            ASSERT(!width && !outset);
+            if (consumeSlashIncludingWhitespace(range)) {
+                width = consumeBorderImageWidth(range);
+                if (consumeSlashIncludingWhitespace(range)) {
+                    outset = consumeBorderImageOutset(range);
+                    if (!outset)
+                        return false;
+                } else if (!width) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    } while (!range.atEnd());
+    return true;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeWebkitBorderImage(CSSPropertyID property, CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    RefPtrWillBeRawPtr<CSSValue> source = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> slice = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> width = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> outset = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> repeat = nullptr;
+    if (consumeBorderImageComponents(property, range, context, source, slice, width, outset, repeat))
+        return createBorderImageValue(source, slice, width, outset, repeat);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeReflect(CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> direction = consumeIdent<CSSValueAbove, CSSValueBelow, CSSValueLeft, CSSValueRight>(range);
+    if (!direction)
+        return nullptr;
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> offset = nullptr;
+    if (range.atEnd()) {
+        offset = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
+    } else {
+        offset = consumeLengthOrPercent(range, context.mode(), ValueRangeAll, UnitlessQuirk::Forbid);
+        if (!offset)
+            return nullptr;
+    }
+
+    RefPtrWillBeRawPtr<CSSValue> mask = nullptr;
+    if (!range.atEnd()) {
+        mask = consumeWebkitBorderImage(CSSPropertyWebkitBoxReflect, range, context);
+        if (!mask)
+            return nullptr;
+    }
+    return CSSReflectValue::create(direction.release(), offset.release(), mask.release());
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
@@ -3598,6 +3670,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyBorderImageWidth:
     case CSSPropertyWebkitMaskBoxImageWidth:
         return consumeBorderImageWidth(m_range);
+    case CSSPropertyWebkitBorderImage:
+        return consumeWebkitBorderImage(property, m_range, m_context);
+    case CSSPropertyWebkitBoxReflect:
+        return consumeReflect(m_range, m_context);
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {
@@ -3812,8 +3888,7 @@ bool CSSPropertyParser::consumeFont(bool important)
 
     addProperty(CSSPropertyFontSize, fontSize.release(), important);
 
-    if (m_range.peek().type() == DelimiterToken && m_range.peek().delimiter() == '/') {
-        m_range.consumeIncludingWhitespace();
+    if (consumeSlashIncludingWhitespace(m_range)) {
         RefPtrWillBeRawPtr<CSSPrimitiveValue> lineHeight = consumeLineHeight(m_range, m_context.mode());
         if (!lineHeight)
             return false;
@@ -3935,7 +4010,7 @@ bool CSSPropertyParser::parseViewportDescriptor(CSSPropertyID propId, bool impor
     }
 }
 
-static bool consumeColumnWidthOrCount(CSSParserTokenRange& range, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSValue> &columnWidth, RefPtrWillBeRawPtr<CSSValue> &columnCount)
+static bool consumeColumnWidthOrCount(CSSParserTokenRange& range, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSValue>& columnWidth, RefPtrWillBeRawPtr<CSSValue>& columnCount)
 {
     if (range.peek().id() == CSSValueAuto) {
         consumeIdent(range);
@@ -4116,6 +4191,38 @@ bool CSSPropertyParser::consume4Values(const StylePropertyShorthand& shorthand, 
     return m_range.atEnd();
 }
 
+bool CSSPropertyParser::consumeBorderImage(CSSPropertyID property, bool important)
+{
+    RefPtrWillBeRawPtr<CSSValue> source = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> slice = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> width = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> outset = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> repeat = nullptr;
+    if (consumeBorderImageComponents(property, m_range, m_context, source, slice, width, outset, repeat)) {
+        ImplicitScope implicitScope(this);
+        switch (property) {
+        case CSSPropertyWebkitMaskBoxImage:
+            addProperty(CSSPropertyWebkitMaskBoxImageSource, source ? source : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageSlice, slice ? slice : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageWidth, width ? width : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageOutset, outset ? outset : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageRepeat, repeat ? repeat : cssValuePool().createImplicitInitialValue(), important);
+            return true;
+        case CSSPropertyBorderImage:
+            addProperty(CSSPropertyBorderImageSource, source ? source : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyBorderImageSlice, slice ? slice : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyBorderImageWidth, width ? width : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyBorderImageOutset, outset ? outset : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyBorderImageRepeat, repeat ? repeat : cssValuePool().createImplicitInitialValue(), important);
+            return true;
+        default:
+            ASSERT_NOT_REACHED();
+            return false;
+        }
+    }
+    return false;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -4247,6 +4354,9 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeShorthandGreedily(borderLeftShorthand(), important);
     case CSSPropertyBorder:
         return consumeBorder(important);
+    case CSSPropertyBorderImage:
+    case CSSPropertyWebkitMaskBoxImage:
+        return consumeBorderImage(property, important);
     default:
         m_currentShorthand = oldShorthand;
         CSSParserValueList valueList(m_range);

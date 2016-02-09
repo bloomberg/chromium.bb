@@ -33,8 +33,6 @@
 
 namespace blink {
 
-class BorderImageParseContext;
-class CSSBorderImageSliceValue;
 class CSSCustomIdentValue;
 class CSSFunctionValue;
 class CSSGradientValue;
@@ -44,9 +42,6 @@ struct CSSParserValue;
 class CSSParserValueList;
 class CSSPrimitiveValue;
 class CSSProperty;
-class CSSQuadValue;
-class CSSShadowValue;
-class CSSStringValue;
 class CSSValue;
 class CSSValueList;
 class StylePropertyShorthand;
@@ -156,8 +151,6 @@ private:
 
     void addFillValue(RefPtrWillBeRawPtr<CSSValue>& lval, PassRefPtrWillBeRawPtr<CSSValue> rval);
 
-    bool parseCubicBezierTimingFunctionValue(CSSParserValueList*& args, double& result);
-
     // Legacy parsing allows <string>s for animation-name
     bool consumeAnimationShorthand(const StylePropertyShorthand&, bool useLegacyParsing, bool important);
 
@@ -196,15 +189,7 @@ private:
     bool parseColorFromValue(const CSSParserValue*, RGBA32&, bool acceptQuirkyColors = false);
 
     // CSS3 Parsing Routines (for properties specific to CSS3)
-    bool parseBorderImageShorthand(CSSPropertyID, bool important);
-    PassRefPtrWillBeRawPtr<CSSValue> parseBorderImage(CSSPropertyID);
-    bool parseBorderImageRepeat(RefPtrWillBeRawPtr<CSSValue>&);
-    bool parseBorderImageSlice(CSSPropertyID, RefPtrWillBeRawPtr<CSSBorderImageSliceValue>&);
-    bool parseBorderImageWidth(RefPtrWillBeRawPtr<CSSQuadValue>&);
-    bool parseBorderImageOutset(RefPtrWillBeRawPtr<CSSQuadValue>&);
-    bool parseRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4], RefPtrWillBeRawPtr<CSSPrimitiveValue> radii2[4], CSSParserValueList*, CSSPropertyID = CSSPropertyInvalid);
-
-    PassRefPtrWillBeRawPtr<CSSValue> parseReflect();
+    bool consumeBorderImage(CSSPropertyID, bool important);
 
     bool consumeFlex(bool important);
 
@@ -220,15 +205,11 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseImageSet(CSSParserValueList*);
 
-    PassRefPtrWillBeRawPtr<CSSValueList> parseFilter();
-    PassRefPtrWillBeRawPtr<CSSFunctionValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSValueID);
-
     bool parseCalculation(CSSParserValue*, ValueRange);
 
     bool parseGeneratedImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
-    PassRefPtrWillBeRawPtr<CSSStringValue> createPrimitiveStringValue(CSSParserValue*);
     PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createPrimitiveCustomIdentValue(CSSParserValue*);
 
     class ImplicitScope {
@@ -285,15 +266,10 @@ private:
     inline bool validUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue) { return validUnit(value, unitflags, m_context.mode(), releaseCalc); }
     bool validUnit(CSSParserValue*, Units, CSSParserMode, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
 
-    bool parseBorderImageQuad(Units, RefPtrWillBeRawPtr<CSSQuadValue>&);
     int colorIntFromValue(CSSParserValue*);
-
-    bool buildBorderImageParseContext(CSSPropertyID, BorderImageParseContext&);
 
     bool parseDeprecatedGradientColorStop(CSSParserValue*, CSSGradientColorStop&);
     PassRefPtrWillBeRawPtr<CSSValue> parseDeprecatedGradientStopColor(const CSSParserValue*);
-
-    void commitBorderImageProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important);
 
 private:
     // Inputs:
