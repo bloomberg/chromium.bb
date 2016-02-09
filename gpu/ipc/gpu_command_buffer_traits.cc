@@ -147,6 +147,13 @@ void ParamTraits<gpu::Mailbox>::Log(const param_type& p, std::string* l) {
     *l += base::StringPrintf("%02x", p.name[i]);
 }
 
+void ParamTraits<gpu::MailboxHolder>::GetSize(base::PickleSizer* s,
+                                              const param_type& p) {
+  GetParamSize(s, p.mailbox);
+  GetParamSize(s, p.sync_token);
+  GetParamSize(s, p.texture_target);
+}
+
 void ParamTraits<gpu::MailboxHolder>::Write(base::Pickle* m,
                                             const param_type& p) {
   WriteParam(m, p.mailbox);
@@ -167,6 +174,11 @@ void ParamTraits<gpu::MailboxHolder>::Log(const param_type& p, std::string* l) {
   LogParam(p.mailbox, l);
   LogParam(p.sync_token, l);
   *l += base::StringPrintf(":%04x@", p.texture_target);
+}
+
+void ParamTraits<gpu::ValueState>::GetSize(base::PickleSizer* s,
+                                           const param_type& p) {
+  s->AddData(sizeof(gpu::ValueState));
 }
 
 void ParamTraits<gpu::ValueState>::Write(base::Pickle* m, const param_type& p) {

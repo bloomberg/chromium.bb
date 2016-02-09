@@ -82,7 +82,9 @@ mojom("interfaces") {
     "capabilities.mojom",
     "command_buffer.mojom",
     "mailbox.mojom",
+    "mailbox_holder.mojom",
     "sync_token.mojom",
+    "value_state.mojom",
   ]
 
   typemaps = [ "mojo.typemap" ]

@@ -30,17 +30,12 @@
 
 using mus::mojom::Color;
 using mus::mojom::ColorPtr;
-using mus::mojom::CommandBufferNamespace;
 using mus::mojom::CompositorFrame;
 using mus::mojom::CompositorFramePtr;
 using mus::mojom::CompositorFrameMetadata;
 using mus::mojom::CompositorFrameMetadataPtr;
 using mus::mojom::DebugBorderQuadState;
 using mus::mojom::DebugBorderQuadStatePtr;
-using mus::mojom::Mailbox;
-using mus::mojom::MailboxPtr;
-using mus::mojom::MailboxHolder;
-using mus::mojom::MailboxHolderPtr;
 using mus::mojom::Pass;
 using mus::mojom::PassPtr;
 using mus::mojom::Quad;
@@ -60,8 +55,6 @@ using mus::mojom::SurfaceId;
 using mus::mojom::SurfaceIdPtr;
 using mus::mojom::SurfaceQuadState;
 using mus::mojom::SurfaceQuadStatePtr;
-using mus::mojom::SyncToken;
-using mus::mojom::SyncTokenPtr;
 using mus::mojom::TextureQuadState;
 using mus::mojom::TextureQuadStatePtr;
 using mus::mojom::TileQuadState;
@@ -518,74 +511,6 @@ TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
 }
 
 // static
-MailboxPtr TypeConverter<MailboxPtr, gpu::Mailbox>::Convert(
-    const gpu::Mailbox& input) {
-  Array<int8_t> name(64);
-  for (int i = 0; i < 64; ++i) {
-    name[i] = input.name[i];
-  }
-  MailboxPtr mailbox(Mailbox::New());
-  mailbox->name = std::move(name);
-  return mailbox;
-}
-
-// static
-gpu::Mailbox TypeConverter<gpu::Mailbox, MailboxPtr>::Convert(
-    const MailboxPtr& input) {
-  gpu::Mailbox mailbox;
-  if (!input->name.is_null())
-    mailbox.SetName(&input->name.storage()[0]);
-  return mailbox;
-}
-
-// static
-SyncTokenPtr TypeConverter<SyncTokenPtr, gpu::SyncToken>::Convert(
-    const gpu::SyncToken& input) {
-  DCHECK(!input.HasData() || input.verified_flush());
-  SyncTokenPtr sync_token(SyncToken::New());
-  sync_token->verified_flush = input.verified_flush();
-  sync_token->namespace_id =
-      static_cast<CommandBufferNamespace>(input.namespace_id());
-  sync_token->extra_data_field = input.extra_data_field();
-  sync_token->command_buffer_id = input.command_buffer_id();
-  sync_token->release_count = input.release_count();
-  return sync_token;
-}
-
-// static
-gpu::SyncToken TypeConverter<gpu::SyncToken, SyncTokenPtr>::Convert(
-    const SyncTokenPtr& input) {
-  const gpu::CommandBufferNamespace namespace_id =
-      static_cast<gpu::CommandBufferNamespace>(input->namespace_id);
-  gpu::SyncToken sync_token(namespace_id, input->extra_data_field,
-                            input->command_buffer_id, input->release_count);
-  if (input->verified_flush)
-    sync_token.SetVerifyFlush();
-
-  return sync_token;
-}
-
-// static
-MailboxHolderPtr TypeConverter<MailboxHolderPtr, gpu::MailboxHolder>::Convert(
-    const gpu::MailboxHolder& input) {
-  MailboxHolderPtr holder(MailboxHolder::New());
-  holder->mailbox = Mailbox::From<gpu::Mailbox>(input.mailbox);
-  holder->sync_token = SyncToken::From<gpu::SyncToken>(input.sync_token);
-  holder->texture_target = input.texture_target;
-  return holder;
-}
-
-// static
-gpu::MailboxHolder TypeConverter<gpu::MailboxHolder, MailboxHolderPtr>::Convert(
-    const MailboxHolderPtr& input) {
-  gpu::MailboxHolder holder;
-  holder.mailbox = input->mailbox.To<gpu::Mailbox>();
-  holder.sync_token = input->sync_token.To<gpu::SyncToken>();
-  holder.texture_target = input->texture_target;
-  return holder;
-}
-
-// static
 TransferableResourcePtr
 TypeConverter<TransferableResourcePtr, cc::TransferableResource>::Convert(
     const cc::TransferableResource& input) {
@@ -594,7 +519,7 @@ TypeConverter<TransferableResourcePtr, cc::TransferableResource>::Convert(
   transferable->format = static_cast<ResourceFormat>(input.format);
   transferable->filter = input.filter;
   transferable->size = Size::From(input.size);
-  transferable->mailbox_holder = MailboxHolder::From(input.mailbox_holder);
+  transferable->mailbox_holder = input.mailbox_holder;
   transferable->read_lock_fences_enabled = input.read_lock_fences_enabled;
   transferable->is_software = input.is_software;
   transferable->is_overlay_candidate = input.is_overlay_candidate;
@@ -610,7 +535,7 @@ TypeConverter<cc::TransferableResource, TransferableResourcePtr>::Convert(
   transferable.format = static_cast<cc::ResourceFormat>(input->format);
   transferable.filter = input->filter;
   transferable.size = input->size.To<gfx::Size>();
-  transferable.mailbox_holder = input->mailbox_holder.To<gpu::MailboxHolder>();
+  transferable.mailbox_holder = input->mailbox_holder;
   transferable.read_lock_fences_enabled = input->read_lock_fences_enabled;
   transferable.is_software = input->is_software;
   transferable.is_overlay_candidate = input->is_overlay_candidate;
@@ -623,7 +548,7 @@ TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::Convert(
     const cc::ReturnedResource& input) {
   ReturnedResourcePtr returned = ReturnedResource::New();
   returned->id = input.id;
-  returned->sync_token = SyncToken::From<gpu::SyncToken>(input.sync_token);
+  returned->sync_token = input.sync_token;
   returned->count = input.count;
   returned->lost = input.lost;
   return returned;
@@ -635,7 +560,7 @@ TypeConverter<cc::ReturnedResource, ReturnedResourcePtr>::Convert(
     const ReturnedResourcePtr& input) {
   cc::ReturnedResource returned;
   returned.id = input->id;
-  returned.sync_token = input->sync_token.To<gpu::SyncToken>();
+  returned.sync_token = input->sync_token;
   returned.count = input->count;
   returned.lost = input->lost;
   return returned;

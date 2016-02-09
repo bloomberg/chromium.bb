@@ -30,10 +30,6 @@ using mus::mojom::CompositorFrameMetadata;
 using mus::mojom::CompositorFrameMetadataPtr;
 using mus::mojom::DebugBorderQuadState;
 using mus::mojom::DebugBorderQuadStatePtr;
-using mus::mojom::Mailbox;
-using mus::mojom::MailboxPtr;
-using mus::mojom::MailboxHolder;
-using mus::mojom::MailboxHolderPtr;
 using mus::mojom::Pass;
 using mus::mojom::PassPtr;
 using mus::mojom::Quad;
@@ -385,41 +381,6 @@ TEST(SurfaceLibTest, RenderPass) {
   EXPECT_EQ(y_flipped, round_trip_texture_quad->y_flipped);
 }
 
-TEST(SurfaceLibTest, Mailbox) {
-  gpu::Mailbox mailbox;
-  mailbox.Generate();
-
-  MailboxPtr mus_mailbox = Mailbox::From(mailbox);
-  EXPECT_EQ(0, memcmp(mailbox.name, &mus_mailbox->name.storage()[0], 64));
-
-  gpu::Mailbox round_trip_mailbox = mus_mailbox.To<gpu::Mailbox>();
-  EXPECT_EQ(mailbox, round_trip_mailbox);
-}
-
-TEST(SurfaceLibTest, MailboxEmptyName) {
-  MailboxPtr mus_mailbox = Mailbox::New();
-
-  gpu::Mailbox converted_mailbox = mus_mailbox.To<gpu::Mailbox>();
-  EXPECT_TRUE(converted_mailbox.IsZero());
-}
-
-TEST(SurfaceLibTest, MailboxHolder) {
-  gpu::Mailbox mailbox;
-  mailbox.Generate();
-  uint32_t texture_target = GL_TEXTURE_2D;
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 1, 7u);
-  sync_token.SetVerifyFlush();
-  gpu::MailboxHolder holder(mailbox, sync_token, texture_target);
-
-  MailboxHolderPtr mus_holder = MailboxHolder::From(holder);
-  EXPECT_EQ(texture_target, mus_holder->texture_target);
-  EXPECT_EQ(sync_token, mus_holder->sync_token.To<gpu::SyncToken>());
-
-  gpu::MailboxHolder round_trip_holder = mus_holder.To<gpu::MailboxHolder>();
-  EXPECT_EQ(mailbox, round_trip_holder.mailbox);
-  EXPECT_EQ(texture_target, round_trip_holder.texture_target);
-  EXPECT_EQ(sync_token, round_trip_holder.sync_token);
-}
 
 TEST(SurfaceLibTest, TransferableResource) {
   uint32_t id = 7u;
@@ -471,7 +432,7 @@ TEST(SurfaceLibTest, ReturnedResource) {
 
   ReturnedResourcePtr mus_resource = ReturnedResource::From(resource);
   EXPECT_EQ(id, mus_resource->id);
-  EXPECT_EQ(sync_token, mus_resource->sync_token.To<gpu::SyncToken>());
+  EXPECT_EQ(sync_token, mus_resource->sync_token);
   EXPECT_EQ(count, mus_resource->count);
   EXPECT_EQ(lost, mus_resource->lost);
 

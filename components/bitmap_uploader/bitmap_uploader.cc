@@ -115,9 +115,9 @@ void BitmapUploader::Upload() {
                     GL_UNSIGNED_BYTE,
                     &((*bitmap_)[0]));
 
-    GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
-    glGenMailboxCHROMIUM(mailbox);
-    glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
+    gpu::Mailbox mailbox;
+    glGenMailboxCHROMIUM(mailbox.name);
+    glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
 
     const GLuint64 fence_sync = glInsertFenceSyncCHROMIUM();
     glShallowFlushCHROMIUM();
@@ -132,15 +132,8 @@ void BitmapUploader::Upload() {
     resource->format = mus::mojom::ResourceFormat::RGBA_8888;
     resource->filter = GL_LINEAR;
     resource->size = bitmap_size.Clone();
-    mus::mojom::MailboxHolderPtr mailbox_holder =
-        mus::mojom::MailboxHolder::New();
-    mailbox_holder->mailbox = mus::mojom::Mailbox::New();
-    for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i)
-      mailbox_holder->mailbox->name.push_back(mailbox[i]);
-    mailbox_holder->texture_target = GL_TEXTURE_2D;
-    mailbox_holder->sync_token =
-        mus::mojom::SyncToken::From<gpu::SyncToken>(sync_token);
-    resource->mailbox_holder = std::move(mailbox_holder);
+    resource->mailbox_holder =
+        gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D);
     resource->read_lock_fences_enabled = false;
     resource->is_software = false;
     resource->is_overlay_candidate = false;
@@ -247,7 +240,7 @@ void BitmapUploader::ReturnResources(
     mus::mojom::ReturnedResourcePtr resource = std::move(resources[i]);
     DCHECK_EQ(1, resource->count);
     glWaitSyncTokenCHROMIUM(
-        resource->sync_token.To<gpu::SyncToken>().GetConstData());
+        resource->sync_token.GetConstData());
     uint32_t texture_id = resource_to_texture_id_map_[resource->id];
     DCHECK_NE(0u, texture_id);
     resource_to_texture_id_map_.erase(resource->id);
