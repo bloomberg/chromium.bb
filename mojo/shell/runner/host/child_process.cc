@@ -51,10 +51,6 @@ namespace shell {
 
 namespace {
 
-void DidCreateChannel(embedder::ChannelInfo* channel_info) {
-  DVLOG(2) << "ChildControllerImpl::DidCreateChannel()";
-}
-
 // Blocker ---------------------------------------------------------------------
 
 // Blocks a thread until another thread unblocks it, at which point it unblocks
@@ -300,34 +296,14 @@ scoped_ptr<mojo::shell::LinuxSandbox> InitializeSandbox() {
 }
 #endif
 
-void InitializeHostMessagePipe(
-    embedder::ScopedPlatformHandle platform_channel,
-    scoped_refptr<base::TaskRunner> io_task_runner,
-    const base::Callback<void(ScopedMessagePipeHandle)>& callback) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-    embedder::SetParentPipeHandle(std::move(platform_channel));
-    std::string primordial_pipe_token =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kPrimordialPipeToken);
-    edk::CreateChildMessagePipe(primordial_pipe_token, callback);
-  } else {
-    ScopedMessagePipeHandle host_message_pipe;
-    host_message_pipe =
-        embedder::CreateChannel(std::move(platform_channel),
-                                base::Bind(&DidCreateChannel), io_task_runner);
-    callback.Run(std::move(host_message_pipe));
-  }
-}
-
-void OnHostMessagePipeCreated(AppContext* app_context,
-                              base::NativeLibrary app_library,
-                              const Blocker::Unblocker& unblocker,
-                              ScopedMessagePipeHandle pipe) {
-  app_context->controller_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChildControllerImpl::Init, base::Unretained(app_context),
-                 base::Unretained(app_library), base::Passed(&pipe),
-                 unblocker));
+ScopedMessagePipeHandle InitializeHostMessagePipe(
+    edk::ScopedPlatformHandle platform_channel,
+    scoped_refptr<base::TaskRunner> io_task_runner) {
+  edk::SetParentPipeHandle(std::move(platform_channel));
+  std::string primordial_pipe_token =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPrimordialPipeToken);
+  return edk::CreateChildMessagePipe(primordial_pipe_token);
 }
 
 }  // namespace
@@ -360,8 +336,8 @@ int ChildProcessMain() {
     sandbox = InitializeSandbox();
 #endif
 
-  embedder::ScopedPlatformHandle platform_channel =
-      embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
+  edk::ScopedPlatformHandle platform_channel =
+      edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           command_line);
   CHECK(platform_channel.is_valid());
 
@@ -372,13 +348,12 @@ int ChildProcessMain() {
   app_context.Init();
   app_context.StartControllerThread();
 
+  ScopedMessagePipeHandle host_pipe = InitializeHostMessagePipe(
+      std::move(platform_channel), app_context.io_runner());
   app_context.controller_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
-          &InitializeHostMessagePipe, base::Passed(&platform_channel),
-          make_scoped_refptr(app_context.io_runner()),
-          base::Bind(&OnHostMessagePipeCreated, base::Unretained(&app_context),
-                     base::Unretained(app_library), blocker.GetUnblocker())));
+      base::Bind(&ChildControllerImpl::Init, &app_context, app_library,
+                 base::Passed(&host_pipe), blocker.GetUnblocker()));
 
   // This will block, then run whatever the controller wants.
   blocker.Block();

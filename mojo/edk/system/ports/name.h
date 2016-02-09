@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <ostream>
+#include <tuple>
 
 namespace mojo {
 namespace edk {
@@ -21,9 +22,15 @@ struct Name {
 inline bool operator==(const Name& a, const Name& b) {
   return a.v1 == b.v1 && a.v2 == b.v2;
 }
+
 inline bool operator!=(const Name& a, const Name& b) {
   return !(a == b);
 }
+
+inline bool operator<(const Name& a, const Name& b) {
+  return std::tie(a.v1, a.v2) < std::tie(b.v1, b.v2);
+}
+
 std::ostream& operator<<(std::ostream& stream, const Name& name);
 
 struct PortName : Name {

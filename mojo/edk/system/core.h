@@ -52,26 +52,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // Called in a child process exactly once during early initialization.
   void InitChild(ScopedPlatformHandle platform_handle);
 
-  // This creates a message pipe endpoint connected to an endpoint in a remote
+  // Creates a message pipe endpoint connected to an endpoint in a remote
   // embedder. |platform_handle| is used as a channel to negotiate the
-  // connection. This is only here to facilitate legacy embedder code. See
-  // mojo::edk::CreateMessagePipe in mojo/edk/embedder/embedder.h.
-  void CreateMessagePipe(
-      ScopedPlatformHandle platform_handle,
-      const base::Callback<void(ScopedMessagePipeHandle)>& callback);
+  // connection.
+  ScopedMessagePipeHandle CreateMessagePipe(
+      ScopedPlatformHandle platform_handle);
 
   // Creates a message pipe endpoint associated with |token|, which a child
   // holding the token can later locate and connect to.
-  void CreateParentMessagePipe(
-      const std::string& token,
-      const base::Callback<void(ScopedMessagePipeHandle)>& callback);
+  ScopedMessagePipeHandle CreateParentMessagePipe(const std::string& token);
 
-  // Creates a message pipe endpoint associated with |token|, which will be
-  // passed to the parent in order to find an associated remote port and connect
-  // to it.
-  void CreateChildMessagePipe(
-      const std::string& token,
-      const base::Callback<void(ScopedMessagePipeHandle)>& callback);
+  // Creates a message pipe endpoint and connects it to a pipe the parent has
+  // associated with |token|.
+  ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token);
 
   MojoHandle AddDispatcher(scoped_refptr<Dispatcher> dispatcher);
 

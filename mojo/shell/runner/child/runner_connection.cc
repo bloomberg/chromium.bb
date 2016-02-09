@@ -74,13 +74,6 @@ class Blocker {
 using GotApplicationRequestCallback =
     base::Callback<void(InterfaceRequest<mojom::ShellClient>)>;
 
-void OnCreateMessagePipe(ScopedMessagePipeHandle* result,
-                         Blocker::Unblocker unblocker,
-                         ScopedMessagePipeHandle pipe) {
-  *result = std::move(pipe);
-  unblocker.Unblock(base::Bind(&base::DoNothing));
-}
-
 void OnGotApplicationRequest(InterfaceRequest<mojom::ShellClient>* out_request,
                              InterfaceRequest<mojom::ShellClient> request) {
   *out_request = std::move(request);
@@ -229,13 +222,10 @@ bool RunnerConnectionImpl::WaitForApplicationRequest(
     std::string primordial_pipe_token =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kPrimordialPipeToken);
-    Blocker blocker;
-    edk::CreateChildMessagePipe(
-        primordial_pipe_token,
-        base::Bind(&OnCreateMessagePipe, base::Unretained(&handle),
-                   blocker.GetUnblocker()));
-    blocker.Block();
+    handle = edk::CreateChildMessagePipe(primordial_pipe_token);
   }
+
+  DCHECK(handle.is_valid());
 
   Blocker blocker;
   controller_runner_->PostTask(

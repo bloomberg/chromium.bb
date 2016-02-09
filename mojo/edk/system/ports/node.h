@@ -122,6 +122,21 @@ class Node {
   // Corresponding to NodeDelegate::ForwardMessage.
   int AcceptMessage(ScopedMessage message);
 
+  // Called to merge two ports with each other. If you have two independent
+  // port pairs A <=> B and C <=> D, the net result of merging B and C is a
+  // single connected port pair A <=> D.
+  //
+  // Note that the behavior of this operation is undefined if either port to be
+  // merged (B or C above) has ever been read from or written to directly, and
+  // this must ONLY be called on one side of the merge, though it doesn't matter
+  // which side.
+  //
+  // It is safe for the non-merged peers (A and D above) to be transferred,
+  // closed, and/or written to before, during, or after the merge.
+  int MergePorts(const PortRef& port_ref,
+                 const NodeName& destination_node_name,
+                 const PortName& destination_port_name);
+
   // Called to inform this node that communication with another node is lost
   // indefinitely. This triggers cleanup of ports bound to this node.
   int LostConnectionToNode(const NodeName& node_name);
@@ -133,6 +148,7 @@ class Node {
                      const ObserveProxyEventData& event);
   int OnObserveProxyAck(const PortName& port_name, uint64_t last_sequence_num);
   int OnObserveClosure(const PortName& port_name, uint64_t last_sequence_num);
+  int OnMergePort(const PortName& port_name, const MergePortEventData& event);
 
   int AddPortWithName(const PortName& port_name,
                       const scoped_refptr<Port>& port);
@@ -151,6 +167,7 @@ class Node {
   int WillSendMessage_Locked(Port* port,
                              const PortName& port_name,
                              Message* message);
+  int BeginProxying_Locked(Port* port, const PortName& port_name);
   int ForwardMessages_Locked(Port* port, const PortName& port_name);
   void InitiateProxyRemoval_Locked(Port* port, const PortName& port_name);
   void MaybeRemoveProxy_Locked(Port* port, const PortName& port_name);
