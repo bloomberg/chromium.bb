@@ -47,8 +47,6 @@
         'gl_bindings_autogen_gl.h',
         'gl_bindings_autogen_osmesa.cc',
         'gl_bindings_autogen_osmesa.h',
-        'gl_bindings_skia_in_process.cc',
-        'gl_bindings_skia_in_process.h',
         'gl_context.cc',
         'gl_context.h',
         'gl_context_android.cc',
