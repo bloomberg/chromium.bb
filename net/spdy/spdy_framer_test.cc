@@ -2922,17 +2922,21 @@ TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
   }
 }
 
+// Regression test for https://crbug.com/464748.
 TEST_P(SpdyFramerTest, GetNumberRequiredContinuationFrames) {
   if (!IsHttp2()) {
     return;
   }
 
   SpdyFramer framer(spdy_version_);
-  // Test case from https://crbug.com/464748.
-  EXPECT_EQ(1u,
-            SpdyFramerPeer::GetNumberRequiredContinuationFrames(&framer, 2039));
-  EXPECT_EQ(2u,
-            SpdyFramerPeer::GetNumberRequiredContinuationFrames(&framer, 2040));
+  EXPECT_EQ(1u, SpdyFramerPeer::GetNumberRequiredContinuationFrames(
+                    &framer, 16383 + 16374));
+  EXPECT_EQ(2u, SpdyFramerPeer::GetNumberRequiredContinuationFrames(
+                    &framer, 16383 + 16374 + 1));
+  EXPECT_EQ(2u, SpdyFramerPeer::GetNumberRequiredContinuationFrames(
+                    &framer, 16383 + 2 * 16374));
+  EXPECT_EQ(3u, SpdyFramerPeer::GetNumberRequiredContinuationFrames(
+                    &framer, 16383 + 2 * 16374 + 1));
 }
 
 TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
@@ -2978,12 +2982,12 @@ TEST_P(SpdyFramerTest, CreatePushPromiseThenContinuationUncompressed) {
         "PUSH_PROMISE and CONTINUATION frames with one byte of padding";
 
     const unsigned char kPartialPushPromiseFrameData[] = {
-        0x00, 0x03, 0xf7, 0x05,  // PUSH_PROMISE
+        0x00, 0x3f, 0xf6, 0x05,  // PUSH_PROMISE
         0x08, 0x00, 0x00, 0x00,  // PADDED
         0x2a, 0x00, 0x00, 0x00,  // Stream 42
         0x00, 0x39, 0x00, 0x03,  // Promised stream 57
         0x78, 0x78, 0x78, 0x7f,  // xxx.
-        0x81, 0x07, 0x78, 0x78,  // ..xx
+        0x80, 0x7f, 0x78, 0x78,  // ..xx
         0x78, 0x78, 0x78, 0x78,  // xxxx
         0x78, 0x78, 0x78, 0x78,  // xxxx
         0x78, 0x78, 0x78, 0x78,  // xxxx
@@ -3302,7 +3306,7 @@ TEST_P(SpdyFramerTest, TooLargeHeadersFrameUsesContinuation) {
 
   // Exact payload length will change with HPACK, but this should be long
   // enough to cause an overflow.
-  const size_t kBigValueSize = kControlFrameSizeLimit;
+  const size_t kBigValueSize = TestSpdyVisitor::sent_control_frame_max_size();
   string big_value(kBigValueSize, 'x');
   headers.SetHeader("aa", big_value);
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeHeaders(headers));
@@ -3317,7 +3321,7 @@ TEST_P(SpdyFramerTest, TooLargeHeadersFrameUsesContinuation) {
   EXPECT_TRUE(visitor.header_buffer_valid_);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.headers_frame_count_);
-  EXPECT_EQ(16, visitor.continuation_count_);
+  EXPECT_EQ(1, visitor.continuation_count_);
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
 }
 
@@ -3333,7 +3337,7 @@ TEST_P(SpdyFramerTest, TooLargePushPromiseFrameUsesContinuation) {
 
   // Exact payload length will change with HPACK, but this should be long
   // enough to cause an overflow.
-  const size_t kBigValueSize = kControlFrameSizeLimit;
+  const size_t kBigValueSize = TestSpdyVisitor::sent_control_frame_max_size();
   string big_value(kBigValueSize, 'x');
   push_promise.SetHeader("aa", big_value);
   scoped_ptr<SpdyFrame> control_frame(
@@ -3349,7 +3353,7 @@ TEST_P(SpdyFramerTest, TooLargePushPromiseFrameUsesContinuation) {
   EXPECT_TRUE(visitor.header_buffer_valid_);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.push_promise_frame_count_);
-  EXPECT_EQ(16, visitor.continuation_count_);
+  EXPECT_EQ(1, visitor.continuation_count_);
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
 }
 

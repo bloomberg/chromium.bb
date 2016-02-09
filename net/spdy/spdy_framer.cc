@@ -105,8 +105,10 @@ const size_t kPadLengthFieldSize = 1;
 
 const SpdyStreamId SpdyFramer::kInvalidStream = static_cast<SpdyStreamId>(-1);
 const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
-// We fragment sent control frames at smaller payload boundaries.
-const size_t SpdyFramer::kMaxControlFrameSize = 1024;
+// Even though the length field is 24 bits, we keep this 16 kB
+// limit on control frame size for legacy reasons and to
+// mitigate DOS attacks.
+const size_t SpdyFramer::kMaxControlFrameSize = (1 << 14) - 1;
 // The size of the control frame buffer. Must be >= the minimum size of the
 // largest control frame, which is SYN_STREAM. See GetSynStreamMinimumSize() for
 // calculation details.
