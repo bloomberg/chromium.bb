@@ -927,7 +927,7 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     LayoutBox* box = toLayoutBox(ownerElement->layoutObject());
 
     // Plugin frameRects are in absolute space within their frame.
-    IntRect frameRectInOwnerElementSpace = box->absoluteToLocalQuad(FloatRect(frameRect()), UseTransforms).enclosingBoundingBox();
+    FloatRect frameRectInOwnerElementSpace = box->absoluteToLocalQuad(FloatRect(frameRect()), UseTransforms).boundingBox();
 
     LayoutRect unclippedAbsoluteRect(frameRectInOwnerElementSpace);
     box->mapToVisibleRectInAncestorSpace(rootView, unclippedAbsoluteRect, nullptr);
@@ -935,20 +935,21 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     // The frameRect is already in absolute space of the local frame to the plugin.
     windowRect = frameRect();
     // Map up to the root frame.
-    windowRect = pixelSnappedIntRect(LayoutRect(m_element->document().view()->layoutView()->localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())), TraverseDocumentBoundaries).boundingBox()));
+    LayoutRect layoutWindowRect =
+        LayoutRect(m_element->document().view()->layoutView()->localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())), TraverseDocumentBoundaries).boundingBox());
     // Finally, adjust for scrolling of the root frame, which the above does not take into account.
-    windowRect.moveBy(roundedIntPoint(-rootView->viewRect().location()));
+    layoutWindowRect.moveBy(-rootView->viewRect().location());
+    windowRect = pixelSnappedIntRect(layoutWindowRect);
 
-    clippedLocalRect = enclosingIntRect(unclippedAbsoluteRect);
-    unclippedIntLocalRect = clippedLocalRect;
-    clippedLocalRect.intersect(rootView->frameView()->visibleContentRect());
+    LayoutRect layoutClippedLocalRect = unclippedAbsoluteRect;
+    LayoutRect unclippedLayoutLocalRect = layoutClippedLocalRect;
+    layoutClippedLocalRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
 
     // TODO(chrishtr): intentionally ignore transform, because the positioning of frameRect() does also. This is probably wrong.
-    unclippedIntLocalRect = box->absoluteToLocalQuad(FloatRect(unclippedIntLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
-
+    unclippedIntLocalRect = box->absoluteToLocalQuad(FloatRect(unclippedLayoutLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
     // As a performance optimization, map the clipped rect separately if is different than the unclipped rect.
-    if (clippedLocalRect != unclippedIntLocalRect)
-        clippedLocalRect = box->absoluteToLocalQuad(FloatRect(clippedLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
+    if (layoutClippedLocalRect != unclippedLayoutLocalRect)
+        clippedLocalRect = box->absoluteToLocalQuad(FloatRect(layoutClippedLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
     else
         clippedLocalRect = unclippedIntLocalRect;
 }

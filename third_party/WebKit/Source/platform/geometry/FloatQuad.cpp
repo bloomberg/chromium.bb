@@ -241,4 +241,11 @@ bool FloatQuad::isCounterclockwise() const
     return determinant(m_p2 - m_p1, m_p3 - m_p2) < 0;
 }
 
+#ifndef NDEBUG
+void FloatQuad::show() const
+{
+    fprintf(stderr, "FloatQuad: [p1=(%f,%f), p2=(%f,%f), p3=(%f,%f), p4=(%f,%f))]\n", m_p1.x(), m_p1.y(), m_p2.x(), m_p2.y(), m_p3.x(), m_p3.y(), m_p4.x(), m_p4.y());
+}
+#endif
+
 } // namespace blink

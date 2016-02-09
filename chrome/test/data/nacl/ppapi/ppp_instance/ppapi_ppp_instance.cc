@@ -46,14 +46,14 @@ void DidChangeView(PP_Instance instance, PP_Resource view) {
 
   PP_Rect clip;
   PPBView()->GetClipRect(view, &clip);
-  EXPECT(clip.point.x == 0 && clip.point.y == -1);
+  EXPECT(clip.point.x == 0 && clip.point.y == 0);
 
   // These are based on embed dimensions.
   PP_Rect position;
   PPBView()->GetRect(view, &position);
   fprintf(stderr, "clip.size.height: %d\n", clip.size.height);
   EXPECT(position.size.width == 15 && clip.size.width == 15);
-  EXPECT(position.size.height == 20 && clip.size.height == 23);
+  EXPECT(position.size.height == 20 && clip.size.height == 21);
 
   TEST_PASSED;
 }

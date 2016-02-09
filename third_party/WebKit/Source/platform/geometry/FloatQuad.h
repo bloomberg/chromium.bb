@@ -147,6 +147,11 @@ public:
     // Note that output is undefined when all points are colinear.
     bool isCounterclockwise() const;
 
+#ifndef NDEBUG
+    // Prints debugging information for this object.
+    void show() const;
+#endif
+
 private:
     FloatPoint m_p1;
     FloatPoint m_p2;
