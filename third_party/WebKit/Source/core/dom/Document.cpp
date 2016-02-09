@@ -3738,6 +3738,7 @@ void Document::setCSSTarget(Element* newTarget)
 void Document::registerNodeList(const LiveNodeListBase* list)
 {
 #if ENABLE(OILPAN)
+    ASSERT(!m_nodeLists[list->invalidationType()].contains(list));
     m_nodeLists[list->invalidationType()].add(list);
 #else
     m_nodeListCounts[list->invalidationType()]++;
