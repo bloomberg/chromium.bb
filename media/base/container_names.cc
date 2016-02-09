@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/base/bit_reader.h"
 
 namespace media {
@@ -1257,13 +1258,15 @@ static bool CheckWebm(const uint8_t* buffer, int buffer_size) {
   RCHECK(GetElementId(&reader) == 0x1a45dfa3);
 
   // Get the header size, and ensure there are enough bits to check.
-  int header_size = GetVint(&reader);
+  // Using saturated_cast<> in case the size read is really large
+  // (in which case the bits_available() check will fail).
+  int header_size = base::saturated_cast<int>(GetVint(&reader));
   RCHECK(reader.bits_available() / 8 >= header_size);
 
   // Loop through the header.
   while (reader.bits_available() > 0) {
     int tag = GetElementId(&reader);
-    int tagsize = GetVint(&reader);
+    int tagsize = base::saturated_cast<int>(GetVint(&reader));
     switch (tag) {
       case 0x4286:  // EBMLVersion
       case 0x42f7:  // EBMLReadVersion
@@ -1273,6 +1276,7 @@ static bool CheckWebm(const uint8_t* buffer, int buffer_size) {
       case 0x4285:  // DocTypeReadVersion
       case 0xec:    // void
       case 0xbf:    // CRC32
+        RCHECK(reader.bits_available() / 8 >= tagsize);
         RCHECK(reader.SkipBits(tagsize * 8));
         break;
 
