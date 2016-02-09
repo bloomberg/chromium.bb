@@ -76,6 +76,20 @@
       {
         "test": "unit_tests"
       }
+    ],
+    "instrumentation_tests": [
+      {
+        "test": "AndroidWebViewTest"
+      },
+      {
+        "test": "ChromePublicTest"
+      },
+      {
+        "test": "ChromeSyncShellTest"
+      },
+      {
+        "test": "ContentShellTest"
+      }
     ]
   },
   "Android Tests (trial)(dbg)": {
