@@ -7,11 +7,18 @@ from pylib.instrumentation import instrumentation_test_instance
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_gtest_run
 from pylib.local.device import local_device_instrumentation_test_run
-from pylib.remote.device import remote_device_environment
-from pylib.remote.device import remote_device_gtest_run
-from pylib.remote.device import remote_device_instrumentation_test_run
-from pylib.remote.device import remote_device_uirobot_test_run
 from pylib.uirobot import uirobot_test_instance
+
+try:
+  from pylib.remote.device import remote_device_environment
+  from pylib.remote.device import remote_device_gtest_run
+  from pylib.remote.device import remote_device_instrumentation_test_run
+  from pylib.remote.device import remote_device_uirobot_test_run
+except ImportError:
+  remote_device_environment = None
+  remote_device_gtest_run = None
+  remote_device_instrumentation_test_run = None
+  remote_device_uirobot_test_run = None
 
 
 def CreateTestRun(_args, env, test_instance, error_func):
@@ -23,7 +30,13 @@ def CreateTestRun(_args, env, test_instance, error_func):
       return (local_device_instrumentation_test_run
               .LocalDeviceInstrumentationTestRun(env, test_instance))
 
-  if isinstance(env, remote_device_environment.RemoteDeviceEnvironment):
+  if (remote_device_environment
+      and isinstance(env, remote_device_environment.RemoteDeviceEnvironment)):
+    # The remote_device modules should be all or nothing.
+    assert (remote_device_gtest_run
+            and remote_device_instrumentation_test_run
+            and remote_device_uirobot_test_run)
+
     if isinstance(test_instance, gtest_test_instance.GtestTestInstance):
       return remote_device_gtest_run.RemoteDeviceGtestTestRun(
           env, test_instance)
