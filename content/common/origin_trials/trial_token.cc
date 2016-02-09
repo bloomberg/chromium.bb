@@ -21,9 +21,6 @@ namespace content {
 
 namespace {
 
-// Version 1 is the only token version currently supported
-const uint8_t kVersion1 = 1;
-
 // This is the default public key used for validating signatures.
 // TODO(iclelland): Move this to the embedder, and provide a mechanism to allow
 // for multiple signing keys. https://crbug.com/543220
@@ -44,33 +41,12 @@ scoped_ptr<TrialToken> TrialToken::Parse(const std::string& token_text) {
     return nullptr;
   }
 
-  // Extract the version from the token. The version must be the first part of
-  // the token, separated from the remainder, as:
-  // version|<version-specific contents>
-  size_t version_end = token_text.find(kFieldSeparator);
-  if (version_end == std::string::npos) {
-    return nullptr;
-  }
-
-  std::string version_string = token_text.substr(0, version_end);
-  uint32_t version;
-  if (!base::StringToUint(version_string, &version) || version > UINT8_MAX) {
-    return nullptr;
-  }
-
-  // Only version 1 currently supported
-  if (version != kVersion1) {
-    return nullptr;
-  }
-
-  // Extract the version-specific contents of the token
-  std::string token_contents = token_text.substr(version_end + 1);
-
-  // The contents of a valid version 1 token should resemble:
+  // A valid token should resemble:
   // signature|origin|feature_name|expiry_timestamp
-  std::vector<std::string> parts =
-      SplitString(token_contents, kFieldSeparator, base::KEEP_WHITESPACE,
-                  base::SPLIT_WANT_ALL);
+  // TODO(iclelland): Add version code to token format to identify key algo
+  // https://crbug.com/570684
+  std::vector<std::string> parts = SplitString(
+      token_text, kFieldSeparator, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 4) {
     return nullptr;
   }
@@ -91,21 +67,19 @@ scoped_ptr<TrialToken> TrialToken::Parse(const std::string& token_text) {
     return nullptr;
   }
 
-  // Signed data is (origin + "|" + feature_name + "|" + expiry).
-  std::string data = token_contents.substr(signature.length() + 1);
+  // signed data is (origin + "|" + feature_name + "|" + expiry).
+  std::string data = token_text.substr(signature.length() + 1);
 
-  return make_scoped_ptr(new TrialToken(version, signature, data, origin_url,
+  return make_scoped_ptr(new TrialToken(signature, data, origin_url,
                                         feature_name, expiry_timestamp));
 }
 
-TrialToken::TrialToken(uint8_t version,
-                       const std::string& signature,
+TrialToken::TrialToken(const std::string& signature,
                        const std::string& data,
                        const GURL& origin,
                        const std::string& feature_name,
                        uint64_t expiry_timestamp)
-    : version_(version),
-      signature_(signature),
+    : signature_(signature),
       data_(data),
       origin_(origin),
       feature_name_(feature_name),

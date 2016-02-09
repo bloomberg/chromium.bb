@@ -32,9 +32,8 @@ const uint8_t kTestPublicKey[] = {
 
 // This is a good trial token, signed with the above test private key.
 const char* kSampleToken =
-    "1|UsEO0cNxoUtBnHDJdGPWTlXuLENjXcEIPL7Bs7sbvicPCcvAtyqhQuTJ9h/u1R3VZpWigtI+"
-    "SdUwk7Dyk/qbDw==|https://valid.example.com|Frobulate|1458766277";
-const uint8_t kExpectedVersion = 1;
+    "UsEO0cNxoUtBnHDJdGPWTlXuLENjXcEIPL7Bs7sbvicPCcvAtyqhQuTJ9h/u1R3VZpWigtI+S"
+    "dUwk7Dyk/qbDw==|https://valid.example.com|Frobulate|1458766277";
 const char* kExpectedSignature =
     "UsEO0cNxoUtBnHDJdGPWTlXuLENjXcEIPL7Bs7sbvicPCcvAtyqhQuTJ9h/u1R3VZpWigtI+S"
     "dUwk7Dyk/qbDw==";
@@ -57,39 +56,30 @@ double kInvalidTimestamp = 1458766278.0;
 
 // Well-formed trial token with an invalid signature.
 const char* kInvalidSignatureToken =
-    "1|CO8hDne98QeFeOJ0DbRZCBN3uE0nyaPgaLlkYhSWnbRoDfEAg+TXELaYfQPfEvKYFauBg/"
-    "hnxmba765hz0mXMc==|https://valid.example.com|Frobulate|1458766277";
+    "CO8hDne98QeFeOJ0DbRZCBN3uE0nyaPgaLlkYhSWnbRoDfEAg+TXELaYfQPfEvKYFauBg/hnx"
+    "mba765hz0mXMc==|https://valid.example.com|Frobulate|1458766277";
 
 // Various ill-formed trial tokens. These should all fail to parse.
 const char* kInvalidTokens[] = {
     // Invalid - only one part
     "abcde",
     // Not enough parts
-    "https://valid.example.com|FeatureName|1458766277",
-    "Signature|https://valid.example.com|FeatureName|1458766277",
-    // Non-numeric version
-    "a|Signature|https://valid.example.com|FeatureName|1458766277",
-    "1x|Signature|https://valid.example.com|FeatureName|1458766277",
-    // Unsupported version (< min, > max, negative, overflow)
-    "0|Signature|https://valid.example.com|FeatureName|1458766277",
-    "2|Signature|https://valid.example.com|FeatureName|1458766277",
-    "-1|Signature|https://valid.example.com|FeatureName|1458766277",
-    "99999|Signature|https://valid.example.com|FeatureName|1458766277",
+    "https://valid.example.com|FeatuerName|1458766277",
     // Delimiter in feature name
-    "1|Signature|https://valid.example.com|Feature|Name|1458766277",
+    "Signature|https://valid.example.com|Feature|Name|1458766277",
     // Extra string field
-    "1|Signature|https://valid.example.com|FeatureName|1458766277|ExtraField",
+    "Signature|https://valid.example.com|FeatureName|1458766277|SomethingElse",
     // Extra numeric field
-    "1|Signature|https://valid.example.com|FeatureName|1458766277|1458766277",
+    "Signature|https://valid.example.com|FeatureName|1458766277|1458766277",
     // Non-numeric expiry timestamp
-    "1|Signature|https://valid.example.com|FeatureName|abcdefghij",
-    "1|Signature|https://valid.example.com|FeatureName|1458766277x",
+    "Signature|https://valid.example.com|FeatureName|abcdefghij",
+    "Signature|https://valid.example.com|FeatureName|1458766277x",
     // Negative expiry timestamp
-    "1|Signature|https://valid.example.com|FeatureName|-1458766277",
+    "Signature|https://valid.example.com|FeatureName|-1458766277",
     // Origin not a proper origin URL
-    "1|Signature|abcdef|FeatureName|1458766277",
-    "1|Signature|data:text/plain,abcdef|FeatureName|1458766277",
-    "1|Signature|javascript:alert(1)|FeatureName|1458766277"};
+    "Signature|abcdef|FeatureName|1458766277",
+    "Signature|data:text/plain,abcdef|FeatureName|1458766277",
+    "Signature|javascript:alert(1)|FeatureName|1458766277"};
 const size_t kNumInvalidTokens = arraysize(kInvalidTokens);
 
 }  // namespace
@@ -141,7 +131,6 @@ TEST_F(TrialTokenTest, ParseInvalidStrings) {
 TEST_F(TrialTokenTest, ParseValidToken) {
   scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
-  EXPECT_EQ(kExpectedVersion, token->version());
   EXPECT_EQ(kExpectedFeatureName, token->feature_name());
   EXPECT_EQ(kExpectedSignature, token->signature());
   EXPECT_EQ(kExpectedData, token->data());
