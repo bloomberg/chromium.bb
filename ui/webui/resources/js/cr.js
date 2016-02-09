@@ -9,6 +9,9 @@
  */
 var global = this;
 
+/** @typedef {{eventName: string, uid: number}} */
+var WebUIListener;
+
 /** Platform, package, object property, and Event support. **/
 var cr = function() {
   'use strict';
@@ -386,14 +389,6 @@ var cr = function() {
       eventListenersMap[listenerId].apply(null, args);
     }
   }
-
-  /**
-   * @typedef {{
-   *   eventName: string,
-   *   uid: number,
-   * }}
-   */
-  var WebUIListener;
 
   /**
    * Registers a listener for an event fired from WebUI handlers. Any number of
