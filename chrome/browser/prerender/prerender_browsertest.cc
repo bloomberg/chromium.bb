@@ -3965,9 +3965,16 @@ class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
   }
 };
 
+// PrerenderNaClPluginEnabled crashes on ARM: http://crbug.com/585251
+#if defined(ARCH_CPU_ARM_FAMILY)
+#define MAYBE_PrerenderNaClPluginEnabled DISABLED_PrerenderNaClPluginEnabled
+#else
+#define MAYBE_PrerenderNaClPluginEnabled PrerenderNaClPluginEnabled
+#endif
+
 // Check that NaCl plugins work when enabled, with prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
-                       PrerenderNaClPluginEnabled) {
+                       MAYBE_PrerenderNaClPluginEnabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
