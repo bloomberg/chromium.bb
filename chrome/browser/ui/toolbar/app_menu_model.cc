@@ -385,6 +385,9 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
   base::TimeDelta delta = timer_.Elapsed();
 
   switch (command_id) {
+    case IDC_UPGRADE_DIALOG:
+      LogMenuAction(MENU_ACTION_UPGRADE_DIALOG);
+      break;
     case IDC_NEW_TAB:
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.NewTab", delta);
