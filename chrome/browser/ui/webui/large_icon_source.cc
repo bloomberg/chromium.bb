@@ -15,6 +15,8 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/large_icon_url_parser.h"
 #include "net/url_request/url_request.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 
@@ -106,9 +108,23 @@ void LargeIconSource::OnLargeIconDataAvailable(
     SendNotFoundResponse(callback);
     return;
   }
+
+#if defined(OS_ANDROID)
+  // RenderFallbackIconBitmap() cannot draw fallback icons on Android. See
+  // crbug.com/580922 for details. Return a 1x1 bitmap so that JavaScript can
+  // detect that it needs to generate a fallback icon.
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(1, 1);
+  bitmap.eraseColor(result.fallback_icon_style->background_color);
+  std::vector<unsigned char> bitmap_data;
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data))
+    bitmap_data.clear();
+#else
   std::vector<unsigned char> bitmap_data =
       fallback_icon_service_->RenderFallbackIconBitmap(
           url, size, *result.fallback_icon_style);
+#endif
+
   callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }
 

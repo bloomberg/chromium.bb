@@ -19,6 +19,7 @@
  *            deviceName: string,
  *            deviceType: string,
  *            domain: string,
+ *            fallbackFaviconText: string,
  *            hostFilteringBehavior: number,
  *            snippet: string,
  *            starred: boolean,

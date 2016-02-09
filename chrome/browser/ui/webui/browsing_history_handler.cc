@@ -21,6 +21,8 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/favicon/fallback_icon_service_factory.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -29,11 +31,15 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/large_icon_source.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/favicon/core/fallback_icon_service.h"
+#include "components/favicon/core/fallback_url_util.h"
+#include "components/favicon/core/large_icon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/web_history_service.h"
@@ -220,6 +226,10 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   // HistoryEntry. Please update it whenever you add or remove
   // any keys in result.
   result->SetString("domain", domain);
+
+  result->SetString("fallbackFaviconText",
+                    base::UTF16ToASCII(favicon::GetFallbackIconText(url)));
+
   result->SetDouble("time", time.ToJsTime());
 
   // Pass the timestamps in a list.
@@ -308,8 +318,18 @@ BrowsingHistoryHandler::~BrowsingHistoryHandler() {
 void BrowsingHistoryHandler::RegisterMessages() {
   // Create our favicon data source.
   Profile* profile = Profile::FromWebUI(web_ui());
+
+#if defined(OS_ANDROID)
+  favicon::FallbackIconService* fallback_icon_service =
+      FallbackIconServiceFactory::GetForBrowserContext(profile);
+  favicon::LargeIconService* large_icon_service =
+      LargeIconServiceFactory::GetForBrowserContext(profile);
+  content::URLDataSource::Add(
+      profile, new LargeIconSource(fallback_icon_service, large_icon_service));
+#else
   content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::ANY));
+#endif
 
   // Get notifications when history is cleared.
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(

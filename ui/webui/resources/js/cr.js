@@ -469,5 +469,10 @@ var cr = function() {
     get isLinux() {
       return /Linux/.test(navigator.userAgent);
     },
+
+    /** Whether this is on Android. */
+    get isAndroid() {
+      return /Android/.test(navigator.userAgent);
+    }
   };
 }();

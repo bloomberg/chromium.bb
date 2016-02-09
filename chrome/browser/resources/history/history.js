@@ -92,6 +92,7 @@ function Visit(result, continued, model) {
   this.url_ = result.url;
   this.domain_ = result.domain;
   this.starred_ = result.starred;
+  this.fallbackFaviconText_ = result.fallbackFaviconText;
 
   // These identify the name and type of the device on which this visit
   // occurred. They will be empty if the visit occurred on the current device.
@@ -219,6 +220,15 @@ Visit.prototype.getResultDOM = function(propertyBag) {
 
   entryBox.appendChild(bookmarkSection);
 
+  if (addTitleFavicon || this.blockedVisit) {
+    var faviconSection = createElementWithClassName('div', 'favicon');
+    if (this.blockedVisit)
+      faviconSection.classList.add('blocked-icon');
+    else
+      this.loadFavicon_(faviconSection);
+    entryBox.appendChild(faviconSection);
+  }
+
   var visitEntryWrapper = /** @type {HTMLElement} */(
       entryBox.appendChild(document.createElement('div')));
   if (addTitleFavicon || this.blockedVisit)
@@ -229,9 +239,6 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   } else {
     var title = visitEntryWrapper.appendChild(
         this.getTitleDOM_(isSearchResult));
-
-    if (addTitleFavicon)
-      this.addFaviconToElement_(visitEntryWrapper);
 
     if (focusless)
       title.querySelector('a').tabIndex = -1;
@@ -440,15 +447,42 @@ Visit.prototype.getVisitAttemptDOM_ = function() {
 };
 
 /**
- * Set the favicon for an element.
- * @param {Element} el The DOM element to which to add the icon.
+ * Load the favicon for an element.
+ * @param {Element} faviconDiv The DOM element for which to load the icon.
  * @private
  */
-Visit.prototype.addFaviconToElement_ = function(el) {
-  var url = isMobileVersion() ?
-      getFaviconImageSet(this.url_, 32, 'touch-icon') :
-      getFaviconImageSet(this.url_);
-  el.style.backgroundImage = url;
+Visit.prototype.loadFavicon_ = function(faviconDiv) {
+  if (cr.isAndroid) {
+    // On Android, if a large icon is unavailable, an HTML/CSS  fallback favicon
+    // is generated because Android does not yet support text drawing in native.
+
+    // Check whether a fallback favicon needs to be generated.
+    var desiredPixelSize = 32 * window.devicePixelRatio;
+    var img = new Image();
+    img.onload = this.onLargeFaviconLoadedAndroid_.bind(this, faviconDiv);
+    img.src = 'chrome://large-icon/' + desiredPixelSize + '/' + this.url_;
+  } else {
+    faviconDiv.style.backgroundImage = getFaviconImageSet(this.url_);
+  }
+};
+
+/**
+ * Called when the chrome://large-icon image has finished loading.
+ * @param {Element} faviconDiv The DOM element to add the favicon to.
+ * @param {Event} event The onload event.
+ * @private
+ */
+Visit.prototype.onLargeFaviconLoadedAndroid_ = function(faviconDiv, event) {
+  // The loaded image should either:
+  // - Have the desired size.
+  // OR
+  // - Be 1x1 px with the background color for the fallback icon.
+  var loadedImg = event.target;
+  if (loadedImg.width == 1) {
+    faviconDiv.classList.add('fallback-favicon');
+    faviconDiv.textContent = this.fallbackFaviconText_;
+  }
+  faviconDiv.style.backgroundImage = url(loadedImg.src);
 };
 
 /**
@@ -1341,6 +1375,8 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
 
   var siteArrow = siteDomainRow.appendChild(
       createElementWithClassName('div', 'site-domain-arrow'));
+  var siteFavicon = siteDomainRow.appendChild(
+      createElementWithClassName('div', 'favicon'));
   var siteDomain = siteDomainRow.appendChild(
       createElementWithClassName('div', 'site-domain'));
   var siteDomainLink = siteDomain.appendChild(new ActionLink);
@@ -1352,7 +1388,7 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
                                                        domainVisits.length);
   siteDomain.appendChild(numberOfVisits);
 
-  domainVisits[0].addFaviconToElement_(siteDomain);
+  domainVisits[0].loadFavicon_(siteFavicon);
 
   siteDomainWrapper.addEventListener(
       'click', this.toggleGroupedVisits_.bind(this));
