@@ -18,6 +18,7 @@
       <part file="printing_resources.grdp" />
       <part file="proximity_auth_resources.grdp" />
       <part file="security_interstitials_resources.grdp" />
+      <part file="signin_resources.grdp" />
       <part file="sync_driver_resources.grdp" />
       <part file="translate_resources.grdp" />
       <part file="version_ui_resources.grdp" />

@@ -62,14 +62,6 @@
           'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
-          # GN version: //chrome/browser/resources:signin_internals_resources
-          'action_name': 'generate_signin_internals_resources',
-          'variables': {
-            'grit_grd_file': 'browser/resources/signin_internals_resources.grd',
-            },
-          'includes': ['chrome_grit_action.gypi' ],
-        },
-        {
           # GN version: //chrome/browser/resources:translate_internals_resources
           'action_name': 'generate_translate_internals_resources',
           'variables': {

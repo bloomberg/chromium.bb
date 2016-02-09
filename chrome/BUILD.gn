@@ -578,7 +578,6 @@ group("extra_resources") {
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
     "//chrome/browser/resources:policy_resources",
-    "//chrome/browser/resources:signin_internals_resources",
     "//chrome/browser/resources:translate_internals_resources",
   ]
   if (!is_ios) {
@@ -655,7 +654,6 @@ repack("packed_extra_resources") {
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/password_manager_internals_resources.pak",
     "$root_gen_dir/chrome/policy_resources.pak",
-    "$root_gen_dir/chrome/signin_internals_resources.pak",
     "$root_gen_dir/chrome/translate_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
@@ -669,7 +667,6 @@ repack("packed_extra_resources") {
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
     "//chrome/browser/resources:policy_resources",
-    "//chrome/browser/resources:signin_internals_resources",
     "//chrome/browser/resources:translate_internals_resources",
     "//chrome/common:resources",
     "//components/resources",
