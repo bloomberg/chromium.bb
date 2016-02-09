@@ -271,15 +271,16 @@ Polymer({
 
     this.playing = isNextTrackAvailable;
 
-    // If there is only a single file in the list, 'currentTrackInde' is not
-    // changed and the handler is not invoked. Instead, plays here.
-    // TODO(yoshiki): clean up the code around here.
-    if (isNextTrackAvailable &&
-        this.$.trackList.currentTrackIndex == nextTrackIndex) {
-      this.$.audio.play();
-    }
-
+    var shouldFireEvent = this.$.trackList.currentTrackIndex === nextTrackIndex;
     this.$.trackList.currentTrackIndex = nextTrackIndex;
+    this.$.audio.currentTime = 0;
+    // If the next track and current track is the same,
+    // the event will not be fired.
+    // So we will fire the event here.
+    // This happenes if there is only one song.
+    if (shouldFireEvent) {
+      this.$.trackList.fire('current-track-index-changed');
+    }
   },
 
   /**
