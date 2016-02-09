@@ -487,8 +487,16 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
     return E_INVALIDARG;
 
   base::string16 name_str = target->name();
-  if (name_str.empty())
-    return S_FALSE;
+  if (name_str.empty()) {
+    if (target->ia2_role() == ROLE_SYSTEM_DOCUMENT && GetParent()) {
+      // Hack: Some versions of JAWS crash if they get an empty name on
+      // a document that's the child of an iframe, so always return a
+      // nonempty string for this role.  https://crbug.com/583057
+      name_str = L" ";
+    } else {
+      return S_FALSE;
+    }
+  }
 
   *name = SysAllocString(name_str.c_str());
 
