@@ -719,6 +719,9 @@ void WebTestProxyBase::PostAccessibilityEvent(const blink::WebAXObject& obj,
     case blink::WebAXEventChildrenChanged:
       event_name = "ChildrenChanged";
       break;
+    case blink::WebAXEventClicked:
+      event_name = "Clicked";
+      break;
     case blink::WebAXEventDocumentSelectionChanged:
       event_name = "DocumentSelectionChanged";
       break;

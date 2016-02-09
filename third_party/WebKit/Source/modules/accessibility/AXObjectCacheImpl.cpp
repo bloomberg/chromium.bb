@@ -922,6 +922,12 @@ void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* layoutObject)
         postNotification(obj, AXLayoutComplete);
 }
 
+void AXObjectCacheImpl::handleClicked(Node* node)
+{
+    if (AXObject* obj = getOrCreate(node))
+        postNotification(obj, AXClicked);
+}
+
 void AXObjectCacheImpl::handleAriaExpandedChange(Node* node)
 {
     if (AXObject* obj = getOrCreate(node))

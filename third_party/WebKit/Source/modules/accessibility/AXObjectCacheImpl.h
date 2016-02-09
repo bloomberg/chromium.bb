@@ -88,6 +88,7 @@ public:
     void didHideMenuListPopup(LayoutMenuList*) override;
     void handleLoadComplete(Document*) override;
     void handleLayoutComplete(Document*) override;
+    void handleClicked(Node*) override;
 
     void setCanvasObjectBounds(Element*, const LayoutRect&) override;
 

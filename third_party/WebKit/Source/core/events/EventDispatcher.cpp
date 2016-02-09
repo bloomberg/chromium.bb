@@ -202,9 +202,16 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
     // Pass the data from the preDispatchEventHandler to the postDispatchEventHandler.
     m_node->postDispatchEventHandler(m_event.get(), preDispatchEventHandlerResult);
 
+    bool isClick = m_event->isMouseEvent() && toMouseEvent(*m_event).type() == EventTypeNames::click;
+    if (isClick) {
+        // Fire an accessibility event indicating a node was clicked on.  This is safe if m_event->target()->toNode() returns null.
+        if (AXObjectCache* cache = m_node->document().existingAXObjectCache())
+            cache->handleClicked(m_event->target()->toNode());
+    }
+
     // The DOM Events spec says that events dispatched by JS (other than "click")
     // should not have their default handlers invoked.
-    bool isTrustedOrClick = !RuntimeEnabledFeatures::trustedEventsDefaultActionEnabled() || m_event->isTrusted() || (m_event->isMouseEvent() && toMouseEvent(*m_event).type() == EventTypeNames::click);
+    bool isTrustedOrClick = !RuntimeEnabledFeatures::trustedEventsDefaultActionEnabled() || m_event->isTrusted() || isClick;
 
     // Call default event handlers. While the DOM does have a concept of preventing
     // default handling, the detail of which handlers are called is an internal

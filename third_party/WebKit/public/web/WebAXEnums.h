@@ -44,6 +44,7 @@ enum WebAXEvent {
     WebAXEventBlur,
     WebAXEventCheckedStateChanged,
     WebAXEventChildrenChanged,
+    WebAXEventClicked,
     WebAXEventDocumentSelectionChanged,
     WebAXEventFocus,
     WebAXEventHide,

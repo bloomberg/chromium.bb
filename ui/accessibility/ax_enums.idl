@@ -30,6 +30,7 @@
     blur,                      // Remove: http://crbug.com/392502
     checked_state_changed,     // Implicit
     children_changed,
+    clicked,
     document_selection_changed,
     focus,
     hide,                      // Remove: http://crbug.com/392502

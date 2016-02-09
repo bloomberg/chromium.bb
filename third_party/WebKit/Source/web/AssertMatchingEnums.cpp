@@ -151,6 +151,7 @@ STATIC_ASSERT_ENUM(WebAXEventAutocorrectionOccured, AXObjectCache::AXAutocorrect
 STATIC_ASSERT_ENUM(WebAXEventBlur, AXObjectCache::AXBlur);
 STATIC_ASSERT_ENUM(WebAXEventCheckedStateChanged, AXObjectCache::AXCheckedStateChanged);
 STATIC_ASSERT_ENUM(WebAXEventChildrenChanged, AXObjectCache::AXChildrenChanged);
+STATIC_ASSERT_ENUM(WebAXEventClicked, AXObjectCache::AXClicked);
 STATIC_ASSERT_ENUM(WebAXEventDocumentSelectionChanged, AXObjectCache::AXDocumentSelectionChanged);
 STATIC_ASSERT_ENUM(WebAXEventFocus, AXObjectCache::AXFocusedUIElementChanged);
 STATIC_ASSERT_ENUM(WebAXEventHide, AXObjectCache::AXHide);

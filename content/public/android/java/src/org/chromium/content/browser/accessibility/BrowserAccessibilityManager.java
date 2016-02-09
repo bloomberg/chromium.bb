@@ -234,8 +234,6 @@ public class BrowserAccessibilityManager {
                 return true;
             case AccessibilityNodeInfo.ACTION_CLICK:
                 nativeClick(mNativeObj, virtualViewId);
-                sendAccessibilityEvent(virtualViewId,
-                        AccessibilityEvent.TYPE_VIEW_CLICKED);
                 return true;
             case AccessibilityNodeInfo.ACTION_FOCUS:
                 nativeFocus(mNativeObj, virtualViewId);
@@ -627,6 +625,11 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void handleCheckStateChanged(int id) {
+        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
+    }
+
+    @CalledByNative
+    private void handleClicked(int id) {
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
     }
 

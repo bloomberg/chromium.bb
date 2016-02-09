@@ -59,6 +59,7 @@ public:
         AXBlur,
         AXCheckedStateChanged,
         AXChildrenChanged,
+        AXClicked,
         AXDocumentSelectionChanged,
         AXFocusedUIElementChanged,
         AXHide,
@@ -117,7 +118,7 @@ public:
     virtual void didHideMenuListPopup(LayoutMenuList*) = 0;
     virtual void handleLoadComplete(Document*) = 0;
     virtual void handleLayoutComplete(Document*) = 0;
-
+    virtual void handleClicked(Node*) = 0;
 
     virtual void setCanvasObjectBounds(Element*, const LayoutRect&) = 0;
 
