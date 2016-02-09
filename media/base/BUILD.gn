@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("base") {
   # This is part of the media component.
@@ -543,4 +544,13 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       }
     }
   }
+}
+
+fuzzer_test("media_container_names_fuzzer") {
+  sources = [
+    "container_names_fuzzertest.cc",
+  ]
+  deps = [
+    "//media",
+  ]
 }
