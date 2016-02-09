@@ -5645,6 +5645,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The option that the user selected from a context menu.</summary>
 </histogram>
 
+<histogram name="ContextMenu.Shown" enum="BooleanPresent">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Recorded when a context menu is shown, sliced by whether a web contents was
+    present.  (It generally should be; indeed, this code path should not be
+    followed when it is absent.  For instance, invoking a context menu from the
+    new tab page or from the sad tab page will not cause an emission to this
+    histogram.)  Note that this refers to link context menus, not the
+    cut-copy-paste context menus that can appear during long presses on text on
+    a web page or long presses in the omnibox.  The value of this histogram for
+    &quot;present&quot; could be usefully compared with the total count of
+    ContextMenu.SelectedOption to determine the clickthrough rate for context
+    menus.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.BackingStoreUpdateResults" enum="BackingStoreResults">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

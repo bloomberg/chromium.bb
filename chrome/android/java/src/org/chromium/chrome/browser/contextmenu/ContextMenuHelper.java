@@ -15,6 +15,7 @@ import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -77,6 +78,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
         view.setOnCreateContextMenuListener(this);
         if (view.showContextMenu()) {
             WebContents webContents = contentViewCore.getWebContents();
+            RecordHistogram.recordBooleanHistogram(
+                    "ContextMenu.Shown", webContents != null);
             if (webContents != null) webContents.onContextMenuOpened();
             return true;
         }
