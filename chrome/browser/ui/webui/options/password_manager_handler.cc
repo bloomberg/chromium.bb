@@ -25,6 +25,7 @@
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/experiments.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -94,8 +95,8 @@ void PasswordManagerHandler::GetLocalizedValues(
   static const OptionsStringResource resources[] = {
       {"autoSigninTitle", IDS_PASSWORDS_AUTO_SIGNIN_TITLE},
       {"autoSigninDescription", IDS_PASSWORDS_AUTO_SIGNIN_DESCRIPTION},
-      {"savedPasswordsTitle", IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE},
-      {"passwordExceptionsTitle", IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE},
+      {"savedPasswordsTitle", IDS_PASSWORD_MANAGER_SHOW_PASSWORDS_TAB_TITLE},
+      {"passwordExceptionsTitle", IDS_PASSWORD_MANAGER_EXCEPTIONS_TAB_TITLE},
       {"passwordSearchPlaceholder", IDS_PASSWORDS_PAGE_SEARCH_PASSWORDS},
       {"passwordShowButton", IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON},
       {"passwordHideButton", IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON},
