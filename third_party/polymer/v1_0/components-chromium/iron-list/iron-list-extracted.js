@@ -4,6 +4,7 @@
   var IOS_TOUCH_SCROLLING = IOS && IOS[1] >= 8;
   var DEFAULT_PHYSICAL_COUNT = 3;
   var MAX_PHYSICAL_COUNT = 500;
+  var HIDDEN_Y = '-10000px';
 
   Polymer({
 
@@ -89,16 +90,25 @@
     observers: [
       '_itemsChanged(items.*)',
       '_selectionEnabledChanged(selectionEnabled)',
-      '_multiSelectionChanged(multiSelection)'
+      '_multiSelectionChanged(multiSelection)',
+      '_setOverflow(scrollTarget)'
     ],
 
     behaviors: [
       Polymer.Templatizer,
-      Polymer.IronResizableBehavior
+      Polymer.IronResizableBehavior,
+      Polymer.IronA11yKeysBehavior,
+      Polymer.IronScrollTargetBehavior
     ],
 
     listeners: {
       'iron-resize': '_resizeHandler'
+    },
+
+    keyBindings: {
+      'up': '_didMoveUp',
+      'down': '_didMoveDown',
+      'enter': '_didEnter'
     },
 
     /**
@@ -106,12 +116,6 @@
      * Recommended value ~0.5, so it will distribute tiles evely in both directions.
      */
     _ratio: 0.5,
-
-    /**
-     * The element that controls the scroll
-     * @type {?Element}
-     */
-    _scroller: null,
 
     /**
      * The padding-top value of the `scroller` element
@@ -144,7 +148,7 @@
     _physicalSize: 0,
 
     /**
-     * The average `offsetHeight` of the tiles observed till now.
+     * The average `F` of the tiles observed till now.
      */
     _physicalAverage: 0,
 
@@ -202,11 +206,19 @@
     _physicalSizes: null,
 
     /**
-     * A cached value for the visible index.
+     * A cached value for the first visible index.
      * See `firstVisibleIndex`
      * @type {?number}
      */
     _firstVisibleIndexVal: null,
+
+    /**
+     * A cached value for the last visible index.
+     * See `lastVisibleIndex`
+     * @type {?number}
+     */
+    _lastVisibleIndexVal: null,
+
 
     /**
      * A Polymer collection for the items.
@@ -231,6 +243,23 @@
     _maxPages: 3,
 
     /**
+     * The currently focused item index.
+     */
+    _focusedIndex: 0,
+
+    /**
+     * The the item that is focused if it is moved offscreen.
+     * @private {?TemplatizerNode}
+     */
+    _offscreenFocusedItem: null,
+
+    /**
+     * The item that backfills the `_offscreenFocusedItem` in the physical items
+     * list when that item is moved offscreen.
+     */
+    _focusBackfillItem: null,
+
+    /**
      * The bottom of the physical content.
      */
     get _physicalBottom() {
@@ -248,7 +277,7 @@
      * The n-th item rendered in the last physical item.
      */
     get _virtualEnd() {
-      return this._virtualStartVal + this._physicalCount - 1;
+      return this._virtualStart + this._physicalCount - 1;
     },
 
     /**
@@ -283,8 +312,13 @@
     set _virtualStart(val) {
       // clamp the value so that _minVirtualStart <= val <= _maxVirtualStart
       this._virtualStartVal = Math.min(this._maxVirtualStart, Math.max(this._minVirtualStart, val));
-      this._physicalStart = this._virtualStartVal % this._physicalCount;
-      this._physicalEnd = (this._physicalStart + this._physicalCount - 1) % this._physicalCount;
+      if (this._physicalCount === 0)  {
+        this._physicalStart = 0;
+        this._physicalEnd = 0;
+      } else {
+        this._physicalStart = this._virtualStartVal % this._physicalCount;
+        this._physicalEnd = (this._physicalStart + this._physicalCount - 1) % this._physicalCount;
+      }
     },
 
     /**
@@ -309,7 +343,7 @@
     * True if the current list is visible.
     */
     get _isVisible() {
-      return this._scroller && Boolean(this._scroller.offsetWidth || this._scroller.offsetHeight);
+      return this.scrollTarget && Boolean(this.scrollTarget.offsetWidth || this.scrollTarget.offsetHeight);
     },
 
     /**
@@ -318,10 +352,8 @@
      * @type {number}
      */
     get firstVisibleIndex() {
-      var physicalOffset;
-
       if (this._firstVisibleIndexVal === null) {
-        physicalOffset = this._physicalTop;
+        var physicalOffset = this._physicalTop;
 
         this._firstVisibleIndexVal = this._iterateItems(
           function(pidx, vidx) {
@@ -332,54 +364,52 @@
             }
           }) || 0;
       }
-
       return this._firstVisibleIndexVal;
     },
 
-    ready: function() {
-      if (IOS_TOUCH_SCROLLING) {
-        this._scrollListener = function() {
-          requestAnimationFrame(this._scrollHandler.bind(this));
-        }.bind(this);
-      } else {
-        this._scrollListener = this._scrollHandler.bind(this);
+    /**
+     * Gets the index of the last visible item in the viewport.
+     *
+     * @type {number}
+     */
+    get lastVisibleIndex() {
+      if (this._lastVisibleIndexVal === null) {
+        var physicalOffset = this._physicalTop;
+
+        this._iterateItems(function(pidx, vidx) {
+          physicalOffset += this._physicalSizes[pidx];
+
+          if(physicalOffset <= this._scrollBottom) {
+              this._lastVisibleIndexVal = vidx;
+          }
+        });
       }
+      return this._lastVisibleIndexVal;
     },
 
-    /**
-     * When the element has been attached to the DOM tree.
-     */
+    ready: function() {
+      this.addEventListener('focus', this._didFocus.bind(this), true);
+    },
+
     attached: function() {
-      // delegate to the parent's scroller
-      // e.g. paper-scroll-header-panel
-      var el = Polymer.dom(this);
-
-      var parentNode = /** @type {?{scroller: ?Element}} */ (el.parentNode);
-      if (parentNode && parentNode.scroller) {
-        this._scroller = parentNode.scroller;
-      } else {
-        this._scroller = this;
-        this.classList.add('has-scroller');
-      }
-
-      if (IOS_TOUCH_SCROLLING) {
-        this._scroller.style.webkitOverflowScrolling = 'touch';
-      }
-
-      this._scroller.addEventListener('scroll', this._scrollListener);
-
       this.updateViewportBoundaries();
       this._render();
     },
 
-    /**
-     * When the element has been removed from the DOM tree.
-     */
     detached: function() {
       this._itemsRendered = false;
-      if (this._scroller) {
-        this._scroller.removeEventListener('scroll', this._scrollListener);
-      }
+    },
+
+    get _defaultScrollTarget() {
+      return this;
+    },
+
+    /**
+     * Set the overflow property if this element has its own scrolling region
+     */
+    _setOverflow: function(scrollTarget) {
+      this.style.webkitOverflowScrolling = scrollTarget === this ? 'touch' : '';
+      this.style.overflow = scrollTarget === this ? 'auto' : '';
     },
 
     /**
@@ -389,20 +419,20 @@
      * @method updateViewportBoundaries
      */
     updateViewportBoundaries: function() {
-      var scrollerStyle = window.getComputedStyle(this._scroller);
+      var scrollerStyle = window.getComputedStyle(this.scrollTarget);
       this._scrollerPaddingTop = parseInt(scrollerStyle['padding-top'], 10);
-      this._viewportSize = this._scroller.offsetHeight;
+      this._viewportSize = this._scrollTargetHeight;
     },
 
     /**
      * Update the models, the position of the
      * items in the viewport and recycle tiles as needed.
      */
-    _refresh: function() {
+    _scrollHandler: function() {
       // clamp the `scrollTop` value
       // IE 10|11 scrollTop may go above `_maxScrollTop`
       // iOS `scrollTop` may go below 0 and above `_maxScrollTop`
-      var scrollTop = Math.max(0, Math.min(this._maxScrollTop, this._scroller.scrollTop));
+      var scrollTop = Math.max(0, Math.min(this._maxScrollTop, this._scrollTop));
       var tileHeight, tileTop, kth, recycledTileSet, scrollBottom, physicalBottom;
       var ratio = this._ratio;
       var delta = scrollTop - this._scrollPosition;
@@ -416,6 +446,7 @@
 
       // clear cached visible index
       this._firstVisibleIndexVal = null;
+      this._lastVisibleIndexVal = null;
 
       scrollBottom = this._scrollBottom;
       physicalBottom = this._physicalBottom;
@@ -505,17 +536,21 @@
     },
 
     /**
-     * Update the list of items, starting from the `_virtualStartVal` item.
+     * Update the list of items, starting from the `_virtualStart` item.
      * @param {!Array<number>=} itemSet
      * @param {!Array<number>=} movingUp
      */
     _update: function(itemSet, movingUp) {
+      // manage focus
+      if (this._isIndexRendered(this._focusedIndex)) {
+        this._restoreFocusedItem();
+      } else {
+        this._createFocusBackfillItem();
+      }
       // update models
       this._assignModels(itemSet);
-
       // measure heights
       this._updateMetrics(itemSet);
-
       // adjust offset after measuring
       if (movingUp) {
         while (movingUp.length) {
@@ -524,10 +559,8 @@
       }
       // update the position of the items
       this._positionItems();
-
       // set the scroller size
       this._updateScrollerSize();
-
       // increase the pool of physical items
       this._increasePoolIfNeeded();
     },
@@ -547,7 +580,6 @@
         physicalItems[i] = inst.root.querySelector('*');
         Polymer.dom(this).appendChild(inst.root);
       }
-
       return physicalItems;
     },
 
@@ -557,24 +589,24 @@
      * if the physical size is shorter than `_optPhysicalSize`
      */
     _increasePoolIfNeeded: function() {
-      if (this._viewportSize !== 0 && this._physicalSize < this._optPhysicalSize) {
-        // 0 <= `currentPage` <= `_maxPages`
-        var currentPage = Math.floor(this._physicalSize / this._viewportSize);
-
-        if (currentPage === 0) {
-          // fill the first page
-          this.async(this._increasePool.bind(this, Math.round(this._physicalCount * 0.5)));
-        } else if (this._lastPage !== currentPage) {
-          // once a page is filled up, paint it and defer the next increase
-          requestAnimationFrame(this._increasePool.bind(this, 1));
-        } else {
-          // fill the rest of the pages
-          this.async(this._increasePool.bind(this, 1));
-        }
-        this._lastPage = currentPage;
-        return true;
+      if (this._viewportSize === 0 || this._physicalSize >= this._optPhysicalSize) {
+        return false;
       }
-      return false;
+      // 0 <= `currentPage` <= `_maxPages`
+      var currentPage = Math.floor(this._physicalSize / this._viewportSize);
+      if (currentPage === 0) {
+        // fill the first page
+        this._debounceTemplate(this._increasePool.bind(this, Math.round(this._physicalCount * 0.5)));
+      } else if (this._lastPage !== currentPage) {
+        // paint the page and defer the next increase
+        // wait 16ms which is rough enough to get paint cycle.
+        Polymer.dom.addDebouncer(this.debounce('_debounceTemplate', this._increasePool.bind(this, 1), 16));
+      } else {
+        // fill the rest of the pages
+        this._debounceTemplate(this._increasePool.bind(this, 1));
+      }
+      this._lastPage = currentPage;
+      return true;
     },
 
     /**
@@ -584,7 +616,7 @@
       // limit the size
       var nextPhysicalCount = Math.min(
           this._physicalCount + missingItems,
-          this._virtualCount,
+          this._virtualCount - this._virtualStart,
           MAX_PHYSICAL_COUNT
         );
       var prevPhysicalCount = this._physicalCount;
@@ -610,6 +642,7 @@
       if (this.isAttached && !this._itemsRendered && this._isVisible && requiresUpdate) {
         this._lastPage = 0;
         this._update();
+        this._scrollHandler();
         this._itemsRendered = true;
       }
     },
@@ -621,11 +654,11 @@
       if (!this.ctor) {
         // Template instance props that should be excluded from forwarding
         var props = {};
-
         props.__key__ = true;
         props[this.as] = true;
         props[this.indexAs] = true;
         props[this.selectedAs] = true;
+        props.tabIndex = true;
 
         this._instanceProps = props;
         this._userTemplate = Polymer.dom(this).querySelector('template');
@@ -693,6 +726,10 @@
         var key = path.substring(0, dot < 0 ? path.length : dot);
         var idx = this._physicalIndexForKey[key];
         var row = this._physicalItems[idx];
+
+        if (idx === this._focusedIndex && this._offscreenFocusedItem) {
+          row = this._offscreenFocusedItem;
+        }
         if (row) {
           var inst = row._templateInstance;
           if (dot >= 0) {
@@ -711,17 +748,18 @@
      */
     _itemsChanged: function(change) {
       if (change.path === 'items') {
+
+        this._restoreFocusedItem();
         // render the new set
         this._itemsRendered = false;
-
         // update the whole set
-        this._virtualStartVal = 0;
+        this._virtualStart = 0;
         this._physicalTop = 0;
         this._virtualCount = this.items ? this.items.length : 0;
+        this._focusedIndex = 0;
         this._collection = this.items ? Polymer.Collection.get(this.items) : null;
         this._physicalIndexForKey = {};
 
-        // scroll to the top
         this._resetScrollPosition(0);
 
         // create the initial physical items
@@ -730,17 +768,20 @@
           this._physicalItems = this._createPool(this._physicalCount);
           this._physicalSizes = new Array(this._physicalCount);
         }
-
-        this.debounce('refresh', this._render);
+        this._debounceTemplate(this._render);
 
       } else if (change.path === 'items.splices') {
         // render the new set
         this._itemsRendered = false;
-
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
 
-        this.debounce('refresh', this._render);
+        this._debounceTemplate(this._render);
+
+        if (this._focusedIndex < 0 || this._focusedIndex >= this._virtualCount) {
+          this._focusedIndex = 0;
+        }
+        this._debounceTemplate(this._render);
 
       } else {
         // update a single item
@@ -762,17 +803,13 @@
 
         idx = splice.index;
         // We only need to care about changes happening above the current position
-        if (idx >= this._virtualStartVal) {
+        if (idx >= this._virtualStart) {
           break;
         }
 
         this._virtualStart = this._virtualStart +
-            Math.max(splice.addedCount - splice.removed.length, idx - this._virtualStartVal);
+            Math.max(splice.addedCount - splice.removed.length, idx - this._virtualStart);
       }
-    },
-
-    _scrollHandler: function() {
-      this._refresh();
     },
 
     /**
@@ -789,9 +826,9 @@
         for (i = 0; i < itemSet.length; i++) {
           pidx = itemSet[i];
           if (pidx >= this._physicalStart) {
-            vidx = this._virtualStartVal + (pidx - this._physicalStart);
+            vidx = this._virtualStart + (pidx - this._physicalStart);
           } else {
-            vidx = this._virtualStartVal + (this._physicalCount - this._physicalStart) + pidx;
+            vidx = this._virtualStart + (this._physicalCount - this._physicalStart) + pidx;
           }
           if ((rtn = fn.call(this, pidx, vidx)) != null) {
             return rtn;
@@ -799,17 +836,14 @@
         }
       } else {
         pidx = this._physicalStart;
-        vidx = this._virtualStartVal;
+        vidx = this._virtualStart;
 
         for (; pidx < this._physicalCount; pidx++, vidx++) {
           if ((rtn = fn.call(this, pidx, vidx)) != null) {
             return rtn;
           }
         }
-
-        pidx = 0;
-
-        for (; pidx < this._physicalStart; pidx++, vidx++) {
+        for (pidx = 0; pidx < this._physicalStart; pidx++, vidx++) {
           if ((rtn = fn.call(this, pidx, vidx)) != null) {
             return rtn;
           }
@@ -827,12 +861,12 @@
         var inst = el._templateInstance;
         var item = this.items && this.items[vidx];
 
-        if (item) {
+        if (item !== undefined && item !== null) {
           inst[this.as] = item;
           inst.__key__ = this._collection.getKey(item);
-          inst[this.selectedAs] =
-            /** @type {!ArraySelectorElement} */ (this.$.selector).isSelected(item);
+          inst[this.selectedAs] = /** @type {!ArraySelectorElement} */ (this.$.selector).isSelected(item);
           inst[this.indexAs] = vidx;
+          inst.tabIndex = vidx === this._focusedIndex ? 0 : -1;
           el.removeAttribute('hidden');
           this._physicalIndexForKey[inst.__key__] = pidx;
         } else {
@@ -849,23 +883,26 @@
      * @param {!Array<number>=} itemSet
      */
      _updateMetrics: function(itemSet) {
-      var newPhysicalSize = 0;
-      var oldPhysicalSize = 0;
-      var prevAvgCount = this._physicalAverageCount;
-      var prevPhysicalAvg = this._physicalAverage;
       // Make sure we distributed all the physical items
       // so we can measure them
       Polymer.dom.flush();
 
+      var newPhysicalSize = 0;
+      var oldPhysicalSize = 0;
+      var prevAvgCount = this._physicalAverageCount;
+      var prevPhysicalAvg = this._physicalAverage;
+
       this._iterateItems(function(pidx, vidx) {
+
         oldPhysicalSize += this._physicalSizes[pidx] || 0;
         this._physicalSizes[pidx] = this._physicalItems[pidx].offsetHeight;
         newPhysicalSize += this._physicalSizes[pidx];
         this._physicalAverageCount += this._physicalSizes[pidx] ? 1 : 0;
+
       }, itemSet);
 
       this._physicalSize = this._physicalSize + newPhysicalSize - oldPhysicalSize;
-      this._viewportSize = this._scroller.offsetHeight;
+      this._viewportSize = this._scrollTargetHeight;
 
       // update the average if we measured something
       if (this._physicalAverageCount !== prevAvgCount) {
@@ -885,7 +922,7 @@
 
       this._iterateItems(function(pidx) {
 
-        this.transform('translate3d(0, ' + y + 'px, 0)', this._physicalItems[pidx]);
+        this.translate3d(0, y + 'px', 0, this._physicalItems[pidx]);
         y += this._physicalSizes[pidx];
 
       });
@@ -895,15 +932,14 @@
      * Adjusts the scroll position when it was overestimated.
      */
     _adjustScrollPosition: function() {
-      var deltaHeight = this._virtualStartVal === 0 ? this._physicalTop :
+      var deltaHeight = this._virtualStart === 0 ? this._physicalTop :
           Math.min(this._scrollPosition + this._physicalTop, 0);
 
       if (deltaHeight) {
         this._physicalTop = this._physicalTop - deltaHeight;
-
         // juking scroll position during interial scrolling on iOS is no bueno
         if (!IOS_TOUCH_SCROLLING) {
-          this._resetScrollPosition(this._scroller.scrollTop - deltaHeight);
+          this._resetScrollPosition(this._scrollTop - deltaHeight);
         }
       }
     },
@@ -912,9 +948,9 @@
      * Sets the position of the scroll.
      */
     _resetScrollPosition: function(pos) {
-      if (this._scroller) {
-        this._scroller.scrollTop = pos;
-        this._scrollPosition = this._scroller.scrollTop;
+      if (this.scrollTarget) {
+        this._scrollTop = pos;
+        this._scrollPosition = this._scrollTop;
       }
     },
 
@@ -925,7 +961,7 @@
      */
     _updateScrollerSize: function(forceUpdate) {
       this._estScrollHeight = (this._physicalBottom +
-          Math.max(this._virtualCount - this._physicalCount - this._virtualStartVal, 0) * this._physicalAverage);
+          Math.max(this._virtualCount - this._physicalCount - this._virtualStart, 0) * this._physicalAverage);
 
       forceUpdate = forceUpdate || this._scrollHeight === 0;
       forceUpdate = forceUpdate || this._scrollPosition >= this._estScrollHeight - this._physicalSize;
@@ -949,20 +985,18 @@
         return;
       }
 
-      var firstVisible = this.firstVisibleIndex;
+      Polymer.dom.flush();
 
+      var firstVisible = this.firstVisibleIndex;
       idx = Math.min(Math.max(idx, 0), this._virtualCount-1);
 
       // start at the previous virtual item
       // so we have a item above the first visible item
       this._virtualStart = idx - 1;
-
       // assign new models
       this._assignModels();
-
       // measure the new sizes
       this._updateMetrics();
-
       // estimate new physical offset
       this._physicalTop = this._virtualStart * this._physicalAverage;
 
@@ -977,21 +1011,17 @@
         currentTopItem = (currentTopItem + 1) % this._physicalCount;
         currentVirtualItem++;
       }
-
       // update the scroller size
       this._updateScrollerSize(true);
-
       // update the position of the items
       this._positionItems();
-
       // set the new scroll position
-      this._resetScrollPosition(this._physicalTop + targetOffsetTop + 1);
-
+      this._resetScrollPosition(this._physicalTop + this._scrollerPaddingTop + targetOffsetTop + 1);
       // increase the pool of physical items if needed
       this._increasePoolIfNeeded();
-
       // clear cached visible index
       this._firstVisibleIndexVal = null;
+      this._lastVisibleIndexVal = null;
     },
 
     /**
@@ -1007,7 +1037,11 @@
      * when the element is resized.
      */
     _resizeHandler: function() {
-      this.debounce('resize', function() {
+      // iOS fires the resize event when the address bar slides up
+      if (IOS && Math.abs(this._viewportSize - this._scrollTargetHeight) < 100) {
+        return;
+      }
+      this._debounceTemplate(function() {
         this._render();
         if (this._itemsRendered && this._physicalItems && this._isVisible) {
           this._resetAverage();
@@ -1033,12 +1067,14 @@
      * @param {(Object|number)} item The item object or its index
      */
     _getNormalizedItem: function(item) {
-      if (typeof item === 'number') {
-        item = this.items[item];
-        if (!item) {
-          throw new RangeError('<item> not found');
+      if (this._collection.getKey(item) === undefined) {
+        if (typeof item === 'number') {
+          item = this.items[item];
+          if (!item) {
+            throw new RangeError('<item> not found');
+          }
+          return item;
         }
-      } else if (this._collection.getKey(item) === undefined) {
         throw new TypeError('<item> should be a valid item');
       }
       return item;
@@ -1061,6 +1097,7 @@
         model[this.selectedAs] = true;
       }
       this.$.selector.select(item);
+      this.updateSizeForItem(item);
     },
 
     /**
@@ -1078,6 +1115,7 @@
         model[this.selectedAs] = false;
       }
       this.$.selector.deselect(item);
+      this.updateSizeForItem(item);
     },
 
     /**
@@ -1123,20 +1161,15 @@
      * it will remove the listener otherwise.
      */
     _selectionEnabledChanged: function(selectionEnabled) {
-      if (selectionEnabled) {
-        this.listen(this, 'tap', '_selectionHandler');
-        this.listen(this, 'keypress', '_selectionHandler');
-      } else {
-        this.unlisten(this, 'tap', '_selectionHandler');
-        this.unlisten(this, 'keypress', '_selectionHandler');
-      }
+      var handler = selectionEnabled ? this.listen : this.unlisten;
+      handler.call(this, this, 'tap', '_selectionHandler');
     },
 
     /**
      * Select an item from an event object.
      */
     _selectionHandler: function(e) {
-      if (e.type !== 'keypress' || e.keyCode === 13) {
+      if (this.selectionEnabled) {
         var model = this.modelForElement(e.target);
         if (model) {
           this.toggleSelectionForItem(model[this.as]);
@@ -1164,6 +1197,135 @@
         this._updateMetrics([pidx]);
         this._positionItems();
       }
+    },
+
+    _isIndexRendered: function(idx) {
+      return idx >= this._virtualStart && idx <= this._virtualEnd;
+    },
+
+    _getPhysicalItemForIndex: function(idx, force) {
+      if (!this._collection) {
+        return null;
+      }
+      if (!this._isIndexRendered(idx)) {
+        if (force) {
+          this.scrollToIndex(idx);
+          return this._getPhysicalItemForIndex(idx, false);
+        }
+        return null;
+      }
+      var item = this._getNormalizedItem(idx);
+      var physicalItem = this._physicalItems[this._physicalIndexForKey[this._collection.getKey(item)]];
+
+      return physicalItem || null;
+    },
+
+    _focusPhysicalItem: function(idx) {
+      this._restoreFocusedItem();
+
+      var physicalItem = this._getPhysicalItemForIndex(idx, true);
+      if (!physicalItem) {
+        return;
+      }
+      var SECRET = ~(Math.random() * 100);
+      var model = physicalItem._templateInstance;
+      var focusable;
+
+      model.tabIndex = SECRET;
+      // the focusable element could be the entire physical item
+      if (physicalItem.tabIndex === SECRET) {
+       focusable = physicalItem;
+      }
+      // the focusable element could be somewhere within the physical item
+      if (!focusable) {
+        focusable = Polymer.dom(physicalItem).querySelector('[tabindex="' + SECRET + '"]');
+      }
+      // restore the tab index
+      model.tabIndex = 0;
+      focusable && focusable.focus();
+    },
+
+    _restoreFocusedItem: function() {
+      if (!this._offscreenFocusedItem) {
+        return;
+      }
+      var item = this._getNormalizedItem(this._focusedIndex);
+      var pidx = this._physicalIndexForKey[this._collection.getKey(item)];
+
+      if (pidx !== undefined) {
+        this.translate3d(0, HIDDEN_Y, 0, this._physicalItems[pidx]);
+        this._physicalItems[pidx] = this._offscreenFocusedItem;
+      }
+      this._offscreenFocusedItem = null;
+    },
+
+    _removeFocusedItem: function() {
+      if (!this._offscreenFocusedItem) {
+        return;
+      }
+      Polymer.dom(this).removeChild(this._offscreenFocusedItem);
+      this._offscreenFocusedItem = null;
+      this._focusBackfillItem = null;
+    },
+
+    _createFocusBackfillItem: function() {
+      if (this._offscreenFocusedItem) {
+        return;
+      }
+      var item = this._getNormalizedItem(this._focusedIndex);
+      var pidx = this._physicalIndexForKey[this._collection.getKey(item)];
+
+      this._offscreenFocusedItem = this._physicalItems[pidx];
+      this.translate3d(0, HIDDEN_Y, 0, this._offscreenFocusedItem);
+
+      if (!this._focusBackfillItem) {
+        var stampedTemplate = this.stamp(null);
+        this._focusBackfillItem = stampedTemplate.root.querySelector('*');
+        Polymer.dom(this).appendChild(stampedTemplate.root);
+      }
+      this._physicalItems[pidx] = this._focusBackfillItem;
+    },
+
+    _didFocus: function(e) {
+      var targetModel = this.modelForElement(e.target);
+      var fidx = this._focusedIndex;
+
+      if (!targetModel) {
+        return;
+      }
+      this._restoreFocusedItem();
+
+      if (this.modelForElement(this._offscreenFocusedItem) === targetModel) {
+        this.scrollToIndex(fidx);
+      } else {
+        // restore tabIndex for the currently focused item
+        this._getModelFromItem(this._getNormalizedItem(fidx)).tabIndex = -1;
+        // set the tabIndex for the next focused item
+        targetModel.tabIndex = 0;
+        fidx = /** @type {{index: number}} */(targetModel).index;
+        this._focusedIndex = fidx;
+        // bring the item into view
+        if (fidx < this.firstVisibleIndex || fidx > this.lastVisibleIndex) {
+          this.scrollToIndex(fidx);
+        } else {
+          this._update();
+        }
+      }
+    },
+
+    _didMoveUp: function() {
+      this._focusPhysicalItem(Math.max(0, this._focusedIndex - 1));
+    },
+
+    _didMoveDown: function() {
+      this._focusPhysicalItem(Math.min(this._virtualCount, this._focusedIndex + 1));
+    },
+
+    _didEnter: function(e) {
+      // focus the currently focused physical item
+      this._focusPhysicalItem(this._focusedIndex);
+      // toggle selection
+      this._selectionHandler(/** @type {{keyboardEvent: Event}} */(e.detail).keyboardEvent);
     }
   });
 

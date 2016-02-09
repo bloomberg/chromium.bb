@@ -111,11 +111,11 @@ Revision: 55d2b39ead32b8d90da538daa1a6681fd9ae89d9
 Tree link: https://github.com/PolymerElements/iron-input/tree/1.0.8
 
 Name: iron-list
-Version: 1.1.7
+Version: 1.2.3
 Repository: git://github.com/PolymerElements/iron-list.git
-Tag: v1.1.7
-Revision: a00edace6cac13c16ba6e7a930d29a14b98e44c7
-Tree link: https://github.com/PolymerElements/iron-list/tree/v1.1.7
+Tag: v1.2.3
+Revision: 07957dc10616341606ae030d78bb41492fb7c0cc
+Tree link: https://github.com/PolymerElements/iron-list/tree/v1.2.3
 
 Name: iron-media-query
 Version: 1.0.8
@@ -230,11 +230,11 @@ Revision: ce52f51c537d27f414fec7298b9ebff4248044eb
 Tree link: https://github.com/PolymerElements/paper-checkbox/tree/v1.1.1
 
 Name: paper-dialog
-Version: 1.0.3
+Version: 1.0.4
 Repository: git://github.com/PolymerElements/paper-dialog.git
-Tag: v1.0.3
-Revision: ec85b110e11e9d390f601e1c88ebf97984b53d82
-Tree link: https://github.com/PolymerElements/paper-dialog/tree/v1.0.3
+Tag: v1.0.4
+Revision: 53b099bed06bbbab7cb0f82c8209328c1a82aee6
+Tree link: https://github.com/PolymerElements/paper-dialog/tree/v1.0.4
 
 Name: paper-dialog-behavior
 Version: 1.1.1

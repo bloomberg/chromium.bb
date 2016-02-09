@@ -22,6 +22,9 @@ MaterialHistoryBrowserTest.prototype = {
 
   commandLineSwitches: [{switchName: 'enable-md-history'}],
 
+  /** @override */
+  runAccessibilityChecks: false,
+
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_util.js',
     'history_card_manager_test.js',

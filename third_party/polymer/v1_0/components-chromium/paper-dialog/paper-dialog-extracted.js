@@ -14,6 +14,7 @@
     },
 
     _renderOpened: function() {
+      this.cancelAnimation();
       if (this.withBackdrop) {
         this.backdropElement.open();
       }
@@ -21,6 +22,7 @@
     },
 
     _renderClosed: function() {
+      this.cancelAnimation();
       if (this.withBackdrop) {
         this.backdropElement.close();
       }

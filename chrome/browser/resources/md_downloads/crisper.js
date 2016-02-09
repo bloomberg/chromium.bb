@@ -9,6 +9,9 @@
  */
 var global = this;
 
+/** @typedef {{eventName: string, uid: number}} */
+var WebUIListener;
+
 /** Platform, package, object property, and Event support. **/
 var cr = function() {
   'use strict';
@@ -357,11 +360,13 @@ var cr = function() {
   }
 
   /**
-   * A registry of callbacks keyed by event name. Used by addWebUIListener to
-   * register listeners.
-   * @type {!Object<Array<Function>>}
+   * A map of maps associating event names with listeners. The 2nd level map
+   * associates a listener ID with the callback function, such that individual
+   * listeners can be removed from an event without affecting other listeners of
+   * the same event.
+   * @type {!Object<!Object<!Function>>}
    */
-  var webUIListenerMap = Object.create(null);
+  var webUIListenerMap = {};
 
   /**
    * The named method the WebUI handler calls directly when an event occurs.
@@ -369,26 +374,52 @@ var cr = function() {
    * of the JS invocation; additionally, the handler may supply any number of
    * other arguments that will be forwarded to the listener callbacks.
    * @param {string} event The name of the event that has occurred.
+   * @param {...*} var_args Additional arguments passed from C++.
    */
-  function webUIListenerCallback(event) {
-    var listenerCallbacks = webUIListenerMap[event];
-    for (var i = 0; i < listenerCallbacks.length; i++) {
-      var callback = listenerCallbacks[i];
-      callback.apply(null, Array.prototype.slice.call(arguments, 1));
+  function webUIListenerCallback(event, var_args) {
+    var eventListenersMap = webUIListenerMap[event];
+    if (!eventListenersMap) {
+      // C++ event sent for an event that has no listeners.
+      // TODO(dpapad): Should a warning be displayed here?
+      return;
+    }
+
+    var args = Array.prototype.slice.call(arguments, 1);
+    for (var listenerId in eventListenersMap) {
+      eventListenersMap[listenerId].apply(null, args);
     }
   }
 
   /**
    * Registers a listener for an event fired from WebUI handlers. Any number of
    * listeners may register for a single event.
-   * @param {string} event The event to listen to.
-   * @param {Function} callback The callback run when the event is fired.
+   * @param {string} eventName The event to listen to.
+   * @param {!Function} callback The callback run when the event is fired.
+   * @return {!WebUIListener} An object to be used for removing a listener via
+   *     cr.removeWebUIListener. Should be treated as read-only.
    */
-  function addWebUIListener(event, callback) {
-    if (event in webUIListenerMap)
-      webUIListenerMap[event].push(callback);
-    else
-      webUIListenerMap[event] = [callback];
+  function addWebUIListener(eventName, callback) {
+    webUIListenerMap[eventName] = webUIListenerMap[eventName] || {};
+    var uid = createUid();
+    webUIListenerMap[eventName][uid] = callback;
+    return {eventName: eventName, uid: uid};
+  }
+
+  /**
+   * Removes a listener. Does nothing if the specified listener is not found.
+   * @param {!WebUIListener} listener The listener to be removed (as returned by
+   *     addWebUIListener).
+   * @return {boolean} Whether the given listener was found and actually
+   *     removed.
+   */
+  function removeWebUIListener(listener) {
+    var listenerExists = webUIListenerMap[listener.eventName] &&
+        webUIListenerMap[listener.eventName][listener.uid];
+    if (listenerExists) {
+      delete webUIListenerMap[listener.eventName][listener.uid];
+      return true;
+    }
+    return false;
   }
 
   return {
@@ -401,11 +432,14 @@ var cr = function() {
     exportPath: exportPath,
     getUid: getUid,
     makePublic: makePublic,
-    webUIResponse: webUIResponse,
+    PropertyKind: PropertyKind,
+
+    // C++ <-> JS communication related methods.
+    addWebUIListener: addWebUIListener,
+    removeWebUIListener: removeWebUIListener,
     sendWithPromise: sendWithPromise,
     webUIListenerCallback: webUIListenerCallback,
-    addWebUIListener: addWebUIListener,
-    PropertyKind: PropertyKind,
+    webUIResponse: webUIResponse,
 
     get doc() {
       return document;
@@ -430,6 +464,11 @@ var cr = function() {
     get isLinux() {
       return /Linux/.test(navigator.userAgent);
     },
+
+    /** Whether this is on Android. */
+    get isAndroid() {
+      return /Android/.test(navigator.userAgent);
+    }
   };
 }();
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -987,9 +1026,19 @@ cr.define('cr.ui', function() {
  */
 function $(id) {
   var el = document.getElementById(id);
-  var message =
-      'Element ' + el + ' with id "' + id + '" is not an HTMLElement.';
-  return el ? assertInstanceof(el, HTMLElement, message) : null;
+  return el ? assertInstanceof(el, HTMLElement) : null;
+}
+
+// TODO(devlin): This should return SVGElement, but closure compiler is missing
+// those externs.
+/**
+ * Alias for document.getElementById. Found elements must be SVGElements.
+ * @param {string} id The ID of the element to find.
+ * @return {Element} The found element or null if not found.
+ */
+function getSVGElement(id) {
+  var el = document.getElementById(id);
+  return el ? assertInstanceof(el, Element) : null;
 }
 
 /**
@@ -1505,8 +1554,12 @@ function assertNotReached(opt_message) {
  * @template T
  */
 function assertInstanceof(value, type, opt_message) {
-  assert(value instanceof type,
-      opt_message || value + ' is not a[n] ' + (type.name || typeof type));
+  // We don't use assert immediately here so that we avoid constructing an error
+  // message if we don't have to.
+  if (!(value instanceof type)) {
+    assertNotReached(opt_message || 'Value ' + value +
+                     ' is not a[n] ' + (type.name || typeof type));
+  }
   return value;
 };
 // Copyright 2015 The Chromium Authors. All rights reserved.
@@ -1979,11 +2032,654 @@ i18nTemplate.process(document, loadTimeData);
     }
   };
 (function() {
+    'use strict';
+
+    /**
+     * Chrome uses an older version of DOM Level 3 Keyboard Events
+     *
+     * Most keys are labeled as text, but some are Unicode codepoints.
+     * Values taken from: http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221/keyset.html#KeySet-Set
+     */
+    var KEY_IDENTIFIER = {
+      'U+0008': 'backspace',
+      'U+0009': 'tab',
+      'U+001B': 'esc',
+      'U+0020': 'space',
+      'U+007F': 'del'
+    };
+
+    /**
+     * Special table for KeyboardEvent.keyCode.
+     * KeyboardEvent.keyIdentifier is better, and KeyBoardEvent.key is even better
+     * than that.
+     *
+     * Values from: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent.keyCode#Value_of_keyCode
+     */
+    var KEY_CODE = {
+      8: 'backspace',
+      9: 'tab',
+      13: 'enter',
+      27: 'esc',
+      33: 'pageup',
+      34: 'pagedown',
+      35: 'end',
+      36: 'home',
+      32: 'space',
+      37: 'left',
+      38: 'up',
+      39: 'right',
+      40: 'down',
+      46: 'del',
+      106: '*'
+    };
+
+    /**
+     * MODIFIER_KEYS maps the short name for modifier keys used in a key
+     * combo string to the property name that references those same keys
+     * in a KeyboardEvent instance.
+     */
+    var MODIFIER_KEYS = {
+      'shift': 'shiftKey',
+      'ctrl': 'ctrlKey',
+      'alt': 'altKey',
+      'meta': 'metaKey'
+    };
+
+    /**
+     * KeyboardEvent.key is mostly represented by printable character made by
+     * the keyboard, with unprintable keys labeled nicely.
+     *
+     * However, on OS X, Alt+char can make a Unicode character that follows an
+     * Apple-specific mapping. In this case, we fall back to .keyCode.
+     */
+    var KEY_CHAR = /[a-z0-9*]/;
+
+    /**
+     * Matches a keyIdentifier string.
+     */
+    var IDENT_CHAR = /U\+/;
+
+    /**
+     * Matches arrow keys in Gecko 27.0+
+     */
+    var ARROW_KEY = /^arrow/;
+
+    /**
+     * Matches space keys everywhere (notably including IE10's exceptional name
+     * `spacebar`).
+     */
+    var SPACE_KEY = /^space(bar)?/;
+
+    /**
+     * Transforms the key.
+     * @param {string} key The KeyBoardEvent.key
+     * @param {Boolean} [noSpecialChars] Limits the transformation to
+     * alpha-numeric characters.
+     */
+    function transformKey(key, noSpecialChars) {
+      var validKey = '';
+      if (key) {
+        var lKey = key.toLowerCase();
+        if (lKey === ' ' || SPACE_KEY.test(lKey)) {
+          validKey = 'space';
+        } else if (lKey.length == 1) {
+          if (!noSpecialChars || KEY_CHAR.test(lKey)) {
+            validKey = lKey;
+          }
+        } else if (ARROW_KEY.test(lKey)) {
+          validKey = lKey.replace('arrow', '');
+        } else if (lKey == 'multiply') {
+          // numpad '*' can map to Multiply on IE/Windows
+          validKey = '*';
+        } else {
+          validKey = lKey;
+        }
+      }
+      return validKey;
+    }
+
+    function transformKeyIdentifier(keyIdent) {
+      var validKey = '';
+      if (keyIdent) {
+        if (keyIdent in KEY_IDENTIFIER) {
+          validKey = KEY_IDENTIFIER[keyIdent];
+        } else if (IDENT_CHAR.test(keyIdent)) {
+          keyIdent = parseInt(keyIdent.replace('U+', '0x'), 16);
+          validKey = String.fromCharCode(keyIdent).toLowerCase();
+        } else {
+          validKey = keyIdent.toLowerCase();
+        }
+      }
+      return validKey;
+    }
+
+    function transformKeyCode(keyCode) {
+      var validKey = '';
+      if (Number(keyCode)) {
+        if (keyCode >= 65 && keyCode <= 90) {
+          // ascii a-z
+          // lowercase is 32 offset from uppercase
+          validKey = String.fromCharCode(32 + keyCode);
+        } else if (keyCode >= 112 && keyCode <= 123) {
+          // function keys f1-f12
+          validKey = 'f' + (keyCode - 112);
+        } else if (keyCode >= 48 && keyCode <= 57) {
+          // top 0-9 keys
+          validKey = String(48 - keyCode);
+        } else if (keyCode >= 96 && keyCode <= 105) {
+          // num pad 0-9
+          validKey = String(96 - keyCode);
+        } else {
+          validKey = KEY_CODE[keyCode];
+        }
+      }
+      return validKey;
+    }
+
+    /**
+      * Calculates the normalized key for a KeyboardEvent.
+      * @param {KeyboardEvent} keyEvent
+      * @param {Boolean} [noSpecialChars] Set to true to limit keyEvent.key
+      * transformation to alpha-numeric chars. This is useful with key
+      * combinations like shift + 2, which on FF for MacOS produces
+      * keyEvent.key = @
+      * To get 2 returned, set noSpecialChars = true
+      * To get @ returned, set noSpecialChars = false
+     */
+    function normalizedKeyForEvent(keyEvent, noSpecialChars) {
+      // Fall back from .key, to .keyIdentifier, to .keyCode, and then to
+      // .detail.key to support artificial keyboard events.
+      return transformKey(keyEvent.key, noSpecialChars) ||
+        transformKeyIdentifier(keyEvent.keyIdentifier) ||
+        transformKeyCode(keyEvent.keyCode) ||
+        transformKey(keyEvent.detail.key, noSpecialChars) || '';
+    }
+
+    function keyComboMatchesEvent(keyCombo, event) {
+      // For combos with modifiers we support only alpha-numeric keys
+      var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);
+      return keyEvent === keyCombo.key &&
+        (!keyCombo.hasModifiers || (
+          !!event.shiftKey === !!keyCombo.shiftKey &&
+          !!event.ctrlKey === !!keyCombo.ctrlKey &&
+          !!event.altKey === !!keyCombo.altKey &&
+          !!event.metaKey === !!keyCombo.metaKey)
+        );
+    }
+
+    function parseKeyComboString(keyComboString) {
+      if (keyComboString.length === 1) {
+        return {
+          combo: keyComboString,
+          key: keyComboString,
+          event: 'keydown'
+        };
+      }
+      return keyComboString.split('+').reduce(function(parsedKeyCombo, keyComboPart) {
+        var eventParts = keyComboPart.split(':');
+        var keyName = eventParts[0];
+        var event = eventParts[1];
+
+        if (keyName in MODIFIER_KEYS) {
+          parsedKeyCombo[MODIFIER_KEYS[keyName]] = true;
+          parsedKeyCombo.hasModifiers = true;
+        } else {
+          parsedKeyCombo.key = keyName;
+          parsedKeyCombo.event = event || 'keydown';
+        }
+
+        return parsedKeyCombo;
+      }, {
+        combo: keyComboString.split(':').shift()
+      });
+    }
+
+    function parseEventString(eventString) {
+      return eventString.trim().split(' ').map(function(keyComboString) {
+        return parseKeyComboString(keyComboString);
+      });
+    }
+
+    /**
+     * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing
+     * keyboard commands that pertain to [WAI-ARIA best practices](http://www.w3.org/TR/wai-aria-practices/#kbd_general_binding).
+     * The element takes care of browser differences with respect to Keyboard events
+     * and uses an expressive syntax to filter key presses.
+     *
+     * Use the `keyBindings` prototype property to express what combination of keys
+     * will trigger the event to fire.
+     *
+     * Use the `key-event-target` attribute to set up event handlers on a specific
+     * node.
+     * The `keys-pressed` event will fire when one of the key combinations set with the
+     * `keys` property is pressed.
+     *
+     * @demo demo/index.html
+     * @polymerBehavior
+     */
+    Polymer.IronA11yKeysBehavior = {
+      properties: {
+        /**
+         * The HTMLElement that will be firing relevant KeyboardEvents.
+         */
+        keyEventTarget: {
+          type: Object,
+          value: function() {
+            return this;
+          }
+        },
+
+        /**
+         * If true, this property will cause the implementing element to
+         * automatically stop propagation on any handled KeyboardEvents.
+         */
+        stopKeyboardEventPropagation: {
+          type: Boolean,
+          value: false
+        },
+
+        _boundKeyHandlers: {
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        // We use this due to a limitation in IE10 where instances will have
+        // own properties of everything on the "prototype".
+        _imperativeKeyBindings: {
+          type: Object,
+          value: function() {
+            return {};
+          }
+        }
+      },
+
+      observers: [
+        '_resetKeyEventListeners(keyEventTarget, _boundKeyHandlers)'
+      ],
+
+      keyBindings: {},
+
+      registered: function() {
+        this._prepKeyBindings();
+      },
+
+      attached: function() {
+        this._listenKeyEventListeners();
+      },
+
+      detached: function() {
+        this._unlistenKeyEventListeners();
+      },
+
+      /**
+       * Can be used to imperatively add a key binding to the implementing
+       * element. This is the imperative equivalent of declaring a keybinding
+       * in the `keyBindings` prototype property.
+       */
+      addOwnKeyBinding: function(eventString, handlerName) {
+        this._imperativeKeyBindings[eventString] = handlerName;
+        this._prepKeyBindings();
+        this._resetKeyEventListeners();
+      },
+
+      /**
+       * When called, will remove all imperatively-added key bindings.
+       */
+      removeOwnKeyBindings: function() {
+        this._imperativeKeyBindings = {};
+        this._prepKeyBindings();
+        this._resetKeyEventListeners();
+      },
+
+      keyboardEventMatchesKeys: function(event, eventString) {
+        var keyCombos = parseEventString(eventString);
+        for (var i = 0; i < keyCombos.length; ++i) {
+          if (keyComboMatchesEvent(keyCombos[i], event)) {
+            return true;
+          }
+        }
+        return false;
+      },
+
+      _collectKeyBindings: function() {
+        var keyBindings = this.behaviors.map(function(behavior) {
+          return behavior.keyBindings;
+        });
+
+        if (keyBindings.indexOf(this.keyBindings) === -1) {
+          keyBindings.push(this.keyBindings);
+        }
+
+        return keyBindings;
+      },
+
+      _prepKeyBindings: function() {
+        this._keyBindings = {};
+
+        this._collectKeyBindings().forEach(function(keyBindings) {
+          for (var eventString in keyBindings) {
+            this._addKeyBinding(eventString, keyBindings[eventString]);
+          }
+        }, this);
+
+        for (var eventString in this._imperativeKeyBindings) {
+          this._addKeyBinding(eventString, this._imperativeKeyBindings[eventString]);
+        }
+
+        // Give precedence to combos with modifiers to be checked first.
+        for (var eventName in this._keyBindings) {
+          this._keyBindings[eventName].sort(function (kb1, kb2) {
+            var b1 = kb1[0].hasModifiers;
+            var b2 = kb2[0].hasModifiers;
+            return (b1 === b2) ? 0 : b1 ? -1 : 1;
+          })
+        }
+      },
+
+      _addKeyBinding: function(eventString, handlerName) {
+        parseEventString(eventString).forEach(function(keyCombo) {
+          this._keyBindings[keyCombo.event] =
+            this._keyBindings[keyCombo.event] || [];
+
+          this._keyBindings[keyCombo.event].push([
+            keyCombo,
+            handlerName
+          ]);
+        }, this);
+      },
+
+      _resetKeyEventListeners: function() {
+        this._unlistenKeyEventListeners();
+
+        if (this.isAttached) {
+          this._listenKeyEventListeners();
+        }
+      },
+
+      _listenKeyEventListeners: function() {
+        Object.keys(this._keyBindings).forEach(function(eventName) {
+          var keyBindings = this._keyBindings[eventName];
+          var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);
+
+          this._boundKeyHandlers.push([this.keyEventTarget, eventName, boundKeyHandler]);
+
+          this.keyEventTarget.addEventListener(eventName, boundKeyHandler);
+        }, this);
+      },
+
+      _unlistenKeyEventListeners: function() {
+        var keyHandlerTuple;
+        var keyEventTarget;
+        var eventName;
+        var boundKeyHandler;
+
+        while (this._boundKeyHandlers.length) {
+          // My kingdom for block-scope binding and destructuring assignment..
+          keyHandlerTuple = this._boundKeyHandlers.pop();
+          keyEventTarget = keyHandlerTuple[0];
+          eventName = keyHandlerTuple[1];
+          boundKeyHandler = keyHandlerTuple[2];
+
+          keyEventTarget.removeEventListener(eventName, boundKeyHandler);
+        }
+      },
+
+      _onKeyBindingEvent: function(keyBindings, event) {
+        if (this.stopKeyboardEventPropagation) {
+          event.stopPropagation();
+        }
+
+        // if event has been already prevented, don't do anything
+        if (event.defaultPrevented) {
+          return;
+        }
+
+        for (var i = 0; i < keyBindings.length; i++) {
+          var keyCombo = keyBindings[i][0];
+          var handlerName = keyBindings[i][1];
+          if (keyComboMatchesEvent(keyCombo, event)) {
+            this._triggerKeyHandler(keyCombo, handlerName, event);
+            // exit the loop if eventDefault was prevented
+            if (event.defaultPrevented) {
+              return;
+            }
+          }
+        }
+      },
+
+      _triggerKeyHandler: function(keyCombo, handlerName, keyboardEvent) {
+        var detail = Object.create(keyCombo);
+        detail.keyboardEvent = keyboardEvent;
+        var event = new CustomEvent(keyCombo.event, {
+          detail: detail,
+          cancelable: true
+        });
+        this[handlerName].call(this, event);
+        if (event.defaultPrevented) {
+          keyboardEvent.preventDefault();
+        }
+      }
+    };
+  })();
+/**
+   * `Polymer.IronScrollTargetBehavior` allows an element to respond to scroll events from a
+   * designated scroll target.
+   *
+   * Elements that consume this behavior can override the `_scrollHandler`
+   * method to add logic on the scroll event.
+   *
+   * @demo demo/scrolling-region.html Scrolling Region
+   * @demo demo/document.html Document Element
+   * @polymerBehavior
+   */
+  Polymer.IronScrollTargetBehavior = {
+
+    properties: {
+
+      /**
+       * Specifies the element that will handle the scroll event
+       * on the behalf of the current element. This is typically a reference to an `Element`,
+       * but there are a few more posibilities:
+       *
+       * ### Elements id
+       *
+       *```html
+       * <div id="scrollable-element" style="overflow-y: auto;">
+       *  <x-element scroll-target="scrollable-element">
+       *    Content
+       *  </x-element>
+       * </div>
+       *```
+       * In this case, `scrollTarget` will point to the outer div element. Alternatively,
+       * you can set the property programatically:
+       *
+       *```js
+       * appHeader.scrollTarget = document.querySelector('#scrollable-element');
+       *```
+       * 
+       * @type {HTMLElement}
+       */
+      scrollTarget: {
+        type: HTMLElement,
+        value: function() {
+          return this._defaultScrollTarget;
+        }
+      }
+    },
+
+    observers: [
+      '_scrollTargetChanged(scrollTarget, isAttached)'
+    ],
+
+    _scrollTargetChanged: function(scrollTarget, isAttached) {
+      // Remove lister to the current scroll target
+      if (this._oldScrollTarget) {
+        if (this._oldScrollTarget === this._doc) {
+          window.removeEventListener('scroll', this._boundScrollHandler);
+        } else if (this._oldScrollTarget.removeEventListener) {
+          this._oldScrollTarget.removeEventListener('scroll', this._boundScrollHandler);
+        }
+        this._oldScrollTarget = null;
+      }
+      if (isAttached) {
+        // Support element id references
+        if (typeof scrollTarget === 'string') {
+
+          var ownerRoot = Polymer.dom(this).getOwnerRoot();
+          this.scrollTarget = (ownerRoot && ownerRoot.$) ?
+              ownerRoot.$[scrollTarget] : Polymer.dom(this.ownerDocument).querySelector('#' + scrollTarget);
+
+        } else if (this._scrollHandler) {
+
+          this._boundScrollHandler = this._boundScrollHandler || this._scrollHandler.bind(this);
+          // Add a new listener
+          if (scrollTarget === this._doc) {
+            window.addEventListener('scroll', this._boundScrollHandler);
+            if (this._scrollTop !== 0 || this._scrollLeft !== 0) {
+              this._scrollHandler();
+            }
+          } else if (scrollTarget && scrollTarget.addEventListener) {
+            scrollTarget.addEventListener('scroll', this._boundScrollHandler);
+          }
+          this._oldScrollTarget = scrollTarget;
+        }
+      }
+    },
+
+    /**
+     * Runs on every scroll event. Consumer of this behavior may want to override this method.
+     *
+     * @protected
+     */
+    _scrollHandler: function scrollHandler() {},
+
+    /**
+     * The default scroll target. Consumers of this behavior may want to customize
+     * the default scroll target.
+     *
+     * @type {Element}
+     */
+    get _defaultScrollTarget() {
+      return this._doc;
+    },
+
+    /**
+     * Shortcut for the document element
+     *
+     * @type {Element}
+     */
+    get _doc() {
+      return this.ownerDocument.documentElement;
+    },
+
+    /**
+     * Gets the number of pixels that the content of an element is scrolled upward.
+     *
+     * @type {number}
+     */
+    get _scrollTop() {
+      if (this._isValidScrollTarget()) {
+        return this.scrollTarget === this._doc ? window.pageYOffset : this.scrollTarget.scrollTop;
+      }
+      return 0;
+    },
+
+    /**
+     * Gets the number of pixels that the content of an element is scrolled to the left.
+     *
+     * @type {number}
+     */
+    get _scrollLeft() {
+      if (this._isValidScrollTarget()) {
+        return this.scrollTarget === this._doc ? window.pageXOffset : this.scrollTarget.scrollLeft;
+      }
+      return 0;
+    },
+
+    /**
+     * Sets the number of pixels that the content of an element is scrolled upward.
+     *
+     * @type {number}
+     */
+    set _scrollTop(top) {
+      if (this.scrollTarget === this._doc) {
+        window.scrollTo(window.pageXOffset, top);
+      } else if (this._isValidScrollTarget()) {
+        this.scrollTarget.scrollTop = top;
+      }
+    },
+
+    /**
+     * Sets the number of pixels that the content of an element is scrolled to the left.
+     *
+     * @type {number}
+     */
+    set _scrollLeft(left) {
+      if (this.scrollTarget === this._doc) {
+        window.scrollTo(left, window.pageYOffset);
+      } else if (this._isValidScrollTarget()) {
+        this.scrollTarget.scrollLeft = left;
+      }
+    },
+
+    /**
+     * Scrolls the content to a particular place.
+     *
+     * @method scroll
+     * @param {number} top The top position
+     * @param {number} left The left position
+     */
+    scroll: function(top, left) {
+       if (this.scrollTarget === this._doc) {
+        window.scrollTo(top, left);
+      } else if (this._isValidScrollTarget()) {
+        this.scrollTarget.scrollTop = top;
+        this.scrollTarget.scrollLeft = left;
+      }
+    },
+
+    /**
+     * Gets the width of the scroll target.
+     *
+     * @type {number}
+     */
+    get _scrollTargetWidth() {
+      if (this._isValidScrollTarget()) {
+        return this.scrollTarget === this._doc ? window.innerWidth : this.scrollTarget.offsetWidth;
+      }
+      return 0;
+    },
+
+    /**
+     * Gets the height of the scroll target.
+     *
+     * @type {number}
+     */
+    get _scrollTargetHeight() {
+      if (this._isValidScrollTarget()) {
+        return this.scrollTarget === this._doc ? window.innerHeight : this.scrollTarget.offsetHeight;
+      }
+      return 0;
+    },
+
+    /**
+     * Returns true if the scroll target is a valid HTMLElement.
+     *
+     * @return {boolean}
+     */
+    _isValidScrollTarget: function() {
+      return this.scrollTarget instanceof HTMLElement;
+    }
+  };
+(function() {
 
   var IOS = navigator.userAgent.match(/iP(?:hone|ad;(?: U;)? CPU) OS (\d+)/);
   var IOS_TOUCH_SCROLLING = IOS && IOS[1] >= 8;
   var DEFAULT_PHYSICAL_COUNT = 3;
   var MAX_PHYSICAL_COUNT = 500;
+  var HIDDEN_Y = '-10000px';
 
   Polymer({
 
@@ -2069,16 +2765,25 @@ i18nTemplate.process(document, loadTimeData);
     observers: [
       '_itemsChanged(items.*)',
       '_selectionEnabledChanged(selectionEnabled)',
-      '_multiSelectionChanged(multiSelection)'
+      '_multiSelectionChanged(multiSelection)',
+      '_setOverflow(scrollTarget)'
     ],
 
     behaviors: [
       Polymer.Templatizer,
-      Polymer.IronResizableBehavior
+      Polymer.IronResizableBehavior,
+      Polymer.IronA11yKeysBehavior,
+      Polymer.IronScrollTargetBehavior
     ],
 
     listeners: {
       'iron-resize': '_resizeHandler'
+    },
+
+    keyBindings: {
+      'up': '_didMoveUp',
+      'down': '_didMoveDown',
+      'enter': '_didEnter'
     },
 
     /**
@@ -2086,12 +2791,6 @@ i18nTemplate.process(document, loadTimeData);
      * Recommended value ~0.5, so it will distribute tiles evely in both directions.
      */
     _ratio: 0.5,
-
-    /**
-     * The element that controls the scroll
-     * @type {?Element}
-     */
-    _scroller: null,
 
     /**
      * The padding-top value of the `scroller` element
@@ -2124,7 +2823,7 @@ i18nTemplate.process(document, loadTimeData);
     _physicalSize: 0,
 
     /**
-     * The average `offsetHeight` of the tiles observed till now.
+     * The average `F` of the tiles observed till now.
      */
     _physicalAverage: 0,
 
@@ -2182,11 +2881,19 @@ i18nTemplate.process(document, loadTimeData);
     _physicalSizes: null,
 
     /**
-     * A cached value for the visible index.
+     * A cached value for the first visible index.
      * See `firstVisibleIndex`
      * @type {?number}
      */
     _firstVisibleIndexVal: null,
+
+    /**
+     * A cached value for the last visible index.
+     * See `lastVisibleIndex`
+     * @type {?number}
+     */
+    _lastVisibleIndexVal: null,
+
 
     /**
      * A Polymer collection for the items.
@@ -2211,6 +2918,23 @@ i18nTemplate.process(document, loadTimeData);
     _maxPages: 3,
 
     /**
+     * The currently focused item index.
+     */
+    _focusedIndex: 0,
+
+    /**
+     * The the item that is focused if it is moved offscreen.
+     * @private {?TemplatizerNode}
+     */
+    _offscreenFocusedItem: null,
+
+    /**
+     * The item that backfills the `_offscreenFocusedItem` in the physical items
+     * list when that item is moved offscreen.
+     */
+    _focusBackfillItem: null,
+
+    /**
      * The bottom of the physical content.
      */
     get _physicalBottom() {
@@ -2228,7 +2952,7 @@ i18nTemplate.process(document, loadTimeData);
      * The n-th item rendered in the last physical item.
      */
     get _virtualEnd() {
-      return this._virtualStartVal + this._physicalCount - 1;
+      return this._virtualStart + this._physicalCount - 1;
     },
 
     /**
@@ -2263,8 +2987,13 @@ i18nTemplate.process(document, loadTimeData);
     set _virtualStart(val) {
       // clamp the value so that _minVirtualStart <= val <= _maxVirtualStart
       this._virtualStartVal = Math.min(this._maxVirtualStart, Math.max(this._minVirtualStart, val));
-      this._physicalStart = this._virtualStartVal % this._physicalCount;
-      this._physicalEnd = (this._physicalStart + this._physicalCount - 1) % this._physicalCount;
+      if (this._physicalCount === 0)  {
+        this._physicalStart = 0;
+        this._physicalEnd = 0;
+      } else {
+        this._physicalStart = this._virtualStartVal % this._physicalCount;
+        this._physicalEnd = (this._physicalStart + this._physicalCount - 1) % this._physicalCount;
+      }
     },
 
     /**
@@ -2289,7 +3018,7 @@ i18nTemplate.process(document, loadTimeData);
     * True if the current list is visible.
     */
     get _isVisible() {
-      return this._scroller && Boolean(this._scroller.offsetWidth || this._scroller.offsetHeight);
+      return this.scrollTarget && Boolean(this.scrollTarget.offsetWidth || this.scrollTarget.offsetHeight);
     },
 
     /**
@@ -2298,10 +3027,8 @@ i18nTemplate.process(document, loadTimeData);
      * @type {number}
      */
     get firstVisibleIndex() {
-      var physicalOffset;
-
       if (this._firstVisibleIndexVal === null) {
-        physicalOffset = this._physicalTop;
+        var physicalOffset = this._physicalTop;
 
         this._firstVisibleIndexVal = this._iterateItems(
           function(pidx, vidx) {
@@ -2312,54 +3039,52 @@ i18nTemplate.process(document, loadTimeData);
             }
           }) || 0;
       }
-
       return this._firstVisibleIndexVal;
     },
 
-    ready: function() {
-      if (IOS_TOUCH_SCROLLING) {
-        this._scrollListener = function() {
-          requestAnimationFrame(this._scrollHandler.bind(this));
-        }.bind(this);
-      } else {
-        this._scrollListener = this._scrollHandler.bind(this);
+    /**
+     * Gets the index of the last visible item in the viewport.
+     *
+     * @type {number}
+     */
+    get lastVisibleIndex() {
+      if (this._lastVisibleIndexVal === null) {
+        var physicalOffset = this._physicalTop;
+
+        this._iterateItems(function(pidx, vidx) {
+          physicalOffset += this._physicalSizes[pidx];
+
+          if(physicalOffset <= this._scrollBottom) {
+              this._lastVisibleIndexVal = vidx;
+          }
+        });
       }
+      return this._lastVisibleIndexVal;
     },
 
-    /**
-     * When the element has been attached to the DOM tree.
-     */
+    ready: function() {
+      this.addEventListener('focus', this._didFocus.bind(this), true);
+    },
+
     attached: function() {
-      // delegate to the parent's scroller
-      // e.g. paper-scroll-header-panel
-      var el = Polymer.dom(this);
-
-      var parentNode = /** @type {?{scroller: ?Element}} */ (el.parentNode);
-      if (parentNode && parentNode.scroller) {
-        this._scroller = parentNode.scroller;
-      } else {
-        this._scroller = this;
-        this.classList.add('has-scroller');
-      }
-
-      if (IOS_TOUCH_SCROLLING) {
-        this._scroller.style.webkitOverflowScrolling = 'touch';
-      }
-
-      this._scroller.addEventListener('scroll', this._scrollListener);
-
       this.updateViewportBoundaries();
       this._render();
     },
 
-    /**
-     * When the element has been removed from the DOM tree.
-     */
     detached: function() {
       this._itemsRendered = false;
-      if (this._scroller) {
-        this._scroller.removeEventListener('scroll', this._scrollListener);
-      }
+    },
+
+    get _defaultScrollTarget() {
+      return this;
+    },
+
+    /**
+     * Set the overflow property if this element has its own scrolling region
+     */
+    _setOverflow: function(scrollTarget) {
+      this.style.webkitOverflowScrolling = scrollTarget === this ? 'touch' : '';
+      this.style.overflow = scrollTarget === this ? 'auto' : '';
     },
 
     /**
@@ -2369,20 +3094,20 @@ i18nTemplate.process(document, loadTimeData);
      * @method updateViewportBoundaries
      */
     updateViewportBoundaries: function() {
-      var scrollerStyle = window.getComputedStyle(this._scroller);
+      var scrollerStyle = window.getComputedStyle(this.scrollTarget);
       this._scrollerPaddingTop = parseInt(scrollerStyle['padding-top'], 10);
-      this._viewportSize = this._scroller.offsetHeight;
+      this._viewportSize = this._scrollTargetHeight;
     },
 
     /**
      * Update the models, the position of the
      * items in the viewport and recycle tiles as needed.
      */
-    _refresh: function() {
+    _scrollHandler: function() {
       // clamp the `scrollTop` value
       // IE 10|11 scrollTop may go above `_maxScrollTop`
       // iOS `scrollTop` may go below 0 and above `_maxScrollTop`
-      var scrollTop = Math.max(0, Math.min(this._maxScrollTop, this._scroller.scrollTop));
+      var scrollTop = Math.max(0, Math.min(this._maxScrollTop, this._scrollTop));
       var tileHeight, tileTop, kth, recycledTileSet, scrollBottom, physicalBottom;
       var ratio = this._ratio;
       var delta = scrollTop - this._scrollPosition;
@@ -2396,6 +3121,7 @@ i18nTemplate.process(document, loadTimeData);
 
       // clear cached visible index
       this._firstVisibleIndexVal = null;
+      this._lastVisibleIndexVal = null;
 
       scrollBottom = this._scrollBottom;
       physicalBottom = this._physicalBottom;
@@ -2485,17 +3211,21 @@ i18nTemplate.process(document, loadTimeData);
     },
 
     /**
-     * Update the list of items, starting from the `_virtualStartVal` item.
+     * Update the list of items, starting from the `_virtualStart` item.
      * @param {!Array<number>=} itemSet
      * @param {!Array<number>=} movingUp
      */
     _update: function(itemSet, movingUp) {
+      // manage focus
+      if (this._isIndexRendered(this._focusedIndex)) {
+        this._restoreFocusedItem();
+      } else {
+        this._createFocusBackfillItem();
+      }
       // update models
       this._assignModels(itemSet);
-
       // measure heights
       this._updateMetrics(itemSet);
-
       // adjust offset after measuring
       if (movingUp) {
         while (movingUp.length) {
@@ -2504,10 +3234,8 @@ i18nTemplate.process(document, loadTimeData);
       }
       // update the position of the items
       this._positionItems();
-
       // set the scroller size
       this._updateScrollerSize();
-
       // increase the pool of physical items
       this._increasePoolIfNeeded();
     },
@@ -2527,7 +3255,6 @@ i18nTemplate.process(document, loadTimeData);
         physicalItems[i] = inst.root.querySelector('*');
         Polymer.dom(this).appendChild(inst.root);
       }
-
       return physicalItems;
     },
 
@@ -2537,24 +3264,24 @@ i18nTemplate.process(document, loadTimeData);
      * if the physical size is shorter than `_optPhysicalSize`
      */
     _increasePoolIfNeeded: function() {
-      if (this._viewportSize !== 0 && this._physicalSize < this._optPhysicalSize) {
-        // 0 <= `currentPage` <= `_maxPages`
-        var currentPage = Math.floor(this._physicalSize / this._viewportSize);
-
-        if (currentPage === 0) {
-          // fill the first page
-          this.async(this._increasePool.bind(this, Math.round(this._physicalCount * 0.5)));
-        } else if (this._lastPage !== currentPage) {
-          // once a page is filled up, paint it and defer the next increase
-          requestAnimationFrame(this._increasePool.bind(this, 1));
-        } else {
-          // fill the rest of the pages
-          this.async(this._increasePool.bind(this, 1));
-        }
-        this._lastPage = currentPage;
-        return true;
+      if (this._viewportSize === 0 || this._physicalSize >= this._optPhysicalSize) {
+        return false;
       }
-      return false;
+      // 0 <= `currentPage` <= `_maxPages`
+      var currentPage = Math.floor(this._physicalSize / this._viewportSize);
+      if (currentPage === 0) {
+        // fill the first page
+        this._debounceTemplate(this._increasePool.bind(this, Math.round(this._physicalCount * 0.5)));
+      } else if (this._lastPage !== currentPage) {
+        // paint the page and defer the next increase
+        // wait 16ms which is rough enough to get paint cycle.
+        Polymer.dom.addDebouncer(this.debounce('_debounceTemplate', this._increasePool.bind(this, 1), 16));
+      } else {
+        // fill the rest of the pages
+        this._debounceTemplate(this._increasePool.bind(this, 1));
+      }
+      this._lastPage = currentPage;
+      return true;
     },
 
     /**
@@ -2564,7 +3291,7 @@ i18nTemplate.process(document, loadTimeData);
       // limit the size
       var nextPhysicalCount = Math.min(
           this._physicalCount + missingItems,
-          this._virtualCount,
+          this._virtualCount - this._virtualStart,
           MAX_PHYSICAL_COUNT
         );
       var prevPhysicalCount = this._physicalCount;
@@ -2590,6 +3317,7 @@ i18nTemplate.process(document, loadTimeData);
       if (this.isAttached && !this._itemsRendered && this._isVisible && requiresUpdate) {
         this._lastPage = 0;
         this._update();
+        this._scrollHandler();
         this._itemsRendered = true;
       }
     },
@@ -2601,11 +3329,11 @@ i18nTemplate.process(document, loadTimeData);
       if (!this.ctor) {
         // Template instance props that should be excluded from forwarding
         var props = {};
-
         props.__key__ = true;
         props[this.as] = true;
         props[this.indexAs] = true;
         props[this.selectedAs] = true;
+        props.tabIndex = true;
 
         this._instanceProps = props;
         this._userTemplate = Polymer.dom(this).querySelector('template');
@@ -2673,6 +3401,10 @@ i18nTemplate.process(document, loadTimeData);
         var key = path.substring(0, dot < 0 ? path.length : dot);
         var idx = this._physicalIndexForKey[key];
         var row = this._physicalItems[idx];
+
+        if (idx === this._focusedIndex && this._offscreenFocusedItem) {
+          row = this._offscreenFocusedItem;
+        }
         if (row) {
           var inst = row._templateInstance;
           if (dot >= 0) {
@@ -2691,17 +3423,18 @@ i18nTemplate.process(document, loadTimeData);
      */
     _itemsChanged: function(change) {
       if (change.path === 'items') {
+
+        this._restoreFocusedItem();
         // render the new set
         this._itemsRendered = false;
-
         // update the whole set
-        this._virtualStartVal = 0;
+        this._virtualStart = 0;
         this._physicalTop = 0;
         this._virtualCount = this.items ? this.items.length : 0;
+        this._focusedIndex = 0;
         this._collection = this.items ? Polymer.Collection.get(this.items) : null;
         this._physicalIndexForKey = {};
 
-        // scroll to the top
         this._resetScrollPosition(0);
 
         // create the initial physical items
@@ -2710,17 +3443,20 @@ i18nTemplate.process(document, loadTimeData);
           this._physicalItems = this._createPool(this._physicalCount);
           this._physicalSizes = new Array(this._physicalCount);
         }
-
-        this.debounce('refresh', this._render);
+        this._debounceTemplate(this._render);
 
       } else if (change.path === 'items.splices') {
         // render the new set
         this._itemsRendered = false;
-
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
 
-        this.debounce('refresh', this._render);
+        this._debounceTemplate(this._render);
+
+        if (this._focusedIndex < 0 || this._focusedIndex >= this._virtualCount) {
+          this._focusedIndex = 0;
+        }
+        this._debounceTemplate(this._render);
 
       } else {
         // update a single item
@@ -2742,17 +3478,13 @@ i18nTemplate.process(document, loadTimeData);
 
         idx = splice.index;
         // We only need to care about changes happening above the current position
-        if (idx >= this._virtualStartVal) {
+        if (idx >= this._virtualStart) {
           break;
         }
 
         this._virtualStart = this._virtualStart +
-            Math.max(splice.addedCount - splice.removed.length, idx - this._virtualStartVal);
+            Math.max(splice.addedCount - splice.removed.length, idx - this._virtualStart);
       }
-    },
-
-    _scrollHandler: function() {
-      this._refresh();
     },
 
     /**
@@ -2769,9 +3501,9 @@ i18nTemplate.process(document, loadTimeData);
         for (i = 0; i < itemSet.length; i++) {
           pidx = itemSet[i];
           if (pidx >= this._physicalStart) {
-            vidx = this._virtualStartVal + (pidx - this._physicalStart);
+            vidx = this._virtualStart + (pidx - this._physicalStart);
           } else {
-            vidx = this._virtualStartVal + (this._physicalCount - this._physicalStart) + pidx;
+            vidx = this._virtualStart + (this._physicalCount - this._physicalStart) + pidx;
           }
           if ((rtn = fn.call(this, pidx, vidx)) != null) {
             return rtn;
@@ -2779,17 +3511,14 @@ i18nTemplate.process(document, loadTimeData);
         }
       } else {
         pidx = this._physicalStart;
-        vidx = this._virtualStartVal;
+        vidx = this._virtualStart;
 
         for (; pidx < this._physicalCount; pidx++, vidx++) {
           if ((rtn = fn.call(this, pidx, vidx)) != null) {
             return rtn;
           }
         }
-
-        pidx = 0;
-
-        for (; pidx < this._physicalStart; pidx++, vidx++) {
+        for (pidx = 0; pidx < this._physicalStart; pidx++, vidx++) {
           if ((rtn = fn.call(this, pidx, vidx)) != null) {
             return rtn;
           }
@@ -2807,12 +3536,12 @@ i18nTemplate.process(document, loadTimeData);
         var inst = el._templateInstance;
         var item = this.items && this.items[vidx];
 
-        if (item) {
+        if (item !== undefined && item !== null) {
           inst[this.as] = item;
           inst.__key__ = this._collection.getKey(item);
-          inst[this.selectedAs] =
-            /** @type {!ArraySelectorElement} */ (this.$.selector).isSelected(item);
+          inst[this.selectedAs] = /** @type {!ArraySelectorElement} */ (this.$.selector).isSelected(item);
           inst[this.indexAs] = vidx;
+          inst.tabIndex = vidx === this._focusedIndex ? 0 : -1;
           el.removeAttribute('hidden');
           this._physicalIndexForKey[inst.__key__] = pidx;
         } else {
@@ -2829,23 +3558,26 @@ i18nTemplate.process(document, loadTimeData);
      * @param {!Array<number>=} itemSet
      */
      _updateMetrics: function(itemSet) {
-      var newPhysicalSize = 0;
-      var oldPhysicalSize = 0;
-      var prevAvgCount = this._physicalAverageCount;
-      var prevPhysicalAvg = this._physicalAverage;
       // Make sure we distributed all the physical items
       // so we can measure them
       Polymer.dom.flush();
 
+      var newPhysicalSize = 0;
+      var oldPhysicalSize = 0;
+      var prevAvgCount = this._physicalAverageCount;
+      var prevPhysicalAvg = this._physicalAverage;
+
       this._iterateItems(function(pidx, vidx) {
+
         oldPhysicalSize += this._physicalSizes[pidx] || 0;
         this._physicalSizes[pidx] = this._physicalItems[pidx].offsetHeight;
         newPhysicalSize += this._physicalSizes[pidx];
         this._physicalAverageCount += this._physicalSizes[pidx] ? 1 : 0;
+
       }, itemSet);
 
       this._physicalSize = this._physicalSize + newPhysicalSize - oldPhysicalSize;
-      this._viewportSize = this._scroller.offsetHeight;
+      this._viewportSize = this._scrollTargetHeight;
 
       // update the average if we measured something
       if (this._physicalAverageCount !== prevAvgCount) {
@@ -2865,7 +3597,7 @@ i18nTemplate.process(document, loadTimeData);
 
       this._iterateItems(function(pidx) {
 
-        this.transform('translate3d(0, ' + y + 'px, 0)', this._physicalItems[pidx]);
+        this.translate3d(0, y + 'px', 0, this._physicalItems[pidx]);
         y += this._physicalSizes[pidx];
 
       });
@@ -2875,15 +3607,14 @@ i18nTemplate.process(document, loadTimeData);
      * Adjusts the scroll position when it was overestimated.
      */
     _adjustScrollPosition: function() {
-      var deltaHeight = this._virtualStartVal === 0 ? this._physicalTop :
+      var deltaHeight = this._virtualStart === 0 ? this._physicalTop :
           Math.min(this._scrollPosition + this._physicalTop, 0);
 
       if (deltaHeight) {
         this._physicalTop = this._physicalTop - deltaHeight;
-
         // juking scroll position during interial scrolling on iOS is no bueno
         if (!IOS_TOUCH_SCROLLING) {
-          this._resetScrollPosition(this._scroller.scrollTop - deltaHeight);
+          this._resetScrollPosition(this._scrollTop - deltaHeight);
         }
       }
     },
@@ -2892,9 +3623,9 @@ i18nTemplate.process(document, loadTimeData);
      * Sets the position of the scroll.
      */
     _resetScrollPosition: function(pos) {
-      if (this._scroller) {
-        this._scroller.scrollTop = pos;
-        this._scrollPosition = this._scroller.scrollTop;
+      if (this.scrollTarget) {
+        this._scrollTop = pos;
+        this._scrollPosition = this._scrollTop;
       }
     },
 
@@ -2905,7 +3636,7 @@ i18nTemplate.process(document, loadTimeData);
      */
     _updateScrollerSize: function(forceUpdate) {
       this._estScrollHeight = (this._physicalBottom +
-          Math.max(this._virtualCount - this._physicalCount - this._virtualStartVal, 0) * this._physicalAverage);
+          Math.max(this._virtualCount - this._physicalCount - this._virtualStart, 0) * this._physicalAverage);
 
       forceUpdate = forceUpdate || this._scrollHeight === 0;
       forceUpdate = forceUpdate || this._scrollPosition >= this._estScrollHeight - this._physicalSize;
@@ -2929,20 +3660,18 @@ i18nTemplate.process(document, loadTimeData);
         return;
       }
 
-      var firstVisible = this.firstVisibleIndex;
+      Polymer.dom.flush();
 
+      var firstVisible = this.firstVisibleIndex;
       idx = Math.min(Math.max(idx, 0), this._virtualCount-1);
 
       // start at the previous virtual item
       // so we have a item above the first visible item
       this._virtualStart = idx - 1;
-
       // assign new models
       this._assignModels();
-
       // measure the new sizes
       this._updateMetrics();
-
       // estimate new physical offset
       this._physicalTop = this._virtualStart * this._physicalAverage;
 
@@ -2957,21 +3686,17 @@ i18nTemplate.process(document, loadTimeData);
         currentTopItem = (currentTopItem + 1) % this._physicalCount;
         currentVirtualItem++;
       }
-
       // update the scroller size
       this._updateScrollerSize(true);
-
       // update the position of the items
       this._positionItems();
-
       // set the new scroll position
-      this._resetScrollPosition(this._physicalTop + targetOffsetTop + 1);
-
+      this._resetScrollPosition(this._physicalTop + this._scrollerPaddingTop + targetOffsetTop + 1);
       // increase the pool of physical items if needed
       this._increasePoolIfNeeded();
-
       // clear cached visible index
       this._firstVisibleIndexVal = null;
+      this._lastVisibleIndexVal = null;
     },
 
     /**
@@ -2987,7 +3712,11 @@ i18nTemplate.process(document, loadTimeData);
      * when the element is resized.
      */
     _resizeHandler: function() {
-      this.debounce('resize', function() {
+      // iOS fires the resize event when the address bar slides up
+      if (IOS && Math.abs(this._viewportSize - this._scrollTargetHeight) < 100) {
+        return;
+      }
+      this._debounceTemplate(function() {
         this._render();
         if (this._itemsRendered && this._physicalItems && this._isVisible) {
           this._resetAverage();
@@ -3013,12 +3742,14 @@ i18nTemplate.process(document, loadTimeData);
      * @param {(Object|number)} item The item object or its index
      */
     _getNormalizedItem: function(item) {
-      if (typeof item === 'number') {
-        item = this.items[item];
-        if (!item) {
-          throw new RangeError('<item> not found');
+      if (this._collection.getKey(item) === undefined) {
+        if (typeof item === 'number') {
+          item = this.items[item];
+          if (!item) {
+            throw new RangeError('<item> not found');
+          }
+          return item;
         }
-      } else if (this._collection.getKey(item) === undefined) {
         throw new TypeError('<item> should be a valid item');
       }
       return item;
@@ -3041,6 +3772,7 @@ i18nTemplate.process(document, loadTimeData);
         model[this.selectedAs] = true;
       }
       this.$.selector.select(item);
+      this.updateSizeForItem(item);
     },
 
     /**
@@ -3058,6 +3790,7 @@ i18nTemplate.process(document, loadTimeData);
         model[this.selectedAs] = false;
       }
       this.$.selector.deselect(item);
+      this.updateSizeForItem(item);
     },
 
     /**
@@ -3103,20 +3836,15 @@ i18nTemplate.process(document, loadTimeData);
      * it will remove the listener otherwise.
      */
     _selectionEnabledChanged: function(selectionEnabled) {
-      if (selectionEnabled) {
-        this.listen(this, 'tap', '_selectionHandler');
-        this.listen(this, 'keypress', '_selectionHandler');
-      } else {
-        this.unlisten(this, 'tap', '_selectionHandler');
-        this.unlisten(this, 'keypress', '_selectionHandler');
-      }
+      var handler = selectionEnabled ? this.listen : this.unlisten;
+      handler.call(this, this, 'tap', '_selectionHandler');
     },
 
     /**
      * Select an item from an event object.
      */
     _selectionHandler: function(e) {
-      if (e.type !== 'keypress' || e.keyCode === 13) {
+      if (this.selectionEnabled) {
         var model = this.modelForElement(e.target);
         if (model) {
           this.toggleSelectionForItem(model[this.as]);
@@ -3144,6 +3872,135 @@ i18nTemplate.process(document, loadTimeData);
         this._updateMetrics([pidx]);
         this._positionItems();
       }
+    },
+
+    _isIndexRendered: function(idx) {
+      return idx >= this._virtualStart && idx <= this._virtualEnd;
+    },
+
+    _getPhysicalItemForIndex: function(idx, force) {
+      if (!this._collection) {
+        return null;
+      }
+      if (!this._isIndexRendered(idx)) {
+        if (force) {
+          this.scrollToIndex(idx);
+          return this._getPhysicalItemForIndex(idx, false);
+        }
+        return null;
+      }
+      var item = this._getNormalizedItem(idx);
+      var physicalItem = this._physicalItems[this._physicalIndexForKey[this._collection.getKey(item)]];
+
+      return physicalItem || null;
+    },
+
+    _focusPhysicalItem: function(idx) {
+      this._restoreFocusedItem();
+
+      var physicalItem = this._getPhysicalItemForIndex(idx, true);
+      if (!physicalItem) {
+        return;
+      }
+      var SECRET = ~(Math.random() * 100);
+      var model = physicalItem._templateInstance;
+      var focusable;
+
+      model.tabIndex = SECRET;
+      // the focusable element could be the entire physical item
+      if (physicalItem.tabIndex === SECRET) {
+       focusable = physicalItem;
+      }
+      // the focusable element could be somewhere within the physical item
+      if (!focusable) {
+        focusable = Polymer.dom(physicalItem).querySelector('[tabindex="' + SECRET + '"]');
+      }
+      // restore the tab index
+      model.tabIndex = 0;
+      focusable && focusable.focus();
+    },
+
+    _restoreFocusedItem: function() {
+      if (!this._offscreenFocusedItem) {
+        return;
+      }
+      var item = this._getNormalizedItem(this._focusedIndex);
+      var pidx = this._physicalIndexForKey[this._collection.getKey(item)];
+
+      if (pidx !== undefined) {
+        this.translate3d(0, HIDDEN_Y, 0, this._physicalItems[pidx]);
+        this._physicalItems[pidx] = this._offscreenFocusedItem;
+      }
+      this._offscreenFocusedItem = null;
+    },
+
+    _removeFocusedItem: function() {
+      if (!this._offscreenFocusedItem) {
+        return;
+      }
+      Polymer.dom(this).removeChild(this._offscreenFocusedItem);
+      this._offscreenFocusedItem = null;
+      this._focusBackfillItem = null;
+    },
+
+    _createFocusBackfillItem: function() {
+      if (this._offscreenFocusedItem) {
+        return;
+      }
+      var item = this._getNormalizedItem(this._focusedIndex);
+      var pidx = this._physicalIndexForKey[this._collection.getKey(item)];
+
+      this._offscreenFocusedItem = this._physicalItems[pidx];
+      this.translate3d(0, HIDDEN_Y, 0, this._offscreenFocusedItem);
+
+      if (!this._focusBackfillItem) {
+        var stampedTemplate = this.stamp(null);
+        this._focusBackfillItem = stampedTemplate.root.querySelector('*');
+        Polymer.dom(this).appendChild(stampedTemplate.root);
+      }
+      this._physicalItems[pidx] = this._focusBackfillItem;
+    },
+
+    _didFocus: function(e) {
+      var targetModel = this.modelForElement(e.target);
+      var fidx = this._focusedIndex;
+
+      if (!targetModel) {
+        return;
+      }
+      this._restoreFocusedItem();
+
+      if (this.modelForElement(this._offscreenFocusedItem) === targetModel) {
+        this.scrollToIndex(fidx);
+      } else {
+        // restore tabIndex for the currently focused item
+        this._getModelFromItem(this._getNormalizedItem(fidx)).tabIndex = -1;
+        // set the tabIndex for the next focused item
+        targetModel.tabIndex = 0;
+        fidx = /** @type {{index: number}} */(targetModel).index;
+        this._focusedIndex = fidx;
+        // bring the item into view
+        if (fidx < this.firstVisibleIndex || fidx > this.lastVisibleIndex) {
+          this.scrollToIndex(fidx);
+        } else {
+          this._update();
+        }
+      }
+    },
+
+    _didMoveUp: function() {
+      this._focusPhysicalItem(Math.max(0, this._focusedIndex - 1));
+    },
+
+    _didMoveDown: function() {
+      this._focusPhysicalItem(Math.min(this._virtualCount, this._focusedIndex + 1));
+    },
+
+    _didEnter: function(e) {
+      // focus the currently focused physical item
+      this._focusPhysicalItem(this._focusedIndex);
+      // toggle selection
+      this._selectionHandler(/** @type {{keyboardEvent: Event}} */(e.detail).keyboardEvent);
     }
   });
 
@@ -3690,438 +4547,6 @@ Polymer({
     }
 
   });
-(function() {
-    'use strict';
-
-    /**
-     * Chrome uses an older version of DOM Level 3 Keyboard Events
-     *
-     * Most keys are labeled as text, but some are Unicode codepoints.
-     * Values taken from: http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221/keyset.html#KeySet-Set
-     */
-    var KEY_IDENTIFIER = {
-      'U+0008': 'backspace',
-      'U+0009': 'tab',
-      'U+001B': 'esc',
-      'U+0020': 'space',
-      'U+007F': 'del'
-    };
-
-    /**
-     * Special table for KeyboardEvent.keyCode.
-     * KeyboardEvent.keyIdentifier is better, and KeyBoardEvent.key is even better
-     * than that.
-     *
-     * Values from: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent.keyCode#Value_of_keyCode
-     */
-    var KEY_CODE = {
-      8: 'backspace',
-      9: 'tab',
-      13: 'enter',
-      27: 'esc',
-      33: 'pageup',
-      34: 'pagedown',
-      35: 'end',
-      36: 'home',
-      32: 'space',
-      37: 'left',
-      38: 'up',
-      39: 'right',
-      40: 'down',
-      46: 'del',
-      106: '*'
-    };
-
-    /**
-     * MODIFIER_KEYS maps the short name for modifier keys used in a key
-     * combo string to the property name that references those same keys
-     * in a KeyboardEvent instance.
-     */
-    var MODIFIER_KEYS = {
-      'shift': 'shiftKey',
-      'ctrl': 'ctrlKey',
-      'alt': 'altKey',
-      'meta': 'metaKey'
-    };
-
-    /**
-     * KeyboardEvent.key is mostly represented by printable character made by
-     * the keyboard, with unprintable keys labeled nicely.
-     *
-     * However, on OS X, Alt+char can make a Unicode character that follows an
-     * Apple-specific mapping. In this case, we fall back to .keyCode.
-     */
-    var KEY_CHAR = /[a-z0-9*]/;
-
-    /**
-     * Matches a keyIdentifier string.
-     */
-    var IDENT_CHAR = /U\+/;
-
-    /**
-     * Matches arrow keys in Gecko 27.0+
-     */
-    var ARROW_KEY = /^arrow/;
-
-    /**
-     * Matches space keys everywhere (notably including IE10's exceptional name
-     * `spacebar`).
-     */
-    var SPACE_KEY = /^space(bar)?/;
-
-    /**
-     * Transforms the key.
-     * @param {string} key The KeyBoardEvent.key
-     * @param {Boolean} [noSpecialChars] Limits the transformation to
-     * alpha-numeric characters.
-     */
-    function transformKey(key, noSpecialChars) {
-      var validKey = '';
-      if (key) {
-        var lKey = key.toLowerCase();
-        if (lKey === ' ' || SPACE_KEY.test(lKey)) {
-          validKey = 'space';
-        } else if (lKey.length == 1) {
-          if (!noSpecialChars || KEY_CHAR.test(lKey)) {
-            validKey = lKey;
-          }
-        } else if (ARROW_KEY.test(lKey)) {
-          validKey = lKey.replace('arrow', '');
-        } else if (lKey == 'multiply') {
-          // numpad '*' can map to Multiply on IE/Windows
-          validKey = '*';
-        } else {
-          validKey = lKey;
-        }
-      }
-      return validKey;
-    }
-
-    function transformKeyIdentifier(keyIdent) {
-      var validKey = '';
-      if (keyIdent) {
-        if (keyIdent in KEY_IDENTIFIER) {
-          validKey = KEY_IDENTIFIER[keyIdent];
-        } else if (IDENT_CHAR.test(keyIdent)) {
-          keyIdent = parseInt(keyIdent.replace('U+', '0x'), 16);
-          validKey = String.fromCharCode(keyIdent).toLowerCase();
-        } else {
-          validKey = keyIdent.toLowerCase();
-        }
-      }
-      return validKey;
-    }
-
-    function transformKeyCode(keyCode) {
-      var validKey = '';
-      if (Number(keyCode)) {
-        if (keyCode >= 65 && keyCode <= 90) {
-          // ascii a-z
-          // lowercase is 32 offset from uppercase
-          validKey = String.fromCharCode(32 + keyCode);
-        } else if (keyCode >= 112 && keyCode <= 123) {
-          // function keys f1-f12
-          validKey = 'f' + (keyCode - 112);
-        } else if (keyCode >= 48 && keyCode <= 57) {
-          // top 0-9 keys
-          validKey = String(48 - keyCode);
-        } else if (keyCode >= 96 && keyCode <= 105) {
-          // num pad 0-9
-          validKey = String(96 - keyCode);
-        } else {
-          validKey = KEY_CODE[keyCode];
-        }
-      }
-      return validKey;
-    }
-
-    /**
-      * Calculates the normalized key for a KeyboardEvent.
-      * @param {KeyboardEvent} keyEvent
-      * @param {Boolean} [noSpecialChars] Set to true to limit keyEvent.key
-      * transformation to alpha-numeric chars. This is useful with key
-      * combinations like shift + 2, which on FF for MacOS produces
-      * keyEvent.key = @
-      * To get 2 returned, set noSpecialChars = true
-      * To get @ returned, set noSpecialChars = false
-     */
-    function normalizedKeyForEvent(keyEvent, noSpecialChars) {
-      // Fall back from .key, to .keyIdentifier, to .keyCode, and then to
-      // .detail.key to support artificial keyboard events.
-      return transformKey(keyEvent.key, noSpecialChars) ||
-        transformKeyIdentifier(keyEvent.keyIdentifier) ||
-        transformKeyCode(keyEvent.keyCode) ||
-        transformKey(keyEvent.detail.key, noSpecialChars) || '';
-    }
-
-    function keyComboMatchesEvent(keyCombo, event) {
-      // For combos with modifiers we support only alpha-numeric keys
-      var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);
-      return keyEvent === keyCombo.key &&
-        (!keyCombo.hasModifiers || (
-          !!event.shiftKey === !!keyCombo.shiftKey &&
-          !!event.ctrlKey === !!keyCombo.ctrlKey &&
-          !!event.altKey === !!keyCombo.altKey &&
-          !!event.metaKey === !!keyCombo.metaKey)
-        );
-    }
-
-    function parseKeyComboString(keyComboString) {
-      if (keyComboString.length === 1) {
-        return {
-          combo: keyComboString,
-          key: keyComboString,
-          event: 'keydown'
-        };
-      }
-      return keyComboString.split('+').reduce(function(parsedKeyCombo, keyComboPart) {
-        var eventParts = keyComboPart.split(':');
-        var keyName = eventParts[0];
-        var event = eventParts[1];
-
-        if (keyName in MODIFIER_KEYS) {
-          parsedKeyCombo[MODIFIER_KEYS[keyName]] = true;
-          parsedKeyCombo.hasModifiers = true;
-        } else {
-          parsedKeyCombo.key = keyName;
-          parsedKeyCombo.event = event || 'keydown';
-        }
-
-        return parsedKeyCombo;
-      }, {
-        combo: keyComboString.split(':').shift()
-      });
-    }
-
-    function parseEventString(eventString) {
-      return eventString.trim().split(' ').map(function(keyComboString) {
-        return parseKeyComboString(keyComboString);
-      });
-    }
-
-    /**
-     * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing
-     * keyboard commands that pertain to [WAI-ARIA best practices](http://www.w3.org/TR/wai-aria-practices/#kbd_general_binding).
-     * The element takes care of browser differences with respect to Keyboard events
-     * and uses an expressive syntax to filter key presses.
-     *
-     * Use the `keyBindings` prototype property to express what combination of keys
-     * will trigger the event to fire.
-     *
-     * Use the `key-event-target` attribute to set up event handlers on a specific
-     * node.
-     * The `keys-pressed` event will fire when one of the key combinations set with the
-     * `keys` property is pressed.
-     *
-     * @demo demo/index.html
-     * @polymerBehavior
-     */
-    Polymer.IronA11yKeysBehavior = {
-      properties: {
-        /**
-         * The HTMLElement that will be firing relevant KeyboardEvents.
-         */
-        keyEventTarget: {
-          type: Object,
-          value: function() {
-            return this;
-          }
-        },
-
-        /**
-         * If true, this property will cause the implementing element to
-         * automatically stop propagation on any handled KeyboardEvents.
-         */
-        stopKeyboardEventPropagation: {
-          type: Boolean,
-          value: false
-        },
-
-        _boundKeyHandlers: {
-          type: Array,
-          value: function() {
-            return [];
-          }
-        },
-
-        // We use this due to a limitation in IE10 where instances will have
-        // own properties of everything on the "prototype".
-        _imperativeKeyBindings: {
-          type: Object,
-          value: function() {
-            return {};
-          }
-        }
-      },
-
-      observers: [
-        '_resetKeyEventListeners(keyEventTarget, _boundKeyHandlers)'
-      ],
-
-      keyBindings: {},
-
-      registered: function() {
-        this._prepKeyBindings();
-      },
-
-      attached: function() {
-        this._listenKeyEventListeners();
-      },
-
-      detached: function() {
-        this._unlistenKeyEventListeners();
-      },
-
-      /**
-       * Can be used to imperatively add a key binding to the implementing
-       * element. This is the imperative equivalent of declaring a keybinding
-       * in the `keyBindings` prototype property.
-       */
-      addOwnKeyBinding: function(eventString, handlerName) {
-        this._imperativeKeyBindings[eventString] = handlerName;
-        this._prepKeyBindings();
-        this._resetKeyEventListeners();
-      },
-
-      /**
-       * When called, will remove all imperatively-added key bindings.
-       */
-      removeOwnKeyBindings: function() {
-        this._imperativeKeyBindings = {};
-        this._prepKeyBindings();
-        this._resetKeyEventListeners();
-      },
-
-      keyboardEventMatchesKeys: function(event, eventString) {
-        var keyCombos = parseEventString(eventString);
-        for (var i = 0; i < keyCombos.length; ++i) {
-          if (keyComboMatchesEvent(keyCombos[i], event)) {
-            return true;
-          }
-        }
-        return false;
-      },
-
-      _collectKeyBindings: function() {
-        var keyBindings = this.behaviors.map(function(behavior) {
-          return behavior.keyBindings;
-        });
-
-        if (keyBindings.indexOf(this.keyBindings) === -1) {
-          keyBindings.push(this.keyBindings);
-        }
-
-        return keyBindings;
-      },
-
-      _prepKeyBindings: function() {
-        this._keyBindings = {};
-
-        this._collectKeyBindings().forEach(function(keyBindings) {
-          for (var eventString in keyBindings) {
-            this._addKeyBinding(eventString, keyBindings[eventString]);
-          }
-        }, this);
-
-        for (var eventString in this._imperativeKeyBindings) {
-          this._addKeyBinding(eventString, this._imperativeKeyBindings[eventString]);
-        }
-
-        // Give precedence to combos with modifiers to be checked first.
-        for (var eventName in this._keyBindings) {
-          this._keyBindings[eventName].sort(function (kb1, kb2) {
-            var b1 = kb1[0].hasModifiers;
-            var b2 = kb2[0].hasModifiers;
-            return (b1 === b2) ? 0 : b1 ? -1 : 1;
-          })
-        }
-      },
-
-      _addKeyBinding: function(eventString, handlerName) {
-        parseEventString(eventString).forEach(function(keyCombo) {
-          this._keyBindings[keyCombo.event] =
-            this._keyBindings[keyCombo.event] || [];
-
-          this._keyBindings[keyCombo.event].push([
-            keyCombo,
-            handlerName
-          ]);
-        }, this);
-      },
-
-      _resetKeyEventListeners: function() {
-        this._unlistenKeyEventListeners();
-
-        if (this.isAttached) {
-          this._listenKeyEventListeners();
-        }
-      },
-
-      _listenKeyEventListeners: function() {
-        Object.keys(this._keyBindings).forEach(function(eventName) {
-          var keyBindings = this._keyBindings[eventName];
-          var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);
-
-          this._boundKeyHandlers.push([this.keyEventTarget, eventName, boundKeyHandler]);
-
-          this.keyEventTarget.addEventListener(eventName, boundKeyHandler);
-        }, this);
-      },
-
-      _unlistenKeyEventListeners: function() {
-        var keyHandlerTuple;
-        var keyEventTarget;
-        var eventName;
-        var boundKeyHandler;
-
-        while (this._boundKeyHandlers.length) {
-          // My kingdom for block-scope binding and destructuring assignment..
-          keyHandlerTuple = this._boundKeyHandlers.pop();
-          keyEventTarget = keyHandlerTuple[0];
-          eventName = keyHandlerTuple[1];
-          boundKeyHandler = keyHandlerTuple[2];
-
-          keyEventTarget.removeEventListener(eventName, boundKeyHandler);
-        }
-      },
-
-      _onKeyBindingEvent: function(keyBindings, event) {
-        if (this.stopKeyboardEventPropagation) {
-          event.stopPropagation();
-        }
-
-        // if event has been already prevented, don't do anything
-        if (event.defaultPrevented) {
-          return;
-        }
-
-        for (var i = 0; i < keyBindings.length; i++) {
-          var keyCombo = keyBindings[i][0];
-          var handlerName = keyBindings[i][1];
-          if (keyComboMatchesEvent(keyCombo, event)) {
-            this._triggerKeyHandler(keyCombo, handlerName, event);
-            // exit the loop if eventDefault was prevented
-            if (event.defaultPrevented) {
-              return;
-            }
-          }
-        }
-      },
-
-      _triggerKeyHandler: function(keyCombo, handlerName, keyboardEvent) {
-        var detail = Object.create(keyCombo);
-        detail.keyboardEvent = keyboardEvent;
-        var event = new CustomEvent(keyCombo.event, {
-          detail: detail,
-          cancelable: true
-        });
-        this[handlerName].call(this, event);
-        if (event.defaultPrevented) {
-          keyboardEvent.preventDefault();
-        }
-      }
-    };
-  })();
 /**
    * @demo demo/index.html
    * @polymerBehavior
