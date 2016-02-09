@@ -5,7 +5,7 @@
 #ifndef CC_ANIMATION_ANIMATION_TIMELINE_H_
 #define CC_ANIMATION_ANIMATION_TIMELINE_H_
 
-#include <vector>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,8 +16,6 @@ namespace cc {
 
 class AnimationHost;
 class AnimationPlayer;
-
-typedef std::vector<scoped_refptr<AnimationPlayer>> AnimationPlayerList;
 
 // An AnimationTimeline owns a group of AnimationPlayers.
 // This is a cc counterpart for blink::AnimationTimeline (in 1:1 relationship).
@@ -58,10 +56,12 @@ class CC_EXPORT AnimationTimeline : public base::RefCounted<AnimationTimeline> {
   void RemoveDetachedPlayersFromImplThread(AnimationTimeline* timeline) const;
   void PushPropertiesToImplThread(AnimationTimeline* timeline);
 
-  void ErasePlayers(AnimationPlayerList::iterator begin,
-                    AnimationPlayerList::iterator end);
+  void ErasePlayer(scoped_refptr<AnimationPlayer> player);
 
-  AnimationPlayerList players_;
+  // A list of all players which this timeline owns.
+  using IdToPlayerMap = std::unordered_map<int, scoped_refptr<AnimationPlayer>>;
+  IdToPlayerMap id_to_player_map_;
+
   int id_;
   AnimationHost* animation_host_;
 

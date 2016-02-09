@@ -19,8 +19,8 @@ AnimationTimeline::AnimationTimeline(int id)
 }
 
 AnimationTimeline::~AnimationTimeline() {
-  for (auto& player : players_)
-    player->SetAnimationTimeline(nullptr);
+  for (auto& kv : id_to_player_map_)
+    kv.second->SetAnimationTimeline(nullptr);
 }
 
 scoped_refptr<AnimationTimeline> AnimationTimeline::CreateImplInstance() const {
@@ -30,37 +30,32 @@ scoped_refptr<AnimationTimeline> AnimationTimeline::CreateImplInstance() const {
 
 void AnimationTimeline::SetAnimationHost(AnimationHost* animation_host) {
   animation_host_ = animation_host;
-  for (auto& player : players_)
-    player->SetAnimationHost(animation_host);
+  for (auto& kv : id_to_player_map_)
+    kv.second->SetAnimationHost(animation_host);
 }
 
 void AnimationTimeline::AttachPlayer(scoped_refptr<AnimationPlayer> player) {
+  DCHECK(player->id());
   player->SetAnimationHost(animation_host_);
-
   player->SetAnimationTimeline(this);
-  players_.push_back(player);
+  id_to_player_map_.insert(std::make_pair(player->id(), player));
 }
 
 void AnimationTimeline::DetachPlayer(scoped_refptr<AnimationPlayer> player) {
-  for (AnimationPlayerList::iterator iter = players_.begin();
-       iter != players_.end(); ++iter) {
-    if (iter->get() != player)
-      continue;
-
-    ErasePlayers(iter, iter + 1);
-    break;
-  }
+  DCHECK(player->id());
+  ErasePlayer(player);
+  id_to_player_map_.erase(player->id());
 }
 
 AnimationPlayer* AnimationTimeline::GetPlayerById(int player_id) const {
-  for (auto& player : players_)
-    if (player->id() == player_id)
-      return player.get();
-  return nullptr;
+  auto f = id_to_player_map_.find(player_id);
+  return f == id_to_player_map_.end() ? nullptr : f->second.get();
 }
 
 void AnimationTimeline::ClearPlayers() {
-  ErasePlayers(players_.begin(), players_.end());
+  for (auto& kv : id_to_player_map_)
+    ErasePlayer(kv.second);
+  id_to_player_map_.clear();
 }
 
 void AnimationTimeline::PushPropertiesTo(AnimationTimeline* timeline_impl) {
@@ -71,7 +66,8 @@ void AnimationTimeline::PushPropertiesTo(AnimationTimeline* timeline_impl) {
 
 void AnimationTimeline::PushAttachedPlayersToImplThread(
     AnimationTimeline* timeline_impl) const {
-  for (auto& player : players_) {
+  for (auto& kv : id_to_player_map_) {
+    auto& player = kv.second;
     AnimationPlayer* player_impl = timeline_impl->GetPlayerById(player->id());
     if (player_impl)
       continue;
@@ -83,33 +79,30 @@ void AnimationTimeline::PushAttachedPlayersToImplThread(
 
 void AnimationTimeline::RemoveDetachedPlayersFromImplThread(
     AnimationTimeline* timeline_impl) const {
-  AnimationPlayerList& players_impl = timeline_impl->players_;
+  IdToPlayerMap& players_impl = timeline_impl->id_to_player_map_;
 
-  auto to_erase =
-      std::partition(players_impl.begin(), players_impl.end(),
-                     [this](AnimationPlayerList::value_type player_impl) {
-                       return GetPlayerById(player_impl->id());
-                     });
-
-  timeline_impl->ErasePlayers(to_erase, players_impl.end());
+  // Erase all the impl players which |this| doesn't have.
+  for (auto it = players_impl.begin(); it != players_impl.end();) {
+    if (GetPlayerById(it->second->id())) {
+      ++it;
+    } else {
+      timeline_impl->ErasePlayer(it->second);
+      it = players_impl.erase(it);
+    }
+  }
 }
 
-void AnimationTimeline::ErasePlayers(AnimationPlayerList::iterator begin,
-                                     AnimationPlayerList::iterator end) {
-  for (auto i = begin; i != end; ++i) {
-    auto& player = *i;
-    if (player->element_animations())
-      player->DetachLayer();
-    player->SetAnimationTimeline(nullptr);
-    player->SetAnimationHost(nullptr);
-  }
-
-  players_.erase(begin, end);
+void AnimationTimeline::ErasePlayer(scoped_refptr<AnimationPlayer> player) {
+  if (player->element_animations())
+    player->DetachLayer();
+  player->SetAnimationTimeline(nullptr);
+  player->SetAnimationHost(nullptr);
 }
 
 void AnimationTimeline::PushPropertiesToImplThread(
     AnimationTimeline* timeline_impl) {
-  for (auto& player : players_) {
+  for (auto& kv : id_to_player_map_) {
+    AnimationPlayer* player = kv.second.get();
     AnimationPlayer* player_impl = timeline_impl->GetPlayerById(player->id());
     if (player_impl)
       player->PushPropertiesTo(player_impl);
