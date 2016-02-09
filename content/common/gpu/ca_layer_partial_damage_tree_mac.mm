@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/transform.h"
 
@@ -273,6 +274,7 @@ void CALayerPartialDamageTree::CommitCALayers(
     scoped_ptr<CALayerPartialDamageTree> old_tree,
     float scale_factor,
     const gfx::Rect& pixel_damage_rect) {
+  TRACE_EVENT0("gpu", "CALayerPartialDamageTree::CommitCALayers");
   UpdateRootAndPartialDamagePlanes(std::move(old_tree), pixel_damage_rect);
   UpdateCALayers(superlayer, scale_factor);
 }

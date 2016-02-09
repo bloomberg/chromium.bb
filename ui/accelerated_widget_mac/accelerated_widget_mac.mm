@@ -123,9 +123,13 @@ void AcceleratedWidgetMac::GotFrame(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& pixel_size,
     float scale_factor) {
+  TRACE_EVENT0("ui", "AcceleratedWidgetMac::GotFrame");
+
   // If there is no view and therefore no superview to draw into, early-out.
-  if (!view_)
+  if (!view_) {
+    TRACE_EVENT0("ui", "No associated NSView");
     return;
+  }
 
   // Disable the fade-in or fade-out effect if we create or remove layers.
   ScopedCAActionDisabler disabler;
@@ -143,6 +147,8 @@ void AcceleratedWidgetMac::GotFrame(
 void AcceleratedWidgetMac::GotCAContextFrame(CAContextID ca_context_id,
                                              const gfx::Size& pixel_size,
                                              float scale_factor) {
+  TRACE_EVENT0("ui", "AcceleratedWidgetMac::GotCAContextFrame");
+
   // In the layer is replaced, keep the old one around until after the new one
   // is installed to avoid flashes.
   base::scoped_nsobject<CALayerHost> old_ca_context_layer =
@@ -151,6 +157,7 @@ void AcceleratedWidgetMac::GotCAContextFrame(CAContextID ca_context_id,
   // Create the layer to host the layer exported by the GPU process with this
   // particular CAContext ID.
   if ([ca_context_layer_ contextId] != ca_context_id) {
+    TRACE_EVENT0("ui", "Creating a new CALayerHost");
     ca_context_layer_.reset([[CALayerHost alloc] init]);
     [ca_context_layer_ setContextId:ca_context_id];
     [ca_context_layer_
@@ -182,6 +189,8 @@ void AcceleratedWidgetMac::GotIOSurfaceFrame(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& pixel_size,
     float scale_factor) {
+  TRACE_EVENT0("ui", "AcceleratedWidgetMac::GotIOSurfaceFrame");
+
   // If there is not a layer for local frames, create one.
   EnsureLocalLayer();
 

@@ -223,10 +223,12 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
 #if defined(OS_MACOSX)
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
-  TRACE_EVENT0("renderer",
+  TRACE_EVENT0("browser",
       "GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped");
   if (!ui::LatencyInfo::Verify(params.latency_info,
                                "GpuHostMsg_AcceleratedSurfaceBuffersSwapped")) {
+
+    TRACE_EVENT0("browser", "ui::LatencyInfo::Verify failed");
     return;
   }
 
@@ -257,6 +259,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
                                      params.size, params.scale_factor,
                                      &ack_params.vsync_timebase,
                                      &ack_params.vsync_interval);
+  } else {
+    TRACE_EVENT0("browser", "Skipping recycled surface frame");
   }
 
   content::ImageTransportFactory::GetInstance()->OnGpuSwapBuffersCompleted(

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/animation_utils.h"
@@ -28,8 +29,10 @@ bool CALayerTree::ScheduleCALayer(
     unsigned background_color,
     unsigned edge_aa_mask,
     float opacity) {
+  // Excessive logging to debug white screens (crbug.com/583805).
+  // TODO(ccameron): change this back to a DLOG.
   if (has_committed_) {
-    DLOG(ERROR) << "ScheduleCALayer called after CommitScheduledCALayers.";
+    LOG(ERROR) << "ScheduleCALayer called after CommitScheduledCALayers.";
     return false;
   }
   return root_layer_.AddContentLayer(is_clipped, clip_rect, sorting_context_id,
@@ -40,6 +43,7 @@ bool CALayerTree::ScheduleCALayer(
 void CALayerTree::CommitScheduledCALayers(CALayer* superlayer,
                                           scoped_ptr<CALayerTree> old_tree,
                                           float scale_factor) {
+  TRACE_EVENT0("gpu", "CALayerTree::CommitScheduledCALayers");
   RootLayer* old_root_layer = nullptr;
   if (old_tree) {
     DCHECK(old_tree->has_committed_);
@@ -204,7 +208,9 @@ bool CALayerTree::RootLayer::AddContentLayer(
         current_layer.sorting_context_id == sorting_context_id &&
         (current_layer.is_clipped != is_clipped ||
          current_layer.clip_rect != clip_rect)) {
-      DLOG(ERROR) << "CALayer changed clip inside non-zero sorting context.";
+      // Excessive logging to debug white screens (crbug.com/583805).
+      // TODO(ccameron): change this back to a DLOG.
+      LOG(ERROR) << "CALayer changed clip inside non-zero sorting context.";
       return false;
     }
     if (!is_singleton_sorting_context &&
@@ -271,7 +277,11 @@ void CALayerTree::RootLayer::CommitToCA(CALayer* superlayer,
     [superlayer addSublayer:ca_layer];
     [superlayer setBorderWidth:0];
   }
-  DCHECK_EQ([ca_layer superlayer], superlayer);
+  // Excessive logging to debug white screens (crbug.com/583805).
+  // TODO(ccameron): change this back to a DCHECK.
+  if ([ca_layer superlayer] != superlayer) {
+    LOG(ERROR) << "CALayerTree root layer not attached to tree.";
+  }
 
   for (size_t i = 0; i < clip_and_sorting_layers.size(); ++i) {
     ClipAndSortingLayer* old_clip_and_sorting_layer = nullptr;
@@ -299,7 +309,11 @@ void CALayerTree::ClipAndSortingLayer::CommitToCA(
     [ca_layer setAnchorPoint:CGPointZero];
     [superlayer addSublayer:ca_layer];
   }
-  DCHECK_EQ([ca_layer superlayer], superlayer);
+  // Excessive logging to debug white screens (crbug.com/583805).
+  // TODO(ccameron): change this back to a DCHECK.
+  if ([ca_layer superlayer] != superlayer) {
+    LOG(ERROR) << "CALayerTree root layer not attached to tree.";
+  }
 
   if (update_is_clipped)
     [ca_layer setMasksToBounds:is_clipped];
