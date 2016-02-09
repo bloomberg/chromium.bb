@@ -39,9 +39,15 @@ TaskQueueImpl::TaskQueueImpl(
 }
 
 TaskQueueImpl::~TaskQueueImpl() {
+#if DCHECK_IS_ON()
   base::AutoLock lock(any_thread_lock_);
-  if (any_thread().time_domain)
-    any_thread().time_domain->UnregisterQueue(this);
+  // NOTE this check shouldn't fire because |TaskQueueManager::queues_|
+  // contains a strong reference to this TaskQueueImpl and the TaskQueueManager
+  // destructor calls UnregisterTaskQueue on all task queues.
+  DCHECK(any_thread().task_queue_manager == nullptr)
+      << "UnregisterTaskQueue must be called first!";
+
+#endif
 }
 
 TaskQueueImpl::Task::Task()
@@ -109,10 +115,10 @@ TaskQueueImpl::MainThreadOnly::~MainThreadOnly() {}
 
 void TaskQueueImpl::UnregisterTaskQueue() {
   base::AutoLock lock(any_thread_lock_);
-  if (!any_thread().task_queue_manager)
-    return;
   if (main_thread_only().time_domain)
     main_thread_only().time_domain->UnregisterQueue(this);
+  if (!any_thread().task_queue_manager)
+    return;
   any_thread().time_domain = nullptr;
   main_thread_only().time_domain = nullptr;
   any_thread().task_queue_manager->UnregisterTaskQueue(this);
@@ -607,12 +613,19 @@ void TaskQueueImpl::NotifyDidProcessTask(
 
 void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
   base::AutoLock lock(any_thread_lock_);
+  DCHECK(time_domain);
+  // NOTE this is similar to checking |any_thread().task_queue_manager| but the
+  // TaskQueueSelectorTests constructs TaskQueueImpl directly with a null
+  // task_queue_manager.  Instead we check |any_thread().time_domain| which is
+  // another way of asserting that UnregisterTaskQueue has not been called.
+  DCHECK(any_thread().time_domain);
+  if (!any_thread().time_domain)
+    return;
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (time_domain == main_thread_only().time_domain)
     return;
 
-  if (time_domain)
-    main_thread_only().time_domain->MigrateQueue(this, time_domain);
+  main_thread_only().time_domain->MigrateQueue(this, time_domain);
   main_thread_only().time_domain = time_domain;
   any_thread().time_domain = time_domain;
 }

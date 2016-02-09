@@ -17,9 +17,7 @@ TimeDomain::TimeDomain(Observer* observer) : observer_(observer) {}
 
 TimeDomain::~TimeDomain() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  for (internal::TaskQueueImpl* queue : registered_task_queues_) {
-    queue->SetTimeDomain(nullptr);
-  }
+  DCHECK(registered_task_queues_.empty());
 }
 
 void TimeDomain::RegisterQueue(internal::TaskQueueImpl* queue) {

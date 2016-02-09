@@ -1511,6 +1511,9 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4, 5, 6, 1, 2, 3));
 
+  runners_[0]->UnregisterTaskQueue();
+  runners_[1]->UnregisterTaskQueue();
+
   manager_->UnregisterTimeDomain(domain_a.get());
   manager_->UnregisterTimeDomain(domain_b.get());
 }
@@ -1549,6 +1552,8 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
 
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
+
+  runners_[0]->UnregisterTaskQueue();
 
   manager_->UnregisterTimeDomain(domain_a.get());
   manager_->UnregisterTimeDomain(domain_b.get());

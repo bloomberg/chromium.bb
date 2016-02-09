@@ -123,6 +123,12 @@ class TaskQueueSelectorTest : public testing::Test {
     }
   }
 
+  void TearDown() final {
+    for (scoped_refptr<TaskQueueImpl>& task_queue : task_queues_) {
+      task_queue->UnregisterTaskQueue();
+    }
+  }
+
   scoped_refptr<TaskQueueImpl> NewTaskQueueWithBlockReporting() {
     return make_scoped_refptr(new TaskQueueImpl(
         nullptr, virtual_time_domain_.get(),
@@ -382,6 +388,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   WorkQueue* chosen_work_queue;
   EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
+
+  task_queue->UnregisterTaskQueue();
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
@@ -417,6 +425,9 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   selector.RemoveQueue(task_queue.get());
   EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
+
+  task_queue->UnregisterTaskQueue();
+  task_queue2->UnregisterTaskQueue();
 }
 
 struct ChooseOldestWithPriorityTestParam {

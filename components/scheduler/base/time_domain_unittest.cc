@@ -68,6 +68,10 @@ class TimeDomainTest : public testing::Test {
         "test.category", "test.category"));
   }
 
+  void TearDown() final {
+    task_queue_->UnregisterTaskQueue();
+  }
+
   virtual MockTimeDomain* CreateMockTimeDomain() {
     return new MockTimeDomain(nullptr);
   }
