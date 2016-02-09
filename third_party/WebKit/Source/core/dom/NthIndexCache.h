@@ -21,17 +21,15 @@ class CORE_EXPORT NthIndexData final : public NoBaseWillBeGarbageCollected<NthIn
     WTF_MAKE_NONCOPYABLE(NthIndexData);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NthIndexData);
 public:
-    NthIndexData() { }
+    NthIndexData(ContainerNode&);
+    NthIndexData(ContainerNode&, const QualifiedName& type);
 
-    unsigned nthIndex(Element&);
-    unsigned nthIndexOfType(Element&, const QualifiedName&);
-    unsigned nthLastIndex(Element&);
-    unsigned nthLastIndexOfType(Element&, const QualifiedName&);
+    unsigned nthIndex(Element&) const;
+    unsigned nthLastIndex(Element&) const;
+    unsigned nthOfTypeIndex(Element&) const;
+    unsigned nthLastOfTypeIndex(Element&) const;
 
 private:
-    unsigned cacheNthIndices(Element&);
-    unsigned cacheNthIndicesOfType(Element&, const QualifiedName&);
-
     WillBeHeapHashMap<RawPtrWillBeMember<Element>, unsigned> m_elementIndexMap;
     unsigned m_count = 0;
 
@@ -45,38 +43,20 @@ public:
     explicit NthIndexCache(Document&);
     ~NthIndexCache();
 
-    unsigned nthChildIndex(Element& element)
-    {
-        ASSERT(element.parentNode());
-        return ensureNthIndexDataFor(*element.parentNode()).nthIndex(element);
-    }
-
-    unsigned nthChildIndexOfType(Element& element, const QualifiedName& type)
-    {
-        ASSERT(element.parentNode());
-        return nthIndexDataWithTagName(element).nthIndexOfType(element, type);
-    }
-
-    unsigned nthLastChildIndex(Element& element)
-    {
-        ASSERT(element.parentNode());
-        return ensureNthIndexDataFor(*element.parentNode()).nthLastIndex(element);
-    }
-
-    unsigned nthLastChildIndexOfType(Element& element, const QualifiedName& type)
-    {
-        ASSERT(element.parentNode());
-        return nthIndexDataWithTagName(element).nthLastIndexOfType(element, type);
-    }
+    static unsigned nthChildIndex(Element&);
+    static unsigned nthLastChildIndex(Element&);
+    static unsigned nthOfTypeIndex(Element&);
+    static unsigned nthLastOfTypeIndex(Element&);
 
 private:
     using IndexByType = WillBeHeapHashMap<String, OwnPtrWillBeMember<NthIndexData>>;
     using ParentMap = WillBeHeapHashMap<RefPtrWillBeMember<Node>, OwnPtrWillBeMember<NthIndexData>>;
     using ParentMapForType = WillBeHeapHashMap<RefPtrWillBeMember<Node>, OwnPtrWillBeMember<IndexByType>>;
 
-    NthIndexData& ensureNthIndexDataFor(Node&);
-    IndexByType& ensureTypeIndexMap(Node&);
-    NthIndexData& nthIndexDataWithTagName(Element&);
+    void cacheNthIndexDataForParent(Element&);
+    void cacheNthOfTypeIndexDataForParent(Element&);
+    IndexByType& ensureTypeIndexMap(ContainerNode&);
+    NthIndexData* nthTypeIndexDataForParent(Element&) const;
 
     RawPtrWillBeMember<Document> m_document;
     OwnPtrWillBeMember<ParentMap> m_parentMap;
