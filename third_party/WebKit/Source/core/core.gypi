@@ -938,6 +938,8 @@
             'animation/PrimitiveInterpolation.h',
             'animation/PropertyHandle.cpp',
             'animation/PropertyHandle.h',
+            'animation/PropertyInterpolationTypesMapping.cpp',
+            'animation/PropertyInterpolationTypesMapping.h',
             'animation/SVGAngleInterpolationType.cpp',
             'animation/SVGAngleInterpolationType.h',
             'animation/SVGIntegerInterpolationType.cpp',

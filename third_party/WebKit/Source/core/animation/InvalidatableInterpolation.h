@@ -7,12 +7,11 @@
 
 #include "core/animation/InterpolationType.h"
 #include "core/animation/PrimitiveInterpolation.h"
+#include "core/animation/PropertyInterpolationTypesMapping.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/animation/TypedInterpolationValue.h"
 
 namespace blink {
-
-using InterpolationTypes = Vector<OwnPtr<const InterpolationType>>;
 
 // TODO(alancutter): This class will replace *StyleInterpolation and Interpolation.
 // For now it needs to distinguish itself during the refactor and temporarily has an ugly name.
