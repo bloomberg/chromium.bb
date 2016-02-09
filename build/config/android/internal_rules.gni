@@ -2092,15 +2092,9 @@ template("test_runner_script") {
       ]
     }
     if (defined(invoker.incremental_install) && invoker.incremental_install) {
-      test_runner_args += [ "--incremental-install" ]
-
-      # These can still be overridden, but make more better defaults during
-      # development.
       test_runner_args += [
-        "--enable-device-cache",
-        "--extract-test-list-from-filter",
-        "--num_retries=0",
-        "--skip-clear-data",  # Clearing wipes optimized dex files.
+        "--incremental-install",
+        "--fast-local-dev",
       ]
     }
     if (is_asan) {

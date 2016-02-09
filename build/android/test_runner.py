@@ -120,6 +120,20 @@ def AddCommonOptions(parser):
       help='If set, will merge logcats recorded during test run and dump them '
            'to the specified file.')
 
+  class FastLocalDevAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+      namespace.verbose_count = max(namespace.verbose_count, 1)
+      namespace.num_retries = 0
+      namespace.enable_device_cache = True
+      namespace.skip_clear_data = True
+      namespace.extract_test_list_from_filter = True
+
+  group.add_argument('--fast-local-dev', type=bool, nargs=0,
+                     action=FastLocalDevAction,
+                     help='Alias for: --verbose --num-retries=0 '
+                          '--enable-device-cache --skip-clear-data '
+                          '--extract-test-list-from-filter')
+
 def ProcessCommonOptions(args):
   """Processes and handles all common options."""
   run_tests_helper.SetLogLevel(args.verbose_count)
