@@ -193,6 +193,7 @@
       'domain_reliability/context_unittest.cc',
       'domain_reliability/dispatcher_unittest.cc',
       'domain_reliability/google_configs_unittest.cc',
+      'domain_reliability/header_unittest.cc',
       'domain_reliability/monitor_unittest.cc',
       'domain_reliability/scheduler_unittest.cc',
       'domain_reliability/test_util.cc',

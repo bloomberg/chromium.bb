@@ -337,21 +337,6 @@ TEST_F(DomainReliabilityMonitorTest, WildcardDoesntMatchSubsubdomain) {
   EXPECT_EQ(0u, CountQueuedBeacons(context));
 }
 
-TEST_F(DomainReliabilityMonitorTest, WildcardPrefersSelfToSelfWildcard) {
-  DomainReliabilityContext* context1 =
-      CreateAndAddContextForOrigin(GURL("https://wildcard/"), false);
-  DomainReliabilityContext* context2 =
-      CreateAndAddContextForOrigin(GURL("https://wildcard/"), true);
-
-  RequestInfo request = MakeRequestInfo();
-  request.url = GURL("http://wildcard/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
-  OnRequestLegComplete(request);
-
-  EXPECT_EQ(1u, CountQueuedBeacons(context1));
-  EXPECT_EQ(0u, CountQueuedBeacons(context2));
-}
-
 TEST_F(DomainReliabilityMonitorTest, WildcardPrefersSelfToParentWildcard) {
   DomainReliabilityContext* context1 =
       CreateAndAddContextForOrigin(GURL("https://test.wildcard/"), false);

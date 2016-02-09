@@ -77,6 +77,27 @@ bool DomainReliabilityConfig::IsValid() const {
   return true;
 }
 
+bool DomainReliabilityConfig::Equals(const DomainReliabilityConfig& other)
+    const {
+  if (include_subdomains != other.include_subdomains ||
+      collectors.size() != other.collectors.size() ||
+      success_sample_rate != other.success_sample_rate ||
+      failure_sample_rate != other.failure_sample_rate ||
+      path_prefixes.size() != other.path_prefixes.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < collectors.size(); ++i)
+    if (*collectors[i] != *other.collectors[i])
+      return false;
+
+  for (size_t i = 0; i < path_prefixes.size(); ++i)
+    if (*path_prefixes[i] != *other.path_prefixes[i])
+      return false;
+
+  return true;
+}
+
 double DomainReliabilityConfig::GetSampleRate(bool request_successful) const {
   return request_successful ? success_sample_rate : failure_sample_rate;
 }

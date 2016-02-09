@@ -158,6 +158,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
   void OnRequestLegComplete(const RequestInfo& info);
 
+  void MaybeHandleHeader(const RequestInfo& info);
+
   bool OnPrefThread() const {
     return pref_task_runner_->BelongsToCurrentThread();
   }

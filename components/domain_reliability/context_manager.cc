@@ -26,6 +26,49 @@ void DomainReliabilityContextManager::RouteBeacon(
   context->OnBeacon(std::move(beacon));
 }
 
+void DomainReliabilityContextManager::SetConfig(
+    const GURL& origin,
+    scoped_ptr<DomainReliabilityConfig> config,
+    base::TimeDelta max_age) {
+  std::string key = origin.host();
+
+  if (!contexts_.count(key) && !removed_contexts_.count(key)) {
+    LOG(WARNING) << "Ignoring NEL header for unknown origin " << origin.spec()
+                 << ".";
+    return;
+  }
+
+  if (contexts_.count(key)) {
+    // Currently, there is no easy way to change the config of a context, so
+    // updating the config requires recreating the context, which loses
+    // pending beacons and collector backoff state. Therefore, don't do so
+    // needlessly; make sure the config has actually changed before recreating
+    // the context.
+    if (contexts_[key]->config().Equals(*config)) {
+      DVLOG(1) << "Ignoring unchanged NEL header for existing origin "
+               << origin.spec() << ".";
+      return;
+    }
+    // TODO(ttuttle): Make Context accept Config changes.
+  }
+
+  DVLOG(1) << "Adding/replacing context for existing origin " << origin.spec()
+           << ".";
+  removed_contexts_.erase(key);
+  config->origin = origin;
+  AddContextForConfig(std::move(config));
+}
+
+void DomainReliabilityContextManager::ClearConfig(const GURL& origin) {
+  std::string key = origin.host();
+
+  if (contexts_.count(key)) {
+    DVLOG(1) << "Removing context for existing origin " << origin.spec() << ".";
+    contexts_.erase(key);
+    removed_contexts_.insert(key);
+  }
+}
+
 void DomainReliabilityContextManager::ClearBeaconsInAllContexts() {
   for (auto& context_entry : contexts_)
     context_entry.second->ClearBeacons();
@@ -33,18 +76,15 @@ void DomainReliabilityContextManager::ClearBeaconsInAllContexts() {
 
 DomainReliabilityContext* DomainReliabilityContextManager::AddContextForConfig(
     scoped_ptr<const DomainReliabilityConfig> config) {
+  std::string key = config->origin.host();
   // TODO(ttuttle): Convert this to actual origin.
 
-  std::string wildcard_prefix = "";
-  if (config->include_subdomains)
-    wildcard_prefix = "*.";
-
-  std::string domain = wildcard_prefix + config->origin.host();
   scoped_ptr<DomainReliabilityContext> context =
       context_factory_->CreateContextForConfig(std::move(config));
-  DomainReliabilityContext** entry = &contexts_[domain];
+  DomainReliabilityContext** entry = &contexts_[key];
   if (*entry)
     delete *entry;
+
   *entry = context.release();
   return *entry;
 }
@@ -70,21 +110,18 @@ DomainReliabilityContext* DomainReliabilityContextManager::GetContextForHost(
   if (context_it != contexts_.end())
     return context_it->second;
 
-  std::string host_with_asterisk = "*." + host;
-  context_it = contexts_.find(host_with_asterisk);
-  if (context_it != contexts_.end())
-    return context_it->second;
-
   size_t dot_pos = host.find('.');
   if (dot_pos == std::string::npos)
     return nullptr;
 
   // TODO(ttuttle): Make sure parent is not in PSL before using.
 
-  std::string parent_with_asterisk = "*." + host.substr(dot_pos + 1);
-  context_it = contexts_.find(parent_with_asterisk);
-  if (context_it != contexts_.end())
+  std::string parent_host = host.substr(dot_pos + 1);
+  context_it = contexts_.find(parent_host);
+  if (context_it != contexts_.end()
+      && context_it->second->config().include_subdomains) {
     return context_it->second;
+  }
 
   return nullptr;
 }

@@ -31,6 +31,7 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
       const base::StringPiece& json);
 
   bool IsValid() const;
+  bool Equals(const DomainReliabilityConfig& other) const;
 
   double GetSampleRate(bool request_successful) const;
 
