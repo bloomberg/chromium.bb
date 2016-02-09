@@ -11,6 +11,7 @@
 namespace ash {
 
 SnapToPixelLayoutManager::SnapToPixelLayoutManager(aura::Window* container) {
+  DCHECK(container->GetProperty(kSnapChildrenToPixelBoundary));
 }
 
 SnapToPixelLayoutManager::~SnapToPixelLayoutManager() {

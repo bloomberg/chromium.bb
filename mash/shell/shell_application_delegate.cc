@@ -5,15 +5,8 @@
 #include "mash/shell/shell_application_delegate.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
-
-namespace {
-
-const char kUseAshSysui[] = "use-ash-sysui";
-
-}  // namespace
 
 namespace mash {
 namespace shell {
@@ -29,7 +22,8 @@ void ShellApplicationDelegate::Initialize(mojo::Shell* shell,
   shell_ = shell;
   StartBrowserDriver();
   StartWindowManager();
-  StartSystemUI();
+  StartWallpaper();
+  StartShelf();
   StartQuickLaunch();
 }
 
@@ -76,19 +70,6 @@ void ShellApplicationDelegate::StartWindowManager() {
       "mojo:desktop_wm",
       base::Bind(&ShellApplicationDelegate::StartWindowManager,
                  base::Unretained(this)));
-}
-
-void ShellApplicationDelegate::StartSystemUI() {
-  static bool use_ash =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kUseAshSysui);
-  if (use_ash) {
-    StartRestartableService("mojo:ash_sysui",
-                            base::Bind(&ShellApplicationDelegate::StartSystemUI,
-                                       base::Unretained(this)));
-  } else {
-    StartWallpaper();
-    StartShelf();
-  }
 }
 
 void ShellApplicationDelegate::StartWallpaper() {

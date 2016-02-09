@@ -53,7 +53,9 @@ UserActivityDetector::UserActivityDetector() {
 
   ui::PlatformEventSource* platform_event_source =
       ui::PlatformEventSource::GetInstance();
-  // TODO(sad): Need a PES for mus.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  CHECK(platform_event_source);
+#endif
   if (platform_event_source)
     platform_event_source->AddPlatformEventObserver(this);
 }
@@ -61,6 +63,9 @@ UserActivityDetector::UserActivityDetector() {
 UserActivityDetector::~UserActivityDetector() {
   ui::PlatformEventSource* platform_event_source =
       ui::PlatformEventSource::GetInstance();
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  CHECK(platform_event_source);
+#endif
   if (platform_event_source)
     platform_event_source->RemovePlatformEventObserver(this);
   g_instance = nullptr;

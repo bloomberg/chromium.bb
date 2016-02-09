@@ -48,7 +48,6 @@ class ShellApplicationDelegate
               mojo::InterfaceRequest<mash::shell::mojom::Shell> r) override;
 
   void StartWindowManager();
-  void StartSystemUI();
   void StartWallpaper();
   void StartShelf();
   void StartBrowserDriver();

@@ -23,7 +23,6 @@
 namespace aura {
 namespace client {
 class DefaultCaptureClient;
-class ScreenPositionClient;
 class WindowTreeClient;
 }
 class Window;
@@ -74,8 +73,6 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   static void NotifyFrameChanged(mus::WindowTreeConnection* connection);
 
   mus::Window* window() { return window_; }
-
-  aura::Window* GetRootWindow();
 
   void OnPlatformWindowClosed();
   void OnActivationChanged(bool active);
@@ -203,6 +200,8 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
  private:
   mus::Window* window_;
 
+  mojo::Shell* shell_;
+
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   const mus::mojom::SurfaceType surface_type_;
@@ -218,7 +217,6 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   scoped_ptr<wm::FocusController> focus_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
-  scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
   base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMus);

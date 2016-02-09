@@ -34,10 +34,6 @@ mojo_native_application("shell") {
     "//mash/wallpaper",
     "//mash/wm",
   ]
-
-  if (use_ash) {
-    data_deps += [ "//ash/mus" ]
-  }
 }
 
 mojo_application_manifest("manifest") {

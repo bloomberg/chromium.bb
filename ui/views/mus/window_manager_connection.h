@@ -48,9 +48,6 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   mus::Window* NewWindow(const std::map<std::string,
                          std::vector<uint8_t>>& properties);
 
-  NativeWidget* CreateNativeWidgetMus(const Widget::InitParams& init_params,
-                                      internal::NativeWidgetDelegate* delegate);
-
  private:
   explicit WindowManagerConnection(mojo::Shell* shell);
   ~WindowManagerConnection() override;
@@ -62,6 +59,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
 
+  NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
+                                   internal::NativeWidgetDelegate* delegate);
 
   mojo::Shell* shell_;
   scoped_ptr<ScreenMus> screen_;
