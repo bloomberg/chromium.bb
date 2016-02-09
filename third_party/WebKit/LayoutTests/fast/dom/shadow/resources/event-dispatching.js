@@ -116,16 +116,6 @@ function dumpTouchList(touches) {
     return result;
 }
 
-function dumpComposedShadowTree(node, indent)
-{
-    indent = indent || "";
-    var output = indent + dumpNode(node) + "\n";
-    var child;
-    for (child = internals.firstChildInFlatTree(node); child; child = internals.nextSiblingInFlatTree(child))
-         output += dumpComposedShadowTree(child, indent + "\t");
-    return output;
-}
-
 function addEventListeners(nodes)
 {
     for (var i = 0; i < nodes.length; ++i) {
@@ -187,5 +177,5 @@ function showSandboxTree()
 {
     var sandbox = document.getElementById('sandbox');
     sandbox.offsetLeft;
-    debug('\n\nComposed Shadow Tree will be:\n' + dumpComposedShadowTree(sandbox));
+    debug('\n\nFlat Tree will be:\n' + dumpFlatTree(sandbox));
 }

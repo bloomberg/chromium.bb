@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Multiple shadow root without shadow element
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#c
 
@@ -17,7 +17,7 @@ Traverse in backward.
 #a
 
 Multiple shadow root with shadow element
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#c
 	#b
@@ -35,7 +35,7 @@ Traverse in backward.
 #a
 
 Multiple shadow root with shadow element, case 2
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#f
 	#c
@@ -59,7 +59,7 @@ Traverse in backward.
 #a
 
 shadow reprojection
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 		#d
@@ -80,7 +80,7 @@ Traverse in backward.
 #a
 
 shadow reprojection, take 2
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#d
 		#f
@@ -101,7 +101,7 @@ Traverse in backward.
 #a
 
 Ignore shadow fallback elements
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#i
 		#k
@@ -134,7 +134,7 @@ Traverse in backward.
 #a
 
 with inactive insertion points
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#s
 		#u

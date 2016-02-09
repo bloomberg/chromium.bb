@@ -10,23 +10,23 @@
 <script>
 description("Tests for Composed Shadow DOM Tree Traversal APIs. Can only run within DRT");
 
-function testComposedShadowTree(node)
+function testFlatTree(node)
 {
     var sandbox = document.getElementById('sandbox');
     sandbox.innerHTML = '';
     sandbox.appendChild(node);
     document.body.offsetLeft;
-    showComposedShadowTree(node);
+    showFlatTree(node);
 }
 
 debug('ShadowRoot should be used.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'})),
               createDOM('div', {'id': 'c'})));
 
 debug('A content element should select light children');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'}),
                                createDOM('content')),
@@ -34,7 +34,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'd'})));
 
 debug('Test for content element selector.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'}),
                                createDOM('content', {'select': '#d'})),
@@ -43,7 +43,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'e'})));
 
 debug('Light children should be selected only at once.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'}),
                                createDOM('content', {'select': '#d'}),
@@ -53,7 +53,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'e'})));
 
 debug('A content element can have fallback elements.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'}),
                                createDOM('content', {'select': '#z'},
@@ -62,7 +62,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'c'})));
 
 debug('Fallback elements should not be used if a content element selects an element.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'}),
                                createDOM('content', {'select': '#c'},
@@ -71,13 +71,13 @@ testComposedShadowTree(
               createDOM('div', {'id': 'c'})));
 
 debug('Test for traversal, starting with a fallback element which is not used.');
-showComposedShadowTree(getNodeInTreeOfTrees('a/f1'));
+showFlatTree(getNodeInTreeOfTrees('a/f1'));
 showNextNode(getNodeInTreeOfTrees('a/f1'));
 showNextNode(getNodeInTreeOfTrees('a/f2'));
 debug('');
 
 debug('Test for Nested ShadowRoots.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'},
                                          createShadowRoot(createDOM('div', {'id': 'c'}),
@@ -91,7 +91,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'i'})));
 
 debug('Test for Multiple ShadowRoots.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'}),
                                createDOM('content'),
@@ -102,13 +102,13 @@ testComposedShadowTree(
               createDOM('div', {'id': 'f'})));
 
 debug('Test for inactive insertion points.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createDOM('content', {'id': 'b'},
                         createDOM('content', {'id': 'c'}))));
 
 debug('Test for an orphaned shadow subtree.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(
                   createDOM('div', {'id': 'b'},
@@ -117,10 +117,10 @@ testComposedShadowTree(
                   createDOM('div', {'id': 'd'}))));
 
 debug('Test for traversal, starting with a node in an orphaned shadow subtree.');
-showComposedShadowTree(getNodeInTreeOfTrees('a/b'));
+showFlatTree(getNodeInTreeOfTrees('a/b'));
 
 debug('Test for a content element which does not select any nodes nor have fallback elements.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('content', {'select': '#none'}),
                                createDOM('div', {'id': 'b'}),
@@ -129,7 +129,7 @@ testComposedShadowTree(
                                createDOM('content', {'select': '#none'}))));
 
 debug('Test for a nested insertion point.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'},
                                          createShadowRoot(createDOM('content', {})),
@@ -137,7 +137,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'c'})));
 
 debug('Test for nested insertion points. Some of them are either empty insertion points or inactive insertion points.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('content', {'select': '#none'}),
                                createDOM('div', {'id': 'b'},
@@ -155,7 +155,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'f', 'class': 'select-4'})));
 
 debug('Test for a re-projection.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(
                   createDOM('div', {'id': 'b'},
@@ -164,7 +164,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'c'})));
 
 debug('Test for a content element which is selected by another content element.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(
                   createDOM('div', {'id': 'b'},
@@ -177,7 +177,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'host-child'})));
 
 debug('Test for a reprojection. Content elements should be used in document order.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(
                   createDOM('content', {'select': '#host-child1'}),
@@ -188,7 +188,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'host-child2', 'class': 'child'})));
 
 debug('Test for complex re-projections.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(
                   createDOM('div', {'id': 'b'},
@@ -214,7 +214,7 @@ testComposedShadowTree(
               createDOM('div', {'id': 'child-2', 'class': 'foo'})));
 
 debug('Test for a shadow insertion point where nothing is distributed.');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(),
               createShadowRoot(

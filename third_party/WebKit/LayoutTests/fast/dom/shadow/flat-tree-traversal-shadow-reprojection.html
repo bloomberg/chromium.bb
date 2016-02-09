@@ -10,23 +10,23 @@
 <script>
 description("Tests for Composed Shadow DOM Tree Traversal APIs. Can only run within DRT");
 
-function testComposedShadowTree(node)
+function testFlatTree(node)
 {
     var sandbox = document.getElementById('sandbox');
     sandbox.innerHTML = '';
     sandbox.appendChild(node);
     document.body.offsetLeft;
-    showComposedShadowTree(node);
+    showFlatTree(node);
 }
 
 debug('Multiple shadow root without shadow element');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'})),
               createShadowRoot(createDOM('div', {'id': 'c'}))));
 
 debug('Multiple shadow root with shadow element');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'})),
               createShadowRoot(createDOM('div', {'id': 'c'}),
@@ -34,7 +34,7 @@ testComposedShadowTree(
                                createDOM('div', {'id': 'e'}))));
 
 debug('Multiple shadow root with shadow element, case 2');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createShadowRoot(createDOM('div', {'id': 'b'})),
               createShadowRoot(createDOM('div', {'id': 'c'}),
@@ -45,7 +45,7 @@ testComposedShadowTree(
                                createDOM('div', {'id': 'h'}))));
 
 debug('shadow reprojection');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createDOM('div', {'id': 'a-child'}),
               createShadowRoot(createDOM('div', {'id': 'b'},
@@ -55,7 +55,7 @@ testComposedShadowTree(
                                                           createDOM('div', {'id': 'f'}))))));
 
 debug('shadow reprojection, take 2');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createDOM('div', {'id': 'b'}),
               createShadowRoot(createDOM('shadow', {'id': 'c'})),
@@ -66,7 +66,7 @@ testComposedShadowTree(
                                                           createDOM('div', {'id': 'h'}))))));
 
 debug('Ignore shadow fallback elements');
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createDOM('div', {'id': 'b'}),
               createShadowRoot(createDOM('div', {'id': 'c'}),
@@ -82,7 +82,7 @@ testComposedShadowTree(
                                                           createDOM('div', {'id': 'm'}))))));
 
 debug('with inactive insertion points')
-testComposedShadowTree(
+testFlatTree(
     createDOM('div', {'id': 'a'},
               createDOM('content', {'id': 'b'},
                         createDOM('div', {'id': 'c'})),

@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 ShadowRoot should be used.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 
@@ -17,7 +17,7 @@ Traverse in backward.
 #a
 
 A content element should select light children
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 	#c
@@ -35,7 +35,7 @@ Traverse in backward.
 #a
 
 Test for content element selector.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 	#d
@@ -50,7 +50,7 @@ Traverse in backward.
 #a
 
 Light children should be selected only at once.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 	#d
@@ -71,7 +71,7 @@ Traverse in backward.
 #a
 
 A content element can have fallback elements.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 	#f1
@@ -89,7 +89,7 @@ Traverse in backward.
 #a
 
 Fallback elements should not be used if a content element selects an element.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 	#c
@@ -104,7 +104,7 @@ Traverse in backward.
 #a
 
 Test for traversal, starting with a fallback element which is not used.
-Composed Shadow Tree:
+Flat Tree:
 #f1
 	#f2
 
@@ -119,7 +119,7 @@ Next node of [#f1] is [#f2]
 Next node of [#f2] is [null]
 
 Test for Nested ShadowRoots.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 		#c
@@ -152,7 +152,7 @@ Traverse in backward.
 #a
 
 Test for Multiple ShadowRoots.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#d
 	#b
@@ -176,7 +176,7 @@ Traverse in backward.
 #a
 
 Test for inactive insertion points.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 		#c
@@ -191,7 +191,7 @@ Traverse in backward.
 #a
 
 Test for an orphaned shadow subtree.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#d
 
@@ -203,7 +203,7 @@ Traverse in backward.
 #a
 
 Test for traversal, starting with a node in an orphaned shadow subtree.
-Composed Shadow Tree:
+Flat Tree:
 #b
 	#c
 
@@ -215,7 +215,7 @@ Traverse in backward.
 #b
 
 Test for a content element which does not select any nodes nor have fallback elements.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 	#c
@@ -230,7 +230,7 @@ Traverse in backward.
 #a
 
 Test for a nested insertion point.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 		#c
@@ -245,7 +245,7 @@ Traverse in backward.
 #a
 
 Test for nested insertion points. Some of them are either empty insertion points or inactive insertion points.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 		#c
@@ -266,7 +266,7 @@ Traverse in backward.
 #a
 
 Test for a re-projection.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 		#c
@@ -281,7 +281,7 @@ Traverse in backward.
 #a
 
 Test for a content element which is selected by another content element.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 		#most-inner-child
@@ -299,7 +299,7 @@ Traverse in backward.
 #a
 
 Test for a reprojection. Content elements should be used in document order.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#host-child1
 	#b
@@ -317,7 +317,7 @@ Traverse in backward.
 #a
 
 Test for complex re-projections.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 		#child-1
@@ -353,7 +353,7 @@ Traverse in backward.
 #a
 
 Test for a shadow insertion point where nothing is distributed.
-Composed Shadow Tree:
+Flat Tree:
 #a
 	#b
 	#c
