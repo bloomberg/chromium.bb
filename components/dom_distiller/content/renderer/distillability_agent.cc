@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/metrics/histogram.h"
+
 #include "components/dom_distiller/content/common/distiller_messages.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
@@ -49,17 +51,14 @@ bool IsLast(bool is_loaded) {
 }
 
 bool IsDistillablePageAdaboost(WebDocument& doc,
-                               const DistillablePageDetector* detector) {
+                               const DistillablePageDetector* detector,
+                               bool is_last) {
   WebDistillabilityFeatures features = doc.distillabilityFeatures();
   GURL parsed_url(doc.url());
   if (!parsed_url.is_valid()) {
     return false;
   }
-  // The adaboost model is only applied to non-mobile pages.
-  if (features.isMobileFriendly) {
-    return false;
-  }
-  return detector->Classify(CalculateDerivedFeatures(
+  bool distillable = detector->Classify(CalculateDerivedFeatures(
     features.openGraph,
     parsed_url,
     features.elementCount,
@@ -69,9 +68,20 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
     features.mozScoreAllSqrt,
     features.mozScoreAllLinear
   ));
+
+  int bucket = static_cast<unsigned>(features.isMobileFriendly) |
+      (static_cast<unsigned>(distillable) << 1);
+  if (is_last) {
+    UMA_HISTOGRAM_ENUMERATION("DomDistiller.PageDistillableAfterLoading",
+        bucket, 4);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("DomDistiller.PageDistillableAfterParsing",
+        bucket, 4);
+  }
+  return distillable && (!features.isMobileFriendly);
 }
 
-bool IsDistillablePage(WebDocument& doc) {
+bool IsDistillablePage(WebDocument& doc, bool is_last) {
   switch (GetDistillerHeuristicsType()) {
     case DistillerHeuristicsType::ALWAYS_TRUE:
       return true;
@@ -79,7 +89,7 @@ bool IsDistillablePage(WebDocument& doc) {
       return doc.distillabilityFeatures().openGraph;
     case DistillerHeuristicsType::ADABOOST_MODEL:
       return IsDistillablePageAdaboost(
-          doc, DistillablePageDetector::GetNewModel());
+          doc, DistillablePageDetector::GetNewModel(), is_last);
     case DistillerHeuristicsType::NONE:
     default:
       return false;
@@ -110,8 +120,9 @@ void DistillabilityAgent::DidMeaningfulLayout(
   bool is_loaded = layout_type == WebMeaningfulLayout::FinishedLoading;
   if (!NeedToUpdate(is_loaded)) return;
 
+  bool is_last = IsLast(is_loaded);
   Send(new FrameHostMsg_Distillability(routing_id(),
-      IsDistillablePage(doc), IsLast(is_loaded)));
+      IsDistillablePage(doc, is_last), is_last));
 }
 
 

@@ -229,11 +229,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(Documen
     if (!body || !head)
         return features;
 
-    if (isMobileFriendly(document)) {
-        features.isMobileFriendly = true;
-        // We only trigger Reader Mode on non-mobile-friendly pages for now.
-        return features;
-    }
+    features.isMobileFriendly = isMobileFriendly(document);
 
     double startTime = monotonicallyIncreasingTime();
 

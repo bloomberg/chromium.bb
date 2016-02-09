@@ -8872,6 +8872,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomDistiller.PageDistillable" enum="DistillableType">
+  <obsolete>
+    PageDistillableAfterLoading and PageDistillableAfterParsing provide more
+    details since 02/2016.
+  </obsolete>
   <owner>cjhopman@chromium.org</owner>
   <summary>
     Records the &quot;Distillable Type&quot; (not distillable, mobile-friendly
@@ -8879,7 +8883,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.PageDistillableAfterLoading"
+    enum="DistillableType2">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Records the &quot;Distillable Type&quot; (mobile-friendly not distillable,
+    mobile-friendly distillable, non-mobile-friendly not distillable,
+    non-mobile-friendly distillable) for each analyzed page after loading.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.PageDistillableAfterParsing"
+    enum="DistillableType2">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Records the &quot;Distillable Type&quot; (mobile-friendly not distillable,
+    mobile-friendly distillable, non-mobile-friendly not distillable,
+    non-mobile-friendly distillable) for each analyzed page after parsing.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.PageDistilledType" enum="DistillableType">
+  <obsolete>
+    Not collected anymore.
+  </obsolete>
   <owner>cjhopman@chromium.org</owner>
   <summary>
     Records the &quot;Distillable Type&quot; (not distillable, mobile-friendly
@@ -61068,8 +61095,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="DistillableType" type="int">
   <int value="0" label="Not distillable"/>
-  <int value="1" label="Non-mobile-friendly Distillable"/>
+  <int value="1" label="Non-mobile-friendly distillable"/>
   <int value="2" label="Mobile-friendly distillable"/>
+</enum>
+
+<enum name="DistillableType2" type="int">
+  <int value="0" label="Non-mobile-friendly, not distillable"/>
+  <int value="1" label="Mobile-friendly, not distillable"/>
+  <int value="2" label="Non-mobile-friendly, distillable"/>
+  <int value="3" label="Mobile-friendly, distillable"/>
 </enum>
 
 <enum name="DllHash" type="int">
