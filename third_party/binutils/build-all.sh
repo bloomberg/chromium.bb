@@ -35,6 +35,9 @@ if ! gpg --verify binutils-$VERSION.tar.bz2.sig; then
   exit 1
 fi
 
+if [ ! -d gperftools ]; then
+  git clone --branch gperftools-2.4 https://github.com/gperftools/gperftools
+fi
 
 # Extract the source
 rm -rf binutils-$VERSION
@@ -69,9 +72,10 @@ for ARCH in i386 amd64; do
     echo ""
     echo "Building chroot for $ARCH"
     echo "============================="
+    GPERFTOOLS_DEPS=autoconf,automake,libtool
     sudo debootstrap \
         --arch=$ARCH \
-        --include=build-essential,flex,bison \
+        --include=build-essential,flex,bison,$GPERFTOOLS_DEPS \
         precise precise-chroot-$ARCH
     echo "============================="
   fi
@@ -87,6 +91,7 @@ for ARCH in i386 amd64; do
   sudo mkdir -p "$BUILDDIR"
   sudo cp -a binutils-$VERSION "$BUILDDIR"
   sudo cp -a build-one.sh "$BUILDDIR"
+  sudo cp -a gperftools "$BUILDDIR"
 
   # Do the build
   PREFIX=
