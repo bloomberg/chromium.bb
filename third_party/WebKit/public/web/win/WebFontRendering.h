@@ -6,17 +6,17 @@
 #define WebFontRendering_h
 
 #include "public/platform/WebCommon.h"
-#include <SkFontHost.h>
+#include "third_party/skia/include/core/SkFontHost.h"
 
+class SkFontMgr;
 class SkTypeface;
-struct IDWriteFactory;
 
 namespace blink {
 
 class WebFontRendering {
 public:
     BLINK_EXPORT static void setUseDirectWrite(bool);
-    BLINK_EXPORT static void setDirectWriteFactory(IDWriteFactory*);
+    BLINK_EXPORT static void setSkiaFontManager(SkFontMgr*);
     BLINK_EXPORT static void setDeviceScaleFactor(float);
     BLINK_EXPORT static void setUseSubpixelPositioning(bool);
     BLINK_EXPORT static void addSideloadedFontForTesting(SkTypeface*);

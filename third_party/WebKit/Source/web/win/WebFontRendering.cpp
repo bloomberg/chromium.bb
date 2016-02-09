@@ -15,9 +15,10 @@ void WebFontRendering::setUseDirectWrite(bool useDirectWrite)
 }
 
 // static
-void WebFontRendering::setDirectWriteFactory(IDWriteFactory* factory)
+void WebFontRendering::setSkiaFontManager(SkFontMgr* fontMgr)
 {
-    FontCache::setDirectWriteFactory(factory);
+    adopted(fontMgr);
+    FontCache::setFontManager(RefPtr<SkFontMgr>(fontMgr));
 }
 
 // static

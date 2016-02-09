@@ -47,7 +47,6 @@
 
 #if OS(WIN)
 #include "SkFontMgr.h"
-struct IDWriteFactory;
 #endif
 
 class SkTypeface;
@@ -114,7 +113,7 @@ public:
     static bool useDirectWrite() { return s_useDirectWrite; }
     static float deviceScaleFactor() { return s_deviceScaleFactor; }
     static void setUseDirectWrite(bool useDirectWrite) { s_useDirectWrite = useDirectWrite; }
-    static void setDirectWriteFactory(IDWriteFactory* factory) { s_directWriteFactory = factory; }
+    static void setFontManager(const RefPtr<SkFontMgr>&);
     static void setDeviceScaleFactor(float deviceScaleFactor) { s_deviceScaleFactor = deviceScaleFactor; }
     static void setUseSubpixelPositioning(bool useSubpixelPositioning) { s_useSubpixelPositioning = useSubpixelPositioning; }
     static void addSideloadedFontForTesting(SkTypeface*);
@@ -188,9 +187,9 @@ private:
     int m_purgePreventCount;
 
 #if OS(WIN)
-    OwnPtr<SkFontMgr> m_fontManager;
+    RefPtr<SkFontMgr> m_fontManager;
     static bool s_useDirectWrite;
-    static IDWriteFactory* s_directWriteFactory;
+    static SkFontMgr* s_fontManager;
     static float s_deviceScaleFactor;
     static bool s_useSubpixelPositioning;
     static HashMap<String, RefPtr<SkTypeface>>* s_sideloadedFonts;

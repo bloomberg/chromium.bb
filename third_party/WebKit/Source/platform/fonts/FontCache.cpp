@@ -73,7 +73,7 @@ static FallbackListShaperCache* gFallbackListShaperCache = nullptr;
 
 #if OS(WIN)
 bool FontCache::s_useDirectWrite = false;
-IDWriteFactory* FontCache::s_directWriteFactory = 0;
+SkFontMgr* FontCache::s_fontManager = nullptr;
 bool FontCache::s_useSubpixelPositioning = false;
 float FontCache::s_deviceScaleFactor = 1.0;
 #endif // OS(WIN)
@@ -146,6 +146,16 @@ FontVerticalDataCache& fontVerticalDataCacheInstance()
     DEFINE_STATIC_LOCAL(FontVerticalDataCache, fontVerticalDataCache, ());
     return fontVerticalDataCache;
 }
+
+#if OS(WIN)
+void FontCache::setFontManager(const RefPtr<SkFontMgr>& fontManager)
+{
+    ASSERT(!s_fontManager);
+    s_fontManager = fontManager.get();
+    // Explicitly AddRef since we're going to hold on to the object for the life of the program.
+    s_fontManager->ref();
+}
+#endif
 
 PassRefPtr<OpenTypeVerticalData> FontCache::getVerticalData(const FontFileKey& key, const FontPlatformData& platformData)
 {
