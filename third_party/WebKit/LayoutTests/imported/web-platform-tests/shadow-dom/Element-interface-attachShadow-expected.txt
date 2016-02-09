@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Check the existence of Element.attachShadow 
+PASS Nodes other than Element should not have attachShadow 
+FAIL Element.attachShadow must throw a TypeError if mode is not "open" or "closed" assert_throws: attachShadow must throw a TypeError when mode is omitted function "function () {
+        document.createElement('div').attac..." did not throw
+PASS Element.attachShadow must create an instance of ShadowRoot 
+PASS Element.attachShadow must throw a InvalidStateError if the context object already hosts a shadow tree 
+FAIL Element.attachShadow must throw a NotSupportedError for button, details, input, marquee, meter, progress, select, textarea, and keygen elements assert_throws: Calling attachShadow({mode: "open"}) on button element must throw function "function () {
+            document.createElement(elementN..." did not throw
+Harness: the test ran to completion.
+
