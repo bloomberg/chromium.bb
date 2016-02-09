@@ -18,7 +18,7 @@ import java.util.concurrent.FutureTask;
  * Delegates all real functionality to the implementation
  * returned from LocationProviderFactory.
  * See detailed documentation on
- * content/browser/geolocation/android_location_api_adapter.h.
+ * content/browser/geolocation/location_api_adapter_android.h.
  * Based on android.webkit.GeolocationService.java
  */
 @MainDex
