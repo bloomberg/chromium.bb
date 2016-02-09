@@ -33,23 +33,31 @@ typedef std::unordered_map<std::string, scoped_ptr<std::set<USHORT>>>
     BLEAttributeHandleTable;
 
 struct BLEDevice {
+  BLEDevice();
+  ~BLEDevice();
   scoped_ptr<BluetoothLowEnergyDeviceInfo> device_info;
   BLEGattServicesMap primary_services;
 };
 
 struct BLEGattService {
+  BLEGattService();
+  ~BLEGattService();
   scoped_ptr<BTH_LE_GATT_SERVICE> service_info;
   BLEGattServicesMap included_services;
   BLEGattCharacteristicsMap included_characteristics;
 };
 
 struct BLEGattCharacteristic {
+  BLEGattCharacteristic();
+  ~BLEGattCharacteristic();
   scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristic_info;
   scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value;
   BLEGattDescriptorsMap included_descriptors;
 };
 
 struct BLEGattDescriptor {
+  BLEGattDescriptor();
+  ~BLEGattDescriptor();
   scoped_ptr<BTH_LE_GATT_DESCRIPTOR> descriptor_info;
   scoped_ptr<BTH_LE_GATT_DESCRIPTOR_VALUE> value;
 };

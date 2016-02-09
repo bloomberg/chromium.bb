@@ -14,6 +14,18 @@ const char kPlatformNotSupported[] =
 namespace device {
 namespace win {
 
+BLEDevice::BLEDevice() {}
+BLEDevice::~BLEDevice() {}
+
+BLEGattService::BLEGattService() {}
+BLEGattService::~BLEGattService() {}
+
+BLEGattCharacteristic::BLEGattCharacteristic() {}
+BLEGattCharacteristic::~BLEGattCharacteristic() {}
+
+BLEGattDescriptor::BLEGattDescriptor() {}
+BLEGattDescriptor::~BLEGattDescriptor() {}
+
 BluetoothLowEnergyWrapperFake::BluetoothLowEnergyWrapperFake() {}
 BluetoothLowEnergyWrapperFake::~BluetoothLowEnergyWrapperFake() {}
 
