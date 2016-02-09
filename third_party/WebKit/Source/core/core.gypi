@@ -3959,6 +3959,7 @@
             'editing/VisibleSelectionTest.cpp',
             'editing/VisibleUnitsTest.cpp',
             'editing/serializers/StyledMarkupSerializerTest.cpp',
+            'editing/spellcheck/SpellCheckerTest.cpp',
             'events/EventPathTest.cpp',
             'events/PointerEventManagerTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',

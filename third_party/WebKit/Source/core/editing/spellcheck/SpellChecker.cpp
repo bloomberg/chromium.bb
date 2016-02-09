@@ -208,8 +208,8 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     // next word so we start checking at a word boundary. Going back by one char
     // and then forward by a word does the trick.
     if (startedWithSelection) {
-    VisiblePosition oneBeforeStart = previousPositionOf(createVisiblePosition(spellingSearchStart));
-        if (oneBeforeStart.isNotNull())
+        VisiblePosition oneBeforeStart = previousPositionOf(createVisiblePosition(spellingSearchStart));
+        if (oneBeforeStart.isNotNull() && rootEditableElementOf(oneBeforeStart) == rootEditableElementOf(spellingSearchStart))
             spellingSearchStart = endOfWord(oneBeforeStart).toParentAnchoredPosition();
         // else we were already at the start of the editable node
     }
