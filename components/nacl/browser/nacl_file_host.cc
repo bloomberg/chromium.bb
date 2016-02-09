@@ -43,9 +43,9 @@ void NotifyRendererOfError(
 }
 
 typedef void (*WriteFileInfoReply)(IPC::Message* reply_msg,
-                                   IPC::PlatformFileForTransit file_desc,
-                                   uint64_t file_token_lo,
-                                   uint64_t file_token_hi);
+                                   const IPC::PlatformFileForTransit& file_desc,
+                                   const uint64_t& file_token_lo,
+                                   const uint64_t& file_token_hi);
 
 void DoRegisterOpenedNaClExecutableFile(
     scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,

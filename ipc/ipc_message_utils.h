@@ -31,29 +31,6 @@
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_sync_message.h"
 
-#if defined(COMPILER_GCC)
-// GCC "helpfully" tries to inline template methods in release mode. Except we
-// want the majority of the template junk being expanded once in the
-// implementation file (and only provide the definitions in
-// ipc_message_utils_impl.h in those files) and exported, instead of expanded
-// at every call site. Special note: GCC happily accepts the attribute before
-// the method declaration, but only acts on it if it is after.
-#if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40500
-// Starting in gcc 4.5, the noinline no longer implies the concept covered by
-// the introduced noclone attribute, which will create specialized versions of
-// functions/methods when certain types are constant.
-// www.gnu.org/software/gcc/gcc-4.5/changes.html
-#define IPC_MSG_NOINLINE  __attribute__((noinline, noclone));
-#else
-#define IPC_MSG_NOINLINE  __attribute__((noinline));
-#endif
-#elif defined(COMPILER_MSVC)
-// MSVC++ doesn't do this.
-#define IPC_MSG_NOINLINE
-#else
-#error "Please add the noinline property for your new compiler here."
-#endif
-
 namespace base {
 class DictionaryValue;
 class FilePath;
@@ -1051,17 +1028,6 @@ struct IPC_EXPORT ParamTraits<MSG> {
 //-----------------------------------------------------------------------------
 // Generic message subclasses
 
-// Used for asynchronous messages.
-template <class ParamType>
-class MessageSchema {
- public:
-  typedef ParamType Param;
-  typedef typename base::TupleTypes<ParamType>::ParamTuple RefParam;
-
-  static void Write(Message* msg, const RefParam& p) IPC_MSG_NOINLINE;
-  static bool Read(const Message* msg, Param* p) IPC_MSG_NOINLINE;
-};
-
 // defined in ipc_logging.cc
 IPC_EXPORT void GenerateLogData(const std::string& channel,
                                 const Message& message,
@@ -1107,79 +1073,6 @@ inline void LogReplyParamsToMessage(const ReplyParamType& reply_params,
 
 inline void ConnectMessageAndReply(const Message* msg, Message* reply) {}
 #endif
-
-// This class assumes that its template argument is a RefTuple (a Tuple with
-// reference elements). This would go into ipc_message_utils_impl.h, but it is
-// also used by chrome_frame.
-template <class RefTuple>
-class ParamDeserializer : public MessageReplyDeserializer {
- public:
-  explicit ParamDeserializer(const RefTuple& out) : out_(out) { }
-
-  bool SerializeOutputParameters(const IPC::Message& msg,
-                                 base::PickleIterator iter) override {
-    return ReadParam(&msg, &iter, &out_);
-  }
-
-  RefTuple out_;
-};
-
-// Used for synchronous messages.
-template <class SendParamType, class ReplyParamType>
-class SyncMessageSchema {
- public:
-  typedef SendParamType SendParam;
-  typedef typename base::TupleTypes<SendParam>::ParamTuple RefSendParam;
-  typedef ReplyParamType ReplyParam;
-
-  static void Write(Message* msg, const RefSendParam& send) IPC_MSG_NOINLINE;
-  static bool ReadSendParam(const Message* msg, SendParam* p) IPC_MSG_NOINLINE;
-  static bool ReadReplyParam(
-      const Message* msg,
-      typename base::TupleTypes<ReplyParam>::ValueTuple* p) IPC_MSG_NOINLINE;
-
-  template<class T, class S, class Method>
-  static bool DispatchWithSendParams(bool ok, const SendParam& send_params,
-                                     const Message* msg, T* obj, S* sender,
-                                     Method func) {
-    Message* reply = SyncMessage::GenerateReply(msg);
-    if (ok) {
-      typename base::TupleTypes<ReplyParam>::ValueTuple reply_params;
-      base::DispatchToMethod(obj, func, send_params, &reply_params);
-      WriteParam(reply, reply_params);
-      LogReplyParamsToMessage(reply_params, msg);
-    } else {
-      NOTREACHED() << "Error deserializing message " << msg->type();
-      reply->set_reply_error();
-    }
-    sender->Send(reply);
-    return ok;
-  }
-
-  template<class T, class Method>
-  static bool DispatchDelayReplyWithSendParams(bool ok,
-                                               const SendParam& send_params,
-                                               const Message* msg, T* obj,
-                                               Method func) {
-    Message* reply = SyncMessage::GenerateReply(msg);
-    if (ok) {
-      base::Tuple<Message&> t = base::MakeRefTuple(*reply);
-      ConnectMessageAndReply(msg, reply);
-      base::DispatchToMethod(obj, func, send_params, &t);
-    } else {
-      NOTREACHED() << "Error deserializing message " << msg->type();
-      reply->set_reply_error();
-      obj->Send(reply);
-    }
-    return ok;
-  }
-
-  template <typename... Ts>
-  static void WriteReplyParams(Message* reply, Ts... args) {
-    ReplyParam p(args...);
-    WriteParam(reply, p);
-  }
-};
 
 }  // namespace IPC
 

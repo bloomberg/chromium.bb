@@ -18,8 +18,6 @@ struct msginfo {
   const char* name;
   const char* file;
   int id;
-  int in_count;
-  int out_count;
 
   bool operator< (const msginfo& other) const {
     return id < other.id;
@@ -29,8 +27,7 @@ struct msginfo {
 // Redefine macros to generate table
 #include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
 #undef IPC_MESSAGE_DECL
-#define IPC_MESSAGE_DECL(kind, type, name, in, out, ilist, olist) \
-  { #name, __FILE__, IPC_MESSAGE_ID(), in, out },
+#define IPC_MESSAGE_DECL(name, ...) {#name, __FILE__, IPC_MESSAGE_ID()},
 
 static msginfo msgtable[] = {
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
@@ -143,12 +140,7 @@ static void dump_msgtable(bool show_args, bool show_ids,
           std::cout << msgtable[i].id << " " <<
               IPC_MESSAGE_ID_CLASS(msgtable[i].id) << "," <<
               IPC_MESSAGE_ID_LINE(msgtable[i].id) << " ";
-        std::cout << msgtable[i].name;
-        if (show_args) {
-          std::cout << "(" << msgtable[i].in_count << " IN, "  <<
-              msgtable[i].out_count << " OUT)";
-        }
-        std::cout << "\n";
+        std::cout << msgtable[i].name << "\n";
       }
     }
   }
@@ -192,4 +184,3 @@ int main(int argc, char **argv) {
   dump_msgtable(show_args, show_ids, show_comma, filter);
   return 0;
 }
-

@@ -32,8 +32,13 @@
 
 // IPC messages for testing ----------------------------------------------------
 
+// TODO(mdempsky): Fix properly by moving into a separate
+// browsertest_message_generator.cc file.
+#undef IPC_IPC_MESSAGE_MACROS_H_
+#undef IPC_MESSAGE_EXTRA
 #define IPC_MESSAGE_IMPL
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_templates_impl.h"
 
 #undef IPC_MESSAGE_START
 #define IPC_MESSAGE_START TestMsgStart

@@ -24,6 +24,4 @@
 #define IPC_STRUCT_TRAITS_PARENT(type)
 #define IPC_STRUCT_TRAITS_END()
 #define IPC_ENUM_TRAITS_VALIDATE(enum_name, validation_expression)
-#define IPC_MESSAGE_DECL(sync, kind, msg_class, \
-                         in_cnt, out_cnt, in_list, out_list)
-
+#define IPC_MESSAGE_DECL(...)

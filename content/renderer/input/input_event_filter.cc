@@ -26,8 +26,9 @@ using blink::WebInputEvent;
 
 #include "ipc/ipc_message_null_macros.h"
 #undef IPC_MESSAGE_DECL
-#define IPC_MESSAGE_DECL(kind, type, name, in, out, ilist, olist) \
-  case name::ID: return #name;
+#define IPC_MESSAGE_DECL(name, ...) \
+  case name::ID:                    \
+    return #name;
 
 const char* GetInputMessageTypeName(const IPC::Message& message) {
   switch (message.type()) {

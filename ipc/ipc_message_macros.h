@@ -202,12 +202,11 @@
 #include <stdint.h>
 
 #include "base/profiler/scoped_profile.h"
+#include "base/tuple.h"
+#include "ipc/export_template.h"
+#include "ipc/ipc_message_templates.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/param_traits_macros.h"
-
-#if defined(IPC_MESSAGE_IMPL)
-#include "ipc/ipc_message_utils_impl.h"
-#endif
 
 // Convenience macro for defining structs without inheritance. Should not need
 // to be subsequently redefined.
@@ -227,566 +226,63 @@
 #define IPC_STRUCT_MEMBER(type, name, ...) type name;
 #define IPC_STRUCT_END() };
 
-// Message macros collect specific numbers of arguments and funnel them into
-// the common message generation macro.  These should never be redefined.
-#define IPC_MESSAGE_CONTROL0(msg_class) \
-  IPC_MESSAGE_DECL(EMPTY, CONTROL, msg_class, 0, 0, (), ())
-
-#define IPC_MESSAGE_CONTROL1(msg_class, type1) \
-  IPC_MESSAGE_DECL(ASYNC, CONTROL, msg_class, 1, 0, (type1), ())
-
-#define IPC_MESSAGE_CONTROL2(msg_class, type1, type2) \
-  IPC_MESSAGE_DECL(ASYNC, CONTROL, msg_class, 2, 0, (type1, type2), ())
-
-#define IPC_MESSAGE_CONTROL3(msg_class, type1, type2, type3) \
-  IPC_MESSAGE_DECL(ASYNC, CONTROL, msg_class, 3, 0, (type1, type2, type3), ())
-
-#define IPC_MESSAGE_CONTROL4(msg_class, type1, type2, type3, type4) \
-  IPC_MESSAGE_DECL(ASYNC, CONTROL, msg_class, 4, 0, (type1, type2, type3, type4), ())
-
-#define IPC_MESSAGE_CONTROL5(msg_class, type1, type2, type3, type4, type5) \
-  IPC_MESSAGE_DECL(ASYNC, CONTROL, msg_class, 5, 0, (type1, type2, type3, type4, type5), ())
-
-#define IPC_MESSAGE_ROUTED0(msg_class) \
-  IPC_MESSAGE_DECL(EMPTY, ROUTED, msg_class, 0, 0, (), ())
-
-#define IPC_MESSAGE_ROUTED1(msg_class, type1) \
-  IPC_MESSAGE_DECL(ASYNC, ROUTED, msg_class, 1, 0, (type1), ())
-
-#define IPC_MESSAGE_ROUTED2(msg_class, type1, type2) \
-  IPC_MESSAGE_DECL(ASYNC, ROUTED, msg_class, 2, 0, (type1, type2), ())
-
-#define IPC_MESSAGE_ROUTED3(msg_class, type1, type2, type3) \
-  IPC_MESSAGE_DECL(ASYNC, ROUTED, msg_class, 3, 0, (type1, type2, type3), ())
-
-#define IPC_MESSAGE_ROUTED4(msg_class, type1, type2, type3, type4) \
-  IPC_MESSAGE_DECL(ASYNC, ROUTED, msg_class, 4, 0, (type1, type2, type3, type4), ())
-
-#define IPC_MESSAGE_ROUTED5(msg_class, type1, type2, type3, type4, type5) \
-  IPC_MESSAGE_DECL(ASYNC, ROUTED, msg_class, 5, 0, (type1, type2, type3, type4, type5), ())
-
-#define IPC_SYNC_MESSAGE_CONTROL0_0(msg_class) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 0, 0, (), ())
-
-#define IPC_SYNC_MESSAGE_CONTROL0_1(msg_class, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 0, 1, (), (type1_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL0_2(msg_class, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 0, 2, (), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL0_3(msg_class, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 0, 3, (), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL0_4(msg_class, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 0, 4, (), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL1_0(msg_class, type1_in) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 1, 0, (type1_in), ())
-
-#define IPC_SYNC_MESSAGE_CONTROL1_1(msg_class, type1_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 1, 1, (type1_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL1_2(msg_class, type1_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 1, 2, (type1_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL1_3(msg_class, type1_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 1, 3, (type1_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL1_4(msg_class, type1_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 1, 4, (type1_in), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL2_0(msg_class, type1_in, type2_in) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 2, 0, (type1_in, type2_in), ())
-
-#define IPC_SYNC_MESSAGE_CONTROL2_1(msg_class, type1_in, type2_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 2, 1, (type1_in, type2_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL2_2(msg_class, type1_in, type2_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 2, 2, (type1_in, type2_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL2_3(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 2, 3, (type1_in, type2_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL2_4(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 2, 4, (type1_in, type2_in), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL3_0(msg_class, type1_in, type2_in, type3_in) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 3, 0, (type1_in, type2_in, type3_in), ())
-
-#define IPC_SYNC_MESSAGE_CONTROL3_1(msg_class, type1_in, type2_in, type3_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 3, 1, (type1_in, type2_in, type3_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL3_2(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 3, 2, (type1_in, type2_in, type3_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL3_3(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 3, 3, (type1_in, type2_in, type3_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL3_4(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 3, 4, (type1_in, type2_in, type3_in), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL4_0(msg_class, type1_in, type2_in, type3_in, type4_in) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 4, 0, (type1_in, type2_in, type3_in, type4_in), ())
-
-#define IPC_SYNC_MESSAGE_CONTROL4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 4, 1, (type1_in, type2_in, type3_in, type4_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL4_2(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 4, 2, (type1_in, type2_in, type3_in, type4_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL4_3(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 4, 3, (type1_in, type2_in, type3_in, type4_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL4_4(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 4, 4, (type1_in, type2_in, type3_in, type4_in), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL5_0(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 5, 0, (type1_in, type2_in, type3_in, type4_in, type5_in), ())
-
-#define IPC_SYNC_MESSAGE_CONTROL5_1(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 5, 1, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL5_2(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 5, 2, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_CONTROL5_3(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 5, 3, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED0_0(msg_class) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 0, 0, (), ())
-
-#define IPC_SYNC_MESSAGE_ROUTED0_1(msg_class, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 0, 1, (), (type1_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED0_2(msg_class, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 0, 2, (), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED0_3(msg_class, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 0, 3, (), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED0_4(msg_class, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 0, 4, (), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED1_0(msg_class, type1_in) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 1, 0, (type1_in), ())
-
-#define IPC_SYNC_MESSAGE_ROUTED1_1(msg_class, type1_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 1, 1, (type1_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED1_2(msg_class, type1_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 1, 2, (type1_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED1_3(msg_class, type1_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 1, 3, (type1_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED1_4(msg_class, type1_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 1, 4, (type1_in), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED2_0(msg_class, type1_in, type2_in) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 2, 0, (type1_in, type2_in), ())
-
-#define IPC_SYNC_MESSAGE_ROUTED2_1(msg_class, type1_in, type2_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 2, 1, (type1_in, type2_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED2_2(msg_class, type1_in, type2_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 2, 2, (type1_in, type2_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED2_3(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 2, 3, (type1_in, type2_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED2_4(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 2, 4, (type1_in, type2_in), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED3_0(msg_class, type1_in, type2_in, type3_in) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 3, 0, (type1_in, type2_in, type3_in), ())
-
-#define IPC_SYNC_MESSAGE_ROUTED3_1(msg_class, type1_in, type2_in, type3_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 3, 1, (type1_in, type2_in, type3_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED3_2(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 3, 2, (type1_in, type2_in, type3_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED3_3(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 3, 3, (type1_in, type2_in, type3_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED3_4(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 3, 4, (type1_in, type2_in, type3_in), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED4_0(msg_class, type1_in, type2_in, type3_in, type4_in) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 0, (type1_in, type2_in, type3_in, type4_in), ())
-
-#define IPC_SYNC_MESSAGE_ROUTED4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 1, (type1_in, type2_in, type3_in, type4_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED4_2(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 2, (type1_in, type2_in, type3_in, type4_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED4_3(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 3, (type1_in, type2_in, type3_in, type4_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED4_4(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 4, 4, (type1_in, type2_in, type3_in, type4_in), (type1_out, type2_out, type3_out, type4_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED5_0(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 0, (type1_in, type2_in, type3_in, type4_in, type5_in), ())
-
-#define IPC_SYNC_MESSAGE_ROUTED5_1(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 1, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED5_2(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 2, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out, type2_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED5_3(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 3, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out, type2_out, type3_out))
-
-// The following macros define the common set of methods provided by ASYNC
-// message classes.
-// This macro is for all the async IPCs that don't pass an extra parameter using
-// IPC_BEGIN_MESSAGE_MAP_WITH_PARAM.
-#define IPC_ASYNC_MESSAGE_METHODS_GENERIC                                     \
-  template<class T, class S, class P, class Method>                           \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
-                       Method func) {                                         \
-    Schema::Param p;                                                          \
-    if (Read(msg, &p)) {                                                      \
-      base::DispatchToMethod(obj, func, p);                                   \
-      return true;                                                            \
-    }                                                                         \
-    return false;                                                             \
-  }
-
-// The following macros are for for async IPCs which have a dispatcher with an
-// extra parameter specified using IPC_BEGIN_MESSAGE_MAP_WITH_PARAM.
-#define IPC_ASYNC_MESSAGE_METHODS_1                                           \
-  IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, class P, typename TA>                            \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
-                       void (T::*func)(P*, TA)) {                             \
-    Schema::Param p;                                                          \
-    if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, base::get<0>(p));                               \
-      return true;                                                            \
-    }                                                                         \
-    return false;                                                             \
-  }
-#define IPC_ASYNC_MESSAGE_METHODS_2                                           \
-  IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, class P, typename TA, typename TB>               \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
-                       void (T::*func)(P*, TA, TB)) {                         \
-    Schema::Param p;                                                          \
-    if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, base::get<0>(p), base::get<1>(p));              \
-      return true;                                                            \
-    }                                                                         \
-    return false;                                                             \
-  }
-#define IPC_ASYNC_MESSAGE_METHODS_3                                           \
-  IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, class P, typename TA, typename TB, typename TC>  \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
-                       void (T::*func)(P*, TA, TB, TC)) {                     \
-    Schema::Param p;                                                          \
-    if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, base::get<0>(p), base::get<1>(p),               \
-                   base::get<2>(p));                                          \
-      return true;                                                            \
-    }                                                                         \
-    return false;                                                             \
-  }
-#define IPC_ASYNC_MESSAGE_METHODS_4                                           \
-  IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, class P, typename TA, typename TB, typename TC,  \
-           typename TD>                                                       \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
-                       void (T::*func)(P*, TA, TB, TC, TD)) {                 \
-    Schema::Param p;                                                          \
-    if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, base::get<0>(p), base::get<1>(p),               \
-                   base::get<2>(p), base::get<3>(p));                         \
-      return true;                                                            \
-    }                                                                         \
-    return false;                                                             \
-  }
-#define IPC_ASYNC_MESSAGE_METHODS_5                                           \
-  IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, class P, typename TA, typename TB, typename TC,  \
-           typename TD, typename TE>                                          \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
-                       void (T::*func)(P*, TA, TB, TC, TD, TE)) {             \
-    Schema::Param p;                                                          \
-    if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, base::get<0>(p), base::get<1>(p),               \
-                   base::get<2>(p), base::get<3>(p), base::get<4>(p));        \
-      return true;                                                            \
-    }                                                                         \
-    return false;                                                             \
-  }
-
-// The following macros define the common set of methods provided by SYNC
-// message classes.
-#define IPC_SYNC_MESSAGE_METHODS_GENERIC                                      \
-  template<class T, class S, class P, class Method>                           \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
-                       Method func) {                                         \
-    Schema::SendParam send_params;                                            \
-    bool ok = ReadSendParam(msg, &send_params);                               \
-    return Schema::DispatchWithSendParams(ok, send_params, msg, obj, sender,  \
-                                          func);                              \
-  }                                                                           \
-  template<class T, class P, class Method>                                    \
-  static bool DispatchDelayReply(const Message* msg, T* obj, P* parameter,    \
-                                 Method func) {                               \
-    Schema::SendParam send_params;                                            \
-    bool ok = ReadSendParam(msg, &send_params);                               \
-    return Schema::DispatchDelayReplyWithSendParams(ok, send_params, msg,     \
-                                                    obj, func);               \
-  }
-#define IPC_SYNC_MESSAGE_METHODS_0 \
-  IPC_SYNC_MESSAGE_METHODS_GENERIC
-#define IPC_SYNC_MESSAGE_METHODS_1 \
-  IPC_SYNC_MESSAGE_METHODS_GENERIC \
-  template<typename TA> \
-  static void WriteReplyParams(Message* reply, TA a) { \
-    Schema::WriteReplyParams(reply, a); \
-  }
-#define IPC_SYNC_MESSAGE_METHODS_2 \
-  IPC_SYNC_MESSAGE_METHODS_GENERIC \
-  template<typename TA, typename TB> \
-  static void WriteReplyParams(Message* reply, TA a, TB b) { \
-    Schema::WriteReplyParams(reply, a, b); \
-  }
-#define IPC_SYNC_MESSAGE_METHODS_3 \
-  IPC_SYNC_MESSAGE_METHODS_GENERIC \
-  template<typename TA, typename TB, typename TC> \
-  static void WriteReplyParams(Message* reply, TA a, TB b, TC c) { \
-    Schema::WriteReplyParams(reply, a, b, c); \
-  }
-#define IPC_SYNC_MESSAGE_METHODS_4 \
-  IPC_SYNC_MESSAGE_METHODS_GENERIC \
-  template<typename TA, typename TB, typename TC, typename TD> \
-  static void WriteReplyParams(Message* reply, TA a, TB b, TC c, TD d) { \
-    Schema::WriteReplyParams(reply, a, b, c, d); \
-  }
-#define IPC_SYNC_MESSAGE_METHODS_5 \
-  IPC_SYNC_MESSAGE_METHODS_GENERIC \
-  template<typename TA, typename TB, typename TC, typename TD, typename TE> \
-  static void WriteReplyParams(Message* reply, TA a, TB b, TC c, TD d, TE e) { \
-    Schema::WriteReplyParams(reply, a, b, c, d, e); \
-  }
-
-// Common message macro which dispatches into one of the 6 (sync x kind)
-// routines.  There is a way that these 6 cases can be lumped together,
-// but the  macros get very complicated in that case.
-// Note: intended be redefined to generate other information.
-#define IPC_MESSAGE_DECL(sync, kind, msg_class,                               \
-                         in_cnt, out_cnt, in_list, out_list)                  \
-  IPC_##sync##_##kind##_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)   \
-  IPC_MESSAGE_EXTRA(sync, kind, msg_class, in_cnt, out_cnt, in_list, out_list)
-
-#define IPC_EMPTY_CONTROL_DECL(msg_class, in_cnt, out_cnt, in_list, out_list) \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::Message {                  \
-   public:                                                                    \
-    typedef IPC::Message Schema;                                              \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class() : IPC::Message(MSG_ROUTING_CONTROL, ID, PRIORITY_NORMAL) {}   \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-  };
-
-#define IPC_EMPTY_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::Message {                  \
-   public:                                                                    \
-    typedef IPC::Message Schema;                                              \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(int32_t routing_id)                                             \
-        : IPC::Message(routing_id, ID, PRIORITY_NORMAL) {}                    \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-  };
-
-#define IPC_ASYNC_CONTROL_DECL(msg_class, in_cnt, out_cnt, in_list, out_list) \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::Message {                  \
-   public:                                                                    \
-    typedef IPC::MessageSchema<IPC_TUPLE_IN_##in_cnt in_list> Schema;         \
-    typedef Schema::Param Param;                                              \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(IPC_TYPE_IN_##in_cnt in_list);                                  \
-    ~msg_class() override;                                                    \
-    static bool Read(const Message* msg, Schema::Param* p);                   \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-    IPC_ASYNC_MESSAGE_METHODS_##in_cnt                                        \
-  };
-
-#define IPC_ASYNC_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::Message {                  \
-   public:                                                                    \
-    typedef IPC::MessageSchema<IPC_TUPLE_IN_##in_cnt in_list> Schema;         \
-    typedef Schema::Param Param;                                              \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(int32_t routing_id IPC_COMMA_##in_cnt                           \
-              IPC_TYPE_IN_##in_cnt in_list);                                  \
-    ~msg_class() override;                                                    \
-    static bool Read(const Message* msg, Schema::Param* p);                   \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-    IPC_ASYNC_MESSAGE_METHODS_##in_cnt                                        \
-  };
-
-#define IPC_SYNC_CONTROL_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::SyncMessage {              \
-   public:                                                                    \
-    typedef IPC::SyncMessageSchema<IPC_TUPLE_IN_##in_cnt in_list,             \
-                                   IPC_TUPLE_OUT_##out_cnt out_list> Schema;  \
-    typedef Schema::ReplyParam ReplyParam;                                    \
-    typedef Schema::SendParam SendParam;                                      \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(IPC_TYPE_IN_##in_cnt in_list                                    \
-              IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)                     \
-              IPC_TYPE_OUT_##out_cnt out_list);                               \
-    ~msg_class() override;                                                    \
-    static bool ReadSendParam(const Message* msg, Schema::SendParam* p);      \
-    static bool ReadReplyParam(                                               \
-        const Message* msg,                                                   \
-        base::TupleTypes<ReplyParam>::ValueTuple* p);                         \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-    IPC_SYNC_MESSAGE_METHODS_##out_cnt                                        \
-  };
-
-#define IPC_SYNC_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)   \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::SyncMessage {              \
-   public:                                                                    \
-    typedef IPC::SyncMessageSchema<IPC_TUPLE_IN_##in_cnt in_list,             \
-                                   IPC_TUPLE_OUT_##out_cnt out_list> Schema;  \
-    typedef Schema::ReplyParam ReplyParam;                                    \
-    typedef Schema::SendParam SendParam;                                      \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(int32_t routing_id                                              \
-              IPC_COMMA_OR_##in_cnt(IPC_COMMA_##out_cnt)                      \
-              IPC_TYPE_IN_##in_cnt in_list                                    \
-              IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)                     \
-              IPC_TYPE_OUT_##out_cnt out_list);                               \
-    ~msg_class() override;                                                    \
-    static bool ReadSendParam(const Message* msg, Schema::SendParam* p);      \
-    static bool ReadReplyParam(                                               \
-        const Message* msg,                                                   \
-        base::TupleTypes<ReplyParam>::ValueTuple* p);                         \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-    IPC_SYNC_MESSAGE_METHODS_##out_cnt                                        \
-  };
+// Message macros collect arguments and funnel them into the common message
+// generation macro.  These should never be redefined.
+
+// Asynchronous messages have only in parameters and are declared like:
+//     IPC_MESSAGE_CONTROL(FooMsg, int, float)
+#define IPC_MESSAGE_CONTROL(msg_class, ...) \
+  IPC_MESSAGE_DECL(msg_class, CONTROL, IPC_TUPLE(__VA_ARGS__), void)
+#define IPC_MESSAGE_ROUTED(msg_class, ...) \
+  IPC_MESSAGE_DECL(msg_class, ROUTED, IPC_TUPLE(__VA_ARGS__), void)
+
+// Synchronous messages have both in and out parameters, so the lists need to
+// be parenthesized to disambiguate:
+//      IPC_SYNC_MESSAGE_CONTROL(BarMsg, (int, int), (bool))
+//
+// Implementation detail: The parentheses supplied by the caller for
+// disambiguation are also used to trigger the IPC_TUPLE invocations below,
+// so "IPC_TUPLE in" and "IPC_TUPLE out" are intentional.
+#define IPC_SYNC_MESSAGE_CONTROL(msg_class, in, out) \
+  IPC_MESSAGE_DECL(msg_class, CONTROL, IPC_TUPLE in, IPC_TUPLE out)
+#define IPC_SYNC_MESSAGE_ROUTED(msg_class, in, out) \
+  IPC_MESSAGE_DECL(msg_class, ROUTED, IPC_TUPLE in, IPC_TUPLE out)
+
+#define IPC_TUPLE(...) base::Tuple<__VA_ARGS__>
+
+#define IPC_MESSAGE_DECL(msg_name, kind, in_tuple, out_tuple)       \
+  struct IPC_MESSAGE_EXPORT msg_name##_Meta {                       \
+    using InTuple = in_tuple;                                       \
+    using OutTuple = out_tuple;                                     \
+    enum { ID = IPC_MESSAGE_ID() };                                 \
+    static const IPC::MessageKind kKind = IPC::MessageKind::kind;   \
+    static const char kName[];                                      \
+  };                                                                \
+  extern template class EXPORT_TEMPLATE_DECLARE(IPC_MESSAGE_EXPORT) \
+      IPC::MessageT<msg_name##_Meta>;                               \
+  using msg_name = IPC::MessageT<msg_name##_Meta>;                  \
+  IPC_MESSAGE_EXTRA(msg_name)
 
 #if defined(IPC_MESSAGE_IMPL)
 
-// "Implementation" inclusion produces constructors, destructors, and
-// logging functions, except for the no-arg special cases, where the
-// implementation occurs in the declaration, and there is no special
-// logging function.
-#define IPC_MESSAGE_EXTRA(sync, kind, msg_class,                              \
-                          in_cnt, out_cnt, in_list, out_list)                 \
-  IPC_##sync##_##kind##_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)   \
-  IPC_##sync##_MESSAGE_LOG(msg_class)
+// "Implementation" inclusion provides the explicit template definition
+// for msg_name.
+#define IPC_MESSAGE_EXTRA(msg_name)                         \
+  const char msg_name##_Meta::kName[] = #msg_name;          \
+  IPC_MESSAGE_DEFINE_KIND(msg_name)                         \
+  template class EXPORT_TEMPLATE_DEFINE(IPC_MESSAGE_EXPORT) \
+      IPC::MessageT<msg_name##_Meta>;
 
-#define IPC_EMPTY_CONTROL_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)
-#define IPC_EMPTY_ROUTED_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)
-
-#define IPC_ASYNC_CONTROL_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list) \
-  msg_class::msg_class(IPC_TYPE_IN_##in_cnt in_list) :                        \
-      IPC::Message(MSG_ROUTING_CONTROL, ID, PRIORITY_NORMAL) {                \
-        Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \
-      }                                                                       \
-  msg_class::~msg_class() {}                                                  \
-  bool msg_class::Read(const Message* msg, Schema::Param* p) {                \
-    return Schema::Read(msg, p);                                              \
-  }
-
-#define IPC_ASYNC_ROUTED_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  msg_class::msg_class(int32_t routing_id IPC_COMMA_##in_cnt                  \
-                       IPC_TYPE_IN_##in_cnt in_list) :                        \
-      IPC::Message(routing_id, ID, PRIORITY_NORMAL) {                         \
-        Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \
-      }                                                                       \
-  msg_class::~msg_class() {}                                                  \
-  bool msg_class::Read(const Message* msg, Schema::Param* p) {                \
-    return Schema::Read(msg, p);                                              \
-  }
-
-#define IPC_SYNC_CONTROL_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  msg_class::msg_class(IPC_TYPE_IN_##in_cnt in_list                           \
-                       IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)            \
-                       IPC_TYPE_OUT_##out_cnt out_list) :                     \
-      IPC::SyncMessage(MSG_ROUTING_CONTROL, ID, PRIORITY_NORMAL,              \
-                       new IPC::ParamDeserializer<Schema::ReplyParam>(        \
-                           IPC_NAME_OUT_##out_cnt out_list)) {                \
-        Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \
-      }                                                                       \
-  msg_class::~msg_class() {}                                                  \
-  bool msg_class::ReadSendParam(const Message* msg, Schema::SendParam* p) {   \
-    return Schema::ReadSendParam(msg, p);                                     \
-  }                                                                           \
-  bool msg_class::ReadReplyParam(                                             \
-      const Message* msg,                                                     \
-      base::TupleTypes<ReplyParam>::ValueTuple* p) {                          \
-    return Schema::ReadReplyParam(msg, p);                                    \
-  }
-
-#define IPC_SYNC_ROUTED_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)   \
-  msg_class::msg_class(int32_t routing_id                                     \
-                       IPC_COMMA_OR_##in_cnt(IPC_COMMA_##out_cnt)             \
-                       IPC_TYPE_IN_##in_cnt in_list                           \
-                       IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)            \
-                       IPC_TYPE_OUT_##out_cnt out_list) :                     \
-      IPC::SyncMessage(routing_id, ID, PRIORITY_NORMAL,                       \
-                       new IPC::ParamDeserializer<Schema::ReplyParam>(        \
-                           IPC_NAME_OUT_##out_cnt out_list)) {                \
-        Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \
-      }                                                                       \
-  msg_class::~msg_class() {}                                                  \
-  bool msg_class::ReadSendParam(const Message* msg, Schema::SendParam* p) {   \
-    return Schema::ReadSendParam(msg, p);                                     \
-  }                                                                           \
-  bool msg_class::ReadReplyParam(                                             \
-      const Message* msg,                                                     \
-      base::TupleTypes<ReplyParam>::ValueTuple* p) {                          \
-    return Schema::ReadReplyParam(msg, p);                                    \
-  }
-
-#define IPC_EMPTY_MESSAGE_LOG(msg_class)                                \
-  void msg_class::Log(std::string* name,                                \
-                      const Message* msg,                               \
-                      std::string* l) {                                 \
-    if (name)                                                           \
-      *name = #msg_class;                                               \
-  }
-
-#define IPC_ASYNC_MESSAGE_LOG(msg_class)                                \
-  void msg_class::Log(std::string* name,                                \
-                      const Message* msg,                               \
-                      std::string* l) {                                 \
-    if (name)                                                           \
-      *name = #msg_class;                                               \
-    if (!msg || !l)                                                     \
-      return;                                                           \
-    Schema::Param p;                                                    \
-    if (Schema::Read(msg, &p))                                          \
-      IPC::LogParam(p, l);                                              \
-  }
-
-#define IPC_SYNC_MESSAGE_LOG(msg_class)                                 \
-  void msg_class::Log(std::string* name,                                \
-                      const Message* msg,                               \
-                      std::string* l) {                                 \
-    if (name)                                                           \
-      *name = #msg_class;                                               \
-    if (!msg || !l)                                                     \
-      return;                                                           \
-    if (msg->is_sync()) {                                               \
-      base::TupleTypes<Schema::SendParam>::ValueTuple p;                \
-      if (Schema::ReadSendParam(msg, &p))                               \
-        IPC::LogParam(p, l);                                            \
-      AddOutputParamsToLog(msg, l);                                     \
-    } else {                                                            \
-      base::TupleTypes<Schema::ReplyParam>::ValueTuple p;               \
-      if (Schema::ReadReplyParam(msg, &p))                              \
-        IPC::LogParam(p, l);                                            \
-    }                                                                   \
-  }
+// MSVC has an intentionally non-compliant "feature" that results in LNK2005
+// ("symbol already defined") errors if we provide an out-of-line definition
+// for kKind.  Microsoft's official response is to test for _MSC_EXTENSIONS:
+// https://connect.microsoft.com/VisualStudio/feedback/details/786583/
+#if defined(_MSC_EXTENSIONS)
+#define IPC_MESSAGE_DEFINE_KIND(msg_name)
+#else
+#define IPC_MESSAGE_DEFINE_KIND(msg_name) \
+  const IPC::MessageKind msg_name##_Meta::kKind;
+#endif
 
 #elif defined(IPC_MESSAGE_MACROS_LOG_ENABLED)
 
@@ -795,95 +291,22 @@
 #endif
 
 // "Log table" inclusion produces extra logging registration code.
-#define IPC_MESSAGE_EXTRA(sync, kind, msg_class,                        \
-                          in_cnt, out_cnt, in_list, out_list)           \
-  class LoggerRegisterHelper##msg_class {                               \
- public:                                                                \
-    LoggerRegisterHelper##msg_class() {                                 \
-      const uint32_t msg_id = static_cast<uint32_t>(msg_class::ID);     \
-      IPC_LOG_TABLE_ADD_ENTRY(msg_id, msg_class::Log);                  \
-    }                                                                   \
-  };                                                                    \
-  LoggerRegisterHelper##msg_class g_LoggerRegisterHelper##msg_class;
+#define IPC_MESSAGE_EXTRA(msg_name)                                \
+  class LoggerRegisterHelper##msg_name {                           \
+   public:                                                         \
+    LoggerRegisterHelper##msg_name() {                             \
+      const uint32_t msg_id = static_cast<uint32_t>(msg_name::ID); \
+      IPC_LOG_TABLE_ADD_ENTRY(msg_id, msg_name::Log);              \
+    }                                                              \
+  };                                                               \
+  LoggerRegisterHelper##msg_name g_LoggerRegisterHelper##msg_name;
 
 #else
 
 // Normal inclusion produces nothing extra.
-#define IPC_MESSAGE_EXTRA(sync, kind, msg_class,                \
-                          in_cnt, out_cnt, in_list, out_list)
+#define IPC_MESSAGE_EXTRA(msg_name)
 
-#endif // defined(IPC_MESSAGE_IMPL)
-
-// Handle variable sized argument lists.  These are usually invoked by token
-// pasting against the argument counts.
-#define IPC_TYPE_IN_0()
-#define IPC_TYPE_IN_1(t1)                   const t1& arg1
-#define IPC_TYPE_IN_2(t1, t2)               const t1& arg1, const t2& arg2
-#define IPC_TYPE_IN_3(t1, t2, t3)           const t1& arg1, const t2& arg2, const t3& arg3
-#define IPC_TYPE_IN_4(t1, t2, t3, t4)       const t1& arg1, const t2& arg2, const t3& arg3, const t4& arg4
-#define IPC_TYPE_IN_5(t1, t2, t3, t4, t5)   const t1& arg1, const t2& arg2, const t3& arg3, const t4& arg4, const t5& arg5
-
-#define IPC_TYPE_OUT_0()
-#define IPC_TYPE_OUT_1(t1)                  t1* arg6
-#define IPC_TYPE_OUT_2(t1, t2)              t1* arg6, t2* arg7
-#define IPC_TYPE_OUT_3(t1, t2, t3)          t1* arg6, t2* arg7, t3* arg8
-#define IPC_TYPE_OUT_4(t1, t2, t3, t4)      t1* arg6, t2* arg7, t3* arg8, \
-                                            t4* arg9
-
-#define IPC_TUPLE_IN_0()                    base::Tuple<>
-#define IPC_TUPLE_IN_1(t1)                  base::Tuple<t1>
-#define IPC_TUPLE_IN_2(t1, t2)              base::Tuple<t1, t2>
-#define IPC_TUPLE_IN_3(t1, t2, t3)          base::Tuple<t1, t2, t3>
-#define IPC_TUPLE_IN_4(t1, t2, t3, t4)      base::Tuple<t1, t2, t3, t4>
-#define IPC_TUPLE_IN_5(t1, t2, t3, t4, t5)  base::Tuple<t1, t2, t3, t4, t5>
-
-#define IPC_TUPLE_OUT_0()                   base::Tuple<>
-#define IPC_TUPLE_OUT_1(t1)                 base::Tuple<t1&>
-#define IPC_TUPLE_OUT_2(t1, t2)             base::Tuple<t1&, t2&>
-#define IPC_TUPLE_OUT_3(t1, t2, t3)         base::Tuple<t1&, t2&, t3&>
-#define IPC_TUPLE_OUT_4(t1, t2, t3, t4)     base::Tuple<t1&, t2&, t3&, t4&>
-
-#define IPC_NAME_IN_0()                     base::MakeTuple()
-#define IPC_NAME_IN_1(t1)                   base::MakeRefTuple(arg1)
-#define IPC_NAME_IN_2(t1, t2)               base::MakeRefTuple(arg1, arg2)
-#define IPC_NAME_IN_3(t1, t2, t3)           base::MakeRefTuple(arg1, arg2, arg3)
-#define IPC_NAME_IN_4(t1, t2, t3, t4)       base::MakeRefTuple(arg1, arg2, \
-                                                               arg3, arg4)
-#define IPC_NAME_IN_5(t1, t2, t3, t4, t5)   base::MakeRefTuple(arg1, arg2, \
-                                                               arg3, arg4, arg5)
-
-#define IPC_NAME_OUT_0()                    base::MakeTuple()
-#define IPC_NAME_OUT_1(t1)                  base::MakeRefTuple(*arg6)
-#define IPC_NAME_OUT_2(t1, t2)              base::MakeRefTuple(*arg6, *arg7)
-#define IPC_NAME_OUT_3(t1, t2, t3)          base::MakeRefTuple(*arg6, *arg7, \
-                                                               *arg8)
-#define IPC_NAME_OUT_4(t1, t2, t3, t4)      base::MakeRefTuple(*arg6, *arg7, \
-                                                               *arg8, *arg9)
-
-// There are places where the syntax requires a comma if there are input args,
-// if there are input args and output args, or if there are input args or
-// output args.  These macros allow generation of the comma as needed; invoke
-// by token pasting against the argument counts.
-#define IPC_COMMA_0
-#define IPC_COMMA_1 ,
-#define IPC_COMMA_2 ,
-#define IPC_COMMA_3 ,
-#define IPC_COMMA_4 ,
-#define IPC_COMMA_5 ,
-
-#define IPC_COMMA_AND_0(x)
-#define IPC_COMMA_AND_1(x) x
-#define IPC_COMMA_AND_2(x) x
-#define IPC_COMMA_AND_3(x) x
-#define IPC_COMMA_AND_4(x) x
-#define IPC_COMMA_AND_5(x) x
-
-#define IPC_COMMA_OR_0(x) x
-#define IPC_COMMA_OR_1(x) ,
-#define IPC_COMMA_OR_2(x) ,
-#define IPC_COMMA_OR_3(x) ,
-#define IPC_COMMA_OR_4(x) ,
-#define IPC_COMMA_OR_5(x) ,
+#endif  // defined(IPC_MESSAGE_IMPL)
 
 // Message IDs
 // Note: we currently use __LINE__ to give unique IDs to messages within
@@ -981,6 +404,144 @@
 // This corresponds to an enum value from IPCMessageStart.
 #define IPC_MESSAGE_CLASS(message) \
   IPC_MESSAGE_ID_CLASS(message.type())
+
+// Deprecated legacy macro names.
+// TODO(mdempsky): Replace uses with generic names.
+
+#define IPC_MESSAGE_CONTROL0(msg) IPC_MESSAGE_CONTROL(msg)
+#define IPC_MESSAGE_CONTROL1(msg, a) IPC_MESSAGE_CONTROL(msg, a)
+#define IPC_MESSAGE_CONTROL2(msg, a, b) IPC_MESSAGE_CONTROL(msg, a, b)
+#define IPC_MESSAGE_CONTROL3(msg, a, b, c) IPC_MESSAGE_CONTROL(msg, a, b, c)
+#define IPC_MESSAGE_CONTROL4(msg, a, b, c, d) \
+  IPC_MESSAGE_CONTROL(msg, a, b, c, d)
+#define IPC_MESSAGE_CONTROL5(msg, a, b, c, d, e) \
+  IPC_MESSAGE_CONTROL(msg, a, b, c, d, e)
+
+#define IPC_MESSAGE_ROUTED0(msg) IPC_MESSAGE_ROUTED(msg)
+#define IPC_MESSAGE_ROUTED1(msg, a) IPC_MESSAGE_ROUTED(msg, a)
+#define IPC_MESSAGE_ROUTED2(msg, a, b) IPC_MESSAGE_ROUTED(msg, a, b)
+#define IPC_MESSAGE_ROUTED3(msg, a, b, c) IPC_MESSAGE_ROUTED(msg, a, b, c)
+#define IPC_MESSAGE_ROUTED4(msg, a, b, c, d) IPC_MESSAGE_ROUTED(msg, a, b, c, d)
+#define IPC_MESSAGE_ROUTED5(msg, a, b, c, d, e) \
+  IPC_MESSAGE_ROUTED(msg, a, b, c, d, e)
+
+#define IPC_SYNC_MESSAGE_CONTROL0_0(msg) IPC_SYNC_MESSAGE_CONTROL(msg, (), ())
+#define IPC_SYNC_MESSAGE_CONTROL0_1(msg, a) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (), (a))
+#define IPC_SYNC_MESSAGE_CONTROL0_2(msg, a, b) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (), (a, b))
+#define IPC_SYNC_MESSAGE_CONTROL0_3(msg, a, b, c) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (), (a, b, c))
+#define IPC_SYNC_MESSAGE_CONTROL0_4(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (), (a, b, c, d))
+#define IPC_SYNC_MESSAGE_CONTROL1_0(msg, a) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a), ())
+#define IPC_SYNC_MESSAGE_CONTROL1_1(msg, a, b) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a), (b))
+#define IPC_SYNC_MESSAGE_CONTROL1_2(msg, a, b, c) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a), (b, c))
+#define IPC_SYNC_MESSAGE_CONTROL1_3(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a), (b, c, d))
+#define IPC_SYNC_MESSAGE_CONTROL1_4(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a), (b, c, d, e))
+#define IPC_SYNC_MESSAGE_CONTROL2_0(msg, a, b) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b), ())
+#define IPC_SYNC_MESSAGE_CONTROL2_1(msg, a, b, c) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b), (c))
+#define IPC_SYNC_MESSAGE_CONTROL2_2(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b), (c, d))
+#define IPC_SYNC_MESSAGE_CONTROL2_3(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b), (c, d, e))
+#define IPC_SYNC_MESSAGE_CONTROL2_4(msg, a, b, c, d, e, f) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b), (c, d, e, f))
+#define IPC_SYNC_MESSAGE_CONTROL3_0(msg, a, b, c) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c), ())
+#define IPC_SYNC_MESSAGE_CONTROL3_1(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c), (d))
+#define IPC_SYNC_MESSAGE_CONTROL3_2(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c), (d, e))
+#define IPC_SYNC_MESSAGE_CONTROL3_3(msg, a, b, c, d, e, f) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c), (d, e, f))
+#define IPC_SYNC_MESSAGE_CONTROL3_4(msg, a, b, c, d, e, f, g) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c), (d, e, f, g))
+#define IPC_SYNC_MESSAGE_CONTROL4_0(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d), ())
+#define IPC_SYNC_MESSAGE_CONTROL4_1(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d), (e))
+#define IPC_SYNC_MESSAGE_CONTROL4_2(msg, a, b, c, d, e, f) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d), (e, f))
+#define IPC_SYNC_MESSAGE_CONTROL4_3(msg, a, b, c, d, e, f, g) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d), (e, f, g))
+#define IPC_SYNC_MESSAGE_CONTROL4_4(msg, a, b, c, d, e, f, g, h) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d), (e, f, g, h))
+#define IPC_SYNC_MESSAGE_CONTROL5_0(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d, e), ())
+#define IPC_SYNC_MESSAGE_CONTROL5_1(msg, a, b, c, d, e, f) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d, e), (f))
+#define IPC_SYNC_MESSAGE_CONTROL5_2(msg, a, b, c, d, e, f, g) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d, e), (f, g))
+#define IPC_SYNC_MESSAGE_CONTROL5_3(msg, a, b, c, d, e, f, g, h) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d, e), (f, g, h))
+#define IPC_SYNC_MESSAGE_CONTROL5_4(msg, a, b, c, d, e, f, g, h, i) \
+  IPC_SYNC_MESSAGE_CONTROL(msg, (a, b, c, d, e), (f, g, h, i))
+
+#define IPC_SYNC_MESSAGE_ROUTED0_0(msg) IPC_SYNC_MESSAGE_ROUTED(msg, (), ())
+#define IPC_SYNC_MESSAGE_ROUTED0_1(msg, a) IPC_SYNC_MESSAGE_ROUTED(msg, (), (a))
+#define IPC_SYNC_MESSAGE_ROUTED0_2(msg, a, b) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (), (a, b))
+#define IPC_SYNC_MESSAGE_ROUTED0_3(msg, a, b, c) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (), (a, b, c))
+#define IPC_SYNC_MESSAGE_ROUTED0_4(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (), (a, b, c, d))
+#define IPC_SYNC_MESSAGE_ROUTED1_0(msg, a) IPC_SYNC_MESSAGE_ROUTED(msg, (a), ())
+#define IPC_SYNC_MESSAGE_ROUTED1_1(msg, a, b) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a), (b))
+#define IPC_SYNC_MESSAGE_ROUTED1_2(msg, a, b, c) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a), (b, c))
+#define IPC_SYNC_MESSAGE_ROUTED1_3(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a), (b, c, d))
+#define IPC_SYNC_MESSAGE_ROUTED1_4(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a), (b, c, d, e))
+#define IPC_SYNC_MESSAGE_ROUTED2_0(msg, a, b) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b), ())
+#define IPC_SYNC_MESSAGE_ROUTED2_1(msg, a, b, c) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b), (c))
+#define IPC_SYNC_MESSAGE_ROUTED2_2(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b), (c, d))
+#define IPC_SYNC_MESSAGE_ROUTED2_3(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b), (c, d, e))
+#define IPC_SYNC_MESSAGE_ROUTED2_4(msg, a, b, c, d, e, f) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b), (c, d, e, f))
+#define IPC_SYNC_MESSAGE_ROUTED3_0(msg, a, b, c) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c), ())
+#define IPC_SYNC_MESSAGE_ROUTED3_1(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c), (d))
+#define IPC_SYNC_MESSAGE_ROUTED3_2(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c), (d, e))
+#define IPC_SYNC_MESSAGE_ROUTED3_3(msg, a, b, c, d, e, f) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c), (d, e, f))
+#define IPC_SYNC_MESSAGE_ROUTED3_4(msg, a, b, c, d, e, f, g) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c), (d, e, f, g))
+#define IPC_SYNC_MESSAGE_ROUTED4_0(msg, a, b, c, d) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d), ())
+#define IPC_SYNC_MESSAGE_ROUTED4_1(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d), (e))
+#define IPC_SYNC_MESSAGE_ROUTED4_2(msg, a, b, c, d, e, f) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d), (e, f))
+#define IPC_SYNC_MESSAGE_ROUTED4_3(msg, a, b, c, d, e, f, g) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d), (e, f, g))
+#define IPC_SYNC_MESSAGE_ROUTED4_4(msg, a, b, c, d, e, f, g, h) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d), (e, f, g, h))
+#define IPC_SYNC_MESSAGE_ROUTED5_0(msg, a, b, c, d, e) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d, e), ())
+#define IPC_SYNC_MESSAGE_ROUTED5_1(msg, a, b, c, d, e, f) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d, e), (f))
+#define IPC_SYNC_MESSAGE_ROUTED5_2(msg, a, b, c, d, e, f, g) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d, e), (f, g))
+#define IPC_SYNC_MESSAGE_ROUTED5_3(msg, a, b, c, d, e, f, g, h) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d, e), (f, g, h))
+#define IPC_SYNC_MESSAGE_ROUTED5_4(msg, a, b, c, d, e, f, g, h, i) \
+  IPC_SYNC_MESSAGE_ROUTED(msg, (a, b, c, d, e), (f, g, h, i))
 
 #endif  // IPC_IPC_MESSAGE_MACROS_H_
 
