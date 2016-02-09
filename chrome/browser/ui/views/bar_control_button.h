@@ -33,7 +33,6 @@ class BarControlButton : public views::ImageButton {
   // views::ImageButton:
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
 
  private:
   gfx::VectorIconId id_;

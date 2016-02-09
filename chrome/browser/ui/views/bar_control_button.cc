@@ -60,10 +60,3 @@ void BarControlButton::OnThemeChanged() {
 void BarControlButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   OnThemeChanged();
 }
-
-bool BarControlButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (IsTriggerableEvent(event))
-    ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
-
-  return ImageButton::OnMousePressed(event);
-}
