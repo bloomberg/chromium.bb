@@ -804,7 +804,7 @@ CertDllVerifyRevocationWithCRLSet(DWORD encoding_type,
       }
       if (issuer_cert)
         break;
-      if (GetLastError() == CRYPT_E_SELF_SIGNED) {
+      if (GetLastError() == static_cast<DWORD>(CRYPT_E_SELF_SIGNED)) {
         issuer_cert.reset(CertDuplicateCertificateContext(subject_cert));
         break;
       }
