@@ -375,7 +375,7 @@ cr.define('options', function() {
       // hidden, this gets called again with a list including
       // the just-created SU. Ignore, to prevent the "already exists" bubble
       // from showing up if the overlay is already hidden.
-      if (!this.visible)
+      if (PageManager.getTopmostVisiblePage().pageDiv != this.pageDiv)
         return;
       $('import-existing-supervised-user-link').hidden =
           supervisedUsers.length === 0;
