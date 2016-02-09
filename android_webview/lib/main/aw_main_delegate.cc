@@ -143,9 +143,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kDisableRendererBackgrounding);
   }
 
-  // Enabled temporarily to gather performance metrics.
-  cl->AppendSwitch(switches::kIPCSyncCompositing);
-
   return false;
 }
 
