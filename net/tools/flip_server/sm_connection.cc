@@ -14,12 +14,12 @@
 #include <string>
 
 #include "net/tools/flip_server/constants.h"
-#include "net/tools/flip_server/create_listener.h"
 #include "net/tools/flip_server/flip_config.h"
 #include "net/tools/flip_server/http_interface.h"
 #include "net/tools/flip_server/spdy_interface.h"
 #include "net/tools/flip_server/spdy_ssl.h"
 #include "net/tools/flip_server/streamer_interface.h"
+#include "net/tools/flip_server/tcp_socket_util.h"
 
 namespace net {
 
@@ -102,7 +102,7 @@ void SMConnection::InitSMConnection(SMConnectionPoolInterface* connection_pool,
     // TODO(kelindsay): is_numeric_host_address value needs to be detected
     server_ip_ = server_ip;
     server_port_ = server_port;
-    int ret = CreateConnectedSocket(
+    int ret = CreateTCPClientSocket(
         &fd_, server_ip, server_port, true, acceptor_->disable_nagle_);
 
     if (ret < 0) {

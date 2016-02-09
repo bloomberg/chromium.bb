@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #include "base/files/file_util.h"
-#include "net/tools/flip_server/create_listener.h"
+#include "net/tools/flip_server/tcp_socket_util.h"
 
 namespace net {
 
@@ -52,7 +52,7 @@ FlipAcceptor::FlipAcceptor(enum FlipHandlerType flip_handler_type,
     https_server_port_ = http_server_port_;
 
   while (1) {
-    int ret = CreateListeningSocket(listen_ip_,
+    int ret = CreateTCPServerSocket(listen_ip_,
                                     listen_port_,
                                     true,
                                     accept_backlog_size_,

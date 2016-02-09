@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H_
-#define NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H_
+#ifndef NET_TOOLS_FLIP_SERVER_TCP_SOCKET_UTIL_H_
+#define NET_TOOLS_FLIP_SERVER_TCP_SOCKET_UTIL_H_
 
 #include <string>
 
@@ -27,13 +27,13 @@ namespace net {
 //             the OS starts rejecting new incoming connections.
 //   reuseaddr - if true sets SO_REUSEADDR on the listening socket
 //   reuseport - if true sets SO_REUSEPORT on the listening socket
-//   wait_for_iface - A boolean indicating that CreateListeningSocket should
+//   wait_for_iface - A boolean indicating that CreateTCPServerSocket should
 //                    block until the interface that it will bind to has been
 //                    raised. This is intended for HA environments.
 //   disable_nagle - if true sets TCP_NODELAY on the listening socket.
 //   listen_fd - this will be assigned a positive value if the socket is
 //               successfully created, else it will be assigned -1.
-int CreateListeningSocket(const std::string& host,
+int CreateTCPServerSocket(const std::string& host,
                           const std::string& port,
                           bool is_numeric_host_address,
                           int backlog,
@@ -43,7 +43,7 @@ int CreateListeningSocket(const std::string& host,
                           bool disable_nagle,
                           int* listen_fd);
 
-int CreateConnectedSocket(int* connect_fd,
+int CreateTCPClientSocket(int* connect_fd,
                           const std::string& host,
                           const std::string& port,
                           bool is_numeric_host_address,
@@ -51,4 +51,4 @@ int CreateConnectedSocket(int* connect_fd,
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H_
+#endif  // NET_TOOLS_FLIP_SERVER_TCP_SOCKET_UTIL_H_

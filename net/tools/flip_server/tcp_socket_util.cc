@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/flip_server/create_listener.h"
+#include "net/tools/flip_server/tcp_socket_util.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -70,8 +70,7 @@ int SetDisableNagle(int fd) {
   return 1;
 }
 
-// see header for documentation of this function.
-int CreateListeningSocket(const std::string& host,
+int CreateTCPServerSocket(const std::string& host,
                           const std::string& port,
                           bool is_numeric_host_address,
                           int backlog,
@@ -207,7 +206,7 @@ int CreateListeningSocket(const std::string& host,
   return 0;
 }
 
-int CreateConnectedSocket(int* connect_fd,
+int CreateTCPClientSocket(int* connect_fd,
                           const std::string& host,
                           const std::string& port,
                           bool is_numeric_host_address,
