@@ -39,8 +39,8 @@ class TraceSamplingThread;
 struct BASE_EXPORT TraceLogStatus {
   TraceLogStatus();
   ~TraceLogStatus();
-  size_t event_capacity;
-  size_t event_count;
+  uint32_t event_capacity;
+  uint32_t event_count;
 };
 
 class BASE_EXPORT TraceLog : public MemoryDumpProvider {

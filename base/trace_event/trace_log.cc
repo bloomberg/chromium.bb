@@ -757,8 +757,8 @@ bool TraceLog::HasEnabledStateObserver(EnabledStateObserver* listener) const {
 TraceLogStatus TraceLog::GetStatus() const {
   AutoLock lock(lock_);
   TraceLogStatus result;
-  result.event_capacity = logged_events_->Capacity();
-  result.event_count = logged_events_->Size();
+  result.event_capacity = static_cast<uint32_t>(logged_events_->Capacity());
+  result.event_count = static_cast<uint32_t>(logged_events_->Size());
   return result;
 }
 
