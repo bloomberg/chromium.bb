@@ -87,6 +87,7 @@ private:
 // |ASSERT_NO_EDITING_ABORT| macro.
 #define ASSERT_NO_EDITING_ABORT (NoEditingAbortChecker(__FILE__, __LINE__).editingState())
 #else
+#define ASSERT_IN_EDITING_COMMAND(expr)
 #define ASSERT_NO_EDITING_ABORT (IgnorableEditingAbortState().editingState())
 #endif
 
