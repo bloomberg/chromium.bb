@@ -23,8 +23,12 @@ import java.lang.reflect.Proxy;
 public class BaseChromiumApplication extends Application {
 
     private static final String TAG = "cr.base";
-    private static final String TOOLBAR_CALLBACK_WRAPPER_CLASS =
+    private static final String TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS =
             "android.support.v7.internal.app.ToolbarActionBar$ToolbarCallbackWrapper";
+    // In builds using the --use_unpublished_apis flag, the ToolbarActionBar class name does not
+    // include the "internal" package.
+    private static final String TOOLBAR_CALLBACK_WRAPPER_CLASS =
+            "android.support.v7.app.ToolbarActionBar$ToolbarCallbackWrapper";
     private final boolean mShouldInitializeApplicationStatusTracking;
 
     public BaseChromiumApplication() {
@@ -156,42 +160,54 @@ public class BaseChromiumApplication extends Application {
             public void onActivityDestroyed(Activity activity) {
                 assert (Proxy.isProxyClass(activity.getWindow().getCallback().getClass())
                         || activity.getWindow().getCallback().getClass().getName().equals(
-                                TOOLBAR_CALLBACK_WRAPPER_CLASS));
+                                TOOLBAR_CALLBACK_WRAPPER_CLASS)
+                        || activity.getWindow().getCallback().getClass().getName().equals(
+                                TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS));
             }
 
             @Override
             public void onActivityPaused(Activity activity) {
                 assert (Proxy.isProxyClass(activity.getWindow().getCallback().getClass())
                         || activity.getWindow().getCallback().getClass().getName().equals(
-                                TOOLBAR_CALLBACK_WRAPPER_CLASS));
+                                TOOLBAR_CALLBACK_WRAPPER_CLASS)
+                        || activity.getWindow().getCallback().getClass().getName().equals(
+                                TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS));
             }
 
             @Override
             public void onActivityResumed(Activity activity) {
                 assert (Proxy.isProxyClass(activity.getWindow().getCallback().getClass())
                         || activity.getWindow().getCallback().getClass().getName().equals(
-                                TOOLBAR_CALLBACK_WRAPPER_CLASS));
+                                TOOLBAR_CALLBACK_WRAPPER_CLASS)
+                        || activity.getWindow().getCallback().getClass().getName().equals(
+                                TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS));
             }
 
             @Override
             public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
                 assert (Proxy.isProxyClass(activity.getWindow().getCallback().getClass())
                         || activity.getWindow().getCallback().getClass().getName().equals(
-                                TOOLBAR_CALLBACK_WRAPPER_CLASS));
+                                TOOLBAR_CALLBACK_WRAPPER_CLASS)
+                        || activity.getWindow().getCallback().getClass().getName().equals(
+                                TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS));
             }
 
             @Override
             public void onActivityStarted(Activity activity) {
                 assert (Proxy.isProxyClass(activity.getWindow().getCallback().getClass())
                         || activity.getWindow().getCallback().getClass().getName().equals(
-                                TOOLBAR_CALLBACK_WRAPPER_CLASS));
+                                TOOLBAR_CALLBACK_WRAPPER_CLASS)
+                        || activity.getWindow().getCallback().getClass().getName().equals(
+                                TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS));
             }
 
             @Override
             public void onActivityStopped(Activity activity) {
                 assert (Proxy.isProxyClass(activity.getWindow().getCallback().getClass())
                         || activity.getWindow().getCallback().getClass().getName().equals(
-                                TOOLBAR_CALLBACK_WRAPPER_CLASS));
+                                TOOLBAR_CALLBACK_WRAPPER_CLASS)
+                        || activity.getWindow().getCallback().getClass().getName().equals(
+                                TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS));
             }
         });
     }

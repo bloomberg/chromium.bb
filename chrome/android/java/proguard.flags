@@ -153,3 +153,9 @@
 
 #-dontwarn android.webkit.WebView
 -dontwarn android.net.http.SslCertificate
+
+# Needed for assertions in BaseChromiumApplication.
+# TODO(twellington): Remove these two lines when support for detecting a debug
+# build lands (https://codereview.chromium.org/1597273005/).
+-keep class android.support.v7.app.ToolbarActionBar$ToolbarCallbackWrapper {*;}
+-keep class android.support.v7.internal.app.ToolbarActionBar$ToolbarCallbackWrapper {*;}
