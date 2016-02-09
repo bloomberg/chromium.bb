@@ -38,7 +38,7 @@
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/presentation/presentation_service_impl.h"
-#include "content/browser/renderer_host/input/input_router.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -247,6 +247,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
     } else {
       DCHECK(!render_widget_host_->owned_by_render_frame_host());
     }
+    InputRouterImpl* ir =
+        static_cast<InputRouterImpl*>(render_widget_host_->input_router());
+    ir->SetFrameTreeNodeId(frame_tree_node_->frame_tree_node_id());
   }
 }
 

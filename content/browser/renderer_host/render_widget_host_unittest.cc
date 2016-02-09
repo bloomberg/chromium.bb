@@ -125,6 +125,7 @@ class MockInputRouter : public InputRouter {
   void RequestNotificationWhenFlushed() override {}
   bool HasPendingEvents() const override { return false; }
   void SetDeviceScaleFactor(float device_scale_factor) override {}
+  void SetFrameTreeNodeId(int frameTreeNodeId) override {}
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override {

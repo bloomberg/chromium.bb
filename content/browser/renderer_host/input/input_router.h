@@ -58,6 +58,10 @@ class InputRouter : public IPC::Listener {
   // A scale factor to scale the coordinate in WebInputEvent from DIP
   // to viewport.
   virtual void SetDeviceScaleFactor(float device_scale_factor) = 0;
+
+  // Sets the frame tree node id of associated frame, used when tracing
+  // input event latencies to relate events to their target frames.
+  virtual void SetFrameTreeNodeId(int frameTreeNodeId) = 0;
 };
 
 }  // namespace content

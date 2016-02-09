@@ -24,6 +24,7 @@
 #include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -344,6 +345,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
           new devtools::service_worker::ServiceWorkerHandler()),
       tracing_handler_(new devtools::tracing::TracingHandler(
           devtools::tracing::TracingHandler::Renderer,
+          host->GetFrameTreeNodeId(),
           GetIOContext())),
       emulation_handler_(nullptr),
       frame_trace_recorder_(nullptr),
@@ -480,7 +482,6 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
     return;
 
   frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
-
 #if defined(OS_ANDROID)
   power_save_blocker_.reset(static_cast<PowerSaveBlockerImpl*>(
       PowerSaveBlocker::Create(

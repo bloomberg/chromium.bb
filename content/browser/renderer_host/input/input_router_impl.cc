@@ -76,6 +76,7 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       client_(client),
       ack_handler_(ack_handler),
       routing_id_(routing_id),
+      frame_tree_node_id_(-1),
       select_message_pending_(false),
       move_caret_pending_(false),
       mouse_move_pending_(false),
@@ -333,11 +334,12 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                "InputRouterImpl::FilterAndSendWebInputEvent",
                "type",
                WebInputEventTraits::GetName(input_event.type));
-  TRACE_EVENT_WITH_FLOW1("input,benchmark",
+  TRACE_EVENT_WITH_FLOW2("input,benchmark,devtools.timeline",
                          "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "step", "SendInputEventUI");
+                         "step", "SendInputEventUI",
+                         "frameTreeNodeId", frame_tree_node_id_);
 
   // Any input event cancels a pending mouse move event.
   next_mouse_move_.reset();
@@ -623,6 +625,10 @@ void InputRouterImpl::SignalFlushedIfNecessary() {
 
   flush_requested_ = false;
   client_->DidFlush();
+}
+
+void InputRouterImpl::SetFrameTreeNodeId(int frameTreeNodeId) {
+  frame_tree_node_id_ = frameTreeNodeId;
 }
 
 }  // namespace content

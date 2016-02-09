@@ -34,7 +34,9 @@ class TracingHandler {
   typedef DevToolsProtocolClient::Response Response;
 
   enum Target { Browser, Renderer };
-  TracingHandler(Target target, DevToolsIOContext* io_context);
+  TracingHandler(Target target,
+                 int frame_tree_node_id,
+                 DevToolsIOContext* io_context);
   virtual ~TracingHandler();
 
   void SetClient(scoped_ptr<Client> client);
@@ -77,6 +79,7 @@ class TracingHandler {
 
   scoped_ptr<Client> client_;
   DevToolsIOContext* io_context_;
+  int frame_tree_node_id_;
   bool did_initiate_recording_;
   bool return_as_stream_;
   base::WeakPtrFactory<TracingHandler> weak_factory_;

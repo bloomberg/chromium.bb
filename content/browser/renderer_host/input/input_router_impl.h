@@ -77,7 +77,9 @@ class CONTENT_EXPORT InputRouterImpl
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;
 
-private:
+  void SetFrameTreeNodeId(int frameTreeNodeId) override;
+
+ private:
   friend class InputRouterImplTest;
 
   // TouchpadTapSuppressionControllerClient
@@ -190,11 +192,11 @@ private:
 
   int routing_id() const { return routing_id_; }
 
-
   IPC::Sender* sender_;
   InputRouterClient* client_;
   InputAckHandler* ack_handler_;
   int routing_id_;
+  int frame_tree_node_id_;
 
   // (Similar to |mouse_move_pending_|.) True while waiting for SelectRange_ACK
   // or MoveRangeSelectionExtent_ACK.
