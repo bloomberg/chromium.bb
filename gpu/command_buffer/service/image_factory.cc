@@ -39,6 +39,8 @@ gfx::BufferFormat ImageFactory::DefaultBufferFormatForImageFormat(
       return gfx::BufferFormat::ETC1;
     case GL_RGB_YUV_420_CHROMIUM:
       return gfx::BufferFormat::YUV_420;
+    case GL_RGB_YCBCR_420V_CHROMIUM:
+      return gfx::BufferFormat::YUV_420_BIPLANAR;
     case GL_RGB_YCBCR_422_CHROMIUM:
       return gfx::BufferFormat::UYVY_422;
     default:
@@ -101,7 +103,7 @@ bool ImageFactory::IsGpuMemoryBufferFormatSupported(
     case gfx::BufferFormat::YUV_420:
       return true;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return false;
+      return capabilities.image_ycbcr_420v;
   }
 
   NOTREACHED();
