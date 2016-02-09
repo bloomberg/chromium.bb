@@ -124,7 +124,7 @@ void LayoutSVGResourceFilter::primitiveAttributeChanged(LayoutObject* object, co
         // Issue paint invalidations for the image on the screen.
         markClientForInvalidation(filter.key, PaintInvalidation);
     }
-    markAllClientLayersForInvalidation();
+    markAllResourceClientsForInvalidation();
 }
 
 } // namespace blink

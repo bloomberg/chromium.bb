@@ -26,6 +26,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGResourceClient.h"
 
 namespace blink {
 
@@ -54,6 +55,15 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_primitiveUnits);
 }
 
+SVGFilterElement::~SVGFilterElement()
+{
+#if !ENABLE(OILPAN)
+    for (SVGResourceClient* filterClient : m_clientsToAdd)
+        filterClient->filterWillBeDestroyed(this);
+    m_clientsToAdd.clear();
+#endif
+}
+
 DEFINE_NODE_FACTORY(SVGFilterElement)
 
 DEFINE_TRACE(SVGFilterElement)
@@ -65,7 +75,6 @@ DEFINE_TRACE(SVGFilterElement)
     visitor->trace(m_height);
     visitor->trace(m_filterUnits);
     visitor->trace(m_primitiveUnits);
-    visitor->trace(m_clientsToAdd);
 #endif
     SVGElement::trace(visitor);
     SVGURIReference::trace(visitor);
@@ -109,8 +118,8 @@ LayoutObject* SVGFilterElement::createLayoutObject(const ComputedStyle&)
 {
     LayoutSVGResourceFilter* layoutObject = new LayoutSVGResourceFilter(this);
 
-    for (const RefPtrWillBeMember<Node>& node : m_clientsToAdd)
-        layoutObject->addClientLayer(node.get());
+    for (SVGResourceClient* client : m_clientsToAdd)
+        layoutObject->addResourceClient(client);
     m_clientsToAdd.clear();
 
     return layoutObject;
@@ -124,13 +133,13 @@ bool SVGFilterElement::selfHasRelativeLengths() const
         || m_height->currentValue()->isRelative();
 }
 
-void SVGFilterElement::addClient(Node* client)
+void SVGFilterElement::addClient(SVGResourceClient* client)
 {
     ASSERT(client);
     m_clientsToAdd.add(client);
 }
 
-void SVGFilterElement::removeClient(Node* client)
+void SVGFilterElement::removeClient(SVGResourceClient* client)
 {
     ASSERT(client);
     m_clientsToAdd.remove(client);

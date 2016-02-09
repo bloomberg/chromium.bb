@@ -149,6 +149,14 @@ CanvasRenderingContext2D::~CanvasRenderingContext2D()
     if (m_pruneLocalFontCacheScheduled) {
         Platform::current()->currentThread()->removeTaskObserver(this);
     }
+#if !ENABLE(OILPAN)
+    dispose();
+#endif
+}
+
+void CanvasRenderingContext2D::dispose()
+{
+    clearFilterReferences();
 }
 
 void CanvasRenderingContext2D::validateStateStack()
@@ -346,6 +354,7 @@ void CanvasRenderingContext2D::restore()
         return;
     m_path.transform(state().transform());
     m_stateStack.removeLast();
+    m_stateStack.last()->clearResolvedFilter();
     m_path.transform(state().transform().inverse());
     SkCanvas* c = drawingCanvas();
     if (c)
@@ -828,7 +837,7 @@ static bool isFullCanvasCompositeMode(SkXfermode::Mode op)
 template<typename DrawFunc>
 void CanvasRenderingContext2D::compositedDraw(const DrawFunc& drawFunc, SkCanvas* c, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
 {
-    SkImageFilter* filter = state().getFilter(canvas(), accessFont(), canvas()->size());
+    SkImageFilter* filter = state().getFilter(canvas(), accessFont(), canvas()->size(), this);
     ASSERT(isFullCanvasCompositeMode(state().globalComposite()) || filter);
     SkMatrix ctm = c->getTotalMatrix();
     c->resetMatrix();
@@ -888,7 +897,7 @@ bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc
             return false;
     }
 
-    if (isFullCanvasCompositeMode(state().globalComposite()) || state().hasFilter(canvas(), accessFont(), canvas()->size())) {
+    if (isFullCanvasCompositeMode(state().globalComposite()) || state().hasFilter(canvas(), accessFont(), canvas()->size(), this)) {
         compositedDraw(drawFunc, drawingCanvas(), paintType, imageType);
         didDraw(clipBounds);
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
@@ -1802,6 +1811,11 @@ void CanvasRenderingContext2D::styleDidChange(const ComputedStyle* oldStyle, con
     if (oldStyle && oldStyle->font() == newStyle.font())
         return;
     pruneLocalFontCache(0);
+}
+
+void CanvasRenderingContext2D::filterNeedsInvalidation()
+{
+    state().clearResolvedFilter();
 }
 
 String CanvasRenderingContext2D::textAlign() const

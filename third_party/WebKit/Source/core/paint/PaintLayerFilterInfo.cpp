@@ -123,11 +123,7 @@ void PaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& 
             Element* filter = m_layer->layoutObject()->node()->document().getElementById(referenceFilterOperation->fragment());
             if (!isSVGFilterElement(filter))
                 continue;
-            if (filter->layoutObject())
-                toLayoutSVGResourceContainer(filter->layoutObject())->addClientLayer(m_layer);
-            else
-                toSVGFilterElement(filter)->addClient(m_layer->layoutObject()->node());
-            m_internalSVGReferences.append(filter);
+            addFilterReference(toSVGFilterElement(filter));
         }
     }
 }
@@ -137,14 +133,12 @@ void PaintLayerFilterInfo::removeReferenceFilterClients()
     for (size_t i = 0; i < m_externalSVGReferences.size(); ++i)
         m_externalSVGReferences.at(i)->removeClient(this);
     m_externalSVGReferences.clear();
-    for (size_t i = 0; i < m_internalSVGReferences.size(); ++i) {
-        Element* filter = m_internalSVGReferences.at(i).get();
-        if (filter->layoutObject())
-            toLayoutSVGResourceContainer(filter->layoutObject())->removeClientLayer(m_layer);
-        else
-            toSVGFilterElement(filter)->removeClient(m_layer->layoutObject()->node());
-    }
-    m_internalSVGReferences.clear();
+    clearFilterReferences();
+}
+
+void PaintLayerFilterInfo::filterNeedsInvalidation()
+{
+    m_layer->filterNeedsPaintInvalidation();
 }
 
 } // namespace blink

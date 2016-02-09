@@ -31,11 +31,13 @@
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
+#include "core/svg/SVGResourceClient.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/Canvas2DContextAttributes.h"
 #include "modules/canvas2d/CanvasPathMethods.h"
 #include "modules/canvas2d/CanvasRenderingContext2DState.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/heap/GarbageCollected.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -61,8 +63,9 @@ class TextMetrics;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
 
-class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods, public WebThread::TaskObserver {
+class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods, public WebThread::TaskObserver, public SVGResourceClient {
     DEFINE_WRAPPERTYPEINFO();
+    USING_PRE_FINALIZER(CanvasRenderingContext2D, dispose);
 public:
     class Factory : public CanvasRenderingContextFactory {
         WTF_MAKE_NONCOPYABLE(Factory);
@@ -226,10 +229,15 @@ public:
 
     void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) override;
 
+    // SVGResourceClient implementation
+    void filterNeedsInvalidation() override;
+
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 
     CanvasRenderingContext2D(HTMLCanvasElement*, const CanvasContextCreationAttributes& attrs, Document&);
+
+    void dispose();
 
     CanvasRenderingContext2DState& modifiableState();
     const CanvasRenderingContext2DState& state() const { return *m_stateStack.last(); }

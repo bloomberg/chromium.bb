@@ -19,6 +19,7 @@
 
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 
+#include "core/SVGElementTypeHelpers.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
@@ -72,6 +73,12 @@ void LayoutSVGResourceContainer::willBeDestroyed()
     // LayoutSVGHiddenContainer::willBeDestroyed() below.
     detachAllClients();
 
+#if !ENABLE(OILPAN)
+    for (SVGResourceClient* client : m_resourceClients)
+        client->filterWillBeDestroyed(toSVGFilterElement(element()));
+    m_resourceClients.clear();
+#endif
+
     LayoutSVGHiddenContainer::willBeDestroyed();
     if (m_registered)
         svgExtensionsFromElement(element()).removeResource(m_id);
@@ -119,7 +126,7 @@ void LayoutSVGResourceContainer::idChanged()
 
 void LayoutSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode mode)
 {
-    if ((m_clients.isEmpty() && m_clientLayers.isEmpty()) || m_isInvalidating)
+    if ((m_clients.isEmpty() && m_resourceClients.isEmpty()) || m_isInvalidating)
         return;
 
     if (m_invalidationMask & mode)
@@ -142,15 +149,15 @@ void LayoutSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
         LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(client, needsLayout);
     }
 
-    markAllClientLayersForInvalidation();
+    markAllResourceClientsForInvalidation();
 
     m_isInvalidating = false;
 }
 
-void LayoutSVGResourceContainer::markAllClientLayersForInvalidation()
+void LayoutSVGResourceContainer::markAllResourceClientsForInvalidation()
 {
-    for (auto* layer : m_clientLayers)
-        layer->filterNeedsPaintInvalidation();
+    for (SVGResourceClient* client : m_resourceClients)
+        client->filterNeedsInvalidation();
 }
 
 void LayoutSVGResourceContainer::markClientForInvalidation(LayoutObject* client, InvalidationMode mode)
@@ -190,26 +197,17 @@ void LayoutSVGResourceContainer::removeClient(LayoutObject* client)
     m_clients.remove(client);
 }
 
-void LayoutSVGResourceContainer::addClientLayer(Node* node)
+void LayoutSVGResourceContainer::addResourceClient(SVGResourceClient* client)
 {
-    ASSERT(node);
-    if (!node->layoutObject() || !node->layoutObject()->hasLayer())
-        return;
-    m_clientLayers.add(toLayoutBoxModelObject(node->layoutObject())->layer());
+    ASSERT(client);
+    m_resourceClients.add(client);
     clearInvalidationMask();
 }
 
-void LayoutSVGResourceContainer::addClientLayer(PaintLayer* client)
+void LayoutSVGResourceContainer::removeResourceClient(SVGResourceClient* client)
 {
     ASSERT(client);
-    m_clientLayers.add(client);
-    clearInvalidationMask();
-}
-
-void LayoutSVGResourceContainer::removeClientLayer(PaintLayer* client)
-{
-    ASSERT(client);
-    m_clientLayers.remove(client);
+    m_resourceClients.remove(client);
 }
 
 void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(SubtreeLayoutScope* layoutScope)
@@ -247,7 +245,7 @@ void LayoutSVGResourceContainer::registerResource()
         const ComputedStyle& style = layoutObject->styleRef();
 
         // If the client has a layer (is a non-SVGElement) we need to signal
-        // invalidation in the same way as is done in markAllClientLayersForInvalidation above.
+        // invalidation in the same way as is done in markAllResourceClientsForInvalidation above.
         if (layoutObject->hasLayer() && resourceType() == FilterResourceType) {
             if (style.hasFilter())
                 toLayoutBoxModelObject(layoutObject)->layer()->filterNeedsPaintInvalidation();

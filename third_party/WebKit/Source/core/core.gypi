@@ -3546,6 +3546,8 @@
             'svg/SVGRectElement.h',
             'svg/SVGRectTearOff.cpp',
             'svg/SVGRectTearOff.h',
+            'svg/SVGResourceClient.cpp',
+            'svg/SVGResourceClient.h',
             'svg/SVGSVGElement.cpp',
             'svg/SVGSVGElement.h',
             'svg/SVGScriptElement.cpp',

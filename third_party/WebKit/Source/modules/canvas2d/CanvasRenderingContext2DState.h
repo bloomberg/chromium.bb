@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class CanvasRenderingContext2D;
 class CanvasStyle;
 class CSSValue;
 class Element;
@@ -85,8 +86,9 @@ public:
     void setFilter(PassRefPtrWillBeRawPtr<CSSValue>);
     void setUnparsedFilter(const String& filterString) { m_unparsedFilter = filterString; }
     const String& unparsedFilter() const { return m_unparsedFilter; }
-    SkImageFilter* getFilter(Element*, const Font&, IntSize canvasSize) const;
-    bool hasFilter(Element*, const Font&, IntSize canvasSize) const;
+    SkImageFilter* getFilter(Element*, const Font&, IntSize canvasSize, CanvasRenderingContext2D*) const;
+    bool hasFilter(Element*, const Font&, IntSize canvasSize, CanvasRenderingContext2D*) const;
+    void clearResolvedFilter() const;
 
     void setStrokeStyle(CanvasStyle*);
     CanvasStyle* strokeStyle() const { return m_strokeStyle.get(); }
