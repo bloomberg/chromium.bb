@@ -73,7 +73,8 @@ ChildWindowSurfaceWin::ChildWindowSurfaceWin(GpuChannelManager* manager,
                                              HWND parent_window)
     : gfx::NativeViewGLSurfaceEGL(0),
       parent_window_(parent_window),
-      manager_(manager) {
+      manager_(manager),
+      alpha_(true) {
   // Don't use EGL_ANGLE_window_fixed_size so that we can avoid recreating the
   // window surface, which can cause flicker on DirectComposition.
   enable_fixed_size_angle_ = false;
@@ -136,6 +137,7 @@ bool ChildWindowSurfaceWin::Resize(const gfx::Size& size,
     if (!MoveWindow(window_, 0, 0, size.width(), size.height(), FALSE)) {
       return false;
     }
+    alpha_ = has_alpha;
     return gfx::NativeViewGLSurfaceEGL::Resize(size, scale_factor, has_alpha);
   } else {
     if (size == GetSize() && has_alpha == alpha_)

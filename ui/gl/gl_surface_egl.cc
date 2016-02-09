@@ -619,7 +619,6 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay() {
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
     : window_(window),
       size_(1, 1),
-      alpha_(true),
       enable_fixed_size_angle_(false),
       surface_(NULL),
       supports_post_sub_buffer_(false),
@@ -814,10 +813,9 @@ gfx::Size NativeViewGLSurfaceEGL::GetSize() {
 bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size,
                                     float scale_factor,
                                     bool has_alpha) {
-  if (size == GetSize() && has_alpha == alpha_)
+  if (size == GetSize())
     return true;
 
-  alpha_ = has_alpha;
   size_ = size;
 
   scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;

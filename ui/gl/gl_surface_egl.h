@@ -120,7 +120,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   EGLNativeWindowType window_;
   gfx::Size size_;
-  bool alpha_;
   bool enable_fixed_size_angle_;
 
   void OnSetSwapInterval(int interval) override;
