@@ -21,6 +21,7 @@ SkColorType ResourceFormatToSkColorType(ResourceFormat format) {
     case LUMINANCE_8:
     case RGB_565:
     case RED_8:
+    case LUMINANCE_F16:
       NOTREACHED();
       break;
   }
@@ -35,6 +36,7 @@ int BitsPerPixel(ResourceFormat format) {
       return 32;
     case RGBA_4444:
     case RGB_565:
+    case LUMINANCE_F16:
       return 16;
     case ALPHA_8:
     case LUMINANCE_8:
@@ -57,7 +59,8 @@ GLenum GLDataType(ResourceFormat format) {
       GL_UNSIGNED_BYTE,           // LUMINANCE_8
       GL_UNSIGNED_SHORT_5_6_5,    // RGB_565,
       GL_UNSIGNED_BYTE,           // ETC1
-      GL_UNSIGNED_BYTE            // RED_8
+      GL_UNSIGNED_BYTE,           // RED_8
+      GL_HALF_FLOAT_OES,          // LUMINANCE_F16
   };
   static_assert(arraysize(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_type does not handle all cases.");
@@ -75,7 +78,8 @@ GLenum GLDataFormat(ResourceFormat format) {
       GL_LUMINANCE,      // LUMINANCE_8
       GL_RGB,            // RGB_565
       GL_ETC1_RGB8_OES,  // ETC1
-      GL_RED_EXT         // RED_8
+      GL_RED_EXT,        // RED_8
+      GL_LUMINANCE,      // LUMINANCE_F16
   };
   static_assert(arraysize(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
@@ -101,6 +105,7 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
     case LUMINANCE_8:
     case RGB_565:
     case ETC1:
+    case LUMINANCE_F16:
       break;
   }
   NOTREACHED();

@@ -108,7 +108,13 @@ enum VideoFormat {
   RGB32,
   MJPEG,
   MT21,
-  FORMAT_MAX = MT21,
+  YUV420P9,
+  YUV420P10,
+  YUV422P9,
+  YUV422P10,
+  YUV444P9,
+  YUV444P10,
+  FORMAT_MAX = YUV444P10,
 };
 
 // Kept in sync with media::ColorSpace via static_asserts.

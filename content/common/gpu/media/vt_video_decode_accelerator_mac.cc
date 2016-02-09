@@ -46,7 +46,11 @@ static const media::VideoCodecProfile kSupportedProfiles[] = {
   media::H264PROFILE_MAIN,
   media::H264PROFILE_EXTENDED,
   media::H264PROFILE_HIGH,
-  media::H264PROFILE_HIGH10PROFILE,
+  // TODO(hubbe): Try to re-enable this again somehow. Currently it seems
+  // that some codecs fail to check the profile during initialization and
+  // then fail on the first frame decode, which currently results in a
+  // pipeline failure.
+  // media::H264PROFILE_HIGH10PROFILE,
   media::H264PROFILE_SCALABLEBASELINE,
   media::H264PROFILE_SCALABLEHIGH,
   media::H264PROFILE_STEREOHIGH,

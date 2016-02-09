@@ -131,6 +131,10 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMp4) {
   PlayVideo("bear.mp4", GetParam());
 }
 
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {
+  PlayVideo("bear-320x180-hi10p.mp4", GetParam());
+}
+
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentMp4) {
   PlayVideo("bear_silent.mp4", GetParam());
 }
@@ -257,6 +261,10 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pH264) {
 
 IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pRec709H264) {
   RunColorFormatTest("yuv420p_rec709.mp4", kEnded);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pHighBitDepth) {
+  RunColorFormatTest("yuv420p_hi10p.mp4", kEnded);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, Yuvj420pH264) {

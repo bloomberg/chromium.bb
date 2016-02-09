@@ -42,6 +42,18 @@ std::string VideoPixelFormatToString(VideoPixelFormat format) {
       return "PIXEL_FORMAT_MJPEG";
     case PIXEL_FORMAT_MT21:
       return "PIXEL_FORMAT_MT21";
+    case PIXEL_FORMAT_YUV420P9:
+      return "PIXEL_FORMAT_YUV420P9";
+    case PIXEL_FORMAT_YUV420P10:
+      return "PIXEL_FORMAT_YUV420P10";
+    case PIXEL_FORMAT_YUV422P9:
+      return "PIXEL_FORMAT_YUV422P9";
+    case PIXEL_FORMAT_YUV422P10:
+      return "PIXEL_FORMAT_YUV422P10";
+    case PIXEL_FORMAT_YUV444P9:
+      return "PIXEL_FORMAT_YUV444P9";
+    case PIXEL_FORMAT_YUV444P10:
+      return "PIXEL_FORMAT_YUV444P10";
   }
   NOTREACHED() << "Invalid VideoPixelFormat provided: " << format;
   return "";
@@ -57,6 +69,12 @@ bool IsYuvPlanar(VideoPixelFormat format) {
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_YUV422P9:
+    case PIXEL_FORMAT_YUV422P10:
+    case PIXEL_FORMAT_YUV444P9:
+    case PIXEL_FORMAT_YUV444P10:
       return true;
 
     case PIXEL_FORMAT_UNKNOWN:
@@ -87,6 +105,12 @@ bool IsOpaque(VideoPixelFormat format) {
     case PIXEL_FORMAT_RGB24:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_YUV422P9:
+    case PIXEL_FORMAT_YUV422P10:
+    case PIXEL_FORMAT_YUV444P9:
+    case PIXEL_FORMAT_YUV444P10:
       return true;
     case PIXEL_FORMAT_YV12A:
     case PIXEL_FORMAT_ARGB:

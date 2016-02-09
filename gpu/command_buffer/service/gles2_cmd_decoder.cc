@@ -3145,6 +3145,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.blend_equation_advanced_coherent =
       feature_info_->feature_flags().blend_equation_advanced_coherent;
   caps.texture_rg = feature_info_->feature_flags().ext_texture_rg;
+  caps.texture_half_float_linear =
+      feature_info_->feature_flags().enable_texture_half_float_linear;
   caps.image_ycbcr_422 =
       feature_info_->feature_flags().chromium_image_ycbcr_422;
   caps.image_ycbcr_420v =

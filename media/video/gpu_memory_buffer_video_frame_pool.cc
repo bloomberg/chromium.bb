@@ -385,6 +385,12 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV422P9:
+    case PIXEL_FORMAT_YUV444P9:
+    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_YUV422P10:
+    case PIXEL_FORMAT_YUV444P10:
     case PIXEL_FORMAT_UNKNOWN:
       frame_ready_cb.Run(video_frame);
       return;

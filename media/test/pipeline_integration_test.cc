@@ -1258,6 +1258,15 @@ TEST_F(PipelineIntegrationTest,
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackHi10P) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi10p.mp4", kClockless));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 TEST_F(PipelineIntegrationTest, MediaSource_ADTS) {
   MockMediaSource source("sfx.adts", kADTS, kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
@@ -1767,6 +1776,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_MP4_AVC3) {
   source.Shutdown();
   Stop();
 }
+
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 TEST_F(PipelineIntegrationTest, SeekWhilePaused) {

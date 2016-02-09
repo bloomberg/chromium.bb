@@ -267,13 +267,61 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
                    ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
                    uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space);
+                   color_space, 0.0f, 1.0f);
+}
+
+// Upshift video frame to 10 bit.
+scoped_refptr<media::VideoFrame> CreateHighbitVideoFrame(
+    const scoped_refptr<media::VideoFrame>& video_frame) {
+  media::VideoPixelFormat format;
+  switch (video_frame->format()) {
+    case media::PIXEL_FORMAT_I420:
+    case media::PIXEL_FORMAT_YV12:
+      format = media::PIXEL_FORMAT_YUV420P10;
+      break;
+    case media::PIXEL_FORMAT_YV16:
+      format = media::PIXEL_FORMAT_YUV422P10;
+      break;
+    case media::PIXEL_FORMAT_YV24:
+      format = media::PIXEL_FORMAT_YUV444P10;
+      break;
+
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+  scoped_refptr<media::VideoFrame> ret = media::VideoFrame::CreateFrame(
+      format, video_frame->coded_size(), video_frame->visible_rect(),
+      video_frame->natural_size(), video_frame->timestamp());
+
+  // Copy all metadata.
+  base::DictionaryValue tmp;
+  video_frame->metadata()->MergeInternalValuesInto(&tmp);
+  ret->metadata()->MergeInternalValuesFrom(tmp);
+
+  for (int plane = media::VideoFrame::kYPlane;
+       plane <= media::VideoFrame::kVPlane; ++plane) {
+    int width = video_frame->row_bytes(plane);
+    const uint8_t* src = video_frame->data(plane);
+    uint16_t* dst = reinterpret_cast<uint16_t*>(ret->data(plane));
+    for (int row = 0; row < video_frame->rows(plane); row++) {
+      for (int x = 0; x < width; x++) {
+        // Replicate the top bits into the lower bits, this way
+        // 0xFF becomes 0x3FF.
+        dst[x] = (src[x] << 2) | (src[x] >> 6);
+      }
+      src += video_frame->stride(plane);
+      dst += ret->stride(plane) / 2;
+    }
+  }
+  return ret;
 }
 
 void CreateTestYUVVideoDrawQuad_Striped(
     const SharedQuadState* shared_state,
     media::VideoPixelFormat format,
     bool is_transparent,
+    bool highbit,
     const gfx::RectF& tex_coord_rect,
     RenderPass* render_pass,
     VideoResourceUpdater* video_resource_updater,
@@ -308,6 +356,10 @@ void CreateTestYUVVideoDrawQuad_Striped(
     }
   }
   uint8_t alpha_value = is_transparent ? 0 : 128;
+
+  if (highbit)
+    video_frame = CreateHighbitVideoFrame(video_frame);
+
   CreateTestYUVVideoDrawQuad_FromVideoFrame(
       shared_state, video_frame, alpha_value, tex_coord_rect, render_pass,
       video_resource_updater, rect, visible_rect, resource_provider);
@@ -980,7 +1032,11 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
   scoped_ptr<VideoResourceUpdater> video_resource_updater_;
 };
 
-TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
+class VideoGLRendererPixelHiLoTest
+    : public VideoGLRendererPixelTest,
+      public ::testing::WithParamInterface<bool> {};
+
+TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
 
   RenderPassId id(1, 1);
@@ -989,10 +1045,11 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::PIXEL_FORMAT_YV12,
-                                     false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
-                                     pass.get(), video_resource_updater_.get(),
-                                     rect, rect, resource_provider_.get());
+  bool highbit = GetParam();
+  CreateTestYUVVideoDrawQuad_Striped(
+      shared_state, media::PIXEL_FORMAT_YV12, false, highbit,
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
+      video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -1003,7 +1060,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
                          FuzzyPixelOffByOneComparator(true)));
 }
 
-TEST_F(VideoGLRendererPixelTest, ClippedYUVRect) {
+TEST_P(VideoGLRendererPixelHiLoTest, ClippedYUVRect) {
   gfx::Rect viewport(this->device_viewport_size_);
   gfx::Rect draw_rect(this->device_viewport_size_.width() * 1.5,
                       this->device_viewport_size_.height() * 1.5);
@@ -1014,11 +1071,12 @@ TEST_F(VideoGLRendererPixelTest, ClippedYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), viewport, pass.get());
 
-  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::PIXEL_FORMAT_YV12,
-                                     false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
-                                     pass.get(), video_resource_updater_.get(),
-                                     draw_rect, viewport,
-                                     resource_provider_.get());
+  bool highbit = GetParam();
+  CreateTestYUVVideoDrawQuad_Striped(
+      shared_state, media::PIXEL_FORMAT_YV12, false, highbit,
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
+      video_resource_updater_.get(), draw_rect, viewport,
+      resource_provider_.get());
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
@@ -1027,7 +1085,7 @@ TEST_F(VideoGLRendererPixelTest, ClippedYUVRect) {
       FuzzyPixelOffByOneComparator(true)));
 }
 
-TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
+TEST_F(VideoGLRendererPixelHiLoTest, OffsetYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
 
   RenderPassId id(1, 1);
@@ -1038,7 +1096,7 @@ TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
 
   // Intentionally sets frame format to I420 for testing coverage.
   CreateTestYUVVideoDrawQuad_Striped(
-      shared_state, media::PIXEL_FORMAT_I420, false,
+      shared_state, media::PIXEL_FORMAT_I420, false, false,
       gfx::RectF(0.125f, 0.25f, 0.75f, 0.5f), pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
@@ -1046,9 +1104,8 @@ TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
   pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
-      &pass_list,
-      base::FilePath(FILE_PATH_LITERAL("yuv_stripes_offset.png")),
-      FuzzyPixelOffByOneComparator(true)));
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("yuv_stripes_offset.png")),
+      FuzzyPixelComparator(true, 100.0f, 1.0f, 1.0f, 1, 0)));
 }
 
 TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
@@ -1075,6 +1132,9 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
                                  base::FilePath(FILE_PATH_LITERAL("black.png")),
                                  FuzzyPixelOffByOneComparator(true)));
 }
+
+// First argument (test case prefix) is intentionally left empty.
+INSTANTIATE_TEST_CASE_P(, VideoGLRendererPixelHiLoTest, ::testing::Bool());
 
 TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
   gfx::Rect rect(this->device_viewport_size_);
@@ -1143,7 +1203,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRectGrey) {
                          FuzzyPixelOffByOneComparator(true)));
 }
 
-TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
+TEST_F(VideoGLRendererPixelHiLoTest, SimpleYUVARect) {
   gfx::Rect rect(this->device_viewport_size_);
 
   RenderPassId id(1, 1);
@@ -1152,10 +1212,10 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::PIXEL_FORMAT_YV12A,
-                                     false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
-                                     pass.get(), video_resource_updater_.get(),
-                                     rect, rect, resource_provider_.get());
+  CreateTestYUVVideoDrawQuad_Striped(
+      shared_state, media::PIXEL_FORMAT_YV12A, false, false,
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
+      video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
   SolidColorDrawQuad* color_quad =
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -1179,10 +1239,10 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::PIXEL_FORMAT_YV12A,
-                                     true, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
-                                     pass.get(), video_resource_updater_.get(),
-                                     rect, rect, resource_provider_.get());
+  CreateTestYUVVideoDrawQuad_Striped(
+      shared_state, media::PIXEL_FORMAT_YV12A, true, false,
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
+      video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
   SolidColorDrawQuad* color_quad =
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
