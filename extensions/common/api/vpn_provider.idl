@@ -83,7 +83,8 @@ namespace vpnProvider {
   // The callback is used by <code>createConfig</code> to signal completion.
   // The callback is called with <code>chrome.runtime.lastError</code> set to
   // an error code if there is an error.
-  // |id|: A unique ID for the created configuration, empty string on failure.
+  // |id|: A unique ID for the created configuration, or <code>undefined</code>
+  // on failure.
   [inline_doc] callback CreateConfigCompleteCallback = void (DOMString id);
 
   interface Functions {
