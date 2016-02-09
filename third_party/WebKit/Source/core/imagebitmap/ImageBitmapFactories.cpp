@@ -35,6 +35,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
@@ -73,6 +74,8 @@ static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSo
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, ExceptionState& exceptionState)
 {
+    UseCounter::Feature feature = UseCounter::CreateImageBitmap;
+    UseCounter::count(scriptState->executionContext(), feature);
     ImageBitmapOptions options;
     return createImageBitmap(scriptState, eventTarget, bitmapSource, options, exceptionState);
 }
@@ -94,6 +97,8 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
+    UseCounter::Feature feature = UseCounter::CreateImageBitmap;
+    UseCounter::count(scriptState->executionContext(), feature);
     ImageBitmapOptions options;
     return createImageBitmap(scriptState, eventTarget, bitmapSource, sx, sy, sw, sh, options, exceptionState);
 }

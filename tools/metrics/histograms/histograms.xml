@@ -66357,6 +66357,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1153" label="CSSSelectorIndirectAdjacent"/>
   <int value="1154" label="NodeTreeRoot"/>
   <int value="1155" label="BluetoothDeviceConnectGATT"/>
+  <int value="1156" label="CreateImageBitmap"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
