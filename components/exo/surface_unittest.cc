@@ -8,7 +8,6 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace exo {
@@ -22,8 +21,8 @@ void ReleaseBuffer(int* release_buffer_call_count) {
 
 TEST_F(SurfaceTest, Attach) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
 
   // Set the release callback that will be run when buffer is no longer in use.
   int release_buffer_call_count = 0;
@@ -49,8 +48,8 @@ TEST_F(SurfaceTest, Attach) {
 
 TEST_F(SurfaceTest, Damage) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   scoped_ptr<Surface> surface(new Surface);
 
   // Attach the buffer to the surface. This will update the pending bounds of
@@ -91,8 +90,8 @@ TEST_F(SurfaceTest, SetOpaqueRegion) {
 
 TEST_F(SurfaceTest, SetBufferScale) {
   gfx::Size buffer_size(512, 512);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   scoped_ptr<Surface> surface(new Surface);
 
   // Attach the buffer to the surface. This will update the pending bounds of

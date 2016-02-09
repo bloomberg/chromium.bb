@@ -10,7 +10,6 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
@@ -21,8 +20,8 @@ using ShellSurfaceTest = test::ExoTestBase;
 
 TEST_F(ShellSurfaceTest, Maximize) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -35,8 +34,8 @@ TEST_F(ShellSurfaceTest, Maximize) {
 
 TEST_F(ShellSurfaceTest, Restore) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -51,8 +50,8 @@ TEST_F(ShellSurfaceTest, Restore) {
 
 TEST_F(ShellSurfaceTest, SetFullscreen) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -105,8 +104,8 @@ TEST_F(ShellSurfaceTest, Move) {
 
 TEST_F(ShellSurfaceTest, SetGeometry) {
   gfx::Size buffer_size(64, 64);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -186,8 +185,8 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_FULLSCREEN, has_state_type);
 
   gfx::Size buffer_size(64, 64);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();
   shell_surface->GetWidget()->Activate();

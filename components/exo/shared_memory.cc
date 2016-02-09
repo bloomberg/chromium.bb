@@ -4,6 +4,7 @@
 
 #include "components/exo/shared_memory.h"
 
+#include <GLES2/gl2extchromium.h>
 #include <stddef.h>
 #include <utility>
 
@@ -76,8 +77,18 @@ scoped_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
     return nullptr;
   }
 
+  // Zero-copy doesn't provide a benefit in the case of shared memory as an
+  // implicit copy is required when trying to use these buffers as zero-copy
+  // buffers. Making the copy explicit allows the buffer to be reused earlier.
+  bool use_zero_copy = false;
+
   return make_scoped_ptr(
-      new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_2D));
+      new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_2D,
+                 // COMMANDS_ISSUED queries are sufficient for shared memory
+                 // buffers as binding to texture is implemented using a call to
+                 // glTexImage2D and the buffer can be reused as soon as that
+                 // command has been issued.
+                 GL_COMMANDS_ISSUED_CHROMIUM, use_zero_copy));
 }
 
 }  // namespace exo

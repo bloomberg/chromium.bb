@@ -273,7 +273,7 @@ void Surface::CommitSurfaceHierarchy() {
     scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
     if (current_buffer_) {
       texture_mailbox_release_callback =
-          current_buffer_->ProduceTextureMailbox(&texture_mailbox);
+          current_buffer_->ProduceTextureMailbox(&texture_mailbox, false);
     }
 
     if (texture_mailbox_release_callback) {
@@ -414,11 +414,11 @@ void Surface::OnCompositingEnded(ui::Compositor* compositor) {
   // Update contents by producing a new texture mailbox for the current buffer.
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
-      current_buffer_->ProduceTextureMailbox(&texture_mailbox);
+      current_buffer_->ProduceTextureMailbox(&texture_mailbox, true);
   if (texture_mailbox_release_callback) {
     layer()->SetTextureMailbox(texture_mailbox,
                                std::move(texture_mailbox_release_callback),
-                               texture_mailbox.size_in_pixels());
+                               layer()->bounds().size());
     layer()->SetTextureFlipped(false);
     layer()->SchedulePaint(gfx::Rect(texture_mailbox.size_in_pixels()));
   }

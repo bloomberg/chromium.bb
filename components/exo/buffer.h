@@ -37,8 +37,11 @@ namespace exo {
 // and not defined as part of this class.
 class Buffer : public base::SupportsWeakPtr<Buffer> {
  public:
+  explicit Buffer(scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer);
   Buffer(scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
-         unsigned texture_target);
+         unsigned texture_target,
+         unsigned query_type,
+         bool use_zero_copy);
   ~Buffer();
 
   // Set the callback to run when the buffer is no longer used by the
@@ -48,11 +51,13 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
     release_callback_ = release_callback;
   }
 
-  // This function can be used to acquire a texture mailbox that is bound to
-  // the buffer. Returns a release callback on success. The release callback
-  // must be called before a new texture mailbox can be acquired.
+  // This function can be used to acquire a texture mailbox for the contents of
+  // buffer. Returns a release callback on success. The release callback should
+  // be called before a new texture mailbox can be acquired unless
+  // |lost_context| is true.
   scoped_ptr<cc::SingleReleaseCallback> ProduceTextureMailbox(
-      cc::TextureMailbox* mailbox);
+      cc::TextureMailbox* mailbox,
+      bool lost_context);
 
   // Returns the size of the buffer.
   gfx::Size GetSize() const;
@@ -68,14 +73,13 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   void Release();
 
   // This is used by ProduceTextureMailbox() to produce a release callback
+  // that releases a texture so it can be destroyed or reused.
+  void ReleaseTexture(scoped_ptr<Texture> texture);
+
+  // This is used by ProduceTextureMailbox() to produce a release callback
   // that releases the buffer contents referenced by a texture before the
   // texture is destroyed or reused.
-  // Note: This is a static function as it needs to run even if the buffer
-  // has been destroyed.
-  static void ReleaseTexture(base::WeakPtr<Buffer> buffer,
-                             scoped_ptr<Texture> texture,
-                             const gpu::SyncToken& sync_token,
-                             bool is_lost);
+  void ReleaseContentsTexture(scoped_ptr<Texture> texture);
 
   // The GPU memory buffer that contains the contents of this buffer.
   scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
@@ -83,14 +87,24 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // Texture target that must be used when creating a texture for buffer.
   const unsigned texture_target_;
 
+  // Query type that must be used when releasing buffer from a texture.
+  const unsigned query_type_;
+
+  // True if zero copy is used when producing a texture mailbox for buffer.
+  const bool use_zero_copy_;
+
   // This is incremented when a texture mailbox is produced and decremented
   // when a texture mailbox is released. It is used to determine when we should
   // notify the client that buffer has been released.
   unsigned use_count_;
 
-  // The last released texture instance. ProduceTextureMailbox() will use this
+  // The last used texture. ProduceTextureMailbox() will use this
   // instead of creating a new texture when possible.
-  scoped_ptr<Texture> last_texture_;
+  scoped_ptr<Texture> texture_;
+
+  // The last used contents texture. ProduceTextureMailbox() will use this
+  // instead of creating a new texture when possible.
+  scoped_ptr<Texture> contents_texture_;
 
   // The client release callback.
   base::Closure release_callback_;

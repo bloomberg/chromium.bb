@@ -13,7 +13,6 @@
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
@@ -44,8 +43,7 @@ TEST_F(TouchTest, OnTouchDown) {
       new ShellSurface(bottom_surface.get()));
   gfx::Size bottom_buffer_size(10, 10);
   scoped_ptr<Buffer> bottom_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(bottom_buffer_size),
-                 GL_TEXTURE_2D));
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(bottom_buffer_size)));
   bottom_surface->Attach(bottom_buffer.get());
   bottom_surface->Commit();
   ash::wm::CenterWindow(bottom_shell_surface->GetWidget()->GetNativeWindow());
@@ -55,8 +53,7 @@ TEST_F(TouchTest, OnTouchDown) {
       new ShellSurface(top_surface.get()));
   gfx::Size top_buffer_size(8, 8);
   scoped_ptr<Buffer> top_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(top_buffer_size),
-                 GL_TEXTURE_2D));
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(top_buffer_size)));
   top_surface->Attach(top_buffer.get());
   top_surface->Commit();
   ash::wm::CenterWindow(top_shell_surface->GetWidget()->GetNativeWindow());
@@ -88,8 +85,8 @@ TEST_F(TouchTest, OnTouchUp) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -119,8 +116,8 @@ TEST_F(TouchTest, OnTouchMotion) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -156,8 +153,8 @@ TEST_F(TouchTest, OnTouchCancel) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();
 

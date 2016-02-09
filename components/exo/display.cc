@@ -14,6 +14,7 @@
 #include "components/exo/surface.h"
 
 #if defined(USE_OZONE)
+#include <GLES2/gl2extchromium.h>
 #include "components/exo/buffer.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -69,8 +70,13 @@ scoped_ptr<Buffer> Display::CreatePrimeBuffer(base::ScopedFD fd,
     return nullptr;
   }
 
+  // Using zero-copy for optimal performance.
+  bool use_zero_copy = true;
+
   return make_scoped_ptr(
-      new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES));
+      new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
+                 // COMMANDS_COMPLETED queries are required by native pixmaps.
+                 GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy));
 }
 #endif
 
