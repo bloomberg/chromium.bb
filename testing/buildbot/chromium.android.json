@@ -406,6 +406,13 @@
         ],
         "test": "unit_tests"
       }
+    ],
+    "instrumentation_tests": [
+      {
+        "apk_under_test": "Blimp.apk",
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
+      }
     ]
   },
   "KitKat Tablet Tester": {
@@ -523,6 +530,13 @@
           "--isolate_file_path=src/chrome/unit_tests.isolate"
         ],
         "test": "unit_tests"
+      }
+    ],
+    "instrumentation_tests": [
+      {
+        "apk_under_test": "Blimp.apk",
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
       }
     ]
   },
@@ -642,6 +656,13 @@
         ],
         "test": "unit_tests"
       }
+    ],
+    "instrumentation_tests": [
+      {
+        "apk_under_test": "Blimp.apk",
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
+      }
     ]
   },
   "Lollipop Low-end Tester": {
@@ -759,6 +780,13 @@
           "--isolate_file_path=src/chrome/unit_tests.isolate"
         ],
         "test": "unit_tests"
+      }
+    ],
+    "instrumentation_tests": [
+      {
+        "apk_under_test": "Blimp.apk",
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
       }
     ]
   },
@@ -878,6 +906,13 @@
         ],
         "test": "unit_tests"
       }
+    ],
+    "instrumentation_tests": [
+      {
+        "apk_under_test": "Blimp.apk",
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
+      }
     ]
   },
   "Lollipop Tablet Tester": {
@@ -995,6 +1030,13 @@
           "--isolate_file_path=src/chrome/unit_tests.isolate"
         ],
         "test": "unit_tests"
+      }
+    ],
+    "instrumentation_tests": [
+      {
+        "apk_under_test": "Blimp.apk",
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
       }
     ]
   },
@@ -1123,6 +1165,13 @@
         ],
         "test": "unit_tests"
       }
+    ],
+    "instrumentation_tests": [
+      {
+        "apk_under_test": "Blimp.apk",
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
+      }
     ]
   },
   "Marshmallow Tablet Tester": {
@@ -1240,6 +1289,13 @@
           "--isolate_file_path=src/chrome/unit_tests.isolate"
         ],
         "test": "unit_tests"
+      }
+    ],
+    "instrumentation_tests": [
+      {
+        "apk_under_test": "Blimp.apk",
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
       }
     ]
   }
