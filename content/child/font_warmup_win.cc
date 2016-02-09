@@ -130,6 +130,25 @@ void CreateDirectWriteFactory(IDWriteFactory** factory) {
       reinterpret_cast<IUnknown**>(factory))));
 }
 
+HRESULT STDMETHODCALLTYPE StubFontCollection(IDWriteFactory* factory,
+                                             IDWriteFontCollection** col,
+                                             BOOL checkUpdates) {
+  // We always return pre-created font collection from here.
+  IDWriteFontCollection* custom_collection = GetCustomFontCollection(factory);
+  DCHECK(custom_collection != nullptr);
+  *col = custom_collection;
+  return S_OK;
+}
+
+void PatchDWriteFactory(IDWriteFactory* factory) {
+  const unsigned int kGetSystemFontCollectionVTableIndex = 3;
+
+  PROC* vtable = *reinterpret_cast<PROC**>(factory);
+  PROC* function_ptr = &vtable[kGetSystemFontCollectionVTableIndex];
+  void* stub_function = &StubFontCollection;
+  base::win::ModifyCode(function_ptr, &stub_function, sizeof(PROC));
+}
+
 // Class to fake out a DC or a Font object. Maintains a reference to a
 // SkTypeFace to emulate the simple operation of a DC and Font.
 class FakeGdiObject : public base::RefCountedThreadSafe<FakeGdiObject> {
@@ -459,9 +478,12 @@ SkFontMgr* GetPreSandboxWarmupFontMgr() {
     IDWriteFactory* factory;
     CreateDirectWriteFactory(&factory);
 
-    g_warmup_fontmgr =
-        SkFontMgr_New_DirectWrite(factory, GetCustomFontCollection(factory));
-    blink::WebFontRendering::setSkiaFontManager(g_warmup_fontmgr);
+    GetCustomFontCollection(factory);
+
+    PatchDWriteFactory(factory);
+
+    blink::WebFontRendering::setDirectWriteFactory(factory);
+    g_warmup_fontmgr = SkFontMgr_New_DirectWrite(factory);
   }
   return g_warmup_fontmgr;
 }
