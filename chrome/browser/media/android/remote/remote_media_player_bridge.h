@@ -57,9 +57,6 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   GURL GetFirstPartyForCookies() override;
 
   // JNI functions
-  base::android::ScopedJavaLocalRef<jstring> GetFrameUrl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   void OnPlaying(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnPaused(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnRouteUnselected(JNIEnv* env,
@@ -84,6 +81,8 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
                       const base::android::JavaParamRef<jobject>& obj);
   void OnSeekCompleted(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
+  void OnError(JNIEnv *env,
+               const base::android::JavaParamRef<jobject>& obj);
 
   // Wrappers for calls to Java used by the remote media player manager
   void RequestRemotePlayback();

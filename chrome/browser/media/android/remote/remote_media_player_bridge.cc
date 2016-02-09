@@ -194,12 +194,6 @@ void RemoteMediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   local_player_->SetVideoSurface(std::move(surface));
 }
 
-base::android::ScopedJavaLocalRef<jstring> RemoteMediaPlayerBridge::GetFrameUrl(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(env, frame_url().spec());
-}
-
 void RemoteMediaPlayerBridge::OnPlaying(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj) {
   static_cast<RemoteMediaPlayerManager *>(manager())->OnPlaying(player_id());
@@ -431,6 +425,15 @@ base::android::ScopedJavaLocalRef<jstring> RemoteMediaPlayerBridge::GetTitle(
   }
   return base::android::ConvertUTF16ToJavaString(env, title);
 }
+
+void RemoteMediaPlayerBridge::OnError(
+    JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+      // TODO(https://crbug.com/585379) implement some useful codes for remote
+      // playback. None of the existing MediaPlayerAndroid codes are
+      // relevant for remote playback.
+      manager()->OnError(player_id(), MEDIA_ERROR_INVALID_CODE);
+}
+
 
 void RemoteMediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
