@@ -79,6 +79,9 @@ class SmoothnessToughCanvasCases(_Smoothness):
   """
   page_set = page_sets.ToughCanvasCasesPageSet
 
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-experimental-canvas-features')
+
   @classmethod
   def Name(cls):
     return 'smoothness.tough_canvas_cases'
