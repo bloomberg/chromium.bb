@@ -929,6 +929,7 @@ def GetConfig():
           'x86-generic', 'arm-generic', 'amd64-generic'
       ],
       build_type=constants.CHROOT_BUILDER_TYPE,
+      buildslave_type=constants.GCE_BUILD_SLAVE_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
       trybot_list=True,
@@ -1073,6 +1074,7 @@ def GetConfig():
       'master-android-pfq',
       android_pfq,
       internal,
+      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       builder_class_name='android_pfq_builders.AndroidPFQMasterBuilder',
       boards=[],
       master=True,
@@ -1580,6 +1582,7 @@ def GetConfig():
   site_config.Add(
       'master-paladin', internal_paladin,
       boards=[],
+      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
       master=True,
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
@@ -1930,6 +1933,7 @@ def GetConfig():
       no_hwtest_builder,
       boards=[],
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
+      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       description='Launcher for Pre-CQ builders',
       trybot_list=False,
       manifest_version=False,
@@ -2039,6 +2043,7 @@ def GetConfig():
   site_config.Add(
       'master-release', _release,
       boards=[],
+      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       master=True,
       sync_chrome=False,
       chrome_sdk=False,

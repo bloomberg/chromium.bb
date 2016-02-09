@@ -342,6 +342,11 @@ def DefaultSettings():
       # The name of the config.
       name=None,
 
+      # What type of builder is used for this build? This is a hint sent to
+      # the waterfall code. It is ignored by the trybot waterfall.
+      #   constants.VALID_BUILD_SLAVE_TYPES
+      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
+
       # A list of boards to build.
       boards=None,
 

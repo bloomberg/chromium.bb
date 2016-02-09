@@ -357,6 +357,19 @@ VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST,
 ANDROID_PN = 'android-container'
 ANDROID_CP = 'chromeos-base/%s' % ANDROID_PN
 
+# Builder types supported
+BAREMETAL_BUILD_SLAVE_TYPE = 'baremetal'
+VM_BUILD_SLAVE_TYPE = 'vm'
+GCE_BUILD_SLAVE_TYPE = 'gce'
+# A wimpy GCE instance well suited to run cbuildbot's master build-types.
+GCE_WIMPY_BUILD_SLAVE_TYPE = 'gce_wimpy'
+
+VALID_BUILD_SLAVE_TYPES = (
+    BAREMETAL_BUILD_SLAVE_TYPE,
+    VM_BUILD_SLAVE_TYPE,
+    GCE_BUILD_SLAVE_TYPE,
+    GCE_WIMPY_BUILD_SLAVE_TYPE,
+)
 
 # Build types supported.
 
