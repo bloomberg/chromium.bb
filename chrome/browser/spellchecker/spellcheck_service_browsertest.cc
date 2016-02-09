@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/tuple.h"
 #include "base/values.h"
@@ -86,11 +88,13 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
 
   void InitSpellcheck(bool enable_spellcheck,
                       const std::string& single_dictionary,
-                      const std::vector<std::string>& multiple_dictionaries) {
+                      const std::string& multiple_dictionaries) {
     prefs_->SetBoolean(prefs::kEnableContinuousSpellcheck, enable_spellcheck);
     prefs_->SetString(prefs::kSpellCheckDictionary, single_dictionary);
     base::ListValue dictionaries_value;
-    dictionaries_value.AppendStrings(multiple_dictionaries);
+    dictionaries_value.AppendStrings(
+        base::SplitString(multiple_dictionaries, ",", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY));
     prefs_->Set(prefs::kSpellCheckDictionaries, dictionaries_value);
     SpellcheckService* spellcheck =
         SpellcheckServiceFactory::GetForRenderProcessId(renderer_->GetID());
@@ -108,12 +112,30 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
     prefs_->SetString(prefs::kSpellCheckDictionary, single_dictionary);
   }
 
-  void SetMultiLingualDictionaries(
-      const std::vector<std::string>& multiple_dictionaries) {
+  void SetMultiLingualDictionaries(const std::string& multiple_dictionaries) {
     ScopedPreferenceChange scope(&renderer_->sink());
     base::ListValue dictionaries_value;
-    dictionaries_value.AppendStrings(multiple_dictionaries);
+    dictionaries_value.AppendStrings(
+        base::SplitString(multiple_dictionaries, ",", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY));
     prefs_->Set(prefs::kSpellCheckDictionaries, dictionaries_value);
+  }
+
+  std::string GetMultilingualDictionaries() {
+    const base::ListValue* list_value =
+        prefs_->GetList(prefs::kSpellCheckDictionaries);
+    std::vector<std::string> dictionaries;
+    for (const auto& item_value : *list_value) {
+      std::string dictionary;
+      EXPECT_TRUE(item_value->GetAsString(&dictionary));
+      dictionaries.push_back(dictionary);
+    }
+    return base::JoinString(dictionaries, ",");
+  }
+
+  void SetAcceptLanguages(const std::string& accept_languages) {
+    ScopedPreferenceChange scope(&renderer_->sink());
+    prefs_->SetString(prefs::kAcceptLanguages, accept_languages);
   }
 
   // Returns the boolean parameter sent in the first
@@ -143,14 +165,29 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
   PrefService* prefs_;
 };
 
+// Removing a spellcheck language from accept languages should remove it from
+// spellcheck languages list as well.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
+                       RemoveSpellcheckLanguageFromAcceptLanguages) {
+  InitSpellcheck(true, "", "en-US,fr");
+  SetAcceptLanguages("en-US,es,ru");
+  EXPECT_EQ("en-US", GetMultilingualDictionaries());
+}
+
+// Keeping spellcheck languages in accept languages should not alter spellcheck
+// languages list.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
+                       KeepSpellcheckLanguagesInAcceptLanguages) {
+  InitSpellcheck(true, "", "en-US,fr");
+  SetAcceptLanguages("en-US,fr,es");
+  EXPECT_EQ("en-US,fr", GetMultilingualDictionaries());
+}
+
 // Starting with spellcheck enabled should send the 'enable spellcheck' message
 // to the renderer. Consequently disabling spellcheck should send the 'disable
 // spellcheck' message to the renderer.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithSpellcheck) {
-  std::vector<std::string> dictionaries;
-  dictionaries.push_back("en-US");
-  dictionaries.push_back("fr");
-  InitSpellcheck(true, "", dictionaries);
+  InitSpellcheck(true, "", "en-US,fr");
   EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
 
   EnableSpellcheck(false);
@@ -162,10 +199,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithSpellcheck) {
 // languages should disable spellcheck.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        StartWithSingularLanguagePreference) {
-  InitSpellcheck(true, "en-US", std::vector<std::string>());
+  InitSpellcheck(true, "en-US", "");
   EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
 
-  SetMultiLingualDictionaries(std::vector<std::string>());
+  SetMultiLingualDictionaries("");
   EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
 }
 
@@ -174,13 +211,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 // languages should disable spellcheck.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        StartWithMultiLanguagePreference) {
-  std::vector<std::string> dictionaries;
-  dictionaries.push_back("en-US");
-  dictionaries.push_back("fr");
-  InitSpellcheck(true, "", dictionaries);
+  InitSpellcheck(true, "", "en-US,fr");
   EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
 
-  SetMultiLingualDictionaries(std::vector<std::string>());
+  SetMultiLingualDictionaries("");
   EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
 }
 
@@ -189,13 +223,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 // removing spellcheck languages should disable spellcheck.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        StartWithBothLanguagePreferences) {
-  std::vector<std::string> dictionaries;
-  dictionaries.push_back("en-US");
-  dictionaries.push_back("fr");
-  InitSpellcheck(true, "en-US", dictionaries);
+  InitSpellcheck(true, "en-US", "en-US,fr");
   EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
 
-  SetMultiLingualDictionaries(std::vector<std::string>());
+  SetMultiLingualDictionaries("");
   EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
 }
 
@@ -203,10 +234,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 // message to the renderer. Consequently adding spellchecking languages should
 // enable spellcheck.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithoutLanguages) {
-  InitSpellcheck(true, "", std::vector<std::string>());
+  InitSpellcheck(true, "", "");
   EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
 
-  SetMultiLingualDictionaries(std::vector<std::string>(1, "en-US"));
+  SetMultiLingualDictionaries("en-US");
   EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
 }
 
@@ -214,10 +245,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithoutLanguages) {
 // message to the renderer. Consequently enabling spellcheck should send the
 // 'enable spellcheck' message to the renderer.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithoutSpellcheck) {
-  std::vector<std::string> dictionaries;
-  dictionaries.push_back("en-US");
-  dictionaries.push_back("fr");
-  InitSpellcheck(false, "", dictionaries);
+  InitSpellcheck(false, "", "en-US,fr");
   EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
 
   EnableSpellcheck(true);

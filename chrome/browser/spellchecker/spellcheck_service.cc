@@ -4,6 +4,8 @@
 
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/supports_user_data.h"
@@ -76,7 +78,6 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   }
 
   single_dictionary_pref.SetValue("");
-
 #endif  // defined(USE_BROWSER_SPELLCHECKER)
 
   std::string language_code;
@@ -96,7 +97,10 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       prefs::kSpellCheckUseSpellingService,
       base::Bind(&SpellcheckService::OnUseSpellingServiceChanged,
                  base::Unretained(this)));
-
+  pref_change_registrar_.Add(
+      prefs::kAcceptLanguages,
+      base::Bind(&SpellcheckService::OnAcceptLanguagesChanged,
+                 base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kEnableContinuousSpellcheck,
       base::Bind(&SpellcheckService::InitForAllRenderers,
@@ -334,6 +338,31 @@ void SpellcheckService::OnUseSpellingServiceChanged() {
   if (metrics_)
     metrics_->RecordSpellingServiceStats(enabled);
   UpdateFeedbackSenderState();
+}
+
+void SpellcheckService::OnAcceptLanguagesChanged() {
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
+  std::vector<std::string> accept_languages =
+      base::SplitString(prefs->GetString(prefs::kAcceptLanguages), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::transform(
+      accept_languages.begin(), accept_languages.end(),
+      accept_languages.begin(),
+      &chrome::spellcheck_common::GetCorrespondingSpellCheckLanguage);
+
+  StringListPrefMember dictionaries_pref;
+  dictionaries_pref.Init(prefs::kSpellCheckDictionaries, prefs);
+  std::vector<std::string> dictionaries = dictionaries_pref.GetValue();
+  std::vector<std::string> filtered_dictionaries;
+
+  for (const auto& dictionary : dictionaries) {
+    if (std::find(accept_languages.begin(), accept_languages.end(),
+                  dictionary) != accept_languages.end()) {
+      filtered_dictionaries.push_back(dictionary);
+    }
+  }
+
+  dictionaries_pref.SetValue(filtered_dictionaries);
 }
 
 void SpellcheckService::UpdateFeedbackSenderState() {

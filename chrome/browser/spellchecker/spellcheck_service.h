@@ -156,6 +156,11 @@ class SpellcheckService : public KeyedService,
   // Notification handler for changes to prefs::kSpellCheckUseSpellingService.
   void OnUseSpellingServiceChanged();
 
+  // Notification handler for changes to prefs::kAcceptLanguages. Removes from
+  // prefs::kSpellCheckDictionaries any languages that are not in
+  // prefs::kAcceptLanguages.
+  void OnAcceptLanguagesChanged();
+
   // Enables the feedback sender if spelling server is available and enabled.
   // Otherwise disables the feedback sender.
   void UpdateFeedbackSenderState();
