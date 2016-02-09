@@ -50495,6 +50495,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.YoungestForeignTabAgeOnNTP" units="seconds">
+  <owner>skym@chromium.org</owner>
+  <summary>Upon NTP load, the age of the youngest synced foreign tab.</summary>
+</histogram>
+
 <histogram name="SyncedNotifications.Actions"
     enum="SyncedNotificationActionType">
   <owner>petewil@chromium.org</owner>

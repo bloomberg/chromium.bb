@@ -772,6 +772,7 @@
       'sync_sessions/revisit/typed_url_page_revisit_task_unittest.cc',
       'sync_sessions/session_data_type_controller_unittest.cc',
       'sync_sessions/synced_session_tracker_unittest.cc',
+      'sync_sessions/sync_sessions_metrics_unittest.cc',
       'sync_sessions/tab_node_pool_unittest.cc',
     ],
     'syncable_prefs_unittest_sources': [

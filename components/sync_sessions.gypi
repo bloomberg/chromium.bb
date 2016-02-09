@@ -60,6 +60,8 @@
         'sync_sessions/synced_window_delegates_getter.h',
         'sync_sessions/sync_sessions_client.cc',
         'sync_sessions/sync_sessions_client.h',
+        'sync_sessions/sync_sessions_metrics.cc',
+        'sync_sessions/sync_sessions_metrics.h',
         'sync_sessions/tab_node_pool.cc',
         'sync_sessions/tab_node_pool.h',
       ],
