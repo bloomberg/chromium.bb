@@ -23,6 +23,10 @@ const base::Feature kEnablePasswordChangeSupport = {
 const base::Feature kEnablePasswordForceSaving = {
     "enable-password-force-saving", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the user to trigger password generation manually.
+extern const base::Feature kEnableManualPasswordGeneration = {
+    "enable-manual-password-generation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace password_manager

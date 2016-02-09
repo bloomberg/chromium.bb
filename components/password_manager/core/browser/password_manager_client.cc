@@ -22,6 +22,8 @@ bool PasswordManagerClient::IsFillingEnabledForCurrentPage() const {
 void PasswordManagerClient::ForceSavePassword() {
 }
 
+void PasswordManagerClient::GeneratePassword() {}
+
 void PasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches,
     const GURL& origin) const {}

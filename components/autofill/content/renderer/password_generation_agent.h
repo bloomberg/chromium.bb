@@ -102,6 +102,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // Hides a password generation popup if one exists.
   void HidePopup();
 
+  // Sets |generation_element_| to the focused password field and shows a
+  // generation popup at this field.
+  void OnGeneratePassword();
+
   // Stores forms that are candidates for account creation.
   AccountCreationFormDataList possible_account_creation_forms_;
 

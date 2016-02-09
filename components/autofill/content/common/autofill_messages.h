@@ -189,6 +189,11 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_PreviewPasswordSuggestion,
 // |AutofillHostMsg_FocusedPasswordFormFound|.
 IPC_MESSAGE_ROUTED0(AutofillMsg_FindFocusedPasswordForm)
 
+// Tells the renderer to find a focused element, and if it is a password field
+// eligible for generation then to trigger generation by responding to the
+// browser with the message |AutofillHostMsg_ShowPasswordGenerationPopup|.
+IPC_MESSAGE_ROUTED0(AutofillMsg_GeneratePassword)
+
 // Tells the renderer that this password form is not blacklisted.  A form can
 // be blacklisted if a user chooses "never save passwords for this site".
 IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,

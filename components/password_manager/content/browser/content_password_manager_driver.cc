@@ -115,6 +115,11 @@ void ContentPasswordManagerDriver::ForceSavePassword() {
   host->Send(new AutofillMsg_FindFocusedPasswordForm(host->GetRoutingID()));
 }
 
+void ContentPasswordManagerDriver::GeneratePassword() {
+  content::RenderFrameHost* host = render_frame_host_;
+  host->Send(new AutofillMsg_GeneratePassword(host->GetRoutingID()));
+}
+
 void ContentPasswordManagerDriver::SendLoggingAvailability() {
   render_frame_host_->Send(new AutofillMsg_SetLoggingState(
       render_frame_host_->GetRoutingID(),

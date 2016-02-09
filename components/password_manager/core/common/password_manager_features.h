@@ -18,6 +18,7 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kEnableAutomaticPasswordSaving;
+extern const base::Feature kEnableManualPasswordGeneration;
 extern const base::Feature kEnablePasswordChangeSupport;
 extern const base::Feature kEnablePasswordForceSaving;
 

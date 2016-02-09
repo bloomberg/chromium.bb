@@ -69,6 +69,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -270,9 +271,10 @@ const struct UmaEnumCommandIdPair {
     {69, -1, IDC_CONTENT_CONTEXT_COPYLINKTEXT},
     {70, -1, IDC_CONTENT_CONTEXT_OPENLINKINPROFILE},
     {71, -1, IDC_OPEN_LINK_IN_PROFILE_FIRST},
+    {72, -1, IDC_CONTENT_CONTEXT_GENERATEPASSWORD},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {72, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {73, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -1258,12 +1260,19 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
 }
 
 void RenderViewContextMenu::AppendPasswordItems() {
-  if (!password_manager::ForceSavingExperimentEnabled())
-    return;
-
-  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD,
-                                  IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
+  bool separator_added = false;
+  if (password_manager::ForceSavingExperimentEnabled()) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    separator_added = true;
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD,
+                                    IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
+  }
+  if (password_manager::ManualPasswordGenerationEnabled()) {
+    if (!separator_added)
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
+                                    IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
+  }
 }
 
 // Menu delegate functions -----------------------------------------------------
@@ -1573,6 +1582,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_OPENLINKWITH:
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
     case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
+    case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:
       return true;
 
     case IDC_ROUTE_MEDIA: {
@@ -2072,6 +2082,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
       ChromePasswordManagerClient::FromWebContents(source_web_contents_)->
           ForceSavePassword();
+      break;
+
+    case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:
+      ChromePasswordManagerClient::FromWebContents(source_web_contents_)->
+          GeneratePassword();
       break;
 
     default:

@@ -71,6 +71,12 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     render_thread_->sink().ClearMessages();
   }
 
+  void ShowGenerationPopUpManually(const char* element_id) {
+    FocusField(element_id);
+    AutofillMsg_GeneratePassword msg(0);
+    password_generation_->OnMessageReceived(msg);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTest);
 };
@@ -567,6 +573,13 @@ TEST_F(PasswordGenerationAgentTest, ChangePasswordFormDetectionTest) {
                                          GetMainFrame()->document(), 0, 2);
   ExpectGenerationAvailable("password", false);
   ExpectGenerationAvailable("newpassword", true);
+}
+
+TEST_F(PasswordGenerationAgentTest, ManualGenerationTest) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  ShowGenerationPopUpManually("first_password");
+  ExpectGenerationAvailable("first_password", true);
+  ExpectGenerationAvailable("second_password", false);
 }
 
 }  // namespace autofill

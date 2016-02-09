@@ -299,6 +299,12 @@ void ChromePasswordManagerClient::ForceSavePassword() {
   driver->ForceSavePassword();
 }
 
+void ChromePasswordManagerClient::GeneratePassword() {
+  password_manager::ContentPasswordManagerDriver* driver =
+      driver_factory_->GetDriverForFrame(web_contents()->GetFocusedFrame());
+  driver->GeneratePassword();
+}
+
 void ChromePasswordManagerClient::NotifyUserAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
   DCHECK(!local_forms.empty());

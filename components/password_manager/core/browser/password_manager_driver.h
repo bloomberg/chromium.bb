@@ -74,6 +74,10 @@ class PasswordManagerDriver
   // the corresponding password form, so that it can be saved.
   virtual void ForceSavePassword() {}
 
+  // Tells the driver to find the focused password field and to show generation
+  // popup at it.
+  virtual void GeneratePassword() {}
+
   // Returns the PasswordGenerationManager associated with this instance.
   virtual PasswordGenerationManager* GetPasswordGenerationManager() = 0;
 

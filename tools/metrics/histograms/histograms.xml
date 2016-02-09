@@ -76813,6 +76813,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="69" label="IDC_CONTENT_CONTEXT_COPYLINKTEXT"/>
   <int value="70" label="IDC_CONTENT_CONTEXT_OPENLINKINPROFILE"/>
   <int value="71" label="IDC_OPEN_LINK_IN_PROFILE_FIRST"/>
+  <int value="72" label="IDC_CONTENT_CONTEXT_GENERATEPASSWORD"/>
 </enum>
 
 <enum name="ReportProcessingResult" type="int">

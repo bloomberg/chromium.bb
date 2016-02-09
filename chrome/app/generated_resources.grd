@@ -730,6 +730,9 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
             &amp;Language settings...
           </message>
+          <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="The name of the Generate Password command in the content area context menu">
+            Generate password
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
@@ -953,6 +956,9 @@ are declared in build/common.gypi.
           </message>
           <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
             &amp;Language Settings...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="In Title Case: The name of the Generate Password command in the content area context menu">
+            Generate Password
           </message>
         </if>
       </if>
@@ -5918,7 +5924,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_PASSWORD_FORCE_SAVING_DESCRIPTION" desc="Description of the flag for the password manager's force-saving option.">
         Allow the user to manually enforce password saving instead of relying on password manager's heuristics.
+      </message>           
+      <message name="IDS_FLAGS_MANUAL_PASSWORD_GENERATION_NAME" desc="Name of the flag for manual password generation.">
+        Manual password generation.
       </message>
+      <message name="IDS_FLAGS_MANUAL_PASSWORD_GENERATION_DESCRIPTION" desc="Description of the flag for manual password generation.">
+        Allow the user to manually enforce to generate password on a password field.
+      </message>      
       <message name="IDS_FLAGS_PASSWORD_MANAGER_LINK_NAME" desc="Name of the flag to enable showing a link to account central on password settings page">
         Remote password management link
       </message>

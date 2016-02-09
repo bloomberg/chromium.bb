@@ -98,6 +98,10 @@ class PasswordManagerClient {
   // password in the focused password field.
   virtual void ForceSavePassword();
 
+  // Informs the embedder that the user has manually requested to generate a
+  // password in the focused password field.
+  virtual void GeneratePassword();
+
   // Informs the embedder that automatic signing in just happened. The form
   // returned to the site is |local_forms[0]|. |local_forms| and
   // |federated_forms| contain all the local and federated credentials for the
