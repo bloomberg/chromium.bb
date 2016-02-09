@@ -164,14 +164,26 @@ void WindowModalityController::OnWindowPropertyChanged(aura::Window* window,
 void WindowModalityController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
-  if (visible && window->GetProperty(aura::client::kModalKey) !=
-      ui::MODAL_TYPE_NONE) {
+  if (visible &&
+      window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE) {
     ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
     // Make sure no other window has capture, otherwise |window| won't get mouse
     // events.
     aura::Window* capture_window = aura::client::GetCaptureWindow(window);
-    if (capture_window)
-      capture_window->ReleaseCapture();
+    if (capture_window) {
+      bool should_release_capture = true;
+      if (window->GetProperty(aura::client::kModalKey) ==
+              ui::MODAL_TYPE_CHILD &&
+          !HasAncestor(capture_window, GetModalParent(window))) {
+        // For child modal windows we only need ensure capture is not on a
+        // descendant of the modal parent. This way we block events to the
+        // parents subtree appropriately.
+        should_release_capture = false;
+      }
+
+      if (should_release_capture)
+        capture_window->ReleaseCapture();
+    }
   }
 }
 

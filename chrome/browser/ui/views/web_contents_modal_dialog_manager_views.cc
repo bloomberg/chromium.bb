@@ -88,7 +88,7 @@ class NativeWebContentsModalDialogManagerViews
 
     wm::SetModalParent(
         widget->GetNativeWindow(),
-        platform_util::GetParent(widget->GetNativeView()));
+        native_delegate_->GetWebContents()->GetNativeView());
 #endif
   }
 

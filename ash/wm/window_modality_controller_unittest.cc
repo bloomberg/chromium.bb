@@ -9,6 +9,7 @@
 #include "ash/test/child_modal_window.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -313,6 +314,66 @@ TEST_F(WindowModalityControllerTest, ChangeCapture) {
   EXPECT_FALSE(modal_view->got_capture_lost());
   EXPECT_FALSE(view->got_capture_lost());
   EXPECT_FALSE(view->got_press());
+}
+
+// Test that when a child modal window becomes visible, we only release the
+// capture window if the current capture window is in the hierarchy of the child
+// modal window's modal parent window.
+TEST_F(WindowModalityControllerTest, ReleaseCapture) {
+  // Create a window hierachy like this:
+  //                            w0
+  //            /               |              \
+  //           w1     <------   w3              w2
+  //            |    (modal to)
+  //           w11
+
+  aura::test::TestWindowDelegate d;
+  scoped_ptr<aura::Window> w1(
+      CreateTestWindowInShellWithDelegate(&d, -1, gfx::Rect()));
+  scoped_ptr<aura::Window> w11(
+      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w1.get()));
+  scoped_ptr<aura::Window> w2(
+      CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
+  scoped_ptr<aura::Window> w3(
+      CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
+  w3->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_CHILD);
+  ::wm::SetModalParent(w3.get(), w1.get());
+
+  // w1's capture should be released when w3 becomes visible.
+  w3->Hide();
+  aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+      ->SetCapture(w1.get());
+  EXPECT_EQ(w1.get(),
+            aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+                ->GetGlobalCaptureWindow());
+  w3->Show();
+  EXPECT_NE(w1.get(),
+            aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+                ->GetGlobalCaptureWindow());
+
+  // w11's capture should be released when w3 becomes visible.
+  w3->Hide();
+  aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+      ->SetCapture(w11.get());
+  EXPECT_EQ(w11.get(),
+            aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+                ->GetGlobalCaptureWindow());
+  w3->Show();
+  EXPECT_NE(w11.get(),
+            aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+                ->GetGlobalCaptureWindow());
+
+  // w2's capture should not be released when w3 becomes visible.
+  w3->Hide();
+  aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+      ->SetCapture(w2.get());
+  EXPECT_EQ(w2.get(),
+            aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+                ->GetGlobalCaptureWindow());
+  w3->Show();
+  EXPECT_EQ(w2.get(),
+            aura::client::GetCaptureClient(Shell::GetPrimaryRootWindow())
+                ->GetGlobalCaptureWindow());
 }
 
 class TouchTrackerWindowDelegate : public aura::test::TestWindowDelegate {
