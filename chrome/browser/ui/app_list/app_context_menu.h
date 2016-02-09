@@ -24,11 +24,32 @@ class AppContextMenuDelegate;
 
 class AppContextMenu : public ui::SimpleMenuModel::Delegate {
  public:
+  enum CommandId {
+    LAUNCH_NEW = 100,
+    TOGGLE_PIN,
+    CREATE_SHORTCUTS,
+    SHOW_APP_INFO,
+    OPTIONS,
+    UNINSTALL,
+    REMOVE_FROM_FOLDER,
+    MENU_NEW_WINDOW,
+    MENU_NEW_INCOGNITO_WINDOW,
+    // Order matters in USE_LAUNCH_TYPE_* and must match the LaunchType enum.
+    USE_LAUNCH_TYPE_COMMAND_START = 200,
+    USE_LAUNCH_TYPE_PINNED = USE_LAUNCH_TYPE_COMMAND_START,
+    USE_LAUNCH_TYPE_REGULAR,
+    USE_LAUNCH_TYPE_FULLSCREEN,
+    USE_LAUNCH_TYPE_WINDOW,
+    USE_LAUNCH_TYPE_COMMAND_END,
+  };
+
   AppContextMenu(AppContextMenuDelegate* delegate,
                  Profile* profile,
                  const std::string& app_id,
                  AppListControllerDelegate* controller);
   ~AppContextMenu() override;
+
+  static void DisableInstalledExtensionCheckForTesting(bool disable);
 
   // Note this could return NULL if corresponding extension is gone.
   ui::MenuModel* GetMenuModel();

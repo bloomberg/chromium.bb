@@ -27,30 +27,18 @@ namespace app_list {
 
 namespace {
 
-enum CommandId {
-  LAUNCH_NEW = 100,
-  TOGGLE_PIN,
-  CREATE_SHORTCUTS,
-  SHOW_APP_INFO,
-  OPTIONS,
-  UNINSTALL,
-  REMOVE_FROM_FOLDER,
-  MENU_NEW_WINDOW,
-  MENU_NEW_INCOGNITO_WINDOW,
-  // Order matters in USE_LAUNCH_TYPE_* and must match the LaunchType enum.
-  USE_LAUNCH_TYPE_COMMAND_START = 200,
-  USE_LAUNCH_TYPE_PINNED = USE_LAUNCH_TYPE_COMMAND_START,
-  USE_LAUNCH_TYPE_REGULAR,
-  USE_LAUNCH_TYPE_FULLSCREEN,
-  USE_LAUNCH_TYPE_WINDOW,
-  USE_LAUNCH_TYPE_COMMAND_END,
-};
+bool disable_installed_extension_check_for_testing = false;
 
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
 
 }  // namespace
+
+// static
+void AppContextMenu::DisableInstalledExtensionCheckForTesting(bool disable) {
+  disable_installed_extension_check_for_testing = disable;
+}
 
 AppContextMenu::AppContextMenu(AppContextMenuDelegate* delegate,
                                Profile* profile,
@@ -69,8 +57,10 @@ AppContextMenu::~AppContextMenu() {
 }
 
 ui::MenuModel* AppContextMenu::GetMenuModel() {
-  if (!controller_->IsExtensionInstalled(profile_, app_id_))
+  if (!disable_installed_extension_check_for_testing &&
+      !controller_->IsExtensionInstalled(profile_, app_id_)) {
     return NULL;
+  }
 
   if (menu_model_.get())
     return menu_model_.get();

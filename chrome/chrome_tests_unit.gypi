@@ -1608,6 +1608,7 @@
       'browser/ui/webui/signin/sync_confirmation_handler_unittest.cc'
     ],
     'chrome_unit_tests_app_list_sources': [
+      'browser/ui/app_list/app_context_menu_unittest.cc',
       'browser/ui/app_list/app_list_positioner_unittest.cc',
       'browser/ui/app_list/app_list_service_mac_unittest.mm',
       'browser/ui/app_list/app_list_service_unittest.cc',
