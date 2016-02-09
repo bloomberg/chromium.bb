@@ -36,22 +36,24 @@ namespace tabs = api::tabs;
 
 bool WillDispatchTabUpdatedEvent(
     WebContents* contents,
-    const base::DictionaryValue* changed_properties,
+    const std::set<std::string> changed_property_names,
     content::BrowserContext* context,
     const Extension* extension,
     Event* event,
     const base::DictionaryValue* listener_filter) {
-  // Overwrite the second argument with the appropriate properties dictionary,
-  // depending on extension permissions.
-  base::DictionaryValue* properties_value = changed_properties->DeepCopy();
-  ExtensionTabUtil::ScrubTabValueForExtension(contents,
-                                              extension,
-                                              properties_value);
-  event->event_args->Set(1, properties_value);
+  base::DictionaryValue* tab_value =
+      ExtensionTabUtil::CreateTabValue(contents, extension);
 
-  // Overwrite the third arg with our tab value as seen by this extension.
-  event->event_args->Set(2,
-                         ExtensionTabUtil::CreateTabValue(contents, extension));
+  scoped_ptr<base::DictionaryValue> changed_properties(
+      new base::DictionaryValue);
+  const base::Value* value = nullptr;
+  for (const auto& property : changed_property_names) {
+    if (tab_value->Get(property, &value))
+      changed_properties->Set(property, make_scoped_ptr(value->DeepCopy()));
+  }
+
+  event->event_args->Set(1, changed_properties.release());
+  event->event_args->Set(2, tab_value);
   return true;
 }
 
@@ -65,45 +67,19 @@ TabsEventRouter::TabEntry::TabEntry(TabsEventRouter* router,
       was_muted_(contents->IsAudioMuted()),
       router_(router) {}
 
-scoped_ptr<base::DictionaryValue> TabsEventRouter::TabEntry::UpdateLoadState() {
+std::set<std::string> TabsEventRouter::TabEntry::UpdateLoadState() {
   // The tab may go in & out of loading (for instance if iframes navigate).
   // We only want to respond to the first change from loading to !loading after
   // the NavigationEntryCommitted() was fired.
-  scoped_ptr<base::DictionaryValue> changed_properties(
-      new base::DictionaryValue());
   if (!complete_waiting_on_load_ || web_contents()->IsLoading()) {
-    return changed_properties;
+    return std::set<std::string>();
   }
 
-  // Send "complete" state change.
+  // Send 'status' of tab change. Expecting 'complete' is fired.
   complete_waiting_on_load_ = false;
-  changed_properties->SetString(tabs_constants::kStatusKey,
-                                tabs_constants::kStatusValueComplete);
-  return changed_properties;
-}
-
-scoped_ptr<base::DictionaryValue> TabsEventRouter::TabEntry::DidNavigate() {
-  // Send "loading" state change.
-  complete_waiting_on_load_ = true;
-  scoped_ptr<base::DictionaryValue> changed_properties(
-      new base::DictionaryValue());
-  changed_properties->SetString(tabs_constants::kStatusKey,
-                                tabs_constants::kStatusValueLoading);
-
-  if (web_contents()->GetURL() != url_) {
-    url_ = web_contents()->GetURL();
-    changed_properties->SetString(tabs_constants::kUrlKey, url_.spec());
-  }
-
-  return changed_properties;
-}
-
-scoped_ptr<base::DictionaryValue> TabsEventRouter::TabEntry::TitleChanged() {
-  scoped_ptr<base::DictionaryValue> changed_properties(
-      new base::DictionaryValue());
-  changed_properties->SetString(tabs_constants::kTitleKey,
-                                web_contents()->GetTitle());
-  return changed_properties;
+  std::set<std::string> changed_property_names;
+  changed_property_names.insert(tabs_constants::kStatusKey);
+  return changed_property_names;
 }
 
 bool TabsEventRouter::TabEntry::SetAudible(bool new_val) {
@@ -122,12 +98,24 @@ bool TabsEventRouter::TabEntry::SetMuted(bool new_val) {
 
 void TabsEventRouter::TabEntry::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  router_->TabUpdated(this, DidNavigate());
+  // Send 'status' of tab change. Expecting 'loading' is fired.
+  complete_waiting_on_load_ = true;
+  std::set<std::string> changed_property_names;
+  changed_property_names.insert(tabs_constants::kStatusKey);
+
+  if (web_contents()->GetURL() != url_) {
+    url_ = web_contents()->GetURL();
+    changed_property_names.insert(tabs_constants::kUrlKey);
+  }
+
+  router_->TabUpdated(this, std::move(changed_property_names));
 }
 
 void TabsEventRouter::TabEntry::TitleWasSet(content::NavigationEntry* entry,
                                             bool explicit_set) {
-  router_->TabUpdated(this, TitleChanged());
+  std::set<std::string> changed_property_names;
+  changed_property_names.insert(tabs_constants::kTitleKey);
+  router_->TabUpdated(this, std::move(changed_property_names));
 }
 
 void TabsEventRouter::TabEntry::WebContentsDestroyed() {
@@ -391,40 +379,31 @@ void TabsEventRouter::TabMoved(WebContents* contents,
                 std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 }
 
-void TabsEventRouter::TabUpdated(
-    TabEntry* entry,
-    scoped_ptr<base::DictionaryValue> changed_properties) {
-  CHECK(entry->web_contents());
-
+void TabsEventRouter::TabUpdated(TabEntry* entry,
+                                 std::set<std::string> changed_property_names) {
   bool audible = entry->web_contents()->WasRecentlyAudible();
   if (entry->SetAudible(audible)) {
-    changed_properties->SetBoolean(tabs_constants::kAudibleKey, audible);
+    changed_property_names.insert(tabs_constants::kAudibleKey);
   }
 
   bool muted = entry->web_contents()->IsAudioMuted();
   if (entry->SetMuted(muted)) {
-    changed_properties->Set(
-        tabs_constants::kMutedInfoKey,
-        ExtensionTabUtil::CreateMutedInfo(entry->web_contents()));
+    changed_property_names.insert(tabs_constants::kMutedInfoKey);
   }
 
-  if (!changed_properties->empty()) {
+  if (!changed_property_names.empty()) {
     DispatchTabUpdatedEvent(entry->web_contents(),
-                            std::move(changed_properties));
+                            std::move(changed_property_names));
   }
 }
 
 void TabsEventRouter::FaviconUrlUpdated(WebContents* contents) {
-    content::NavigationEntry* entry =
-        contents->GetController().GetVisibleEntry();
-    if (!entry || !entry->GetFavicon().valid)
-      return;
-    scoped_ptr<base::DictionaryValue> changed_properties(
-        new base::DictionaryValue);
-    changed_properties->SetString(
-        tabs_constants::kFaviconUrlKey,
-        entry->GetFavicon().url.possibly_invalid_spec());
-    DispatchTabUpdatedEvent(contents, std::move(changed_properties));
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  if (!entry || !entry->GetFavicon().valid)
+    return;
+  std::set<std::string> changed_property_names;
+  changed_property_names.insert(tabs_constants::kFaviconUrlKey);
+  DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
 }
 
 void TabsEventRouter::DispatchEvent(
@@ -446,8 +425,8 @@ void TabsEventRouter::DispatchEvent(
 
 void TabsEventRouter::DispatchTabUpdatedEvent(
     WebContents* contents,
-    scoped_ptr<base::DictionaryValue> changed_properties) {
-  DCHECK(changed_properties);
+    const std::set<std::string> changed_property_names) {
+  DCHECK(!changed_property_names.empty());
   DCHECK(contents);
 
   // The state of the tab (as seen from the extension point of view) has
@@ -471,9 +450,8 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
   event->restrict_to_browser_context = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchTabUpdatedEvent,
-                 contents,
-                 changed_properties.get());
+      base::Bind(&WillDispatchTabUpdatedEvent, contents,
+                 std::move(changed_property_names));
   EventRouter::Get(profile)->BroadcastEvent(std::move(event));
 }
 
@@ -518,11 +496,9 @@ void TabsEventRouter::TabPinnedStateChanged(WebContents* contents, int index) {
   int tab_index;
 
   if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
-    scoped_ptr<base::DictionaryValue> changed_properties(
-        new base::DictionaryValue());
-    changed_properties->SetBoolean(tabs_constants::kPinnedKey,
-                                   tab_strip->IsTabPinned(tab_index));
-    DispatchTabUpdatedEvent(contents, std::move(changed_properties));
+    std::set<std::string> changed_property_names;
+    changed_property_names.insert(tabs_constants::kPinnedKey);
+    DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
   }
 }
 

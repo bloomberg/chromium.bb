@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_EVENT_ROUTER_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -95,7 +96,7 @@ class TabsEventRouter : public TabStripModelObserver,
   // there's any changed property.
   class TabEntry;
   void TabUpdated(TabEntry* entry,
-                  scoped_ptr<base::DictionaryValue> changed_properties);
+                  std::set<std::string> changed_property_names);
 
   // Triggers a tab updated event if the favicon URL changes.
   void FaviconUrlUpdated(content::WebContents* contents);
@@ -115,11 +116,11 @@ class TabsEventRouter : public TabStripModelObserver,
       scoped_ptr<base::ListValue> event_args,
       scoped_ptr<base::ListValue> cross_incognito_args);
 
-  // Packages |changed_properties| as a tab updated event for the tab |contents|
-  // and dispatches the event to the extension.
+  // Packages |changed_property_names| as a tab updated event for the tab
+  // |contents| and dispatches the event to the extension.
   void DispatchTabUpdatedEvent(
       content::WebContents* contents,
-      scoped_ptr<base::DictionaryValue> changed_properties);
+      const std::set<std::string> changed_property_names);
 
   // Register ourselves to receive the various notifications we are interested
   // in for a tab. Also create tab entry to observe web contents notifications.
@@ -142,22 +143,13 @@ class TabsEventRouter : public TabStripModelObserver,
     // |contents|.
     TabEntry(TabsEventRouter* router, content::WebContents* contents);
 
-    // Indicate via a list of key/value pairs if a tab is loading based on its
-    // WebContents. Whether the state has changed or not is used to determine
-    // if events needs to be sent to extensions during processing of
-    // TabChangedAt(). If this method indicates that a tab should "hold" a
-    // state-change to "loading", the DidNavigate() method should eventually
-    // send a similar message to undo it. If false, the returned key/value
-    // pairs list is empty.
-    scoped_ptr<base::DictionaryValue> UpdateLoadState();
-
-    // Indicate via a list of key/value pairs that a tab load has resulted in a
-    // navigation and the destination url is available for inspection. The list
-    // is empty if no updates should be sent.
-    scoped_ptr<base::DictionaryValue> DidNavigate();
-
-    // Indicate via a list of key/value pairs if the title of a tab is changed.
-    scoped_ptr<base::DictionaryValue> TitleChanged();
+    // Indicate via a list of property names if a tab is loading based on its
+    // WebContents. Whether the state has changed or not is used to determine if
+    // events need to be sent to extensions during processing of TabChangedAt()
+    // If this method indicates that a tab should "hold" a state-change to
+    // "loading", the NavigationEntryCommitted() method should eventually send a
+    // similar message to undo it.
+    std::set<std::string> UpdateLoadState();
 
     // Update the audible and muted states and return whether they were changed
     bool SetAudible(bool new_val);
