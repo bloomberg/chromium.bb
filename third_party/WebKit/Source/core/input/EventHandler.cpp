@@ -3561,7 +3561,7 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
     event->setUnderlyingEvent(underlyingEvent);
 
     target->dispatchEvent(event);
-    return event->defaultHandled();
+    return event->defaultHandled() || event->defaultPrevented();
 }
 
 void EventHandler::defaultTextInputEventHandler(TextEvent* event)
