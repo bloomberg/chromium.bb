@@ -544,6 +544,9 @@ long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
   long len = 0;
   const long long ebml_id = ReadID(pReader, pos, len);
 
+  if (ebml_id == E_BUFFER_NOT_FULL)
+    return E_BUFFER_NOT_FULL;
+
   // TODO(tomfinegan): Move Matroska ID constants into a common namespace.
   if (len != 4 || ebml_id != mkvmuxer::kMkvEBML)
     return E_FILE_FORMAT_INVALID;
