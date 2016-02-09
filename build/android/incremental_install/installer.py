@@ -32,6 +32,11 @@ from util import build_utils
 sys.path = prev_sys_path
 
 
+def _DeviceCachePath(device):
+  file_name = 'device_cache_%s.json' % device.adb.GetDeviceSerial()
+  return os.path.join(constants.GetOutDirectory(), file_name)
+
+
 def _TransformDexPaths(paths):
   """Given paths like ["/a/b/c", "/a/c/d"], returns ["b.c", "c.d"]."""
   if len(paths) == 1:
@@ -58,17 +63,22 @@ def _GetDeviceIncrementalDir(package):
   return '/data/local/tmp/incremental-app-%s' % package
 
 
-def Uninstall(device, package):
+def Uninstall(device, package, enable_device_cache=False):
   """Uninstalls and removes all incremental files for the given package."""
   main_timer = time_profile.TimeProfile()
   device.Uninstall(package)
+  if enable_device_cache:
+    # Uninstall is rare, so just wipe the cache in this case.
+    cache_path = _DeviceCachePath(device)
+    if os.path.exists(cache_path):
+      os.unlink(cache_path)
   device.RunShellCommand(['rm', '-rf', _GetDeviceIncrementalDir(package)],
                          check_return=True)
   logging.info('Uninstall took %s seconds.', main_timer.GetDelta())
 
 
 def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
-            enable_device_cache=True, use_concurrency=True,
+            enable_device_cache=False, use_concurrency=True,
             show_proguard_warning=False):
   """Installs the given incremental apk and all required supporting files.
 
@@ -144,23 +154,24 @@ def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
                       'To do so, use GN arg:\n'
                       '    disable_incremental_isolated_processes=true')
 
-  cache_path = '%s/files-cache.json' % device_incremental_dir
+  cache_path = _DeviceCachePath(device)
   def restore_cache():
     if not enable_device_cache:
       logging.info('Ignoring device cache')
       return
-    # Delete the cached file so that any exceptions cause the next attempt
-    # to re-compute md5s.
-    cmd = 'P=%s;cat $P 2>/dev/null && rm $P' % cache_path
-    lines = device.RunShellCommand(cmd, check_return=False, large_output=True)
-    if lines:
-      device.LoadCacheData(lines[0])
+    if os.path.exists(cache_path):
+      logging.info('Using device cache: %s', cache_path)
+      with open(cache_path) as f:
+        device.LoadCacheData(f.read())
+      # Delete the cached file so that any exceptions cause it to be cleared.
+      os.unlink(cache_path)
     else:
-      logging.info('Device cache not found: %s', cache_path)
+      logging.info('No device cache present: %s', cache_path)
 
   def save_cache():
-    cache_data = device.DumpCacheData()
-    device.WriteFile(cache_path, cache_data)
+    with open(cache_path, 'w') as f:
+      f.write(device.DumpCacheData())
+      logging.info('Wrote device cache: %s', cache_path)
 
   # Create 2 lock files:
   # * install.lock tells the app to pause on start-up (until we release it).
@@ -281,7 +292,7 @@ def main():
 
   apk = apk_helper.ToHelper(args.apk_path)
   if args.uninstall:
-    Uninstall(device, apk.GetPackageName())
+    Uninstall(device, apk.GetPackageName(), enable_device_cache=args.cache)
   else:
     Install(device, apk, split_globs=args.splits, native_libs=args.native_libs,
             dex_files=args.dex_files, enable_device_cache=args.cache,

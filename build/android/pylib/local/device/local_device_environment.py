@@ -65,6 +65,7 @@ class LocalDeviceEnvironment(environment.Environment):
           logging.info('Using device cache: %s', cache_path)
           with open(cache_path) as f:
             d.LoadCacheData(f.read())
+          # Delete cached file so that any exceptions cause it to be cleared.
           os.unlink(cache_path)
     if self._logcat_output_file:
       self._logcat_output_dir = tempfile.mkdtemp()
