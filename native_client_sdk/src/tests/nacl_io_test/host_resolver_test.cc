@@ -135,6 +135,109 @@ TEST_F(HostResolverTest, Getaddrinfo_NumericService) {
   ki_freeaddrinfo(ai);
 }
 
+TEST_F(HostResolverTest, Getnameinfo_Numeric) {
+  char host[64];
+  char serv[64];
+
+  // IPv4 host + service to strings.
+  struct sockaddr_in in;
+
+  memset(&in, 0, sizeof(in));
+  memset(host, 0, sizeof(host));
+  memset(serv, 0, sizeof(serv));
+  in.sin_family = AF_INET;
+  in.sin_port = ntohs(443);
+  in.sin_addr.s_addr = ntohl(0x01020304);
+
+  ASSERT_EQ(0, ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in),
+                              sizeof(in), host, sizeof(host), serv,
+                              sizeof(serv), NI_NUMERICSERV));
+  ASSERT_STREQ(host, "1.2.3.4");
+  ASSERT_STREQ(serv, "443");
+
+  // IPv4 host only.
+  memset(host, 0, sizeof(host));
+  ASSERT_EQ(0,
+            ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in), sizeof(in),
+                           host, sizeof(host), NULL, 0, NI_NUMERICSERV));
+  ASSERT_STREQ(host, "1.2.3.4");
+
+  // IPv6 host + service.
+  struct sockaddr_in6 in6;
+
+  memset(&in6, 0, sizeof(in6));
+  memset(host, 0, sizeof(host));
+  memset(serv, 0, sizeof(serv));
+  in6.sin6_family = AF_INET6;
+  in6.sin6_port = ntohs(80);
+  in6.sin6_addr.s6_addr[0] = 0xfe;
+  in6.sin6_addr.s6_addr[1] = 0x80;
+  in6.sin6_addr.s6_addr[12] = 0x05;
+  in6.sin6_addr.s6_addr[13] = 0x06;
+  in6.sin6_addr.s6_addr[14] = 0x07;
+  in6.sin6_addr.s6_addr[15] = 0x08;
+
+  ASSERT_EQ(0, ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in6),
+                              sizeof(in6), host, sizeof(host), serv,
+                              sizeof(serv), NI_NUMERICSERV));
+  ASSERT_STREQ(host, "fe80::506:708");
+  ASSERT_STREQ(serv, "80");
+
+  // IPv6 service only.
+  memset(serv, 0, sizeof(serv));
+  ASSERT_EQ(
+      0, ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in6), sizeof(in6),
+                        NULL, 0, serv, sizeof(serv), NI_NUMERICSERV));
+  ASSERT_STREQ(serv, "80");
+}
+
+TEST_F(HostResolverTest, Getnameinfo_ErrorHandling) {
+  struct sockaddr_in in;
+  char host[64];
+  char serv[64];
+
+  memset(&in, 0, sizeof(in));
+  memset(host, 0, sizeof(host));
+  memset(serv, 0, sizeof(serv));
+  in.sin_family = AF_INET;
+  in.sin_port = ntohs(443);
+  in.sin_addr.s_addr = ntohl(0x01020304);
+
+  // Bogus salen, hostlen, or servlen.
+  ASSERT_EQ(EAI_FAMILY, ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in),
+                                       sizeof(in) - 4, host, sizeof(host), serv,
+                                       sizeof(serv), NI_NUMERICSERV));
+  ASSERT_EQ(EAI_OVERFLOW,
+            ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in), sizeof(in),
+                           host, 7, serv, sizeof(serv), NI_NUMERICSERV));
+  ASSERT_EQ(EAI_OVERFLOW,
+            ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in), sizeof(in),
+                           host, sizeof(host), serv, 3, NI_NUMERICSERV));
+
+  // User insists on names, but we can only provide numbers.
+  ASSERT_EQ(EAI_NONAME,
+            ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in), sizeof(in),
+                           host, sizeof(host), serv, 3, NI_NAMEREQD));
+
+  // User forgot to pass a host or serv buffer.
+  ASSERT_EQ(EAI_NONAME,
+            ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&in), sizeof(in),
+                           NULL, 0, NULL, 0, NI_NUMERICSERV));
+
+  // Wrong socket type.
+  struct sockaddr unix_sock;
+  memset(&unix_sock, 0, sizeof(unix_sock));
+  memset(host, 0, sizeof(host));
+  memset(serv, 0, sizeof(serv));
+  unix_sock.sa_family = AF_UNIX;
+  ASSERT_EQ(EAI_FAMILY,
+            ki_getnameinfo(reinterpret_cast<struct sockaddr*>(&unix_sock),
+                           sizeof(unix_sock), host, sizeof(host), serv,
+                           sizeof(serv), NI_NUMERICSERV));
+  ASSERT_STREQ(host, "");
+  ASSERT_STREQ(serv, "");
+}
+
 TEST_F(HostResolverTest, Getaddrinfo_MissingPPAPI) {
   // Verify that full lookups fail due to lack of PPAPI interfaces
   struct addrinfo* ai = NULL;

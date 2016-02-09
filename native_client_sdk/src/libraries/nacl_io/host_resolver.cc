@@ -8,8 +8,11 @@
 
 #include "nacl_io/host_resolver.h"
 
+#include <arpa/inet.h>
 #include <assert.h>
+#include <netinet/in.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -221,14 +224,51 @@ void HostResolver::freeaddrinfo(struct addrinfo* res) {
   }
 }
 
-int HostResolver::getnameinfo(const struct sockaddr *sa,
+int HostResolver::getnameinfo(const struct sockaddr* sa,
                               socklen_t salen,
-                              char *host,
+                              char* host,
                               size_t hostlen,
-                              char *serv,
+                              char* serv,
                               size_t servlen,
                               int flags) {
-  return ENOSYS;
+  in_port_t port;
+  const void* addr;
+
+  if (host == NULL && serv == NULL) {
+    LOG_TRACE("host and serv are NULL.");
+    return EAI_NONAME;
+  }
+
+  // Currently we only handle numeric hosts and services.
+  if (flags & NI_NAMEREQD)
+    return EAI_NONAME;
+
+  if (sa->sa_family == AF_INET) {
+    if (salen < sizeof(struct sockaddr_in))
+      return EAI_FAMILY;
+
+    const struct sockaddr_in* sock =
+        reinterpret_cast<const struct sockaddr_in*>(sa);
+    port = sock->sin_port;
+    addr = &sock->sin_addr.s_addr;
+  } else if (sa->sa_family == AF_INET6) {
+    if (salen < sizeof(struct sockaddr_in6))
+      return EAI_FAMILY;
+
+    const struct sockaddr_in6* sock =
+        reinterpret_cast<const struct sockaddr_in6*>(sa);
+    port = sock->sin6_port;
+    addr = sock->sin6_addr.s6_addr;
+  } else {
+    return EAI_FAMILY;
+  }
+
+  if (host && inet_ntop(sa->sa_family, addr, host, hostlen) == NULL)
+    return EAI_OVERFLOW;
+  if (serv && (size_t)snprintf(serv, servlen, "%u", htons(port)) >= servlen)
+    return EAI_OVERFLOW;
+
+  return 0;
 }
 
 int HostResolver::getaddrinfo(const char* node,
