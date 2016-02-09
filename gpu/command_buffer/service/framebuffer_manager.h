@@ -52,6 +52,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     virtual bool CanRenderTo(const FeatureInfo* feature_info) const = 0;
     virtual void DetachFromFramebuffer(Framebuffer* framebuffer) const = 0;
     virtual bool ValidForAttachmentType(GLenum attachment_type,
+                                        ContextType context_type,
                                         uint32_t max_color_attachments) = 0;
     virtual size_t GetSignatureSize(TextureManager* texture_manager) const = 0;
     virtual void AddToSignature(

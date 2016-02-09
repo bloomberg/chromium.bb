@@ -93,13 +93,7 @@ GLsizei WebGLRenderbufferAttachment::depth() const
 
 GLenum WebGLRenderbufferAttachment::format() const
 {
-    GLenum format = m_renderbuffer->internalFormat();
-    if (format == GL_DEPTH_STENCIL_OES
-        && m_renderbuffer->emulatedStencilBuffer()
-        && m_renderbuffer->emulatedStencilBuffer()->internalFormat() != GL_STENCIL_INDEX8) {
-        return 0;
-    }
-    return format;
+    return m_renderbuffer->internalFormat();
 }
 
 WebGLSharedObject* WebGLRenderbufferAttachment::object() const
@@ -125,22 +119,12 @@ void WebGLRenderbufferAttachment::onDetached(WebGraphicsContext3D* context)
 void WebGLRenderbufferAttachment::attach(WebGraphicsContext3D* context, GLenum target, GLenum attachment)
 {
     Platform3DObject object = objectOrZero(m_renderbuffer.get());
-    if (attachment == GL_DEPTH_STENCIL_ATTACHMENT && m_renderbuffer->emulatedStencilBuffer()) {
-        context->framebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, object);
-        context->framebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, objectOrZero(m_renderbuffer->emulatedStencilBuffer()));
-    } else {
-        context->framebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, object);
-    }
+    context->framebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, object);
 }
 
 void WebGLRenderbufferAttachment::unattach(WebGraphicsContext3D* context, GLenum target, GLenum attachment)
 {
-    if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-        context->framebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
-        context->framebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
-    } else {
-        context->framebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, 0);
-    }
+    context->framebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, 0);
 }
 
 GLenum WebGLRenderbufferAttachment::type() const
@@ -258,12 +242,7 @@ void WebGLTextureAttachment::unattach(WebGraphicsContext3D* context, GLenum targ
     if (m_target == GL_TEXTURE_3D || m_target == GL_TEXTURE_2D_ARRAY) {
         context->framebufferTextureLayer(target, attachment, 0, m_level, m_layer);
     } else {
-        if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-            context->framebufferTexture2D(target, GL_DEPTH_ATTACHMENT, m_target, 0, m_level);
-            context->framebufferTexture2D(target, GL_STENCIL_ATTACHMENT, m_target, 0, m_level);
-        } else {
-            context->framebufferTexture2D(target, attachment, m_target, 0, m_level);
-        }
+        context->framebufferTexture2D(target, attachment, m_target, 0, m_level);
     }
 }
 
@@ -505,10 +484,8 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(GLenum target, GLenu
             attach(target, GL_STENCIL_ATTACHMENT, GL_STENCIL_ATTACHMENT);
             break;
         case GL_DEPTH_ATTACHMENT:
-            attach(target, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT);
-            break;
         case GL_STENCIL_ATTACHMENT:
-            attach(target, GL_DEPTH_STENCIL_ATTACHMENT, GL_STENCIL_ATTACHMENT);
+            attach(target, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT);
             break;
         }
     }
@@ -624,28 +601,15 @@ GLenum WebGLFramebuffer::checkDepthStencilStatus(const char** reason) const
     for (const auto& it : m_attachments) {
         WebGLAttachment* attachment = it.value.get();
         ASSERT(attachment);
-        GLenum internalformat = attachment->format();
         switch (it.key) {
         case GL_DEPTH_ATTACHMENT:
             depthAttachment = attachment;
-            if (!isDepthRenderable(internalformat, false)) {
-                *reason = "the internalformat of the attached image is not depth-renderable";
-                return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-            }
             break;
         case GL_STENCIL_ATTACHMENT:
             stencilAttachment = attachment;
-            if (!isStencilRenderable(internalformat, false)) {
-                *reason = "the internalformat of the attached image is not stencil-renderable";
-                return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-            }
             break;
         case GL_DEPTH_STENCIL_ATTACHMENT:
             depthStencilAttachment = attachment;
-            if (internalformat != GL_DEPTH_STENCIL_OES) {
-                *reason = "the internalformat of the attached image is not DEPTH_STENCIL";
-                return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-            }
             break;
         default:
             break;

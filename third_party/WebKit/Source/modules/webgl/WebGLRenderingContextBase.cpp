@@ -581,6 +581,10 @@ PassOwnPtr<WebGraphicsContext3D> WebGLRenderingContextBase::createWebGraphicsCon
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, extractWebGLContextCreationError(glInfo)));
         return nullptr;
     }
+    if (context->getString(GL_EXTENSIONS).utf8().find("GL_OES_packed_depth_stencil") == std::string::npos) {
+        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "OES_packed_depth_stencil support is required."));
+        return nullptr;
+    }
 
     return context.release();
 }
@@ -2046,18 +2050,6 @@ WebGLRenderbuffer* WebGLRenderingContextBase::createRenderbuffer()
     return o;
 }
 
-WebGLRenderbuffer* WebGLRenderingContextBase::ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer* renderbuffer)
-{
-    if (isContextLost())
-        return nullptr;
-    if (!renderbuffer->emulatedStencilBuffer()) {
-        renderbuffer->setEmulatedStencilBuffer(createRenderbuffer());
-        webContext()->bindRenderbuffer(target, objectOrZero(renderbuffer->emulatedStencilBuffer()));
-        webContext()->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding.get()));
-    }
-    return renderbuffer->emulatedStencilBuffer();
-}
-
 const WebGLSamplerState* WebGLRenderingContextBase::getTextureUnitSamplerState(GLenum target, GLuint unit) const
 {
     ASSERT(unit < m_textureUnits.size());
@@ -2414,32 +2406,17 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(ScriptState* scriptState
         return;
     }
     Platform3DObject bufferObject = objectOrZero(buffer);
-    switch (attachment) {
-    case GL_DEPTH_STENCIL_ATTACHMENT:
-        if (isWebGL2OrHigher() || isDepthStencilSupported() || !buffer) {
-            webContext()->framebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, renderbuffertarget, bufferObject);
-            webContext()->framebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, renderbuffertarget, bufferObject);
-        } else {
-            WebGLRenderbuffer* emulatedStencilBuffer = ensureEmulatedStencilBuffer(renderbuffertarget, buffer);
-            if (!emulatedStencilBuffer) {
-                synthesizeGLError(GL_OUT_OF_MEMORY, "framebufferRenderbuffer", "out of memory");
-                return;
-            }
-            webContext()->framebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, renderbuffertarget, bufferObject);
-            webContext()->framebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, renderbuffertarget, objectOrZero(emulatedStencilBuffer));
-        }
-        break;
-    default:
-        webContext()->framebufferRenderbuffer(target, attachment, renderbuffertarget, bufferObject);
-    }
     if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
         // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
         // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
+        webContext()->framebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, renderbuffertarget, bufferObject);
+        webContext()->framebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, renderbuffertarget, bufferObject);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, buffer);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, buffer);
         preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_DEPTH_ATTACHMENT, buffer);
         preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_STENCIL_ATTACHMENT, buffer);
     } else {
+        webContext()->framebufferRenderbuffer(target, attachment, renderbuffertarget, bufferObject);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, buffer);
         preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, buffer);
     }
@@ -2470,22 +2447,17 @@ void WebGLRenderingContextBase::framebufferTexture2D(ScriptState* scriptState, G
         return;
     }
     Platform3DObject textureObject = objectOrZero(texture);
-    switch (attachment) {
-    case GL_DEPTH_STENCIL_ATTACHMENT:
-        webContext()->framebufferTexture2D(target, GL_DEPTH_ATTACHMENT, textarget, textureObject, level);
-        webContext()->framebufferTexture2D(target, GL_STENCIL_ATTACHMENT, textarget, textureObject, level);
-        break;
-    default:
-        webContext()->framebufferTexture2D(target, attachment, textarget, textureObject, level);
-    }
     if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
         // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
         // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
+        webContext()->framebufferTexture2D(target, GL_DEPTH_ATTACHMENT, textarget, textureObject, level);
+        webContext()->framebufferTexture2D(target, GL_STENCIL_ATTACHMENT, textarget, textureObject, level);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, textarget, texture, level, 0);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, textarget, texture, level, 0);
         preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_DEPTH_ATTACHMENT, texture);
         preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_STENCIL_ATTACHMENT, texture);
     } else {
+        webContext()->framebufferTexture2D(target, attachment, textarget, textureObject, level);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level, 0);
         preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, texture);
     }
@@ -3095,13 +3067,7 @@ ScriptValue WebGLRenderingContextBase::getRenderbufferParameter(ScriptState* scr
         webContext()->getRenderbufferParameteriv(target, pname, &value);
         return WebGLAny(scriptState, value);
     case GL_RENDERBUFFER_STENCIL_SIZE:
-        if (m_renderbufferBinding->emulatedStencilBuffer()) {
-            webContext()->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding->emulatedStencilBuffer()));
-            webContext()->getRenderbufferParameteriv(target, pname, &value);
-            webContext()->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding.get()));
-        } else {
-            webContext()->getRenderbufferParameteriv(target, pname, &value);
-        }
+        webContext()->getRenderbufferParameteriv(target, pname, &value);
         return WebGLAny(scriptState, value);
     case GL_RENDERBUFFER_INTERNAL_FORMAT:
         return WebGLAny(scriptState, m_renderbufferBinding->internalFormat());
@@ -3857,7 +3823,6 @@ void WebGLRenderingContextBase::renderbufferStorageImpl(
         webContext()->renderbufferStorage(target, internalformat, width, height);
         m_renderbufferBinding->setInternalFormat(internalformat);
         m_renderbufferBinding->setSize(width, height);
-        m_renderbufferBinding->deleteEmulatedStencilBuffer(webContext());
         break;
     case GL_SRGB8_ALPHA8_EXT:
         if (!extensionEnabled(EXTsRGBName)) {
@@ -3867,24 +3832,10 @@ void WebGLRenderingContextBase::renderbufferStorageImpl(
         webContext()->renderbufferStorage(target, internalformat, width, height);
         m_renderbufferBinding->setInternalFormat(internalformat);
         m_renderbufferBinding->setSize(width, height);
-        m_renderbufferBinding->deleteEmulatedStencilBuffer(webContext());
         break;
     case GL_DEPTH_STENCIL_OES:
-        if (isDepthStencilSupported()) {
-            webContext()->renderbufferStorage(target, GL_DEPTH24_STENCIL8_OES, width, height);
-        } else {
-            WebGLRenderbuffer* emulatedStencilBuffer = ensureEmulatedStencilBuffer(target, m_renderbufferBinding.get());
-            if (!emulatedStencilBuffer) {
-                synthesizeGLError(GL_OUT_OF_MEMORY, functionName, "out of memory");
-                break;
-            }
-            webContext()->renderbufferStorage(target, GL_DEPTH_COMPONENT16, width, height);
-            webContext()->bindRenderbuffer(target, objectOrZero(emulatedStencilBuffer));
-            webContext()->renderbufferStorage(target, GL_STENCIL_INDEX8, width, height);
-            webContext()->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding.get()));
-            emulatedStencilBuffer->setSize(width, height);
-            emulatedStencilBuffer->setInternalFormat(GL_STENCIL_INDEX8);
-        }
+        ASSERT(isDepthStencilSupported());
+        webContext()->renderbufferStorage(target, GL_DEPTH24_STENCIL8_OES, width, height);
         m_renderbufferBinding->setSize(width, height);
         m_renderbufferBinding->setInternalFormat(internalformat);
         break;

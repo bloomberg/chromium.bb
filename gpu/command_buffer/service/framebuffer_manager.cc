@@ -19,6 +19,22 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+
+bool DetectWebGL1DepthStencilAttachmentConflicts(
+    uint32_t needed_channels, uint32_t channels) {
+  switch (needed_channels) {
+    case GLES2Util::kDepth:
+    case GLES2Util::kStencil:
+    case GLES2Util::kDepth | GLES2Util::kStencil:
+      return (needed_channels != channels);
+    default:
+      return false;
+  }
+}
+
+}  // namespace anonymous
+
 DecoderFramebufferState::DecoderFramebufferState()
     : clear_state_dirty(false),
       bound_read_framebuffer(NULL),
@@ -74,10 +90,15 @@ class RenderbufferAttachment
   }
 
   bool ValidForAttachmentType(GLenum attachment_type,
+                              ContextType context_type,
                               uint32_t max_color_attachments) override {
     uint32_t need = GLES2Util::GetChannelsNeededForAttachmentType(
         attachment_type, max_color_attachments);
+    DCHECK_NE(0u, need);
     uint32_t have = GLES2Util::GetChannelsForFormat(internal_format());
+    if (context_type == CONTEXT_TYPE_WEBGL1 &&
+        DetectWebGL1DepthStencilAttachmentConflicts(need, have))
+      return false;
     return (need & have) != 0;
   }
 
@@ -192,6 +213,7 @@ class TextureAttachment
   }
 
   bool ValidForAttachmentType(GLenum attachment_type,
+                              ContextType context_type,
                               uint32_t max_color_attachments) override {
     GLenum type = 0;
     GLenum internal_format = 0;
@@ -201,6 +223,7 @@ class TextureAttachment
     }
     uint32_t need = GLES2Util::GetChannelsNeededForAttachmentType(
         attachment_type, max_color_attachments);
+    DCHECK_NE(0u, need);
     uint32_t have = GLES2Util::GetChannelsForFormat(internal_format);
 
     // Workaround for NVIDIA drivers that incorrectly expose these formats as
@@ -209,6 +232,9 @@ class TextureAttachment
         internal_format == GL_LUMINANCE_ALPHA) {
       return false;
     }
+    if (context_type == CONTEXT_TYPE_WEBGL1 &&
+        DetectWebGL1DepthStencilAttachmentConflicts(need, have))
+      return need == have;
     return (need & have) != 0;
   }
 
@@ -480,6 +506,7 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
     GLenum attachment_type = it->first;
     Attachment* attachment = it->second.get();
     if (!attachment->ValidForAttachmentType(attachment_type,
+                                            feature_info->context_type(),
                                             manager_->max_color_attachments_)) {
       return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
     }

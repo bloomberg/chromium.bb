@@ -56,10 +56,6 @@ public:
 
     void setHasEverBeenBound() { m_hasEverBeenBound = true; }
 
-    void setEmulatedStencilBuffer(WebGLRenderbuffer* buffer) { m_emulatedStencilBuffer = buffer; }
-    WebGLRenderbuffer* emulatedStencilBuffer() const { return m_emulatedStencilBuffer; }
-    void deleteEmulatedStencilBuffer(WebGraphicsContext3D* context3d);
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -74,8 +70,6 @@ private:
     GLsizei m_width, m_height;
 
     bool m_hasEverBeenBound;
-
-    Member<WebGLRenderbuffer> m_emulatedStencilBuffer;
 };
 
 } // namespace blink

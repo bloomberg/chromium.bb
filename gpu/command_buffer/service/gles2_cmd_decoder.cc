@@ -6078,8 +6078,15 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     service_id = renderbuffer->service_id();
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glFramebufferRenderbuffer");
-  glFramebufferRenderbufferEXT(
-      target, attachment, renderbuffertarget, service_id);
+  if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+    glFramebufferRenderbufferEXT(
+        target, GL_DEPTH_ATTACHMENT, renderbuffertarget, service_id);
+    glFramebufferRenderbufferEXT(
+        target, GL_STENCIL_ATTACHMENT, renderbuffertarget, service_id);
+  } else {
+    glFramebufferRenderbufferEXT(
+        target, attachment, renderbuffertarget, service_id);
+  }
   GLenum error = LOCAL_PEEK_GL_ERROR("glFramebufferRenderbuffer");
   if (error == GL_NO_ERROR) {
     framebuffer->AttachRenderbuffer(attachment, renderbuffer);
@@ -6266,16 +6273,26 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
   if (texture_ref)
     DoCopyTexImageIfNeeded(texture_ref->texture(), textarget);
 
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(name);
-  if (0 == samples) {
-    glFramebufferTexture2DEXT(target, attachment, textarget, service_id, level);
+  std::vector<GLenum> attachments;
+  if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+    attachments.push_back(GL_DEPTH_ATTACHMENT);
+    attachments.push_back(GL_STENCIL_ATTACHMENT);
   } else {
-    if (features().use_img_for_multisampled_render_to_texture) {
-      glFramebufferTexture2DMultisampleIMG(target, attachment, textarget,
-          service_id, level, samples);
+    attachments.push_back(attachment);
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(name);
+  for (size_t ii = 0; ii < attachments.size(); ++ii) {
+    if (0 == samples) {
+      glFramebufferTexture2DEXT(
+          target, attachments[ii], textarget, service_id, level);
     } else {
-      glFramebufferTexture2DMultisampleEXT(target, attachment, textarget,
-          service_id, level, samples);
+      if (features().use_img_for_multisampled_render_to_texture) {
+        glFramebufferTexture2DMultisampleIMG(
+            target, attachments[ii], textarget, service_id, level, samples);
+      } else {
+        glFramebufferTexture2DMultisampleEXT(
+            target, attachments[ii], textarget, service_id, level, samples);
+      }
     }
   }
   GLenum error = LOCAL_PEEK_GL_ERROR(name);
@@ -10058,12 +10075,14 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     glGenFramebuffersEXT(1, &fb);
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, fb);
 
+    glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT,
+                              target, texture->service_id(), level);
     bool have_stencil = (channels & GLES2Util::kStencil) != 0;
-    GLenum attachment = have_stencil ? GL_DEPTH_STENCIL_ATTACHMENT :
-                                       GL_DEPTH_ATTACHMENT;
+    if (have_stencil) {
+      glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT,
+                                target, texture->service_id(), level);
+    }
 
-    glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER_EXT, attachment, target,
-                              texture->service_id(), level);
     // ANGLE promises a depth only attachment ok.
     if (glCheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER_EXT) !=
         GL_FRAMEBUFFER_COMPLETE) {

@@ -561,12 +561,14 @@ public:
     DepthStencilTrackingContext()
         : m_nextRenderBufferId(1)
         , m_stencilAttachment(0)
-        , m_depthAttachment(0) {}
+        , m_depthAttachment(0)
+        , m_depthStencilAttachment(0) {}
     ~DepthStencilTrackingContext() override {}
 
     int numAllocatedRenderBuffer() const { return m_nextRenderBufferId - 1; }
     WebGLId stencilAttachment() const { return m_stencilAttachment; }
     WebGLId depthAttachment() const { return m_depthAttachment; }
+    WebGLId depthStencilAttachment() const { return m_depthStencilAttachment; }
 
     WebString getString(WGC3Denum type) override
     {
@@ -583,10 +585,19 @@ public:
 
     void framebufferRenderbuffer(WGC3Denum target, WGC3Denum attachment, WGC3Denum renderbuffertarget, WebGLId renderbuffer) override
     {
-        if (attachment == GL_STENCIL_ATTACHMENT) {
-            m_stencilAttachment = renderbuffer;
-        } else {
+        switch (attachment) {
+        case GL_DEPTH_ATTACHMENT:
             m_depthAttachment = renderbuffer;
+            break;
+        case GL_STENCIL_ATTACHMENT:
+            m_stencilAttachment = renderbuffer;
+            break;
+        case GL_DEPTH_STENCIL_ATTACHMENT:
+            m_depthStencilAttachment = renderbuffer;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            break;
         }
     }
 
@@ -594,10 +605,10 @@ public:
     {
         switch (ptype) {
         case GL_DEPTH_BITS:
-            *value = m_depthAttachment ? 24 : 0;
+            *value = (m_depthAttachment || m_depthStencilAttachment) ? 24 : 0;
             return;
         case GL_STENCIL_BITS:
-            *value = m_stencilAttachment ? 8 : 0;
+            *value = (m_stencilAttachment || m_depthStencilAttachment) ? 8 : 0;
             return;
         }
         MockWebGraphicsContext3D::getIntegerv(ptype, value);
@@ -607,19 +618,18 @@ private:
     WebGLId m_nextRenderBufferId;
     WebGLId m_stencilAttachment;
     WebGLId m_depthAttachment;
+    WebGLId m_depthStencilAttachment;
 };
 
 struct DepthStencilTestCase {
-    DepthStencilTestCase(bool requestStencil, bool requestDepth, int expectedRenderBuffers, bool expectDepthStencil, const char* const testCaseName)
+    DepthStencilTestCase(bool requestStencil, bool requestDepth, int expectedRenderBuffers, const char* const testCaseName)
         : requestStencil(requestStencil)
         , requestDepth(requestDepth)
-        , expectDepthStencil(expectDepthStencil)
         , expectedRenderBuffers(expectedRenderBuffers)
         , testCaseName(testCaseName) { }
 
     bool requestStencil;
     bool requestDepth;
-    bool expectDepthStencil;
     int expectedRenderBuffers;
     const char* const testCaseName;
 };
@@ -632,10 +642,10 @@ struct DepthStencilTestCase {
 TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
 {
     DepthStencilTestCase cases[] = {
-        DepthStencilTestCase(false, false, false, 0, "neither"),
-        DepthStencilTestCase(true, false, true, 1, "stencil only"),
-        DepthStencilTestCase(false, true, true, 1, "depth only"),
-        DepthStencilTestCase(true, true, true, 1, "both"),
+        DepthStencilTestCase(false, false, 0, "neither"),
+        DepthStencilTestCase(true, false, 1, "stencil only"),
+        DepthStencilTestCase(false, true, 1, "depth only"),
+        DepthStencilTestCase(true, true, 1, "both"),
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
@@ -652,26 +662,28 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
         EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
         EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);
         EXPECT_EQ(cases[i].expectedRenderBuffers, trackingContext->numAllocatedRenderBuffer());
-        if (cases[i].expectDepthStencil) {
-            EXPECT_EQ(trackingContext->stencilAttachment(), trackingContext->depthAttachment());
-        } else if (cases[i].requestStencil || cases[i].requestDepth) {
-            EXPECT_NE(trackingContext->stencilAttachment(), trackingContext->depthAttachment());
-        } else {
-            EXPECT_EQ(0u, trackingContext->stencilAttachment());
+        if (cases[i].requestDepth || cases[i].requestStencil) {
+            EXPECT_NE(0u, trackingContext->depthStencilAttachment());
             EXPECT_EQ(0u, trackingContext->depthAttachment());
+            EXPECT_EQ(0u, trackingContext->stencilAttachment());
+        } else {
+            EXPECT_EQ(0u, trackingContext->depthStencilAttachment());
+            EXPECT_EQ(0u, trackingContext->depthAttachment());
+            EXPECT_EQ(0u, trackingContext->stencilAttachment());
         }
 
         drawingBuffer->reset(IntSize(10, 20));
         EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
         EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);
         EXPECT_EQ(cases[i].expectedRenderBuffers, trackingContext->numAllocatedRenderBuffer());
-        if (cases[i].expectDepthStencil) {
-            EXPECT_EQ(trackingContext->stencilAttachment(), trackingContext->depthAttachment());
-        } else if (cases[i].requestStencil || cases[i].requestDepth) {
-            EXPECT_NE(trackingContext->stencilAttachment(), trackingContext->depthAttachment());
-        } else {
-            EXPECT_EQ(0u, trackingContext->stencilAttachment());
+        if (cases[i].requestDepth || cases[i].requestStencil) {
+            EXPECT_NE(0u, trackingContext->depthStencilAttachment());
             EXPECT_EQ(0u, trackingContext->depthAttachment());
+            EXPECT_EQ(0u, trackingContext->stencilAttachment());
+        } else {
+            EXPECT_EQ(0u, trackingContext->depthStencilAttachment());
+            EXPECT_EQ(0u, trackingContext->depthAttachment());
+            EXPECT_EQ(0u, trackingContext->stencilAttachment());
         }
 
         drawingBuffer->beginDestruction();

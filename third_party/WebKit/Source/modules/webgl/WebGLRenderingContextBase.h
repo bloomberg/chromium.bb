@@ -503,8 +503,6 @@ protected:
 
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*);
 
-    WebGLRenderbuffer* ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer*);
-
     virtual const WebGLSamplerState* getTextureUnitSamplerState(GLenum target, GLuint unit) const;
 
     // Structure for rendering to a DrawingBuffer, instead of directly

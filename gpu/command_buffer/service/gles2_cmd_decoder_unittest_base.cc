@@ -1297,10 +1297,23 @@ void GLES2DecoderTestBase::DoFramebufferRenderbuffer(
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
-      target, attachment, renderbuffer_target, renderbuffer_service_id))
-      .Times(1)
-      .RetiresOnSaturation();
+  if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+    EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+        target, GL_DEPTH_ATTACHMENT, renderbuffer_target,
+        renderbuffer_service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+        target, GL_STENCIL_ATTACHMENT, renderbuffer_target,
+        renderbuffer_service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+        target, attachment, renderbuffer_target, renderbuffer_service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(error))
       .RetiresOnSaturation();

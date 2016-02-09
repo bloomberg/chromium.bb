@@ -36,9 +36,6 @@ WebGLRenderbuffer* WebGLRenderbuffer::create(WebGLRenderingContextBase* ctx)
 
 WebGLRenderbuffer::~WebGLRenderbuffer()
 {
-    // This render buffer (heap) object must finalize itself.
-    m_emulatedStencilBuffer.clear();
-
     // See the comment in WebGLObject::detachAndDeleteObject().
     detachAndDeleteObject();
 }
@@ -57,20 +54,10 @@ void WebGLRenderbuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteRenderbuffer(m_object);
     m_object = 0;
-    deleteEmulatedStencilBuffer(context3d);
-}
-
-void WebGLRenderbuffer::deleteEmulatedStencilBuffer(WebGraphicsContext3D* context3d)
-{
-    if (!m_emulatedStencilBuffer)
-        return;
-    m_emulatedStencilBuffer->deleteObject(context3d);
-    m_emulatedStencilBuffer.clear();
 }
 
 DEFINE_TRACE(WebGLRenderbuffer)
 {
-    visitor->trace(m_emulatedStencilBuffer);
     WebGLSharedPlatform3DObject::trace(visitor);
 }
 
