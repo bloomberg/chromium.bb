@@ -14,7 +14,6 @@
 #include "core/page/Page.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
-#include "core/paint/LayerFixedPositionRecorder.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -90,8 +89,6 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(GraphicsContext& co
 
     if (m_paintLayer.paintsWithTransparency(paintingInfo.globalPaintFlags()))
         paintFlags |= PaintLayerHaveTransparency;
-
-    LayerFixedPositionRecorder fixedPositionRecorder(context, *m_paintLayer.layoutObject());
 
     // Transforms will be applied by property nodes directly for SPv2.
     // PaintLayerAppliedTransform is used in LayoutReplica, to avoid applying the transform twice.

@@ -168,10 +168,6 @@ public:
         EndTransform,
         BeginClipPath,
         EndClipPath,
-        BeginFixedPosition,
-        EndFixedPosition,
-        BeginFixedPositionContainer,
-        EndFixedPositionContainer,
 
         Subsequence,
         EndSubsequence,
