@@ -627,17 +627,6 @@ void ThreadState::willStartV8GC(BlinkGC::V8GCType gcType)
     // the major GC requests object grouping.
     if (gcType == BlinkGC::V8MajorGC)
         completeSweep();
-
-    // The fact that the PageNavigation GC is scheduled means that there is
-    // a dead frame. In common cases, a sequence of Oilpan's GC => V8 GC =>
-    // Oilpan's GC is needed to collect the dead frame. So we force the
-    // PageNavigation GC before running the V8 GC.
-    if (gcState() == PageNavigationGCScheduled) {
-#if PRINT_HEAP_STATS
-        dataLogF("Scheduled PageNavigationGC\n");
-#endif
-        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::PageNavigationGC);
-    }
 }
 
 void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
