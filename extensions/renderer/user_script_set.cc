@@ -109,15 +109,15 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
     return false;
 
   // Unpickle scripts.
-  size_t num_scripts = 0;
+  uint32_t num_scripts = 0;
   base::Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()),
                       pickle_size);
   base::PickleIterator iter(pickle);
-  CHECK(iter.ReadSizeT(&num_scripts));
+  CHECK(iter.ReadUInt32(&num_scripts));
 
   scripts_.clear();
   scripts_.reserve(num_scripts);
-  for (size_t i = 0; i < num_scripts; ++i) {
+  for (uint32_t i = 0; i < num_scripts; ++i) {
     scoped_ptr<UserScript> script(new UserScript());
     script->Unpickle(pickle, &iter);
 

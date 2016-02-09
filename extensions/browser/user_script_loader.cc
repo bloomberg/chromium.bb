@@ -279,7 +279,7 @@ void UserScriptLoader::StartLoad() {
 scoped_ptr<base::SharedMemory> UserScriptLoader::Serialize(
     const UserScriptList& scripts) {
   base::Pickle pickle;
-  pickle.WriteSizeT(scripts.size());
+  pickle.WriteUInt32(scripts.size());
   for (const UserScript& script : scripts) {
     // TODO(aa): This can be replaced by sending content script metadata to
     // renderers along with other extension data in ExtensionMsg_Loaded.

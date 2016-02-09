@@ -187,7 +187,7 @@ void ParamTraits<APIPermissionSet>::Write(base::Pickle* m,
                                           const param_type& p) {
   APIPermissionSet::const_iterator it = p.begin();
   const APIPermissionSet::const_iterator end = p.end();
-  WriteParam(m, p.size());
+  WriteParam(m, static_cast<uint32_t>(p.size()));
   for (; it != end; ++it) {
     WriteParam(m, it->id());
     it->Write(m);
@@ -197,10 +197,10 @@ void ParamTraits<APIPermissionSet>::Write(base::Pickle* m,
 bool ParamTraits<APIPermissionSet>::Read(const base::Pickle* m,
                                          base::PickleIterator* iter,
                                          param_type* r) {
-  size_t size;
+  uint32_t size;
   if (!ReadParam(m, iter, &size))
     return false;
-  for (size_t i = 0; i < size; ++i) {
+  for (uint32_t i = 0; i < size; ++i) {
     APIPermission::ID id;
     if (!ReadParam(m, iter, &id))
       return false;
@@ -225,7 +225,7 @@ void ParamTraits<ManifestPermissionSet>::Write(base::Pickle* m,
                                                const param_type& p) {
   ManifestPermissionSet::const_iterator it = p.begin();
   const ManifestPermissionSet::const_iterator end = p.end();
-  WriteParam(m, p.size());
+  WriteParam(m, static_cast<uint32_t>(p.size()));
   for (; it != end; ++it) {
     WriteParam(m, it->name());
     it->Write(m);
@@ -235,10 +235,10 @@ void ParamTraits<ManifestPermissionSet>::Write(base::Pickle* m,
 bool ParamTraits<ManifestPermissionSet>::Read(const base::Pickle* m,
                                               base::PickleIterator* iter,
                                               param_type* r) {
-  size_t size;
+  uint32_t size;
   if (!ReadParam(m, iter, &size))
     return false;
-  for (size_t i = 0; i < size; ++i) {
+  for (uint32_t i = 0; i < size; ++i) {
     std::string name;
     if (!ReadParam(m, iter, &name))
       return false;

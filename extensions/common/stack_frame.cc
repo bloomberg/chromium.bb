@@ -25,16 +25,15 @@ StackFrame::StackFrame(const StackFrame& frame)
       function(frame.function) {
 }
 
-StackFrame::StackFrame(size_t line_number,
-                       size_t column_number,
+StackFrame::StackFrame(uint32_t line_number,
+                       uint32_t column_number,
                        const base::string16& source,
                        const base::string16& function)
     : line_number(line_number),
       column_number(column_number),
       source(source),
       function(function.empty() ? base::UTF8ToUTF16(kAnonymousFunction)
-                   : function) {
-}
+                                : function) {}
 
 StackFrame::~StackFrame() {
 }

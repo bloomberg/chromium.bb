@@ -17,8 +17,8 @@ namespace extensions {
 struct StackFrame {
   StackFrame();
   StackFrame(const StackFrame& frame);
-  StackFrame(size_t line_number,
-             size_t column_number,
+  StackFrame(uint32_t line_number,
+             uint32_t column_number,
              const base::string16& source,
              const base::string16& function);
   ~StackFrame();
@@ -29,8 +29,8 @@ struct StackFrame {
 
   bool operator==(const StackFrame& rhs) const;
 
-  size_t line_number;
-  size_t column_number;
+  uint32_t line_number;
+  uint32_t column_number;
   base::string16 source;
   base::string16 function;  // optional
 };
