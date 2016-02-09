@@ -31,17 +31,18 @@ struct BootstrapData {
 void RemoteMessagePipeBootstrap::Create(
     NodeController* node_controller,
     ScopedPlatformHandle platform_handle,
-    const ports::PortRef& port) {
+    const ports::PortRef& port,
+    const base::Closure& callback) {
   if (node_controller->io_task_runner()->RunsTasksOnCurrentThread()) {
     // Owns itself.
-    new RemoteMessagePipeBootstrap(
-        node_controller, std::move(platform_handle), port);
+    new RemoteMessagePipeBootstrap(node_controller, std::move(platform_handle),
+                                   port, callback);
   } else {
     node_controller->io_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeBootstrap::Create,
                    base::Unretained(node_controller),
-                   base::Passed(&platform_handle), port));
+                   base::Passed(&platform_handle), port, callback));
   }
 }
 
@@ -55,9 +56,11 @@ RemoteMessagePipeBootstrap::~RemoteMessagePipeBootstrap() {
 RemoteMessagePipeBootstrap::RemoteMessagePipeBootstrap(
     NodeController* node_controller,
     ScopedPlatformHandle platform_handle,
-    const ports::PortRef& port)
+    const ports::PortRef& port,
+    const base::Closure& callback)
     : node_controller_(node_controller),
       local_port_(port),
+      callback_(callback),
       io_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       channel_(Channel::Create(this, std::move(platform_handle),
                                io_task_runner_)) {
@@ -116,14 +119,8 @@ void RemoteMessagePipeBootstrap::OnChannelMessage(
   }
 
   peer_info_received_ = true;
-
-  // We need to choose one side to initiate the port merge. It doesn't matter
-  // who does it as long as they don't both try. Simple solution: pick the one
-  // with the "smaller" port name.
-  if (local_port_.name() < data->port_name) {
-    node_controller_->node()->MergePorts(local_port_, data->node_name,
-                                         data->port_name);
-  }
+  node_controller_->ConnectToRemotePort(
+      local_port_, data->node_name, data->port_name, callback_);
 
   // Send another ping to the other end to trigger shutdown. This may race with
   // the other end sending its own ping, but it doesn't matter. Whoever wins

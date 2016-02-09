@@ -29,7 +29,8 @@ enum class MessageType : uint32_t {
   BROKER_CLIENT_ADDED,
   ACCEPT_BROKER_CLIENT,
   PORTS_MESSAGE,
-  REQUEST_PORT_MERGE,
+  REQUEST_PORT_CONNECTION,
+  CONNECT_TO_PORT,
   REQUEST_INTRODUCTION,
   INTRODUCE,
 #if defined(OS_WIN)
@@ -73,8 +74,13 @@ struct AcceptBrokerClientData {
 
 // This is followed by arbitrary payload data which is interpreted as a token
 // string for port location.
-struct RequestPortMergeData {
+struct RequestPortConnectionData {
   ports::PortName connector_port_name;
+};
+
+struct ConnectToPortData {
+  ports::PortName connector_port_name;
+  ports::PortName connectee_port_name;
 };
 
 // Used for both REQUEST_INTRODUCTION and INTRODUCE.
@@ -261,14 +267,25 @@ void NodeChannel::PortsMessage(Channel::MessagePtr message) {
   WriteChannelMessage(std::move(message));
 }
 
-void NodeChannel::RequestPortMerge(const ports::PortName& connector_port_name,
-                                   const std::string& token) {
-  RequestPortMergeData* data;
+void NodeChannel::RequestPortConnection(
+    const ports::PortName& connector_port_name,
+    const std::string& token) {
+  RequestPortConnectionData* data;
   Channel::MessagePtr message = CreateMessage(
-      MessageType::REQUEST_PORT_MERGE,
-      sizeof(RequestPortMergeData) + token.size(), 0, &data);
+      MessageType::REQUEST_PORT_CONNECTION,
+      sizeof(RequestPortConnectionData) + token.size(), 0, &data);
   data->connector_port_name = connector_port_name;
   memcpy(data + 1, token.data(), token.size());
+  WriteChannelMessage(std::move(message));
+}
+
+void NodeChannel::ConnectToPort(const ports::PortName& connector_port_name,
+                                const ports::PortName& connectee_port_name) {
+  ConnectToPortData* data;
+  Channel::MessagePtr message = CreateMessage(
+      MessageType::CONNECT_TO_PORT, sizeof(ConnectToPortData), 0, &data);
+  data->connector_port_name = connector_port_name;
+  data->connectee_port_name = connectee_port_name;
   WriteChannelMessage(std::move(message));
 }
 
@@ -435,16 +452,24 @@ void NodeChannel::OnChannelMessage(const void* payload,
       break;
     }
 
-    case MessageType::REQUEST_PORT_MERGE: {
-      const RequestPortMergeData* data;
+    case MessageType::REQUEST_PORT_CONNECTION: {
+      const RequestPortConnectionData* data;
       GetMessagePayload(payload, &data);
 
       const char* token_data = reinterpret_cast<const char*>(data + 1);
       const size_t token_size = payload_size - sizeof(*data) - sizeof(Header);
       std::string token(token_data, token_size);
 
-      delegate_->OnRequestPortMerge(remote_node_name_,
-                                    data->connector_port_name, token);
+      delegate_->OnRequestPortConnection(remote_node_name_,
+                                         data->connector_port_name, token);
+      break;
+    }
+
+    case MessageType::CONNECT_TO_PORT: {
+      const ConnectToPortData* data;
+      GetMessagePayload(payload, &data);
+      delegate_->OnConnectToPort(remote_node_name_, data->connector_port_name,
+                                 data->connectee_port_name);
       break;
     }
 

@@ -82,13 +82,42 @@ class NodeController : public ports::NodeDelegate,
   int SendMessage(const ports::PortRef& port_ref,
                   scoped_ptr<PortsMessage>* message);
 
-  // Reserves a local port |port| associated with |token|. A peer holding a copy
-  // of |token| can merge one of its own ports into this one.
-  void ReservePort(const std::string& token, const ports::PortRef& port);
+  using ReservePortCallback = base::Callback<void(const ports::PortRef& port)>;
 
-  // Merges a local port |port| into a port reserved by |token| in the parent.
-  void MergePortIntoParent(const std::string& token,
-                           const ports::PortRef& port);
+  // Reserves a port associated with |token|. A peer may associate one of their
+  // own ports with this one by sending us a RequestPortConnection message with
+  // the same token value.
+  //
+  // Note that the reservation is made synchronously. In order to avoid races,
+  // reservations should be acquired before |token| is communicated to any
+  // potential peer.
+  //
+  // |callback| must be runnable on any thread and will be run with a reference
+  // to the new local port once connected.
+  void ReservePort(const std::string& token,
+                   const ReservePortCallback& callback);
+
+  // Eventually initializes a local port with a parent port peer identified by
+  // |token|. The parent should also have |token| and should alrady have
+  // reserved a port for it. |callback| must be runnable on any thread and will
+  // be run if and when the local port is connected.
+  void ConnectToParentPort(const ports::PortRef& local_port,
+                           const std::string& token,
+                           const base::Closure& callback);
+
+  // Connects two reserved ports to each other. Useful when two independent
+  // systems in the same (parent) process need to establish a port pair without
+  // any direct knowledge of each other.
+  void ConnectReservedPorts(const std::string& token1,
+                            const std::string& token2);
+
+  // Connects a local port to a port on a remote node. Note that a connection to
+  // the remote node need not be established yet. The port will be connected
+  // ASAP, at which point |callback| will be run.
+  void ConnectToRemotePort(const ports::PortRef& local_port,
+                           const ports::NodeName& remote_node_name,
+                           const ports::PortName& remote_port_name,
+                           const base::Closure& callback);
 
   // Creates a new shared buffer for use in the current process.
   scoped_refptr<PlatformSharedBuffer> CreateSharedBuffer(size_t num_bytes);
@@ -109,9 +138,44 @@ class NodeController : public ports::NodeDelegate,
                                      scoped_refptr<NodeChannel>>;
   using OutgoingMessageQueue = std::queue<Channel::MessagePtr>;
 
+  // Tracks a pending token-based connection to a parent port.
+  struct PendingPortRequest {
+    PendingPortRequest();
+    ~PendingPortRequest();
+
+    std::string token;
+    ports::PortRef local_port;
+    base::Closure callback;
+  };
+
+  // Tracks a reserved port.
+  struct ReservedPort {
+    ReservedPort();
+    ~ReservedPort();
+
+    ports::PortRef local_port;
+    ReservePortCallback callback;
+  };
+
+  // Tracks a pending connection to a remote port on any peer.
+  struct PendingRemotePortConnection {
+    PendingRemotePortConnection();
+    ~PendingRemotePortConnection();
+
+    ports::PortRef local_port;
+    ports::NodeName remote_node_name;
+    ports::PortName remote_port_name;
+    base::Closure callback;
+  };
+
   void ConnectToChildOnIOThread(base::ProcessHandle process_handle,
                                 ScopedPlatformHandle platform_handle);
   void ConnectToParentOnIOThread(ScopedPlatformHandle platform_handle);
+  void RequestParentPortConnectionOnIOThread(const ports::PortRef& local_port,
+                                             const std::string& token,
+                                             const base::Closure& callback);
+  void ConnectToRemotePortOnIOThread(
+      const PendingRemotePortConnection& connection);
 
   scoped_refptr<NodeChannel> GetPeerChannel(const ports::NodeName& name);
   scoped_refptr<NodeChannel> GetParentChannel();
@@ -151,9 +215,12 @@ class NodeController : public ports::NodeDelegate,
                             const ports::NodeName& broker_name,
                             ScopedPlatformHandle broker_channel) override;
   void OnPortsMessage(Channel::MessagePtr message) override;
-  void OnRequestPortMerge(const ports::NodeName& from_node,
-                          const ports::PortName& connector_port_name,
-                          const std::string& token) override;
+  void OnRequestPortConnection(const ports::NodeName& from_node,
+                               const ports::PortName& connector_port_name,
+                               const std::string& token) override;
+  void OnConnectToPort(const ports::NodeName& from_node,
+                       const ports::PortName& connector_port_name,
+                       const ports::PortName& connectee_port_name) override;
   void OnRequestIntroduction(const ports::NodeName& from_node,
                              const ports::NodeName& name) override;
   void OnIntroduce(const ports::NodeName& from_node,
@@ -197,13 +264,7 @@ class NodeController : public ports::NodeDelegate,
   base::Lock reserved_ports_lock_;
 
   // Ports reserved by token.
-  base::hash_map<std::string, ports::PortRef> reserved_ports_;
-
-  // Guards |pending_port_merges_|.
-  base::Lock pending_port_merges_lock_;
-
-  // A set of port merge requests awaiting parent connection.
-  std::vector<std::pair<std::string, ports::PortRef>> pending_port_merges_;
+  base::hash_map<std::string, ReservedPort> reserved_ports_;
 
   // Guards |parent_name_| and |bootstrap_parent_channel_|.
   base::Lock parent_lock_;
@@ -245,6 +306,17 @@ class NodeController : public ports::NodeDelegate,
 
   // Channels to children during handshake.
   NodeMap pending_children_;
+
+  // Port connection requests which have been deferred until we have a parent.
+  std::vector<PendingPortRequest> pending_port_requests_;
+
+  // Port connection requests awaiting a response from the parent.
+  std::unordered_map<ports::PortName, base::Closure>
+      pending_parent_port_connections_;
+
+  // Port connections pending the availability of a remote peer node.
+  std::unordered_map<ports::NodeName, std::vector<PendingRemotePortConnection>>
+      pending_remote_port_connections_;
 
   // Indicates whether this object should delete itself on IO thread shutdown.
   // Must only be accessed from the IO thread.

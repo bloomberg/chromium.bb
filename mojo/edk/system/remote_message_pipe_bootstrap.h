@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -27,20 +28,17 @@ class NodeController;
 //
 // The bootstrapping procedure the same on either end:
 //
-//   1. Select a local port P to be merged with a remote port.
+//   1. Create a local port P.
 //   2. Write the local node name and P's name to the bootstrap pipe.
 //   3. When a message is read from the pipe:
 //      - If it's the first message read, extract the remote node+port name and
-//        and send an empty ACK message on the pipe.
+//        initialize the local port. Send an empty ACK message on the pipe.
 //      - If it's the second message read, close the channel, and delete |this|.
 //   4. When an error occus on the pipe, delete |this|.
 //
 // Excluding irrecoverable error conditions such as either process dying,
 // armageddon, etc., this ensures neither end closes the channel until both ends
-// are aware of each other's port-to-merge.
-//
-// At step 3, one side of the channel is chosen to issue a message at the Ports
-// layer which eventually merges the two ports.
+// have intiailized their corresponding local port.
 class RemoteMessagePipeBootstrap
     : public Channel::Delegate,
       public base::MessageLoop::DestructionObserver {
@@ -50,18 +48,22 @@ class RemoteMessagePipeBootstrap
   // |port| must be a reference to an uninitialized local port.
   static void Create(NodeController* node_controller,
                      ScopedPlatformHandle platform_handle,
-                     const ports::PortRef& port);
+                     const ports::PortRef& port,
+                     const base::Closure& callback);
 
  protected:
-  explicit RemoteMessagePipeBootstrap(NodeController* node_controller,
-                                      ScopedPlatformHandle platform_handle,
-                                      const ports::PortRef& port);
+  explicit RemoteMessagePipeBootstrap(
+      NodeController* node_controller,
+      ScopedPlatformHandle platform_handle,
+      const ports::PortRef& port,
+      const base::Closure& callback);
 
   void ShutDown();
 
   bool shutting_down_ = false;
   NodeController* node_controller_;
   const ports::PortRef local_port_;
+  base::Closure callback_;
 
   scoped_refptr<base::TaskRunner> io_task_runner_;
   scoped_refptr<Channel> channel_;

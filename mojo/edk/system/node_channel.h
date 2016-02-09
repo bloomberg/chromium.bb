@@ -44,9 +44,14 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                                       const ports::NodeName& broker_name,
                                       ScopedPlatformHandle broker_channel) = 0;
     virtual void OnPortsMessage(Channel::MessagePtr message) = 0;
-    virtual void OnRequestPortMerge(const ports::NodeName& from_node,
-                                    const ports::PortName& connector_port_name,
-                                    const std::string& token) = 0;
+    virtual void OnRequestPortConnection(
+        const ports::NodeName& from_node,
+        const ports::PortName& connector_port_name,
+        const std::string& token) = 0;
+    virtual void OnConnectToPort(
+        const ports::NodeName& from_node,
+        const ports::PortName& connector_port_name,
+        const ports::PortName& connectee_port_name) = 0;
     virtual void OnRequestIntroduction(const ports::NodeName& from_node,
                                        const ports::NodeName& name) = 0;
     virtual void OnIntroduce(const ports::NodeName& from_node,
@@ -98,8 +103,10 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void AcceptBrokerClient(const ports::NodeName& broker_name,
                           ScopedPlatformHandle broker_channel);
   void PortsMessage(Channel::MessagePtr message);
-  void RequestPortMerge(const ports::PortName& connector_port_name,
-                         const std::string& token);
+  void RequestPortConnection(const ports::PortName& connector_port_name,
+                             const std::string& token);
+  void ConnectToPort(const ports::PortName& connector_port_name,
+                     const ports::PortName& connectee_port_name);
   void RequestIntroduction(const ports::NodeName& name);
   void Introduce(const ports::NodeName& name,
                  ScopedPlatformHandle channel_handle);

@@ -35,24 +35,55 @@
 namespace mojo {
 namespace shell {
 
+ChildProcessHost::PipeHolder::PipeHolder() {}
+
+void ChildProcessHost::PipeHolder::Reject() {
+  base::AutoLock lock(lock_);
+  reject_pipe_ = true;
+  pipe_.reset();
+}
+
+void ChildProcessHost::PipeHolder::SetPipe(ScopedMessagePipeHandle pipe) {
+  base::AutoLock lock(lock_);
+  DCHECK(!pipe_.is_valid());
+  if (!reject_pipe_)
+    pipe_ = std::move(pipe);
+}
+
+ScopedMessagePipeHandle ChildProcessHost::PipeHolder::PassPipe() {
+  base::AutoLock lock(lock_);
+  DCHECK(pipe_.is_valid());
+  return std::move(pipe_);
+}
+
+ChildProcessHost::PipeHolder::~PipeHolder() {}
+
 ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
                                    bool start_sandboxed,
                                    const base::FilePath& app_path)
     : launch_process_runner_(launch_process_runner),
       start_sandboxed_(start_sandboxed),
       app_path_(app_path),
+      channel_info_(nullptr),
       start_child_process_event_(false, false),
       weak_factory_(this) {
-  node_channel_.reset(new edk::PlatformChannelPair);
-  primordial_pipe_token_ = edk::GenerateRandomToken();
-  controller_.Bind(
-      InterfacePtrInfo<mojom::ChildController>(
-          edk::CreateParentMessagePipe(primordial_pipe_token_), 0u));
+  pipe_holder_ = new PipeHolder();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+    node_channel_.reset(new edk::PlatformChannelPair);
+    primordial_pipe_token_ = edk::GenerateRandomToken();
+  } else {
+    pipe_holder_->SetPipe(embedder::CreateChannel(
+        platform_channel_pair_.PassServerHandle(),
+        base::Bind(&ChildProcessHost::DidCreateChannel, base::Unretained(this)),
+        base::ThreadTaskRunnerHandle::Get()));
+    OnMessagePipeCreated();
+  }
 }
 
 ChildProcessHost::ChildProcessHost(ScopedHandle channel)
     : launch_process_runner_(nullptr),
       start_sandboxed_(false),
+      channel_info_(nullptr),
       start_child_process_event_(false, false),
       weak_factory_(this) {
   CHECK(channel.is_valid());
@@ -68,11 +99,40 @@ ChildProcessHost::~ChildProcessHost() {
 
 void ChildProcessHost::Start(const ProcessReadyCallback& callback) {
   DCHECK(!child_process_.IsValid());
+  DCHECK(process_ready_callback_.is_null());
+
+  process_ready_callback_ = callback;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+    // With the new EDK, bootstrap message pipes are created asynchronously.
+    // We recieve the bound pipe (if successful) on an arbitrary thread,
+    // stash it in the thread-safe |pipe_holder_|, and then try to call
+    // OnMessagePipeCreated() on the host's main thread.
+    //
+    // Because of the way the launcher process shuts down, it's possible for
+    // the main thread's MessageLoop to stop running (but not yet be destroyed!)
+    // while this boostrap is pending, resulting in OnMessagePipeCreated() never
+    // being called.
+    //
+    // A typical child process (i.e. one using ShellConnection to bind the other
+    // end of this pipe) may hang forever waiting for an Initialize() message
+    // unless the pipe is closed. This in turn means that Join() could hang
+    // waiting for the process to exit. Deadlock!
+    //
+    // |pipe_holder_| exists for this reason. If it's still holding onto the
+    // pipe when Join() is called, the pipe will be closed.
+    DCHECK(!primordial_pipe_token_.empty());
+    edk::CreateParentMessagePipe(
+        primordial_pipe_token_,
+        base::Bind(&OnParentMessagePipeCreated, pipe_holder_,
+                   base::ThreadTaskRunnerHandle::Get(),
+                   base::Bind(&ChildProcessHost::OnMessagePipeCreated,
+                              weak_factory_.GetWeakPtr())));
+  }
+
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ChildProcessHost::DoLaunch, base::Unretained(this)),
-      base::Bind(&ChildProcessHost::DidStart,
-                 weak_factory_.GetWeakPtr(), callback));
+      base::Bind(&ChildProcessHost::DidStart, weak_factory_.GetWeakPtr()));
 }
 
 int ChildProcessHost::Join() {
@@ -81,6 +141,10 @@ int ChildProcessHost::Join() {
 
   controller_ = mojom::ChildControllerPtr();
   DCHECK(child_process_.IsValid());
+
+  // Ensure the child pipe is closed even if it wasn't yet connected to the
+  // controller.
+  pipe_holder_->Reject();
 
   int rv = -1;
   LOG_IF(ERROR, !child_process_.WaitForExit(&rv))
@@ -108,11 +172,11 @@ void ChildProcessHost::ExitNow(int32_t exit_code) {
   controller_->ExitNow(exit_code);
 }
 
-void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
+void ChildProcessHost::DidStart() {
   DVLOG(2) << "ChildProcessHost::DidStart()";
 
   if (child_process_.IsValid()) {
-    callback.Run(child_process_.Pid());
+    MaybeNotifyProcessReady();
   } else {
     LOG(ERROR) << "Failed to start child process";
     AppCompleted(MOJO_RESULT_UNKNOWN);
@@ -212,6 +276,35 @@ void ChildProcessHost::AppCompleted(int32_t result) {
     on_app_complete_.reset();
     on_app_complete.Run(result);
   }
+}
+
+void ChildProcessHost::DidCreateChannel(embedder::ChannelInfo* channel_info) {
+  DVLOG(2) << "AppChildProcessHost::DidCreateChannel()";
+
+  DCHECK(channel_info ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"));
+  channel_info_ = channel_info;
+}
+
+void ChildProcessHost::OnMessagePipeCreated() {
+  controller_.Bind(
+      InterfacePtrInfo<mojom::ChildController>(pipe_holder_->PassPipe(), 0u));
+  MaybeNotifyProcessReady();
+}
+
+void ChildProcessHost::MaybeNotifyProcessReady() {
+  if (controller_.is_bound() && child_process_.IsValid())
+    process_ready_callback_.Run(child_process_.Pid());
+}
+
+// static
+void ChildProcessHost::OnParentMessagePipeCreated(
+    scoped_refptr<PipeHolder> holder,
+    scoped_refptr<base::TaskRunner> callback_task_runner,
+    const base::Closure& callback,
+    ScopedMessagePipeHandle pipe) {
+  holder->SetPipe(std::move(pipe));
+  callback_task_runner->PostTask(FROM_HERE, callback);
 }
 
 }  // namespace shell
