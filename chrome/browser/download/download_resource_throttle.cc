@@ -54,11 +54,13 @@ void CanDownloadOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_ANDROID)
   content::WebContents* contents = info->web_contents_getter.Run();
-  if (!contents)
+  if (contents) {
+    content::DownloadControllerAndroid::Get()->AcquireFileAccessPermission(
+        contents, base::Bind(&OnAcquireFileAccessPermissionDone,
+                             base::Passed(std::move(info))));
+  } else {
     OnAcquireFileAccessPermissionDone(std::move(info), false);
-  content::DownloadControllerAndroid::Get()->AcquireFileAccessPermission(
-      contents, base::Bind(&OnAcquireFileAccessPermissionDone,
-                           base::Passed(std::move(info))));
+  }
 #else
   CanDownload(std::move(info));
 #endif
