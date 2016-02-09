@@ -1282,10 +1282,12 @@ static bool CheckWebm(const uint8_t* buffer, int buffer_size) {
 
       case 0x4282:  // EBMLDocType
         // Need to see "webm" or "matroska" next.
+        RCHECK(reader.bits_available() >= 32);
         switch (ReadBits(&reader, 32)) {
           case TAG('w', 'e', 'b', 'm') :
             return true;
           case TAG('m', 'a', 't', 'r') :
+            RCHECK(reader.bits_available() >= 32);
             return (ReadBits(&reader, 32) == TAG('o', 's', 'k', 'a'));
         }
         return false;
