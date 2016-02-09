@@ -428,15 +428,30 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
 
   std::string crash_type(url.path());
   if (crash_type == kHeapOverflow) {
+    LOG(ERROR)
+        << "Intentionally causing ASAN heap overflow"
+        << " because user navigated to " << url.spec();
     base::debug::AsanHeapOverflow();
   } else if (crash_type == kHeapUnderflow) {
+    LOG(ERROR)
+        << "Intentionally causing ASAN heap underflow"
+        << " because user navigated to " << url.spec();
     base::debug::AsanHeapUnderflow();
   } else if (crash_type == kUseAfterFree) {
+    LOG(ERROR)
+        << "Intentionally causing ASAN heap use-after-free"
+        << " because user navigated to " << url.spec();
     base::debug::AsanHeapUseAfterFree();
 #if defined(SYZYASAN)
   } else if (crash_type == kCorruptHeapBlock) {
+    LOG(ERROR)
+        << "Intentionally causing ASAN corrupt heap block"
+        << " because user navigated to " << url.spec();
     base::debug::AsanCorruptHeapBlock();
   } else if (crash_type == kCorruptHeap) {
+    LOG(ERROR)
+        << "Intentionally causing ASAN corrupt heap"
+        << " because user navigated to " << url.spec();
     base::debug::AsanCorruptHeap();
 #endif
   }
@@ -447,8 +462,13 @@ void MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(kChromeUIScheme))
     return;
   if (url == GURL(kChromeUIBadCastCrashURL)) {
+    LOG(ERROR)
+        << "Intentionally crashing (with bad cast)"
+        << " because user navigated to " << url.spec();
     BadCastCrashIntentionally();
   } else if (url == GURL(kChromeUICrashURL)) {
+    LOG(ERROR) << "Intentionally crashing (with null pointer dereference)"
+               << " because user navigated to " << url.spec();
     CrashIntentionally();
   } else if (url == GURL(kChromeUIDumpURL)) {
     // This URL will only correctly create a crash dump file if content is
@@ -457,12 +477,18 @@ void MaybeHandleDebugURL(const GURL& url) {
     // of base::debug::DumpWithoutCrashing for more details.
     base::debug::DumpWithoutCrashing();
   } else if (url == GURL(kChromeUIKillURL)) {
+    LOG(ERROR) << "Intentionally issuing kill signal to current process"
+               << " because user navigated to " << url.spec();
     base::Process::Current().Terminate(1, false);
   } else if (url == GURL(kChromeUIHangURL)) {
+    LOG(ERROR) << "Intentionally hanging ourselves with sleep infinite loop"
+               << " because user navigated to " << url.spec();
     for (;;) {
       base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
     }
   } else if (url == GURL(kChromeUIShorthangURL)) {
+    LOG(ERROR) << "Intentionally sleeping renderer for 20 seconds"
+               << " because user navigated to " << url.spec();
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
   }
 
