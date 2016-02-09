@@ -1824,7 +1824,8 @@ int KernelProxy::socketpair(int domain, int type, int protocol, int* sv) {
     return -1;
   }
 
-  if (SOCK_STREAM != type) {
+  // TODO(cernekee): mask this off with SOCK_TYPE_MASK first.
+  if (SOCK_STREAM != type && SOCK_DGRAM != type) {
     errno = EPROTOTYPE;
     return -1;
   }
@@ -1850,7 +1851,7 @@ int KernelProxy::socketpair(int domain, int type, int protocol, int* sv) {
   }
 #endif
 
-  UnixNode* socket = new UnixNode(stream_fs_.get());
+  UnixNode* socket = new UnixNode(stream_fs_.get(), type);
   Error rtn = socket->Init(O_RDWR);
   if (rtn != 0) {
     errno = rtn;

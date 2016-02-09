@@ -256,7 +256,7 @@ TEST_F(SocketTest, SocketpairUnsupported) {
   EXPECT_EQ(errno, EOPNOTSUPP);
   EXPECT_LT(ki_socketpair(AF_INET6, SOCK_STREAM, 0, sv), 0);
   EXPECT_EQ(errno, EOPNOTSUPP);
-  EXPECT_LT(ki_socketpair(AF_UNIX, SOCK_DGRAM, 0, sv), 0);
+  EXPECT_LT(ki_socketpair(AF_UNIX, SOCK_RAW, 0, sv), 0);
   EXPECT_EQ(errno, EPROTOTYPE);
   EXPECT_LT(ki_socketpair(AF_MAX, SOCK_STREAM, 0, sv), 0);
   EXPECT_EQ(errno, EAFNOSUPPORT);
@@ -296,9 +296,15 @@ TEST_F(UnixSocketTest, Socketpair) {
   EXPECT_EQ(0, errno);
   EXPECT_LE(0, sv_[0]);
   EXPECT_LE(0, sv_[1]);
+
+  errno = 0;
+  EXPECT_EQ(0, ki_socketpair(AF_UNIX, SOCK_DGRAM, 0, sv_));
+  EXPECT_EQ(0, errno);
+  EXPECT_LE(0, sv_[0]);
+  EXPECT_LE(0, sv_[1]);
 }
 
-TEST_F(UnixSocketTest, SendRecv) {
+TEST_F(UnixSocketTest, SendRecvStream) {
   char outbuf[256];
   char inbuf[512];
 
@@ -318,7 +324,7 @@ TEST_F(UnixSocketTest, SendRecv) {
 
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 
-  // A reader should block after to read at this point.
+  // A reader should block after trying to read at this point.
   EXPECT_EQ(-1, ki_recv(sv_[1], inbuf, sizeof(inbuf), MSG_DONTWAIT));
   EXPECT_EQ(EAGAIN, errno);
 
@@ -338,10 +344,74 @@ TEST_F(UnixSocketTest, SendRecv) {
   EXPECT_EQ(EAGAIN, errno);
 }
 
-TEST_F(UnixSocketTest, RecvNonBlocking) {
+TEST_F(UnixSocketTest, RecvNonBlockingStream) {
   char buf[128];
 
   EXPECT_EQ(0, ki_socketpair(AF_UNIX, SOCK_STREAM, 0, sv_));
+
+  EXPECT_EQ(-1, ki_recv(sv_[0], buf, sizeof(buf), MSG_DONTWAIT));
+  EXPECT_EQ(EAGAIN, errno);
+
+  struct pollfd pollfd = {sv_[0], POLLIN | POLLOUT, 0};
+  EXPECT_EQ(1, ki_poll(&pollfd, 1, 0));
+  EXPECT_EQ(POLLOUT, pollfd.revents & POLLOUT);
+  EXPECT_NE(POLLIN, pollfd.revents & POLLIN);
+}
+
+TEST_F(UnixSocketTest, SendRecvDgram) {
+  char outbuf1[256];
+  char outbuf2[128];
+  char inbuf[512];
+
+  memset(outbuf1, 0xA4, sizeof(outbuf1));
+  memset(outbuf2, 0xA5, sizeof(outbuf2));
+  memset(inbuf, 0x3C, sizeof(inbuf));
+
+  EXPECT_EQ(0, ki_socketpair(AF_UNIX, SOCK_DGRAM, 0, sv_));
+
+  int len1 = ki_send(sv_[0], outbuf1, sizeof(outbuf1), /* flags */ 0);
+  EXPECT_EQ(sizeof(outbuf1), len1);
+
+  // The buffers should be different.
+  EXPECT_NE(0, memcmp(outbuf1, inbuf, sizeof(outbuf1)));
+
+  int len2 = ki_send(sv_[0], outbuf2, sizeof(outbuf2), /* flags */ 0);
+  EXPECT_EQ(sizeof(outbuf2), len2);
+
+  // Make sure the datagram boundaries are respected.
+  len1 = ki_recv(sv_[1], inbuf, sizeof(inbuf), /* flags */ 0);
+  EXPECT_EQ(sizeof(outbuf1), len1);
+  EXPECT_EQ(0, memcmp(outbuf1, inbuf, sizeof(outbuf1)));
+
+  len2 = ki_recv(sv_[1], inbuf, sizeof(inbuf), /* flags */ 0);
+  EXPECT_EQ(sizeof(outbuf2), len2);
+  EXPECT_EQ(0, memcmp(outbuf2, inbuf, sizeof(outbuf2)));
+
+  // A reader should block after trying to read at this point.
+  EXPECT_EQ(-1, ki_recv(sv_[1], inbuf, sizeof(inbuf), MSG_DONTWAIT));
+  EXPECT_EQ(EAGAIN, errno);
+
+  // Send a datagram larger than the recv buffer, and check for overflow.
+  memset(inbuf, 0x3C, sizeof(inbuf));
+  EXPECT_NE(0, memcmp(outbuf1, inbuf, sizeof(outbuf1)));
+  len1 = ki_send(sv_[1], outbuf1, sizeof(outbuf1), /* flags */ 0);
+  EXPECT_EQ(sizeof(outbuf1), len1);
+
+  len2 = ki_recv(sv_[0], inbuf, 16, /* flags */ 0);
+  EXPECT_EQ(16, len2);
+  EXPECT_EQ(0, memcmp(outbuf1, inbuf, 16));
+  EXPECT_EQ(0x3C, inbuf[16]);
+
+  // Verify that the remainder of the packet was discarded, and there
+  // is nothing left to receive.
+  EXPECT_EQ(-1, ki_recv(sv_[0], inbuf, sizeof(inbuf), MSG_DONTWAIT));
+  EXPECT_EQ(EAGAIN, errno);
+}
+
+TEST_F(UnixSocketTest, RecvNonBlockingDgram) {
+  char buf[128];
+
+  EXPECT_EQ(0, ki_socketpair(AF_UNIX, SOCK_DGRAM, 0, sv_));
 
   EXPECT_EQ(-1, ki_recv(sv_[0], buf, sizeof(buf), MSG_DONTWAIT));
   EXPECT_EQ(EAGAIN, errno);

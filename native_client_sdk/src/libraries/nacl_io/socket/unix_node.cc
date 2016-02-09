@@ -14,9 +14,9 @@
 
 namespace nacl_io {
 
-UnixNode::UnixNode(Filesystem* filesystem)
+UnixNode::UnixNode(Filesystem* filesystem, int type)
     : SocketNode(SOCK_STREAM, filesystem),
-      emitter_(UnixEventEmitter::MakeUnixEventEmitter(65536)) {
+      emitter_(UnixEventEmitter::MakeUnixEventEmitter(65536, type)) {
   emitter_->AttachStream(this);
 }
 

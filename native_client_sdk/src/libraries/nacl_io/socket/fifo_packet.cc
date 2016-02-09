@@ -68,4 +68,28 @@ void FIFOPacket::WritePacket(Packet* packet) {
   packets_.push_front(packet);
 }
 
+size_t FIFOPacket::Read(void* buf, size_t len) {
+  Packet* packet = ReadPacket();
+  if (!packet)
+    return 0;
+
+  size_t bytes = packet->len();
+  if (bytes > len)
+    bytes = len;
+  memcpy(buf, packet->buffer(), bytes);
+
+  delete packet;
+  return bytes;
+}
+
+size_t FIFOPacket::Write(const void* buf, size_t len) {
+  if (len > WriteAvailable())
+    return 0;
+
+  Packet* packet = new Packet(NULL);
+  packet->Copy(buf, len, 0);
+  WritePacket(packet);
+  return len;
+}
+
 }  // namespace nacl_io

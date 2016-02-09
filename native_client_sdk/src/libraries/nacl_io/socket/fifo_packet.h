@@ -5,6 +5,7 @@
 #ifndef LIBRARIES_NACL_IO_FIFO_PACKET_H_
 #define LIBRARIES_NACL_IO_FIFO_PACKET_H_
 
+#include <stdint.h>
 #include <string.h>
 
 #include <list>
@@ -44,6 +45,12 @@ class FIFOPacket : public FIFOInterface {
 
   // Take ownership of packet and place it in the FIFO.
   void WritePacket(Packet* packet);
+
+  // Read out the top packet into a byte buffer.
+  size_t Read(void* buf, size_t len);
+
+  // Enqueue a new packet from a byte buffer.
+  size_t Write(const void* buf, size_t len);
 
  private:
   std::list<Packet*> packets_;

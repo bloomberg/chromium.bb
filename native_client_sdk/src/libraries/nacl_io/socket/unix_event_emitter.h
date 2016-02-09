@@ -5,7 +5,7 @@
 #ifndef LIBRARIES_NACL_IO_SOCKET_UNIX_EVENT_EMITTER_H_
 #define LIBRARIES_NACL_IO_SOCKET_UNIX_EVENT_EMITTER_H_
 
-#include "nacl_io/fifo_char.h"
+#include "nacl_io/fifo_interface.h"
 #include "nacl_io/stream/stream_event_emitter.h"
 
 #include "sdk_util/macros.h"
@@ -29,17 +29,15 @@ class UnixEventEmitter : public StreamEventEmitter {
 
   virtual ScopedUnixEventEmitter GetPeerEmitter() = 0;
 
-  static ScopedUnixEventEmitter MakeUnixEventEmitter(size_t size);
+  static ScopedUnixEventEmitter MakeUnixEventEmitter(size_t size, int type);
 
  protected:
   UnixEventEmitter() {}
 
   // Probably only need the master's lock.
   virtual const sdk_util::SimpleLock& GetFifoLock() = 0;
-  virtual FIFOInterface* in_fifo() { return in_fifoc(); }
-  virtual FIFOInterface* out_fifo() { return out_fifoc(); }
-  virtual FIFOChar* in_fifoc() = 0;
-  virtual FIFOChar* out_fifoc() = 0;
+  virtual FIFOInterface* in_fifo() = 0;
+  virtual FIFOInterface* out_fifo() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UnixEventEmitter);

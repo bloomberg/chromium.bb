@@ -5,8 +5,10 @@
 #include "nacl_io/socket/unix_event_emitter.h"
 
 #include <stdlib.h>
+#include <sys/socket.h>
 
 #include "nacl_io/fifo_char.h"
+#include "nacl_io/socket/fifo_packet.h"
 #include "sdk_util/scoped_ref.h"
 
 namespace nacl_io {
@@ -19,24 +21,33 @@ typedef sdk_util::ScopedRef<UnixMasterEventEmitter>
 
 class UnixMasterEventEmitter : public UnixEventEmitter {
  public:
-  explicit UnixMasterEventEmitter(size_t size)
-      : in_fifo_(size),
-        out_fifo_(size),
-        child_emitter_created_(false),
-        child_emitter_(NULL) {
+  explicit UnixMasterEventEmitter(size_t size, int type)
+      : child_emitter_created_(false), child_emitter_(NULL) {
+    if (type == SOCK_STREAM) {
+      in_fifo_ = new FIFOChar(size);
+      out_fifo_ = new FIFOChar(size);
+    } else {
+      in_fifo_ = new FIFOPacket(size);
+      out_fifo_ = new FIFOPacket(size);
+    }
     UpdateStatus_Locked();
+  }
+
+  ~UnixMasterEventEmitter() {
+    delete in_fifo_;
+    delete out_fifo_;
   }
 
   virtual ScopedUnixEventEmitter GetPeerEmitter();
 
  protected:
-  virtual FIFOChar* in_fifoc() { return &in_fifo_; }
-  virtual FIFOChar* out_fifoc() { return &out_fifo_; }
+  virtual FIFOInterface* in_fifo() { return in_fifo_; }
+  virtual FIFOInterface* out_fifo() { return out_fifo_; }
   virtual const sdk_util::SimpleLock& GetFifoLock() { return fifo_lock_; }
 
  private:
-  FIFOChar in_fifo_;
-  FIFOChar out_fifo_;
+  FIFOInterface* in_fifo_;
+  FIFOInterface* out_fifo_;
   sdk_util::SimpleLock fifo_lock_;
   bool child_emitter_created_;
   UnixChildEventEmitter* child_emitter_;
@@ -55,8 +66,8 @@ class UnixChildEventEmitter : public UnixEventEmitter {
  protected:
   virtual void Destroy() { parent_emitter_->child_emitter_ = NULL; }
 
-  virtual FIFOChar* in_fifoc() { return parent_emitter_->out_fifoc(); }
-  virtual FIFOChar* out_fifoc() { return parent_emitter_->in_fifoc(); }
+  virtual FIFOInterface* in_fifo() { return parent_emitter_->out_fifo(); }
+  virtual FIFOInterface* out_fifo() { return parent_emitter_->in_fifo(); }
   virtual const sdk_util::SimpleLock& GetFifoLock() {
     return parent_emitter_->GetFifoLock();
   }
@@ -75,7 +86,7 @@ ScopedUnixEventEmitter UnixMasterEventEmitter::GetPeerEmitter() {
 
 uint32_t UnixEventEmitter::ReadIn_Locked(char* data, uint32_t len) {
   AUTO_LOCK(GetFifoLock());
-  uint32_t count = in_fifoc()->Read(data, len);
+  uint32_t count = in_fifo()->Read(data, len);
   ScopedUnixEventEmitter peer = GetPeerEmitter();
   if (peer) {
     peer->UpdateStatus_Locked();
@@ -86,7 +97,7 @@ uint32_t UnixEventEmitter::ReadIn_Locked(char* data, uint32_t len) {
 
 uint32_t UnixEventEmitter::WriteOut_Locked(const char* data, uint32_t len) {
   AUTO_LOCK(GetFifoLock());
-  uint32_t count = out_fifoc()->Write(data, len);
+  uint32_t count = out_fifo()->Write(data, len);
   ScopedUnixEventEmitter peer = GetPeerEmitter();
   if (peer) {
     peer->UpdateStatus_Locked();
@@ -95,8 +106,9 @@ uint32_t UnixEventEmitter::WriteOut_Locked(const char* data, uint32_t len) {
   return count;
 }
 
-ScopedUnixEventEmitter UnixEventEmitter::MakeUnixEventEmitter(size_t size) {
-  return ScopedUnixEventEmitter(new UnixMasterEventEmitter(size));
+ScopedUnixEventEmitter UnixEventEmitter::MakeUnixEventEmitter(size_t size,
+                                                              int type) {
+  return ScopedUnixEventEmitter(new UnixMasterEventEmitter(size, type));
 }
 
 }  // namespace nacl_io

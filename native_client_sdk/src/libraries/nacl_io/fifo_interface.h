@@ -25,6 +25,8 @@ class FIFOInterface {
 
   virtual size_t ReadAvailable() = 0;
   virtual size_t WriteAvailable() = 0;
+  virtual size_t Read(void* buf, size_t len) = 0;
+  virtual size_t Write(const void* buf, size_t len) = 0;
 };
 
 }  // namespace nacl_io

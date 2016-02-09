@@ -34,11 +34,11 @@ class FIFOChar : public FIFOInterface {
 
   // Reads out the data making room in the FIFO.  Returns actual amount
   // read.
-  size_t Read(void* buf, size_t len);
+  virtual size_t Read(void* buf, size_t len);
 
   // Writes into the FIFO no more than len bytes, returns actual amount
   // written.
-  size_t Write(const void* buf, size_t len);
+  virtual size_t Write(const void* buf, size_t len);
 
  private:
   char* buffer_;

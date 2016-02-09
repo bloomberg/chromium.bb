@@ -16,7 +16,7 @@ namespace nacl_io {
 
 class UnixNode : public SocketNode {
  public:
-  explicit UnixNode(Filesystem* filesystem);
+  UnixNode(Filesystem* filesystem, int type);
   UnixNode(Filesystem* filesystem, const UnixNode& peer);
 
   virtual EventEmitter* GetEventEmitter();
