@@ -271,6 +271,13 @@ bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
   return false;
 }
 
+bool MenuButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  // CustomButton::AcceleratorPressed ends up in NotifyClick, which doesn't work
+  // for menu buttons.
+  Activate();
+  return true;
+}
+
 void MenuButton::GetAccessibleState(ui::AXViewState* state) {
   CustomButton::GetAccessibleState(state);
   state->role = ui::AX_ROLE_POP_UP_BUTTON;

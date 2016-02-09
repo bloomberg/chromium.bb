@@ -77,6 +77,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void GetAccessibleState(ui::AXViewState* state) override;
 
  protected:

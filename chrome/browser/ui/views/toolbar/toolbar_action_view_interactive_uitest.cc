@@ -63,6 +63,29 @@ void TestOverflowedToolbarAction(Browser* browser,
       button, ui_controls::DOWN | ui_controls::UP, quit_closure);
 }
 
+void ActivateOverflowedActionWithKeyboard(Browser* browser,
+                                          const base::Closure& closure) {
+  AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
+  EXPECT_TRUE(app_menu_button->IsMenuShowing());
+  // We need to dispatch key events to the menu's native window, rather than the
+  // browser's.
+  gfx::NativeWindow native_window =
+      views::MenuController::GetActiveInstance()->owner()->GetNativeWindow();
+
+  // Send two key down events followed by the return key.
+  // The two key down events target the toolbar action in the app menu.
+  // TODO(devlin): Shouldn't this be one key down event?
+  ui_controls::SendKeyPress(native_window,
+                            ui::VKEY_DOWN,
+                            false, false, false, false);
+  ui_controls::SendKeyPress(native_window,
+                            ui::VKEY_DOWN,
+                            false, false, false, false);
+  ui_controls::SendKeyPressNotifyWhenDone(native_window,
+                            ui::VKEY_RETURN,
+                            false, false, false, false, closure);
+}
+
 // Tests the context menu of an overflowed action.
 void TestWhileContextMenuOpen(bool* did_test_while_menu_open,
                               Browser* browser,
@@ -336,4 +359,45 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
       ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::UP));
   EXPECT_FALSE(view_controller->is_showing_popup());
   EXPECT_EQ(nullptr, toolbar_actions_bar->popup_owner());
+}
+
+#if defined(USE_OZONE)
+// ozone bringup - http://crbug.com/401304
+#define MAYBE_ActivateOverflowedToolbarActionWithKeyboard \
+  DISABLED_ActivateOverflowedToolbarActionWithKeyboard
+#else
+#define MAYBE_ActivateOverflowedToolbarActionWithKeyboard \
+  ActivateOverflowedToolbarActionWithKeyboard
+#endif
+IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
+                       MAYBE_ActivateOverflowedToolbarActionWithKeyboard) {
+  views::MenuController::TurnOffMenuSelectionHoldForTest();
+  // Load an extension with an action.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
+  base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
+
+  // Reduce visible count to 0 so that all actions are overflowed.
+  ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
+
+  // Set up a listener for the extension being triggered.
+  ExtensionTestMessageListener listener("Popup opened", false);
+
+  // Open the app menu, navigate to the toolbar action, and activate it via the
+  // keyboard.
+  AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser());
+  gfx::Point app_button_loc =
+      test::GetCenterInScreenCoordinates(app_menu_button);
+  base::RunLoop loop;
+  ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
+  ui_controls::SendMouseEventsNotifyWhenDone(
+      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+      base::Bind(&ActivateOverflowedActionWithKeyboard,
+                 browser(), loop.QuitClosure()));
+  loop.Run();
+
+  // The app menu should no longer be showing.
+  EXPECT_FALSE(app_menu_button->IsMenuShowing());
+  // And the extension should have been activated.
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
