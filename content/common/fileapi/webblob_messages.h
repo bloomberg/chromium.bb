@@ -26,7 +26,7 @@ IPC_MESSAGE_CONTROL2(BlobHostMsg_AppendBlobDataItem,
 IPC_SYNC_MESSAGE_CONTROL3_0(BlobHostMsg_SyncAppendSharedMemory,
                             std::string /*uuid*/,
                             base::SharedMemoryHandle,
-                            size_t /* buffer size */)
+                            uint32_t /* buffer size */)
 IPC_MESSAGE_CONTROL2(BlobHostMsg_FinishBuilding,
                      std::string /* uuid */,
                      std::string /* content_type */)
@@ -57,7 +57,7 @@ IPC_MESSAGE_CONTROL2(StreamHostMsg_AppendBlobDataItem,
 IPC_SYNC_MESSAGE_CONTROL3_0(StreamHostMsg_SyncAppendSharedMemory,
                             GURL /* url */,
                             base::SharedMemoryHandle,
-                            size_t /* buffer size */)
+                            uint32_t /* buffer size */)
 
 // Flushes contents buffered in the stream.
 IPC_MESSAGE_CONTROL1(StreamHostMsg_Flush,

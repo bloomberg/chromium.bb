@@ -148,7 +148,6 @@ TEST_F(TextInputClientMacTest, TimeoutCharacterIndex) {
 TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
   ScopedTestingThread thread(this);
   const NSUInteger kPreviousValue = 42;
-  const size_t kNotFoundValue = static_cast<size_t>(-1);
 
   // Set an arbitrary value to ensure the index is not |NSNotFound|.
   PostTask(FROM_HERE,
@@ -159,7 +158,7 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
       new TextInputClientMessageFilter(widget()->GetProcess()->GetID()));
   scoped_ptr<IPC::Message> message(
       new TextInputClientReplyMsg_GotCharacterIndexForPoint(
-          widget()->GetRoutingID(), kNotFoundValue));
+          widget()->GetRoutingID(), UINT32_MAX));
   // Set |WTF::notFound| to the index |kTaskDelayMs| after the previous
   // setting.
   PostTask(FROM_HERE,

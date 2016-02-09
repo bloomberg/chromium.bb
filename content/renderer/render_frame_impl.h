@@ -771,7 +771,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnExtendSelectionAndDelete(int before, int after);
   void OnReload(bool ignore_cache);
   void OnReloadLoFiImages();
-  void OnTextSurroundingSelectionRequest(size_t max_length);
+  void OnTextSurroundingSelectionRequest(uint32_t max_length);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id);
   void OnUpdateOpener(int opener_routing_id);

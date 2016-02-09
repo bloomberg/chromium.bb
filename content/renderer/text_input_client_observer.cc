@@ -65,7 +65,8 @@ void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
 
 void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
   blink::WebPoint web_point(point);
-  size_t index = webview()->focusedFrame()->characterIndexForPoint(web_point);
+  uint32_t index = static_cast<uint32_t>(
+      webview()->focusedFrame()->characterIndexForPoint(web_point));
   Send(new TextInputClientReplyMsg_GotCharacterIndexForPoint(routing_id(),
       index));
 }

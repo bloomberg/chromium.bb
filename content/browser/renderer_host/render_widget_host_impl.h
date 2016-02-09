@@ -592,7 +592,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
       gfx::NativeViewId dummy_activation_window);
 #endif
   void OnSelectionChanged(const base::string16& text,
-                          size_t offset,
+                          uint32_t offset,
                           const gfx::Range& range);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);

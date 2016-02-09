@@ -85,7 +85,7 @@ void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(
     const base::string16& message,
     const base::string16& source,
     const base::string16& stack_trace_string,
-    int32_t line_number,
+    uint32_t line_number,
     int32_t severity_level) {
   base::string16 trimmed_message = message;
   StackTrace stack_trace = GetStackTraceFromMessage(

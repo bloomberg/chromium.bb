@@ -17,9 +17,9 @@
 
 // Tells the renderer to set its maximum cache size to the supplied value.
 IPC_MESSAGE_CONTROL3(WebCacheMsg_SetCacheCapacities,
-                     size_t /* min_dead_capacity */,
-                     size_t /* max_dead_capacity */,
-                     size_t /* capacity */)
+                     uint32_t /* min_dead_capacity */,
+                     uint32_t /* max_dead_capacity */,
+                     uint32_t /* capacity */)
 
 // Tells the renderer to clear the cache.
 IPC_MESSAGE_CONTROL1(WebCacheMsg_ClearCache,

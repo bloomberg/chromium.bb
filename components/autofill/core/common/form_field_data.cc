@@ -57,7 +57,7 @@ bool DeserializeCommonSection1(base::PickleIterator* iter,
          iter->ReadString16(&field_data->value) &&
          iter->ReadString(&field_data->form_control_type) &&
          iter->ReadString(&field_data->autocomplete_attribute) &&
-         iter->ReadSizeT(&field_data->max_length) &&
+         iter->ReadUInt32(&field_data->max_length) &&
          iter->ReadBool(&field_data->is_autofilled) &&
          iter->ReadBool(&field_data->is_checked) &&
          iter->ReadBool(&field_data->is_checkable) &&
@@ -155,7 +155,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteString16(field_data.value);
   pickle->WriteString(field_data.form_control_type);
   pickle->WriteString(field_data.autocomplete_attribute);
-  pickle->WriteSizeT(field_data.max_length);
+  pickle->WriteUInt32(field_data.max_length);
   pickle->WriteBool(field_data.is_autofilled);
   pickle->WriteBool(field_data.is_checked);
   pickle->WriteBool(field_data.is_checkable);

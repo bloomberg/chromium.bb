@@ -307,19 +307,18 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
         content::RenderProcessHost::FromID(allocation->first);
     if (host) {
       // This is the capacity this renderer has been allocated.
-      size_t capacity = allocation->second;
+      uint32_t capacity = allocation->second;
 
       // We don't reserve any space for dead objects in the cache. Instead, we
       // prefer to keep live objects around. There is probably some performance
       // tuning to be done here.
-      size_t min_dead_capacity = 0;
+      uint32_t min_dead_capacity = 0;
 
       // We allow the dead objects to consume up to half of the cache capacity.
-      size_t max_dead_capacity = capacity / 2;
-      if (base::SysInfo::IsLowEndDevice()) {
-        max_dead_capacity = std::min(static_cast<size_t>(512 * 1024),
-                                     max_dead_capacity);
-      }
+      uint32_t max_dead_capacity = capacity / 2;
+      if (base::SysInfo::IsLowEndDevice())
+        max_dead_capacity = std::min(512 * 1024u, max_dead_capacity);
+
       host->Send(new WebCacheMsg_SetCacheCapacities(min_dead_capacity,
                                                     max_dead_capacity,
                                                     capacity));

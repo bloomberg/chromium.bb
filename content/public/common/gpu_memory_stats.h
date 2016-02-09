@@ -26,7 +26,7 @@ struct CONTENT_EXPORT GPUVideoMemoryUsageStats {
     ~ProcessStats();
 
     // The bytes of GPU resources accessible by this process
-    size_t video_memory;
+    uint32_t video_memory;
 
     // Set to true if this process' GPU resource count is inflated because
     // it is counting other processes' resources (e.g, the GPU process has
@@ -39,10 +39,10 @@ struct CONTENT_EXPORT GPUVideoMemoryUsageStats {
   ProcessMap process_map;
 
   // The total amount of GPU memory allocated at the time of the request.
-  size_t bytes_allocated;
+  uint32_t bytes_allocated;
 
   // The maximum amount of GPU memory ever allocated at once.
-  size_t bytes_allocated_historical_max;
+  uint32_t bytes_allocated_historical_max;
 };
 
 }  // namespace content

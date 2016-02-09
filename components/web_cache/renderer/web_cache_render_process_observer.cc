@@ -60,9 +60,9 @@ void WebCacheRenderProcessObserver::OnRenderProcessShutdown() {
 }
 
 void WebCacheRenderProcessObserver::OnSetCacheCapacities(
-    size_t min_dead_capacity,
-    size_t max_dead_capacity,
-    size_t capacity) {
+    uint32_t min_dead_capacity,
+    uint32_t max_dead_capacity,
+    uint32_t capacity) {
   if (!webkit_initialized_) {
     pending_cache_min_dead_capacity_ = min_dead_capacity;
     pending_cache_max_dead_capacity_ = max_dead_capacity;

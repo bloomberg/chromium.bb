@@ -48,14 +48,17 @@ void TextInputClientMessageFilter::OnGotStringAtPoint(
   service->GetStringAtPointReply(string, NSPointFromCGPoint(point.ToCGPoint()));
 }
 
-void TextInputClientMessageFilter::OnGotCharacterIndexForPoint(size_t index) {
+void TextInputClientMessageFilter::OnGotCharacterIndexForPoint(uint32_t index) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
   // |index| could be WTF::notFound (-1) and its value is different from
   // NSNotFound so we need to convert it.
-  if (index == static_cast<size_t>(-1)) {
-    index = NSNotFound;
+  size_t char_index;
+  if (index == UINT32_MAX) {
+    char_index = NSNotFound;
+  } else {
+    char_index = index;
   }
-  service->SetCharacterIndexAndSignal(index);
+  service->SetCharacterIndexAndSignal(char_index);
 }
 
 void TextInputClientMessageFilter::OnGotFirstRectForRange(

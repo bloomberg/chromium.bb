@@ -23,12 +23,13 @@ class SpellCheckMarker {
   };
 
   // IPC requires a default constructor.
-  SpellCheckMarker() : hash(0xFFFFFFFF), offset(static_cast<size_t>(-1)) {}
+  SpellCheckMarker() : hash(0xFFFFFFFF), offset(UINT32_MAX) {}
 
-  SpellCheckMarker(uint32_t hash, size_t offset) : hash(hash), offset(offset) {}
+  SpellCheckMarker(uint32_t hash, uint32_t offset)
+      : hash(hash), offset(offset) {}
 
   uint32_t hash;
-  size_t offset;
+  uint32_t offset;
 };
 
 #endif  // CHROME_COMMON_SPELLCHECK_MARKER_H_

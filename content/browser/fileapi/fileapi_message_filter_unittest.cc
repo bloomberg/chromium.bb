@@ -249,7 +249,7 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
   ASSERT_TRUE(shared_memory->CreateAndMapAnonymous(kFakeData.size()));
   memcpy(shared_memory->memory(), kFakeData.data(), kFakeData.size());
   StreamHostMsg_SyncAppendSharedMemory append_message(
-      kUrl, shared_memory->handle(), kFakeData.size());
+      kUrl, shared_memory->handle(), static_cast<uint32_t>(kFakeData.size()));
   EXPECT_TRUE(filter_->OnMessageReceived(append_message));
 
   StreamHostMsg_FinishBuilding finish_message(kUrl);

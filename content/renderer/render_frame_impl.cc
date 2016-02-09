@@ -2134,7 +2134,7 @@ void RenderFrameImpl::OnReloadLoFiImages() {
   GetWebFrame()->reloadLoFiImages();
 }
 
-void RenderFrameImpl::OnTextSurroundingSelectionRequest(size_t max_length) {
+void RenderFrameImpl::OnTextSurroundingSelectionRequest(uint32_t max_length) {
   blink::WebSurroundingText surroundingText;
   surroundingText.initialize(frame_->selectionRange(), max_length);
 
@@ -2347,7 +2347,7 @@ void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
   // Use the routing id of Render Widget Host.
   Send(new ViewHostMsg_SelectionChanged(GetRenderWidget()->routing_id(),
                                         selection_text,
-                                        offset,
+                                        static_cast<uint32_t>(offset),
                                         range));
 }
 
@@ -2825,7 +2825,7 @@ void RenderFrameImpl::didAddMessageToConsole(
     FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                       DetailedConsoleMessageAdded(
                           message.text, source_name, stack_trace, source_line,
-                          static_cast<int32_t>(log_severity)));
+                          static_cast<uint32_t>(log_severity)));
   }
 
   Send(new FrameHostMsg_AddMessageToConsole(

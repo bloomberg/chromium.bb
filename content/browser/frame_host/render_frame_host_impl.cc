@@ -1396,8 +1396,8 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
 
 void RenderFrameHostImpl::OnTextSurroundingSelectionResponse(
     const base::string16& content,
-    size_t start_offset,
-    size_t end_offset) {
+    uint32_t start_offset,
+    uint32_t end_offset) {
   render_view_host_->OnTextSurroundingSelectionResponse(
       content, start_offset, end_offset);
 }

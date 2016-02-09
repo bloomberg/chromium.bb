@@ -593,8 +593,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                 bool is_reload,
                                 IPC::Message* reply_msg);
   void OnTextSurroundingSelectionResponse(const base::string16& content,
-                                          size_t start_offset,
-                                          size_t end_offset);
+                                          uint32_t start_offset,
+                                          uint32_t end_offset);
   void OnDidAccessInitialDocument();
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnDidChangeName(const std::string& name);

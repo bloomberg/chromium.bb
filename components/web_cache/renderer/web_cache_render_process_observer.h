@@ -6,6 +6,7 @@
 #define COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_RENDER_PROCESS_OBSERVER_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -30,9 +31,9 @@ class WebCacheRenderProcessObserver : public content::RenderProcessObserver {
   void OnRenderProcessShutdown() override;
 
   // Message handlers.
-  void OnSetCacheCapacities(size_t min_dead_capacity,
-                            size_t max_dead_capacity,
-                            size_t capacity);
+  void OnSetCacheCapacities(uint32_t min_dead_capacity,
+                            uint32_t max_dead_capacity,
+                            uint32_t capacity);
   // If |on_navigation| is true, the clearing is delayed until the next
   // navigation event.
   void OnClearCache(bool on_navigation);

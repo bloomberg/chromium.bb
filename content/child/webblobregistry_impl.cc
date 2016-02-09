@@ -300,7 +300,7 @@ void WebBlobRegistryImpl::BuilderImpl::SendOversizedDataForBlob(
     consolidation_.ReadMemory(consolidated_item_index, offset, chunk_size,
                               shared_memory->memory());
     sender_->Send(new BlobHostMsg_SyncAppendSharedMemory(
-        uuid_, shared_memory->handle(), chunk_size));
+        uuid_, shared_memory->handle(), static_cast<uint32_t>(chunk_size)));
     data_size -= chunk_size;
     offset += chunk_size;
   }

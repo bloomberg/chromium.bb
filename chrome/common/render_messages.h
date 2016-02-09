@@ -56,6 +56,18 @@ struct ParamTraits<ContentSettingsPattern> {
   static void Log(const param_type& p, std::string* l);
 };
 
+// Manual traits since this struct uses size_t and it's in Blink, so avoid
+// changing Blink due to IPC differences.
+template <>
+struct ParamTraits<blink::WebCache::UsageStats> {
+  typedef blink::WebCache::UsageStats param_type;
+  static void Write(base::Pickle* m, const param_type& u);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* u);
+  static void Log(const param_type& p, std::string* l);
+};
+
 }  // namespace IPC
 
 #endif  // CHROME_COMMON_RENDER_MESSAGES_H_
@@ -160,14 +172,6 @@ IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
   IPC_STRUCT_TRAITS_MEMBER(image_height)
   IPC_STRUCT_TRAITS_MEMBER(has_attribution)
   IPC_STRUCT_TRAITS_MEMBER(logo_alternate)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::UsageStats)
-  IPC_STRUCT_TRAITS_MEMBER(minDeadCapacity)
-  IPC_STRUCT_TRAITS_MEMBER(maxDeadCapacity)
-  IPC_STRUCT_TRAITS_MEMBER(capacity)
-  IPC_STRUCT_TRAITS_MEMBER(liveSize)
-  IPC_STRUCT_TRAITS_MEMBER(deadSize)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType,

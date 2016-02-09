@@ -26,7 +26,7 @@ class ExtensionsRenderFrameObserver
   void DetailedConsoleMessageAdded(const base::string16& message,
                                    const base::string16& source,
                                    const base::string16& stack_trace,
-                                   int32_t line_number,
+                                   uint32_t line_number,
                                    int32_t severity_level) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsRenderFrameObserver);

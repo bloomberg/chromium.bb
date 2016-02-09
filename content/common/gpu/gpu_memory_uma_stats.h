@@ -19,13 +19,13 @@ struct GPUMemoryUmaStats {
   }
 
   // The number of bytes currently allocated.
-  size_t bytes_allocated_current;
+  uint32_t bytes_allocated_current;
 
   // The maximum number of bytes ever allocated at once.
-  size_t bytes_allocated_max;
+  uint32_t bytes_allocated_max;
 
   // The number of context groups.
-  size_t context_group_count;
+  uint32_t context_group_count;
 };
 
 }  // namespace content

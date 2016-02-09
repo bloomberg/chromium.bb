@@ -727,7 +727,7 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
 // Request the text surrounding the selection with a |max_length|. The response
 // will be sent via FrameHostMsg_TextSurroundingSelectionResponse.
 IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
-                    size_t /* max_length */)
+                    uint32_t /* max_length */)
 
 // Tells the renderer to insert a link to the specified stylesheet. This is
 // needed to support navigation transitions.
@@ -1280,8 +1280,8 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeThemeColor,
 // |endOffset| are the offsets of the selection in the returned |content|.
 IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
                     base::string16,  /* content */
-                    size_t, /* startOffset */
-                    size_t /* endOffset */)
+                    uint32_t, /* startOffset */
+                    uint32_t/* endOffset */)
 
 // Register a new handler for URL requests with the given scheme.
 IPC_MESSAGE_ROUTED4(FrameHostMsg_RegisterProtocolHandler,

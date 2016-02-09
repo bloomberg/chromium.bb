@@ -38,7 +38,7 @@ void WriteCommonSection1(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteString16(data.value);
   pickle->WriteString(data.form_control_type);
   pickle->WriteString(data.autocomplete_attribute);
-  pickle->WriteSizeT(data.max_length);
+  pickle->WriteUInt32(data.max_length);
   pickle->WriteBool(data.is_autofilled);
   pickle->WriteBool(data.is_checked);
   pickle->WriteBool(data.is_checkable);

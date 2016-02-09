@@ -238,7 +238,7 @@ const ui::Clipboard::FormatType& GetFileSystemFileFormatType() {
 void WriteFileSystemFilesToPickle(
     const std::vector<DropData::FileSystemFileInfo>& file_system_files,
     base::Pickle* pickle) {
-  pickle->WriteSizeT(file_system_files.size());
+  pickle->WriteUInt32(file_system_files.size());
   for (size_t i = 0; i < file_system_files.size(); ++i) {
     pickle->WriteString(file_system_files[i].url.spec());
     pickle->WriteInt64(file_system_files[i].size);
@@ -251,12 +251,12 @@ bool ReadFileSystemFilesFromPickle(
     std::vector<DropData::FileSystemFileInfo>* file_system_files) {
   base::PickleIterator iter(pickle);
 
-  size_t num_files = 0;
-  if (!iter.ReadSizeT(&num_files))
+  uint32_t num_files = 0;
+  if (!iter.ReadUInt32(&num_files))
     return false;
   file_system_files->resize(num_files);
 
-  for (size_t i = 0; i < num_files; ++i) {
+  for (uint32_t i = 0; i < num_files; ++i) {
     std::string url_string;
     int64_t size = 0;
     if (!iter.ReadString(&url_string) || !iter.ReadInt64(&size))

@@ -45,7 +45,7 @@ struct FormFieldData {
   base::string16 value;
   std::string form_control_type;
   std::string autocomplete_attribute;
-  size_t max_length;
+  uint32_t max_length;
   bool is_autofilled;
   bool is_checked;
   bool is_checkable;

@@ -96,7 +96,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DetailedConsoleMessageAdded(const base::string16& message,
                                            const base::string16& source,
                                            const base::string16& stack_trace,
-                                           int32_t line_number,
+                                           uint32_t line_number,
                                            int32_t severity_level) {}
 
   // Called when an interesting (from document lifecycle perspective),

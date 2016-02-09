@@ -123,11 +123,13 @@ bool DeserializeValueSize(const std::string& signon_realm,
     }
     count = count_32;
   } else {
-    if (!iter.ReadSizeT(&count)) {
+    uint64_t count_64 = 0;
+    if (!iter.ReadUInt64(&count_64)) {
       LOG(ERROR) << "Failed to deserialize KWallet entry "
                  << "(realm: " << signon_realm << ")";
       return false;
     }
+    count = static_cast<size_t>(count_64);
   }
 
   if (count > 0xFFFF) {
@@ -236,7 +238,7 @@ bool DeserializeValueSize(const std::string& signon_realm,
 void SerializeValue(const std::vector<autofill::PasswordForm*>& forms,
                     base::Pickle* pickle) {
   pickle->WriteInt(kPickleVersion);
-  pickle->WriteSizeT(forms.size());
+  pickle->WriteUInt64(forms.size());
   for (autofill::PasswordForm* form : forms) {
     pickle->WriteInt(form->scheme);
     pickle->WriteString(form->origin.spec());

@@ -48,7 +48,7 @@ IPC_MESSAGE_ROUTED1(TextInputClientMsg_StringAtPoint, gfx::Point)
 
 // Reply message for TextInputClientMsg_CharacterIndexForPoint.
 IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotCharacterIndexForPoint,
-                    size_t /* character index */)
+                    uint32_t /* character index */)
 
 // Reply message for TextInputClientMsg_FirstRectForCharacterRange.
 IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotFirstRectForRange,

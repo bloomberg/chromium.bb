@@ -547,7 +547,7 @@ void FileAPIMessageFilter::OnAppendBlobDataItemToBlob(
 void FileAPIMessageFilter::OnAppendSharedMemoryToBlob(
     const std::string& uuid,
     base::SharedMemoryHandle handle,
-    size_t buffer_size) {
+    uint32_t buffer_size) {
   DCHECK(base::SharedMemory::IsHandleValid(handle));
   if (!buffer_size) {
     bad_message::ReceivedBadMessage(
@@ -634,7 +634,8 @@ void FileAPIMessageFilter::OnAppendBlobDataItemToStream(
 }
 
 void FileAPIMessageFilter::OnAppendSharedMemoryToStream(
-    const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size) {
+    const GURL& url, base::SharedMemoryHandle handle,
+    uint32_t buffer_size) {
   DCHECK(base::SharedMemory::IsHandleValid(handle));
   if (!buffer_size) {
     bad_message::ReceivedBadMessage(

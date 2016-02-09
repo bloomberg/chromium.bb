@@ -1301,10 +1301,10 @@ const NativeWebKeyboardEvent*
 }
 
 void RenderWidgetHostImpl::OnSelectionChanged(const base::string16& text,
-                                              size_t offset,
+                                              uint32_t offset,
                                               const gfx::Range& range) {
   if (view_)
-    view_->SelectionChanged(text, offset, range);
+    view_->SelectionChanged(text, static_cast<size_t>(offset), range);
 }
 
 void RenderWidgetHostImpl::OnSelectionBoundsChanged(

@@ -1163,7 +1163,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
 // text in the document.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
                     base::string16 /* text covers the selection range */,
-                    size_t /* the offset of the text in the document */,
+                    uint32_t /* the offset of the text in the document */,
                     gfx::Range /* selection range in the document */)
 
 // Notification that the selection bounds have changed.

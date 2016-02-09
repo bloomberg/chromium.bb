@@ -25,7 +25,7 @@ struct SyncCompositorCommonBrowserParams {
   SyncCompositorCommonBrowserParams();
   ~SyncCompositorCommonBrowserParams();
 
-  size_t bytes_limit;
+  uint32_t bytes_limit;
   cc::CompositorFrameAck ack;
   gfx::ScrollOffset root_scroll_offset;
   bool update_root_scroll_offset;
@@ -54,7 +54,7 @@ struct SyncCompositorDemandDrawHwParams {
 struct SyncCompositorSetSharedMemoryParams {
   SyncCompositorSetSharedMemoryParams();
 
-  size_t buffer_size;
+  uint32_t buffer_size;
   base::SharedMemoryHandle shm_handle;
 };
 

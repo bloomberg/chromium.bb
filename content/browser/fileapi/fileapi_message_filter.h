@@ -135,7 +135,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                                   const storage::DataElement& item);
   void OnAppendSharedMemoryToBlob(const std::string& uuid,
                                   base::SharedMemoryHandle handle,
-                                  size_t buffer_size);
+                                  uint32_t buffer_size);
   void OnFinishBuildingBlob(const std::string& uuid,
                              const std::string& content_type);
   void OnIncrementBlobRefCount(const std::string& uuid);
@@ -155,7 +155,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   void OnAppendBlobDataItemToStream(const GURL& url,
                                     const storage::DataElement& item);
   void OnAppendSharedMemoryToStream(
-      const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size);
+      const GURL& url, base::SharedMemoryHandle handle, uint32_t buffer_size);
   void OnFlushStream(const GURL& url);
   void OnFinishBuildingStream(const GURL& url);
   void OnAbortBuildingStream(const GURL& url);

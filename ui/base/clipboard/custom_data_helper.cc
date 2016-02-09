@@ -43,8 +43,8 @@ void ReadCustomDataTypes(const void* data,
   SkippablePickle pickle(data, data_length);
   base::PickleIterator iter(pickle);
 
-  size_t size = 0;
-  if (!iter.ReadSizeT(&size))
+  uint32_t size = 0;
+  if (!iter.ReadUInt32(&size))
     return;
 
   // Keep track of the original elements in the types vector. On failure, we
@@ -52,7 +52,7 @@ void ReadCustomDataTypes(const void* data,
   // custom data pickles.
   size_t original_size = types->size();
 
-  for (size_t i = 0; i < size; ++i) {
+  for (uint32_t i = 0; i < size; ++i) {
     types->push_back(base::string16());
     if (!iter.ReadString16(&types->back()) || !pickle.SkipString16(&iter)) {
       types->resize(original_size);
@@ -68,11 +68,11 @@ void ReadCustomDataForType(const void* data,
   SkippablePickle pickle(data, data_length);
   base::PickleIterator iter(pickle);
 
-  size_t size = 0;
-  if (!iter.ReadSizeT(&size))
+  uint32_t size = 0;
+  if (!iter.ReadUInt32(&size))
     return;
 
-  for (size_t i = 0; i < size; ++i) {
+  for (uint32_t i = 0; i < size; ++i) {
     base::string16 deserialized_type;
     if (!iter.ReadString16(&deserialized_type))
       return;
@@ -91,11 +91,11 @@ void ReadCustomDataIntoMap(const void* data,
   base::Pickle pickle(reinterpret_cast<const char*>(data), data_length);
   base::PickleIterator iter(pickle);
 
-  size_t size = 0;
-  if (!iter.ReadSizeT(&size))
+  uint32_t size = 0;
+  if (!iter.ReadUInt32(&size))
     return;
 
-  for (size_t i = 0; i < size; ++i) {
+  for (uint32_t i = 0; i < size; ++i) {
     base::string16 type;
     if (!iter.ReadString16(&type)) {
       // Data is corrupt, return an empty map.
@@ -115,7 +115,7 @@ void ReadCustomDataIntoMap(const void* data,
 void WriteCustomDataToPickle(
     const std::map<base::string16, base::string16>& data,
     base::Pickle* pickle) {
-  pickle->WriteSizeT(data.size());
+  pickle->WriteUInt32(data.size());
   for (std::map<base::string16, base::string16>::const_iterator it =
            data.begin();
        it != data.end();

@@ -42,14 +42,14 @@ void BookmarkNodeData::Element::WriteToPickle(base::Pickle* pickle) const {
   pickle->WriteString(url.spec());
   pickle->WriteString16(title);
   pickle->WriteInt64(id_);
-  pickle->WriteSizeT(meta_info_map.size());
+  pickle->WriteUInt32(static_cast<uint32_t>(meta_info_map.size()));
   for (BookmarkNode::MetaInfoMap::const_iterator it = meta_info_map.begin();
       it != meta_info_map.end(); ++it) {
     pickle->WriteString(it->first);
     pickle->WriteString(it->second);
   }
   if (!is_url) {
-    pickle->WriteSizeT(children.size());
+    pickle->WriteUInt32(static_cast<uint32_t>(children.size()));
     for (std::vector<Element>::const_iterator i = children.begin();
          i != children.end(); ++i) {
       i->WriteToPickle(pickle);
@@ -69,8 +69,8 @@ bool BookmarkNodeData::Element::ReadFromPickle(base::PickleIterator* iterator) {
   date_added = base::Time();
   date_folder_modified = base::Time();
   meta_info_map.clear();
-  size_t meta_field_count;
-  if (!iterator->ReadSizeT(&meta_field_count))
+  uint32_t meta_field_count;
+  if (!iterator->ReadUInt32(&meta_field_count))
     return false;
   for (size_t i = 0; i < meta_field_count; ++i) {
     std::string key;
@@ -83,8 +83,8 @@ bool BookmarkNodeData::Element::ReadFromPickle(base::PickleIterator* iterator) {
   }
   children.clear();
   if (!is_url) {
-    size_t children_count;
-    if (!iterator->ReadSizeT(&children_count))
+    uint32_t children_count;
+    if (!iterator->ReadUInt32(&children_count))
       return false;
     children.reserve(children_count);
     for (size_t i = 0; i < children_count; ++i) {
@@ -234,7 +234,7 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
 void BookmarkNodeData::WriteToPickle(const base::FilePath& profile_path,
                                      base::Pickle* pickle) const {
   profile_path.WriteToPickle(pickle);
-  pickle->WriteSizeT(size());
+  pickle->WriteUInt32(static_cast<uint32_t>(size()));
 
   for (size_t i = 0; i < size(); ++i)
     elements[i].WriteToPickle(pickle);
@@ -242,9 +242,9 @@ void BookmarkNodeData::WriteToPickle(const base::FilePath& profile_path,
 
 bool BookmarkNodeData::ReadFromPickle(base::Pickle* pickle) {
   base::PickleIterator data_iterator(*pickle);
-  size_t element_count;
+  uint32_t element_count;
   if (profile_path_.ReadFromPickle(&data_iterator) &&
-      data_iterator.ReadSizeT(&element_count)) {
+      data_iterator.ReadUInt32(&element_count)) {
     std::vector<Element> tmp_elements;
     tmp_elements.resize(element_count);
     for (size_t i = 0; i < element_count; ++i) {

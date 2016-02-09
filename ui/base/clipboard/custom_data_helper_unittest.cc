@@ -120,7 +120,7 @@ TEST(CustomDataHelperTest, BadReadTypes) {
   expected.push_back(ASCIIToUTF16("f"));
 
   base::Pickle malformed;
-  malformed.WriteSizeT(1000);
+  malformed.WriteUInt32(1000);
   malformed.WriteString16(ASCIIToUTF16("hello"));
   malformed.WriteString16(ASCIIToUTF16("world"));
   std::vector<base::string16> actual(expected);
@@ -128,7 +128,7 @@ TEST(CustomDataHelperTest, BadReadTypes) {
   EXPECT_EQ(expected, actual);
 
   base::Pickle malformed2;
-  malformed2.WriteSizeT(1);
+  malformed2.WriteUInt32(1);
   malformed2.WriteString16(ASCIIToUTF16("hello"));
   std::vector<base::string16> actual2(expected);
   ReadCustomDataTypes(malformed2.data(), malformed2.size(), &actual2);
@@ -140,7 +140,7 @@ TEST(CustomDataHelperTest, BadPickle) {
   std::map<base::string16, base::string16> result_map;
 
   base::Pickle malformed;
-  malformed.WriteSizeT(1000);
+  malformed.WriteUInt32(1000);
   malformed.WriteString16(ASCIIToUTF16("hello"));
   malformed.WriteString16(ASCIIToUTF16("world"));
 
@@ -153,7 +153,7 @@ TEST(CustomDataHelperTest, BadPickle) {
   EXPECT_EQ(0u, result_map.size());
 
   base::Pickle malformed2;
-  malformed2.WriteSizeT(1);
+  malformed2.WriteUInt32(1);
   malformed2.WriteString16(ASCIIToUTF16("hello"));
 
   ReadCustomDataForType(malformed2.data(),
