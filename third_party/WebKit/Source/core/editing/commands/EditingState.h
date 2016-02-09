@@ -42,11 +42,11 @@ class IgnorableEditingAbortState final {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(IgnorableEditingAbortState);
 
-    EditingState* editingState() { return &m_editingState; }
-
 public:
     IgnorableEditingAbortState();
     ~IgnorableEditingAbortState();
+
+    EditingState* editingState() { return &m_editingState; }
 
 private:
     EditingState m_editingState;
