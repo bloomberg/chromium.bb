@@ -238,4 +238,26 @@ DWORD ProcessPolicy::CreateProcessWAction(EvalResult eval_result,
   return ERROR_SUCCESS;
 }
 
+DWORD ProcessPolicy::CreateThreadAction(
+    const ClientInfo& client_info,
+    const SIZE_T stack_size,
+    const LPTHREAD_START_ROUTINE start_address,
+    const LPVOID parameter,
+    const DWORD creation_flags,
+    LPDWORD thread_id,
+    HANDLE* handle) {
+  HANDLE local_handle =
+      ::CreateRemoteThread(client_info.process, nullptr, stack_size,
+                           start_address, parameter, creation_flags, thread_id);
+  if (!local_handle) {
+    return ::GetLastError();
+  }
+  if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
+                         client_info.process, handle, 0, FALSE,
+                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
+    return ERROR_ACCESS_DENIED;
+  }
+  return ERROR_SUCCESS;
+}
+
 }  // namespace sandbox

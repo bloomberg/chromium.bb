@@ -61,6 +61,7 @@ class PolicyBase final : public TargetPolicy {
   MitigationFlags GetProcessMitigations() override;
   ResultCode SetDelayedProcessMitigations(MitigationFlags flags) override;
   MitigationFlags GetDelayedProcessMitigations() const override;
+  void SetDisconnectCsrss() override;
   void SetStrictInterceptions() override;
   ResultCode SetStdoutHandle(HANDLE handle) override;
   ResultCode SetStderrHandle(HANDLE handle) override;
@@ -145,6 +146,7 @@ class PolicyBase final : public TargetPolicy {
   IntegrityLevel delayed_integrity_level_;
   MitigationFlags mitigations_;
   MitigationFlags delayed_mitigations_;
+  bool is_csrss_connected_;
   // Object in charge of generating the low level policy.
   LowLevelPolicy* policy_maker_;
   // Memory structure that stores the low level policy.

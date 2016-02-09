@@ -5,7 +5,7 @@
 #include "sandbox/win/src/process_thread_interception.h"
 
 #include <stdint.h>
-
+#include "base/win/windows_version.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_params.h"
@@ -406,6 +406,83 @@ BOOL WINAPI TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
 
   ::SetLastError(original_error);
   return FALSE;
+}
+
+HANDLE WINAPI TargetCreateThread(CreateThreadFunction orig_CreateThread,
+                                 LPSECURITY_ATTRIBUTES thread_attributes,
+                                 SIZE_T stack_size,
+                                 LPTHREAD_START_ROUTINE start_address,
+                                 LPVOID parameter,
+                                 DWORD creation_flags,
+                                 LPDWORD thread_id) {
+  HANDLE hThread = NULL;
+
+  TargetServices* target_services = SandboxFactory::GetTargetServices();
+  if (NULL == target_services ||
+      target_services->GetState()->IsCsrssConnected()) {
+    hThread = orig_CreateThread(thread_attributes, stack_size, start_address,
+                                parameter, creation_flags, thread_id);
+    if (hThread) {
+      return hThread;
+    }
+  }
+
+  DWORD original_error = ::GetLastError();
+  do {
+    if (NULL == target_services)
+      break;
+
+    // We don't trust that the IPC can work this early.
+    if (!target_services->GetState()->InitCalled())
+      break;
+
+    __try {
+      if (NULL != thread_id &&
+          !ValidParameter(thread_id, sizeof(*thread_id), WRITE))
+        break;
+
+      if (nullptr == start_address)
+        break;
+      // We don't support thread_attributes not being null.
+      if (nullptr != thread_attributes)
+        break;
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+      break;
+    }
+
+    void* memory = GetGlobalIPCMemory();
+    if (nullptr == memory)
+      break;
+
+    SharedMemIPCClient ipc(memory);
+    CrossCallReturn answer = {0};
+
+    // NOTE: we don't pass the thread_attributes through. This matches the
+    // approach in CreateProcess and in CreateThreadInternal().
+    ResultCode code = CrossCall(ipc, IPC_CREATETHREAD_TAG,
+                                reinterpret_cast<LPVOID>(stack_size),
+                                reinterpret_cast<LPVOID>(start_address),
+                                parameter, creation_flags, &answer);
+    if (SBOX_ALL_OK != code)
+      break;
+
+    ::SetLastError(answer.win32_result);
+    if (ERROR_SUCCESS != answer.win32_result) {
+      return NULL;
+    }
+
+    __try {
+      if (thread_id != NULL) {
+        *thread_id = ::GetThreadId(answer.handle);
+      }
+      return answer.handle;
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+      break;
+    }
+  } while (false);
+
+  ::SetLastError(original_error);
+  return NULL;
 }
 
 }  // namespace sandbox

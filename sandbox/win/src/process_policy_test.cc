@@ -11,6 +11,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
+#include "sandbox/win/src/process_thread_interception.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -269,6 +270,74 @@ SBOX_TESTS_COMMAND int Process_OpenToken(int argc, wchar_t **argv) {
   return SBOX_TEST_FAILED;
 }
 
+// Generate a event name, used to test thread creation.
+std::wstring GenerateEventName(DWORD pid) {
+  wchar_t buff[30] = {0};
+  int res = swprintf_s(buff, sizeof(buff) / sizeof(buff[0]),
+                       L"ProcessPolicyTest_%08x", pid);
+  if (-1 != res) {
+    return std::wstring(buff);
+  }
+  return std::wstring();
+}
+
+// This is the function that is called when testing thread creation.
+// It is expected to set an event that the caller is waiting on.
+DWORD TestThreadFunc(LPVOID lpdwThreadParam) {
+  std::wstring event_name =
+      GenerateEventName(reinterpret_cast<DWORD>(lpdwThreadParam));
+  if (!event_name.length()) {
+    return 1;
+  }
+  HANDLE event = ::OpenEvent(EVENT_ALL_ACCESS | EVENT_MODIFY_STATE, FALSE,
+                             event_name.c_str());
+  if (!event) {
+    return 1;
+  }
+  if (!SetEvent(event)) {
+    return 1;
+  }
+  return 0;
+}
+
+SBOX_TESTS_COMMAND int Process_CreateThread(int argc, wchar_t** argv) {
+  DWORD pid = ::GetCurrentProcessId();
+  std::wstring event_name = GenerateEventName(pid);
+  if (!event_name.length()) {
+    return SBOX_TEST_FIRST_ERROR;
+  }
+  HANDLE event = ::CreateEvent(NULL, TRUE, FALSE, event_name.c_str());
+  if (!event) {
+    return SBOX_TEST_SECOND_ERROR;
+  }
+
+  DWORD thread_id = 0;
+  HANDLE thread = NULL;
+  thread = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&TestThreadFunc,
+                          (LPVOID)pid, 0, &thread_id);
+
+  if (!thread) {
+    return SBOX_TEST_THIRD_ERROR;
+  }
+  if (!thread_id) {
+    return SBOX_TEST_FOURTH_ERROR;
+  }
+  if (WaitForSingleObject(thread, INFINITE) != WAIT_OBJECT_0) {
+    return SBOX_TEST_FIFTH_ERROR;
+  }
+  DWORD exit_code = 0;
+  if (!GetExitCodeThread(thread, &exit_code)) {
+    return SBOX_TEST_SIXTH_ERROR;
+  }
+  if (exit_code) {
+    return SBOX_TEST_SEVENTH_ERROR;
+  }
+  if (WaitForSingleObject(event, INFINITE) != WAIT_OBJECT_0) {
+    return SBOX_TEST_FAILED;
+  }
+  return SBOX_TEST_SUCCEEDED;
+}
+
 TEST(ProcessPolicyTest, TestAllAccess) {
   // Check if the "all access" rule fails to be added when the token is too
   // powerful.
@@ -397,13 +466,45 @@ TEST(ProcessPolicyTest, TestCreateProcessA) {
   sandbox::TargetPolicy* policy = runner.GetPolicy();
   policy->SetJobLevel(JOB_NONE, 0);
   policy->SetTokenLevel(USER_UNPROTECTED, USER_UNPROTECTED);
-
   base::string16 exe_path = MakePathToSys(L"calc.exe", false);
   ASSERT_TRUE(!exe_path.empty());
   EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
                              TargetPolicy::PROCESS_ALL_EXEC, exe_path.c_str()));
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"Process_CreateProcessA calc.exe"));
+}
+
+// This tests that the CreateThread works with CSRSS not locked down.
+// In other words, that the interception passes through OK.
+TEST(ProcessPolicyTest, TestCreateThreadWithCsrss) {
+  TestRunner runner(JOB_NONE, USER_INTERACTIVE, USER_INTERACTIVE);
+  runner.SetDisableCsrss(false);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"Process_CreateThread"));
+}
+
+// This tests that the CreateThread works with CSRSS locked down.
+// In other words, that the interception correctly works.
+TEST(ProcessPolicyTest, TestCreateThreadWithoutCsrss) {
+  TestRunner runner(JOB_NONE, USER_INTERACTIVE, USER_INTERACTIVE);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"Process_CreateThread"));
+}
+
+// This tests that our CreateThread interceptors works when called directly.
+TEST(ProcessPolicyTest, TestCreateThreadOutsideSandbox) {
+  DWORD pid = ::GetCurrentProcessId();
+  std::wstring event_name = GenerateEventName(pid);
+  ASSERT_STRNE(NULL, event_name.c_str());
+  HANDLE event = ::CreateEvent(NULL, TRUE, FALSE, event_name.c_str());
+  EXPECT_NE(static_cast<HANDLE>(NULL), event);
+
+  DWORD thread_id = 0;
+  HANDLE thread = NULL;
+  thread = TargetCreateThread(::CreateThread, NULL, 0,
+                              (LPTHREAD_START_ROUTINE)&TestThreadFunc,
+                              (LPVOID)pid, 0, &thread_id);
+  EXPECT_NE(static_cast<HANDLE>(NULL), thread);
+  EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(thread, INFINITE));
+  EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(event, INFINITE));
 }
 
 }  // namespace sandbox

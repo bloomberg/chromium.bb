@@ -48,17 +48,17 @@ class TargetPolicy {
                            // over the resulting process and thread handles.
                            // No other parameters besides the command line are
                            // passed to the child process.
-    PROCESS_ALL_EXEC,      // Allows the creation of a process and return fill
+    PROCESS_ALL_EXEC,      // Allows the creation of a process and return full
                            // access on the returned handles.
                            // This flag can be used only when the main token of
                            // the sandboxed application is at least INTERACTIVE.
     EVENTS_ALLOW_ANY,      // Allows the creation of an event with full access.
-    EVENTS_ALLOW_READONLY, // Allows opening an even with synchronize access.
-    REG_ALLOW_READONLY,    // Allows readonly access to a registry key.
-    REG_ALLOW_ANY,         // Allows read and write access to a registry key.
-    FAKE_USER_GDI_INIT     // Fakes user32 and gdi32 initialization. This can
-                           // be used to allow the DLLs to load and initialize
-                           // even if the process cannot access that subsystem.
+    EVENTS_ALLOW_READONLY,  // Allows opening an even with synchronize access.
+    REG_ALLOW_READONLY,     // Allows readonly access to a registry key.
+    REG_ALLOW_ANY,          // Allows read and write access to a registry key.
+    FAKE_USER_GDI_INIT      // Fakes user32 and gdi32 initialization. This can
+                            // be used to allow the DLLs to load and initialize
+                            // even if the process cannot access that subsystem.
   };
 
   // Increments the reference count of this object. The reference count must
@@ -208,6 +208,10 @@ class TargetPolicy {
 
   // Returns the currently set delayed mitigation flags.
   virtual MitigationFlags GetDelayedProcessMitigations() const = 0;
+
+  // Disconnect the target from CSRSS when TargetServices::LowerToken() is
+  // called inside the target.
+  virtual void SetDisconnectCsrss() = 0;
 
   // Sets the interceptions to operate in strict mode. By default, interceptions
   // are performed in "relaxed" mode, where if something inside NTDLL.DLL is

@@ -213,12 +213,8 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
     target_process_id_ = 0;
   }
 
-  if (disable_csrss_) {
-    // Close all ALPC ports to disable CSRSS.
-    if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-      policy_->AddKernelObjectToClose(L"ALPC Port", NULL);
-    }
-  }
+  if (disable_csrss_)
+    policy_->SetDisconnectCsrss();
 
   // Get the path to the sandboxed process.
   wchar_t prog_name[MAX_PATH];

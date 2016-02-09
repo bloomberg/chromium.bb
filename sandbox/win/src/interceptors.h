@@ -34,6 +34,7 @@ enum InterceptorId {
   // Process-thread dispatcher:
   CREATE_PROCESSW_ID,
   CREATE_PROCESSA_ID,
+  CREATE_THREAD_ID,
   // Registry dispatcher:
   CREATE_KEY_ID,
   OPEN_KEY_ID,

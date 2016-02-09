@@ -133,6 +133,7 @@ PolicyBase::PolicyBase()
       delayed_integrity_level_(INTEGRITY_LEVEL_LAST),
       mitigations_(0),
       delayed_mitigations_(0),
+      is_csrss_connected_(true),
       policy_maker_(NULL),
       policy_(NULL),
       lowbox_sid_(NULL) {
@@ -625,6 +626,13 @@ bool PolicyBase::OnJobEmpty(HANDLE job) {
   return true;
 }
 
+void PolicyBase::SetDisconnectCsrss() {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    is_csrss_connected_ = false;
+    AddKernelObjectToClose(L"ALPC Port", NULL);
+  }
+}
+
 EvalResult PolicyBase::EvalPolicy(int service,
                                   CountedParameterSetBase* params) {
   if (NULL != policy_) {
@@ -677,7 +685,7 @@ bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {
     }
   }
 
-  if (!SetupBasicInterceptions(&manager))
+  if (!SetupBasicInterceptions(&manager, is_csrss_connected_))
     return false;
 
   if (!manager.InitializeInterceptions())

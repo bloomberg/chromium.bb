@@ -201,6 +201,20 @@ SANDBOX_INTERCEPT BOOL WINAPI TargetCreateProcessA64(
                               process_information);
 }
 
+SANDBOX_INTERCEPT HANDLE WINAPI
+TargetCreateThread64(LPSECURITY_ATTRIBUTES thread_attributes,
+                     SIZE_T stack_size,
+                     LPTHREAD_START_ROUTINE start_address,
+                     PVOID parameter,
+                     DWORD creation_flags,
+                     LPDWORD thread_id) {
+  CreateThreadFunction orig_fn =
+      reinterpret_cast<CreateThreadFunction>(g_originals[CREATE_THREAD_ID]);
+  return TargetCreateThread(orig_fn, thread_attributes, stack_size,
+                            start_address, parameter, creation_flags,
+                            thread_id);
+}
+
 // -----------------------------------------------------------------------
 
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtCreateKey64(

@@ -122,6 +122,15 @@ SANDBOX_INTERCEPT BOOL WINAPI TargetCreateProcessA64(
     LPVOID environment, LPCSTR current_directory, LPSTARTUPINFOA startup_info,
     LPPROCESS_INFORMATION process_information);
 
+// Interception of CreateThread in kernel32.dll.
+SANDBOX_INTERCEPT HANDLE WINAPI
+TargetCreateThread64(LPSECURITY_ATTRIBUTES thread_attributes,
+                     SIZE_T stack_size,
+                     LPTHREAD_START_ROUTINE start_address,
+                     PVOID parameter,
+                     DWORD creation_flags,
+                     LPDWORD thread_id);
+
 // -----------------------------------------------------------------------
 // Interceptors handled by the registry dispatcher.
 
