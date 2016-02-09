@@ -786,6 +786,14 @@ willPositionSheet:(NSWindow*)sheet
 
   [self resetCustomAppKitFullscreenVariables];
 
+  // Ensures that the permission bubble shows up properly at the front.
+  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  if (manager && manager->IsBubbleVisible()) {
+    NSWindow* bubbleWindow = manager->GetBubbleWindow();
+    DCHECK(bubbleWindow);
+    [bubbleWindow orderFront:nil];
+  }
+
   // Ensure that the window is layout properly.
   [self layoutSubviews];
 }
