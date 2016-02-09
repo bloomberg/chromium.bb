@@ -2625,12 +2625,6 @@ void CalculateRenderSurfaceLayerListInternal(
     DCHECK(!render_to_separate_surface || IsRootLayer(layer));
     return;
   }
-
-  if (layer->HasContributingDelegatedRenderPasses()) {
-    layer->render_target()
-        ->render_surface()
-        ->AddContributingDelegatedRenderPassLayer(layer);
-  }
 }
 
 void CalculateRenderTarget(

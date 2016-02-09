@@ -528,8 +528,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
   }
   // If the layer clips its descendants but it is not axis-aligned with respect
   // to its parent.
-  bool layer_clips_external_content =
-      LayerClipsSubtree(layer) || layer->HasDelegatedContent();
+  bool layer_clips_external_content = LayerClipsSubtree(layer);
   if (layer_clips_external_content && !preserves_2d_axis_alignment &&
       num_descendants_that_draw_content > 0) {
     TRACE_EVENT_INSTANT0(

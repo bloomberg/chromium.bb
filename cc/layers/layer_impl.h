@@ -278,11 +278,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual void GetContentsResourceId(ResourceId* resource_id,
                                      gfx::Size* resource_size) const;
 
-  virtual bool HasDelegatedContent() const;
-  virtual bool HasContributingDelegatedRenderPasses() const;
-  virtual RenderPassId FirstContributingRenderPassId() const;
-  virtual RenderPassId NextContributingRenderPassId(RenderPassId id) const;
-
   virtual void NotifyTileStateChanged(const Tile* tile) {}
 
   virtual ScrollbarLayerImplBase* ToScrollbarLayer();

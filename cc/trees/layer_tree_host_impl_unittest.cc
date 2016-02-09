@@ -24,7 +24,6 @@
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/append_quads_data.h"
-#include "cc/layers/delegated_renderer_layer_impl.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/io_surface_layer_impl.h"
 #include "cc/layers/layer_impl.h"

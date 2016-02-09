@@ -24,7 +24,6 @@
 namespace cc {
 
 class DamageTracker;
-class DelegatedRendererLayerImpl;
 class Occlusion;
 class RenderPassId;
 class RenderPassSink;
@@ -127,7 +126,6 @@ class CC_EXPORT RenderSurfaceImpl {
   }
 
   LayerImplList& layer_list() { return layer_list_; }
-  void AddContributingDelegatedRenderPassLayer(LayerImpl* layer);
   void ClearLayerLists();
 
   int OwningLayerId() const;
@@ -179,8 +177,6 @@ class CC_EXPORT RenderSurfaceImpl {
   gfx::Rect clip_rect_;
 
   LayerImplList layer_list_;
-  std::vector<DelegatedRendererLayerImpl*>
-      contributing_delegated_render_pass_layer_list_;
   Occlusion occlusion_in_content_space_;
 
   // The nearest ancestor target surface that will contain the contents of this

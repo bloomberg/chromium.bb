@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "cc/layers/delegated_frame_provider.h"
-#include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"
@@ -22,8 +20,6 @@
 #include "cc/resources/single_release_callback.h"
 #include "cc/test/failure_output_surface.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_delegated_renderer_layer.h"
-#include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -944,10 +940,6 @@ class LayerTreeHostContextTestDontUseLostResources
     frame_data->render_pass_list.push_back(std::move(pass_for_quad));
     frame_data->render_pass_list.push_back(std::move(pass));
 
-    delegated_resource_collection_ = new DelegatedFrameResourceCollection;
-    delegated_frame_provider_ = new DelegatedFrameProvider(
-        delegated_resource_collection_.get(), std::move(frame_data));
-
     ResourceId resource = child_resource_provider_->CreateResource(
         gfx::Size(4, 4), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
     ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
@@ -965,13 +957,6 @@ class LayerTreeHostContextTestDontUseLostResources
     scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(10, 10));
     root->SetIsDrawable(true);
-
-    scoped_refptr<FakeDelegatedRendererLayer> delegated =
-        FakeDelegatedRendererLayer::Create(layer_settings(),
-                                           delegated_frame_provider_.get());
-    delegated->SetBounds(gfx::Size(10, 10));
-    delegated->SetIsDrawable(true);
-    root->AddChild(delegated);
 
     scoped_refptr<PictureLayer> layer =
         PictureLayer::Create(layer_settings(), &client_);
@@ -1120,10 +1105,6 @@ class LayerTreeHostContextTestDontUseLostResources
   scoped_ptr<FakeOutputSurface> child_output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> child_resource_provider_;
-
-  scoped_refptr<DelegatedFrameResourceCollection>
-      delegated_resource_collection_;
-  scoped_refptr<DelegatedFrameProvider> delegated_frame_provider_;
 
   scoped_refptr<VideoFrame> color_video_frame_;
   scoped_refptr<VideoFrame> hw_video_frame_;

@@ -443,22 +443,6 @@ void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
   }
 }
 
-bool LayerImpl::HasDelegatedContent() const {
-  return false;
-}
-
-bool LayerImpl::HasContributingDelegatedRenderPasses() const {
-  return false;
-}
-
-RenderPassId LayerImpl::FirstContributingRenderPassId() const {
-  return RenderPassId(0, 0);
-}
-
-RenderPassId LayerImpl::NextContributingRenderPassId(RenderPassId id) const {
-  return RenderPassId(0, 0);
-}
-
 void LayerImpl::GetContentsResourceId(ResourceId* resource_id,
                                       gfx::Size* resource_size) const {
   NOTREACHED();

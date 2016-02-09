@@ -332,9 +332,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual void SetLayerTreeHost(LayerTreeHost* host);
 
-  virtual bool HasDelegatedContent() const;
-  bool HasContributingDelegatedRenderPasses() const { return false; }
-
   void SetIsDrawable(bool is_drawable);
 
   void SetHideLayerAndSubtree(bool hide);

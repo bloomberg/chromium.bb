@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "cc/blink/web_layer_impl.h"
-#include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/context_provider.h"

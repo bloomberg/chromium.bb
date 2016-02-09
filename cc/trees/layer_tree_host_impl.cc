@@ -901,20 +901,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
         frame->will_draw_layers.push_back(*it);
 
-        if (it->HasContributingDelegatedRenderPasses()) {
-          RenderPassId contributing_render_pass_id =
-              it->FirstContributingRenderPassId();
-          while (true) {
-            RenderPass* pass = FindRenderPassById(frame->render_passes,
-                                                  contributing_render_pass_id);
-            if (!pass)
-              break;
-            it->AppendQuads(pass, &append_quads_data);
-            contributing_render_pass_id =
-                it->NextContributingRenderPassId(contributing_render_pass_id);
-          }
-        }
-
         it->AppendQuads(target_render_pass, &append_quads_data);
 
         // For layers that represent themselves, add composite frame timing

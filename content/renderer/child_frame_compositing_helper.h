@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
-#include "cc/layers/delegated_frame_resource_collection.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_id.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"

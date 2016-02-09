@@ -1675,14 +1675,6 @@ void Layer::UpdateDrawsContent(bool has_drawable_content) {
   if (draws_content == draws_content_)
     return;
 
-  if (HasDelegatedContent()) {
-    // Layers with delegated content need to be treated as if they have as
-    // many children as the number of layers they own delegated quads for.
-    // Since we don't know this number right now, we choose one that acts like
-    // infinity for our purposes.
-    AddDrawableDescendants(draws_content ? 1000 : -1000);
-  }
-
   if (parent())
     parent()->AddDrawableDescendants(draws_content ? 1 : -1);
 
@@ -1947,10 +1939,6 @@ void Layer::AddDrawableDescendants(int num) {
 
 void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
   benchmark->RunOnLayer(this);
-}
-
-bool Layer::HasDelegatedContent() const {
-  return false;
 }
 
 void Layer::SetFrameTimingRequests(
