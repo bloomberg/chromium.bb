@@ -44,18 +44,8 @@ bool IsPinchToZoomEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  // --disable-pinch should always disable pinch
-  if (command_line.HasSwitch(switches::kDisablePinch))
-    return false;
-
-#if defined(OS_WIN)
-  return base::win::GetVersion() >= base::win::VERSION_WIN8;
-#elif defined(OS_CHROMEOS)
-  return true;
-#else
-  return command_line.HasSwitch(switches::kEnableViewport) ||
-      command_line.HasSwitch(switches::kEnablePinch);
-#endif
+  // Enable pinch everywhere unless it's been explicitly disabled.
+  return !command_line.HasSwitch(switches::kDisablePinch);
 }
 
 #if defined(OS_WIN)
