@@ -17683,6 +17683,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="JSDialogs.FineTiming.TimeBetweenDialogClosedAndNextDialogCreated"
+    units="ms">
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Fine-grained (in msec) time between closing a Javascript dialog and opening
+    another, to track very frequent dialogs.
+  </summary>
+</histogram>
+
+<histogram
+    name="JSDialogs.FineTiming.TimeBetweenDialogCreatedAndNextDialogCreated"
+    units="ms">
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Fine-grained (in msec) time between opening a Javascript dialog and opening
+    another, to track very frequent dialogs.
+  </summary>
+</histogram>
+
+<histogram
+    name="JSDialogs.FineTiming.TimeBetweenDialogCreatedAndSameDialogClosed"
+    units="ms">
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Fine-grained (in msec) time between opening a Javascript dialog and closing
+    it, to track very short-lived dialogs.
+  </summary>
+</histogram>
+
 <histogram name="Keyboard.KeystrokeDeltas" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -51013,6 +51043,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of tabs open across all browser windows when a tab was discarded
     due to low memory conditions.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.FineTiming.TimeBetweenTabClosedAndNextTabCreated"
+    units="ms">
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Fine-grained (in msec) time between closing a tab and opening another, to
+    track very frequent tabs.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.FineTiming.TimeBetweenTabCreatedAndNextTabCreated"
+    units="ms">
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Fine-grained (in msec) time between opening a tab and opening another, to
+    track very frequent tabs.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.FineTiming.TimeBetweenTabCreatedAndSameTabClosed"
+    units="ms">
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Fine-grained (in msec) time between opening a tab and closing it, to track
+    very short-lived tabs.
   </summary>
 </histogram>
 

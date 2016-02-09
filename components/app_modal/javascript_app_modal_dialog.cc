@@ -4,6 +4,8 @@
 
 #include "components/app_modal/javascript_app_modal_dialog.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
@@ -72,7 +74,8 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       is_before_unload_dialog_(is_before_unload_dialog),
       is_reload_(is_reload),
       callback_(callback),
-      use_override_prompt_text_(false) {
+      use_override_prompt_text_(false),
+      creation_time_(base::TimeTicks::Now()) {
   EnforceMaxTextSize(message_text, &message_text_);
   EnforceMaxPromptSize(default_prompt_text, &default_prompt_text_);
 }
@@ -95,10 +98,7 @@ void JavaScriptAppModalDialog::Invalidate() {
     return;
 
   AppModalDialog::Invalidate();
-  if (!callback_.is_null()) {
-    callback_.Run(false, base::string16());
-    callback_.Reset();
-  }
+  CallDialogClosedCallback(false, base::string16());
   if (native_dialog())
     CloseModalDialog();
 }
@@ -142,12 +142,9 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
   if (!IsValid())
     return;
 
-  if (!callback_.is_null()) {
-    callback_.Run(success, user_input);
-    callback_.Reset();
-  }
+  CallDialogClosedCallback(success, user_input);
 
-  // The callback_ above may delete web_contents_, thus removing the extra
+  // The close callback above may delete web_contents_, thus removing the extra
   // data from the map owned by ::JavaScriptDialogManager. Make sure
   // to only use the data if still present. http://crbug.com/236476
   ExtraDataMap::iterator extra_data =
@@ -160,6 +157,20 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
   // On Views, we can end up coming through this code path twice :(.
   // See crbug.com/63732.
   AppModalDialog::Invalidate();
+}
+
+void JavaScriptAppModalDialog::CallDialogClosedCallback(bool success,
+    const base::string16& user_input) {
+  // TODO(joenotcharles): Both the callers of this function also check IsValid
+  // and call AppModalDialog::Invalidate, but in different orders. If the
+  // difference is not significant, more common code could be moved here.
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "JSDialogs.FineTiming.TimeBetweenDialogCreatedAndSameDialogClosed",
+      base::TimeTicks::Now() - creation_time_);
+  if (!callback_.is_null()) {
+    callback_.Run(success, user_input);
+    callback_.Reset();
+  }
 }
 
 // static
