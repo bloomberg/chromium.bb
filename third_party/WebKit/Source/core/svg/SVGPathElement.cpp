@@ -68,14 +68,31 @@ DEFINE_TRACE(SVGPathElement)
 
 DEFINE_NODE_FACTORY(SVGPathElement)
 
+const StylePath* SVGPathElement::stylePath() const
+{
+    if (LayoutObject* layoutObject = this->layoutObject())
+        return layoutObject->styleRef().svgStyle().d();
+    return m_path->currentValue()->pathValue()->cachedPath();
+}
+
+float SVGPathElement::pathLengthScaleFactor() const
+{
+    if (!pathLength()->isSpecified())
+        return 1;
+    float authorPathLength = pathLength()->currentValue()->value();
+    if (authorPathLength < 0)
+        return 1;
+    if (!authorPathLength)
+        return 0;
+    float computedPathLength = stylePath()->length();
+    if (!computedPathLength)
+        return 1;
+    return computedPathLength / authorPathLength;
+}
+
 Path SVGPathElement::asPath() const
 {
-    if (layoutObject()) {
-        const SVGComputedStyle& svgStyle = layoutObject()->styleRef().svgStyle();
-        return svgStyle.d()->path();
-    }
-
-    return m_path->currentValue()->pathValue()->cachedPath()->path();
+    return stylePath()->path();
 }
 
 const SVGPathByteStream& SVGPathElement::pathByteStream() const

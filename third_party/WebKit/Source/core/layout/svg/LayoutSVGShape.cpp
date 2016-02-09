@@ -67,24 +67,10 @@ void LayoutSVGShape::createPath()
 
 float LayoutSVGShape::dashScaleFactor() const
 {
-    if (!isSVGPathElement(element()))
+    if (!isSVGPathElement(element())
+        || !styleRef().svgStyle().strokeDashArray()->size())
         return 1;
-    SVGPathElement& pathElement = toSVGPathElement(*element());
-    if (!pathElement.pathLength()->isSpecified())
-        return 1;
-    const SVGComputedStyle& svgStyle = styleRef().svgStyle();
-    float authorPathLength = pathElement.pathLength()->currentValue()->value();
-    if (authorPathLength < 0 || !svgStyle.strokeDashArray()->size())
-        return 1;
-    if (!authorPathLength)
-        return 0;
-    // Since we know this is a <path> element, we also know the source of the
-    // path - the 'd' presentation attribute. Since the StylePath already
-    // caches the computed path length for use, use that here directly.
-    float computedPathLength = svgStyle.d()->length();
-    if (!computedPathLength)
-        return 1;
-    return computedPathLength / authorPathLength;
+    return toSVGPathElement(*element()).pathLengthScaleFactor();
 }
 
 void LayoutSVGShape::updateShapeFromElement()

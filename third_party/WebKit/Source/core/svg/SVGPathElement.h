@@ -29,6 +29,8 @@
 
 namespace blink {
 
+class StylePath;
+
 class SVGPathElement final : public SVGGeometryElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -42,6 +44,7 @@ public:
 
     SVGAnimatedPath* path() const { return m_path.get(); }
     SVGAnimatedNumber* pathLength() const { return m_pathLength.get(); }
+    float pathLengthScaleFactor() const;
 
     const SVGPathByteStream& pathByteStream() const;
 
@@ -52,6 +55,8 @@ public:
 
 private:
     explicit SVGPathElement(Document&);
+
+    const StylePath* stylePath() const;
 
     void svgAttributeChanged(const QualifiedName&) override;
 
