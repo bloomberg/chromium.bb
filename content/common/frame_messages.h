@@ -221,9 +221,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // Whether this commit created a new entry.
   IPC_STRUCT_MEMBER(bool, did_create_new_entry)
 
-  // Whether this commit should replace the current entry.
-  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
-
   // Information regarding the security of the connection (empty if the
   // connection was not secure).
   IPC_STRUCT_MEMBER(std::string, security_info)

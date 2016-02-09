@@ -20,7 +20,7 @@ http/tests/security/contentSecurityPolicy/1.1/referrer-empty-http-https.html [ C
 http/tests/security/contentSecurityPolicy/1.1/referrer-invalid-http-https.html [ Crash ]
 http/tests/security/contentSecurityPolicy/1.1/referrer-never-http-https.html [ Crash ]
 http/tests/security/contentSecurityPolicy/1.1/referrer-origin-http-https.html [ Crash ]
-http/tests/security/cross-frame-access-document-direct.html [ Crash Timeout ]
+http/tests/security/cross-frame-access-document-direct.html [ Crash ]
 http/tests/security/frameNavigation/xss-ALLOWED-targeted-subframe-navigation-change.html [ Crash Timeout ]
 http/tests/security/listener/xss-inactive-closure.html [ Crash ]
 http/tests/security/listener/xss-JSTargetNode-onclick-addEventListener.html [ Crash ]
