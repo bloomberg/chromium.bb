@@ -48,7 +48,7 @@ PassRefPtrWillBeRawPtr<ScriptResource> ScriptResource::fetch(FetchRequest& reque
 }
 
 ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const String& charset)
-    : TextResource(resourceRequest, Script, "application/javascript", charset), m_integrityChecked(false)
+    : TextResource(resourceRequest, Script, "application/javascript", charset), m_integrityDisposition(ScriptIntegrityDisposition::NotChecked)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptScript, ("*/*", AtomicString::ConstructFromLiteral));
 
@@ -118,6 +118,11 @@ bool ScriptResource::mimeTypeAllowedByNosniff() const
     return parseContentTypeOptionsHeader(m_response.httpHeaderField(HTTPNames::X_Content_Type_Options)) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
 }
 
+void ScriptResource::setIntegrityDisposition(ScriptIntegrityDisposition disposition)
+{
+    ASSERT(disposition != ScriptIntegrityDisposition::NotChecked);
+    m_integrityDisposition = disposition;
+}
 bool ScriptResource::mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const
 {
     if (request.integrityMetadata().isEmpty())
