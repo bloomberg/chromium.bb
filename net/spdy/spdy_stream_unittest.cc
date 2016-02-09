@@ -248,9 +248,10 @@ TEST_P(SpdyStreamTest, Trailers) {
       spdy_util_.ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   AddRead(*echo);
 
-  const char* const kExtraHeaders[] = {"foo", "bar"};
+  SpdyHeaderBlock late_headers;
+  late_headers["foo"] = "bar";
   scoped_ptr<SpdyFrame> trailers(
-      spdy_util_.ConstructSpdyHeaderFrame(1, kExtraHeaders, 1));
+      spdy_util_.ConstructSpdyResponseHeaders(1, late_headers, false));
   AddRead(*trailers);
 
   AddReadEOF();
@@ -546,7 +547,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeaders) {
   GURL url(kStreamUrl);
 
   scoped_ptr<SpdyFrame> syn(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   AddWrite(*syn);
 
   const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
@@ -595,7 +596,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
   GURL url(kStreamUrl);
 
   scoped_ptr<SpdyFrame> syn(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   AddWrite(*syn);
 
   scoped_ptr<SpdyFrame>
@@ -658,7 +659,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
   GURL url(kStreamUrl);
 
   scoped_ptr<SpdyFrame> syn(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   AddWrite(*syn);
 
   scoped_ptr<SpdyFrame>
@@ -671,11 +672,10 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
 
   AddReadPause();
 
-  scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
-  (*late_headers)["X-UpperCase"] = "yes";
-  scoped_ptr<SpdyFrame> headers_frame(spdy_util_.ConstructSpdyControlFrame(
-      std::move(late_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
-      0));
+  SpdyHeaderBlock late_headers;
+  late_headers["X-UpperCase"] = "yes";
+  scoped_ptr<SpdyFrame> headers_frame(
+      spdy_util_.ConstructSpdyReply(2, late_headers));
   AddRead(*headers_frame);
 
   AddWritePause();
@@ -735,7 +735,7 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
   GURL url(kStreamUrl);
 
   scoped_ptr<SpdyFrame> syn(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   AddWrite(*syn);
 
   scoped_ptr<SpdyFrame>
@@ -748,11 +748,10 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
 
   AddReadPause();
 
-  scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
-  (*late_headers)[spdy_util_.GetStatusKey()] = "500 Server Error";
-  scoped_ptr<SpdyFrame> headers_frame(spdy_util_.ConstructSpdyControlFrame(
-      std::move(late_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
-      0));
+  SpdyHeaderBlock late_headers;
+  late_headers[spdy_util_.GetStatusKey()] = "500 Server Error";
+  scoped_ptr<SpdyFrame> headers_frame(
+      spdy_util_.ConstructSpdyReply(2, late_headers));
   AddRead(*headers_frame);
 
   AddReadPause();
@@ -1064,7 +1063,7 @@ TEST_P(SpdyStreamTest, ReceivedBytes) {
   GURL url(kStreamUrl);
 
   scoped_ptr<SpdyFrame> syn(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   AddWrite(*syn);
 
   AddReadPause();
@@ -1110,8 +1109,8 @@ TEST_P(SpdyStreamTest, ReceivedBytes) {
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
   int64_t reply_frame_len = reply->size();
-  int64_t data_header_len =
-      spdy_util_.CreateFramer(false)->GetDataFrameMinimumSize();
+  int64_t data_header_len = SpdyConstants::GetDataFrameMinimumSize(
+      NextProtoToSpdyMajorVersion(GetProtocol()));
   int64_t data_frame_len = data_header_len + kPostBodyLength;
   int64_t response_len = reply_frame_len + data_frame_len;
 

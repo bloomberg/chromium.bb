@@ -54,7 +54,6 @@ class NET_EXPORT SpdySessionPool
       SSLConfigService* ssl_config_service,
       const base::WeakPtr<HttpServerProperties>& http_server_properties,
       TransportSecurityState* transport_security_state,
-      bool enable_compression,
       bool enable_ping_based_connection_checking,
       NextProto default_protocol,
       size_t session_max_recv_window_size,
@@ -209,7 +208,6 @@ class NET_EXPORT SpdySessionPool
   // Defaults to true. May be controlled via SpdySessionPoolPeer for tests.
   bool verify_domain_authentication_;
   bool enable_sending_initial_data_;
-  bool enable_compression_;
   bool enable_ping_based_connection_checking_;
   const NextProto default_protocol_;
   size_t session_max_recv_window_size_;

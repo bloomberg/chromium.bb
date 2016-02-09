@@ -34,15 +34,12 @@ SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
   return HTTP2;
 }
 
-BufferedSpdyFramer::BufferedSpdyFramer(SpdyMajorVersion version,
-                                       bool enable_compression)
+BufferedSpdyFramer::BufferedSpdyFramer(SpdyMajorVersion version)
     : spdy_framer_(version),
       visitor_(NULL),
       header_buffer_valid_(false),
       header_stream_id_(SpdyFramer::kInvalidStream),
-      frames_received_(0) {
-  spdy_framer_.set_enable_compression(enable_compression);
-}
+      frames_received_(0) {}
 
 BufferedSpdyFramer::~BufferedSpdyFramer() {
 }

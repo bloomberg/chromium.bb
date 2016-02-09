@@ -168,7 +168,6 @@ class SSLClientSocketPoolTest
     params.http_auth_handler_factory = http_auth_handler_factory_.get();
     params.http_server_properties =
         http_server_properties_.GetWeakPtr();
-    params.enable_spdy_compression = false;
     params.spdy_default_protocol = GetParam();
     return new HttpNetworkSession(params);
   }

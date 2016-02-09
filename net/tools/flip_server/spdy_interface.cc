@@ -38,7 +38,7 @@ SpdySM::SpdySM(SMConnection* connection,
                MemoryCache* memory_cache,
                FlipAcceptor* acceptor,
                SpdyMajorVersion spdy_version)
-    : buffered_spdy_framer_(new BufferedSpdyFramer(spdy_version, true)),
+    : buffered_spdy_framer_(new BufferedSpdyFramer(spdy_version)),
       valid_spdy_session_(false),
       connection_(connection),
       client_output_list_(connection->output_list()),
@@ -604,7 +604,7 @@ void SpdySM::GetOutput() {
 
 void SpdySM::CreateFramer(SpdyMajorVersion spdy_version) {
   DCHECK(!buffered_spdy_framer_);
-  buffered_spdy_framer_.reset(new BufferedSpdyFramer(spdy_version, true));
+  buffered_spdy_framer_.reset(new BufferedSpdyFramer(spdy_version));
   buffered_spdy_framer_->set_visitor(this);
 }
 

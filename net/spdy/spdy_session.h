@@ -240,7 +240,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               TransportSecurityState* transport_security_state,
               bool verify_domain_authentication,
               bool enable_sending_initial_data,
-              bool enable_compression,
               bool enable_ping_based_connection_checking,
               NextProto default_protocol,
               size_t session_max_recv_window_size,
@@ -1158,7 +1157,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Outside of tests, these should always be true.
   bool verify_domain_authentication_;
   bool enable_sending_initial_data_;
-  bool enable_compression_;
   bool enable_ping_based_connection_checking_;
 
   // The SPDY protocol used. Always between kProtoSPDYMinimumVersion and

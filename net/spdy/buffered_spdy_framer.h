@@ -145,8 +145,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 class NET_EXPORT_PRIVATE BufferedSpdyFramer
     : public SpdyFramerVisitorInterface {
  public:
-  BufferedSpdyFramer(SpdyMajorVersion version,
-                     bool enable_compression);
+  explicit BufferedSpdyFramer(SpdyMajorVersion version);
   ~BufferedSpdyFramer() override;
 
   // Sets callbacks to be called from the buffered spdy framer.  A visitor must

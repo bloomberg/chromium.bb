@@ -169,7 +169,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
       read_buf_(NULL),
       session_deps_(GetProtocol()),
       connect_data_(SYNCHRONOUS, OK),
-      framer_(spdy_util_.spdy_version(), false),
+      framer_(spdy_util_.spdy_version()),
       user_agent_(kUserAgent),
       url_(kRequestUrl),
       proxy_host_port_(kProxyHost, kProxyPort),
@@ -341,7 +341,7 @@ SpdyFrame*
 SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
   SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
-  return spdy_util_.ConstructSpdySyn(kStreamId, block, LOWEST, false, false);
+  return spdy_util_.ConstructSpdySyn(kStreamId, block, LOWEST, false);
 }
 
 // Constructs a SPDY SYN_STREAM frame for a CONNECT request which includes
@@ -350,7 +350,7 @@ SpdyFrame* SpdyProxyClientSocketTest::ConstructConnectAuthRequestFrame() {
   SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
   block["proxy-authorization"] = "Basic Zm9vOmJhcg==";
-  return spdy_util_.ConstructSpdySyn(kStreamId, block, LOWEST, false, false);
+  return spdy_util_.ConstructSpdySyn(kStreamId, block, LOWEST, false);
 }
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.

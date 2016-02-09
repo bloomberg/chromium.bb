@@ -166,7 +166,7 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
 
 TEST_P(SpdyHttpStreamTest, SendRequest) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
       CreateMockWrite(*req.get(), 0),
   };
@@ -226,9 +226,9 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
 
 TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   scoped_ptr<SpdyFrame> req1(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> req2(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 3, LOWEST, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
     CreateMockWrite(*req2, 1),
@@ -325,7 +325,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
 }
 
 TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+  BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
@@ -389,7 +389,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 }
 
 TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+  BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
   scoped_ptr<SpdyFrame> body(
@@ -719,8 +719,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
 TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   const char* const full_url = "http://www.example.org/foo?query=what#anchor";
   const char* const base_url = "http://www.example.org/foo?query=what";
-  scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet(base_url, false, 1, LOWEST));
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyGet(base_url, 1, LOWEST));
   MockWrite writes[] = {
       CreateMockWrite(*req.get(), 0),
   };

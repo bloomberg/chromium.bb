@@ -169,7 +169,7 @@ class SpdySMTestBase : public ::testing::TestWithParam<SpdyMajorVersion> {
                                     acceptor_.get(),
                                     GetParam()));
 
-    spdy_framer_.reset(new BufferedSpdyFramer(GetParam(), true));
+    spdy_framer_.reset(new BufferedSpdyFramer(GetParam()));
     spdy_framer_visitor_.reset(new SpdyFramerVisitor);
     spdy_framer_->set_visitor(spdy_framer_visitor_.get());
   }

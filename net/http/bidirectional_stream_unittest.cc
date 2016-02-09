@@ -356,7 +356,7 @@ TEST_F(BidirectionalStreamTest, CreateInsecureStream) {
 // BidirectionalStreamSpdyJob.
 TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", false, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   scoped_ptr<SpdyFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -443,7 +443,7 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
 }
 
 TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+  BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
       "https://www.example.org", 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -553,7 +553,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
 // read even if the read queue is empty.
 TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", false, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   scoped_ptr<SpdyFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -615,7 +615,7 @@ TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
 
 TEST_F(BidirectionalStreamTest, TestBuffering) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", false, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   scoped_ptr<SpdyFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -696,7 +696,7 @@ TEST_F(BidirectionalStreamTest, TestBuffering) {
 
 TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", false, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   scoped_ptr<SpdyFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -712,9 +712,10 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
 
   scoped_ptr<SpdyFrame> body_frame(spdy_util_.ConstructSpdyBodyFrame(1, false));
 
-  const char* const kTrailers[] = {"foo", "bar"};
+  SpdyHeaderBlock late_headers;
+  late_headers["foo"] = "bar";
   scoped_ptr<SpdyFrame> trailers(
-      spdy_util_.ConstructSpdyHeaderFrame(1, kTrailers, 1, true));
+      spdy_util_.ConstructSpdyResponseHeaders(1, late_headers, true));
 
   MockRead reads[] = {
       CreateMockRead(*resp, 1),           CreateMockRead(*body_frame, 2),
@@ -771,7 +772,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
 }
 
 TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+  BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
       "https://www.example.org", 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -841,7 +842,7 @@ TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
 }
 
 TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+  BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
       "https://www.example.org", 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -961,7 +962,7 @@ INSTANTIATE_TEST_CASE_P(CancelOrDeleteTests,
 
 TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", false, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
 
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
@@ -1017,7 +1018,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
 
 TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", false, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
 
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
@@ -1076,7 +1077,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
 
 TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", false, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
 
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
@@ -1092,9 +1093,10 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
   scoped_ptr<SpdyFrame> response_body_frame(
       spdy_util_.ConstructSpdyBodyFrame(1, false));
 
-  const char* const kTrailers[] = {"foo", "bar"};
+  SpdyHeaderBlock late_headers;
+  late_headers["foo"] = "bar";
   scoped_ptr<SpdyFrame> trailers(
-      spdy_util_.ConstructSpdyHeaderFrame(1, kTrailers, 1, true));
+      spdy_util_.ConstructSpdyResponseHeaders(1, late_headers, true));
 
   MockRead reads[] = {
       CreateMockRead(*resp, 1), CreateMockRead(*response_body_frame, 2),
@@ -1141,7 +1143,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
 
 TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", false, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
 
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));

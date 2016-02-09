@@ -86,8 +86,6 @@ class NET_EXPORT HttpNetworkSession
     uint16_t testing_fixed_https_port;
     bool enable_tcp_fast_open_for_ssl;
 
-    // Compress SPDY headers.
-    bool enable_spdy_compression;
     // Use SPDY ping frames to test for connection health after idle.
     bool enable_spdy_ping_based_connection_checking;
     NextProto spdy_default_protocol;
