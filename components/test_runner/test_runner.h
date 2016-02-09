@@ -590,6 +590,9 @@ class TestRunner : public WebTestRunner,
   // Simulates a click on a Web Notification.
   void SimulateWebNotificationClick(const std::string& title, int action_index);
 
+  // Simulates closing a Web Notification.
+  void SimulateWebNotificationClose(const std::string& title, bool by_user);
+
   // Speech recognition related functions.
   void AddMockSpeechRecognitionResult(const std::string& transcript,
                                       double confidence);

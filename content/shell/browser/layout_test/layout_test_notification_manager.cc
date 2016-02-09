@@ -134,6 +134,24 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title,
           base::Bind(&OnEventDispatchComplete));
 }
 
+void LayoutTestNotificationManager::SimulateClose(const std::string& title,
+                                                  bool by_user) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const auto& persistent_iterator = persistent_notifications_.find(title);
+  if (persistent_iterator == persistent_notifications_.end())
+    return;
+
+  const PersistentNotification& notification = persistent_iterator->second;
+  content::NotificationEventDispatcher::GetInstance()
+      ->DispatchNotificationCloseEvent(
+          notification.browser_context,
+          notification.persistent_id,
+          notification.origin,
+          by_user,
+          base::Bind(&OnEventDispatchComplete));
+}
+
 blink::WebNotificationPermission
 LayoutTestNotificationManager::CheckPermissionOnUIThread(
     BrowserContext* browser_context,

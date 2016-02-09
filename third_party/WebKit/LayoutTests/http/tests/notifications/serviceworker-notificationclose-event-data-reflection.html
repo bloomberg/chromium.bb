@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Notifications: data property reflection in the "notificationclick" event.</title>
+    <title>Notifications: Action reflection in the "notificationclose" event.</title>
     <script src="../resources/permissions-helper.js"></script>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
@@ -11,18 +11,18 @@
   </head>
   <body>
     <script>
-      // Tests that the notification available in the "notificationclick" event in the
+      // Tests that the notification available in the "notificationclose" event in the
       // Service Worker accurately reflects the data attributes of several type
       // with which the notification was created (for this test --) in the document.
 
       async_test(function(test) {
           runNotificationDataReflectionTest(test, {
               run: function (scope) {
-                  testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
+                  testRunner.simulateWebNotificationClose(scope, true /* by_user */);
               },
-              name: 'click'
+              name: 'close'
           });
-      }, 'Clicking on a notification displayed by a Service Worker the notificationclick event.');
+      }, 'NotificationEvent data property should be reflected when the notification is closed by the user.');
     </script>
   </body>
 </html>

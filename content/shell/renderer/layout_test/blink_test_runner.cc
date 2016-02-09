@@ -517,6 +517,12 @@ void BlinkTestRunner::SimulateWebNotificationClick(const std::string& title,
                                                           action_index));
 }
 
+void BlinkTestRunner::SimulateWebNotificationClose(const std::string& title,
+                                                   bool by_user) {
+  Send(new LayoutTestHostMsg_SimulateWebNotificationClose(routing_id(), title,
+                                                          by_user));
+}
+
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
   content::SetDeviceScaleFactor(render_view(), factor);
 }

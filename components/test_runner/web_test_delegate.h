@@ -157,6 +157,8 @@ class WebTestDelegate {
   // Controls Web Notifications.
   virtual void SimulateWebNotificationClick(const std::string& title,
                                             int action_index) = 0;
+  virtual void SimulateWebNotificationClose(const std::string& title,
+                                            bool by_user) = 0;
 
   // Controls the device scale factor of the main WebView for hidpi tests.
   virtual void SetDeviceScaleFactor(float factor) = 0;

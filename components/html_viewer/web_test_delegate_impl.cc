@@ -194,6 +194,11 @@ void WebTestDelegateImpl::SimulateWebNotificationClick(
   NOTIMPLEMENTED();
 }
 
+void WebTestDelegateImpl::SimulateWebNotificationClose(
+    const std::string& title, bool by_user) {
+  NOTIMPLEMENTED();
+}
+
 void WebTestDelegateImpl::SetDeviceScaleFactor(float factor) {
   NOTIMPLEMENTED();
 }

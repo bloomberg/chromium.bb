@@ -102,3 +102,9 @@ addEventListener('notificationclick', function(event) {
                               notification: notificationCopy,
                               action: event.action });
 });
+
+addEventListener('notificationclose', function(event) {
+    var notificationCopy = cloneNotification(event.notification);
+    messagePort.postMessage({ command: 'close',
+                              notification: notificationCopy });
+});

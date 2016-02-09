@@ -34,6 +34,10 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   // clicked. Must be called on the UI thread.
   void SimulateClick(const std::string& title, int action_index);
 
+  // Simulates the closing a notification titled |title|. Must be called on
+  // the UI thread.
+  void SimulateClose(const std::string& title, bool by_user);
+
   // PlatformNotificationService implementation.
   blink::WebNotificationPermission CheckPermissionOnUIThread(
       BrowserContext* browser_context,

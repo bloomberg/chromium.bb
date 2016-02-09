@@ -99,6 +99,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDatabaseQuota(int quota) override;
   void SimulateWebNotificationClick(const std::string& title,
                                     int action_index) override;
+  void SimulateWebNotificationClose(const std::string& title,
+                                    bool by_user) override;
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorProfile(const std::string& name) override;
   void EnableUseZoomForDSF() override;

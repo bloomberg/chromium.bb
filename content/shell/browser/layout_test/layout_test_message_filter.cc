@@ -50,6 +50,7 @@ void LayoutTestMessageFilter::OverrideThreadForMessage(
   if (message.type() == LayoutTestHostMsg_ClearAllDatabases::ID)
     *thread = BrowserThread::FILE;
   if (message.type() == LayoutTestHostMsg_SimulateWebNotificationClick::ID ||
+      message.type() == LayoutTestHostMsg_SimulateWebNotificationClose::ID ||
       message.type() == LayoutTestHostMsg_SetPermission::ID ||
       message.type() == LayoutTestHostMsg_ResetPermissions::ID ||
       message.type() == LayoutTestHostMsg_SetBluetoothAdapter::ID)
@@ -67,6 +68,8 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClick,
                         OnSimulateWebNotificationClick)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClose,
+                        OnSimulateWebNotificationClose)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_AcceptAllCookies, OnAcceptAllCookies)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetPermission, OnSetPermission)
@@ -119,6 +122,14 @@ void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
     manager->SimulateClick(title, action_index);
+}
+
+void LayoutTestMessageFilter::OnSimulateWebNotificationClose(
+    const std::string& title, bool by_user) {
+  LayoutTestNotificationManager* manager =
+      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
+  if (manager)
+    manager->SimulateClose(title, by_user);
 }
 
 void LayoutTestMessageFilter::OnAcceptAllCookies(bool accept) {

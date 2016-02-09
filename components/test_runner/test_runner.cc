@@ -296,6 +296,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetPOSIXLocale(const std::string& locale);
   void SetMIDIAccessorResult(bool result);
   void SimulateWebNotificationClick(const std::string& title, int action_index);
+  void SimulateWebNotificationClose(const std::string& title, bool by_user);
   void AddMockSpeechRecognitionResult(const std::string& transcript,
                                       double confidence);
   void SetMockSpeechRecognitionError(const std::string& error,
@@ -572,6 +573,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMIDIAccessorResult)
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
+      .SetMethod("simulateWebNotificationClose",
+                 &TestRunnerBindings::SimulateWebNotificationClose)
       .SetMethod("addMockSpeechRecognitionResult",
                  &TestRunnerBindings::AddMockSpeechRecognitionResult)
       .SetMethod("setMockSpeechRecognitionError",
@@ -1418,6 +1421,13 @@ void TestRunnerBindings::SimulateWebNotificationClick(const std::string& title,
   if (!runner_)
     return;
   runner_->SimulateWebNotificationClick(title, action_index);
+}
+
+void TestRunnerBindings::SimulateWebNotificationClose(const std::string& title,
+                                                      bool by_user) {
+  if (!runner_)
+    return;
+  runner_->SimulateWebNotificationClose(title, by_user);
 }
 
 void TestRunnerBindings::AddMockSpeechRecognitionResult(
@@ -2986,6 +2996,11 @@ void TestRunner::SetMIDIAccessorResult(bool result) {
 void TestRunner::SimulateWebNotificationClick(const std::string& title,
                                               int action_index) {
   delegate_->SimulateWebNotificationClick(title, action_index);
+}
+
+void TestRunner::SimulateWebNotificationClose(const std::string& title,
+                                              bool by_user) {
+  delegate_->SimulateWebNotificationClose(title, by_user);
 }
 
 void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,

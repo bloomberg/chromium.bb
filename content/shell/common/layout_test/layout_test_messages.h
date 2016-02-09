@@ -30,6 +30,9 @@ IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_SetDatabaseQuota,
 IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_SimulateWebNotificationClick,
                     std::string /* title */,
                     int /* action_index */)
+IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_SimulateWebNotificationClose,
+                    std::string /* title */,
+                    bool /* by_user */)
 IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_AcceptAllCookies,
                     bool /* accept */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_DeleteAllCookies)
