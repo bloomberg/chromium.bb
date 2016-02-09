@@ -272,7 +272,7 @@ void LogTypeQualityMetric(const std::string& base_name,
 void AutofillMetrics::LogCardUploadDecisionMetric(
     CardUploadDecisionMetric metric) {
   DCHECK_LT(metric, NUM_CARD_UPLOAD_DECISION_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.CardUploadDecision", metric,
+  UMA_HISTOGRAM_ENUMERATION("Autofill.CardUploadDecisionExpanded", metric,
                             NUM_CARD_UPLOAD_DECISION_METRICS);
 }
 

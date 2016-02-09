@@ -2246,10 +2246,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Autofill.CardUploadDecision" enum="AutofillCardUploadDecision">
+  <obsolete>
+    Deprecated as of 2/2016, replaced by Autofill.CardUploadDecisionExpanded.
+  </obsolete>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
     Whether upload was offered upon detecting a form submission with credit card
     data and a reason if it wasn't.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.CardUploadDecisionExpanded"
+    enum="AutofillCardUploadDecisionExpanded">
+  <owner>jdonnelly@chromium.org</owner>
+  <summary>
+    Whether upload was offered upon detecting a form submission with credit card
+    data and a detailed reason if it wasn't.
   </summary>
 </histogram>
 
@@ -57746,10 +57758,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="AutofillCardUploadDecision" type="int">
+  <obsolete>
+    Deprecated as of 2/2016, replaced by AutofillCardUploadDecisionExpanded.
+  </obsolete>
   <int value="0" label="Upload offered"/>
   <int value="1" label="Upload not offered, no CVC detected"/>
   <int value="2" label="Upload not offered, no valid address available"/>
   <int value="3" label="Upload not offered, get upload details RPC failed"/>
+</enum>
+
+<enum name="AutofillCardUploadDecisionExpanded" type="int">
+  <int value="0" label="Upload offered"/>
+  <int value="1" label="Upload not offered, no CVC detected"/>
+  <int value="2" label="Upload not offered, no address available"/>
+  <int value="3" label="Upload not offered, no name available"/>
+  <int value="4"
+      label="Upload not offered, addresses had conflicting zip codes"/>
+  <int value="5" label="Upload not offered, no zip code available"/>
+  <int value="6" label="Upload not offered, get upload details RPC failed"/>
 </enum>
 
 <enum name="AutofillCreditCardInfoBar" type="int">

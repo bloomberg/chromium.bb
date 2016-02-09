@@ -396,11 +396,12 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);
 
-  // Returns all web profiles known to the personal data manager whose names
-  // match the name on |card| and that have been created or used within the last
-  // 15 minutes.
-  std::vector<AutofillProfile> GetProfilesForCreditCardUpload(
-      const CreditCard& card);
+  // Examines |card| and the stored profiles and if a candidate set of profiles
+  // is found that matches the client-side validation rules, assigns the values
+  // to |profiles|. If no valid set can be found, returns false.
+  bool GetProfilesForCreditCardUpload(
+      const CreditCard& card,
+      std::vector<AutofillProfile>* profiles) const;
 
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is

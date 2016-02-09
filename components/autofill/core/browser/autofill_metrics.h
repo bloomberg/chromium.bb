@@ -42,15 +42,27 @@ class AutofillMetrics {
     // All the required conditions were satisfied and the card upload prompt was
     // triggered.
     UPLOAD_OFFERED,
-    // No CVC was detected. We don't know whether a valid address was available
+    // No CVC was detected. We don't know whether any addresses were available
     // nor whether we would have been able to get upload details.
     UPLOAD_NOT_OFFERED_NO_CVC,
-    // A CVC was detected but no valid address was available (recently created
-    // or used, with a name matching the card, and with a non-empty zip code).
+    // A CVC was detected but no recently created or used address was available.
     // We don't know whether we would have been able to get upload details.
     UPLOAD_NOT_OFFERED_NO_ADDRESS,
-    // A CVC was detected and a valid address was available but the request to
-    // Payments for upload details failed.
+    // A CVC and one or more addresses were available but no name was found on
+    // either the card or the adress(es). We don't know whether the address(es)
+    // were otherwise valid nor whether we would have been able to get upload
+    // details.
+    UPLOAD_NOT_OFFERED_NO_NAME,
+    // A CVC, multiple addresses, and a name were available but the adresses had
+    // conflicting zip codes. We don't know whether we would have been able to
+    // get upload details.
+    UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS,
+    // A CVC, one or more addresses, and a name were available but no zip code
+    // was found on any of the adress(es). We don't know whether we would have
+    // been able to get upload details.
+    UPLOAD_NOT_OFFERED_NO_ZIP_CODE,
+    // A CVC, one or more valid addresses, and a name were available but the
+    // request to Payments for upload details failed.
     UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED,
     NUM_CARD_UPLOAD_DECISION_METRICS,
   };
