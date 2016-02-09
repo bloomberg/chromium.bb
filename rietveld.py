@@ -416,10 +416,7 @@ class Rietveld(object):
       for retry in xrange(self._maxtries):
         try:
           logging.debug('%s' % request_path)
-          result = self.rpc_server.Send(request_path, **kwargs)
-          # Sometimes GAE returns a HTTP 200 but with HTTP 500 as the content.
-          # How nice.
-          return result
+          return self.rpc_server.Send(request_path, **kwargs)
         except urllib2.HTTPError, e:
           if retry >= (self._maxtries - 1):
             raise
@@ -528,6 +525,11 @@ class OAuthRpcServer(object):
       payload: request is a POST if not None, GET otherwise
       timeout: in seconds
       extra_headers: (dict)
+
+    Returns: the HTTP response body as a string
+
+    Raises:
+      urllib2.HTTPError
     """
     # This method signature should match upload.py:AbstractRpcServer.Send()
     method = 'GET'
@@ -543,7 +545,6 @@ class OAuthRpcServer(object):
     try:
       if timeout:
         self._http.timeout = timeout
-      # TODO(pgervais) implement some kind of retry mechanism (see upload.py).
       url = self.host + request_path
       if kwargs:
         url += "?" + urllib.urlencode(kwargs)
@@ -571,6 +572,10 @@ class OAuthRpcServer(object):
           self.creds.access_token = None
           continue
         break
+
+      if ret[0].status != 200:
+        raise urllib2.HTTPError(
+            request_path, int(ret[0]['status']), ret[1], None, None)
 
       return ret[1]
 
