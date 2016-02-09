@@ -211,11 +211,11 @@ def GetCppResultWrapperType(kind):
   if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
-    return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
+    return "%sRequest" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceKind(kind):
     return "%sAssociatedPtrInfo" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
+    return "%sAssociatedRequest" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
     return "mojo::String"
   if mojom.IsGenericHandleKind(kind):
@@ -253,11 +253,11 @@ def GetCppWrapperType(kind):
   if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
-    return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
+    return "%sRequest" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceKind(kind):
     return "%sAssociatedPtrInfo" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
+    return "%sAssociatedRequest" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
     return "mojo::String"
   if mojom.IsGenericHandleKind(kind):
@@ -287,11 +287,11 @@ def GetCppConstWrapperType(kind):
   if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
-    return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
+    return "%sRequest" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceKind(kind):
     return "%sAssociatedPtrInfo" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
+    return "%sAssociatedRequest" % GetNameForKind(kind.kind)
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
   if mojom.IsStringKind(kind):

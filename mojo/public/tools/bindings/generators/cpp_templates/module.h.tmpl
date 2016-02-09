@@ -75,10 +75,13 @@ extern const {{constant.kind|cpp_pod_type}} {{constant.name}};
 class {{interface.name}};
 using {{interface.name}}Ptr = mojo::InterfacePtr<{{interface.name}}>;
 using {{interface.name}}PtrInfo = mojo::InterfacePtrInfo<{{interface.name}}>;
+using {{interface.name}}Request = mojo::InterfaceRequest<{{interface.name}}>;
 using {{interface.name}}AssociatedPtr =
     mojo::AssociatedInterfacePtr<{{interface.name}}>;
 using {{interface.name}}AssociatedPtrInfo =
     mojo::AssociatedInterfacePtrInfo<{{interface.name}}>;
+using {{interface.name}}AssociatedRequest =
+    mojo::AssociatedInterfaceRequest<{{interface.name}}>;
 {%  endfor %}
 
 {#--- Struct Forward Declarations -#}
