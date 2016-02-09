@@ -569,6 +569,17 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
       IsMaximized());
 }
 
+int OpaqueBrowserFrameView::GetTopAreaHeight() const {
+  gfx::ImageSkia* frame_image = GetFrameImage();
+  int top_area_height = frame_image->height();
+  if (browser_view()->IsTabStripVisible()) {
+    top_area_height =
+        std::max(top_area_height,
+                 GetBoundsForTabStrip(browser_view()->tabstrip()).bottom());
+  }
+  return top_area_height;
+}
+
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(
     gfx::Canvas* canvas) const {
   frame_background_->set_frame_color(GetFrameColor());

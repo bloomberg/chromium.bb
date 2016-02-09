@@ -26,9 +26,9 @@ namespace {
 #if defined(OS_CHROMEOS)
 // Used for theme fallback colors.
 const SkColor kDefaultColorFrame[] = {
-    SkColorSetRGB(109, 109, 109), SkColorSetRGB(204, 204, 204)};
+    SkColorSetRGB(0xC3, 0xC3, 0xC4), SkColorSetRGB(204, 204, 204)};
 const SkColor kDefaultColorFrameInactive[] = {
-    SkColorSetRGB(176, 176, 176), SkColorSetRGB(220, 220, 220)};
+    SkColorSetRGB(0xCD, 0xCD, 0xCE), SkColorSetRGB(220, 220, 220)};
 #elif defined(OS_MACOSX)
 const SkColor kDefaultColorFrame = SkColorSetRGB(224, 224, 224);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(246, 246, 246);
@@ -37,10 +37,19 @@ const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 #endif  // OS_CHROMEOS
 
-const SkColor kDefaultColorFrameIncognito[] = {
-    SkColorSetRGB(83, 106, 139), SkColorSetRGB(160, 160, 162)};
+// These colors are the same between CrOS and !CrOS for MD, so this ifdef can be
+// removed when we stop supporting pre-MD.
+#if defined(OS_CHROMEOS)
+const SkColor kDefaultColorFrameIncognito[] = {SkColorSetRGB(0xA0, 0xA0, 0xA4),
+                                               SkColorSetRGB(0x28, 0x2B, 0x2D)};
 const SkColor kDefaultColorFrameIncognitoInactive[] = {
-    SkColorSetRGB(126, 139, 156), SkColorSetRGB(120, 120, 122)};
+    SkColorSetRGB(0xAA, 0xAA, 0xAE), SkColorSetRGB(0x14, 0x17, 0x19)};
+#else
+const SkColor kDefaultColorFrameIncognito[] = {SkColorSetRGB(83, 106, 139),
+                                               SkColorSetRGB(0x28, 0x2B, 0x2D)};
+const SkColor kDefaultColorFrameIncognitoInactive[] = {
+    SkColorSetRGB(126, 139, 156), SkColorSetRGB(0x14, 0x17, 0x19)};
+#endif
 
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);

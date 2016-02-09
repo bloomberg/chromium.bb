@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"  // override
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 class BrowserView;
@@ -62,24 +63,17 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   // Paints the title bar, primarily the title string.
   void PaintTitleBar(gfx::Canvas* canvas);
 
-  // Sets |frame_image| and |frame_overlay_image| to the frame image and the
-  // frame overlay image respectivately which should be used to paint the
-  // header.
-  void GetFrameImages(Mode mode,
-                      gfx::ImageSkia* frame_image,
-                      gfx::ImageSkia* frame_overlay_image) const;
+  // Gets the base image to paint for the frame. This may be null, in which case
+  // GetFrameColor() should be used instead.
+  gfx::ImageSkia GetFrameImage(Mode mode) const;
 
-  // Sets |frame_image| and |frame_overlay_image| to the frame image and the
-  // frame overlay image respectively that should be used to paint the header
-  // for tabbed browser windows.
-  void GetFrameImagesForTabbedBrowser(
-      Mode mode,
-      gfx::ImageSkia* frame_image,
-      gfx::ImageSkia* frame_overlay_image) const;
+  // Gets the overlay image to paint on top of the base image. This may be null,
+  // in which case nothing will be drawn.
+  gfx::ImageSkia GetFrameOverlayImage(Mode mode) const;
 
-  // Returns the frame image which should be used to paint the header for popup
-  // browser windows and for hosted app windows which show the toolbar.
-  gfx::ImageSkia GetFrameImageForNonTabbedBrowser(Mode mode) const;
+  // Gets the color to use to paint the frame (when GetFrameImage() returns
+  // a null image).
+  SkColor GetFrameColor(Mode mode) const;
 
   // Updates the size and icons used for the minimize, restore, and close
   // buttons.

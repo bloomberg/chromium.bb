@@ -846,11 +846,10 @@
         <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="theme_frame_incognito_inactive.png" />
       </if>
       <if expr="use_ash">
-        <!-- Ash has a gray frame, Windows uses blue. -->
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="common/ash/theme_frame_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="common/ash/theme_frame_inactive.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO" file="common/ash/theme_frame_incognito_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="common/ash/theme_frame_incognito_inactive.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="notused.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="notused.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO" file="notused.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="notused.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY_INACTIVE" file="notused.png" />

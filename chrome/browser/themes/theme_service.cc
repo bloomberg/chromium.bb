@@ -167,7 +167,7 @@ ThemeService::ThemeService()
       installed_pending_load_id_(kDefaultThemeID),
       number_of_infobars_(0),
       original_theme_provider_(*this, false),
-      otr_theme_provider_(*this, true),
+      incognito_theme_provider_(*this, true),
       weak_ptr_factory_(this) {}
 
 ThemeService::~ThemeService() {
@@ -339,14 +339,14 @@ std::string ThemeService::GetThemeID() const {
   return profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 }
 
-color_utils::HSL ThemeService::GetTint(int id, bool otr) const {
+color_utils::HSL ThemeService::GetTint(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
 
   color_utils::HSL hsl;
   if (theme_supplier_ && theme_supplier_->GetTint(id, &hsl))
     return hsl;
 
-  return ThemeProperties::GetDefaultTint(id, otr);
+  return ThemeProperties::GetDefaultTint(id, incognito);
 }
 
 void ThemeService::ClearAllThemeData() {
@@ -443,8 +443,8 @@ bool ThemeService::UsingSystemTheme() const {
   return UsingDefaultTheme();
 }
 
-gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
-  gfx::Image image = GetImageNamed(id);
+gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id, bool incognito) const {
+  gfx::Image image = GetImageNamed(id, incognito);
   if (image.IsEmpty())
     return nullptr;
   // TODO(pkotwicz): Remove this const cast.  The gfx::Image interface returns
@@ -452,13 +452,13 @@ gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
   return const_cast<gfx::ImageSkia*>(image.ToImageSkia());
 }
 
-SkColor ThemeService::GetColor(int id, bool otr) const {
+SkColor ThemeService::GetColor(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
 
   // For legacy reasons, |theme_supplier_| requires the incognito variants
   // of color IDs.
   int theme_supplier_id = id;
-  if (otr) {
+  if (incognito) {
     if (id == ThemeProperties::COLOR_FRAME)
       theme_supplier_id = ThemeProperties::COLOR_FRAME_INCOGNITO;
     else if (id == ThemeProperties::COLOR_FRAME_INACTIVE)
@@ -476,36 +476,38 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
       ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND;
   switch (id) {
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
-      return color_utils::HSLShift(gfx::kChromeIconGrey,
-                                   GetTint(ThemeProperties::TINT_BUTTONS, otr));
+      return color_utils::HSLShift(
+          gfx::kChromeIconGrey,
+          GetTint(ThemeProperties::TINT_BUTTONS, incognito));
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
       // The active color is overridden in Gtk2UI.
       return SkColorSetA(
-          GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, otr), 0x33);
+          GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
+          0x33);
     case ThemeProperties::COLOR_BACKGROUND_TAB:
       return color_utils::HSLShift(
-          GetColor(ThemeProperties::COLOR_TOOLBAR, otr),
-          GetTint(ThemeProperties::TINT_BACKGROUND_TAB, otr));
+          GetColor(ThemeProperties::COLOR_TOOLBAR, incognito),
+          GetTint(ThemeProperties::TINT_BACKGROUND_TAB, incognito));
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       if (UsingDefaultTheme())
         break;
-      return GetColor(ThemeProperties::COLOR_TOOLBAR, otr);
+      return GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       if (UsingDefaultTheme())
         break;
       // Use 50% of bookmark text color as separator color.
-      return SkColorSetA(GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, otr),
-                         128);
+      return SkColorSetA(
+          GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito), 128);
     case ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT:
-      return IncreaseLightness(GetColor(kNtpText, otr), 0.30);
+      return IncreaseLightness(GetColor(kNtpText, incognito), 0.30);
     case ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
-      return GetColor(kNtpText, otr);
+      return GetColor(kNtpText, incognito);
     case ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE:
-      return IncreaseLightness(GetColor(kNtpText, otr), 0.70);
+      return IncreaseLightness(GetColor(kNtpText, incognito), 0.70);
     case ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
-      return IncreaseLightness(GetColor(kNtpText, otr), 0.86);
+      return IncreaseLightness(GetColor(kNtpText, incognito), 0.86);
     case ThemeProperties::COLOR_NTP_TEXT_LIGHT:
-      return IncreaseLightness(GetColor(kNtpText, otr), 0.40);
+      return IncreaseLightness(GetColor(kNtpText, incognito), 0.40);
     case ThemeProperties::COLOR_TAB_THROBBER_SPINNING:
     case ThemeProperties::COLOR_TAB_THROBBER_WAITING: {
       SkColor base_color =
@@ -513,18 +515,18 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
                                ? ui::NativeTheme::kColorId_ThrobberSpinningColor
                                : ui::NativeTheme::kColorId_ThrobberWaitingColor,
                            nullptr);
-      color_utils::HSL hsl = GetTint(ThemeProperties::TINT_BUTTONS, otr);
+      color_utils::HSL hsl = GetTint(ThemeProperties::TINT_BUTTONS, incognito);
       return color_utils::HSLShift(base_color, hsl);
     }
 #if defined(ENABLE_SUPERVISED_USERS)
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL:
-      return color_utils::GetReadableColor(SK_ColorWHITE,
-                                           GetColor(kLabelBackground, otr));
+      return color_utils::GetReadableColor(
+          SK_ColorWHITE, GetColor(kLabelBackground, incognito));
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
       return color_utils::BlendTowardOppositeLuminance(
-          GetColor(ThemeProperties::COLOR_FRAME, otr), 0x80);
+          GetColor(ThemeProperties::COLOR_FRAME, incognito), 0x80);
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BORDER:
-      return color_utils::AlphaBlend(GetColor(kLabelBackground, otr),
+      return color_utils::AlphaBlend(GetColor(kLabelBackground, incognito),
                                      SK_ColorBLACK, 230);
 #endif
     case ThemeProperties::COLOR_STATUS_BAR_TEXT: {
@@ -533,8 +535,9 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
       // views couldn't do alpha blending. Even though this is no longer the
       // case, this blending decision is built into the majority of themes that
       // exist, and we must keep doing it.
-      SkColor toolbar_color = GetColor(ThemeProperties::COLOR_TOOLBAR, otr);
-      SkColor text_color = GetColor(ThemeProperties::COLOR_TAB_TEXT, otr);
+      SkColor toolbar_color =
+          GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
+      SkColor text_color = GetColor(ThemeProperties::COLOR_TAB_TEXT, incognito);
       return SkColorSetARGB(
           SkColorGetA(text_color),
           (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
@@ -543,7 +546,7 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
     }
   }
 
-  return ThemeProperties::GetDefaultColor(id, otr);
+  return ThemeProperties::GetDefaultColor(id, incognito);
 }
 
 int ThemeService::GetDisplayProperty(int id) const {
@@ -605,15 +608,23 @@ base::RefCountedMemory* ThemeService::GetRawData(
   return data;
 }
 
-gfx::Image ThemeService::GetImageNamed(int id) const {
+gfx::Image ThemeService::GetImageNamed(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
+
+  int adjusted_id = id;
+  if (incognito) {
+    if (id == IDR_THEME_FRAME)
+      adjusted_id = IDR_THEME_FRAME_INCOGNITO;
+    else if (id == IDR_THEME_FRAME_INACTIVE)
+      adjusted_id = IDR_THEME_FRAME_INCOGNITO_INACTIVE;
+  }
 
   gfx::Image image;
   if (theme_supplier_)
-    image = theme_supplier_->GetImageNamed(id);
+    image = theme_supplier_->GetImageNamed(adjusted_id);
 
   if (image.IsEmpty())
-    image = rb_.GetNativeImageNamed(id);
+    image = rb_.GetNativeImageNamed(adjusted_id);
 
   return image;
 }
@@ -748,7 +759,7 @@ const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
 #else
   bool incognito = profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
 #endif
-  return incognito ? service->otr_theme_provider_
+  return incognito ? service->incognito_theme_provider_
                    : service->original_theme_provider_;
 }
 
@@ -761,7 +772,7 @@ ThemeService::BrowserThemeProvider::~BrowserThemeProvider() {}
 
 gfx::ImageSkia* ThemeService::BrowserThemeProvider::GetImageSkiaNamed(
     int id) const {
-  return theme_service_.GetImageSkiaNamed(id);
+  return theme_service_.GetImageSkiaNamed(id, incognito_);
 }
 
 SkColor ThemeService::BrowserThemeProvider::GetColor(int id) const {

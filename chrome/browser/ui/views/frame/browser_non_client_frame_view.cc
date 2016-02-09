@@ -104,6 +104,7 @@ bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
   return browser_view_->IsBrowserTypeNormal();
 }
 
+#if !defined(OS_CHROMEOS)
 SkColor BrowserNonClientFrameView::GetFrameColor() const {
   ThemeProperties::OverwritableByUserThemeProperty color_id =
       ShouldPaintAsActive() ? ThemeProperties::COLOR_FRAME
@@ -154,16 +155,7 @@ gfx::ImageSkia* BrowserNonClientFrameView::GetFrameOverlayImage() const {
   }
   return nullptr;
 }
-
-int BrowserNonClientFrameView::GetTopAreaHeight() const {
-  gfx::ImageSkia* frame_image = GetFrameImage();
-  int top_area_height = frame_image->height();
-  if (browser_view_->IsTabStripVisible()) {
-    top_area_height = std::max(top_area_height,
-      GetBoundsForTabStrip(browser_view_->tabstrip()).bottom());
-  }
-  return top_area_height;
-}
+#endif  // !defined(OS_CHROMEOS)
 
 void BrowserNonClientFrameView::UpdateAvatar() {
 #if !defined(OS_CHROMEOS)

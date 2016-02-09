@@ -137,7 +137,7 @@ class ThemeService : public base::NonThreadSafe,
   virtual bool ShouldInitWithSystemTheme() const;
 
   // Get the specified tint - |id| is one of the TINT_* enum values.
-  color_utils::HSL GetTint(int id, bool otr) const;
+  color_utils::HSL GetTint(int id, bool incognito) const;
 
   // Clears all the override fields and saves the dictionary.
   virtual void ClearAllThemeData();
@@ -208,7 +208,7 @@ class ThemeService : public base::NonThreadSafe,
 
   // These methods provide the implementation for ui::ThemeProvider (exposed
   // via BrowserThemeProvider).
-  gfx::ImageSkia* GetImageSkiaNamed(int id) const;
+  gfx::ImageSkia* GetImageSkiaNamed(int id, bool incognito) const;
   SkColor GetColor(int id, bool incognito) const;
   int GetDisplayProperty(int id) const;
   bool ShouldUseNativeFrame() const;
@@ -227,7 +227,7 @@ class ThemeService : public base::NonThreadSafe,
   //
   // TODO(erg): Make this part of the ui::ThemeProvider and the main way to get
   // theme properties out of the theme provider since it's cross platform.
-  gfx::Image GetImageNamed(int id) const;
+  gfx::Image GetImageNamed(int id, bool incognito) const;
 
   // Called when the extension service is ready.
   void OnExtensionServiceReady();
@@ -297,7 +297,7 @@ class ThemeService : public base::NonThreadSafe,
 #endif
 
   BrowserThemeProvider original_theme_provider_;
-  BrowserThemeProvider otr_theme_provider_;
+  BrowserThemeProvider incognito_theme_provider_;
 
   base::WeakPtrFactory<ThemeService> weak_ptr_factory_;
 

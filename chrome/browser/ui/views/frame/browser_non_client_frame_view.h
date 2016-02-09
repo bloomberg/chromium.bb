@@ -72,11 +72,12 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // not.
   virtual bool ShouldPaintAsThemed() const;
 
+#if !defined(OS_CHROMEOS)
   // Compute aspects of the frame needed to paint the frame background.
   SkColor GetFrameColor() const;
   gfx::ImageSkia* GetFrameImage() const;
   gfx::ImageSkia* GetFrameOverlayImage() const;
-  int GetTopAreaHeight() const;
+#endif
 
   // Updates the avatar button using the old or new UI based on the BrowserView
   // type, and the presence of the --enable-new-avatar-menu flag. Calls either
