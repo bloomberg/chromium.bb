@@ -425,7 +425,7 @@ TEST_F(CustomButtonTest, AsCustomButton) {
   RadioButton radio_button(text, 0);
   EXPECT_TRUE(CustomButton::AsCustomButton(&radio_button));
 
-  MenuButton menu_button(NULL, text, NULL, false);
+  MenuButton menu_button(text, NULL, false);
   EXPECT_TRUE(CustomButton::AsCustomButton(&menu_button));
 
   Label label;

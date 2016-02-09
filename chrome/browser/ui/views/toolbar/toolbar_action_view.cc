@@ -53,7 +53,7 @@ ToolbarActionView::ContextMenuCallback* context_menu_callback_for_test =
 ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
     ToolbarActionView::Delegate* delegate)
-    : MenuButton(nullptr, base::string16(), this, false),
+    : MenuButton(base::string16(), this, false),
       view_controller_(view_controller),
       delegate_(delegate),
       called_register_command_(false),

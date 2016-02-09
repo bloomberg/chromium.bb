@@ -167,7 +167,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
   void AddNewAvatarButton() {
     new_avatar_button_ =
-        new views::MenuButton(nullptr, base::string16(), nullptr, false);
+        new views::MenuButton(base::string16(), nullptr, false);
     new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
     root_view_->AddChildView(new_avatar_button_);
     delegate_->set_show_avatar(true);

@@ -101,7 +101,7 @@ PermissionCombobox::PermissionCombobox(Listener* listener,
                                        int index,
                                        const GURL& url,
                                        ContentSetting setting)
-    : MenuButton(nullptr, base::string16(), this, true),
+    : MenuButton(base::string16(), this, true),
       index_(index),
       listener_(listener),
       model_(new PermissionMenuModel(

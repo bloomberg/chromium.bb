@@ -161,20 +161,12 @@ static const int kSeparatorStartX = 2;
 // Left-padding for the instructional text.
 static const int kInstructionsPadding = 6;
 
-// Tag for the 'Other bookmarks' button.
-static const int kOtherFolderButtonTag = 1;
-
 // Tag for the 'Apps Shortcut' button.
 static const int kAppsShortcutButtonTag = 2;
 
 // Preferred padding between text and edge.
 static const int kButtonPaddingHorizontal = 6;
 static const int kButtonPaddingVertical = 4;
-
-// Tag for the 'Managed bookmarks' button.
-static const int kManagedFolderButtonTag = 3;
-// Tag for the 'Supervised bookmarks' button.
-static const int kSupervisedFolderButtonTag = 4;
 
 static const gfx::ElideBehavior kElideBehavior = gfx::FADE_TAIL;
 
@@ -302,11 +294,10 @@ const char ShortcutButton::kViewClassName[] = "ShortcutButton";
 // button.
 class BookmarkFolderButton : public views::MenuButton {
  public:
-  BookmarkFolderButton(views::ButtonListener* listener,
-                       const base::string16& title,
+  BookmarkFolderButton(const base::string16& title,
                        views::MenuButtonListener* menu_button_listener,
                        bool show_menu_marker)
-      : MenuButton(listener, title, menu_button_listener, show_menu_marker) {
+      : MenuButton(title, menu_button_listener, show_menu_marker) {
     SetElideBehavior(kElideBehavior);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -350,7 +341,7 @@ class BookmarkFolderButton : public views::MenuButton {
 class OverflowButton : public views::MenuButton {
  public:
   explicit OverflowButton(BookmarkBarView* owner)
-      : MenuButton(NULL, base::string16(), owner, false), owner_(owner) {}
+      : MenuButton(base::string16(), owner, false), owner_(owner) {}
 
   bool OnMousePressed(const ui::MouseEvent& e) override {
     owner_->StopThrobbing(true);
@@ -1461,18 +1452,9 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  const BookmarkNode* node;
-  if (sender->tag() == kOtherFolderButtonTag) {
-    node = model_->other_node();
-  } else if (sender->tag() == kManagedFolderButtonTag) {
-    node = managed_->managed_node();
-  } else if (sender->tag() == kSupervisedFolderButtonTag) {
-    node = managed_->supervised_node();
-  } else {
-    int index = GetIndexOf(sender);
-    DCHECK_NE(-1, index);
-    node = model_->bookmark_bar_node()->GetChild(index);
-  }
+  int index = GetIndexOf(sender);
+  DCHECK_NE(-1, index);
+  const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(index);
   DCHECK(page_navigator_);
 
   if (node->is_url()) {
@@ -1627,31 +1609,25 @@ int BookmarkBarView::GetFirstHiddenNodeIndex() {
 
 MenuButton* BookmarkBarView::CreateOtherBookmarksButton() {
   // Title is set in Loaded.
-  MenuButton* button =
-      new BookmarkFolderButton(this, base::string16(), this, false);
+  MenuButton* button = new BookmarkFolderButton(base::string16(), this, false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
   button->set_context_menu_controller(this);
-  button->set_tag(kOtherFolderButtonTag);
   return button;
 }
 
 MenuButton* BookmarkBarView::CreateManagedBookmarksButton() {
   // Title is set in Loaded.
-  MenuButton* button =
-      new BookmarkFolderButton(this, base::string16(), this, false);
+  MenuButton* button = new BookmarkFolderButton(base::string16(), this, false);
   button->set_id(VIEW_ID_MANAGED_BOOKMARKS);
   button->set_context_menu_controller(this);
-  button->set_tag(kManagedFolderButtonTag);
   return button;
 }
 
 MenuButton* BookmarkBarView::CreateSupervisedBookmarksButton() {
   // Title is set in Loaded.
-  MenuButton* button =
-      new BookmarkFolderButton(this, base::string16(), this, false);
+  MenuButton* button = new BookmarkFolderButton(base::string16(), this, false);
   button->set_id(VIEW_ID_SUPERVISED_BOOKMARKS);
   button->set_context_menu_controller(this);
-  button->set_tag(kSupervisedFolderButtonTag);
   return button;
 }
 
@@ -1683,7 +1659,7 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
     return button;
   }
   views::MenuButton* button =
-      new BookmarkFolderButton(this, node->GetTitle(), this, false);
+      new BookmarkFolderButton(node->GetTitle(), this, false);
   ConfigureButton(node, button);
   return button;
 }

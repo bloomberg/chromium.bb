@@ -47,8 +47,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   static const int kMenuMarkerPaddingRight;
 
   // Create a Button.
-  MenuButton(ButtonListener* listener,
-             const base::string16& text,
+  MenuButton(const base::string16& text,
              MenuButtonListener* menu_button_listener,
              bool show_menu_marker);
   ~MenuButton() override;

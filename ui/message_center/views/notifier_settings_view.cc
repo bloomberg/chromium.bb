@@ -578,7 +578,7 @@ void NotifierSettingsView::UpdateContentsView(
     base::string16 notifier_group_text = active_group.login_info.empty() ?
         active_group.name : active_group.login_info;
     notifier_group_selector_ =
-        new views::MenuButton(NULL, notifier_group_text, this, true);
+        new views::MenuButton(notifier_group_text, this, true);
     notifier_group_selector_->SetBorder(scoped_ptr<views::Border>(
         new views::LabelButtonAssetBorder(views::Button::STYLE_BUTTON)));
     notifier_group_selector_->SetFocusPainter(nullptr);

@@ -62,8 +62,7 @@ class PermissionMenuButton : public views::MenuButton,
 PermissionMenuButton::PermissionMenuButton(const base::string16& text,
                                            PermissionMenuModel* model,
                                            bool show_menu_marker)
-    : MenuButton(NULL, text, this, show_menu_marker),
-      menu_model_(model) {
+    : MenuButton(text, this, show_menu_marker), menu_model_(model) {
   // Update the themed border before the NativeTheme is applied. Usually this
   // happens in a call to LabelButton::OnNativeThemeChanged(). However, if
   // PermissionMenuButton called that from its override, the NativeTheme would

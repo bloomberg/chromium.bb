@@ -178,8 +178,7 @@ void ExampleMenuModel::ExecuteCommand(int command_id, int event_flags) {
 // ExampleMenuButton -----------------------------------------------------------
 
 ExampleMenuButton::ExampleMenuButton(const base::string16& test)
-    : MenuButton(NULL, test, this, true) {
-}
+    : MenuButton(test, this, true) {}
 
 ExampleMenuButton::~ExampleMenuButton() {
 }

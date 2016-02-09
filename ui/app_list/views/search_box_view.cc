@@ -172,7 +172,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
 
 #if !defined(OS_CHROMEOS)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  menu_button_ = new views::MenuButton(NULL, base::string16(), this, false);
+  menu_button_ = new views::MenuButton(base::string16(), this, false);
   menu_button_->SetBorder(views::Border::NullBorder());
   menu_button_->SetImage(views::Button::STATE_NORMAL,
                          *rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_NORMAL));

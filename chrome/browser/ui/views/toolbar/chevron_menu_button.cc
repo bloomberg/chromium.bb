@@ -361,7 +361,7 @@ size_t ChevronMenuButton::MenuController::IndexForId(int id) const {
 
 ChevronMenuButton::ChevronMenuButton(
     BrowserActionsContainer* browser_actions_container)
-    : views::MenuButton(NULL, base::string16(), this, false),
+    : views::MenuButton(base::string16(), this, false),
       browser_actions_container_(browser_actions_container),
       weak_factory_(this) {
   // Set the border explicitly, because otherwise the native theme manager takes

@@ -35,12 +35,11 @@
 bool AppMenuButton::g_open_app_immediately_for_testing = false;
 
 AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
-    : views::MenuButton(NULL, base::string16(), toolbar_view, false),
+    : views::MenuButton(base::string16(), toolbar_view, false),
       severity_(AppMenuIconPainter::SEVERITY_NONE),
       toolbar_view_(toolbar_view),
       allow_extension_dragging_(
-          extensions::FeatureSwitch::extension_action_redesign()
-              ->IsEnabled()),
+          extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
       destroyed_(nullptr),
       margin_trailing_(0),
       ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),

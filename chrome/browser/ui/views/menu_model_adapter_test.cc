@@ -170,8 +170,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   // ViewEventTestBase implementation.
 
   void SetUp() override {
-    button_ = new views::MenuButton(
-        NULL, base::ASCIIToUTF16("Menu Adapter Test"), this, true);
+    button_ = new views::MenuButton(base::ASCIIToUTF16("Menu Adapter Test"),
+                                    this, true);
 
     menu_ = menu_model_adapter_.CreateMenu();
     menu_runner_.reset(

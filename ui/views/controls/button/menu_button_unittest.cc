@@ -41,30 +41,22 @@ class MenuButtonTest : public ViewsTestBase {
 
  protected:
   // Creates a MenuButton with no button listener.
-  void CreateMenuButtonWithNoListener() { CreateMenuButton(nullptr, nullptr); }
-
-  // Creates a MenuButton with a ButtonListener. In this case, the MenuButton
-  // acts like a regular button.
-  void CreateMenuButtonWithButtonListener(ButtonListener* button_listener) {
-    CreateMenuButton(button_listener, nullptr);
-  }
+  void CreateMenuButtonWithNoListener() { CreateMenuButton(nullptr); }
 
   // Creates a MenuButton with a MenuButtonListener. In this case, when the
   // MenuButton is pushed, it notifies the MenuButtonListener to open a
   // drop-down menu.
   void CreateMenuButtonWithMenuButtonListener(
       MenuButtonListener* menu_button_listener) {
-    CreateMenuButton(nullptr, menu_button_listener);
+    CreateMenuButton(menu_button_listener);
   }
 
  private:
-  void CreateMenuButton(ButtonListener* button_listener,
-                        MenuButtonListener* menu_button_listener) {
+  void CreateMenuButton(MenuButtonListener* menu_button_listener) {
     CreateWidget();
 
     const base::string16 label(ASCIIToUTF16("button"));
-    button_ =
-        new MenuButton(button_listener, label, menu_button_listener, false);
+    button_ = new MenuButton(label, menu_button_listener, false);
     button_->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
     widget_->SetContentsView(button_);
 
@@ -268,24 +260,6 @@ class TestShowSiblingButtonListener : public MenuButtonListener {
   DISALLOW_COPY_AND_ASSIGN(TestShowSiblingButtonListener);
 };
 
-// Tests if the listener is notified correctly, when a mouse click happens on a
-// MenuButton that has a regular ButtonListener.
-TEST_F(MenuButtonTest, ActivateNonDropDownOnMouseClick) {
-  TestButtonListener button_listener;
-  CreateMenuButtonWithButtonListener(&button_listener);
-
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-
-  generator.set_current_location(gfx::Point(10, 10));
-  generator.ClickLeftButton();
-
-  // Check that MenuButton has notified the listener on mouse-released event,
-  // while it was in hovered state.
-  EXPECT_EQ(button(), button_listener.last_sender());
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, button_listener.last_event_type());
-  EXPECT_EQ(Button::STATE_HOVERED, button_listener.last_sender_state());
-}
-
 // Tests if the listener is notified correctly when a mouse click happens on a
 // MenuButton that has a MenuButtonListener.
 TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
@@ -422,31 +396,6 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
 #if !defined(OS_MACOSX) || defined(USE_AURA)
-
-// Tests if the listener is notified correctly when a gesture tap happens on a
-// MenuButton that has a regular ButtonListener.
-TEST_F(MenuButtonTest, ActivateNonDropDownOnGestureTap) {
-  TestButtonListener button_listener;
-  CreateMenuButtonWithButtonListener(&button_listener);
-
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-
-  // Move the mouse outside the menu button so that it doesn't impact the
-  // button state.
-  generator.MoveMouseTo(400, 400);
-  EXPECT_FALSE(button()->IsMouseHovered());
-
-  generator.GestureTapAt(gfx::Point(10, 10));
-
-  // Check that MenuButton has notified the listener on gesture tap event, while
-  // it was in hovered state.
-  EXPECT_EQ(button(), button_listener.last_sender());
-  EXPECT_EQ(ui::ET_GESTURE_TAP, button_listener.last_event_type());
-  EXPECT_EQ(Button::STATE_HOVERED, button_listener.last_sender_state());
-
-  // The button should go back to it's normal state since the gesture ended.
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
-}
 
 // Tests if the listener is notified correctly when a gesture tap happens on a
 // MenuButton that has a MenuButtonListener.
