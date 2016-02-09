@@ -484,7 +484,6 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
     const DrawQuad& quad = **it;
-    gfx::QuadF send_quad(gfx::RectF(quad.visible_rect));
 
     if (render_pass_is_clipped &&
         ShouldSkipQuad(quad, render_pass_scissor_in_draw_space)) {
