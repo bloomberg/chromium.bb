@@ -5,12 +5,16 @@
 #ifndef CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
 #define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
 
+#include <queue>
+
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
+#include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -81,8 +85,8 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
                       const std::string& video_constraints);
 
   // Methods for adding or removing WebRTCInternalsUIObserver.
-  void AddObserver(WebRTCInternalsUIObserver *observer);
-  void RemoveObserver(WebRTCInternalsUIObserver *observer);
+  void AddObserver(WebRTCInternalsUIObserver* observer);
+  void RemoveObserver(WebRTCInternalsUIObserver* observer);
 
   // Sends all update data to |observer|.
   void UpdateObserver(WebRTCInternalsUIObserver* observer);
@@ -100,7 +104,14 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   bool IsEventLogRecordingsEnabled() const;
   const base::FilePath& GetEventLogRecordingsFilePath() const;
 
-  void ResetForTesting();
+ protected:
+  // Constructor/Destructor are protected to allow tests to derive from the
+  // class and do per-instance testing without having to use the global
+  // instance.
+  // The default ctor sets |aggregate_updates_ms| to 500ms.
+  WebRTCInternals();
+  explicit WebRTCInternals(int aggregate_updates_ms);
+  ~WebRTCInternals() override;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<WebRTCInternals>;
@@ -113,10 +124,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   FRIEND_TEST_ALL_PREFIXES(WebRtcInternalsTest,
                            AudioDebugRecordingsFileSelectionCanceled);
 
-  WebRTCInternals();
-  ~WebRTCInternals() override;
-
-  void SendUpdate(const std::string& command, base::Value* value);
+  void SendUpdate(const std::string& command, scoped_ptr<base::Value> value);
 
   // RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
@@ -144,6 +152,12 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // |peer_connection_data_| to impose/release a block on suspending the current
   // application for power-saving.
   void CreateOrReleasePowerSaveBlocker();
+
+  // Called on a timer to deliver updates to javascript.
+  // We throttle and bulk together updates to avoid DOS like scenarios where
+  // a page uses a lot of peerconnection instances with many event
+  // notifications.
+  void ProcessPendingUpdates();
 
   base::ObserverList<WebRTCInternalsUIObserver> observers_;
 
@@ -191,6 +205,36 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
 
   // Set of render process hosts that |this| is registered as an observer on.
   base::hash_set<int> render_process_id_set_;
+
+  // Used to bulk up updates that we send to javascript.
+  // The class owns the value/dictionary and command name of an update.
+  // For each update, a PendingUpdate is stored in the |pending_updates_| queue
+  // and deleted as soon as the update has been delivered.
+  // The class is moveble and not copyable to avoid copying while still allowing
+  // us to use an stl container without needing scoped_ptr or similar.
+  // The class is single threaded, so all operations must occur on the same
+  // thread.
+  class PendingUpdate {
+   public:
+    PendingUpdate(const std::string& command, scoped_ptr<base::Value> value);
+    PendingUpdate(PendingUpdate&& other);
+    ~PendingUpdate();
+
+    const std::string& command() const;
+    const base::Value* value() const;
+
+   private:
+    base::ThreadChecker thread_checker_;
+    std::string command_;
+    scoped_ptr<base::Value> value_;
+    DISALLOW_COPY_AND_ASSIGN(PendingUpdate);
+  };
+
+  std::queue<PendingUpdate> pending_updates_;
+  const int aggregate_updates_ms_;
+
+  // Weak factory for this object that we use for bulking up updates.
+  base::WeakPtrFactory<WebRTCInternals> weak_factory_;
 };
 
 }  // namespace content

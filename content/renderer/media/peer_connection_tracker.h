@@ -163,7 +163,12 @@ class CONTENT_EXPORT PeerConnectionTracker
  private:
   // Assign a local ID to a peer connection so that the browser process can
   // uniquely identify a peer connection in the renderer process.
+  // The return value will always be positive.
   int GetNextLocalID();
+
+  // Looks up a handler in our map and if found, returns its ID.  If the handler
+  // is not registered, the return value will be -1.
+  int GetLocalIDForHandler(RTCPeerConnectionHandler* handler) const;
 
   // IPC Message handler for getting all stats.
   void OnGetAllStats();
@@ -171,8 +176,19 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Called when the browser process reports a suspend event from the OS.
   void OnSuspend();
 
-  void SendPeerConnectionUpdate(RTCPeerConnectionHandler* pc_handler,
-                                const std::string& callback_type,
+  // Called to deliver an update to the host (PeerConnectionTrackerHost).
+  // |local_id| - The id of the registered RTCPeerConnectionHandler.
+  //              Using an id instead of the hander pointer is done on purpose
+  //              to force doing the lookup before building the callback data
+  //              in case the handler isn't registered.
+  // |callback_type| - A string, most often static, that represents the type
+  //                   of operation that the data stored in |value| comes from.
+  //                   E.g. "createOffer", "createAnswer",
+  //                   "setRemoteDescription" etc.
+  // |value| - A json serialized string containing all the information for the
+  //           update event.
+  void SendPeerConnectionUpdate(int local_id,
+                                const char* callback_type,
                                 const std::string& value);
 
   // This map stores the local ID assigned to each RTCPeerConnectionHandler.
@@ -180,7 +196,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   PeerConnectionIdMap peer_connection_id_map_;
 
   // This keeps track of the next available local ID.
-  int next_lid_;
+  int next_local_id_;
   base::ThreadChecker main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionTracker);

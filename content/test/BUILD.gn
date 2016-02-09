@@ -678,6 +678,7 @@ test("content_unittests") {
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/libjingle:libpeerconnection",
       "//third_party/webrtc/modules/video_capture",
+      "//ui/shell_dialogs:shell_dialogs",
     ]
 
     if (is_linux || is_mac || is_win) {

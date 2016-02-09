@@ -1209,6 +1209,7 @@
                 '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
                 '../third_party/libjingle/libjingle.gyp:libpeerconnection',
                 '../third_party/webrtc/modules/modules.gyp:video_capture_module',
+                '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
               ],
             }],
             ['enable_webrtc==1 and enable_plugins==1', {
