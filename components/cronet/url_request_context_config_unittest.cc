@@ -19,6 +19,8 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
+      // QUIC User Agent ID.
+      "Default QUIC User Agent ID",
       // Enable SPDY.
       true,
       // Enable SDCH.
@@ -38,6 +40,8 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       "{\"QUIC\":{\"max_server_configs_stored_in_properties\":2,"
       "\"delay_tcp_race\":true,"
       "\"max_number_of_lossy_connections\":10,"
+      "\"prefer_aes\":true,"
+      "\"user_agent_id\":\"Custom QUIC UAID\","
       "\"packet_loss_threshold\":0.5,"
       "\"idle_connection_timeout_seconds\":300,"
       "\"close_sessions_on_ip_change\":true,"
@@ -71,11 +75,17 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
   quic_connection_options.push_back(net::kREJ);
   EXPECT_EQ(quic_connection_options, params->quic_connection_options);
 
+  // Check Custom QUIC User Agent Id.
+  EXPECT_EQ("Custom QUIC UAID", params->quic_user_agent_id);
+
   // Check max_server_configs_stored_in_properties.
   EXPECT_EQ(2u, params->quic_max_server_configs_stored_in_properties);
 
   // Check delay_tcp_race.
   EXPECT_TRUE(params->quic_delay_tcp_race);
+
+  // Check prefer_aes.
+  EXPECT_TRUE(params->quic_prefer_aes);
 
   // Check max_number_of_lossy_connections and packet_loss_threshold.
   EXPECT_EQ(10, params->quic_max_number_of_lossy_connections);

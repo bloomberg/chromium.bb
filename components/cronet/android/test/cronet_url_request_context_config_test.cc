@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "components/cronet/url_request_context_config.h"
+#include "components/cronet/version.h"
 #include "jni/CronetUrlRequestContextTest_jni.h"
 
 namespace cronet {
@@ -32,6 +33,8 @@ static void VerifyUrlRequestContextConfig(
   CHECK_EQ((*config->quic_hints.begin())->host, "example.com");
   CHECK_EQ((*config->quic_hints.begin())->port, 12);
   CHECK_EQ((*config->quic_hints.begin())->alternate_port, 34);
+  CHECK_NE(config->quic_user_agent_id.find("Cronet/" CRONET_VERSION),
+           std::string::npos);
   CHECK_EQ(config->load_disable_cache, false);
   CHECK_EQ(config->http_cache, URLRequestContextConfig::HttpCacheType::MEMORY);
   CHECK_EQ(config->http_cache_max_size, 54321);

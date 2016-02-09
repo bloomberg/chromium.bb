@@ -107,8 +107,9 @@ class CronetUrlRequestContext extends CronetEngine {
     static long createNativeUrlRequestContextConfig(CronetEngine.Builder builder) {
         final long urlRequestContextConfig = nativeCreateRequestContextConfig(
                 builder.getUserAgent(), builder.storagePath(), builder.quicEnabled(),
-                builder.http2Enabled(), builder.sdchEnabled(), builder.dataReductionProxyKey(),
-                builder.dataReductionProxyPrimaryProxy(), builder.dataReductionProxyFallbackProxy(),
+                builder.getDefaultQuicUserAgentId(), builder.http2Enabled(), builder.sdchEnabled(),
+                builder.dataReductionProxyKey(), builder.dataReductionProxyPrimaryProxy(),
+                builder.dataReductionProxyFallbackProxy(),
                 builder.dataReductionProxySecureProxyCheckUrl(), builder.cacheDisabled(),
                 builder.httpCacheMode(), builder.httpCacheMaxSize(), builder.experimentalOptions(),
                 builder.mockCertVerifier());
@@ -465,11 +466,11 @@ class CronetUrlRequestContext extends CronetEngine {
 
     // Native methods are implemented in cronet_url_request_context_adapter.cc.
     private static native long nativeCreateRequestContextConfig(String userAgent,
-            String storagePath, boolean quicEnabled, boolean http2Enabled, boolean sdchEnabled,
-            String dataReductionProxyKey, String dataReductionProxyPrimaryProxy,
-            String dataReductionProxyFallbackProxy, String dataReductionProxySecureProxyCheckUrl,
-            boolean disableCache, int httpCacheMode, long httpCacheMaxSize,
-            String experimentalOptions, long mockCertVerifier);
+            String storagePath, boolean quicEnabled, String quicUserAgentId, boolean http2Enabled,
+            boolean sdchEnabled, String dataReductionProxyKey,
+            String dataReductionProxyPrimaryProxy, String dataReductionProxyFallbackProxy,
+            String dataReductionProxySecureProxyCheckUrl, boolean disableCache, int httpCacheMode,
+            long httpCacheMaxSize, String experimentalOptions, long mockCertVerifier);
 
     private static native void nativeAddQuicHint(
             long urlRequestContextConfig, String host, int port, int alternatePort);

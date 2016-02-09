@@ -687,6 +687,7 @@ static jlong CreateRequestContextConfig(
     const JavaParamRef<jstring>& juser_agent,
     const JavaParamRef<jstring>& jstorage_path,
     jboolean jquic_enabled,
+    const JavaParamRef<jstring>& jquic_default_user_agent_id,
     jboolean jhttp2_enabled,
     jboolean jsdch_enabled,
     const JavaParamRef<jstring>& jdata_reduction_proxy_key,
@@ -699,7 +700,9 @@ static jlong CreateRequestContextConfig(
     const JavaParamRef<jstring>& jexperimental_quic_connection_options,
     jlong jmock_cert_verifier) {
   return reinterpret_cast<jlong>(new URLRequestContextConfig(
-      jquic_enabled, jhttp2_enabled, jsdch_enabled,
+      jquic_enabled,
+      base::android::ConvertJavaStringToUTF8(env, jquic_default_user_agent_id),
+      jhttp2_enabled, jsdch_enabled,
       static_cast<URLRequestContextConfig::HttpCacheType>(jhttp_cache_mode),
       jhttp_cache_max_size, jdisable_cache,
       base::android::ConvertJavaStringToUTF8(env, jstorage_path),

@@ -131,8 +131,8 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Constructs a User-Agent string including Cronet version, and
-         * application name and version.
+         * Constructs a User-Agent string including application name and version,
+         * system build version, model and id, and Cronet version.
          *
          * @return User-Agent string.
          */
@@ -240,7 +240,8 @@ public abstract class CronetEngine {
 
         /**
          * Sets whether <a href="https://www.chromium.org/quic">QUIC</a> protocol
-         * is enabled. Defaults to disabled.
+         * is enabled. Defaults to disabled. If QUIC is enabled, then QUIC User Agent Id
+         * containing application name and Cronet version is sent to the server.
          * @param value {@code true} to enable QUIC, {@code false} to disable.
          * @return the builder to facilitate chaining.
          */
@@ -251,6 +252,16 @@ public abstract class CronetEngine {
 
         boolean quicEnabled() {
             return mQuicEnabled;
+        }
+
+        /**
+         * Constructs default QUIC User Agent Id string including application name
+         * and Cronet version. Returns empty string if QUIC is not enabled.
+         *
+         * @return QUIC User Agent ID string.
+         */
+        String getDefaultQuicUserAgentId() {
+            return mQuicEnabled ? UserAgent.getQuicUserAgentIdFrom(mContext) : "";
         }
 
         /**

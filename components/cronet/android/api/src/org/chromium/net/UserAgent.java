@@ -29,8 +29,8 @@ public final class UserAgent {
     }
 
     /**
-     * Constructs a User-Agent string including Cronet version, and application
-     * name and version.
+     * Constructs a User-Agent string including application name and version,
+     * system build version, model and Id, and Cronet version.
      * @param context the context to fetch the application name and version
      *         from.
      * @return User-Agent string.
@@ -65,6 +65,23 @@ public final class UserAgent {
         builder.append(Version.CRONET_VERSION);
 
         builder.append(')');
+
+        return builder.toString();
+    }
+
+    /**
+     * Constructs default QUIC User Agent Id string including application name
+     * and Cronet version.
+     * @param context the context to fetch the application name from.
+     * @return User-Agent string.
+     */
+    static String getQuicUserAgentIdFrom(Context context) {
+        StringBuilder builder = new StringBuilder();
+
+        // Application name and cronet version.
+        builder.append(context.getPackageName());
+        builder.append(" Cronet/");
+        builder.append(Version.CRONET_VERSION);
 
         return builder.toString();
     }

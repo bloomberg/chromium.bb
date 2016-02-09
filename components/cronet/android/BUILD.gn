@@ -411,6 +411,7 @@ shared_library("cronet_tests") {
   deps = [
     ":cronet_static",
     ":cronet_tests_jni_headers",
+    ":cronet_version_header",
     "//base",
     "//base:i18n",
     "//net",
@@ -418,6 +419,8 @@ shared_library("cronet_tests") {
     "//net:test_support",
     "//third_party/icu",
   ]
+
+  include_dirs = [ _cronet_version_header_include_dir ]
 
   if (cronet_enable_data_reduction_proxy_support) {
     deps += [ "//components/data_reduction_proxy/core/browser" ]

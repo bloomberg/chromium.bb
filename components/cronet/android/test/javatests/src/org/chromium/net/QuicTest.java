@@ -48,7 +48,7 @@ public class QuicTest extends CronetTestBase {
                                         .put("packet_loss_threshold", 0.5)
                                         .put("idle_connection_timeout_seconds", 300)
                                         .put("close_sessions_on_ip_change", true)
-                                        .put("migrate_sessions_on_network_change", true);
+                                        .put("migrate_sessions_on_network_change", false);
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         mBuilder.setExperimentalOptions(experimentalOptions.toString());
 
