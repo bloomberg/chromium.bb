@@ -62,6 +62,10 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_clone:
     case __NR_epoll_pwait:
     case __NR_flock:
+    case __NR_ftruncate:
+#if defined(__i386__) || defined(__arm__) || defined(__mips__)
+    case __NR_ftruncate64:
+#endif
 #if defined(__x86_64__) || defined(__aarch64__)
     case __NR_newfstatat:
     case __NR_getdents64:
