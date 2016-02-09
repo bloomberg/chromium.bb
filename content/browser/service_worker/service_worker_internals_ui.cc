@@ -151,6 +151,7 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
   info->SetString("version_id", base::Int64ToString(version.version_id));
   info->SetInteger("process_id",
                    static_cast<int>(GetRealProcessId(version.process_id)));
+  info->SetInteger("process_host_id", version.process_id);
   info->SetInteger("thread_id", version.thread_id);
   info->SetInteger("devtools_agent_route_id", version.devtools_agent_route_id);
 }
@@ -507,11 +508,11 @@ void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
   const DictionaryValue* cmd_args = NULL;
-  int process_id = 0;
+  int process_host_id = 0;
   int devtools_agent_route_id = 0;
   if (!args->GetInteger(0, &callback_id) ||
       !args->GetDictionary(1, &cmd_args) ||
-      !cmd_args->GetInteger("process_id", &process_id) ||
+      !cmd_args->GetInteger("process_host_id", &process_host_id) ||
       !cmd_args->GetInteger("devtools_agent_route_id",
                             &devtools_agent_route_id)) {
     return;
@@ -520,7 +521,8 @@ void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
       base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
   scoped_refptr<DevToolsAgentHostImpl> agent_host(
       ServiceWorkerDevToolsManager::GetInstance()
-          ->GetDevToolsAgentHostForWorker(process_id, devtools_agent_route_id));
+          ->GetDevToolsAgentHostForWorker(process_host_id,
+                                          devtools_agent_route_id));
   if (!agent_host.get()) {
     callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
