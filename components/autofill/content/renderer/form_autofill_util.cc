@@ -1520,6 +1520,7 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
                                  keyword, keyword + strlen(keyword));
     if (title_pos != title.end() ||
         path.find(keyword) != std::string::npos) {
+      form->is_formless_checkout = true;
       // Found a keyword: treat this as an unowned form.
       return UnownedFormElementsAndFieldSetsToFormData(
           fieldsets, control_elements, element, document, extract_mask, form,
@@ -1527,7 +1528,22 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     }
   }
 
-  return false;
+  // Since it's not a checkout flow, only add fields that have a non-"off"
+  // autocomplete attribute to the formless autofill.
+  CR_DEFINE_STATIC_LOCAL(WebString, kOffAttribute, ("off"));
+  std::vector<WebFormControlElement> elements_with_autocomplete;
+  for (const WebFormControlElement& element : control_elements) {
+    blink::WebString autocomplete = element.getAttribute("autocomplete");
+    if (autocomplete.length() && autocomplete != kOffAttribute)
+      elements_with_autocomplete.push_back(element);
+  }
+
+  if (elements_with_autocomplete.empty())
+    return false;
+
+  return UnownedFormElementsAndFieldSetsToFormData(
+      fieldsets, elements_with_autocomplete, element, document, extract_mask,
+      form, field);
 }
 
 bool UnownedPasswordFormElementsAndFieldSetsToFormData(

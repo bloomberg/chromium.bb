@@ -301,6 +301,9 @@ class FormStructure {
   // True if the form is a <form>.
   bool is_form_tag_;
 
+  // True if the form is made of unowned fields in a non checkout flow.
+  bool is_formless_checkout_;
+
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
 

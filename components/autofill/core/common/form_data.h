@@ -32,8 +32,10 @@ struct FormData {
   GURL origin;
   // The action target of the form.
   GURL action;
-  // true if this form is a form tag.
+  // True if this form is a form tag.
   bool is_form_tag;
+  // True if the form is made of unowned fields in a non checkout flow.
+  bool is_formless_checkout;
   // A vector of all the input fields in the form.
   std::vector<FormFieldData> fields;
 };

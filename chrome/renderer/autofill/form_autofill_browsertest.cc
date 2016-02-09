@@ -2750,7 +2750,8 @@ TEST_F(FormAutofillTest, PreviewFormForUnownedNonEnglishForm) {
 
 // Data that looks like an unowned form should NOT be matched unless an
 // additional indicator is present, such as title tag or url, to prevent false
-// positives.
+// positives. The fields that have an autocomplete attribute should match since
+// there is no chance of making a prediction error.
 
 TEST_F(FormAutofillTest, UnmatchedFormNoURL) {
   TestUnmatchedUnownedForm(kUnownedUntitledFormHtml, nullptr);
@@ -4437,24 +4438,26 @@ TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
 TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
   struct {
     const char* html;
-    const size_t expected_forms;
+    const bool has_extracted_form;
+    const bool is_form_tag;
+    const bool is_formless_checkout;
   } test_cases[] = {
       // An empty form should not be extracted
       {"<FORM name='TestForm' action='http://buh.com' method='post'>"
        "</FORM>",
-       0},
+       false, true, false},
       // A form with less than three fields with no autocomplete type(s) should
       // not be extracted.
       {"<FORM name='TestForm' action='http://buh.com' method='post'>"
        "  <INPUT type='name' id='firstname'/>"
        "</FORM>",
-       0},
+       false, true, false},
       // A form with less than three fields with at least one autocomplete type
       // should be extracted.
       {"<FORM name='TestForm' action='http://buh.com' method='post'>"
        "  <INPUT type='name' id='firstname' autocomplete='given-name'/>"
        "</FORM>",
-       1},
+       true, true, false},
       // A form with three or more fields should be extracted.
       {"<FORM name='TestForm' action='http://buh.com' method='post'>"
        "  <INPUT type='text' id='firstname'/>"
@@ -4462,7 +4465,18 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
        "  <INPUT type='text' id='email'/>"
        "  <INPUT type='submit' value='Send'/>"
        "</FORM>",
-       1},
+       true, true, false},
+      // An input field with an autocomplete attribute outside of a form should
+      // be extracted. The is_formless_checkout attribute should
+      // then be true.
+      {"<INPUT type='text' id='firstname' autocomplete='given-name'/>"
+       "<INPUT type='submit' value='Send'/>",
+       true, false, false},
+      // An input field without an autocomplete attribute outside of a form
+      // should not be extracted.
+      {"<INPUT type='text' id='firstname'/>"
+       "<INPUT type='submit' value='Send'/>",
+       false, false, false},
   };
 
   for (auto test_case : test_cases) {
@@ -4473,7 +4487,12 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
 
     FormCache form_cache(*web_frame);
     std::vector<FormData> forms = form_cache.ExtractNewForms();
-    EXPECT_EQ(test_case.expected_forms, forms.size());
+    EXPECT_EQ(test_case.has_extracted_form, forms.size() == 1);
+
+    if (test_case.has_extracted_form) {
+      EXPECT_EQ(test_case.is_form_tag, forms[0].is_form_tag);
+      EXPECT_EQ(test_case.is_formless_checkout, forms[0].is_formless_checkout);
+    }
   }
 }
 
