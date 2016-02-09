@@ -124,7 +124,7 @@ public:
 class FileSystemRootRequest final : public RefCountedWillBeGarbageCollectedFinalized<FileSystemRootRequest> {
     WTF_MAKE_NONCOPYABLE(FileSystemRootRequest);
 public:
-    static PassRefPtrWillBeRawPtr<FileSystemRootRequest> create(PassRefPtrWillBeRawPtr<RequestFileSystemRootCallback> requestCallback, const String& type)
+    static PassRefPtrWillBeRawPtr<FileSystemRootRequest> create(PassRefPtr<RequestFileSystemRootCallback> requestCallback, const String& type)
     {
         return adoptRefWillBeNoop(new FileSystemRootRequest(requestCallback, type));
     }
@@ -133,7 +133,6 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(m_requestCallback);
     }
 
 private:
@@ -150,11 +149,11 @@ private:
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), entry);
     }
 
-    FileSystemRootRequest(PassRefPtrWillBeRawPtr<RequestFileSystemRootCallback> requestCallback, const String& type)
+    FileSystemRootRequest(PassRefPtr<RequestFileSystemRootCallback> requestCallback, const String& type)
         : m_requestCallback(requestCallback)
         , m_type(type) { }
 
-    RefPtrWillBeMember<RequestFileSystemRootCallback> m_requestCallback;
+    RefPtr<RequestFileSystemRootCallback> m_requestCallback;
     String m_type;
 };
 
@@ -194,7 +193,7 @@ bool FileSystemRootRequest::didGetEntry(Entry* entry)
 class DirectoryContentRequest final : public RefCountedWillBeGarbageCollectedFinalized<DirectoryContentRequest> {
     WTF_MAKE_NONCOPYABLE(DirectoryContentRequest);
 public:
-    static PassRefPtrWillBeRawPtr<DirectoryContentRequest> create(PassRefPtrWillBeRawPtr<RequestDirectoryContentCallback> requestCallback, const String& url)
+    static PassRefPtrWillBeRawPtr<DirectoryContentRequest> create(PassRefPtr<RequestDirectoryContentCallback> requestCallback, const String& url)
     {
         return adoptRefWillBeNoop(new DirectoryContentRequest(requestCallback, url));
     }
@@ -207,7 +206,6 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        visitor->trace(m_requestCallback);
         visitor->trace(m_directoryReader);
     }
 
@@ -226,13 +224,13 @@ private:
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), entries);
     }
 
-    DirectoryContentRequest(PassRefPtrWillBeRawPtr<RequestDirectoryContentCallback> requestCallback, const String& url)
+    DirectoryContentRequest(PassRefPtr<RequestDirectoryContentCallback> requestCallback, const String& url)
         : m_requestCallback(requestCallback)
         , m_url(ParsedURLString, url) { }
 
     void readDirectoryEntries();
 
-    RefPtrWillBeMember<RequestDirectoryContentCallback> m_requestCallback;
+    RefPtr<RequestDirectoryContentCallback> m_requestCallback;
     KURL m_url;
     RefPtr<Array<TypeBuilder::FileSystem::Entry>> m_entries;
     PersistentWillBeMember<DirectoryReader> m_directoryReader;
@@ -323,7 +321,7 @@ bool DirectoryContentRequest::didReadDirectoryEntries(const EntryHeapVector& ent
 class MetadataRequest final : public RefCountedWillBeGarbageCollectedFinalized<MetadataRequest> {
     WTF_MAKE_NONCOPYABLE(MetadataRequest);
 public:
-    static PassRefPtrWillBeRawPtr<MetadataRequest> create(PassRefPtrWillBeRawPtr<RequestMetadataCallback> requestCallback, const String& url)
+    static PassRefPtrWillBeRawPtr<MetadataRequest> create(PassRefPtr<RequestMetadataCallback> requestCallback, const String& url)
     {
         return adoptRefWillBeNoop(new MetadataRequest(requestCallback, url));
     }
@@ -336,7 +334,6 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        visitor->trace(m_requestCallback);
     }
 
 private:
@@ -354,11 +351,11 @@ private:
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), metadata);
     }
 
-    MetadataRequest(PassRefPtrWillBeRawPtr<RequestMetadataCallback> requestCallback, const String& url)
+    MetadataRequest(PassRefPtr<RequestMetadataCallback> requestCallback, const String& url)
         : m_requestCallback(requestCallback)
         , m_url(ParsedURLString, url) { }
 
-    RefPtrWillBeMember<RequestMetadataCallback> m_requestCallback;
+    RefPtr<RequestMetadataCallback> m_requestCallback;
     KURL m_url;
     bool m_isDirectory;
 };
@@ -400,7 +397,7 @@ bool MetadataRequest::didGetMetadata(Metadata* metadata)
 class FileContentRequest final : public EventListener {
     WTF_MAKE_NONCOPYABLE(FileContentRequest);
 public:
-    static PassRefPtrWillBeRawPtr<FileContentRequest> create(PassRefPtrWillBeRawPtr<RequestFileContentCallback> requestCallback, const String& url, bool readAsText, long long start, long long end, const String& charset)
+    static PassRefPtrWillBeRawPtr<FileContentRequest> create(PassRefPtr<RequestFileContentCallback> requestCallback, const String& url, bool readAsText, long long start, long long end, const String& charset)
     {
         return adoptRefWillBeNoop(new FileContentRequest(requestCallback, url, readAsText, start, end, charset));
     }
@@ -426,7 +423,6 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        visitor->trace(m_requestCallback);
         visitor->trace(m_reader);
         EventListener::trace(visitor);
     }
@@ -447,7 +443,7 @@ private:
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), result, charset);
     }
 
-    FileContentRequest(PassRefPtrWillBeRawPtr<RequestFileContentCallback> requestCallback, const String& url, bool readAsText, long long start, long long end, const String& charset)
+    FileContentRequest(PassRefPtr<RequestFileContentCallback> requestCallback, const String& url, bool readAsText, long long start, long long end, const String& charset)
         : EventListener(EventListener::CPPEventListenerType)
         , m_requestCallback(requestCallback)
         , m_url(ParsedURLString, url)
@@ -456,7 +452,7 @@ private:
         , m_end(end)
         , m_charset(charset) { }
 
-    RefPtrWillBeMember<RequestFileContentCallback> m_requestCallback;
+    RefPtr<RequestFileContentCallback> m_requestCallback;
     KURL m_url;
     bool m_readAsText;
     int m_start;
@@ -531,7 +527,7 @@ void FileContentRequest::didRead()
 
 class DeleteEntryRequest final : public RefCountedWillBeGarbageCollectedFinalized<DeleteEntryRequest> {
 public:
-    static PassRefPtrWillBeRawPtr<DeleteEntryRequest> create(PassRefPtrWillBeRawPtr<DeleteEntryCallback> requestCallback, const KURL& url)
+    static PassRefPtrWillBeRawPtr<DeleteEntryRequest> create(PassRefPtr<DeleteEntryCallback> requestCallback, const KURL& url)
     {
         return adoptRefWillBeNoop(new DeleteEntryRequest(requestCallback, url));
     }
@@ -544,7 +540,6 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(m_requestCallback);
     }
 
 private:
@@ -585,11 +580,11 @@ private:
         m_requestCallback->sendSuccess(static_cast<int>(errorCode));
     }
 
-    DeleteEntryRequest(PassRefPtrWillBeRawPtr<DeleteEntryCallback> requestCallback, const KURL& url)
+    DeleteEntryRequest(PassRefPtr<DeleteEntryCallback> requestCallback, const KURL& url)
         : m_requestCallback(requestCallback)
         , m_url(url) { }
 
-    RefPtrWillBeMember<DeleteEntryCallback> m_requestCallback;
+    RefPtr<DeleteEntryCallback> m_requestCallback;
     KURL m_url;
 };
 
@@ -664,7 +659,7 @@ void InspectorFileSystemAgent::disable(ErrorString*)
     m_state->setBoolean(FileSystemAgentState::fileSystemAgentEnabled, m_enabled);
 }
 
-void InspectorFileSystemAgent::requestFileSystemRoot(ErrorString* error, const String& origin, const String& type, PassRefPtrWillBeRawPtr<RequestFileSystemRootCallback> requestCallback)
+void InspectorFileSystemAgent::requestFileSystemRoot(ErrorString* error, const String& origin, const String& type, PassRefPtr<RequestFileSystemRootCallback> requestCallback)
 {
     if (!assertEnabled(error))
         return;
@@ -676,7 +671,7 @@ void InspectorFileSystemAgent::requestFileSystemRoot(ErrorString* error, const S
     FileSystemRootRequest::create(requestCallback, type)->start(executionContext);
 }
 
-void InspectorFileSystemAgent::requestDirectoryContent(ErrorString* error, const String& url, PassRefPtrWillBeRawPtr<RequestDirectoryContentCallback> requestCallback)
+void InspectorFileSystemAgent::requestDirectoryContent(ErrorString* error, const String& url, PassRefPtr<RequestDirectoryContentCallback> requestCallback)
 {
     if (!assertEnabled(error))
         return;
@@ -688,7 +683,7 @@ void InspectorFileSystemAgent::requestDirectoryContent(ErrorString* error, const
     DirectoryContentRequest::create(requestCallback, url)->start(executionContext);
 }
 
-void InspectorFileSystemAgent::requestMetadata(ErrorString* error, const String& url, PassRefPtrWillBeRawPtr<RequestMetadataCallback> requestCallback)
+void InspectorFileSystemAgent::requestMetadata(ErrorString* error, const String& url, PassRefPtr<RequestMetadataCallback> requestCallback)
 {
     if (!assertEnabled(error))
         return;
@@ -700,7 +695,7 @@ void InspectorFileSystemAgent::requestMetadata(ErrorString* error, const String&
     MetadataRequest::create(requestCallback, url)->start(executionContext);
 }
 
-void InspectorFileSystemAgent::requestFileContent(ErrorString* error, const String& url, bool readAsText, const int* start, const int* end, const String* charset, PassRefPtrWillBeRawPtr<RequestFileContentCallback> requestCallback)
+void InspectorFileSystemAgent::requestFileContent(ErrorString* error, const String& url, bool readAsText, const int* start, const int* end, const String* charset, PassRefPtr<RequestFileContentCallback> requestCallback)
 {
     if (!assertEnabled(error))
         return;
@@ -714,7 +709,7 @@ void InspectorFileSystemAgent::requestFileContent(ErrorString* error, const Stri
     FileContentRequest::create(requestCallback, url, readAsText, startPosition, endPosition, charset ? *charset : "")->start(executionContext);
 }
 
-void InspectorFileSystemAgent::deleteEntry(ErrorString* error, const String& urlString, PassRefPtrWillBeRawPtr<DeleteEntryCallback> requestCallback)
+void InspectorFileSystemAgent::deleteEntry(ErrorString* error, const String& urlString, PassRefPtr<DeleteEntryCallback> requestCallback)
 {
     if (!assertEnabled(error))
         return;

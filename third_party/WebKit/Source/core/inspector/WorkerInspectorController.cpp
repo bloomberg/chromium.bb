@@ -255,7 +255,6 @@ DEFINE_TRACE(WorkerInspectorController)
 {
     visitor->trace(m_workerGlobalScope);
     visitor->trace(m_instrumentingAgents);
-    visitor->trace(m_backendDispatcher);
     visitor->trace(m_agents);
     visitor->trace(m_pageInspectorProxy);
     visitor->trace(m_workerDebuggerAgent);

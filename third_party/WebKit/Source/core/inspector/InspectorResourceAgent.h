@@ -135,7 +135,7 @@ public:
     void enable(ErrorString*) override;
     void setUserAgentOverride(ErrorString*, const String& userAgent) override;
     void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&) override;
-    void getResponseBody(ErrorString*, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>) override;
+    void getResponseBody(ErrorString*, const String& requestId, PassRefPtr<GetResponseBodyCallback>) override;
     void addBlockedURL(ErrorString*, const String& url) override;
     void removeBlockedURL(ErrorString*, const String& url) override;
 
@@ -163,7 +163,7 @@ private:
     void removeFinishedReplayXHRFired(Timer<InspectorResourceAgent>*);
     void didFinishXHRInternal(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&, bool);
 
-    bool getResponseBodyBlob(const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>);
+    bool getResponseBodyBlob(const String& requestId, PassRefPtr<GetResponseBodyCallback>);
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     String m_userAgentOverride;

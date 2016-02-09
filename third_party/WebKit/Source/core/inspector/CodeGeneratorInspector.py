@@ -1786,7 +1786,7 @@ class Generator:
 
             callback_writer.newline("class " + callback_name + " : public CallbackBase {\n")
             callback_writer.newline("public:\n")
-            callback_writer.newline("    " + callback_name + "(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl>, int sessionId, int id);\n")
+            callback_writer.newline("    " + callback_name + "(PassRefPtr<InspectorBackendDispatcherImpl>, int sessionId, int id);\n")
             callback_writer.newline("    CORE_EXPORT void sendSuccess(" + ", ".join(decl_parameter_list) + ");\n")
             error_part_writer = callback_writer.insert_writer("")
             callback_writer.newline("};\n")
@@ -1807,12 +1807,12 @@ class Generator:
 
             ad_hoc_type_output.append(callback_output)
 
-            method_out_code += "    RefPtrWillBeRawPtr<" + agent_interface_name + "::" + callback_name + "> callback = adoptRefWillBeNoop(new " + agent_interface_name + "::" + callback_name + "(this, sessionId, callId));\n"
+            method_out_code += "    RefPtr<" + agent_interface_name + "::" + callback_name + "> callback = adoptRef(new " + agent_interface_name + "::" + callback_name + "(this, sessionId, callId));\n"
             agent_call_param_list.append("callback")
             normal_response_cook_text += "    if (!error.length()) \n"
             normal_response_cook_text += "        return;\n"
             normal_response_cook_text += "    callback->disable();\n"
-            backend_agent_interface_list.append(", PassRefPtrWillBeRawPtr<%s> callback" % callback_name)
+            backend_agent_interface_list.append(", PassRefPtr<%s> callback" % callback_name)
         else:
             if "returns" in json_command:
                 method_out_code += "\n"

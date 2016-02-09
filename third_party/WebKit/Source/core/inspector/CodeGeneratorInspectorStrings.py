@@ -68,8 +68,8 @@ $code    if (m_inspectorFrontendChannel)
 }
 """)
 
-callback_main_methods = (
-"""InspectorBackendDispatcher::$agentName::$callbackName::$callbackName(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id) : CallbackBase(backendImpl, sessionId, id) {}
+callback_main_methods = ("""
+InspectorBackendDispatcher::$agentName::$callbackName::$callbackName(PassRefPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id) : CallbackBase(backendImpl, sessionId, id) {}
 
 void InspectorBackendDispatcher::$agentName::$callbackName::sendSuccess($parameters)
 {
@@ -142,17 +142,15 @@ typedef String ErrorString;
 
 class InspectorBackendDispatcherImpl;
 
-class CORE_EXPORT InspectorBackendDispatcher: public RefCountedWillBeGarbageCollectedFinalized<InspectorBackendDispatcher> {
+class CORE_EXPORT InspectorBackendDispatcher: public RefCounted<InspectorBackendDispatcher> {
 public:
-    static PassRefPtrWillBeRawPtr<InspectorBackendDispatcher> create(InspectorFrontendChannel* inspectorFrontendChannel);
+    static PassRefPtr<InspectorBackendDispatcher> create(InspectorFrontendChannel* inspectorFrontendChannel);
     virtual ~InspectorBackendDispatcher() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    class CORE_EXPORT CallbackBase: public RefCountedWillBeGarbageCollectedFinalized<CallbackBase> {
+    class CORE_EXPORT CallbackBase: public RefCounted<CallbackBase> {
     public:
-        CallbackBase(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id);
+        CallbackBase(PassRefPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id);
         virtual ~CallbackBase();
-        DECLARE_VIRTUAL_TRACE();
         void sendFailure(const ErrorString&);
         bool isActive();
 
@@ -162,7 +160,7 @@ public:
     private:
         void disable() { m_alreadySent = true; }
 
-        RefPtrWillBeMember<InspectorBackendDispatcherImpl> m_backendImpl;
+        RefPtr<InspectorBackendDispatcherImpl> m_backendImpl;
         int m_sessionId;
         int m_id;
         bool m_alreadySent;
@@ -303,15 +301,15 @@ const char InspectorBackendDispatcherImpl::InvalidParamsFormatString[] = "Some a
 
 $methods
 
-PassRefPtrWillBeRawPtr<InspectorBackendDispatcher> InspectorBackendDispatcher::create(InspectorFrontendChannel* inspectorFrontendChannel)
+PassRefPtr<InspectorBackendDispatcher> InspectorBackendDispatcher::create(InspectorFrontendChannel* inspectorFrontendChannel)
 {
-    return adoptRefWillBeNoop(new InspectorBackendDispatcherImpl(inspectorFrontendChannel));
+    return adoptRef(new InspectorBackendDispatcherImpl(inspectorFrontendChannel));
 }
 
 
 void InspectorBackendDispatcherImpl::dispatch(int sessionId, const String& message)
 {
-    RefPtrWillBeRawPtr<InspectorBackendDispatcher> protect(this);
+    RefPtr<InspectorBackendDispatcher> protect(this);
     int callId = 0;
     RefPtr<JSONValue> parsedMessage = parseJSON(message);
     ASSERT(parsedMessage);
@@ -464,15 +462,10 @@ bool InspectorBackendDispatcher::getCommandName(const String& message, String* r
     return true;
 }
 
-InspectorBackendDispatcher::CallbackBase::CallbackBase(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id)
+InspectorBackendDispatcher::CallbackBase::CallbackBase(PassRefPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id)
     : m_backendImpl(backendImpl), m_sessionId(sessionId), m_id(id), m_alreadySent(false) {}
 
 InspectorBackendDispatcher::CallbackBase::~CallbackBase() {}
-
-DEFINE_TRACE(InspectorBackendDispatcher::CallbackBase)
-{
-    visitor->trace(m_backendImpl);
-}
 
 void InspectorBackendDispatcher::CallbackBase::sendFailure(const ErrorString& error)
 {

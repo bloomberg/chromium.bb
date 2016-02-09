@@ -127,7 +127,7 @@ public:
     void addEditedStyleElement(int backendNodeId, const String& content);
     bool getEditedStyleElement(int backendNodeId, String* content);
 
-    void enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallback>) override;
+    void enable(ErrorString*, PassRefPtr<EnableCallback>) override;
     void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty>>&) override;
     void getPlatformFontsForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>>&) override;
     void getInlineStylesForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributes) override;
@@ -172,7 +172,7 @@ private:
     typedef WillBeHeapHashMap<RawPtrWillBeMember<Node>, RefPtrWillBeMember<InspectorStyleSheetForInlineStyle> > NodeToInspectorStyleSheet; // bogus "stylesheets" with elements' inline styles
     typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
 
-    void resourceContentLoaded(PassRefPtrWillBeRawPtr<EnableCallback>);
+    void resourceContentLoaded(PassRefPtr<EnableCallback>);
     void wasEnabled();
     void resetNonPersistentData();
     InspectorStyleSheetForInlineStyle* asInspectorStyleSheet(Element* element);

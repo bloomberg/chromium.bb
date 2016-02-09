@@ -160,7 +160,7 @@ private:
     RawPtrWillBeMember<PageRuntimeAgent> m_pageRuntimeAgent;
     RawPtrWillBeMember<PageConsoleAgent> m_pageConsoleAgent;
 
-    RefPtrWillBeMember<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
+    RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;
     InspectorAgentRegistry m_agents;
     bool m_deferredAgentsInitialized;

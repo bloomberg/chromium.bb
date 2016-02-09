@@ -90,7 +90,7 @@ private:
     InspectorAgentRegistry m_agents;
     OwnPtrWillBeMember<PageInspectorProxy> m_pageInspectorProxy;
     OwnPtr<InspectorFrontend> m_frontend;
-    RefPtrWillBeMember<InspectorBackendDispatcher> m_backendDispatcher;
+    RefPtr<InspectorBackendDispatcher> m_backendDispatcher;
     RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
     RawPtrWillBeMember<WorkerRuntimeAgent> m_workerRuntimeAgent;
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;

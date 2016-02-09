@@ -44,7 +44,7 @@ void InspectorTracingAgent::restore()
     emitMetadataEvents();
 }
 
-void InspectorTracingAgent::start(ErrorString*, const String* categoryFilter, const String*, const double*, const String*, PassRefPtrWillBeRawPtr<StartCallback> callback)
+void InspectorTracingAgent::start(ErrorString*, const String* categoryFilter, const String*, const double*, const String*, PassRefPtr<StartCallback> callback)
 {
     ASSERT(sessionId().isEmpty());
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
@@ -53,7 +53,7 @@ void InspectorTracingAgent::start(ErrorString*, const String* categoryFilter, co
     callback->sendSuccess();
 }
 
-void InspectorTracingAgent::end(ErrorString* errorString, PassRefPtrWillBeRawPtr<EndCallback> callback)
+void InspectorTracingAgent::end(ErrorString* errorString, PassRefPtr<EndCallback> callback)
 {
     m_client->disableTracing();
     resetSessionId();

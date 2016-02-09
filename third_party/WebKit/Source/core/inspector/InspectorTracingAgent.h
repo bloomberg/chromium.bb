@@ -43,8 +43,8 @@ public:
     void disable(ErrorString*) override;
 
     // Protocol method implementations.
-    void start(ErrorString*, const String* categoryFilter, const String*, const double*, const String*, PassRefPtrWillBeRawPtr<StartCallback>) override;
-    void end(ErrorString*, PassRefPtrWillBeRawPtr<EndCallback>) override;
+    void start(ErrorString*, const String* categoryFilter, const String*, const double*, const String*, PassRefPtr<StartCallback>) override;
+    void end(ErrorString*, PassRefPtr<EndCallback>) override;
 
     // Methods for other agents to use.
     void setLayerTreeId(int);

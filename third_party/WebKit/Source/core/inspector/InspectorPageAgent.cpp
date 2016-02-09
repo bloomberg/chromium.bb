@@ -505,7 +505,7 @@ void InspectorPageAgent::finishReload()
     m_debuggerAgent->setSkipAllPauses(&unused, false);
 }
 
-void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
 {
     if (!callback->isActive())
         return;
@@ -526,7 +526,7 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
     callback->sendSuccess(content, base64Encoded);
 }
 
-void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");
@@ -535,7 +535,7 @@ void InspectorPageAgent::getResourceContent(ErrorString* errorString, const Stri
     m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::getResourceContentAfterResourcesContentLoaded, this, frameId, url, callback));
 }
 
-void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, PassRefPtrWillBeRawPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, PassRefPtr<SearchInResourceCallback> callback)
 {
     if (!callback->isActive())
         return;
@@ -559,7 +559,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
     callback->sendSuccess(results);
 }
 
-void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, PassRefPtrWillBeRawPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, PassRefPtr<SearchInResourceCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");

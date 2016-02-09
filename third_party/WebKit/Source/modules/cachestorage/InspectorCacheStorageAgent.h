@@ -28,10 +28,10 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    void requestCacheNames(ErrorString*, const String& securityOrigin, PassRefPtrWillBeRawPtr<RequestCacheNamesCallback>) override;
-    void requestEntries(ErrorString*, const String& cacheId, int skipCount, int pageSize, PassRefPtrWillBeRawPtr<RequestEntriesCallback>) override;
-    void deleteCache(ErrorString*, const String& cacheId, PassRefPtrWillBeRawPtr<DeleteCacheCallback>) override;
-    void deleteEntry(ErrorString*, const String& cacheId, const String& request, PassRefPtrWillBeRawPtr<DeleteEntryCallback>) override;
+    void requestCacheNames(ErrorString*, const String& securityOrigin, PassRefPtr<RequestCacheNamesCallback>) override;
+    void requestEntries(ErrorString*, const String& cacheId, int skipCount, int pageSize, PassRefPtr<RequestEntriesCallback>) override;
+    void deleteCache(ErrorString*, const String& cacheId, PassRefPtr<DeleteCacheCallback>) override;
+    void deleteEntry(ErrorString*, const String& cacheId, const String& request, PassRefPtr<DeleteEntryCallback>) override;
 
 private:
     explicit InspectorCacheStorageAgent();

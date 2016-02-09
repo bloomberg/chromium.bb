@@ -650,7 +650,7 @@ void InspectorCSSAgent::resetNonPersistentData()
     resetPseudoStates();
 }
 
-void InspectorCSSAgent::enable(ErrorString* errorString, PassRefPtrWillBeRawPtr<EnableCallback> prpCallback)
+void InspectorCSSAgent::enable(ErrorString* errorString, PassRefPtr<EnableCallback> prpCallback)
 {
     if (!m_domAgent->enabled()) {
         *errorString = "DOM agent needs to be enabled first.";
@@ -660,7 +660,7 @@ void InspectorCSSAgent::enable(ErrorString* errorString, PassRefPtrWillBeRawPtr<
     m_resourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorCSSAgent::resourceContentLoaded, this, prpCallback));
 }
 
-void InspectorCSSAgent::resourceContentLoaded(PassRefPtrWillBeRawPtr<EnableCallback> callback)
+void InspectorCSSAgent::resourceContentLoaded(PassRefPtr<EnableCallback> callback)
 {
     if (!callback->isActive())
         return;

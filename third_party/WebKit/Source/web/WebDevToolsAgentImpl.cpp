@@ -459,7 +459,6 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_tracingAgent);
     visitor->trace(m_pageRuntimeAgent);
     visitor->trace(m_pageConsoleAgent);
-    visitor->trace(m_inspectorBackendDispatcher);
     visitor->trace(m_agents);
 }
 

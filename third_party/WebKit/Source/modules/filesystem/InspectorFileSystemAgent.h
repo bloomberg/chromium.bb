@@ -51,11 +51,11 @@ public:
 
     void enable(ErrorString*) override;
 
-    void requestFileSystemRoot(ErrorString*, const String& origin, const String& typeString, PassRefPtrWillBeRawPtr<RequestFileSystemRootCallback>) override;
-    void requestDirectoryContent(ErrorString*, const String& url, PassRefPtrWillBeRawPtr<RequestDirectoryContentCallback>) override;
-    void requestMetadata(ErrorString*, const String& url, PassRefPtrWillBeRawPtr<RequestMetadataCallback>) override;
-    void requestFileContent(ErrorString*, const String& url, bool readAsText, const int* start, const int* end, const String* charset, PassRefPtrWillBeRawPtr<RequestFileContentCallback>) override;
-    void deleteEntry(ErrorString*, const String& url, PassRefPtrWillBeRawPtr<DeleteEntryCallback>) override;
+    void requestFileSystemRoot(ErrorString*, const String& origin, const String& typeString, PassRefPtr<RequestFileSystemRootCallback>) override;
+    void requestDirectoryContent(ErrorString*, const String& url, PassRefPtr<RequestDirectoryContentCallback>) override;
+    void requestMetadata(ErrorString*, const String& url, PassRefPtr<RequestMetadataCallback>) override;
+    void requestFileContent(ErrorString*, const String& url, bool readAsText, const int* start, const int* end, const String* charset, PassRefPtr<RequestFileContentCallback>) override;
+    void deleteEntry(ErrorString*, const String& url, PassRefPtr<DeleteEntryCallback>) override;
 
     void disable(ErrorString*) override;
     void restore() override;

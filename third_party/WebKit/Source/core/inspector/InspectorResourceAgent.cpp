@@ -119,7 +119,7 @@ static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers
 class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     WTF_MAKE_NONCOPYABLE(InspectorFileReaderLoaderClient);
 public:
-    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, PassOwnPtr<TextResourceDecoder> decoder, PassRefPtrWillBeRawPtr<GetResponseBodyCallback> callback)
+    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, PassOwnPtr<TextResourceDecoder> decoder, PassRefPtr<GetResponseBodyCallback> callback)
         : m_blob(blob)
         , m_decoder(decoder)
         , m_callback(callback)
@@ -180,7 +180,7 @@ private:
 
     RefPtr<BlobDataHandle> m_blob;
     OwnPtr<TextResourceDecoder> m_decoder;
-    RefPtrWillBePersistent<GetResponseBodyCallback> m_callback;
+    RefPtr<GetResponseBodyCallback> m_callback;
     OwnPtr<FileReaderLoader> m_loader;
     OwnPtr<ArrayBufferBuilder> m_rawData;
 };
@@ -907,7 +907,7 @@ void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const RefPtr<JSON
     m_state->setObject(ResourceAgentState::extraRequestHeaders, headers);
 }
 
-bool InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback> callback)
+bool InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassRefPtr<GetResponseBodyCallback> callback)
 {
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
     if (!resourceData)
@@ -925,9 +925,9 @@ bool InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassRe
 }
 
 
-void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback> passCallback)
+void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, PassRefPtr<GetResponseBodyCallback> passCallback)
 {
-    RefPtrWillBeRawPtr<GetResponseBodyCallback> callback = passCallback;
+    RefPtr<GetResponseBodyCallback> callback = passCallback;
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
     if (!resourceData) {
         callback->sendFailure("No resource with given identifier found");

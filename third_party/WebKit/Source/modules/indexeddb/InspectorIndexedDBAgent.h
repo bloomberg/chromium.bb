@@ -55,10 +55,10 @@ public:
 
     // Called from the front-end.
     void enable(ErrorString*) override;
-    void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback>) override;
-    void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtrWillBeRawPtr<RequestDatabaseCallback>) override;
-    void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtrWillBeRawPtr<RequestDataCallback>) override;
-    void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtrWillBeRawPtr<ClearObjectStoreCallback>) override;
+    void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback>) override;
+    void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback>) override;
+    void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback>) override;
+    void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtr<ClearObjectStoreCallback>) override;
 
 private:
     explicit InspectorIndexedDBAgent(InspectedFrames*);
