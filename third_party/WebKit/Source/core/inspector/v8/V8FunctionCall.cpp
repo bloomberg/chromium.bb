@@ -30,8 +30,8 @@
 
 #include "core/inspector/v8/V8FunctionCall.h"
 
-#include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8StringUtil.h"
+#include "core/inspector/v8/public/V8DebuggerClient.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <v8.h>

@@ -33,11 +33,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MuteConsoleScope.h"
-#include "core/inspector/v8/InjectedScript.h"
-#include "core/inspector/v8/InjectedScriptManager.h"
-#include "core/inspector/v8/RemoteObjectId.h"
-#include "core/inspector/v8/V8Debugger.h"
-#include "core/inspector/v8/V8RuntimeAgent.h"
+#include "core/inspector/v8/public/V8Debugger.h"
+#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "platform/JSONValues.h"
 
 using blink::TypeBuilder::Runtime::ExecutionContextDescription;
@@ -48,11 +45,10 @@ namespace InspectorRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
-InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, Client* client)
+InspectorRuntimeAgent::InspectorRuntimeAgent(V8Debugger* debugger, Client* client)
     : InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>("Runtime")
     , m_enabled(false)
-    , m_v8RuntimeAgent(V8RuntimeAgent::create(injectedScriptManager, debugger))
-    , m_injectedScriptManager(injectedScriptManager)
+    , m_v8RuntimeAgent(V8RuntimeAgent::create(debugger))
     , m_client(client)
 {
 }
@@ -96,9 +92,7 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& exp
         executionContextId = *optExecutionContextId;
     } else {
         v8::HandleScope handles(defaultScriptState()->isolate());
-        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(defaultScriptState()->context());
-        ASSERT(injectedScript);
-        executionContextId = injectedScript->contextId();
+        executionContextId = m_v8RuntimeAgent->ensureDefaultContextAvailable(defaultScriptState()->context());
     }
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))

@@ -105,20 +105,17 @@ public:
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;
 
+    V8RuntimeAgent* v8Agent() { return m_v8RuntimeAgent.get(); }
+
 protected:
-    InspectorRuntimeAgent(InjectedScriptManager*, V8Debugger*, Client*);
+    InspectorRuntimeAgent(V8Debugger*, Client*);
     virtual ScriptState* defaultScriptState() = 0;
 
-    InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     void reportExecutionContextCreated(ScriptState*, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
     void reportExecutionContextDestroyed(ScriptState*);
 
     bool m_enabled;
-
-private:
-
     OwnPtr<V8RuntimeAgent> m_v8RuntimeAgent;
-    InjectedScriptManager* m_injectedScriptManager;
     Client* m_client;
 };
 

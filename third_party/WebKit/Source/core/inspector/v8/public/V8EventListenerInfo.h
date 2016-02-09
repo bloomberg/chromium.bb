@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EventListenerInfo_h
-#define EventListenerInfo_h
+#ifndef V8EventListenerInfo_h
+#define V8EventListenerInfo_h
 
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
@@ -12,9 +12,9 @@
 
 namespace blink {
 
-class EventListenerInfo {
+class V8EventListenerInfo {
 public:
-    EventListenerInfo(const AtomicString& eventType, bool useCapture, v8::Local<v8::Object> handler)
+    V8EventListenerInfo(const AtomicString& eventType, bool useCapture, v8::Local<v8::Object> handler)
         : eventType(eventType)
         , useCapture(useCapture)
         , handler(handler)
@@ -27,8 +27,8 @@ public:
 
 };
 
-using EventListenerInfoMap = HashMap<String, OwnPtr<Vector<EventListenerInfo>>>;
+using V8EventListenerInfoMap = HashMap<String, OwnPtr<Vector<V8EventListenerInfo>>>;
 
 } // namespace blink
 
-#endif // EventListenerInfo_h
+#endif // V8EventListenerInfo_h

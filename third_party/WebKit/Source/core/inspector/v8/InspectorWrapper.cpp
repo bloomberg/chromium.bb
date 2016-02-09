@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/inspector/v8/InspectorWrapper.h"
-#include "core/inspector/v8/V8DebuggerClient.h"
+#include "core/inspector/v8/public/V8DebuggerClient.h"
 
 #include "wtf/RefPtr.h"
 

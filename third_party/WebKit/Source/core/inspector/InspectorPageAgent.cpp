@@ -57,7 +57,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/v8/V8StringUtil.h"
+#include "core/inspector/v8/public/V8ContentSearchUtil.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/JSONValues.h"
@@ -555,7 +555,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
     }
 
     RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> results;
-    results = V8StringUtil::searchInTextByLines(m_debuggerAgent->debugger(), content, query, caseSensitive, isRegex);
+    results = V8ContentSearchUtil::searchInTextByLines(m_debuggerAgent->debugger(), content, query, caseSensitive, isRegex);
     callback->sendSuccess(results);
 }
 

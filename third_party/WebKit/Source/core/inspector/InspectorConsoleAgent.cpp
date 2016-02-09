@@ -32,10 +32,9 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/inspector/v8/InjectedScript.h"
-#include "core/inspector/v8/InjectedScriptManager.h"
-#include "core/inspector/v8/V8Debugger.h"
-#include "core/inspector/v8/V8DebuggerAgent.h"
+#include "core/inspector/v8/public/V8Debugger.h"
+#include "core/inspector/v8/public/V8DebuggerAgent.h"
+#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -44,9 +43,9 @@ namespace ConsoleAgentState {
 static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 }
 
-InspectorConsoleAgent::InspectorConsoleAgent(InjectedScriptManager* injectedScriptManager)
+InspectorConsoleAgent::InspectorConsoleAgent(V8RuntimeAgent* runtimeAgent)
     : InspectorBaseAgent<InspectorConsoleAgent, InspectorFrontend::Console>("Console")
-    , m_injectedScriptManager(injectedScriptManager)
+    , m_runtimeAgent(runtimeAgent)
     , m_debuggerAgent(nullptr)
     , m_enabled(false)
 {
@@ -119,7 +118,7 @@ void InspectorConsoleAgent::clearAllMessages()
 
 void InspectorConsoleAgent::consoleMessagesCleared()
 {
-    m_injectedScriptManager->releaseObjectGroup("console");
+    m_runtimeAgent->disposeObjectGroup("console");
     frontend()->messagesCleared();
 }
 
@@ -198,30 +197,28 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     RefPtrWillBeRawPtr<ScriptArguments> arguments = consoleMessage->scriptArguments();
     if (arguments && arguments->argumentCount()) {
         ScriptState::Scope scope(arguments->scriptState());
-        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(arguments->scriptState()->context());
-        if (injectedScript) {
-            RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject> > jsonArgs = TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject>::create();
-            if (consoleMessage->type() == TableMessageType && generatePreview && arguments->argumentCount()) {
-                v8::Local<v8::Value> table = arguments->argumentAt(0).v8Value();
-                v8::Local<v8::Value> columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1).v8Value() : v8::Local<v8::Value>();
-                RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript->wrapTable(table, columns);
+        v8::Local<v8::Context> context = arguments->scriptState()->context();
+        RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject>> jsonArgs = TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject>::create();
+        if (consoleMessage->type() == TableMessageType && generatePreview) {
+            v8::Local<v8::Value> table = arguments->argumentAt(0).v8Value();
+            v8::Local<v8::Value> columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1).v8Value() : v8::Local<v8::Value>();
+            RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = m_runtimeAgent->wrapTable(context, table, columns);
+            if (inspectorValue)
+                jsonArgs->addItem(inspectorValue);
+            else
+                jsonArgs = nullptr;
+        } else {
+            for (unsigned i = 0; i < arguments->argumentCount(); ++i) {
+                RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = m_runtimeAgent->wrapObject(context, arguments->argumentAt(i).v8Value(), "console", generatePreview);
                 if (!inspectorValue) {
-                    ASSERT_NOT_REACHED();
-                    return;
+                    jsonArgs = nullptr;
+                    break;
                 }
                 jsonArgs->addItem(inspectorValue);
-            } else {
-                for (unsigned i = 0; i < arguments->argumentCount(); ++i) {
-                    RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript->wrapObject(arguments->argumentAt(i).v8Value(), "console", generatePreview);
-                    if (!inspectorValue) {
-                        ASSERT_NOT_REACHED();
-                        return;
-                    }
-                    jsonArgs->addItem(inspectorValue);
-                }
             }
-            jsonObj->setParameters(jsonArgs);
         }
+        if (jsonArgs)
+            jsonObj->setParameters(jsonArgs);
     }
     if (consoleMessage->callStack())
         jsonObj->setStack(consoleMessage->callStack()->buildInspectorObject());

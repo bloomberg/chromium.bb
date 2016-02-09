@@ -47,9 +47,9 @@ class WorkerGlobalScopeProxy;
 class CORE_EXPORT PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames)
+    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(V8RuntimeAgent* runtimeAgent, InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames)
     {
-        return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, inspectedFrames));
+        return adoptPtrWillBeNoop(new PageConsoleAgent(runtimeAgent, domAgent, inspectedFrames));
     }
     ~PageConsoleAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -68,7 +68,7 @@ protected:
     void disableStackCapturingIfNeeded() override;
 
 private:
-    PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectedFrames*);
+    PageConsoleAgent(V8RuntimeAgent*, InspectorDOMAgent*, InspectedFrames*);
     void clearMessages(ErrorString*) override;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;

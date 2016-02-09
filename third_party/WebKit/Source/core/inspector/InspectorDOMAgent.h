@@ -35,8 +35,7 @@
 #include "core/events/EventListenerMap.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorHighlight.h"
-#include "core/inspector/v8/InjectedScript.h"
-#include "core/inspector/v8/InjectedScriptManager.h"
+#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/JSONValues.h"
 #include "platform/geometry/FloatQuad.h"
@@ -98,9 +97,9 @@ public:
         virtual void setInspectedNode(Node*) { }
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager, Client* client)
+    static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
     {
-        return adoptPtrWillBeNoop(new InspectorDOMAgent(inspectedFrames, injectedScriptManager, client));
+        return adoptPtrWillBeNoop(new InspectorDOMAgent(isolate, inspectedFrames, runtimeAgent, client));
     }
 
     static String toErrorString(ExceptionState&);
@@ -205,7 +204,7 @@ public:
     Document* assertDocument(ErrorString*, int nodeId);
 
 private:
-    InspectorDOMAgent(InspectedFrames*, InjectedScriptManager*, Client*);
+    InspectorDOMAgent(v8::Isolate*, InspectedFrames*, V8RuntimeAgent*, Client*);
 
     void setDocument(Document*);
     void innerEnable();
@@ -245,8 +244,9 @@ private:
 
     RawPtrWillBeMember<InspectorRevalidateDOMTask> revalidateTask();
 
+    v8::Isolate* m_isolate;
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    InjectedScriptManager* m_injectedScriptManager;
+    V8RuntimeAgent* m_runtimeAgent;
     Client* m_client;
     RawPtrWillBeMember<DOMListener> m_domListener;
     OwnPtrWillBeMember<NodeToIdMap> m_documentNodeToIdMap;

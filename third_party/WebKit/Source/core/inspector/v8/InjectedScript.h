@@ -100,8 +100,7 @@ public:
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) const;
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const;
     v8::Local<v8::Value> findObject(const RemoteObjectId&) const;
-
-    String objectIdToObjectGroupName(const String& objectId) const;
+    String objectGroupName(const RemoteObjectId&) const;
     void releaseObjectGroup(const String&);
 
     void setCustomObjectFormatterEnabled(bool);

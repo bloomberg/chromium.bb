@@ -47,8 +47,8 @@ class Isolate;
 
 namespace blink {
 
-class InjectedScriptManager;
 class HeapStatsUpdateTask;
+class V8RuntimeAgent;
 
 typedef String ErrorString;
 
@@ -56,7 +56,7 @@ class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<I
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorHeapProfilerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, InjectedScriptManager*);
+    static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, V8RuntimeAgent*);
     ~InspectorHeapProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -78,7 +78,7 @@ public:
 private:
     class HeapStatsUpdateTask;
 
-    InspectorHeapProfilerAgent(v8::Isolate*, InjectedScriptManager*);
+    InspectorHeapProfilerAgent(v8::Isolate*, V8RuntimeAgent*);
 
     void requestHeapStatsUpdate();
 
@@ -86,7 +86,7 @@ private:
     void stopTrackingHeapObjectsInternal();
 
     v8::Isolate* m_isolate;
-    InjectedScriptManager* m_injectedScriptManager;
+    V8RuntimeAgent* m_runtimeAgent;
     OwnPtrWillBeMember<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 

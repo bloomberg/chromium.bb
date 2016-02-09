@@ -4,9 +4,9 @@
 
 #include "core/inspector/v8/V8Regex.h"
 
-#include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
 #include "core/inspector/v8/V8StringUtil.h"
+#include "core/inspector/v8/public/V8DebuggerClient.h"
 
 namespace blink {
 

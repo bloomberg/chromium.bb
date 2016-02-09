@@ -33,8 +33,8 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ThreadDebugger.h"
-#include "core/inspector/v8/V8Debugger.h"
-#include "core/inspector/v8/V8StackTrace.h"
+#include "core/inspector/v8/public/V8Debugger.h"
+#include "core/inspector/v8/public/V8StackTrace.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
 

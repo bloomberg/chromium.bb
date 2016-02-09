@@ -49,13 +49,13 @@ using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(mainThreadDebugger, inspectedFrames, injectedScriptManager));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(mainThreadDebugger, inspectedFrames, runtimeAgent));
 }
 
-PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager)
-    : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(inspectedFrames->root()))
+PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
+    : InspectorDebuggerAgent(runtimeAgent, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(inspectedFrames->root()))
     , m_inspectedFrames(inspectedFrames)
 {
 }

@@ -43,12 +43,12 @@ class WorkerDebuggerAgent final : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(WorkerDebuggerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> create(V8Debugger*, WorkerGlobalScope*, InjectedScriptManager*);
+    static PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> create(V8Debugger*, WorkerGlobalScope*, V8RuntimeAgent*);
     ~WorkerDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    WorkerDebuggerAgent(V8Debugger*, WorkerGlobalScope*, InjectedScriptManager*);
+    WorkerDebuggerAgent(V8Debugger*, WorkerGlobalScope*, V8RuntimeAgent*);
 
     // V8DebuggerAgent::Client implemntation.
     void muteConsole() override;

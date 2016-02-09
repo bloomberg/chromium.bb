@@ -8,7 +8,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/public/V8Debugger.h"
 
 namespace blink {
 

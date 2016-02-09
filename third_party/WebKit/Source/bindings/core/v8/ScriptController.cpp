@@ -61,7 +61,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/v8/V8StackTrace.h"
+#include "core/inspector/v8/public/V8StackTrace.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

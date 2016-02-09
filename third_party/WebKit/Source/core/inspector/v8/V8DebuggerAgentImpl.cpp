@@ -15,12 +15,14 @@
 #include "core/inspector/v8/PromiseTracker.h"
 #include "core/inspector/v8/RemoteObjectId.h"
 #include "core/inspector/v8/V8AsyncCallTracker.h"
-#include "core/inspector/v8/V8Debugger.h"
-#include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
 #include "core/inspector/v8/V8Regex.h"
+#include "core/inspector/v8/V8RuntimeAgentImpl.h"
 #include "core/inspector/v8/V8StackTraceImpl.h"
 #include "core/inspector/v8/V8StringUtil.h"
+#include "core/inspector/v8/public/V8ContentSearchUtil.h"
+#include "core/inspector/v8/public/V8Debugger.h"
+#include "core/inspector/v8/public/V8DebuggerClient.h"
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
@@ -116,9 +118,10 @@ static bool positionComparator(const std::pair<int, int>& a, const std::pair<int
     return a.second < b.second;
 }
 
-PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
+PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(V8RuntimeAgent* runtimeAgent, int contextGroupId)
 {
-    return adoptPtr(new V8DebuggerAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger), contextGroupId));
+    V8RuntimeAgentImpl* runtimeAgentImpl = static_cast<V8RuntimeAgentImpl*>(runtimeAgent);
+    return adoptPtr(new V8DebuggerAgentImpl(runtimeAgentImpl->injectedScriptManager(), runtimeAgentImpl->debugger(), contextGroupId));
 }
 
 V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, int contextGroupId)
@@ -149,7 +152,7 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_startingStepIntoAsync(false)
 {
     ASSERT(contextGroupId);
-    m_injectedScriptManager->injectedScriptHost()->setDebugger(this, m_debugger);
+    m_injectedScriptManager->injectedScriptHost()->setDebuggerAgent(this);
 
     // FIXME: remove once InjectedScriptManager moves to v8.
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
@@ -599,7 +602,7 @@ void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String& scri
 {
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it != m_scripts.end())
-        results = V8StringUtil::searchInTextByLines(m_debugger, it->value.source(), query, asBool(optionalCaseSensitive), asBool(optionalIsRegex));
+        results = V8ContentSearchUtil::searchInTextByLines(m_debugger, it->value.source(), query, asBool(optionalCaseSensitive), asBool(optionalIsRegex));
     else
         *error = "No script for id: " + scriptId;
 }
@@ -1380,7 +1383,7 @@ String V8DebuggerAgentImpl::sourceMapURLForScript(const V8DebuggerScript& script
 {
     if (success)
         return script.sourceMappingURL();
-    return V8StringUtil::findSourceMapURL(script.source(), false);
+    return V8ContentSearchUtil::findSourceMapURL(script.source(), false);
 }
 
 void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScript)
@@ -1388,7 +1391,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     V8DebuggerScript script = parsedScript.script;
 
     if (!parsedScript.success)
-        script.setSourceURL(V8StringUtil::findSourceURL(script.source(), false));
+        script.setSourceURL(V8ContentSearchUtil::findSourceURL(script.source(), false));
 
     int executionContextId = script.executionContextId();
     bool isContentScript = script.isContentScript();

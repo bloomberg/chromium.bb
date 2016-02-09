@@ -34,7 +34,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
-#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -271,25 +270,6 @@ private:
 
 ClientMessageLoopAdapter* ClientMessageLoopAdapter::s_instance = nullptr;
 
-class PageInjectedScriptHostClient: public InjectedScriptHostClient {
-public:
-    PageInjectedScriptHostClient() { }
-
-    ~PageInjectedScriptHostClient() override { }
-
-    void muteWarningsAndDeprecations()
-    {
-        FrameConsole::mute();
-        UseCounter::muteForInspector();
-    }
-
-    void unmuteWarningsAndDeprecations()
-    {
-        FrameConsole::unmute();
-        UseCounter::unmuteForInspector();
-    }
-};
-
 class DebuggerTask : public InspectorTaskRunner::Task {
 public:
     DebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor> descriptor)
@@ -381,14 +361,17 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
-    m_injectedScriptManager = InjectedScriptManager::create(mainThreadDebugger);
-    InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
 
-    OwnPtrWillBeRawPtr<InspectorInspectorAgent> inspectorAgentPtr(InspectorInspectorAgent::create(injectedScriptManager));
+    OwnPtrWillBeRawPtr<InspectorInspectorAgent> inspectorAgentPtr(InspectorInspectorAgent::create());
     m_inspectorAgent = inspectorAgentPtr.get();
     m_agents.append(inspectorAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_inspectedFrames.get(), injectedScriptManager, m_overlay.get()));
+    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get()));
+    m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
+    m_agents.append(pageRuntimeAgentPtr.release());
+
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), m_pageRuntimeAgent->v8Agent(), m_overlay.get()));
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
 
@@ -396,11 +379,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_layerTreeAgent = layerTreeAgentPtr.get();
     m_agents.append(layerTreeAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(injectedScriptManager, this, mainThreadDebugger->debugger(), m_inspectedFrames.get()));
-    m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
-    m_agents.append(pageRuntimeAgentPtr.release());
-
-    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_inspectedFrames.get());
+    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(m_pageRuntimeAgent->v8Agent(), m_domAgent, m_inspectedFrames.get());
     m_pageConsoleAgent = pageConsoleAgentPtr.get();
 
     OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(pageConsoleAgentPtr.get());
@@ -468,7 +447,6 @@ void WebDevToolsAgentImpl::willBeDestroyed()
     ASSERT(m_inspectedFrames->root()->view());
 
     detach();
-    m_injectedScriptManager->disconnect();
     m_resourceContentLoader->dispose();
     m_agents.discardAgents();
     m_instrumentingAgents->reset();
@@ -480,8 +458,6 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         return;
     m_deferredAgentsInitialized = true;
 
-    InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
-
     OwnPtrWillBeRawPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_inspectedFrames.get()));
     m_resourceAgent = resourceAgentPtr.get();
     m_agents.append(resourceAgentPtr.release());
@@ -490,7 +466,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     InspectorCSSAgent* cssAgent = cssAgentPtr.get();
     m_agents.append(cssAgentPtr.release());
 
-    m_agents.append(InspectorAnimationAgent::create(m_inspectedFrames.get(), m_domAgent, cssAgent, injectedScriptManager));
+    m_agents.append(InspectorAnimationAgent::create(m_inspectedFrames.get(), m_domAgent, cssAgent, m_pageRuntimeAgent->v8Agent()));
 
     m_agents.append(InspectorMemoryAgent::create());
 
@@ -498,29 +474,25 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(InspectorFileSystemAgent::create(m_inspectedFrames.get()));
     m_agents.append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_inspectedFrames.get(), injectedScriptManager));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_inspectedFrames.get(), m_pageRuntimeAgent->v8Agent()));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
 
-    m_agents.append(InspectorDOMDebuggerAgent::create(injectedScriptManager, m_domAgent, debuggerAgent->v8DebuggerAgent()));
-
-    m_agents.append(InspectorInputAgent::create(m_inspectedFrames.get()));
-
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    m_agents.append(InspectorProfilerAgent::create(MainThreadDebugger::instance()->debugger(), m_overlay.get()));
 
-    m_agents.append(InspectorHeapProfilerAgent::create(isolate, injectedScriptManager));
+    m_agents.append(InspectorDOMDebuggerAgent::create(isolate, m_domAgent, m_pageRuntimeAgent->v8Agent(), debuggerAgent->v8Agent()));
+    m_agents.append(InspectorInputAgent::create(m_inspectedFrames.get()));
+    m_agents.append(InspectorProfilerAgent::create(MainThreadDebugger::instance()->debugger(), m_overlay.get()));
+    m_agents.append(InspectorHeapProfilerAgent::create(isolate, m_pageRuntimeAgent->v8Agent()));
 
     OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgent));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
-    m_pageConsoleAgent->setDebuggerAgent(debuggerAgent->v8DebuggerAgent());
+    m_pageConsoleAgent->setDebuggerAgent(debuggerAgent->v8Agent());
 
-    m_injectedScriptManager->injectedScriptHost()->init(
-        bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
-        bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()),
-        adoptPtr(new PageInjectedScriptHostClient()));
+    m_pageRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()));
+    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
 
     if (m_overlay)
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent.get());

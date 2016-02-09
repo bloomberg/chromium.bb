@@ -30,8 +30,8 @@
 
 #include "core/inspector/v8/InjectedScriptHost.h"
 
-#include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerAgentImpl.h"
+#include "core/inspector/v8/public/V8Debugger.h"
 #include "platform/JSONValues.h"
 
 #include "wtf/RefPtr.h"
@@ -39,30 +39,40 @@
 
 namespace blink {
 
-PassRefPtr<InjectedScriptHost> InjectedScriptHost::create()
+PassRefPtr<InjectedScriptHost> InjectedScriptHost::create(V8DebuggerImpl* debugger)
 {
-    return adoptRef(new InjectedScriptHost());
+    return adoptRef(new InjectedScriptHost(debugger));
 }
 
-InjectedScriptHost::InjectedScriptHost()
-    : m_debuggerAgent(nullptr)
+InjectedScriptHost::InjectedScriptHost(V8DebuggerImpl* debugger)
+    : m_debugger(debugger)
+    , m_debuggerAgent(nullptr)
     , m_inspectCallback(nullptr)
     , m_clearConsoleCallback(nullptr)
-    , m_debugger(nullptr)
 {
-    m_defaultInspectableObject = adoptPtr(new InspectableObject());
 }
 
 InjectedScriptHost::~InjectedScriptHost()
 {
 }
 
+void InjectedScriptHost::setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback> callback)
+{
+    m_clearConsoleCallback = std::move(callback);
+}
+
+void InjectedScriptHost::setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::InspectCallback> callback)
+{
+    m_inspectCallback = std::move(callback);
+}
+
 void InjectedScriptHost::disconnect()
 {
+    m_debugger = nullptr;
     m_debuggerAgent = nullptr;
     m_inspectCallback = nullptr;
     m_clearConsoleCallback = nullptr;
-    m_debugger = nullptr;
+    m_inspectedObjects.clear();
 }
 
 void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JSONValue> hints)
@@ -79,12 +89,7 @@ void InjectedScriptHost::clearConsoleMessages()
         (*m_clearConsoleCallback)();
 }
 
-v8::Local<v8::Value> InjectedScriptHost::InspectableObject::get(v8::Local<v8::Context>)
-{
-    return v8::Local<v8::Value>();
-};
-
-void InjectedScriptHost::addInspectedObject(PassOwnPtr<InjectedScriptHost::InspectableObject> object)
+void InjectedScriptHost::addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable> object)
 {
     m_inspectedObjects.prepend(object);
     while (m_inspectedObjects.size() > 5)
@@ -96,10 +101,10 @@ void InjectedScriptHost::clearInspectedObjects()
     m_inspectedObjects.clear();
 }
 
-InjectedScriptHost::InspectableObject* InjectedScriptHost::inspectedObject(unsigned num)
+V8RuntimeAgent::Inspectable* InjectedScriptHost::inspectedObject(unsigned num)
 {
     if (num >= m_inspectedObjects.size())
-        return m_defaultInspectableObject.get();
+        return nullptr;
     return m_inspectedObjects[num].get();
 }
 

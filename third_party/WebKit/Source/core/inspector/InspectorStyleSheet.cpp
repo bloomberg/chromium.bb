@@ -49,7 +49,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
-#include "core/inspector/v8/V8StringUtil.h"
+#include "core/inspector/v8/public/V8ContentSearchUtil.h"
 #include "core/svg/SVGStyleElement.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -1487,7 +1487,7 @@ String InspectorStyleSheet::sourceURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        String commentValue = V8StringUtil::findSourceURL(styleSheetText, true);
+        String commentValue = V8ContentSearchUtil::findSourceURL(styleSheetText, true);
         if (!commentValue.isEmpty()) {
             m_sourceURL = commentValue;
             return commentValue;
@@ -1538,7 +1538,7 @@ String InspectorStyleSheet::sourceMapURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        String commentValue = V8StringUtil::findSourceMapURL(styleSheetText, true);
+        String commentValue = V8ContentSearchUtil::findSourceMapURL(styleSheetText, true);
         if (!commentValue.isEmpty())
             return commentValue;
     }

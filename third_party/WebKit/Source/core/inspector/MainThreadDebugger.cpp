@@ -33,10 +33,12 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/V8Window.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorTaskRunner.h"
-#include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/public/V8Debugger.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -123,6 +125,18 @@ void MainThreadDebugger::runMessageLoopOnPause(int contextGroupId)
 void MainThreadDebugger::quitMessageLoopOnPause()
 {
     m_clientMessageLoop->quitNow();
+}
+
+void MainThreadDebugger::muteWarningsAndDeprecations()
+{
+    FrameConsole::mute();
+    UseCounter::muteForInspector();
+}
+
+void MainThreadDebugger::unmuteWarningsAndDeprecations()
+{
+    FrameConsole::unmute();
+    UseCounter::unmuteForInspector();
 }
 
 bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)

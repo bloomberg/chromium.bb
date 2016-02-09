@@ -32,12 +32,13 @@
 
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/InjectedScript.h"
+#include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/RemoteObjectId.h"
-#include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
 #include "core/inspector/v8/V8StackTraceImpl.h"
 #include "core/inspector/v8/V8StringUtil.h"
+#include "core/inspector/v8/public/V8DebuggerClient.h"
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
 
@@ -57,15 +58,15 @@ inline static bool asBool(const bool* const b)
     return b ? *b : false;
 }
 
-PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger)
+PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(V8Debugger* debugger)
 {
-    return adoptPtr(new V8RuntimeAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger)));
+    return adoptPtr(new V8RuntimeAgentImpl(static_cast<V8DebuggerImpl*>(debugger)));
 }
 
-V8RuntimeAgentImpl::V8RuntimeAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger)
+V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8DebuggerImpl* debugger)
     : m_state(nullptr)
     , m_frontend(nullptr)
-    , m_injectedScriptManager(injectedScriptManager)
+    , m_injectedScriptManager(InjectedScriptManager::create(debugger))
     , m_debugger(debugger)
     , m_enabled(false)
 {
@@ -176,7 +177,7 @@ void V8RuntimeAgentImpl::isRunRequired(ErrorString*, bool* out_result)
 void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enabled)
 {
     m_state->setBoolean(V8RuntimeAgentImplState::customObjectFormatterEnabled, enabled);
-    injectedScriptManager()->setCustomObjectFormatterEnabled(enabled);
+    m_injectedScriptManager->setCustomObjectFormatterEnabled(enabled);
 }
 
 void V8RuntimeAgentImpl::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
@@ -290,7 +291,7 @@ void V8RuntimeAgentImpl::restore()
     String error;
     enable(&error);
     if (m_state->booleanProperty(V8RuntimeAgentImplState::customObjectFormatterEnabled, false))
-        injectedScriptManager()->setCustomObjectFormatterEnabled(true);
+        m_injectedScriptManager->setCustomObjectFormatterEnabled(true);
 }
 
 void V8RuntimeAgentImpl::enable(ErrorString* errorString)
@@ -300,15 +301,79 @@ void V8RuntimeAgentImpl::enable(ErrorString* errorString)
 
 void V8RuntimeAgentImpl::disable(ErrorString* errorString)
 {
-    m_compiledScripts.clear();
     m_enabled = false;
+    m_compiledScripts.clear();
+    clearInspectedObjects();
+    m_injectedScriptManager->discardInjectedScripts();
+}
+
+int V8RuntimeAgentImpl::ensureDefaultContextAvailable(v8::Local<v8::Context> context)
+{
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
+    return injectedScript ? injectedScript->contextId() : 0;
+}
+
+void V8RuntimeAgentImpl::setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback> callback)
+{
+    m_injectedScriptManager->injectedScriptHost()->setClearConsoleCallback(callback);
+}
+
+void V8RuntimeAgentImpl::setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::InspectCallback> callback)
+{
+    m_injectedScriptManager->injectedScriptHost()->setInspectObjectCallback(callback);
+}
+
+PassRefPtr<TypeBuilder::Runtime::RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& groupName, bool generatePreview)
+{
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
+    if (!injectedScript)
+        return nullptr;
+    return injectedScript->wrapObject(value, groupName, generatePreview);
+}
+
+PassRefPtr<TypeBuilder::Runtime::RemoteObject> V8RuntimeAgentImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
+{
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
+    if (!injectedScript)
+        return nullptr;
+    return injectedScript->wrapTable(table, columns);
+}
+
+void V8RuntimeAgentImpl::disposeObjectGroup(const String& groupName)
+{
+    m_injectedScriptManager->releaseObjectGroup(groupName);
+}
+
+v8::Local<v8::Value> V8RuntimeAgentImpl::findObject(const String& objectId, v8::Local<v8::Context>* context, String* groupName)
+{
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
+    if (!remoteId)
+        return v8::Local<v8::Value>();
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId->contextId());
+    if (!injectedScript)
+        return v8::Local<v8::Value>();
+    if (context)
+        *context = injectedScript->context();
+    if (groupName)
+        *groupName = injectedScript->objectGroupName(*remoteId);
+    return injectedScript->findObject(*remoteId);
+}
+
+void V8RuntimeAgentImpl::addInspectedObject(PassOwnPtr<Inspectable> inspectable)
+{
+    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(inspectable);
+}
+
+void V8RuntimeAgentImpl::clearInspectedObjects()
+{
+    m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 
 void V8RuntimeAgentImpl::reportExecutionContextCreated(v8::Local<v8::Context> context, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
 {
     if (!m_enabled)
         return;
-    InjectedScript* injectedScript = injectedScriptManager()->injectedScriptFor(context);
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
     if (!injectedScript)
         return;
     RefPtr<ExecutionContextDescription> description = ExecutionContextDescription::create()
@@ -324,7 +389,7 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(v8::Local<v8::Context> co
 
 void V8RuntimeAgentImpl::reportExecutionContextDestroyed(v8::Local<v8::Context> context)
 {
-    int contextId = injectedScriptManager()->discardInjectedScriptFor(context);
+    int contextId = m_injectedScriptManager->discardInjectedScriptFor(context);
     if (m_enabled)
         m_frontend->executionContextDestroyed(contextId);
 }

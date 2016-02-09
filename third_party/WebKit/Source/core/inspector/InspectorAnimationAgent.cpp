@@ -24,7 +24,7 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
-#include "core/inspector/v8/InjectedScriptManager.h"
+#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/text/Base64.h"
@@ -36,12 +36,12 @@ static const char animationAgentPlaybackRate[] = "animationAgentPlaybackRate";
 
 namespace blink {
 
-InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, InjectedScriptManager* injectedScriptManager)
+InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
     : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
     , m_inspectedFrames(inspectedFrames)
     , m_domAgent(domAgent)
     , m_cssAgent(cssAgent)
-    , m_injectedScriptManager(injectedScriptManager)
+    , m_runtimeAgent(runtimeAgent)
     , m_isCloning(false)
 {
 }
@@ -382,20 +382,17 @@ void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const S
     const Element* element = toKeyframeEffect(animation->effect())->target();
     Document* document = element->ownerDocument();
     LocalFrame* frame = document ? document->frame() : nullptr;
-    if (!frame) {
+    ScriptState* scriptState = frame ? ScriptState::forMainWorld(frame) : nullptr;
+    if (!scriptState) {
         *errorString = "Element not associated with a document.";
         return;
     }
 
-    ScriptState* scriptState = ScriptState::forMainWorld(frame);
-    if (!scriptState)
-        return;
     ScriptState::Scope scope(scriptState);
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState->context());
-    if (!injectedScript)
-        return;
-    injectedScript->releaseObjectGroup("animation");
-    result = injectedScript->wrapObject(toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation");
+    m_runtimeAgent->disposeObjectGroup("animation");
+    result = m_runtimeAgent->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation");
+    if (!result)
+        *errorString = "Element not associated with a document.";
 }
 
 static CSSPropertyID animationProperties[] = {

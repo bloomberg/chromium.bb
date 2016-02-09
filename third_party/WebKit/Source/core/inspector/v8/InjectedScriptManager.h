@@ -43,15 +43,14 @@ class InjectedScriptHost;
 class InjectedScriptNative;
 class RemoteObjectIdBase;
 class V8DebuggerClient;
+class V8DebuggerImpl;
 
 class CORE_EXPORT InjectedScriptManager {
     WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
     USING_FAST_MALLOC(InjectedScriptManager);
 public:
-    static PassOwnPtr<InjectedScriptManager> create(V8DebuggerClient*);
+    static PassOwnPtr<InjectedScriptManager> create(V8DebuggerImpl*);
     ~InjectedScriptManager();
-
-    void disconnect();
 
     InjectedScriptHost* injectedScriptHost();
 
@@ -65,7 +64,7 @@ public:
     void setCustomObjectFormatterEnabled(bool);
 
 private:
-    explicit InjectedScriptManager(V8DebuggerClient*);
+    explicit InjectedScriptManager(V8DebuggerImpl*);
 
     v8::Local<v8::Object> createInjectedScript(const String& source, v8::Local<v8::Context>, int id, InjectedScriptNative*);
 

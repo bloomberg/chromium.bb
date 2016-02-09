@@ -79,6 +79,8 @@ private:
     // V8DebuggerClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
+    void muteWarningsAndDeprecations() override;
+    void unmuteWarningsAndDeprecations() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
 
     static WTF::Mutex& creationMutex();

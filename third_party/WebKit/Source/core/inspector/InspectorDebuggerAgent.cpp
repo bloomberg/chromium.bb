@@ -32,7 +32,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/MuteConsoleScope.h"
-#include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/public/V8Debugger.h"
 #include "platform/ScriptForbiddenScope.h"
 
 namespace blink {
@@ -41,9 +41,9 @@ namespace DebuggerAgentState {
 static const char debuggerEnabled[] = "debuggerEnabled";
 }
 
-InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
+InspectorDebuggerAgent::InspectorDebuggerAgent(V8RuntimeAgent* runtimeAgent, V8Debugger* debugger, int contextGroupId)
     : InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>("Debugger")
-    , m_v8DebuggerAgent(V8DebuggerAgent::create(injectedScriptManager, debugger, contextGroupId))
+    , m_v8DebuggerAgent(V8DebuggerAgent::create(runtimeAgent, contextGroupId))
     , m_debugger(debugger)
 {
 }

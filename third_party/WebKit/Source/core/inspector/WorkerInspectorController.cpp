@@ -43,8 +43,7 @@
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerRuntimeAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
-#include "core/inspector/v8/InjectedScriptHost.h"
-#include "core/inspector/v8/InjectedScriptManager.h"
+#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -108,13 +107,6 @@ private:
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
 };
 
-class WorkerInjectedScriptHostClient: public InjectedScriptHostClient {
-public:
-    WorkerInjectedScriptHostClient() { }
-
-    ~WorkerInjectedScriptHostClient() override { }
-};
-
 WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope)
     : m_workerGlobalScope(workerGlobalScope)
     , m_instrumentingAgents(InstrumentingAgents::create())
@@ -135,29 +127,25 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
         data->setThreadDebugger(newDebugger.release());
     }
 
-    m_injectedScriptManager = InjectedScriptManager::create(m_workerThreadDebugger);
     V8Debugger* debugger = m_workerThreadDebugger->debugger();
 
-    OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(m_injectedScriptManager.get(), debugger, workerGlobalScope, this);
+    OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(debugger, workerGlobalScope, this);
     m_workerRuntimeAgent = workerRuntimeAgent.get();
     m_agents.append(workerRuntimeAgent.release());
 
-    OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(debugger, workerGlobalScope, m_injectedScriptManager.get());
+    OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(debugger, workerGlobalScope, m_workerRuntimeAgent->v8Agent());
     m_workerDebuggerAgent = workerDebuggerAgent.get();
     m_agents.append(workerDebuggerAgent.release());
 
     m_agents.append(InspectorProfilerAgent::create(debugger, 0));
-    m_agents.append(InspectorHeapProfilerAgent::create(isolate, m_injectedScriptManager.get()));
+    m_agents.append(InspectorHeapProfilerAgent::create(isolate, m_workerRuntimeAgent->v8Agent()));
 
-    OwnPtrWillBeRawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_injectedScriptManager.get(), workerGlobalScope);
+    OwnPtrWillBeRawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_workerRuntimeAgent->v8Agent(), workerGlobalScope);
     WorkerConsoleAgent* workerConsoleAgentPtr = workerConsoleAgent.get();
-    workerConsoleAgentPtr->setDebuggerAgent(m_workerDebuggerAgent->v8DebuggerAgent());
+    workerConsoleAgentPtr->setDebuggerAgent(m_workerDebuggerAgent->v8Agent());
     m_agents.append(workerConsoleAgent.release());
 
-    m_injectedScriptManager->injectedScriptHost()->init(
-        nullptr,
-        bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgentPtr),
-        adoptPtr(new WorkerInjectedScriptHostClient()));
+    m_workerRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgentPtr));
 }
 
 WorkerInspectorController::~WorkerInspectorController()

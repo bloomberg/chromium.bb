@@ -5,7 +5,7 @@
 #ifndef V8StackTraceImpl_h
 #define V8StackTraceImpl_h
 
-#include "core/inspector/v8/V8StackTrace.h"
+#include "core/inspector/v8/public/V8StackTrace.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

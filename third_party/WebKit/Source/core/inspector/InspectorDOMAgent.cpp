@@ -69,9 +69,7 @@
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/v8/InjectedScriptHost.h"
-#include "core/inspector/v8/InjectedScriptManager.h"
-#include "core/inspector/v8/RemoteObjectId.h"
+#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/DocumentLoader.h"
@@ -270,10 +268,11 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, TypeBuilder::DOM
     }
 }
 
-InspectorDOMAgent::InspectorDOMAgent(InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager, Client* client)
+InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
     : InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>("DOM")
+    , m_isolate(isolate)
     , m_inspectedFrames(inspectedFrames)
-    , m_injectedScriptManager(injectedScriptManager)
+    , m_runtimeAgent(runtimeAgent)
     , m_client(client)
     , m_domListener(nullptr)
     , m_documentNodeToIdMap(adoptPtrWillBeNoop(new NodeToIdMap()))
@@ -1210,24 +1209,13 @@ void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const Ref
 
 Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String& objectId)
 {
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
-    if (!remoteId) {
-        *errorString = "Invalid remote object id";
-        return nullptr;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Cannot find context for specified object id";
-        return nullptr;
-    }
-    v8::HandleScope handles(injectedScript->isolate());
-    v8::Local<v8::Value> value = injectedScript->findObject(*remoteId);
+    v8::HandleScope handles(m_isolate);
+    v8::Local<v8::Value> value = m_runtimeAgent->findObject(objectId);
     if (value.IsEmpty()) {
         *errorString = "Node for given objectId not found";
         return nullptr;
     }
-    v8::Isolate* isolate = injectedScript->isolate();
-    if (!V8Node::hasInstance(value, isolate)) {
+    if (!V8Node::hasInstance(value, m_isolate)) {
         *errorString = "Object id doesn't reference a Node";
         return nullptr;
     }
@@ -2062,7 +2050,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
     }
 }
 
-class InspectableNode final : public InjectedScriptHost::InspectableObject {
+class InspectableNode final : public V8RuntimeAgent::Inspectable {
 public:
     explicit InspectableNode(Node* node) : m_nodeId(DOMNodeIds::idForNode(node)) { }
 
@@ -2079,7 +2067,7 @@ void InspectorDOMAgent::setInspectedNode(ErrorString* errorString, int nodeId)
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableNode(node)));
+    m_runtimeAgent->addInspectedObject(adoptPtr(new InspectableNode(node)));
     if (m_client)
         m_client->setInspectedNode(node);
 }
@@ -2121,10 +2109,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
         return nullptr;
 
     ScriptState::Scope scope(scriptState);
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState->context());
-    if (!injectedScript)
-        return nullptr;
-    return injectedScript->wrapObject(nodeV8Value(scriptState->context(), node), objectGroup);
+    return m_runtimeAgent->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), objectGroup);
 }
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)

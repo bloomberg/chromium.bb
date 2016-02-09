@@ -49,7 +49,7 @@ class CORE_EXPORT PageDebuggerAgent final
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(PageDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectedFrames*, InjectedScriptManager*);
+    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectedFrames*, V8RuntimeAgent*);
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -61,7 +61,7 @@ public:
     void didClearDocumentOfWindowObject(LocalFrame*);
 
 private:
-    PageDebuggerAgent(MainThreadDebugger*, InspectedFrames*, InjectedScriptManager*);
+    PageDebuggerAgent(MainThreadDebugger*, InspectedFrames*, V8RuntimeAgent*);
     void muteConsole() override;
     void unmuteConsole() override;
 

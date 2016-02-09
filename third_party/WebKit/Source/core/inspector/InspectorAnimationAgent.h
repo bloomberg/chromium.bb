@@ -18,18 +18,18 @@ namespace blink {
 class AnimationNode;
 class AnimationTimeline;
 class Element;
-class InjectedScriptManager;
 class InspectedFrames;
 class InspectorCSSAgent;
 class InspectorDOMAgent;
 class TimingFunction;
+class V8RuntimeAgent;
 
 class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>, public InspectorBackendDispatcher::AnimationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, InjectedScriptManager* injectedScriptManager)
+    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
     {
-        return adoptPtrWillBeNoop(new InspectorAnimationAgent(inspectedFrames, domAgent, cssAgent, injectedScriptManager));
+        return adoptPtrWillBeNoop(new InspectorAnimationAgent(inspectedFrames, domAgent, cssAgent, runtimeAgent));
     }
 
     // Base agent methods.
@@ -61,7 +61,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, InjectedScriptManager*);
+    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, V8RuntimeAgent*);
 
     typedef TypeBuilder::Animation::Animation::Type::Enum AnimationType;
 
@@ -75,7 +75,7 @@ private:
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
-    InjectedScriptManager* m_injectedScriptManager;
+    V8RuntimeAgent* m_runtimeAgent;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimationClone;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;

@@ -35,34 +35,29 @@
 #include "core/inspector/v8/InjectedScriptNative.h"
 #include "core/inspector/v8/InjectedScriptSource.h"
 #include "core/inspector/v8/RemoteObjectId.h"
-#include "core/inspector/v8/V8Debugger.h"
-#include "core/inspector/v8/V8DebuggerClient.h"
+#include "core/inspector/v8/V8DebuggerImpl.h"
 #include "core/inspector/v8/V8InjectedScriptHost.h"
 #include "core/inspector/v8/V8StringUtil.h"
+#include "core/inspector/v8/public/V8DebuggerClient.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-PassOwnPtr<InjectedScriptManager> InjectedScriptManager::create(V8DebuggerClient* client)
+PassOwnPtr<InjectedScriptManager> InjectedScriptManager::create(V8DebuggerImpl* debugger)
 {
-    return adoptPtr(new InjectedScriptManager(client));
+    return adoptPtr(new InjectedScriptManager(debugger));
 }
 
-InjectedScriptManager::InjectedScriptManager(V8DebuggerClient* client)
-    : m_injectedScriptHost(InjectedScriptHost::create())
+InjectedScriptManager::InjectedScriptManager(V8DebuggerImpl* debugger)
+    : m_injectedScriptHost(InjectedScriptHost::create(debugger))
     , m_customObjectFormatterEnabled(false)
-    , m_client(client)
+    , m_client(debugger->client())
 {
 }
 
 InjectedScriptManager::~InjectedScriptManager()
 {
-}
-
-void InjectedScriptManager::disconnect()
-{
     m_injectedScriptHost->disconnect();
-    m_injectedScriptHost.clear();
 }
 
 InjectedScriptHost* InjectedScriptManager::injectedScriptHost()

@@ -30,10 +30,7 @@
 #ifndef InjectedScriptHost_h
 #define InjectedScriptHost_h
 
-#include "core/InspectorTypeBuilder.h"
-#include "core/inspector/v8/InjectedScriptHostClient.h"
-#include "core/inspector/v8/V8DebuggerAgentImpl.h"
-#include "wtf/Functional.h"
+#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -42,14 +39,10 @@
 
 namespace blink {
 
-class EventTarget;
-class InjectedScriptHostClient;
-class InspectorConsoleAgent;
+class V8EventListenerInfo;
 class JSONValue;
 class V8DebuggerImpl;
 class V8DebuggerAgentImpl;
-
-class EventListenerInfo;
 
 // SECURITY NOTE: Although the InjectedScriptHost is intended for use solely by the inspector,
 // a reference to the InjectedScriptHost may be leaked to the page being inspected. Thus, the
@@ -58,36 +51,18 @@ class EventListenerInfo;
 
 class InjectedScriptHost : public RefCounted<InjectedScriptHost> {
 public:
-    static PassRefPtr<InjectedScriptHost> create();
+    static PassRefPtr<InjectedScriptHost> create(V8DebuggerImpl*);
     ~InjectedScriptHost();
 
-    using InspectCallback = Function<void(PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>)>;
-    using ClearConsoleCallback = Function<void()>;
-
-    void init(PassOwnPtr<InspectCallback> inspectCallback, PassOwnPtr<ClearConsoleCallback> clearConsoleCallback, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
-    {
-        m_inspectCallback = std::move(inspectCallback);
-        m_clearConsoleCallback = std::move(clearConsoleCallback);
-        m_client = std::move(injectedScriptHostClient);
-    }
-
-    void setDebugger(V8DebuggerAgentImpl* debuggerAgent, V8DebuggerImpl* debugger)
-    {
-        m_debuggerAgent = debuggerAgent;
-        m_debugger = debugger;
-    }
+    void setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback>);
+    void setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::InspectCallback>);
+    void setDebuggerAgent(V8DebuggerAgentImpl* debuggerAgent) { m_debuggerAgent = debuggerAgent; }
 
     void disconnect();
 
-    class InspectableObject {
-        USING_FAST_MALLOC(InspectableObject);
-    public:
-        virtual v8::Local<v8::Value> get(v8::Local<v8::Context>);
-        virtual ~InspectableObject() { }
-    };
-    void addInspectedObject(PassOwnPtr<InspectableObject>);
+    void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
     void clearInspectedObjects();
-    InspectableObject* inspectedObject(unsigned num);
+    V8RuntimeAgent::Inspectable* inspectedObject(unsigned num);
 
     void inspectImpl(PassRefPtr<JSONValue> objectToInspect, PassRefPtr<JSONValue> hints);
 
@@ -97,23 +72,20 @@ public:
     void monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName);
     void unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber);
 
-    V8DebuggerImpl& debugger() { return *m_debugger; }
-    InjectedScriptHostClient* client() { return m_client.get(); }
+    V8DebuggerImpl* debugger() { return m_debugger; }
 
     // FIXME: store this template in per isolate data
     void setWrapperTemplate(v8::Local<v8::FunctionTemplate> wrapperTemplate, v8::Isolate* isolate) { m_wrapperTemplate.Reset(isolate, wrapperTemplate); }
     v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }
 
 private:
-    InjectedScriptHost();
+    InjectedScriptHost(V8DebuggerImpl*);
 
-    V8DebuggerAgentImpl* m_debuggerAgent;
-    OwnPtr<InspectCallback> m_inspectCallback;
-    OwnPtr<ClearConsoleCallback> m_clearConsoleCallback;
     V8DebuggerImpl* m_debugger;
-    Vector<OwnPtr<InspectableObject>> m_inspectedObjects;
-    OwnPtr<InspectableObject> m_defaultInspectableObject;
-    OwnPtr<InjectedScriptHostClient> m_client;
+    V8DebuggerAgentImpl* m_debuggerAgent;
+    OwnPtr<V8RuntimeAgent::InspectCallback> m_inspectCallback;
+    OwnPtr<V8RuntimeAgent::ClearConsoleCallback> m_clearConsoleCallback;
+    Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
 

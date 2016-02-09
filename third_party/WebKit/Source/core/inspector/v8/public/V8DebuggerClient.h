@@ -6,7 +6,7 @@
 #define V8DebuggerClient_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/v8/EventListenerInfo.h"
+#include "core/inspector/v8/public/V8EventListenerInfo.h"
 
 #include <v8.h>
 
@@ -18,7 +18,9 @@ public:
     virtual ~V8DebuggerClient() { }
     virtual void runMessageLoopOnPause(int contextGroupId) = 0;
     virtual void quitMessageLoopOnPause() = 0;
-    virtual void eventListeners(v8::Local<v8::Value>, EventListenerInfoMap&) = 0;
+    virtual void muteWarningsAndDeprecations() = 0;
+    virtual void unmuteWarningsAndDeprecations() = 0;
+    virtual void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoMap&) = 0;
     virtual bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) = 0;
 
     virtual v8::MaybeLocal<v8::Object> instantiateObject(v8::Local<v8::Function>) = 0;

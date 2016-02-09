@@ -7,18 +7,17 @@
 
 #include "core/CoreExport.h"
 #include "core/InspectorBackendDispatcher.h"
-#include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/public/V8Debugger.h"
 
 namespace blink {
 
-class InjectedScriptManager;
+class V8RuntimeAgent;
 
 class CORE_EXPORT V8DebuggerAgent : public InspectorBackendDispatcher::DebuggerCommandHandler, public V8Debugger::Agent<InspectorFrontend::Debugger> {
 public:
     static const char backtraceObjectGroup[];
 
-    // FIXME: injected script management should be an implementation details.
-    static PassOwnPtr<V8DebuggerAgent> create(InjectedScriptManager*, V8Debugger*, int contextGroupId);
+    static PassOwnPtr<V8DebuggerAgent> create(V8RuntimeAgent*, int contextGroupId);
     virtual ~V8DebuggerAgent() { }
 
     // API for the embedder to report native activities.

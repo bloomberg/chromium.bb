@@ -26,7 +26,7 @@ ThreadDebugger::~ThreadDebugger()
 {
 }
 
-void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, EventListenerInfoMap& result)
+void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, V8EventListenerInfoMap& result)
 {
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(m_isolate, value, result);
 }

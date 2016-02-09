@@ -32,7 +32,7 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/v8/V8DebuggerAgent.h"
+#include "core/inspector/v8/public/V8DebuggerAgent.h"
 
 namespace blink {
 
@@ -93,14 +93,14 @@ public:
     void clearFrontend() override;
     void restore() override;
 
-    V8DebuggerAgent* v8DebuggerAgent() const { return m_v8DebuggerAgent.get(); }
+    V8DebuggerAgent* v8Agent() const { return m_v8DebuggerAgent.get(); }
 
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;
 
     V8Debugger* debugger() { return m_debugger; }
 protected:
-    InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*, int contextGroupId);
+    InspectorDebuggerAgent(V8RuntimeAgent*, V8Debugger*, int contextGroupId);
 
     OwnPtr<V8DebuggerAgent> m_v8DebuggerAgent;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;

@@ -33,13 +33,12 @@
 
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/v8/V8RuntimeAgent.h"
+#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class InjectedScript;
 class InjectedScriptManager;
 class JSONArray;
 class V8DebuggerImpl;
@@ -49,7 +48,7 @@ typedef String ErrorString;
 class CORE_EXPORT V8RuntimeAgentImpl : public V8RuntimeAgent {
     WTF_MAKE_NONCOPYABLE(V8RuntimeAgentImpl);
 public:
-    V8RuntimeAgentImpl(InjectedScriptManager*, V8DebuggerImpl*);
+    V8RuntimeAgentImpl(V8DebuggerImpl*);
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
@@ -91,16 +90,26 @@ public:
     void runScript(ErrorString*, const TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
 
     V8DebuggerImpl* debugger() { return m_debugger; }
+    InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager.get(); }
 
 private:
-    InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
+    void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
+    void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;
+    int ensureDefaultContextAvailable(v8::Local<v8::Context>) override;
+    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) override;
+    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
+    void disposeObjectGroup(const String&) override;
+    v8::Local<v8::Value> findObject(const String& objectId, v8::Local<v8::Context>* = nullptr, String* groupName = nullptr) override;
+    void addInspectedObject(PassOwnPtr<Inspectable>) override;
+    void clearInspectedObjects() override;
+
     void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
     PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
     RefPtr<JSONObject> m_state;
     InspectorFrontend::Runtime* m_frontend;
-    InjectedScriptManager* m_injectedScriptManager;
+    OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
     bool m_enabled;
     HashMap<String, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;

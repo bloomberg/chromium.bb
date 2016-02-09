@@ -155,7 +155,7 @@ String toWTFStringWithTypeCheck(v8::Local<v8::Value> value)
     return toWTFString(value.As<v8::String>());
 }
 
-namespace V8StringUtil {
+namespace V8ContentSearchUtil {
 
 String findSourceURL(const String& content, bool multiline)
 {
@@ -179,6 +179,6 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> searchInTextB
     return result;
 }
 
-} // namespace V8StringUtil
+} // namespace V8ContentSearchUtil
 
 } // namespace blink

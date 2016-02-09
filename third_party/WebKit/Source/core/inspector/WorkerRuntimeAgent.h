@@ -40,9 +40,9 @@ class WorkerGlobalScope;
 
 class WorkerRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, WorkerGlobalScope* context, InspectorRuntimeAgent::Client* client)
+    static PassOwnPtrWillBeRawPtr<WorkerRuntimeAgent> create(V8Debugger* debugger, WorkerGlobalScope* context, InspectorRuntimeAgent::Client* client)
     {
-        return adoptPtrWillBeNoop(new WorkerRuntimeAgent(injectedScriptManager, debugger, context, client));
+        return adoptPtrWillBeNoop(new WorkerRuntimeAgent(debugger, context, client));
     }
     ~WorkerRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -50,7 +50,7 @@ public:
     void enable(ErrorString*) final;
 
 private:
-    WorkerRuntimeAgent(InjectedScriptManager*, V8Debugger*, WorkerGlobalScope*, InspectorRuntimeAgent::Client*);
+    WorkerRuntimeAgent(V8Debugger*, WorkerGlobalScope*, InspectorRuntimeAgent::Client*);
     ScriptState* defaultScriptState() override;
     void muteConsole() override;
     void unmuteConsole() override;

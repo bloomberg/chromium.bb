@@ -35,15 +35,15 @@ namespace blink {
 
 class ConsoleMessage;
 class ConsoleMessageStorage;
-class InjectedScriptManager;
 class V8DebuggerAgent;
+class V8RuntimeAgent;
 
 typedef String ErrorString;
 
 class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, InspectorFrontend::Console>, public InspectorBackendDispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
-    explicit InspectorConsoleAgent(InjectedScriptManager*);
+    explicit InspectorConsoleAgent(V8RuntimeAgent*);
     ~InspectorConsoleAgent() override;
 
     void setDebuggerAgent(V8DebuggerAgent* debuggerAgent) { m_debuggerAgent = debuggerAgent; }
@@ -65,7 +65,7 @@ protected:
     virtual void enableStackCapturingIfNeeded() = 0;
     virtual void disableStackCapturingIfNeeded() = 0;
 
-    InjectedScriptManager* m_injectedScriptManager;
+    V8RuntimeAgent* m_runtimeAgent;
     V8DebuggerAgent* m_debuggerAgent;
     bool m_enabled;
 };

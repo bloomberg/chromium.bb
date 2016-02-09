@@ -33,10 +33,10 @@
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/RemoteObjectId.h"
-#include "core/inspector/v8/V8Debugger.h"
-#include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8FunctionCall.h"
 #include "core/inspector/v8/V8StringUtil.h"
+#include "core/inspector/v8/public/V8Debugger.h"
+#include "core/inspector/v8/public/V8DebuggerClient.h"
 #include "platform/JSONParser.h"
 #include "platform/JSONValues.h"
 #include "platform/JSONValuesForV8.h"
@@ -396,18 +396,9 @@ v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) 
     return m_native->objectForId(objectId.id());
 }
 
-String InjectedScript::objectIdToObjectGroupName(const String& objectId) const
+String InjectedScript::objectGroupName(const RemoteObjectId& objectId) const
 {
-    RefPtr<JSONValue> parsedObjectId = parseJSON(objectId);
-    if (!parsedObjectId)
-        return String();
-    RefPtr<JSONObject> object;
-    if (!parsedObjectId->asObject(&object))
-        return String();
-    int boundId = 0;
-    if (!object->getNumber("id", &boundId))
-        return String();
-    return m_native->groupName(boundId);
+    return m_native->groupName(objectId.id());
 }
 
 void InjectedScript::releaseObjectGroup(const String& objectGroup)

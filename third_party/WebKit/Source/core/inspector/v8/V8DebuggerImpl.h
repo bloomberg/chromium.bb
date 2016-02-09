@@ -33,8 +33,8 @@
 
 #include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
-#include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerScript.h"
+#include "core/inspector/v8/public/V8Debugger.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 

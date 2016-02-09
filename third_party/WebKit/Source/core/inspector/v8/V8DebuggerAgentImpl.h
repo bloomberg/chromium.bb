@@ -9,8 +9,8 @@
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
-#include "core/inspector/v8/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
+#include "core/inspector/v8/public/V8DebuggerAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -56,7 +56,6 @@ public:
 
     V8DebuggerAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, int contextGroupId);
     ~V8DebuggerAgentImpl() override;
-    DECLARE_TRACE();
 
     void setInspectorState(PassRefPtr<JSONObject>) override;
     void setFrontend(InspectorFrontend::Debugger* frontend) override { m_frontend = frontend; }
@@ -68,8 +67,8 @@ public:
 
     // Part of the protocol.
     void enable(ErrorString*) override;
-    void setBreakpointsActive(ErrorString*, bool active);
-    void setSkipAllPauses(ErrorString*, bool skipped);
+    void setBreakpointsActive(ErrorString*, bool active) override;
+    void setSkipAllPauses(ErrorString*, bool skipped) override;
 
     void setBreakpointByUrl(ErrorString*, int lineNumber, const String* optionalURL, const String* optionalURLRegex, const int* optionalColumnNumber, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location>>& locations) override;
     void setBreakpoint(ErrorString*, const RefPtr<JSONObject>& location, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Debugger::Location>& actualLocation) override;
