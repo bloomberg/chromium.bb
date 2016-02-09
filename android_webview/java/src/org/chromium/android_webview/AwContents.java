@@ -3023,7 +3023,7 @@ public class AwContents implements SmartClipProvider,
                 nativeRequestNewHitTestDataAt(mNativeAwContents,
                         event.getX() / (float) mDIPScale,
                         event.getY() / (float) mDIPScale,
-                        event.getTouchMajor() / (float) mDIPScale);
+                        Math.max(event.getTouchMajor(), event.getTouchMinor()) / (float) mDIPScale);
             }
 
             if (mOverScrollGlow != null) {

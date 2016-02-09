@@ -100,6 +100,18 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
         if (!isValidTouchEventActionForNative(eventAction)) return false;
 
         int pointerCount = event.getPointerCount();
+
+        float[] touchMajor = {event.getTouchMajor(), pointerCount > 1 ? event.getTouchMajor(1) : 0};
+        float[] touchMinor = {event.getTouchMinor(), pointerCount > 1 ? event.getTouchMinor(1) : 0};
+
+        for (int i = 0; i < 2; i++) {
+            if (touchMajor[i] < touchMinor[i]) {
+                float tmp = touchMajor[i];
+                touchMajor[i] = touchMinor[i];
+                touchMinor[i] = tmp;
+            }
+        }
+
         boolean consumed = nativeOnTouchEvent(mNativeBlimpViewPtr, event,
                 event.getEventTime(), eventAction,
                 pointerCount, event.getHistorySize(), event.getActionIndex(),
@@ -107,8 +119,8 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
                 pointerCount > 1 ? event.getX(1) : 0,
                 pointerCount > 1 ? event.getY(1) : 0,
                 event.getPointerId(0), pointerCount > 1 ? event.getPointerId(1) : -1,
-                event.getTouchMajor(), pointerCount > 1 ? event.getTouchMajor(1) : 0,
-                event.getTouchMinor(), pointerCount > 1 ? event.getTouchMinor(1) : 0,
+                touchMajor[0], touchMajor[1],
+                touchMinor[0], touchMinor[1],
                 event.getOrientation(), pointerCount > 1 ? event.getOrientation(1) : 0,
                 event.getAxisValue(MotionEvent.AXIS_TILT),
                 pointerCount > 1 ? event.getAxisValue(MotionEvent.AXIS_TILT, 1) : 0,

@@ -140,9 +140,17 @@ public class PlatformWindowAndroid extends SurfaceView {
     }
 
     private boolean notifyTouchEventAtIndex(MotionEvent event, int index) {
+        float touchMajor = event.getTouchMajor(index);
+        float touchMinor = event.getTouchMinor(index);
+        if (touchMajor < touchMinor) {
+            float tmp = touchMajor;
+            touchMajor = touchMinor;
+            touchMinor = tmp;
+        }
+
         return nativeTouchEvent(mNativeMojoViewport, event.getEventTime(), event.getActionMasked(),
                 event.getPointerId(index), event.getX(index), event.getY(index),
-                event.getPressure(index), event.getTouchMajor(index), event.getTouchMinor(index),
+                event.getPressure(index), touchMajor, touchMinor,
                 event.getOrientation(index), event.getAxisValue(MotionEvent.AXIS_HSCROLL, index),
                 event.getAxisValue(MotionEvent.AXIS_VSCROLL, index));
     }
