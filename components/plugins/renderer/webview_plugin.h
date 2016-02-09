@@ -178,6 +178,7 @@ class WebViewPlugin : public blink::WebPlugin,
   blink::WebString old_title_;
   bool finished_loading_;
   bool focused_;
+  bool is_painting_;
 };
 
 #endif  // COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_

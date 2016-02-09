@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/auto_reset.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -55,7 +56,8 @@ WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
       container_(nullptr),
       web_view_(WebView::create(this)),
       finished_loading_(false),
-      focused_(false) {
+      focused_(false),
+      is_painting_(false) {
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
@@ -171,6 +173,9 @@ void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   gfx::Rect paint_rect = gfx::IntersectRects(rect_, rect);
   if (paint_rect.IsEmpty())
     return;
+
+  base::AutoReset<bool> is_painting(
+        &is_painting_, true);
 
   paint_rect.Offset(-rect_.x(), -rect_.y());
 
@@ -288,8 +293,11 @@ void WebViewPlugin::didChangeCursor(const WebCursorInfo& cursor) {
 }
 
 void WebViewPlugin::scheduleAnimation() {
-  if (container_)
+  if (container_) {
+    // This should never happen; see also crbug.com/545039 for context.
+    CHECK(!is_painting_);
     container_->setNeedsLayout();
+  }
 }
 
 void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame) {
