@@ -1206,7 +1206,7 @@ void XMLHttpRequest::setRequestHeaderInternal(const AtomicString& name, const At
     if (!normalizedValue.isEmpty() && !isValidHTTPFieldContentRFC7230(normalizedValue))
         headerValueCategory = HeaderValueInvalid;
 
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, headerValueCategoryHistogram, ("Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230", HeaderValueCategoryByRFC7230End));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, headerValueCategoryHistogram, new EnumerationHistogram("Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230", HeaderValueCategoryByRFC7230End));
     headerValueCategoryHistogram.count(headerValueCategory);
 }
 
