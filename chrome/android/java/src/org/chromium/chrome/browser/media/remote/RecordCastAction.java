@@ -135,6 +135,20 @@ public class RecordCastAction {
         }
     }
 
+    /**
+     * Record the ratio of the time the media element was detached from the remote playback session
+     * to the total duration of the session (as from when the element has been attached till when
+     * the session stopped or disconnected), in percents.
+     *
+     * @param percentage The ratio in percents.
+     */
+    public static void recordRemoteSessionTimeWithoutMediaElementPercentage(int percentage) {
+        if (LibraryLoader.isInitialized()) {
+            RecordHistogram.recordPercentageHistogram(
+                    "Cast.Sender.SessionTimeWithoutMediaElementPercentage", percentage);
+        }
+    }
+
     // Cast sending
     private static native void nativeRecordRemotePlaybackDeviceSelected(int deviceType);
     private static native void nativeRecordCastPlayRequested();

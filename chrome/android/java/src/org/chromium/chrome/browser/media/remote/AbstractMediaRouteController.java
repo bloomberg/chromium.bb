@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v7.media.MediaControlIntent;
 import android.support.v7.media.MediaItemStatus;
 import android.support.v7.media.MediaRouteSelector;
@@ -177,6 +178,9 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     private boolean mRoutesAvailable = false;
     private final Set<UiListener> mUiListeners;
     private boolean mWatchingRouteSelection = false;
+
+    private long mMediaElementAttachedTimestampMs = 0;
+    private long mMediaElementDetachedTimestampMs = 0;
 
     protected AbstractMediaRouteController() {
 
@@ -374,6 +378,33 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         startWatchingRouteSelection();
     }
 
+    @Override
+    public void release() {
+        recordEndOfSessionUMA();
+    }
+
+    private void recordEndOfSessionUMA() {
+        long remotePlaybackStoppedTimestampMs = SystemClock.uptimeMillis();
+
+        // There was no media element ever...
+        if (mMediaElementAttachedTimestampMs == 0) return;
+
+        long remotePlaybackIntervalMs =
+                remotePlaybackStoppedTimestampMs - mMediaElementAttachedTimestampMs;
+
+        if (mMediaElementDetachedTimestampMs == 0) {
+            mMediaElementDetachedTimestampMs = remotePlaybackStoppedTimestampMs;
+        }
+
+        int noElementRemotePlaybackTimePercentage =
+                (int) ((remotePlaybackStoppedTimestampMs - mMediaElementDetachedTimestampMs) * 100
+                        / remotePlaybackIntervalMs);
+        RecordCastAction.recordRemoteSessionTimeWithoutMediaElementPercentage(
+                noElementRemotePlaybackTimePercentage);
+        mMediaElementAttachedTimestampMs = 0;
+        mMediaElementDetachedTimestampMs = 0;
+    }
+
     protected final void registerRoute(RouteInfo route) {
         mCurrentRoute = route;
 
@@ -420,6 +451,17 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
 
     @Override
     public void setMediaStateListener(MediaStateListener mediaStateListener) {
+        if (mMediaStateListener != null && mediaStateListener == null
+                    && mMediaElementAttachedTimestampMs != 0) {
+            mMediaElementDetachedTimestampMs = SystemClock.uptimeMillis();
+        } else if (mMediaStateListener == null && mediaStateListener != null) {
+            // We're switching the videos so let's record the UMA for the previous one.
+            if (mMediaElementDetachedTimestampMs != 0) recordEndOfSessionUMA();
+
+            mMediaElementAttachedTimestampMs = SystemClock.uptimeMillis();
+            mMediaElementDetachedTimestampMs = 0;
+        }
+
         mMediaStateListener = mediaStateListener;
     }
 

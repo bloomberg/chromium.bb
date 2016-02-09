@@ -401,6 +401,8 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
     @Override
     public void release() {
+        super.release();
+
         for (UiListener listener : getUiListeners()) {
             listener.onRouteUnselected(this);
         }

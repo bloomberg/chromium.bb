@@ -4039,6 +4039,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.SessionTimeWithoutMediaElementPercentage"
+    units="%">
+  <owner>aberent@chromium.org</owner>
+  <owner>avayvod@chromium.org</owner>
+  <summary>
+    Records the ratio of the time the media element was detached from the remote
+    playback session to the total duration of the session (as from when the
+    element has been attached till when the session stopped or disconnected), in
+    percents.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.UrlResolveResult"
     enum="RemotePlaybackUrlResolveResult">
   <owner>aberent@google.com</owner>
