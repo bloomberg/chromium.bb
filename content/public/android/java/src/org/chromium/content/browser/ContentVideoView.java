@@ -295,6 +295,7 @@ public class ContentVideoView extends FrameLayout
         if (mSurfaceHolder != null) {
             mCurrentState = STATE_NO_ERROR;
             if (mNativeContentVideoView != 0) {
+                // Note: this may result in a reentrant call to onVideoSizeChanged().
                 nativeSetSurface(mNativeContentVideoView, mSurfaceHolder.getSurface());
             }
         }
