@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -40,13 +41,9 @@ namespace {
 // handled directly by the Image.
 const int kBorderInset = 0;
 
-// The ToolbarActionView which is currently showing its context menu, if any.
-// Since only one context menu can be shown (even across browser windows), it's
-// safe to have this be a global singleton.
-ToolbarActionView* context_menu_owner = nullptr;
-
 // The callback to call directly before showing the context menu.
-ToolbarActionView::ContextMenuCallback* context_menu_callback = nullptr;
+ToolbarActionView::ContextMenuCallback* context_menu_callback_for_test =
+    nullptr;
 
 }  // namespace
 
@@ -93,8 +90,6 @@ ToolbarActionView::ToolbarActionView(
 }
 
 ToolbarActionView::~ToolbarActionView() {
-  if (context_menu_owner == this)
-    context_menu_owner = nullptr;
   view_controller_->SetDelegate(nullptr);
 }
 
@@ -178,13 +173,21 @@ void ToolbarActionView::OnMenuButtonClicked(views::View* sender,
   }
 }
 
+void ToolbarActionView::OnMenuClosed() {
+  menu_runner_.reset();
+  menu_ = nullptr;
+  view_controller_->OnContextMenuClosed();
+  menu_adapter_.reset();
+  ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
+}
+
 gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
 }
 
 void ToolbarActionView::set_context_menu_callback_for_testing(
     base::Callback<void(ToolbarActionView*)>* callback) {
-  context_menu_callback = callback;
+  context_menu_callback_for_test = callback;
 }
 
 gfx::Size ToolbarActionView::GetPreferredSize() const {
@@ -267,21 +270,6 @@ void ToolbarActionView::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  // If there's another active menu that won't be dismissed by opening this one,
-  // then we can't show this one right away, since we can only show one nested
-  // menu at a time.
-  // If the other menu is an extension action's context menu, then we'll run
-  // this one after that one closes. If it's a different type of menu, then we
-  // close it and give up, for want of a better solution. (Luckily, this is
-  // rare).
-  // TODO(devlin): Update this when views code no longer runs menus in a nested
-  // loop.
-  if (context_menu_owner) {
-    context_menu_owner->followup_context_menu_task_ =
-        base::Bind(&ToolbarActionView::DoShowContextMenu,
-                   weak_factory_.GetWeakPtr(),
-                   source_type);
-  }
   if (CloseActiveMenuIfNeeded())
     return;
 
@@ -297,13 +285,12 @@ void ToolbarActionView::DoShowContextMenu(
     return;
 
   DCHECK(visible());  // We should never show a context menu for a hidden item.
-  DCHECK(!context_menu_owner);
 
   gfx::Point screen_loc;
   ConvertPointToScreen(this, &screen_loc);
 
-  int run_types =
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
+  int run_types = views::MenuRunner::HAS_MNEMONICS |
+                  views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC;
   if (delegate_->ShownInsideMenu())
     run_types |= views::MenuRunner::IS_NESTED;
 
@@ -314,31 +301,20 @@ void ToolbarActionView::DoShowContextMenu(
       GetWidget();
 
   ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
-
-  views::MenuModelAdapter adapter(context_menu_model);
-  menu_ = adapter.CreateMenu();
+  // Unretained() is safe here as ToolbarActionView will always outlive the
+  // menu. Any action that would lead to the deletion of |this| first triggers
+  // the closing of the menu through lost capture.
+  menu_adapter_.reset(new views::MenuModelAdapter(
+      context_menu_model,
+      base::Bind(&ToolbarActionView::OnMenuClosed, base::Unretained(this))));
+  menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
-  if (context_menu_callback)
-    context_menu_callback->Run(this);
-  if (menu_runner_->RunMenuAt(parent, this, gfx::Rect(screen_loc, size()),
-                              views::MENU_ANCHOR_TOPLEFT,
-                              source_type) == views::MenuRunner::MENU_DELETED) {
-    return;
-  }
-  ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
-
-  menu_runner_.reset();
-  menu_ = nullptr;
-  context_menu_owner = nullptr;
-  view_controller_->OnContextMenuClosed();
-
-  // If another extension action wants to show its context menu, allow it to.
-  if (!followup_context_menu_task_.is_null()) {
-    base::Closure task = followup_context_menu_task_;
-    followup_context_menu_task_ = base::Closure();
-    task.Run();
-  }
+  if (context_menu_callback_for_test)
+    context_menu_callback_for_test->Run(this);
+  ignore_result(
+      menu_runner_->RunMenuAt(parent, this, gfx::Rect(screen_loc, size()),
+                              views::MENU_ANCHOR_TOPLEFT, source_type));
 }
 
 bool ToolbarActionView::CloseActiveMenuIfNeeded() {

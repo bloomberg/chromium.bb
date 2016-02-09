@@ -11,6 +11,7 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
 
@@ -26,6 +27,7 @@ class Image;
 
 namespace views {
 class MenuItemView;
+class MenuModelAdapter;
 class MenuRunner;
 }
 
@@ -132,6 +134,9 @@ class ToolbarActionView : public views::MenuButton,
   // Returns true if a menu was closed, false otherwise.
   bool CloseActiveMenuIfNeeded();
 
+  // Callback for MenuModelAdapter.
+  void OnMenuClosed();
+
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
   scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
 
@@ -148,16 +153,15 @@ class ToolbarActionView : public views::MenuButton,
   // tab.
   bool wants_to_run_;
 
+  // Responsible for converting the context menu model into |menu_|.
+  scoped_ptr<views::MenuModelAdapter> menu_adapter_;
+
   // Responsible for running the menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   // The root MenuItemView for the context menu, or null if no menu is being
   // shown.
   views::MenuItemView* menu_;
-
-  // If non-null, this is the next toolbar action context menu that wants to run
-  // once the current owner (this one) is done.
-  base::Closure followup_context_menu_task_;
 
   // The time the popup was last closed.
   base::TimeTicks popup_closed_time_;

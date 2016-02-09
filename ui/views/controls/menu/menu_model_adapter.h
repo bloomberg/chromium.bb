@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
@@ -24,6 +25,8 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   // The caller retains ownership of the ui::MenuModel instance and
   // must ensure it exists for the lifetime of the adapter.
   explicit MenuModelAdapter(ui::MenuModel* menu_model);
+  MenuModelAdapter(ui::MenuModel* menu_model,
+                   const base::Closure& on_menu_closed_callback);
   ~MenuModelAdapter() override;
 
   // Populate a MenuItemView menu with the ui::MenuModel items
@@ -75,6 +78,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   void SelectionChanged(MenuItemView* menu) override;
   void WillShowMenu(MenuItemView* menu) override;
   void WillHideMenu(MenuItemView* menu) override;
+  void OnMenuClosed(MenuItemView* menu, MenuRunner::RunResult result) override;
 
  private:
   // Implementation of BuildMenu().
@@ -90,6 +94,9 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
 
   // Map MenuItems to MenuModels.  Used to implement WillShowMenu().
   std::map<MenuItemView*, ui::MenuModel*> menu_map_;
+
+  // Optional callback triggered during OnMenuClosed().
+  base::Closure on_menu_closed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuModelAdapter);
 };
