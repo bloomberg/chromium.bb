@@ -3007,6 +3007,19 @@
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
+          'target_name': 'chrome_app_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'chrome_app_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'chrome_app_unittests.isolate',
+          ],
+        },
+        {
           'target_name': 'unit_tests_run',
           'type': 'none',
           'dependencies': [

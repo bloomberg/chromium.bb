@@ -69,6 +69,17 @@
     },
     {
       "platforms": [
+        "win",
+        "mac",
+        "linux"
+      ],
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      },
+      "test": "chrome_app_unittests"
+    },
+    {
+      "platforms": [
         "win"
       ],
       "test": "chrome_elf_unittests"

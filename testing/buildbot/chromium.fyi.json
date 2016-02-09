@@ -795,6 +795,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -1901,6 +1907,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -2069,6 +2081,12 @@
       },
       {
         "test": "cacheinvalidation_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
       },
       {
         "test": "chrome_elf_unittests"
@@ -2241,6 +2259,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -2409,6 +2433,12 @@
       },
       {
         "test": "cacheinvalidation_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
       },
       {
         "test": "chrome_elf_unittests"
@@ -2581,6 +2611,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -2749,6 +2785,12 @@
       },
       {
         "test": "cacheinvalidation_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
       },
       {
         "test": "chrome_elf_unittests"
@@ -2922,6 +2964,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
       },
       {
         "test": "chrome_elf_unittests"
@@ -3124,6 +3172,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -3303,6 +3357,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
       },
       {
         "test": "chrome_elf_unittests"
@@ -3502,6 +3562,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -3670,6 +3736,12 @@
       },
       {
         "test": "cacheinvalidation_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
       },
       {
         "test": "chrome_elf_unittests"
@@ -3842,6 +3914,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -4012,6 +4090,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -4175,6 +4259,12 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
+      },
+      {
         "test": "chrome_elf_unittests"
       },
       {
@@ -4325,6 +4415,12 @@
       },
       {
         "test": "cacheinvalidation_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
       },
       {
         "test": "chrome_elf_unittests"
@@ -4495,6 +4591,12 @@
       },
       {
         "test": "cacheinvalidation_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chrome_app_unittests"
       },
       {
         "test": "chrome_elf_unittests"

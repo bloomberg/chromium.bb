@@ -549,6 +549,7 @@
             '../base/base.gyp:base_unittests_run',
             '../cc/cc_tests.gyp:cc_unittests_run',
             '../chrome/chrome.gyp:browser_tests_run',
+            '../chrome/chrome.gyp:chrome_app_unittests_run',
             '../chrome/chrome.gyp:chrome_run',
             '../chrome/chrome.gyp:interactive_ui_tests_run',
             '../chrome/chrome.gyp:sync_integration_tests_run',

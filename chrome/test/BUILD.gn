@@ -2089,7 +2089,7 @@ test("unit_tests") {
   }
 }
 
-if (is_win || (is_linux && !is_chromeos)) {
+if (is_win || is_mac || (is_linux && !is_chromeos)) {
   # TODO(GYP): Figure out which of these work and are needed on other
   # platforms.
   test("chrome_app_unittests") {
@@ -2122,7 +2122,9 @@ if (is_win || (is_linux && !is_chromeos)) {
       deps += [ "//third_party/cld_2:cld2_platform_impl" ]
     }
   }
+}
 
+if (is_win || (is_linux && !is_chromeos)) {
   test("performance_browser_tests") {
     sources =
         rebase_path(chrome_tests_gypi_values.performance_browser_tests_sources,

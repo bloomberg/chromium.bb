@@ -166,11 +166,10 @@
     "label": "//cc:cc_unittests",
     "type": "windowed_test_launcher",
   },
-  # See http://crbug.com/585151
-  #"chrome_app_unittests": {
-    #"label": "//chrome/test:chrome_app_unittests",
-    #"type": "unknown",
-  #},
+  "chrome_app_unittests": {
+    "label": "//chrome/test:chrome_app_unittests",
+    "type": "console_test_launcher",
+  },
   "chrome_elf_unittests": {
     "label": "//chrome_elf:chrome_elf_unittests",
     "type": "unknown",
