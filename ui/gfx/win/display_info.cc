@@ -46,9 +46,9 @@ DisplayInfo::DisplayInfo(const MONITORINFOEX& monitor_info,
                          float device_scale_factor,
                          gfx::Display::Rotation rotation)
     : id_(DeviceIdFromDeviceName(monitor_info.szDevice)),
+      rotation_(rotation),
       screen_rect_(monitor_info.rcMonitor),
       screen_work_rect_(monitor_info.rcWork),
-      rotation_(rotation),
       device_scale_factor_(device_scale_factor) {}
 
 // static
