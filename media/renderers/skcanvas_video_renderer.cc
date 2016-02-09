@@ -349,12 +349,12 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     if (video_frame->HasTextures()) {
       DCHECK(context_3d.gr_context);
       DCHECK(gl);
-      if (media::VideoFrame::NumPlanes(video_frame->format()) == 1) {
-        last_image_ =
-            NewSkImageFromVideoFrameNative(video_frame.get(), context_3d);
-      } else {
+      if (media::VideoFrame::NumPlanes(video_frame->format()) == 3) {
         last_image_ =
             NewSkImageFromVideoFrameYUVTextures(video_frame.get(), context_3d);
+      } else {
+        last_image_ =
+            NewSkImageFromVideoFrameNative(video_frame.get(), context_3d);
       }
     } else {
       auto video_generator = new VideoImageGenerator(video_frame);
@@ -632,7 +632,6 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
     bool flip_y) {
   DCHECK(video_frame);
   DCHECK(video_frame->HasTextures());
-  DCHECK_EQ(1u, VideoFrame::NumPlanes(video_frame->format()));
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
