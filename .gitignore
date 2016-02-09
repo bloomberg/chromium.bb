@@ -5,6 +5,7 @@
 /git.bat
 /gitk.bat
 /pylint.bat
+/.pylint.d/
 /python
 /python.bat
 /ssh.bat
@@ -26,7 +27,8 @@
 /svn_bin
 /external_bin
 /win_toolchain/vs2013_files
-/win_toolchain/.timestamps
+/win_toolchain/vs_files
+/win_toolchain/*.timestamps
 /win_toolchain/.vspro
 /win_toolchain/data.json
 
