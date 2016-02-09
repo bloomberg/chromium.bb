@@ -77,9 +77,7 @@ bool CreateServerUnixDomainSocket(const base::FilePath& socket_path,
                                   int* server_listen_fd) {
   DCHECK(server_listen_fd);
 
-  std::string socket_name = socket_path.value();
-  base::FilePath socket_dir = socket_path.DirName();
-
+  const std::string socket_name = socket_path.value();
   struct sockaddr_un unix_addr;
   size_t unix_addr_len;
   base::ScopedFD fd(
@@ -88,6 +86,7 @@ bool CreateServerUnixDomainSocket(const base::FilePath& socket_path,
     return false;
 
   // Make sure the path we need exists.
+  base::FilePath socket_dir = socket_path.DirName();
   if (!base::CreateDirectory(socket_dir)) {
     LOG(ERROR) << "Couldn't create directory: " << socket_dir.value();
     return false;
@@ -102,13 +101,13 @@ bool CreateServerUnixDomainSocket(const base::FilePath& socket_path,
   // Bind the socket.
   if (bind(fd.get(), reinterpret_cast<const sockaddr*>(&unix_addr),
            unix_addr_len) < 0) {
-    PLOG(ERROR) << "bind " << socket_path.value();
+    PLOG(ERROR) << "bind " << socket_name;
     return false;
   }
 
   // Start listening on the socket.
   if (listen(fd.get(), SOMAXCONN) < 0) {
-    PLOG(ERROR) << "listen " << socket_path.value();
+    PLOG(ERROR) << "listen " << socket_name;
     unlink(socket_name.c_str());
     return false;
   }
