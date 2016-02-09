@@ -143,15 +143,6 @@ cvox.AbstractTts.prototype.increaseOrDecreaseProperty =
       this.ttsProperties[propertyName] = Math.max(Math.min(current, max), min);
     };
 
-/**
- * Converts an engine property value to a percentage from 0.00 to 1.00.
- * @param {string} property The property to convert.
- * @return {?number} The percentage of the property.
- */
-cvox.AbstractTts.prototype.propertyToPercentage = function(property) {
-  return (this.ttsProperties[property] - this.propertyMin[property]) /
-         Math.abs(this.propertyMax[property] - this.propertyMin[property]);
-};
 
 /**
  * Merges the given properties with the default ones. Always returns a

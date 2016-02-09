@@ -41,12 +41,13 @@ TEST_F('CvoxCommandStoreUnitTest', 'TableData', function() {
 
   var controllingSpeechCmds =
       cvox.CommandStore.commandsForCategory('controlling_speech');
-  assertEquals(10, controllingSpeechCmds.length);
+  assertEquals(11, controllingSpeechCmds.length);
   assertEquals('stopSpeech', controllingSpeechCmds[0]);
-  assertEquals('decreaseTtsRate', controllingSpeechCmds[1]);
-  assertEquals('increaseTtsRate', controllingSpeechCmds[2]);
-  assertEquals('decreaseTtsPitch', controllingSpeechCmds[3]);
-  assertEquals('increaseTtsPitch', controllingSpeechCmds[4]);
+  assertEquals('toggleChromeVox', controllingSpeechCmds[1]);
+  assertEquals('decreaseTtsRate', controllingSpeechCmds[2]);
+  assertEquals('increaseTtsRate', controllingSpeechCmds[3]);
+  assertEquals('decreaseTtsPitch', controllingSpeechCmds[4]);
+  assertEquals('increaseTtsPitch', controllingSpeechCmds[5]);
 });
 
 

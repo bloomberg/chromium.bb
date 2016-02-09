@@ -17,7 +17,6 @@ goog.require('LiveRegions');
 goog.require('NextEarcons');
 goog.require('Output');
 goog.require('Output.EventType');
-goog.require('PanelCommand');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
@@ -62,12 +61,6 @@ Background = function() {
    * @private
    */
   this.currentRange_ = null;
-
-  /**
-   * @type {cursors.Range}
-   * @private
-   */
-  this.savedRange_ = null;
 
   /**
    * Which variant of ChromeVox is active.
@@ -201,13 +194,6 @@ Background.prototype = {
       cvox.ChromeVox.earcons.cancelEarcon(cvox.Earcon.PAGE_START_LOADING);
     }
 
-    if (mode === ChromeVoxMode.NEXT ||
-        mode === ChromeVoxMode.FORCE_NEXT) {
-      (new PanelCommand(PanelCommandType.ENABLE_MENUS)).send();
-    } else {
-      (new PanelCommand(PanelCommandType.DISABLE_MENUS)).send();
-    }
-
     this.mode_ = mode;
   },
 
@@ -248,10 +234,6 @@ Background.prototype = {
   setCurrentRange: function(newRange) {
     if (!newRange)
       return;
-
-    var panelUrl = chrome.extension.getURL('cvox2/background/panel.html');
-    if (newRange.start.node.root.docUrl.indexOf(panelUrl) != 0)
-      this.savedRange_ = new cursors.Range(newRange.start, newRange.end);
 
     this.currentRange_ = newRange;
 
@@ -313,12 +295,12 @@ Background.prototype = {
         pred = AutomationPredicate.button;
         predErrorMsg = 'no_previous_button';
         break;
-      case 'nextCheckbox':
+      case 'nextCheckBox':
         dir = Dir.FORWARD;
         pred = AutomationPredicate.checkBox;
         predErrorMsg = 'no_next_checkbox';
         break;
-      case 'previousCheckbox':
+      case 'previousCheckBox':
         dir = Dir.BACKWARD;
         pred = AutomationPredicate.checkBox;
         predErrorMsg = 'no_previous_checkbox';
@@ -394,14 +376,14 @@ Background.prototype = {
         predErrorMsg = 'no_previous_visited_link';
         break;
       case 'right':
-      case 'nextObject':
+      case 'nextElement':
         current = current.move(cursors.Unit.DOM_NODE, Dir.FORWARD);
         break;
       case 'left':
-      case 'previousObject':
+      case 'previousElement':
         current = current.move(cursors.Unit.DOM_NODE, Dir.BACKWARD);
         break;
-      case 'jumpToTop':
+      case 'goToBeginning':
         var node =
             AutomationUtil.findNodePost(current.start.node.root,
                                         Dir.FORWARD,
@@ -409,7 +391,7 @@ Background.prototype = {
         if (node)
           current = cursors.Range.fromNode(node);
         break;
-      case 'jumpToBottom':
+      case 'goToEnd':
         var node =
             AutomationUtil.findNodePost(current.start.node.root,
                                         Dir.BACKWARD,
@@ -418,7 +400,7 @@ Background.prototype = {
           current = cursors.Range.fromNode(node);
         break;
       case 'forceClickOnCurrentItem':
-      case 'performDefaultAction':
+      case 'doDefault':
         if (this.currentRange_) {
           var actionNode = this.currentRange_.start.node;
           if (actionNode.role == RoleType.inlineTextBox)
@@ -428,7 +410,7 @@ Background.prototype = {
         // Skip all other processing; if focus changes, we should get an event
         // for that.
         return false;
-      case 'readFromHere':
+      case 'continuousRead':
         global.isReadingContinuously = true;
         var continueReading = function() {
           if (!global.isReadingContinuously || !this.currentRange_)
@@ -460,7 +442,7 @@ Background.prototype = {
             .go();
 
         return false;
-      case 'contextMenu':
+      case 'showContextMenu':
         if (this.currentRange_) {
           var actionNode = this.currentRange_.start.node;
           if (actionNode.role == RoleType.inlineTextBox)
@@ -515,27 +497,6 @@ Background.prototype = {
         cvox.ChromeVox.tts.speak(
             Msgs.getMsg('pass_through_key'), cvox.QueueMode.QUEUE);
         return true;
-      case 'openChromeVoxMenus':
-        (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
-        break;
-      case 'decreaseTtsRate':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, false);
-        break;
-      case 'increaseTtsRate':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, true);
-        break;
-      case 'decreaseTtsPitch':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.PITCH, false);
-        break;
-      case 'increaseTtsPitch':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.PITCH, true);
-        break;
-      case 'decreaseTtsVolume':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.VOLUME, false);
-        break;
-      case 'increaseTtsVolume':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.VOLUME, true);
-        break;
       default:
         return true;
     }
@@ -555,64 +516,27 @@ Background.prototype = {
       }
     }
 
-    if (current)
-      this.navigateToRange_(current);
+    if (current) {
+      // TODO(dtseng): Figure out what it means to focus a range.
+      var actionNode = current.start.node;
+      if (actionNode.role == RoleType.inlineTextBox)
+        actionNode = actionNode.parent;
+
+      // Iframes, when focused, causes the child webArea to fire focus event.
+      // This can result in getting stuck when navigating backward.
+      if (actionNode.role != RoleType.iframe && !actionNode.state.focused)
+        actionNode.focus();
+
+      var prevRange = this.currentRange_;
+      this.setCurrentRange(current);
+
+      new Output().withSpeechAndBraille(
+              this.currentRange_, prevRange, Output.EventType.NAVIGATE)
+          .withQueueMode(cvox.QueueMode.FLUSH)
+          .go();
+    }
 
     return false;
-  },
-
-  /**
-   * Increase or decrease a speech property and make an announcement.
-   * @param {string} propertyName The name of the property to change.
-   * @param {boolean} increase If true, increases the property value by one
-   *     step size, otherwise decreases.
-   */
-  increaseOrDecreaseSpeechProperty_: function(propertyName, increase) {
-    cvox.ChromeVox.tts.increaseOrDecreaseProperty(propertyName, increase);
-    var announcement;
-    var valueAsPercent = Math.round(
-        cvox.ChromeVox.tts.propertyToPercentage(propertyName) * 100);
-    switch (propertyName) {
-      case cvox.AbstractTts.RATE:
-        announcement = Msgs.getMsg('announce_rate', [valueAsPercent]);
-        break;
-      case cvox.AbstractTts.PITCH:
-        announcement = Msgs.getMsg('announce_pitch', [valueAsPercent]);
-        break;
-      case cvox.AbstractTts.VOLUME:
-        announcement = Msgs.getMsg('announce_volume', [valueAsPercent]);
-        break;
-    }
-    if (announcement) {
-      cvox.ChromeVox.tts.speak(
-          announcement, cvox.QueueMode.FLUSH,
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
-    }
-  },
-
-  /**
-   * Navigate to the given range - it both sets the range and outputs it.
-   * @param {!cursors.Range} range The new range.
-   * @private
-   */
-  navigateToRange_: function(range) {
-    // TODO(dtseng): Figure out what it means to focus a range.
-    var actionNode = range.start.node;
-    if (actionNode.role == RoleType.inlineTextBox)
-      actionNode = actionNode.parent;
-
-    // Iframes, when focused, causes the child webArea to fire focus event.
-    // This can result in getting stuck when navigating backward.
-    if (actionNode.role != RoleType.iframe && !actionNode.state.focused)
-      actionNode.focus();
-
-    var prevRange = this.currentRange_;
-    this.setCurrentRange(range);
-
-    new Output().withSpeechAndBraille(
-        range, prevRange, Output.EventType.NAVIGATE)
-        .withQueueMode(cvox.QueueMode.FLUSH)
-        .go();
   },
 
   /**
@@ -673,10 +597,10 @@ Background.prototype = {
 
     switch (evt.command) {
       case cvox.BrailleKeyCommand.PAN_LEFT:
-        this.onGotCommand('previousObject');
+        this.onGotCommand('previousElement');
         break;
       case cvox.BrailleKeyCommand.PAN_RIGHT:
-        this.onGotCommand('nextObject');
+        this.onGotCommand('nextElement');
         break;
       case cvox.BrailleKeyCommand.LINE_UP:
         this.onGotCommand('previousLine');
@@ -685,10 +609,10 @@ Background.prototype = {
         this.onGotCommand('nextLine');
         break;
       case cvox.BrailleKeyCommand.TOP:
-        this.onGotCommand('jumpToTop');
+        this.onGotCommand('goToBeginning');
         break;
       case cvox.BrailleKeyCommand.BOTTOM:
-        this.onGotCommand('jumpToBottom');
+        this.onGotCommand('goToEnd');
         break;
       case cvox.BrailleKeyCommand.ROUTING:
         this.brailleRoutingCommand_(
@@ -799,24 +723,7 @@ Background.prototype = {
         }
         break;
     }
-  },
-
-  /**
-   * Restore the range to the last range that was *not* in the ChromeVox
-   * panel. This is used when the ChromeVox Panel closes.
-   */
-  restoreCurrentRange: function() {
-    if (this.savedRange_) {
-      var containingWebView = this.savedRange_.start.node;
-      while (containingWebView && containingWebView.role != RoleType.webView)
-        containingWebView = containingWebView.parent;
-      if (containingWebView)
-        containingWebView.focus();
-
-      this.navigateToRange_(this.savedRange_);
-      this.savedRange_ = null;
-    }
-  },
+  }
 };
 
 /**

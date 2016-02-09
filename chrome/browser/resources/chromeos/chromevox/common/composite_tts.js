@@ -94,23 +94,12 @@ cvox.CompositeTts.prototype.increaseOrDecreaseProperty =
 /**
  * @override
  */
-cvox.CompositeTts.prototype.propertyToPercentage = function(property) {
-  for (var i = 0, engine; engine = this.ttsEngines_[i]; i++) {
-    var value = engine.propertyToPercentage(property);
-    if (value !== undefined)
-      return value;
-  }
-};
-
-
-/**
- * @override
- */
 cvox.CompositeTts.prototype.getDefaultProperty = function(property) {
   for (var i = 0, engine; engine = this.ttsEngines_[i]; i++) {
     var value = engine.getDefaultProperty(property);
-    if (value !== undefined)
+    if (value) {
       return value;
+    }
   }
   return null;
 };

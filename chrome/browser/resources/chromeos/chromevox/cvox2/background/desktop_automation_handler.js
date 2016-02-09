@@ -65,6 +65,7 @@ DesktopAutomationHandler.prototype = {
    */
   onEventDefault: function(evt) {
     var node = evt.target;
+
     if (!node)
       return;
 

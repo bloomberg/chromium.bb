@@ -344,8 +344,6 @@ cvox.History.prototype.addCapturingEventListener = function(listener) { };
 cvox.History.prototype.increaseOrDecreaseProperty =
     function(propertyName, increase) { };
 /** @override */
-cvox.History.prototype.propertyToPercentage = function(property) { };
-/** @override */
 cvox.History.prototype.getDefaultProperty = function(property) { };
 
 

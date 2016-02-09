@@ -6,14 +6,113 @@
 <meta charset="utf-8">
 <title class="i18n" msgid="panel_title"></title>
 
-<link href="http://fonts.googleapis.com/css?family=Droid+Sans+Mono|Roboto:400,700,700italic" rel="stylesheet" type="text/css">
-<link href="panel.css" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Droid+Sans+Mono|Roboto:400,700,700italic' rel='stylesheet' type='text/css'>
 
 <script type="text/javascript" src="../../closure/base.js"></script>
 <script type="text/javascript" src="../../deps.js"></script>
 <script type="text/javascript" src="panel_loader.js"></script>
 <script type="text/javascript" src="../../chromeVoxPanelScript.js">
 </script>
+<style>
+  body {
+    padding: 0;
+    border: 0;
+    margin: 0;
+    height: 35px;
+    overflow: hidden;
+  }
+  #main {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 35px;
+    background-color: #000;
+    display: flex;
+  }
+  button {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background-color: #000;
+    outline: none;
+  }
+  #menu {
+    min-width: 52px;
+    height: 35px;
+  }
+  #options_close {
+    min-width: 48px;
+    height: 35px;
+  }
+  #chromevox {
+    width: 19px;
+    height: 19px;
+    margin: 8px 0;
+  }
+  #triangle {
+    width: 6px;
+    height: 6px;
+    margin: 14px 0;
+  }
+  #options {
+    background-image: url('/images/options-19.png');
+    width: 19px;
+    height: 19px;
+    margin: 8px 0;
+  }
+  #options:hover {
+    background-image: url('/images/options-hover-19.png');
+  }
+  #close {
+    background-image: url('/images/close-19.png');
+    width: 19px;
+    height: 19px;
+  }
+  #close:hover {
+    background-image: url('/images/close-hover-19.png');
+  }
+  #caption {
+    color: #fff;
+    margin-left: 12px;
+    flex-grow: 1;
+  }
+  #speech-container {
+    height: 35px;
+    margin-left: 12px;
+  }
+  #speech {
+    height: 35px;
+    line-height: 35px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 12pt;
+    overflow: hidden;
+  }
+  .usertext {
+    font-weight: 700;
+    font-style: italic;
+  }
+  #braille-container {
+    position: relative;
+    top: -35px;
+    height: 35px;
+  }
+  #braille-text {
+    height: 17px;
+    line-height: 17px;
+    font-family: 'Droid Sans Mono', Courier, monospace;
+    font-size: 12pt;
+    letter-spacing: 3.13px;
+    white-space: pre;
+  }
+  #braille-cells {
+    height: 17px;
+    line-height: 17px;
+    font-family: 'Droid Sans Mono', Courier, monospace;
+    font-size: 13pt;
+    white-space: pre;
+  }
+</style>
 
 </head>
 
@@ -21,8 +120,8 @@
 
 <body>
 <div id="main">
-  <div hidden id="menus_title" class="i18n" msgid="menus_title"></div>
-  <button id="menus_button" aria-labelledby="menus_title">
+  <div hidden id="menu_title" class="i18n" msgid="menu_title"></div>
+  <button id="menu" aria-labelledby="menu_title">
     <img id="chromevox" src="/images/chromevox-19.png">
     <img id="triangle" src="/images/triangle-6.png">
   </button>
@@ -41,10 +140,6 @@
     <div hidden id="disable_chromevox_title" class="i18n"
          msgid="disable_chromevox"></div>
     <button id="close" aria-labelledby="disable_chromevox_title"></button>
-  </div>
-</div>
-<div id="menus_background">
-  <div id="menu-bar" aria-role="menubar">
   </div>
 </div>
 </body>

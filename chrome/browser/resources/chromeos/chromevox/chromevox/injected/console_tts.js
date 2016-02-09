@@ -62,9 +62,6 @@ cvox.ConsoleTts.prototype.addCapturingEventListener = function(listener) { };
 /** @override */
 cvox.ConsoleTts.prototype.increaseOrDecreaseProperty = function() { };
 
-/** @override */
-cvox.ConsoleTts.prototype.propertyToPercentage = function() { };
-
 /**
  * Sets the enabled bit.
  * @param {boolean} enabled The new enabled bit.

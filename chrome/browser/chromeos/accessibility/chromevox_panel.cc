@@ -111,14 +111,10 @@ void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {
 
 void ChromeVoxPanel::EnterFullscreen() {
   fullscreen_ = true;
-  widget_->widget_delegate()->set_can_activate(true);
-  widget_->Activate();
-  web_view_->RequestFocus();
   UpdateWidgetBounds();
 }
 
 void ChromeVoxPanel::ExitFullscreen() {
-  widget_->widget_delegate()->set_can_activate(false);
   fullscreen_ = false;
   UpdateWidgetBounds();
 }

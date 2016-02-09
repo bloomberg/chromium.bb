@@ -43,7 +43,4 @@ PanelCommandType = {
   ADD_NORMAL_SPEECH: 'add_normal_speech',
   ADD_ANNOTATION_SPEECH: 'add_annotation_speech',
   UPDATE_BRAILLE: 'update_braille',
-  OPEN_MENUS: 'open_menus',
-  ENABLE_MENUS: 'enable_menus',
-  DISABLE_MENUS: 'disable_menus',
 };
