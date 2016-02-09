@@ -418,6 +418,10 @@
                   'content/public/browser/indexed_db|'\
                   'content/test/data/indexeddb',
     },
+    'ink_drop': {
+      'filepath': 'ui/views/animation/test/.*ink_drop.*|' \
+                  'ui/views/animation/.*ink_drop.*'
+    },
     'installer': {
       'filepath': 'chrome/installer/',
     },
@@ -1364,6 +1368,7 @@
     'importer': ['tfarina@chromium.org'],
     'indexed_db': ['cmumford@chromium.org',
                    'jsbell+idb@chromium.org'],
+    'ink_drop': ['bruthig+ink_drop@chromium.org'],
     'installer': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'installer_linux': [ 'mmoss@chromium.org'],
     'instant': ['dcblack@chromium.org', 'jered@chromium.org',
