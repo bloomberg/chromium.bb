@@ -680,6 +680,7 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
   // think the page is 125% larger so the size of the page is correct for
   // minimum (default) scaling.
   // This is important for sites that try to fill the page.
+  // The 1.25 value is |printingMinimumShrinkFactor|.
   gfx::Size print_layout_size(web_print_params_.printContentArea.width,
                               web_print_params_.printContentArea.height);
   print_layout_size.set_height(
@@ -1759,21 +1760,17 @@ void PrintWebViewHelper::PrintPageInternal(
   gfx::Rect canvas_area =
       params.params.display_header_footer ? gfx::Rect(page_size) : content_area;
 
-#if defined(OS_WIN) || defined(ENABLE_PRINT_PREVIEW)
+  // TODO(thestig): Figure out why Linux is different.
+#if defined(OS_WIN)
   float webkit_page_shrink_factor =
       frame->getPrintPageShrink(params.page_number);
   float scale_factor = css_scale_factor * webkit_page_shrink_factor;
-#endif
-  // TODO(thestig) GetVectorCanvasForNewPage() and RenderPageContent() take a
-  // different scale factor vs Windows. Figure out why and combine the two.
-#if defined(OS_WIN)
-  float platform_scale_factor = scale_factor;
 #else
-  float platform_scale_factor = css_scale_factor;
-#endif  // defined(OS_WIN)
+  float scale_factor = css_scale_factor;
+#endif
 
   SkCanvas* canvas = metafile->GetVectorCanvasForNewPage(
-      page_size, canvas_area, platform_scale_factor);
+      page_size, canvas_area, scale_factor);
   if (!canvas)
     return;
 
@@ -1781,16 +1778,24 @@ void PrintWebViewHelper::PrintPageInternal(
 
 #if defined(ENABLE_PRINT_PREVIEW)
   if (params.params.display_header_footer) {
+    // TODO(thestig): Figure out why Linux needs this. The value may be
+    // |printingMinimumShrinkFactor|.
+#if defined(OS_WIN)
+    const float fudge_factor = 1;
+#else
+    const float fudge_factor = 1.25;
+#endif
     // |page_number| is 0-based, so 1 is added.
     PrintHeaderAndFooter(canvas, params.page_number + 1,
                          print_preview_context_.total_page_count(), *frame,
-                         scale_factor, page_layout_in_points, params.params);
+                         scale_factor / fudge_factor, page_layout_in_points,
+                         params.params);
   }
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 
   float webkit_scale_factor =
       RenderPageContent(frame, params.page_number, canvas_area, content_area,
-                        platform_scale_factor, canvas);
+                        scale_factor, canvas);
   DCHECK_GT(webkit_scale_factor, 0.0f);
 
   // Done printing. Close the canvas to retrieve the compiled metafile.
