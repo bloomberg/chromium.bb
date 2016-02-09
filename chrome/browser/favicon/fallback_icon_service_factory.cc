@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/favicon/chrome_fallback_icon_client_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/favicon/core/fallback_icon_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -30,6 +31,11 @@ FallbackIconServiceFactory::FallbackIconServiceFactory()
 }
 
 FallbackIconServiceFactory::~FallbackIconServiceFactory() {}
+
+content::BrowserContext* FallbackIconServiceFactory::GetBrowserContextToUse(
+      content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
 
 KeyedService* FallbackIconServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -33,6 +34,11 @@ LargeIconServiceFactory::LargeIconServiceFactory()
 }
 
 LargeIconServiceFactory::~LargeIconServiceFactory() {}
+
+content::BrowserContext* LargeIconServiceFactory::GetBrowserContextToUse(
+      content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
 
 KeyedService* LargeIconServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
