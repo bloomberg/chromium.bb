@@ -1605,21 +1605,25 @@ NavigationControllerImpl::GetSessionStorageNamespace(SiteInstance* instance) {
             browser_context_, instance->GetSiteURL());
   }
 
-  SessionStorageNamespaceMap::const_iterator it =
-      session_storage_namespace_map_.find(partition_id);
-  if (it != session_storage_namespace_map_.end())
-    return it->second.get();
-
-  // Create one if no one has accessed session storage for this partition yet.
-  //
   // TODO(ajwong): Should this use the |partition_id| directly rather than
   // re-lookup via |instance|?  http://crbug.com/142685
   StoragePartition* partition =
-              BrowserContext::GetStoragePartition(browser_context_, instance);
+      BrowserContext::GetStoragePartition(browser_context_, instance);
+  DOMStorageContextWrapper* context_wrapper =
+      static_cast<DOMStorageContextWrapper*>(partition->GetDOMStorageContext());
+
+  SessionStorageNamespaceMap::const_iterator it =
+      session_storage_namespace_map_.find(partition_id);
+  if (it != session_storage_namespace_map_.end()) {
+    // Ensure that this namespace actually belongs to this partition.
+    DCHECK(static_cast<SessionStorageNamespaceImpl*>(it->second.get())->
+        IsFromContext(context_wrapper));
+    return it->second.get();
+  }
+
+  // Create one if no one has accessed session storage for this partition yet.
   SessionStorageNamespaceImpl* session_storage_namespace =
-      new SessionStorageNamespaceImpl(
-          static_cast<DOMStorageContextWrapper*>(
-              partition->GetDOMStorageContext()));
+      new SessionStorageNamespaceImpl(context_wrapper);
   session_storage_namespace_map_[partition_id] = session_storage_namespace;
 
   return session_storage_namespace;
