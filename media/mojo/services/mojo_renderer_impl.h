@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "media/base/renderer.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -25,11 +24,21 @@ class DemuxerStreamProvider;
 // interfaces::Renderer proxies back to the MojoRendererImpl via the
 // interfaces::RendererClient interface.
 //
-// MojoRendererImpl implements media::Renderer for use as either an audio
-// or video renderer.
+// This class can be created on any thread, where the |remote_renderer| is
+// connected and passed in the constructor. Then Initialize() will be called on
+// the |task_runner| and starting from that point this class is bound to the
+// |task_runner|*. That means all Renderer and RendererClient methods will be
+// called/dispached on the |task_runner|. The only exception is GetMediaTime(),
+// which can be called on any thread.
+//
+// * Threading details:
+// mojo::GetProxy() doesn't bind an InterfacePtr to a thread. Then when
+// InterfacePtr::operator->() or InterfacePtr::get() is called for the first
+// time, e.g. to call remote_renderer->Initialize(), the InterfacePtr is bound
+// the thread where the call is made.
+
 class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
  public:
-  // |task_runner| is the TaskRunner on which all methods are invoked.
   MojoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       interfaces::RendererPtr remote_renderer);
@@ -53,21 +62,32 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
   bool HasAudio() override;
   bool HasVideo() override;
 
-  // interfaces::RendererClient implementation.
+ private:
+  // interfaces::RendererClient implementation, dispatched on the
+  // |task_runner_|.
   void OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) override;
   void OnBufferingStateChange(interfaces::BufferingState state) override;
   void OnEnded() override;
   void OnError() override;
 
- private:
+  // Callback for connection error on |remote_renderer_|.
+  void OnConnectionError();
+
   // Called when |remote_renderer_| has finished initializing.
   void OnInitialized(bool success);
 
-  // Task runner used to execute pipeline tasks.
+  // |task_runner| on which all methods are invoked, except for GetMediaTime(),
+  // which can be called on any thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  // Provider of audio/video DemuxerStreams. Must be valid throughout the
+  // lifetime of |this|.
   DemuxerStreamProvider* demuxer_stream_provider_;
+
+  // Remote Renderer, bound to |task_runner_|.
   interfaces::RendererPtr remote_renderer_;
+
+  // Binding for RendererClient, bound to the |task_runner_|.
   mojo::Binding<RendererClient> binding_;
 
   // Callbacks passed to Initialize() that we forward messages from
@@ -77,14 +97,9 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
   PipelineStatusCB error_cb_;
   BufferingStateCB buffering_state_cb_;
 
-  // Lock used to serialize access for the following data members.
+  // Lock used to serialize access for |time_|.
   mutable base::Lock lock_;
-
   base::TimeDelta time_;
-  // TODO(xhwang): It seems we don't need |max_time_| now. Drop it!
-  base::TimeDelta max_time_;
-
-  base::WeakPtrFactory<MojoRendererImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererImpl);
 };

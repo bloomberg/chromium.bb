@@ -10,11 +10,8 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
 
 namespace media {
 
@@ -23,22 +20,21 @@ MojoRendererImpl::MojoRendererImpl(
     interfaces::RendererPtr remote_renderer)
     : task_runner_(task_runner),
       remote_renderer_(std::move(remote_renderer)),
-      binding_(this),
-      weak_factory_(this) {
+      binding_(this) {
   DVLOG(1) << __FUNCTION__;
 }
 
 MojoRendererImpl::~MojoRendererImpl() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  // Connection to |remote_renderer_| will error-out here.
 }
 
-// TODO(xhwang): Support |waiting_for_decryption_key_cb| if needed.
+// TODO(xhwang): Support |waiting_for_decryption_key_cb| and |statictics_cb|.
+// See http://crbug.com/585287
 void MojoRendererImpl::Initialize(
     DemuxerStreamProvider* demuxer_stream_provider,
     const PipelineStatusCB& init_cb,
-    const StatisticsCB& statistics_cb,
+    const StatisticsCB& /* statistics_cb */,
     const BufferingStateCB& buffering_state_cb,
     const base::Closure& ended_cb,
     const PipelineStatusCB& error_cb,
@@ -47,11 +43,25 @@ void MojoRendererImpl::Initialize(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
 
+  // If connection error has happened, fail immediately.
+  if (remote_renderer_.encountered_error()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(init_cb, PIPELINE_ERROR_INITIALIZATION_FAILED));
+    return;
+  }
+
+  // Otherwise, set an error handler to catch the connection error.
+  // Using base::Unretained(this) is safe because |this| owns
+  // |remote_renderer_|, and the error handler can't be invoked once
+  // |remote_renderer_| is destroyed.
+  remote_renderer_.set_connection_error_handler(
+      base::Bind(&MojoRendererImpl::OnConnectionError, base::Unretained(this)));
+
   demuxer_stream_provider_ = demuxer_stream_provider;
   init_cb_ = init_cb;
+  buffering_state_cb_ = buffering_state_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
-  buffering_state_cb_ = buffering_state_cb;
 
   // Create audio and video interfaces::DemuxerStream and bind its lifetime to
   // the pipe.
@@ -68,11 +78,13 @@ void MojoRendererImpl::Initialize(
   if (video)
     new MojoDemuxerStreamImpl(video, GetProxy(&video_stream));
 
+  // Using base::Unretained(this) is safe because |this| owns
+  // |remote_renderer_|, and the callback won't be dispatched if
+  // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
       binding_.CreateInterfacePtrAndBind(), std::move(audio_stream),
       std::move(video_stream),
-      BindToCurrentLoop(base::Bind(&MojoRendererImpl::OnInitialized,
-                                   weak_factory_.GetWeakPtr())));
+      base::Bind(&MojoRendererImpl::OnInitialized, base::Unretained(this)));
 }
 
 void MojoRendererImpl::SetCdm(CdmContext* cdm_context,
@@ -142,62 +154,44 @@ bool MojoRendererImpl::HasVideo() {
 
 void MojoRendererImpl::OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) {
   DVLOG(3) << __FUNCTION__ << ": " << time_usec << ", " << max_time_usec;
-
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&MojoRendererImpl::OnTimeUpdate,
-                                      weak_factory_.GetWeakPtr(),
-                                      time_usec,
-                                      max_time_usec));
-    return;
-  }
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   time_ = base::TimeDelta::FromMicroseconds(time_usec);
-  max_time_ = base::TimeDelta::FromMicroseconds(max_time_usec);
 }
 
 void MojoRendererImpl::OnBufferingStateChange(
     interfaces::BufferingState state) {
   DVLOG(2) << __FUNCTION__;
-
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&MojoRendererImpl::OnBufferingStateChange,
-                                      weak_factory_.GetWeakPtr(),
-                                      state));
-    return;
-  }
-
+  DCHECK(task_runner_->BelongsToCurrentThread());
   buffering_state_cb_.Run(static_cast<media::BufferingState>(state));
 }
 
 void MojoRendererImpl::OnEnded() {
   DVLOG(1) << __FUNCTION__;
-
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MojoRendererImpl::OnEnded, weak_factory_.GetWeakPtr()));
-    return;
-  }
-
+  DCHECK(task_runner_->BelongsToCurrentThread());
   ended_cb_.Run();
 }
 
 void MojoRendererImpl::OnError() {
   DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(init_cb_.is_null());
-
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MojoRendererImpl::OnError, weak_factory_.GetWeakPtr()));
-    return;
-  }
 
   // TODO(tim): Should we plumb error code from remote renderer?
   // http://crbug.com/410451.
+  error_cb_.Run(PIPELINE_ERROR_DECODE);
+}
+
+void MojoRendererImpl::OnConnectionError() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!init_cb_.is_null()) {
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    return;
+  }
+
   error_cb_.Run(PIPELINE_ERROR_DECODE);
 }
 

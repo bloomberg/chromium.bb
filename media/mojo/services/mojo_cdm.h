@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/media_keys.h"
@@ -85,6 +84,8 @@ class MojoCdm : public MediaKeys,
                      const media::CdmConfig& cdm_config,
                      scoped_ptr<CdmInitializedPromise> promise);
 
+  void OnConnectionError();
+
   // interfaces::ContentDecryptionModuleClient implementation.
   void OnSessionMessage(const mojo::String& session_id,
                         interfaces::CdmMessageType message_type,
@@ -103,10 +104,10 @@ class MojoCdm : public MediaKeys,
                                  double new_expiry_time_sec) final;
 
   // Callback for InitializeCdm.
-  // Note: Cannot use OnPromiseResult() below since we need an extra parameters
-  // |cdm_id| and |decryptor|, which isn't needed in CdmInitializedPromise.
-  void OnCdmInitialized(scoped_ptr<CdmInitializedPromise> promise,
-                        interfaces::CdmPromiseResultPtr result,
+  // Note: Cannot use OnPromiseResult() below since we need to handle connection
+  // error. Also we have extra parameters |cdm_id| and |decryptor|, which aren't
+  // needed in CdmInitializedPromise.
+  void OnCdmInitialized(interfaces::CdmPromiseResultPtr result,
                         int cdm_id,
                         interfaces::DecryptorPtr decryptor);
 
@@ -140,7 +141,8 @@ class MojoCdm : public MediaKeys,
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
 
-  base::WeakPtrFactory<MojoCdm> weak_factory_;
+  // Pending promise for InitializeCdm().
+  scoped_ptr<CdmInitializedPromise> pending_init_promise_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdm);
 };

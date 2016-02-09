@@ -25,8 +25,10 @@ MojoRendererService::MojoRendererService(
       state_(STATE_UNINITIALIZED),
       last_media_time_usec_(0),
       weak_factory_(this) {
-  weak_this_ = weak_factory_.GetWeakPtr();
   DVLOG(1) << __FUNCTION__;
+  DCHECK(renderer_);
+
+  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 MojoRendererService::~MojoRendererService() {

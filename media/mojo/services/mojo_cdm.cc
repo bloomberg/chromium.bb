@@ -67,8 +67,7 @@ MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
       session_closed_cb_(session_closed_cb),
       legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
-      session_expiration_update_cb_(session_expiration_update_cb),
-      weak_factory_(this) {
+      session_expiration_update_cb_(session_expiration_update_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(!session_message_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
@@ -83,16 +82,45 @@ MojoCdm::~MojoCdm() {
   DVLOG(1) << __FUNCTION__;
 }
 
+// Using base::Unretained(this) below is safe because |this| owns |remote_cdm_|,
+// and if |this| is destroyed, |remote_cdm_| will be destroyed as well. Then the
+// error handler can't be invoked and callbacks won't be dispatched.
+
 void MojoCdm::InitializeCdm(const std::string& key_system,
                             const GURL& security_origin,
                             const media::CdmConfig& cdm_config,
                             scoped_ptr<CdmInitializedPromise> promise) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
+
+  // If connection error has happened, fail immediately.
+  if (remote_cdm_.encountered_error()) {
+    LOG(ERROR) << "Remote CDM encountered error.";
+    promise->reject(NOT_SUPPORTED_ERROR, 0, "Mojo CDM creation failed.");
+    return;
+  }
+
+  // Otherwise, set an error handler to catch the connection error.
+  remote_cdm_.set_connection_error_handler(
+      base::Bind(&MojoCdm::OnConnectionError, base::Unretained(this)));
+
+  pending_init_promise_ = std::move(promise);
+
   remote_cdm_->Initialize(
       key_system, security_origin.spec(),
       interfaces::CdmConfig::From(cdm_config),
-      base::Bind(&MojoCdm::OnCdmInitialized, weak_factory_.GetWeakPtr(),
-                 base::Passed(&promise)));
+      base::Bind(&MojoCdm::OnCdmInitialized, base::Unretained(this)));
+}
+
+void MojoCdm::OnConnectionError() {
+  LOG(ERROR) << "Remote CDM connection error.";
+
+  // We only handle initial connection error.
+  if (!pending_init_promise_)
+    return;
+
+  pending_init_promise_->reject(NOT_SUPPORTED_ERROR, 0,
+                                "Mojo CDM creation failed.");
+  pending_init_promise_.reset();
 }
 
 void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
@@ -100,7 +128,7 @@ void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
   DVLOG(2) << __FUNCTION__;
   remote_cdm_->SetServerCertificate(
       mojo::Array<uint8_t>::From(certificate),
-      base::Bind(&MojoCdm::OnPromiseResult<>, weak_factory_.GetWeakPtr(),
+      base::Bind(&MojoCdm::OnPromiseResult<>, base::Unretained(this),
                  base::Passed(&promise)));
 }
 
@@ -116,8 +144,8 @@ void MojoCdm::CreateSessionAndGenerateRequest(
       static_cast<interfaces::ContentDecryptionModule::InitDataType>(
           init_data_type),
       mojo::Array<uint8_t>::From(init_data),
-      base::Bind(&MojoCdm::OnPromiseResult<std::string>,
-                 weak_factory_.GetWeakPtr(), base::Passed(&promise)));
+      base::Bind(&MojoCdm::OnPromiseResult<std::string>, base::Unretained(this),
+                 base::Passed(&promise)));
 }
 
 void MojoCdm::LoadSession(SessionType session_type,
@@ -127,9 +155,8 @@ void MojoCdm::LoadSession(SessionType session_type,
   remote_cdm_->LoadSession(
       static_cast<interfaces::ContentDecryptionModule::SessionType>(
           session_type),
-      session_id,
-      base::Bind(&MojoCdm::OnPromiseResult<std::string>,
-                 weak_factory_.GetWeakPtr(), base::Passed(&promise)));
+      session_id, base::Bind(&MojoCdm::OnPromiseResult<std::string>,
+                             base::Unretained(this), base::Passed(&promise)));
 }
 
 void MojoCdm::UpdateSession(const std::string& session_id,
@@ -138,24 +165,24 @@ void MojoCdm::UpdateSession(const std::string& session_id,
   DVLOG(2) << __FUNCTION__;
   remote_cdm_->UpdateSession(
       session_id, mojo::Array<uint8_t>::From(response),
-      base::Bind(&MojoCdm::OnPromiseResult<>, weak_factory_.GetWeakPtr(),
+      base::Bind(&MojoCdm::OnPromiseResult<>, base::Unretained(this),
                  base::Passed(&promise)));
 }
 
 void MojoCdm::CloseSession(const std::string& session_id,
                            scoped_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
-  remote_cdm_->CloseSession(session_id, base::Bind(&MojoCdm::OnPromiseResult<>,
-                                                   weak_factory_.GetWeakPtr(),
-                                                   base::Passed(&promise)));
+  remote_cdm_->CloseSession(
+      session_id, base::Bind(&MojoCdm::OnPromiseResult<>,
+                             base::Unretained(this), base::Passed(&promise)));
 }
 
 void MojoCdm::RemoveSession(const std::string& session_id,
                             scoped_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
-  remote_cdm_->RemoveSession(session_id, base::Bind(&MojoCdm::OnPromiseResult<>,
-                                                    weak_factory_.GetWeakPtr(),
-                                                    base::Passed(&promise)));
+  remote_cdm_->RemoveSession(
+      session_id, base::Bind(&MojoCdm::OnPromiseResult<>,
+                             base::Unretained(this), base::Passed(&promise)));
 }
 
 CdmContext* MojoCdm::GetCdmContext() {
@@ -237,20 +264,22 @@ void MojoCdm::OnSessionExpirationUpdate(const mojo::String& session_id,
       session_id, base::Time::FromDoubleT(new_expiry_time_sec));
 }
 
-void MojoCdm::OnCdmInitialized(scoped_ptr<CdmInitializedPromise> promise,
-                               interfaces::CdmPromiseResultPtr result,
+void MojoCdm::OnCdmInitialized(interfaces::CdmPromiseResultPtr result,
                                int cdm_id,
                                interfaces::DecryptorPtr decryptor) {
   DVLOG(2) << __FUNCTION__ << " cdm_id: " << cdm_id;
+  DCHECK(pending_init_promise_);
+
   if (!result->success) {
-    RejectPromise(std::move(promise), std::move(result));
+    RejectPromise(std::move(pending_init_promise_), std::move(result));
     return;
   }
 
   DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
   cdm_id_ = cdm_id;
   decryptor_ptr_ = std::move(decryptor);
-  promise->resolve();
+  pending_init_promise_->resolve();
+  pending_init_promise_.reset();
 }
 
 }  // namespace media
