@@ -50,7 +50,11 @@ function clearContext() {
 
 var bitmap;
 var video;
-var options = ["none", "flipY"];
+var imageOrientationOptions = ["none", "flipY", "invalid"];
+var premultiplyAlphaOptions = ["default", "none", "invalid"];
+var optionIndexArray = [[0, 0], [0, 1], [0, 2],
+                        [1, 0], [1, 1], [1, 2],
+                        [2, 0], [2, 1], [2, 2]];
 var optionIndex = 0;
 
 var canvas = document.createElement("canvas");
@@ -63,41 +67,51 @@ video.addEventListener("canplaythrough", videoLoaded, false);
 video.src = "../../compositing/resources/video.ogv";
 
 function videoLoaded() {
-    if (optionIndex == options.length) {
+    if (optionIndex == optionIndexArray.length) {
         finishJSTest();
         return;
     }
-     debug("Checking HTMLVideoElement with imageOrientation: " + options[optionIndex] + ".");
+    var optionIndex1 = optionIndexArray[optionIndex][0];
+    var optionIndex2 = optionIndexArray[optionIndex][1];
+    debug("Checking HTMLVideoElement with imageOrientation: " + imageOrientationOptions[optionIndex1] + " with premultiplyAlphaOption: " + premultiplyAlphaOptions[optionIndex2] + ".");
     var imageBitmaps = {};
-    var p1 = createImageBitmap(video, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.noCrop = image });
-    var p2 = createImageBitmap(video,  0, 0, 100, 100, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.crop = image });
-    var p3 = createImageBitmap(video,  50, 50, 100, 100, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.cropRight = image });
-    var p4 = createImageBitmap(video,  100, 100, 100, 100, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.cropCenter = image });
-    var p5 = createImageBitmap(video, -100, -100, 600, 600, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.overCrop = image });
-    var p6 = createImageBitmap(video, 100, 100, 500, 500, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.overCropRight = image });
-    var p7 = createImageBitmap(video, 100, 100, -100, -100, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.negativeCrop = image });
-    var p8 = createImageBitmap(video, -300, -300, 300, 300, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.empty = image });
-    var p9 = createImageBitmap(video, 400, 300, 300, 300, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.emptyTwo = image });
-
+    var p1 = createImageBitmap(video, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.noCrop = image });
+    var p2 = createImageBitmap(video,  0, 0, 100, 100, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.crop = image });
+    var p3 = createImageBitmap(video,  50, 50, 100, 100, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.cropRight = image });
+    var p4 = createImageBitmap(video,  100, 100, 100, 100, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.cropCenter = image });
+    var p5 = createImageBitmap(video, -100, -100, 600, 600, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.overCrop = image });
+    var p6 = createImageBitmap(video, 100, 100, 500, 500, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.overCropRight = image });
+    var p7 = createImageBitmap(video, 100, 100, -100, -100, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.negativeCrop = image });
+    var p8 = createImageBitmap(video, -300, -300, 300, 300, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.empty = image });
+    var p9 = createImageBitmap(video, 400, 300, 300, 300, {imageOrientation: imageOrientationOptions[optionIndex1], premultiplyAlpha: premultiplyAlphaOptions[optionIndex2]}).then(function (image) { imageBitmaps.emptyTwo = image });
     Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
-        checkNoCrop(imageBitmaps.noCrop);
-        checkCrop(imageBitmaps.crop);
-        checkCrop(imageBitmaps.cropRight);
-        checkCrop(imageBitmaps.cropCenter);
-        checkOverCrop(imageBitmaps.overCrop);
-        checkOverCropRight(imageBitmaps.overCropRight);
-        checkCrop(imageBitmaps.negativeCrop);
-        checkEmpty(imageBitmaps.empty);
-        checkEmpty(imageBitmaps.emptyTwo);
+        checkNoCrop(imageBitmaps.noCrop, imageOrientationOptions[optionIndex1]);
+        checkCrop(imageBitmaps.crop, imageOrientationOptions[optionIndex1]);
+        checkCrop(imageBitmaps.cropRight, imageOrientationOptions[optionIndex1]);
+        checkCrop(imageBitmaps.cropCenter, imageOrientationOptions[optionIndex1]);
+        checkOverCrop(imageBitmaps.overCrop, imageOrientationOptions[optionIndex1]);
+        checkOverCropRight(imageBitmaps.overCropRight, imageOrientationOptions[optionIndex1]);
+        checkCrop(imageBitmaps.negativeCrop, imageOrientationOptions[optionIndex1]);
+        checkEmpty(imageBitmaps.empty, imageOrientationOptions[optionIndex1]);
+        checkEmpty(imageBitmaps.emptyTwo, imageOrientationOptions[optionIndex1]);
         optionIndex++;
         videoLoaded();
-    }, function() {
-        testFailed("Promise was rejected.");
-        finishJSTest();
+    }, function(ex) {
+        // when the options are invalid, we expect the promise to be rejected.
+        if ((imageOrientationOptions[optionIndex1] != "none" && imageOrientationOptions[optionIndex1] != "flipY") ||
+            (premultiplyAlphaOptions[optionIndex2] != "default" && premultiplyAlphaOptions[optionIndex2] != "none")) {
+            testPassed("createImageBitmap with invalid options are rejected");
+            optionIndex++;
+            videoLoaded();
+        } else {
+            testFailed("Promise was rejected." + ex);
+            finishJSTest();
+            return;
+        }
     });
 }
 
-function checkNoCrop(imageBitmap) {
+function checkNoCrop(imageBitmap, option) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
@@ -111,6 +125,7 @@ function checkNoCrop(imageBitmap) {
     shouldBeClear(360, 40);
     shouldBeClear(80, 290);
 
+    /*commenting out all cases because of crbug.com/578889
     // shrunk to (0, 0), (100, 100)
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0, 100, 100);
@@ -146,10 +161,10 @@ function checkNoCrop(imageBitmap) {
     shouldBeClear(10, 10);
     shouldBeClear(80, 80);
     shouldBeClear(150, 150);
-    shouldBeClear(210, 210);
+    shouldBeClear(210, 210);*/
 }
 
-function checkCrop(imageBitmap) {
+function checkCrop(imageBitmap, option) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
@@ -162,14 +177,14 @@ function checkCrop(imageBitmap) {
     shouldBeClear(210, 210);
 }
 
-function checkOverCrop(imageBitmap) {
+function checkOverCrop(imageBitmap, option) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
     // should be drawn to (100, 100), (452, 388)
     clearContext();
     ctx.drawImage(imageBitmap, 0, 0);
-    if (options[optionIndex] == "none") {
+    if (option == "none") {
         shouldBeClear(10, 10);
         shouldBeClear(90, 90);
         shouldBeOpaque(110, 110);
@@ -189,10 +204,11 @@ function checkOverCrop(imageBitmap) {
         shouldBeClear(460, 210);
     }
 
+    /*commenting out all cases because of crbug.com/578889
     // should be drawn to (50, 50), (226, 194)
     clearContext();
     ctx.drawImage(imageBitmap, 0, 0, 300, 300);
-    if (options[optionIndex] == "none") {
+    if (option == "none") {
         shouldBeClear(10, 10);
         shouldBeClear(40, 40);
         shouldBeOpaque(60, 60);
@@ -208,17 +224,17 @@ function checkOverCrop(imageBitmap) {
         shouldBeClear(230, 250);
         shouldBeClear(50, 100);
         shouldBeClear(230, 100);
-    }
+    }*/
 }
 
-function checkOverCropRight(imageBitmap) {
+function checkOverCropRight(imageBitmap, option) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
     // should be drawn to (0, 0), (252, 188)
     clearContext();
     ctx.drawImage(imageBitmap, 0, 0);
-    if (options[optionIndex] == "none") {
+    if (option == "none") {
         shouldBeOpaque(10, 10);
         shouldBeOpaque(100, 100);
         shouldBeOpaque(200, 50);
@@ -239,7 +255,7 @@ function checkOverCropRight(imageBitmap) {
     }
 }
 
-function checkEmpty(imageBitmap) {
+function checkEmpty(imageBitmap, option) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 

@@ -160,10 +160,21 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
 
     IntPoint dstPoint = IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y()));
     video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
-    if (options.imageOrientation() == imageOrientationFlipY)
-        m_image = StaticBitmapImage::create(adoptRef(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get())));
-    else
+
+    bool imageOrientationFlipYFlag;
+    bool premultiplyAlphaEnabledFlag;
+    parseOptions(options, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag);
+
+    if (imageOrientationFlipYFlag || !premultiplyAlphaEnabledFlag) {
+        SkImage* skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get();
+        if (imageOrientationFlipYFlag)
+            skiaImage = flipSkImageVertically(skiaImage);
+        if (!premultiplyAlphaEnabledFlag)
+            skiaImage = premulSkImageToUnPremul(skiaImage);
+        m_image = StaticBitmapImage::create(adoptRef(skiaImage));
+    } else {
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
+    }
     m_image->setOriginClean(!video->wouldTaintOrigin(document->securityOrigin()));
 }
 

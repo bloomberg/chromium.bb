@@ -3,33 +3,12 @@ Ensure correct behavior of drawImage with ImageBitmaps from video elements along
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Checking HTMLVideoElement with imageOrientation: none.
+Checking HTMLVideoElement with imageOrientation: none with premultiplyAlphaOption: default.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS This pixel is opaque
 PASS This pixel is opaque
 PASS This pixel is opaque
 PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
@@ -51,13 +30,6 @@ PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
 PASS This pixel is opaque
 PASS This pixel is opaque
 PASS This pixel is transparent black
@@ -87,33 +59,12 @@ PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS This pixel is transparent black
-Checking HTMLVideoElement with imageOrientation: flipY.
+Checking HTMLVideoElement with imageOrientation: none with premultiplyAlphaOption: none.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS This pixel is opaque
 PASS This pixel is opaque
 PASS This pixel is opaque
 PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
@@ -135,13 +86,6 @@ PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is opaque
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
-PASS This pixel is transparent black
 PASS This pixel is opaque
 PASS This pixel is opaque
 PASS This pixel is transparent black
@@ -171,6 +115,128 @@ PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS This pixel is transparent black
 PASS This pixel is transparent black
+Checking HTMLVideoElement with imageOrientation: none with premultiplyAlphaOption: invalid.
+PASS createImageBitmap with invalid options are rejected
+Checking HTMLVideoElement with imageOrientation: flipY with premultiplyAlphaOption: default.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+Checking HTMLVideoElement with imageOrientation: flipY with premultiplyAlphaOption: none.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+Checking HTMLVideoElement with imageOrientation: flipY with premultiplyAlphaOption: invalid.
+PASS createImageBitmap with invalid options are rejected
+Checking HTMLVideoElement with imageOrientation: invalid with premultiplyAlphaOption: default.
+PASS createImageBitmap with invalid options are rejected
+Checking HTMLVideoElement with imageOrientation: invalid with premultiplyAlphaOption: none.
+PASS createImageBitmap with invalid options are rejected
+Checking HTMLVideoElement with imageOrientation: invalid with premultiplyAlphaOption: invalid.
+PASS createImageBitmap with invalid options are rejected
 PASS successfullyParsed is true
 
 TEST COMPLETE
