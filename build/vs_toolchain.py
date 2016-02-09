@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
 import json
 import os
 import pipes
@@ -151,14 +152,15 @@ def _VersionNumber():
     raise ValueError('Unexpected GYP_MSVS_VERSION')
 
 
-def _CopyRuntimeImpl(target, source):
+def _CopyRuntimeImpl(target, source, verbose=True):
   """Copy |source| to |target| if it doesn't already exist or if it
   needs to be updated.
   """
   if (os.path.isdir(os.path.dirname(target)) and
       (not os.path.isfile(target) or
       os.stat(target).st_mtime != os.stat(source).st_mtime)):
-    print 'Copying %s to %s...' % (source, target)
+    if verbose:
+      print 'Copying %s to %s...' % (source, target)
     if os.path.exists(target):
       os.unlink(target)
     shutil.copy2(source, target)
@@ -190,9 +192,14 @@ def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
   suffix = "d.dll" if debug else ".dll"
   if GetVisualStudioVersion() == '2015':
     _CopyRuntime2015(target_dir, source_dir, '%s140' + suffix)
-    if debug:
-      _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbased.dll'),
-                       os.path.join(source_dir, 'ucrtbased.dll'))
+    ucrt_src_dir = os.path.join(source_dir, 'api-ms-win-*.dll')
+    print 'Copying %s to %s...' % (ucrt_src_dir, target_dir)
+    for ucrt_src_file in glob.glob(ucrt_src_dir):
+      file_part = os.path.basename(ucrt_src_file)
+      ucrt_dst_file = os.path.join(target_dir, file_part)
+      _CopyRuntimeImpl(ucrt_dst_file, ucrt_src_file, False)
+    _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbase' + suffix),
+                      os.path.join(source_dir, 'ucrtbase' + suffix))
   else:
     _CopyRuntime2013(target_dir, source_dir, 'msvc%s120' + suffix)
 
