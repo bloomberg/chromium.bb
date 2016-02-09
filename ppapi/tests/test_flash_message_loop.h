@@ -20,19 +20,37 @@ class MessageLoop;
 class TestFlashMessageLoop : public TestCase {
  public:
   explicit TestFlashMessageLoop(TestingInstance* instance);
-  virtual ~TestFlashMessageLoop();
+  ~TestFlashMessageLoop() override;
 
   // TestCase implementation.
-  virtual void RunTests(const std::string& filter);
+  void RunTests(const std::string& filter) override;
+
+  void clear_instance_so() { instance_so_ = nullptr; }
+
+  void DidRunScriptCallback();
 
  private:
+  // ScriptableObject implementation.
+  class InstanceSO;
+
+  // TestCase protected overrides.
+  pp::deprecated::ScriptableObject* CreateTestObject() override;
+
   std::string TestBasics();
   std::string TestRunWithoutQuit();
+  std::string TestSuspendScriptCallbackWhileRunning();
 
+  void TestSuspendScriptCallbackTask(int32_t unused);
   void QuitMessageLoopTask(int32_t unused);
   void DestroyMessageLoopResourceTask(int32_t unused);
 
   pp::flash::MessageLoop* message_loop_;
+
+  // The scriptable object and result storage for the
+  // SuspendScriptCallbackWhileRunning test.
+  InstanceSO* instance_so_;
+  bool suspend_script_callback_result_;
+
   pp::CompletionCallbackFactory<TestFlashMessageLoop> callback_factory_;
 };
 
