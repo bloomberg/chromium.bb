@@ -147,6 +147,14 @@
             }
         }
     ],
+    "MinidumpDirectoryObserver": [
+        {
+            "group_name": "ObserverExperimentGroup",
+            "params": {
+                "Enabled": "true"
+            }
+        }
+    ],
     "NTPPopularSites": [
         {
             "group_name": "Enabled",
