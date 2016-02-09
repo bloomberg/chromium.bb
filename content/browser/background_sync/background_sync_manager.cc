@@ -203,25 +203,6 @@ void BackgroundSyncManager::Register(
                  MakeStatusAndRegistrationCompletion(callback)));
 }
 
-void BackgroundSyncManager::GetRegistration(
-    int64_t sw_registration_id,
-    const std::string& sync_registration_tag,
-    const StatusAndRegistrationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (disabled_) {
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
-    return;
-  }
-
-  RegistrationKey registration_key(sync_registration_tag);
-
-  op_scheduler_.ScheduleOperation(base::Bind(
-      &BackgroundSyncManager::GetRegistrationImpl,
-      weak_ptr_factory_.GetWeakPtr(), sw_registration_id, registration_key,
-      MakeStatusAndRegistrationCompletion(callback)));
-}
-
 void BackgroundSyncManager::GetRegistrations(
     int64_t sw_registration_id,
     const StatusAndRegistrationsCallback& callback) {
@@ -918,30 +899,6 @@ void BackgroundSyncManager::UnregisterDidStore(int64_t sw_registration_id,
   BackgroundSyncMetrics::CountUnregister(BACKGROUND_SYNC_STATUS_OK);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_OK));
-}
-
-void BackgroundSyncManager::GetRegistrationImpl(
-    int64_t sw_registration_id,
-    const RegistrationKey& registration_key,
-    const StatusAndRegistrationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (disabled_) {
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
-    return;
-  }
-
-  RefCountedRegistration* registration =
-      LookupActiveRegistration(sw_registration_id, registration_key);
-  if (!registration) {
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_FOUND, callback);
-    return;
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                 base::Passed(CreateRegistrationHandle(registration))));
 }
 
 void BackgroundSyncManager::GetRegistrationsImpl(

@@ -196,13 +196,6 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void GetRegistration(
-      const mojo::String& tag,
-      const BackgroundSyncService::RegisterCallback& callback) {
-    service_impl_->GetRegistration(tag, sw_registration_id_, callback);
-    base::RunLoop().RunUntilIdle();
-  }
-
   void GetRegistrations(
       const BackgroundSyncService::GetRegistrationsCallback& callback) {
     service_impl_->GetRegistrations(sw_registration_id_, callback);
@@ -260,36 +253,6 @@ TEST_F(BackgroundSyncServiceImplTest, UnregisterWithRegisteredSync) {
              base::Bind(&ErrorCallback, &unregister_called, &unregister_error));
   EXPECT_TRUE(unregister_called);
   EXPECT_EQ(BackgroundSyncError::NONE, unregister_error);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, GetRegistration) {
-  bool called = false;
-  BackgroundSyncError error;
-  SyncRegistrationPtr reg;
-  GetRegistration(
-      "", base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
-  EXPECT_TRUE(called);
-  EXPECT_EQ(BackgroundSyncError::NOT_FOUND, error);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, GetRegistrationWithRegisteredSync) {
-  bool register_called = false;
-  bool getregistration_called = false;
-  BackgroundSyncError register_error;
-  BackgroundSyncError getregistration_error;
-  SyncRegistrationPtr register_reg;
-  SyncRegistrationPtr getregistration_reg;
-  Register(default_sync_registration_.Clone(),
-           base::Bind(&ErrorAndRegistrationCallback, &register_called,
-                      &register_error, &register_reg));
-  EXPECT_TRUE(register_called);
-  EXPECT_EQ(BackgroundSyncError::NONE, register_error);
-  GetRegistration(
-      register_reg->tag,
-      base::Bind(&ErrorAndRegistrationCallback, &getregistration_called,
-                 &getregistration_error, &getregistration_reg));
-  EXPECT_TRUE(getregistration_called);
-  EXPECT_EQ(BackgroundSyncError::NONE, getregistration_error);
 }
 
 TEST_F(BackgroundSyncServiceImplTest, GetRegistrations) {

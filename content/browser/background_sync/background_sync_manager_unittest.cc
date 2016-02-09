@@ -499,26 +499,33 @@ class BackgroundSyncManagerTest : public testing::Test {
       int64_t sw_registration_id,
       const BackgroundSyncRegistrationOptions& registration_options) {
     bool was_called = false;
-    background_sync_manager_->GetRegistration(
-        sw_registration_id, registration_options.tag,
-        base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+    background_sync_manager_->GetRegistrations(
+        sw_registration_id,
+        base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
 
     if (callback_status_ == BACKGROUND_SYNC_STATUS_OK) {
-      EXPECT_STREQ(registration_options.tag.c_str(),
-                   callback_registration_handle_->options()->tag.c_str());
+      for (auto iter = callback_registration_handles_->begin();
+           iter < callback_registration_handles_->end(); ++iter) {
+        if ((*iter)->options()->tag == registration_options.tag) {
+          // Transfer the matching registration handle out of the vector into
+          // callback_registration_handle_ for testing.
+          callback_registration_handle_.reset(*iter);
+          callback_registration_handles_->weak_erase(iter);
+          return true;
+        }
+      }
     }
-
-    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
+    return false;
   }
 
   bool GetRegistrations() {
-    return GetRegistrationWithServiceWorkerId(sw_registration_id_1_);
+    return GetRegistrationsWithServiceWorkerId(sw_registration_id_1_);
   }
 
-  bool GetRegistrationWithServiceWorkerId(int64_t sw_registration_id) {
+  bool GetRegistrationsWithServiceWorkerId(int64_t sw_registration_id) {
     bool was_called = false;
     background_sync_manager_->GetRegistrations(
         sw_registration_id,
@@ -841,34 +848,34 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   SetupDelayedBackgroundSyncManager();
 
   bool register_called = false;
-  bool get_registration_called = false;
+  bool get_registrations_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_1_,
       true /* requested_from_service_worker */,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &register_called));
-  test_background_sync_manager_->GetRegistration(
-      sw_registration_id_1_, sync_options_1_.tag,
-      base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
-                 base::Unretained(this), &get_registration_called));
+  test_background_sync_manager_->GetRegistrations(
+      sw_registration_id_1_,
+      base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
+                 base::Unretained(this), &get_registrations_called));
 
   base::RunLoop().RunUntilIdle();
   // Init should be blocked while loading from the backend.
   EXPECT_FALSE(register_called);
-  EXPECT_FALSE(get_registration_called);
+  EXPECT_FALSE(get_registrations_called);
 
   test_background_sync_manager_->Continue();
   base::RunLoop().RunUntilIdle();
   // Register should be blocked while storing to the backend.
   EXPECT_FALSE(register_called);
-  EXPECT_FALSE(get_registration_called);
+  EXPECT_FALSE(get_registrations_called);
 
   test_background_sync_manager_->Continue();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(register_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, callback_status_);
-  // GetRegistration should run immediately as it doesn't write to disk.
-  EXPECT_TRUE(get_registration_called);
+  // GetRegistrations should run immediately as it doesn't write to disk.
+  EXPECT_TRUE(get_registrations_called);
 }
 
 TEST_F(BackgroundSyncManagerTest, UnregisterServiceWorker) {

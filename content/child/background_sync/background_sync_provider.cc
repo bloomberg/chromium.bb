@@ -125,25 +125,6 @@ void BackgroundSyncProvider::unregisterBackgroundSync(
                  base::Passed(std::move(callbacksPtr))));
 }
 
-void BackgroundSyncProvider::getRegistration(
-    const blink::WebString& tag,
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebSyncRegistrationCallbacks* callbacks) {
-  DCHECK(service_worker_registration);
-  DCHECK(callbacks);
-  int64_t service_worker_registration_id =
-      GetServiceWorkerRegistrationId(service_worker_registration);
-  scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacksPtr(callbacks);
-
-  // base::Unretained is safe here, as the mojo channel will be deleted (and
-  // will wipe its callbacks) before 'this' is deleted.
-  GetBackgroundSyncServicePtr()->GetRegistration(
-      tag.utf8(), service_worker_registration_id,
-      base::Bind(&BackgroundSyncProvider::GetRegistrationCallback,
-                 base::Unretained(this),
-                 base::Passed(std::move(callbacksPtr))));
-}
-
 void BackgroundSyncProvider::getRegistrations(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebSyncGetRegistrationsCallbacks* callbacks) {
@@ -232,40 +213,6 @@ void BackgroundSyncProvider::UnregisterCallback(
     case BackgroundSyncError::NOT_ALLOWED:
       // This error should never be returned from
       // BackgroundSyncManager::Unregister
-      NOTREACHED();
-      break;
-    case BackgroundSyncError::NO_SERVICE_WORKER:
-      callbacks->onError(
-          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                              "No service worker is active."));
-      break;
-  }
-}
-
-void BackgroundSyncProvider::GetRegistrationCallback(
-    scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
-    BackgroundSyncError error,
-    const SyncRegistrationPtr& options) {
-  // TODO(iclelland): Determine the correct error message to return in each case
-  scoped_ptr<blink::WebSyncRegistration> result;
-  switch (error) {
-    case BackgroundSyncError::NONE:
-      if (!options.is_null())
-        result =
-            mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(options);
-      callbacks->onSuccess(blink::adoptWebPtr(result.release()));
-      break;
-    case BackgroundSyncError::NOT_FOUND:
-      callbacks->onSuccess(nullptr);
-      break;
-    case BackgroundSyncError::STORAGE:
-      callbacks->onError(
-          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                              "Background Sync is disabled."));
-      break;
-    case BackgroundSyncError::NOT_ALLOWED:
-      // This error should never be returned from
-      // BackgroundSyncManager::GetRegistration
       NOTREACHED();
       break;
     case BackgroundSyncError::NO_SERVICE_WORKER:

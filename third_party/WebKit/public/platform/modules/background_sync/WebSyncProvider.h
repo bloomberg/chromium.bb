@@ -32,10 +32,6 @@ public:
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void unregisterBackgroundSync(int64_t handleId, WebServiceWorkerRegistration*, WebSyncUnregistrationCallbacks*) = 0;
 
-    // Takes ownership of the WebSyncRegistrationCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getRegistration(const WebString&, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
-
     // Takes ownership of the WebSyncGetRegistrationsCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void getRegistrations(WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;

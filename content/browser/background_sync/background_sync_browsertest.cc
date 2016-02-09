@@ -67,12 +67,20 @@ void RegistrationPendingCallback(
 }
 
 void RegistrationPendingDidGetSyncRegistration(
+    const std::string& tag,
     const base::Callback<void(bool)>& callback,
     BackgroundSyncStatus error_type,
-    scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle) {
+    scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>
+        registration_handles) {
   ASSERT_EQ(BACKGROUND_SYNC_STATUS_OK, error_type);
-  callback.Run(registration_handle->sync_state() ==
-               BackgroundSyncState::PENDING);
+  // Find the right registration in the list and check its status.
+  for (const auto& handle : *registration_handles) {
+    if (handle->options()->tag == tag) {
+      callback.Run(handle->sync_state() == BackgroundSyncState::PENDING);
+      return;
+    }
+  }
+  ADD_FAILURE() << "Registration should exist";
 }
 
 void RegistrationPendingDidGetSWRegistration(
@@ -84,9 +92,9 @@ void RegistrationPendingDidGetSWRegistration(
   ASSERT_EQ(SERVICE_WORKER_OK, status);
   int64_t service_worker_id = registration->id();
   BackgroundSyncManager* sync_manager = sync_context->background_sync_manager();
-  sync_manager->GetRegistration(
-      service_worker_id, tag,
-      base::Bind(&RegistrationPendingDidGetSyncRegistration, callback));
+  sync_manager->GetRegistrations(
+      service_worker_id,
+      base::Bind(&RegistrationPendingDidGetSyncRegistration, tag, callback));
 }
 
 void RegistrationPendingOnIOThread(

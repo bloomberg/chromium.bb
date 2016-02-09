@@ -73,16 +73,6 @@ class CONTENT_EXPORT BackgroundSyncManager
                 bool requested_from_service_worker,
                 const StatusAndRegistrationCallback& callback);
 
-  // Finds the background sync registration associated with
-  // |sw_registration_id|, and tag |sync_registration_tag|. Calls |callback|
-  // with BACKGROUND_SYNC_STATUS_NOT_FOUND if it doesn't exist. Calls |callback|
-  // with BACKGROUND_SYNC_STATUS_OK on success. If the callback's status is not
-  // BACKGROUND_SYNC_STATUS_OK then the callback's RegistrationHandle will be
-  // nullptr.
-  void GetRegistration(int64_t sw_registration_id,
-                       const std::string& sync_registration_tag,
-                       const StatusAndRegistrationCallback& callback);
-
   // Finds the background sync registrations associated with
   // |sw_registration_id|. Calls |callback| with BACKGROUND_SYNC_STATUS_OK on
   // success.
@@ -273,11 +263,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   void UnregisterDidStore(int64_t sw_registration_id,
                           const StatusCallback& callback,
                           ServiceWorkerStatusCode status);
-
-  // GetRegistration callbacks
-  void GetRegistrationImpl(int64_t sw_registration_id,
-                           const RegistrationKey& registration_key,
-                           const StatusAndRegistrationCallback& callback);
 
   // GetRegistrations callbacks
   void GetRegistrationsImpl(int64_t sw_registration_id,

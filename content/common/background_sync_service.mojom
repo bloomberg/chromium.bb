@@ -32,8 +32,6 @@ interface BackgroundSyncService {
   Register(SyncRegistration options, int64 service_worker_registration_id,
            bool requested_from_service_worker)
       => (BackgroundSyncError err, SyncRegistration options);
-  GetRegistration(string tag, int64 service_worker_registration_id)
-      => (BackgroundSyncError err, SyncRegistration? registration);
   GetRegistrations(int64 service_worker_registration_id)
       => (BackgroundSyncError err, array<SyncRegistration> registrations);
   Unregister(int64 handle_id, int64 service_worker_registration_id)

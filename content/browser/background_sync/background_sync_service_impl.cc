@@ -129,20 +129,6 @@ void BackgroundSyncServiceImpl::Unregister(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void BackgroundSyncServiceImpl::GetRegistration(
-    const mojo::String& tag,
-    int64_t sw_registration_id,
-    const GetRegistrationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BackgroundSyncManager* background_sync_manager =
-      background_sync_context_->background_sync_manager();
-  DCHECK(background_sync_manager);
-  background_sync_manager->GetRegistration(
-      sw_registration_id, tag.get(),
-      base::Bind(&BackgroundSyncServiceImpl::OnRegisterResult,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
 void BackgroundSyncServiceImpl::GetRegistrations(
     int64_t sw_registration_id,
     const GetRegistrationsCallback& callback) {

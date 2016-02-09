@@ -39,9 +39,6 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   void Unregister(BackgroundSyncRegistrationHandle::HandleId handle_id,
                   int64_t sw_registration_id,
                   const UnregisterCallback& callback) override;
-  void GetRegistration(const mojo::String& tag,
-                       int64_t sw_registration_id,
-                       const GetRegistrationCallback& callback) override;
   void GetRegistrations(int64_t sw_registration_id,
                         const GetRegistrationsCallback& callback) override;
   void DuplicateRegistrationHandle(
