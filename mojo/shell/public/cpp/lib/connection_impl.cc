@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/service_connector.h"
+#include "mojo/shell/public/cpp/interface_binder.h"
 
 namespace mojo {
 namespace internal {
@@ -36,7 +36,7 @@ ConnectionImpl::ConnectionImpl(
       allowed_interfaces_(allowed_interfaces),
       allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
                             allowed_interfaces_.count("*") == 1),
-      default_connector_(nullptr),
+      default_binder_(nullptr),
       weak_factory_(this) {
   if (local_services.is_pending())
     local_binding_.Bind(std::move(local_services));
@@ -48,17 +48,14 @@ ConnectionImpl::ConnectionImpl()
       remote_ids_valid_(false),
       local_binding_(this),
       allow_all_interfaces_(true),
-      default_connector_(nullptr),
+      default_binder_(nullptr),
       weak_factory_(this) {
 }
 
 ConnectionImpl::~ConnectionImpl() {
-  for (NameToServiceConnectorMap::iterator i =
-           name_to_service_connector_.begin();
-       i != name_to_service_connector_.end(); ++i) {
-    delete i->second;
-  }
-  name_to_service_connector_.clear();
+  for (auto& i : name_to_binder_)
+    delete i.second;
+  name_to_binder_.clear();
 }
 
 shell::mojom::Shell::ConnectToApplicationCallback
@@ -70,17 +67,17 @@ ConnectionImpl::GetConnectToApplicationCallback() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, Connection implementation:
 
-void ConnectionImpl::SetServiceConnector(ServiceConnector* service_connector) {
-  default_connector_ = service_connector;
+void ConnectionImpl::SetDefaultInterfaceBinder(InterfaceBinder* binder) {
+  default_binder_ = binder;
 }
 
-bool ConnectionImpl::SetServiceConnectorForName(
-    ServiceConnector* service_connector,
+bool ConnectionImpl::SetInterfaceBinderForName(
+    InterfaceBinder* binder,
     const std::string& interface_name) {
   if (allow_all_interfaces_ ||
       allowed_interfaces_.count(interface_name)) {
-    RemoveServiceConnectorForName(interface_name);
-    name_to_service_connector_[interface_name] = service_connector;
+    RemoveInterfaceBinderForName(interface_name);
+    name_to_binder_[interface_name] = binder;
     return true;
   }
   LOG(WARNING) << "CapabilityFilter prevented connection to interface: "
@@ -143,33 +140,28 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 // ConnectionImpl, ServiceProvider implementation:
 
 void ConnectionImpl::ConnectToService(const mojo::String& interface_name,
-                                      ScopedMessagePipeHandle client_handle) {
-  auto iter = name_to_service_connector_.find(interface_name);
-  if (iter != name_to_service_connector_.end()) {
-    iter->second->ConnectToService(this, interface_name,
-                                   std::move(client_handle));
-  }
-  if (default_connector_) {
-    default_connector_->ConnectToService(this, interface_name,
-                                         std::move(client_handle));
-  }
+                                      ScopedMessagePipeHandle handle) {
+  auto iter = name_to_binder_.find(interface_name);
+  if (iter != name_to_binder_.end())
+    iter->second->BindInterface(this, interface_name, std::move(handle));
+  else if (default_binder_)
+    default_binder_->BindInterface(this, interface_name, std::move(handle));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, private:
 
-void ConnectionImpl::RemoveServiceConnectorForName(
+void ConnectionImpl::RemoveInterfaceBinderForName(
     const std::string& interface_name) {
-  NameToServiceConnectorMap::iterator it =
-      name_to_service_connector_.find(interface_name);
-  if (it == name_to_service_connector_.end())
+  NameToInterfaceBinderMap::iterator it = name_to_binder_.find(interface_name);
+  if (it == name_to_binder_.end())
     return;
   delete it->second;
-  name_to_service_connector_.erase(it);
+  name_to_binder_.erase(it);
 }
 
 void ConnectionImpl::OnGotRemoteIDs(uint32_t target_application_id,
-                                     uint32_t content_handler_id) {
+                                    uint32_t content_handler_id) {
   DCHECK(!remote_ids_valid_);
   remote_ids_valid_ = true;
 

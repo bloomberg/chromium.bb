@@ -28,12 +28,12 @@ class ConnectionImpl : public Connection, public ServiceProvider {
     explicit TestApi(ConnectionImpl* impl) : impl_(impl) {}
     ~TestApi() {}
 
-    void SetServiceConnectorForName(ServiceConnector* connector,
-                                    const std::string& interface_name) {
-      impl_->SetServiceConnectorForName(connector, interface_name);
+    void SetInterfaceBinderForName(InterfaceBinder* binder,
+                                   const std::string& interface_name) {
+      impl_->SetInterfaceBinderForName(binder, interface_name);
     }
-    void RemoveServiceConnectorForName(const std::string& interface_name) {
-      impl_->RemoveServiceConnectorForName(interface_name);
+    void RemoveInterfaceBinderForName(const std::string& interface_name) {
+      impl_->RemoveInterfaceBinderForName(interface_name);
     }
 
   private:
@@ -57,12 +57,12 @@ class ConnectionImpl : public Connection, public ServiceProvider {
       GetConnectToApplicationCallback();
 
  private:
-  using NameToServiceConnectorMap = std::map<std::string, ServiceConnector*>;
+  using NameToInterfaceBinderMap = std::map<std::string, InterfaceBinder*>;
 
   // Connection overrides.
-  void SetServiceConnector(ServiceConnector* service_connector) override;
-  bool SetServiceConnectorForName(ServiceConnector* service_connector,
-                                  const std::string& interface_name) override;
+  void SetDefaultInterfaceBinder(InterfaceBinder* binder) override;
+  bool SetInterfaceBinderForName(InterfaceBinder* binder,
+                                 const std::string& interface_name) override;
   const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
   ServiceProvider* GetServiceProvider() override;
@@ -76,9 +76,9 @@ class ConnectionImpl : public Connection, public ServiceProvider {
 
   // ServiceProvider method.
   void ConnectToService(const mojo::String& service_name,
-                        ScopedMessagePipeHandle client_handle) override;
+                        ScopedMessagePipeHandle handle) override;
 
-  void RemoveServiceConnectorForName(const std::string& interface_name);
+  void RemoveInterfaceBinderForName(const std::string& interface_name);
   void OnGotRemoteIDs(uint32_t target_application_id,
                       uint32_t content_handler_id);
 
@@ -98,8 +98,8 @@ class ConnectionImpl : public Connection, public ServiceProvider {
   const std::set<std::string> allowed_interfaces_;
   const bool allow_all_interfaces_;
 
-  ServiceConnector* default_connector_;
-  NameToServiceConnectorMap name_to_service_connector_;
+  InterfaceBinder* default_binder_;
+  NameToInterfaceBinderMap name_to_binder_;
 
   base::WeakPtrFactory<ConnectionImpl> weak_factory_;
 

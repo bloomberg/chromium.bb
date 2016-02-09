@@ -10,18 +10,19 @@
 #include "base/macros.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document.h"
+#include "mojo/shell/public/cpp/interface_binder.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
 namespace html_viewer {
 
-// ServiceConnectorQueue records all incoming service requests and processes
+// InterfaceBinderQueue records all incoming service requests and processes
 // them once PushRequestsTo() is called. This is useful if you need to delay
 // processing incoming service requests.
-class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
-    : public mojo::ServiceConnector {
+class HTMLDocumentApplicationDelegate::InterfaceBinderQueue
+    : public mojo::InterfaceBinder {
  public:
-  ServiceConnectorQueue() {}
-  ~ServiceConnectorQueue() override {}
+  InterfaceBinderQueue() {}
+  ~InterfaceBinderQueue() override {}
 
   void PushRequestsTo(mojo::Connection* connection) {
     ScopedVector<Request> requests;
@@ -38,10 +39,10 @@ class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
     mojo::ScopedMessagePipeHandle handle;
   };
 
-  // mojo::ServiceConnector:
-  void ConnectToService(mojo::Connection* connection,
-                        const std::string& interface_name,
-                        mojo::ScopedMessagePipeHandle handle) override {
+  // mojo::InterfaceBinder:
+  void BindInterface(mojo::Connection* connection,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle handle) override {
     scoped_ptr<Request> request(new Request);
     request->interface_name = interface_name;
     request->handle = std::move(handle);
@@ -50,7 +51,7 @@ class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
 
   ScopedVector<Request> requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceConnectorQueue);
+  DISALLOW_COPY_AND_ASSIGN(InterfaceBinderQueue);
 };
 
 HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
@@ -119,9 +120,9 @@ bool HTMLDocumentApplicationDelegate::AcceptConnection(
   } else {
     // HTMLDocument provides services, but is created asynchronously. Queue up
     // requests until the HTMLDocument is created.
-    scoped_ptr<ServiceConnectorQueue> service_connector_queue(
-        new ServiceConnectorQueue);
-    connection->SetServiceConnector(service_connector_queue.get());
+    scoped_ptr<InterfaceBinderQueue> interface_binder_queue(
+        new InterfaceBinderQueue);
+    connection->SetDefaultInterfaceBinder(interface_binder_queue.get());
 
     mojo::URLLoaderPtr loader;
     url_loader_factory_->CreateURLLoader(GetProxy(&loader));
@@ -141,7 +142,7 @@ bool HTMLDocumentApplicationDelegate::AcceptConnection(
         base::Bind(&HTMLDocumentApplicationDelegate::OnResponseReceived,
                    weak_factory_.GetWeakPtr(), base::Passed(&app_retainer),
                    base::Passed(&loader), connection,
-                   base::Passed(&service_connector_queue)));
+                   base::Passed(&interface_binder_queue)));
   }
   return true;
 }
@@ -156,7 +157,7 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
     scoped_ptr<mojo::AppRefCount> app_refcount,
     mojo::URLLoaderPtr loader,
     mojo::Connection* connection,
-    scoped_ptr<ServiceConnectorQueue> connector_queue,
+    scoped_ptr<InterfaceBinderQueue> binder_queue,
     mojo::URLResponsePtr response) {
   // HTMLDocument is destroyed when the hosting view is destroyed, or
   // explicitly from our destructor.
@@ -167,9 +168,9 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
       html_factory_);
   documents2_.insert(document);
 
-  if (connector_queue) {
-    connector_queue->PushRequestsTo(connection);
-    connection->SetServiceConnector(nullptr);
+  if (binder_queue) {
+    binder_queue->PushRequestsTo(connection);
+    connection->SetDefaultInterfaceBinder(nullptr);
   }
 }
 

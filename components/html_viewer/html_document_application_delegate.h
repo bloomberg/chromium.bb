@@ -37,7 +37,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ShellClient,
   HTMLFactory* html_factory() { return html_factory_; }
 
  private:
-  class ServiceConnectorQueue;
+  class InterfaceBinderQueue;
 
   ~HTMLDocumentApplicationDelegate() override;
 
@@ -56,7 +56,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ShellClient,
   void OnResponseReceived(scoped_ptr<mojo::AppRefCount> app_refcount,
                           mojo::URLLoaderPtr loader,
                           mojo::Connection* connection,
-                          scoped_ptr<ServiceConnectorQueue> connector_queue,
+                          scoped_ptr<InterfaceBinderQueue> binder_queue,
                           mojo::URLResponsePtr response);
 
   // HTMLFactory:

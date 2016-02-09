@@ -11,12 +11,12 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
-#include "mojo/shell/public/cpp/lib/interface_factory_connector.h"
+#include "mojo/shell/public/cpp/lib/interface_factory_binder.h"
 #include "mojo/shell/public/interfaces/service_provider.mojom.h"
 
 namespace mojo {
 
-class ServiceConnector;
+class InterfaceBinder;
 
 // Represents a connection to another application. An instance of this class is
 // passed to ShellClient's AcceptConnection() method each
@@ -37,11 +37,11 @@ class ServiceConnector;
 //
 // The InterfaceFactory must outlive the Connection.
 //
-// Additionally you specify a ServiceConnector. If a ServiceConnector has
+// Additionally you specify a InterfaceBinder. If a InterfaceBinder has
 // been set and an InterfaceFactory has not been registered for the interface
-// request, than the interface request is sent to the ServiceConnector.
+// request, than the interface request is sent to the InterfaceBinder.
 //
-// Just as with InterfaceFactory, ServiceConnector must outlive Connection.
+// Just as with InterfaceFactory, InterfaceBinder must outlive Connection.
 //
 // An Connection's lifetime is managed by an ShellConnection. To close a
 // connection, call CloseConnection which will destroy this object.
@@ -61,7 +61,7 @@ class Connection {
   };
 
   // See class description for details.
-  virtual void SetServiceConnector(ServiceConnector* connector) = 0;
+  virtual void SetDefaultInterfaceBinder(InterfaceBinder* binder) = 0;
 
   // Makes Interface available as a service to the remote application.
   // |factory| will create implementations of Interface on demand.
@@ -69,8 +69,8 @@ class Connection {
   // from the shell prevented the service from being exposed.
   template <typename Interface>
   bool AddService(InterfaceFactory<Interface>* factory) {
-    return SetServiceConnectorForName(
-        new internal::InterfaceFactoryConnector<Interface>(factory),
+    return SetInterfaceBinderForName(
+        new internal::InterfaceFactoryBinder<Interface>(factory),
         Interface::Name_);
   }
 
@@ -135,9 +135,9 @@ class Connection {
   virtual void AddRemoteIDCallback(const Closure& callback) = 0;
 
  protected:
-  // Returns true if the connector was set, false if it was not set (e.g. by
+  // Returns true if the binder was set, false if it was not set (e.g. by
   // some filtering policy preventing this interface from being exposed).
-  virtual bool SetServiceConnectorForName(ServiceConnector* service_connector,
+   virtual bool SetInterfaceBinderForName(InterfaceBinder* binder,
                                           const std::string& name) = 0;
 
   virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
