@@ -70,9 +70,6 @@ source_set("platform") {
     "scoped_platform_handle.h",
     "simple_platform_shared_buffer.cc",
     "simple_platform_shared_buffer.h",
-    "simple_platform_shared_buffer_android.cc",
-    "simple_platform_shared_buffer_posix.cc",
-    "simple_platform_shared_buffer_win.cc",
     "simple_platform_support.cc",
     "simple_platform_support.h",
   ]

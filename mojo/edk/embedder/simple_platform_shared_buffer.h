@@ -7,6 +7,9 @@
 
 #include <stddef.h>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
+#include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -14,7 +17,8 @@
 namespace mojo {
 namespace edk {
 
-// A simple implementation of |PlatformSharedBuffer|.
+// A simple implementation of |PlatformSharedBuffer| that uses
+// |base::SharedMemory|.
 class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSharedBuffer final
     : public PlatformSharedBuffer {
  public:
@@ -40,8 +44,6 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSharedBuffer final
   explicit SimplePlatformSharedBuffer(size_t num_bytes);
   ~SimplePlatformSharedBuffer() override;
 
-  // Implemented in simple_platform_shared_buffer_{posix,win}.cc:
-
   // This is called by |Create()| before this object is given to anyone.
   bool Init();
 
@@ -50,15 +52,10 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSharedBuffer final
   // claimed |num_bytes_|.)
   bool InitFromPlatformHandle(ScopedPlatformHandle platform_handle);
 
-  // The platform-dependent part of |Map()|; doesn't check arguments.
-  scoped_ptr<PlatformSharedBufferMapping> MapImpl(size_t offset, size_t length);
-
   const size_t num_bytes_;
 
-  // This is set in |Init()|/|InitFromPlatformHandle()| and never modified
-  // (except by |PassPlatformHandle()|; see the comments above its declaration),
-  // hence does not need to be protected by a lock.
-  ScopedPlatformHandle handle_;
+  base::Lock lock_;
+  scoped_ptr<base::SharedMemory> shared_memory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(SimplePlatformSharedBuffer);
 };
@@ -76,21 +73,25 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSharedBufferMapping
  private:
   friend class SimplePlatformSharedBuffer;
 
-  SimplePlatformSharedBufferMapping(void* base,
-                                    size_t length,
-                                    void* real_base,
-                                    size_t real_length)
-      : base_(base),
+  SimplePlatformSharedBufferMapping(base::SharedMemoryHandle handle,
+                                    size_t offset,
+                                    size_t length)
+      : offset_(offset),
         length_(length),
-        real_base_(real_base),
-        real_length_(real_length) {}
+        base_(nullptr),
+        shared_memory_(handle, false) {}
+
+  bool Map();
   void Unmap();
 
-  void* const base_;
+  const size_t offset_;
   const size_t length_;
+  void* base_;
 
-  void* const real_base_;
-  const size_t real_length_;
+  // Since mapping life cycles are separate from PlatformSharedBuffer and a
+  // buffer can be mapped multiple times, we have our own SharedMemory object
+  // created from a duplicate handle.
+  base::SharedMemory shared_memory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(SimplePlatformSharedBufferMapping);
 };
