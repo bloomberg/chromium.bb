@@ -52,6 +52,7 @@ SKIP = {
 
   # Android bots need custom dimension_sets entries for swarming, and capacity
   # is not there yet -- so don't let manage.py add swarming automatically there.
+  'Android User Builder Tests',
   'Android GN',
   'Android Tests',
   'Android Tests (dbg)',
@@ -69,11 +70,33 @@ SKIP = {
 
   # The memory.fyi waterfall is in the process of being converted to recipes,
   # and swarming doesn't work yet.
+  'Chromium Mac (valgrind)(1)',
+  'Chromium Mac (valgrind)(2)',
+  'Chromium OS (valgrind)(1)',
+  'Chromium OS (valgrind)(2)',
+  'Chromium OS (valgrind)(3)',
+  'Chromium OS (valgrind)(4)',
+  'Chromium OS (valgrind)(5)',
+  'Chromium OS (valgrind)(6)',
   'Linux Tests (valgrind)(1)',
   'Linux Tests (valgrind)(2)',
   'Linux Tests (valgrind)(3)',
   'Linux Tests (valgrind)(4)',
   'Linux Tests (valgrind)(5)',
+  'Windows Unit (DrMemory full) (1)',
+  'Windows Unit (DrMemory full) (2)',
+  'Windows Unit (DrMemory full) (3)',
+  'Windows Unit (DrMemory full) (4)',
+  'Windows Unit (DrMemory full) (5)',
+  'Windows Unit (DrMemory full) (6)',
+  'Windows Unit (DrMemory full) (7)',
+  'Windows Unit (DrMemory full) (8)',
+  'Windows Unit (DrMemory full) (9)',
+  'Windows Unit (DrMemory full) (10)',
+  'Windows Unit (DrMemory full) (11)',
+  'Windows Unit (DrMemory full) (12)',
+  'Windows Unit (DrMemory x64)',
+  'Windows Unit (DrMemory)',
 
   # This builder is fine, but win8_chromium_ng uses GN and this configuration,
   # which breaks everything.

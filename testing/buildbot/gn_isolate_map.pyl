@@ -166,10 +166,11 @@
     "label": "//cc:cc_unittests",
     "type": "windowed_test_launcher",
   },
-  "chrome_app_unittests": {
-    "label": "//chrome/test:chrome_app_unittests",
-    "type": "unknown",
-  },
+  # See http://crbug.com/585151
+  #"chrome_app_unittests": {
+    #"label": "//chrome/test:chrome_app_unittests",
+    #"type": "unknown",
+  #},
   "chrome_elf_unittests": {
     "label": "//chrome_elf:chrome_elf_unittests",
     "type": "unknown",
@@ -182,10 +183,11 @@
     "label": "//chromeos:chromeos_unittests",
     "type": "unknown",
   },
-  "cloud_print_unittests": {
-    "label": "//cloud_print:cloud_print_unittests",
-    "type": "unknown",
-  },
+  # See http://crbug.com/585151
+  #"cloud_print_unittests": {
+    #"label": "//cloud_print:cloud_print_unittests",
+    #"type": "unknown",
+  #},
   "components_browsertests": {
     "label": "//components:components_browsertests",
     "type": "windowed_test_launcher",
@@ -318,14 +320,16 @@
     "label": "//ui/keyboard:keyboard_unittests",
     "type": "unknown",
   },
-  "libaddressinput_unittests": {
-    "label": "//third_party/libaddressinput:libaddressinput_unittests",
-    "type": "console_test_launcher",
-  },
-  "libphonenumber_unittests": {
-    "label": "//third_party/libphonenumber:libphonenumber_unittests",
-    "type": "console_test_launcher",
-  },
+  # See http://crbug.com/585151
+  #"libaddressinput_unittests": {
+    #"label": "//third_party/libaddressinput:libaddressinput_unittests",
+    #"type": "console_test_launcher",
+  #},
+  # See http://crbug.com/585151
+  #"libphonenumber_unittests": {
+    #"label": "//third_party/libphonenumber:libphonenumber_unittests",
+    #"type": "console_test_launcher",
+  #},
   "media_unittests": {
     "label": "//media:media_unittests",
     "type": "windowed_test_launcher",
