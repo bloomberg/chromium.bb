@@ -52,7 +52,7 @@ class TestScreenWin : public gfx::ScreenWin {
     UpdateFromDisplayInfos(display_infos);
   }
 
-  ~TestScreenWin() = default;
+  ~TestScreenWin() override = default;
 
  protected:
   // gfx::ScreenWin:
@@ -106,7 +106,7 @@ class TestScreenWin : public gfx::ScreenWin {
     if (search != hwnd_map_.end())
       return MonitorInfoFromScreenRect(search->second);
 
-    EXPECT_EQ(default_options, MONITOR_DEFAULTTOPRIMARY);
+    EXPECT_EQ(default_options, static_cast<DWORD>(MONITOR_DEFAULTTOPRIMARY));
     for (const auto& monitor_info : monitor_infos_) {
       if (monitor_info.rcMonitor.left == 0 &&
           monitor_info.rcMonitor.top == 0) {
