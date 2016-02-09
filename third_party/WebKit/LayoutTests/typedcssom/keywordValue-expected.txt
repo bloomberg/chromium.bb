@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Constructor should throw an error if given an empty string 
+FAIL cssString returns a string with a format similar to CSS.escape. This test also implies that toCSSValue supports all keywords including custom identifiers assert_equals: expected "\\ Hello\ World" but got "' Hello World'"
+PASS keywordValue returns a string equal to the string used in the constructor 
+Harness: the test ran to completion.
+

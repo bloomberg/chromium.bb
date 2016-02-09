@@ -4,31 +4,21 @@
 
 #include "core/css/cssom/KeywordValue.h"
 
-#include "wtf/HashMap.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSCustomIdentValue.h"
+#include "core/css/parser/CSSParserString.h"
+#include "core/css/parser/CSSPropertyParser.h"
 
 namespace blink {
 
-namespace {
-
-using KeywordTable = HashMap<String, KeywordValue::KeywordValueName>;
-
-KeywordTable createKeywordTable()
+KeywordValue* KeywordValue::create(const String& keyword, ExceptionState& exceptionState)
 {
-    KeywordTable table;
-    table.set(String("initial"), KeywordValue::KeywordValueName::Initial);
-    table.set(String("inherit"), KeywordValue::KeywordValueName::Inherit);
-    table.set(String("revert"), KeywordValue::KeywordValueName::Revert);
-    table.set(String("unset"), KeywordValue::KeywordValueName::Unset);
-    return table;
+    if (keyword.isEmpty()) {
+        exceptionState.throwTypeError("KeywordValue does not support empty strings");
+        return nullptr;
+    }
+    return new KeywordValue(keyword);
 }
-
-KeywordTable& keywordTable()
-{
-    DEFINE_STATIC_LOCAL(KeywordTable, keywordTable, (createKeywordTable()));
-    return keywordTable;
-}
-
-} // namespace
 
 const String& KeywordValue::keywordValue() const
 {
@@ -37,20 +27,13 @@ const String& KeywordValue::keywordValue() const
 
 PassRefPtrWillBeRawPtr<CSSValue> KeywordValue::toCSSValue() const
 {
-    switch (keywordTable().get(m_keywordValue)) {
-    case Initial:
-        return cssValuePool().createExplicitInitialValue();
-    case Inherit:
-        return cssValuePool().createInheritedValue();
-    case Revert:
-        return cssValuePool().createIdentifierValue(CSSValueID::CSSValueRevert);
-    case Unset:
-        return cssValuePool().createUnsetValue();
-    default:
-        // TODO: Support other keywords
-        ASSERT_NOT_REACHED();
-        return nullptr;
+    CSSParserString cssKeywordString;
+    cssKeywordString.init(m_keywordValue);
+    CSSValueID keywordID = cssValueKeywordID(cssKeywordString);
+    if (keywordID == CSSValueID::CSSValueInvalid) {
+        return CSSCustomIdentValue::create(m_keywordValue);
     }
+    return cssValuePool().createIdentifierValue(keywordID);
 }
 
 } // namespace blink

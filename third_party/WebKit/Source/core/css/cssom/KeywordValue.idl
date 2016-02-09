@@ -4,7 +4,8 @@
 
 [
     Constructor(DOMString keyword),
-    RuntimeEnabled=CSSTypedOM
+    RuntimeEnabled=CSSTypedOM,
+    RaisesException=Constructor
 ] interface KeywordValue : StyleValue {
     readonly attribute DOMString keywordValue;
 };

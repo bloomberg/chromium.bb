@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<script>
+
+test(function() {
+  assert_throws(TypeError(), function() { new KeywordValue("") });
+}, "Constructor should throw an error if given an empty string");
+
+//This test fails due to bug: 584999
+test(function() {
+  assert_equals(new KeywordValue('initial').cssString, 'initial');
+  assert_equals(new KeywordValue('center').cssString, 'center');
+  assert_equals(new KeywordValue('customLemon').cssString, 'customLemon');
+  assert_equals(new KeywordValue(' Hello World').cssString, CSS.escape(' Hello World'));
+  assert_equals(new KeywordValue('3').cssString, CSS.escape('3'));
+}, 'cssString returns a string with a format similar to CSS.escape. This test also ' +
+    'implies that toCSSValue supports all keywords including custom identifiers');
+
+test(function() {
+  assert_equals(new KeywordValue('initial').keywordValue, 'initial');
+  assert_equals(new KeywordValue('center').keywordValue, 'center');
+  assert_equals(new KeywordValue('customLemon').keywordValue, 'customLemon');
+  assert_equals(new KeywordValue(' Hello World').keywordValue, ' Hello World');
+  assert_equals(new KeywordValue('3').keywordValue, '3');
+}, 'keywordValue returns a string equal to the string used in the constructor');
+
+</script>
+<body>
+</body>
