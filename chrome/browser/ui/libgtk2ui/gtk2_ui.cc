@@ -1108,15 +1108,9 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
       return bitmap;
     }
 
-    // TODO(erg): We list both the normal and *_DESKTOP versions of these
-    // images because in some contexts, we don't go through the
-    // chrome::MapThemeImage interface. That should be fixed, but tracking that
-    // down is Hard.
     case IDR_THEME_TAB_BACKGROUND:
-    case IDR_THEME_TAB_BACKGROUND_DESKTOP:
       return GenerateTabImage(IDR_THEME_FRAME);
     case IDR_THEME_TAB_BACKGROUND_INCOGNITO:
-    case IDR_THEME_TAB_BACKGROUND_INCOGNITO_DESKTOP:
       return GenerateTabImage(IDR_THEME_FRAME_INCOGNITO);
     case IDR_FRAME:
     case IDR_THEME_FRAME:

@@ -522,9 +522,6 @@
         </if>
         <if expr="use_ash">
           <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="common/ash/otr_icon.png" />
-          <if expr="not chromeos">
-            <structure type="chrome_scaled_image" name="IDR_OTR_ICON_DESKTOP" file="common/otr_icon.png" />
-          </if>
         </if>
       </if>
       <if expr="is_macosx or is_ios">
@@ -854,12 +851,6 @@
         <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="common/ash/theme_frame_inactive.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO" file="common/ash/theme_frame_incognito_active.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="common/ash/theme_frame_incognito_inactive.png" />
-        <if expr="not chromeos">
-          <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_DESKTOP" file="theme_frame.png" />
-          <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE_DESKTOP" file="theme_frame_inactive.png" />
-          <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_DESKTOP" file="theme_frame_incognito.png" />
-          <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE_DESKTOP" file="theme_frame_incognito_inactive.png" />
-        </if>
       </if>
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY_INACTIVE" file="notused.png" />
@@ -873,10 +864,6 @@
         <!-- Ash has gray tab backgrounds, Windows uses blue. -->
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="common/ash/theme_default_inactive.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="common/ash/theme_default_inactive.png" />
-        <if expr="not chromeos">
-          <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_DESKTOP" file="theme_tab_background.png" />
-          <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO_DESKTOP" file="theme_tab_background_incognito.png" />
-        </if>
       </if>
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="mac/theme_default_inactive.png" />
@@ -892,9 +879,6 @@
       <if expr="use_ash">
         <!-- Ash has a dark gray toolbar background, Windows has light gray. -->
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="common/ash/theme_default_active.png" />
-        <if expr="not chromeos">
-          <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_DESKTOP" file="theme_toolbar_default.png" />
-        </if>
       </if>
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="mac/theme_default_active.png" />
