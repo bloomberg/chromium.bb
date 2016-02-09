@@ -27,6 +27,12 @@ recordPanelShown:
 {
     audits : 7
     console : 8
+    drawer-animations : 11
+    drawer-console : 10
+    drawer-network.config : 12
+    drawer-rendering : 13
+    drawer-sensors : 14
+    drawer-sources.search : 15
     elements : 1
     layers : 9
     network : 3
