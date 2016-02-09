@@ -7,6 +7,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
@@ -420,6 +421,12 @@ void DefaultDisplayManager::OnAcceleratedWidgetDestroyed() {
 }
 
 void DefaultDisplayManager::OnActivationChanged(bool active) {}
+
+void DefaultDisplayManager::RequestCopyOfOutput(
+    scoped_ptr<cc::CopyOutputRequest> output_request) {
+  if (top_level_display_client_)
+    top_level_display_client_->RequestCopyOfOutput(std::move(output_request));
+}
 
 }  // namespace ws
 

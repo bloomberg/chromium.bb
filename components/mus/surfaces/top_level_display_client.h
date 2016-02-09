@@ -13,6 +13,7 @@
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "components/mus/gles2/gpu_state.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
 #include "components/mus/surfaces/surfaces_context_provider_delegate.h"
 #include "components/mus/surfaces/surfaces_state.h"
@@ -20,6 +21,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace cc {
+class CopyOutputResult;
 class Display;
 class DisplayScheduler;
 class SurfaceFactory;
@@ -46,6 +48,8 @@ class TopLevelDisplayClient : public cc::DisplayClient,
   void SubmitCompositorFrame(scoped_ptr<cc::CompositorFrame> frame,
                              const base::Closure& callback);
   const cc::SurfaceId& surface_id() const { return cc_id_; }
+
+  void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> output_request);
 
  private:
   // DisplayClient implementation.

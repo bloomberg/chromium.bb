@@ -6,6 +6,7 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
@@ -79,6 +80,11 @@ void TopLevelDisplayClient::SubmitCompositorFrame(
   display_->Resize(last_submitted_frame_size_);
   factory_.SubmitCompositorFrame(cc_id_, std::move(pending_frame_),
                                  base::Bind(&CallCallback, callback));
+}
+
+void TopLevelDisplayClient::RequestCopyOfOutput(
+    scoped_ptr<cc::CopyOutputRequest> output_request) {
+  factory_.RequestCopyOfSurface(cc_id_, std::move(output_request));
 }
 
 void TopLevelDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,

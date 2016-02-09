@@ -143,6 +143,7 @@ test("window_manager_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_config",
+    "//cc:cc",
     "//components/mus/common",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "cc/output/copy_output_request.h"
 #include "components/mus/common/types.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -330,6 +331,8 @@ class TestDisplayManager : public DisplayManager {
   void UpdateTextInputState(const ui::TextInputState& state) override {}
   void SetImeVisibility(bool visible) override {}
   bool IsFramePending() const override { return false; }
+  void RequestCopyOfOutput(
+      scoped_ptr<cc::CopyOutputRequest> output_request) override {}
 
  private:
   mojom::ViewportMetrics display_metrices_;
