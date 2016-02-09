@@ -72,10 +72,9 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   request_time_ = base::Time::Now();
   priority_ = priority;
 
-  SSLInfo ssl_info;
-  bool success = session_->GetSSLInfo(&ssl_info);
+  bool success = session_->GetSSLInfo(&ssl_info_);
   DCHECK(success);
-  DCHECK(ssl_info.cert.get());
+  DCHECK(ssl_info_.cert.get());
 
   int rv = stream_request_.StartRequest(
       session_, &stream_,

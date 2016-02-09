@@ -505,11 +505,15 @@ TEST_P(QuicHttpStreamTest, GetSSLInfoAfterSessionClosed) {
                                           callback_.callback()));
 
   SSLInfo ssl_info;
+  EXPECT_FALSE(ssl_info.is_valid());
   stream_->GetSSLInfo(&ssl_info);
+  EXPECT_TRUE(ssl_info.is_valid());
 
   session_->connection()->CloseConnection(QUIC_NO_ERROR, true);
 
-  stream_->GetSSLInfo(&ssl_info);
+  SSLInfo ssl_info2;
+  stream_->GetSSLInfo(&ssl_info2);
+  EXPECT_TRUE(ssl_info2.is_valid());
 }
 
 TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
