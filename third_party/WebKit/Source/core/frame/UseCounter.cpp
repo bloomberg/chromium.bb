@@ -863,12 +863,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PictureSourceSrc:
         return "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.";
 
-    case XHRProgressEventPosition:
-        return replacedWillBeRemoved("The XMLHttpRequest progress event property 'position'", "'loaded'", 50, "5044837464145920");
-
-    case XHRProgressEventTotalSize:
-        return replacedWillBeRemoved("The XMLHttpRequest progress event property 'totalSize'", "'total'", 50, "5044837464145920");
-
     case ConsoleTimeline:
         return replacedBy("'console.timeline'", "'console.time'");
 

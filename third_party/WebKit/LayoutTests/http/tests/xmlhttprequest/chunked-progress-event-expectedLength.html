@@ -33,11 +33,11 @@ function test()
         if (e.loaded == 4 && e.total == 0 && !e.lengthComputable)
             log("PASS");
         else if (e.total != 0 && !e.lengthComputable)
-            log("FAIL: XMLHttpRequestProgressEvent lengthComputable=false but total is non-zero: " + e.total);
+            log("FAIL: ProgressEvent lengthComputable=false but total is non-zero: " + e.total);
     }
 
     xhr.onreadystatechange = function(e) {
-        if (xhr.readyState == xhr.DONE) 
+        if (xhr.readyState == xhr.DONE)
         {
             if (window.testRunner)
                 testRunner.notifyDone();

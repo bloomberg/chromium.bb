@@ -157,12 +157,6 @@
     shouldBeTrue("document.createEvent('WheelEvent') instanceof window.Event");
     shouldBeTrue("document.createEvent('WheelEvent').constructor === window.WheelEvent");
 
-    // XMLHttpRequestProgressEvent
-    shouldBeTrue("document.createEvent('XMLHttpRequestProgressEvent') instanceof window.XMLHttpRequestProgressEvent");
-    shouldBeTrue("document.createEvent('XMLHttpRequestProgressEvent') instanceof window.ProgressEvent");
-    shouldBeTrue("document.createEvent('XMLHttpRequestProgressEvent') instanceof window.Event");
-    shouldBeTrue("document.createEvent('XMLHttpRequestProgressEvent').constructor === window.XMLHttpRequestProgressEvent");
-
     // StorageEvent
     shouldBeTrue("document.createEvent('StorageEvent') instanceof window.StorageEvent");
     shouldBeTrue("document.createEvent('StorageEvent') instanceof window.Event");

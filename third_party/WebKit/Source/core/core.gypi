@@ -395,7 +395,6 @@
             'xml/XSLTProcessor.idl',
             'xmlhttprequest/XMLHttpRequest.idl',
             'xmlhttprequest/XMLHttpRequestEventTarget.idl',
-            'xmlhttprequest/XMLHttpRequestProgressEvent.idl',
             'xmlhttprequest/XMLHttpRequestUpload.idl',
         ],
         # core IDL files that have partial interfaces in modules.
@@ -494,7 +493,6 @@
             'html/MediaKeyEvent.idl',
             'html/track/TrackEvent.idl',
             'svg/SVGZoomEvent.idl',
-            'xmlhttprequest/XMLHttpRequestProgressEvent.idl',
         ],
         # IDL files that only have typedefs/enums.
         'core_typedefs_enums_only_idl_files': [
@@ -2312,7 +2310,6 @@
             'xmlhttprequest/XMLHttpRequest.cpp',
             'xmlhttprequest/XMLHttpRequest.h',
             'xmlhttprequest/XMLHttpRequestEventTarget.h',
-            'xmlhttprequest/XMLHttpRequestProgressEvent.h',
             'xmlhttprequest/XMLHttpRequestProgressEventThrottle.cpp',
             'xmlhttprequest/XMLHttpRequestProgressEventThrottle.h',
             'xmlhttprequest/XMLHttpRequestUpload.cpp',

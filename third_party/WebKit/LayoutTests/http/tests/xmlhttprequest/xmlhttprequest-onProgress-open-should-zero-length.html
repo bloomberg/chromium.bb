@@ -14,7 +14,7 @@ function log (msg)
 }
 
 function onProgress(e) {
-    if (e.position >= resourceSize / 4) {
+    if (e.loaded >= resourceSize / 4) {
         // We want to restart the XMLHttpRequest to see if the count is updated
         var xhr = e.target;
         xhr.onprogress = onProgressTest;
@@ -25,7 +25,7 @@ function onProgress(e) {
 }
 
 function onProgressTest(e) {
-    lastPosition = e.position;
+    lastPosition = e.loaded;
 }
 
 function onReadyStateChange() {

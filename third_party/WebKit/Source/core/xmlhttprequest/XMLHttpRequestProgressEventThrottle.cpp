@@ -27,10 +27,10 @@
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 
 #include "core/EventTypeNames.h"
+#include "core/events/ProgressEvent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
-#include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 
@@ -63,7 +63,7 @@ PassRefPtrWillBeRawPtr<Event> XMLHttpRequestProgressEventThrottle::DeferredEvent
 {
     ASSERT(m_isSet);
 
-    RefPtrWillBeRawPtr<Event> event = XMLHttpRequestProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
+    RefPtrWillBeRawPtr<Event> event = ProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
     clear();
     return event.release();
 }
@@ -86,14 +86,14 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
     // Given that ResourceDispatcher doesn't deliver an event when suspended,
     // we don't have to worry about event dispatching while suspended.
     if (type != EventTypeNames::progress) {
-        m_target->dispatchEvent(XMLHttpRequestProgressEvent::create(type, lengthComputable, loaded, total));
+        m_target->dispatchEvent(ProgressEvent::create(type, lengthComputable, loaded, total));
         return;
     }
 
     if (isActive()) {
         m_deferred.set(lengthComputable, loaded, total);
     } else {
-        dispatchProgressProgressEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, lengthComputable, loaded, total));
+        dispatchProgressProgressEvent(ProgressEvent::create(EventTypeNames::progress, lengthComputable, loaded, total));
         startOneShot(minimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
     }
 }

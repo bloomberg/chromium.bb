@@ -1,4 +1,3 @@
-CONSOLE WARNING: The XMLHttpRequest progress event property 'position' is deprecated and will be removed in M50, around April 2016. Please use 'loaded' instead. See https://www.chromestatus.com/features/5044837464145920 for more details.
 Verify that XMLHttpRequest.open resets received size.
 
 You should see PASSED once.

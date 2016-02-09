@@ -5366,10 +5366,6 @@ interface XMLHttpRequestEventTarget : EventTarget
     setter onloadstart
     setter onprogress
     setter ontimeout
-interface XMLHttpRequestProgressEvent : ProgressEvent
-    getter position
-    getter totalSize
-    method constructor
 interface XMLHttpRequestUpload : XMLHttpRequestEventTarget
     method constructor
 interface XMLSerializer

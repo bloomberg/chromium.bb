@@ -279,8 +279,6 @@ public:
         NamedNodeMapGetNamedItemNS = 310,
         NamedNodeMapSetNamedItemNS = 311,
         NamedNodeMapRemoveNamedItemNS = 312,
-        XHRProgressEventPosition = 316,
-        XHRProgressEventTotalSize = 317,
         PrefixedDocumentIsFullscreen = 318,
         PrefixedDocumentCurrentFullScreenElement = 320,
         PrefixedDocumentCancelFullScreen = 321,

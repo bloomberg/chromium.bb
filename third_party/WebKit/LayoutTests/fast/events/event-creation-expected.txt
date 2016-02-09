@@ -105,10 +105,6 @@ PASS document.createEvent('WheelEvent') instanceof window.MouseEvent is true
 PASS document.createEvent('WheelEvent') instanceof window.UIEvent is true
 PASS document.createEvent('WheelEvent') instanceof window.Event is true
 PASS document.createEvent('WheelEvent').constructor === window.WheelEvent is true
-PASS document.createEvent('XMLHttpRequestProgressEvent') instanceof window.XMLHttpRequestProgressEvent is true
-PASS document.createEvent('XMLHttpRequestProgressEvent') instanceof window.ProgressEvent is true
-PASS document.createEvent('XMLHttpRequestProgressEvent') instanceof window.Event is true
-PASS document.createEvent('XMLHttpRequestProgressEvent').constructor === window.XMLHttpRequestProgressEvent is true
 PASS document.createEvent('StorageEvent') instanceof window.StorageEvent is true
 PASS document.createEvent('StorageEvent') instanceof window.Event is true
 PASS document.createEvent('StorageEvent').constructor === window.StorageEvent is true
