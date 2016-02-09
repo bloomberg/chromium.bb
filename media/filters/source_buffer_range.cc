@@ -98,7 +98,8 @@ void SourceBufferRange::Seek(DecodeTimestamp timestamp) {
 
   KeyframeMap::iterator result = GetFirstKeyframeAtOrBefore(timestamp);
   next_buffer_index_ = result->second - keyframe_map_index_base_;
-  DCHECK_LT(next_buffer_index_, static_cast<int>(buffers_.size()));
+  CHECK_LT(next_buffer_index_, static_cast<int>(buffers_.size()))
+      << next_buffer_index_ << ", size = " << buffers_.size();
 }
 
 void SourceBufferRange::SeekAheadTo(DecodeTimestamp timestamp) {
@@ -127,7 +128,7 @@ void SourceBufferRange::SeekAhead(DecodeTimestamp timestamp,
 }
 
 void SourceBufferRange::SeekToStart() {
-  DCHECK(!buffers_.empty());
+  CHECK(!buffers_.empty());
   next_buffer_index_ = 0;
 }
 
@@ -173,6 +174,8 @@ SourceBufferRange* SourceBufferRange::SplitRange(DecodeTimestamp timestamp) {
   // this range and |split_range| accordingly.
   if (next_buffer_index_ >= static_cast<int>(buffers_.size())) {
     split_range->next_buffer_index_ = next_buffer_index_ - keyframe_index;
+    CHECK_GE(split_range->next_buffer_index_, 0)
+        << split_range->next_buffer_index_;
     ResetNextBufferPosition();
   }
 
@@ -263,7 +266,8 @@ size_t SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
 
   if (next_buffer_index_ > -1) {
     next_buffer_index_ -= buffers_deleted;
-    DCHECK_GE(next_buffer_index_, 0);
+    CHECK_GE(next_buffer_index_, 0) << next_buffer_index_ << ", deleted "
+                                    << buffers_deleted;
   }
 
   // Invalidate media segment start time if we've deleted the first buffer of
@@ -443,15 +447,16 @@ bool SourceBufferRange::HasNextBuffer() const {
 }
 
 int SourceBufferRange::GetNextConfigId() const {
-  DCHECK(HasNextBuffer());
+  CHECK(HasNextBuffer()) << next_buffer_index_;
   // If the next buffer is an audio splice frame, the next effective config id
   // comes from the first fade out preroll buffer.
   return buffers_[next_buffer_index_]->GetSpliceBufferConfigId(0);
 }
 
 DecodeTimestamp SourceBufferRange::GetNextTimestamp() const {
-  DCHECK(!buffers_.empty());
-  DCHECK(HasNextBufferPosition());
+  CHECK(!buffers_.empty()) << next_buffer_index_;
+  CHECK(HasNextBufferPosition()) << next_buffer_index_
+                                 << ", size=" << buffers_.size();
 
   if (next_buffer_index_ >= static_cast<int>(buffers_.size())) {
     return kNoDecodeTimestamp();
