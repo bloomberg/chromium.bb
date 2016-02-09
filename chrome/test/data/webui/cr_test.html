@@ -262,24 +262,6 @@ function testDefineWithGetter() {
   v = 1;
   assertEquals(1, foo.v);
 }
-
-/**
- * Tests that an event fired by a WebUI handler is sent to all listeners.
- */
-function testAddWebUIListener() {
-  var responses = new Map();
-  cr.addWebUIListener('fullscreen-enabled', function(enabled) {
-    responses.set('first', enabled);
-  });
-  cr.addWebUIListener('fullscreen-enabled', function(enabled) {
-    responses.set('second', enabled);
-  });
-
-  cr.webUIListenerCallback('fullscreen-enabled', true);
-  assertTrue(responses.get('first'));
-  assertTrue(responses.get('second'));
-}
-
 </script>
 
 </body>

@@ -52,7 +52,7 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
     });
   }
 
-  suite('cr.js', function() {
+  suite('SendWithPromise', function() {
     setup(function() {
       // Simulate a WebUI handler that echoes back all parameters passed to it.
       whenChromeSendCalled(CHROME_SEND_NAME).then(function(args) {
@@ -90,6 +90,84 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
       return cr.sendWithPromise(CHROME_SEND_NAME).then(function(response) {
         assertEquals(undefined, response);
       });
+    });
+  });
+
+  // Run all registered tests.
+  mocha.run();
+});
+
+
+TEST_F('WebUIResourceAsyncTest', 'WebUIListeners', function() {
+  suite('WebUIListeners', function() {
+    var listener1 = null;
+    var listener2 = null;
+
+    /** @const {string} */
+    var EVENT_NAME = 'my-foo-event';
+
+    teardown(function() {
+      if (listener1)
+        cr.removeWebUIListener(listener1);
+      if (listener2)
+        cr.removeWebUIListener(listener2);
+    });
+
+    test('removeWebUIListener', function() {
+      listener1 = cr.addWebUIListener(EVENT_NAME, function() {});
+      assertTrue(cr.removeWebUIListener(listener1));
+      assertFalse(cr.removeWebUIListener(listener1));
+      assertFalse(cr.removeWebUIListener({
+        eventName: 'non-existing-event',
+        uid: 12345,
+      }));
+    });
+
+    test('addWebUIListener_ResponseParams', function() {
+      var expectedString = 'foo';
+      var expectedNumber = 123;
+      var expectedArray = [1, 2];
+      var expectedObject = {};
+
+      return new Promise(function(resolve, reject) {
+        listener1 = cr.addWebUIListener(EVENT_NAME, function(s, n, a, o) {
+          assertEquals(expectedString, s);
+          assertEquals(expectedNumber, n);
+          assertEquals(expectedArray, a);
+          assertEquals(expectedObject, o);
+          resolve();
+        });
+        cr.webUIListenerCallback(EVENT_NAME, expectedString, expectedNumber,
+            expectedArray, expectedObject);
+      });
+    });
+
+    test('addWebUIListener_NoResponseParams', function() {
+      return new Promise(function(resolve, reject) {
+        listener1 = cr.addWebUIListener(EVENT_NAME, function() {
+          assertEquals(0, arguments.length);
+          resolve();
+        });
+        cr.webUIListenerCallback(EVENT_NAME);
+      });
+    });
+
+    test('addWebUIListener_MulitpleListeners', function() {
+      /** @constructor */
+      var PromiseResolver = function() {
+        this.promise = new Promise(function(resolve, reject) {
+          this.resolve = resolve;
+          this.reject = reject;
+        }.bind(this));
+      };
+
+      var resolver1 = new PromiseResolver();
+      var resolver2 = new PromiseResolver();
+      listener1 = cr.addWebUIListener(EVENT_NAME, resolver1.resolve);
+      listener2 = cr.addWebUIListener(EVENT_NAME, resolver2.resolve);
+      cr.webUIListenerCallback(EVENT_NAME);
+      // Check that both listeners registered are invoked.
+      return Promise.all([resolver1.promise, resolver2.promise]);
     });
   });
 
