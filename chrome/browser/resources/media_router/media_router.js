@@ -39,7 +39,6 @@ cr.define('media_router', function() {
     container.addEventListener('close-route-click', onCloseRouteClick);
     container.addEventListener('create-route', onCreateRoute);
     container.addEventListener('issue-action-click', onIssueActionClick);
-    container.addEventListener('join-route-click', onJoinRouteClick);
     container.addEventListener('navigate-sink-list-to-details',
                                onNavigateToDetails);
     container.addEventListener('navigate-to-cast-mode-list',
@@ -53,6 +52,8 @@ cr.define('media_router', function() {
     container.addEventListener('report-sink-count', onSinkCountReported);
     container.addEventListener('show-initial-state', onShowInitialState);
     container.addEventListener('sink-click', onSinkClick);
+    container.addEventListener('start-casting-to-route-click',
+                               onStartCastingToRouteClick);
 
     // Pressing the ESC key closes the dialog.
     document.addEventListener('keydown', function(e) {
@@ -184,14 +185,14 @@ cr.define('media_router', function() {
   }
 
   /**
-   * Joins a route.
-   * Called when the user requests to join a media route.
+   * Starts casting to an existing route.
+   * Called when the user requests to start casting to a media route.
    *
    * @param {!Event} event
    * Parameters in |event|.detail:
-   *   route - route to join.
+   *   route - The route to connect to if possible.
    */
-  function onJoinRouteClick(event) {
+  function onStartCastingToRouteClick(event) {
     /** @type {{route: !media_router.Route}} */
     var detail = event.detail;
     media_router.browserApi.joinRoute(detail.route);

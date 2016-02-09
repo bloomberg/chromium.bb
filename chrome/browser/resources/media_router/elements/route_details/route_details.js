@@ -28,13 +28,13 @@ Polymer({
     },
 
     /**
-     * The text for the join button.
+     * The text for the start casting button.
      * @private {string}
      */
-    joinButtonText_: {
+    startCastingButtonText_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('joinButton'),
+      value: loadTimeData.getString('startCastingButton'),
     },
 
     /**
@@ -44,9 +44,7 @@ Polymer({
     stopCastingButtonText_: {
       type: String,
       readOnly: true,
-      value: function() {
-        return loadTimeData.getString('stopCastingButton');
-      },
+      value: function() { return loadTimeData.getString('stopCastingButton'); },
     },
 
     /**
@@ -72,13 +70,13 @@ Polymer({
   },
 
   /**
-   * Fires a join-route-click event. This is called when the button to join
-   * the current route is clicked.
+   * Fires a start-casting-to-route-click event. This is called when the button
+   * to start casting to the current route is clicked.
    *
    * @private
    */
-  joinRoute_: function() {
-    this.fire('join-route-click', {route: this.route});
+  startCastingToRoute_: function() {
+    this.fire('start-casting-to-route-click', {route: this.route});
   },
 
   /**

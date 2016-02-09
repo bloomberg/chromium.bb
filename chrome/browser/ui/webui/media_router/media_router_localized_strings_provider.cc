@@ -22,8 +22,8 @@ void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
       IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS);
   html_source->AddLocalizedString("stopCastingButton",
       IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON);
-  html_source->AddLocalizedString("joinButton",
-      IDS_MEDIA_ROUTER_JOIN_BUTTON);
+  html_source->AddLocalizedString("startCastingButton",
+                                  IDS_MEDIA_ROUTER_START_CASTING_BUTTON);
 }
 
 void AddIssuesStrings(content::WebUIDataSource* html_source) {

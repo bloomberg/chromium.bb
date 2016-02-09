@@ -106,11 +106,11 @@
   <message name="IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS" desc="Label of activity status, which describes the media that is currently being casted.">
     Casting: <ph name="routeTitle">$1<ex>Video</ex></ph>
   </message>
-  <message name="IDS_MEDIA_ROUTER_JOIN_BUTTON" desc="Join button, which, on click, will join the current route.">
-    Join
+  <message name="IDS_MEDIA_ROUTER_START_CASTING_BUTTON" desc="Start casting button, which, on click, will start casting to the current route.">
+    Cast
   </message>
   <message name="IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON" desc="Stop casting button, which, on click, will stop the current route.">
-    Stop casting
+    Stop
   </message>
 
   <!-- Sink List -->

@@ -38,13 +38,15 @@ cr.define('route_details', function() {
       };
 
       // Checks the default route view is shown.
-      var checkJoinButtonIsShown = function() {
-        assertFalse(details.$['join-route-button'].hasAttribute('hidden'));
+      var checkStartCastButtonIsShown = function() {
+        assertFalse(
+            details.$['start-casting-to-route-button'].hasAttribute('hidden'));
       };
 
       // Checks the default route view is not shown.
-      var checkJoinButtonIsNotShown = function() {
-        assertTrue(details.$['join-route-button'].hasAttribute('hidden'));
+      var checkStartCastButtonIsNotShown = function() {
+        assertTrue(
+            details.$['start-casting-to-route-button'].hasAttribute('hidden'));
       };
 
       // Checks the custom controller is shown.
@@ -92,13 +94,12 @@ cr.define('route_details', function() {
         MockInteractions.tap(details.$['close-route-button']);
       });
 
-      // Tests for 'join-route-click' event firing when the
-      // 'join-route-button' button is clicked.
-      test('join route button click', function(done) {
-        details.addEventListener('join-route-click', function() {
-          done();
-        });
-        MockInteractions.tap(details.$['join-route-button']);
+      // Tests for 'start-casting-to-route-click' event firing when the
+      // 'start-casting-to-route-button' button is clicked.
+      test('start casting to route button click', function(done) {
+        details.addEventListener(
+            'start-casting-to-route-click', function() { done(); });
+        MockInteractions.tap(details.$['start-casting-to-route-button']);
       });
 
       // Tests the initial expected text.
@@ -106,8 +107,9 @@ cr.define('route_details', function() {
         // <paper-button> text is styled as upper case.
         checkSpanText(loadTimeData.getString('stopCastingButton')
             .toUpperCase(), 'close-route-button');
-        checkSpanText(loadTimeData.getString('joinButton'),
-            'join-route-button');
+        checkSpanText(
+            loadTimeData.getString('startCastingButton'),
+            'start-casting-to-route-button');
         checkSpanText('', 'route-information');
       });
 
@@ -123,7 +125,7 @@ cr.define('route_details', function() {
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
             fakeRouteOne.description), 'route-information');
         checkDefaultViewIsShown();
-        checkJoinButtonIsNotShown();
+        checkStartCastButtonIsNotShown();
 
         // Set |route| to a different route.
         details.route = fakeRouteTwo;
@@ -131,7 +133,7 @@ cr.define('route_details', function() {
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
             fakeRouteTwo.description), 'route-information');
         checkDefaultViewIsShown();
-        checkJoinButtonIsShown();
+        checkStartCastButtonIsShown();
       });
 
       // Tests when |route| exists, has a custom controller, and it loads.

@@ -9,10 +9,6 @@
   width: 100%;
 }
 
-#join-route-button {
-  @apply(--layout-flex);
-}
-
 #route-action-buttons {
   @apply(--layout-horizontal);
   @apply(--layout-end-justified);
@@ -39,3 +35,8 @@
   margin-top: 16px;
   overflow: hidden;
 }
+
+#start-casting-to-route-button {
+  @apply(--layout-flex);
+}
+
