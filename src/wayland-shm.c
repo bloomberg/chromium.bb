@@ -56,6 +56,7 @@ struct wl_shm_pool {
 	int external_refcount;
 	char *data;
 	int32_t size;
+	int32_t new_size;
 };
 
 struct wl_shm_buffer {
@@ -74,12 +75,35 @@ struct wl_shm_sigbus_data {
 };
 
 static void
+shm_pool_finish_resize(struct wl_shm_pool *pool)
+{
+	void *data;
+
+	if (pool->size == pool->new_size)
+		return;
+
+	data = mremap(pool->data, pool->size, pool->new_size, MREMAP_MAYMOVE);
+	if (data == MAP_FAILED) {
+		wl_resource_post_error(pool->resource,
+				       WL_SHM_ERROR_INVALID_FD,
+				       "failed mremap");
+		return;
+	}
+
+	pool->data = data;
+	pool->size = pool->new_size;
+}
+
+static void
 shm_pool_unref(struct wl_shm_pool *pool, bool external)
 {
-	if (external)
+	if (external) {
 		pool->external_refcount--;
-	else
+		if (pool->external_refcount == 0)
+			shm_pool_finish_resize(pool);
+	} else {
 		pool->internal_refcount--;
+	}
 
 	if (pool->internal_refcount + pool->external_refcount)
 		return;
@@ -202,7 +226,6 @@ shm_pool_resize(struct wl_client *client, struct wl_resource *resource,
 		int32_t size)
 {
 	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
-	void *data;
 
 	if (size < pool->size) {
 		wl_resource_post_error(resource,
@@ -211,16 +234,15 @@ shm_pool_resize(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
-	data = mremap(pool->data, pool->size, size, MREMAP_MAYMOVE);
-	if (data == MAP_FAILED) {
-		wl_resource_post_error(resource,
-				       WL_SHM_ERROR_INVALID_FD,
-				       "failed mremap");
-		return;
-	}
+	pool->new_size = size;
 
-	pool->data = data;
-	pool->size = size;
+	/* If the compositor has taken references on this pool it
+	 * may be caching pointers into it. In that case we
+	 * defer the resize (which may move the entire mapping)
+	 * until the compositor finishes dereferencing the pool.
+	 */
+	if (pool->external_refcount == 0)
+		shm_pool_finish_resize(pool);
 }
 
 struct wl_shm_pool_interface shm_pool_interface = {
@@ -251,6 +273,7 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	pool->internal_refcount = 1;
 	pool->external_refcount = 0;
 	pool->size = size;
+	pool->new_size = size;
 	pool->data = mmap(NULL, size,
 			  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (pool->data == MAP_FAILED) {
