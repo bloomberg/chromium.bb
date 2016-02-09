@@ -71,70 +71,24 @@ class ChildProcessHost {
   void ExitNow(int32_t exit_code);
 
  protected:
-  void DidStart();
+  void DidStart(const ProcessReadyCallback& callback);
 
  private:
-  // A thread-safe holder for the bootstrap message pipe to this child process.
-  // The pipe is established on an arbitrary thread and may not be connected
-  // until the host's message loop has stopped running.
-  class PipeHolder : public base::RefCountedThreadSafe<PipeHolder> {
-   public:
-    PipeHolder();
-
-    void Reject();
-    void SetPipe(ScopedMessagePipeHandle pipe);
-    ScopedMessagePipeHandle PassPipe();
-
-   private:
-    friend class base::RefCountedThreadSafe<PipeHolder>;
-
-    ~PipeHolder();
-
-    base::Lock lock_;
-    bool reject_pipe_ = false;
-    ScopedMessagePipeHandle pipe_;
-
-    DISALLOW_COPY_AND_ASSIGN(PipeHolder);
-  };
-
   void DoLaunch();
 
   void AppCompleted(int32_t result);
-
-  // Callback for |embedder::CreateChannel()|.
-  void DidCreateChannel(embedder::ChannelInfo* channel_info);
-
-  // Called once |pipe_holder_| is bound to a pipe.
-  void OnMessagePipeCreated();
-
-  // Called when the child process is launched and when the bootstrap
-  // message pipe is created. Once both things have happened (which may happen
-  // in either order), |process_ready_callback_| is invoked.
-  void MaybeNotifyProcessReady();
-
-  // Callback used to receive the child message pipe from the ports EDK.
-  // This may be called on any thread. It will always stash the pipe in
-  // |holder|, and it will then attempt to call |callback| on
-  // |callback_task_runner| (which may or may not still be running tasks.)
-  static void OnParentMessagePipeCreated(
-      scoped_refptr<PipeHolder> holder,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
-      const base::Closure& callback,
-      ScopedMessagePipeHandle pipe);
 
   scoped_refptr<base::TaskRunner> launch_process_runner_;
   bool start_sandboxed_;
   const base::FilePath app_path_;
   base::Process child_process_;
   // Used for the ChildController binding.
-  embedder::PlatformChannelPair platform_channel_pair_;
+  edk::PlatformChannelPair platform_channel_pair_;
   mojom::ChildControllerPtr controller_;
-  embedder::ChannelInfo* channel_info_;
   mojom::ChildController::StartAppCallback on_app_complete_;
-  embedder::HandlePassingInformation handle_passing_info_;
+  edk::HandlePassingInformation handle_passing_info_;
 
-  // Used only when --use-new-edk is specified. Used to back the NodeChannel
-  // between the parent and child node.
+  // Used to back the NodeChannel between the parent and child node.
   scoped_ptr<edk::PlatformChannelPair> node_channel_;
 
   // Since Start() calls a method on another thread, we use an event to block
@@ -143,14 +97,6 @@ class ChildProcessHost {
 
   // A token the child can use to connect a primordial pipe to the host.
   std::string primordial_pipe_token_;
-
-  // Holds the message pipe to the child process until it is either closed or
-  // bound to the controller interface.
-  scoped_refptr<PipeHolder> pipe_holder_;
-
-  // Invoked exactly once, as soon as the child process's ID is known and
-  // a pipe to the child has been established.
-  ProcessReadyCallback process_ready_callback_;
 
   base::WeakPtrFactory<ChildProcessHost> weak_factory_;
 

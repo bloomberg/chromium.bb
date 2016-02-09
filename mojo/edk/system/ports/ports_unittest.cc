@@ -690,32 +690,12 @@ TEST_F(PortsTest, SendUninitialized) {
   Node node0(node0_name, &node0_delegate);
   node_map[0] = &node0;
 
-  NodeName node1_name(1, 1);
-  TestNodeDelegate node1_delegate(node1_name);
-  Node node1(node1_name, &node1_delegate);
-  node_map[1] = &node1;
-
-  // Begin to setup a pipe between node0 and node1, but don't initialize either
-  // endpoint.
-  PortRef x0, x1;
+  PortRef x0;
   EXPECT_EQ(OK, node0.CreateUninitializedPort(&x0));
-  EXPECT_EQ(OK, node1.CreateUninitializedPort(&x1));
-
-  node0_delegate.set_save_messages(true);
-  node1_delegate.set_save_messages(true);
-
-  // Send a message on each port and expect neither to arrive yet.
-
   EXPECT_EQ(ERROR_PORT_STATE_UNEXPECTED,
             SendStringMessage(&node0, x0, "oops"));
-  EXPECT_EQ(ERROR_PORT_STATE_UNEXPECTED,
-            SendStringMessage(&node1, x1, "oh well"));
-
   EXPECT_EQ(OK, node0.ClosePort(x0));
-  EXPECT_EQ(OK, node1.ClosePort(x1));
-
   EXPECT_TRUE(node0.CanShutdownCleanly(false));
-  EXPECT_TRUE(node1.CanShutdownCleanly(false));
 }
 
 TEST_F(PortsTest, SendFailure) {
@@ -1066,6 +1046,322 @@ TEST_F(PortsTest, SendWithClosedPeerSent) {
   PumpTasks();
 
   EXPECT_TRUE(node0.CanShutdownCleanly(false));
+}
+
+TEST_F(PortsTest, MergePorts) {
+  NodeName node0_name(0, 1);
+  TestNodeDelegate node0_delegate(node0_name);
+  Node node0(node0_name, &node0_delegate);
+  node_map[0] = &node0;
+
+  NodeName node1_name(1, 1);
+  TestNodeDelegate node1_delegate(node1_name);
+  Node node1(node1_name, &node1_delegate);
+  node_map[1] = &node1;
+
+  // Setup two independent port pairs, A-B on node0 and C-D on node1.
+  PortRef A, B, C, D;
+  EXPECT_EQ(OK, node0.CreatePortPair(&A, &B));
+  EXPECT_EQ(OK, node1.CreatePortPair(&C, &D));
+
+  node0_delegate.set_read_messages(false);
+  node1_delegate.set_save_messages(true);
+
+  // Write a message on A.
+  EXPECT_EQ(OK, SendStringMessage(&node0, A, "hey"));
+
+  PumpTasks();
+
+  // Initiate a merge between B and C.
+  EXPECT_EQ(OK, node0.MergePorts(B, node1_name, C.name()));
+
+  PumpTasks();
+
+  // Expect only two receiving ports to be left after pumping tasks.
+  EXPECT_TRUE(node0.CanShutdownCleanly(true));
+  EXPECT_TRUE(node1.CanShutdownCleanly(true));
+
+  // Expect D to have received the message sent on A.
+  ScopedMessage message;
+  ASSERT_TRUE(node1_delegate.GetSavedMessage(&message));
+  EXPECT_EQ(0, strcmp("hey", ToString(message)));
+
+  EXPECT_EQ(OK, node0.ClosePort(A));
+  EXPECT_EQ(OK, node1.ClosePort(D));
+
+  // No more ports should be open.
+  EXPECT_TRUE(node0.CanShutdownCleanly(false));
+  EXPECT_TRUE(node1.CanShutdownCleanly(false));
+}
+
+TEST_F(PortsTest, MergePortWithClosedPeer1) {
+  // This tests that the right thing happens when initiating a merge on a port
+  // whose peer has already been closed.
+
+  NodeName node0_name(0, 1);
+  TestNodeDelegate node0_delegate(node0_name);
+  Node node0(node0_name, &node0_delegate);
+  node_map[0] = &node0;
+
+  NodeName node1_name(1, 1);
+  TestNodeDelegate node1_delegate(node1_name);
+  Node node1(node1_name, &node1_delegate);
+  node_map[1] = &node1;
+
+  // Setup two independent port pairs, A-B on node0 and C-D on node1.
+  PortRef A, B, C, D;
+  EXPECT_EQ(OK, node0.CreatePortPair(&A, &B));
+  EXPECT_EQ(OK, node1.CreatePortPair(&C, &D));
+
+  node0_delegate.set_read_messages(false);
+  node1_delegate.set_save_messages(true);
+
+  // Write a message on A.
+  EXPECT_EQ(OK, SendStringMessage(&node0, A, "hey"));
+
+  PumpTasks();
+
+  // Close A.
+  EXPECT_EQ(OK, node0.ClosePort(A));
+
+  // Initiate a merge between B and C.
+  EXPECT_EQ(OK, node0.MergePorts(B, node1_name, C.name()));
+
+  PumpTasks();
+
+  // Expect only one receiving port to be left after pumping tasks.
+  EXPECT_TRUE(node0.CanShutdownCleanly(false));
+  EXPECT_TRUE(node1.CanShutdownCleanly(true));
+
+  // Expect D to have received the message sent on A.
+  ScopedMessage message;
+  ASSERT_TRUE(node1_delegate.GetSavedMessage(&message));
+  EXPECT_EQ(0, strcmp("hey", ToString(message)));
+
+  EXPECT_EQ(OK, node1.ClosePort(D));
+
+  // No more ports should be open.
+  EXPECT_TRUE(node0.CanShutdownCleanly(false));
+  EXPECT_TRUE(node1.CanShutdownCleanly(false));
+}
+
+TEST_F(PortsTest, MergePortWithClosedPeer2) {
+  // This tests that the right thing happens when merging into a port whose peer
+  // has already been closed.
+
+  NodeName node0_name(0, 1);
+  TestNodeDelegate node0_delegate(node0_name);
+  Node node0(node0_name, &node0_delegate);
+  node_map[0] = &node0;
+
+  NodeName node1_name(1, 1);
+  TestNodeDelegate node1_delegate(node1_name);
+  Node node1(node1_name, &node1_delegate);
+  node_map[1] = &node1;
+
+  // Setup two independent port pairs, A-B on node0 and C-D on node1.
+  PortRef A, B, C, D;
+  EXPECT_EQ(OK, node0.CreatePortPair(&A, &B));
+  EXPECT_EQ(OK, node1.CreatePortPair(&C, &D));
+
+  node0_delegate.set_save_messages(true);
+  node1_delegate.set_read_messages(false);
+
+  // Write a message on D.
+  EXPECT_EQ(OK, SendStringMessage(&node0, D, "hey"));
+
+  PumpTasks();
+
+  // Close D.
+  EXPECT_EQ(OK, node1.ClosePort(D));
+
+  // Initiate a merge between B and C.
+  EXPECT_EQ(OK, node0.MergePorts(B, node1_name, C.name()));
+
+  PumpTasks();
+
+  // Expect only one receiving port to be left after pumping tasks.
+  EXPECT_TRUE(node0.CanShutdownCleanly(true));
+  EXPECT_TRUE(node1.CanShutdownCleanly(false));
+
+  // Expect A to have received the message sent on D.
+  ScopedMessage message;
+  ASSERT_TRUE(node0_delegate.GetSavedMessage(&message));
+  EXPECT_EQ(0, strcmp("hey", ToString(message)));
+
+  EXPECT_EQ(OK, node0.ClosePort(A));
+
+  // No more ports should be open.
+  EXPECT_TRUE(node0.CanShutdownCleanly(false));
+  EXPECT_TRUE(node1.CanShutdownCleanly(false));
+}
+
+TEST_F(PortsTest, MergePortsWithClosedPeers) {
+  // This tests that no residual ports are left behind if two ports are merged
+  // when both of their peers have been closed.
+
+  NodeName node0_name(0, 1);
+  TestNodeDelegate node0_delegate(node0_name);
+  Node node0(node0_name, &node0_delegate);
+  node_map[0] = &node0;
+
+  NodeName node1_name(1, 1);
+  TestNodeDelegate node1_delegate(node1_name);
+  Node node1(node1_name, &node1_delegate);
+  node_map[1] = &node1;
+
+  // Setup two independent port pairs, A-B on node0 and C-D on node1.
+  PortRef A, B, C, D;
+  EXPECT_EQ(OK, node0.CreatePortPair(&A, &B));
+  EXPECT_EQ(OK, node1.CreatePortPair(&C, &D));
+
+  node0_delegate.set_save_messages(true);
+  node1_delegate.set_read_messages(false);
+
+  // Close A and D.
+  EXPECT_EQ(OK, node0.ClosePort(A));
+  EXPECT_EQ(OK, node1.ClosePort(D));
+
+  PumpTasks();
+
+  // Initiate a merge between B and C.
+  EXPECT_EQ(OK, node0.MergePorts(B, node1_name, C.name()));
+
+  PumpTasks();
+
+  // Expect everything to have gone away.
+  EXPECT_TRUE(node0.CanShutdownCleanly(false));
+  EXPECT_TRUE(node1.CanShutdownCleanly(false));
+}
+
+TEST_F(PortsTest, MergePortsWithMovedPeers) {
+  // This tests that no ports can be merged successfully even if their peers
+  // are moved around.
+
+  NodeName node0_name(0, 1);
+  TestNodeDelegate node0_delegate(node0_name);
+  Node node0(node0_name, &node0_delegate);
+  node_map[0] = &node0;
+
+  NodeName node1_name(1, 1);
+  TestNodeDelegate node1_delegate(node1_name);
+  Node node1(node1_name, &node1_delegate);
+  node_map[1] = &node1;
+
+  node0_delegate.set_save_messages(true);
+  node1_delegate.set_read_messages(false);
+
+  // Setup two independent port pairs, A-B on node0 and C-D on node1.
+  PortRef A, B, C, D;
+  EXPECT_EQ(OK, node0.CreatePortPair(&A, &B));
+  EXPECT_EQ(OK, node1.CreatePortPair(&C, &D));
+
+  // Set up another pair X-Y for moving ports on node0.
+  PortRef X, Y;
+  EXPECT_EQ(OK, node0.CreatePortPair(&X, &Y));
+
+  ScopedMessage message;
+
+  // Move A to new port E.
+  EXPECT_EQ(OK, SendStringMessageWithPort(&node0, X, "foo", A));
+  ASSERT_TRUE(node0_delegate.GetSavedMessage(&message));
+  ASSERT_EQ(1u, message->num_ports());
+  PortRef E;
+  ASSERT_EQ(OK, node0.GetPort(message->ports()[0], &E));
+
+  EXPECT_EQ(OK, node0.ClosePort(X));
+  EXPECT_EQ(OK, node0.ClosePort(Y));
+
+  node0_delegate.set_read_messages(false);
+
+  // Write messages on E and D.
+  EXPECT_EQ(OK, SendStringMessage(&node0, E, "hey"));
+  EXPECT_EQ(OK, SendStringMessage(&node1, D, "hi"));
+
+  // Initiate a merge between B and C.
+  EXPECT_EQ(OK, node0.MergePorts(B, node1_name, C.name()));
+
+  node0_delegate.set_read_messages(true);
+  node1_delegate.set_read_messages(true);
+  node1_delegate.set_save_messages(true);
+
+  PumpTasks();
+
+  // Expect to receive D's message on E and E's message on D.
+  ASSERT_TRUE(node0_delegate.GetSavedMessage(&message));
+  EXPECT_EQ(0, strcmp("hi", ToString(message)));
+  ASSERT_TRUE(node1_delegate.GetSavedMessage(&message));
+  EXPECT_EQ(0, strcmp("hey", ToString(message)));
+
+  // Close E and D.
+  EXPECT_EQ(OK, node0.ClosePort(E));
+  EXPECT_EQ(OK, node1.ClosePort(D));
+
+  PumpTasks();
+
+  // Expect everything to have gone away.
+  EXPECT_TRUE(node0.CanShutdownCleanly(false));
+  EXPECT_TRUE(node1.CanShutdownCleanly(false));
+}
+
+
+TEST_F(PortsTest, MergePortsFailsGracefully) {
+  // This tests that the system remains in a well-defined state if something
+  // goes wrong during port merge.
+
+  NodeName node0_name(0, 1);
+  TestNodeDelegate node0_delegate(node0_name);
+  Node node0(node0_name, &node0_delegate);
+  node_map[0] = &node0;
+
+  NodeName node1_name(1, 1);
+  TestNodeDelegate node1_delegate(node1_name);
+  Node node1(node1_name, &node1_delegate);
+  node_map[1] = &node1;
+
+  // Setup two independent port pairs, A-B on node0 and C-D on node1.
+  PortRef A, B, C, D;
+  EXPECT_EQ(OK, node0.CreatePortPair(&A, &B));
+  EXPECT_EQ(OK, node1.CreatePortPair(&C, &D));
+
+  PumpTasks();
+
+  // Initiate a merge between B and C.
+  EXPECT_EQ(OK, node0.MergePorts(B, node1_name, C.name()));
+
+  // Move C to a new port E. This is dumb and nobody should do it, but it's
+  // possible. MergePorts will fail as a result because C won't be in a
+  // receiving state when the event arrives at node1, so B should be closed.
+  ScopedMessage message;
+  PortRef X, Y;
+  EXPECT_EQ(OK, node1.CreatePortPair(&X, &Y));
+  node1_delegate.set_save_messages(true);
+  EXPECT_EQ(OK, SendStringMessageWithPort(&node1, X, "foo", C));
+  ASSERT_TRUE(node1_delegate.GetSavedMessage(&message));
+  ASSERT_EQ(1u, message->num_ports());
+  PortRef E;
+  ASSERT_EQ(OK, node1.GetPort(message->ports()[0], &E));
+  EXPECT_EQ(OK, node1.ClosePort(X));
+  EXPECT_EQ(OK, node1.ClosePort(Y));
+
+  // C goes away as a result of normal proxy removal.
+  PumpTasks();
+
+  EXPECT_EQ(ERROR_PORT_UNKNOWN, node1.GetPort(C.name(), &C));
+
+  // B should have been closed cleanly.
+  EXPECT_EQ(ERROR_PORT_UNKNOWN, node0.GetPort(B.name(), &B));
+
+  // Close A, D, and E.
+  EXPECT_EQ(OK, node0.ClosePort(A));
+  EXPECT_EQ(OK, node1.ClosePort(D));
+  EXPECT_EQ(OK, node1.ClosePort(E));
+
+  PumpTasks();
+
+  // Expect everything to have gone away.
+  EXPECT_TRUE(node0.CanShutdownCleanly(false));
+  EXPECT_TRUE(node1.CanShutdownCleanly(false));
 }
 
 }  // namespace test

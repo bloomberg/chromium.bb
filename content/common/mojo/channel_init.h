@@ -47,12 +47,6 @@ class CONTENT_EXPORT ChannelInit {
       scoped_ptr<IPC::ScopedIPCSupport> ipc_support,
       mojo::embedder::ChannelInfo* channel);
 
-  // Callback used with the new ports EDK on pipe creation.
-  void OnCreateMessagePipe(
-      scoped_ptr<IPC::ScopedIPCSupport> ipc_support,
-      const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback,
-      mojo::ScopedMessagePipeHandle pipe);
-
   // If non-null the channel has been established.
   mojo::embedder::ChannelInfo* channel_info_;
 

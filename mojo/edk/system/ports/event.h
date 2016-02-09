@@ -34,6 +34,7 @@ enum struct EventType : uint32_t {
   kObserveProxy,
   kObserveProxyAck,
   kObserveClosure,
+  kMergePort,
 };
 
 struct EventHeader {
@@ -61,6 +62,11 @@ struct ObserveProxyAckEventData {
 
 struct ObserveClosureEventData {
   uint64_t last_sequence_num;
+};
+
+struct MergePortEventData {
+  PortName new_port_name;
+  PortDescriptor new_port_descriptor;
 };
 
 inline const EventHeader* GetEventHeader(const Message& message) {

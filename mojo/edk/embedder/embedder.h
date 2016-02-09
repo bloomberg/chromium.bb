@@ -118,7 +118,12 @@ MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupportOnIOThread();
 // |OnShutdownComplete()|.
 MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport();
 
-// Unused. Crashes. Only here for linking.
+// Creates a message pipe over an arbitrary platform channel. The other end of
+// the channel must also be passed to this function. Either endpoint can be in
+// any process.
+//
+// Note that the channel is only used to negotiate pipe connection, not as the
+// transport for messages on the pipe.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateMessagePipe(ScopedPlatformHandle platform_handle);
 
@@ -128,13 +133,10 @@ CreateMessagePipe(ScopedPlatformHandle platform_handle);
 // either PreInitializeChildProcess() or SetParentPipe() must have been been
 // called at least once already.
 //
-// Note: This only exists for backwards compatibility with embedders that rely
-// on mojo::embedder::CreateChannel() behavior. If you have a means of passing
-// platform handles around, you can probably also pass strings around. If you
-// can pass strings around, use CreateParentMessagePipe() and
-// CreateChlidMessagePipe() instead (see below.)
-//
 // |callback| must be safe to call from any thread.
+//
+// DEPRECATED: Please don't use this. Use the synchronous version above. This
+// is now merely an inconvenient wrapper for that.
 MOJO_SYSTEM_IMPL_EXPORT void
 CreateMessagePipe(
     ScopedPlatformHandle platform_handle,
@@ -143,8 +145,17 @@ CreateMessagePipe(
 // Creates a message pipe from a token. A child embedder must also have this
 // token and call CreateChildMessagePipe() with it in order for the pipe to get
 // connected.
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+CreateParentMessagePipe(const std::string& token);
+
+// Creates a message pipe from a token. A child embedder must also have this
+// token and call CreateChildMessagePipe() with it in order for the pipe to get
+// connected.
 //
 // |callback| must be safe to call from any thread.
+//
+// DEPRECATED: Please don't use this. Use the synchronous version above. This
+// is now merely an inconvenient wrapper for that.
 MOJO_SYSTEM_IMPL_EXPORT void
 CreateParentMessagePipe(
     const std::string& token,
@@ -153,8 +164,17 @@ CreateParentMessagePipe(
 // Creates a message pipe from a token in a child process. The parent must also
 // have this token and call CreateParentMessagePipe() with it in order for the
 // pipe to get connected.
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+CreateChildMessagePipe(const std::string& token);
+
+// Creates a message pipe from a token in a child process. The parent must also
+// have this token and call CreateParentMessagePipe() with it in order for the
+// pipe to get connected.
 //
 // |callback| must be safe to call from any thread.
+//
+// DEPRECATED: Please don't use this. Use the synchronous version above. This
+// is now merely an inconvenient wrapper for that.
 MOJO_SYSTEM_IMPL_EXPORT void
 CreateChildMessagePipe(
     const std::string& token,

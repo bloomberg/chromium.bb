@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/test_utils.h"
@@ -1268,6 +1269,44 @@ TEST_F(MultiprocessMessagePipeTest, WriteCloseSendPeer) {
                                        MOJO_DEADLINE_INDEFINITE, nullptr));
 
     WriteMessage(h, "quit");
+  END_CHILD()
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(BootstrapMessagePipeAsyncClient,
+                                  MultiprocessMessagePipeTest, parent) {
+  // Receive one end of a platform channel from the parent.
+  MojoHandle channel_handle;
+  EXPECT_EQ("hi", ReadMessageWithHandles(parent, &channel_handle, 1));
+  ScopedPlatformHandle channel;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            edk::PassWrappedPlatformHandle(channel_handle, &channel));
+  ASSERT_TRUE(channel.is_valid());
+
+  // Create a new pipe using our end of the channel.
+  ScopedMessagePipeHandle pipe = edk::CreateMessagePipe(std::move(channel));
+
+  // Ensure that we can read and write on the new pipe.
+  VerifyEcho(pipe.get().value(), "goodbye");
+}
+
+TEST_F(MultiprocessMessagePipeTest, BootstrapMessagePipeAsync) {
+  // Tests that new cross-process message pipes can be created synchronously
+  // using asynchronous negotiation over an arbitrary platform channel.
+  RUN_CHILD_ON_PIPE(BootstrapMessagePipeAsyncClient, child)
+    // Pass one end of a platform channel to the child.
+    PlatformChannelPair platform_channel;
+    MojoHandle client_channel_handle;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              CreatePlatformHandleWrapper(platform_channel.PassClientHandle(),
+                                          &client_channel_handle));
+    WriteMessageWithHandles(child, "hi", &client_channel_handle, 1);
+
+    // Create a new pipe using our end of the channel.
+    ScopedMessagePipeHandle pipe =
+        edk::CreateMessagePipe(platform_channel.PassServerHandle());
+
+    // Ensure that we can read and write on the new pipe.
+    VerifyEcho(pipe.get().value(), "goodbye");
   END_CHILD()
 }
 
