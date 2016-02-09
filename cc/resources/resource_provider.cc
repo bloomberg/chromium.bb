@@ -1170,38 +1170,31 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
                                            TransferableResourceArray* list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
-  bool need_sync_token = false;
 
-  gpu::SyncToken new_sync_token;
-  std::vector<size_t> unverified_token_indexes;
-  for (ResourceIdArray::const_iterator it = resources.begin();
-       it != resources.end();
-       ++it) {
-    TransferableResource resource;
-    TransferResource(gl, *it, &resource);
-    need_sync_token |= (!resource.mailbox_holder.sync_token.HasData() &&
-                        !resource.is_software);
-
-    if (resource.mailbox_holder.sync_token.HasData() &&
-        !resource.mailbox_holder.sync_token.verified_flush()) {
-      unverified_token_indexes.push_back(list->size());
-    }
-
-    ++resources_.find(*it)->second.exported_count;
-    list->push_back(resource);
-  }
-
-  // Fill out unverified sync tokens array.
+  // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
-  unverified_sync_tokens.reserve(unverified_token_indexes.size() + 1);
-  for (auto it = unverified_token_indexes.begin();
-       it != unverified_token_indexes.end(); ++it) {
-    unverified_sync_tokens.push_back(
-        list->at(*it).mailbox_holder.sync_token.GetData());
+  std::vector<Resource*> need_synchronization_resources;
+  for (const ResourceId id : resources) {
+    Resource* resource = GetResource(id);
+    bool need_synchronization = CreateMailboxAndBindResource(gl, resource);
+
+    // TODO(dyen): Temporarily add missing sync tokens, eventually this should
+    // be removed as we guarantee all resources have associated sync tokens.
+    need_synchronization |= (resource->type != RESOURCE_TYPE_BITMAP &&
+                             !resource->mailbox.HasSyncToken());
+
+    if (output_surface_->capabilities().delegated_sync_points_required &&
+        need_synchronization) {
+      need_synchronization_resources.push_back(resource);
+    } else if (resource->mailbox.HasSyncToken() &&
+               !resource->mailbox.sync_token().verified_flush()) {
+      unverified_sync_tokens.push_back(resource->mailbox.GetSyncTokenData());
+    }
   }
 
-  if (need_sync_token &&
-      output_surface_->capabilities().delegated_sync_points_required) {
+  // Insert sync point to synchronize the mailbox creation or bound textures.
+  gpu::SyncToken new_sync_token;
+  if (!need_synchronization_resources.empty()) {
     const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
     gl->OrderingBarrierCHROMIUM();
     gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
@@ -1213,13 +1206,32 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
                                  unverified_sync_tokens.size());
   }
 
-  if (new_sync_token.HasData()) {
-    for (TransferableResourceArray::iterator it = list->begin();
-         it != list->end();
-         ++it) {
-      if (!it->mailbox_holder.sync_token.HasData())
-        it->mailbox_holder.sync_token = new_sync_token;
-    }
+  for (Resource* resource : need_synchronization_resources) {
+    resource->mailbox.set_sync_token(new_sync_token);
+  }
+
+  // Transfer Resources
+  for (const ResourceId id : resources) {
+    TransferableResource resource;
+    TransferResource(gl, id, &resource);
+
+    DCHECK(!output_surface_->capabilities().delegated_sync_points_required ||
+           resource.mailbox_holder.sync_token.HasData() ||
+           resource.is_software);
+
+    ++resources_.find(id)->second.exported_count;
+    list->push_back(resource);
+  }
+
+  // TODO(dyen): This is necessary because we do not guarantee all resource
+  // updates will insert sync tokens currently. Otherwise there is no way to
+  // know if a sync token is out of date or not. This can also be removed once
+  // proper resource state tracking is completed. Note that this used to be done
+  // in the TransferResource step, but will now fail if a resource is used in
+  // the same resource list twice.
+  for (const ResourceId id : resources) {
+    Resource* resource = GetResource(id);
+    resource->mailbox.set_sync_token(gpu::SyncToken());
   }
 }
 
@@ -1354,6 +1366,36 @@ void ResourceProvider::ReceiveReturnsFromParent(
   }
 }
 
+bool ResourceProvider::CreateMailboxAndBindResource(
+    gpu::gles2::GLES2Interface* gl,
+    Resource* resource) {
+  if (resource->type != RESOURCE_TYPE_BITMAP) {
+    bool did_create_or_bind = false;
+    if (!resource->mailbox.IsValid()) {
+      LazyCreate(resource);
+
+      gpu::MailboxHolder mailbox_holder;
+      mailbox_holder.texture_target = resource->target;
+      gl->GenMailboxCHROMIUM(mailbox_holder.mailbox.name);
+      gl->ProduceTextureDirectCHROMIUM(resource->gl_id,
+                                       mailbox_holder.texture_target,
+                                       mailbox_holder.mailbox.name);
+      resource->mailbox = TextureMailbox(mailbox_holder);
+      did_create_or_bind = true;
+    }
+
+    if (resource->image_id && resource->dirty_image) {
+      DCHECK(resource->gl_id);
+      DCHECK(resource->origin == Resource::INTERNAL);
+      BindImageForSampling(resource);
+      did_create_or_bind = true;
+    }
+
+    return did_create_or_bind;
+  }
+  return false;
+}
+
 void ResourceProvider::TransferResource(GLES2Interface* gl,
                                         ResourceId id,
                                         TransferableResource* resource) {
@@ -1373,33 +1415,14 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   if (source->type == RESOURCE_TYPE_BITMAP) {
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;
     resource->is_software = true;
-  } else if (!source->mailbox.IsValid()) {
-    LazyCreate(source);
-    DCHECK(source->gl_id);
-    DCHECK(source->origin == Resource::INTERNAL);
-    if (source->image_id && source->dirty_image)
-      BindImageForSampling(source);
-    // This is a resource allocated by the compositor, we need to produce it.
-    // Don't set a sync point, the caller will do it.
-    gl->GenMailboxCHROMIUM(resource->mailbox_holder.mailbox.name);
-    gl->ProduceTextureDirectCHROMIUM(source->gl_id,
-                                     resource->mailbox_holder.texture_target,
-                                     resource->mailbox_holder.mailbox.name);
-
-    source->mailbox = TextureMailbox(resource->mailbox_holder);
   } else {
+    DCHECK(source->mailbox.IsValid());
     DCHECK(source->mailbox.IsTexture());
-    if (source->image_id && source->dirty_image) {
-      DCHECK(source->gl_id);
-      DCHECK(source->origin == Resource::INTERNAL);
-      BindImageForSampling(source);
-    }
     // This is either an external resource, or a compositor resource that we
     // already exported. Make sure to forward the sync point that we were given.
     resource->mailbox_holder.mailbox = source->mailbox.mailbox();
     resource->mailbox_holder.texture_target = source->mailbox.target();
     resource->mailbox_holder.sync_token = source->mailbox.sync_token();
-    source->mailbox.set_sync_token(gpu::SyncToken());
   }
 }
 

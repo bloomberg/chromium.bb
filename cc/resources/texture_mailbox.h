@@ -39,6 +39,9 @@ class CC_EXPORT TextureMailbox {
   bool IsValid() const { return IsTexture() || IsSharedMemory(); }
   bool IsTexture() const { return !mailbox_holder_.mailbox.IsZero(); }
   bool IsSharedMemory() const { return shared_bitmap_ != NULL; }
+  bool HasSyncToken() const { return mailbox_holder_.sync_token.HasData(); }
+
+  int8_t* GetSyncTokenData() { return mailbox_holder_.sync_token.GetData(); }
 
   bool Equals(const TextureMailbox&) const;
 
