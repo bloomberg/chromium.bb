@@ -189,9 +189,7 @@
             ],
           },
           'conditions': [
-            # TODO(slan): Reenable this test for Desktop x86 when CQ supports it.
-            # (b/26429268)
-            ['use_alsa==1 and is_cast_desktop_build==0', {
+            ['use_alsa==1', {
               'dependencies': [
                 'media/media.gyp:alsa_cma_backend_unittests',
               ],

@@ -120,9 +120,7 @@ cast_test_group("cast_tests") {
     # --test-launcher-jobs=1 => so internal code can bind to port
     filters += [ "cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast --test-launcher-jobs=1" ]
 
-    # TODO(slan): Reenable this test for Desktop x86 when CQ supports it.
-    # (b/26429268)
-    if (use_alsa && !is_cast_desktop_build) {
+    if (use_alsa) {
       tests +=
           [ "//chromecast/media/cma/backend/alsa:alsa_cma_backend_unittests" ]
     }
