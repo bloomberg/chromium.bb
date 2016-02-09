@@ -28,6 +28,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/editing/commands/EditCommand.h"
+#include "core/editing/commands/EditingState.h"
 #include "core/editing/commands/UndoStep.h"
 #include "wtf/Vector.h"
 
@@ -95,8 +96,9 @@ protected:
     // sugary-sweet convenience functions to help create and apply edit commands in composite commands
     //
     void appendNode(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> parent);
-    void applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand>);
-    void applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand>, const VisibleSelection&);
+    // TODO(tkent): EditingState argument should not be optional.
+    void applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand>, EditingState* = ASSERT_NO_EDITING_ABORT);
+    void applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand>, const VisibleSelection&, EditingState* = ASSERT_NO_EDITING_ABORT);
     void applyStyle(const EditingStyle*, EditAction = EditActionChangeAttributes);
     void applyStyle(const EditingStyle*, const Position& start, const Position& end, EditAction = EditActionChangeAttributes);
     void applyStyledElement(PassRefPtrWillBeRawPtr<Element>);

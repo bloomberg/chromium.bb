@@ -53,7 +53,7 @@ public:
 private:
     explicit ReplaceNodeWithSpanCommand(PassRefPtrWillBeRawPtr<HTMLElement>);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
 
     RefPtrWillBeMember<HTMLElement> m_elementToReplace;

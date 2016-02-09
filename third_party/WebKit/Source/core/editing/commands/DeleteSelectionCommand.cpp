@@ -784,7 +784,7 @@ void DeleteSelectionCommand::removeRedundantBlocks()
     }
 }
 
-void DeleteSelectionCommand::doApply()
+void DeleteSelectionCommand::doApply(EditingState*)
 {
     // If selection has not been set to a custom selection when the command was created,
     // use the current ending selection.

@@ -43,7 +43,7 @@ public:
 private:
     SetNodeAttributeCommand(PassRefPtrWillBeRawPtr<Element>, const QualifiedName& attribute, const AtomicString& value);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
 
     RefPtrWillBeMember<Element> m_element;

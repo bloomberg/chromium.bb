@@ -117,7 +117,8 @@ void EditCommand::setParent(CompositeEditCommand* parent)
 
 void SimpleEditCommand::doReapply()
 {
-    doApply();
+    EditingState editingState;
+    doApply(&editingState);
 }
 
 DEFINE_TRACE(EditCommand)

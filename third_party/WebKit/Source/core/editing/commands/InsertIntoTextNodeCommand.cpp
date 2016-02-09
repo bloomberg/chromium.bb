@@ -44,7 +44,7 @@ InsertIntoTextNodeCommand::InsertIntoTextNodeCommand(PassRefPtrWillBeRawPtr<Text
     ASSERT(!m_text.isEmpty());
 }
 
-void InsertIntoTextNodeCommand::doApply()
+void InsertIntoTextNodeCommand::doApply(EditingState*)
 {
     bool passwordEchoEnabled = document().settings() && document().settings()->passwordEchoEnabled();
     if (passwordEchoEnabled)

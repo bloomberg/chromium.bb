@@ -920,7 +920,7 @@ static inline HTMLElement* elementToSplitToAvoidPastingIntoInlineElementsWithSty
     return toHTMLElement(highestEnclosingNodeOfType(insertionPos, isInlineHTMLElementWithStyle, CannotCrossEditingBoundary, containingBlock));
 }
 
-void ReplaceSelectionCommand::doApply()
+void ReplaceSelectionCommand::doApply(EditingState*)
 {
     const VisibleSelection selection = endingSelection();
     ASSERT(selection.isCaretOrRange());

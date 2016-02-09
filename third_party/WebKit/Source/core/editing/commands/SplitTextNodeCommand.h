@@ -44,7 +44,7 @@ public:
 private:
     SplitTextNodeCommand(PassRefPtrWillBeRawPtr<Text>, int offset);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
     void doReapply() override;
     void insertText1AndTrimText2();

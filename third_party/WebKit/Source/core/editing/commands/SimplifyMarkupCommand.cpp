@@ -38,7 +38,7 @@ SimplifyMarkupCommand::SimplifyMarkupCommand(Document& document, Node* firstNode
 {
 }
 
-void SimplifyMarkupCommand::doApply()
+void SimplifyMarkupCommand::doApply(EditingState*)
 {
     ContainerNode* rootNode = m_firstNode->parentNode();
     WillBeHeapVector<RefPtrWillBeMember<ContainerNode>> nodesToRemove;

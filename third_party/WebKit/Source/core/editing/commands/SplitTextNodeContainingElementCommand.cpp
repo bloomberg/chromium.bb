@@ -39,7 +39,7 @@ SplitTextNodeContainingElementCommand::SplitTextNodeContainingElementCommand(Pas
     ASSERT(m_text->length() > 0);
 }
 
-void SplitTextNodeContainingElementCommand::doApply()
+void SplitTextNodeContainingElementCommand::doApply(EditingState*)
 {
     ASSERT(m_text);
     ASSERT(m_offset > 0);

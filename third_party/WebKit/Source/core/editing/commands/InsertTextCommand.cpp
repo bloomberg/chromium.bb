@@ -120,7 +120,7 @@ bool InsertTextCommand::performOverwrite(const String& text, bool selectInserted
     return true;
 }
 
-void InsertTextCommand::doApply()
+void InsertTextCommand::doApply(EditingState*)
 {
     ASSERT(m_text.find('\n') == kNotFound);
 

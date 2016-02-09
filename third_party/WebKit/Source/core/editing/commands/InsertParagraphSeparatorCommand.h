@@ -44,7 +44,7 @@ public:
 private:
     InsertParagraphSeparatorCommand(Document&, bool useDefaultParagraphElement, bool pasteBlockquoteIntoUnquotedArea);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
 
     void calculateStyleBeforeInsertion(const Position&);
     void applyStyleAfterInsertion(Element* originalEnclosingBlock);

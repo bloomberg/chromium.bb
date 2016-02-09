@@ -42,7 +42,7 @@ public:
 private:
     SplitElementCommand(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Node> splitPointChild);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
     void doReapply() override;
     void executeApply();

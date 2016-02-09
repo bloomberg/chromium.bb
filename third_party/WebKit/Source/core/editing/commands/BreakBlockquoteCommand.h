@@ -39,7 +39,7 @@ public:
 
 private:
     explicit BreakBlockquoteCommand(Document&);
-    void doApply() override;
+    void doApply(EditingState*) override;
 };
 
 } // namespace blink

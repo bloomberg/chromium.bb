@@ -148,7 +148,7 @@ PassRefPtrWillBeRawPtr<Element> InsertParagraphSeparatorCommand::cloneHierarchyU
     return parent.release();
 }
 
-void InsertParagraphSeparatorCommand::doApply()
+void InsertParagraphSeparatorCommand::doApply(EditingState*)
 {
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;

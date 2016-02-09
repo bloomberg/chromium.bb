@@ -36,7 +36,7 @@ MoveSelectionCommand::MoveSelectionCommand(PassRefPtrWillBeRawPtr<DocumentFragme
     ASSERT(m_fragment);
 }
 
-void MoveSelectionCommand::doApply()
+void MoveSelectionCommand::doApply(EditingState*)
 {
     ASSERT(endingSelection().isNonOrphanedRange());
 

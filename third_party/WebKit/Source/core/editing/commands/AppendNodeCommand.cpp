@@ -41,7 +41,7 @@ AppendNodeCommand::AppendNodeCommand(PassRefPtrWillBeRawPtr<ContainerNode> paren
     ASSERT(m_parent->hasEditableStyle() || !m_parent->inActiveDocument());
 }
 
-void AppendNodeCommand::doApply()
+void AppendNodeCommand::doApply(EditingState*)
 {
     if (!m_parent->hasEditableStyle() && m_parent->inActiveDocument())
         return;

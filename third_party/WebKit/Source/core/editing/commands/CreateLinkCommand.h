@@ -40,7 +40,7 @@ public:
 private:
     CreateLinkCommand(Document&, const String& linkURL);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     EditAction editingAction() const override { return EditActionCreateLink; }
 
     String m_url;

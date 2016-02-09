@@ -42,7 +42,7 @@ public:
 private:
     AppendNodeCommand(PassRefPtrWillBeRawPtr<ContainerNode> parent, PassRefPtrWillBeRawPtr<Node>);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
 
     RefPtrWillBeMember<ContainerNode> m_parent;

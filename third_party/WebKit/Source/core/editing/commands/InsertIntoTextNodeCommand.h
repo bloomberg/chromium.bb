@@ -44,7 +44,7 @@ public:
 private:
     InsertIntoTextNodeCommand(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, const String& text);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
 
     RefPtrWillBeMember<Text> m_node;

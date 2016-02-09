@@ -44,7 +44,7 @@ public:
 private:
     MoveSelectionCommand(PassRefPtrWillBeRawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     EditAction editingAction() const override;
 
     RefPtrWillBeMember<DocumentFragment> m_fragment;

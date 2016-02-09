@@ -38,7 +38,7 @@ RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(PassRef
     ASSERT(m_node);
 }
 
-void RemoveNodePreservingChildrenCommand::doApply()
+void RemoveNodePreservingChildrenCommand::doApply(EditingState*)
 {
     if (m_node->isContainerNode()) {
         NodeVector children;

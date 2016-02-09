@@ -204,7 +204,8 @@ void CompositeEditCommand::apply()
     ASSERT(frame);
     {
         EventQueueScope eventQueueScope;
-        doApply();
+        EditingState editingState;
+        doApply(&editingState);
     }
 
     // Only need to call appliedEditing for top-level commands,
@@ -246,11 +247,15 @@ void CompositeEditCommand::setShouldRetainAutocorrectionIndicator(bool)
 //
 // sugary-sweet convenience functions to help create and apply edit commands in composite commands
 //
-void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand> prpCommand)
+void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand> prpCommand, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<EditCommand> command = prpCommand;
     command->setParent(this);
-    command->doApply();
+    command->doApply(editingState);
+    if (editingState->isAborted()) {
+        command->setParent(nullptr);
+        return;
+    }
     if (command->isSimpleEditCommand()) {
         command->setParent(0);
         ensureComposition()->append(toSimpleEditCommand(command.get()));
@@ -258,15 +263,16 @@ void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCo
     m_commands.append(command.release());
 }
 
-void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand> command, const VisibleSelection& selection)
+void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand> command, const VisibleSelection& selection, EditingState* editingState)
 {
     command->setParent(this);
     if (!equalSelectionsInDOMTree(selection, command->endingSelection())) {
         command->setStartingSelection(selection);
         command->setEndingSelection(selection);
     }
-    command->doApply();
-    m_commands.append(command);
+    command->doApply(editingState);
+    if (!editingState->isAborted())
+        m_commands.append(command);
 }
 
 void CompositeEditCommand::applyStyle(const EditingStyle* style, EditAction editingAction)

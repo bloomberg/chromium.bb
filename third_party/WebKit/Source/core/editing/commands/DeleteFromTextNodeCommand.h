@@ -44,7 +44,7 @@ public:
 private:
     DeleteFromTextNodeCommand(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
 
     RefPtrWillBeMember<Text> m_node;

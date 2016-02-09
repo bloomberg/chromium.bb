@@ -40,7 +40,7 @@ RemoveNodeCommand::RemoveNodeCommand(PassRefPtrWillBeRawPtr<Node> node, ShouldAs
     ASSERT(m_node->parentNode());
 }
 
-void RemoveNodeCommand::doApply()
+void RemoveNodeCommand::doApply(EditingState*)
 {
     ContainerNode* parent = m_node->parentNode();
     if (!parent || (m_shouldAssumeContentIsAlwaysEditable == DoNotAssumeContentIsAlwaysEditable

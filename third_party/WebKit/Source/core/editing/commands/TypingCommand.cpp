@@ -246,7 +246,7 @@ void TypingCommand::closeTyping(LocalFrame* frame)
         lastTypingCommand->closeTyping();
 }
 
-void TypingCommand::doApply()
+void TypingCommand::doApply(EditingState*)
 {
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;

@@ -42,7 +42,7 @@ public:
 private:
     SimplifyMarkupCommand(Document&, Node* firstNode, Node* nodeAfterLast);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     int pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<ContainerNode>>& nodesToRemove, size_t startNodeIndex);
 
     RefPtrWillBeMember<Node> m_firstNode;

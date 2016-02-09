@@ -111,7 +111,7 @@ static bool inSameTreeAndOrdered(const VisiblePosition& shouldBeFormer, const Vi
     return Position::commonAncestorTreeScope(formerPosition, laterPosition) && comparePositions(formerPosition, laterPosition) <= 0;
 }
 
-void InsertListCommand::doApply()
+void InsertListCommand::doApply(EditingState*)
 {
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;

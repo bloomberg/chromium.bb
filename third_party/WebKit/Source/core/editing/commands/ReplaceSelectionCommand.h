@@ -59,7 +59,7 @@ public:
 private:
     ReplaceSelectionCommand(Document&, PassRefPtrWillBeRawPtr<DocumentFragment>, CommandOptions, EditAction);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     EditAction editingAction() const override;
     bool isReplaceSelectionCommand() const override;
 

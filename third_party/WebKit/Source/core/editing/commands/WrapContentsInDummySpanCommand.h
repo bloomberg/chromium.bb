@@ -44,7 +44,7 @@ public:
 private:
     explicit WrapContentsInDummySpanCommand(PassRefPtrWillBeRawPtr<Element>);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
     void doReapply() override;
     void executeApply();

@@ -96,7 +96,7 @@ private:
 
     static PassRefPtrWillBeRawPtr<TypingCommand> lastTypingCommandIfStillOpenForTyping(LocalFrame*);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     EditAction editingAction() const override;
     bool isTypingCommand() const override;
     bool preservesTypingStyle() const override { return m_preservesTypingStyle; }

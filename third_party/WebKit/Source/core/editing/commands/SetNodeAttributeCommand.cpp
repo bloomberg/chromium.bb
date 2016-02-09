@@ -40,7 +40,7 @@ SetNodeAttributeCommand::SetNodeAttributeCommand(PassRefPtrWillBeRawPtr<Element>
     ASSERT(m_element);
 }
 
-void SetNodeAttributeCommand::doApply()
+void SetNodeAttributeCommand::doApply(EditingState*)
 {
     m_oldValue = m_element->getAttribute(m_attribute);
     m_element->setAttribute(m_attribute, m_value);

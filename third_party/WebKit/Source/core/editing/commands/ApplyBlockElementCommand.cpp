@@ -55,7 +55,7 @@ ApplyBlockElementCommand::ApplyBlockElementCommand(Document& document, const Qua
 {
 }
 
-void ApplyBlockElementCommand::doApply()
+void ApplyBlockElementCommand::doApply(EditingState*)
 {
     if (!endingSelection().rootEditableElement())
         return;

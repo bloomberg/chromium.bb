@@ -65,7 +65,7 @@ static void swapInNodePreservingAttributesAndChildren(HTMLElement* newElement, H
     parentNode->removeChild(&elementToReplace, ASSERT_NO_EXCEPTION);
 }
 
-void ReplaceNodeWithSpanCommand::doApply()
+void ReplaceNodeWithSpanCommand::doApply(EditingState*)
 {
     if (!m_elementToReplace->inDocument())
         return;

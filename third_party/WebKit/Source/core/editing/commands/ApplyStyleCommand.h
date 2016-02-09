@@ -73,7 +73,7 @@ private:
     ApplyStyleCommand(PassRefPtrWillBeRawPtr<Element>, bool removeOnly, EditAction);
     ApplyStyleCommand(Document&, const EditingStyle*, bool (*isInlineElementToRemove)(const Element*), EditAction);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     EditAction editingAction() const override;
 
     // style-removal helpers

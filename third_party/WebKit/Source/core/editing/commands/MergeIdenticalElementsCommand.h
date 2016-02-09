@@ -42,7 +42,7 @@ public:
 private:
     MergeIdenticalElementsCommand(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element>);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
 
     RefPtrWillBeMember<Element> m_element1;

@@ -40,7 +40,7 @@ public:
 private:
     explicit InsertLineBreakCommand(Document&);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
 
     bool preservesTypingStyle() const override;
 

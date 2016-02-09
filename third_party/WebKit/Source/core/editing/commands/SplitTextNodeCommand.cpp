@@ -49,7 +49,7 @@ SplitTextNodeCommand::SplitTextNodeCommand(PassRefPtrWillBeRawPtr<Text> text, in
     ASSERT(m_offset < m_text2->length());
 }
 
-void SplitTextNodeCommand::doApply()
+void SplitTextNodeCommand::doApply(EditingState*)
 {
     ContainerNode* parent = m_text2->parentNode();
     if (!parent || !parent->hasEditableStyle())

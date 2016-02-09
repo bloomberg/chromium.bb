@@ -46,7 +46,7 @@ RemoveCSSPropertyCommand::~RemoveCSSPropertyCommand()
 {
 }
 
-void RemoveCSSPropertyCommand::doApply()
+void RemoveCSSPropertyCommand::doApply(EditingState*)
 {
     const StylePropertySet* style = m_element->inlineStyle();
     if (!style)

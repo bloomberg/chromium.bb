@@ -34,7 +34,7 @@ UnlinkCommand::UnlinkCommand(Document& document)
 {
 }
 
-void UnlinkCommand::doApply()
+void UnlinkCommand::doApply(EditingState*)
 {
     // FIXME: If a caret is inside a link, we should remove it, but currently we don't.
     if (!endingSelection().isNonOrphanedRange())

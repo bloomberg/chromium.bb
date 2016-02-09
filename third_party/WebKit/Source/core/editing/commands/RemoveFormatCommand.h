@@ -40,7 +40,7 @@ public:
 private:
     explicit RemoveFormatCommand(Document&);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     EditAction editingAction() const override { return EditActionUnspecified; }
 };
 

@@ -68,7 +68,7 @@ void SplitElementCommand::executeApply()
         m_element1->appendChild(child, exceptionState);
 }
 
-void SplitElementCommand::doApply()
+void SplitElementCommand::doApply(EditingState*)
 {
     m_element1 = m_element2->cloneElementWithoutChildren();
 

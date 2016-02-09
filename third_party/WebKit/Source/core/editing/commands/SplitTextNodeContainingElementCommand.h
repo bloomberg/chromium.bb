@@ -42,7 +42,7 @@ public:
 private:
     SplitTextNodeContainingElementCommand(PassRefPtrWillBeRawPtr<Text>, int offset);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
 
     RefPtrWillBeMember<Text> m_text;
     int m_offset;

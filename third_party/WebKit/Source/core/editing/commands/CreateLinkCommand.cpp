@@ -36,7 +36,7 @@ CreateLinkCommand::CreateLinkCommand(Document& document, const String& url)
     m_url = url;
 }
 
-void CreateLinkCommand::doApply()
+void CreateLinkCommand::doApply(EditingState*)
 {
     if (endingSelection().isNone())
         return;

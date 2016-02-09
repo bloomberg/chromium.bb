@@ -46,7 +46,7 @@ public:
 private:
     InsertTextCommand(Document&, const String& text, bool selectInsertedText, RebalanceType);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
 
     Position positionInsideTextNode(const Position&);
     Position insertTab(const Position&);

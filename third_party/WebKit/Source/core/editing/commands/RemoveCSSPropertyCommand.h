@@ -46,7 +46,7 @@ private:
     RemoveCSSPropertyCommand(Document&, PassRefPtrWillBeRawPtr<Element>, CSSPropertyID);
     ~RemoveCSSPropertyCommand() override;
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     void doUnapply() override;
 
     RefPtrWillBeMember<Element> m_element;

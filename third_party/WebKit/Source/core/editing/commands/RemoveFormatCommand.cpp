@@ -77,7 +77,7 @@ static bool isElementForRemoveFormatCommand(const Element* element)
     return elements.contains(element->tagQName());
 }
 
-void RemoveFormatCommand::doApply()
+void RemoveFormatCommand::doApply(EditingState*)
 {
     LocalFrame* frame = document().frame();
 

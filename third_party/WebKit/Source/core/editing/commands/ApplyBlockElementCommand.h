@@ -48,7 +48,7 @@ protected:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    void doApply() final;
+    void doApply(EditingState*) final;
     virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>&) = 0;
     void rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition&, Position&, Position&);
     VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition&, Position&, Position&);

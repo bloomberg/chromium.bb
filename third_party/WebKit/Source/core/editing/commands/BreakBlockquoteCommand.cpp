@@ -72,7 +72,7 @@ BreakBlockquoteCommand::BreakBlockquoteCommand(Document& document)
 {
 }
 
-void BreakBlockquoteCommand::doApply()
+void BreakBlockquoteCommand::doApply(EditingState*)
 {
     if (endingSelection().isNone())
         return;

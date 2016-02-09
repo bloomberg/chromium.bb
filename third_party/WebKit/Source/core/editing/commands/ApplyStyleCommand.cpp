@@ -196,7 +196,7 @@ Position ApplyStyleCommand::endPosition()
     return m_end;
 }
 
-void ApplyStyleCommand::doApply()
+void ApplyStyleCommand::doApply(EditingState*)
 {
     switch (m_propertyLevel) {
     case PropertyDefault: {

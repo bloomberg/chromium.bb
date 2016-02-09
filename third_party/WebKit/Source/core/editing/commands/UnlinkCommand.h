@@ -40,7 +40,7 @@ public:
 private:
     explicit UnlinkCommand(Document&);
 
-    void doApply() override;
+    void doApply(EditingState*) override;
     EditAction editingAction() const override { return EditActionUnlink; }
 };
 

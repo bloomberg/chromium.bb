@@ -49,7 +49,7 @@ void WrapContentsInDummySpanCommand::executeApply()
     m_element->appendChild(m_dummySpan.get(), IGNORE_EXCEPTION);
 }
 
-void WrapContentsInDummySpanCommand::doApply()
+void WrapContentsInDummySpanCommand::doApply(EditingState*)
 {
     m_dummySpan = HTMLSpanElement::create(document());
 

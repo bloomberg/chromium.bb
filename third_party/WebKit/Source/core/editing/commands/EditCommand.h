@@ -34,6 +34,7 @@ namespace blink {
 
 class CompositeEditCommand;
 class Document;
+class EditingState;
 
 class EditCommand : public RefCountedWillBeGarbageCollectedFinalized<EditCommand> {
 public:
@@ -50,7 +51,8 @@ public:
     virtual bool isCompositeEditCommand() const { return false; }
     bool isTopLevelCommand() const { return !m_parent; }
 
-    virtual void doApply() = 0;
+    // The |EditingState*| argument must not be nullptr.
+    virtual void doApply(EditingState*) = 0;
 
     DECLARE_VIRTUAL_TRACE();
 
