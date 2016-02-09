@@ -165,6 +165,7 @@ source_set("common") {
     "//mojo/shell/runner/child:lib",
     "//net",
     "//skia",
+    "//third_party/WebKit/public:blink",
     "//third_party/icu",
     "//third_party/libjingle",
     "//ui/accessibility",
