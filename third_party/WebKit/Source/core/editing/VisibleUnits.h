@@ -106,6 +106,10 @@ CORE_EXPORT PositionInFlatTree mostForwardCaretPosition(const PositionInFlatTree
 CORE_EXPORT bool isVisuallyEquivalentCandidate(const Position&);
 CORE_EXPORT bool isVisuallyEquivalentCandidate(const PositionInFlatTree&);
 
+// Whether or not [node, 0] and [node, lastOffsetForEditing(node)] are their own VisiblePositions.
+// If true, adjacent candidates are visually distinct.
+CORE_EXPORT bool endsOfNodeAreVisuallyDistinctPositions(const Node*);
+
 CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInFlatTree canonicalPositionOf(const PositionInFlatTree&);
 

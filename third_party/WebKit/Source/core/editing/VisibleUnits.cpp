@@ -2403,11 +2403,28 @@ bool rendersInDifferentPosition(const Position& position1, const Position& posit
     return true;
 }
 
-// Whether or not [node, 0] and [node, lastOffsetForEditing(node)] are their own VisiblePositions.
-// If true, adjacent candidates are visually distinct.
-// FIXME: Disregard nodes with layoutObjects that have no height, as we do in isCandidate.
+static bool isVisuallyEmpty(const LayoutObject* layout)
+{
+    for (LayoutObject* child = layout->slowFirstChild(); child; child = child->nextSibling()) {
+        // TODO(xiaochengh): Replace type-based conditioning by virtual function.
+        if (child->isBox()) {
+            if (!toLayoutBox(child)->size().isEmpty())
+                return false;
+        } else if (child->isLayoutInline()) {
+            if (toLayoutInline(child)->firstLineBoxIncludingCulling())
+                return false;
+        } else if (child->isText()) {
+            if (toLayoutText(child)->hasTextBoxes())
+                return false;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
 // FIXME: Share code with isCandidate, if possible.
-static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
+bool endsOfNodeAreVisuallyDistinctPositions(const Node* node)
 {
     if (!node || !node->layoutObject())
         return false;
@@ -2425,7 +2442,7 @@ static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
         return true;
 
     // There is a VisiblePosition inside an empty inline-block container.
-    return node->layoutObject()->isAtomicInlineLevel() && canHaveChildrenForEditing(node) && toLayoutBox(node->layoutObject())->size().height() != 0 && !node->hasChildren();
+    return node->layoutObject()->isAtomicInlineLevel() && canHaveChildrenForEditing(node) && !toLayoutBox(node->layoutObject())->size().isEmpty() && isVisuallyEmpty(node->layoutObject());
 }
 
 template <typename Strategy>
