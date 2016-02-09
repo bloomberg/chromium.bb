@@ -40,24 +40,24 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
     if (!shouldPaintContents && !shouldPaintScrollbars)
         return;
 
-    // TODO(pdr): Creating frame paint properties here will not be needed once
-    // settings()->rootLayerScrolls() is enabled.
-    // TODO(pdr): Make this conditional on the rootLayerScrolls setting.
-    Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        TransformPaintPropertyNode* transform = m_frameView->scrollTranslation() ? m_frameView->scrollTranslation() : m_frameView->preTranslation();
-        ClipPaintPropertyNode* clip = m_frameView->contentClip();
-        if (transform || clip) {
-            PaintChunkProperties properties(context.paintController().currentPaintChunkProperties());
-            if (transform)
-                properties.transform = transform;
-            if (clip)
-                properties.clip = clip;
-            scopedPaintChunkProperties.emplace(context.paintController(), properties);
-        }
-    }
-
     if (shouldPaintContents) {
+        // TODO(pdr): Creating frame paint properties here will not be needed once
+        // settings()->rootLayerScrolls() is enabled.
+        // TODO(pdr): Make this conditional on the rootLayerScrolls setting.
+        Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            TransformPaintPropertyNode* transform = m_frameView->scrollTranslation() ? m_frameView->scrollTranslation() : m_frameView->preTranslation();
+            ClipPaintPropertyNode* clip = m_frameView->contentClip();
+            if (transform || clip) {
+                PaintChunkProperties properties(context.paintController().currentPaintChunkProperties());
+                if (transform)
+                    properties.transform = transform;
+                if (clip)
+                    properties.clip = clip;
+                scopedPaintChunkProperties.emplace(context.paintController(), properties);
+            }
+        }
+
         TransformRecorder transformRecorder(context, *frameView().layoutView(),
             AffineTransform::translation(frameView().x() - frameView().scrollX(), frameView().y() - frameView().scrollY()));
 
@@ -72,6 +72,15 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
         IntRect visibleAreaWithScrollbars(frameView().location(), frameView().visibleContentRect(IncludeScrollbars).size());
         scrollViewDirtyRect.intersect(visibleAreaWithScrollbars);
         scrollViewDirtyRect.moveBy(-frameView().location());
+
+        Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            if (TransformPaintPropertyNode* transform = m_frameView->preTranslation()) {
+                PaintChunkProperties properties(context.paintController().currentPaintChunkProperties());
+                properties.transform = transform;
+                scopedPaintChunkProperties.emplace(context.paintController(), properties);
+            }
+        }
 
         TransformRecorder transformRecorder(context, *frameView().layoutView(),
             AffineTransform::translation(frameView().x(), frameView().y()));
