@@ -111,12 +111,7 @@ Element* FocusNavigationScope::owner() const
 
 FocusNavigationScope FocusNavigationScope::focusNavigationScopeOf(const Node& node)
 {
-    const Node* root = &node;
-    for (const Node* n = &node; n; n = n->parentNode())
-        root = n;
-    // The result is not always a ShadowRoot nor a DocumentNode since
-    // a starting node is in an orphaned tree in composed shadow tree.
-    return FocusNavigationScope(&root->treeScope());
+    return FocusNavigationScope(&node.treeScope());
 }
 
 FocusNavigationScope FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(Element& element)
