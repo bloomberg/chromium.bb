@@ -75,6 +75,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter {
             hittest_data);
     bool RejectHitTarget(const cc::SurfaceDrawQuad* surface_quad,
                          const gfx::Point& point_in_quad_space) override;
+    bool AcceptHitTarget(const cc::SurfaceDrawQuad* surface_quad,
+                         const gfx::Point& point_in_quad_space) override;
 
     const std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>&
         hittest_data_;

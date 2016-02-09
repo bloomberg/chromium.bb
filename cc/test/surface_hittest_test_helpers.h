@@ -70,18 +70,25 @@ class TestSurfaceHittestDelegate : public SurfaceHittestDelegate {
   TestSurfaceHittestDelegate();
   ~TestSurfaceHittestDelegate();
 
-  int target_overrides() const { return target_overrides_; }
+  int reject_target_overrides() const { return reject_target_overrides_; }
+  int accept_target_overrides() const { return accept_target_overrides_; }
 
-  void AddInsetsForSurface(const SurfaceId& surface_id,
-                           const gfx::Insets& inset);
+  void AddInsetsForRejectSurface(const SurfaceId& surface_id,
+                                 const gfx::Insets& inset);
+  void AddInsetsForAcceptSurface(const SurfaceId& surface_id,
+                                 const gfx::Insets& inset);
 
   // SurfaceHittestDelegate implementation.
   bool RejectHitTarget(const SurfaceDrawQuad* surface_quad,
                        const gfx::Point& point_in_quad_space) override;
+  bool AcceptHitTarget(const SurfaceDrawQuad* surface_quad,
+                       const gfx::Point& point_in_quad_space) override;
 
  private:
-  int target_overrides_;
-  std::map<SurfaceId, gfx::Insets> insets_for_surface_;
+  int reject_target_overrides_;
+  int accept_target_overrides_;
+  std::map<SurfaceId, gfx::Insets> insets_for_reject_;
+  std::map<SurfaceId, gfx::Insets> insets_for_accept_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSurfaceHittestDelegate);
 };

@@ -93,27 +93,48 @@ scoped_ptr<CompositorFrame> CreateCompositorFrame(const gfx::Rect& root_rect,
 }
 
 TestSurfaceHittestDelegate::TestSurfaceHittestDelegate()
-    : target_overrides_(0) {}
+    : reject_target_overrides_(0), accept_target_overrides_(0) {}
 
 TestSurfaceHittestDelegate::~TestSurfaceHittestDelegate() {}
 
-void TestSurfaceHittestDelegate::AddInsetsForSurface(
+void TestSurfaceHittestDelegate::AddInsetsForRejectSurface(
     const SurfaceId& surface_id,
     const gfx::Insets& inset) {
-  insets_for_surface_.insert(std::make_pair(surface_id, inset));
+  insets_for_reject_.insert(std::make_pair(surface_id, inset));
+}
+
+void TestSurfaceHittestDelegate::AddInsetsForAcceptSurface(
+    const SurfaceId& surface_id,
+    const gfx::Insets& inset) {
+  insets_for_accept_.insert(std::make_pair(surface_id, inset));
 }
 
 bool TestSurfaceHittestDelegate::RejectHitTarget(
     const SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
-  if (!insets_for_surface_.count(surface_quad->surface_id))
+  if (!insets_for_reject_.count(surface_quad->surface_id))
     return false;
   gfx::Rect bounds(surface_quad->rect);
-  bounds.Inset(insets_for_surface_[surface_quad->surface_id]);
+  bounds.Inset(insets_for_reject_[surface_quad->surface_id]);
   // If the point provided falls outside the inset, then we skip this surface.
   if (!bounds.Contains(point_in_quad_space)) {
     if (surface_quad->rect.Contains(point_in_quad_space))
-      ++target_overrides_;
+      ++reject_target_overrides_;
+    return true;
+  }
+  return false;
+}
+
+bool TestSurfaceHittestDelegate::AcceptHitTarget(
+    const SurfaceDrawQuad* surface_quad,
+    const gfx::Point& point_in_quad_space) {
+  if (!insets_for_accept_.count(surface_quad->surface_id))
+    return false;
+  gfx::Rect bounds(surface_quad->rect);
+  bounds.Inset(insets_for_accept_[surface_quad->surface_id]);
+  // If the point provided falls outside the inset, then we accept this surface.
+  if (!bounds.Contains(point_in_quad_space)) {
+    ++accept_target_overrides_;
     return true;
   }
   return false;

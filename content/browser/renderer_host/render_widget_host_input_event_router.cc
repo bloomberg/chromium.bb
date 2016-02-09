@@ -27,6 +27,15 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::RejectHitTarget(
   return false;
 }
 
+bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
+    const cc::SurfaceDrawQuad* surface_quad,
+    const gfx::Point& point_in_quad_space) {
+  auto it = hittest_data_.find(surface_quad->surface_id);
+  if (it != hittest_data_.end() && !it->second.ignored_for_hittest)
+    return true;
+  return false;
+}
+
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
     : active_touches_(0) {}
 
