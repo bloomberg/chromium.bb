@@ -11,64 +11,54 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/compound_buffer.h"
-#include "remoting/protocol/p2p_stream_socket.h"
-
-static const int kMaxSendBufferSize = 256 * 1024;
+#include "remoting/protocol/message_pipe.h"
+#include "remoting/protocol/message_serialization.h"
 
 namespace remoting {
 namespace protocol {
 
-class WebrtcDataStreamAdapter::Channel : public P2PStreamSocket,
+class WebrtcDataStreamAdapter::Channel : public MessagePipe,
                                          public webrtc::DataChannelObserver {
  public:
-  typedef base::Callback<void(Channel* adapter, bool success)>
-      ConnectedCallback;
-
-  Channel(const ConnectedCallback& connected_callback);
+  explicit Channel(base::WeakPtr<WebrtcDataStreamAdapter> adapter);
   ~Channel() override;
 
   void Start(rtc::scoped_refptr<webrtc::DataChannelInterface> channel);
 
   std::string name() { return channel_->label(); }
 
-  // P2PStreamSocket interface.
-  int Read(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
-           const net::CompletionCallback &callback) override;
-  int Write(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
-            const net::CompletionCallback &callback) override;
+  // MessagePipe interface.
+  void StartReceiving(const MessageReceivedCallback& callback) override;
+  void Send(google::protobuf::MessageLite* message,
+            const base::Closure& done) override;
 
  private:
+  enum class State { CONNECTING, OPEN, CLOSED };
+
   // webrtc::DataChannelObserver interface.
   void OnStateChange() override;
   void OnMessage(const webrtc::DataBuffer& buffer) override;
-  void OnBufferedAmountChange(uint64_t previous_amount) override;
 
-  int DoWrite(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size);
+  void OnConnected();
+
+  void OnError();
+
+  base::WeakPtr<WebrtcDataStreamAdapter> adapter_;
 
   rtc::scoped_refptr<webrtc::DataChannelInterface> channel_;
-  ConnectedCallback connected_callback_;
 
-  scoped_refptr<net::IOBuffer> write_buffer_;
-  int write_buffer_size_;
-  net::CompletionCallback write_callback_;
+  MessageReceivedCallback message_received_callback_;
 
-  scoped_refptr<net::IOBuffer> read_buffer_;
-  int read_buffer_size_;
-  net::CompletionCallback read_callback_;
-
-  CompoundBuffer received_data_buffer_;
-
-  base::WeakPtrFactory<Channel> weak_factory_;
+  State state_ = State::CONNECTING;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
 
 WebrtcDataStreamAdapter::Channel::Channel(
-    const ConnectedCallback& connected_callback)
-    : connected_callback_(connected_callback), weak_factory_(this) {}
+    base::WeakPtr<WebrtcDataStreamAdapter> adapter)
+    : adapter_(adapter) {}
 
 WebrtcDataStreamAdapter::Channel::~Channel() {
   if (channel_) {
@@ -85,127 +75,102 @@ void WebrtcDataStreamAdapter::Channel::Start(
   channel_->RegisterObserver(this);
 
    if (channel_->state() == webrtc::DataChannelInterface::kOpen) {
-    base::ResetAndReturn(&connected_callback_).Run(this, true);
+    OnConnected();
   } else {
     DCHECK_EQ(channel_->state(), webrtc::DataChannelInterface::kConnecting);
   }
 }
 
-int WebrtcDataStreamAdapter::Channel::Read(
-    const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
-    const net::CompletionCallback& callback) {
-  DCHECK(read_callback_.is_null());
+void WebrtcDataStreamAdapter::Channel::StartReceiving(
+    const MessageReceivedCallback& callback) {
+  DCHECK(message_received_callback_.is_null());
+  DCHECK(!callback.is_null());
 
-  if (received_data_buffer_.total_bytes() == 0) {
-    read_buffer_ = buffer;
-    read_buffer_size_ = buffer_size;
-    read_callback_ = callback;
-    return net::ERR_IO_PENDING;
-  }
-
-  int bytes_to_copy =
-      std::min(buffer_size, received_data_buffer_.total_bytes());
-  received_data_buffer_.CopyTo(buffer->data(), bytes_to_copy);
-  received_data_buffer_.CropFront(bytes_to_copy);
-  return bytes_to_copy;
+  message_received_callback_ = callback;
 }
 
-int WebrtcDataStreamAdapter::Channel::Write(
-    const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
-    const net::CompletionCallback& callback) {
-  DCHECK(write_callback_.is_null());
-
-  if (channel_->buffered_amount() >= kMaxSendBufferSize) {
-    write_buffer_ = buffer;
-    write_buffer_size_ = buffer_size;
-    write_callback_ = callback;
-    return net::ERR_IO_PENDING;
+void WebrtcDataStreamAdapter::Channel::Send(
+    google::protobuf::MessageLite* message,
+    const base::Closure& done) {
+  rtc::Buffer buffer;
+  buffer.SetSize(message->ByteSize());
+  message->SerializeWithCachedSizesToArray(
+      reinterpret_cast<uint8_t*>(buffer.data()));
+  webrtc::DataBuffer data_buffer(std::move(buffer), true /* binary */);
+  if (!channel_->Send(data_buffer)) {
+    OnError();
+    return;
   }
 
-  return DoWrite(buffer, buffer_size);
+  if (!done.is_null())
+    done.Run();
 }
 
 void WebrtcDataStreamAdapter::Channel::OnStateChange() {
   switch (channel_->state()) {
-    case webrtc::DataChannelInterface::kConnecting:
-      break;
-
     case webrtc::DataChannelInterface::kOpen:
-      DCHECK(!connected_callback_.is_null());
-      base::ResetAndReturn(&connected_callback_).Run(this, true);
+      OnConnected();
       break;
 
-    case webrtc::DataChannelInterface::kClosing: {
-      // Hold weak pointer for self to detect when one of the callbacks deletes
-      // the channel.
-      base::WeakPtr<Channel> self = weak_factory_.GetWeakPtr();
-      if (!connected_callback_.is_null()) {
-        base::ResetAndReturn(&connected_callback_).Run(this, false);
-      }
-
-      if (self && !read_callback_.is_null()) {
-        read_buffer_ = nullptr;
-        base::ResetAndReturn(&read_callback_).Run(net::ERR_CONNECTION_CLOSED);
-      }
-
-      if (self && !write_callback_.is_null()) {
-        write_buffer_ = nullptr;
-        base::ResetAndReturn(&write_callback_).Run(net::ERR_CONNECTION_CLOSED);
-      }
+    case webrtc::DataChannelInterface::kClosing:
+      // Currently channels are not expected to be closed.
+      OnError();
       break;
-    }
+
+    case webrtc::DataChannelInterface::kConnecting:
     case webrtc::DataChannelInterface::kClosed:
-      DCHECK(connected_callback_.is_null());
       break;
   }
+}
+
+void WebrtcDataStreamAdapter::Channel::OnConnected() {
+  CHECK(state_ == State::CONNECTING);
+  state_ = State::OPEN;
+  adapter_->OnChannelConnected(this);
+}
+
+void WebrtcDataStreamAdapter::Channel::OnError() {
+  if (state_ == State::CLOSED)
+    return;
+
+  state_ = State::CLOSED;
+  if (adapter_)
+    adapter_->OnChannelError(this);
 }
 
 void WebrtcDataStreamAdapter::Channel::OnMessage(
-    const webrtc::DataBuffer& buffer) {
-  const char* data = reinterpret_cast<const char*>(buffer.data.data());
-  int data_size = buffer.data.size();
-
-  // If there is no outstanding read request then just copy the data to
-  // |received_data_buffer_|.
-  if (read_callback_.is_null()) {
-    received_data_buffer_.AppendCopyOf(data, data_size);
-    return;
-  }
-
-  DCHECK(received_data_buffer_.total_bytes() == 0);
-  int bytes_to_copy = std::min(read_buffer_size_, data_size);
-  memcpy(read_buffer_->data(), buffer.data.data(), bytes_to_copy);
-
-  if (bytes_to_copy < data_size) {
-    received_data_buffer_.AppendCopyOf(data + bytes_to_copy,
-                                       data_size - bytes_to_copy);
-  }
-  read_buffer_ = nullptr;
-  base::ResetAndReturn(&read_callback_).Run(bytes_to_copy);
+    const webrtc::DataBuffer& rtc_buffer) {
+  scoped_ptr<CompoundBuffer> buffer(new CompoundBuffer());
+  buffer->AppendCopyOf(reinterpret_cast<const char*>(rtc_buffer.data.data()),
+                       rtc_buffer.data.size());
+  buffer->Lock();
+  message_received_callback_.Run(std::move(buffer));
 }
 
-void WebrtcDataStreamAdapter::Channel::OnBufferedAmountChange(
-    uint64_t previous_amount) {
-  if (channel_->buffered_amount() < kMaxSendBufferSize) {
-    base::ResetAndReturn(&write_callback_)
-        .Run(DoWrite(write_buffer_, write_buffer_size_));
+struct WebrtcDataStreamAdapter::PendingChannel {
+  PendingChannel() {}
+  PendingChannel(scoped_ptr<Channel> channel,
+                 const ChannelCreatedCallback& connected_callback)
+      : channel(std::move(channel)), connected_callback(connected_callback) {}
+  PendingChannel(PendingChannel&& other)
+      : channel(std::move(other.channel)),
+        connected_callback(std::move(other.connected_callback)) {}
+  PendingChannel& operator=(PendingChannel&& other) {
+    channel = std::move(other.channel);
+    connected_callback = std::move(other.connected_callback);
+    return *this;
   }
-}
 
-int WebrtcDataStreamAdapter::Channel::DoWrite(
-    const scoped_refptr<net::IOBuffer>& buffer,
-    int buffer_size) {
-  webrtc::DataBuffer data_buffer(rtc::Buffer(buffer->data(), buffer_size),
-                                 true /* binary */);
-  if (channel_->Send(data_buffer)) {
-    return buffer_size;
-  } else {
-    return net::ERR_FAILED;
-  }
-}
+  scoped_ptr<Channel> channel;
+  ChannelCreatedCallback connected_callback;
+};
 
-WebrtcDataStreamAdapter::WebrtcDataStreamAdapter(bool outgoing)
-    : outgoing_(outgoing), weak_factory_(this) {}
+WebrtcDataStreamAdapter::WebrtcDataStreamAdapter(
+    bool outgoing,
+    const ErrorCallback& error_callback)
+    : outgoing_(outgoing),
+      error_callback_(error_callback),
+      weak_factory_(this) {}
 
 WebrtcDataStreamAdapter::~WebrtcDataStreamAdapter() {
   DCHECK(pending_channels_.empty());
@@ -225,7 +190,7 @@ void WebrtcDataStreamAdapter::OnIncomingDataChannel(
     LOG(ERROR) << "Received unexpected data channel " << data_channel->label();
     return;
   }
-  it->second->Start(data_channel);
+  it->second.channel->Start(data_channel);
 }
 
 void WebrtcDataStreamAdapter::CreateChannel(
@@ -234,10 +199,8 @@ void WebrtcDataStreamAdapter::CreateChannel(
   DCHECK(peer_connection_);
   DCHECK(pending_channels_.find(name) == pending_channels_.end());
 
-  Channel* channel =
-      new Channel(base::Bind(&WebrtcDataStreamAdapter::OnChannelConnected,
-                             base::Unretained(this), callback));
-  pending_channels_[name] = channel;
+  Channel* channel = new Channel(weak_factory_.GetWeakPtr());
+  pending_channels_[name] = PendingChannel(make_scoped_ptr(channel), callback);
 
   if (outgoing_) {
     webrtc::DataChannelInit config;
@@ -249,23 +212,22 @@ void WebrtcDataStreamAdapter::CreateChannel(
 void WebrtcDataStreamAdapter::CancelChannelCreation(const std::string& name) {
   auto it = pending_channels_.find(name);
   DCHECK(it != pending_channels_.end());
-  delete it->second;
   pending_channels_.erase(it);
 }
 
-void WebrtcDataStreamAdapter::OnChannelConnected(
-    const ChannelCreatedCallback& connected_callback,
-    Channel* channel,
-    bool connected) {
+void WebrtcDataStreamAdapter::OnChannelConnected(Channel* channel) {
   auto it = pending_channels_.find(channel->name());
   DCHECK(it != pending_channels_.end());
+  PendingChannel pending_channel = std::move(it->second);
   pending_channels_.erase(it);
 
-  // The callback can delete the channel which also holds the callback
-  // object which may cause crash if the callback carries some arguments. Copy
-  // the callback to stack to avoid this problem.
-  ChannelCreatedCallback callback = connected_callback;
-  callback.Run(make_scoped_ptr(channel));
+  // Once the channel is connected its ownership  is passed to the
+  // |connected_callback|.
+  pending_channel.connected_callback.Run(std::move(pending_channel.channel));
+}
+
+void WebrtcDataStreamAdapter::OnChannelError(Channel* channel) {
+  error_callback_.Run(CHANNEL_CONNECTION_ERROR);
 }
 
 }  // namespace protocol

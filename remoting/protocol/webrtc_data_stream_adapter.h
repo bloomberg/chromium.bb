@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "remoting/protocol/stream_channel_factory.h"
+#include "remoting/protocol/errors.h"
+#include "remoting/protocol/message_channel_factory.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/webrtc/base/refcount.h"
 
@@ -20,11 +22,14 @@ class PeerConnectionInterface;
 namespace remoting {
 namespace protocol {
 
-// WebrtcDataStreamAdapter is a StreamChannelFactory that creates channels that
-// send and receive data over PeerConnection data channels.
-class WebrtcDataStreamAdapter : public StreamChannelFactory {
+// WebrtcDataStreamAdapter is a MessageChannelFactory that creates channels that
+// send and receive messages over PeerConnection data channels.
+class WebrtcDataStreamAdapter : public MessageChannelFactory {
  public:
-  explicit WebrtcDataStreamAdapter(bool outgoing);
+  typedef base::Callback<void(ErrorCode)> ErrorCallback;
+
+  explicit WebrtcDataStreamAdapter(bool outgoing,
+                                   const ErrorCallback& error_callback);
   ~WebrtcDataStreamAdapter() override;
 
   // Initializes the adapter for |peer_connection|. If |outgoing| is set to true
@@ -36,23 +41,26 @@ class WebrtcDataStreamAdapter : public StreamChannelFactory {
   // Called by WebrtcTransport.
   void OnIncomingDataChannel(webrtc::DataChannelInterface* data_channel);
 
-  // StreamChannelFactory interface.
+  // MessageChannelFactory interface.
   void CreateChannel(const std::string& name,
                      const ChannelCreatedCallback& callback) override;
   void CancelChannelCreation(const std::string& name) override;
 
  private:
   class Channel;
+  friend class Channel;
 
-  void OnChannelConnected(const ChannelCreatedCallback& connected_callback,
-                          Channel* channel,
-                          bool connected);
+  struct PendingChannel;
+
+  void OnChannelConnected(Channel* channel);
+  void OnChannelError(Channel* channel);
 
   const bool outgoing_;
+  ErrorCallback error_callback_;
 
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
 
-  std::map<std::string, Channel*> pending_channels_;
+  std::map<std::string, PendingChannel> pending_channels_;
 
   base::WeakPtrFactory<WebrtcDataStreamAdapter> weak_factory_;
 
