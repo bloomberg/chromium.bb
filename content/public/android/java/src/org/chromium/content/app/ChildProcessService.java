@@ -23,10 +23,10 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ChildProcessConstants;
-import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.FileDescriptorInfo;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.IChildProcessCallback;
@@ -64,8 +64,6 @@ public class ChildProcessService extends Service {
     private FileDescriptorInfo[] mFdInfos;
     // Linker-specific parameters for this child process service.
     private ChromiumLinkerParams mLinkerParams;
-    // Child library process type.
-    private int mLibraryProcessType;
 
     private static AtomicReference<Context> sContext = new AtomicReference<Context>(null);
     private boolean mLibraryInitialized = false;
@@ -153,7 +151,8 @@ public class ChildProcessService extends Service {
 
                     boolean loadAtFixedAddressFailed = false;
                     try {
-                        LibraryLoader.get(mLibraryProcessType).loadNow(getApplicationContext());
+                        LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
+                                .loadNow(getApplicationContext());
                         isLoaded = true;
                     } catch (ProcessInitException e) {
                         if (requestedSharedRelro) {
@@ -167,7 +166,8 @@ public class ChildProcessService extends Service {
                     if (!isLoaded && requestedSharedRelro) {
                         linker.disableSharedRelros();
                         try {
-                            LibraryLoader.get(mLibraryProcessType).loadNow(getApplicationContext());
+                            LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
+                                    .loadNow(getApplicationContext());
                             isLoaded = true;
                         } catch (ProcessInitException e) {
                             Log.e(TAG, "Failed to load native library on retry", e);
@@ -176,10 +176,10 @@ public class ChildProcessService extends Service {
                     if (!isLoaded) {
                         System.exit(-1);
                     }
-                    LibraryLoader.get(mLibraryProcessType)
+                    LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
                             .registerRendererProcessHistogram(requestedSharedRelro,
                                     loadAtFixedAddressFailed);
-                    LibraryLoader.get(mLibraryProcessType).initialize();
+                    LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).initialize();
                     synchronized (mMainThread) {
                         mLibraryInitialized = true;
                         mMainThread.notifyAll();
@@ -258,8 +258,6 @@ public class ChildProcessService extends Service {
             // mLinkerParams is never used if Linker.isUsed() returns false.
             // See onCreate().
             mLinkerParams = new ChromiumLinkerParams(intent);
-            mLibraryProcessType =
-                    ChildProcessLauncher.ChildProcessCreationParams.getLibraryProcessType(intent);
             mIsBound = true;
             mMainThread.notifyAll();
         }

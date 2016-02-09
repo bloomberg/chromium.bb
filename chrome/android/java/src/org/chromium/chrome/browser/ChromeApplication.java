@@ -190,14 +190,6 @@ public class ChromeApplication extends ContentApplication {
     private PrintingController mPrintingController;
 
     /**
-     * This is called during early initialization in order to set up ChildProcessLauncher
-     * for certain Chrome packaging configurations
-     */
-    public ChildProcessLauncher.ChildProcessCreationParams getChildProcessCreationParams() {
-        return null;
-    }
-
-    /**
      * This is called once per ChromeApplication instance, which get created per process
      * (browser OR renderer).  Don't stick anything in here that shouldn't be called multiple times
      * during Chrome's lifetime.

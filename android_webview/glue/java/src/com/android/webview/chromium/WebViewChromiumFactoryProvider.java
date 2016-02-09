@@ -249,8 +249,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         ResourceBundle.initializeLocalePaks(context, R.array.locale_paks);
         initPlatSupportLibrary();
         final int extraBindFlags = 0;
-        AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, extraBindFlags,
-                LibraryProcessType.PROCESS_WEBVIEW_CHILD);
+        AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, extraBindFlags);
         AwBrowserProcess.start(context);
 
         if (isBuildDebuggable()) {

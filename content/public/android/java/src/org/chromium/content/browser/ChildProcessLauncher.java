@@ -26,7 +26,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
@@ -66,15 +65,10 @@ public class ChildProcessLauncher {
     public static class ChildProcessCreationParams {
         private final String mPackageName;
         private final int mExtraBindFlags;
-        private final int mLibraryProcessType;
-        private static final String EXTRA_LIBRARY_PROCESS_TYPE =
-                "org.chromium.content.common.child_service_params.library_process_type";
 
-        public ChildProcessCreationParams(String packageName, int extraBindFlags,
-                int libraryProcessType) {
+        public ChildProcessCreationParams(String packageName, int extraBindFlags) {
             mPackageName = packageName;
             mExtraBindFlags = extraBindFlags;
-            mLibraryProcessType = libraryProcessType;
         }
 
         public String getPackageName() {
@@ -90,15 +84,6 @@ public class ChildProcessLauncher {
          */
         public int addExtraBindFlags(int bindFlags) {
             return bindFlags | mExtraBindFlags;
-        }
-
-        public void addIntentExtras(Intent intent) {
-            intent.putExtra(EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
-        }
-
-        public static int getLibraryProcessType(Intent intent) {
-            return intent.getIntExtra(EXTRA_LIBRARY_PROCESS_TYPE,
-                    LibraryProcessType.PROCESS_CHILD);
         }
     }
 
