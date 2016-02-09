@@ -550,7 +550,7 @@ bool SyscallSets::IsAllowedGeneralIo(int sysno) {
 #if defined(__i386__) || defined(__arm__) || defined(__mips__)
     case __NR__newselect:
 #endif
-#if defined(__arm__)
+#if defined(__arm__) || defined(__mips__)
     case __NR_send:
 #endif
 #if defined(__x86_64__) || defined(__arm__) || defined(__mips__) || \
