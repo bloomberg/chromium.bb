@@ -25,8 +25,11 @@ class DownloadDangerPrompt {
  public:
   // Actions resulting from showing the danger prompt.
   enum Action {
+    // The user chose to proceed down the dangerous path.
     ACCEPT,
+    // The user chose not to proceed down the dangerous path.
     CANCEL,
+    // The user dismissed the dialog without making an explicit choice.
     DISMISS,
   };
   typedef base::Callback<void(Action)> OnDone;
