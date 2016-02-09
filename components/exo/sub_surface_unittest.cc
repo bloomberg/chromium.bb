@@ -32,6 +32,14 @@ TEST_F(SubSurfaceTest, SetPosition) {
   // Check that position is updated when Commit() is called.
   parent->Commit();
   EXPECT_EQ(position.ToString(), surface->bounds().origin().ToString());
+
+  // Create and commit a new sub-surface using the same surface.
+  sub_surface.reset();
+  sub_surface = make_scoped_ptr(new SubSurface(surface.get(), parent.get()));
+  parent->Commit();
+
+  // Initial position should be reset to origin.
+  EXPECT_EQ(gfx::Point().ToString(), surface->bounds().origin().ToString());
 }
 
 TEST_F(SubSurfaceTest, PlaceAbove) {

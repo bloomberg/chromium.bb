@@ -166,7 +166,6 @@ void Surface::AddSubSurface(Surface* sub_surface) {
 
   DCHECK(!sub_surface->parent());
   DCHECK(!sub_surface->IsVisible());
-  DCHECK(sub_surface->bounds().origin() == gfx::Point());
   AddChild(sub_surface);
 
   DCHECK(!ListContainsEntry(pending_sub_surfaces_, sub_surface));
@@ -178,6 +177,8 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
                sub_surface->AsTracedValue());
 
   RemoveChild(sub_surface);
+  if (sub_surface->IsVisible())
+    sub_surface->Hide();
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.erase(
