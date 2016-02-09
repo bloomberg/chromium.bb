@@ -52,7 +52,7 @@ function expect(data, order) {
   frameIds = {};
   nextTabId = 0;
   tabIds = {};
-  nextProcessId = 0;
+  nextProcessId = -1;
   processIds = {}
   initListeners();
 }

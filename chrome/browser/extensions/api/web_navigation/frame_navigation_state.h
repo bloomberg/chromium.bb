@@ -19,7 +19,7 @@ class RenderViewHost;
 
 namespace extensions {
 
-// Tracks the navigation state of all frame hosts in a given tab currently known
+// Tracks the loading state of all frame hosts in a given tab currently known
 // to the webNavigation API. It is mainly used to track in which frames an error
 // occurred so no further events for this frame are being sent.
 class FrameNavigationState {
@@ -39,11 +39,12 @@ class FrameNavigationState {
   // True if navigation events for the given frame can be sent.
   bool CanSendEvents(content::RenderFrameHost* frame_host) const;
 
-  // Starts to track a navigation in |frame_host| to |url|.
-  void StartTrackingNavigation(content::RenderFrameHost* frame_host,
-                               const GURL& url,
-                               bool is_error_page,
-                               bool is_iframe_srcdoc);
+  // Starts to track a document load in |frame_host| to |url|.
+  void StartTrackingDocumentLoad(content::RenderFrameHost* frame_host,
+                                 const GURL& url,
+                                 bool is_same_page,
+                                 bool is_error_page,
+                                 bool is_iframe_srcdoc);
 
   // Adds the |frame_host| to the set of RenderFrameHosts associated with the
   // WebContents this object is tracking. This method and FrameHostDeleted
@@ -73,31 +74,18 @@ class FrameNavigationState {
   // True if |frame_host| is marked as being in an error state.
   bool GetErrorOccurredInFrame(content::RenderFrameHost* frame_host) const;
 
-  // Marks |frame_host| as having finished its last navigation, i.e. the
+  // Marks |frame_host| as having finished its last document load, i.e. the
   // onCompleted event was fired for this frame.
-  void SetNavigationCompleted(content::RenderFrameHost* frame_host);
+  void SetDocumentLoadCompleted(content::RenderFrameHost* frame_host);
 
-  // True if |frame_host| is currently not navigating.
-  bool GetNavigationCompleted(content::RenderFrameHost* frame_host) const;
+  // True if |frame_host| is currently not loading a document.
+  bool GetDocumentLoadCompleted(content::RenderFrameHost* frame_host) const;
 
   // Marks |frame_host| as having finished parsing.
   void SetParsingFinished(content::RenderFrameHost* frame_host);
 
   // True if |frame_host| has finished parsing.
   bool GetParsingFinished(content::RenderFrameHost* frame_host) const;
-
-  // Marks |frame_host| as having committed its navigation, i.e. the onCommitted
-  // event was fired for this frame.
-  void SetNavigationCommitted(content::RenderFrameHost* frame_host);
-
-  // True if |frame_host| has committed its navigation.
-  bool GetNavigationCommitted(content::RenderFrameHost* frame_host) const;
-
-  // Marks |frame_host| as redirected by the server.
-  void SetIsServerRedirected(content::RenderFrameHost* frame_host);
-
-  // True if |frame_host| was redirected by the server.
-  bool GetIsServerRedirected(content::RenderFrameHost* frame_host) const;
 
 #ifdef UNIT_TEST
   static void set_allow_extension_scheme(bool allow_extension_scheme) {
@@ -111,9 +99,7 @@ class FrameNavigationState {
 
     bool error_occurred;  // True if an error has occurred in this frame.
     bool is_iframe_srcdoc;  // True if the frame is displaying its srcdoc.
-    bool is_navigating;  // True if there is a navigation going on.
-    bool is_committed;  // True if the navigation is already committed.
-    bool is_server_redirected;  // True if a server redirect happened.
+    bool is_loading;        // True if there is a document load going on.
     bool is_parsing;  // True if the frame is still parsing.
     GURL url;  // URL of this frame.
   };

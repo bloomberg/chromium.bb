@@ -27,7 +27,7 @@ onload = function() {
               event: "onBeforeNavigate",
               details: { frameId: 0,
                          parentFrameId: -1,
-                         processId: 0,
+                         processId: -1,
                          tabId: 0,
                          timeStamp: 0,
                          url: INITIAL_URL }},
@@ -58,7 +58,7 @@ onload = function() {
               event: "onBeforeNavigate",
               details: { frameId: 0,
                          parentFrameId: -1,
-                         processId: 1,
+                         processId: -1,
                          tabId: 0,
                          timeStamp: 0,
                          url: CROSS_SITE_URL }},
@@ -89,7 +89,7 @@ onload = function() {
               event: "onBeforeNavigate",
               details: { frameId: 0,
                          parentFrameId: -1,
-                         processId: 0,
+                         processId: -1,
                          tabId: 0,
                          timeStamp: 0,
                          url: SAME_SITE_URL }},
@@ -97,7 +97,7 @@ onload = function() {
               event: "onErrorOccurred",
               details: { error: "net::ERR_ABORTED",
                          frameId: 0,
-                         processId: 0,
+                         processId: -1,
                          tabId: 0,
                          timeStamp: 0,
                          url: SAME_SITE_URL }}
@@ -107,8 +107,8 @@ onload = function() {
               [ "a-onCompleted",
                 "b-onBeforeNavigate",
                 "c-onBeforeNavigate",
-                "c-onErrorOccurred",
-                "b-onCommitted" ]]);
+                "b-onCommitted",
+                "c-onErrorOccurred" ]]);
 
           chrome.tabs.update(
               tabId,

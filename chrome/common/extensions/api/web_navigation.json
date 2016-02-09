@@ -137,7 +137,11 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation is about to occur."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
+              "processId": {
+                "type": "integer",
+                "description": "The value of -1.",
+                "deprecated": "The processId is no longer set for this event, since the process which will render the resulting document is not known until onCommit."
+              },
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique for a given tab and process."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame. Set to -1 of no parent frame exists."},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to start the navigation, in milliseconds since the epoch."}
@@ -244,7 +248,11 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
+              "processId": {
+                "type": "integer",
+                "description": "The value of -1.",
+                "deprecated": "The processId is no longer set for this event."
+              },
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
               "error": {"type": "string", "description": "The error description."},
               "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}

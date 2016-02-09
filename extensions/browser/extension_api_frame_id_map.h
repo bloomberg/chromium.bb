@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 
 namespace content {
+class NavigationHandle;
 class RenderFrameHost;
 class WebContents;
 }  // namespace content
@@ -56,8 +57,14 @@ class ExtensionApiFrameIdMap {
   // Get the extension API frame ID for |rfh|.
   static int GetFrameId(content::RenderFrameHost* rfh);
 
+  // Get the extension API frame ID for |navigation_handle|.
+  static int GetFrameId(content::NavigationHandle* navigation_handle);
+
   // Get the extension API frame ID for the parent of |rfh|.
   static int GetParentFrameId(content::RenderFrameHost* rfh);
+
+  // Get the extension API frame ID for the parent of |navigation_handle|.
+  static int GetParentFrameId(content::NavigationHandle* navigation_handle);
 
   // Find the current RenderFrameHost for a given WebContents and extension
   // frame ID.

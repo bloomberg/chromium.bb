@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -65,13 +66,13 @@ ExtensionApiFrameIdMap::ExtensionApiFrameIdMap() {}
 
 ExtensionApiFrameIdMap::~ExtensionApiFrameIdMap() {}
 
+// static
 ExtensionApiFrameIdMap* ExtensionApiFrameIdMap::Get() {
   return g_map_instance.Pointer();
 }
 
+// static
 int ExtensionApiFrameIdMap::GetFrameId(content::RenderFrameHost* rfh) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   if (!rfh)
     return kInvalidFrameId;
   if (rfh->GetParent())
@@ -79,12 +80,32 @@ int ExtensionApiFrameIdMap::GetFrameId(content::RenderFrameHost* rfh) {
   return kTopFrameId;
 }
 
-int ExtensionApiFrameIdMap::GetParentFrameId(content::RenderFrameHost* rfh) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+// static
+int ExtensionApiFrameIdMap::GetFrameId(
+    content::NavigationHandle* navigation_handle) {
+  return navigation_handle->IsInMainFrame()
+             ? 0
+             : navigation_handle->GetFrameTreeNodeId();
+}
 
+// static
+int ExtensionApiFrameIdMap::GetParentFrameId(content::RenderFrameHost* rfh) {
   return rfh ? GetFrameId(rfh->GetParent()) : kInvalidFrameId;
 }
 
+// static
+int ExtensionApiFrameIdMap::GetParentFrameId(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame())
+    return -1;
+
+  if (navigation_handle->IsParentMainFrame())
+    return 0;
+
+  return navigation_handle->GetParentFrameTreeNodeId();
+}
+
+// static
 content::RenderFrameHost* ExtensionApiFrameIdMap::GetRenderFrameHostById(
     content::WebContents* web_contents,
     int frame_id) {

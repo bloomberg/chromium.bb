@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/api/web_navigation.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -240,7 +241,7 @@ WebNavigationTabObserver* WebNavigationTabObserver::Get(
 void WebNavigationTabObserver::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   if (navigation_state_.CanSendEvents(render_frame_host) &&
-      !navigation_state_.GetNavigationCompleted(render_frame_host)) {
+      !navigation_state_.GetDocumentLoadCompleted(render_frame_host)) {
     helpers::DispatchOnErrorOccurred(
         web_contents(),
         render_frame_host,
@@ -266,102 +267,38 @@ void WebNavigationTabObserver::RenderFrameHostChanged(
   navigation_state_.FrameHostCreated(new_host);
 }
 
-void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
-  DVLOG(2) << "DidStartProvisionalLoad("
-           << "render_frame_host=" << render_frame_host
-           << ", frame_num=" << render_frame_host->GetRoutingID()
-           << ", url=" << validated_url << ")";
-  navigation_state_.StartTrackingNavigation(render_frame_host, validated_url,
-                                            is_error_page, is_iframe_srcdoc);
-
-  if (!navigation_state_.CanSendEvents(render_frame_host))
+void WebNavigationTabObserver::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSynchronousNavigation() ||
+      !FrameNavigationState::IsValidUrl(navigation_handle->GetURL())) {
     return;
+  }
 
-  helpers::DispatchOnBeforeNavigate(
-      web_contents(),
-      render_frame_host,
-      navigation_state_.GetUrl(render_frame_host));
+  helpers::DispatchOnBeforeNavigate(navigation_handle);
 }
 
-void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  DVLOG(2) << "DidCommitProvisionalLoad("
-           << "render_frame_host=" << render_frame_host
-           << ", frame_num=" << render_frame_host->GetRoutingID()
-           << ", url=" << url << ")";
-  bool is_reference_fragment_navigation =
-      IsReferenceFragmentNavigation(render_frame_host, url);
-  bool is_history_state_modification =
-      navigation_state_.GetNavigationCommitted(render_frame_host);
-
-  // Update the URL as it might have changed.
-  navigation_state_.UpdateFrame(render_frame_host, url);
-  navigation_state_.SetNavigationCommitted(render_frame_host);
-
-  if (!navigation_state_.CanSendEvents(render_frame_host))
+void WebNavigationTabObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage()) {
+    HandleCommit(navigation_handle);
     return;
-
-  events::HistogramValue histogram_value = events::UNKNOWN;
-  std::string event_name;
-  if (is_reference_fragment_navigation) {
-    histogram_value = events::WEB_NAVIGATION_ON_REFERENCE_FRAGMENT_UPDATED;
-    event_name = web_navigation::OnReferenceFragmentUpdated::kEventName;
-  } else if (is_history_state_modification) {
-    histogram_value = events::WEB_NAVIGATION_ON_HISTORY_STATE_UPDATED;
-    event_name = web_navigation::OnHistoryStateUpdated::kEventName;
-  } else {
-    if (navigation_state_.GetIsServerRedirected(render_frame_host)) {
-      transition_type = ui::PageTransitionFromInt(
-          transition_type | ui::PAGE_TRANSITION_SERVER_REDIRECT);
-    }
-    histogram_value = events::WEB_NAVIGATION_ON_COMMITTED;
-    event_name = web_navigation::OnCommitted::kEventName;
   }
-  helpers::DispatchOnCommitted(
-      histogram_value, event_name, web_contents(), render_frame_host,
-      navigation_state_.GetUrl(render_frame_host), transition_type);
-}
 
-void WebNavigationTabObserver::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  DVLOG(2) << "DidFailProvisionalLoad("
-           << "render_frame_host=" << render_frame_host
-           << ", frame_num=" << render_frame_host->GetRoutingID()
-           << ", url=" << validated_url << ")";
-  if (navigation_state_.CanSendEvents(render_frame_host)) {
-    helpers::DispatchOnErrorOccurred(
-        web_contents(),
-        render_frame_host,
-        navigation_state_.GetUrl(render_frame_host),
-        error_code);
-  }
-  navigation_state_.SetErrorOccurredInFrame(render_frame_host);
+  HandleError(navigation_handle);
 }
 
 void WebNavigationTabObserver::DocumentLoadedInFrame(
     content::RenderFrameHost* render_frame_host) {
-  DVLOG(2) << "DocumentLoadedInFrame("
-           << "render_frame_host=" << render_frame_host
-           << ", frame_num=" << render_frame_host->GetRoutingID() << ")";
   if (!navigation_state_.CanSendEvents(render_frame_host))
     return;
+
   navigation_state_.SetParsingFinished(render_frame_host);
   helpers::DispatchOnDOMContentLoaded(
       web_contents(),
       render_frame_host,
       navigation_state_.GetUrl(render_frame_host));
 
-  if (!navigation_state_.GetNavigationCompleted(render_frame_host))
+  if (!navigation_state_.GetDocumentLoadCompleted(render_frame_host))
     return;
 
   // The load might already have finished by the time we finished parsing. For
@@ -375,15 +312,12 @@ void WebNavigationTabObserver::DocumentLoadedInFrame(
 void WebNavigationTabObserver::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  DVLOG(2) << "DidFinishLoad("
-           << "render_frame_host=" << render_frame_host
-           << ", frame_num=" << render_frame_host->GetRoutingID()
-           << ", url=" << validated_url << ")";
   // When showing replacement content, we might get load signals for frames
   // that weren't reguarly loaded.
   if (!navigation_state_.IsValidFrame(render_frame_host))
     return;
-  navigation_state_.SetNavigationCompleted(render_frame_host);
+
+  navigation_state_.SetDocumentLoadCompleted(render_frame_host);
   if (!navigation_state_.CanSendEvents(render_frame_host))
     return;
 
@@ -413,14 +347,11 @@ void WebNavigationTabObserver::DidFailLoad(
     int error_code,
     const base::string16& error_description,
     bool was_ignored_by_handler) {
-  DVLOG(2) << "DidFailLoad("
-           << "render_frame_host=" << render_frame_host
-           << ", frame_num=" << render_frame_host->GetRoutingID()
-           << ", url=" << validated_url << ")";
   // When showing replacement content, we might get load signals for frames
   // that weren't reguarly loaded.
   if (!navigation_state_.IsValidFrame(render_frame_host))
     return;
+
   if (navigation_state_.CanSendEvents(render_frame_host)) {
     helpers::DispatchOnErrorOccurred(
         web_contents(),
@@ -429,16 +360,6 @@ void WebNavigationTabObserver::DidFailLoad(
         error_code);
   }
   navigation_state_.SetErrorOccurredInFrame(render_frame_host);
-}
-
-void WebNavigationTabObserver::DidGetRedirectForResourceRequest(
-    content::RenderFrameHost* render_frame_host,
-    const content::ResourceRedirectDetails& details) {
-  if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME &&
-      details.resource_type != content::RESOURCE_TYPE_SUB_FRAME) {
-    return;
-  }
-  navigation_state_.SetIsServerRedirected(render_frame_host);
 }
 
 void WebNavigationTabObserver::DidOpenRequestedURL(
@@ -471,6 +392,45 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 void WebNavigationTabObserver::WebContentsDestroyed() {
   g_tab_observer.Get().erase(web_contents());
   registrar_.RemoveAll();
+}
+
+void WebNavigationTabObserver::HandleCommit(
+    content::NavigationHandle* navigation_handle) {
+  bool is_reference_fragment_navigation = IsReferenceFragmentNavigation(
+      navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL());
+
+  navigation_state_.StartTrackingDocumentLoad(
+      navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL(),
+      navigation_handle->IsSamePage(),
+      false,  // is_error_page
+      navigation_handle->IsSrcdoc());
+
+  events::HistogramValue histogram_value = events::UNKNOWN;
+  std::string event_name;
+  if (is_reference_fragment_navigation) {
+    histogram_value = events::WEB_NAVIGATION_ON_REFERENCE_FRAGMENT_UPDATED;
+    event_name = web_navigation::OnReferenceFragmentUpdated::kEventName;
+  } else if (navigation_handle->IsSamePage()) {
+    histogram_value = events::WEB_NAVIGATION_ON_HISTORY_STATE_UPDATED;
+    event_name = web_navigation::OnHistoryStateUpdated::kEventName;
+  } else {
+    histogram_value = events::WEB_NAVIGATION_ON_COMMITTED;
+    event_name = web_navigation::OnCommitted::kEventName;
+  }
+  helpers::DispatchOnCommitted(histogram_value, event_name, navigation_handle);
+}
+
+void WebNavigationTabObserver::HandleError(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->HasCommitted()) {
+    navigation_state_.StartTrackingDocumentLoad(
+        navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL(),
+        navigation_handle->IsSamePage(),
+        true,  // is_error_page
+        navigation_handle->IsSrcdoc());
+  }
+
+  helpers::DispatchOnErrorOccurred(navigation_handle);
 }
 
 // See also NavigationController::IsURLInPageNavigation.
@@ -529,7 +489,7 @@ bool WebNavigationGetFrameFunction::RunSync() {
   frame_details.error_occurred =
       frame_navigation_state.GetErrorOccurredInFrame(render_frame_host);
   frame_details.parent_frame_id =
-      helpers::GetFrameId(render_frame_host->GetParent());
+      ExtensionApiFrameIdMap::GetFrameId(render_frame_host->GetParent());
   results_ = GetFrame::Results::Create(frame_details);
   return true;
 }
@@ -569,8 +529,9 @@ bool WebNavigationGetAllFramesFunction::RunSync() {
     linked_ptr<GetAllFrames::Results::DetailsType> frame(
         new GetAllFrames::Results::DetailsType());
     frame->url = frame_url.spec();
-    frame->frame_id = helpers::GetFrameId(*it);
-    frame->parent_frame_id = helpers::GetFrameId((*it)->GetParent());
+    frame->frame_id = ExtensionApiFrameIdMap::GetFrameId(*it);
+    frame->parent_frame_id =
+        ExtensionApiFrameIdMap::GetFrameId((*it)->GetParent());
     frame->process_id = (*it)->GetProcess()->GetID();
     frame->error_occurred = navigation_state.GetErrorOccurredInFrame(*it);
     result_list.push_back(frame);

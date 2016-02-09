@@ -22,7 +22,7 @@ onload = function() {
               event: "onBeforeNavigate",
               details: { frameId: 0,
                          parentFrameId: -1,
-                         processId: 0,
+                         processId: -1,
                          tabId: 0,
                          timeStamp: 0,
                          url: URL_LOAD_REDIRECT }},
