@@ -190,8 +190,6 @@ class QuicStreamFactory::Job {
   bool is_post_;
   bool was_alternative_service_recently_broken_;
   scoped_ptr<QuicServerInfo> server_info_;
-  scoped_ptr<DatagramClientSocket> socket_;
-  scoped_ptr<QuicChromiumPacketReader> reader_;
   bool started_another_job_;
   const BoundNetLog net_log_;
   int num_sent_client_hellos_;
@@ -431,8 +429,7 @@ int QuicStreamFactory::Job::DoConnect() {
 
   int rv = factory_->CreateSession(
       server_id_, cert_verify_flags_, std::move(server_info_), address_list_,
-      std::move(socket_), std::move(reader_), dns_resolution_end_time_,
-      net_log_, &session_);
+      dns_resolution_end_time_, net_log_, &session_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -474,9 +471,6 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
     }
     // The handshake was rejected statelessly, so create another connection
     // to resume the handshake.
-    socket_.reset(session_->ReleaseSocket());
-    reader_.reset(session_->ReleaseReader());
-
     io_state_ = STATE_CONNECT;
     return OK;
   }
@@ -1398,16 +1392,13 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   return OK;
 }
 
-int QuicStreamFactory::CreateSession(
-    const QuicServerId& server_id,
-    int cert_verify_flags,
-    scoped_ptr<QuicServerInfo> server_info,
-    const AddressList& address_list,
-    scoped_ptr<DatagramClientSocket> socket,
-    scoped_ptr<QuicChromiumPacketReader> reader,
-    base::TimeTicks dns_resolution_end_time,
-    const BoundNetLog& net_log,
-    QuicChromiumClientSession** session) {
+int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
+                                     int cert_verify_flags,
+                                     scoped_ptr<QuicServerInfo> server_info,
+                                     const AddressList& address_list,
+                                     base::TimeTicks dns_resolution_end_time,
+                                     const BoundNetLog& net_log,
+                                     QuicChromiumClientSession** session) {
   IPEndPoint addr = *address_list.begin();
   bool enable_port_selection = enable_port_selection_;
   if (enable_port_selection && ContainsKey(gone_away_aliases_, server_id)) {
@@ -1424,25 +1415,24 @@ int QuicStreamFactory::CreateSession(
                             :            // Use our callback.
           DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
 
-  if (socket.get() == nullptr) {
-    socket = client_socket_factory_->CreateDatagramClientSocket(
-        bind_type, base::Bind(&PortSuggester::SuggestPort, port_suggester),
-        net_log.net_log(), net_log.source());
+  scoped_ptr<DatagramClientSocket> socket(
+      client_socket_factory_->CreateDatagramClientSocket(
+          bind_type, base::Bind(&PortSuggester::SuggestPort, port_suggester),
+          net_log.net_log(), net_log.source()));
 
-    // Passing in kInvalidNetworkHandle binds socket to default network.
-    int rv = ConfigureSocket(socket.get(), addr,
-                             NetworkChangeNotifier::kInvalidNetworkHandle);
-    if (rv != OK) {
-      return rv;
-    }
+  // Passing in kInvalidNetworkHandle binds socket to default network.
+  int rv = ConfigureSocket(socket.get(), addr,
+                           NetworkChangeNotifier::kInvalidNetworkHandle);
+  if (rv != OK) {
+    return rv;
+  }
 
-    UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
-                         port_suggester->call_count());
-    if (enable_port_selection) {
-      DCHECK_LE(1u, port_suggester->call_count());
-    } else {
-      DCHECK_EQ(0u, port_suggester->call_count());
-    }
+  UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
+                       port_suggester->call_count());
+  if (enable_port_selection) {
+    DCHECK_LE(1u, port_suggester->call_count());
+  } else {
+    DCHECK_EQ(0u, port_suggester->call_count());
   }
 
   if (!helper_.get()) {
@@ -1489,11 +1479,10 @@ int QuicStreamFactory::CreateSession(
   }
 
   *session = new QuicChromiumClientSession(
-      connection, std::move(socket), std::move(reader), this,
-      quic_crypto_client_stream_factory_, clock_.get(),
-      transport_security_state_, std::move(server_info), server_id,
-      yield_after_packets_, yield_after_duration_, cert_verify_flags, config,
-      &crypto_config_, network_connection_.GetDescription(),
+      connection, std::move(socket), this, quic_crypto_client_stream_factory_,
+      clock_.get(), transport_security_state_, std::move(server_info),
+      server_id, yield_after_packets_, yield_after_duration_, cert_verify_flags,
+      config, &crypto_config_, network_connection_.GetDescription(),
       dns_resolution_end_time, &push_promise_index_,
       base::ThreadTaskRunnerHandle::Get().get(),
       std::move(socket_performance_watcher), net_log.net_log());

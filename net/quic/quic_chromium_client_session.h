@@ -113,7 +113,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   QuicChromiumClientSession(
       QuicConnection* connection,
       scoped_ptr<DatagramClientSocket> socket,
-      scoped_ptr<QuicChromiumPacketReader> reader,
       QuicStreamFactory* stream_factory,
       QuicCryptoClientStreamFactory* crypto_client_stream_factory,
       QuicClock* clock,
@@ -242,12 +241,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // QUIC packets are sent. This default socket can change, so do not store the
   // returned socket.
   const DatagramClientSocket* GetDefaultSocket() const;
-
-  // Releases the default socket so it can be used for a different connection.
-  DatagramClientSocket* ReleaseSocket();
-
-  // Releases the default reader so it can be used for a different connection.
-  QuicChromiumPacketReader* ReleaseReader();
 
   bool IsAuthorized(const std::string& hostname) override;
 

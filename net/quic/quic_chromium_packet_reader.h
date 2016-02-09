@@ -49,8 +49,6 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   // and passing the data along to the QuicConnection.
   void StartReading();
 
-  void set_visitor(Visitor* visitor) { visitor_ = visitor; }
-
  private:
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
