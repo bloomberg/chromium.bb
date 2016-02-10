@@ -349,10 +349,13 @@ scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
   if (!texture_)
     texture_ = make_scoped_ptr(new Texture(context_provider.get()));
 
+  // Copy the contents of |contents_texture| to |texture| and produce a
+  // texture mailbox from the result in |texture|.
+  Texture* contents_texture = contents_texture_.get();
   Texture* texture = texture_.get();
 
   // The contents texture will be released when copy has completed.
-  gpu::SyncToken sync_token = contents_texture_->CopyTexImage(
+  gpu::SyncToken sync_token = contents_texture->CopyTexImage(
       texture, base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
                           base::Passed(&contents_texture_)));
   *texture_mailbox = cc::TextureMailbox(
