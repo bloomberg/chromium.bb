@@ -238,6 +238,11 @@ void CALayerPartialDamageTree::UpdateCALayers(CALayer* superlayer,
     [superlayer setSublayers:nil];
     [superlayer addSublayer:root_plane_->ca_layer];
   }
+  // Excessive logging to debug white screens (crbug.com/583805).
+  // TODO(ccameron): change this back to a DLOG.
+  if ([root_plane_->ca_layer superlayer] != superlayer) {
+    LOG(ERROR) << "CALayerPartialDamageTree root layer not attached to tree.";
+  }
   for (auto& plane : partial_damage_planes_) {
     if (!plane->ca_layer) {
       DCHECK(plane == partial_damage_planes_.back());

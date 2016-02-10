@@ -291,6 +291,8 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
     } else {
       TRACE_EVENT0("gpu", "Blank frame: No overlays or CALayers");
       [ca_root_layer_ setSublayers:nil];
+      current_partial_damage_tree_.reset();
+      current_ca_layer_tree_.reset();
     }
     swap->ca_layer_tree.reset();
     swap->partial_damage_tree.reset();
