@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <set>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -51,7 +49,8 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
       CreateContextProviderCallback;
 
   static scoped_refptr<StreamTextureFactorySynchronousImpl> Create(
-      const CreateContextProviderCallback& try_create_callback);
+      const CreateContextProviderCallback& try_create_callback,
+      int frame_id);
 
   StreamTextureProxy* CreateProxy() override;
   void EstablishPeer(int32_t stream_id, int player_id, int frame_id) override;
@@ -66,12 +65,14 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
  private:
   friend class base::RefCounted<StreamTextureFactorySynchronousImpl>;
   StreamTextureFactorySynchronousImpl(
-      const CreateContextProviderCallback& try_create_callback);
+      const CreateContextProviderCallback& try_create_callback,
+      int frame_id);
   ~StreamTextureFactorySynchronousImpl() override;
 
   CreateContextProviderCallback create_context_provider_callback_;
   scoped_refptr<ContextProvider> context_provider_;
-  std::set<StreamTextureFactoryContextObserver*> observers_;
+  int frame_id_;
+  StreamTextureFactoryContextObserver* observer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactorySynchronousImpl);
 };

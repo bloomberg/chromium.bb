@@ -198,6 +198,7 @@
 #include <cpu-features.h>
 
 #include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
@@ -5955,15 +5956,23 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     const media::WebMediaPlayerParams& params) {
-  scoped_refptr<StreamTextureFactory> stream_texture_factory =
-      RenderThreadImpl::current()->GetStreamTexureFactory();
-  if (!stream_texture_factory.get()) {
-    LOG(ERROR) << "Failed to get stream texture factory!";
-    return NULL;
+  scoped_refptr<StreamTextureFactory> stream_texture_factory;
+  bool enable_texture_copy = false;
+  if (SynchronousCompositorFactory* factory =
+          SynchronousCompositorFactory::GetInstance()) {
+    stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
+  } else {
+    stream_texture_factory =
+        RenderThreadImpl::current()->GetStreamTexureFactory();
+    enable_texture_copy =
+        RenderThreadImpl::current()->sync_compositor_message_filter() !=
+        nullptr;
+    if (!stream_texture_factory.get()) {
+      LOG(ERROR) << "Failed to get stream texture factory!";
+      return NULL;
+    }
   }
 
-  bool enable_texture_copy =
-      RenderThreadImpl::current()->EnableStreamTextureCopy();
   return new WebMediaPlayerAndroid(frame_, client, encrypted_client,
                                    GetWebMediaPlayerDelegate()->AsWeakPtr(),
                                    GetMediaPlayerManager(), GetCdmFactory(),

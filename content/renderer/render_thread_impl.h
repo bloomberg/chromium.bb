@@ -294,11 +294,7 @@ class CONTENT_EXPORT RenderThreadImpl
     return sync_compositor_message_filter_.get();
   }
 
-  static void SetStreamTextureFactory(
-      scoped_refptr<StreamTextureFactory> factory);
-
   scoped_refptr<StreamTextureFactory> GetStreamTexureFactory();
-  bool EnableStreamTextureCopy();
 #endif
 
   // Creates the embedder implementation of WebMediaStreamCenter.

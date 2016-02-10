@@ -86,7 +86,57 @@ ContextHolder CreateContextHolder(
 
 }  // namespace
 
-SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl() {
+class SynchronousCompositorFactoryImpl::VideoContextProvider
+    : public StreamTextureFactorySynchronousImpl::ContextProvider {
+ public:
+  VideoContextProvider(
+      scoped_refptr<cc::ContextProvider> context_provider,
+      gpu::GLInProcessContext* gl_in_process_context)
+      : context_provider_(context_provider),
+        gl_in_process_context_(gl_in_process_context) {
+    context_provider_->BindToCurrentThread();
+  }
+
+  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
+      uint32_t stream_id) override {
+    return gl_in_process_context_->GetSurfaceTexture(stream_id);
+  }
+
+  uint32_t CreateStreamTexture(uint32_t texture_id) override {
+    return gl_in_process_context_->CreateStreamTexture(texture_id);
+  }
+
+  gpu::gles2::GLES2Interface* ContextGL() override {
+    return context_provider_->ContextGL();
+  }
+
+  void AddObserver(StreamTextureFactoryContextObserver* obs) override {
+    observer_list_.AddObserver(obs);
+  }
+
+  void RemoveObserver(StreamTextureFactoryContextObserver* obs) override {
+    observer_list_.RemoveObserver(obs);
+  }
+
+  void RestoreContext() {
+    FOR_EACH_OBSERVER(StreamTextureFactoryContextObserver,
+                      observer_list_,
+                      ResetStreamTextureProxy());
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<VideoContextProvider>;
+  ~VideoContextProvider() override {}
+
+  scoped_refptr<cc::ContextProvider> context_provider_;
+  gpu::GLInProcessContext* gl_in_process_context_;
+  base::ObserverList<StreamTextureFactoryContextObserver> observer_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoContextProvider);
+};
+
+SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
+    : num_hardware_compositors_(0) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
     // TODO(boliu): Figure out how to deal with this more nicely.
@@ -125,111 +175,47 @@ SynchronousCompositorFactoryImpl::CreateExternalBeginFrameSource(
       routing_id, SynchronousCompositorRegistryInProc::GetInstance()));
 }
 
-// SynchronousCompositorStreamTextureFactoryImpl.
-
-class SynchronousCompositorStreamTextureFactoryImpl::VideoContextProvider
-    : public StreamTextureFactorySynchronousImpl::ContextProvider {
- public:
-  VideoContextProvider(scoped_refptr<cc::ContextProvider> context_provider,
-                       gpu::GLInProcessContext* gl_in_process_context)
-      : context_provider_(context_provider),
-        gl_in_process_context_(gl_in_process_context) {
-    context_provider_->BindToCurrentThread();
-  }
-
-  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
-      uint32_t stream_id) override {
-    return gl_in_process_context_->GetSurfaceTexture(stream_id);
-  }
-
-  uint32_t CreateStreamTexture(uint32_t texture_id) override {
-    return gl_in_process_context_->CreateStreamTexture(texture_id);
-  }
-
-  gpu::gles2::GLES2Interface* ContextGL() override {
-    return context_provider_->ContextGL();
-  }
-
-  void AddObserver(StreamTextureFactoryContextObserver* obs) override {
-    observer_list_.AddObserver(obs);
-  }
-
-  void RemoveObserver(StreamTextureFactoryContextObserver* obs) override {
-    observer_list_.RemoveObserver(obs);
-  }
-
-  void RestoreContext() {
-    FOR_EACH_OBSERVER(StreamTextureFactoryContextObserver, observer_list_,
-                      ResetStreamTextureProxy());
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<VideoContextProvider>;
-  ~VideoContextProvider() override {}
-
-  scoped_refptr<cc::ContextProvider> context_provider_;
-  gpu::GLInProcessContext* gl_in_process_context_;
-  base::ObserverList<StreamTextureFactoryContextObserver> observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoContextProvider);
-};
-
-namespace {
-base::LazyInstance<SynchronousCompositorStreamTextureFactoryImpl>::Leaky
-    g_stream_texture_factory = LAZY_INSTANCE_INITIALIZER;
-}  // namespace
-
-// static
-SynchronousCompositorStreamTextureFactoryImpl*
-SynchronousCompositorStreamTextureFactoryImpl::GetInstance() {
-  return g_stream_texture_factory.Pointer();
-}
-
-SynchronousCompositorStreamTextureFactoryImpl::
-    SynchronousCompositorStreamTextureFactoryImpl()
-    : num_hardware_compositors_(0) {}
-
 scoped_refptr<StreamTextureFactory>
-SynchronousCompositorStreamTextureFactoryImpl::CreateStreamTextureFactory() {
-  return StreamTextureFactorySynchronousImpl::Create(
-      base::Bind(&SynchronousCompositorStreamTextureFactoryImpl::
-                     TryCreateStreamTextureFactory,
-                 base::Unretained(this)));
+SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int frame_id) {
+  scoped_refptr<StreamTextureFactorySynchronousImpl> factory(
+      StreamTextureFactorySynchronousImpl::Create(
+          base::Bind(
+              &SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory,
+              base::Unretained(this)),
+          frame_id));
+  return factory;
 }
 
-void SynchronousCompositorStreamTextureFactoryImpl::
-    CompositorInitializedHardwareDraw() {
+void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   num_hardware_compositors_++;
   if (num_hardware_compositors_ == 1 && main_thread_task_runner_.get()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SynchronousCompositorStreamTextureFactoryImpl::
-                                  RestoreContextOnMainThread,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::Bind(
+            &SynchronousCompositorFactoryImpl::RestoreContextOnMainThread,
+            base::Unretained(this)));
   }
 }
 
-void SynchronousCompositorStreamTextureFactoryImpl::
-    CompositorReleasedHardwareDraw() {
+void SynchronousCompositorFactoryImpl::CompositorReleasedHardwareDraw() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   DCHECK_GT(num_hardware_compositors_, 0u);
   num_hardware_compositors_--;
 }
 
-void SynchronousCompositorStreamTextureFactoryImpl::
-    RestoreContextOnMainThread() {
+void SynchronousCompositorFactoryImpl::RestoreContextOnMainThread() {
   if (CanCreateMainThreadContext() && video_context_provider_.get())
     video_context_provider_->RestoreContext();
 }
 
-bool SynchronousCompositorStreamTextureFactoryImpl::
-    CanCreateMainThreadContext() {
+bool SynchronousCompositorFactoryImpl::CanCreateMainThreadContext() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   return num_hardware_compositors_ > 0;
 }
 
 scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
-SynchronousCompositorStreamTextureFactoryImpl::TryCreateStreamTextureFactory() {
+SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
   {
     base::AutoLock lock(num_hardware_compositor_lock_);
     main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -240,8 +226,8 @@ SynchronousCompositorStreamTextureFactoryImpl::TryCreateStreamTextureFactory() {
   // |video_context_provider_| to null is also not safe since it makes
   // synchronous destruction uncontrolled and possibly deadlock.
   if (!CanCreateMainThreadContext()) {
-    return scoped_refptr<
-        StreamTextureFactorySynchronousImpl::ContextProvider>();
+    return
+        scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>();
   }
 
   if (!video_context_provider_.get()) {
@@ -262,15 +248,10 @@ SynchronousCompositorStreamTextureFactoryImpl::TryCreateStreamTextureFactory() {
   return video_context_provider_;
 }
 
-void SynchronousCompositorStreamTextureFactoryImpl::SetDeferredGpuService(
+void SynchronousCompositorFactoryImpl::SetDeferredGpuService(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   DCHECK(!android_view_service_.get());
   android_view_service_ = service;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
-    RenderThreadImpl::SetStreamTextureFactory(CreateStreamTextureFactory());
-  }
 }
 
 }  // namespace content

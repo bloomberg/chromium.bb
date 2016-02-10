@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_FACTORY_IMPL_H_
 #define CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_FACTORY_IMPL_H_
 
-#include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
@@ -47,36 +46,27 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   InputHandlerManagerClient* GetInputHandlerManagerClient() override;
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
+  scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
+      int frame_id) override;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;
   }
 
- private:
-  SynchronousInputEventFilter synchronous_input_event_filter_;
-};
-
-class SynchronousCompositorStreamTextureFactoryImpl {
- public:
-  static SynchronousCompositorStreamTextureFactoryImpl* GetInstance();
-
-  scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory();
   void SetDeferredGpuService(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
   void CompositorInitializedHardwareDraw();
   void CompositorReleasedHardwareDraw();
 
+
  private:
-  friend struct base::DefaultLazyInstanceTraits<
-      SynchronousCompositorStreamTextureFactoryImpl>;
-
-  SynchronousCompositorStreamTextureFactoryImpl();
-  ~SynchronousCompositorStreamTextureFactoryImpl();
-
+  scoped_refptr<cc::ContextProvider> GetSharedWorkerContextProvider();
   bool CanCreateMainThreadContext();
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       TryCreateStreamTextureFactory();
   void RestoreContextOnMainThread();
+
+  SynchronousInputEventFilter synchronous_input_event_filter_;
 
   scoped_refptr<gpu::InProcessCommandBuffer::Service> android_view_service_;
 

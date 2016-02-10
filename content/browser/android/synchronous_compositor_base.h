@@ -24,7 +24,6 @@ struct BeginFrameArgs;
 namespace content {
 
 class RenderWidgetHostViewAndroid;
-class SynchronousCompositorStreamTextureFactoryImpl;
 class WebContents;
 
 class SynchronousCompositorBase : public SynchronousCompositor {

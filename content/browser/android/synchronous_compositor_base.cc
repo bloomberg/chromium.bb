@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/supports_user_data.h"
-#include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -37,8 +36,11 @@ void SynchronousCompositor::SetGpuService(
   g_sync_point_manager = service->sync_point_manager();
   GpuProcessHost::RegisterGpuMainThreadFactory(
       CreateInProcessGpuThreadForSynchronousCompositor);
-  SynchronousCompositorStreamTextureFactoryImpl::GetInstance()
-      ->SetDeferredGpuService(service);
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIPCSyncCompositing)) {
+    SynchronousCompositorImpl::SetGpuServiceInProc(service);
+  }
 }
 
 // static

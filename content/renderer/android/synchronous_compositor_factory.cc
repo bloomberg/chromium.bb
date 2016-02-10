@@ -9,13 +9,13 @@
 namespace content {
 
 namespace {
-SynchronousCompositorFactory* g_instance = nullptr;
+SynchronousCompositorFactory* g_instance = NULL;
 }  // namespace
 
 // static
 void SynchronousCompositorFactory::SetInstance(
     SynchronousCompositorFactory* instance) {
-  DCHECK(g_instance == nullptr);
+  DCHECK(g_instance == NULL);
   g_instance = instance;
 }
 
