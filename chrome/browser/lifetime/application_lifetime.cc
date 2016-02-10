@@ -69,10 +69,10 @@ bool AreAllBrowsersCloseable() {
   }
   return true;
 }
-#endif  // !defined(OS_ANDROID)
 
 int g_keep_alive_count = 0;
 bool g_disable_shutdown_for_testing = false;
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 // Whether chrome should send stop request to a session manager.
@@ -102,6 +102,7 @@ void AttemptExitInternal(bool try_to_quit_application) {
   g_browser_process->platform_part()->AttemptExit();
 }
 
+#if !defined(OS_ANDROID)
 void CloseAllBrowsersAndQuit() {
   browser_shutdown::SetTryingToQuit(true);
   CloseAllBrowsers();
@@ -136,6 +137,7 @@ void CloseAllBrowsers() {
       new BrowserCloseManager;
   browser_close_manager->StartClosingBrowsers();
 }
+#endif  // !defined(OS_ANDROID)
 
 void AttemptUserExit() {
 #if defined(OS_CHROMEOS)
@@ -233,6 +235,7 @@ void ExitCleanly() {
 }
 #endif
 
+#if !defined(OS_ANDROID)
 void SessionEnding() {
   // This is a time-limited shutdown where we need to write as much to
   // disk as we can as soon as we can, and where we must kill the
@@ -308,6 +311,7 @@ void DecrementKeepAliveCount() {
 bool WillKeepAlive() {
   return g_keep_alive_count > 0;
 }
+#endif  // !defined(OS_ANDROID)
 
 void NotifyAppTerminating() {
   static bool notified = false;
@@ -358,6 +362,7 @@ void NotifyAndTerminate(bool fast_path) {
 #endif
 }
 
+#if !defined(OS_ANDROID)
 void OnAppExiting() {
   static bool notified = false;
   if (notified)
@@ -371,5 +376,6 @@ void DisableShutdownForTesting(bool disable_shutdown_for_testing) {
   if (!g_disable_shutdown_for_testing && !WillKeepAlive())
     CloseAllBrowsersIfNeeded();
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace chrome

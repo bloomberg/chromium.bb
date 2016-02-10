@@ -45,11 +45,13 @@ void UsbTabHelper::CreateDeviceManager(
                                          std::move(request));
 }
 
+#if !defined(OS_ANDROID)
 void UsbTabHelper::CreatePermissionBubble(
     content::RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
   GetPermissionBubble(render_frame_host, std::move(request));
 }
+#endif  // !defined(OS_ANDROID)
 
 UsbTabHelper::UsbTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
@@ -82,6 +84,7 @@ void UsbTabHelper::GetPermissionProvider(
   frame_usb_services->permission_provider->Bind(std::move(request));
 }
 
+#if !defined(OS_ANDROID)
 void UsbTabHelper::GetPermissionBubble(
     content::RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
@@ -92,3 +95,4 @@ void UsbTabHelper::GetPermissionBubble(
   }
   frame_usb_services->permission_bubble->Bind(std::move(request));
 }
+#endif  // !defined(OS_ANDROID)

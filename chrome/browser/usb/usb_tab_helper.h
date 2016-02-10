@@ -41,9 +41,11 @@ class UsbTabHelper : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::DeviceManager> request);
 
+#if !defined(OS_ANDROID)
   void CreatePermissionBubble(
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request);
+#endif  // !defined(OS_ANDROID)
 
  private:
   explicit UsbTabHelper(content::WebContents* web_contents);
@@ -59,9 +61,11 @@ class UsbTabHelper : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::PermissionProvider> request);
 
+#if !defined(OS_ANDROID)
   void GetPermissionBubble(
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request);
+#endif  // !defined(OS_ANDROID)
 
   FrameUsbServicesMap frame_usb_services_;
 

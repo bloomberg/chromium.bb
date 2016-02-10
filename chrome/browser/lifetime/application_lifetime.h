@@ -46,6 +46,7 @@ void AttemptExit();
 void ExitCleanly();
 #endif
 
+#if !defined(OS_ANDROID)
 // Closes all browsers and if successful, quits.
 void CloseAllBrowsersAndQuit();
 
@@ -72,6 +73,7 @@ void DecrementKeepAliveCount();
 // Returns true if application will continue running after the last Browser
 // closes.
 bool WillKeepAlive();
+#endif  // !defined(OS_ANDROID)
 
 // Emits APP_TERMINATING notification. It is guaranteed that the
 // notification is sent only once.
@@ -81,6 +83,7 @@ void NotifyAppTerminating();
 // For ChromeOS, also request session manager to end the session.
 void NotifyAndTerminate(bool fast_path);
 
+#if !defined(OS_ANDROID)
 // Called once the application is exiting.
 void OnAppExiting();
 
@@ -90,6 +93,7 @@ void HandleAppExitingForPlatform();
 
 // Disable browser shutdown for unit tests.
 void DisableShutdownForTesting(bool disable_shutdown_for_testing);
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace chrome
 
