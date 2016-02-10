@@ -13,18 +13,18 @@
 namespace mojo {
 namespace shell {
 
-ScopedMessagePipeHandle ConnectToServiceByName(
+ScopedMessagePipeHandle ConnectToInterfaceByName(
     ApplicationManager* application_manager,
     const GURL& application_url,
     const std::string& interface_name) {
-  ServiceProviderPtr services;
+  InterfaceProviderPtr remote_interfaces;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->SetTarget(Identity(application_url, std::string(),
                              GetPermissiveCapabilityFilter()));
-  params->set_services(GetProxy(&services));
+  params->set_remote_interfaces(GetProxy(&remote_interfaces));
   application_manager->ConnectToApplication(std::move(params));
   MessagePipe pipe;
-  services->ConnectToService(interface_name, std::move(pipe.handle1));
+  remote_interfaces->GetInterface(interface_name, std::move(pipe.handle1));
   return std::move(pipe.handle0);
 }
 

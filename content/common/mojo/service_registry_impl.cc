@@ -21,18 +21,18 @@ ServiceRegistryImpl::~ServiceRegistryImpl() {
 }
 
 void ServiceRegistryImpl::Bind(
-    mojo::InterfaceRequest<mojo::ServiceProvider> request) {
+    mojo::InterfaceRequest<mojo::InterfaceProvider> request) {
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(base::Bind(
       &ServiceRegistryImpl::OnConnectionError, base::Unretained(this)));
 }
 
 void ServiceRegistryImpl::BindRemoteServiceProvider(
-    mojo::ServiceProviderPtr service_provider) {
+    mojo::InterfaceProviderPtr service_provider) {
   CHECK(!remote_provider_);
   remote_provider_ = std::move(service_provider);
   while (!pending_connects_.empty()) {
-    remote_provider_->ConnectToService(
+    remote_provider_->GetInterface(
         mojo::String::From(pending_connects_.front().first),
         mojo::ScopedMessagePipeHandle(pending_connects_.front().second));
     pending_connects_.pop();
@@ -68,7 +68,7 @@ void ServiceRegistryImpl::ConnectToRemoteService(
         std::make_pair(service_name.as_string(), handle.release()));
     return;
   }
-  remote_provider_->ConnectToService(
+  remote_provider_->GetInterface(
       mojo::String::From(service_name.as_string()), std::move(handle));
 }
 
@@ -80,7 +80,7 @@ base::WeakPtr<ServiceRegistry> ServiceRegistryImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void ServiceRegistryImpl::ConnectToService(
+void ServiceRegistryImpl::GetInterface(
     const mojo::String& name,
     mojo::ScopedMessagePipeHandle client_handle) {
   auto it = service_factories_.find(name);

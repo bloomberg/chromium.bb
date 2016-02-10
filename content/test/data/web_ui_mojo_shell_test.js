@@ -22,7 +22,7 @@ define('main', [
   var connectToService = function(serviceProvider, iface) {
     var pipe = core.createMessagePipe();
     var service = new iface.proxyClass(new router.Router(pipe.handle0));
-    serviceProvider.connectToService(iface.name, pipe.handle1);
+    serviceProvider.getInterface(iface.name, pipe.handle1);
     return service;
   };
 

@@ -22,7 +22,7 @@
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "url/gurl.h"

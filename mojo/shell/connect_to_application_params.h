@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/identity.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "url/gurl.h"
 
@@ -50,18 +50,18 @@ class ConnectToApplicationParams {
     return std::move(target_url_request_);
   }
 
-  void set_services(InterfaceRequest<ServiceProvider> value) {
-    services_ = std::move(value);
+  void set_remote_interfaces(InterfaceRequest<InterfaceProvider> value) {
+    remote_interfaces_ = std::move(value);
   }
-  InterfaceRequest<ServiceProvider> TakeServices() {
-    return std::move(services_);
+  InterfaceRequest<InterfaceProvider> TakeRemoteInterfaces() {
+    return std::move(remote_interfaces_);
   }
 
-  void set_exposed_services(ServiceProviderPtr value) {
-    exposed_services_ = std::move(value);
+  void set_local_interfaces(InterfaceProviderPtr value) {
+    local_interfaces_ = std::move(value);
   }
-  ServiceProviderPtr TakeExposedServices() {
-    return std::move(exposed_services_);
+  InterfaceProviderPtr TakeLocalInterfaces() {
+    return std::move(local_interfaces_);
   }
 
   void set_on_application_end(const base::Closure& value) {
@@ -91,8 +91,8 @@ class ConnectToApplicationParams {
   // remains unchanged.
   URLRequestPtr target_url_request_;
 
-  InterfaceRequest<ServiceProvider> services_;
-  ServiceProviderPtr exposed_services_;
+  InterfaceRequest<InterfaceProvider> remote_interfaces_;
+  InterfaceProviderPtr local_interfaces_;
   base::Closure on_application_end_;
   shell::mojom::Shell::ConnectToApplicationCallback connect_callback_;
 

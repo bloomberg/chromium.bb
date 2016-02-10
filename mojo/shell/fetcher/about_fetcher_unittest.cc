@@ -63,9 +63,9 @@ class TestContentHandler : public ShellClient,
     destruct_callback.Run();
 
     // Drop |application| request. This results in the application manager
-    // dropping the ServiceProvider interface request provided by the client
+    // dropping the InterfaceProvider interface request provided by the client
     // who made the ConnectToApplication() call. Therefore the client could
-    // listen for connection error of the ServiceProvider interface to learn
+    // listen for connection error of the InterfaceProvider interface to learn
     // that StartApplication() has been called.
   }
 
@@ -107,20 +107,20 @@ class AboutFetcherTest : public testing::Test {
   void ConnectAndWait(const std::string& url) {
     base::RunLoop run_loop;
 
-    ServiceProviderPtr service_provider;
-    InterfaceRequest<ServiceProvider> service_provider_request =
-        GetProxy(&service_provider);
+    InterfaceProviderPtr remote_interfaces;
+    InterfaceRequest<InterfaceProvider> remote_request =
+        GetProxy(&remote_interfaces);
     // This connection error handler will be called when:
     // - TestContentHandler::StartApplication() has been called (please see
     //   comments in that method); or
     // - the application manager fails to fetch the requested URL.
-    service_provider.set_connection_error_handler(
+    remote_interfaces.set_connection_error_handler(
         [&run_loop]() { run_loop.Quit(); });
 
     scoped_ptr<ConnectToApplicationParams> params(
         new ConnectToApplicationParams);
     params->SetTargetURL(GURL(url));
-    params->set_services(std::move(service_provider_request));
+    params->set_remote_interfaces(std::move(remote_request));
     application_manager_->ConnectToApplication(std::move(params));
 
     run_loop.Run();

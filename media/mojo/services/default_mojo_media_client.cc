@@ -67,7 +67,7 @@ class DefaultMojoMediaClient : public MojoMediaClient {
   }
 
   scoped_ptr<CdmFactory> CreateCdmFactory(
-      mojo::ServiceProvider* /* service_provider */) override {
+      mojo::InterfaceProvider* /* service_provider */) override {
     return make_scoped_ptr(new DefaultCdmFactory());
   }
 

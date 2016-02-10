@@ -22,7 +22,7 @@ namespace shell {
 namespace test {
 
 // Lives on the main thread of the test.
-// Listens for services exposed/blocked and for application connections being
+// Listens for interfaces exposed/blocked and for application connections being
 // closed. Quits |loop| when all expectations are met.
 class ConnectionValidator : public ApplicationLoader,
                             public ShellClient,
@@ -67,10 +67,10 @@ class ConnectionValidator : public ApplicationLoader,
   }
 
   // Overridden from Validator:
-  void AddServiceCalled(const String& app_url,
-                        const String& service_url,
-                        const String& name,
-                        bool blocked) override {
+  void AddInterfaceCalled(const String& app_url,
+                          const String& service_url,
+                          const String& name,
+                          bool blocked) override {
     Validate(base::StringPrintf("%s %s %s %s",
         blocked ? "B" : "E", app_url.data(), service_url.data(), name.data()));
   }
@@ -123,8 +123,8 @@ class ServiceApplication : public ShellClient,
     shell_->ConnectToService("test:validator", &validator_);
   }
   bool AcceptConnection(Connection* connection) override {
-    AddService<Safe>(connection);
-    AddService<Unsafe>(connection);
+    AddInterface<Safe>(connection);
+    AddInterface<Unsafe>(connection);
     return true;
   }
 
@@ -141,11 +141,11 @@ class ServiceApplication : public ShellClient,
   }
 
   template <typename Interface>
-  void AddService(Connection* connection) {
-    validator_->AddServiceCalled(connection->GetRemoteApplicationURL(),
-                                 connection->GetConnectionURL(),
-                                 Interface::Name_,
-                                 !connection->AddInterface<Interface>(this));
+  void AddInterface(Connection* connection) {
+    validator_->AddInterfaceCalled(connection->GetRemoteApplicationURL(),
+                                   connection->GetConnectionURL(),
+                                   Interface::Name_,
+                                   !connection->AddInterface<Interface>(this));
   }
 
   Shell* shell_;
@@ -172,12 +172,12 @@ bool TestApplication::AcceptConnection(Connection* connection) {
   connection->GetInterface(&validator_);
 
   connection1_ = shell_->Connect("test:service");
-  connection1_->SetRemoteServiceProviderConnectionErrorHandler(
+  connection1_->SetRemoteInterfaceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service"));
 
   connection2_ = shell_->Connect("test:service2");
-  connection2_->SetRemoteServiceProviderConnectionErrorHandler(
+  connection2_->SetRemoteInterfaceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service2"));
   return true;
@@ -291,45 +291,45 @@ void CapabilityFilterTest::TearDown() {
   application_manager_.reset();
 }
 
-class ServiceProviderImpl : public ServiceProvider {
+class InterfaceProviderImpl : public InterfaceProvider {
  public:
-  explicit ServiceProviderImpl(
-      InterfaceRequest<ServiceProvider> service_provider,
+  explicit InterfaceProviderImpl(
+      InterfaceRequest<InterfaceProvider> interfaces,
       InterfaceFactory<Validator>* factory)
-      : binding_(this, std::move(service_provider)),
+      : binding_(this, std::move(interfaces)),
         factory_(factory) {}
-  ~ServiceProviderImpl() override {}
+  ~InterfaceProviderImpl() override {}
 
  private:
-  // ServiceProvider method.
-  void ConnectToService(const mojo::String& service_name,
-                        ScopedMessagePipeHandle client_handle) override {
-    if (service_name == Validator::Name_) {
+  // InterfaceProvider method.
+  void GetInterface(const mojo::String& interface_name,
+                    ScopedMessagePipeHandle client_handle) override {
+    if (interface_name == Validator::Name_) {
       factory_->Create(nullptr,
                        MakeRequest<Validator>(std::move(client_handle)));
     }
   }
 
-  Binding<ServiceProvider> binding_;
+  Binding<InterfaceProvider> binding_;
   InterfaceFactory<Validator>* factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceProviderImpl);
+  DISALLOW_COPY_AND_ASSIGN(InterfaceProviderImpl);
 };
 
 void CapabilityFilterTest::RunApplication(const std::string& url,
                                           const CapabilityFilter& filter) {
-  ServiceProviderPtr services;
+  InterfaceProviderPtr remote_interfaces;
 
   // We expose Validator to the test application via ConnectToApplication
   // because we don't allow the test application to connect to test:validator.
   // Adding it to the CapabilityFilter would interfere with the test.
-  ServiceProviderPtr exposed_services;
-  new ServiceProviderImpl(GetProxy(&exposed_services), validator_);
+  InterfaceProviderPtr local_interfaces;
+  new InterfaceProviderImpl(GetProxy(&local_interfaces), validator_);
   scoped_ptr<ConnectToApplicationParams> params(
       new ConnectToApplicationParams);
   params->SetTarget(Identity(GURL(url), std::string(), filter));
-  params->set_services(GetProxy(&services));
-  params->set_exposed_services(std::move(exposed_services));
+  params->set_remote_interfaces(GetProxy(&remote_interfaces));
+  params->set_local_interfaces(std::move(local_interfaces));
   params->set_on_application_end(base::MessageLoop::QuitWhenIdleClosure());
   application_manager_->ConnectToApplication(std::move(params));
 }

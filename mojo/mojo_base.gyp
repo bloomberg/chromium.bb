@@ -206,7 +206,7 @@
         'mojom_files': [
           'shell/public/interfaces/application_manager.mojom',
           'shell/public/interfaces/content_handler.mojom',
-          'shell/public/interfaces/service_provider.mojom',
+          'shell/public/interfaces/interface_provider.mojom',
           'shell/public/interfaces/shell.mojom',
           'shell/public/interfaces/shell_client.mojom',
         ],

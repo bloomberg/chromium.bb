@@ -23,8 +23,8 @@ ConnectionImpl::ConnectionImpl(
     const std::string& connection_url,
     const std::string& remote_url,
     uint32_t remote_id,
-    ServiceProviderPtr remote_services,
-    InterfaceRequest<ServiceProvider> local_services,
+    InterfaceProviderPtr remote_interfaces,
+    InterfaceRequest<InterfaceProvider> local_interfaces,
     const std::set<std::string>& allowed_interfaces)
     : connection_url_(connection_url),
       remote_url_(remote_url),
@@ -32,14 +32,14 @@ ConnectionImpl::ConnectionImpl(
       content_handler_id_(0u),
       remote_ids_valid_(false),
       local_binding_(this),
-      remote_service_provider_(std::move(remote_services)),
+      remote_interfaces_(std::move(remote_interfaces)),
       allowed_interfaces_(allowed_interfaces),
       allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
                             allowed_interfaces_.count("*") == 1),
       default_binder_(nullptr),
       weak_factory_(this) {
-  if (local_services.is_pending())
-    local_binding_.Bind(std::move(local_services));
+  if (local_interfaces.is_pending())
+    local_binding_.Bind(std::move(local_interfaces));
 }
 
 ConnectionImpl::ConnectionImpl()
@@ -94,17 +94,17 @@ const std::string& ConnectionImpl::GetRemoteApplicationURL() {
   return remote_url_;
 }
 
-ServiceProvider* ConnectionImpl::GetRemoteInterfaces() {
-  return remote_service_provider_.get();
+InterfaceProvider* ConnectionImpl::GetRemoteInterfaces() {
+  return remote_interfaces_.get();
 }
 
-ServiceProvider* ConnectionImpl::GetLocalInterfaces() {
+InterfaceProvider* ConnectionImpl::GetLocalInterfaces() {
   return this;
 }
 
-void ConnectionImpl::SetRemoteServiceProviderConnectionErrorHandler(
+void ConnectionImpl::SetRemoteInterfaceProviderConnectionErrorHandler(
     const Closure& handler) {
-  remote_service_provider_.set_connection_error_handler(handler);
+  remote_interfaces_.set_connection_error_handler(handler);
 }
 
 bool ConnectionImpl::GetRemoteApplicationID(uint32_t* remote_id) const {
@@ -137,15 +137,15 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConnectionImpl, ServiceProvider implementation:
+// ConnectionImpl, InterfaceProvider implementation:
 
-void ConnectionImpl::ConnectToService(const mojo::String& interface_name,
-                                      ScopedMessagePipeHandle handle) {
+void ConnectionImpl::GetInterface(const mojo::String& interface_name,
+                                  ScopedMessagePipeHandle handle) {
   auto iter = name_to_binder_.find(interface_name);
-  if (iter != name_to_binder_.end())
-    iter->second->BindInterface(this, interface_name, std::move(handle));
-  else if (default_binder_)
-    default_binder_->BindInterface(this, interface_name, std::move(handle));
+  InterfaceBinder* binder = iter != name_to_binder_.end() ? iter->second :
+      default_binder_;
+  if (binder)
+    binder->BindInterface(this, interface_name, std::move(handle));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

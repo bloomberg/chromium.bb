@@ -2113,12 +2113,12 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&setup));
 
-  mojo::ServiceProviderPtr exposed_services;
+  mojo::InterfaceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));
 
-  mojo::ServiceProviderPtr services;
-  setup->ExchangeServiceProviders(routing_id_, GetProxy(&services),
-                                  std::move(exposed_services));
+  mojo::InterfaceProviderPtr services;
+  setup->ExchangeInterfaceProviders(routing_id_, GetProxy(&services),
+                                    std::move(exposed_services));
   service_registry_->BindRemoteServiceProvider(std::move(services));
 
 #if defined(OS_ANDROID)

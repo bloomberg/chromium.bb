@@ -11,12 +11,12 @@ module mojo.shell;
 interface Safe { };
 interface Unsafe { };
 
-// Implemented by a service that records services exposed to an application and
-// connection errors to a target application.
+// Implemented by a service that records interfaces exposed to an application
+// and connection errors to a target application.
 interface Validator {
-  AddServiceCalled(string app_url,
-                   string service_url,
-                   string name,
-                   bool blocked);
+  AddInterfaceCalled(string app_url,
+                     string service_url,
+                     string name,
+                     bool blocked);
   ConnectionClosed(string from_url, string to_url);
 };

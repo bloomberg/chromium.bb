@@ -1498,8 +1498,8 @@ void RenderFrameImpl::NavigateToSwappedOutURL() {
 }
 
 void RenderFrameImpl::BindServiceRegistry(
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+    mojo::InterfaceRequest<mojo::InterfaceProvider> services,
+    mojo::InterfaceProviderPtr exposed_services) {
   service_registry_.Bind(std::move(services));
   service_registry_.BindRemoteServiceProvider(std::move(exposed_services));
 }
@@ -6006,7 +6006,7 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 #if defined(ENABLE_MOJO_MEDIA)
 media::interfaces::ServiceFactory* RenderFrameImpl::GetMediaServiceFactory() {
   if (!media_service_factory_) {
-    mojo::ServiceProviderPtr service_provider =
+    mojo::InterfaceProviderPtr service_provider =
         ConnectToApplication(GURL("mojo:media"));
     mojo::ConnectToService(service_provider.get(), &media_service_factory_);
     media_service_factory_.set_connection_error_handler(
@@ -6076,11 +6076,11 @@ void RenderFrameImpl::ConnectToService(
   GetServiceRegistry()->ConnectToRemoteService(std::move(request));
 }
 
-mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
+mojo::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
     const GURL& url) {
   if (!mojo_shell_)
     GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
-  mojo::ServiceProviderPtr service_provider;
+  mojo::InterfaceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url);
   mojo::shell::mojom::CapabilityFilterPtr filter(

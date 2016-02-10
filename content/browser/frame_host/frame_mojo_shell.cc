@@ -49,11 +49,11 @@ void FrameMojoShell::BindRequest(
 // future we may need to support both.
 void FrameMojoShell::ConnectToApplication(
     mojo::URLRequestPtr application_url,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr /* exposed_services */,
+    mojo::InterfaceRequest<mojo::InterfaceProvider> services,
+    mojo::InterfaceProviderPtr /* exposed_services */,
     mojo::shell::mojom::CapabilityFilterPtr filter,
     const ConnectToApplicationCallback& callback) {
-  mojo::ServiceProviderPtr frame_services;
+  mojo::InterfaceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
 

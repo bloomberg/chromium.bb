@@ -13,7 +13,7 @@
 #include "media/base/video_renderer_sink.h"
 
 namespace mojo {
-class ServiceProvider;
+class InterfaceProvider;
 }
 
 namespace media {
@@ -39,7 +39,7 @@ class MojoMediaClient {
 
   // Returns the CdmFactory to be used by MojoCdmService.
   virtual scoped_ptr<CdmFactory> CreateCdmFactory(
-      mojo::ServiceProvider* service_provider);
+      mojo::InterfaceProvider* service_provider);
 
  protected:
   MojoMediaClient();

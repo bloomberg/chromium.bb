@@ -12,7 +12,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "mojo/shell/public/cpp/lib/interface_factory_binder.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace mojo {
 
@@ -22,12 +22,11 @@ class InterfaceBinder;
 // passed to ShellClient's AcceptConnection() method each
 // time a connection is made to this app.
 //
-// To use, define a class that implements your specific service API (e.g.,
-// FooImpl to implement a service named Foo). Then implement an
-// InterfaceFactory<Foo> that binds instances of FooImpl to
+// To use, define a class that implements your specific interface. Then
+// implement an InterfaceFactory<Foo> that binds instances of FooImpl to
 // InterfaceRequest<Foo>s and register that on the connection like this:
 //
-//   connection->AddService(&factory);
+//   connection->AddInterface(&factory);
 //
 // Or, if you have multiple factories implemented by the same type, explicitly
 // specify the interface to register the factory for:
@@ -63,10 +62,10 @@ class Connection {
   // See class description for details.
   virtual void SetDefaultInterfaceBinder(InterfaceBinder* binder) = 0;
 
-  // Makes Interface available as a service to the remote application.
+  // Allow the remote application to request instances of Interface.
   // |factory| will create implementations of Interface on demand.
-  // Returns true if the service was exposed, false if capability filtering
-  // from the shell prevented the service from being exposed.
+  // Returns true if the interface was exposed, false if capability filtering
+  // from the shell prevented the interface from being exposed.
   template <typename Interface>
   bool AddInterface(InterfaceFactory<Interface>* factory) {
     return SetInterfaceBinderForName(
@@ -76,13 +75,13 @@ class Connection {
 
   // Binds |ptr| to an implemention of Interface in the remote application.
   // |ptr| can immediately be used to start sending requests to the remote
-  // service.
+  // interface.
   template <typename Interface>
   void GetInterface(InterfacePtr<Interface>* ptr) {
-    if (ServiceProvider* sp = GetRemoteInterfaces()) {
+    if (InterfaceProvider* ip = GetRemoteInterfaces()) {
       MessagePipe pipe;
       ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
-      sp->ConnectToService(Interface::Name_, std::move(pipe.handle1));
+      ip->GetInterface(Interface::Name_, std::move(pipe.handle1));
     }
   }
 
@@ -101,18 +100,18 @@ class Connection {
   // Returns the URL identifying the remote application on this connection.
   virtual const std::string& GetRemoteApplicationURL() = 0;
 
-  // Returns the raw proxy to the remote application's ServiceProvider
-  // interface. Most applications will just use ConnectToService() instead.
+  // Returns the raw proxy to the remote application's InterfaceProvider
+  // interface. Most applications will just use GetInterface() instead.
   // Caller does not take ownership.
-  virtual ServiceProvider* GetRemoteInterfaces() = 0;
+  virtual InterfaceProvider* GetRemoteInterfaces() = 0;
 
-  // Returns the local application's ServiceProvider interface. The return
+  // Returns the local application's InterfaceProvider interface. The return
   // value is owned by this connection.
-  virtual ServiceProvider* GetLocalInterfaces() = 0;
+  virtual InterfaceProvider* GetLocalInterfaces() = 0;
 
   // Register a handler to receive an error notification on the pipe to the
-  // remote application's service provider.
-  virtual void SetRemoteServiceProviderConnectionErrorHandler(
+  // remote application's InterfaceProvider.
+  virtual void SetRemoteInterfaceProviderConnectionErrorHandler(
       const Closure& handler) = 0;
 
   // Returns the id of the remote application. For Connections created via

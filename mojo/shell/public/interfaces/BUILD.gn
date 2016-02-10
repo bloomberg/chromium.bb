@@ -9,7 +9,7 @@ mojom("interfaces") {
   sources = [
     "application_manager.mojom",
     "content_handler.mojom",
-    "service_provider.mojom",
+    "interface_provider.mojom",
     "shell.mojom",
     "shell_client.mojom",
   ]

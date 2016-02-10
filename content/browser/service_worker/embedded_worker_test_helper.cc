@@ -58,10 +58,10 @@ class EmbeddedWorkerTestHelper::MockEmbeddedWorkerSetup
     new MockEmbeddedWorkerSetup(helper, std::move(request));
   }
 
-  void ExchangeServiceProviders(
+  void ExchangeInterfaceProviders(
       int32_t thread_id,
-      mojo::InterfaceRequest<mojo::ServiceProvider> services,
-      mojo::ServiceProviderPtr exposed_services) override {
+      mojo::InterfaceRequest<mojo::InterfaceProvider> services,
+      mojo::InterfaceProviderPtr exposed_services) override {
     if (!helper_)
       return;
     helper_->OnSetupMojoStub(thread_id, std::move(services),
@@ -100,7 +100,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       new ServiceRegistryImpl);
   render_process_service_registry_.ServiceRegistry::AddService(
       base::Bind(&MockEmbeddedWorkerSetup::Create, weak_factory_.GetWeakPtr()));
-  mojo::ServiceProviderPtr services;
+  mojo::InterfaceProviderPtr services;
   render_process_service_registry_.Bind(mojo::GetProxy(&services));
   host_service_registry->BindRemoteServiceProvider(std::move(services));
   render_process_host_->SetServiceRegistry(std::move(host_service_registry));
@@ -384,8 +384,8 @@ void EmbeddedWorkerTestHelper::OnPushEventStub(
 
 void EmbeddedWorkerTestHelper::OnSetupMojoStub(
     int thread_id,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+    mojo::InterfaceRequest<mojo::InterfaceProvider> services,
+    mojo::InterfaceProviderPtr exposed_services) {
   scoped_ptr<ServiceRegistryImpl> new_registry(new ServiceRegistryImpl);
   new_registry->Bind(std::move(services));
   new_registry->BindRemoteServiceProvider(std::move(exposed_services));

@@ -17,7 +17,7 @@ namespace shell {
 
 class ApplicationManager;
 
-ScopedMessagePipeHandle ConnectToServiceByName(
+ScopedMessagePipeHandle ConnectToInterfaceByName(
     ApplicationManager* application_manager,
     const GURL& application_url,
     const std::string& interface_name);
@@ -26,12 +26,12 @@ ScopedMessagePipeHandle ConnectToServiceByName(
 // capability filters. Runs |application_url| with a permissive capability
 // filter.
 template <typename Interface>
-inline void ConnectToService(ApplicationManager* application_manager,
-                             const GURL& application_url,
-                             InterfacePtr<Interface>* ptr) {
+inline void ConnectToInterface(ApplicationManager* application_manager,
+                               const GURL& application_url,
+                               InterfacePtr<Interface>* ptr) {
   ScopedMessagePipeHandle service_handle =
-      ConnectToServiceByName(application_manager, application_url,
-                             Interface::Name_);
+      ConnectToInterfaceByName(application_manager, application_url,
+                               Interface::Name_);
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 

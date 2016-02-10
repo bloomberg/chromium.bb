@@ -22,7 +22,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/service_worker_event_status.mojom.h"
 #include "ipc/ipc_listener.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
@@ -87,8 +87,8 @@ class ServiceWorkerContextClient
   // ServiceRegistry to connect to services before this method is called are
   // queued up and will resolve after this method is called.
   void BindServiceRegistry(
-      mojo::InterfaceRequest<mojo::ServiceProvider> services,
-      mojo::ServiceProviderPtr exposed_services);
+      mojo::InterfaceRequest<mojo::InterfaceProvider> services,
+      mojo::InterfaceProviderPtr exposed_services);
 
   // WebServiceWorkerContextClient overrides.
   blink::WebURL scope() const override;

@@ -41,8 +41,8 @@ class CONTENT_EXPORT MojoShellContext {
   static void ConnectToApplication(
       const GURL& url,
       const GURL& requestor_url,
-      mojo::InterfaceRequest<mojo::ServiceProvider> request,
-      mojo::ServiceProviderPtr exposed_services,
+      mojo::InterfaceRequest<mojo::InterfaceProvider> request,
+      mojo::InterfaceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
       const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback);
 
@@ -55,8 +55,8 @@ class CONTENT_EXPORT MojoShellContext {
   void ConnectToApplicationOnOwnThread(
       const GURL& url,
       const GURL& requestor_url,
-      mojo::InterfaceRequest<mojo::ServiceProvider> request,
-      mojo::ServiceProviderPtr exposed_services,
+      mojo::InterfaceRequest<mojo::InterfaceProvider> request,
+      mojo::InterfaceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
       const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback);
 

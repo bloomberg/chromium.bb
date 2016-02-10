@@ -73,9 +73,6 @@ scoped_ptr<Connection> ShellConnection::Connect(ConnectParams* params) {
     return nullptr;
   DCHECK(params);
   URLRequestPtr request = params->TakeRequest();
-  ServiceProviderPtr local_services;
-  InterfaceRequest<ServiceProvider> local_request = GetProxy(&local_services);
-  ServiceProviderPtr remote_services;
   std::string application_url = request->url.To<std::string>();
   // We allow all interfaces on outgoing connections since we are presumably in
   // a position to know who we're talking to.
@@ -83,15 +80,20 @@ scoped_ptr<Connection> ShellConnection::Connect(ConnectParams* params) {
   //             filter here too?
   std::set<std::string> allowed;
   allowed.insert("*");
-  InterfaceRequest<ServiceProvider> remote_services_proxy =
-      GetProxy(&remote_services);
+  InterfaceProviderPtr local_interfaces;
+  InterfaceRequest<InterfaceProvider> local_request =
+      GetProxy(&local_interfaces);
+  InterfaceProviderPtr remote_interfaces;
+  InterfaceRequest<InterfaceProvider> remote_request =
+      GetProxy(&remote_interfaces);
   scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
       application_url, application_url,
-      shell::mojom::Shell::kInvalidApplicationID, std::move(remote_services),
+      shell::mojom::Shell::kInvalidApplicationID, std::move(remote_interfaces),
       std::move(local_request), allowed));
   shell_->ConnectToApplication(std::move(request),
-                               std::move(remote_services_proxy),
-                               std::move(local_services), params->TakeFilter(),
+                               std::move(remote_request),
+                               std::move(local_interfaces),
+                               params->TakeFilter(),
                                registry->GetConnectToApplicationCallback());
   return std::move(registry);
 }
@@ -122,18 +124,19 @@ void ShellConnection::Initialize(shell::mojom::ShellPtr shell,
 void ShellConnection::AcceptConnection(
     const String& requestor_url,
     uint32_t requestor_id,
-    InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services,
+    InterfaceRequest<InterfaceProvider> local_interfaces,
+    InterfaceProviderPtr remote_interfaces,
     Array<String> allowed_interfaces,
     const String& url) {
   scoped_ptr<Connection> registry(new internal::ConnectionImpl(
-      url, requestor_url, requestor_id, std::move(exposed_services),
-      std::move(services), allowed_interfaces.To<std::set<std::string>>()));
+      url, requestor_url, requestor_id, std::move(remote_interfaces),
+      std::move(local_interfaces),
+      allowed_interfaces.To<std::set<std::string>>()));
   if (!client_->AcceptConnection(registry.get()))
     return;
 
-  // If we were quitting because we thought there were no more services for this
-  // app in use, then that has changed so cancel the quit request.
+  // If we were quitting because we thought there were no more interfaces for
+  // this app in use, then that has changed so cancel the quit request.
   if (quit_requested_)
     quit_requested_ = false;
 

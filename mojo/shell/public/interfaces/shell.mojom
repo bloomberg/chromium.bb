@@ -4,7 +4,7 @@
 
 module mojo.shell.mojom;
 
-import "mojo/shell/public/interfaces/service_provider.mojom";
+import "mojo/shell/public/interfaces/interface_provider.mojom";
 import "network/public/interfaces/url_loader.mojom";
 
 // Specifies a whitelist of applications and services an application can connect
@@ -62,8 +62,8 @@ interface Shell {
   // establish the connection to |application_url|. If no content handler is
   // used |content_handler_id| is kInvalidApplicationID.
   ConnectToApplication(mojo.URLRequest application_url,
-                       mojo.ServiceProvider&? services,
-                       mojo.ServiceProvider? exposed_services,
+                       mojo.InterfaceProvider&? remote_interfaces,
+                       mojo.InterfaceProvider? local_interfaces,
                        CapabilityFilter filter) =>
       (uint32 application_id, uint32 content_handler_id);
 

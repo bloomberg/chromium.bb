@@ -4,10 +4,10 @@
 
 module content;
 
-import "mojo/shell/public/interfaces/service_provider.mojom";
+import "mojo/shell/public/interfaces/interface_provider.mojom";
 
 interface RenderFrameSetup {
-  ExchangeServiceProviders(int32 frame_routing_id,
-                           mojo.ServiceProvider& services,
-                           mojo.ServiceProvider exposed_services);
+  ExchangeInterfaceProviders(int32 frame_routing_id,
+                             mojo.InterfaceProvider& remote_interfaces,
+                             mojo.InterfaceProvider local_interfaces);
 };

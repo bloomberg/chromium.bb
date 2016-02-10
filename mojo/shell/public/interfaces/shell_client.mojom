@@ -4,7 +4,7 @@
 
 module mojo.shell.mojom;
 
-import "mojo/shell/public/interfaces/service_provider.mojom";
+import "mojo/shell/public/interfaces/interface_provider.mojom";
 import "mojo/shell/public/interfaces/shell.mojom";
 
 // TODO(beng): rewrite these comments.
@@ -36,7 +36,7 @@ interface ShellClient {
   // If the other application wants to request services from this application,
   // it will have passed a valid interface request through the |services|
   // parameter (i.e. one containing a valid message pipe endpoint). This
-  // application may then bind an implementation of |ServiceProvider| to that
+  // application may then bind an implementation of |InterfaceProvider| to that
   // request in order to make services available to the other application.
   //
   // If the other application wants to offer services to this application, it
@@ -64,8 +64,8 @@ interface ShellClient {
   //
   AcceptConnection(string requestor_url,
                    uint32 requestor_id,
-                   mojo.ServiceProvider&? services,
-                   mojo.ServiceProvider? exposed_services,
+                   mojo.InterfaceProvider&? local_interfaces,
+                   mojo.InterfaceProvider? remote_interfaces,
                    array<string> allowed_interfaces,
                    string resolved_url);
 

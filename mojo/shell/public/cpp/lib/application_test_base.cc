@@ -53,8 +53,8 @@ class ShellGrabber : public shell::mojom::ShellClient {
 
   void AcceptConnection(const String& requestor_url,
                         uint32_t requestor_id,
-                        InterfaceRequest<ServiceProvider> services,
-                        ServiceProviderPtr exposed_services,
+                        InterfaceRequest<InterfaceProvider> local_interfaces,
+                        InterfaceProviderPtr remote_interfaces,
                         Array<String> allowed_interfaces,
                         const String& url) override {
     MOJO_CHECK(false);

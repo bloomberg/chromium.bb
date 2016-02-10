@@ -150,8 +150,8 @@ void PackageManagerImpl::FetchRequest(
     // LocalFetcher uses the network service to infer MIME types from URLs.
     // Skip this for mojo URLs to avoid recursively loading the network service.
     if (!network_service_ && !url.SchemeIs("mojo") && !url.SchemeIs("exe")) {
-      ConnectToService(application_manager_, GURL("mojo:network_service"),
-                       &network_service_);
+      ConnectToInterface(application_manager_, GURL("mojo:network_service"),
+                         &network_service_);
     }
     // Ownership of this object is transferred to |loader_callback|.
     // TODO(beng): this is eff'n weird.
@@ -166,8 +166,8 @@ void PackageManagerImpl::FetchRequest(
   }
 
   if (!url_loader_factory_) {
-    ConnectToService(application_manager_, GURL("mojo:network_service"),
-                     &url_loader_factory_);
+    ConnectToInterface(application_manager_, GURL("mojo:network_service"),
+                       &url_loader_factory_);
   }
 
   // Ownership of this object is transferred to |loader_callback|.

@@ -12,18 +12,18 @@
 #include "media/mojo/services/mojo_media_client.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "mojo/shell/public/cpp/app_lifetime_helper.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 
 ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<interfaces::ServiceFactory> request,
-    mojo::ServiceProvider* service_provider,
+    mojo::InterfaceProvider* interfaces,
     scoped_refptr<MediaLog> media_log,
     scoped_ptr<mojo::AppRefCount> parent_app_refcount,
     MojoMediaClient* mojo_media_client)
     : binding_(this, std::move(request)),
-      service_provider_(service_provider),
+      interfaces_(interfaces),
       media_log_(media_log),
       parent_app_refcount_(std::move(parent_app_refcount)),
       mojo_media_client_(mojo_media_client) {
@@ -82,7 +82,7 @@ RendererFactory* ServiceFactoryImpl::GetRendererFactory() {
 
 CdmFactory* ServiceFactoryImpl::GetCdmFactory() {
   if (!cdm_factory_) {
-    cdm_factory_ = mojo_media_client_->CreateCdmFactory(service_provider_);
+    cdm_factory_ = mojo_media_client_->CreateCdmFactory(interfaces_);
     LOG_IF(ERROR, !cdm_factory_) << "CdmFactory not available.";
   }
   return cdm_factory_.get();

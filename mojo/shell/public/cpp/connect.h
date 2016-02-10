@@ -7,17 +7,17 @@
 
 #include <utility>
 
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace mojo {
 
-// Binds |ptr| to a remote implementation of Interface from |service_provider|.
+// Binds |ptr| to a remote implementation of Interface from |interfaces|.
 template <typename Interface>
-inline void ConnectToService(ServiceProvider* service_provider,
-                             InterfacePtr<Interface>* ptr) {
+inline void GetInterface(InterfaceProvider* interfaces,
+                         InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
-  service_provider->ConnectToService(Interface::Name_, std::move(pipe.handle1));
+  interfaces->GetInterface(Interface::Name_, std::move(pipe.handle1));
 }
 
 }  // namespace mojo

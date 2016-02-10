@@ -12,16 +12,16 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace mojo {
 namespace internal {
 
 // A ConnectionImpl represents each half of a connection between two
-// applications, allowing customization of which services are published to the
+// applications, allowing customization of which interfaces are published to the
 // other.
-class ConnectionImpl : public Connection, public ServiceProvider {
+class ConnectionImpl : public Connection, public InterfaceProvider {
  public:
   class TestApi {
   public:
@@ -48,8 +48,8 @@ class ConnectionImpl : public Connection, public ServiceProvider {
   ConnectionImpl(const std::string& connection_url,
                  const std::string& remote_url,
                  uint32_t remote_id,
-                 ServiceProviderPtr remote_services,
-                 InterfaceRequest<ServiceProvider> local_services,
+                 InterfaceProviderPtr remote_interfaces,
+                 InterfaceRequest<InterfaceProvider> local_interfaces,
                  const std::set<std::string>& allowed_interfaces);
   ~ConnectionImpl() override;
 
@@ -59,24 +59,24 @@ class ConnectionImpl : public Connection, public ServiceProvider {
  private:
   using NameToInterfaceBinderMap = std::map<std::string, InterfaceBinder*>;
 
-  // Connection overrides.
+  // Connection:
   void SetDefaultInterfaceBinder(InterfaceBinder* binder) override;
   bool SetInterfaceBinderForName(InterfaceBinder* binder,
                                  const std::string& interface_name) override;
   const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
-  ServiceProvider* GetRemoteInterfaces() override;
-  ServiceProvider* GetLocalInterfaces() override;
-  void SetRemoteServiceProviderConnectionErrorHandler(
+  InterfaceProvider* GetRemoteInterfaces() override;
+  InterfaceProvider* GetLocalInterfaces() override;
+  void SetRemoteInterfaceProviderConnectionErrorHandler(
       const Closure& handler) override;
   bool GetRemoteApplicationID(uint32_t* remote_id) const override;
   bool GetRemoteContentHandlerID(uint32_t* content_handler_id) const override;
   void AddRemoteIDCallback(const Closure& callback) override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
-  // ServiceProvider method.
-  void ConnectToService(const mojo::String& service_name,
-                        ScopedMessagePipeHandle handle) override;
+  // InterfaceProvider:
+  void GetInterface(const mojo::String& interface_name,
+                    ScopedMessagePipeHandle handle) override;
 
   void RemoveInterfaceBinderForName(const std::string& interface_name);
   void OnGotRemoteIDs(uint32_t target_application_id,
@@ -92,8 +92,8 @@ class ConnectionImpl : public Connection, public ServiceProvider {
   bool remote_ids_valid_;
   std::vector<Closure> remote_id_callbacks_;
 
-  Binding<ServiceProvider> local_binding_;
-  ServiceProviderPtr remote_service_provider_;
+  Binding<InterfaceProvider> local_binding_;
+  InterfaceProviderPtr remote_interfaces_;
 
   const std::set<std::string> allowed_interfaces_;
   const bool allow_all_interfaces_;

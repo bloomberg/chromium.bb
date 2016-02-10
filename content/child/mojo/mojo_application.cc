@@ -50,11 +50,11 @@ void MojoApplication::OnActivate(
   application_setup.Bind(
       mojo::InterfacePtrInfo<ApplicationSetup>(std::move(pipe), 0u));
 
-  mojo::ServiceProviderPtr services;
-  mojo::ServiceProviderPtr exposed_services;
+  mojo::InterfaceProviderPtr services;
+  mojo::InterfaceProviderPtr exposed_services;
   service_registry_.Bind(GetProxy(&exposed_services));
-  application_setup->ExchangeServiceProviders(GetProxy(&services),
-                                              std::move(exposed_services));
+  application_setup->ExchangeInterfaceProviders(GetProxy(&services),
+                                                std::move(exposed_services));
   service_registry_.BindRemoteServiceProvider(std::move(services));
 }
 

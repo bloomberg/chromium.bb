@@ -115,16 +115,16 @@ void InitContentHandlers(PackageManagerImpl* manager,
   }
 }
 
-class TracingServiceProvider : public ServiceProvider {
+class TracingInterfaceProvider : public InterfaceProvider {
  public:
-  TracingServiceProvider(Tracer* tracer,
-                         InterfaceRequest<ServiceProvider> request)
+  TracingInterfaceProvider(Tracer* tracer,
+                           InterfaceRequest<InterfaceProvider> request)
       : tracer_(tracer), binding_(this, std::move(request)) {}
-  ~TracingServiceProvider() override {}
+  ~TracingInterfaceProvider() override {}
 
-  void ConnectToService(const mojo::String& service_name,
-                        ScopedMessagePipeHandle client_handle) override {
-    if (tracer_ && service_name == tracing::TraceProvider::Name_) {
+  void GetInterface(const mojo::String& interface_name,
+                    ScopedMessagePipeHandle client_handle) override {
+    if (tracer_ && interface_name == tracing::TraceProvider::Name_) {
       tracer_->ConnectToProvider(
           MakeRequest<tracing::TraceProvider>(std::move(client_handle)));
     }
@@ -132,9 +132,9 @@ class TracingServiceProvider : public ServiceProvider {
 
  private:
   Tracer* tracer_;
-  StrongBinding<ServiceProvider> binding_;
+  StrongBinding<InterfaceProvider> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(TracingServiceProvider);
+  DISALLOW_COPY_AND_ASSIGN(TracingInterfaceProvider);
 };
 
 }  // namespace
@@ -197,24 +197,24 @@ void Context::Init(const base::FilePath& shell_file_root) {
       make_scoped_ptr(package_manager_), std::move(runner_factory),
       task_runners_->blocking_pool()));
 
-  ServiceProviderPtr tracing_services;
-  ServiceProviderPtr tracing_exposed_services;
-  new TracingServiceProvider(&tracer_, GetProxy(&tracing_exposed_services));
+  InterfaceProviderPtr tracing_remote_interfaces;
+  InterfaceProviderPtr tracing_local_interfaces;
+  new TracingInterfaceProvider(&tracer_, GetProxy(&tracing_local_interfaces));
 
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->set_source(Identity(GURL("mojo:shell"), std::string(),
                               GetPermissiveCapabilityFilter()));
   params->SetTarget(Identity(GURL("mojo:tracing"), std::string(),
                              GetPermissiveCapabilityFilter()));
-  params->set_services(GetProxy(&tracing_services));
-  params->set_exposed_services(std::move(tracing_exposed_services));
+  params->set_remote_interfaces(GetProxy(&tracing_remote_interfaces));
+  params->set_local_interfaces(std::move(tracing_local_interfaces));
   application_manager_->ConnectToApplication(std::move(params));
 
   if (command_line.HasSwitch(tracing::kTraceStartup)) {
     tracing::TraceCollectorPtr coordinator;
     auto coordinator_request = GetProxy(&coordinator);
-    tracing_services->ConnectToService(tracing::TraceCollector::Name_,
-                                       coordinator_request.PassMessagePipe());
+    tracing_remote_interfaces->GetInterface(
+        tracing::TraceCollector::Name_, coordinator_request.PassMessagePipe());
     tracer_.StartCollectingFromTracingService(std::move(coordinator));
   }
 
@@ -222,7 +222,7 @@ void Context::Init(const base::FilePath& shell_file_root) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
     tracing::StartupPerformanceDataCollectorPtr collector;
-    tracing_services->ConnectToService(
+    tracing_remote_interfaces->GetInterface(
         tracing::StartupPerformanceDataCollector::Name_,
         GetProxy(&collector).PassMessagePipe());
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
@@ -258,16 +258,16 @@ void Context::OnShutdownComplete() {
 
 void Context::Run(const GURL& url) {
   DCHECK(app_complete_callback_.is_null());
-  ServiceProviderPtr services;
-  ServiceProviderPtr exposed_services;
+  InterfaceProviderPtr remote_interfaces;
+  InterfaceProviderPtr local_interfaces;
 
   app_urls_.insert(url);
 
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->SetTarget(
       Identity(url, std::string(), GetPermissiveCapabilityFilter()));
-  params->set_services(GetProxy(&services));
-  params->set_exposed_services(std::move(exposed_services));
+  params->set_remote_interfaces(GetProxy(&remote_interfaces));
+  params->set_local_interfaces(std::move(local_interfaces));
   params->set_on_application_end(
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
   application_manager_->ConnectToApplication(std::move(params));

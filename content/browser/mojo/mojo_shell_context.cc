@@ -158,8 +158,8 @@ class MojoShellContext::Proxy {
   void ConnectToApplication(
       const GURL& url,
       const GURL& requestor_url,
-      mojo::InterfaceRequest<mojo::ServiceProvider> request,
-      mojo::ServiceProviderPtr exposed_services,
+      mojo::InterfaceRequest<mojo::InterfaceProvider> request,
+      mojo::InterfaceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
       const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
@@ -260,8 +260,8 @@ MojoShellContext::~MojoShellContext() {
 void MojoShellContext::ConnectToApplication(
     const GURL& url,
     const GURL& requestor_url,
-    mojo::InterfaceRequest<mojo::ServiceProvider> request,
-    mojo::ServiceProviderPtr exposed_services,
+    mojo::InterfaceRequest<mojo::InterfaceProvider> request,
+    mojo::InterfaceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
     const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
   proxy_.Get()->ConnectToApplication(url, requestor_url, std::move(request),
@@ -272,8 +272,8 @@ void MojoShellContext::ConnectToApplication(
 void MojoShellContext::ConnectToApplicationOnOwnThread(
     const GURL& url,
     const GURL& requestor_url,
-    mojo::InterfaceRequest<mojo::ServiceProvider> request,
-    mojo::ServiceProviderPtr exposed_services,
+    mojo::InterfaceRequest<mojo::InterfaceProvider> request,
+    mojo::InterfaceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
     const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
   scoped_ptr<mojo::shell::ConnectToApplicationParams> params(
@@ -282,8 +282,8 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
       mojo::shell::Identity(requestor_url, std::string(),
                             mojo::shell::GetPermissiveCapabilityFilter()));
   params->SetTarget(mojo::shell::Identity(url, std::string(), filter));
-  params->set_services(std::move(request));
-  params->set_exposed_services(std::move(exposed_services));
+  params->set_remote_interfaces(std::move(request));
+  params->set_local_interfaces(std::move(exposed_services));
   params->set_on_application_end(base::Bind(&base::DoNothing));
   params->set_connect_callback(callback);
   application_manager_->ConnectToApplication(std::move(params));

@@ -86,16 +86,17 @@ void RegisterToWorkerDevToolsManagerOnUI(
 void SetupMojoOnUIThread(
     int process_id,
     int thread_id,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::InterfacePtrInfo<mojo::ServiceProvider> exposed_services) {
+    mojo::InterfaceRequest<mojo::InterfaceProvider> services,
+    mojo::InterfacePtrInfo<mojo::InterfaceProvider> exposed_services) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   // |rph| or its ServiceRegistry may be NULL in unit tests.
   if (!rph || !rph->GetServiceRegistry())
     return;
   EmbeddedWorkerSetupPtr setup;
   rph->GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&setup));
-  setup->ExchangeServiceProviders(thread_id, std::move(services),
-                                  mojo::MakeProxy(std::move(exposed_services)));
+  setup->ExchangeInterfaceProviders(
+      thread_id, std::move(services),
+      mojo::MakeProxy(std::move(exposed_services)));
 }
 
 }  // namespace
@@ -510,10 +511,10 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   thread_id_ = thread_id;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnThreadStarted());
 
-  mojo::ServiceProviderPtr exposed_services;
+  mojo::InterfaceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));
-  mojo::ServiceProviderPtr services;
-  mojo::InterfaceRequest<mojo::ServiceProvider> services_request =
+  mojo::InterfaceProviderPtr services;
+  mojo::InterfaceRequest<mojo::InterfaceProvider> services_request =
       GetProxy(&services);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
