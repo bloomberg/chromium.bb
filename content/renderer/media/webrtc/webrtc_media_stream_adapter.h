@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
+#include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {
 

@@ -10,8 +10,8 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
-#include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
+#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/videosourceinterface.h"
 
 namespace content {
 

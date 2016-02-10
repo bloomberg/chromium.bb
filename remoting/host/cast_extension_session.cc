@@ -19,9 +19,9 @@
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_video_capturer_adapter.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
-#include "third_party/libjingle/source/talk/app/webrtc/test/fakeconstraints.h"
-#include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
+#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/test/fakeconstraints.h"
+#include "third_party/webrtc/api/videosourceinterface.h"
 
 namespace remoting {
 

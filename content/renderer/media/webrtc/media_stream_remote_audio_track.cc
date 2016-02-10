@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
+#include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {
 

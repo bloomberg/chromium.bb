@@ -16,8 +16,8 @@
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
-#include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/videosourceinterface.h"
 #include "third_party/webrtc/p2p/stunprober/stunprober.h"
 
 namespace base {

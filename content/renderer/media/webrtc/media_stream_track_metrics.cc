@@ -12,7 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/common/media/media_stream_track_metrics_host_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
+#include "third_party/webrtc/api/mediastreaminterface.h"
 
 using webrtc::AudioTrackVector;
 using webrtc::MediaStreamInterface;

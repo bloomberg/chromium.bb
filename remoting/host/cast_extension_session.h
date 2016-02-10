@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/host/host_extension_session.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 

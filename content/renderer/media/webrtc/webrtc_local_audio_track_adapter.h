@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreamtrack.h"
+#include "third_party/webrtc/api/mediastreamtrack.h"
 #include "third_party/webrtc/media/base/audiorenderer.h"
 
 namespace cricket {

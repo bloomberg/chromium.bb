@@ -10,7 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace webrtc {
 class MediaStreamInterface;

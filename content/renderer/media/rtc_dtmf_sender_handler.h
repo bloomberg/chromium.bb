@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandlerClient.h"
-#include "third_party/libjingle/source/talk/app/webrtc/dtmfsenderinterface.h"
+#include "third_party/webrtc/api/dtmfsenderinterface.h"
 
 namespace content {
 

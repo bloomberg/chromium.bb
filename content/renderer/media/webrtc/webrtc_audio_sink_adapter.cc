@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/webrtc_audio_sink_adapter.h"
 #include "media/base/audio_bus.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
+#include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {
 

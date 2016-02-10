@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
+#include "third_party/webrtc/api/mediaconstraintsinterface.h"
 
 namespace content {
 

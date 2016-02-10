@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/libjingle/source/talk/app/webrtc/dtlsidentitystore.h"
+#include "third_party/webrtc/api/dtlsidentitystore.h"
 #include "url/gurl.h"
 
 namespace content {

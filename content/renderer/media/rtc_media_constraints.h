@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
+#include "third_party/webrtc/api/mediaconstraintsinterface.h"
 
 namespace blink {
 class WebMediaConstraints;

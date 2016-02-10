@@ -15,7 +15,7 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/protocol/stream_message_pipe_adapter.h"
 #include "remoting/protocol/transport_context.h"
-#include "third_party/libjingle/source/talk/app/webrtc/test/fakeconstraints.h"
+#include "third_party/webrtc/api/test/fakeconstraints.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/modules/audio_device/include/fake_audio_device.h"
 
