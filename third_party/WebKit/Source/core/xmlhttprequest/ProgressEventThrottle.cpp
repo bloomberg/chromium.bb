@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
+#include "core/xmlhttprequest/ProgressEventThrottle.h"
 
 #include "core/EventTypeNames.h"
 #include "core/events/ProgressEvent.h"
@@ -36,12 +36,12 @@
 
 namespace blink {
 
-XMLHttpRequestProgressEventThrottle::DeferredEvent::DeferredEvent()
+ProgressEventThrottle::DeferredEvent::DeferredEvent()
 {
     clear();
 }
 
-void XMLHttpRequestProgressEventThrottle::DeferredEvent::set(bool lengthComputable, unsigned long long loaded, unsigned long long total)
+void ProgressEventThrottle::DeferredEvent::set(bool lengthComputable, unsigned long long loaded, unsigned long long total)
 {
     m_isSet = true;
 
@@ -50,7 +50,7 @@ void XMLHttpRequestProgressEventThrottle::DeferredEvent::set(bool lengthComputab
     m_total = total;
 }
 
-void XMLHttpRequestProgressEventThrottle::DeferredEvent::clear()
+void ProgressEventThrottle::DeferredEvent::clear()
 {
     m_isSet = false;
 
@@ -59,7 +59,7 @@ void XMLHttpRequestProgressEventThrottle::DeferredEvent::clear()
     m_total = 0;
 }
 
-PassRefPtrWillBeRawPtr<Event> XMLHttpRequestProgressEventThrottle::DeferredEvent::take()
+PassRefPtrWillBeRawPtr<Event> ProgressEventThrottle::DeferredEvent::take()
 {
     ASSERT(m_isSet);
 
@@ -68,20 +68,20 @@ PassRefPtrWillBeRawPtr<Event> XMLHttpRequestProgressEventThrottle::DeferredEvent
     return event.release();
 }
 
-const double XMLHttpRequestProgressEventThrottle::minimumProgressEventDispatchingIntervalInSeconds = .05; // 50 ms per specification.
+const double ProgressEventThrottle::minimumProgressEventDispatchingIntervalInSeconds = .05; // 50 ms per specification.
 
-XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(XMLHttpRequest* target)
+ProgressEventThrottle::ProgressEventThrottle(XMLHttpRequest* target)
     : m_target(target)
     , m_hasDispatchedProgressProgressEvent(false)
 {
     ASSERT(target);
 }
 
-XMLHttpRequestProgressEventThrottle::~XMLHttpRequestProgressEventThrottle()
+ProgressEventThrottle::~ProgressEventThrottle()
 {
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
+void ProgressEventThrottle::dispatchProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
 {
     // Given that ResourceDispatcher doesn't deliver an event when suspended,
     // we don't have to worry about event dispatching while suspended.
@@ -98,7 +98,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
     }
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event> event, DeferredEventAction action)
+void ProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event> event, DeferredEventAction action)
 {
     XMLHttpRequest::State state = m_target->readyState();
     // Given that ResourceDispatcher doesn't deliver an event when suspended,
@@ -123,7 +123,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefP
     }
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(PassRefPtrWillBeRawPtr<Event> progressEvent)
+void ProgressEventThrottle::dispatchProgressProgressEvent(PassRefPtrWillBeRawPtr<Event> progressEvent)
 {
     XMLHttpRequest::State state = m_target->readyState();
     if (m_target->readyState() == XMLHttpRequest::LOADING && m_hasDispatchedProgressProgressEvent) {
@@ -139,7 +139,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(PassRefP
     m_target->dispatchEvent(progressEvent);
 }
 
-void XMLHttpRequestProgressEventThrottle::fired()
+void ProgressEventThrottle::fired()
 {
     if (!m_deferred.isSet()) {
         // No "progress" event was queued since the previous dispatch, we can
@@ -153,12 +153,12 @@ void XMLHttpRequestProgressEventThrottle::fired()
     startOneShot(minimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
 }
 
-void XMLHttpRequestProgressEventThrottle::suspend()
+void ProgressEventThrottle::suspend()
 {
     stop();
 }
 
-void XMLHttpRequestProgressEventThrottle::resume()
+void ProgressEventThrottle::resume()
 {
     if (!m_deferred.isSet())
         return;
@@ -169,7 +169,7 @@ void XMLHttpRequestProgressEventThrottle::resume()
     startOneShot(0, BLINK_FROM_HERE);
 }
 
-DEFINE_TRACE(XMLHttpRequestProgressEventThrottle)
+DEFINE_TRACE(ProgressEventThrottle)
 {
     visitor->trace(m_target);
 }
