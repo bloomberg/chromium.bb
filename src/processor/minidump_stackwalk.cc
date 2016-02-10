@@ -71,8 +71,7 @@ using google_breakpad::scoped_ptr;
 bool PrintMinidumpProcess(const string &minidump_file,
                           const std::vector<string> &symbol_paths,
                           bool machine_readable,
-                          bool output_stack_contents,
-                          bool output_modules_only) {
+                          bool output_stack_contents) {
   scoped_ptr<SimpleSymbolSupplier> symbol_supplier;
   if (!symbol_paths.empty()) {
     // TODO(mmentovai): check existence of symbol_path if specified?
@@ -95,9 +94,7 @@ bool PrintMinidumpProcess(const string &minidump_file,
     return false;
   }
 
-  if (output_modules_only) {
-    PrintProcessModules(process_state);
-  } else if (machine_readable) {
+  if (machine_readable) {
     PrintProcessStateMachineReadable(process_state);
   } else {
     PrintProcessState(process_state, output_stack_contents, &resolver);
@@ -107,10 +104,9 @@ bool PrintMinidumpProcess(const string &minidump_file,
 }
 
 void usage(const char *program_name) {
-  fprintf(stderr, "usage: %s [-m|-s|-b] <minidump-file> [symbol-path ...]\n"
+  fprintf(stderr, "usage: %s [-m|-s] <minidump-file> [symbol-path ...]\n"
           "    -m : Output in machine-readable format\n"
-          "    -s : Output stack contents\n"
-          "    -b : Output contained full module paths\n",
+          "    -s : Output stack contents\n",
           program_name);
 }
 
@@ -127,7 +123,6 @@ int main(int argc, char **argv) {
   const char *minidump_file;
   bool machine_readable = false;
   bool output_stack_contents = false;
-  bool output_modules_only = false;
   int symbol_path_arg;
 
   if (strcmp(argv[1], "-m") == 0) {
@@ -148,15 +143,6 @@ int main(int argc, char **argv) {
     output_stack_contents = true;
     minidump_file = argv[2];
     symbol_path_arg = 3;
-  } else if (strcmp(argv[1], "-b") == 0) {
-    if (argc < 3) {
-      usage(argv[0]);
-      return 1;
-    }
-
-    output_modules_only = true;
-    minidump_file = argv[2];
-    symbol_path_arg = 3;
   } else {
     minidump_file = argv[1];
     symbol_path_arg = 2;
@@ -172,6 +158,5 @@ int main(int argc, char **argv) {
   return PrintMinidumpProcess(minidump_file,
                               symbol_paths,
                               machine_readable,
-                              output_stack_contents,
-                              output_modules_only) ? 0 : 1;
+                              output_stack_contents) ? 0 : 1;
 }
