@@ -150,9 +150,6 @@ class KernelWrapTest : public ::testing::Test {
         .WillOnce(Return(1))
         .WillOnce(Return(2));
 
-    ASSERT_EQ(0, ki_push_state_for_testing());
-    ASSERT_EQ(0, ki_init(&mock));
-
     // We allow write to be called any number of times, and it forwards to
     // _real_write. This prevents an infinite loop writing output if there is a
     // failure.
@@ -167,6 +164,9 @@ class KernelWrapTest : public ::testing::Test {
     ON_CALL(mock, munmap(_, _))
         .WillByDefault(Return(0));
     EXPECT_CALL(mock, munmap(_, _)).Times(AnyNumber());
+
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&mock));
   }
 
   void TearDown() {
