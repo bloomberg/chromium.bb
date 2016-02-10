@@ -335,6 +335,14 @@ class WebControllerTest : public WebTestT {
     WebTestT::TearDown();
   }
 
+  // The value for web view OCMock objects to expect for |-setFrame:|.
+  CGRect ExpectedWebViewFrame() const {
+    CGSize containerViewSize = [UIScreen mainScreen].bounds.size;
+    containerViewSize.height -=
+        CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
+    return {CGPointZero, containerViewSize};
+  }
+
   // Creates WebView mock.
   virtual UIView* CreateMockWebView() const = 0;
 
@@ -354,6 +362,7 @@ class CRWUIWebViewWebControllerTest
     id result = [[OCMockObject mockForClass:[UIWebView class]] retain];
     [[[result stub] andReturn:nil] request];
     [[result stub] setDelegate:OCMOCK_ANY];  // Called by resetInjectedWebView
+    [[result stub] setFrame:ExpectedWebViewFrame()];
     // Stub out the injection process.
     [[[result stub] andReturn:@"object"]
         stringByEvaluatingJavaScriptFromString:
@@ -388,6 +397,7 @@ class CRWWKWebViewWebControllerTest
     [[[result stub] andReturn:[NSURL URLWithString:kTestURLString]] URL];
     [[result stub] setNavigationDelegate:OCMOCK_ANY];
     [[result stub] setUIDelegate:OCMOCK_ANY];
+    [[result stub] setFrame:ExpectedWebViewFrame()];
     [[result stub] addObserver:webController_
                     forKeyPath:OCMOCK_ANY
                        options:0

@@ -79,22 +79,25 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
                                            green:kBackgroundRGBComponents[1]
                                             blue:kBackgroundRGBComponents[2]
                                            alpha:1.0];
-    // The frame needs to be set immediately after the web view is added
-    // as a subview. The change in the frame triggers drawing operations and
-    // if not done after it's added as a subview, the web view exhibits
-    // strange behavior where clicks from certain web sites are not triggered.
-    // The actual value of the frame doesn't matter as long as it's not
-    // CGRectZero.  The CRWWebViewContentView's frame will be reset to a correct
-    // value in a subsequent layout pass.
-    // TODO(crbug.com/577793): This is an undocumented and not-well-understood
-    // workaround for this issue.
-    const CGRect kDummyRect = CGRectMake(10, 20, 30, 50);
-    self.frame = kDummyRect;
   }
 }
 
 - (BOOL)becomeFirstResponder {
   return [_webView becomeFirstResponder];
+}
+
+- (void)setFrame:(CGRect)frame {
+  if (CGRectEqualToRect(self.frame, frame))
+    return;
+  [super setFrame:frame];
+  [self updateWebViewFrame];
+}
+
+- (void)setBounds:(CGRect)bounds {
+  if (CGRectEqualToRect(self.bounds, bounds))
+    return;
+  [super setBounds:bounds];
+  [self updateWebViewFrame];
 }
 
 #pragma mark Accessors

@@ -588,6 +588,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)loadRequestForCurrentNavigationItem {
   DCHECK(self.webView && !self.nativeController);
   DCHECK([self currentSessionEntry]);
+  // If a load is kicked off on a WKWebView with a frame whose size is {0, 0} or
+  // that has a negative dimension for a size, rendering issues occur that
+  // manifest in erroneous scrolling and tap handling (crbug.com/574996,
+  // crbug.com/577793).
+  DCHECK_GT(CGRectGetWidth(self.webView.frame), 0.0);
+  DCHECK_GT(CGRectGetHeight(self.webView.frame), 0.0);
 
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];

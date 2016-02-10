@@ -160,12 +160,8 @@
   if (![_webViewContentView isEqual:webViewContentView]) {
     [_webViewContentView removeFromSuperview];
     _webViewContentView.reset([webViewContentView retain]);
-    // UIWebViews that are added in |-layoutSubviews| exhbit a scrolling bug, so
-    // they must be added here in the getter (crbug.com/568097).
-    if ([_webViewContentView webViewType] == web::UI_WEB_VIEW_TYPE) {
-      DCHECK(![_webViewContentView superview]);
-      [self addSubview:_webViewContentView];
-    }
+    [_webViewContentView setFrame:self.bounds];
+    [self addSubview:_webViewContentView];
   }
 }
 
@@ -221,13 +217,6 @@
 - (void)layoutSubviews {
   [super layoutSubviews];
 
-  // WKWebViews added outside of |-layoutSubviews| exhibit a rendering bug that
-  // erroneously scrolls to an arbitrary offset, so add them here
-  // (crbug.com/574996).
-  if (self.webViewContentView.webViewType == web::WK_WEB_VIEW_TYPE &&
-      !self.webViewContentView.superview) {
-    [self addSubview:self.webViewContentView];
-  }
   self.webViewContentView.frame = self.bounds;
 
   // TODO(crbug.com/570114): Move adding of the following subviews to another
