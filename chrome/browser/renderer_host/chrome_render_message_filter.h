@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "third_party/WebKit/public/web/WebCache.h"
 
 class GURL;
 class Profile;
@@ -52,7 +51,11 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   void OnDnsPrefetch(const network_hints::LookupRequest& request);
   void OnPreconnect(const GURL& url, bool allow_credentials, int count);
-  void OnUpdatedCacheStats(const blink::WebCache::UsageStats& stats);
+  void OnUpdatedCacheStats(uint64_t min_capacity,
+                           uint64_t max_capacity,
+                           uint64_t capacity,
+                           uint64_t live_size,
+                           uint64_t dead_size);
 
   void OnAllowDatabase(int render_frame_id,
                        const GURL& origin_url,

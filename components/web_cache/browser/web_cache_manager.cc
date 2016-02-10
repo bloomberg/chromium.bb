@@ -26,7 +26,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using blink::WebCache;
 
 namespace web_cache {
 
@@ -126,20 +125,24 @@ void WebCacheManager::ObserveActivity(int renderer_id) {
 }
 
 void WebCacheManager::ObserveStats(int renderer_id,
-                                   const WebCache::UsageStats& stats) {
+                                   uint64_t min_dead_capacity,
+                                   uint64_t max_dead_capacity,
+                                   uint64_t capacity,
+                                   uint64_t live_size,
+                                   uint64_t dead_size) {
   StatsMap::iterator entry = stats_.find(renderer_id);
   if (entry == stats_.end())
     return;  // We might see stats for a renderer that has been destroyed.
 
   // Record the updated stats.
-  entry->second.capacity = stats.capacity;
-  entry->second.deadSize = stats.deadSize;
-  entry->second.liveSize = stats.liveSize;
-  entry->second.maxDeadCapacity = stats.maxDeadCapacity;
-  entry->second.minDeadCapacity = stats.minDeadCapacity;
+  entry->second.capacity = capacity;
+  entry->second.dead_size = dead_size;
+  entry->second.live_size = live_size;
+  entry->second.max_dead_capacity = max_dead_capacity;
+  entry->second.min_dead_capacity = min_dead_capacity;
 }
 
-void WebCacheManager::SetGlobalSizeLimit(size_t bytes) {
+void WebCacheManager::SetGlobalSizeLimit(uint64_t bytes) {
   global_size_limit_ = bytes;
   ReviseAllocationStrategyLater();
 }
@@ -180,49 +183,48 @@ void WebCacheManager::Observe(int type,
 }
 
 // static
-size_t WebCacheManager::GetDefaultGlobalSizeLimit() {
+uint64_t WebCacheManager::GetDefaultGlobalSizeLimit() {
   return GetDefaultCacheSize();
 }
 
 void WebCacheManager::GatherStats(const std::set<int>& renderers,
-                                  WebCache::UsageStats* stats) {
-  DCHECK(stats);
-
-  memset(stats, 0, sizeof(WebCache::UsageStats));
+                                  uint64_t* capacity,
+                                  uint64_t* live_size,
+                                  uint64_t* dead_size) {
+  *capacity = *live_size = *dead_size = 0;
 
   std::set<int>::const_iterator iter = renderers.begin();
   while (iter != renderers.end()) {
     StatsMap::iterator elmt = stats_.find(*iter);
     if (elmt != stats_.end()) {
-      stats->minDeadCapacity += elmt->second.minDeadCapacity;
-      stats->maxDeadCapacity += elmt->second.maxDeadCapacity;
-      stats->capacity += elmt->second.capacity;
-      stats->liveSize += elmt->second.liveSize;
-      stats->deadSize += elmt->second.deadSize;
+      *capacity += elmt->second.capacity;
+      *live_size += elmt->second.live_size;
+      *dead_size += elmt->second.dead_size;
     }
     ++iter;
   }
 }
 
 // static
-size_t WebCacheManager::GetSize(AllocationTactic tactic,
-                                const WebCache::UsageStats& stats) {
+uint64_t WebCacheManager::GetSize(AllocationTactic tactic,
+                                 uint64_t live_size,
+                                 uint64_t dead_size) {
   switch (tactic) {
   case DIVIDE_EVENLY:
     // We aren't going to reserve any space for existing objects.
     return 0;
   case KEEP_CURRENT_WITH_HEADROOM:
     // We need enough space for our current objects, plus some headroom.
-    return 3 * GetSize(KEEP_CURRENT, stats) / 2;
+    return 3 * GetSize(KEEP_CURRENT, live_size, dead_size) / 2;
   case KEEP_CURRENT:
     // We need enough space to keep our current objects.
-    return stats.liveSize + stats.deadSize;
+    return live_size + dead_size;
   case KEEP_LIVE_WITH_HEADROOM:
     // We need enough space to keep out live resources, plus some headroom.
-    return 3 * GetSize(KEEP_LIVE, stats) / 2;
+    return 3 * GetSize(KEEP_LIVE, live_size, dead_size) / 2;
   case KEEP_LIVE:
     // We need enough space to keep our live resources.
-    return stats.liveSize;
+    return live_size;
   default:
     NOTREACHED() << "Unknown cache allocation tactic";
     return 0;
@@ -231,36 +233,40 @@ size_t WebCacheManager::GetSize(AllocationTactic tactic,
 
 bool WebCacheManager::AttemptTactic(
     AllocationTactic active_tactic,
-    const WebCache::UsageStats& active_stats,
+    uint64_t active_live_size,
+    uint64_t active_dead_size,
     AllocationTactic inactive_tactic,
-    const WebCache::UsageStats& inactive_stats,
+    uint64_t inactive_live_size,
+    uint64_t inactive_dead_size,
     AllocationStrategy* strategy) {
   DCHECK(strategy);
 
-  size_t active_size = GetSize(active_tactic, active_stats);
-  size_t inactive_size = GetSize(inactive_tactic, inactive_stats);
+  uint64_t active_size = GetSize(active_tactic, active_live_size,
+                                 active_dead_size);
+  uint64_t inactive_size = GetSize(inactive_tactic, inactive_live_size,
+                                   inactive_dead_size);
 
   // Give up if we don't have enough space to use this tactic.
   if (global_size_limit_ < active_size + inactive_size)
     return false;
 
   // Compute the unreserved space available.
-  size_t total_extra = global_size_limit_ - (active_size + inactive_size);
+  uint64_t total_extra = global_size_limit_ - (active_size + inactive_size);
 
   // The plan for the extra space is to divide it evenly amoung the active
   // renderers.
-  size_t shares = active_renderers_.size();
+  uint64_t shares = active_renderers_.size();
 
   // The inactive renderers get one share of the extra memory to be divided
   // among themselves.
-  size_t inactive_extra = 0;
+  uint64_t inactive_extra = 0;
   if (!inactive_renderers_.empty()) {
     ++shares;
     inactive_extra = total_extra / shares;
   }
 
   // The remaining memory is allocated to the active renderers.
-  size_t active_extra = total_extra - inactive_extra;
+  uint64_t active_extra = total_extra - inactive_extra;
 
   // Actually compute the allocations for each renderer.
   AddToStrategy(active_renderers_, active_tactic, active_extra, strategy);
@@ -272,7 +278,7 @@ bool WebCacheManager::AttemptTactic(
 
 void WebCacheManager::AddToStrategy(const std::set<int>& renderers,
                                     AllocationTactic tactic,
-                                    size_t extra_bytes_to_allocate,
+                                    uint64_t extra_bytes_to_allocate,
                                     AllocationStrategy* strategy) {
   DCHECK(strategy);
 
@@ -282,16 +288,18 @@ void WebCacheManager::AddToStrategy(const std::set<int>& renderers,
     return;
 
   // Divide the extra memory evenly among the renderers.
-  size_t extra_each = extra_bytes_to_allocate / renderers.size();
+  uint64_t extra_each = extra_bytes_to_allocate / renderers.size();
 
   std::set<int>::const_iterator iter = renderers.begin();
   while (iter != renderers.end()) {
-    size_t cache_size = extra_each;
+    uint64_t cache_size = extra_each;
 
     // Add in the space required to implement |tactic|.
     StatsMap::iterator elmt = stats_.find(*iter);
-    if (elmt != stats_.end())
-      cache_size += GetSize(tactic, elmt->second);
+    if (elmt != stats_.end()) {
+      cache_size += GetSize(tactic, elmt->second.live_size,
+                            elmt->second.dead_size);
+    }
 
     // Record the allocation in our strategy.
     strategy->push_back(Allocation(*iter, cache_size));
@@ -307,17 +315,19 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
         content::RenderProcessHost::FromID(allocation->first);
     if (host) {
       // This is the capacity this renderer has been allocated.
-      uint32_t capacity = allocation->second;
+      uint64_t capacity = allocation->second;
 
       // We don't reserve any space for dead objects in the cache. Instead, we
       // prefer to keep live objects around. There is probably some performance
       // tuning to be done here.
-      uint32_t min_dead_capacity = 0;
+      uint64_t min_dead_capacity = 0;
 
       // We allow the dead objects to consume up to half of the cache capacity.
-      uint32_t max_dead_capacity = capacity / 2;
-      if (base::SysInfo::IsLowEndDevice())
-        max_dead_capacity = std::min(512 * 1024u, max_dead_capacity);
+      uint64_t max_dead_capacity = capacity / 2;
+      if (base::SysInfo::IsLowEndDevice()) {
+        max_dead_capacity = std::min(static_cast<uint64_t>(512 * 1024u),
+                                     max_dead_capacity);
+      }
 
       host->Send(new WebCacheMsg_SetCacheCapacities(min_dead_capacity,
                                                     max_dead_capacity,
@@ -353,25 +363,27 @@ void WebCacheManager::ReviseAllocationStrategy() {
   FindInactiveRenderers();
 
   // Gather statistics
-  WebCache::UsageStats active;
-  WebCache::UsageStats inactive;
-  GatherStats(active_renderers_, &active);
-  GatherStats(inactive_renderers_, &inactive);
+  uint64_t active_capacity, active_live_size, active_dead_size,
+           inactive_capacity, inactive_live_size, inactive_dead_size;
+  GatherStats(active_renderers_, &active_capacity, &active_live_size,
+              &active_dead_size);
+  GatherStats(inactive_renderers_, &inactive_capacity, &inactive_live_size,
+              &inactive_dead_size);
 
   UMA_HISTOGRAM_COUNTS_100("Cache.ActiveTabs", active_renderers_.size());
   UMA_HISTOGRAM_COUNTS_100("Cache.InactiveTabs", inactive_renderers_.size());
   UMA_HISTOGRAM_MEMORY_MB("Cache.ActiveCapacityMB",
-                          active.capacity / 1024 / 1024);
+                          active_capacity / 1024 / 1024);
   UMA_HISTOGRAM_MEMORY_MB("Cache.ActiveDeadSizeMB",
-                          active.deadSize / 1024 / 1024);
+                          active_dead_size / 1024 / 1024);
   UMA_HISTOGRAM_MEMORY_MB("Cache.ActiveLiveSizeMB",
-                          active.liveSize / 1024 / 1024);
+                          active_live_size / 1024 / 1024);
   UMA_HISTOGRAM_MEMORY_MB("Cache.InactiveCapacityMB",
-                          inactive.capacity / 1024 / 1024);
+                          inactive_capacity / 1024 / 1024);
   UMA_HISTOGRAM_MEMORY_MB("Cache.InactiveDeadSizeMB",
-                          inactive.deadSize / 1024 / 1024);
+                          inactive_dead_size / 1024 / 1024);
   UMA_HISTOGRAM_MEMORY_MB("Cache.InactiveLiveSizeMB",
-                          inactive.liveSize / 1024 / 1024);
+                          inactive_live_size / 1024 / 1024);
 
   // Compute an allocation strategy.
   //
@@ -389,23 +401,29 @@ void WebCacheManager::ReviseAllocationStrategy() {
   AllocationStrategy strategy;
   if (  // Ideally, we'd like to give the active renderers some headroom and
         // keep all our current objects.
-      AttemptTactic(KEEP_CURRENT_WITH_HEADROOM, active,
-                    KEEP_CURRENT, inactive, &strategy) ||
+      AttemptTactic(KEEP_CURRENT_WITH_HEADROOM, active_live_size,
+                    active_dead_size, KEEP_CURRENT, inactive_live_size,
+                    inactive_dead_size, &strategy) ||
       // If we can't have that, then we first try to evict the dead objects in
       // the caches of inactive renderers.
-      AttemptTactic(KEEP_CURRENT_WITH_HEADROOM, active,
-                    KEEP_LIVE, inactive, &strategy) ||
+      AttemptTactic(KEEP_CURRENT_WITH_HEADROOM, active_live_size,
+                    active_dead_size, KEEP_LIVE, inactive_live_size,
+                    inactive_dead_size, &strategy) ||
       // Next, we try to keep the live objects in the active renders (with some
       // room for new objects) and give whatever is left to the inactive
       // renderers.
-      AttemptTactic(KEEP_LIVE_WITH_HEADROOM, active,
-                    DIVIDE_EVENLY, inactive, &strategy) ||
+      AttemptTactic(KEEP_LIVE_WITH_HEADROOM, active_live_size,
+                    active_dead_size, DIVIDE_EVENLY, inactive_live_size,
+                    inactive_dead_size, &strategy) ||
       // If we've gotten this far, then we are very tight on memory.  Let's try
       // to at least keep around the live objects for the active renderers.
-      AttemptTactic(KEEP_LIVE, active, DIVIDE_EVENLY, inactive, &strategy) ||
+      AttemptTactic(KEEP_LIVE, active_live_size, active_dead_size,
+                    DIVIDE_EVENLY, inactive_live_size, inactive_dead_size,
+                    &strategy) ||
       // We're basically out of memory.  The best we can do is just divide up
       // what we have and soldier on.
-      AttemptTactic(DIVIDE_EVENLY, active, DIVIDE_EVENLY, inactive,
+      AttemptTactic(DIVIDE_EVENLY, active_live_size, active_dead_size,
+                    DIVIDE_EVENLY, inactive_live_size, inactive_dead_size,
                     &strategy)) {
     // Having found a workable strategy, we enact it.
     EnactStrategy(strategy);

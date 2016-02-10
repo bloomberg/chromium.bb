@@ -116,7 +116,12 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   void InformHostOfCacheStats() {
     WebCache::UsageStats stats;
     WebCache::getUsageStats(&stats);
-    RenderThread::Get()->Send(new ChromeViewHostMsg_UpdatedCacheStats(stats));
+    RenderThread::Get()->Send(new ChromeViewHostMsg_UpdatedCacheStats(
+        static_cast<uint64_t>(stats.minDeadCapacity),
+        static_cast<uint64_t>(stats.maxDeadCapacity),
+        static_cast<uint64_t>(stats.capacity),
+        static_cast<uint64_t>(stats.liveSize),
+        static_cast<uint64_t>(stats.deadSize)));
   }
 
   base::WeakPtrFactory<RendererResourceDelegate> weak_factory_;

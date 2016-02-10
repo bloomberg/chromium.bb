@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/numerics/safe_conversions.h"
 #include "components/web_cache/common/web_cache_messages.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
@@ -60,18 +61,21 @@ void WebCacheRenderProcessObserver::OnRenderProcessShutdown() {
 }
 
 void WebCacheRenderProcessObserver::OnSetCacheCapacities(
-    uint32_t min_dead_capacity,
-    uint32_t max_dead_capacity,
-    uint32_t capacity) {
+    uint64_t min_dead_capacity,
+    uint64_t max_dead_capacity,
+    uint64_t capacity64) {
+  size_t min_dead_capacity2 = base::checked_cast<size_t>(min_dead_capacity);
+  size_t max_dead_capacity2 = base::checked_cast<size_t>(max_dead_capacity);
+  size_t capacity = base::checked_cast<size_t>(capacity64);
   if (!webkit_initialized_) {
-    pending_cache_min_dead_capacity_ = min_dead_capacity;
-    pending_cache_max_dead_capacity_ = max_dead_capacity;
+    pending_cache_min_dead_capacity_ = min_dead_capacity2;
+    pending_cache_max_dead_capacity_ = max_dead_capacity2;
     pending_cache_capacity_ = capacity;
     return;
   }
 
   WebCache::setCapacities(
-      min_dead_capacity, max_dead_capacity, capacity);
+      min_dead_capacity2, max_dead_capacity2, capacity);
 }
 
 void WebCacheRenderProcessObserver::OnClearCache(bool on_navigation) {

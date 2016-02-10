@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "third_party/WebKit/public/web/WebCache.h"
 
 namespace base {
 template<typename Type>
@@ -32,8 +31,13 @@ class PrefRegistrySimple;
 
 namespace web_cache {
 
+// Note: memory usage uses uint64_t because potentially the browser could be
+// 32 bit and the renderers 64 bits.
 class WebCacheManager : public content::NotificationObserver {
   friend class WebCacheManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      WebCacheManagerTest,
+      GatherStatsTest);
   FRIEND_TEST_ALL_PREFIXES(
       WebCacheManagerTest,
       CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_1);
@@ -79,14 +83,18 @@ class WebCacheManager : public content::NotificationObserver {
   // Periodically, renderers should inform the cache manager of their current
   // statistics.  The more up-to-date the cache manager's statistics, the
   // better it can allocate cache resources.
-  void ObserveStats(
-      int renderer_id, const blink::WebCache::UsageStats& stats);
+  void ObserveStats(int renderer_id,
+                    uint64_t min_dead_capacity,
+                    uint64_t max_dead_capacity,
+                    uint64_t capacity,
+                    uint64_t live_size,
+                    uint64_t dead_size);
 
   // The global limit on the number of bytes in all the in-memory caches.
-  size_t global_size_limit() const { return global_size_limit_; }
+  uint64_t global_size_limit() const { return global_size_limit_; }
 
   // Sets the global size limit, forcing a recalculation of cache allocations.
-  void SetGlobalSizeLimit(size_t bytes);
+  void SetGlobalSizeLimit(uint64_t bytes);
 
   // Clears all in-memory caches.
   void ClearCache();
@@ -105,23 +113,28 @@ class WebCacheManager : public content::NotificationObserver {
 
   // Gets the default global size limit.  This interrogates system metrics to
   // tune the default size to the current system.
-  static size_t GetDefaultGlobalSizeLimit();
+  static uint64_t GetDefaultGlobalSizeLimit();
 
  protected:
   // The amount of idle time before we consider a tab to be "inactive"
   static const int kRendererInactiveThresholdMinutes = 5;
 
   // Keep track of some renderer information.
-  struct RendererInfo : blink::WebCache::UsageStats {
+  struct RendererInfo {
     // The access time for this renderer.
     base::Time access;
+    uint64_t min_dead_capacity;
+    uint64_t max_dead_capacity;
+    uint64_t capacity;
+    uint64_t live_size;
+    uint64_t dead_size;
   };
 
   typedef std::map<int, RendererInfo> StatsMap;
 
   // An allocation is the number of bytes a specific renderer should use for
   // its cache.
-  typedef std::pair<int,size_t> Allocation;
+  typedef std::pair<int,uint64_t> Allocation;
 
   // An allocation strategy is a list of allocations specifying the resources
   // each renderer is permitted to consume for its cache.
@@ -172,15 +185,18 @@ class WebCacheManager : public content::NotificationObserver {
   // Helper functions for devising an allocation strategy
 
   // Add up all the stats from the given set of renderers and place the result
-  // in |stats|.
+  // in the given parameters.
   void GatherStats(const std::set<int>& renderers,
-                   blink::WebCache::UsageStats* stats);
+                   uint64_t* capacity,
+                   uint64_t* live_size,
+                   uint64_t* dead_size);
 
   // Get the amount of memory that would be required to implement |tactic|
   // using the specified allocation tactic.  This function defines the
   // semantics for each of the tactics.
-  static size_t GetSize(AllocationTactic tactic,
-                        const blink::WebCache::UsageStats& stats);
+  static uint64_t GetSize(AllocationTactic tactic,
+                          uint64_t live_size,
+                          uint64_t dead_size);
 
   // Attempt to use the specified tactics to compute an allocation strategy
   // and place the result in |strategy|.  |active_stats| and |inactive_stats|
@@ -190,9 +206,11 @@ class WebCacheManager : public content::NotificationObserver {
   // Returns |true| on success and |false| on failure.  Does not modify
   // |strategy| on failure.
   bool AttemptTactic(AllocationTactic active_tactic,
-                     const blink::WebCache::UsageStats& active_stats,
+                     uint64_t active_live_size,
+                     uint64_t active_dead_size,
                      AllocationTactic inactive_tactic,
-                     const blink::WebCache::UsageStats& inactive_stats,
+                     uint64_t inactive_live_size,
+                     uint64_t inactive_dead_size,
                      AllocationStrategy* strategy);
 
   // For each renderer in |renderers|, computes its allocation according to
@@ -200,7 +218,7 @@ class WebCacheManager : public content::NotificationObserver {
   // is divided evenly among the renderers.
   void AddToStrategy(const std::set<int>& renderers,
                      AllocationTactic tactic,
-                     size_t extra_bytes_to_allocate,
+                     uint64_t extra_bytes_to_allocate,
                      AllocationStrategy* strategy);
 
   // Enact an allocation strategy by informing the renderers of their
@@ -223,7 +241,7 @@ class WebCacheManager : public content::NotificationObserver {
   void FindInactiveRenderers();
 
   // The global size limit for all in-memory caches.
-  size_t global_size_limit_;
+  uint64_t global_size_limit_;
 
   // Maps every renderer_id our most recent copy of its statistics.
   StatsMap stats_;

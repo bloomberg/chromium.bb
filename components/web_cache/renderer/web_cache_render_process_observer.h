@@ -31,9 +31,9 @@ class WebCacheRenderProcessObserver : public content::RenderProcessObserver {
   void OnRenderProcessShutdown() override;
 
   // Message handlers.
-  void OnSetCacheCapacities(uint32_t min_dead_capacity,
-                            uint32_t max_dead_capacity,
-                            uint32_t capacity);
+  void OnSetCacheCapacities(uint64_t min_dead_capacity,
+                            uint64_t max_dead_capacity,
+                            uint64_t capacity);
   // If |on_navigation| is true, the clearing is delayed until the next
   // navigation event.
   void OnClearCache(bool on_navigation);
