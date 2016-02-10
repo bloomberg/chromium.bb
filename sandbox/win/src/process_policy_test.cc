@@ -314,7 +314,7 @@ SBOX_TESTS_COMMAND int Process_CreateThread(int argc, wchar_t** argv) {
   DWORD thread_id = 0;
   HANDLE thread = NULL;
   thread = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&TestThreadFunc,
-                          (LPVOID)pid, 0, &thread_id);
+                          reinterpret_cast<LPVOID>(pid), 0, &thread_id);
 
   if (!thread) {
     return SBOX_TEST_THIRD_ERROR;
@@ -501,7 +501,7 @@ TEST(ProcessPolicyTest, TestCreateThreadOutsideSandbox) {
   HANDLE thread = NULL;
   thread = TargetCreateThread(::CreateThread, NULL, 0,
                               (LPTHREAD_START_ROUTINE)&TestThreadFunc,
-                              (LPVOID)pid, 0, &thread_id);
+                              reinterpret_cast<LPVOID>(pid), 0, &thread_id);
   EXPECT_NE(static_cast<HANDLE>(NULL), thread);
   EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(thread, INFINITE));
   EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(event, INFINITE));
