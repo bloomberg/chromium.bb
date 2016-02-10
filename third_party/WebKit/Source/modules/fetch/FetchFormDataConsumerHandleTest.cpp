@@ -6,13 +6,14 @@
 
 #include "core/dom/DOMTypedArray.h"
 #include "core/html/FormData.h"
-#include "core/loader/ThreadableLoader.h"
+#include "core/loader/MockThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -42,19 +43,13 @@ String toString(const Vector<char>& data)
     return String(data.data(), data.size());
 }
 
-class NoopLoader final : public ThreadableLoader {
-public:
-    static PassRefPtr<ThreadableLoader> create() { return adoptRef(new NoopLoader); }
-    void overrideTimeout(unsigned long) override {}
-    void cancel() override {}
-};
-
 class LoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
     explicit LoaderFactory(PassOwnPtr<WebDataConsumerHandle> handle) : m_handle(handle) {}
     PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient* client, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
     {
-        RefPtr<ThreadableLoader> loader = NoopLoader::create();
+        RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+        EXPECT_CALL(*loader, cancel()).Times(1);
         client->didReceiveResponse(0, ResourceResponse(), m_handle.release());
         return loader.release();
     }

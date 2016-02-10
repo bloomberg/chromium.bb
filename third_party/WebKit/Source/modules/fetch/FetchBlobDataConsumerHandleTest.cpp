@@ -6,7 +6,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/loader/ThreadableLoader.h"
+#include "core/loader/MockThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
@@ -52,17 +52,6 @@ using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
 class MockLoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
     MOCK_METHOD5(create, PassRefPtr<ThreadableLoader>(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&));
-};
-
-class MockThreadableLoader : public ThreadableLoader {
-public:
-    static PassRefPtr<MockThreadableLoader> create() { return adoptRef(new StrictMock<MockThreadableLoader>); }
-
-    MOCK_METHOD1(overrideTimeout, void(unsigned long));
-    MOCK_METHOD0(cancel, void());
-
-protected:
-    MockThreadableLoader() = default;
 };
 
 PassRefPtr<BlobDataHandle> createBlobDataHandle(const char* s)
