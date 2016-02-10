@@ -37,6 +37,7 @@ public final class BootstrapApplication extends Application {
 
     private ClassLoaderPatcher mClassLoaderPatcher;
     private Application mRealApplication;
+    private Instrumentation mOrigInstrumentation;
     private Instrumentation mRealInstrumentation;
     private Object mStashedProviderList;
     private Object mActivityThread;
@@ -44,41 +45,76 @@ public final class BootstrapApplication extends Application {
     @Override
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(context);
-        File incrementalRootDir = new File(MANAGED_DIR_PREFIX + context.getPackageName());
-        File libDir = new File(incrementalRootDir, "lib");
-        File dexDir = new File(incrementalRootDir, "dex");
-        File installLockFile = new File(incrementalRootDir, "install.lock");
-        File firstRunLockFile = new File(incrementalRootDir, "firstrun.lock");
-
         try {
             mActivityThread = Reflect.invokeMethod(Class.forName("android.app.ActivityThread"),
                     "currentActivityThread");
             mClassLoaderPatcher = new ClassLoaderPatcher(context);
 
-            boolean isFirstRun = LockFile.installerLockExists(firstRunLockFile);
+            mOrigInstrumentation =
+                    (Instrumentation) Reflect.getField(mActivityThread, "mInstrumentation");
+            Context instContext = mOrigInstrumentation.getContext();
+            if (instContext == null) {
+                instContext = context;
+            }
+
+            // When running with an instrumentation that lives in a different package from the
+            // application, we must load the dex files and native libraries from both pacakges.
+            // This logic likely won't work when the instrumentation is incremental, but the app is
+            // non-incremental. This configuration isn't used right now though.
+            String appPackageName = getPackageName();
+            String instPackageName = instContext.getPackageName();
+            boolean instPackageNameDiffers = !appPackageName.equals(instPackageName);
+            Log.i(TAG, "App PackageName: " + appPackageName);
+            if (instPackageNameDiffers) {
+                Log.i(TAG, "Inst PackageName: " + instPackageName);
+            }
+
+            File appIncrementalRootDir = new File(MANAGED_DIR_PREFIX + appPackageName);
+            File appLibDir = new File(appIncrementalRootDir, "lib");
+            File appDexDir = new File(appIncrementalRootDir, "dex");
+            File appInstallLockFile = new File(appIncrementalRootDir, "install.lock");
+            File appFirstRunLockFile = new File(appIncrementalRootDir, "firstrun.lock");
+            File instIncrementalRootDir = new File(MANAGED_DIR_PREFIX + instPackageName);
+            File instLibDir = new File(instIncrementalRootDir, "lib");
+            File instDexDir = new File(instIncrementalRootDir, "dex");
+            File instInstallLockFile = new File(instIncrementalRootDir, "install.lock");
+            File instFirstRunLockFile = new File(instIncrementalRootDir , "firstrun.lock");
+
+            boolean isFirstRun = LockFile.installerLockExists(appFirstRunLockFile)
+                    || (instPackageNameDiffers
+                               && LockFile.installerLockExists(instFirstRunLockFile));
             if (isFirstRun) {
                 if (mClassLoaderPatcher.mIsPrimaryProcess) {
                     // Wait for incremental_install.py to finish.
-                    LockFile.waitForInstallerLock(installLockFile, 30 * 1000);
+                    LockFile.waitForInstallerLock(appInstallLockFile, 30 * 1000);
+                    LockFile.waitForInstallerLock(instInstallLockFile, 30 * 1000);
                 } else {
                     // Wait for the browser process to create the optimized dex files
                     // and copy the library files.
-                    LockFile.waitForInstallerLock(firstRunLockFile, 60 * 1000);
+                    LockFile.waitForInstallerLock(appFirstRunLockFile, 60 * 1000);
+                    LockFile.waitForInstallerLock(instFirstRunLockFile, 60 * 1000);
                 }
             }
 
-            mClassLoaderPatcher.importNativeLibs(libDir);
-            mClassLoaderPatcher.loadDexFiles(dexDir);
+            mClassLoaderPatcher.importNativeLibs(instLibDir);
+            mClassLoaderPatcher.loadDexFiles(instDexDir);
+            if (instPackageNameDiffers) {
+                mClassLoaderPatcher.importNativeLibs(appLibDir);
+                mClassLoaderPatcher.loadDexFiles(appDexDir);
+            }
 
             if (isFirstRun && mClassLoaderPatcher.mIsPrimaryProcess) {
-                LockFile.clearInstallerLock(firstRunLockFile);
+                LockFile.clearInstallerLock(appFirstRunLockFile);
+                if (instPackageNameDiffers) {
+                    LockFile.clearInstallerLock(instFirstRunLockFile);
+                }
             }
 
             // mInstrumentationAppDir is one of a set of fields that is initialized only when
             // instrumentation is active.
             if (Reflect.getField(mActivityThread, "mInstrumentationAppDir") != null) {
                 String realInstrumentationName =
-                        getClassNameFromMetadata(REAL_INSTRUMENTATION_META_DATA_NAME);
+                        getClassNameFromMetadata(REAL_INSTRUMENTATION_META_DATA_NAME, instContext);
                 initInstrumentation(realInstrumentationName);
             } else {
                 Log.i(TAG, "No instrumentation active.");
@@ -93,7 +129,7 @@ public final class BootstrapApplication extends Application {
             // attachBaseContext() is called from ActivityThread#handleBindApplication() and
             // Application#mApplication is changed right after we return. Thus, we cannot swap
             // the Application instances until onCreate() is called.
-            String realApplicationName = getClassNameFromMetadata(REAL_APP_META_DATA_NAME);
+            String realApplicationName = getClassNameFromMetadata(REAL_APP_META_DATA_NAME, context);
             Log.i(TAG, "Instantiating " + realApplicationName);
             mRealApplication =
                     (Application) Reflect.newInstance(Class.forName(realApplicationName));
@@ -114,12 +150,14 @@ public final class BootstrapApplication extends Application {
      * Returns the fully-qualified class name for the given key, stored in a
      * &lt;meta&gt; witin the manifest.
      */
-    private String getClassNameFromMetadata(String key) throws NameNotFoundException {
-        ApplicationInfo appInfo = getPackageManager().getApplicationInfo(getPackageName(),
+    private static String getClassNameFromMetadata(String key, Context context)
+            throws NameNotFoundException {
+        String pkgName = context.getPackageName();
+        ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(pkgName,
                 PackageManager.GET_META_DATA);
         String value = appInfo.metaData.getString(key);
         if (value != null && !value.contains(".")) {
-            value = getPackageName() + "." + value;
+            value = pkgName + "." + value;
         }
         return value;
     }
@@ -129,14 +167,12 @@ public final class BootstrapApplication extends Application {
      */
     private void initInstrumentation(String realInstrumentationName)
             throws ReflectiveOperationException {
-        Instrumentation oldInstrumentation =
-                (Instrumentation) Reflect.getField(mActivityThread, "mInstrumentation");
         if (realInstrumentationName == null) {
             // This is the case when an incremental app is used as a target for an instrumentation
             // test. In this case, ActivityThread can instantiate the proper class just fine since
             // it exists within the test apk (as opposed to the incremental apk-under-test).
             Log.i(TAG, "Running with external instrumentation");
-            mRealInstrumentation = oldInstrumentation;
+            mRealInstrumentation = mOrigInstrumentation;
             return;
         }
         // For unit tests, the instrumentation class is replaced in the manifest by a build step
@@ -151,11 +187,11 @@ public final class BootstrapApplication extends Application {
                 "mWatcher", "mUiAutomationConnection"};
         for (String fieldName : initFields) {
             Reflect.setField(mRealInstrumentation, fieldName,
-                    Reflect.getField(oldInstrumentation, fieldName));
+                    Reflect.getField(mOrigInstrumentation, fieldName));
         }
         // But make sure the correct ComponentName is used.
         ComponentName newName = new ComponentName(
-                oldInstrumentation.getComponentName().getPackageName(), realInstrumentationName);
+                mOrigInstrumentation.getComponentName().getPackageName(), realInstrumentationName);
         Reflect.setField(mRealInstrumentation, "mComponent", newName);
     }
 

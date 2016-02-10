@@ -13,6 +13,7 @@ import os
 import posixpath
 import shutil
 import sys
+import zipfile
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
@@ -61,6 +62,12 @@ def _Execute(concurrently, *funcs):
 def _GetDeviceIncrementalDir(package):
   """Returns the device path to put incremental files for the given package."""
   return '/data/local/tmp/incremental-app-%s' % package
+
+
+def _HasClasses(jar_path):
+  """Returns whether the given jar contains classes.dex."""
+  with zipfile.ZipFile(jar_path) as jar:
+    return 'classes.dex' in jar.namelist()
 
 
 def Uninstall(device, package, enable_device_cache=False):
@@ -138,7 +145,10 @@ def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
         # Ensure no two files have the same name.
         transformed_names = _TransformDexPaths(dex_files)
         for src_path, dest_name in zip(dex_files, transformed_names):
-          shutil.copy(src_path, os.path.join(temp_dir, dest_name))
+          # Binary targets with no extra classes create .dex.jar without a
+          # classes.dex (which Android chokes on).
+          if _HasClasses(src_path):
+            shutil.copy(src_path, os.path.join(temp_dir, dest_name))
         device.PushChangedFiles([(temp_dir, device_dex_dir)],
                                 delete_device_stale=True)
       push_dex_timer.Stop(log=False)
