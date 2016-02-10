@@ -243,6 +243,8 @@ class ScreenWinTestSingleDisplay1x : public ScreenWinTest {
 
  private:
   HWND fake_hwnd_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenWinTestSingleDisplay1x);
 };
 
 TEST_F(ScreenWinTestSingleDisplay1x, GetDisplays) {
@@ -290,6 +292,126 @@ TEST_F(ScreenWinTestSingleDisplay1x, GetPrimaryDisplay) {
   EXPECT_EQ(gfx::Point(0, 0), screen->GetPrimaryDisplay().bounds().origin());
 }
 
+// Single Display of 1.25 Device Scale Factor.
+class ScreenWinTestSingleDisplay1_25x : public ScreenWinTest {
+ public:
+  ScreenWinTestSingleDisplay1_25x() = default;
+
+  void SetUpScreen(TestScreenWinInitializer* initializer) override {
+    gfx::SetDefaultDeviceScaleFactor(1.25);
+    // Add Monitor of Scale Factor 1.0 since gfx::GetDPIScale performs the
+    // clamping and not ScreenWin.
+    initializer->AddMonitor(gfx::Rect(0, 0, 1920, 1200),
+                            gfx::Rect(0, 0, 1920, 1100),
+                            L"primary",
+                            1.0);
+    fake_hwnd_ = initializer->CreateFakeHwnd(gfx::Rect(0, 0, 1920, 1100));
+  }
+
+  HWND GetFakeHwnd() {
+    return fake_hwnd_;
+  }
+
+ private:
+  HWND fake_hwnd_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenWinTestSingleDisplay1_25x);
+};
+
+TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplays) {
+  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  ASSERT_EQ(1u, displays.size());
+  // On Windows, scale factors of 1.25 or lower are clamped to 1.0.
+  EXPECT_EQ(gfx::Rect(0, 0, 1920, 1200), displays[0].bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 1920, 1100), displays[0].work_area());
+}
+
+TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplayNearestWindow) {
+  gfx::Screen* screen = GetScreen();
+  gfx::NativeWindow native_window = GetNativeWindowFromHWND(GetFakeHwnd());
+  EXPECT_EQ(screen->GetAllDisplays()[0],
+            screen->GetDisplayNearestWindow(native_window));
+}
+
+TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplayNearestPoint) {
+  gfx::Screen* screen = GetScreen();
+  gfx::Display display = screen->GetAllDisplays()[0];
+  EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
+  EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(250, 952)));
+  EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(1919, 1199)));
+}
+
+TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplayMatching) {
+  gfx::Screen* screen = GetScreen();
+  gfx::Display display = screen->GetAllDisplays()[0];
+  EXPECT_EQ(display, screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_EQ(display,
+            screen->GetDisplayMatching(gfx::Rect(1819, 1099, 100, 100)));
+}
+TEST_F(ScreenWinTestSingleDisplay1_25x, GetPrimaryDisplay) {
+  gfx::Screen* screen = GetScreen();
+  EXPECT_EQ(gfx::Point(0, 0), screen->GetPrimaryDisplay().bounds().origin());
+}
+
+// Single Display of 1.25 Device Scale Factor.
+class ScreenWinTestSingleDisplay1_5x : public ScreenWinTest {
+ public:
+  ScreenWinTestSingleDisplay1_5x() = default;
+
+  void SetUpScreen(TestScreenWinInitializer* initializer) override {
+    gfx::SetDefaultDeviceScaleFactor(1.5);
+    initializer->AddMonitor(gfx::Rect(0, 0, 1920, 1200),
+                            gfx::Rect(0, 0, 1920, 1100),
+                            L"primary",
+                            1.5);
+    fake_hwnd_ = initializer->CreateFakeHwnd(gfx::Rect(0, 0, 1920, 1100));
+  }
+
+  HWND GetFakeHwnd() {
+    return fake_hwnd_;
+  }
+
+ private:
+  HWND fake_hwnd_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenWinTestSingleDisplay1_5x);
+};
+
+TEST_F(ScreenWinTestSingleDisplay1_5x, GetDisplays) {
+  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  ASSERT_EQ(1u, displays.size());
+  EXPECT_EQ(gfx::Rect(0, 0, 1280, 800), displays[0].bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 1280, 734), displays[0].work_area());
+}
+
+TEST_F(ScreenWinTestSingleDisplay1_5x, GetDisplayNearestWindow) {
+  gfx::Screen* screen = GetScreen();
+  gfx::NativeWindow native_window = GetNativeWindowFromHWND(GetFakeHwnd());
+  EXPECT_EQ(screen->GetAllDisplays()[0],
+            screen->GetDisplayNearestWindow(native_window));
+}
+
+TEST_F(ScreenWinTestSingleDisplay1_5x, GetDisplayNearestPoint) {
+  gfx::Screen* screen = GetScreen();
+  gfx::Display display = screen->GetAllDisplays()[0];
+  EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
+  EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(250, 524)));
+  EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(1279, 733)));
+}
+
+TEST_F(ScreenWinTestSingleDisplay1_5x, GetDisplayMatching) {
+  gfx::Screen* screen = GetScreen();
+  gfx::Display display = screen->GetAllDisplays()[0];
+  EXPECT_EQ(display, screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_EQ(display,
+            screen->GetDisplayMatching(gfx::Rect(1819, 1099, 100, 100)));
+}
+TEST_F(ScreenWinTestSingleDisplay1_5x, GetPrimaryDisplay) {
+  gfx::Screen* screen = GetScreen();
+  EXPECT_EQ(gfx::Point(0, 0), screen->GetPrimaryDisplay().bounds().origin());
+}
+
+
 // Single Display of 2.0 Device Scale Factor.
 class ScreenWinTestSingleDisplay2x : public ScreenWinTest {
  public:
@@ -319,6 +441,13 @@ TEST_F(ScreenWinTestSingleDisplay2x, GetDisplays) {
   ASSERT_EQ(1u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 960, 600), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 960, 550), displays[0].work_area());
+}
+
+TEST_F(ScreenWinTestSingleDisplay2x, GetDisplayNearestWindow) {
+  gfx::Screen* screen = GetScreen();
+  gfx::NativeWindow native_window = GetNativeWindowFromHWND(GetFakeHwnd());
+  EXPECT_EQ(screen->GetAllDisplays()[0],
+            screen->GetDisplayNearestWindow(native_window));
 }
 
 TEST_F(ScreenWinTestSingleDisplay2x, GetDisplayNearestPoint) {
