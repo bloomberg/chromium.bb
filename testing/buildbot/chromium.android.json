@@ -410,6 +410,9 @@
     "instrumentation_tests": [
       {
         "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
         "test": "blimp_test_apk",
         "test_apk": "BlimpTest.apk"
       }
@@ -535,6 +538,9 @@
     "instrumentation_tests": [
       {
         "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
         "test": "blimp_test_apk",
         "test_apk": "BlimpTest.apk"
       }
@@ -660,6 +666,9 @@
     "instrumentation_tests": [
       {
         "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
         "test": "blimp_test_apk",
         "test_apk": "BlimpTest.apk"
       }
@@ -785,6 +794,9 @@
     "instrumentation_tests": [
       {
         "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
         "test": "blimp_test_apk",
         "test_apk": "BlimpTest.apk"
       }
@@ -910,6 +922,9 @@
     "instrumentation_tests": [
       {
         "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
         "test": "blimp_test_apk",
         "test_apk": "BlimpTest.apk"
       }
@@ -1035,6 +1050,9 @@
     "instrumentation_tests": [
       {
         "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
         "test": "blimp_test_apk",
         "test_apk": "BlimpTest.apk"
       }
@@ -1169,6 +1187,9 @@
     "instrumentation_tests": [
       {
         "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
         "test": "blimp_test_apk",
         "test_apk": "BlimpTest.apk"
       }
@@ -1294,6 +1315,9 @@
     "instrumentation_tests": [
       {
         "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
         "test": "blimp_test_apk",
         "test_apk": "BlimpTest.apk"
       }
