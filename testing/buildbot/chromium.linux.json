@@ -254,6 +254,20 @@
         "test": "unit_tests"
       }
     ],
+    "instrumentation_tests": [
+      {
+        "test": "AndroidWebViewTest"
+      },
+      {
+        "test": "ChromePublicTest"
+      },
+      {
+        "test": "ContentShellTest"
+      },
+      {
+        "test": "ChromeSyncShellTest"
+      }
+    ],
     "scripts": [
       {
         "name": "webview_licenses",
@@ -377,6 +391,20 @@
           "--isolate_file_path=src/chrome/unit_tests.isolate"
         ],
         "test": "unit_tests"
+      }
+    ],
+    "instrumentation_tests": [
+      {
+        "test": "AndroidWebViewTest"
+      },
+      {
+        "test": "ChromePublicTest"
+      },
+      {
+        "test": "ContentShellTest"
+      },
+      {
+        "test": "ChromeSyncShellTest"
       }
     ],
     "scripts": [
