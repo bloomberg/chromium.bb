@@ -5,13 +5,12 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 
 <dom-module id="settings-edit-dictionary-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="edit_dictionary_page.css">
   <template>
-    <div class="settings-box">
+    <div class="settings-box block">
       <div id="addWordRow">
         <iron-a11y-keys id="keys" keys="enter esc"
             on-keys-pressed="onKeysPress_"></iron-a11y-keys>
@@ -20,16 +19,20 @@
         <paper-button on-tap="onAddWordTap_"
             i18n-content="addDictionaryWordButton"></paper-button>
       </div>
+    </div>
+    <div class="settings-box block">
       <h2 i18n-content="customDictionaryWords"></h2>
-      <iron-list id="list" items="{{words_}}">
-        <template>
-          <paper-item>
-            <div class="word">[[item]]</div>
-            <paper-icon-button icon="clear" on-tap="onRemoveWordTap_">
-            </paper-icon-button>
-          </paper-item>
-        </template>
-      </iron-list>
+      <div class="list-frame">
+        <iron-list id="list" items="{{words_}}">
+          <template>
+            <div class="list-item">
+              <div class="word">[[item]]</div>
+              <paper-icon-button icon="clear" on-tap="onRemoveWordTap_">
+              </paper-icon-button>
+            </div>
+          </template>
+        </iron-list>
+      </div>
     </div>
   </template>
   <script src="edit_dictionary_page.js"></script>
