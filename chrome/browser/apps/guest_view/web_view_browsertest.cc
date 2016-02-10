@@ -1074,6 +1074,9 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisplayNoneWebviewLoad) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisplayNoneWebviewRemoveChild) {
+  // http://crbug.com/585652
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+     return;
   TestHelper("testDisplayNoneWebviewRemoveChild",
              "web_view/shim", NO_TEST_SERVER);
 }
