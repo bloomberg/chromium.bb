@@ -651,7 +651,7 @@ void SyncSetupHandler::HandleShowSetupUI(const base::ListValue* args) {
   // If a setup wizard is present on this page or another, bring it to focus.
   // Otherwise, display a new one on this page.
   if (!FocusExistingWizardIfPresent())
-    OpenSyncSetup(args);
+    OpenSyncSetup(false /* creating_supervised_user */);
 }
 
 #if defined(OS_CHROMEOS)
@@ -666,9 +666,10 @@ void SyncSetupHandler::HandleDoSignOutOnAuthError(const base::ListValue* args) {
 #if !defined(OS_CHROMEOS)
 void SyncSetupHandler::HandleStartSignin(const base::ListValue* args) {
   // Should only be called if the user is not already signed in.
-  DCHECK(!SigninManagerFactory::GetForProfile(GetProfile())->
-      IsAuthenticated());
-  OpenSyncSetup(args);
+  DCHECK(!SigninManagerFactory::GetForProfile(GetProfile())->IsAuthenticated());
+  bool creating_supervised_user = false;
+  args->GetBoolean(0, &creating_supervised_user);
+  OpenSyncSetup(creating_supervised_user);
 }
 
 void SyncSetupHandler::HandleStopSyncing(const base::ListValue* args) {
@@ -747,7 +748,7 @@ void SyncSetupHandler::CloseSyncSetup() {
   configuring_sync_ = false;
 }
 
-void SyncSetupHandler::OpenSyncSetup(const base::ListValue* args) {
+void SyncSetupHandler::OpenSyncSetup(bool creating_supervised_user) {
   if (!PrepareSyncSetup())
     return;
 
@@ -773,15 +774,10 @@ void SyncSetupHandler::OpenSyncSetup(const base::ListValue* args) {
     // setup including any visible overlays, and display the gaia auth page.
     // Control will be returned to the sync settings page once auth is complete.
     CloseUI();
-    if (args) {
-      std::string access_point = base::UTF16ToUTF8(ExtractStringValue(args));
-      if (access_point == "access-point-supervised-user") {
-        DisplayGaiaLogin(
-            signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER);
-        return;
-      }
-    }
-    DisplayGaiaLogin(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
+    DisplayGaiaLogin(
+        creating_supervised_user ?
+            signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER :
+            signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
     return;
   }
 #endif

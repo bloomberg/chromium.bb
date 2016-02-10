@@ -95,7 +95,7 @@ cr.define('options', function() {
 
       $('create-profile-supervised-sign-in-link').onclick =
           function(event) {
-        SyncSetupOverlay.startSignIn('access-point-supervised-user');
+        SyncSetupOverlay.startSignIn(true /* creatingSupervisedUser */);
       };
 
       $('create-profile-supervised-sign-in-again-link').onclick =

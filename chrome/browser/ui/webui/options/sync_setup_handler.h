@@ -50,7 +50,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
       content::WebUI* web_ui);
 
   // Initializes the sync setup flow and shows the setup UI.
-  void OpenSyncSetup(const base::ListValue* args);
+  void OpenSyncSetup(bool creating_supervised_user);
 
   // Shows advanced configuration dialog without going through sign in dialog.
   // Kicks the sync backend if necessary with showing spinner dialog until it

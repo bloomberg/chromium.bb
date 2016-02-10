@@ -156,7 +156,10 @@ cr.define('settings', function() {
    * @private
    */
   SyncPrivateApi.startSignIn = function() {
-    chrome.send('SyncSetupStartSignIn');
+    // TODO(tommycli): Currently this is always false, but this will become
+    // a parameter once supervised users are implemented in MD Settings.
+    var creatingSupervisedUser = false;
+    chrome.send('SyncSetupStartSignIn', [creatingSupervisedUser]);
   };
 
   /**

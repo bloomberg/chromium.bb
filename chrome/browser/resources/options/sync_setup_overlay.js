@@ -842,10 +842,11 @@ cr.define('options', function() {
     /**
      * Starts the signin process for the user. Does nothing if the user is
      * already signed in.
+     * @param {boolean} creatingSupervisedUser
      * @private
      */
-    startSignIn_: function(accessPoint) {
-      chrome.send('SyncSetupStartSignIn', [accessPoint]);
+    startSignIn_: function(creatingSupervisedUser) {
+      chrome.send('SyncSetupStartSignIn', [creatingSupervisedUser]);
     },
 
     /**

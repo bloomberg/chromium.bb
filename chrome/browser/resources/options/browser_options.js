@@ -200,7 +200,7 @@ cr.define('options', function() {
         } else if (cr.isChromeOS) {
           SyncSetupOverlay.showSetupUI();
         } else {
-          SyncSetupOverlay.startSignIn('access-point-settings');
+          SyncSetupOverlay.startSignIn(false /* creatingSupervisedUser */);
         }
       };
       $('customize-sync').onclick = function(event) {
