@@ -143,6 +143,13 @@ bool GetIsRoaming() {
       base::android::GetApplicationContext());
 }
 
+std::string GetWifiSSID() {
+  return base::android::ConvertJavaStringToUTF8(
+      Java_AndroidNetworkLibrary_getWifiSSID(
+          base::android::AttachCurrentThread(),
+          base::android::GetApplicationContext()));
+}
+
 bool RegisterNetworkLibrary(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

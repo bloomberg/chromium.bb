@@ -215,6 +215,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
       &internal::AddressTrackerLinux::GetInterfaceName);
 }
 
+#if !defined(OS_ANDROID)
 std::string GetWifiSSID() {
   NetworkInterfaceList networks;
   if (GetNetworkList(&networks, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
@@ -223,5 +224,6 @@ std::string GetWifiSSID() {
   }
   return "";
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace net

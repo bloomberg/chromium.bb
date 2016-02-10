@@ -503,6 +503,7 @@
       'base/network_delegate.h',
       'base/network_delegate_impl.cc',
       'base/network_delegate_impl.h',
+      'base/network_interfaces_android.cc',
       'base/network_interfaces_linux.cc',
       'base/network_interfaces_mac.cc',
       'base/network_interfaces_win.cc',

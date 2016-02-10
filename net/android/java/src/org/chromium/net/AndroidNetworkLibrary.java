@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.security.KeyChain;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -227,5 +229,35 @@ class AndroidNetworkLibrary {
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return networkInfo.isRoaming();
+    }
+
+    /*
+     * Returns the current SSID if the device is connected to a Wi-Fi network.
+     */
+    @CalledByNative
+    private static String getWifiSSID(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
+        if (wifiInfo == null) {
+            return "";
+        }
+
+        String ssid = wifiInfo.getSSID();
+
+        if (ssid == null || "<unknown ssid>".equals(ssid)) {
+            return "";
+        }
+
+        return removeSurroundingQuotes(ssid);
+    }
+
+    private static String removeSurroundingQuotes(String string) {
+        if (string.length() > 2 && string.charAt(0) == '\"'
+                && string.charAt(string.length() - 1) == '\"') {
+            return string.substring(1, string.length() - 1);
+        }
+
+        return string;
     }
 }
