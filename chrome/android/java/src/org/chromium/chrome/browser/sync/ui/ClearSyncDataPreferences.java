@@ -26,6 +26,7 @@ public class ClearSyncDataPreferences extends ClearBrowsingDataPreferences {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mApplicationContext = activity.getApplicationContext();
