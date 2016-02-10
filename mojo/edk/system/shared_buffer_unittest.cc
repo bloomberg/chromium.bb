@@ -62,7 +62,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CopyToBufferClient, SharedBufferTest, h) {
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-TEST_F(SharedBufferTest, PassSharedBufferCrossProcess) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_PassSharedBufferCrossProcess DISABLED_PassSharedBufferCrossProcess
+#else
+#define MAYBE_PassSharedBufferCrossProcess PassSharedBufferCrossProcess
+#endif
+TEST_F(SharedBufferTest, MAYBE_PassSharedBufferCrossProcess) {
   const std::string message = "hello";
   MojoHandle b = CreateBuffer(message.size());
 
@@ -86,7 +92,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateBufferClient, SharedBufferTest, h) {
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-TEST_F(SharedBufferTest, PassSharedBufferFromChild) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_PassSharedBufferFromChild DISABLED_PassSharedBufferFromChild
+#else
+#define MAYBE_PassSharedBufferFromChild PassSharedBufferFromChild
+#endif
+TEST_F(SharedBufferTest, MAYBE_PassSharedBufferFromChild) {
   const std::string message = "hello";
   MojoHandle b;
   RUN_CHILD_ON_PIPE(CreateBufferClient, h)
@@ -133,7 +145,14 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBuffer, SharedBufferTest, h) {
   WriteMessage(h, "ok");
 }
 
-TEST_F(SharedBufferTest, PassSharedBufferFromChildToChild) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_PassSharedBufferFromChildToChild \
+    DISABLED_PassSharedBufferFromChildToChild
+#else
+#define MAYBE_PassSharedBufferFromChildToChild PassSharedBufferFromChildToChild
+#endif
+TEST_F(SharedBufferTest, MAYBE_PassSharedBufferFromChildToChild) {
   const std::string message = "hello";
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
@@ -197,7 +216,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBufferParent, SharedBufferTest,
   END_CHILD()
 }
 
-TEST_F(SharedBufferTest, PassHandleBetweenCousins) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_PassHandleBetweenCousins DISABLED_PassHandleBetweenCousins
+#else
+#define MAYBE_PassHandleBetweenCousins PassHandleBetweenCousins
+#endif
+TEST_F(SharedBufferTest, MAYBE_PassHandleBetweenCousins) {
   const std::string message = "hello";
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
