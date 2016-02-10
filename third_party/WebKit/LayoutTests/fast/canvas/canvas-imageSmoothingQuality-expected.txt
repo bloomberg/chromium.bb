@@ -13,12 +13,12 @@ PASS mediumContext.imageSmoothingQuality is 'medium'
 PASS highContext.imageSmoothingQuality is 'high'
 
 PASS lowData is not mediumData
-PASS mediumData is not highData
+PASS mediumData is highData
 PASS lowData is not highData
 
 PASS sampleAlpha(noFilterData) is > sampleAlpha(lowData)
 PASS sampleAlpha(lowData) is > sampleAlpha(mediumData)
-PASS sampleAlpha(mediumData) is > sampleAlpha(highData)
+PASS sampleAlpha(mediumData) is sampleAlpha(highData)
 
 
 On setting, it must be set to the new value.
