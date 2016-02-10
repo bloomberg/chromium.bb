@@ -29,6 +29,11 @@ struct NativeValueTraits<{{cpp_class}}> {
     static {{cpp_class}} nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
+template <>
+struct V8TypeOf<{{cpp_class}}> {
+    typedef {{v8_class}} Type;
+};
+
 } // namespace blink
 
 #endif // {{v8_original_class}}_h

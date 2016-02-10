@@ -36,6 +36,11 @@ struct NativeValueTraits<TestInterfaceEventInit> {
     static TestInterfaceEventInit nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
+template <>
+struct V8TypeOf<TestInterfaceEventInit> {
+    typedef V8TestInterfaceEventInit Type;
+};
+
 } // namespace blink
 
 #endif // V8TestInterfaceEventInit_h

@@ -36,6 +36,11 @@ struct NativeValueTraits<TestPermissiveDictionary> {
     static TestPermissiveDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
+template <>
+struct V8TypeOf<TestPermissiveDictionary> {
+    typedef V8TestPermissiveDictionary Type;
+};
+
 } // namespace blink
 
 #endif // V8TestPermissiveDictionary_h

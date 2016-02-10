@@ -36,6 +36,11 @@ struct NativeValueTraits<TestDictionaryDerivedImplementedAs> {
     static TestDictionaryDerivedImplementedAs nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
+template <>
+struct V8TypeOf<TestDictionaryDerivedImplementedAs> {
+    typedef V8TestDictionaryDerivedImplementedAs Type;
+};
+
 } // namespace blink
 
 #endif // V8TestDictionaryDerived_h

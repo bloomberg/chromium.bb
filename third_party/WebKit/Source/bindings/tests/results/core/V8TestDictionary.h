@@ -36,6 +36,11 @@ struct NativeValueTraits<TestDictionary> {
     static TestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
+template <>
+struct V8TypeOf<TestDictionary> {
+    typedef V8TestDictionary Type;
+};
+
 } // namespace blink
 
 #endif // V8TestDictionary_h
