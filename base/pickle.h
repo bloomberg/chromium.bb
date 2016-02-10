@@ -45,7 +45,6 @@ class BASE_EXPORT PickleIterator {
   bool ReadUInt32(uint32_t* result) WARN_UNUSED_RESULT;
   bool ReadInt64(int64_t* result) WARN_UNUSED_RESULT;
   bool ReadUInt64(uint64_t* result) WARN_UNUSED_RESULT;
-  bool ReadSizeT(size_t* result) WARN_UNUSED_RESULT;
   bool ReadFloat(float* result) WARN_UNUSED_RESULT;
   bool ReadDouble(double* result) WARN_UNUSED_RESULT;
   bool ReadString(std::string* result) WARN_UNUSED_RESULT;
@@ -122,12 +121,11 @@ class BASE_EXPORT PickleSizer {
 
   void AddBool() { return AddInt(); }
   void AddInt() { AddPOD<int>(); }
-  void AddLongUsingDangerousNonPortableLessPersistableForm() { AddPOD<long>(); }
+  void AddLong() { AddPOD<uint64_t>(); }
   void AddUInt16() { return AddPOD<uint16_t>(); }
   void AddUInt32() { return AddPOD<uint32_t>(); }
   void AddInt64() { return AddPOD<int64_t>(); }
   void AddUInt64() { return AddPOD<uint64_t>(); }
-  void AddSizeT() { return AddPOD<uint64_t>(); }
   void AddFloat() { return AddPOD<float>(); }
   void AddDouble() { return AddPOD<double>(); }
   void AddString(const StringPiece& value);
@@ -229,23 +227,15 @@ class BASE_EXPORT Pickle {
   bool WriteInt(int value) {
     return WritePOD(value);
   }
-  // WARNING: DO NOT USE THIS METHOD IF PICKLES ARE PERSISTED IN ANY WAY.
-  // It will write whatever a "long" is on this architecture. On 32-bit
-  // platforms, it is 32 bits. On 64-bit platforms, it is 64 bits. If persisted
-  // pickles are still around after upgrading to 64-bit, or if they are copied
-  // between dissimilar systems, YOUR PICKLES WILL HAVE GONE BAD.
-  bool WriteLongUsingDangerousNonPortableLessPersistableForm(long value) {
-    return WritePOD(value);
+  bool WriteLong(long value) {
+    // Always write long as a 64-bit value to ensure compatibility between
+    // 32-bit and 64-bit processes.
+    return WritePOD(static_cast<int64_t>(value));
   }
   bool WriteUInt16(uint16_t value) { return WritePOD(value); }
   bool WriteUInt32(uint32_t value) { return WritePOD(value); }
   bool WriteInt64(int64_t value) { return WritePOD(value); }
   bool WriteUInt64(uint64_t value) { return WritePOD(value); }
-  bool WriteSizeT(size_t value) {
-    // Always write size_t as a 64-bit value to ensure compatibility between
-    // 32-bit and 64-bit processes.
-    return WritePOD(static_cast<uint64_t>(value));
-  }
   bool WriteFloat(float value) {
     return WritePOD(value);
   }

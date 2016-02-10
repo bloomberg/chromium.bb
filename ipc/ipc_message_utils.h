@@ -182,14 +182,26 @@ struct ParamTraits<unsigned int> {
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 
+// long isn't safe to send over IPC because it's 4 bytes on 32 bit builds but
+// 8 bytes on 64 bit builds. So if a 32 bit and 64 bit process have a channel
+// that would cause problem.
+// We need to keep this on for a few configs:
+//   1) Windows because DWORD is typedef'd to it, which is fine because we have
+//      very few IPCs that cross this boundary.
+//   2) We also need to keep it for Linux for two reasons: int64_t is typedef'd
+//      to long, and gfx::PluginWindow is long and is used in one GPU IPC.
+//   3) Android 64 bit also has int64_t typedef'd to long.
+// Since we want to support Android 32<>64 bit IPC, as long as we don't have
+// these traits for 32 bit ARM then that'll catch any errors.
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(ARCH_CPU_ARM64)
 template <>
 struct ParamTraits<long> {
   typedef long param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    sizer->AddLongUsingDangerousNonPortableLessPersistableForm();
+    sizer->AddLong();
   }
   static void Write(base::Pickle* m, const param_type& p) {
-    m->WriteLongUsingDangerousNonPortableLessPersistableForm(p);
+    m->WriteLong(p);
   }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -203,10 +215,10 @@ template <>
 struct ParamTraits<unsigned long> {
   typedef unsigned long param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    sizer->AddLongUsingDangerousNonPortableLessPersistableForm();
+    sizer->AddLong();
   }
   static void Write(base::Pickle* m, const param_type& p) {
-    m->WriteLongUsingDangerousNonPortableLessPersistableForm(p);
+    m->WriteLong(p);
   }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -215,6 +227,7 @@ struct ParamTraits<unsigned long> {
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
+#endif
 
 template <>
 struct ParamTraits<long long> {

@@ -414,6 +414,7 @@ void ParamTraits<unsigned int>::Log(const param_type& p, std::string* l) {
   l->append(base::UintToString(p));
 }
 
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM64) || defined(OS_LINUX)
 void ParamTraits<long>::Log(const param_type& p, std::string* l) {
   l->append(base::Int64ToString(static_cast<int64_t>(p)));
 }
@@ -421,6 +422,7 @@ void ParamTraits<long>::Log(const param_type& p, std::string* l) {
 void ParamTraits<unsigned long>::Log(const param_type& p, std::string* l) {
   l->append(base::Uint64ToString(static_cast<uint64_t>(p)));
 }
+#endif
 
 void ParamTraits<long long>::Log(const param_type& p, std::string* l) {
   l->append(base::Int64ToString(static_cast<int64_t>(p)));
@@ -690,7 +692,7 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
       size_t size = 0;
       bool result = p.GetSize(&size);
       DCHECK(result);
-      ParamTraits<size_t>::Write(m, size);
+      ParamTraits<uint32_t>::Write(m, static_cast<uint32_t>(size));
 
       // If the caller intended to pass ownership to the IPC stack, release a
       // reference.
@@ -738,11 +740,12 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
       if (!ParamTraits<MachPortMac>::Read(m, iter, &mach_port_mac))
         return false;
 
-      size_t size;
-      if (!ParamTraits<size_t>::Read(m, iter, &size))
+      uint32_t size;
+      if (!ParamTraits<uint32_t>::Read(m, iter, &size))
         return false;
 
-      *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(), size,
+      *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
+                                    static_cast<size_t>(size),
                                     base::GetCurrentProcId());
       return true;
     }

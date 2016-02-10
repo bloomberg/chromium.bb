@@ -27,7 +27,6 @@ const uint16_t testuint16 = 32123;
 const uint32_t testuint32 = 1593847192;
 const int64_t testint64 = -0x7E8CA9253104BDFCLL;
 const uint64_t testuint64 = 0xCE8CA9253104BDF7ULL;
-const size_t testsizet = 0xFEDC7654;
 const float testfloat = 3.1415926935f;
 const double testdouble = 2.71828182845904523;
 const std::string teststring("Hello world");  // note non-aligned string length
@@ -73,10 +72,6 @@ void VerifyResult(const Pickle& pickle) {
   EXPECT_TRUE(iter.ReadUInt64(&outuint64));
   EXPECT_EQ(testuint64, outuint64);
 
-  size_t outsizet;
-  EXPECT_TRUE(iter.ReadSizeT(&outsizet));
-  EXPECT_EQ(testsizet, outsizet);
-
   float outfloat;
   EXPECT_TRUE(iter.ReadFloat(&outfloat));
   EXPECT_EQ(testfloat, outfloat);
@@ -119,13 +114,11 @@ TEST(PickleTest, EncodeDecode) {
   EXPECT_TRUE(pickle.WriteBool(testbool1));
   EXPECT_TRUE(pickle.WriteBool(testbool2));
   EXPECT_TRUE(pickle.WriteInt(testint));
-  EXPECT_TRUE(
-      pickle.WriteLongUsingDangerousNonPortableLessPersistableForm(testlong));
+  EXPECT_TRUE(pickle.WriteLong(testlong));
   EXPECT_TRUE(pickle.WriteUInt16(testuint16));
   EXPECT_TRUE(pickle.WriteUInt32(testuint32));
   EXPECT_TRUE(pickle.WriteInt64(testint64));
   EXPECT_TRUE(pickle.WriteUInt64(testuint64));
-  EXPECT_TRUE(pickle.WriteSizeT(testsizet));
   EXPECT_TRUE(pickle.WriteFloat(testfloat));
   EXPECT_TRUE(pickle.WriteDouble(testdouble));
   EXPECT_TRUE(pickle.WriteString(teststring));
@@ -145,25 +138,26 @@ TEST(PickleTest, EncodeDecode) {
   VerifyResult(pickle3);
 }
 
-// Tests that reading/writing a size_t works correctly when the source process
+// Tests that reading/writing a long works correctly when the source process
 // is 64-bit.  We rely on having both 32- and 64-bit trybots to validate both
 // arms of the conditional in this test.
-TEST(PickleTest, SizeTFrom64Bit) {
+TEST(PickleTest, LongFrom64Bit) {
   Pickle pickle;
-  // Under the hood size_t is always written as a 64-bit value, so simulate a
-  // 64-bit size_t even on 32-bit architectures by explicitly writing a
-  // uint64_t.
-  EXPECT_TRUE(pickle.WriteUInt64(testuint64));
+  // Under the hood long is always written as a 64-bit value, so simulate a
+  // 64-bit long even on 32-bit architectures by explicitly writing an int64_t.
+  EXPECT_TRUE(pickle.WriteInt64(testint64));
 
   PickleIterator iter(pickle);
-  size_t outsizet;
-  if (sizeof(size_t) < sizeof(uint64_t)) {
-    // ReadSizeT() should return false when the original written value can't be
-    // represented as a size_t.
-    EXPECT_FALSE(iter.ReadSizeT(&outsizet));
+  long outlong;
+  if (sizeof(long) < sizeof(int64_t)) {
+    // ReadLong() should return false when the original written value can't be
+    // represented as a long.
+#if GTEST_HAS_DEATH_TEST
+    EXPECT_DEATH(ignore_result(iter.ReadLong(&outlong)), "");
+#endif
   } else {
-    EXPECT_TRUE(iter.ReadSizeT(&outsizet));
-    EXPECT_EQ(testuint64, outsizet);
+    EXPECT_TRUE(iter.ReadLong(&outlong));
+    EXPECT_EQ(testint64, outlong);
   }
 }
 
@@ -556,14 +550,14 @@ TEST(PickleTest, ClaimBytes) {
   std::string data("Hello, world!");
 
   TestingPickle pickle;
-  pickle.WriteSizeT(data.size());
+  pickle.WriteUInt32(data.size());
   void* bytes = pickle.ClaimBytes(data.size());
   pickle.WriteInt(42);
   memcpy(bytes, data.data(), data.size());
 
   PickleIterator iter(pickle);
-  size_t out_data_length;
-  EXPECT_TRUE(iter.ReadSizeT(&out_data_length));
+  uint32_t out_data_length;
+  EXPECT_TRUE(iter.ReadUInt32(&out_data_length));
   EXPECT_EQ(data.size(), out_data_length);
 
   const char* out_data = nullptr;
@@ -594,8 +588,8 @@ TEST(PickleTest, PickleSizer) {
   {
     TestingPickle pickle;
     base::PickleSizer sizer;
-    pickle.WriteLongUsingDangerousNonPortableLessPersistableForm(42);
-    sizer.AddLongUsingDangerousNonPortableLessPersistableForm();
+    pickle.WriteLong(42);
+    sizer.AddLong();
     EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
   }
   {
@@ -624,13 +618,6 @@ TEST(PickleTest, PickleSizer) {
     base::PickleSizer sizer;
     pickle.WriteUInt64(42);
     sizer.AddUInt64();
-    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
-  }
-  {
-    TestingPickle pickle;
-    base::PickleSizer sizer;
-    pickle.WriteSizeT(42);
-    sizer.AddSizeT();
     EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
   }
   {
