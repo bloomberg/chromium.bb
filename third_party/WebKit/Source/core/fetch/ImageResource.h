@@ -130,6 +130,8 @@ private:
     explicit ImageResource(blink::Image*);
     ImageResource(const ResourceRequest&, blink::Image*);
 
+    friend class PaintLayerTest;
+
     class ImageResourceFactory : public ResourceFactory {
     public:
         ImageResourceFactory()
