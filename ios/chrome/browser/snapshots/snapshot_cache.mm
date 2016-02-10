@@ -389,8 +389,8 @@ void ConvertAndSaveGreyImage(
 - (void)handleLowMemory {
   DCHECK(!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled());
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
-  NSMutableDictionary* dictionary =
-      [[NSMutableDictionary alloc] initWithCapacity:2];
+  base::scoped_nsobject<NSMutableDictionary> dictionary(
+      [[NSMutableDictionary alloc] initWithCapacity:2]);
   for (NSString* sessionID in pinnedIDs_) {
     UIImage* image = nil;
     if (lruCache_)
@@ -403,9 +403,10 @@ void ConvertAndSaveGreyImage(
   if (lruCache_) {
     [lruCache_ removeAllObjects];
     for (NSString* sessionID in pinnedIDs_)
-      [lruCache_ setObject:dictionary[sessionID] forKey:sessionID];
+      [lruCache_ setObject:[dictionary objectForKey:sessionID]
+                    forKey:sessionID];
   } else {
-    imageDictionary_.reset(dictionary);
+    imageDictionary_ = dictionary;
   }
 }
 
