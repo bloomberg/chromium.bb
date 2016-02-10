@@ -43,10 +43,6 @@ class PermissionBubbleRequest {
   // next to an image and indicate the user grants the permission.
   virtual base::string16 GetMessageTextFragment() const = 0;
 
-  // Get whether this request was accompanied by a user gesture. Gestured
-  // requests will have priority over non-gestured ones.
-  virtual bool HasUserGesture() const = 0;
-
   // Get the origin on whose behalf this permission request is being made.
   virtual GURL GetOrigin() const = 0;
 

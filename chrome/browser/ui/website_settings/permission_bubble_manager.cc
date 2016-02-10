@@ -28,7 +28,6 @@ class CancelledRequest : public PermissionBubbleRequest {
       : icon_(cancelled->GetIconId()),
         message_text_(cancelled->GetMessageText()),
         message_fragment_(cancelled->GetMessageTextFragment()),
-        user_gesture_(cancelled->HasUserGesture()),
         origin_(cancelled->GetOrigin()) {}
   ~CancelledRequest() override {}
 
@@ -37,7 +36,6 @@ class CancelledRequest : public PermissionBubbleRequest {
   base::string16 GetMessageTextFragment() const override {
     return message_fragment_;
   }
-  bool HasUserGesture() const override { return user_gesture_; }
   GURL GetOrigin() const override { return origin_; }
 
   // These are all no-ops since the placeholder is non-forwarding.
@@ -51,7 +49,6 @@ class CancelledRequest : public PermissionBubbleRequest {
   int icon_;
   base::string16 message_text_;
   base::string16 message_fragment_;
-  bool user_gesture_;
   GURL origin_;
 };
 
@@ -375,12 +372,7 @@ void PermissionBubbleManager::TriggerShowBubble() {
   }
 
   if (requests_.empty()) {
-    // Queues containing a user-gesture-generated request have priority.
-    if (HasUserGestureRequest(queued_requests_))
-      requests_.swap(queued_requests_);
-    else if (HasUserGestureRequest(queued_frame_requests_))
-      requests_.swap(queued_frame_requests_);
-    else if (queued_requests_.size())
+    if (queued_requests_.size())
       requests_.swap(queued_requests_);
     else
       requests_.swap(queued_frame_requests_);
@@ -446,16 +438,6 @@ PermissionBubbleRequest* PermissionBubbleManager::GetExistingRequest(
     if (IsMessageTextEqual(existing_request, request))
       return existing_request;
   return nullptr;
-}
-
-bool PermissionBubbleManager::HasUserGestureRequest(
-    const std::vector<PermissionBubbleRequest*>& queue) {
-  std::vector<PermissionBubbleRequest*>::const_iterator iter;
-  for (iter = queue.begin(); iter != queue.end(); iter++) {
-    if ((*iter)->HasUserGesture())
-      return true;
-  }
-  return false;
 }
 
 void PermissionBubbleManager::PermissionGrantedIncludingDuplicates(

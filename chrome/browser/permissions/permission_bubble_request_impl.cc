@@ -16,13 +16,11 @@
 
 PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
     const GURL& request_origin,
-    bool user_gesture,
     content::PermissionType permission_type,
     const std::string& display_languages,
     const PermissionDecidedCallback& permission_decided_callback,
     const base::Closure delete_callback)
     : request_origin_(request_origin),
-      user_gesture_(user_gesture),
       permission_type_(permission_type),
       display_languages_(display_languages),
       permission_decided_callback_(permission_decided_callback),
@@ -144,10 +142,6 @@ base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {
       return base::string16();
   }
   return l10n_util::GetStringUTF16(message_id);
-}
-
-bool PermissionBubbleRequestImpl::HasUserGesture() const {
-  return user_gesture_;
 }
 
 GURL PermissionBubbleRequestImpl::GetOrigin() const {

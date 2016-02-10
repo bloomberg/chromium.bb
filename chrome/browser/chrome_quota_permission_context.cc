@@ -50,7 +50,6 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
       int64_t requested_quota,
-      bool user_gesture,
       const std::string& display_languages,
       const content::QuotaPermissionContext::PermissionCallback& callback);
 
@@ -60,7 +59,6 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
-  bool HasUserGesture() const override;
   GURL GetOrigin() const override;
   void PermissionGranted() override;
   void PermissionDenied() override;
@@ -72,7 +70,6 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   GURL origin_url_;
   std::string display_languages_;
   int64_t requested_quota_;
-  bool user_gesture_;
   content::QuotaPermissionContext::PermissionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaPermissionRequest);
@@ -82,14 +79,12 @@ QuotaPermissionRequest::QuotaPermissionRequest(
     ChromeQuotaPermissionContext* context,
     const GURL& origin_url,
     int64_t requested_quota,
-    bool user_gesture,
     const std::string& display_languages,
     const content::QuotaPermissionContext::PermissionCallback& callback)
     : context_(context),
       origin_url_(origin_url),
       display_languages_(display_languages),
       requested_quota_(requested_quota),
-      user_gesture_(user_gesture),
       callback_(callback) {}
 
 QuotaPermissionRequest::~QuotaPermissionRequest() {}
@@ -110,10 +105,6 @@ base::string16 QuotaPermissionRequest::GetMessageText() const {
 
 base::string16 QuotaPermissionRequest::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(IDS_REQUEST_QUOTA_PERMISSION_FRAGMENT);
-}
-
-bool QuotaPermissionRequest::HasUserGesture() const {
-  return user_gesture_;
 }
 
 GURL QuotaPermissionRequest::GetOrigin() const {
@@ -305,7 +296,7 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
       PermissionBubbleManager::FromWebContents(web_contents);
   if (bubble_manager) {
     bubble_manager->AddRequest(new QuotaPermissionRequest(
-        this, params.origin_url, params.requested_size, params.user_gesture,
+        this, params.origin_url, params.requested_size,
         Profile::FromBrowserContext(web_contents->GetBrowserContext())
             ->GetPrefs()
             ->GetString(prefs::kAcceptLanguages),

@@ -11,8 +11,7 @@
 MockPermissionBubbleRequest::MockPermissionBubbleRequest()
     : granted_(false),
       cancelled_(false),
-      finished_(false),
-      user_gesture_(false) {
+      finished_(false) {
   text_ = base::ASCIIToUTF16("test");
   accept_label_ = base::ASCIIToUTF16("button");
   deny_label_ = base::ASCIIToUTF16("button");
@@ -23,8 +22,7 @@ MockPermissionBubbleRequest::MockPermissionBubbleRequest(
     const std::string& text)
     : granted_(false),
       cancelled_(false),
-      finished_(false),
-      user_gesture_(false) {
+      finished_(false) {
   text_ = base::UTF8ToUTF16(text);
   accept_label_ = base::ASCIIToUTF16("button");
   deny_label_ = base::ASCIIToUTF16("button");
@@ -36,8 +34,7 @@ MockPermissionBubbleRequest::MockPermissionBubbleRequest(
     const GURL& url)
     : granted_(false),
       cancelled_(false),
-      finished_(false),
-      user_gesture_(false) {
+      finished_(false) {
   text_ = base::UTF8ToUTF16(text);
   accept_label_ = base::ASCIIToUTF16("button");
   deny_label_ = base::ASCIIToUTF16("button");
@@ -50,8 +47,7 @@ MockPermissionBubbleRequest::MockPermissionBubbleRequest(
     const std::string& deny_label)
     : granted_(false),
       cancelled_(false),
-      finished_(false),
-      user_gesture_(false) {
+      finished_(false) {
   text_ = base::UTF8ToUTF16(text);
   accept_label_ = base::UTF8ToUTF16(accept_label);
   deny_label_ = base::UTF8ToUTF16(deny_label);
@@ -71,10 +67,6 @@ base::string16 MockPermissionBubbleRequest::GetMessageText() const {
 
 base::string16 MockPermissionBubbleRequest::GetMessageTextFragment() const {
   return text_;
-}
-
-bool MockPermissionBubbleRequest::HasUserGesture() const {
-  return user_gesture_;
 }
 
 GURL MockPermissionBubbleRequest::GetOrigin() const {
@@ -110,6 +102,3 @@ bool MockPermissionBubbleRequest::finished() {
   return finished_;
 }
 
-void MockPermissionBubbleRequest::SetHasUserGesture() {
-  user_gesture_ = true;
-}

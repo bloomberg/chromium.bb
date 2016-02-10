@@ -37,8 +37,7 @@ RegisterProtocolHandlerPermissionRequest
       bool user_gesture)
     : registry_(registry),
       handler_(handler),
-      origin_(url.GetOrigin()),
-      user_gesture_(user_gesture) {}
+      origin_(url.GetOrigin()) {}
 
 RegisterProtocolHandlerPermissionRequest::
 ~RegisterProtocolHandlerPermissionRequest() {}
@@ -86,10 +85,6 @@ RegisterProtocolHandlerPermissionRequest::GetMessageTextFragment() const {
           IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE_FRAGMENT,
           GetProtocolName(handler_),
           base::UTF8ToUTF16(old_handler.url().host_piece()));
-}
-
-bool RegisterProtocolHandlerPermissionRequest::HasUserGesture() const {
-  return user_gesture_;
 }
 
 GURL RegisterProtocolHandlerPermissionRequest::GetOrigin() const {

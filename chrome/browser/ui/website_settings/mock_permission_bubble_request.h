@@ -23,7 +23,6 @@ class MockPermissionBubbleRequest : public PermissionBubbleRequest {
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
-  bool HasUserGesture() const override;
   GURL GetOrigin() const override;
 
   void PermissionGranted() override;
@@ -35,13 +34,10 @@ class MockPermissionBubbleRequest : public PermissionBubbleRequest {
   bool cancelled();
   bool finished();
 
-  void SetHasUserGesture();
-
  private:
   bool granted_;
   bool cancelled_;
   bool finished_;
-  bool user_gesture_;
 
   base::string16 text_;
   base::string16 accept_label_;

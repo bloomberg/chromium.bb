@@ -436,50 +436,6 @@ TEST_F(PermissionBubbleManagerTest,
   EXPECT_TRUE(iframe_request_other_domain_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest, IFrameUserGestureRequest) {
-  iframe_request_other_domain_.SetHasUserGesture();
-  manager_->DisplayPendingRequests();
-  manager_->AddRequest(&request1_);
-  manager_->AddRequest(&iframe_request_other_domain_);
-  WaitForFrameLoad();
-  WaitForCoalescing();
-  manager_->AddRequest(&request2_);
-
-  EXPECT_TRUE(view_factory_->is_visible());
-  Closing();
-  EXPECT_TRUE(request1_.finished());
-  EXPECT_FALSE(iframe_request_other_domain_.finished());
-  EXPECT_FALSE(request2_.finished());
-  EXPECT_TRUE(view_factory_->is_visible());
-  Closing();
-  EXPECT_TRUE(iframe_request_other_domain_.finished());
-  EXPECT_FALSE(request2_.finished());
-}
-
-TEST_F(PermissionBubbleManagerTest, AllUserGestureRequests) {
-  iframe_request_other_domain_.SetHasUserGesture();
-  request2_.SetHasUserGesture();
-  manager_->DisplayPendingRequests();
-  manager_->AddRequest(&request1_);
-  manager_->AddRequest(&iframe_request_other_domain_);
-  WaitForCoalescing();
-  WaitForFrameLoad();
-  manager_->AddRequest(&request2_);
-
-  EXPECT_TRUE(view_factory_->is_visible());
-  Closing();
-  EXPECT_TRUE(request1_.finished());
-  EXPECT_FALSE(request2_.finished());
-  EXPECT_FALSE(iframe_request_other_domain_.finished());
-  EXPECT_TRUE(view_factory_->is_visible());
-  Closing();
-  EXPECT_TRUE(request2_.finished());
-  EXPECT_FALSE(iframe_request_other_domain_.finished());
-  Closing();
-  EXPECT_TRUE(iframe_request_other_domain_.finished());
-  EXPECT_FALSE(view_factory_->is_visible());
-}
-
 TEST_F(PermissionBubbleManagerTest, RequestsDontNeedUserGesture) {
   manager_->DisplayPendingRequests();
   WaitForFrameLoad();

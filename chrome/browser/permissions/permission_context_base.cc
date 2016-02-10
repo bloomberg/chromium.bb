@@ -178,7 +178,7 @@ void PermissionContextBase::DecidePermission(
     return;
   scoped_ptr<PermissionBubbleRequest> request_ptr(
       new PermissionBubbleRequestImpl(
-          requesting_origin, user_gesture, permission_type_,
+          requesting_origin, permission_type_,
           profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
           base::Bind(&PermissionContextBase::PermissionDecided,
                      weak_factory_.GetWeakPtr(), id, requesting_origin,

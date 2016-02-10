@@ -271,10 +271,6 @@ base::string16 MediaStreamDevicesController::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-bool MediaStreamDevicesController::HasUserGesture() const {
-  return request_.user_gesture;
-}
-
 GURL MediaStreamDevicesController::GetOrigin() const {
   return request_.security_origin;
 }
