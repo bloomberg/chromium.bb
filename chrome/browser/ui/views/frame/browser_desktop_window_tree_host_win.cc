@@ -154,46 +154,53 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                                     WPARAM w_param,
                                                     LPARAM l_param) {
   switch (message) {
-  case WM_CREATE:
-    minimize_button_metrics_.Init(GetHWND());
-    break;
-  case WM_WINDOWPOSCHANGED: {
-    UpdateDWMFrame();
+    case WM_CREATE:
+      minimize_button_metrics_.Init(GetHWND());
+      break;
+    case WM_WINDOWPOSCHANGED: {
+      UpdateDWMFrame();
 
-    // Windows lies to us about the position of the minimize button before a
-    // window is visible.  We use this position to place the OTR avatar in RTL
-    // mode, so when the window is shown, we need to re-layout and schedule a
-    // paint for the non-client frame view so that the icon top has the correct
-    // position when the window becomes visible.  This fixes bugs where the icon
-    // appears to overlay the minimize button.
-    // Note that we will call Layout every time SetWindowPos is called with
-    // SWP_SHOWWINDOW, however callers typically are careful about not
-    // specifying this flag unless necessary to avoid flicker.
-    // This may be invoked during creation on XP and before the non_client_view
-    // has been created.
-    WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(l_param);
-    if (window_pos->flags & SWP_SHOWWINDOW && GetWidget()->non_client_view()) {
-      GetWidget()->non_client_view()->Layout();
-      GetWidget()->non_client_view()->SchedulePaint();
+      // Windows lies to us about the position of the minimize button before a
+      // window is visible.  We use this position to place the OTR avatar in RTL
+      // mode, so when the window is shown, we need to re-layout and schedule a
+      // paint for the non-client frame view so that the icon top has the
+      // correct
+      // position when the window becomes visible.  This fixes bugs where the
+      // icon
+      // appears to overlay the minimize button.
+      // Note that we will call Layout every time SetWindowPos is called with
+      // SWP_SHOWWINDOW, however callers typically are careful about not
+      // specifying this flag unless necessary to avoid flicker.
+      // This may be invoked during creation on XP and before the
+      // non_client_view
+      // has been created.
+      WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(l_param);
+      if (window_pos->flags & SWP_SHOWWINDOW &&
+          GetWidget()->non_client_view()) {
+        GetWidget()->non_client_view()->Layout();
+        GetWidget()->non_client_view()->SchedulePaint();
+      }
+      break;
     }
-    break;
-  }
-  case WM_ERASEBKGND:
-    if (!did_gdi_clear_ && DesktopWindowTreeHostWin::ShouldUseNativeFrame()) {
-      // This is necessary to avoid white flashing in the titlebar area around
-      // the minimize/maximize/close buttons.
-      HDC dc = GetDC(GetHWND());
-      MARGINS margins = GetDWMFrameMargins();
-      RECT client_rect;
-      GetClientRect(GetHWND(), &client_rect);
-      HBRUSH brush = CreateSolidBrush(0);
-      RECT rect = { 0, 0, client_rect.right, margins.cyTopHeight };
-      FillRect(dc, &rect, brush);
-      DeleteObject(brush);
-      ReleaseDC(GetHWND(), dc);
-      did_gdi_clear_ = true;
+    case WM_ERASEBKGND: {
+      gfx::Insets insets;
+      if (!did_gdi_clear_ && GetClientAreaInsets(&insets)) {
+        // This is necessary to avoid white flashing in the titlebar area around
+        // the minimize/maximize/close buttons.
+        DCHECK_EQ(0, insets.top());
+        HDC dc = GetDC(GetHWND());
+        MARGINS margins = GetDWMFrameMargins();
+        RECT client_rect;
+        GetClientRect(GetHWND(), &client_rect);
+        HBRUSH brush = CreateSolidBrush(0);
+        RECT rect = {0, 0, client_rect.right, margins.cyTopHeight};
+        FillRect(dc, &rect, brush);
+        DeleteObject(brush);
+        ReleaseDC(GetHWND(), dc);
+        did_gdi_clear_ = true;
+      }
+      break;
     }
-    break;
   }
 }
 
