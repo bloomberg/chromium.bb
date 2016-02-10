@@ -11,7 +11,6 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/vibration/NavigatorVibration.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/CurrentTime.h"
 
@@ -48,7 +47,6 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
 
     KURL iconUrl;
 
-    // TODO(peter): Apply the appropriate CORS checks on the |iconUrl|.
     if (options.hasIcon() && !options.icon().isEmpty()) {
         iconUrl = executionContext->completeURL(options.icon());
         if (!iconUrl.isValid())
@@ -82,6 +80,14 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
         WebNotificationAction webAction;
         webAction.action = action.action();
         webAction.title = action.title();
+
+        KURL iconUrl;
+        if (action.hasIcon() && !action.icon().isEmpty()) {
+            iconUrl = executionContext->completeURL(action.icon());
+            if (!iconUrl.isValid())
+                iconUrl = KURL();
+        }
+        webAction.icon = iconUrl;
 
         actions.append(webAction);
     }

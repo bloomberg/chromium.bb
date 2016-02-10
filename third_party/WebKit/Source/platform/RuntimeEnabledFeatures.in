@@ -124,6 +124,7 @@ NetInfoDownlinkMax status=stable
 NewMediaPlaybackUi
 NotificationConstructor status=stable
 NotificationExperimental status=test
+NotificationActionIcons status=test
 Notifications status=stable
 OrientationEvent
 // For simulating Android's overlay fullscreen video in layout tests on Linux.

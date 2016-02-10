@@ -27,6 +27,9 @@ struct CONTENT_EXPORT PlatformNotificationAction {
 
   // Title of the button.
   base::string16 title;
+
+  // URL of the icon for the button. May be empty if no url was specified.
+  GURL icon;
 };
 
 // Structure representing the information associated with a Web Notification.

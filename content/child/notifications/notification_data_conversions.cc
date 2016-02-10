@@ -52,6 +52,8 @@ PlatformNotificationData ToPlatformNotificationData(
     platform_data.actions[i].action =
         base::UTF16ToUTF8(base::StringPiece16(web_data.actions[i].action));
     platform_data.actions[i].title = web_data.actions[i].title;
+    platform_data.actions[i].icon =
+        blink::WebStringToGURL(web_data.actions[i].icon.string());
   }
 
   return platform_data;
@@ -90,6 +92,7 @@ WebNotificationData ToWebNotificationData(
     web_data.actions[i].action =
         blink::WebString::fromUTF8(platform_data.actions[i].action);
     web_data.actions[i].title = platform_data.actions[i].title;
+    web_data.actions[i].icon = blink::WebURL(platform_data.actions[i].icon);
   }
 
   return web_data;

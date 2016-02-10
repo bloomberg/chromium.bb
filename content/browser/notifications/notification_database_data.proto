@@ -20,10 +20,11 @@ message NotificationDatabaseDataProto {
 
   // A notification action, corresponds to content::PlatformNotificationAction.
   //
-  // Next tag: 3
+  // Next tag: 4
   message NotificationAction {
     optional string action = 1;
     optional string title = 2;
+    optional string icon = 3;
   }
 
   // Actual data payload of the notification. This message is the protocol

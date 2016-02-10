@@ -52,12 +52,15 @@
           // Deliberately add more actions than are supported.
           for (var i = 0; i < 2 * Notification.maxActions; i++) {
               options.actions.push({
-                  action: "a" + i,
-                  title: "Action " + i
+                  action: 'a' + i,
+                  title: 'Action ' + i,
+                  icon: 'https://example/action_icon_' + i + '.png'
               });
           }
 
-          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
+          if (window.testRunner) {
+              testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
+          }
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
               // (1) Tell the Service Worker to display a Web Notification.
               workerInfo.port.postMessage({
@@ -80,7 +83,9 @@
                   // notification's display promise has been resolved.
                   if (event.data.command == 'show') {
                       assert_true(event.data.success, 'The notification must have been displayed.');
-                      testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
+                      if (window.testRunner) {
+                          testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
+                      }
                       return;
                   }
 
@@ -96,11 +101,11 @@
                       assert_equals(notifications.length, 1);
                       assert_object_is_superset(notifications[0], options, 'The Notification object properties must be the same in getNotifications.');
 
-                      notifications[0].actions.foo = "bar";
-                      notifications[0].actions.push({ title: "Foo" });
+                      notifications[0].actions.foo = 'bar';
+                      notifications[0].actions.push({ title: 'Foo' });
                       if (notifications[0].actions.length) {
-                          notifications[0].actions[0].title = "Changed";
-                          notifications[0].actions[0].foo = "bar";
+                          notifications[0].actions[0].title = 'Changed';
+                          notifications[0].actions[0].foo = 'bar';
                       }
                       assert_object_equals(notifications[0].actions, options.actions, 'The actions field should be immutable.');
 

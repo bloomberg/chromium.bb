@@ -6,23 +6,15 @@
 #define WebNotificationAction_h
 
 #include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 
 // Structure representing the data associated with a Web Notification action.
 struct WebNotificationAction {
-    // Empty and copy constructor only for WebVector.
-    WebNotificationAction() = default;
-    WebNotificationAction(const WebNotificationAction&) = default;
-
-    WebNotificationAction(const WebString& action, const WebString& title)
-        : action(action)
-        , title(title)
-    {
-    }
-
     WebString action;
     WebString title;
+    WebURL icon;
 };
 
 } // namespace blink

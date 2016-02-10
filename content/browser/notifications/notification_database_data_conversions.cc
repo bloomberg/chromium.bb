@@ -71,6 +71,7 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
     PlatformNotificationAction action;
     action.action = payload_action.action();
     action.title = base::UTF8ToUTF16(payload_action.title());
+    action.icon = GURL(payload_action.icon());
     notification_data->actions.push_back(action);
   }
 
@@ -125,6 +126,7 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
         payload->add_actions();
     payload_action->set_action(action.action);
     payload_action->set_title(base::UTF16ToUTF8(action.title));
+    payload_action->set_icon(action.icon.spec());
   }
 
   NotificationDatabaseDataProto message;

@@ -7,4 +7,5 @@
 dictionary NotificationAction {
     required DOMString action;
     required DOMString title;
+    [RuntimeEnabled=NotificationActionIcons] USVString icon;
 };

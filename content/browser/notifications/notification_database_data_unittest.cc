@@ -27,6 +27,7 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
+const char kNotificationActionIconUrl[] = "https://example.com/action_icon.png";
 const int kNotificationVibrationPattern[] = {100, 200, 300};
 const double kNotificationTimestamp = 621046800.;
 const unsigned char kNotificationData[] = {0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf};
@@ -56,6 +57,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
     PlatformNotificationAction notification_action;
     notification_action.action = base::SizeTToString(i);
     notification_action.title = base::SizeTToString16(i);
+    notification_action.icon = GURL(kNotificationActionIconUrl);
     notification_data.actions.push_back(notification_action);
   }
 
@@ -111,6 +113,8 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
               copied_notification_data.actions[i].action);
     EXPECT_EQ(notification_data.actions[i].title,
               copied_notification_data.actions[i].title);
+    EXPECT_EQ(notification_data.actions[i].icon,
+              copied_notification_data.actions[i].icon);
   }
 }
 
