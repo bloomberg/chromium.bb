@@ -16,11 +16,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-declare_args() {
-  # TODO(slan): This most likely needs to be moved into a .gni file.
-  use_chromecast_webui = true
-}
-
 if (use_playready) {
   config("playready_config") {
     defines = [ "PLAYREADY_CDM_AVAILABLE" ]
@@ -225,22 +220,9 @@ repack("cast_shell_pak") {
   ]
 
   if (chromecast_branding != "public") {
-    sources +=
-        [ "$root_gen_dir/chromecast/internal/shell/app/sound_resources.pak" ]
+    sources += [ "$root_gen_dir/chromecast/internal/cast_shell_internal.pak" ]
 
-    deps += [ "//chromecast/internal/shell/app:chromecast_sound_resources" ]
-
-    if (use_chromecast_webui) {
-      sources += [
-        "$root_gen_dir/chromecast/internal/webui/app_resources.pak",
-        "$root_gen_dir/chromecast/internal/webui/cast_webui_resources.pak",
-      ]
-
-      deps += [
-        "//chromecast/internal/webui:chromecast_app_resources",
-        "//chromecast/internal/webui:chromecast_webui_resources",
-      ]
-    }
+    deps += [ "//chromecast/internal:cast_shell_internal_pak" ]
   }
 }
 

@@ -14,7 +14,6 @@
     'chromecast_branding%': 'public',
     'disable_display%': 0,
     'ozone_platform_cast%': 0,
-    'use_chromecast_webui%': 0,
   },
   'includes': [
     'chromecast_tests.gypi',
@@ -292,15 +291,9 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
             'conditions': [
-              ['chromecast_branding!="public" and use_chromecast_webui==1', {
-                'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/chromecast/app_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/chromecast/cast_webui_resources.pak',
-                ],
-              }],
               ['chromecast_branding!="public"', {
                 'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/chromecast/sound_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/chromecast/internal/cast_shell_internal.pak',
                 ],
               }],
             ],
@@ -310,15 +303,9 @@
         },
       ],
       'conditions': [
-        ['chromecast_branding!="public" and use_chromecast_webui==1', {
-          'dependencies': [
-            'internal/chromecast_resources.gyp:chromecast_app_resources',
-            'internal/chromecast_resources.gyp:chromecast_webui_resources',
-          ],
-        }],
         ['chromecast_branding!="public"', {
           'dependencies': [
-            'internal/chromecast_resources.gyp:chromecast_sound_resources',
+            'internal/chromecast_resources.gyp:cast_shell_internal_pak',
           ],
         }],
       ],
