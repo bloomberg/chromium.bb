@@ -65,7 +65,7 @@ int CountOccurences(const std::string& haystack, const std::string& needle) {
 class FeedbackSenderTest : public testing::Test {
  public:
   FeedbackSenderTest() : ui_thread_(content::BrowserThread::UI, &loop_) {
-    feedback_.reset(new FeedbackSender(NULL, kLanguage, kCountry));
+    feedback_.reset(new FeedbackSender(nullptr, kLanguage, kCountry));
     feedback_->StartFeedbackCollection();
   }
 
@@ -79,7 +79,7 @@ class FeedbackSenderTest : public testing::Test {
     // TODO(rouslan): Remove the command-line switch. http://crbug.com/247726
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSpellingFeedbackFieldTrial);
-    feedback_.reset(new FeedbackSender(NULL, kLanguage, kCountry));
+    feedback_.reset(new FeedbackSender(nullptr, kLanguage, kCountry));
     feedback_->StartFeedbackCollection();
   }
 
@@ -92,7 +92,7 @@ class FeedbackSenderTest : public testing::Test {
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
         kFeedbackFieldTrialName, kFeedbackFieldTrialEnabledGroupName);
     field_trial_->group();
-    feedback_.reset(new FeedbackSender(NULL, kLanguage, kCountry));
+    feedback_.reset(new FeedbackSender(nullptr, kLanguage, kCountry));
     feedback_->StartFeedbackCollection();
   }
 
@@ -196,7 +196,8 @@ TEST_F(FeedbackSenderTest, SelectFeedback) {
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
                                       std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"SELECT\""));
-  EXPECT_TRUE(UploadDataContains("\"actionTargetIndex\":" + kSuggestionIndex));
+  EXPECT_TRUE(UploadDataContains("\"actionTargetIndex\":" +
+                                 base::StringPrintf("%d", kSuggestionIndex)));
 }
 
 // Send ADD_TO_DICT feedback message if the user has added the misspelled word
@@ -422,9 +423,9 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
   scoped_ptr<base::DictionaryValue> actual(static_cast<base::DictionaryValue*>(
       base::JSONReader::Read(actual_data).release()));
   actual->SetString("params.key", "TestDummyKey");
-  base::ListValue* suggestions = NULL;
+  base::ListValue* suggestions = nullptr;
   actual->GetList("params.suggestionInfo", &suggestions);
-  base::DictionaryValue* suggestion = NULL;
+  base::DictionaryValue* suggestion = nullptr;
   suggestions->GetDictionary(0, &suggestion);
   suggestion->SetString("suggestionId", "42");
   suggestion->SetString("timestamp", "9001");

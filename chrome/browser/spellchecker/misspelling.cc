@@ -14,19 +14,19 @@
 
 namespace {
 
-// Builds a value from a list of spellcheck suggestions. The caller owns the
-// result.
-base::Value* BuildSuggestionsValue(const std::vector<base::string16>& list) {
-  base::ListValue* result = new base::ListValue;
+// Builds a value from a list of spellcheck suggestions.
+scoped_ptr<base::Value> BuildSuggestionsValue(
+    const std::vector<base::string16>& list) {
+  scoped_ptr<base::ListValue> result(new base::ListValue);
   result->AppendStrings(list);
-  return result;
+  return std::move(result);
 }
 
-// Builds a value from a spellcheck action. The caller owns the result.
-base::Value* BuildUserActionValue(const SpellcheckAction& action) {
-  base::ListValue* result = new base::ListValue;
+// Builds a value from a spellcheck action.
+scoped_ptr<base::Value> BuildUserActionValue(const SpellcheckAction& action) {
+  scoped_ptr<base::ListValue> result(new base::ListValue);
   result->Append(action.Serialize());
-  return result;
+  return std::move(result);
 }
 
 }  // namespace
@@ -48,8 +48,9 @@ Misspelling::Misspelling(const base::string16& context,
 
 Misspelling::~Misspelling() {}
 
-base::DictionaryValue* SerializeMisspelling(const Misspelling& misspelling) {
-  base::DictionaryValue* result = new base::DictionaryValue;
+scoped_ptr<base::DictionaryValue> SerializeMisspelling(
+    const Misspelling& misspelling) {
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->SetString(
       "timestamp",
       base::Int64ToString(static_cast<long>(misspelling.timestamp.ToJsTime())));
@@ -57,8 +58,10 @@ base::DictionaryValue* SerializeMisspelling(const Misspelling& misspelling) {
   result->SetInteger("misspelledStart", misspelling.location);
   result->SetString("originalText", misspelling.context);
   result->SetString("suggestionId", base::UintToString(misspelling.hash));
-  result->Set("suggestions", BuildSuggestionsValue(misspelling.suggestions));
-  result->Set("userActions", BuildUserActionValue(misspelling.action));
+  result->Set("suggestions",
+              BuildSuggestionsValue(misspelling.suggestions).release());
+  result->Set("userActions",
+              BuildUserActionValue(misspelling.action).release());
   return result;
 }
 
