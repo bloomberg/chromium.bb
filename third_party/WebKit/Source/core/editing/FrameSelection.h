@@ -259,9 +259,6 @@ private:
     void setOriginalBase(const VisiblePositionInFlatTree& newBase) { m_originalBaseInFlatTree = newBase; }
 
     template <typename Strategy>
-    bool containsAlgorithm(const LayoutPoint&);
-
-    template <typename Strategy>
     void setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelectionTemplate<Strategy>&, TextGranularity, EndPointsAdjustmentMode);
 
     template <typename Strategy>

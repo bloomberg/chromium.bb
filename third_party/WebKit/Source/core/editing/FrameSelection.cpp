@@ -730,15 +730,14 @@ void FrameSelection::paintCaret(GraphicsContext& context, const LayoutPoint& pai
     }
 }
 
-template <typename Strategy>
-bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
+bool FrameSelection::contains(const LayoutPoint& point)
 {
     Document* document = m_frame->document();
     if (!document->layoutView())
         return false;
 
     // Treat a collapsed selection like no selection.
-    const VisibleSelectionTemplate<Strategy> visibleSelection = this->visibleSelection<Strategy>();
+    const VisibleSelectionInFlatTree& visibleSelection = this->visibleSelection<EditingInFlatTreeStrategy>();
     if (!visibleSelection.isRange())
         return false;
 
@@ -749,26 +748,19 @@ bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
     if (!innerNode || !innerNode->layoutObject())
         return false;
 
-    const VisiblePositionTemplate<Strategy> visiblePos = createVisiblePosition(fromPositionInDOMTree<Strategy>(innerNode->layoutObject()->positionForPoint(result.localPoint())));
+    const VisiblePositionInFlatTree& visiblePos = createVisiblePosition(fromPositionInDOMTree<EditingInFlatTreeStrategy>(innerNode->layoutObject()->positionForPoint(result.localPoint())));
     if (visiblePos.isNull())
         return false;
 
-    const VisiblePositionTemplate<Strategy> visibleStart = visibleSelection.visibleStart();
-    const VisiblePositionTemplate<Strategy> visibleEnd = visibleSelection.visibleEnd();
+    const VisiblePositionInFlatTree& visibleStart = visibleSelection.visibleStart();
+    const VisiblePositionInFlatTree& visibleEnd = visibleSelection.visibleEnd();
     if (visibleStart.isNull() || visibleEnd.isNull())
         return false;
 
-    const PositionTemplate<Strategy> start = visibleStart.deepEquivalent();
-    const PositionTemplate<Strategy> end = visibleEnd.deepEquivalent();
-    const PositionTemplate<Strategy> pos = visiblePos.deepEquivalent();
+    const PositionInFlatTree& start = visibleStart.deepEquivalent();
+    const PositionInFlatTree& end = visibleEnd.deepEquivalent();
+    const PositionInFlatTree& pos = visiblePos.deepEquivalent();
     return start.compareTo(pos) <= 0 && pos.compareTo(end) <= 0;
-}
-
-bool FrameSelection::contains(const LayoutPoint& point)
-{
-    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
-        return containsAlgorithm<EditingInFlatTreeStrategy>(point);
-    return containsAlgorithm<EditingStrategy>(point);
 }
 
 // Workaround for the fact that it's hard to delete a frame.
@@ -1121,35 +1113,19 @@ void FrameSelection::setFocusedNodeIfNeeded()
         m_frame->page()->focusController().setFocusedElement(0, m_frame);
 }
 
-template <typename Strategy>
-String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIteratorBehavior behavior)
+static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
-    const VisibleSelectionTemplate<Strategy> visibleSelection = selection.visibleSelection<Strategy>();
-    const EphemeralRangeTemplate<Strategy> range = visibleSelection.toNormalizedEphemeralRange();
+    const VisibleSelectionInFlatTree& visibleSelection = selection.visibleSelection<EditingInFlatTreeStrategy>();
+    const EphemeralRangeInFlatTree& range = visibleSelection.toNormalizedEphemeralRange();
     // We remove '\0' characters because they are not visibly rendered to the user.
     return plainText(range, behavior).replace(0, "");
 }
 
-static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
-{
-    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
-        return extractSelectedTextAlgorithm<EditingInFlatTreeStrategy>(selection, behavior);
-    return extractSelectedTextAlgorithm<EditingStrategy>(selection, behavior);
-}
-
-template <typename Strategy>
-static String extractSelectedHTMLAlgorithm(const FrameSelection& selection)
-{
-    const VisibleSelectionTemplate<Strategy> visibleSelection = selection.visibleSelection<Strategy>();
-    const EphemeralRangeTemplate<Strategy> range = visibleSelection.toNormalizedEphemeralRange();
-    return createMarkup(range.startPosition(), range.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
-}
-
 String FrameSelection::selectedHTMLForClipboard() const
 {
-    if (!RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
-        return extractSelectedHTMLAlgorithm<EditingStrategy>(*this);
-    return extractSelectedHTMLAlgorithm<EditingInFlatTreeStrategy>(*this);
+    const VisibleSelectionInFlatTree& visibleSelection = this->visibleSelection<EditingInFlatTreeStrategy>();
+    const EphemeralRangeInFlatTree& range = visibleSelection.toNormalizedEphemeralRange();
+    return createMarkup(range.startPosition(), range.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
 String FrameSelection::selectedText(TextIteratorBehavior behavior) const
