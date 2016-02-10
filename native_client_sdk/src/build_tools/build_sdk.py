@@ -459,7 +459,7 @@ def GypNinjaBuild_PPAPI(arch, rel_out_dir):
   GypNinjaBuild(arch, gyp_py, gyp_file, 'ppapi_lib', out_dir)
 
 
-def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
+def GypNinjaBuild_Pnacl(arch, rel_out_dir):
   # TODO(binji): This will build the pnacl_irt_shim twice; once as part of the
   # Chromium build, and once here. When we move more of the SDK build process
   # to gyp, we can remove this.
@@ -468,14 +468,12 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
   out_dir = MakeNinjaRelPath(rel_out_dir)
   gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'src',
                           'untrusted', 'pnacl_irt_shim', 'pnacl_irt_shim.gyp')
-  targets = ['aot']
-  GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir)
+  GypNinjaBuild(arch, gyp_py, gyp_file, 'aot', out_dir)
 
 
 def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
   gyp_env = dict(os.environ)
-  gyp_env['GYP_GENERATORS'] = 'ninja'
-  gyp_defines = ['nacl_allow_thin_archives=0', 'use_nacl_clang=1']
+  gyp_defines = []
   if options.mac_sdk:
     gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
 
@@ -535,7 +533,7 @@ def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
       for arch in ('ia32', 'arm'):
         # Fill in the latest native pnacl shim library from the chrome build.
         build_dir = GYPBUILD_DIR + '-pnacl-' + arch
-        GypNinjaBuild_Pnacl(build_dir, arch)
+        GypNinjaBuild_Pnacl(arch, build_dir)
 
   GypNinjaInstall(pepperdir, toolchains)
 

@@ -106,7 +106,7 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
     self.options_mock = patch('build_artifacts.options').start()
     self.options_mock.mac_sdk = False
     self.options_mock.no_arm_trusted = False
-    self.gyp_defines_base = ['nacl_allow_thin_archives=0']
+    self.gyp_defines_base = []
 
   def testSimple(self):
     build_artifacts.GypNinjaBuild(
@@ -115,8 +115,7 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
         call(['python', 'gyp.py', 'foo.gyp', '--depth=.', '-G',
               'output_dir=out_dir'],
              cwd='src_dir',
-             env={'GYP_GENERATORS': 'ninja',
-                  'GYP_DEFINES': ' '.join(self.gyp_defines_base)}),
+             env={'GYP_DEFINES': ' '.join(self.gyp_defines_base)}),
         call(['ninja', '-C', 'out_dir/Release', 'target'], cwd='src_dir')
     ])
 
@@ -128,7 +127,6 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
               'output_dir=out_dir'],
              cwd='src_dir',
              env={
-                 'GYP_GENERATORS': 'ninja',
                  'GYP_DEFINES': ' '.join(self.gyp_defines_base +
                                          ['target_arch=x64']),
              }),
@@ -142,8 +140,7 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
         call(['python', 'gyp.py', 'foo.gyp', '--depth=.', '-G',
               'output_dir=out_dir'],
              cwd='src_dir',
-             env={'GYP_GENERATORS': 'ninja',
-                  'GYP_DEFINES': ' '.join(self.gyp_defines_base)}),
+             env={'GYP_DEFINES': ' '.join(self.gyp_defines_base)}),
         call(['ninja', '-C', 'out_dir/Release', 'target1', 'target2'],
              cwd='src_dir')
     ])
@@ -158,9 +155,8 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
               'output_dir=out_dir'],
              cwd='src_dir',
              env={
-               'GYP_GENERATORS': 'ninja',
                'GYP_DEFINES': ' '.join(self.gyp_defines_base +
-                                       ['mac_sdk=10.6', 'clang=1']),
+                                       ['mac_sdk=10.6']),
              }),
         call(['ninja', '-C', 'out_dir/Release', 'target'], cwd='src_dir')
     ])
@@ -175,7 +171,6 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
              cwd='src_dir',
              env={
                'GYP_CROSSCOMPILE': '1',
-               'GYP_GENERATORS': 'ninja',
                'GYP_DEFINES': ' '.join(self.gyp_defines_base +
                                        ['target_arch=arm']),
              }),
@@ -193,7 +188,6 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
              cwd='src_dir',
              env={
                'GYP_CROSSCOMPILE': '1',
-               'GYP_GENERATORS': 'ninja',
                'GYP_DEFINES': ' '.join(self.gyp_defines_base +
                                        ['target_arch=arm',
                                         'disable_cross_trusted=1']),

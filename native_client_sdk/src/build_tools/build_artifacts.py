@@ -200,8 +200,7 @@ def NinjaBuild(targets, out_dir):
 
 def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
   gyp_env = dict(os.environ)
-  gyp_env['GYP_GENERATORS'] = 'ninja'
-  gyp_defines = ['nacl_allow_thin_archives=0']
+  gyp_defines = []
   if options.mac_sdk:
     gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
   if arch:
@@ -210,8 +209,6 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
       gyp_env['GYP_CROSSCOMPILE'] = '1'
       if options.no_arm_trusted:
         gyp_defines.append('disable_cross_trusted=1')
-  if PLATFORM == 'mac':
-    gyp_defines.append('clang=1')
 
   gyp_env['GYP_DEFINES'] = ' '.join(gyp_defines)
   generator_flags = ['-G', 'output_dir=%s' % out_dir]
