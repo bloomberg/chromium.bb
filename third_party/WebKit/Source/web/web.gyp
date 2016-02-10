@@ -118,7 +118,6 @@
                         '<@(bindings_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
-                        '<@(platform_unittest_support_files)',
                         # FIXME: the next line should not be needed. We prefer to run these unit tests outside blink_web.dll.
                         '<@(platform_web_unittest_files)',
                         '<@(web_unittest_files)',

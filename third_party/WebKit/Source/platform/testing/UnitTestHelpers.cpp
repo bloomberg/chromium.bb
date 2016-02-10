@@ -83,5 +83,10 @@ void exitRunLoop()
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
+void yieldCurrentThread()
+{
+    base::PlatformThread::YieldCurrentThread();
+}
+
 } // namespace testing
 } // namespace blink

@@ -348,9 +348,6 @@ public:
     // embedder.
     virtual WebThread* currentThread() { return nullptr; }
 
-    // Yield the current thread so another thread can be scheduled.
-    virtual void yieldCurrentThread() { }
-
     // WaitableEvent -------------------------------------------------------
 
     // Creates an embedder-defined waitable event object.

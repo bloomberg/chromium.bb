@@ -1102,13 +1102,6 @@
       'image-decoders/webp/WEBPImageDecoderTest.cpp',
       'threading/BackgroundTaskRunnerTest.cpp',
     ],
-    # TODO(jbroman): Move these into platform_test_support_files.
-    'platform_unittest_support_files': [
-      'testing/URLTestHelpers.cpp',
-      'testing/URLTestHelpers.h',
-      'testing/UnitTestHelpers.cpp',
-      'testing/UnitTestHelpers.h',
-    ],
     'platform_test_support_files': [
       'graphics/test/FakeGraphicsLayerFactory.cpp',
       'graphics/test/FakeGraphicsLayerFactory.h',
@@ -1124,6 +1117,10 @@
       'testing/TestPaintArtifact.h',
       'testing/TransformPrinters.cpp',
       'testing/TransformPrinters.h',
+      'testing/URLTestHelpers.cpp',
+      'testing/URLTestHelpers.h',
+      'testing/UnitTestHelpers.cpp',
+      'testing/UnitTestHelpers.h',
     ],
     'conditions': [
       ['OS=="win"',

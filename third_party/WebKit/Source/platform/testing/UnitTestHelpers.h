@@ -44,6 +44,8 @@ PassRefPtr<SharedBuffer> readFromFile(const String& path);
 void enterRunLoop();
 void exitRunLoop();
 
+void yieldCurrentThread();
+
 } // namespace testing
 } // namespace blink
 

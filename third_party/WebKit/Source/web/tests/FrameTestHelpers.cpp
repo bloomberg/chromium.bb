@@ -348,7 +348,7 @@ void TestWebFrameClient::waitForLoadToComplete()
         if (!isLoading())
             break;
 
-        Platform::current()->yieldCurrentThread();
+        testing::yieldCurrentThread();
     }
 }
 

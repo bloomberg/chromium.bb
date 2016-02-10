@@ -100,7 +100,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   bool portAllowed(const blink::WebURL& url) const override;
   blink::WebThread* createThread(const char* name) override;
   blink::WebThread* currentThread() override;
-  void yieldCurrentThread() override;
   blink::WebWaitableEvent* createWaitableEvent(
       blink::WebWaitableEvent::ResetPolicy policy,
       blink::WebWaitableEvent::InitialState state) override;

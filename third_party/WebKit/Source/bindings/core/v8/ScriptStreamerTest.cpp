@@ -54,7 +54,7 @@ protected:
         // cannot fully control in what kind of chunks the data is passed to V8
         // (if V8 is not requesting more data between two appendData calls, it
         // will get both chunks together).
-        Platform::current()->yieldCurrentThread();
+        testing::yieldCurrentThread();
     }
 
     void appendPadding()

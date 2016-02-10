@@ -509,10 +509,6 @@ blink::WebThread* BlinkPlatformImpl::currentThread() {
   return static_cast<blink::WebThread*>(current_thread_slot_.Get());
 }
 
-void BlinkPlatformImpl::yieldCurrentThread() {
-  base::PlatformThread::YieldCurrentThread();
-}
-
 blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent(
     blink::WebWaitableEvent::ResetPolicy policy,
     blink::WebWaitableEvent::InitialState state) {

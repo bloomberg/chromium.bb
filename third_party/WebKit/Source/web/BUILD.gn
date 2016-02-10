@@ -62,7 +62,6 @@ component("web") {
     sources += bindings_unittest_files
     sources += core_unittest_files
     sources += modules_unittest_files
-    sources += platform_unittest_support_files
     sources += platform_web_unittest_files
 
     sources += [ "WebTestingSupport.cpp" ]
@@ -154,7 +153,6 @@ test("webkit_unit_tests") {
     sources += bindings_unittest_files
     sources += core_unittest_files
     sources += modules_unittest_files
-    sources += platform_unittest_support_files
     sources += platform_web_unittest_files
   }
 

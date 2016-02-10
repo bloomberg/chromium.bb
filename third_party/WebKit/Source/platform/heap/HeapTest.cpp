@@ -37,6 +37,7 @@
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -464,7 +465,7 @@ protected:
         }
         while (tester->m_threadsToFinish) {
             SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
-            Platform::current()->yieldCurrentThread();
+            testing::yieldCurrentThread();
         }
         delete tester;
     }
@@ -531,7 +532,7 @@ protected:
                         globalPersistent = createGlobalPersistent(0x0ed0cabb);
                     }
                     SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
-                    Platform::current()->yieldCurrentThread();
+                    testing::yieldCurrentThread();
                 }
 
                 if (gcCount < gcPerThread) {
@@ -549,7 +550,7 @@ protected:
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
             }
             SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
-            Platform::current()->yieldCurrentThread();
+            testing::yieldCurrentThread();
         }
 
         // Intentionally leak the cross-thread persistent so as to verify
@@ -586,7 +587,7 @@ private:
                     weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
                     weakMap2.add(static_cast<unsigned>(i), IntWrapper::create(0));
                     SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
-                    Platform::current()->yieldCurrentThread();
+                    testing::yieldCurrentThread();
                 }
 
                 if (gcCount < gcPerThread) {
@@ -604,7 +605,7 @@ private:
                 EXPECT_TRUE(weakMap2.isEmpty());
             }
             SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
-            Platform::current()->yieldCurrentThread();
+            testing::yieldCurrentThread();
         }
         ThreadState::detach();
         atomicDecrement(&m_threadsToFinish);
@@ -4706,7 +4707,7 @@ public:
 
         // Wait for the sleeper to run.
         while (!s_sleeperRunning) {
-            Platform::current()->yieldCurrentThread();
+            testing::yieldCurrentThread();
         }
 
         {
@@ -4722,7 +4723,7 @@ public:
             // We enter the safepoint here since the sleeper thread will detach
             // causing it to GC.
             ThreadState::current()->safePoint(BlinkGC::NoHeapPointersOnStack);
-            Platform::current()->yieldCurrentThread();
+            testing::yieldCurrentThread();
         }
 
         {
@@ -4740,7 +4741,7 @@ private:
 
         // Simulate a long running op that is not entering a safepoint.
         while (!s_sleeperDone) {
-            Platform::current()->yieldCurrentThread();
+            testing::yieldCurrentThread();
         }
 
         ThreadState::detach();

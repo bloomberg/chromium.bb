@@ -12,8 +12,6 @@ _gypi = exec_script("//build/gypi_to_gn.py",
 
 platform_files = _gypi.platform_files
 platform_test_files = get_path_info(_gypi.platform_test_files, "abspath")
-platform_unittest_support_files =
-    get_path_info(_gypi.platform_unittest_support_files, "abspath")
 platform_web_unittest_files =
     get_path_info(_gypi.platform_web_unittest_files, "abspath")
 platform_test_support_files =
