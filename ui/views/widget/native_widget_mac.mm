@@ -504,9 +504,15 @@ void NativeWidgetMac::RunShellDrag(View* view,
 }
 
 void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
-  // TODO(tapted): This should use setNeedsDisplayInRect:, once the coordinate
-  // system of |rect| has been converted.
-  [GetNativeView() setNeedsDisplay:YES];
+  // |rect| is relative to client area of the window.
+  NSWindow* window = GetNativeWindow();
+  NSRect client_rect = [window contentRectForFrameRect:[window frame]];
+  NSRect target_rect = rect.ToCGRect();
+
+  // Convert to Appkit coordinate system (origin at bottom left).
+  target_rect.origin.y =
+      NSHeight(client_rect) - target_rect.origin.y - NSHeight(target_rect);
+  [GetNativeView() setNeedsDisplayInRect:target_rect];
   if (bridge_ && bridge_->layer())
     bridge_->layer()->SchedulePaint(rect);
 }

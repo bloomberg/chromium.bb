@@ -54,6 +54,21 @@
 @property(readonly, nonatomic) int invalidateShadowCount;
 @end
 
+// Used to mock BridgedContentView so that calls to drawRect: can be
+// intercepted.
+@interface MockBridgedView : NSView {
+ @private
+  // Number of times -[NSView drawRect:] has been called.
+  NSUInteger drawRectCount_;
+
+  // The dirtyRect parameter passed to last invocation of drawRect:.
+  NSRect lastDirtyRect_;
+}
+
+@property(assign, nonatomic) NSUInteger drawRectCount;
+@property(assign, nonatomic) NSRect lastDirtyRect;
+@end
+
 namespace views {
 namespace test {
 
@@ -1205,6 +1220,90 @@ TEST_F(NativeWidgetMacTest, ChangeOpacity) {
   widget->CloseNow();
 }
 
+// Test that NativeWidgetMac::SchedulePaintInRect correctly passes the dirtyRect
+// parameter to BridgedContentView::drawRect, for a titled window (window with a
+// toolbar).
+TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Titled) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+
+  gfx::Rect screen_rect(50, 50, 100, 100);
+  widget->SetBounds(screen_rect);
+
+  // Setup the mock content view for the NSWindow, so that we can intercept
+  // drawRect.
+  NSWindow* window = widget->GetNativeWindow();
+  base::scoped_nsobject<MockBridgedView> mock_bridged_view(
+      [[MockBridgedView alloc] init]);
+  [window setContentView:mock_bridged_view];
+
+  // Ensure the initial draw of the window is done.
+  base::RunLoop().RunUntilIdle();
+
+  // Add a dummy view to the widget. This will cause SchedulePaint to be called
+  // on the dummy view.
+  View* dummy_view = new View();
+  gfx::Rect dummy_bounds(25, 30, 10, 15);
+  dummy_view->SetBoundsRect(dummy_bounds);
+  // Reset drawRect count.
+  [mock_bridged_view setDrawRectCount:0];
+  widget->GetContentsView()->AddChildView(dummy_view);
+
+  // SchedulePaint is asyncronous. Wait for drawRect: to be called.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, [mock_bridged_view drawRectCount]);
+  int client_area_height = widget->GetClientAreaBoundsInScreen().height();
+  // These are expected dummy_view bounds in AppKit coordinate system. The y
+  // coordinate of rect origin is calculated as:
+  // client_area_height - 30 (dummy_view's y coordinate) - 15 (dummy view's
+  // height).
+  gfx::Rect expected_appkit_bounds(25, client_area_height - 45, 10, 15);
+  EXPECT_NSEQ(expected_appkit_bounds.ToCGRect(),
+              [mock_bridged_view lastDirtyRect]);
+  widget->CloseNow();
+}
+
+// Test that NativeWidgetMac::SchedulePaintInRect correctly passes the dirtyRect
+// parameter to BridgedContentView::drawRect, for a borderless window.
+TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
+  Widget* widget = CreateTopLevelFramelessPlatformWidget();
+
+  gfx::Rect screen_rect(50, 50, 100, 100);
+  widget->SetBounds(screen_rect);
+
+  // Setup the mock content view for the NSWindow, so that we can intercept
+  // drawRect.
+  NSWindow* window = widget->GetNativeWindow();
+  base::scoped_nsobject<MockBridgedView> mock_bridged_view(
+      [[MockBridgedView alloc] init]);
+  [window setContentView:mock_bridged_view];
+
+  // Ensure the initial draw of the window is done.
+  base::RunLoop().RunUntilIdle();
+
+  // Add a dummy view to the widget. This will cause SchedulePaint to be called
+  // on the dummy view.
+  View* dummy_view = new View();
+  gfx::Rect dummy_bounds(25, 30, 10, 15);
+  dummy_view->SetBoundsRect(dummy_bounds);
+  // Reset drawRect count.
+  [mock_bridged_view setDrawRectCount:0];
+  widget->GetRootView()->AddChildView(dummy_view);
+
+  // SchedulePaint is asyncronous. Wait for drawRect: to be called.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, [mock_bridged_view drawRectCount]);
+  // These are expected dummy_view bounds in AppKit coordinate system. The y
+  // coordinate of rect origin is calculated as:
+  // 100(client area height) - 30 (dummy_view's y coordinate) - 15 (dummy view's
+  // height).
+  gfx::Rect expected_appkit_bounds(25, 55, 10, 15);
+  EXPECT_NSEQ(expected_appkit_bounds.ToCGRect(),
+              [mock_bridged_view lastDirtyRect]);
+  widget->CloseNow();
+}
+
 }  // namespace test
 }  // namespace views
 
@@ -1221,6 +1320,18 @@ TEST_F(NativeWidgetMacTest, ChangeOpacity) {
 - (void)invalidateShadow {
   ++invalidateShadowCount_;
   [super invalidateShadow];
+}
+
+@end
+
+@implementation MockBridgedView
+
+@synthesize drawRectCount = drawRectCount_;
+@synthesize lastDirtyRect = lastDirtyRect_;
+
+- (void)drawRect:(NSRect)dirtyRect {
+  ++drawRectCount_;
+  lastDirtyRect_ = dirtyRect;
 }
 
 @end
