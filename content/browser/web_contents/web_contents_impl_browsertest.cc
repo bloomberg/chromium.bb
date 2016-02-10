@@ -108,13 +108,8 @@ class NavigateOnCommitObserver : public WebContentsObserver {
       const LoadCommittedDetails& load_details) override {
     if (!done_) {
       done_ = true;
-      shell_->LoadURL(url_);
-
-      // There should be a pending entry.
-      CHECK(shell_->web_contents()->GetController().GetPendingEntry());
-
-      // Now that there is a pending entry, stop the load.
       shell_->Stop();
+      shell_->LoadURL(url_);
     }
   }
 
@@ -194,8 +189,16 @@ class LoadingStateChangedDelegate : public WebContentsDelegate {
   int loadingStateToDifferentDocumentCount_;
 };
 
+// See: http://crbug.com/298193
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_DidStopLoadingDetails DISABLED_DidStopLoadingDetails
+#else
+#define MAYBE_DidStopLoadingDetails DidStopLoadingDetails
+#endif
+
 // Test that DidStopLoading includes the correct URL in the details.
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DidStopLoadingDetails) {
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MAYBE_DidStopLoadingDetails) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   LoadStopNotificationObserver load_observer(
@@ -209,15 +212,20 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DidStopLoadingDetails) {
             load_observer.controller_);
 }
 
+// See: http://crbug.com/298193
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_DidStopLoadingDetailsWithPending \
+  DISABLED_DidStopLoadingDetailsWithPending
+#else
+#define MAYBE_DidStopLoadingDetailsWithPending DidStopLoadingDetailsWithPending
+#endif
+
 // Test that DidStopLoading includes the correct URL in the details when a
 // pending entry is present.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       DidStopLoadingDetailsWithPending) {
+                       MAYBE_DidStopLoadingDetailsWithPending) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  // TODO(clamy): Add a cross-process navigation case as well once
-  // crbug.com/581024 is fixed.
-  GURL url1 = embedded_test_server()->GetURL("/title1.html");
-  GURL url2 = embedded_test_server()->GetURL("/title2.html");
+  GURL url("data:text/html,<div>test</div>");
 
   // Listen for the first load to stop.
   LoadStopNotificationObserver load_observer(
@@ -226,11 +234,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // We will hear a DidStopLoading from the first load as the new load
   // is started.
   NavigateOnCommitObserver commit_observer(
-      shell(), url2);
-  NavigateToURL(shell(), url1);
+      shell(), embedded_test_server()->GetURL("/title2.html"));
+  NavigateToURL(shell(), url);
   load_observer.Wait();
 
-  EXPECT_EQ(url1, load_observer.url_);
+  EXPECT_EQ(url, load_observer.url_);
   EXPECT_EQ(0, load_observer.session_index_);
   EXPECT_EQ(&shell()->web_contents()->GetController(),
             load_observer.controller_);

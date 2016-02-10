@@ -3467,19 +3467,14 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
 
   // Suppose it aborts before committing, if it's a 204 or download or due to a
   // stop or a new navigation from the user.  The URL should remain visible.
-  if (IsBrowserSideNavigationEnabled()) {
-    static_cast<NavigatorImpl*>(main_test_rfh()->frame_tree_node()->navigator())
-        ->CancelNavigation(main_test_rfh()->frame_tree_node());
-  } else {
-    FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-    params.error_code = net::ERR_ABORTED;
-    params.error_description = base::string16();
-    params.url = url;
-    params.showing_repost_interstitial = false;
-    main_test_rfh()->OnMessageReceived(
-        FrameHostMsg_DidFailProvisionalLoadWithError(0, params));
-    main_test_rfh()->OnMessageReceived(FrameHostMsg_DidStopLoading(0));
-  }
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
+  params.error_code = net::ERR_ABORTED;
+  params.error_description = base::string16();
+  params.url = url;
+  params.showing_repost_interstitial = false;
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_DidFailProvisionalLoadWithError(0, params));
+  contents()->SetIsLoading(false, true, NULL);
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
 
   // If something else later modifies the contents of the about:blank page, then

@@ -332,25 +332,10 @@ void WebContentsObserverSanityChecker::WebContentsDestroyed() {
   CHECK(active_media_players_.empty());
 }
 
-void WebContentsObserverSanityChecker::DidStartLoading() {
-  // TODO(clamy): add checks for the loading state in the rest of observer
-  // methods.
-  CHECK(!is_loading_);
-  CHECK(web_contents()->IsLoading());
-  is_loading_ = true;
-}
-
-void WebContentsObserverSanityChecker::DidStopLoading() {
-  CHECK(is_loading_);
-  CHECK(!web_contents()->IsLoading());
-  is_loading_ = false;
-}
-
 WebContentsObserverSanityChecker::WebContentsObserverSanityChecker(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      is_loading_(false),
-      web_contents_destroyed_(false) {}
+    : WebContentsObserver(web_contents), web_contents_destroyed_(false) {
+}
 
 WebContentsObserverSanityChecker::~WebContentsObserverSanityChecker() {
   CHECK(web_contents_destroyed_);

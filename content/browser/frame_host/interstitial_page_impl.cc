@@ -164,6 +164,7 @@ InterstitialPageImpl::InterstitialPageImpl(
       original_child_id_(web_contents->GetRenderProcessHost()->GetID()),
       original_rvh_id_(web_contents->GetRenderViewHost()->GetRoutingID()),
       should_revert_web_contents_title_(false),
+      web_contents_was_loading_(false),
       resource_dispatcher_host_notified_(false),
       rvh_delegate_view_(new InterstitialPageRVHDelegateView(this)),
       create_view_(true),
@@ -517,6 +518,14 @@ void InterstitialPageImpl::DidNavigate(
     // Hide the original RVH since we're showing the interstitial instead.
     rwh_view->Hide();
   }
+
+  // Notify the tab we are not loading so the throbber is stopped. It also
+  // causes a WebContentsObserver::DidStopLoading callback that the
+  // AutomationProvider (used by the UI tests) expects to consider a navigation
+  // as complete. Without this, navigating in a UI test to a URL that triggers
+  // an interstitial would hang.
+  web_contents_was_loading_ = controller_->delegate()->IsLoading();
+  controller_->delegate()->SetIsLoading(false, true, NULL);
 }
 
 RendererPreferences InterstitialPageImpl::GetRendererPrefs(
@@ -625,7 +634,9 @@ void InterstitialPageImpl::Proceed() {
   Disable();
   action_taken_ = PROCEED_ACTION;
 
-  controller_->delegate()->DidProceedOnInterstitial();
+  // Resumes the throbber, if applicable.
+  if (web_contents_was_loading_)
+    controller_->delegate()->SetIsLoading(true, true, NULL);
 
   // If this is a new navigation, the old page is going away, so we cancel any
   // blocked requests for it.  If it is not a new navigation, then it means the
