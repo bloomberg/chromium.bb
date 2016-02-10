@@ -4843,6 +4843,9 @@ std::string GLES2Util::GetStringTextureSizedTextureFilterableInternalFormat(
       {GL_RGBA4, "GL_RGBA4"},
       {GL_RGB10_A2, "GL_RGB10_A2"},
       {GL_RGBA16F, "GL_RGBA16F"},
+      {GL_RGB_YUV_420_CHROMIUM, "GL_RGB_YUV_420_CHROMIUM"},
+      {GL_RGB_YCBCR_422_CHROMIUM, "GL_RGB_YCBCR_422_CHROMIUM"},
+      {GL_RGB_YCBCR_420V_CHROMIUM, "GL_RGB_YCBCR_420V_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

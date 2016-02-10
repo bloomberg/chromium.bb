@@ -2022,6 +2022,9 @@ _NAMED_TYPE_INFO = {
       'GL_RGBA4',
       'GL_RGB10_A2',
       'GL_RGBA16F',
+      'GL_RGB_YUV_420_CHROMIUM',
+      'GL_RGB_YCBCR_422_CHROMIUM',
+      'GL_RGB_YCBCR_420V_CHROMIUM',
     ],
   },
   'TextureInternalFormatStorage': {
