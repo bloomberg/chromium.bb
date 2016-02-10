@@ -158,7 +158,6 @@ using CSSTextCache = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<const CS
 
 static CSSTextCache& cssTextCache()
 {
-    RELEASE_ASSERT(isMainThread());
     DEFINE_STATIC_LOCAL(CSSTextCache, cache, ());
     return cache;
 }
