@@ -19,8 +19,9 @@
 
 #include "core/layout/svg/SVGTextLayoutEngine.h"
 
+#include "core/layout/api/LineLayoutAPIShim.h"
+#include "core/layout/api/LineLayoutSVGTextPath.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
-#include "core/layout/svg/LayoutSVGTextPath.h"
 #include "core/layout/svg/SVGTextChunkBuilder.h"
 #include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 #include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
@@ -171,14 +172,14 @@ void SVGTextLayoutEngine::beginTextPathLayout(SVGInlineFlowBox* flowBox)
     lineLayout.layoutCharactersInTextBoxes(flowBox);
 
     m_inPathLayout = true;
-    LayoutSVGTextPath* textPath = &toLayoutSVGTextPath(flowBox->layoutObject());
+    LineLayoutSVGTextPath textPath = LineLayoutSVGTextPath(flowBox->lineLayoutItem());
 
-    Path path = textPath->layoutPath();
+    Path path = textPath.layoutPath();
     if (path.isEmpty())
         return;
     m_textPathCalculator = new Path::PositionCalculator(path);
     m_textPathLength = path.length();
-    m_textPathStartOffset = textPath->calculateStartOffset(m_textPathLength);
+    m_textPathStartOffset = textPath.calculateStartOffset(m_textPathLength);
 
     SVGTextPathChunkBuilder textPathChunkLayoutBuilder;
     textPathChunkLayoutBuilder.processTextChunks(lineLayout.m_lineLayoutBoxes);
@@ -190,7 +191,7 @@ void SVGTextLayoutEngine::beginTextPathLayout(SVGInlineFlowBox* flowBox)
     SVGLengthAdjustType lengthAdjust = SVGLengthAdjustUnknown;
     float desiredTextLength = 0;
 
-    if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLayoutObject(textPath)) {
+    if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLayoutObject(LineLayoutAPIShim::layoutObjectFrom(textPath))) {
         SVGLengthContext lengthContext(textContentElement);
         lengthAdjust = textContentElement->lengthAdjust()->currentValue()->enumValue();
         if (textContentElement->textLengthIsSpecifiedByUser())

@@ -259,9 +259,19 @@ public:
         return m_layoutObject->isRubyBase();
     }
 
+    bool isSVGInline() const
+    {
+        return m_layoutObject->isSVGInline();
+    }
+
     bool isSVGInlineText() const
     {
         return m_layoutObject->isSVGInlineText();
+    }
+
+    bool isSVGTextPath() const
+    {
+        return m_layoutObject->isSVGTextPath();
     }
 
     bool isTableCell() const
