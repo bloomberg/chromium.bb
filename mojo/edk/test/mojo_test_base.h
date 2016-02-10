@@ -38,10 +38,10 @@ class MojoTestBase : public testing::Test {
 
   class ClientController {
    public:
-    ClientController(const std::string& client_name,
-                     MojoTestBase* test,
-                     const HandlerCallback& callback);
+    ClientController(const std::string& client_name, MojoTestBase* test);
     ~ClientController();
+
+    MojoHandle pipe() const { return pipe_.get().value(); }
 
     int WaitForShutdown();
 
@@ -50,49 +50,20 @@ class MojoTestBase : public testing::Test {
 
     MojoTestBase* test_;
     MultiprocessTestHelper helper_;
+    ScopedMessagePipeHandle pipe_;
     bool was_shutdown_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ClientController);
   };
 
-  ClientController& StartClient(
-      const std::string& client_name,
-      const HandlerCallback& callback);
-
-  static void RunHandlerOnMainThread(
-      std::function<void(MojoHandle, int*, const base::Closure&)> handler,
-      int* expected_exit_code,
-      const base::Closure& quit_closure,
-      ScopedMessagePipeHandle pipe) {
-    handler(pipe.get().value(), expected_exit_code, quit_closure);
-  }
-
-  static void RunHandler(
-      std::function<void(MojoHandle, int*, const base::Closure&)> handler,
-      int* expected_exit_code,
-      const base::Closure& quit_closure,
-      scoped_refptr<base::TaskRunner> task_runner,
-      ScopedMessagePipeHandle pipe) {
-    task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&RunHandlerOnMainThread, handler,
-                 base::Unretained(expected_exit_code), quit_closure,
-                 base::Passed(&pipe)));
-  }
+  ClientController& StartClient(const std::string& client_name);
 
   template <typename HandlerFunc>
   void StartClientWithHandler(const std::string& client_name,
                               HandlerFunc handler) {
-    base::MessageLoop::ScopedNestableTaskAllower nesting(&message_loop_);
-    base::RunLoop run_loop;
-    int expected_exit_code;
-    ClientController& c =
-        StartClient(client_name,
-                    base::Bind(&RunHandler, handler,
-                               base::Unretained(&expected_exit_code),
-                               run_loop.QuitClosure(),
-                               base::ThreadTaskRunnerHandle::Get()));
-    run_loop.Run();
+    int expected_exit_code = 0;
+    ClientController& c = StartClient(client_name);
+    handler(c.pipe(), &expected_exit_code);
     EXPECT_EQ(expected_exit_code, c.WaitForShutdown());
   }
 
@@ -173,22 +144,18 @@ class MojoTestBase : public testing::Test {
 #define RUN_CHILD_ON_PIPE(client_name, pipe_name)                   \
     StartClientWithHandler(                                         \
         #client_name,                                               \
-        [&](MojoHandle pipe_name,                                   \
-            int *expected_exit_code,                                \
-            const base::Closure& quit_closure) { {
+        [&](MojoHandle pipe_name, int *expected_exit_code) { {
 
 // Waits for the client to terminate and expects a return code of zero.
 #define END_CHILD()               \
         }                         \
         *expected_exit_code = 0;  \
-        quit_closure.Run();       \
     });
 
 // Wait for the client to terminate with a specific return code.
 #define END_CHILD_AND_EXPECT_EXIT_CODE(code) \
         }                                    \
         *expected_exit_code = code;          \
-        quit_closure.Run();                  \
     });
 
 // Use this to declare the child process's "main()" function for tests using

@@ -32,16 +32,15 @@ class MultiprocessTestHelper {
   // Start a child process and run the "main" function "named" |test_child_name|
   // declared using |MOJO_MULTIPROCESS_TEST_CHILD_MAIN()| or
   // |MOJO_MULTIPROCESS_TEST_CHILD_TEST()| (below).
-  void StartChild(const std::string& test_child_name,
-                  const HandlerCallback& callback);
+  ScopedMessagePipeHandle StartChild(const std::string& test_child_name);
 
   // Like |StartChild()|, but appends an extra switch (with ASCII value) to the
   // command line. (The switch must not already be present in the default
   // command line.)
-  void StartChildWithExtraSwitch(const std::string& test_child_name,
-                                 const std::string& switch_string,
-                                 const std::string& switch_value,
-                                 const HandlerCallback& callback);
+  ScopedMessagePipeHandle StartChildWithExtraSwitch(
+      const std::string& test_child_name,
+      const std::string& switch_string,
+      const std::string& switch_value);
 
   // Wait for the child process to terminate.
   // Returns the exit code of the child process. Note that, though it's declared

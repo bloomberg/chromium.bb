@@ -110,13 +110,27 @@ class PIDSender : public RenderProcessHostObserver {
 
 }  // namespace
 
-void ConnectChildToShell(
-    int child_process_id,
-    base::WeakPtr<RenderProcessHost> render_process_host,
-    mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request,
-    mojo::ScopedMessagePipeHandle pipe) {
-  if (!render_process_host)
+void RegisterChildWithExternalShell(int child_process_id,
+                                    RenderProcessHost* render_process_host) {
+  // Some process types get created before the main message loop.
+  if (!MojoShellConnection::Get())
     return;
+
+  // Create the channel to be shared with the target process.
+  mojo::edk::HandlePassingInformation handle_passing_info;
+  mojo::edk::PlatformChannelPair platform_channel_pair;
+
+  // Give one end to the shell so that it can create an instance.
+  mojo::edk::ScopedPlatformHandle parent_pipe =
+      platform_channel_pair.PassServerHandle();
+
+  // Send the other end to the child via Chrome IPC.
+  base::PlatformFile client_file = PlatformFileFromScopedPlatformHandle(
+      platform_channel_pair.PassClientHandle());
+  SetMojoPlatformFile(render_process_host, client_file);
+
+  mojo::ScopedMessagePipeHandle request_pipe =
+      mojo::edk::CreateMessagePipe(std::move(parent_pipe));
 
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
   MojoShellConnection::Get()->GetShell()->ConnectToService(
@@ -132,60 +146,20 @@ void ConnectChildToShell(
   std::string url =
       base::StringPrintf("exe:chrome_renderer%d", child_process_id);
 
+  mojo::shell::mojom::PIDReceiverPtr pid_receiver;
+  mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
+      GetProxy(&pid_receiver);
+  new PIDSender(render_process_host, std::move(pid_receiver));
 
   application_manager->CreateInstanceForHandle(
-      mojo::ScopedHandle(mojo::Handle(pipe.release().value())),
+      mojo::ScopedHandle(mojo::Handle(request_pipe.release().value())),
       url,
       CreateCapabilityFilterForRenderer(),
       std::move(request));
 
   // Store the URL on the RPH so client code can access it later via
   // GetMojoApplicationInstanceURL().
-  SetMojoApplicationInstanceURL(render_process_host.get(), url);
-}
-
-void OnChildMessagePipeCreated(
-    int child_process_id,
-    base::WeakPtr<RenderProcessHost> render_process_host,
-    scoped_refptr<base::TaskRunner> task_runner,
-    mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request,
-    mojo::ScopedMessagePipeHandle pipe) {
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&ConnectChildToShell, child_process_id,
-                                   render_process_host, base::Passed(&request),
-                                   base::Passed(&pipe)));
-}
-
-void RegisterChildWithExternalShell(
-    int child_process_id,
-    base::WeakPtr<RenderProcessHost> render_process_host) {
-  // Some process types get created before the main message loop.
-  if (!MojoShellConnection::Get())
-    return;
-
-  // Create the channel to be shared with the target process.
-  mojo::edk::HandlePassingInformation handle_passing_info;
-  mojo::edk::PlatformChannelPair platform_channel_pair;
-
-  // Give one end to the shell so that it can create an instance.
-  mojo::edk::ScopedPlatformHandle parent_pipe =
-      platform_channel_pair.PassServerHandle();
-
-  mojo::shell::mojom::PIDReceiverPtr pid_receiver;
-  mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
-      GetProxy(&pid_receiver);
-  new PIDSender(render_process_host.get(), std::move(pid_receiver));
-
-  // Send the other end to the child via Chrome IPC.
-  base::PlatformFile client_file = PlatformFileFromScopedPlatformHandle(
-      platform_channel_pair.PassClientHandle());
-  SetMojoPlatformFile(render_process_host.get(), client_file);
-
-  mojo::edk::CreateMessagePipe(
-      std::move(parent_pipe),
-      base::Bind(&OnChildMessagePipeCreated, child_process_id,
-                 render_process_host, base::ThreadTaskRunnerHandle::Get(),
-                 base::Passed(&request)));
+  SetMojoApplicationInstanceURL(render_process_host, url);
 }
 
 std::string GetMojoApplicationInstanceURL(

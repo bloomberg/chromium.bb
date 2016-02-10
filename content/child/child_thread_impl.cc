@@ -688,10 +688,9 @@ void ChildThreadImpl::OnBindExternalMojoShellHandle(
 #elif defined(OS_WIN)
   base::PlatformFile handle = file;
 #endif
-  mojo_shell_channel_init_.Init(
-      handle, GetIOTaskRunner(),
-      base::Bind(&MojoShellConnectionImpl::BindToMessagePipe,
-                 base::Unretained(MojoShellConnectionImpl::Get())));
+  mojo::ScopedMessagePipeHandle pipe =
+      mojo_shell_channel_init_.Init(handle, GetIOTaskRunner());
+  MojoShellConnectionImpl::Get()->BindToMessagePipe(std::move(pipe));
 #endif  // defined(MOJO_SHELL_CLIENT)
 }
 

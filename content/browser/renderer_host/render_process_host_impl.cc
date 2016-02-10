@@ -628,7 +628,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 #endif  // USE_ATTACHMENT_BROKER
 
 #if defined(MOJO_SHELL_CLIENT)
-  RegisterChildWithExternalShell(id_, weak_factory_.GetWeakPtr());
+  RegisterChildWithExternalShell(id_, this);
 #endif
 }
 

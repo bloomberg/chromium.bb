@@ -90,12 +90,23 @@ class TargetApplicationDelegate : public mojo::ShellClient,
                                          primordial_pipe_token);
 
     // Allocate the pipe locally.
-    mojo::edk::CreateParentMessagePipe(
-        primordial_pipe_token,
-        base::Bind(&TargetApplicationDelegate::OnMessagePipeCreated,
-                   weak_factory_.GetWeakPtr(),
-                   base::ThreadTaskRunnerHandle::Get(),
-                   base::Passed(&request)));
+    mojo::ScopedMessagePipeHandle pipe =
+        mojo::edk::CreateParentMessagePipe(primordial_pipe_token);
+
+    mojo::shell::mojom::CapabilityFilterPtr filter(
+        mojo::shell::mojom::CapabilityFilter::New());
+    mojo::Array<mojo::String> test_interfaces;
+    test_interfaces.push_back(
+        mojo::shell::test::mojom::CreateInstanceForHandleTest::Name_);
+    filter->filter.insert("mojo:mojo_shell_apptests",
+                          std::move(test_interfaces));
+
+    mojo::shell::mojom::ApplicationManagerPtr application_manager;
+    shell_->ConnectToService("mojo:shell", &application_manager);
+    application_manager->CreateInstanceForHandle(
+        mojo::ScopedHandle(mojo::Handle(pipe.release().value())),
+        "exe:application_manager_apptest_target", std::move(filter),
+        std::move(request));
 
     base::LaunchOptions options;
   #if defined(OS_WIN)
@@ -125,36 +136,6 @@ class TargetApplicationDelegate : public mojo::ShellClient,
   void QuitDriver() override {
     target_.Terminate(0, false);
     shell_->Quit();
-  }
-
-  static void OnMessagePipeCreated(
-      base::WeakPtr<TargetApplicationDelegate> weak_self,
-      scoped_refptr<base::TaskRunner> task_runner,
-      mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request,
-      mojo::ScopedMessagePipeHandle pipe) {
-    task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&TargetApplicationDelegate::OnMessagePipeCreatedOnMainThread,
-                   weak_self, base::Passed(&request), base::Passed(&pipe)));
-  }
-
-  void OnMessagePipeCreatedOnMainThread(
-      mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request,
-      mojo::ScopedMessagePipeHandle pipe) {
-    mojo::shell::mojom::CapabilityFilterPtr filter(
-        mojo::shell::mojom::CapabilityFilter::New());
-    mojo::Array<mojo::String> test_interfaces;
-    test_interfaces.push_back(
-        mojo::shell::test::mojom::CreateInstanceForHandleTest::Name_);
-    filter->filter.insert("mojo:mojo_shell_apptests",
-                          std::move(test_interfaces));
-
-    mojo::shell::mojom::ApplicationManagerPtr application_manager;
-    shell_->ConnectToService("mojo:shell", &application_manager);
-    application_manager->CreateInstanceForHandle(
-        mojo::ScopedHandle(mojo::Handle(pipe.release().value())),
-        "exe:application_manager_apptest_target", std::move(filter),
-        std::move(request));
   }
 
   mojo::Shell* shell_;

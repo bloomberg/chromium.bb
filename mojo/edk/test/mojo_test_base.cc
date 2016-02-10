@@ -22,19 +22,16 @@ MojoTestBase::MojoTestBase() {
 MojoTestBase::~MojoTestBase() {}
 
 MojoTestBase::ClientController& MojoTestBase::StartClient(
-    const std::string& client_name,
-    const HandlerCallback& callback) {
+    const std::string& client_name) {
   clients_.push_back(
-      make_scoped_ptr(new ClientController(client_name, this, callback)));
+      make_scoped_ptr(new ClientController(client_name, this)));
   return *clients_.back();
 }
 
-MojoTestBase::ClientController::ClientController(
-    const std::string& client_name,
-    MojoTestBase* test,
-    const HandlerCallback& callback)
-    : test_(test) {
-  helper_.StartChild(client_name, callback);
+MojoTestBase::ClientController::ClientController(const std::string& client_name,
+                                                 MojoTestBase* test)
+    : test_(test),
+      pipe_(helper_.StartChild(client_name)) {
 }
 
 MojoTestBase::ClientController::~ClientController() {

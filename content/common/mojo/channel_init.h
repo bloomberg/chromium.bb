@@ -5,7 +5,6 @@
 #ifndef CONTENT_COMMON_MOJO_CHANNEL_INIT_H_
 #define CONTENT_COMMON_MOJO_CHANNEL_INIT_H_
 
-#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -28,12 +27,10 @@ class CONTENT_EXPORT ChannelInit {
   ChannelInit();
   ~ChannelInit();
 
-  // Initializes the channel. This takes ownership of |file|. Calls |callback|
-  // on the calling thread once the pipe is created.
-  void Init(
+  // Initializes the channel. This takes ownership of |file|.
+  mojo::ScopedMessagePipeHandle Init(
       base::PlatformFile file,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner,
-      const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback);
+      scoped_refptr<base::TaskRunner> io_thread_task_runner);
 
   // Notifies the channel that we (hence it) will soon be destroyed.
   void WillDestroySoon();

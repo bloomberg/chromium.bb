@@ -49,8 +49,7 @@ class ApplicationSetupImpl : public ApplicationSetup {
 
 }  // namespace
 
-MojoApplicationHost::MojoApplicationHost()
-    : did_activate_(false), weak_factory_(this) {
+MojoApplicationHost::MojoApplicationHost() : did_activate_(false) {
 #if defined(OS_ANDROID)
   service_registry_android_.reset(
       new ServiceRegistryAndroid(&service_registry_));
@@ -76,13 +75,12 @@ bool MojoApplicationHost::Init() {
 
   // Forward this to the client once we know its process handle.
   client_handle_ = channel_pair.PassClientHandle();
-
-  channel_init_.Init(
+  mojo::ScopedMessagePipeHandle pipe = channel_init_.Init(
       PlatformFileFromScopedPlatformHandle(channel_pair.PassServerHandle()),
-      io_task_runner,
-      base::Bind(&MojoApplicationHost::OnMessagePipeCreated,
-                 weak_factory_.GetWeakPtr()));
-
+      io_task_runner);
+  application_setup_.reset(new ApplicationSetupImpl(
+      &service_registry_,
+      mojo::MakeRequest<ApplicationSetup>(std::move(pipe))));
   return true;
 }
 
@@ -106,12 +104,5 @@ void MojoApplicationHost::OverrideIOTaskRunnerForTest(
   io_task_runner_override_ = io_task_runner;
 }
 
-void MojoApplicationHost::OnMessagePipeCreated(
-    mojo::ScopedMessagePipeHandle pipe) {
-  DCHECK(pipe.is_valid());
-  application_setup_.reset(new ApplicationSetupImpl(
-      &service_registry_,
-      mojo::MakeRequest<ApplicationSetup>(std::move(pipe))));
-}
 
 }  // namespace content

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
@@ -20,9 +19,8 @@ class RenderProcessHost;
 // child. The server handle of this channel is shared with the external shell
 // via Mojo IPC. |child_process_id| is used to uniquify the child in the
 // external shell's instance map.
-void RegisterChildWithExternalShell(
-    int child_process_id,
-    base::WeakPtr<RenderProcessHost> render_process_host);
+void RegisterChildWithExternalShell(int child_process_id,
+                                    RenderProcessHost* render_process_host);
 
 // Returns the URL associated with an instance corresponding to the renderer
 // process in the external shell. This URL can be passed to

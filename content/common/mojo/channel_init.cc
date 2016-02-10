@@ -27,24 +27,22 @@ ChannelInit::~ChannelInit() {
                                    base::Bind(&base::DoNothing), nullptr);
 }
 
-void ChannelInit::Init(
+mojo::ScopedMessagePipeHandle ChannelInit::Init(
     base::PlatformFile file,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner,
-    const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback) {
+    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
   scoped_ptr<IPC::ScopedIPCSupport> ipc_support(
       new IPC::ScopedIPCSupport(io_thread_task_runner));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
     ipc_support_ = std::move(ipc_support);
-    callback.Run(mojo::edk::CreateMessagePipe(
-        mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(file))));
+    return mojo::edk::CreateMessagePipe(
+        mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(file)));
   } else {
-    mojo::ScopedMessagePipeHandle message_pipe = mojo::embedder::CreateChannel(
+    return mojo::embedder::CreateChannel(
         mojo::embedder::ScopedPlatformHandle(
             mojo::embedder::PlatformHandle(file)),
         base::Bind(&ChannelInit::OnCreatedChannel, weak_factory_.GetWeakPtr(),
                    base::Passed(&ipc_support)),
         base::ThreadTaskRunnerHandle::Get());
-    callback.Run(std::move(message_pipe));
   }
 }
 

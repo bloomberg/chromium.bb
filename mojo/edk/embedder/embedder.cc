@@ -111,33 +111,14 @@ ScopedMessagePipeHandle CreateMessagePipe(
   return internal::g_core->CreateMessagePipe(std::move(platform_handle));
 }
 
-void CreateMessagePipe(
-    ScopedPlatformHandle platform_handle,
-    const base::Callback<void(ScopedMessagePipeHandle)>& callback) {
-  DCHECK(internal::g_core);
-  callback.Run(CreateMessagePipe(std::move(platform_handle)));
-}
-
 ScopedMessagePipeHandle CreateParentMessagePipe(const std::string& token) {
   DCHECK(internal::g_core);
   return internal::g_core->CreateParentMessagePipe(token);
 }
 
-void CreateParentMessagePipe(
-    const std::string& token,
-    const base::Callback<void(ScopedMessagePipeHandle)>& callback) {
-  callback.Run(CreateParentMessagePipe(token));
-}
-
 ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token) {
   DCHECK(internal::g_core);
   return internal::g_core->CreateChildMessagePipe(token);
-}
-
-void CreateChildMessagePipe(
-    const std::string& token,
-    const base::Callback<void(ScopedMessagePipeHandle)>& callback) {
-  callback.Run(CreateChildMessagePipe(token));
 }
 
 std::string GenerateRandomToken() {

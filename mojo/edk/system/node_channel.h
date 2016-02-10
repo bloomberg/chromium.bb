@@ -99,7 +99,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                           ScopedPlatformHandle broker_channel);
   void PortsMessage(Channel::MessagePtr message);
   void RequestPortMerge(const ports::PortName& connector_port_name,
-                         const std::string& token);
+                        const std::string& token);
   void RequestIntroduction(const ports::NodeName& name);
   void Introduce(const ports::NodeName& name,
                  ScopedPlatformHandle channel_handle);

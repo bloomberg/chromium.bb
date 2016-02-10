@@ -37,35 +37,11 @@ namespace {
 
 const char kMojoPrimordialPipeToken[] = "mojo-primordial-pipe-token";
 
-void RunHandlerOnMainThread(std::function<int(MojoHandle)> handler,
-                            int* exit_code,
-                            const base::Closure& quit_closure,
-                            ScopedMessagePipeHandle pipe) {
-  *exit_code = handler(pipe.get().value());
-  quit_closure.Run();
-}
-
-void RunHandler(std::function<int(MojoHandle)> handler,
-                int* exit_code,
-                const base::Closure& quit_closure,
-                scoped_refptr<base::TaskRunner> task_runner,
-                ScopedMessagePipeHandle pipe) {
-  task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&RunHandlerOnMainThread, handler, base::Unretained(exit_code),
-                 quit_closure, base::Passed(&pipe)));
-}
-
 int RunClientFunction(std::function<int(MojoHandle)> handler) {
-  base::RunLoop run_loop;
-  int exit_code = 0;
   CHECK(!MultiprocessTestHelper::primordial_pipe_token.empty());
-  CreateChildMessagePipe(
-      MultiprocessTestHelper::primordial_pipe_token,
-      base::Bind(&RunHandler, handler, base::Unretained(&exit_code),
-                 run_loop.QuitClosure(), base::ThreadTaskRunnerHandle::Get()));
-  run_loop.Run();
-  return exit_code;
+  ScopedMessagePipeHandle pipe = CreateChildMessagePipe(
+      MultiprocessTestHelper::primordial_pipe_token);
+  return handler(pipe.get().value());
 }
 
 }  // namespace
@@ -76,17 +52,16 @@ MultiprocessTestHelper::~MultiprocessTestHelper() {
   CHECK(!test_child_.IsValid());
 }
 
-void MultiprocessTestHelper::StartChild(const std::string& test_child_name,
-                                        const HandlerCallback& callback) {
-  StartChildWithExtraSwitch(
-      test_child_name, std::string(), std::string(), callback);
+ScopedMessagePipeHandle MultiprocessTestHelper::StartChild(
+    const std::string& test_child_name) {
+  return StartChildWithExtraSwitch(
+      test_child_name, std::string(), std::string());
 }
 
-void MultiprocessTestHelper::StartChildWithExtraSwitch(
+ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     const std::string& test_child_name,
     const std::string& switch_string,
-    const std::string& switch_value,
-    const HandlerCallback& callback) {
+    const std::string& switch_value) {
   CHECK(!test_child_name.empty());
   CHECK(!test_child_.IsValid());
 
@@ -139,14 +114,16 @@ void MultiprocessTestHelper::StartChildWithExtraSwitch(
 #error "Not supported yet."
 #endif
 
+  ScopedMessagePipeHandle pipe = CreateParentMessagePipe(pipe_token);
+
   test_child_ =
       base::SpawnMultiProcessTestChild(test_child_main, command_line, options);
   channel.ChildProcessLaunched();
 
   ChildProcessLaunched(test_child_.Handle(), channel.PassServerHandle());
-  CreateParentMessagePipe(pipe_token, callback);
-
   CHECK(test_child_.IsValid());
+
+  return pipe;
 }
 
 int MultiprocessTestHelper::WaitForChildShutdown() {

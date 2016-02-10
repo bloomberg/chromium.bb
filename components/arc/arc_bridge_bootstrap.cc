@@ -32,13 +32,6 @@ namespace arc {
 
 namespace {
 
-static void CallMessagePipeCallbackOnThread(
-    const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback,
-    scoped_refptr<base::TaskRunner> task_runner,
-    mojo::ScopedMessagePipeHandle pipe) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&pipe)));
-}
-
 // We do not know the PID of ARC, since Chrome does not create it directly.
 // Since Mojo in POSIX does not use the child PID except as an unique
 // identifier for the routing table, rather than doing a lot of plumbing in the
@@ -65,8 +58,6 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap {
   //   StartArcInstance() -> OnInstanceStarted() ->
   // STARTED
   //   AcceptInstanceConnection() -> OnInstanceConnected() ->
-  // CONNECTED
-  //   CreateMessagePipe() -> OnMessagePipeCreated() ->
   // READY
   //
   // When Stop() is called from any state, either because an operation
@@ -95,9 +86,6 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap {
     // The instance has started. Waiting for it to connect to the IPC bridge.
     STARTED,
 
-    // The instance has begun the connection handshake.
-    CONNECTED,
-
     // The instance is fully connected.
     READY,
 
@@ -122,7 +110,6 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap {
   // connected socket's file descriptor.
   static base::ScopedFD AcceptInstanceConnection(base::ScopedFD socket_fd);
   void OnInstanceConnected(base::ScopedFD fd);
-  void OnMessagePipeCreated(mojo::ScopedMessagePipeHandle server_pipe);
 
   void SetState(State state);
 
@@ -278,22 +265,8 @@ void ArcBridgeBootstrapImpl::OnInstanceConnected(base::ScopedFD fd) {
     LOG(ERROR) << "Invalid handle";
     return;
   }
-  SetState(State::CONNECTED);
-  mojo::edk::CreateMessagePipe(
-      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(fd.release())),
-      base::Bind(&CallMessagePipeCallbackOnThread,
-                 base::Bind(&ArcBridgeBootstrapImpl::OnMessagePipeCreated,
-                            weak_factory_.GetWeakPtr()),
-                 base::ThreadTaskRunnerHandle::Get()));
-}
-
-void ArcBridgeBootstrapImpl::OnMessagePipeCreated(
-    mojo::ScopedMessagePipeHandle server_pipe) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (state_ != State::CONNECTED) {
-    VLOG(1) << "Stop() called when ARC is not running";
-    return;
-  }
+  mojo::ScopedMessagePipeHandle server_pipe = mojo::edk::CreateMessagePipe(
+      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(fd.release())));
   if (!server_pipe.is_valid()) {
     LOG(ERROR) << "Invalid pipe";
     return;
