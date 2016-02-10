@@ -885,6 +885,7 @@
       'scroll/ScrollbarThemeOverlay.cpp',
       'scroll/ScrollbarThemeOverlay.h',
       'scroll/ScrollbarThemeOverlayMock.h',
+      'scroll/ScrollStateData.h',
       'speech/PlatformSpeechSynthesisUtterance.cpp',
       'speech/PlatformSpeechSynthesisUtterance.h',
       'speech/PlatformSpeechSynthesisVoice.cpp',

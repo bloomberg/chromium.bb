@@ -3675,6 +3675,7 @@
             'imagebitmap/ImageBitmapOptions.idl',
             'input/InputDeviceCapabilitiesInit.idl',
             'page/EventSourceInit.idl',
+            'page/scrolling/ScrollStateInit.idl',
             'timing/PerformanceObserverInit.idl',
         ],
         'generated_core_dictionary_files': [
@@ -3780,6 +3781,8 @@
             '<(blink_core_output_dir)/input/InputDeviceCapabilitiesInit.h',
             '<(blink_core_output_dir)/page/EventSourceInit.cpp',
             '<(blink_core_output_dir)/page/EventSourceInit.h',
+            '<(blink_core_output_dir)/page/scrolling/ScrollStateInit.cpp',
+            '<(blink_core_output_dir)/page/scrolling/ScrollStateInit.h',
             '<(blink_core_output_dir)/timing/PerformanceObserverInit.cpp',
             '<(blink_core_output_dir)/timing/PerformanceObserverInit.h',
         ],

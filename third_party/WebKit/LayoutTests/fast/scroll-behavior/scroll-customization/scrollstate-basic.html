@@ -29,33 +29,44 @@ if ('ScrollState' in window) {
   }, "Empty constructor behaves correctly.");
 
   test(function() {
-    var deltaX = 12.5;
-    var deltaY = 14.9;
-    var deltaGranularity = 148.3;
-    var velocityX = 23.7;
-    var velocityY = 2.5;
-    var inInertialPhase = true;
-    var isBeginning = true;
-    var isEnding = true;
-    var scrollState = new ScrollState(deltaX, deltaY, deltaGranularity, velocityX,
-                                      velocityY, inInertialPhase, isBeginning, isEnding);
-    assert_equals(scrollState.deltaX, deltaX);
-    assert_equals(scrollState.deltaY, deltaY);
-    assert_equals(scrollState.deltaGranularity, deltaGranularity);
-    assert_equals(scrollState.velocityX, velocityX);
-    assert_equals(scrollState.velocityY, velocityY);
-    assert_equals(scrollState.inInertialPhase, inInertialPhase);
-    assert_equals(scrollState.isBeginning, isBeginning);
-    assert_equals(scrollState.isEnding, isEnding);
-    assert_equals(scrollState.fromUserInput, false);
-    assert_equals(scrollState.shouldPropagate, true);
+    var init = {
+      deltaX: 12.5,
+      deltaY: 14.9,
+      startPositionX: 16.82,
+      startPositionY: 82.17,
+      velocityX: 23.7,
+      velocityY: 2.5,
+      isBeginning: true,
+      isInInertialPhase: true,
+      isEnding: true,
+      shouldPropagate: false,
+      fromUserInput: true,
+      isDirectManipulation: true,
+      deltaGranularity: 148.3
+    };
+    var scrollState = new ScrollState(init);
+    assert_equals(scrollState.deltaX, init.deltaX);
+    assert_equals(scrollState.deltaY, init.deltaY);
+    assert_equals(scrollState.startPositionX, Math.floor(init.startPositionX));
+    assert_equals(scrollState.startPositionY, Math.floor(init.startPositionY));
+    assert_equals(scrollState.velocityX, init.velocityX);
+    assert_equals(scrollState.velocityY, init.velocityY);
+    assert_equals(scrollState.isBeginning, init.isBeginning);
+    assert_equals(scrollState.inInertialPhase, init.isInInertialPhase);
+    assert_equals(scrollState.isEnding, init.isEnding);
+    assert_equals(scrollState.shouldPropagate, init.shouldPropagate);
+    assert_equals(scrollState.fromUserInput, init.fromUserInput);
+    assert_equals(scrollState.isDirectManipulation, init.isDirectManipulation);
+    assert_equals(scrollState.deltaGranularity, init.deltaGranularity);
   }, "Constructor behaves correctly.");
 
   test(function() {
     var scrollState = new ScrollState();
+    scrollState.isBeginning = true;
+    assert_equals(scrollState.isBeginning, false);
     scrollState.fromUserInput = true;
     assert_equals(scrollState.fromUserInput, false);
-  }, "fromUserInput is read only");
+  }, "attributes are read only");
 }
 </script>
 </body>

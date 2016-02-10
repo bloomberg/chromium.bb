@@ -5,27 +5,24 @@
 // https://docs.google.com/document/d/1VnvAqeWFG9JFZfgG5evBqrLGDZYRE5w6G5jEDORekPY
 
 [
-    Constructor(optional double deltaX = 0,
-                optional double deltaY = 0,
-                optional double deltaGranularity = 0,
-                optional double velocityX = 0,
-                optional double velocityY = 0,
-                optional boolean inInertialPhase = false,
-                optional boolean isBeginning = false,
-                optional boolean isEnding = false),
-    WillBeGarbageCollected,
-    RuntimeEnabled=ScrollCustomization
-] interface ScrollState {
+  Constructor(optional ScrollStateInit scrollStateInit),
+  WillBeGarbageCollected,
+  RuntimeEnabled = ScrollCustomization,
+] interface ScrollState
+{
     readonly attribute double deltaX;
     readonly attribute double deltaY;
-    readonly attribute double deltaGranularity;
+    readonly attribute long startPositionX;
+    readonly attribute long startPositionY;
     readonly attribute double velocityX;
     readonly attribute double velocityY;
+    readonly attribute boolean isBeginning;
     readonly attribute boolean inInertialPhase;
     readonly attribute boolean isEnding;
-    readonly attribute boolean isBeginning;
-    readonly attribute boolean fromUserInput;
     readonly attribute boolean shouldPropagate;
+    readonly attribute boolean fromUserInput;
+    readonly attribute boolean isDirectManipulation;
+    readonly attribute double deltaGranularity;
 
     [RaisesException] void consumeDelta(double x, double y);
     void distributeToScrollChainDescendant();

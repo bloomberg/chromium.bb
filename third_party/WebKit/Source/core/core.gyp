@@ -662,6 +662,7 @@
 
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/gin/gin.gyp:gin',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',

@@ -20,7 +20,7 @@ test(function() {
 }, "These tests only work with scroll customization enabled.");
 
 if ('ScrollState' in window) {
-  var scrollState = new ScrollState(10, -20);
+  var scrollState = new ScrollState({deltaX: 10, deltaY: -20});
   deltaShouldBe(scrollState, 10, -20, "Unconsumed deltas");
   scrollState.consumeDelta(2, -3);
   deltaShouldBe(scrollState, 8, -17, "Partially consumed deltas");

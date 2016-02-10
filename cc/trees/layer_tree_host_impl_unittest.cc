@@ -390,19 +390,30 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   scoped_ptr<ScrollState> BeginState(const gfx::Point& point) {
-    return ScrollState::Create(gfx::Vector2dF(), point, gfx::Vector2dF(), true,
-                               false, false);
+    ScrollStateData scroll_state_data;
+    scroll_state_data.is_beginning = true;
+    scroll_state_data.start_position_x = point.x();
+    scroll_state_data.start_position_y = point.y();
+    scoped_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
+    return scroll_state;
   }
 
   scoped_ptr<ScrollState> UpdateState(const gfx::Point& point,
                                       const gfx::Vector2dF& delta) {
-    return ScrollState::Create(delta, point, gfx::Vector2dF(), false, false,
-                               false);
+    ScrollStateData scroll_state_data;
+    scroll_state_data.delta_x = delta.x();
+    scroll_state_data.delta_y = delta.y();
+    scroll_state_data.start_position_x = point.x();
+    scroll_state_data.start_position_y = point.y();
+    scoped_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
+    return scroll_state;
   }
 
   scoped_ptr<ScrollState> EndState() {
-    return ScrollState::Create(gfx::Vector2dF(), gfx::Point(), gfx::Vector2dF(),
-                               false, false, true);
+    ScrollStateData scroll_state_data;
+    scroll_state_data.is_ending = true;
+    scoped_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
+    return scroll_state;
   }
 
   void DrawFrame() {
@@ -9292,10 +9303,8 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
       UpdateState(gfx::Point(0, y), gfx::Vector2d(0, 50)).get());
   EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y + 50),
                                                       InputHandler::WHEEL));
-  ScrollState scroll_state_end(0, 0, 0 /* start_position_x */,
-                               y + 50 /* start_position_y */, 0, 0, false,
-                               false, true);
-  host_impl_->ScrollEnd(&scroll_state_end);
+  scoped_ptr<ScrollState> scroll_state_end = EndState();
+  host_impl_->ScrollEnd(scroll_state_end.get());
   EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
                                                        InputHandler::WHEEL));
 

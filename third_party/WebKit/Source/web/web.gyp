@@ -57,6 +57,7 @@
                 '../config.gyp:config',
                 '../platform/blink_platform.gyp:blink_common',
                 '../modules/modules.gyp:modules',
+                '<(DEPTH)/cc/cc.gyp:cc',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(angle_path)/src/angle.gyp:translator',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',

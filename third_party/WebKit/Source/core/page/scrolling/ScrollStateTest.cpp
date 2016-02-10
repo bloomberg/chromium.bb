@@ -10,6 +10,18 @@
 
 namespace blink {
 
+namespace {
+
+PassRefPtrWillBeRawPtr<ScrollState> CreateScrollState(double deltaX, double deltaY, bool beginning, bool ending)
+{
+    OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
+    scrollStateData->delta_x = deltaX;
+    scrollStateData->delta_y = deltaY;
+    scrollStateData->is_beginning = beginning;
+    scrollStateData->is_ending = ending;
+    return ScrollState::create(scrollStateData.release());
+}
+
 class ScrollStateTest : public testing::Test {
 };
 
@@ -21,7 +33,7 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative)
     const float deltaXToConsume = 1.2;
     const float deltaYToConsume = 2.3;
 
-    RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(deltaX, deltaY, 0, 0, 0, false, false);
+    RefPtrWillBeRawPtr<ScrollState> scrollState = CreateScrollState(deltaX, deltaY, false, false);
     EXPECT_FLOAT_EQ(deltaX, scrollState->deltaX());
     EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
     EXPECT_FALSE(scrollState->deltaConsumedForScrollSequence());
@@ -52,8 +64,7 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative)
 
 TEST_F(ScrollStateTest, CurrentNativeScrollingElement)
 {
-    RefPtrWillBeRawPtr<ScrollState> scrollState =
-        ScrollState::create(0, 0, 0, 0, 0, false, false);
+    RefPtrWillBeRawPtr<ScrollState> scrollState = CreateScrollState(0, 0, false, false);
     RefPtrWillBeRawPtr<Element> element = Element::create(
         QualifiedName::null(), Document::create().get());
     scrollState->setCurrentNativeScrollingElement(element.get());
@@ -63,15 +74,14 @@ TEST_F(ScrollStateTest, CurrentNativeScrollingElement)
 
 TEST_F(ScrollStateTest, FullyConsumed)
 {
-    RefPtrWillBeRawPtr<ScrollState> scrollStateBegin =
-        ScrollState::create(0, 0, 0, 0, 0, false, true, false);
-    RefPtrWillBeRawPtr<ScrollState> scrollState =
-        ScrollState::create(0, 0, 0, 0, 0, false, false, false);
-    RefPtrWillBeRawPtr<ScrollState> scrollStateEnd =
-        ScrollState::create(0, 0, 0, 0, 0, false, false, true);
+    RefPtrWillBeRawPtr<ScrollState> scrollStateBegin = CreateScrollState(0, 0, true, false);
+    RefPtrWillBeRawPtr<ScrollState> scrollState = CreateScrollState(0, 0, false, false);
+    RefPtrWillBeRawPtr<ScrollState> scrollStateEnd = CreateScrollState(0, 0, false, true);
     EXPECT_FALSE(scrollStateBegin->fullyConsumed());
     EXPECT_TRUE(scrollState->fullyConsumed());
     EXPECT_FALSE(scrollStateEnd->fullyConsumed());
 }
+
+} // namespace
 
 } // namespace blink

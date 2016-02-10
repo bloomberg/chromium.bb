@@ -194,7 +194,6 @@
       "platform/WebScrollbarLayer.h",
       "platform/WebScrollbarThemeGeometry.h",
       "platform/WebScrollbarThemePainter.h",
-      "platform/WebScrollStateData.h",
       "platform/WebSecurityOrigin.h",
       "platform/WebSelectionBound.h",
       "platform/WebSetSinkIdCallbacks.h",

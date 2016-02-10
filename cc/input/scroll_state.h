@@ -21,30 +21,6 @@ class LayerImpl;
 // here: https://goo.gl/1ipTpP.
 class CC_EXPORT ScrollState {
  public:
-  static scoped_ptr<ScrollState> Create(const gfx::Vector2dF& scroll_delta,
-                                        const gfx::Point& viewport_point,
-                                        const gfx::Vector2dF& scroll_velocity,
-                                        bool is_beginning,
-                                        bool is_in_inertial_phase,
-                                        bool is_ending) {
-    return make_scoped_ptr(new ScrollState(
-        scroll_delta.x(), scroll_delta.y(), viewport_point.x(),
-        viewport_point.y(), scroll_velocity.x(), scroll_velocity.y(),
-        is_beginning, is_in_inertial_phase, is_ending));
-  }
-
-  ScrollState(double delta_x,
-              double delta_y,
-              int start_position_x,
-              int start_position_y,
-              double velocity_x,
-              double velocity_y,
-              bool is_beginning,
-              bool is_in_inertial_phase,
-              bool is_ending,
-              bool should_propagate = false,
-              bool delta_consumed_for_scroll_sequence = false,
-              bool is_direct_manipulation = false);
   explicit ScrollState(ScrollStateData data);
   ~ScrollState();
 
@@ -89,11 +65,11 @@ class CC_EXPORT ScrollState {
   }
 
   void set_current_native_scrolling_layer(LayerImpl* layer) {
-    data_.current_native_scrolling_layer = layer;
+    data_.set_current_native_scrolling_layer(layer);
   }
 
   LayerImpl* current_native_scrolling_layer() const {
-    return data_.current_native_scrolling_layer;
+    return data_.current_native_scrolling_layer();
   }
 
   bool delta_consumed_for_scroll_sequence() const {

@@ -2445,9 +2445,13 @@ WebInputEventResult EventHandler::handleGestureScrollEnd(const PlatformGestureEv
     if (node) {
         passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
         if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
-            RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(
-                0, 0, 0, 0, 0, gestureEvent.inertial(), /* isBeginning */
-                false, /* isEnding */ true, /* fromUserInput */ true);
+            OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
+            scrollStateData->is_ending = true;
+            scrollStateData->is_in_inertial_phase = gestureEvent.inertial();
+            scrollStateData->from_user_input = true;
+            scrollStateData->is_direct_manipulation = true;
+            scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
+            RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
             customizedScroll(*node.get(), *scrollState);
         }
     }
@@ -2482,9 +2486,13 @@ WebInputEventResult EventHandler::handleGestureScrollBegin(const PlatformGesture
     passScrollGestureEventToWidget(gestureEvent, m_scrollGestureHandlingNode->layoutObject());
     if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
         m_currentScrollChain.clear();
-        RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(
-            0, 0, 0, 0, 0, /* inInertialPhase */ false, /* isBeginning */
-            true, /* isEnding */ false, /* fromUserInput */ true);
+        OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
+        scrollStateData->start_position_x = gestureEvent.position().x();
+        scrollStateData->start_position_y = gestureEvent.position().y();
+        scrollStateData->is_beginning = true;
+        scrollStateData->from_user_input = true;
+        scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
+        RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
         customizedScroll(*m_scrollGestureHandlingNode.get(), *scrollState);
     } else {
         if (m_frame->isMainFrame())
@@ -2561,12 +2569,16 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
 
         bool scrolled = false;
         if (handleScrollCustomization) {
-            RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(
-                gestureEvent.deltaX(), gestureEvent.deltaY(),
-                0, gestureEvent.velocityX(), gestureEvent.velocityY(),
-                gestureEvent.inertial(), /* isBeginning */
-                false, /* isEnding */ false, /* fromUserInput */ true,
-                !gestureEvent.preventPropagation(), m_deltaConsumedForScrollSequence);
+            OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
+            scrollStateData->delta_x = gestureEvent.deltaX();
+            scrollStateData->delta_y = gestureEvent.deltaY();
+            scrollStateData->velocity_x = gestureEvent.velocityX();
+            scrollStateData->velocity_y = gestureEvent.velocityY();
+            scrollStateData->should_propagate = !gestureEvent.preventPropagation();
+            scrollStateData->is_in_inertial_phase = gestureEvent.inertial();
+            scrollStateData->from_user_input = true;
+            scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
+            RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
             if (m_previousGestureScrolledNode) {
                 // The ScrollState needs to know what the current
                 // native scrolling element is, so that for an

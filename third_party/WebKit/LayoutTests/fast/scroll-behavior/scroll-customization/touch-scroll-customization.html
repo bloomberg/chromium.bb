@@ -189,7 +189,7 @@ if ('ScrollState' in window) {
       assert_equals(elements[i].numberOfScrollBegins, deltas.length, "Incorrect number of begin events for " + elements[i].id);
       assert_equals(elements[i].numberOfScrollEnds, deltas.length, "Incorrect number of end events for " + elements[i].id);
     }
-  }, "Correct number of scroll end and begin events observed.");
+  }, "Correct number of scroll begin and end events observed.");
 
   {
     // NOTE - this async test needs to be run last, as it shares state with the

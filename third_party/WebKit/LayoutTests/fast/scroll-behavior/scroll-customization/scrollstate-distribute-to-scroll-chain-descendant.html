@@ -33,7 +33,7 @@ for (var i = 0; i < elementCount; ++i) {
 
 if ('ScrollState' in window && window.internals) {
   test(function() {
-    var scrollState = new ScrollState(100, 0, 0, 0, 0, false, false);
+    var scrollState = new ScrollState({deltaX: 100});
     window.internals.setScrollChain(scrollState, elements);
     scrollState.distributeToScrollChainDescendant();
     assert_equals(0, remainingNumberOfTimesToBeCalled);
@@ -43,7 +43,7 @@ if ('ScrollState' in window && window.internals) {
   }, "distributeToScrollChainDescendant propagates correctly.");
 
   test(function() {
-    var scrollState = new ScrollState(100, 0, 0, 0, 0, false, false);
+    var scrollState = new ScrollState({deltaX: 100});
     window.internals.setScrollChain(scrollState, []);
     assert_equals(0, remainingNumberOfTimesToBeCalled);
     scrollState.distributeToScrollChainDescendant();

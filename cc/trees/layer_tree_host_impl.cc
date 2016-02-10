@@ -2622,8 +2622,12 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     return scroll_status;
   }
 
-  ScrollState scroll_state(0, 0, viewport_point.x(), viewport_point.y(), 0, 0,
-                           false, true, false);
+  ScrollStateData scroll_state_data;
+  scroll_state_data.start_position_x = viewport_point.x();
+  scroll_state_data.start_position_y = viewport_point.y();
+  scroll_state_data.is_in_inertial_phase = true;
+  ScrollState scroll_state(scroll_state_data);
+
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
   // that can scroll and set up an animation of its scroll offset. Note that
   // this does not currently go through the scroll customization and viewport
@@ -3842,7 +3846,8 @@ void LayerTreeHostImpl::LayerTransformIsPotentiallyAnimatingChanged(
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   // TODO(majidvp): We should pass in the original starting scroll position here
-  ScrollState scroll_state(0, 0, 0, 0, 0, 0, false, false, false);
+  ScrollStateData scroll_state_data;
+  ScrollState scroll_state(scroll_state_data);
   ScrollEnd(&scroll_state);
 }
 

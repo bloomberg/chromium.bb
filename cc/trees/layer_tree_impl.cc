@@ -1860,7 +1860,8 @@ void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
 
 void LayerTreeImpl::InputScrollAnimationFinished() {
   // TODO(majidvp): We should pass in the original starting scroll position here
-  ScrollState scroll_state(0, 0, 0, 0, 0, 0, false, false, false);
+  ScrollStateData scroll_state_data;
+  ScrollState scroll_state(scroll_state_data);
   layer_tree_host_impl_->ScrollEnd(&scroll_state);
 }
 

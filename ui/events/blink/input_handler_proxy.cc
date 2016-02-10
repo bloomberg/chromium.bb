@@ -123,28 +123,34 @@ WebGestureEvent ObtainGestureScrollBegin(const WebGestureEvent& event) {
 }
 
 cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
+  cc::ScrollStateData scroll_state_data;
   switch (event.type) {
     case WebInputEvent::GestureScrollBegin:
-      return cc::ScrollState(0, 0, event.x, event.y, 0, 0, true, false, false);
+      scroll_state_data.start_position_x = event.x;
+      scroll_state_data.start_position_y = event.y;
+      scroll_state_data.is_beginning = true;
+      break;
     case WebInputEvent::GestureFlingStart:
-      return cc::ScrollState(
-          0, 0, event.x, event.y, event.data.flingStart.velocityX,
-          event.data.flingStart.velocityX, true, true, false);
+      scroll_state_data.velocity_x = event.data.flingStart.velocityX;
+      scroll_state_data.velocity_y = event.data.flingStart.velocityY;
+      scroll_state_data.is_in_inertial_phase = true;
+      break;
     case WebInputEvent::GestureScrollUpdate:
-      return cc::ScrollState(-event.data.scrollUpdate.deltaX,
-                             -event.data.scrollUpdate.deltaY, event.x, event.y,
-                             event.data.scrollUpdate.velocityX,
-                             event.data.scrollUpdate.velocityY,
-                             event.data.scrollUpdate.inertial, false, false);
+      scroll_state_data.delta_x = -event.data.scrollUpdate.deltaX;
+      scroll_state_data.delta_y = -event.data.scrollUpdate.deltaY;
+      scroll_state_data.velocity_x = event.data.scrollUpdate.velocityX;
+      scroll_state_data.velocity_y = event.data.scrollUpdate.velocityY;
+      scroll_state_data.is_in_inertial_phase = event.data.scrollUpdate.inertial;
+      break;
     case WebInputEvent::GestureScrollEnd:
-      return cc::ScrollState(0, 0, event.x, event.y, 0, 0, false, false, true);
     case WebInputEvent::GestureFlingCancel:
-      return cc::ScrollState(0, 0, event.x, event.y, 0, 0, false, true, true);
-
+      scroll_state_data.is_ending = true;
+      break;
     default:
       NOTREACHED();
-      return cc::ScrollState(0, 0, 0, 0, 0, 0, false, false, false);
+      break;
   }
+  return cc::ScrollState(scroll_state_data);
 }
 
 void ReportInputEventLatencyUma(const WebInputEvent& event,
@@ -464,8 +470,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
         break;
     }
   } else {
-    cc::ScrollState scroll_state_begin(0, 0, wheel_event.x, wheel_event.y, 0, 0,
-                                       true, false, false);
+    cc::ScrollStateData scroll_state_begin_data;
+    scroll_state_begin_data.start_position_x = wheel_event.x;
+    scroll_state_begin_data.start_position_y = wheel_event.y;
+    scroll_state_begin_data.is_beginning = true;
+    cc::ScrollState scroll_state_begin(scroll_state_begin_data);
     cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
         &scroll_state_begin, cc::InputHandler::WHEEL);
 
@@ -478,16 +487,21 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
                              "InputHandlerProxy::handle_input wheel scroll",
                              TRACE_EVENT_SCOPE_THREAD, "deltaX",
                              scroll_delta.x(), "deltaY", scroll_delta.y());
-        cc::ScrollState scroll_state_update(scroll_delta.x(), scroll_delta.y(),
-                                            wheel_event.x, wheel_event.y, 0, 0,
-                                            false, false, false);
+
+        cc::ScrollStateData scroll_state_update_data;
+        scroll_state_update_data.delta_x = scroll_delta.x();
+        scroll_state_update_data.delta_y = scroll_delta.y();
+        scroll_state_update_data.start_position_x = wheel_event.x;
+        scroll_state_update_data.start_position_y = wheel_event.y;
+        cc::ScrollState scroll_state_update(scroll_state_update_data);
 
         scroll_result = input_handler_->ScrollBy(&scroll_state_update);
         HandleOverscroll(gfx::Point(wheel_event.x, wheel_event.y),
                          scroll_result);
 
-        cc::ScrollState scroll_state_end(0, 0, wheel_event.x, wheel_event.y,
-                                         0, 0, false, false, true);
+        cc::ScrollStateData scroll_state_end_data;
+        scroll_state_end_data.is_ending = true;
+        cc::ScrollState scroll_state_end(scroll_state_end_data);
         input_handler_->ScrollEnd(&scroll_state_end);
 
         result = scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
@@ -1026,9 +1040,9 @@ bool InputHandlerProxy::CancelCurrentFlingWithoutNotifyingClient() {
   bool had_fling_animation = !!fling_curve_;
   if (had_fling_animation &&
       fling_parameters_.sourceDevice == blink::WebGestureDeviceTouchscreen) {
-    cc::ScrollState scroll_state(0, 0, fling_parameters_.point.x,
-                                 fling_parameters_.point.y, 0, 0, false, true,
-                                 true);
+    cc::ScrollStateData scroll_state_data;
+    scroll_state_data.is_ending = true;
+    cc::ScrollState scroll_state(scroll_state_data);
     input_handler_->ScrollEnd(&scroll_state);
     TRACE_EVENT_ASYNC_END0(
         "input",
@@ -1148,10 +1162,13 @@ bool InputHandlerProxy::scrollBy(const WebFloatSize& increment,
       break;
     case blink::WebGestureDeviceTouchscreen: {
       clipped_increment = ToClientScrollIncrement(clipped_increment);
-      cc::ScrollState scroll_state(
-          clipped_increment.width, clipped_increment.height,
-          fling_parameters_.point.x, fling_parameters_.point.y,
-          clipped_velocity.width, clipped_velocity.height, false, true, false);
+      cc::ScrollStateData scroll_state_data;
+      scroll_state_data.delta_x = clipped_increment.width;
+      scroll_state_data.delta_y = clipped_increment.height;
+      scroll_state_data.velocity_x = clipped_velocity.width;
+      scroll_state_data.velocity_y = clipped_velocity.height;
+      scroll_state_data.is_in_inertial_phase = true;
+      cc::ScrollState scroll_state(scroll_state_data);
       cc::InputHandlerScrollResult scroll_result =
           input_handler_->ScrollBy(&scroll_state);
       HandleOverscroll(fling_parameters_.point, scroll_result);
