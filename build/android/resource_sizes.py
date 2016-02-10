@@ -37,24 +37,6 @@ with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
 # using 'nm' on libchrome.so which results from a GCC official build (i.e.
 # Clang is not supported currently).
 
-STATIC_INITIALIZER_SYMBOL_PREFIX = '_GLOBAL__I_'
-
-EXPECTED_STATIC_INITIALIZERS = frozenset([
-    'allocators.cpp',
-    'common.pb.cc',
-    'defaults.cc',
-    'generated_message_util.cc',
-    'locale_impl.cpp',
-    'timeutils.cc',
-    'watchdog.cc',
-    # http://b/6354040
-    'SkFontHost_android.cpp',
-    # http://b/6354040
-    'isolate.cc',
-    'assembler_arm.cc',
-    'isolate.cc',
-])
-
 _BASE_CHART = {
     'format_version': '0.1',
     'benchmark_name': 'resource_sizes',
@@ -62,23 +44,47 @@ _BASE_CHART = {
     'trace_rerun_options': [],
     'charts': {}
 }
-
+_DUMP_STATIC_INITIALIZERS_PATH = os.path.join(
+    host_paths.DIR_SOURCE_ROOT, 'tools', 'linux', 'dump-static-initializers.py')
 _RC_HEADER_RE = re.compile(r'^#define (?P<name>\w+) (?P<id>\d+)$')
 
 
+def CountStaticInitializers(so_path):
+  def get_elf_section_size(readelf_stdout, section_name):
+    # Matches: .ctors PROGBITS 000000000516add0 5169dd0 000010 00 WA 0 0 8
+    match = re.search(r'\.%s.*$' % re.escape(section_name),
+                      readelf_stdout, re.MULTILINE)
+    if not match:
+      return (False, -1)
+    size_str = re.split(r'\W+', match.group(0))[5]
+    return (True, int(size_str, 16))
+
+  # Find the number of files with at least one static initializer.
+  # First determine if we're 32 or 64 bit
+  stdout = cmd_helper.GetCmdOutput(['readelf', '-h', so_path])
+  elf_class_line = re.search('Class:.*$', stdout, re.MULTILINE).group(0)
+  elf_class = re.split(r'\W+', elf_class_line)[1]
+  if elf_class == 'ELF32':
+    word_size = 4
+  else:
+    word_size = 8
+
+  # Then find the number of files with global static initializers.
+  # NOTE: this is very implementation-specific and makes assumptions
+  # about how compiler and linker implement global static initializers.
+  si_count = 0
+  stdout = cmd_helper.GetCmdOutput(['readelf', '-SW', so_path])
+  has_init_array, init_array_size = get_elf_section_size(stdout, 'init_array')
+  if has_init_array:
+    si_count = init_array_size / word_size
+  si_count = max(si_count, 0)
+  return si_count
+
+
 def GetStaticInitializers(so_path):
-  """Returns a list of static initializers found in the non-stripped library
-     located at the provided path. Note that this function assumes that the
-     library was compiled with GCC.
-  """
-  output = cmd_helper.GetCmdOutput(['nm', so_path])
-  static_initializers = []
-  for line in output:
-    symbol_name = line.split(' ').pop().rstrip()
-    if STATIC_INITIALIZER_SYMBOL_PREFIX in symbol_name:
-      static_initializers.append(
-          symbol_name.replace(STATIC_INITIALIZER_SYMBOL_PREFIX, ''))
-  return static_initializers
+  output = cmd_helper.GetCmdOutput([_DUMP_STATIC_INITIALIZERS_PATH, '-d',
+                                    so_path])
+  return output.splitlines()
 
 
 def ReportPerfResult(chart_data, graph_title, trace_title, value, units,
@@ -307,13 +313,21 @@ def PrintStaticInitializersCount(so_with_symbols_path, chartjson=None):
      Args:
        so_with_symbols_path: Path to the unstripped libchrome.so file.
   """
-  print 'Files with static initializers:'
+  # GetStaticInitializers uses get-static-initializers.py to get a list of all
+  # static initializers. This does not work on all archs (particularly arm).
+  # TODO(rnephew): Get rid of warning when crbug.com/585588 is fixed.
+  si_count = CountStaticInitializers(so_with_symbols_path)
   static_initializers = GetStaticInitializers(so_with_symbols_path)
+  if si_count != len(static_initializers):
+    print ('There are %d files with static initializers, but '
+           'dump-static-initializers found %d:' %
+           (si_count, len(static_initializers)))
+  else:
+    print 'Found %d files with static initializers:' % si_count
   print '\n'.join(static_initializers)
 
   ReportPerfResult(chartjson, 'StaticInitializersCount', 'count',
-                   len(static_initializers), 'count')
-
+                   si_count, 'count')
 
 def _FormatBytes(byts):
   """Pretty-print a number of bytes."""
