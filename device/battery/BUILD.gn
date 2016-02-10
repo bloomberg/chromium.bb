@@ -48,7 +48,7 @@ if (!is_android) {
       ]
     }
 
-    if (is_desktop_linux) {
+    if (is_linux && !is_chromeos) {
       if (use_dbus) {
         configs += [ "//build/config/linux:dbus" ]
         deps += [ "//dbus" ]
