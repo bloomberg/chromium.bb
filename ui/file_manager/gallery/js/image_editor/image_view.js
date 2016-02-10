@@ -650,12 +650,14 @@ ImageView.prototype.replace = function(
         if (reverse) {
           this.setTransform_(oldContentImage, oldViewport, reverse);
           setTimeout(function() {
-            if (oldContentImage.parentNode)
+            if (oldContentImage.parentNode &&
+                  this.contentImage_ !== oldContentImage)
               oldContentImage.parentNode.removeChild(oldContentImage);
-          }, reverse.getSafeInterval());
+          }.bind(this), reverse.getSafeInterval());
         } else {
-            if (oldContentImage.parentNode)
-              oldContentImage.parentNode.removeChild(oldContentImage);
+          if (oldContentImage.parentNode &&
+              this.contentImage_ !== oldContentImage)
+            oldContentImage.parentNode.removeChild(oldContentImage);
         }
       }
     }.bind(this));
