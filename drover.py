@@ -10,7 +10,6 @@ import re
 import sys
 import urlparse
 
-import breakpad  # pylint: disable=W0611
 
 import gclient_utils
 import subprocess2
@@ -377,7 +376,7 @@ def getSVNAuthInfo(folder=None):
   try:
     for auth_file in os.listdir(svn_simple_folder):
       # Read the SVN auth file, convert it into a dictionary, and store it.
-      results[auth_file] = dict(re.findall(r'K [0-9]+\n(.*)\nV [0-9]+\n(.*)\n', 
+      results[auth_file] = dict(re.findall(r'K [0-9]+\n(.*)\nV [0-9]+\n(.*)\n',
           open(os.path.join(svn_simple_folder, auth_file)).read()))
   except Exception as _:
     pass
@@ -391,7 +390,7 @@ def getCurrentSVNUsers(url):
   auth_infos = getSVNAuthInfo()
   results = []
   for _, auth_info in auth_infos.iteritems():
-    if ('svn:realmstring' in auth_info 
+    if ('svn:realmstring' in auth_info
         and netloc in auth_info['svn:realmstring']):
       username = auth_info['username']
       results.append(username)

@@ -51,7 +51,6 @@ class TryChangeUnittest(TryChangeTestsBase):
       'HELP_STRING', 'Error', 'InvalidScript', 'NoTryServerAccess',
       'OptionParser', 'PrintSuccess',
       'RunCommand', 'RunGit', 'SCM', 'SVN', 'TryChange', 'USAGE', 'contextlib',
-      'breakpad',
       'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils',
       'gerrit_util', 'gen_parser',
       'getpass', 'itertools', 'json', 'logging', 'optparse', 'os', 'posixpath',
