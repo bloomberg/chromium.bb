@@ -577,6 +577,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
     if (styleSheet->isCacheable())
         const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->saveParsedStyleSheet(styleSheet);
+    clearResource();
 }
 
 bool LinkStyle::sheetLoaded()
@@ -761,8 +762,9 @@ void LinkStyle::process()
         }
         setResource(CSSStyleSheetResource::fetch(request, document().fetcher()));
 
-        if (!resource()) {
+        if (m_loading && !resource()) {
             // The request may have been denied if (for example) the stylesheet is local and the document is remote, or if there was a Content Security Policy Failure.
+            // setCSSStyleSheet() can be called synchronuosly in setResource() and thus resource() is null and |m_loading| is false in such cases even if the request succeeds.
             m_loading = false;
             removePendingSheet();
             notifyLoadedSheetAndAllCriticalSubresources(Node::ErrorOccurredLoadingSubresource);
