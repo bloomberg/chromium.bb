@@ -79,8 +79,26 @@ class MacTool(object):
     if os.path.relpath(dest):
       dest = os.path.join(base, dest)
 
-    args = ['xcrun', 'ibtool', '--errors', '--warnings', '--notices',
-        '--output-format', 'human-readable-text', '--compile', dest, source]
+    args = ['xcrun', 'ibtool', '--errors', '--warnings', '--notices']
+
+    if os.environ['XCODE_VERSION_ACTUAL'] > '0700':
+      args.extend(['--auto-activate-custom-fonts'])
+      if 'IPHONEOS_DEPLOYMENT_TARGET' in os.environ:
+        args.extend([
+            '--target-device', 'iphone', '--target-device', 'ipad',
+            '--minimum-deployment-target',
+            os.environ['IPHONEOS_DEPLOYMENT_TARGET'],
+        ])
+      else:
+        args.extend([
+            '--target-device', 'mac',
+            '--minimum-deployment-target',
+            os.environ['MACOSX_DEPLOYMENT_TARGET'],
+        ])
+
+    args.extend(['--output-format', 'human-readable-text', '--compile', dest,
+        source])
+
     ibtool_section_re = re.compile(r'/\*.*\*/')
     ibtool_re = re.compile(r'.*note:.*is clipping its content')
     ibtoolout = subprocess.Popen(args, stdout=subprocess.PIPE)

@@ -1487,6 +1487,7 @@ def _GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
     # written for bundles:
     'TARGET_BUILD_DIR' : built_products_dir,
     'TEMP_DIR' : '${TMPDIR}',
+    'XCODE_VERSION_ACTUAL' : XcodeVersion()[0],
   }
   if xcode_settings.GetPerConfigSetting('SDKROOT', configuration):
     env['SDKROOT'] = xcode_settings._SdkPath(configuration)

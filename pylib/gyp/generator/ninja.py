@@ -773,9 +773,12 @@ class NinjaWriter(object):
       output = self.ExpandSpecial(output)
       if os.path.splitext(output)[-1] != '.xcassets':
         isBinary = self.xcode_settings.IsBinaryOutputFormat(self.config_name)
+        extra_env = self.xcode_settings.GetPerTargetSettings()
+        env = self.GetSortedXcodeEnv(additional_settings=extra_env)
+        env = self.ComputeExportEnvString(env)
         self.ninja.build(output, 'mac_tool', res,
                          variables=[('mactool_cmd', 'copy-bundle-resource'), \
-                                    ('binary', isBinary)])
+                                    ('env', env), ('binary', isBinary)])
         bundle_depends.append(output)
       else:
         xcassets.append(res)
