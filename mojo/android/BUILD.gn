@@ -134,6 +134,7 @@ shared_library("mojo_java_unittests") {
 
 android_apk("mojo_test_apk") {
   testonly = true
+  create_dist_ijar = true
   deps = [
     ":mojo_java_unittests",
     ":mojo_javatests",
