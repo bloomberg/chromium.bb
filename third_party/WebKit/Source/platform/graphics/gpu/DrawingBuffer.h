@@ -167,12 +167,19 @@ public:
     void addNewMailboxCallback(PassOwnPtr<Closure> closure) { m_newMailboxCallback = std::move(closure); }
 
 protected: // For unittests
+    struct PLATFORM_EXPORT SupportedExtensions {
+        SupportedExtensions();
+
+        bool multisample;
+        bool packedDepthStencil;
+        bool depth24;
+        bool discardFramebuffer;
+    };
+
     DrawingBuffer(
         PassOwnPtr<WebGraphicsContext3D>,
         PassOwnPtr<Extensions3DUtil>,
-        bool multisampleExtensionSupported,
-        bool packedDepthStencilExtensionSupported,
-        bool discardFramebufferSupported,
+        const SupportedExtensions&,
         PreserveDrawingBuffer,
         WebGraphicsContext3D::Attributes requestedAttributes);
 
@@ -299,6 +306,7 @@ private:
     WebGraphicsContext3D::Attributes m_requestedAttributes;
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;
+    bool m_depth24ExtensionSupported;
     bool m_discardFramebufferSupported;
     Platform3DObject m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.

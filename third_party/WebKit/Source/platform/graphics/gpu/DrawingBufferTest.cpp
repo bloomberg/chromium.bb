@@ -223,8 +223,7 @@ public:
     DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3D> context,
         PassOwnPtr<Extensions3DUtil> extensionsUtil,
         PreserveDrawingBuffer preserve)
-        : DrawingBuffer(context, extensionsUtil, false /* multisampleExtensionSupported */,
-            false /* packedDepthStencilExtensionSupported */, false /* discardFramebufferSupported */, preserve, WebGraphicsContext3D::Attributes())
+        : DrawingBuffer(context, extensionsUtil, DrawingBuffer::SupportedExtensions(), preserve, WebGraphicsContext3D::Attributes())
         , m_live(0)
     { }
 
