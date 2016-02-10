@@ -1310,7 +1310,8 @@ bool RenderWidgetHostViewMac::GetLineBreakIndex(
   // 75% of maximum height.
   // TODO(nona): Check the threshold is reliable or not.
   // TODO(nona): Bidi support.
-  const size_t loop_end_idx = std::min(bounds.size(), range.end());
+  const size_t loop_end_idx =
+      std::min(bounds.size(), static_cast<size_t>(range.end()));
   int max_height = 0;
   int min_y_offset = std::numeric_limits<int32_t>::max();
   for (size_t idx = range.start(); idx < loop_end_idx; ++idx) {

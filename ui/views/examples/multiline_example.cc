@@ -25,7 +25,7 @@ namespace examples {
 
 namespace {
 
-gfx::Range ClampRange(gfx::Range range, size_t max) {
+gfx::Range ClampRange(gfx::Range range, uint32_t max) {
   range.set_start(std::min(range.start(), max));
   range.set_end(std::min(range.end(), max));
   return range;

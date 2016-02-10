@@ -300,15 +300,15 @@ void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::string* l) {
 }
 
 void ParamTraits<gfx::Range>::Write(base::Pickle* m, const gfx::Range& r) {
-  m->WriteSizeT(r.start());
-  m->WriteSizeT(r.end());
+  m->WriteUInt32(r.start());
+  m->WriteUInt32(r.end());
 }
 
 bool ParamTraits<gfx::Range>::Read(const base::Pickle* m,
                                    base::PickleIterator* iter,
                                    gfx::Range* r) {
-  size_t start, end;
-  if (!iter->ReadSizeT(&start) || !iter->ReadSizeT(&end))
+  uint32_t start, end;
+  if (!iter->ReadUInt32(&start) || !iter->ReadUInt32(&end))
     return false;
   r->set_start(start);
   r->set_end(end);
@@ -316,7 +316,7 @@ bool ParamTraits<gfx::Range>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<gfx::Range>::Log(const gfx::Range& r, std::string* l) {
-  l->append(base::StringPrintf("(%" PRIuS ", %" PRIuS ")", r.start(), r.end()));
+  l->append(base::StringPrintf("(%d, %d)", r.start(), r.end()));
 }
 
 void ParamTraits<gfx::ScrollOffset>::Write(base::Pickle* m,

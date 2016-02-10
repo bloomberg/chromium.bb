@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
@@ -18,30 +17,30 @@ Range::Range()
       end_(0) {
 }
 
-Range::Range(size_t start, size_t end)
+Range::Range(uint32_t start, uint32_t end)
     : start_(start),
       end_(end) {
 }
 
-Range::Range(size_t position)
+Range::Range(uint32_t position)
     : start_(position),
       end_(position) {
 }
 
 // static
 const Range Range::InvalidRange() {
-  return Range(std::numeric_limits<size_t>::max());
+  return Range(std::numeric_limits<uint32_t>::max());
 }
 
 bool Range::IsValid() const {
   return *this != InvalidRange();
 }
 
-size_t Range::GetMin() const {
+uint32_t Range::GetMin() const {
   return std::min(start(), end());
 }
 
-size_t Range::GetMax() const {
+uint32_t Range::GetMax() const {
   return std::max(start(), end());
 }
 
@@ -68,8 +67,8 @@ bool Range::Contains(const Range& range) const {
 }
 
 Range Range::Intersect(const Range& range) const {
-  size_t min = std::max(GetMin(), range.GetMin());
-  size_t max = std::min(GetMax(), range.GetMax());
+  uint32_t min = std::max(GetMin(), range.GetMin());
+  uint32_t max = std::min(GetMax(), range.GetMax());
 
   if (min >= max)  // No intersection.
     return InvalidRange();
@@ -78,7 +77,7 @@ Range Range::Intersect(const Range& range) const {
 }
 
 std::string Range::ToString() const {
-  return base::StringPrintf("{%" PRIuS ",%" PRIuS "}", start(), end());
+  return base::StringPrintf("{%d,%d}", start(), end());
 }
 
 std::ostream& operator<<(std::ostream& os, const Range& range) {

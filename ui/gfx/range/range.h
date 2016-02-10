@@ -6,6 +6,7 @@
 #define UI_GFX_RANGE_RANGE_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <ostream>
 #include <string>
@@ -39,10 +40,10 @@ class GFX_EXPORT Range {
   Range();
 
   // Initializes the range with a start and end.
-  Range(size_t start, size_t end);
+  Range(uint32_t start, uint32_t end);
 
   // Initializes the range with the same start and end positions.
-  explicit Range(size_t position);
+  explicit Range(uint32_t position);
 
   // Platform constructors.
 #if defined(OS_MACOSX)
@@ -53,31 +54,30 @@ class GFX_EXPORT Range {
   Range(const CHARRANGE& range, LONG total_length = -1);
 #endif
 
-  // Returns a range that is invalid, which is {size_t_max,size_t_max}.
+  // Returns a range that is invalid, which is {UINT32_MAX,UINT32_MAX}.
   static const Range InvalidRange();
 
   // Checks if the range is valid through comparison to InvalidRange().
   bool IsValid() const;
 
   // Getters and setters.
-  size_t start() const { return start_; }
-  void set_start(size_t start) { start_ = start; }
+  uint32_t start() const { return start_; }
+  void set_start(uint32_t start) { start_ = start; }
 
-  size_t end() const { return end_; }
-  void set_end(size_t end) { end_ = end; }
+  uint32_t end() const { return end_; }
+  void set_end(uint32_t end) { end_ = end; }
 
   // Returns the absolute value of the length.
-  size_t length() const {
-    ptrdiff_t length = end() - start();
-    return length >= 0 ? length : -length;
+  uint32_t length() const {
+    return GetMax() - GetMin();
   }
 
   bool is_reversed() const { return start() > end(); }
   bool is_empty() const { return start() == end(); }
 
   // Returns the minimum and maximum values.
-  size_t GetMin() const;
-  size_t GetMax() const;
+  uint32_t GetMin() const;
+  uint32_t GetMax() const;
 
   bool operator==(const Range& other) const;
   bool operator!=(const Range& other) const;
@@ -108,8 +108,8 @@ class GFX_EXPORT Range {
   std::string ToString() const;
 
  private:
-  size_t start_;
-  size_t end_;
+  uint32_t start_;
+  uint32_t end_;
 };
 
 GFX_EXPORT std::ostream& operator<<(std::ostream& os, const Range& range);

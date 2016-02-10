@@ -77,7 +77,7 @@ class GFX_EXPORT SelectionModel {
 
   // WARNING: Generally the selection start should not be changed without
   // considering the effect on the caret affinity.
-  void set_selection_start(size_t pos) { selection_.set_start(pos); }
+  void set_selection_start(uint32_t pos) { selection_.set_start(pos); }
 
   bool operator==(const SelectionModel& sel) const;
   bool operator!=(const SelectionModel& sel) const { return !(*this == sel); }

@@ -184,7 +184,8 @@ TEST_F(StyledLabelTest, DontBreakLinks) {
   const std::string link_text("and this should be a link");
   InitStyledLabel(text + link_text);
   styled()->AddStyleRange(
-      gfx::Range(text.size(), text.size() + link_text.size()),
+      gfx::Range(static_cast<uint32_t>(text.size()),
+                 static_cast<uint32_t>(text.size() + link_text.size())),
       StyledLabel::RangeStyleInfo::CreateForLink());
 
   Label label(ASCIIToUTF16(text + link_text.substr(0, link_text.size() / 2)));
@@ -209,7 +210,8 @@ TEST_F(StyledLabelTest, StyledRangeWithDisabledLineWrapping) {
   StyledLabel::RangeStyleInfo style_info;
   style_info.disable_line_wrapping = true;
   styled()->AddStyleRange(
-      gfx::Range(text.size(), text.size() + unbreakable_text.size()),
+      gfx::Range(static_cast<uint32_t>(text.size()),
+                 static_cast<uint32_t>(text.size() + unbreakable_text.size())),
       style_info);
 
   Label label(ASCIIToUTF16(
@@ -233,7 +235,8 @@ TEST_F(StyledLabelTest, StyledRangeUnderlined) {
   StyledLabel::RangeStyleInfo style_info;
   style_info.font_style = gfx::Font::UNDERLINE;
   styled()->AddStyleRange(
-      gfx::Range(text.size(), text.size() + underlined_text.size()),
+      gfx::Range(static_cast<uint32_t>(text.size()),
+                 static_cast<uint32_t>(text.size() + underlined_text.size())),
       style_info);
 
   styled()->SetBounds(0, 0, 1000, 1000);
@@ -255,7 +258,8 @@ TEST_F(StyledLabelTest, StyledRangeBold) {
 
   StyledLabel::RangeStyleInfo style_info;
   style_info.font_style = gfx::Font::BOLD;
-  styled()->AddStyleRange(gfx::Range(0, bold_text.size()), style_info);
+  styled()->AddStyleRange(
+      gfx::Range(0u, static_cast<uint32_t>(bold_text.size())), style_info);
 
   // Calculate the bold text width if it were a pure label view, both with bold
   // and normal style.
@@ -315,13 +319,15 @@ TEST_F(StyledLabelTest, Color) {
 
   StyledLabel::RangeStyleInfo style_info_red;
   style_info_red.color = SK_ColorRED;
-  styled()->AddStyleRange(gfx::Range(0, text_red.size()), style_info_red);
+  styled()->AddStyleRange(
+      gfx::Range(0u, static_cast<uint32_t>(text_red.size())), style_info_red);
 
   StyledLabel::RangeStyleInfo style_info_link =
       StyledLabel::RangeStyleInfo::CreateForLink();
-  styled()->AddStyleRange(gfx::Range(text_red.size(),
-                                    text_red.size() + text_link.size()),
-                          style_info_link);
+  styled()->AddStyleRange(
+      gfx::Range(static_cast<uint32_t>(text_red.size()),
+                 static_cast<uint32_t>(text_red.size() + text_link.size())),
+      style_info_link);
 
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
@@ -377,10 +383,13 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
   StyledLabel::RangeStyleInfo tooltip_style;
   tooltip_style.tooltip = ASCIIToUTF16("tooltip");
   styled()->AddStyleRange(
-      gfx::Range(tooltip_start, tooltip_start + tooltip_text.size()),
+      gfx::Range(static_cast<uint32_t>(tooltip_start),
+                 static_cast<uint32_t>(tooltip_start + tooltip_text.size())),
       tooltip_style);
-  styled()->AddStyleRange(gfx::Range(link_start, link_start + link_text.size()),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
+  styled()->AddStyleRange(
+      gfx::Range(static_cast<uint32_t>(link_start),
+                 static_cast<uint32_t>(link_start + link_text.size())),
+      StyledLabel::RangeStyleInfo::CreateForLink());
 
   // Break line inside the range with the tooltip.
   Label label(ASCIIToUTF16(

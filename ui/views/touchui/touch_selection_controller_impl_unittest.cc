@@ -553,13 +553,15 @@ TEST_F(TouchSelectionControllerImplTest,
   textfield_->OnGestureEvent(&tap);
 
   // Select some text such that one handle is hidden.
-  textfield_->SelectRange(gfx::Range(10, textfield_text.length()));
+  textfield_->SelectRange(
+      gfx::Range(10u, static_cast<uint32_t>(textfield_text.length())));
 
   // Check that one selection handle is hidden.
   EXPECT_FALSE(IsSelectionHandle1Visible());
   EXPECT_TRUE(IsSelectionHandle2Visible());
-  EXPECT_EQ(gfx::Range(10, textfield_text.length()),
-            textfield_->GetSelectedRange());
+  EXPECT_EQ(
+      gfx::Range(10u, static_cast<uint32_t>(textfield_text.length())),
+      textfield_->GetSelectedRange());
 
   // Drag the visible handle around and make sure the selection end point of the
   // invisible handle does not change.

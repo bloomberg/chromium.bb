@@ -632,7 +632,8 @@ void RenderText::MoveCursor(BreakType break_type,
 bool RenderText::MoveCursorTo(const SelectionModel& model) {
   // Enforce valid selection model components.
   size_t text_length = text().length();
-  Range range(std::min(model.selection().start(), text_length),
+  Range range(std::min(model.selection().start(),
+                       static_cast<uint32_t>(text_length)),
               std::min(model.caret_pos(), text_length));
   // The current model only supports caret positions at valid cursor indices.
   if (!IsValidCursorIndex(range.start()) || !IsValidCursorIndex(range.end()))
@@ -644,8 +645,9 @@ bool RenderText::MoveCursorTo(const SelectionModel& model) {
 }
 
 bool RenderText::SelectRange(const Range& range) {
-  Range sel(std::min(range.start(), text().length()),
-            std::min(range.end(), text().length()));
+  uint32_t text_length = static_cast<uint32_t>(text().length());
+  Range sel(std::min(range.start(), text_length),
+            std::min(range.end(), text_length));
   // Allow selection bounds at valid indicies amid multi-character graphemes.
   if (!IsValidLogicalIndex(sel.start()) || !IsValidLogicalIndex(sel.end()))
     return false;
