@@ -196,6 +196,7 @@
       <part file="find_in_page_strings.grdp" />
       <part file="flags_ui_strings.grdp" />
       <part file="history_ui_strings.grdp" />
+      <part file="login_dialog_strings.grdp" />
       <part file="omnibox_strings.grdp" />
       <part file="password_manager_strings.grdp" />
       <part file="pdf_strings.grdp" />

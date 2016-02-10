@@ -3282,25 +3282,6 @@ Even if you have downloaded files from this website before, the website might ha
         Empty Cache and Hard Reload
       </message>
 
-      <!-- Basic Auth Dialog -->
-      <message name="IDS_LOGIN_DIALOG_TITLE" desc="String to be displayed in the title bar of the login prompt dialog" formatter_data="android_java">
-        Authentication Required
-      </message>
-      <message name="IDS_LOGIN_DIALOG_AUTHORITY" desc="String to be displayed in the login prompt dialog to explain that the user needs to log in, and the name of the web site">
-        <ph name="DOMAIN">$1<ex>google.com</ex></ph> requires a username and password.
-      </message>
-      <message name="IDS_LOGIN_DIALOG_PROXY_AUTHORITY" desc="String to be displayed in the proxy login prompt dialog to explain that the user needs to log in, and the name of the proxy">
-        The proxy <ph name="DOMAIN">$1<ex>google.com</ex></ph> requires a username and password.
-      </message>
-      <message name="IDS_LOGIN_DIALOG_USERNAME_FIELD" desc="The label of the username field in the login prompt dialog" formatter_data="android_java">
-        User Name:
-      </message>
-      <message name="IDS_LOGIN_DIALOG_PASSWORD_FIELD" desc="The label of the password field in the login prompt dialog" formatter_data="android_java">
-        Password:
-      </message>
-      <message name="IDS_LOGIN_DIALOG_OK_BUTTON_LABEL" desc="The label of the 'Log In' button on the login prompt dialog" formatter_data="android_java">
-        Log In
-      </message>
       <!-- User Image Selection Dialog -->
       <if expr="chromeos">
         <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the user image selection dialog">
