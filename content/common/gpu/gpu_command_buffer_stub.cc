@@ -1142,10 +1142,9 @@ bool GpuCommandBufferStub::CheckContextLost() {
             switches::kInProcessGPU)) {
       LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
                  << " from problems.";
-#if defined(OS_WIN)
-      base::win::SetShouldCrashOnProcessDetach(false);
-#endif
-      exit(0);
+      // Signal the message loop to quit to shut down other threads
+      // gracefully.
+      base::MessageLoop::current()->QuitNow();
     }
 
     // Lose all other contexts if the reset was triggered by the robustness
