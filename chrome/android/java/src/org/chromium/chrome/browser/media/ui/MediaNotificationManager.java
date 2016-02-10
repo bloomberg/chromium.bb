@@ -587,8 +587,12 @@ public class MediaNotificationManager {
             mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
         }
 
-        mNotificationBuilder.setContentIntent(
-                PendingIntent.getActivity(mContext, 0, mMediaNotificationInfo.contentIntent, 0));
+        // The intent will currently only be null when using a custom tab.
+        // TODO(avayvod) work out what we should do in this case. See https://crbug.com/585395.
+        if (mMediaNotificationInfo.contentIntent != null) {
+            mNotificationBuilder.setContentIntent(PendingIntent.getActivity(mContext, 0,
+                    mMediaNotificationInfo.contentIntent, 0));
+        }
 
         mNotificationBuilder.setContent(createContentView());
         mNotificationBuilder.setVisibility(
