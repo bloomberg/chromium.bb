@@ -78,7 +78,7 @@ protected:
     void layout() override;
 
     LayoutSize intrinsicSize() const final { return m_intrinsicSize; }
-    void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
+    void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
 
     void computePositionedLogicalWidth(LogicalExtentComputedValues&) const override;
     void computePositionedLogicalHeight(LogicalExtentComputedValues&) const override;
@@ -112,7 +112,8 @@ private:
     bool canBeSelectionLeaf() const override { return true; }
 
     LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const final;
-    void computeAspectRatioInformationForLayoutBox(LayoutBox*, FloatSize& constrainedSize, double& intrinsicRatio) const;
+    void computeIntrinsicSizingInfoForLayoutBox(LayoutBox*, IntrinsicSizingInfo&) const;
+    FloatSize constrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo&) const;
 
     mutable LayoutSize m_intrinsicSize;
 };

@@ -284,23 +284,23 @@ bool LayoutImage::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     return inside;
 }
 
-void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const
+void LayoutImage::computeIntrinsicSizingInfo(IntrinsicSizingInfo& intrinsicSizingInfo) const
 {
-    LayoutReplaced::computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
+    LayoutReplaced::computeIntrinsicSizingInfo(intrinsicSizingInfo);
 
     // Our intrinsicSize is empty if we're laying out generated images with relative width/height. Figure out the right intrinsic size to use.
-    if (intrinsicSize.isEmpty() && m_imageResource->imageHasRelativeSize()) {
+    if (intrinsicSizingInfo.size.isEmpty() && m_imageResource->imageHasRelativeSize()) {
         LayoutObject* containingBlock = isOutOfFlowPositioned() ? container() : this->containingBlock();
         if (containingBlock->isBox()) {
             LayoutBox* box = toLayoutBox(containingBlock);
-            intrinsicSize.setWidth(box->availableLogicalWidth().toFloat());
-            intrinsicSize.setHeight(box->availableLogicalHeight(IncludeMarginBorderPadding).toFloat());
+            intrinsicSizingInfo.size.setWidth(box->availableLogicalWidth().toFloat());
+            intrinsicSizingInfo.size.setHeight(box->availableLogicalHeight(IncludeMarginBorderPadding).toFloat());
         }
     }
     // Don't compute an intrinsic ratio to preserve historical WebKit behavior if we're painting alt text and/or a broken image.
     // Video is excluded from this behavior because video elements have a default aspect ratio that a failed poster image load should not override.
     if (m_imageResource && m_imageResource->errorOccurred() && !isVideo()) {
-        intrinsicRatio = 1;
+        intrinsicSizingInfo.aspectRatio = 1;
         return;
     }
 }

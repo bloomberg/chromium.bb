@@ -147,47 +147,48 @@ static inline bool layoutObjectHasAspectRatio(const LayoutObject* layoutObject)
     return layoutObject->isImage() || layoutObject->isCanvas() || layoutObject->isVideo();
 }
 
-void LayoutReplaced::computeAspectRatioInformationForLayoutBox(LayoutBox* contentLayoutObject, FloatSize& constrainedSize, double& intrinsicRatio) const
+void LayoutReplaced::computeIntrinsicSizingInfoForLayoutBox(LayoutBox* contentLayoutObject, IntrinsicSizingInfo& intrinsicSizingInfo) const
 {
-    FloatSize intrinsicSize;
     if (contentLayoutObject) {
-        contentLayoutObject->computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
+        contentLayoutObject->computeIntrinsicSizingInfo(intrinsicSizingInfo);
 
         // Handle zoom & vertical writing modes here, as the embedded document doesn't know about them.
-        intrinsicSize.scale(style()->effectiveZoom());
+        intrinsicSizingInfo.size.scale(style()->effectiveZoom());
         if (isLayoutImage())
-            intrinsicSize.scale(toLayoutImage(this)->imageDevicePixelRatio());
+            intrinsicSizingInfo.size.scale(toLayoutImage(this)->imageDevicePixelRatio());
 
         // Update our intrinsic size to match what the content layoutObject has computed, so that when we
         // constrain the size below, the correct intrinsic size will be obtained for comparison against
         // min and max widths.
-        if (intrinsicRatio && !intrinsicSize.isEmpty())
-            m_intrinsicSize = LayoutSize(intrinsicSize);
+        if (intrinsicSizingInfo.aspectRatio && !intrinsicSizingInfo.size.isEmpty())
+            m_intrinsicSize = LayoutSize(intrinsicSizingInfo.size);
 
         if (!isHorizontalWritingMode()) {
-            if (intrinsicRatio)
-                intrinsicRatio = 1 / intrinsicRatio;
-            intrinsicSize = intrinsicSize.transposedSize();
+            if (intrinsicSizingInfo.aspectRatio)
+                intrinsicSizingInfo.aspectRatio = 1 / intrinsicSizingInfo.aspectRatio;
+            intrinsicSizingInfo.size = intrinsicSizingInfo.size.transposedSize();
         }
     } else {
-        computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
-        if (intrinsicRatio && !intrinsicSize.isEmpty())
-            m_intrinsicSize = LayoutSize(isHorizontalWritingMode() ? intrinsicSize : intrinsicSize.transposedSize());
+        computeIntrinsicSizingInfo(intrinsicSizingInfo);
+        if (intrinsicSizingInfo.aspectRatio && !intrinsicSizingInfo.size.isEmpty())
+            m_intrinsicSize = LayoutSize(isHorizontalWritingMode() ? intrinsicSizingInfo.size : intrinsicSizingInfo.size.transposedSize());
     }
+}
 
-    // Now constrain the intrinsic size along each axis according to minimum and maximum width/heights along the
-    // opposite axis. So for example a maximum width that shrinks our width will result in the height we compute here
-    // having to shrink in order to preserve the aspect ratio. Because we compute these values independently along
-    // each axis, the final returned size may in fact not preserve the aspect ratio.
-    // FIXME: In the long term, it might be better to just return this code more to the way it used to be before this
-    // function was added, since all it has done is make the code more unclear.
-    constrainedSize = intrinsicSize;
-    if (intrinsicRatio && !intrinsicSize.isEmpty() && style()->logicalWidth().isAuto() && style()->logicalHeight().isAuto()) {
-        // We can't multiply or divide by 'intrinsicRatio' here, it breaks tests, like fast/images/zoomed-img-size.html, which
+FloatSize LayoutReplaced::constrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo& intrinsicSizingInfo) const
+{
+    // Constrain the intrinsic size along each axis according to minimum and maximum width/heights along the opposite
+    // axis. So for example a maximum width that shrinks our width will result in the height we compute here having
+    // to shrink in order to preserve the aspect ratio. Because we compute these values independently along each
+    // axis, the final returned size may in fact not preserve the aspect ratio.
+    FloatSize constrainedSize = intrinsicSizingInfo.size;
+    if (intrinsicSizingInfo.aspectRatio && !intrinsicSizingInfo.size.isEmpty() && style()->logicalWidth().isAuto() && style()->logicalHeight().isAuto()) {
+        // We can't multiply or divide by 'intrinsicSizingInfo.aspectRatio' here, it breaks tests, like fast/images/zoomed-img-size.html, which
         // can only be fixed once subpixel precision is available for things like intrinsicWidth/Height - which include zoom!
-        constrainedSize.setWidth(LayoutBox::computeReplacedLogicalHeight() * intrinsicSize.width() / intrinsicSize.height());
-        constrainedSize.setHeight(LayoutBox::computeReplacedLogicalWidth() * intrinsicSize.height() / intrinsicSize.width());
+        constrainedSize.setWidth(LayoutBox::computeReplacedLogicalHeight() * intrinsicSizingInfo.size.width() / intrinsicSizingInfo.size.height());
+        constrainedSize.setHeight(LayoutBox::computeReplacedLogicalWidth() * intrinsicSizingInfo.size.height() / intrinsicSizingInfo.size.width());
     }
+    return constrainedSize;
 }
 
 void LayoutReplaced::computePositionedLogicalWidth(LogicalExtentComputedValues& computedValues) const
@@ -530,17 +531,17 @@ LayoutRect LayoutReplaced::replacedContentRect(const LayoutSize* overriddenIntri
     return finalRect;
 }
 
-void LayoutReplaced::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const
+void LayoutReplaced::computeIntrinsicSizingInfo(IntrinsicSizingInfo& intrinsicSizingInfo) const
 {
     // If there's an embeddedContentBox() of a remote, referenced document available, this code-path should never be used.
     ASSERT(!embeddedContentBox());
-    intrinsicSize = FloatSize(intrinsicLogicalWidth().toFloat(), intrinsicLogicalHeight().toFloat());
+    intrinsicSizingInfo.size = FloatSize(intrinsicLogicalWidth().toFloat(), intrinsicLogicalHeight().toFloat());
 
     // Figure out if we need to compute an intrinsic ratio.
-    if (intrinsicSize.isEmpty() || !layoutObjectHasAspectRatio(this))
+    if (intrinsicSizingInfo.size.isEmpty() || !layoutObjectHasAspectRatio(this))
         return;
 
-    intrinsicRatio = intrinsicSize.width() / intrinsicSize.height();
+    intrinsicSizingInfo.aspectRatio = intrinsicSizingInfo.size.width() / intrinsicSizingInfo.size.height();
 }
 
 static bool hasIntrinsicWidthForLayoutBox(LayoutBox* layoutObject)
@@ -573,14 +574,14 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
     LayoutBox* contentLayoutObject = embeddedContentBox();
 
     // 10.3.2 Inline, replaced elements: http://www.w3.org/TR/CSS21/visudet.html#inline-replaced-width
-    double intrinsicRatio = 0;
-    FloatSize constrainedSize;
-    computeAspectRatioInformationForLayoutBox(contentLayoutObject, constrainedSize, intrinsicRatio);
+    IntrinsicSizingInfo intrinsicSizingInfo;
+    computeIntrinsicSizingInfoForLayoutBox(contentLayoutObject, intrinsicSizingInfo);
+    FloatSize constrainedSize = constrainIntrinsicSizeToMinMax(intrinsicSizingInfo);
 
     if (style()->logicalWidth().isAuto()) {
         bool computedHeightIsAuto = hasAutoHeightOrContainingBlockWithAutoHeight();
         // TODO(shanmuga.m@samsung.com): hasIntrinsicWidth/Height information should be obtained
-        // from LayoutBox::computeIntrinsicRatioInformation().
+        // from LayoutBox::computeIntrinsicSizingInfo().
         bool hasIntrinsicWidth = constrainedSize.width() > 0 || hasIntrinsicWidthForLayoutBox(contentLayoutObject);
 
         // If 'height' and 'width' both have computed values of 'auto' and the element also has an intrinsic width, then that intrinsic width is the used value of 'width'.
@@ -589,13 +590,13 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
 
         bool hasIntrinsicHeight = constrainedSize.height() > 0 || hasIntrinsicHeightForLayoutBox(contentLayoutObject);
 
-        if (intrinsicRatio) {
+        if (intrinsicSizingInfo.aspectRatio) {
             // If 'height' and 'width' both have computed values of 'auto' and the element has no intrinsic width, but does have an intrinsic height and intrinsic ratio;
             // or if 'width' has a computed value of 'auto', 'height' has some other computed value, and the element does have an intrinsic ratio; then the used value
             // of 'width' is: (used height) * (intrinsic ratio)
-            if (intrinsicRatio && ((computedHeightIsAuto && !hasIntrinsicWidth && hasIntrinsicHeight) || !computedHeightIsAuto)) {
+            if (intrinsicSizingInfo.aspectRatio && ((computedHeightIsAuto && !hasIntrinsicWidth && hasIntrinsicHeight) || !computedHeightIsAuto)) {
                 LayoutUnit logicalHeight = computeReplacedLogicalHeight();
-                return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(logicalHeight * intrinsicRatio), shouldComputePreferred);
+                return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(logicalHeight * intrinsicSizingInfo.aspectRatio), shouldComputePreferred);
             }
 
             // If 'height' and 'width' both have computed values of 'auto' and the element has an intrinsic ratio but no intrinsic height or width, then the used value of
@@ -639,13 +640,13 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
     LayoutBox* contentLayoutObject = embeddedContentBox();
 
     // 10.6.2 Inline, replaced elements: http://www.w3.org/TR/CSS21/visudet.html#inline-replaced-height
-    double intrinsicRatio = 0;
-    FloatSize constrainedSize;
-    computeAspectRatioInformationForLayoutBox(contentLayoutObject, constrainedSize, intrinsicRatio);
+    IntrinsicSizingInfo intrinsicSizingInfo;
+    computeIntrinsicSizingInfoForLayoutBox(contentLayoutObject, intrinsicSizingInfo);
+    FloatSize constrainedSize = constrainIntrinsicSizeToMinMax(intrinsicSizingInfo);
 
     bool widthIsAuto = style()->logicalWidth().isAuto();
     // TODO(shanmuga.m@samsung.com): hasIntrinsicWidth/Height information should be obtained
-    // from LayoutBox::computeIntrinsicRatioInformation().
+    // from LayoutBox::computeIntrinsicSizingInfo().
     bool hasIntrinsicHeight = constrainedSize.height() > 0 || hasIntrinsicHeightForLayoutBox(contentLayoutObject);
 
     // If 'height' and 'width' both have computed values of 'auto' and the element also has an intrinsic height, then that intrinsic height is the used value of 'height'.
@@ -654,8 +655,8 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
 
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic ratio then the used value of 'height' is:
     // (used width) / (intrinsic ratio)
-    if (intrinsicRatio)
-        return computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit(availableLogicalWidth() / intrinsicRatio));
+    if (intrinsicSizingInfo.aspectRatio)
+        return computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit(availableLogicalWidth() / intrinsicSizingInfo.aspectRatio));
 
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic height, then that intrinsic height is the used value of 'height'.
     if (hasIntrinsicHeight)

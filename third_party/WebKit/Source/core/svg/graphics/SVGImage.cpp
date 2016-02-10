@@ -153,26 +153,25 @@ IntSize SVGImage::containerSize() const
     // Assure that a container size is always given for a non-identity zoom level.
     ASSERT(layoutObject->style()->effectiveZoom() == 1);
 
-    FloatSize intrinsicSize;
-    double intrinsicRatio = 0;
-    layoutObject->computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
+    LayoutBox::IntrinsicSizingInfo intrinsicSizingInfo;
+    layoutObject->computeIntrinsicSizingInfo(intrinsicSizingInfo);
 
-    if (intrinsicSize.isEmpty() && intrinsicRatio) {
-        if (!intrinsicSize.width() && intrinsicSize.height())
-            intrinsicSize.setWidth(intrinsicSize.height() * intrinsicRatio);
-        else if (intrinsicSize.width() && !intrinsicSize.height())
-            intrinsicSize.setHeight(intrinsicSize.width() / intrinsicRatio);
+    if (intrinsicSizingInfo.size.isEmpty() && intrinsicSizingInfo.aspectRatio) {
+        if (!intrinsicSizingInfo.size.width() && intrinsicSizingInfo.size.height())
+            intrinsicSizingInfo.size.setWidth(intrinsicSizingInfo.size.height() * intrinsicSizingInfo.aspectRatio);
+        else if (intrinsicSizingInfo.size.width() && !intrinsicSizingInfo.size.height())
+            intrinsicSizingInfo.size.setHeight(intrinsicSizingInfo.size.width() / intrinsicSizingInfo.aspectRatio);
     }
 
     // TODO(davve): In order to maintain aspect ratio the intrinsic
     // size is faked from the viewBox as a last resort. This may cause
     // unwanted side effects. Preferably we should be able to signal
     // the intrinsic ratio in another way.
-    if (intrinsicSize.isEmpty())
-        intrinsicSize = rootElement->currentViewBoxRect().size();
+    if (intrinsicSizingInfo.size.isEmpty())
+        intrinsicSizingInfo.size = rootElement->currentViewBoxRect().size();
 
-    if (!intrinsicSize.isEmpty())
-        return expandedIntSize(intrinsicSize);
+    if (!intrinsicSizingInfo.size.isEmpty())
+        return expandedIntSize(intrinsicSizingInfo.size);
 
     // As last resort, use CSS replaced element fallback size.
     return IntSize(300, 150);

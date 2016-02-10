@@ -81,7 +81,7 @@ public:
 protected:
     bool needsPreferredWidthsRecalculation() const final;
     LayoutBox* embeddedContentBox() const final;
-    void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const final;
+    void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
 
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 

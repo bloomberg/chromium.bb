@@ -37,7 +37,7 @@ public:
     bool isEmbeddedThroughSVGImage() const;
     bool isEmbeddedThroughFrameContainingSVGDocument() const;
 
-    void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
+    void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
     void mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*) const override;
 
     // If you have a LayoutSVGRoot, use firstChild or lastChild instead.
