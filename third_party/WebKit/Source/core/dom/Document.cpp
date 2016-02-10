@@ -3764,6 +3764,7 @@ void Document::unregisterNodeList(const LiveNodeListBase* list)
 void Document::registerNodeListWithIdNameCache(const LiveNodeListBase* list)
 {
 #if ENABLE(OILPAN)
+    ASSERT(!m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
     m_nodeLists[InvalidateOnIdNameAttrChange].add(list);
 #else
     m_nodeListCounts[InvalidateOnIdNameAttrChange]++;
