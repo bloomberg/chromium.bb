@@ -55,7 +55,23 @@ public:
 
     TransformComponentType type() const override { return m_is2D ? MatrixType : Matrix3DType; }
 
+    // Bindings require a non const return value.
+    MatrixTransformComponent* asMatrix() const override { return const_cast<MatrixTransformComponent*>(this); }
+
     PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
+
+    static MatrixTransformComponent* perspective(double length);
+
+    static MatrixTransformComponent* rotate(double angle);
+    static MatrixTransformComponent* rotate3d(double angle, double x, double y, double z);
+
+    static MatrixTransformComponent* scale(double x, double y);
+    static MatrixTransformComponent* scale3d(double x, double y, double z);
+
+    static MatrixTransformComponent* skew(double x, double y);
+
+    static MatrixTransformComponent* translate(double x, double y);
+    static MatrixTransformComponent* translate3d(double x, double y, double z);
 
 private:
     MatrixTransformComponent(double a, double b, double c, double d, double e, double f)
@@ -71,6 +87,12 @@ private:
         : TransformComponent()
         , m_matrix(TransformationMatrix::create(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44))
         , m_is2D(false)
+    { }
+
+    MatrixTransformComponent(PassOwnPtr<const TransformationMatrix> matrix, TransformComponentType fromType)
+        : TransformComponent()
+        , m_matrix(matrix)
+        , m_is2D(is2DComponentType(fromType))
     { }
 
     // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc

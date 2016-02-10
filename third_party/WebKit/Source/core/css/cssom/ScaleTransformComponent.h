@@ -5,6 +5,7 @@
 #ifndef ScaleTransformComponent_h
 #define ScaleTransformComponent_h
 
+#include "core/css/cssom/MatrixTransformComponent.h"
 #include "core/css/cssom/TransformComponent.h"
 
 namespace blink {
@@ -28,6 +29,12 @@ public:
     double z() const { return m_z; }
 
     TransformComponentType type() const override { return m_is2D ? ScaleType : Scale3DType; }
+
+    MatrixTransformComponent* asMatrix() const override
+    {
+        return m_is2D ? MatrixTransformComponent::scale(m_x, m_y)
+            : MatrixTransformComponent::scale3d(m_x, m_y, m_z);
+    }
 
     PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
 

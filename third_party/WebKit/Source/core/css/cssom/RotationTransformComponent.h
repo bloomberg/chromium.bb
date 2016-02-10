@@ -5,6 +5,7 @@
 #ifndef RotationTransformComponent_h
 #define RotationTransformComponent_h
 
+#include "core/css/cssom/MatrixTransformComponent.h"
 #include "core/css/cssom/TransformComponent.h"
 
 namespace blink {
@@ -29,6 +30,12 @@ public:
     double z() const { return m_z; }
 
     TransformComponentType type() const override { return m_is2D ? RotationType : Rotation3DType; }
+
+    MatrixTransformComponent* asMatrix() const override
+    {
+        return m_is2D ? MatrixTransformComponent::rotate(m_angle)
+            : MatrixTransformComponent::rotate3d(m_angle, m_x, m_y, m_z);
+    }
 
     PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
 

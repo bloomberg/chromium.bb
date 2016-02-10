@@ -3,21 +3,34 @@
 <script src="../resources/testharnessreport.js"></script>
 
 <script>
+var EPSILON = 1e-6; // float epsilon
 var values = [
   {input: new Rotation(0), angle: 0, x: 0, y: 0, z: 1,
-    is2DComponent: true, cssString: "rotate(0deg)"},
+    is2DComponent: true, cssString: "rotate(0deg)",
+    asMatrix: new Matrix(1, 0, 0, 1, 0, 0)},
   {input: new Rotation(10), angle: 10, x: 0, y: 0, z: 1,
-    is2DComponent: true, cssString: "rotate(10deg)"},
+    is2DComponent: true, cssString: "rotate(10deg)",
+    asMatrix: new Matrix(0.9848077, 0.1736481, -0.1736481, 0.9848077, 0, 0)},
   {input: new Rotation(-21), angle: -21, x: 0, y: 0, z: 1,
-    is2DComponent: true, cssString: "rotate(-21deg)"},
+    is2DComponent: true, cssString: "rotate(-21deg)",
+    asMatrix: new Matrix(0.9335804, -0.3583679, 0.3583679, 0.9335804, 0, 0)},
   {input: new Rotation(3.2), angle: 3.2, x: 0, y: 0, z: 1,
-    is2DComponent: true, cssString: "rotate(3.2deg)"},
-  {input: new Rotation(10, 0, 0, 1), angle: 10, x: 0, y: 0, z: 1,
-    is2DComponent: false, cssString: "rotate3d(0, 0, 1, 10deg)"},
+    is2DComponent: true, cssString: "rotate(3.2deg)",
+    asMatrix: new Matrix(0.9984407, 0.0558215, -0.0558215, 0.9984407, 0, 0)},
+  {input: new Rotation(90, 0, 0, 1), angle: 90, x: 0, y: 0, z: 1,
+    is2DComponent: false, cssString: "rotate3d(0, 0, 1, 90deg)",
+    asMatrix: new Matrix(0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)},
+  {input: new Rotation(0, 2.7, -3, 4.4), angle: 0, x: 2.7, y: -3, z: 4.4,
+    is2DComponent: false, cssString: "rotate3d(2.7, -3, 4.4, 0deg)",
+    asMatrix: new Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)},
   {input: new Rotation(10, 2, 3, 4), angle: 10, x: 2, y: 3, z: 4,
-    is2DComponent: false, cssString: "rotate3d(2, 3, 4, 10deg)"},
+    is2DComponent: false, cssString: "rotate3d(2, 3, 4, 10deg)",
+    asMatrix: new Matrix(0.9869032, 0.1321258, -0.0925460, 0, -0.1258394,
+      0.9895225, 0.0707777, 0, 0.1009279, -0.0582048, 0.9931896, 0, 0, 0, 0, 1)},
   {input: new Rotation(-1.2, 2, 3.7, -4), angle: -1.2, x: 2, y: 3.7, z: -4,
-    is2DComponent: false, cssString: "rotate3d(2, 3.7, -4, -1.2deg)"}
+    is2DComponent: false, cssString: "rotate3d(2, 3.7, -4, -1.2deg)",
+    asMatrix: new Matrix(0.9998067, 0.01448049, 0.0132978, 0, -0.0143841,
+      0.9998698, -0.0073125, 0, -0.0134019, 0.0071198, 0.9998848, 0, 0, 0, 0, 1)}
 ];
 
 test(function() {
@@ -40,5 +53,24 @@ test(function() {
     assert_equals(values[i].input.cssString, values[i].cssString);
   }
 }, "Test that cssString values for Rotation is correct.");
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    var input = values[i].input;
+    var inputAsMatrix = input.asMatrix();
+    assert_equals(inputAsMatrix.is2DComponent(), input.is2DComponent());
+    var expectedMatrix = values[i].asMatrix;
+    for (var attribute in expectedMatrix) {
+      if (typeof expectedMatrix[attribute] === "number") {
+        assert_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute], EPSILON);
+      } else if (attribute != "cssString") {
+        // Due to the complex trigonometric calculations required for a Rotation matrix,
+        // the 6 significant figures of each value in the cssString might be different.
+        // Hence, do not check cssString.
+        assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
+      }
+    }
+  }
+}, "Test that asMatrix is constructed correctly for Rotation.");
 
 </script>

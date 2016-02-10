@@ -24,6 +24,9 @@ public:
 
     TransformComponentType type() const override { return PerspectiveType; }
 
+    // TODO: Implement asMatrix for PerspectiveTransformComponent.
+    MatrixTransformComponent* asMatrix() const override { return nullptr; }
+
     PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()

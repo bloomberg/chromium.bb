@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class MatrixTransformComponent;
+
 class CORE_EXPORT TransformComponent : public GarbageCollectedFinalized<TransformComponent>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(TransformComponent);
     DEFINE_WRAPPERTYPEINFO();
@@ -24,9 +26,10 @@ public:
 
     virtual TransformComponentType type() const = 0;
 
-    bool is2DComponent() const
+    bool is2DComponent() const { return is2DComponentType(type()); }
+
+    static bool is2DComponentType(TransformComponentType transformType)
     {
-        TransformComponentType transformType = type();
         return transformType != Matrix3DType
             && transformType != PerspectiveType
             && transformType != Rotation3DType
@@ -41,6 +44,7 @@ public:
     }
 
     virtual PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const = 0;
+    virtual MatrixTransformComponent* asMatrix() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 

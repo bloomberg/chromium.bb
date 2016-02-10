@@ -3,6 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 
 <script>
+var EPSILON = 1e-6; // float epsilon
 var values = [
   {input: new Skew(0, 0), ax: 0, ay: 0, cssString: "skew(0, 0)"},
   {input: new Skew(1, 2), ax: 1, ay: 2, cssString: "skew(1, 2)"},
@@ -33,5 +34,28 @@ test(function() {
   assert_throws(null, function() { new Skew(); });
   assert_throws(null, function() { new Skew(1); });
 }, "Test that invalid number of arguments for Skew throws an exception.");
+
+function tanDegrees(degrees) {
+  var radians = degrees * Math.PI / 180;
+  return Math.tan(radians);
+}
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    var input = values[i].input;
+    var inputAsMatrix = input.asMatrix();
+    assert_true(inputAsMatrix.is2DComponent());
+    var tanAx = tanDegrees(input.ax);
+    var tanAy = tanDegrees(input.ay);
+    var expectedMatrix = new Matrix(1, tanAy, tanAx, 1, 0, 0);
+    for (var attribute in expectedMatrix) {
+      if (typeof expectedMatrix[attribute] === "number") {
+        assert_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute], EPSILON);
+      } else {
+        assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
+      }
+    }
+  }
+}, "Test that asMatrix is constructed correctly for Skew.");
 
 </script>

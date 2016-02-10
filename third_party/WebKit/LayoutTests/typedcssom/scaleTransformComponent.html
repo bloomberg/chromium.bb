@@ -3,6 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 
 <script>
+var EPSILON = 1e-6; // float epsilon
 var values = [
   {input: new Scale(0, 0), x: 0, y: 0, z: 1, is2DComponent: true,
     cssString: "scale(0, 0)"},
@@ -72,7 +73,22 @@ test(function() {
   assert_throws(null, () => { new Scale(NaN, NaN, NaN); });
 }, "Test that invalid input throws an exception.");
 
-</script>
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    var input = values[i].input;
+    var inputAsMatrix = input.asMatrix();
+    assert_equals(inputAsMatrix.is2DComponent(), input.is2DComponent());
 
-<body>
-</body>
+    var expectedMatrix = input.is2DComponent() ? new Matrix(input.x, 0, 0, input.y, 0, 0) :
+        new Matrix(input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1);
+    for (var attribute in expectedMatrix) {
+      if (typeof expectedMatrix[attribute] === "number") {
+        assert_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute], EPSILON);
+      } else {
+        assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
+      }
+    }
+  }
+}, "Test that asMatrix is constructed correctly for Scale.");
+
+</script>

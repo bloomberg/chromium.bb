@@ -5469,6 +5469,7 @@ interface TrackEvent : Event
     method constructor
 interface TransformComponent
     getter cssString
+    method asMatrix
     method constructor
     method is2DComponent
 interface TransformValue : StyleValue
