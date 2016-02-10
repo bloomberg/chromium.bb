@@ -133,7 +133,7 @@ _OS_NEGATIVE_FILTER['mac'] = [
 _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
-    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
+
     'ClickTest.testShouldOnlyFollowHrefOnce',
     'CombinedInputActionsTest.testCombiningShiftAndClickResultsInANewWindow',
     'ElementSelectingTest.testShouldBeAbleToToggleEnabledMultiSelectOption',
@@ -176,8 +176,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     "SessionHandlingTest.callingQuitMoreThanOnceOnASessionIsANoOp",
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
-    # Not applicable on ChromeShell (doesn't support tabs).
-    'WindowSwitchingTest.*',
 
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
@@ -207,6 +205,7 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'])
+
 _OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
         'CorrectEventFiringTest.testShouldFireClickEventWhenClicking',
@@ -229,6 +228,10 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
         'FormHandlingTest.handleFormWithJavascriptAction',
         'TypingTest.testShouldReportKeyCodeOfArrowKeysUpDownEvents',
         'TypingTest.testShouldReportKeyCodeOfArrowKeys',
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1006
+        'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
+         # Not applicable on ChromeDriverWebViewShell (doesn't support tabs).
+        'WindowSwitchingTest.*',
     ]
 )
 
