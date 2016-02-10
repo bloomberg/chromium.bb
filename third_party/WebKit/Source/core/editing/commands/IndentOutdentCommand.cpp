@@ -109,7 +109,7 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     return true;
 }
 
-void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Position& end, RefPtrWillBeRawPtr<HTMLElement>& targetBlockquote)
+void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Position& end, RefPtrWillBeRawPtr<HTMLElement>& targetBlockquote, EditingState* editingState)
 {
     Element* enclosingCell = toElement(enclosingNodeOfType(start, &isTableCell));
     Element* elementToSplitTo;
@@ -140,7 +140,7 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
     VisiblePosition endOfContents = createVisiblePosition(end);
     if (startOfContents.isNull() || endOfContents.isNull())
         return;
-    moveParagraphWithClones(startOfContents, endOfContents, targetBlockquote.get(), outerBlock.get());
+    moveParagraphWithClones(startOfContents, endOfContents, targetBlockquote.get(), outerBlock.get(), editingState);
 }
 
 void IndentOutdentCommand::outdentParagraph()
@@ -251,20 +251,20 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
     }
 }
 
-void IndentOutdentCommand::formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection)
+void IndentOutdentCommand::formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState* editingState)
 {
     if (m_typeOfAction == Indent)
-        ApplyBlockElementCommand::formatSelection(startOfSelection, endOfSelection);
+        ApplyBlockElementCommand::formatSelection(startOfSelection, endOfSelection, editingState);
     else
         outdentRegion(startOfSelection, endOfSelection);
 }
 
-void IndentOutdentCommand::formatRange(const Position& start, const Position& end, const Position&, RefPtrWillBeRawPtr<HTMLElement>& blockquoteForNextIndent)
+void IndentOutdentCommand::formatRange(const Position& start, const Position& end, const Position&, RefPtrWillBeRawPtr<HTMLElement>& blockquoteForNextIndent, EditingState* editingState)
 {
     if (tryIndentingAsListItem(start, end))
         blockquoteForNextIndent = nullptr;
     else
-        indentIntoBlockquote(start, end, blockquoteForNextIndent);
+        indentIntoBlockquote(start, end, blockquoteForNextIndent, editingState);
 }
 
 } // namespace blink

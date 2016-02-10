@@ -766,7 +766,7 @@ void DeleteSelectionCommand::clearTransientState()
 }
 
 // This method removes div elements with no attributes that have only one child or no children at all.
-void DeleteSelectionCommand::removeRedundantBlocks()
+void DeleteSelectionCommand::removeRedundantBlocks(EditingState* editingState)
 {
     Node* node = m_endingPosition.computeContainerNode();
     Element* rootElement = node->rootEditableElement();
@@ -776,7 +776,9 @@ void DeleteSelectionCommand::removeRedundantBlocks()
             if (node == m_endingPosition.anchorNode())
                 updatePositionForNodeRemovalPreservingChildren(m_endingPosition, *node);
 
-            CompositeEditCommand::removeNodePreservingChildren(node);
+            CompositeEditCommand::removeNodePreservingChildren(node, editingState);
+            if (editingState->isAborted())
+                return;
             node = m_endingPosition.anchorNode();
         } else {
             node = node->parentNode();
@@ -784,7 +786,7 @@ void DeleteSelectionCommand::removeRedundantBlocks()
     }
 }
 
-void DeleteSelectionCommand::doApply(EditingState*)
+void DeleteSelectionCommand::doApply(EditingState* editingState)
 {
     // If selection has not been set to a custom selection when the command was created,
     // use the current ending selection.
@@ -855,8 +857,11 @@ void DeleteSelectionCommand::doApply(EditingState*)
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = m_needPlaceholder ? HTMLBRElement::create(document()) : nullptr;
 
     if (placeholder) {
-        if (m_sanitizeMarkup)
-            removeRedundantBlocks();
+        if (m_sanitizeMarkup) {
+            removeRedundantBlocks(editingState);
+            if (editingState->isAborted())
+                return;
+        }
         // handleGeneralDelete cause DOM mutation events so |m_endingPosition|
         // can be out of document.
         if (m_endingPosition.inDocument())

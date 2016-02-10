@@ -69,7 +69,7 @@ private:
     void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
     void removeNode(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) override;
     void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned, unsigned) override;
-    void removeRedundantBlocks();
+    void removeRedundantBlocks(EditingState*);
 
     bool m_hasSelectionToDelete;
     bool m_smartDelete;

@@ -400,8 +400,9 @@ void CompositeEditCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, ShouldA
     applyCommandToComposite(RemoveNodeCommand::create(node, shouldAssumeContentIsAlwaysEditable));
 }
 
-void CompositeEditCommand::removeNodePreservingChildren(PassRefPtrWillBeRawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+void CompositeEditCommand::removeNodePreservingChildren(PassRefPtrWillBeRawPtr<Node> node, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
+    ASSERT_IN_EDITING_COMMAND(node->document().frame());
     applyCommandToComposite(RemoveNodePreservingChildrenCommand::create(node, shouldAssumeContentIsAlwaysEditable));
 }
 
@@ -583,10 +584,10 @@ void CompositeEditCommand::insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<No
     insertNodeAt(node, positionOutsideTabSpan(pos));
 }
 
-void CompositeEditCommand::deleteSelection(bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup)
+void CompositeEditCommand::deleteSelection(EditingState* editingState, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup)
 {
     if (endingSelection().isRange())
-        applyCommandToComposite(DeleteSelectionCommand::create(document(), smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup));
+        applyCommandToComposite(DeleteSelectionCommand::create(document(), smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup), editingState);
 }
 
 void CompositeEditCommand::deleteSelection(const VisibleSelection &selection, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup)
@@ -1136,7 +1137,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
 // The blockElement parameter is the element to move the paragraph to,
 // outerNode is the top element of the paragraph hierarchy.
 
-void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, HTMLElement* blockElement, Node* outerNode)
+void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, HTMLElement* blockElement, Node* outerNode, EditingState* editingState)
 {
     ASSERT(outerNode);
     ASSERT(blockElement);
@@ -1154,7 +1155,9 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     cloneParagraphUnderNewElement(start, end, outerNode, blockElement);
 
     setEndingSelection(VisibleSelection(start, end));
-    deleteSelection(false, false, false);
+    deleteSelection(editingState, false, false, false);
+    if (editingState->isAborted())
+        return;
 
     // There are bugs in deletion when it removes a fully selected table/list.
     // It expands and removes the entire table/list, but will let content
@@ -1244,7 +1247,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     setEndingSelection(VisibleSelection(start, end));
     document().frame()->spellChecker().clearMisspellingsAndBadGrammar(endingSelection());
-    deleteSelection(false, false, false);
+    deleteSelection(ASSERT_NO_EDITING_ABORT, false, false, false);
 
     ASSERT(destination.deepEquivalent().inDocument());
     cleanupAfterDeletion(destination);

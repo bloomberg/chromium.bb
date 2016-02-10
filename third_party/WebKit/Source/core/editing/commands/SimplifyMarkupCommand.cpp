@@ -91,7 +91,7 @@ void SimplifyMarkupCommand::doApply(EditingState*)
         int numPrunedAncestors = pruneSubsequentAncestorsToRemove(nodesToRemove, i);
         if (numPrunedAncestors < 0)
             continue;
-        removeNodePreservingChildren(nodesToRemove[i], AssumeContentIsAlwaysEditable);
+        removeNodePreservingChildren(nodesToRemove[i], ASSERT_NO_EDITING_ABORT, AssumeContentIsAlwaysEditable);
         i += numPrunedAncestors;
     }
 }

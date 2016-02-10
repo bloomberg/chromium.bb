@@ -79,7 +79,7 @@ void BreakBlockquoteCommand::doApply(EditingState*)
 
     // Delete the current selection.
     if (endingSelection().isRange())
-        deleteSelection(false, false);
+        deleteSelection(ASSERT_NO_EDITING_ABORT, false, false);
 
     // This is a scenario that should never happen, but we want to
     // make sure we don't dereference a null pointer below.

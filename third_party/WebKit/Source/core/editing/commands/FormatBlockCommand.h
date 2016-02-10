@@ -53,8 +53,8 @@ public:
 private:
     FormatBlockCommand(Document&, const QualifiedName& tagName);
 
-    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) override;
-    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>&) override;
+    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState*) override;
+    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>&, EditingState*) override;
     EditAction editingAction() const override { return EditActionFormatBlock; }
 
     bool m_didApply;

@@ -605,7 +605,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
 
 void TypingCommand::deleteSelection(bool smartDelete)
 {
-    CompositeEditCommand::deleteSelection(smartDelete);
+    CompositeEditCommand::deleteSelection(ASSERT_NO_EDITING_ABORT, smartDelete);
     typingAddedToOpenCommand(DeleteSelection);
 }
 

@@ -58,15 +58,15 @@ FormatBlockCommand::FormatBlockCommand(Document& document, const QualifiedName& 
 {
 }
 
-void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection)
+void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState* editingState)
 {
     if (!isElementForFormatBlock(tagName()))
         return;
-    ApplyBlockElementCommand::formatSelection(startOfSelection, endOfSelection);
+    ApplyBlockElementCommand::formatSelection(startOfSelection, endOfSelection, editingState);
     m_didApply = true;
 }
 
-void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockElement)
+void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockElement, EditingState*)
 {
     Element* refElement = enclosingBlockFlowElement(createVisiblePosition(end));
     Element* root = rootEditableElementOf(start);

@@ -55,7 +55,7 @@ ApplyBlockElementCommand::ApplyBlockElementCommand(Document& document, const Qua
 {
 }
 
-void ApplyBlockElementCommand::doApply(EditingState*)
+void ApplyBlockElementCommand::doApply(EditingState* editingState)
 {
     if (!endingSelection().rootEditableElement())
         return;
@@ -90,7 +90,9 @@ void ApplyBlockElementCommand::doApply(EditingState*)
     RefPtrWillBeRawPtr<ContainerNode> endScope = nullptr;
     int endIndex = indexForVisiblePosition(endOfSelection, endScope);
 
-    formatSelection(startOfSelection, endOfSelection);
+    formatSelection(startOfSelection, endOfSelection, editingState);
+    if (editingState->isAborted())
+        return;
 
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -105,7 +107,7 @@ void ApplyBlockElementCommand::doApply(EditingState*)
     }
 }
 
-void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection)
+void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState* editingState)
 {
     // Special case empty unsplittable elements because there's nothing to split
     // and there's nothing to move.
@@ -137,7 +139,9 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         Node* enclosingCell = enclosingNodeOfType(start, &isTableCell);
         VisiblePosition endOfNextParagraph = endOfNextParagrahSplittingTextNodesIfNeeded(endOfCurrentParagraph, start, end);
 
-        formatRange(start, end, m_endOfLastParagraph, blockquoteForNextIndent);
+        formatRange(start, end, m_endOfLastParagraph, blockquoteForNextIndent, editingState);
+        if (editingState->isAborted())
+            return;
 
         // Don't put the next paragraph in the blockquote we just created for this paragraph unless
         // the next paragraph is in the same cell.

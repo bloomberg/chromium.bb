@@ -160,7 +160,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState*)
     // Delete the current selection.
     if (endingSelection().isRange()) {
         calculateStyleBeforeInsertion(insertionPosition);
-        deleteSelection(false, true);
+        deleteSelection(ASSERT_NO_EDITING_ABORT, false, true);
         insertionPosition = endingSelection().start();
         affinity = endingSelection().affinity();
     }

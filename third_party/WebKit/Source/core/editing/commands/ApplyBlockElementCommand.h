@@ -41,7 +41,7 @@ protected:
     ApplyBlockElementCommand(Document&, const QualifiedName& tagName, const AtomicString& inlineStyle);
     ApplyBlockElementCommand(Document&, const QualifiedName& tagName);
 
-    virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection);
+    virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState*);
     PassRefPtrWillBeRawPtr<HTMLElement> createBlockElement() const;
     const QualifiedName& tagName() const { return m_tagName; }
 
@@ -49,7 +49,7 @@ protected:
 
 private:
     void doApply(EditingState*) final;
-    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>&) = 0;
+    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>&, EditingState*) = 0;
     void rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition&, Position&, Position&);
     VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition&, Position&, Position&);
 

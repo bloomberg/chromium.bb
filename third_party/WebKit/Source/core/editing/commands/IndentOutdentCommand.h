@@ -49,10 +49,10 @@ private:
     void outdentRegion(const VisiblePosition&, const VisiblePosition&);
     void outdentParagraph();
     bool tryIndentingAsListItem(const Position&, const Position&);
-    void indentIntoBlockquote(const Position&, const Position&, RefPtrWillBeRawPtr<HTMLElement>&);
+    void indentIntoBlockquote(const Position&, const Position&, RefPtrWillBeRawPtr<HTMLElement>&, EditingState*);
 
-    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) override;
-    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockquoteForNextIndent) override;
+    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState*) override;
+    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockquoteForNextIndent, EditingState*) override;
 
     EIndentType m_typeOfAction;
 };
