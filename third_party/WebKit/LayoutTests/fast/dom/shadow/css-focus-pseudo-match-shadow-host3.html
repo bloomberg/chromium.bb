@@ -21,16 +21,16 @@ function buildShadowComposedTree(delegatesFocus1, delegatesFocus2) {
         createDOM('div', {},
             createDOM('input', {'id': 'outer-input'}),
             createDOM('div', {'id': 'shadow-host'},
-                createShadowRoot(
-                    {'delegatesFocus': delegatesFocus1},
+                attachShadow(
+                    {'mode': 'open', 'delegatesFocus': delegatesFocus1},
                     createDOM('style', {},
                         document.createTextNode('div { background-color: yellow; } div#inner-shadow-host:focus { background-color: blue; }')),
                     createDOM('div', {'id': 'inner-div'},
                         document.createTextNode('Blink')),
                     createDOM('input', {'id': 'inner-input'}),
                     createDOM('div', {'id': 'inner-shadow-host'},
-                        createShadowRoot(
-                            {'delegatesFocus': delegatesFocus2},
+                        attachShadow(
+                            {'mode': 'open', 'delegatesFocus': delegatesFocus2},
                             createDOM('div', {'id': 'inner-div2'},
                                 document.createTextNode('Blink')),
                             createDOM('input', {'id': 'inner-input2'})))))));

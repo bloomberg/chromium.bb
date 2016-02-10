@@ -22,9 +22,9 @@ function buildSingleShadowTree(delegatesFocus) {
             createDOM('input', {'id': 'outer-input'}),
             createDOM('div', {'id': 'shadow-host'},
                 createDOM('input', {'id': 'lightdom-input'}),
-                createShadowRoot(
-                    {'delegatesFocus': delegatesFocus},
-                    createDOM('content'),
+                attachShadow(
+                    {'mode': 'open', 'delegatesFocus': delegatesFocus},
+                    createDOM('slot'),
                     createDOM('input', {'id': 'inner-input'})))));
 
     sandbox.offsetTop;

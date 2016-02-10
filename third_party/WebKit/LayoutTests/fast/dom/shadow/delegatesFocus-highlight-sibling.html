@@ -45,7 +45,7 @@ function RegisterXMenu() {
   var xMenuProto = Object.create(HTMLElement.prototype);
   xMenuProto.createdCallback = function() {
     var delegatesFocus = this.hasAttribute('delegatesFocus');
-    this.attachShadow({ 'delegatesFocus': delegatesFocus })
+    this.attachShadow({ 'mode': 'open', 'delegatesFocus': delegatesFocus })
     .appendChild(
       document.importNode(template.content, true)
     );

@@ -22,16 +22,16 @@ function buildNestedDistributionTree(delegatesFocus1, delegatesFocus2) {
             createDOM('input', {'id': 'outer-input'}),
             createDOM('div', {'id': 'shadow-host'},
                 createDOM('input', {'id': 'input1'}),
-                createShadowRoot(
-                    {'delegatesFocus': delegatesFocus1},
+                attachShadow(
+                    {'mode': 'open', 'delegatesFocus': delegatesFocus1},
                     createDOM('style', {},
                         document.createTextNode('div { background-color: yellow; } div#inner-shadow-host:focus { background-color: blue; }')),
                     createDOM('input', {'id': 'input2'}),
                     createDOM('div', {'id': 'inner-shadow-host'},
-                        createDOM('content', {}),  // #input1 goes here
-                        createShadowRoot(
-                            {'delegatesFocus': delegatesFocus2},
-                            createDOM('content', {}),  // #input1 redistributed here,  #input2 goes here.
+                        createDOM('slot', {}),  // #input1 goes here
+                        attachShadow(
+                            {'mode': 'open', 'delegatesFocus': delegatesFocus2},
+                            createDOM('slot', {}),  // #input1 redistributed here,  #input2 goes here.
                             createDOM('input', {'id': 'input3'})))))));
 
     sandbox.offsetTop;

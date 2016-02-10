@@ -17,7 +17,7 @@ function setupShadowDOM(delegatesFocus) {
     host = sandbox.appendChild(document.createElement('div'));
     host.id = 'host';
 
-    root = host.attachShadow({ 'delegatesFocus': delegatesFocus });
+    root = host.attachShadow({ 'mode': 'open', 'delegatesFocus': delegatesFocus });
     input = document.createElement('input');
     root.appendChild(input);
 
