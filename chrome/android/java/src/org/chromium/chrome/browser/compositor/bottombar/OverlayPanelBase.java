@@ -1221,6 +1221,8 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     private void updatePromoVisibility(float percentage) {
         if (isPromoVisible()) {
+            createPromoView();
+
             mPromoVisible = true;
 
             mPromoHeightPx = Math.round(MathUtils.clamp(percentage * mPromoContentHeightPx,
