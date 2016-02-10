@@ -124,7 +124,7 @@ protected:
         ASSERT_TRUE(head);
 
         RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(document());
-        meta->setAttribute(HTMLNames::nameAttr, "api-experiments");
+        meta->setAttribute(HTMLNames::nameAttr, "origin-trials");
         AtomicString value(token);
         meta->setAttribute(HTMLNames::contentAttr, value);
         head->appendChild(meta.release());

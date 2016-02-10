@@ -17,7 +17,7 @@ namespace blink {
 
 namespace {
 
-const char kTrialMetaTagName[] = "api-experiments";
+const char kTrialMetaTagName[] = "origin-trials";
 
 String getCurrentOrigin(ExecutionContext* executionContext)
 {
