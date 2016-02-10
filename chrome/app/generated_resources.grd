@@ -2300,7 +2300,7 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
       <message name="IDS_CREATE_SHORTCUTS_LABEL" desc="Contents of the main label in the create application shortcuts dialog explaining the dialog.">
-        Create application shortcuts in the following places:
+        Add shortcuts to the following places:
       </message>
       <message name="IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX" desc="Label of the checkbox to create an application shortcut on the desktop.">
         Desktop

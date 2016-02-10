@@ -260,6 +260,7 @@ void CreateApplicationShortcutView::InitControls(DialogLayout dialog_layout) {
   create_shortcuts_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
   create_shortcuts_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  create_shortcuts_label_->SetMultiLine(true);
 
   desktop_check_box_ = AddCheckbox(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX),
@@ -303,7 +304,7 @@ void CreateApplicationShortcutView::InitControls(DialogLayout dialog_layout) {
 
   static const int kTableColumnSetId = 1;
   column_set = layout->AddColumnSet(kTableColumnSetId);
-  column_set->AddPaddingColumn(0, views::kPanelHorizIndentation);
+  column_set->AddPaddingColumn(0, views::kCheckboxIndent);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         100.0f, views::GridLayout::USE_PREF, 0, 0);
 

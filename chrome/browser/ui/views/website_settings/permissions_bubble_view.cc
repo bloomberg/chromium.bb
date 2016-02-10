@@ -44,6 +44,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 
 namespace {
 
@@ -55,9 +56,6 @@ const int kButtonBorderSize = 2;
 
 // (Square) pixel size of icon.
 const int kIconSize = 18;
-
-// Number of pixels to indent the permission request labels.
-const int kPermissionIndentSpacing = 12;
 
 }  // namespace
 
@@ -235,7 +233,8 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
 
     views::View* label_container = new views::View();
     label_container->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, kPermissionIndentSpacing, 0, 0));
+        views::BoxLayout::kHorizontal, views::kCheckboxIndent, 0,
+        views::kItemLabelSpacing));
     views::ImageView* icon = new views::ImageView();
     gfx::VectorIconId vector_id = requests[index]->GetVectorIconId();
     if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
