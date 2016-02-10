@@ -9,15 +9,18 @@
 
 #include "mojo/edk/system/ports/message.h"
 #include "mojo/edk/system/ports/name.h"
-#include "mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace edk {
 namespace ports {
 
+#pragma pack(push, 1)
+
 // TODO: Add static assertions of alignment.
 
-struct MOJO_ALIGNAS(8) PortDescriptor {
+struct PortDescriptor {
+  PortDescriptor();
+
   NodeName peer_node_name;
   PortName peer_port_name;
   NodeName referring_node_name;
@@ -26,6 +29,7 @@ struct MOJO_ALIGNAS(8) PortDescriptor {
   uint64_t next_sequence_num_to_receive;
   uint64_t last_sequence_num_to_receive;
   bool peer_closed;
+  char padding[7];
 };
 
 enum struct EventType : uint32_t {
@@ -68,6 +72,8 @@ struct MergePortEventData {
   PortName new_port_name;
   PortDescriptor new_port_descriptor;
 };
+
+#pragma pack(pop)
 
 inline const EventHeader* GetEventHeader(const Message& message) {
   return static_cast<const EventHeader*>(message.header_bytes());

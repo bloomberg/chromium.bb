@@ -882,6 +882,7 @@ void Node::WillSendPort_Locked(Port* port,
   port_descriptor->last_sequence_num_to_receive =
       port->last_sequence_num_to_receive;
   port_descriptor->peer_closed = port->peer_closed;
+  memset(port_descriptor->padding, 0, sizeof(port_descriptor->padding));
 
   // Configure the local port to point to the new port.
   port->peer_node_name = to_node_name;

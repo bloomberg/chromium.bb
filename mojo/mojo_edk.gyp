@@ -100,6 +100,7 @@
         'edk/system/options_validation.h',
         'edk/system/platform_handle_dispatcher.cc',
         'edk/system/platform_handle_dispatcher.h',
+        'edk/system/ports/event.cc',
         'edk/system/ports/event.h',
         'edk/system/ports/hash_functions.h',
         'edk/system/ports/message.cc',
