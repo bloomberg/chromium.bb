@@ -196,7 +196,8 @@ void UsbDeviceImpl::Open(const OpenCallback& callback) {
   DCHECK(client) << "Could not get permission broker client.";
   client->OpenPath(
       device_path_,
-      base::Bind(&UsbDeviceImpl::OnOpenRequestComplete, this, callback));
+      base::Bind(&UsbDeviceImpl::OnOpenRequestComplete, this, callback),
+      base::Bind(&UsbDeviceImpl::OnOpenRequestError, this, callback));
 #else
   blocking_task_runner_->PostTask(
       FROM_HERE,
@@ -291,14 +292,18 @@ void UsbDeviceImpl::OnOpenRequestComplete(const OpenCallback& callback,
                             base::Passed(&fd), callback));
 }
 
+void UsbDeviceImpl::OnOpenRequestError(const OpenCallback& callback,
+                                       const std::string& error_name,
+                                       const std::string& error_message) {
+  USB_LOG(EVENT) << "Permission broker failed to open the device: "
+                 << error_name << ": " << error_message;
+  callback.Run(nullptr);
+}
+
 void UsbDeviceImpl::OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,
                                                const OpenCallback& callback) {
   fd.CheckValidity();
-  if (!fd.is_valid()) {
-    USB_LOG(EVENT) << "Did not get valid device handle from permission broker.";
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
-  }
+  DCHECK(fd.is_valid());
 
   PlatformUsbDeviceHandle handle;
   const int rv = libusb_open_fd(platform_device_, fd.TakeValue(), &handle);

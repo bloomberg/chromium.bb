@@ -23,7 +23,8 @@ class CHROMEOS_EXPORT FakePermissionBrokerClient
   void CheckPathAccess(const std::string& path,
                        const ResultCallback& callback) override;
   void OpenPath(const std::string& path,
-                const OpenPathCallback& callback) override;
+                const OpenPathCallback& callback,
+                const ErrorCallback& error_callback) override;
   void RequestTcpPortAccess(uint16_t port,
                             const std::string& interface,
                             const dbus::FileDescriptor& lifeline_fd,

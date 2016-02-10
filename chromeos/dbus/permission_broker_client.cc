@@ -27,6 +27,10 @@ using permission_broker::kRequestUdpPortAccess;
 
 namespace chromeos {
 
+namespace {
+const char kNoResponseError[] = "org.chromium.Error.NoResponse";
+}
+
 class PermissionBrokerClientImpl : public PermissionBrokerClient {
  public:
   PermissionBrokerClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
@@ -42,14 +46,17 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
   }
 
   void OpenPath(const std::string& path,
-                const OpenPathCallback& callback) override {
+                const OpenPathCallback& callback,
+                const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(kPermissionBrokerInterface, kOpenPath);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(path);
-    proxy_->CallMethod(
+    proxy_->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&PermissionBrokerClientImpl::OnOpenPathResponse,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::Bind(&PermissionBrokerClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   void RequestTcpPortAccess(uint16_t port,
@@ -133,15 +140,23 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
   void OnOpenPathResponse(const OpenPathCallback& callback,
                           dbus::Response* response) {
     dbus::FileDescriptor fd;
+    dbus::MessageReader reader(response);
+    if (!reader.PopFileDescriptor(&fd))
+      LOG(WARNING) << "Could not parse response: " << response->ToString();
+    callback.Run(std::move(fd));
+  }
+
+  void OnError(const ErrorCallback& callback, dbus::ErrorResponse* response) {
+    std::string error_name;
+    std::string error_message;
     if (response) {
       dbus::MessageReader reader(response);
-      if (!reader.PopFileDescriptor(&fd))
-        LOG(WARNING) << "Could not parse response: " << response->ToString();
+      error_name = response->GetErrorName();
+      reader.PopString(&error_message);
     } else {
-      LOG(WARNING) << "Access request method call failed.";
+      error_name = kNoResponseError;
     }
-
-    callback.Run(std::move(fd));
+    callback.Run(error_name, error_message);
   }
 
   dbus::ObjectProxy* proxy_;

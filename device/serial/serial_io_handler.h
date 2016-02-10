@@ -50,10 +50,20 @@ class SerialIoHandler : public base::NonThreadSafe,
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       dbus::FileDescriptor fd);
 
+  // Signals that the permission broker failed to open the port.
+  void OnPathOpenError(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      const std::string& error_name,
+      const std::string& error_message);
+
   // Validates the file descriptor provided by the permission broker.
   void ValidateOpenPort(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       dbus::FileDescriptor fd);
+
+  // Reports the open error from the permission broker.
+  void ReportPathOpenError(const std::string& error_name,
+                           const std::string& error_message);
 #endif  // defined(OS_CHROMEOS)
 
   // Performs an async Read operation. Behavior is undefined if this is called

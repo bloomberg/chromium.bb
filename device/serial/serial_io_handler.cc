@@ -54,12 +54,15 @@ void SerialIoHandler::Open(const std::string& port,
       chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
   DCHECK(client) << "Could not get permission_broker client.";
   // PermissionBrokerClient should be called on the UI thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
   ui_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&chromeos::PermissionBrokerClient::OpenPath,
-                            base::Unretained(client), port,
-                            base::Bind(&SerialIoHandler::OnPathOpened, this,
-                                       file_thread_task_runner_,
-                                       base::ThreadTaskRunnerHandle::Get())));
+      FROM_HERE,
+      base::Bind(
+          &chromeos::PermissionBrokerClient::OpenPath, base::Unretained(client),
+          port, base::Bind(&SerialIoHandler::OnPathOpened, this,
+                           file_thread_task_runner_, task_runner),
+          base::Bind(&SerialIoHandler::OnPathOpenError, this, task_runner)));
 #else
   file_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SerialIoHandler::StartOpen, this, port,
@@ -73,10 +76,18 @@ void SerialIoHandler::OnPathOpened(
     scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     dbus::FileDescriptor fd) {
-  DCHECK(CalledOnValidThread());
   file_thread_task_runner->PostTask(
       FROM_HERE, base::Bind(&SerialIoHandler::ValidateOpenPort, this,
                             io_thread_task_runner, base::Passed(&fd)));
+}
+
+void SerialIoHandler::OnPathOpenError(
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    const std::string& error_name,
+    const std::string& error_message) {
+  io_thread_task_runner->PostTask(
+      FROM_HERE, base::Bind(&SerialIoHandler::ReportPathOpenError, this,
+                            error_name, error_message));
 }
 
 void SerialIoHandler::ValidateOpenPort(
@@ -91,6 +102,17 @@ void SerialIoHandler::ValidateOpenPort(
   io_thread_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&SerialIoHandler::FinishOpen, this, base::Passed(&file)));
+}
+
+void SerialIoHandler::ReportPathOpenError(const std::string& error_name,
+                                          const std::string& error_message) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!open_complete_.is_null());
+  LOG(ERROR) << "Permission broker failed to open '" << port_
+             << "': " << error_name << ": " << error_message;
+  OpenCompleteCallback callback = open_complete_;
+  open_complete_.Reset();
+  callback.Run(false);
 }
 
 #endif

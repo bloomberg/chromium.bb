@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "dbus/file_descriptor.h"
@@ -20,6 +21,8 @@ namespace chromeos {
 
 namespace {
 
+const char kOpenFailedError[] = "open_failed";
+
 // So that real devices can be accessed by tests and "Chromium OS on Linux" this
 // function implements a simplified version of the method implemented by the
 // permission broker by opening the path specified and returning the resulting
@@ -27,15 +30,23 @@ namespace {
 void OpenPathAndValidate(
     const std::string& path,
     const PermissionBrokerClient::OpenPathCallback& callback,
+    const PermissionBrokerClient::ErrorCallback& error_callback,
     scoped_refptr<base::TaskRunner> task_runner) {
-  dbus::FileDescriptor dbus_fd;
   int fd = HANDLE_EINTR(open(path.c_str(), O_RDWR));
   if (fd < 0) {
-    PLOG(WARNING) << "Failed to open '" << path << "'";
-  } else {
-    dbus_fd.PutValue(fd);
-    dbus_fd.CheckValidity();
+    int error_code = logging::GetLastSystemErrorCode();
+    task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback, kOpenFailedError,
+                   base::StringPrintf(
+                       "Failed to open '%s': %s", path.c_str(),
+                       logging::SystemErrorCodeToString(error_code).c_str())));
+    return;
   }
+
+  dbus::FileDescriptor dbus_fd;
+  dbus_fd.PutValue(fd);
+  dbus_fd.CheckValidity();
   task_runner->PostTask(FROM_HERE,
                         base::Bind(callback, base::Passed(&dbus_fd)));
 }
@@ -55,11 +66,13 @@ void FakePermissionBrokerClient::CheckPathAccess(
 }
 
 void FakePermissionBrokerClient::OpenPath(const std::string& path,
-                                          const OpenPathCallback& callback) {
-  base::WorkerPool::PostTask(FROM_HERE,
-                             base::Bind(&OpenPathAndValidate, path, callback,
-                                        base::ThreadTaskRunnerHandle::Get()),
-                             false);
+                                          const OpenPathCallback& callback,
+                                          const ErrorCallback& error_callback) {
+  base::WorkerPool::PostTask(
+      FROM_HERE,
+      base::Bind(&OpenPathAndValidate, path, callback, error_callback,
+                 base::ThreadTaskRunnerHandle::Get()),
+      false);
 }
 
 void FakePermissionBrokerClient::RequestTcpPortAccess(

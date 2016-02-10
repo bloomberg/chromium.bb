@@ -34,6 +34,12 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   // An OpenPathCallback callback is run when an OpenPath request is completed.
   typedef base::Callback<void(dbus::FileDescriptor)> OpenPathCallback;
 
+  // An ErrorCallback callback is run when an error is returned by the
+  // permission broker.
+  typedef base::Callback<void(const std::string& error_name,
+                              const std::string& message)>
+      ErrorCallback;
+
   ~PermissionBrokerClient() override;
 
   static PermissionBrokerClient* Create();
@@ -46,9 +52,11 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
                                const ResultCallback& callback) = 0;
 
   // OpenPath requests that the permission broker open the device node
-  // identified by |path| and return the resulting file descriptor.
+  // identified by |path| and return the resulting file descriptor. One of
+  // |callback| or |error_callback| is called.
   virtual void OpenPath(const std::string& path,
-                        const OpenPathCallback& callback) = 0;
+                        const OpenPathCallback& callback,
+                        const ErrorCallback& error_callback) = 0;
 
   // Requests the |port| be opened on the firewall for incoming TCP/IP
   // connections received on |interface| (an empty string indicates all

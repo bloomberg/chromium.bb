@@ -97,6 +97,9 @@ class UsbDeviceImpl : public UsbDevice {
 #if defined(OS_CHROMEOS)
   void OnOpenRequestComplete(const OpenCallback& callback,
                              dbus::FileDescriptor fd);
+  void OnOpenRequestError(const OpenCallback& callback,
+                          const std::string& error_name,
+                          const std::string& error_message);
   void OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,
                                   const OpenCallback& callback);
 #endif
