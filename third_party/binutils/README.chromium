@@ -44,7 +44,9 @@ To upgrade binutils, use the following steps:
  * Remove any patches which have been merged upstream from build-all.sh
  * Update this README.chromium file
  * Run build-all.sh
- * Run upload.sh
+ * Run upload.sh. Note: you will need write access to
+   gs://chromium-binutils bucket on Google Cloud Storage. To get the
+   access, subscribe to the internal chrome-team mailing list.
  * Wait for goma to have new binutils deployed (see http://go/ma).
     Please notify {ukai,yyanagisawa,shinyak}@chromium.org and await
     confirmation.
