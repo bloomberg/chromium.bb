@@ -37,6 +37,7 @@ shared_library("chrome_watcher") {
     "//build/config/sanitizers:deps",
     "//chrome/installer/util:with_no_strings",
     "//components/browser_watcher",
+    "//components/crash/content/app",
     "//third_party/kasko",
   ]
   ldflags = [ "/DEF:" + rebase_path("chrome_watcher.def", root_build_dir) ]

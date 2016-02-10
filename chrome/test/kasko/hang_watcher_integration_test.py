@@ -14,13 +14,20 @@ of Chrome with Chrome branding, and attempting to use it with anything else will
 most likely lead to constant failures.
 
 Typical usage (assuming in root 'src' directory):
-
-- generate project files with the following GYP variables:
-    branding=Chrome kasko=1 kasko_hang_reports=1
+- generate project files with the following build variables:
+    GYP variables:
+      branding=Chrome kasko=1 kasko_hang_reports=1
+    GN variables:
+      target_cpu = "x86"
+      is_debug = false
+      is_chrome_branded = true
+      enable_kasko = true
+      enable_kasko_hang_reports = true
 - build the release Chrome binaries:
-    ninja -C out\Release chrome.exe chromedriver.exe
+    ninja -C {build_dir} chrome.exe chromedriver.exe
 - run the test:
     python chrome/test/kasko/hang_watcher_integration_test.py
+      --chrome={build_dir}\chrome.exe
 """
 
 import logging
