@@ -43,7 +43,7 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     return True
 
   def SetupBenchmarkDefaultTraceRerunOptions(self, tbm_options):
-    tbm_options.SetTimelineBasedMetrics((
+    tbm_options.SetLegacyTimelineBasedMetrics((
         memory_timeline.MemoryTimelineMetric(),
     ))
 

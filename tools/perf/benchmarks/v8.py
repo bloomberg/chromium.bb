@@ -85,7 +85,7 @@ class V8InfiniteScroll(perf_benchmark.PerfBenchmark):
     for category in categories:
       category_filter.AddIncludedCategory(category)
     options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetrics([v8_gc_latency.V8GCLatency(),
+    options.SetLegacyTimelineBasedMetrics([v8_gc_latency.V8GCLatency(),
                                      smoothness.SmoothnessMetric(),
                                      memory_timeline.MemoryTimelineMetric()])
     return options

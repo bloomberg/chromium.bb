@@ -24,7 +24,7 @@ class _StartupPerfBenchmark(perf_benchmark.PerfBenchmark):
         filter_string='startup,blink.user_timing')
     options = timeline_based_measurement.Options(
         overhead_level=startup_category_filter)
-    options.SetTimelineBasedMetrics(
+    options.SetLegacyTimelineBasedMetrics(
         [startup.StartupTimelineMetric()])
     return options
 

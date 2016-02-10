@@ -65,7 +65,7 @@ class WebrtcRendering(perf_benchmark.PerfBenchmark):
     category_filter = tracing_category_filter.TracingCategoryFilter(
         filter_string='webrtc,webkit.console,blink.console')
     options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetrics(
+    options.SetLegacyTimelineBasedMetrics(
         [webrtc_rendering_timeline.WebRtcRenderingTimelineMetric()])
     return options
 

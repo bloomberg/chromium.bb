@@ -24,7 +24,7 @@ class _GPUTimes(perf_benchmark.PerfBenchmark):
     cat_filter = tracing_category_filter.TracingCategoryFilter(cat_string)
 
     options = timeline_based_measurement.Options(overhead_level=cat_filter)
-    options.SetTimelineBasedMetrics([gpu_timeline.GPUTimelineMetric()])
+    options.SetLegacyTimelineBasedMetrics([gpu_timeline.GPUTimelineMetric()])
     return options
 
 

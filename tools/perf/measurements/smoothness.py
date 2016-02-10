@@ -50,7 +50,7 @@ class Smoothness(page_test.PageTest):
         ','.join(custom_categories))
 
     options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetrics([smoothness.SmoothnessMetric()])
+    options.SetLegacyTimelineBasedMetrics([smoothness.SmoothnessMetric()])
     for delay in page.GetSyntheticDelayCategories():
       options.category_filter.AddSyntheticDelay(delay)
     self._tbm = timeline_based_measurement.TimelineBasedMeasurement(

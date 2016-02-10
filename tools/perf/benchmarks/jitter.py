@@ -26,7 +26,8 @@ class Jitter(perf_benchmark.PerfBenchmark):
     cat_filter.AddIncludedCategory(TIMELINE_REQUIRED_CATEGORY)
     options = timeline_based_measurement.Options(
         overhead_level=cat_filter)
-    options.SetTimelineBasedMetrics([jitter_timeline.JitterTimelineMetric()])
+    options.SetLegacyTimelineBasedMetrics(
+        [jitter_timeline.JitterTimelineMetric()])
     return options
 
   @classmethod
