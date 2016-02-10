@@ -9,6 +9,9 @@ config("libwebp_config") {
   include_dirs = [ "." ]
 }
 
+set_opt_level =
+    !is_debug && is_posix && (current_cpu == "arm" || current_cpu == "arm64")
+
 use_dsp_neon =
     current_cpu == "arm64" || (current_cpu == "arm" && arm_version >= 7 &&
                                (arm_use_neon || arm_optionally_use_neon))
@@ -29,6 +32,10 @@ source_set("libwebp_dec") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  if (set_opt_level) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 
   deps = [
     ":libwebp_dsp",
@@ -88,6 +95,10 @@ source_set("libwebp_dsp") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  if (set_opt_level) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 
   all_dependent_configs = [ ":libwebp_config" ]
   deps = [
@@ -118,6 +129,10 @@ source_set("libwebp_dsp_sse41") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  if (set_opt_level) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 
   all_dependent_configs = [ ":libwebp_config" ]
   if (!is_msan) {
@@ -144,6 +159,10 @@ source_set("libwebp_dsp_sse2") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  if (set_opt_level) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 
   all_dependent_configs = [ ":libwebp_config" ]
   if (!is_msan) {
@@ -166,6 +185,11 @@ if (use_dsp_neon) {
     ]
 
     include_dirs = [ "." ]
+
+    if (set_opt_level) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
 
     if (current_cpu == "arm") {
       # behavior similar to *.c.neon in an Android.mk
@@ -210,6 +234,10 @@ source_set("libwebp_enc") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  if (set_opt_level) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 
   all_dependent_configs = [ ":libwebp_config" ]
 
@@ -242,6 +270,10 @@ source_set("libwebp_utils") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  if (set_opt_level) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 
   all_dependent_configs = [ ":libwebp_config" ]
 

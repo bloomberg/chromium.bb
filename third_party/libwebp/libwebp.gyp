@@ -3,6 +3,14 @@
 # found in the LICENSE file.
 
 {
+  'target_defaults': {
+    'conditions': [
+      ['os_posix==1 and (target_arch=="arm" or target_arch=="arm64")', {
+        'cflags!': [ '-Os' ],
+        'cflags': [ '-O2' ],
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'libwebp_dec',
