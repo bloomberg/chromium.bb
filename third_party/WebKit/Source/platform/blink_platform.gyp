@@ -146,6 +146,7 @@
       '<(libjpeg_gyp_path):libjpeg',
     ],
     'export_dependent_settings': [
+      'platform_generated.gyp:make_platform_generated',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/cc/cc.gyp:cc',
       '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',

@@ -223,6 +223,7 @@ component("platform") {
   ]
 
   public_deps = [
+    ":make_platform_generated",
     "//base",
     "//cc",
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -238,7 +239,6 @@ component("platform") {
     "//v8",
   ]
   deps = [
-    ":make_platform_generated",
     "//third_party/WebKit/Source/platform/heap",
     "//third_party/harfbuzz-ng",
     "//third_party/icu",
