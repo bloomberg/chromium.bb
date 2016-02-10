@@ -27,8 +27,6 @@
         'out_newlib32_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-x86-32-nonsfi/>(nlib_target)',
         'out_pnacl_newlib_arm_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-arm-nonsfi/>(nlib_target)',
         'out_newlib_arm_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-arm-nonsfi/>(nlib_target)',
-        'build_glibc': 0,
-        'build_newlib': 0,
         'build_pnacl_newlib': 1,
         'pnacl_native_biased': 1,
         'enable_x86_32': 1,
@@ -65,18 +63,7 @@
         # pnacl_support_extension rename this to the canonical name when
         # copying to the final target directory.
         'nlib_target': 'libpnacl_irt_shim_browser.a',
-        'out_pnacl_newlib_arm': '>(tc_lib_dir_pnacl_translate)/lib-arm/>(nlib_target)',
-        'out_pnacl_newlib_x86_32': '>(tc_lib_dir_pnacl_translate)/lib-x86-32/>(nlib_target)',
-        'out_pnacl_newlib_x86_64': '>(tc_lib_dir_pnacl_translate)/lib-x86-64/>(nlib_target)',
-        'out_pnacl_newlib_mips': '>(tc_lib_dir_pnacl_translate)/lib-mips32/>(nlib_target)',
-        'build_glibc': 0,
-        'build_newlib': 0,
-        'build_pnacl_newlib': 1,
-        'pnacl_native_biased': 1,
-        'enable_x86_32': 1,
-        'enable_x86_64': 1,
-        'enable_arm': 1,
-        'enable_mips': 1,
+        'build_newlib': 1,
         'sources': [
           'shim_entry.c',
           'shim_ppapi.c',
