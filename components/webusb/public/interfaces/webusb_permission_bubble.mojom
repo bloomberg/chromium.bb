@@ -4,8 +4,8 @@
 
 module webusb;
 
-import "device/devices_app/usb/public/interfaces/device.mojom";
-import "device/devices_app/usb/public/interfaces/device_manager.mojom";
+import "device/usb/public/interfaces/device.mojom";
+import "device/usb/public/interfaces/device_manager.mojom";
 
 interface WebUsbPermissionBubble {
   // Get permission from user to use the device.

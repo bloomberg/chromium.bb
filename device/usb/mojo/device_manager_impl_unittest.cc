@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/devices_app/usb/device_manager_impl.h"
+#include "device/usb/mojo/device_manager_impl.h"
 
 #include <stddef.h>
 #include <set>
@@ -16,11 +16,11 @@
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/core/mock_device_client.h"
-#include "device/devices_app/usb/device_impl.h"
-#include "device/devices_app/usb/fake_permission_provider.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
+#include "device/usb/mojo/device_impl.h"
+#include "device/usb/mojo/fake_permission_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Invoke;

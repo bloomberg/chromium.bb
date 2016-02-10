@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_DEVICES_APP_USB_DEVICE_IMPL_H_
-#define DEVICE_DEVICES_APP_USB_DEVICE_IMPL_H_
+#ifndef DEVICE_USB_MOJO_DEVICE_IMPL_H_
+#define DEVICE_USB_MOJO_DEVICE_IMPL_H_
 
 #include <stdint.h>
 
@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "device/devices_app/usb/public/interfaces/device.mojom.h"
-#include "device/devices_app/usb/public/interfaces/permission_provider.mojom.h"
+#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/usb/public/interfaces/permission_provider.mojom.h"
 #include "device/usb/usb_device_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -110,4 +110,4 @@ class DeviceImpl : public Device {
 }  // namespace usb
 }  // namespace device
 
-#endif  // DEVICE_DEVICES_APP_USB_DEVICE_IMPL_H_
+#endif  // DEVICE_USB_MOJO_DEVICE_IMPL_H_

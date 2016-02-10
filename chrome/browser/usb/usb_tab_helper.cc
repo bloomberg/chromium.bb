@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/usb/web_usb_permission_bubble.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
-#include "device/devices_app/usb/device_manager_impl.h"
+#include "device/usb/mojo/device_manager_impl.h"
 
 using content::RenderFrameHost;
 using content::WebContents;

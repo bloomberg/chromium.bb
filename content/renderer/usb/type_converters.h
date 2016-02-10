@@ -4,8 +4,8 @@
 
 #include "mojo/public/cpp/bindings/type_converter.h"
 
-#include "device/devices_app/usb/public/interfaces/device.mojom.h"
-#include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
+#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDevice.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceFilter.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceInfo.h"

@@ -103,13 +103,13 @@ test("device_unittests") {
   # USB does not compile on iOS.
   if (!is_ios) {
     sources += [
-      "devices_app/usb/device_impl_unittest.cc",
-      "devices_app/usb/device_manager_impl_unittest.cc",
-      "devices_app/usb/fake_permission_provider.cc",
-      "devices_app/usb/fake_permission_provider.h",
       "test/test_device_client.cc",
       "test/test_device_client.h",
       "test/usb_test_gadget_impl.cc",
+      "usb/mojo/device_impl_unittest.cc",
+      "usb/mojo/device_manager_impl_unittest.cc",
+      "usb/mojo/fake_permission_provider.cc",
+      "usb/mojo/fake_permission_provider.h",
       "usb/usb_descriptors_unittest.cc",
       "usb/usb_device_filter_unittest.cc",
       "usb/usb_device_handle_unittest.cc",
@@ -120,10 +120,10 @@ test("device_unittests") {
     deps += [
       "//device/core",
       "//device/core:mocks",
-      "//device/devices_app:lib",
-      "//device/devices_app/usb/public/interfaces",
       "//device/usb",
       "//device/usb:mocks",
+      "//device/usb/mojo",
+      "//device/usb/public/interfaces",
     ]
   }
 

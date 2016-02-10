@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_USB_DEVICE_MANAGER_IMPL_H_
-#define DEVICE_USB_DEVICE_MANAGER_IMPL_H_
+#ifndef DEVICE_USB_MOJO_DEVICE_MANAGER_IMPL_H_
+#define DEVICE_USB_MOJO_DEVICE_MANAGER_IMPL_H_
 
 #include <queue>
 #include <set>
@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
-#include "device/devices_app/usb/public/interfaces/permission_provider.mojom.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
+#include "device/usb/public/interfaces/permission_provider.mojom.h"
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -108,4 +108,4 @@ class DeviceManagerImpl : public DeviceManager,
 }  // namespace usb
 }  // namespace device
 
-#endif  // DEVICE_USB_DEVICE_MANAGER_IMPL_H_
+#endif  // DEVICE_USB_MOJO_DEVICE_MANAGER_IMPL_H_

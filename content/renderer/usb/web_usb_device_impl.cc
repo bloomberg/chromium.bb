@@ -12,7 +12,6 @@
 #include "content/child/mojo/type_converters.h"
 #include "content/child/scoped_web_callbacks.h"
 #include "content/renderer/usb/type_converters.h"
-#include "device/devices_app/public/cpp/constants.h"
 #include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "third_party/WebKit/public/platform/WebVector.h"

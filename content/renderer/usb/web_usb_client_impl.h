@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/webusb/public/interfaces/webusb_permission_bubble.mojom.h"
-#include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBClient.h"
 
 namespace content {

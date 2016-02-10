@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/devices_app/usb/device_manager_impl.h"
+#include "device/usb/mojo/device_manager_impl.h"
 
 #include <stddef.h>
 #include <utility>
@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "device/core/device_client.h"
-#include "device/devices_app/usb/device_impl.h"
-#include "device/devices_app/usb/public/interfaces/device.mojom.h"
-#include "device/devices_app/usb/type_converters.h"
+#include "device/usb/mojo/device_impl.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_service.h"

@@ -1,4 +1,4 @@
 include_rules = [
   "+components/webusb/public/interfaces",
-  "+device/devices_app/usb/public",
+  "+device/usb/public",
 ]

@@ -14,7 +14,7 @@
     '../components/url_formatter/url_formatter.gyp:url_formatter',
     '../device/battery/battery.gyp:device_battery',
     '../device/battery/battery.gyp:device_battery_mojo_bindings',
-    '../device/devices_app/devices_app.gyp:device_usb_mojo_bindings_lib',
+    '../device/usb/usb.gyp:device_usb_mojo_bindings',
     '../device/vibration/vibration.gyp:device_vibration',
     '../device/vibration/vibration.gyp:device_vibration_mojo_bindings',
     '../gin/gin.gyp:gin',

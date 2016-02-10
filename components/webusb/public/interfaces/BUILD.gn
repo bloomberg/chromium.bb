@@ -10,6 +10,6 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//device/devices_app/usb/public/interfaces",
+    "//device/usb/public/interfaces",
   ]
 }

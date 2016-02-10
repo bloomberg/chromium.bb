@@ -151,7 +151,7 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "gin/v8_initializer.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "net/base/mime_util.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/devices_app/usb/device_impl.h"
+#include "device/usb/mojo/device_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -20,9 +20,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "device/devices_app/usb/fake_permission_provider.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
+#include "device/usb/mojo/fake_permission_provider.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -337,8 +337,8 @@ class USBDeviceImplTest : public testing::Test {
     const std::vector<uint8_t>& bytes = mock_outbound_data_.front();
     ASSERT_EQ(bytes.size(), length);
     for (size_t i = 0; i < length; ++i) {
-      EXPECT_EQ(bytes[i], buffer->data()[i])
-          << "Contents differ at index: " << i;
+      EXPECT_EQ(bytes[i], buffer->data()[i]) << "Contents differ at index: "
+                                             << i;
     }
     mock_outbound_data_.pop();
     callback.Run(USB_TRANSFER_COMPLETED, buffer, length);

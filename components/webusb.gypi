@@ -30,7 +30,7 @@
           'webusb/public/interfaces/webusb_permission_bubble.mojom',
         ],
         'dependencies': [
-          '../device/devices_app/devices_app.gyp:device_usb_mojo_bindings',
+          '../device/usb/usb.gyp:device_usb_mojo_bindings',
         ],
       },
       'includes': [
@@ -42,7 +42,6 @@
       'type': 'static_library',
       'dependencies': [
         'components_webusb_mojo_bindings',
-        '../device/devices_app/devices_app.gyp:device_usb_mojo_bindings_lib',
       ],
     },
   ],

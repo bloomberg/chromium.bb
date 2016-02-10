@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_DEVICES_APP_USB_TYPE_CONVERTERS_H_
-#define DEVICE_DEVICES_APP_USB_TYPE_CONVERTERS_H_
+#ifndef DEVICE_USB_MOJO_TYPE_CONVERTERS_H_
+#define DEVICE_USB_MOJO_TYPE_CONVERTERS_H_
 
 #include <vector>
 
-#include "device/devices_app/usb/public/interfaces/device.mojom.h"
-#include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
+#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_device_handle.h"

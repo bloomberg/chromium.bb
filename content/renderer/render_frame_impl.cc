@@ -209,7 +209,6 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #else
 #include "cc/blink/context_provider_web_context.h"
-#include "device/devices_app/public/cpp/constants.h"
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)

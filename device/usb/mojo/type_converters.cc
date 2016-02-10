@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/devices_app/usb/type_converters.h"
+#include "device/usb/mojo/type_converters.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -185,8 +185,10 @@ TypeConverter<mojo::Array<device::usb::InterfaceInfoPtr>,
       // This is the first time we're seeing an alternate with this interface
       // number, so add a new InterfaceInfo to the array and map the number.
       auto info = device::usb::InterfaceInfo::New();
-      iter = interface_map.insert(std::make_pair(interfaces[i].interface_number,
-                                                 info.get())).first;
+      iter = interface_map
+                 .insert(
+                     std::make_pair(interfaces[i].interface_number, info.get()))
+                 .first;
       infos.push_back(std::move(info));
     }
     iter->second->alternates.push_back(std::move(alternate));
