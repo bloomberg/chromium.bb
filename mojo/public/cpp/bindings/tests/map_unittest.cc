@@ -92,8 +92,8 @@ TEST_F(MapTest, TestIndexOperatorMoveOnly) {
   for (size_t i = 0; i < kStringIntDataSize; ++i) {
     auto it = map.find(kStringIntData[i].string_data);
     ASSERT_TRUE(it != map.end());
-    ASSERT_EQ(1u, it.GetValue().size());
-    EXPECT_EQ(kStringIntData[i].int_data, it.GetValue()[0]);
+    ASSERT_EQ(1u, it->second.size());
+    EXPECT_EQ(kStringIntData[i].int_data, it->second[0]);
   }
 }
 
@@ -266,8 +266,8 @@ TEST_F(MapTest, MapArrayClone) {
   Map<String, Array<String>> m2 = m.Clone();
 
   for (auto it = m2.begin(); it != m2.end(); ++it) {
-    ASSERT_EQ(1u, it.GetValue().size());
-    EXPECT_EQ(it.GetKey(), it.GetValue().at(0));
+    ASSERT_EQ(1u, it->second.size());
+    EXPECT_EQ(it->first, it->second.at(0));
   }
 }
 
@@ -314,6 +314,41 @@ TEST_F(MapTest, ArrayOfMap) {
     ASSERT_FALSE(deserialized_array[0].at("hello world")[0]);
     ASSERT_TRUE(deserialized_array[0].at("hello world")[1]);
   }
+}
+
+TEST_F(MapTest, MoveFromAndToSTLMap_Copyable) {
+  std::map<int32_t, CopyableType> map1;
+  map1.insert(std::make_pair(123, CopyableType()));
+  map1[123].ResetCopied();
+
+  Map<int32_t, CopyableType> mojo_map(std::move(map1));
+  ASSERT_EQ(1u, mojo_map.size());
+  ASSERT_NE(mojo_map.end(), mojo_map.find(123));
+  ASSERT_FALSE(mojo_map[123].copied());
+
+  std::map<int32_t, CopyableType> map2(mojo_map.PassStorage());
+  ASSERT_EQ(1u, map2.size());
+  ASSERT_NE(map2.end(), map2.find(123));
+  ASSERT_FALSE(map2[123].copied());
+
+  ASSERT_EQ(0u, mojo_map.size());
+  ASSERT_TRUE(mojo_map.is_null());
+}
+
+TEST_F(MapTest, MoveFromAndToSTLMap_MoveOnly) {
+  std::map<int32_t, MoveOnlyType> map1;
+  map1.insert(std::make_pair(123, MoveOnlyType()));
+
+  Map<int32_t, MoveOnlyType> mojo_map(std::move(map1));
+  ASSERT_EQ(1u, mojo_map.size());
+  ASSERT_NE(mojo_map.end(), mojo_map.find(123));
+
+  std::map<int32_t, MoveOnlyType> map2(mojo_map.PassStorage());
+  ASSERT_EQ(1u, map2.size());
+  ASSERT_NE(map2.end(), map2.find(123));
+
+  ASSERT_EQ(0u, mojo_map.size());
+  ASSERT_TRUE(mojo_map.is_null());
 }
 
 }  // namespace

@@ -29,7 +29,7 @@ class ClipboardStandaloneImpl::ClipboardData {
     Array<String> types(data_types_.size());
     int i = 0;
     for (auto it = data_types_.begin(); it != data_types_.end(); ++it, ++i)
-      types[i] = it.GetKey();
+      types[i] = it->first;
 
     return types;
   }
@@ -41,7 +41,7 @@ class ClipboardStandaloneImpl::ClipboardData {
   void GetData(const String& mime_type, Array<uint8_t>* data) const {
     auto it = data_types_.find(mime_type);
     if (it != data_types_.end())
-      *data = it.GetValue().Clone();
+      *data = it->second.Clone();
   }
 
  private:

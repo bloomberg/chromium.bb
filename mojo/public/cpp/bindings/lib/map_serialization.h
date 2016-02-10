@@ -120,10 +120,9 @@ inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input) {
   size_t value_data_size = 0;
   for (auto it = input.begin(); it != input.end(); ++it) {
     key_data_size +=
-        internal::MapSerializer<MapKey, DataKey>::GetItemSize(it.GetKey());
+        internal::MapSerializer<MapKey, DataKey>::GetItemSize(it->first);
     value_data_size +=
-        internal::MapSerializer<MapValue, DataValue>::GetItemSize(
-            it.GetValue());
+        internal::MapSerializer<MapValue, DataValue>::GetItemSize(it->second);
   }
 
   return struct_overhead + key_base_size + key_data_size + value_base_size +
