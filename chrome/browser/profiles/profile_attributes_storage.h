@@ -7,12 +7,22 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include <string>
+#include <vector>
 
+#include "base/macros.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
+
+namespace base {
+class FilePath;
+}  // namespace base
 class ProfileAttributesEntry;
 
 class ProfileAttributesStorage {
  public:
+  using Observer = ProfileInfoCacheObserver;
+
   ProfileAttributesStorage() {}
   ~ProfileAttributesStorage() {}
 
@@ -46,6 +56,10 @@ class ProfileAttributesStorage {
   // Returns the count of known profiles.
   virtual size_t GetNumberOfProfiles() const = 0;
 
+  virtual void AddObserver(ProfileAttributesStorage::Observer* observer) = 0;
+  virtual void RemoveObserver(ProfileAttributesStorage::Observer* observer) = 0;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ProfileAttributesStorage);
 };
 

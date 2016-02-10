@@ -63,6 +63,8 @@ using content::BrowserThread;
 using content::PlatformNotificationContext;
 using message_center::NotifierId;
 
+class ProfileAttributesEntry;
+
 namespace {
 
 // Invalid id for a renderer process. Used in cases where we need to check for
@@ -163,11 +165,11 @@ void PlatformNotificationServiceImpl::ProcessPersistentNotificationOperation(
   // if it already exist. We therefore check first that the profile is there
   // and fail early otherwise.
   const base::FilePath profile_path =
-      profile_manager->GetProfileInfoCache().GetUserDataDir().AppendASCII(
-          profile_id);
+      profile_manager->user_data_dir().AppendASCII(profile_id);
 
-  if (profile_manager->GetProfileInfoCache().GetIndexOfProfileWithPath(
-          profile_path) == std::string::npos) {
+  ProfileAttributesEntry* entry = nullptr;
+  if (!profile_manager->GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(profile_path, &entry)) {
     LOG(ERROR) << "Loading a path that does not exist";
     return;
   }

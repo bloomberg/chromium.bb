@@ -16,7 +16,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_details.h"
@@ -30,7 +30,6 @@
 #endif
 
 class Profile;
-class ProfileInfoCache;
 
 namespace base {
 class CancelableTaskTracker;
@@ -49,14 +48,13 @@ class ProfileNotifierGroup;
 class MessageCenterSettingsController
     : public message_center::NotifierSettingsProvider,
       public content::NotificationObserver,
-      public ProfileInfoCacheObserver,
+      public ProfileAttributesStorage::Observer,
 #if defined(OS_CHROMEOS)
       public user_manager::UserManager::UserSessionStateObserver,
 #endif
       public extensions::AppIconLoader::Delegate {
  public:
-  explicit MessageCenterSettingsController(
-      ProfileInfoCache* profile_info_cache);
+  explicit MessageCenterSettingsController(ProfileAttributesStorage& storage);
   ~MessageCenterSettingsController() override;
 
   // Overridden from message_center::NotifierSettingsProvider.
@@ -94,7 +92,7 @@ class MessageCenterSettingsController
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ProfileInfoCacheObserver:
+  // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
       const base::string16& profile_name) override;
@@ -128,7 +126,8 @@ class MessageCenterSettingsController
   std::map<base::string16, ContentSettingsPattern> patterns_;
 
   // The list of all configurable notifier groups. This is each profile that is
-  // loaded (and in the ProfileInfoCache - so no incognito profiles go here).
+  // loaded (and in the ProfileAttributesStorage - so no incognito profiles go
+  // here).
   std::vector<scoped_ptr<message_center::ProfileNotifierGroup>>
       notifier_groups_;
 
@@ -136,7 +135,7 @@ class MessageCenterSettingsController
 
   content::NotificationRegistrar registrar_;
 
-  ProfileInfoCache* profile_info_cache_;
+  ProfileAttributesStorage& storage_;
 
   base::WeakPtrFactory<MessageCenterSettingsController> weak_factory_;
 

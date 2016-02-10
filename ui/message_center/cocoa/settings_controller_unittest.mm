@@ -37,8 +37,7 @@ NotifierGroup* NewGroup(const std::string& name,
                         const std::string& login_info) {
   return new NotifierGroup(gfx::Image(),
                            base::UTF8ToUTF16(name),
-                           base::UTF8ToUTF16(login_info),
-                           true);
+                           base::UTF8ToUTF16(login_info));
 }
 
 Notifier* NewNotifier(const std::string& id,

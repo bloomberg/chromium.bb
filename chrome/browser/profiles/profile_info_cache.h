@@ -182,8 +182,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
                              const base::FilePath& image_path,
                              const base::FilePath& profile_path);
 
-  void AddObserver(ProfileInfoCacheObserver* obs);
-  void RemoveObserver(ProfileInfoCacheObserver* obs);
+  void AddObserver(ProfileInfoCacheObserver* obs) override;
+  void RemoveObserver(ProfileInfoCacheObserver* obs) override;
 
   void set_disable_avatar_download_for_testing(
       bool disable_avatar_download_for_testing) {
