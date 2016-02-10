@@ -449,7 +449,7 @@
   },
   "setup_unittests": {
     "label": "//chrome/installer/setup:setup_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "skia_unittests": {
     "label": "//skia:skia_unittests",
