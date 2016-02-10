@@ -265,6 +265,11 @@ static bool borderOrPaddingLogicalWidthChanged(const ComputedStyle& oldStyle, co
 
 void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
+    // Horizontal writing mode definition is updated in LayoutBoxModelObject::updateFromStyle,
+    // (as part of the LayoutBoxModelObject::styleDidChange call below). So, we can safely cache the horizontal
+    // writing mode value before style change here.
+    bool oldHorizontalWritingMode = isHorizontalWritingMode();
+
     LayoutBox::styleDidChange(diff, oldStyle);
 
     if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow()) {
@@ -285,6 +290,21 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
             // See styleWillChange() for other cases.
             if (LayoutBlock* cb = containingBlock())
                 cb->removePositionedObjects(this, NewContainingBlock);
+        }
+
+        // Changing the writingMode() may change isOrthogonalWritingModeRoot()
+        // of children. Make sure all children are marked/unmarked as orthogonal
+        // writing-mode roots.
+        bool newHorizontalWritingMode = isHorizontalWritingMode();
+        if (oldHorizontalWritingMode != newHorizontalWritingMode) {
+            for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
+                if (!child->isBox())
+                    continue;
+                if (newHorizontalWritingMode != child->isHorizontalWritingMode())
+                    toLayoutBox(child)->markOrthogonalWritingModeRoot();
+                else
+                    toLayoutBox(child)->unmarkOrthogonalWritingModeRoot();
+            }
         }
     }
 
