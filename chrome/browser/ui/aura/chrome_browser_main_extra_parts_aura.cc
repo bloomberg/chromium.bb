@@ -61,23 +61,21 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
         window->GetNativeWindowProperty(Profile::kProfileKey));
   }
 
-  if (profile) {
-    ThemeService* ts = ThemeServiceFactory::GetForProfile(profile);
-    // If using the system (GTK) theme, don't use an Aura NativeTheme at all.
-    if (!ts->UsingSystemTheme()) {
-      // Use a dark theme for incognito browser windows that aren't
-      // custom-themed. Otherwise, normal Aura theme.
-      if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE &&
-          ts->UsingDefaultTheme() &&
-          BrowserView::GetBrowserViewForNativeWindow(window)) {
-        return ui::NativeThemeDarkAura::instance();
-      }
+  // If using the system (GTK) theme, don't use an Aura NativeTheme at all.
+  // NB: ThemeService::UsingSystemTheme() might lag behind this pref. See
+  // http://crbug.com/585522
+  if (!profile || profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme))
+    return nullptr;
 
-      return ui::NativeThemeAura::instance();
-    }
+  // Use a dark theme for incognito browser windows that aren't
+  // custom-themed. Otherwise, normal Aura theme.
+  if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE &&
+      ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme() &&
+      BrowserView::GetBrowserViewForNativeWindow(window)) {
+    return ui::NativeThemeDarkAura::instance();
   }
 
-  return nullptr;
+  return ui::NativeThemeAura::instance();
 }
 #endif
 
