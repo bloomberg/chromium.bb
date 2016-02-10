@@ -60,6 +60,13 @@ TEST(EventTest, GetCharacter) {
   KeyEvent keyev4(event);
   EXPECT_EQ(13, keyev4.GetCharacter());
 #endif
+
+  // Check if expected Unicode character was returned for a key combination
+  // contains Control.
+  // e.g. Control+Shift+2 produces U+200C on "Persian" keyboard.
+  // http://crbug.com/582453
+  KeyEvent keyev5(0x200C, VKEY_UNKNOWN, EF_CONTROL_DOWN | EF_SHIFT_DOWN);
+  EXPECT_EQ(0x200C, keyev5.GetCharacter());
 }
 
 TEST(EventTest, ClickCount) {
@@ -201,60 +208,60 @@ TEST(EventTest, KeyEvent) {
     { VKEY_Z, EF_CONTROL_DOWN, '\x1A' },
     { VKEY_Z, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x1A' },
 
-    { VKEY_2, EF_CONTROL_DOWN, '\0' },
+    { VKEY_2, EF_CONTROL_DOWN, '2' },
     { VKEY_2, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0' },
-    { VKEY_6, EF_CONTROL_DOWN, '\0' },
+    { VKEY_6, EF_CONTROL_DOWN, '6' },
     { VKEY_6, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x1E' },
-    { VKEY_OEM_MINUS, EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_MINUS, EF_CONTROL_DOWN, '-' },
     { VKEY_OEM_MINUS, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x1F' },
     { VKEY_OEM_4, EF_CONTROL_DOWN, '\x1B' },
-    { VKEY_OEM_4, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_4, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x7B' },
     { VKEY_OEM_5, EF_CONTROL_DOWN, '\x1C' },
-    { VKEY_OEM_5, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_5, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x7C' },
     { VKEY_OEM_6, EF_CONTROL_DOWN, '\x1D' },
-    { VKEY_OEM_6, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_6, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x7D' },
     { VKEY_RETURN, EF_CONTROL_DOWN, '\x0A' },
 
     { VKEY_0, 0, '0' },
     { VKEY_0, EF_SHIFT_DOWN, ')' },
     { VKEY_0, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON, ')' },
-    { VKEY_0, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0' },
+    { VKEY_0, EF_SHIFT_DOWN | EF_CONTROL_DOWN, ')' },
 
     { VKEY_9, 0, '9' },
     { VKEY_9, EF_SHIFT_DOWN, '(' },
     { VKEY_9, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON, '(' },
-    { VKEY_9, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0' },
+    { VKEY_9, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '(' },
 
-    { VKEY_NUMPAD0, EF_CONTROL_DOWN, '\0' },
+    { VKEY_NUMPAD0, EF_CONTROL_DOWN, '0' },
     { VKEY_NUMPAD0, EF_SHIFT_DOWN, '0' },
 
-    { VKEY_NUMPAD9, EF_CONTROL_DOWN, '\0' },
+    { VKEY_NUMPAD9, EF_CONTROL_DOWN, '9' },
     { VKEY_NUMPAD9, EF_SHIFT_DOWN, '9' },
 
     { VKEY_TAB, EF_NONE, '\t' },
     { VKEY_TAB, EF_CONTROL_DOWN, '\t' },
     { VKEY_TAB, EF_SHIFT_DOWN, '\t' },
 
-    { VKEY_MULTIPLY, EF_CONTROL_DOWN, '\0' },
+    { VKEY_MULTIPLY, EF_CONTROL_DOWN, '*' },
     { VKEY_MULTIPLY, EF_SHIFT_DOWN, '*' },
-    { VKEY_ADD, EF_CONTROL_DOWN, '\0' },
+    { VKEY_ADD, EF_CONTROL_DOWN, '+' },
     { VKEY_ADD, EF_SHIFT_DOWN, '+' },
-    { VKEY_SUBTRACT, EF_CONTROL_DOWN, '\0' },
+    { VKEY_SUBTRACT, EF_CONTROL_DOWN, '-' },
     { VKEY_SUBTRACT, EF_SHIFT_DOWN, '-' },
-    { VKEY_DECIMAL, EF_CONTROL_DOWN, '\0' },
+    { VKEY_DECIMAL, EF_CONTROL_DOWN, '.' },
     { VKEY_DECIMAL, EF_SHIFT_DOWN, '.' },
-    { VKEY_DIVIDE, EF_CONTROL_DOWN, '\0' },
+    { VKEY_DIVIDE, EF_CONTROL_DOWN, '/' },
     { VKEY_DIVIDE, EF_SHIFT_DOWN, '/' },
 
-    { VKEY_OEM_1, EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_1, EF_CONTROL_DOWN, ';' },
     { VKEY_OEM_1, EF_SHIFT_DOWN, ':' },
-    { VKEY_OEM_PLUS, EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_PLUS, EF_CONTROL_DOWN, '=' },
     { VKEY_OEM_PLUS, EF_SHIFT_DOWN, '+' },
-    { VKEY_OEM_COMMA, EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_COMMA, EF_CONTROL_DOWN, ',' },
     { VKEY_OEM_COMMA, EF_SHIFT_DOWN, '<' },
-    { VKEY_OEM_PERIOD, EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_PERIOD, EF_CONTROL_DOWN, '.' },
     { VKEY_OEM_PERIOD, EF_SHIFT_DOWN, '>' },
-    { VKEY_OEM_3, EF_CONTROL_DOWN, '\0' },
+    { VKEY_OEM_3, EF_CONTROL_DOWN, '\x0' },
     { VKEY_OEM_3, EF_SHIFT_DOWN, '~' },
   };
 

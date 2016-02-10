@@ -831,10 +831,6 @@ base::char16 KeyEvent::GetCharacter() const {
         return ucs2_character & 0x1F;
       if (ucs2_character == '\r')
         return '\n';
-      // Transitionally, if key_ contains another control character, return it.
-      if (ucs2_character >= 0 && ucs2_character <= 0x1F)
-        return ucs2_character;
-      return 0;
     }
     return ucs2_character;
   }
