@@ -160,6 +160,10 @@ def main():
                       action='store_true',
                       help='Clear HTTP cache before start,' +
                       'save cache before exit.')
+  parser.add_argument('--wpr-archive', default=None, type=str,
+                      help='Web page replay archive to load job\'s urls from.')
+  parser.add_argument('--wpr-record', default=False, action='store_true',
+                      help='Record web page replay archive.')
   args = parser.parse_args()
 
   try:
@@ -171,21 +175,26 @@ def main():
   job_urls = _ReadUrlsFromJobDescription(args.job)
   device = device_utils.DeviceUtils.HealthyDevices()[0]
 
-  pages_loaded = 0
-  for iteration in xrange(args.repeat):
-    for url in job_urls:
-      with device_setup.DeviceConnection(device) as connection:
-        if iteration == 0 and pages_loaded == 0 and args.save_cache:
-          connection.ClearCache()
-        page_track.PageTrack(connection)
-        tracing_track = tracing.TracingTrack(connection,
-            categories='blink,cc,netlog,renderer.scheduler,toplevel,v8')
-        connection.SetUpMonitoring()
-        connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
-        connection.StartMonitoring()
-        pages_loaded += 1
-        _SaveChromeTrace(tracing_track.ToJsonDict(), args.output,
-            str(pages_loaded))
+  with device_setup.WprHost(device,
+                            args.wpr_archive,
+                            args.wpr_record) as additional_flags:
+    pages_loaded = 0
+    for iteration in xrange(args.repeat):
+      for url in job_urls:
+        with device_setup.DeviceConnection(
+            device=device,
+            additional_flags=additional_flags) as connection:
+          if iteration == 0 and pages_loaded == 0 and args.save_cache:
+            connection.ClearCache()
+          page_track.PageTrack(connection)
+          tracing_track = tracing.TracingTrack(connection,
+              categories='blink,cc,netlog,renderer.scheduler,toplevel,v8')
+          connection.SetUpMonitoring()
+          connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
+          connection.StartMonitoring()
+          pages_loaded += 1
+          _SaveChromeTrace(tracing_track.ToJsonDict(), args.output,
+              str(pages_loaded))
 
   if args.save_cache:
     # Move Chrome to background to allow it to flush the index.

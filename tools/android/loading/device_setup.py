@@ -16,11 +16,18 @@ _SRC_DIR = os.path.abspath(os.path.join(
 
 sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
 from devil.android import device_utils
+from devil.android import forwarder
 from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 from pylib import constants
 from pylib import flag_changer
+
+sys.path.append(os.path.join(_SRC_DIR, 'tools', 'perf'))
+from chrome_telemetry_build import chromium_config
+
+sys.path.append(chromium_config.GetTelemetryDir())
+from telemetry.internal.util import webpagereplay
 
 import devtools_monitor
 
@@ -104,12 +111,58 @@ def _SetUpDevice(device, package_info):
 
 
 @contextlib.contextmanager
+def WprHost(device, wpr_archive_path, record=False):
+  """Launches web page replay host.
+
+  Args:
+    device: Android device.
+    wpr_archive_path: host sided WPR archive's path.
+    record: Enables or disables WPR archive recording.
+
+  Returns:
+    Additional flags list that may be used for chromium to load web page through
+    the running web page replay host.
+  """
+  assert device
+  if wpr_archive_path == None:
+    yield []
+    return
+
+  wpr_server_args = ['--use_closest_match']
+  if record:
+    wpr_server_args.append('--record')
+    if os.path.exists(wpr_archive_path):
+      os.remove(wpr_archive_path)
+  else:
+    assert os.path.exists(wpr_archive_path)
+  wpr_server = webpagereplay.ReplayServer(wpr_archive_path,
+      '127.0.0.1', 0, 0, None, wpr_server_args)
+  ports = wpr_server.StartServer()[:-1]
+  host_http_port = ports[0]
+  host_https_port = ports[1]
+
+  forwarder.Forwarder.Map([(0, host_http_port), (0, host_https_port)], device)
+  device_http_port = forwarder.Forwarder.DevicePortForHostPort(host_http_port)
+  device_https_port = forwarder.Forwarder.DevicePortForHostPort(host_https_port)
+
+  try:
+    yield [
+      '--host-resolver-rules="MAP * 127.0.0.1,EXCLUDE localhost"',
+      '--testing-fixed-http-port={}'.format(device_http_port),
+      '--testing-fixed-https-port={}'.format(device_https_port)]
+  finally:
+    forwarder.Forwarder.UnmapDevicePort(device_http_port, device)
+    forwarder.Forwarder.UnmapDevicePort(device_https_port, device)
+    wpr_server.StopServer()
+
+@contextlib.contextmanager
 def DeviceConnection(device,
                      package=DEFAULT_CHROME_PACKAGE,
                      hostname=DEVTOOLS_HOSTNAME,
                      port=DEVTOOLS_PORT,
                      host_exe='out/Release/chrome',
-                     host_profile_dir=None):
+                     host_profile_dir=None,
+                     additional_flags=None):
   """Context for starting recording on a device.
 
   Sets up and restores any device and tracing appropriately
@@ -122,6 +175,7 @@ def DeviceConnection(device,
     host_exe: The binary to execute when running on the host.
     host_profile_dir: The profile dir to use when running on the host (if None,
       a fresh profile dir will be used).
+    additional_flags: Additional chromium arguments.
 
   Returns:
     A context manager type which evaluates to a DevToolsConnection.
@@ -131,6 +185,8 @@ def DeviceConnection(device,
   new_flags = ['--disable-fre',
                '--enable-test-events',
                '--remote-debugging-port=%d' % port]
+  if additional_flags != None:
+    new_flags.extend(additional_flags)
   if device:
     _SetUpDevice(device, package_info)
   with FlagReplacer(device, command_line_path, new_flags):
