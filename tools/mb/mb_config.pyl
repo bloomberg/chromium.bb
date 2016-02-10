@@ -525,11 +525,8 @@
     },
     'chromium.mojo': {
       'Chromium Mojo Android': 'android_gn_release_bot',
-      'Chromium Mojo Linux Perf': 'gn_release_bot',
-      'Chromium Mojo Android Nexus5 Perf': 'android_gn_release_bot',
       'Chromium Mojo Windows': 'gn_release_bot_minimal_symbols_x86',
       'Chromium Mojo Linux': 'gn_release_bot',
-      'Chromium Mojo Windows 7 Perf': 'gn_release_bot_minimal_symbols_x86',
     },
     'chromium.perf': {
       'Android Builder': 'gn_official_goma_minimal_symbols_android',
