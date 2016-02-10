@@ -440,7 +440,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   scoped_ptr<EnsureMediaDirectoriesExists> ensure_media_directories_exists_;
 };
 
-#if !defined(DISABLE_NACL) && !defined(DISABLE_NACL_BROWSERTESTS)
+#if !defined(DISABLE_NACL)
 class MediaGalleriesPlatformAppPpapiTest
     : public MediaGalleriesPlatformAppBrowserTest {
  protected:

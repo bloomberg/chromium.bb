@@ -3953,7 +3953,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
 }
 
 // Can't run tests with NaCl plugins if built with DISABLE_NACL.
-#if !defined(DISABLE_NACL) && !defined(DISABLE_NACL_BROWSERTESTS)
+#if !defined(DISABLE_NACL)
 class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
  public:
   PrerenderBrowserTestWithNaCl() {}

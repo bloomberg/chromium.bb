@@ -64,9 +64,7 @@ using content::RenderViewHost;
 // Flaky on Mac ASAN:
 //    http://crbug.com/428670
 
-#if defined(DISABLE_NACL) || \
-    (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)) || \
-    defined(DISABLE_NACL_BROWSERTESTS)
+#if defined(DISABLE_NACL) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
 
 #define MAYBE_PPAPI_NACL(test_name) DISABLED_##test_name
 

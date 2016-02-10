@@ -176,7 +176,7 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 #endif
 
 // NaCl glibc toolchain is not available on MIPS
-#if defined(ARCH_CPU_MIPS_FAMILY) || defined(DISABLE_NACL_BROWSERTESTS)
+#if defined(ARCH_CPU_MIPS_FAMILY)
 #  define MAYBE_GLIBC(test_name) DISABLED_##test_name
 #else
 #  define MAYBE_GLIBC(test_name) test_name
@@ -197,8 +197,7 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 // ARM linux.
 // TODO(crbug.com/579804) -- tests disabled on Linux for flakiness.
 #if defined(OS_LINUX) && \
-    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL)) && \
-    !defined(DISABLE_NACL_BROWSERTESTS)
+    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
 #  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
 #else
 #  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
