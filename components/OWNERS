@@ -20,8 +20,8 @@ per-file autofill.gypi=mathp@chromium.org
 per-file autofill.gypi=vabr@chromium.org
 per-file autofill_strings.grdp=estade@chromium.org
 per-file autofill_strings.grdp=isherman@chromium.org
-per-file autofill_strings.gypi=mathp@chromium.org
-per-file autofill_strings.gypi=vabr@chromium.org
+per-file autofill_strings.grdp=mathp@chromium.org
+per-file autofill_strings.grdp=vabr@chromium.org
 
 per-file bookmark_bar_strings.grdp=sky@chromium.org
 per-file bookmarks.gypi=sky@chromium.org
