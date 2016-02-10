@@ -13,12 +13,12 @@ PASS mediumContext.imageSmoothingQuality is 'medium'
 PASS highContext.imageSmoothingQuality is 'high'
 
 FAIL lowData should not be {"0":0,"1":0,"2":0,"3":201}.
-FAIL mediumData should not be {"0":0,"1":0,"2":0,"3":201}.
+PASS mediumData is highData
 FAIL lowData should not be {"0":0,"1":0,"2":0,"3":201}.
 
 FAIL sampleAlpha(noFilterData) should be > sampleAlpha(lowData). Was 201 (of type number).
 FAIL sampleAlpha(lowData) should be > sampleAlpha(mediumData). Was 201 (of type number).
-FAIL sampleAlpha(mediumData) should be > sampleAlpha(highData). Was 201 (of type number).
+PASS sampleAlpha(mediumData) is sampleAlpha(highData)
 
 
 On setting, it must be set to the new value.
