@@ -101,8 +101,8 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "initMessageEvent", "MessageEvent", info.Holder(), info.GetIsolate());
     MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
-    bool canBubbleArg;
-    bool cancelableArg;
+    bool canBubbleArg = false;
+    bool cancelableArg = false;
     if (!v8Call(info[1]->BooleanValue(info.GetIsolate()->GetCurrentContext()), canBubbleArg)
         || !v8Call(info[2]->BooleanValue(info.GetIsolate()->GetCurrentContext()), cancelableArg))
         return;
