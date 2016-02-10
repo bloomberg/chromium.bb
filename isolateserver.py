@@ -1195,6 +1195,7 @@ class IsolateServer(StorageApi):
         content_type='application/octet-stream',
         data=content,
         method='PUT',
+        headers={'Cache-Control': 'public, max-age=31536000'},
         url=url)
     return response is not None
 

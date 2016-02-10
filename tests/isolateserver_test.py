@@ -559,6 +559,7 @@ class IsolateServerStorageApiTest(TestCase):
           'data': data,
           'content_type': 'application/octet-stream',
           'method': 'PUT',
+          'headers': {'Cache-Control': 'public, max-age=31536000'},
         },
         '',
         None,
