@@ -829,8 +829,7 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
       if (!is_first_run_ ||
           (browser_creator_ &&
            browser_creator_->is_default_browser_dialog_suppressed())) {
-        chrome::ShowDefaultBrowserPrompt(profile_,
-                                         browser->host_desktop_type());
+        chrome::ShowDefaultBrowserPrompt(profile_);
       }
     }
 #endif

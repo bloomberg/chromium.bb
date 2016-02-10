@@ -202,8 +202,7 @@ class CheckDefaultBrowserObserver
     : public shell_integration::DefaultWebClientObserver {
  public:
   CheckDefaultBrowserObserver(const base::FilePath& profile_path,
-                              bool show_prompt,
-                              chrome::HostDesktopType desktop_type);
+                              bool show_prompt);
   ~CheckDefaultBrowserObserver() override;
 
  private:
@@ -219,18 +218,14 @@ class CheckDefaultBrowserObserver
 
   // True if the prompt is to be shown if Chrome is not the default browser.
   bool show_prompt_;
-  chrome::HostDesktopType desktop_type_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckDefaultBrowserObserver);
 };
 
 CheckDefaultBrowserObserver::CheckDefaultBrowserObserver(
     const base::FilePath& profile_path,
-    bool show_prompt,
-    chrome::HostDesktopType desktop_type)
-    : profile_path_(profile_path),
-      show_prompt_(show_prompt),
-      desktop_type_(desktop_type) {}
+    bool show_prompt)
+    : profile_path_(profile_path), show_prompt_(show_prompt) {}
 
 CheckDefaultBrowserObserver::~CheckDefaultBrowserObserver() {}
 
@@ -286,7 +281,7 @@ void RegisterDefaultBrowserPromptPrefs(PrefRegistrySimple* registry) {
       prefs::kBrowserSuppressDefaultBrowserPrompt, std::string());
 }
 
-void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
+void ShowDefaultBrowserPrompt(Profile* profile) {
   // Do not check if Chrome is the default browser if there is a policy in
   // control of this setting.
   if (g_browser_process->local_state()->IsManagedPreference(
@@ -322,8 +317,7 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
 
   scoped_refptr<shell_integration::DefaultBrowserWorker>(
       new shell_integration::DefaultBrowserWorker(
-          new CheckDefaultBrowserObserver(profile->GetPath(), show_prompt,
-                                          desktop_type)))
+          new CheckDefaultBrowserObserver(profile->GetPath(), show_prompt)))
       ->StartCheckIsDefault();
 }
 

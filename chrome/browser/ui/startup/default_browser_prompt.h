@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_STARTUP_DEFAULT_BROWSER_PROMPT_H_
 #define CHROME_BROWSER_UI_STARTUP_DEFAULT_BROWSER_PROMPT_H_
 
-#include "chrome/browser/ui/host_desktop.h"
-
 class PrefRegistrySimple;
 class Profile;
 
@@ -15,7 +13,7 @@ namespace chrome {
 void RegisterDefaultBrowserPromptPrefs(PrefRegistrySimple* registry);
 
 // Shows a prompt UI to set the default browser if necessary.
-void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type);
+void ShowDefaultBrowserPrompt(Profile* profile);
 
 // Shows a prompt UI to set the default browser on first run
 // (if necessary and permitted). Returns true if the dialog has been launched.
