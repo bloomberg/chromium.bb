@@ -1120,10 +1120,10 @@ component("base") {
     # Required for base/stack_trace_win.cc to symbolize correctly.
     data += [ "$root_build_dir/dbghelp.dll" ]
 
-    deps += [
-      ":copy_dbghelp.dll",
-      "//base/trace_event/etw_manifest:chrome_events_win",
-    ]
+    deps += [ "//base/trace_event/etw_manifest:chrome_events_win" ]
+    if (current_toolchain == default_toolchain) {
+      deps += [ ":copy_dbghelp.dll" ]
+    }
 
     if (is_component_build) {
       # Copy the VS runtime DLLs into the isolate so that they don't have to be
