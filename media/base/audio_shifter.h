@@ -56,9 +56,12 @@ class MEDIA_EXPORT AudioShifter {
   AudioShifter(base::TimeDelta max_buffer_size,
                base::TimeDelta clock_accuracy,
                base::TimeDelta adjustment_time,
-               size_t rate,
+               int rate,
                int channels);
   ~AudioShifter();
+
+  int sample_rate() const { return rate_; }
+  int channels() const { return channels_; }
 
   // Push Audio into the shifter. All inputs must have the same number of
   // channels, but bus size can vary. The playout time can be noisy and
@@ -79,9 +82,6 @@ class MEDIA_EXPORT AudioShifter {
   // calculate playout_time would be now + audio pipeline delay.
   void Pull(AudioBus* output, base::TimeTicks playout_time);
 
-  // Flush audio (but leave timing info)
-  void Flush();
-
 private:
   void Zero(AudioBus* output);
   void ResamplerCallback(int frame_delay, AudioBus* destination);
@@ -100,7 +100,8 @@ private:
   const base::TimeDelta max_buffer_size_;
   const base::TimeDelta clock_accuracy_;
   const base::TimeDelta adjustment_time_;
-  const size_t rate_;
+  const int rate_;
+  const int channels_;
 
   // The clock smoothers are used to smooth out timestamps
   // and adjust for drift and inaccurate clocks.

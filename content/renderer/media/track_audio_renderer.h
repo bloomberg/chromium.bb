@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_RENDERER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_RENDERER_H_
+#ifndef CONTENT_RENDERER_MEDIA_TRACK_AUDIO_RENDERER_H_
+#define CONTENT_RENDERER_MEDIA_TRACK_AUDIO_RENDERER_H_
 
 #include <stdint.h>
 
@@ -19,8 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
-#include "content/renderer/media/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
+#include "media/base/audio_renderer_sink.h"
 #include "media/base/output_device.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
@@ -33,34 +32,43 @@ class AudioParameters;
 
 namespace content {
 
-class WebRtcAudioCapturer;
-
-// WebRtcLocalAudioRenderer is a MediaStreamAudioRenderer designed for rendering
-// local audio media stream tracks,
-// http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
-// It also implements media::AudioRendererSink::RenderCallback to render audio
-// data provided from a WebRtcLocalAudioTrack source.
-// When the audio layer in the browser process asks for data to render, this
-// class provides the data by implementing the MediaStreamAudioSink
-// interface, i.e., we are a sink seen from the WebRtcAudioCapturer perspective.
-// TODO(henrika): improve by using similar principles as in
-// MediaStreamVideoRendererSink which register itself to the video track when
-// the provider is started and deregisters itself when it is stopped. Tracking
-// this at http://crbug.com/164813.
-class CONTENT_EXPORT WebRtcLocalAudioRenderer
+// TrackAudioRenderer is a MediaStreamAudioRenderer for plumbing audio data
+// generated from either local or remote (but not PeerConnection/WebRTC-sourced)
+// MediaStreamAudioTracks to an audio output device, reconciling differences in
+// the rates of production and consumption of the audio data.  Note that remote
+// PeerConnection-sourced tracks are NOT rendered by this implementation (see
+// MediaStreamRendererFactoryImpl).
+//
+// This class uses AudioDeviceFactory to create media::AudioOutputDevices and
+// owns/manages their lifecycles.  Output devices are automatically re-created
+// in response to audio format changes, or use of the SwitchOutputDevice() API
+// by client code.
+//
+// Audio data is feed-in from the source via calls to OnData().  The
+// internally-owned media::AudioOutputDevice calls Render() to pull-out that
+// audio data.  However, because of clock differences and other environmental
+// factors, the audio will inevitably feed-in at a rate different from the rate
+// it is being rendered-out.  media::AudioShifter is used to buffer, stretch
+// and skip audio to maintain time synchronization between the producer and
+// consumer.
+class CONTENT_EXPORT TrackAudioRenderer
     : NON_EXPORTED_BASE(public MediaStreamAudioRenderer),
       NON_EXPORTED_BASE(public MediaStreamAudioSink),
       NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
       NON_EXPORTED_BASE(public media::OutputDevice) {
  public:
-  // Creates a local renderer and registers a capturing |source| object.
-  // The |source| is owned by the WebRtcAudioDeviceImpl.
+  // Creates a renderer for the given |audio_track|.  |playout_render_frame_id|
+  // refers to the RenderFrame that owns this instance (e.g., it contains the
+  // DOM widget representing the player).  |session_id| and |device_id| are
+  // optional, and are used to direct audio output to a pre-selected device;
+  // otherwise, audio is output to the default device for the system.
+  //
   // Called on the main thread.
-  WebRtcLocalAudioRenderer(const blink::WebMediaStreamTrack& audio_track,
-                           int source_render_frame_id,
-                           int session_id,
-                           const std::string& device_id,
-                           const url::Origin& security_origin);
+  TrackAudioRenderer(const blink::WebMediaStreamTrack& audio_track,
+                     int playout_render_frame_id,
+                     int session_id,
+                     const std::string& device_id,
+                     const url::Origin& security_origin);
 
   // MediaStreamAudioRenderer implementation.
   // Called on the main thread.
@@ -80,19 +88,15 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   media::AudioParameters GetOutputParameters() override;
   media::OutputDeviceStatus GetDeviceStatus() override;
 
-  const base::TimeDelta& total_render_time() const {
-    return total_render_time_;
-  }
-
  protected:
-  ~WebRtcLocalAudioRenderer() override;
+  ~TrackAudioRenderer() override;
 
  private:
   // MediaStreamAudioSink implementation.
 
   // Called on the AudioInputDevice worker thread.
   void OnData(const media::AudioBus& audio_bus,
-              base::TimeTicks estimated_capture_time) override;
+              base::TimeTicks reference_time) override;
 
   // Called on the AudioInputDevice worker thread.
   void OnSetFormat(const media::AudioParameters& params) override;
@@ -107,25 +111,31 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
 
   // Initializes and starts the |sink_| if
   //  we have received valid |source_params_| &&
-  //  |playing_| has been set to true &&
-  //  |volume_| is not zero.
+  //  |playing_| has been set to true.
   void MaybeStartSink();
 
   // Sets new |source_params_| and then re-initializes and restarts |sink_|.
   void ReconfigureSink(const media::AudioParameters& params);
 
-  // The audio track which provides data to render. Given that this class
-  // implements local loopback, the audio track is getting data from a capture
-  // instance like a selected microphone and forwards the recorded data to its
-  // sinks. The recorded data is stored in a FIFO and consumed
-  // by this class when the sink asks for new data.
+  // Creates a new AudioShifter, destroying the old one (if any).  This is
+  // called any time playback is started/stopped, or the sink changes.
+  void CreateAudioShifter();
+
+  // Called when either the source or sink has changed somehow, or audio has
+  // been paused.  Drops the AudioShifter and updates
+  // |prior_elapsed_render_time_|.  May be called from either the main thread or
+  // the audio thread.  Assumption: |thread_lock_| is already acquired.
+  void HaltAudioFlowWhileLockHeld();
+
+  // The audio track which provides access to the source data to render.
+  //
   // This class is calling MediaStreamAudioSink::AddToAudioTrack() and
   // MediaStreamAudioSink::RemoveFromAudioTrack() to connect and disconnect
   // with the audio track.
   blink::WebMediaStreamTrack audio_track_;
 
   // The render view and frame in which the audio is rendered into |sink_|.
-  const int source_render_frame_id_;
+  const int playout_render_frame_id_;
   const int session_id_;
 
   // MessageLoop associated with the single thread that performs all control
@@ -138,27 +148,22 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // This does all the synchronization/resampling/smoothing.
   scoped_ptr<media::AudioShifter> audio_shifter_;
 
-  // Stores last time a render callback was received. The time difference
-  // between a new time stamp and this value can be used to derive the
-  // total render time.
-  base::TimeTicks last_render_time_;
+  // These track the time duration of all the audio rendered so far by this
+  // instance.  |prior_elapsed_render_time_| tracks the time duration of all
+  // audio rendered before the last format change.  |num_samples_rendered_|
+  // tracks the number of audio samples rendered since the last format change.
+  base::TimeDelta prior_elapsed_render_time_;
+  int64_t num_samples_rendered_;
 
-  // Keeps track of total time audio has been rendered.
-  base::TimeDelta total_render_time_;
-
-  // The audio parameters of the capture source.
+  // The audio parameters of the track's source.
   // Must only be touched on the main thread.
   media::AudioParameters source_params_;
-
-  // The audio parameters used by the sink.
-  // Must only be touched on the main thread.
-  media::AudioParameters sink_params_;
 
   // Set when playing, cleared when paused.
   bool playing_;
 
-  // Protects |audio_shifter_|, |playing_|, |last_render_time_|,
-  // |total_render_time_| and |volume_|.
+  // Protects |audio_shifter_|, |prior_elapsed_render_time_|, and
+  // |num_samples_rendered_|.
   mutable base::Lock thread_lock_;
 
   // The preferred device id of the output device or empty for the default
@@ -166,18 +171,19 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   std::string output_device_id_;
   url::Origin security_origin_;
 
-  // Cache value for the volume.
+  // Cache value for the volume.  Whenever |sink_| is re-created, its volume
+  // should be set to this.
   float volume_;
 
   // Flag to indicate whether |sink_| has been started yet.
   bool sink_started_;
 
-  // Used to DCHECK that some methods are called on the capture audio thread.
-  base::ThreadChecker capture_thread_checker_;
+  // Used to DCHECK that some methods are called on the audio thread.
+  base::ThreadChecker audio_thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioRenderer);
+  DISALLOW_COPY_AND_ASSIGN(TrackAudioRenderer);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_RENDERER_H_
+#endif  // CONTENT_RENDERER_MEDIA_TRACK_AUDIO_RENDERER_H_
