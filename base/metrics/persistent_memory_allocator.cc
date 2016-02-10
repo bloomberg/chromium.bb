@@ -163,7 +163,6 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(void* base,
 
   if (shared_meta()->cookie != kGlobalCookie) {
     if (readonly) {
-      NOTREACHED();
       SetCorrupt();
       return;
     }
@@ -215,10 +214,7 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(void* base,
         strcpy(name_cstr, name.c_str());
     }
   } else {
-    if (readonly) {
-      // For read-only access, validate reasonable ctor parameters.
-      DCHECK_GE(mem_size_, shared_meta()->freeptr.load());
-    } else {
+    if (!readonly) {
       // The allocator is attaching to a previously initialized segment of
       // memory. Make sure the embedded data matches what has been passed.
       if (shared_meta()->size != mem_size_ ||
@@ -282,7 +278,7 @@ size_t PersistentMemoryAllocator::GetAllocSize(Reference ref) const {
   uint32_t size = block->size;
   // Header was verified by GetBlock() but a malicious actor could change
   // the value between there and here. Check it again.
-  if (size <= sizeof(BlockHeader) || ref + size >= mem_size_) {
+  if (size <= sizeof(BlockHeader) || ref + size > mem_size_) {
     SetCorrupt();
     return 0;
   }

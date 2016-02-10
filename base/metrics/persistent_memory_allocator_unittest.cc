@@ -451,6 +451,8 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
   FilePath file_path_base = temp_dir.path().AppendASCII("persistent_memory_");
 
   LocalPersistentMemoryAllocator local(TEST_MEMORY_SIZE, TEST_ID, "");
+  local.Allocate(1, 1);
+  local.Allocate(11, 11);
   const size_t minsize = local.used();
   scoped_ptr<char[]> garbage(new char[minsize]);
   RandBytes(garbage.get(), minsize);
@@ -472,9 +474,25 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
     mmfile->Initialize(file_path);
     EXPECT_EQ(filesize, mmfile->length());
     if (FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile)) {
-      // Just need to make sure it doesn't crash.
+      // Make sure construction doesn't crash.
       FilePersistentMemoryAllocator allocator(mmfile.release(), 0, "");
-      (void)allocator;  // Ensure compiler can't optimize-out above variable.
+      // Also make sure that iteration doesn't crash.
+      PersistentMemoryAllocator::Iterator iter;
+      allocator.CreateIterator(&iter);
+      for (;;) {
+        Reference ref = allocator.GetNextIterable(&iter, 0);
+        if (!ref)
+          break;
+        const char* data = allocator.GetAsObject<char>(ref, 0);
+        uint32_t type = allocator.GetType(ref);
+        size_t size = allocator.GetAllocSize(ref);
+        // Ensure compiler can't optimize-out above variables.
+        (void)data;
+        (void)type;
+        (void)size;
+        // Ensure that corruption-detected flag gets properly set.
+        EXPECT_EQ(filesize != minsize, allocator.IsCorrupt());
+      }
     } else {
       // For filesize >= minsize, the file must be acceptable. This
       // else clause (file-not-acceptable) should be reached only if
@@ -482,7 +500,6 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
       EXPECT_LT(filesize, minsize);
     }
 
-#if !DCHECK_IS_ON()  // DCHECK builds will die at a NOTREACHED().
     strings::SafeSPrintf(filename, "memory_%d_B", filesize);
     file_path = temp_dir.path().AppendASCII(filename);
     ASSERT_FALSE(PathExists(file_path));
@@ -506,7 +523,6 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
       // filesize < minsize.
       EXPECT_GT(minsize, filesize);
     }
-#endif
   }
 }
 
