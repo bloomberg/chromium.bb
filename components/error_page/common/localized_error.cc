@@ -837,6 +837,9 @@ void LocalizedError::GetStrings(int error_code,
     suggestions->Append(suggest_network_prediction);
   }
 
+  // TODO(crbug.com/584615): Does it make sense to show all of these
+  // suggestions on mobile? Several of them seem irrelevant in the mobile
+  // context.
   if (options.suggestions & SUGGEST_FIREWALL_CONFIG) {
     base::DictionaryValue* suggest_firewall_config = new base::DictionaryValue;
     suggest_firewall_config->SetString("header",
