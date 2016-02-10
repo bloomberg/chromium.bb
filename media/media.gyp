@@ -764,6 +764,10 @@
             'filters/ffmpeg_video_decoder.cc',
             'filters/ffmpeg_video_decoder.h',
           ],
+          'sources': [
+            'filters/android/media_codec_audio_decoder.cc',
+            'filters/android/media_codec_audio_decoder.h',
+          ],
           'defines': [
             'DISABLE_USER_INPUT_MONITOR',
           ],

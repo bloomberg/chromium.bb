@@ -394,6 +394,8 @@ component("media") {
       "capture/video/android/video_capture_device_android.h",
       "capture/video/android/video_capture_device_factory_android.cc",
       "capture/video/android/video_capture_device_factory_android.h",
+      "filters/android/media_codec_audio_decoder.cc",
+      "filters/android/media_codec_audio_decoder.h",
     ]
     sources -= [
       "filters/decrypting_audio_decoder.cc",
