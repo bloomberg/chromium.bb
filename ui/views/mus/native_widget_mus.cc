@@ -30,6 +30,7 @@
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/focus_controller.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(mus::Window*);
@@ -179,7 +180,6 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                                  mus::Window* window,
                                  mus::mojom::SurfaceType surface_type)
     : window_(window),
-      shell_(shell),
       native_widget_delegate_(delegate),
       surface_type_(surface_type),
       show_state_before_fullscreen_(ui::PLATFORM_WINDOW_STATE_UNKNOWN),
@@ -190,6 +190,21 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   aura::SetMusWindow(content_, window_);
 
   window->SetLocalProperty(kNativeWidgetMusKey, this);
+  // WindowTreeHost creates the compositor using the ContextFactory from
+  // aura::Env. Install |context_factory_| there so that |context_factory_| is
+  // picked up.
+  ui::ContextFactory* default_context_factory =
+      aura::Env::GetInstance()->context_factory();
+  // For Chrome, we need the GpuProcessTransportFactory so that renderer and
+  // browser pixels are composited into a single backing
+  // SoftwareOutputDeviceMus.
+  if (!default_context_factory) {
+    context_factory_.reset(
+        new SurfaceContextFactory(shell, window_, surface_type_));
+    aura::Env::GetInstance()->set_context_factory(context_factory_.get());
+  }
+  window_tree_host_.reset(new WindowTreeHostMus(shell, this, window_));
+  aura::Env::GetInstance()->set_context_factory(default_context_factory);
 }
 
 NativeWidgetMus::~NativeWidgetMus() {
@@ -211,6 +226,10 @@ void NativeWidgetMus::NotifyFrameChanged(
       native_widget->UpdateClientArea();
     }
   }
+}
+
+aura::Window* NativeWidgetMus::GetRootWindow() {
+  return window_tree_host_->window();
 }
 
 void NativeWidgetMus::OnPlatformWindowClosed() {
@@ -292,25 +311,8 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   window_->SetCanFocus(params.activatable ==
                        Widget::InitParams::ACTIVATABLE_YES);
 
-  // WindowTreeHost creates the compositor using the ContextFactory from
-  // aura::Env. Install |context_factory_| there so that |context_factory_| is
-  // picked up.
-  ui::ContextFactory* default_context_factory =
-      aura::Env::GetInstance()->context_factory();
-  // For Chrome, we need the GpuProcessTransportFactory so that renderer and
-  // browser pixels are composited into a single backing
-  // SoftwareOutputDeviceMus.
-  if (!default_context_factory) {
-    if (!context_factory_) {
-      context_factory_.reset(new SurfaceContextFactory(shell_, window_,
-                                                       surface_type_));
-    }
-    aura::Env::GetInstance()->set_context_factory(context_factory_.get());
-  }
-  window_tree_host_.reset(new WindowTreeHostMus(shell_, this, window_));
   window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();
-  aura::Env::GetInstance()->set_context_factory(default_context_factory);
   window_tree_host_->window()->SetProperty(kMusWindow, window_);
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
@@ -319,6 +321,10 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
                                focus_client_.get());
   aura::client::SetActivationClient(window_tree_host_->window(),
                                     focus_client_.get());
+  screen_position_client_.reset(new wm::DefaultScreenPositionClient());
+  aura::client::SetScreenPositionClient(window_tree_host_->window(),
+                                        screen_position_client_.get());
+
   window_tree_client_.reset(
       new NativeWidgetMusWindowTreeClient(window_tree_host_->window()));
   window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());

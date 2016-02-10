@@ -54,6 +54,15 @@ mus::Window* WindowManagerConnection::NewWindow(
   return window_tree_connection_->NewTopLevelWindow(&properties);
 }
 
+NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
+    const Widget::InitParams& init_params,
+    internal::NativeWidgetDelegate* delegate) {
+  std::map<std::string, std::vector<uint8_t>> properties;
+  NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
+  return new NativeWidgetMus(delegate, shell_, NewWindow(properties),
+                             mus::mojom::SurfaceType::DEFAULT);
+}
+
 WindowManagerConnection::WindowManagerConnection(mojo::Shell* shell)
     : shell_(shell), window_tree_connection_(nullptr) {
   window_tree_connection_.reset(
@@ -62,9 +71,8 @@ WindowManagerConnection::WindowManagerConnection(mojo::Shell* shell)
   screen_.reset(new ScreenMus(this));
   screen_->Init(shell);
 
-  ViewsDelegate::GetInstance()->set_native_widget_factory(
-      base::Bind(&WindowManagerConnection::CreateNativeWidget,
-                 base::Unretained(this)));
+  ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
+      &WindowManagerConnection::CreateNativeWidgetMus, base::Unretained(this)));
 }
 
 WindowManagerConnection::~WindowManagerConnection() {
@@ -81,15 +89,6 @@ void WindowManagerConnection::OnConnectionLost(
 void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {
   if (window_tree_connection_)
     NativeWidgetMus::NotifyFrameChanged(window_tree_connection_.get());
-}
-
-NativeWidget* WindowManagerConnection::CreateNativeWidget(
-    const Widget::InitParams& init_params,
-    internal::NativeWidgetDelegate* delegate) {
-  std::map<std::string, std::vector<uint8_t>> properties;
-  NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
-  return new NativeWidgetMus(delegate, shell_, NewWindow(properties),
-                             mus::mojom::SurfaceType::DEFAULT);
 }
 
 }  // namespace views

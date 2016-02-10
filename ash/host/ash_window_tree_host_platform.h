@@ -5,14 +5,16 @@
 #ifndef ASH_HOST_ASH_WINDOW_TREE_HOST_PLATFORM_H_
 #define ASH_HOST_ASH_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include "ash/ash_export.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/transformer_helper.h"
 #include "ui/aura/window_tree_host_platform.h"
 
 namespace ash {
 
-class AshWindowTreeHostPlatform : public AshWindowTreeHost,
-                                  public aura::WindowTreeHostPlatform {
+class ASH_EXPORT AshWindowTreeHostPlatform
+    : public AshWindowTreeHost,
+      public aura::WindowTreeHostPlatform {
  public:
   explicit AshWindowTreeHostPlatform(const gfx::Rect& initial_bounds);
   ~AshWindowTreeHostPlatform() override;
