@@ -70,6 +70,7 @@ source_set("renderer") {
     "//skia/public",
     "//storage/common",
     "//third_party/WebKit/public:blink",
+    "//third_party/boringssl",
     "//third_party/icu",
     "//third_party/libjingle",
     "//third_party/libyuv",

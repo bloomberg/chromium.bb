@@ -16,6 +16,7 @@
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
+#include "content/renderer/origin_trials/trial_token_validator.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "device/vibration/vibration_manager.mojom.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -190,6 +191,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                     const blink::WebString& sample) override;
   void recordRapporURL(const char* metric, const blink::WebURL& url) override;
 
+  blink::WebTrialTokenValidator* trialTokenValidator() override;
+
   // Set the PlatformEventObserverBase in |platform_event_observers_| associated
   // with |type| to |observer|. If there was already an observer associated to
   // the given |type|, it will be replaced.
@@ -295,6 +298,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
 
   scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
+
+  TrialTokenValidator trial_token_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

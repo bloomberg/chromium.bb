@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/origin_trials/trial_token_validator.h"
+#include "content/renderer/origin_trials/trial_token_validator.h"
 
 #include "base/time/time.h"
-#include "content/common/origin_trials/trial_token.h"
+#include "content/renderer/origin_trials/trial_token.h"
 
 namespace content {
 

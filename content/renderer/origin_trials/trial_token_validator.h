@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
-#define CONTENT_CHILD_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
+#ifndef CONTENT_RENDERER_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
+#define CONTENT_RENDERER_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
 
 #include <string>
 #include "third_party/WebKit/public/platform/WebTrialTokenValidator.h"
@@ -30,4 +30,4 @@ class TrialTokenValidator : public blink::WebTrialTokenValidator {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
+#endif  // CONTENT_RENDERER_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_

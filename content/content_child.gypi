@@ -173,8 +173,6 @@
       'child/npapi/webplugin_ime_win.cc',
       'child/npapi/webplugin_ime_win.h',
       'child/npapi/webplugin_resource_client.h',
-      'child/origin_trials/trial_token_validator.cc',
-      'child/origin_trials/trial_token_validator.h',
       'child/permissions/permission_dispatcher.cc',
       'child/permissions/permission_dispatcher.h',
       'child/permissions/permission_dispatcher_thread_proxy.cc',

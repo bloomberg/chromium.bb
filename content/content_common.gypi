@@ -465,8 +465,6 @@
       'common/notification_constants.h',
       'common/one_writer_seqlock.cc',
       'common/one_writer_seqlock.h',
-      'common/origin_trials/trial_token.cc',
-      'common/origin_trials/trial_token.h',
       'common/origin_util.cc',
       'common/p2p_messages.h',
       'common/page_state_serialization.cc',

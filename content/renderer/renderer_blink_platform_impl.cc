@@ -1293,4 +1293,11 @@ void RendererBlinkPlatformImpl::MockBatteryStatusChangedForTesting(
   g_test_battery_status_listener->updateBatteryStatus(status);
 }
 
+//------------------------------------------------------------------------------
+
+blink::WebTrialTokenValidator*
+RendererBlinkPlatformImpl::trialTokenValidator() {
+  return &trial_token_validator_;
+}
+
 }  // namespace content
