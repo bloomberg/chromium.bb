@@ -908,20 +908,6 @@ void NaClAppStartModule(struct NaClApp  *nap,
   NaClSetInitState(nap, NACL_MODULE_STARTED);
 }
 
-void NaClAppShutdown(struct NaClApp     *nap,
-                     int                exit_status) {
-  NaClLog(4, "NaClAppShutdown: nap 0x%"NACL_PRIxPTR
-          ", exit_status %d\n", (uintptr_t) nap, exit_status);
-
-  NaClXMutexLock(&nap->mu);
-  nap->exit_status = exit_status;
-  NaClXMutexUnlock(&nap->mu);
-  if (NULL != nap->debug_stub_callbacks) {
-    nap->debug_stub_callbacks->process_exit_hook();
-  }
-  NaClExit(0);
-}
-
 /*
  * It is fine to have multiple I/O operations read from memory in Write
  * or SendMsg like operations.

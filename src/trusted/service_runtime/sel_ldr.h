@@ -626,9 +626,6 @@ void NaClAppStartModule(struct NaClApp  *self,
                                                     NaClErrorCode status),
                         void            *instance_data);
 
-void NaClAppShutdown(struct NaClApp     *self,
-                     int                exit_status);
-
 NaClErrorCode NaClGetLoadStatus(struct NaClApp *nap) NACL_WUR;
 
 void NaClFillMemoryRegionWithHalt(void *start, size_t size);
