@@ -38,13 +38,6 @@ class FindBarView : public DropdownBarView,
                     public views::TextfieldController,
                     public views::ViewTargeterDelegate {
  public:
-  // A tag denoting which button the user pressed.
-  enum ButtonTag {
-    FIND_PREVIOUS_TAG = 0,  // The Find Previous button.
-    FIND_NEXT_TAG,          // The Find Next button.
-    CLOSE_TAG,              // The Close button (the 'X').
-  };
-
   explicit FindBarView(FindBarHost* host);
   ~FindBarView() override;
 

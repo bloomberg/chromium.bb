@@ -108,26 +108,58 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, NavigationByKeyEvent) {
       browser()->tab_strip_model()->GetActiveWebContents(), ASCIIToUTF16("a"),
       true, false, NULL, NULL);
 
-  // The textfield should be focused after pressing [Enter] on the find button.
+  // The previous button should still be focused after pressing [Enter] on it.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
                                               false, false, false));
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_RETURN, false,
                                               false, false, false));
   EXPECT_TRUE(
-      ui_test_utils::IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+      ui_test_utils::IsViewFocused(browser(),
+      VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON));
 
-  // The textfield should be focused after pressing [Enter] on the find button.
+  // The next button should still be focused after pressing [Enter] on it.
   ui_test_utils::FindInPage(
       browser()->tab_strip_model()->GetActiveWebContents(), ASCIIToUTF16("b"),
       true, false, NULL, NULL);
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
                                               false, false, false));
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
-                                              false, false, false));
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_RETURN, false,
                                               false, false, false));
   EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(browser(),
+      VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON));
+}
+
+// TODO(mpistrich): Enable again when ui_test_utils::ClickOnView works with find
+// bar view IDs.
+// http://crbug.com/584043
+IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_NavigationByMouse) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  // First we navigate to any page.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kSimplePage));
+  // Show the Find bar.
+  browser()->GetFindBarController()->Show();
+  EXPECT_TRUE(
       ui_test_utils::IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+  ui_test_utils::FindInPage(
+      browser()->tab_strip_model()->GetActiveWebContents(), ASCIIToUTF16("a"),
+      true, false, NULL, NULL);
+
+  // The textfield should be focused after clicking on any button.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(browser(),
+      VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // The textfield should be focused after clicking on any button.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON);
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(browser(),
+      VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)

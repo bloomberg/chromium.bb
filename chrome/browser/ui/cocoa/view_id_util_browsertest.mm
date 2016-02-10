@@ -76,7 +76,10 @@ class ViewIDTest : public InProcessBrowserTest {
           i == VIEW_ID_SCRIPT_BUBBLE ||
           i == VIEW_ID_SAVE_CREDIT_CARD_BUTTON ||
           i == VIEW_ID_TRANSLATE_BUTTON ||
-          i == VIEW_ID_LOCATION_ICON) {
+          i == VIEW_ID_LOCATION_ICON ||
+          i == VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON ||
+          i == VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON ||
+          i == VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON) {
         continue;
       }
 
