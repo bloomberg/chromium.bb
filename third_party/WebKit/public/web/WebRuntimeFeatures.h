@@ -162,7 +162,10 @@ public:
 
     BLINK_EXPORT static void enableWebFontsIntervention(bool);
 
+    BLINK_EXPORT static void enableWebFontsInterventionTrigger(bool);
+
     BLINK_EXPORT static void enableScrollAnchoring(bool);
+
 private:
     WebRuntimeFeatures();
 };

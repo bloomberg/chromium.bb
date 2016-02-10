@@ -173,8 +173,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisablePresentationAPI))
     WebRuntimeFeatures::enablePresentationAPI(false);
 
-  if (base::FeatureList::IsEnabled(features::kWebFontsIntervention))
+  if (base::FeatureList::IsEnabled(features::kWebFontsIntervention)) {
     WebRuntimeFeatures::enableWebFontsIntervention(true);
+    if (command_line.HasSwitch(switches::kEnableWebFontsInterventionTrigger))
+      WebRuntimeFeatures::enableWebFontsInterventionTrigger(true);
+  }
 
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::enableSlimmingPaintV2(true);

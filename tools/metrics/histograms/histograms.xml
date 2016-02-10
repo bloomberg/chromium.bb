@@ -70962,6 +70962,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1819536169" label="disable-cast-streaming-hw-encoding"/>
   <int value="1820451991" label="enable-offline-auto-reload"/>
   <int value="1821723343" label="disable-saml-signin"/>
+  <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
   <int value="1844110073" label="enable-app-view"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>

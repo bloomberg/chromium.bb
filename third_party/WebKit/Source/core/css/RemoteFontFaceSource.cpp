@@ -31,7 +31,8 @@ RemoteFontFaceSource::RemoteFontFaceSource(PassRefPtrWillBeRawPtr<FontResource> 
 
     if (RuntimeEnabledFeatures::webFontsInterventionEnabled()) {
         // TODO(crbug.com/515343): Consider to use better signals.
-        if (networkStateNotifier().connectionType() == WebConnectionTypeCellular2G && display == FontDisplayAuto) {
+        if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled()
+            || (networkStateNotifier().connectionType() == WebConnectionTypeCellular2G && display == FontDisplayAuto)) {
 
             m_isInterventionTriggered = true;
             m_period = SwapPeriod;

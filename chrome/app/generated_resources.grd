@@ -14705,6 +14705,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_DESCRIPTION" desc="Description for the flag to enable WebFonts User Agent Intervention.">
       Enable User Agent Intervention for WebFonts loading.
     </message>
+    <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_TRIGGER_NAME" desc="Title for the flag to trigger WebFonts User Agent Intervention always.">
+      Trigger User Agent Intervention for WebFonts loading always.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_TRIGGER_DESCRIPTION" desc="Description for the flag to trigger WebFonts User Agent Intervention always.">
+      Enable to trigger User Agent Intervention for WebFonts loading always. This flag affects only when the intervention is enabled.
+    </message>
 
     </messages>
   </release>

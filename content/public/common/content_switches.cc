@@ -492,6 +492,10 @@ const char kEnableViewport[]                = "enable-viewport";
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 
+// Enable WebFonts intervention and trigger the signal always.
+const char kEnableWebFontsInterventionTrigger[] =
+    "enable-webfonts-intervention-trigger";
+
 // Enables WebGL extensions not yet approved by the community.
 const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
 

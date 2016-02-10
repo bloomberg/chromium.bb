@@ -320,6 +320,11 @@ void WebRuntimeFeatures::enableWebFontsIntervention(bool enable)
     RuntimeEnabledFeatures::setWebFontsInterventionEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableWebFontsInterventionTrigger(bool enable)
+{
+    RuntimeEnabledFeatures::setWebFontsInterventionTriggerEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableScrollAnchoring(bool enable)
 {
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(enable);
