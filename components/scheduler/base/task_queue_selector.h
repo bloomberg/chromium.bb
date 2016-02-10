@@ -85,10 +85,13 @@ class SCHEDULER_EXPORT TaskQueueSelector {
  protected:
   class SCHEDULER_EXPORT PrioritizingSelector {
    public:
-    PrioritizingSelector(TaskQueueSelector* task_queue_selector);
+    PrioritizingSelector(TaskQueueSelector* task_queue_selector,
+                         const char* name);
 
-    void AssignQueueToSet(internal::TaskQueueImpl* queue,
-                          TaskQueue::QueuePriority priority);
+    void ChangeSetIndex(internal::TaskQueueImpl* queue,
+                        TaskQueue::QueuePriority priority);
+    void AddQueue(internal::TaskQueueImpl* queue,
+                  TaskQueue::QueuePriority priority);
     void RemoveQueue(internal::TaskQueueImpl* queue);
 
     bool SelectWorkQueueToService(TaskQueue::QueuePriority max_priority,
@@ -112,6 +115,10 @@ class SCHEDULER_EXPORT TaskQueueSelector {
     bool ChooseOldestWithPriority(TaskQueue::QueuePriority priority,
                                   bool* out_chose_delayed_over_immediate,
                                   WorkQueue** out_work_queue) const;
+
+#if DCHECK_IS_ON() || !defined(NDEBUG)
+    bool CheckContainsQueueForTest(const internal::TaskQueueImpl* queue) const;
+#endif
 
    private:
     bool ChooseOldestImmediateTaskWithPriority(

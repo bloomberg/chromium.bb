@@ -23,10 +23,9 @@ void WorkQueue::AsValueInto(base::trace_event::TracedValue* state) const {
   }
 }
 
-WorkQueue::~WorkQueue() {}
-
-void WorkQueue::Clear() {
-  work_queue_ = std::queue<TaskQueueImpl::Task>();
+WorkQueue::~WorkQueue() {
+  DCHECK(!work_queue_sets_) << task_queue_ ->GetName() << " : "
+      << work_queue_sets_->name() << " : " << name_;
 }
 
 const TaskQueueImpl::Task* WorkQueue::GetFrontTask() const {
@@ -43,21 +42,19 @@ bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
 }
 
 void WorkQueue::Push(TaskQueueImpl::Task&& task) {
-  DCHECK(work_queue_sets_);
   bool was_empty = work_queue_.empty();
   work_queue_.push(task);
-  if (was_empty)
+  if (was_empty && work_queue_sets_)
     work_queue_sets_->OnPushQueue(this);
 }
 
 void WorkQueue::PushAndSetEnqueueOrder(TaskQueueImpl::Task&& task,
                                        EnqueueOrder enqueue_order) {
-  DCHECK(work_queue_sets_);
   bool was_empty = work_queue_.empty();
   work_queue_.push(task);
   work_queue_.back().set_enqueue_order(enqueue_order);
 
-  if (was_empty)
+  if (was_empty && work_queue_sets_)
     work_queue_sets_->OnPushQueue(this);
 }
 
@@ -66,10 +63,9 @@ void WorkQueue::PopTaskForTest() {
 }
 
 void WorkQueue::SwapLocked(std::queue<TaskQueueImpl::Task>& incoming_queue) {
-  DCHECK(work_queue_sets_);
   std::swap(work_queue_, incoming_queue);
 
-  if (!work_queue_.empty())
+  if (!work_queue_.empty() && work_queue_sets_)
     work_queue_sets_->OnPushQueue(this);
   task_queue_->TraceQueueSize(true);
 }
@@ -84,9 +80,11 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   return pending_task;
 }
 
-void WorkQueue::AssignToWorkQueueSets(WorkQueueSets* work_queue_sets,
-                                      size_t work_queue_set_index) {
+void WorkQueue::AssignToWorkQueueSets(WorkQueueSets* work_queue_sets) {
   work_queue_sets_ = work_queue_sets;
+}
+
+void WorkQueue::AssignSetIndex(size_t work_queue_set_index) {
   work_queue_set_index_ = work_queue_set_index;
 }
 

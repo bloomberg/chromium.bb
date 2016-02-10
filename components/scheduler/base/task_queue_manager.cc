@@ -195,6 +195,8 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
       break;
     }
 
+    bool should_trigger_wakeup = work_queue->task_queue()->wakeup_policy() ==
+                                 TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
     switch (ProcessTaskFromWorkQueue(work_queue, &previous_task)) {
       case ProcessTaskResult::DEFERRED:
         // If a task was deferred, try again with another task. Note that this
@@ -206,8 +208,8 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
       case ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED:
         return;  // The TaskQueueManager got deleted, we must bail out.
     }
-    bool should_trigger_wakeup = work_queue->task_queue()->wakeup_policy() ==
-                                 TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
+    work_queue = nullptr; // The queue may have been unregistered.
+
     UpdateWorkQueues(should_trigger_wakeup, &previous_task);
 
     // Only run a single task per batch in nested run loops so that we can

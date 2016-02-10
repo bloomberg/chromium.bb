@@ -127,8 +127,8 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   main_thread_only().task_queue_manager = nullptr;
   main_thread_only().delayed_incoming_queue = std::priority_queue<Task>();
   any_thread().immediate_incoming_queue = std::queue<Task>();
-  main_thread_only().immediate_work_queue->Clear();
-  main_thread_only().delayed_work_queue->Clear();
+  main_thread_only().immediate_work_queue.reset();
+  main_thread_only().delayed_work_queue.reset();
 }
 
 bool TaskQueueImpl::RunsTasksOnCurrentThread() const {
@@ -488,7 +488,7 @@ const char* TaskQueueImpl::GetName() const {
 }
 
 void TaskQueueImpl::SetQueuePriority(QueuePriority priority) {
-  if (!main_thread_only().task_queue_manager)
+  if (!main_thread_only().task_queue_manager || priority == GetQueuePriority())
     return;
   main_thread_only().task_queue_manager->selector_.SetQueuePriority(this,
                                                                     priority);

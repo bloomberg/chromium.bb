@@ -126,6 +126,10 @@ class TaskQueueSelectorTest : public testing::Test {
   void TearDown() final {
     for (scoped_refptr<TaskQueueImpl>& task_queue : task_queues_) {
       task_queue->UnregisterTaskQueue();
+      // Note since this test doesn't have a TaskQueueManager we need to
+      // manually remove |task_queue| from the |selector_|.  Normally
+      // UnregisterTaskQueue would do that.
+      selector_.RemoveQueue(task_queue.get());
     }
   }
 
@@ -187,7 +191,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithEnabledQueue) {
 
 TEST_F(TaskQueueSelectorTest,
        TestObserverWithSetQueuePriorityAndQueueAlreadyEnabled) {
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::NORMAL_PRIORITY);
+  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::HIGH_PRIORITY);
   MockObserver mock_observer;
   selector_.SetTaskQueueSelectorObserver(&mock_observer);
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(0);
@@ -294,7 +298,7 @@ TEST_F(TaskQueueSelectorTest, TestBestEffortGetsStarved) {
   PushTasks(queue_order, 2);
   selector_.SetQueuePriority(task_queues_[0].get(),
                              TaskQueue::BEST_EFFORT_PRIORITY);
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::NORMAL_PRIORITY);
+  EXPECT_EQ(TaskQueue::NORMAL_PRIORITY, task_queues_[1]->GetQueuePriority());
   WorkQueue* chosen_work_queue = nullptr;
   for (int i = 0; i < 100; i++) {
     EXPECT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
@@ -390,6 +394,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
 
   task_queue->UnregisterTaskQueue();
+  selector.RemoveQueue(task_queue.get());
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
@@ -422,12 +427,13 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
 
   // Removing the second queue and selecting again should result in another
   // notification.
+  task_queue->UnregisterTaskQueue();
   selector.RemoveQueue(task_queue.get());
   EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
 
-  task_queue->UnregisterTaskQueue();
   task_queue2->UnregisterTaskQueue();
+  selector.RemoveQueue(task_queue2.get());
 }
 
 struct ChooseOldestWithPriorityTestParam {

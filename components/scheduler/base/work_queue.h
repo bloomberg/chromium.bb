@@ -26,8 +26,10 @@ class SCHEDULER_EXPORT WorkQueue {
 
   // Associates this work queue with the given work queue sets. This must be
   // called before any tasks can be inserted into this work queue.
-  void AssignToWorkQueueSets(WorkQueueSets* work_queue_sets,
-                             size_t work_queue_set_index);
+  void AssignToWorkQueueSets(WorkQueueSets* work_queue_sets);
+
+  // Assigns the current set index.
+  void AssignSetIndex(size_t work_queue_set_index);
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 

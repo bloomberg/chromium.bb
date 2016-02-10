@@ -13,8 +13,8 @@ namespace scheduler {
 namespace internal {
 
 TaskQueueSelector::TaskQueueSelector()
-    : enabled_selector_(this),
-      blocked_selector_(this),
+    : enabled_selector_(this, "enabled"),
+      blocked_selector_(this, "blocked"),
       immediate_starvation_count_(0),
       high_priority_starvation_count_(0),
       num_blocked_queues_to_report_(0),
@@ -25,17 +25,25 @@ TaskQueueSelector::~TaskQueueSelector() {}
 void TaskQueueSelector::AddQueue(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(queue->IsQueueEnabled());
-  SetQueuePriority(queue, TaskQueue::NORMAL_PRIORITY);
+  enabled_selector_.AddQueue(queue, TaskQueue::NORMAL_PRIORITY);
 }
 
 void TaskQueueSelector::RemoveQueue(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (queue->IsQueueEnabled()) {
     enabled_selector_.RemoveQueue(queue);
+// The #if DCHECK_IS_ON() shouldn't be necessary but this doesn't compile on
+// chromeos bots without it :(
+#if DCHECK_IS_ON()
+    DCHECK(!blocked_selector_.CheckContainsQueueForTest(queue));
+#endif
   } else if (queue->should_report_when_execution_blocked()) {
     DCHECK_GT(num_blocked_queues_to_report_, 0u);
     num_blocked_queues_to_report_--;
     blocked_selector_.RemoveQueue(queue);
+#if DCHECK_IS_ON()
+    DCHECK(!enabled_selector_.CheckContainsQueueForTest(queue));
+#endif
   }
 }
 
@@ -45,9 +53,9 @@ void TaskQueueSelector::EnableQueue(internal::TaskQueueImpl* queue) {
   if (queue->should_report_when_execution_blocked()) {
     DCHECK_GT(num_blocked_queues_to_report_, 0u);
     num_blocked_queues_to_report_--;
+    blocked_selector_.RemoveQueue(queue);
   }
-  blocked_selector_.RemoveQueue(queue);
-  enabled_selector_.AssignQueueToSet(queue, queue->GetQueuePriority());
+  enabled_selector_.AddQueue(queue, queue->GetQueuePriority());
   if (task_queue_selector_observer_)
     task_queue_selector_observer_->OnTaskQueueEnabled(queue);
 }
@@ -56,9 +64,10 @@ void TaskQueueSelector::DisableQueue(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(!queue->IsQueueEnabled());
   enabled_selector_.RemoveQueue(queue);
-  blocked_selector_.AssignQueueToSet(queue, queue->GetQueuePriority());
-  if (queue->should_report_when_execution_blocked())
+  if (queue->should_report_when_execution_blocked()) {
+    blocked_selector_.AddQueue(queue, queue->GetQueuePriority());
     num_blocked_queues_to_report_++;
+  }
 }
 
 void TaskQueueSelector::SetQueuePriority(internal::TaskQueueImpl* queue,
@@ -66,9 +75,15 @@ void TaskQueueSelector::SetQueuePriority(internal::TaskQueueImpl* queue,
   DCHECK_LT(priority, TaskQueue::QUEUE_PRIORITY_COUNT);
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (queue->IsQueueEnabled()) {
-    enabled_selector_.AssignQueueToSet(queue, priority);
+    enabled_selector_.ChangeSetIndex(queue, priority);
+  } else if (queue->should_report_when_execution_blocked()) {
+    blocked_selector_.ChangeSetIndex(queue, priority);
   } else {
-    blocked_selector_.AssignQueueToSet(queue, priority);
+    // Normally blocked_selector_.ChangeSetIndex would assign the queue's
+    // priority, however if |queue->should_report_when_execution_blocked()| is
+    // false then the disabled queue is not in any set so we need to do it here.
+    queue->delayed_work_queue()->AssignSetIndex(priority);
+    queue->immediate_work_queue()->AssignSetIndex(priority);
   }
   DCHECK_EQ(priority, queue->GetQueuePriority());
 }
@@ -80,50 +95,50 @@ TaskQueue::QueuePriority TaskQueueSelector::NextPriority(
 }
 
 TaskQueueSelector::PrioritizingSelector::PrioritizingSelector(
-    TaskQueueSelector* task_queue_selector)
+    TaskQueueSelector* task_queue_selector,
+    const char* name)
     : task_queue_selector_(task_queue_selector),
-      delayed_work_queue_sets_(TaskQueue::QUEUE_PRIORITY_COUNT),
-      immediate_work_queue_sets_(TaskQueue::QUEUE_PRIORITY_COUNT) {}
+      delayed_work_queue_sets_(TaskQueue::QUEUE_PRIORITY_COUNT, name),
+      immediate_work_queue_sets_(TaskQueue::QUEUE_PRIORITY_COUNT, name) {}
 
-void TaskQueueSelector::PrioritizingSelector::AssignQueueToSet(
+void TaskQueueSelector::PrioritizingSelector::AddQueue(
     internal::TaskQueueImpl* queue,
     TaskQueue::QueuePriority priority) {
-  delayed_work_queue_sets_.AssignQueueToSet(queue->delayed_work_queue(),
-                                            priority);
-  immediate_work_queue_sets_.AssignQueueToSet(queue->immediate_work_queue(),
-                                              priority);
-  // The #if DCHECK_IS_ON() shouldn't be necessary but this doesn't compile on
-  // chromeos bots without it :(
 #if DCHECK_IS_ON()
-  DCHECK_EQ(queue->delayed_work_queue()->Empty(),
-            !delayed_work_queue_sets_.ContainsWorkQueueForTest(
-                queue->delayed_work_queue()));
-  DCHECK_EQ(queue->immediate_work_queue()->Empty(),
-            !immediate_work_queue_sets_.ContainsWorkQueueForTest(
-                queue->immediate_work_queue()));
+  DCHECK(!CheckContainsQueueForTest(queue));
+#endif
+  delayed_work_queue_sets_.AddQueue(queue->delayed_work_queue(), priority);
+  immediate_work_queue_sets_.AddQueue(queue->immediate_work_queue(), priority);
+#if DCHECK_IS_ON()
+  DCHECK(CheckContainsQueueForTest(queue));
+#endif
+}
+
+void TaskQueueSelector::PrioritizingSelector::ChangeSetIndex(
+    internal::TaskQueueImpl* queue,
+    TaskQueue::QueuePriority priority) {
+#if DCHECK_IS_ON()
+  DCHECK(CheckContainsQueueForTest(queue));
+#endif
+  delayed_work_queue_sets_.ChangeSetIndex(queue->delayed_work_queue(),
+                                          priority);
+  immediate_work_queue_sets_.ChangeSetIndex(queue->immediate_work_queue(),
+                                            priority);
+#if DCHECK_IS_ON()
+  DCHECK(CheckContainsQueueForTest(queue));
 #endif
 }
 
 void TaskQueueSelector::PrioritizingSelector::RemoveQueue(
     internal::TaskQueueImpl* queue) {
 #if DCHECK_IS_ON()
-  DCHECK_EQ(queue->delayed_work_queue()->Empty(),
-            !delayed_work_queue_sets_.ContainsWorkQueueForTest(
-                queue->delayed_work_queue()))
-      << " Did you try to RemoveQueue twice? Thats not supported!";
-  DCHECK_EQ(queue->immediate_work_queue()->Empty(),
-            !immediate_work_queue_sets_.ContainsWorkQueueForTest(
-                queue->immediate_work_queue()))
-      << " Did you try to RemoveQueue twice? Thats not supported!";
+  DCHECK(CheckContainsQueueForTest(queue));
 #endif
   delayed_work_queue_sets_.RemoveQueue(queue->delayed_work_queue());
   immediate_work_queue_sets_.RemoveQueue(queue->immediate_work_queue());
 
 #if DCHECK_IS_ON()
-  DCHECK(!delayed_work_queue_sets_.ContainsWorkQueueForTest(
-      queue->delayed_work_queue()));
-  DCHECK(!immediate_work_queue_sets_.ContainsWorkQueueForTest(
-      queue->delayed_work_queue()));
+  DCHECK(!CheckContainsQueueForTest(queue));
 #endif
 }
 
@@ -220,6 +235,23 @@ bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
   return false;
 }
 
+#if DCHECK_IS_ON() || !defined(NDEBUG)
+bool
+TaskQueueSelector::PrioritizingSelector::CheckContainsQueueForTest(
+    const internal::TaskQueueImpl* queue) const {
+  bool contains_delayed_work_queue =
+      delayed_work_queue_sets_.ContainsWorkQueueForTest(
+          queue->delayed_work_queue());
+
+  bool contains_immediate_work_queue =
+      immediate_work_queue_sets_.ContainsWorkQueueForTest(
+          queue->immediate_work_queue());
+
+  DCHECK_EQ(contains_delayed_work_queue, contains_immediate_work_queue);
+  return contains_delayed_work_queue;
+}
+#endif
+
 bool TaskQueueSelector::SelectWorkQueueToService(WorkQueue** out_work_queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   bool chose_delayed_over_immediate = false;
@@ -239,6 +271,7 @@ bool TaskQueueSelector::SelectWorkQueueToService(WorkQueue** out_work_queue) {
 }
 
 void TaskQueueSelector::TrySelectingBlockedQueue() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!num_blocked_queues_to_report_ || !task_queue_selector_observer_)
     return;
   WorkQueue* chosen_blocked_queue;
@@ -255,6 +288,7 @@ void TaskQueueSelector::TrySelectingBlockedQueue() {
 
 void TaskQueueSelector::TrySelectingBlockedQueueOverEnabledQueue(
     const WorkQueue& chosen_enabled_queue) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!num_blocked_queues_to_report_ || !task_queue_selector_observer_)
     return;
 
@@ -325,6 +359,7 @@ void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {
 }
 
 bool TaskQueueSelector::EnabledWorkQueuesEmpty() const {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   for (TaskQueue::QueuePriority priority = TaskQueue::CONTROL_PRIORITY;
        priority < TaskQueue::QUEUE_PRIORITY_COUNT;
        priority = NextPriority(priority)) {
