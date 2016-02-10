@@ -50,6 +50,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.icon = GURL(kNotificationIconUrl);
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.timestamp = base::Time::FromJsTime(kNotificationTimestamp);
+  notification_data.renotify = true;
   notification_data.silent = true;
   notification_data.require_interaction = true;
   notification_data.data = developer_data;
@@ -98,6 +99,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
               testing::ElementsAreArray(kNotificationVibrationPattern));
 
   EXPECT_EQ(notification_data.timestamp, copied_notification_data.timestamp);
+  EXPECT_EQ(notification_data.renotify, copied_notification_data.renotify);
   EXPECT_EQ(notification_data.silent, copied_notification_data.silent);
   EXPECT_EQ(notification_data.require_interaction,
             copied_notification_data.require_interaction);

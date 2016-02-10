@@ -236,6 +236,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ("", base::UTF16ToUTF8(default_notification.message()));
   EXPECT_EQ("", default_notification.tag());
   EXPECT_TRUE(default_notification.icon().IsEmpty());
+  EXPECT_FALSE(default_notification.renotify());
   EXPECT_FALSE(default_notification.silent());
   EXPECT_FALSE(default_notification.never_timeout());
 
@@ -260,6 +261,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ("Contents", base::UTF16ToUTF8(all_options_notification.message()));
   EXPECT_EQ("replace-id", all_options_notification.tag());
   EXPECT_FALSE(all_options_notification.icon().IsEmpty());
+  EXPECT_TRUE(all_options_notification.renotify());
   EXPECT_TRUE(all_options_notification.silent());
   EXPECT_TRUE(all_options_notification.never_timeout());
   EXPECT_DOUBLE_EQ(kNotificationTimestamp,

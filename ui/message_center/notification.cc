@@ -34,6 +34,7 @@ RichNotificationData::RichNotificationData()
       progress(0),
       should_make_spoken_feedback_for_popup_updates(true),
       clickable(true),
+      renotify(false),
       silent(false) {}
 
 RichNotificationData::RichNotificationData(const RichNotificationData& other)
@@ -50,6 +51,7 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
           other.should_make_spoken_feedback_for_popup_updates),
       clickable(other.clickable),
       vibration_pattern(other.vibration_pattern),
+      renotify(other.renotify),
       silent(other.silent) {}
 
 RichNotificationData::~RichNotificationData() {}

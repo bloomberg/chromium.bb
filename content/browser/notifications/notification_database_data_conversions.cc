@@ -59,6 +59,7 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
 
   notification_data->timestamp =
       base::Time::FromInternalValue(payload.timestamp());
+  notification_data->renotify = payload.renotify();
   notification_data->silent = payload.silent();
   notification_data->require_interaction = payload.require_interaction();
 
@@ -113,6 +114,7 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
     payload->add_vibration_pattern(notification_data.vibration_pattern[i]);
 
   payload->set_timestamp(notification_data.timestamp.ToInternalValue());
+  payload->set_renotify(notification_data.renotify);
   payload->set_silent(notification_data.silent);
   payload->set_require_interaction(notification_data.require_interaction);
 

@@ -78,6 +78,10 @@ struct CONTENT_EXPORT PlatformNotificationData {
   base::Time timestamp;
 
   // Whether default notification indicators (sound, vibration, light) should
+  // be played again if the notification is replacing an older notification.
+  bool renotify = false;
+
+  // Whether default notification indicators (sound, vibration, light) should
   // be suppressed.
   bool silent = false;
 

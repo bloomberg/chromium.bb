@@ -124,6 +124,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         builder.setDefaults(mDefaults);
         builder.setVibrate(mVibratePattern);
         builder.setWhen(mTimestamp);
+        builder.setOnlyAlertOnce(!mRenotify);
         builder.setContent(compactView);
 
         // Some things are duplicated in the builder to ensure the notification shows correctly on

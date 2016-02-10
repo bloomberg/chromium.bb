@@ -93,6 +93,7 @@ public:
     String icon() const;
     NavigatorVibration::VibrationPattern vibrate(bool& isNull) const;
     DOMTimeStamp timestamp() const;
+    bool renotify() const;
     bool silent() const;
     bool requireInteraction() const;
     ScriptValue data(ScriptState*);

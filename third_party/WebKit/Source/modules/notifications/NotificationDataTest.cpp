@@ -23,10 +23,12 @@ const char kNotificationDir[] = "rtl";
 const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world";
 const char kNotificationTag[] = "my_tag";
+const char kNotificationEmptyTag[] = "";
 const char kNotificationIcon[] = "https://example.com/icon.png";
 const char kNotificationIconInvalid[] = "https://invalid:icon:url";
 const unsigned kNotificationVibration[] = { 42, 10, 20, 30, 40 };
 const unsigned long long kNotificationTimestamp = 621046800ull;
+const bool kNotificationRenotify = true;
 const bool kNotificationSilent = false;
 const bool kNotificationRequireInteraction = true;
 
@@ -77,6 +79,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
     options.setIcon(kNotificationIcon);
     options.setVibrate(vibrationSequence);
     options.setTimestamp(kNotificationTimestamp);
+    options.setRenotify(kNotificationRenotify);
     options.setSilent(kNotificationSilent);
     options.setRequireInteraction(kNotificationRequireInteraction);
     options.setActions(actions);
@@ -101,6 +104,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
         EXPECT_EQ(vibrationPattern[i], static_cast<unsigned>(notificationData.vibrate[i]));
 
     EXPECT_EQ(kNotificationTimestamp, notificationData.timestamp);
+    EXPECT_EQ(kNotificationRenotify, notificationData.renotify);
     EXPECT_EQ(kNotificationSilent, notificationData.silent);
     EXPECT_EQ(kNotificationRequireInteraction, notificationData.requireInteraction);
     EXPECT_EQ(actions.size(), notificationData.actions.size());
@@ -128,6 +132,19 @@ TEST_F(NotificationDataTest, SilentNotificationWithVibration)
     ASSERT_TRUE(exceptionState.hadException());
 
     EXPECT_EQ("Silent notifications must not specify vibration patterns.", exceptionState.message());
+}
+
+TEST_F(NotificationDataTest, RenotifyWithEmptyTag)
+{
+    NotificationOptions options;
+    options.setTag(kNotificationEmptyTag);
+    options.setRenotify(true);
+
+    TrackExceptionState exceptionState;
+    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    ASSERT_TRUE(exceptionState.hadException());
+
+    EXPECT_EQ("Notifications which set the renotify flag must specify a non-empty tag.", exceptionState.message());
 }
 
 TEST_F(NotificationDataTest, InvalidIconUrls)

@@ -258,6 +258,11 @@ DOMTimeStamp Notification::timestamp() const
     return m_data.timestamp;
 }
 
+bool Notification::renotify() const
+{
+    return m_data.renotify;
+}
+
 bool Notification::silent() const
 {
     return m_data.silent;

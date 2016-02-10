@@ -474,6 +474,7 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
       DisplayNameForContextMessage(profile, origin));
   notification.set_vibration_pattern(notification_data.vibration_pattern);
   notification.set_timestamp(notification_data.timestamp);
+  notification.set_renotify(notification_data.renotify);
   notification.set_silent(notification_data.silent);
 
   std::vector<message_center::ButtonInfo> buttons;

@@ -41,6 +41,7 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         builder.setDefaults(mDefaults);
         builder.setVibrate(mVibratePattern);
         builder.setWhen(mTimestamp);
+        builder.setOnlyAlertOnce(!mRenotify);
         return builder.build();
     }
 }

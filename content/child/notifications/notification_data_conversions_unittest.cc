@@ -44,6 +44,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   web_data.vibrate = blink::WebVector<int>(
       kNotificationVibrationPattern, arraysize(kNotificationVibrationPattern));
   web_data.timestamp = kNotificationTimestamp;
+  web_data.renotify = true;
   web_data.silent = true;
   web_data.requireInteraction = true;
   web_data.data =
@@ -66,6 +67,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationBody), platform_data.body);
   EXPECT_EQ(kNotificationTag, platform_data.tag);
   EXPECT_EQ(kNotificationIconUrl, platform_data.icon.spec());
+  EXPECT_TRUE(platform_data.renotify);
   EXPECT_TRUE(platform_data.silent);
   EXPECT_TRUE(platform_data.require_interaction);
 
@@ -102,6 +104,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.icon = GURL(kNotificationIconUrl);
   platform_data.vibration_pattern = vibration_pattern;
   platform_data.timestamp = base::Time::FromJsTime(kNotificationTimestamp);
+  platform_data.renotify = true;
   platform_data.silent = true;
   platform_data.require_interaction = true;
   platform_data.data = developer_data;
@@ -127,6 +130,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
     EXPECT_EQ(vibration_pattern[i], web_data.vibrate[i]);
 
   EXPECT_DOUBLE_EQ(kNotificationTimestamp, web_data.timestamp);
+  EXPECT_TRUE(web_data.renotify);
   EXPECT_TRUE(web_data.silent);
   EXPECT_TRUE(web_data.requireInteraction);
 

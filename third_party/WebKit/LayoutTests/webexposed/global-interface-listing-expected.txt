@@ -3689,6 +3689,7 @@ interface Notification : EventTarget
     getter onclose
     getter onerror
     getter onshow
+    getter renotify
     getter requireInteraction
     getter silent
     getter tag

@@ -48,6 +48,7 @@ public abstract class NotificationBuilderBase {
     protected int mDefaults = Notification.DEFAULT_ALL;
     protected long[] mVibratePattern;
     protected long mTimestamp;
+    protected boolean mRenotify;
 
     /**
      * Combines all of the options that have been set and returns a new Notification object.
@@ -170,6 +171,14 @@ public abstract class NotificationBuilderBase {
      */
     public NotificationBuilderBase setTimestamp(long timestamp) {
         mTimestamp = timestamp;
+        return this;
+    }
+
+    /**
+     * Sets the behavior for when the notification is replaced.
+     */
+    public NotificationBuilderBase setRenotify(boolean renotify) {
+        mRenotify = renotify;
         return this;
     }
 

@@ -54,6 +54,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   bool should_make_spoken_feedback_for_popup_updates;
   bool clickable;
   std::vector<int> vibration_pattern;
+  bool renotify;
   bool silent;
 };
 
@@ -122,6 +123,12 @@ class MESSAGE_CENTER_EXPORT Notification {
   void set_vibration_pattern(const std::vector<int>& vibration_pattern) {
     optional_fields_.vibration_pattern = vibration_pattern;
   }
+
+  // This property currently has no effect on non-Android platforms.
+  // It determines whether the sound and vibration effects should signal
+  // if the notification is replacing another notification.
+  bool renotify() const { return optional_fields_.renotify; }
+  void set_renotify(bool renotify) { optional_fields_.renotify = renotify; }
 
   // This property currently has no effect on non-Android platforms.
   bool silent() const { return optional_fields_.silent; }

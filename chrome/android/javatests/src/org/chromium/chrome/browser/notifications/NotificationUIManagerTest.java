@@ -86,6 +86,23 @@ public class NotificationUIManagerTest extends NotificationTestBase {
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
+    public void testNotificationRenotifyProperty() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        Notification notification =
+                showAndGetNotification("MyNotification", "{ tag: 'myTag', renotify: true }");
+
+        // Zero indicates that no defaults should be inherited from the system.
+        assertEquals(0, notification.flags & Notification.FLAG_ONLY_ALERT_ONCE);
+    }
+
+    /**
+     * Verifies that notifications created with the "silent" flag do not inherit system defaults
+     * in regards to their sound, vibration and light indicators.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
     public void testNotificationSilentProperty() throws Exception {
         loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);

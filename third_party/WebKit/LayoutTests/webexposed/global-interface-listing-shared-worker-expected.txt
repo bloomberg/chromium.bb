@@ -421,6 +421,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter onclose
 [Worker]     getter onerror
 [Worker]     getter onshow
+[Worker]     getter renotify
 [Worker]     getter requireInteraction
 [Worker]     getter silent
 [Worker]     getter tag
