@@ -133,24 +133,31 @@ source_set("test_utils") {
 
 test("mojo_system_unittests") {
   sources = [
-    "awakable_list_unittest.cc",
-    "core_test_base.cc",
-    "core_test_base.h",
-    "core_unittest.cc",
-    "data_pipe_unittest.cc",
-    "message_pipe_unittest.cc",
     "options_validation_unittest.cc",
-    "platform_handle_dispatcher_unittest.cc",
-    "shared_buffer_dispatcher_unittest.cc",
-    "shared_buffer_unittest.cc",
-    "wait_set_dispatcher_unittest.cc",
-    "waiter_test_utils.cc",
-    "waiter_test_utils.h",
-    "waiter_unittest.cc",
   ]
 
   if (!is_ios) {
     sources += [ "multiprocess_message_pipe_unittest.cc" ]
+  }
+
+  if (!is_android) {
+    # TODO(rockot): Re-enable tests on Android once we figure out what's causing
+    # them to time out en masse. http://crbug.com/585802
+    sources += [
+      "awakable_list_unittest.cc",
+      "core_test_base.cc",
+      "core_test_base.h",
+      "core_unittest.cc",
+      "data_pipe_unittest.cc",
+      "message_pipe_unittest.cc",
+      "platform_handle_dispatcher_unittest.cc",
+      "shared_buffer_dispatcher_unittest.cc",
+      "shared_buffer_unittest.cc",
+      "wait_set_dispatcher_unittest.cc",
+      "waiter_test_utils.cc",
+      "waiter_test_utils.h",
+      "waiter_unittest.cc",
+    ]
   }
 
   deps = [
