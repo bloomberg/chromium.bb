@@ -196,7 +196,8 @@ NaClListener::NaClListener()
 #endif
       main_loop_(NULL),
       is_started_(false) {
-  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
+  attachment_broker_.reset(
+      IPC::AttachmentBrokerUnprivileged::CreateBroker().release());
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   DCHECK(g_listener == NULL);
@@ -257,9 +258,8 @@ void NaClListener::Listen() {
   filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());
   channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
-  IPC::AttachmentBroker* global = IPC::AttachmentBroker::GetGlobal();
-  if (global && !global->IsPrivilegedBroker())
-    global->DesignateBrokerCommunicationChannel(channel_.get());
+  if (attachment_broker_.get())
+    attachment_broker_->DesignateBrokerCommunicationChannel(channel_.get());
   main_loop_ = base::MessageLoop::current();
   main_loop_->Run();
 }

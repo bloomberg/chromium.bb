@@ -32,7 +32,8 @@ void SendReply(IPC::Channel* channel, int32_t pid, bool result) {
 }  // namespace
 
 NaClBrokerListener::NaClBrokerListener() {
-  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
+  attachment_broker_.reset(
+      IPC::AttachmentBrokerUnprivileged::CreateBroker().release());
 }
 
 NaClBrokerListener::~NaClBrokerListener() {
@@ -43,9 +44,8 @@ void NaClBrokerListener::Listen() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
   channel_ = IPC::Channel::CreateClient(channel_name, this);
-  IPC::AttachmentBroker* global = IPC::AttachmentBroker::GetGlobal();
-  if (global && !global->IsPrivilegedBroker())
-    global->DesignateBrokerCommunicationChannel(channel_.get());
+  if (attachment_broker_.get())
+    attachment_broker_->DesignateBrokerCommunicationChannel(channel_.get());
   CHECK(channel_->Connect());
   base::MessageLoop::current()->Run();
 }

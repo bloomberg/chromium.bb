@@ -22,14 +22,17 @@ class IPC_EXPORT AttachmentBrokerUnprivileged : public IPC::AttachmentBroker {
   AttachmentBrokerUnprivileged();
   ~AttachmentBrokerUnprivileged() override;
 
-  // If there is no global attachment broker, makes a new
-  // AttachmentBrokerUnprivileged and sets it as the global attachment broker.
-  // This method is thread safe.
-  static void CreateBrokerIfNeeded();
+   // On platforms that support attachment brokering, returns a new instance of
+   // a platform-specific attachment broker. Otherwise returns |nullptr|.
+   // The caller takes ownership of the newly created instance, and is
+   // responsible for ensuring that the attachment broker lives longer than
+   // every IPC::Channel. The new instance automatically registers itself as the
+   // global attachment broker.
+  static scoped_ptr<AttachmentBrokerUnprivileged> CreateBroker();
 
-  // AttachmentBroker:
-  void DesignateBrokerCommunicationChannel(Endpoint* endpoint) override;
-  bool IsPrivilegedBroker() override;
+  // In each unprivileged process, exactly one channel should be used to
+  // communicate brokerable attachments with the broker process.
+  void DesignateBrokerCommunicationChannel(Endpoint* endpoint);
 
  protected:
   IPC::Sender* get_sender() { return sender_; }

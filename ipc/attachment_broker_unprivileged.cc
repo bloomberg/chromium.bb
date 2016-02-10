@@ -4,7 +4,6 @@
 
 #include "ipc/attachment_broker_unprivileged.h"
 
-#include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
@@ -20,15 +19,18 @@
 
 namespace IPC {
 
-namespace {
+AttachmentBrokerUnprivileged::AttachmentBrokerUnprivileged()
+    : sender_(nullptr) {
+  IPC::AttachmentBroker::SetGlobal(this);
+}
 
-// On platforms that support attachment brokering, returns a new instance of
-// a platform-specific attachment broker. Otherwise returns |nullptr|.
-// The caller takes ownership of the newly created instance, and is
-// responsible for ensuring that the attachment broker lives longer than
-// every IPC::Channel. The new instance automatically registers itself as the
-// global attachment broker.
-scoped_ptr<AttachmentBrokerUnprivileged> CreateBroker() {
+AttachmentBrokerUnprivileged::~AttachmentBrokerUnprivileged() {
+  IPC::AttachmentBroker::SetGlobal(nullptr);
+}
+
+// static
+scoped_ptr<AttachmentBrokerUnprivileged>
+AttachmentBrokerUnprivileged::CreateBroker() {
 #if defined(OS_WIN)
   return scoped_ptr<AttachmentBrokerUnprivileged>(
       new IPC::AttachmentBrokerUnprivilegedWin);
@@ -40,51 +42,12 @@ scoped_ptr<AttachmentBrokerUnprivileged> CreateBroker() {
 #endif
 }
 
-// This class is wrapped in a LazyInstance to ensure that its constructor is
-// only called once. The constructor creates an attachment broker and sets it as
-// the global broker.
-class AttachmentBrokerMakeOnce {
- public:
-  AttachmentBrokerMakeOnce() {
-    // Single process tests can cause an attachment broker to already exist.
-    if (AttachmentBroker::GetGlobal())
-      return;
-    attachment_broker_ = CreateBroker();
-  }
-
- private:
-  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
-};
-
-base::LazyInstance<AttachmentBrokerMakeOnce>::Leaky
-    g_attachment_broker_make_once = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
-AttachmentBrokerUnprivileged::AttachmentBrokerUnprivileged()
-    : sender_(nullptr) {
-  IPC::AttachmentBroker::SetGlobal(this);
-}
-
-AttachmentBrokerUnprivileged::~AttachmentBrokerUnprivileged() {
-  IPC::AttachmentBroker::SetGlobal(nullptr);
-}
-
-// static
-void AttachmentBrokerUnprivileged::CreateBrokerIfNeeded() {
-  g_attachment_broker_make_once.Get();
-}
-
 void AttachmentBrokerUnprivileged::DesignateBrokerCommunicationChannel(
     Endpoint* endpoint) {
   DCHECK(endpoint);
   DCHECK(!sender_);
   sender_ = endpoint;
   endpoint->SetAttachmentBrokerEndpoint(true);
-}
-
-bool AttachmentBrokerUnprivileged::IsPrivilegedBroker() {
-  return false;
 }
 
 void AttachmentBrokerUnprivileged::LogError(UMAError error) {

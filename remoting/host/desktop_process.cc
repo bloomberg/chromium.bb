@@ -147,10 +147,14 @@ bool DesktopProcess::Start(
       IPC::ChannelProxy::Create(daemon_channel_name_, IPC::Channel::MODE_CLIENT,
                                 this, io_task_runner.get());
 
-  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
-  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker())
-    broker->DesignateBrokerCommunicationChannel(daemon_channel_.get());
+  // Attachment broker may be already created in tests.
+  if (!IPC::AttachmentBroker::GetGlobal())
+    attachment_broker_ = IPC::AttachmentBrokerUnprivileged::CreateBroker();
+
+  if (attachment_broker_) {
+    attachment_broker_->DesignateBrokerCommunicationChannel(
+        daemon_channel_.get());
+  }
 
   // Pass |desktop_pipe| to the daemon.
   daemon_channel_->Send(

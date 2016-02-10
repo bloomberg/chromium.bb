@@ -460,6 +460,9 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Accessed on the UI thread.
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
 
+  // AttachmentBroker for |daemon_channel_|.
+  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
+
   // Owned as |desktop_environment_factory_|.
   DesktopSessionConnector* desktop_session_connector_ = nullptr;
 #endif  // defined(REMOTING_MULTI_PROCESS)
@@ -541,10 +544,11 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
                                               this,
                                               context_->network_task_runner());
 
-  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
-  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker())
-    broker->DesignateBrokerCommunicationChannel(daemon_channel_.get());
+  attachment_broker_ = IPC::AttachmentBrokerUnprivileged::CreateBroker();
+  if (attachment_broker_) {
+    attachment_broker_->DesignateBrokerCommunicationChannel(
+        daemon_channel_.get());
+  }
 
 #else  // !defined(REMOTING_MULTI_PROCESS)
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
