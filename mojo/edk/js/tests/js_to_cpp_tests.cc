@@ -29,6 +29,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 // Global value updated by some checks to prevent compilers from optimizing
 // reads out of existence.
@@ -440,5 +441,6 @@ TEST_F(JsToCppTest, BackPointer) {
   EXPECT_TRUE(cpp_side_connection.DidSucceed());
 }
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo

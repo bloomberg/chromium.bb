@@ -26,7 +26,7 @@ class TestingDelegate : public IPC::MojoBootstrap::Delegate {
  public:
   TestingDelegate() : passed_(false) {}
 
-  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
+  void OnPipeAvailable(mojo::edk::ScopedPlatformHandle handle,
                        int32_t peer_pid) override;
   void OnBootstrapError() override;
 
@@ -36,9 +36,8 @@ class TestingDelegate : public IPC::MojoBootstrap::Delegate {
   bool passed_;
 };
 
-void TestingDelegate::OnPipeAvailable(
-    mojo::embedder::ScopedPlatformHandle handle,
-    int32_t peer_pid) {
+void TestingDelegate::OnPipeAvailable(mojo::edk::ScopedPlatformHandle handle,
+                                      int32_t peer_pid) {
   passed_ = true;
   base::MessageLoop::current()->QuitWhenIdle();
 }

@@ -13,10 +13,10 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',
         'battery/battery.gyp:device_battery',
         'battery/battery.gyp:device_battery_mojo_bindings',

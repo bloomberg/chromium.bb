@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../third_party/mojo/mojo_variables.gypi',
+    'mojo_variables.gypi',
   ],
   'target_defaults' : {
     'include_dirs': [
@@ -19,17 +19,13 @@
   'targets': [
     {
       # GN version: //mojo/edk/system
-      'target_name': 'mojo_system_impl2',
-      'type': 'static_library',
-      # TODO(use_chrome_edk): this should be a component to match third_party,
-      # but since third_party includes it, we either make it a static library
-      # or we have to change the export macros to be different than third_party.
-      #'type': '<(component)',
+      'target_name': 'mojo_system_impl',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
-        '../third_party/mojo/mojo_public.gyp:mojo_system_headers',
+        'mojo_public.gyp:mojo_system_headers',
       ],
       'defines': [
         'MOJO_SYSTEM_IMPL_IMPLEMENTATION',
@@ -152,8 +148,7 @@
     },
     {
       # GN version: //mojo/edk/js
-      # TODO(use_chrome_edk): remove "2"
-      'target_name': 'mojo_js_lib2',
+      'target_name': 'mojo_js_lib',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -185,8 +180,7 @@
     },
     {
       # GN version: //mojo/edk/test:test_support_impl
-      # TODO(use_chrome_edk): remove "2"
-      'target_name': 'mojo_test_support_impl2',
+      'target_name': 'mojo_test_support_impl',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -198,13 +192,13 @@
     },
     {
       # GN version: //mojo/edk/test:test_support
-      'target_name': 'mojo_common_test_support2',
+      'target_name': 'mojo_common_test_support',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
-        'mojo_system_impl2',
+        'mojo_system_impl',
       ],
       'sources': [
         'edk/test/mojo_test_base.cc',
@@ -227,19 +221,36 @@
     },
     {
       # GN version: //mojo/edk/test:run_all_unittests
-      # TODO(use_chrome_edk): remove "2"
-      'target_name': 'mojo_run_all_unittests2',
+      'target_name': 'mojo_run_all_unittests',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
-        '../third_party/mojo/mojo_public.gyp:mojo_public_test_support',
-        'mojo_system_impl2',
-        'mojo_test_support_impl2',
+        'mojo_common_test_support',
+        'mojo_public.gyp:mojo_public_test_support',
+        'mojo_system_impl',
+        'mojo_test_support_impl',
       ],
       'sources': [
         'edk/test/run_all_unittests.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/edk/test:run_all_perftests
+      'target_name': 'mojo_run_all_perftests',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_common_test_support',
+        'mojo_public.gyp:mojo_public_test_support',
+        'mojo_system_impl',
+        'mojo_test_support_impl',
+      ],
+      'sources': [
+        'edk/test/run_all_perftests.cc',
       ],
     },
   ],

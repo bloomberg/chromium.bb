@@ -13,11 +13,11 @@
 #include "extensions/renderer/process_info_native_handler.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
+#include "mojo/edk/js/core.h"
+#include "mojo/edk/js/handle.h"
+#include "mojo/edk/js/support.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/core.h"
-#include "third_party/mojo/src/mojo/edk/js/core.h"
-#include "third_party/mojo/src/mojo/edk/js/handle.h"
-#include "third_party/mojo/src/mojo/edk/js/support.h"
 
 namespace extensions {
 namespace {
@@ -155,13 +155,11 @@ void ApiTestEnvironment::RegisterModules() {
       "exports.$set('MatchAgainstEventFilter', function() { return [] });");
 
   gin::ModuleRegistry::From(env()->context()->v8_context())
-      ->AddBuiltinModule(env()->isolate(),
-                         mojo::js::Core::kModuleName,
-                         mojo::js::Core::GetModule(env()->isolate()));
+      ->AddBuiltinModule(env()->isolate(), mojo::edk::js::Core::kModuleName,
+                         mojo::edk::js::Core::GetModule(env()->isolate()));
   gin::ModuleRegistry::From(env()->context()->v8_context())
-      ->AddBuiltinModule(env()->isolate(),
-                         mojo::js::Support::kModuleName,
-                         mojo::js::Support::GetModule(env()->isolate()));
+      ->AddBuiltinModule(env()->isolate(), mojo::edk::js::Support::kModuleName,
+                         mojo::edk::js::Support::GetModule(env()->isolate()));
   gin::Handle<TestServiceProvider> service_provider =
       TestServiceProvider::Create(env()->isolate());
   service_provider_ = service_provider.get();

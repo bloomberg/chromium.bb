@@ -11,11 +11,11 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/standalone/scoped_user_data_dir.h"
 #include "mojo/shell/standalone/task_runners.h"
 #include "mojo/shell/standalone/tracer.h"
-#include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -24,9 +24,7 @@ class NativeApplicationLoader;
 class PackageManagerImpl;
 
 // The "global" context for the shell's main process.
-// TODO(use_chrome_edk)
-// class Context : public edk::ProcessDelegate {
-class Context : public embedder::ProcessDelegate {
+class Context : public edk::ProcessDelegate {
  public:
   Context();
   ~Context() override;

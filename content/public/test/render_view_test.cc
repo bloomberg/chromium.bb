@@ -369,12 +369,9 @@ void RenderViewTest::SetUp() {
 
 #if !defined(OS_IOS)
   InitializeMojo();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-    test_io_thread_.reset(new base::TestIOThread(
-        base::TestIOThread::kAutoStart));
-    ipc_support_.reset(new mojo::test::ScopedIPCSupport(
-        test_io_thread_->task_runner()));
-  }
+  test_io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
+  ipc_support_.reset(
+      new mojo::edk::test::ScopedIPCSupport(test_io_thread_->task_runner()));
 #endif
 
   // This needs to pass the mock render thread to the view.

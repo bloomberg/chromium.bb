@@ -2,6 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("headers") {
+  sources = [
+    "configuration.h",
+    "embedder.h",
+    "embedder_internal.h",
+    "platform_channel_pair.h",
+    "platform_handle.h",
+    "platform_handle_utils.h",
+    "process_delegate.h",
+    "scoped_platform_handle.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/system",
+  ]
+}
+
 source_set("embedder") {
   # This isn't really a standalone target; it must be linked into the
   # mojo_system_impl component.
@@ -34,12 +52,13 @@ source_set("embedder") {
 
   public_deps = [
     ":delegates",
+    ":headers",
     ":platform",
+    "//base",
     "//mojo/public/cpp/system",
   ]
 
   deps = [
-    "//base",
     "//crypto",
   ]
 }
@@ -112,13 +131,11 @@ source_set("delegates") {
   ]
 }
 
-# TODO(use_chrome_edk): remove "2"
-source_set("embedder_unittests2") {
+source_set("embedder_unittests") {
   testonly = true
 
-  # TODO(use_chrome_edk): remove "2". Also enable this visibility check when we
-  # figure out why it's failing just on Android.
-  #visibility = [ "//mojo/edk/system:mojo_system_unittests2" ]
+  # TODO: Figure out why this visibility check fails on Android.
+  # visibility = [ "//mojo/edk/system:mojo_system_unittests" ]
 
   sources = [
     "embedder_unittest.cc",
@@ -129,17 +146,10 @@ source_set("embedder_unittests2") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/message_pump",
-
-    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
-    # declared in third party only for now.
+    "//mojo/edk/system",
     "//mojo/edk/system:test_utils",
     "//mojo/edk/test:test_support",
+    "//mojo/message_pump",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/system",
-
-    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
-    # declared in third party only for now.
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 }

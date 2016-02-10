@@ -6,6 +6,5 @@ include_rules = [
   "+components/signin/core/account_id",
   "+ipc",
   "+mojo",
-  "+third_party/mojo",
   "+ui/arc",
 ]

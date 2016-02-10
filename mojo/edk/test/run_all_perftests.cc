@@ -14,9 +14,6 @@
 int main(int argc, char** argv) {
   base::PerfTestSuite test(argc, argv);
 
-  // TODO(use_chrome_edk): temporary to force new EDK.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch("--use-new-edk");
-
   mojo::edk::Init();
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
   // Leak this because its destructor calls mojo::edk::ShutdownIPCSupport which

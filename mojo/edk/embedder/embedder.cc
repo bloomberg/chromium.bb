@@ -39,12 +39,6 @@ Core* GetCore() { return g_core; }
 void SetMaxMessageSize(size_t bytes) {
 }
 
-void PreInitializeParentProcess() {
-}
-
-void PreInitializeChildProcess() {
-}
-
 ScopedPlatformHandle ChildProcessLaunched(base::ProcessHandle child_process) {
   PlatformChannelPair channel;
   ChildProcessLaunched(child_process, channel.PassServerHandle());

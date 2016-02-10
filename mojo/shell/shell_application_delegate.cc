@@ -11,7 +11,6 @@
 #include "base/process/process.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 namespace mojo {
 namespace shell {

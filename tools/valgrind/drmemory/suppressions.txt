@@ -779,21 +779,7 @@ system call NtCreateNamedPipeFile
 *!mojo::edk::PlatformChannelPair::PlatformChannelPair
 ...
 *!mojo::edk::ChildProcessLaunched
-*!mojo::embedder::ChildProcessLaunched
 *!content::*::OnProcessLaunched
-*!content::ChildProcessLauncher::Notify
-*!content::ChildProcessLauncher::DidLaunch
-*!base::internal::InvokeHelper<>::MakeItSo
-
-HANDLE LEAK
-name=bug_561803_b
-system call NtDuplicateObject
-*!DuplicateHandle
-*!DuplicateHandle
-*!mojo::edk::ChildBrokerHost::ChildBrokerHost
-*!mojo::edk::ChildProcessLaunched
-*!mojo::embedder::ChildProcessLaunched
-...
 *!content::ChildProcessLauncher::Notify
 *!content::ChildProcessLauncher::DidLaunch
 *!base::internal::InvokeHelper<>::MakeItSo

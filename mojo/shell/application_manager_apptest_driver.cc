@@ -69,9 +69,6 @@ class TargetApplicationDelegate : public mojo::ShellClient,
       child_command_line.AppendSwitch(switches::kWaitForDebugger);
     }
 
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"));
-    child_command_line.AppendSwitch("use-new-edk");
-
     mojo::shell::mojom::PIDReceiverPtr receiver;
     mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
         GetProxy(&receiver);

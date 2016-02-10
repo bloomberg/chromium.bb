@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../third_party/mojo/mojo_variables.gypi',
+    'mojo_variables.gypi',
   ],
   'targets': [
     {
@@ -13,8 +13,8 @@
       'type': 'none',
       'dependencies': [
         'mojo_base.gyp:mojo_base',
-        '../third_party/mojo/mojo_edk_tests.gyp:mojo_edk_tests',
-        '../third_party/mojo/mojo_public.gyp:mojo_public',
+        'mojo_edk_tests.gyp:mojo_edk_tests',
+        'mojo_public.gyp:mojo_public',
       ],
     },
   ]

@@ -140,6 +140,8 @@
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "mojo/common/url_type_converters.h"
+#include "mojo/edk/js/core.h"
+#include "mojo/edk/js/support.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -178,8 +180,6 @@
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/mojo/src/mojo/edk/js/core.h"
-#include "third_party/mojo/src/mojo/edk/js/support.h"
 #include "url/url_util.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -2381,15 +2381,14 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context) {
   gin::ModuleRegistry* registry = gin::ModuleRegistry::From(context);
-  if (registry->available_modules().count(mojo::js::Core::kModuleName))
+  if (registry->available_modules().count(mojo::edk::js::Core::kModuleName))
     return;
 
   v8::HandleScope handle_scope(isolate);
-  registry->AddBuiltinModule(
-      isolate, mojo::js::Core::kModuleName, mojo::js::Core::GetModule(isolate));
-  registry->AddBuiltinModule(isolate,
-                             mojo::js::Support::kModuleName,
-                             mojo::js::Support::GetModule(isolate));
+  registry->AddBuiltinModule(isolate, mojo::edk::js::Core::kModuleName,
+                             mojo::edk::js::Core::GetModule(isolate));
+  registry->AddBuiltinModule(isolate, mojo::edk::js::Support::kModuleName,
+                             mojo::edk::js::Support::GetModule(isolate));
   registry->AddBuiltinModule(
       isolate,
       ServiceRegistryJsWrapper::kModuleName,

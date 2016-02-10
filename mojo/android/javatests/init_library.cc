@@ -10,7 +10,7 @@
 #include "mojo/android/javatests/mojo_test_case.h"
 #include "mojo/android/javatests/validation_test_util.h"
 #include "mojo/android/system/core_impl.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder.h"
 
 namespace {
 
@@ -27,7 +27,7 @@ bool RegisterJNI(JNIEnv* env) {
 }
 
 bool Init() {
-  mojo::embedder::Init();
+  mojo::edk::Init();
   return true;
 }
 

@@ -9,6 +9,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 class Core {
  public:
@@ -16,6 +17,7 @@ class Core {
   static v8::Local<v8::Value> GetModule(v8::Isolate* isolate);
 };
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo
 

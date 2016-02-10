@@ -164,12 +164,12 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "media/base/media_switches.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_switches.h"
@@ -1569,7 +1569,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_CHROMEOS)
     switches::kDisableVaapiAcceleratedVideoEncode,
 #endif
-    "use-new-edk",  // TODO(use_chrome_edk): temporary.
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
@@ -2377,7 +2376,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   }
 
   RendererClosedDetails details(status, exit_code);
-  mojo_application_host_->WillDestroySoon();
 
   child_process_launcher_.reset();
 #if USE_ATTACHMENT_BROKER
@@ -2464,8 +2462,6 @@ void RenderProcessHostImpl::OnShutdownRequest() {
   // process. They should not attempt to swap them back in.
   FOR_EACH_OBSERVER(RenderProcessHostObserver, observers_,
                     RenderProcessWillExit(this));
-
-  mojo_application_host_->WillDestroySoon();
 
   Send(new ChildProcessMsg_Shutdown());
 }
@@ -2562,19 +2558,13 @@ void RenderProcessHostImpl::OnProcessLaunched() {
                                          Source<RenderProcessHost>(this),
                                          NotificationService::NoDetails());
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk") &&
-      child_process_launcher_.get()) {
+  if (child_process_launcher_.get()) {
     base::ProcessHandle process_handle =
         child_process_launcher_->GetProcess().Handle();
-    mojo::embedder::ScopedPlatformHandle client_pipe =
-        mojo::embedder::ChildProcessLaunched(process_handle);
+    mojo::edk::ScopedPlatformHandle client_pipe =
+        mojo::edk::ChildProcessLaunched(process_handle);
     Send(new ChildProcessMsg_SetMojoParentPipeHandle(
-        IPC::GetFileHandleForProcess(
-#if defined(OS_WIN)
-                                     client_pipe.release().handle,
-#else
-                                     client_pipe.release().fd,
-#endif
+        IPC::GetFileHandleForProcess(client_pipe.release().handle,
                                      process_handle, true)));
   }
 

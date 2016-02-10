@@ -15,6 +15,8 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
+
 class HandleCloseObserver;
 
 // Wrapper for mojo Handles exposed to JavaScript. This ensures the Handle
@@ -44,6 +46,7 @@ class HandleWrapper : public gin::Wrappable<HandleWrapper> {
   base::ObserverList<HandleCloseObserver> close_observers_;
 };
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo
 
@@ -72,26 +75,28 @@ struct Converter<mojo::MessagePipeHandle> {
 
 // We need to specialize the normal gin::Handle converter in order to handle
 // converting |null| to a wrapper for an empty mojo::Handle.
-template<>
-struct Converter<gin::Handle<mojo::edk::HandleWrapper> > {
+template <>
+struct Converter<gin::Handle<mojo::edk::js::HandleWrapper>> {
   static v8::Handle<v8::Value> ToV8(
       v8::Isolate* isolate,
-      const gin::Handle<mojo::edk::HandleWrapper>& val) {
+      const gin::Handle<mojo::edk::js::HandleWrapper>& val) {
     return val.ToV8();
   }
 
-  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
-                     gin::Handle<mojo::edk::HandleWrapper>* out) {
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
+                     gin::Handle<mojo::edk::js::HandleWrapper>* out) {
     if (val->IsNull()) {
-      *out = mojo::edk::HandleWrapper::Create(isolate, MOJO_HANDLE_INVALID);
+      *out = mojo::edk::js::HandleWrapper::Create(isolate, MOJO_HANDLE_INVALID);
       return true;
     }
 
-    mojo::edk::HandleWrapper* object = NULL;
-    if (!Converter<mojo::edk::HandleWrapper*>::FromV8(isolate, val, &object)) {
+    mojo::edk::js::HandleWrapper* object = NULL;
+    if (!Converter<mojo::edk::js::HandleWrapper*>::FromV8(isolate, val,
+                                                          &object)) {
       return false;
     }
-    *out = gin::Handle<mojo::edk::HandleWrapper>(val, object);
+    *out = gin::Handle<mojo::edk::js::HandleWrapper>(val, object);
     return true;
   }
 };

@@ -18,7 +18,7 @@ namespace IPC {
 // the current process and that it is shutdown cleanly when no longer in use.
 //
 // NOTE: Unless you are making explicit calls to functions in the
-// mojo::embedder namespace, you almost definitely DO NOT need this and should
+// mojo::edk namespace, you almost definitely DO NOT need this and should
 // not be using it.
 class IPC_MOJO_EXPORT ScopedIPCSupport {
  public:

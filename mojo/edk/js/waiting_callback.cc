@@ -11,6 +11,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 namespace {
 
@@ -117,5 +118,6 @@ void WaitingCallback::OnWillCloseHandle() {
                  MOJO_RESULT_INVALID_ARGUMENT));
 }
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo

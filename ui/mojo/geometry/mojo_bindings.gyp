@@ -13,14 +13,14 @@
           'geometry.mojom',
         ],
       },
-      'includes': [ '../../../third_party/mojo/mojom_bindings_generator_explicit.gypi' ],
+      'includes': [ '../../../mojo/mojom_bindings_generator_explicit.gypi' ],
     },
     {
       'target_name': 'mojo_geometry_bindings',
       'type': 'static_library',
       'dependencies': [
         'mojo_geometry_bindings_mojom',
-        '../../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
   ],

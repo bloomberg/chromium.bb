@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/service_registry.h"
-#include "third_party/mojo/src/mojo/edk/js/handle.h"
+#include "mojo/edk/js/handle.h"
 #include "v8/include/v8.h"
 
 namespace content {

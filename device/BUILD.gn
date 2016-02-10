@@ -57,12 +57,12 @@ test("device_unittests") {
     "//device/bluetooth:mocks",
     "//device/nfc",
     "//mojo/common",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//net",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/system",
     "//tools/usb_gadget",
     "//url",
   ]

@@ -33,12 +33,6 @@ class ProcessDelegate;
 // Allows changing the default max message size. Must be called before Init.
 MOJO_SYSTEM_IMPL_EXPORT void SetMaxMessageSize(size_t bytes);
 
-// Must be called before Init in the parent (unsandboxed) process.
-MOJO_SYSTEM_IMPL_EXPORT void PreInitializeParentProcess();
-
-// Must be called before Init in the child (sandboxed) process.
-MOJO_SYSTEM_IMPL_EXPORT void PreInitializeChildProcess();
-
 // Called in the parent process for each child process that is launched. The
 // returned handle must be sent to the child process which then calls
 // SetParentPipeHandle.

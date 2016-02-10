@@ -639,17 +639,17 @@
         '../media/midi/midi.gyp:midi',
         '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../storage/storage_common.gyp:storage_common',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/boringssl/boringssl.gyp:boringssl',
-        '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../ui/gl/gl.gyp:gl',
         'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
       ],
       'export_dependent_settings' : [
         '../mojo/mojo_base.gyp:mojo_application_bindings',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'actions': [
         {

@@ -18,15 +18,15 @@
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder.h"
 
 namespace ipc_fuzzer {
 
 // TODO(morrita): content::InitializeMojo() should be used once it becomes
 // a public API. See src/content/app/mojo/mojo_init.cc
 void InitializeMojo() {
-  mojo::embedder::SetMaxMessageSize(64 * 1024 * 1024);
-  mojo::embedder::Init();
+  mojo::edk::SetMaxMessageSize(64 * 1024 * 1024);
+  mojo::edk::Init();
 }
 
 ReplayProcess::ReplayProcess()

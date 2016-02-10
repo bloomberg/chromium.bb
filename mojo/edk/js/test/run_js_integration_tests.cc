@@ -17,6 +17,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 namespace {
 
 class TestRunnerDelegate : public gin::FileRunnerDelegate {
@@ -53,5 +54,6 @@ TEST(JSTest, sample_service) {
 }
 
 }  // namespace
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo

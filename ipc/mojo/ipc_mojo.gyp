@@ -17,14 +17,14 @@
       'defines': [
         'IPC_MOJO_IMPLEMENTATION',
       ],
-      'includes': [ '../../third_party/mojo/mojom_bindings_generator.gypi' ],
+      'includes': [ '../../mojo/mojom_bindings_generator.gypi' ],
       'dependencies': [
         '../ipc.gyp:ipc',
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         'client_channel.mojom',
@@ -63,9 +63,9 @@
         '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:test_support_base',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../testing/gtest.gyp:gtest',
-        '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         'ipc_mojo',
       ],
       'include_dirs': [
@@ -74,6 +74,11 @@
       'sources': [
         'async_handle_waiter_unittest.cc',
         'run_all_unittests.cc',
+
+        # TODO(rockot): Re-enable these when we're ready to start using
+        # ChannelMojo again. They need to be updated to support multiprocess
+        # testing with the current Mojo EDK implementation.
+        #"ipc_channel_mojo_unittest.cc",
         'ipc_channel_mojo_unittest.cc',
         'ipc_mojo_bootstrap_unittest.cc',
       ],
@@ -91,9 +96,9 @@
         '../../base/base.gyp:test_support_base',
         '../../base/base.gyp:test_support_perf',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../testing/gtest.gyp:gtest',
-        '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         'ipc_mojo',
       ],
       'include_dirs': [

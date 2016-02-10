@@ -10,15 +10,13 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/wait_set.h"
 
 using mojo::edk::internal::g_core;
 
-// TODO(use_chrome_edk): commented out since for now we use the entrypoints in
-// third_party and that checks the command line to redirect here.
-/*
-
 // Definitions of the system functions.
 extern "C" {
+
 MojoTimeTicks MojoGetTimeTicksNow() {
   return g_core->GetTimeTicksNow();
 }
@@ -42,6 +40,29 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
                         MojoHandleSignalsState* signals_states) {
   return g_core->WaitMany(handles, signals, num_handles, deadline, result_index,
                           signals_states);
+}
+
+MojoResult MojoCreateWaitSet(MojoHandle* wait_set_handle) {
+  return g_core->CreateWaitSet(wait_set_handle);
+}
+
+MojoResult MojoAddHandle(MojoHandle wait_set_handle,
+                         MojoHandle handle,
+                         MojoHandleSignals signals) {
+  return g_core->AddHandle(wait_set_handle, handle, signals);
+}
+
+MojoResult MojoRemoveHandle(MojoHandle wait_set_handle, MojoHandle handle) {
+  return g_core->RemoveHandle(wait_set_handle, handle);
+}
+
+MojoResult MojoGetReadyHandles(MojoHandle wait_set_handle,
+                               uint32_t* count,
+                               MojoHandle* handles,
+                               MojoResult* results,
+                               struct MojoHandleSignalsState* signals_states) {
+  return g_core->GetReadyHandles(wait_set_handle, count, handles, results,
+                                 signals_states);
 }
 
 MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,
@@ -148,4 +169,3 @@ MojoResult MojoUnmapBuffer(void* buffer) {
 }
 
 }  // extern "C"
-*/

@@ -79,7 +79,7 @@
       'target_name': 'arc_mojo_bindings',
       'type': 'static_library',
       'includes': [
-        '../third_party/mojo/mojom_bindings_generator.gypi',
+        '../mojo/mojom_bindings_generator.gypi',
       ],
       'sources': [
         'arc/common/app.mojom',

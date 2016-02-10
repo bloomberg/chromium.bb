@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 
 namespace IPC {
 
@@ -32,7 +32,7 @@ class MojoServerBootstrap : public MojoBootstrap {
   bool OnMessageReceived(const Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
 
-  mojo::embedder::ScopedPlatformHandle server_pipe_;
+  mojo::edk::ScopedPlatformHandle server_pipe_;
   bool connected_;
   int32_t peer_pid_;
 
@@ -46,7 +46,7 @@ void MojoServerBootstrap::SendClientPipe(int32_t peer_pid) {
   DCHECK_EQ(state(), STATE_INITIALIZED);
   DCHECK(connected_);
 
-  mojo::embedder::PlatformChannelPair channel_pair;
+  mojo::edk::PlatformChannelPair channel_pair;
   server_pipe_ = channel_pair.PassServerHandle();
 
   base::Process peer_process =
@@ -56,11 +56,7 @@ void MojoServerBootstrap::SendClientPipe(int32_t peer_pid) {
       base::Process::Open(peer_pid);
 #endif
   PlatformFileForTransit client_pipe = GetFileHandleForProcess(
-#if defined(OS_POSIX)
-      channel_pair.PassClientHandle().release().fd,
-#else
       channel_pair.PassClientHandle().release().handle,
-#endif
       peer_process.Handle(), true);
   if (client_pipe == IPC::InvalidPlatformFileForTransit()) {
 #if !defined(OS_WIN)
@@ -96,7 +92,7 @@ bool MojoServerBootstrap::OnMessageReceived(const Message&) {
   set_state(STATE_READY);
   CHECK(server_pipe_.is_valid());
   delegate()->OnPipeAvailable(
-      mojo::embedder::ScopedPlatformHandle(server_pipe_.release()), peer_pid_);
+      mojo::edk::ScopedPlatformHandle(server_pipe_.release()), peer_pid_);
 
   return true;
 }
@@ -139,8 +135,9 @@ bool MojoClientBootstrap::OnMessageReceived(const Message& message) {
   Send(new Message());
   set_state(STATE_READY);
   delegate()->OnPipeAvailable(
-      mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
-          PlatformFileForTransitToPlatformFile(pipe))), peer_pid_);
+      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
+          PlatformFileForTransitToPlatformFile(pipe))),
+      peer_pid_);
 
   return true;
 }

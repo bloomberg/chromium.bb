@@ -7,7 +7,7 @@
 # Mojo land like mojo_shell should be in mojo.gyp.
 {
   'includes': [
-    '../third_party/mojo/mojo_variables.gypi',
+    'mojo_variables.gypi',
   ],
   'targets': [
     {
@@ -25,8 +25,8 @@
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
-            '../third_party/mojo/mojo_public.gyp:mojo_bindings_java',
-            '../third_party/mojo/mojo_public.gyp:mojo_public_java',
+            'mojo_public.gyp:mojo_bindings_java',
+            'mojo_public.gyp:mojo_public_java',
           ],
         }],
       ]
@@ -130,14 +130,14 @@
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
-        '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../third_party/mojo/mojo_edk.gyp:mojo_common_test_support',
-        '../third_party/mojo/mojo_edk.gyp:mojo_run_all_unittests',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../third_party/mojo/mojo_public.gyp:mojo_public_test_utils',
         'mojo_common_lib',
+        'mojo_edk.gyp:mojo_system_impl',
+        'mojo_edk.gyp:mojo_common_test_support',
+        'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_environment_chromium',
         'mojo_message_pump_lib',
+        'mojo_public.gyp:mojo_cpp_bindings',
+        'mojo_public.gyp:mojo_public_test_utils',
         'mojo_url_type_converters',
       ],
       'sources': [
@@ -152,7 +152,7 @@
       'type': 'static_library',
       'dependencies': [
         'mojo_environment_chromium_impl',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        'mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
@@ -217,7 +217,7 @@
       'export_dependent_settings': [
         'mojo_services.gyp:network_service_bindings_generation',
       ],
-      'includes': [ '../third_party/mojo/mojom_bindings_generator_explicit.gypi' ],
+      'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
     {
       # GN version: //mojo/shell/public/cpp
@@ -257,8 +257,8 @@
       'type': 'static_library',
       'dependencies': [
         'mojo_application_bindings_mojom',
+        'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_services.gyp:network_service_bindings_lib',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
         'mojo_services.gyp:network_service_bindings_lib',
@@ -282,12 +282,12 @@
       'target_name': 'mojo_public_application_unittests',
       'type': 'executable',
       'dependencies': [
-        'mojo_application_base',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
-        '../third_party/mojo/mojo_edk.gyp:mojo_run_all_unittests',
-        '../third_party/mojo/mojo_public.gyp:mojo_utility',
-        '../third_party/mojo/mojo_public.gyp:mojo_environment_standalone',
+        'mojo_application_base',
+        'mojo_edk.gyp:mojo_run_all_unittests',
+        'mojo_public.gyp:mojo_utility',
+        'mojo_public.gyp:mojo_environment_standalone',
       ],
       'sources': [
         'shell/public/cpp/tests/connection_impl_unittest.cc',
@@ -320,7 +320,7 @@
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             'mojo_common_lib',
-            '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+            'mojo_edk.gyp:mojo_system_impl',
             'mojo_environment_chromium',
             'mojo_jni_headers',
           ],
@@ -344,7 +344,7 @@
           'dependencies': [
             '../base/base.gyp:base_java',
             'libmojo_system_java',
-            '../third_party/mojo/mojo_public.gyp:mojo_public_java',
+            'mojo_public.gyp:mojo_public_java',
           ],
           'variables': {
             'java_in_dir': '<(DEPTH)/mojo/android/system',

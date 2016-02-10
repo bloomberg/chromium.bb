@@ -4,7 +4,7 @@ include_rules = [
   "+content/public/renderer",
 
   "+gin",
-  "+third_party/mojo/src/mojo/edk/js",
+  "+mojo/edk/js",
 
   "+third_party/skia/include/core",
   "+third_party/cld_2/src/public/compact_lang_det.h",

@@ -12,7 +12,7 @@
       # generated cpp files must be listed explicitly in chrome_api.
       'type': 'none',
       'includes': [
-        '../../../third_party/mojo/mojom_bindings_generator.gypi',
+        '../../../mojo/mojom_bindings_generator.gypi',
       ],
       'sources': [
         'mime_handler.mojom',
@@ -31,7 +31,7 @@
       ],
       'dependencies': [
         'extensions_api_mojom',
-        '../../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/extensions/common/api/mime_handler.mojom.cc',

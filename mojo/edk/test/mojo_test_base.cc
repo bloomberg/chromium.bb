@@ -30,8 +30,12 @@ MojoTestBase::ClientController& MojoTestBase::StartClient(
 
 MojoTestBase::ClientController::ClientController(const std::string& client_name,
                                                  MojoTestBase* test)
-    : test_(test),
-      pipe_(helper_.StartChild(client_name)) {
+    : test_(test)
+#if !defined(OS_IOS)
+      ,
+      pipe_(helper_.StartChild(client_name))
+#endif
+{
 }
 
 MojoTestBase::ClientController::~ClientController() {
@@ -41,7 +45,12 @@ MojoTestBase::ClientController::~ClientController() {
 
 int MojoTestBase::ClientController::WaitForShutdown() {
   was_shutdown_ = true;
+#if !defined(OS_IOS)
   return helper_.WaitForChildShutdown();
+#else
+  NOTREACHED();
+  return 1;
+#endif
 }
 
 // static

@@ -190,6 +190,8 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 //  11.                                      (wait/cl.)
 //  12.                                                  (wait/cl.)
 
+#if !defined(OS_IOS)
+
 #if defined(OS_ANDROID)
 // Android multi-process tests are not executing the new process. This is flaky.
 #define MAYBE_MultiprocessChannels DISABLED_MultiprocessChannels
@@ -284,6 +286,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessChannelsClient, EmbedderTest,
 
 // TODO(vtl): Test immediate write & close.
 // TODO(vtl): Test broken-connection cases.
+
+#endif  // !defined(OS_IOS)
 
 }  // namespace
 }  // namespace edk

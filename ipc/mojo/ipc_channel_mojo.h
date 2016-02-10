@@ -22,7 +22,6 @@
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "ipc/mojo/scoped_ipc_support.h"
 #include "mojo/public/cpp/system/core.h"
-#include "third_party/mojo/src/mojo/edk/embedder/channel_info_forward.h"
 
 namespace IPC {
 
@@ -55,12 +54,6 @@ class IPC_MOJO_EXPORT ChannelMojo
       public MojoBootstrap::Delegate,
       public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {
  public:
-  using CreateMessagingPipeCallback =
-      base::Callback<void(mojo::ScopedMessagePipeHandle)>;
-  using CreateMessagingPipeOnIOThreadCallback =
-      base::Callback<void(mojo::ScopedMessagePipeHandle,
-                          mojo::embedder::ChannelInfo*)>;
-
   // True if ChannelMojo should be used regardless of the flag.
   static bool ShouldBeUsed();
 
@@ -120,23 +113,12 @@ class IPC_MOJO_EXPORT ChannelMojo
               Mode mode,
               Listener* listener);
 
-  void CreateMessagingPipe(mojo::embedder::ScopedPlatformHandle handle,
-                           const CreateMessagingPipeCallback& callback);
   void InitMessageReader(mojo::ScopedMessagePipeHandle pipe, int32_t peer_pid);
 
   Listener* listener() const { return listener_; }
   void set_peer_pid(base::ProcessId pid) { peer_pid_ = pid; }
 
  private:
-  struct ChannelInfoDeleter {
-    explicit ChannelInfoDeleter(scoped_refptr<base::TaskRunner> io_runner);
-    ~ChannelInfoDeleter();
-
-    void operator()(mojo::embedder::ChannelInfo* ptr) const;
-
-    scoped_refptr<base::TaskRunner> io_runner;
-  };
-
   // ChannelMojo needs to kill its MessagePipeReader in delayed manner
   // because the channel wants to kill these readers during the
   // notifications invoked by them.
@@ -144,20 +126,10 @@ class IPC_MOJO_EXPORT ChannelMojo
 
   void InitOnIOThread();
 
-  static void CreateMessagingPipeOnIOThread(
-      mojo::embedder::ScopedPlatformHandle handle,
-      scoped_refptr<base::TaskRunner> callback_runner,
-      const CreateMessagingPipeOnIOThreadCallback& callback);
-  void OnMessagingPipeCreated(const CreateMessagingPipeCallback& callback,
-                              mojo::ScopedMessagePipeHandle handle,
-                              mojo::embedder::ChannelInfo* channel_info);
-
   scoped_ptr<MojoBootstrap> bootstrap_;
   Listener* listener_;
   base::ProcessId peer_pid_;
   scoped_refptr<base::TaskRunner> io_runner_;
-  scoped_ptr<mojo::embedder::ChannelInfo,
-             ChannelInfoDeleter> channel_info_;
 
   // Guards |message_reader_|, |waiting_connect_| and |pending_messages_|
   //

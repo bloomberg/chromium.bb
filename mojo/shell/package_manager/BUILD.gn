@@ -31,11 +31,11 @@ test("unittests") {
   deps = [
     ":package_manager",
     "//base",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/shell",
     "//mojo/shell:test_support",
     "//mojo/shell/public/cpp",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//url",
   ]
 }

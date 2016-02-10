@@ -54,6 +54,7 @@ source_set("lib") {
     "//base",
     "//base:base_static",
     "//base:i18n",
+    "//mojo/edk/system",
     "//mojo/gles2",
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
@@ -61,7 +62,6 @@ source_set("lib") {
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/child:interfaces",
     "//mojo/shell/runner/common",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 
   if (is_linux && !is_android) {
@@ -91,11 +91,11 @@ test("mojo_runner_host_unittests") {
     "//base",
     "//base/test:test_support",
     "//mojo/common",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/common",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 }

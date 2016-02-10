@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder.h"
 
 namespace IPC {
 namespace internal {
@@ -142,8 +142,8 @@ AsyncHandleWaiter::~AsyncHandleWaiter() {
 
 MojoResult AsyncHandleWaiter::Wait(MojoHandle handle,
                                    MojoHandleSignals signals) {
-  return mojo::embedder::AsyncWait(
-      handle, signals, base::Bind(&Context::HandleIsReady, context_));
+  return mojo::edk::AsyncWait(handle, signals,
+                              base::Bind(&Context::HandleIsReady, context_));
 }
 
 void AsyncHandleWaiter::InvokeCallback(MojoResult result) {

@@ -32,7 +32,7 @@
       # generated cpp files must be listed explicitly in extensions_common
       'type': 'none',
       'includes': [
-        '../third_party/mojo/mojom_bindings_generator.gypi',
+        '../mojo/mojom_bindings_generator.gypi',
       ],
       'sources': [
         '<@(extensions_common_mojo_sources)',
@@ -204,8 +204,8 @@
         '../components/components.gyp:guest_view_renderer',
         '../content/content.gyp:content_resources',
         '../gin/gin.gyp:gin',
+        '../mojo/mojo_public.gyp:mojo_js_bindings',
         '../third_party/WebKit/public/blink.gyp:blink',
-        '../third_party/mojo/mojo_public.gyp:mojo_js_bindings',
       ],
       'include_dirs': [
         '..',

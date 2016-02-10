@@ -18,6 +18,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 namespace {
 
@@ -56,5 +57,6 @@ v8::Local<v8::Value> Support::GetModule(v8::Isolate* isolate) {
   return templ->NewInstance();
 }
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo

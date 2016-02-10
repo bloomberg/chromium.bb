@@ -38,7 +38,7 @@ group("for_shared_library") {
   ]
   if (is_component_build) {
     deps = [
-      "//third_party/mojo/src/mojo/edk/system",
+      "//mojo/edk/system",
     ]
   } else {
     deps = [
@@ -53,7 +53,7 @@ group("for_component") {
   ]
   if (is_component_build) {
     deps = [
-      "//third_party/mojo/src/mojo/edk/system",
+      "//mojo/edk/system",
     ]
   }
 }

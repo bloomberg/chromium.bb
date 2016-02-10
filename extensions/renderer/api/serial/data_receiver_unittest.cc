@@ -14,6 +14,7 @@
 #include "gin/dictionary.h"
 #include "gin/wrappable.h"
 #include "grit/extensions_renderer_resources.h"
+#include "mojo/edk/js/handle.h"
 
 namespace extensions {
 

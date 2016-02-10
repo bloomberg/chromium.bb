@@ -1582,8 +1582,8 @@ test("net_unittests") {
     deps += [
       ":net_browser_services",
       ":net_utility_services",
+      "//mojo/edk/system",
       "//mojo/environment:chromium",
-      "//third_party/mojo/src/mojo/edk/system",
     ]
   } else {
     sources -= [

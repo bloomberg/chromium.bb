@@ -180,7 +180,6 @@
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/public/cpp/shell.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
 
@@ -918,7 +917,6 @@ int BrowserMainLoop::CreateThreads() {
 int BrowserMainLoop::PreMainMessageLoopRun() {
 #if defined(MOJO_SHELL_CLIENT)
   if (IsRunningInMojoShell()) {
-    mojo::embedder::PreInitializeChildProcess();
     MojoShellConnectionImpl::Create();
     MojoShellConnectionImpl::Get()->BindToCommandLinePlatformChannel();
 #if defined(USE_AURA)

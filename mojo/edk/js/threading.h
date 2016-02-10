@@ -10,6 +10,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 class Threading {
  public:
@@ -19,6 +20,7 @@ class Threading {
   Threading();
 };
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo
 

@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 #include "ipc/ipc_message_attachment_set.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder.h"
 
 namespace IPC {
 namespace internal {
@@ -25,8 +25,8 @@ MessageAttachment::Type MojoHandleAttachment::GetType() const {
 
 #if defined(OS_POSIX)
 base::PlatformFile MojoHandleAttachment::TakePlatformFile() {
-  mojo::embedder::ScopedPlatformHandle platform_handle;
-  MojoResult unwrap_result = mojo::embedder::PassWrappedPlatformHandle(
+  mojo::edk::ScopedPlatformHandle platform_handle;
+  MojoResult unwrap_result = mojo::edk::PassWrappedPlatformHandle(
       handle_.get().value(), &platform_handle);
   handle_.reset();
   if (unwrap_result != MOJO_RESULT_OK) {
@@ -34,7 +34,7 @@ base::PlatformFile MojoHandleAttachment::TakePlatformFile() {
     return -1;
   }
 
-  return platform_handle.release().fd;
+  return platform_handle.release().handle;
 }
 #endif  // OS_POSIX
 

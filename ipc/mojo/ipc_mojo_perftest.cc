@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "ipc/ipc_perftest_support.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 
 namespace {
 
@@ -18,9 +18,7 @@ namespace {
 // it provides main() which doesn't have Mojo initialization.  We need
 // some way to call Init() only once before using Mojo.
 struct MojoInitialier {
-  MojoInitialier() {
-    mojo::embedder::Init();
-  }
+  MojoInitialier() { mojo::edk::Init(); }
 };
 
 base::LazyInstance<MojoInitialier> g_mojo_initializer
@@ -75,10 +73,10 @@ TEST_F(MojoChannelPerfTest, DISABLED_MaxChannelCount) {
   base::SetFdLimit(20000);
 #endif
 
-  std::vector<mojo::embedder::PlatformChannelPair*> channels;
+  std::vector<mojo::edk::PlatformChannelPair*> channels;
   for (size_t i = 0; i < 10000; ++i) {
     LOG(INFO) << "channels size: " << channels.size();
-    channels.push_back(new mojo::embedder::PlatformChannelPair());
+    channels.push_back(new mojo::edk::PlatformChannelPair());
   }
 }
 

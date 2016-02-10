@@ -17,13 +17,8 @@ config("system_config") {
   ]
 }
 
-static_library("system") {
-  # TODO(use_chrome_edk): this should be a component to match third_party,
-  # but since third_party includes it, we either make it a static library
-  # or we have to change the export macros to be different than third_party.
-  #component("system") {
-  # TODO(use_chrome_edk): remove "2"
-  output_name = "mojo_system_impl2"
+component("system") {
+  output_name = "mojo_system_impl"
 
   sources = [
     "async_waiter.cc",
@@ -85,12 +80,12 @@ static_library("system") {
   all_dependent_configs = [ ":system_config" ]
 
   public_deps = [
-    "../../../mojo/public/c/system",
-    "../../../mojo/public/cpp/system",
-    "../embedder",
-    "../embedder:delegates",
-    "../embedder:platform",
-    "ports",
+    "//mojo/edk/embedder",
+    "//mojo/edk/embedder:delegates",
+    "//mojo/edk/embedder:platform",
+    "//mojo/edk/system/ports",
+    "//mojo/public/c/system",
+    "//mojo/public/cpp/system",
   ]
 
   deps = [
@@ -104,15 +99,14 @@ static_library("system") {
                             # which is uninteresting.
   }
 
-  allow_circular_includes_from = [ "../embedder" ]
+  allow_circular_includes_from = [ "//mojo/edk/embedder" ]
 }
 
 group("tests") {
   testonly = true
   deps = [
-    # TODO(use_chrome_edk): remove "2"
-    ":mojo_message_pipe_perftests2",
-    ":mojo_system_unittests2",
+    ":mojo_message_pipe_perftests",
+    ":mojo_system_unittests",
   ]
 }
 
@@ -137,18 +131,14 @@ source_set("test_utils") {
   ]
 }
 
-# TODO(use_chrome_edk): remove "2"
-test("mojo_system_unittests2") {
+test("mojo_system_unittests") {
   sources = [
     "awakable_list_unittest.cc",
     "core_test_base.cc",
     "core_test_base.h",
     "core_unittest.cc",
     "data_pipe_unittest.cc",
-    "message_pipe_test_utils.cc",
-    "message_pipe_test_utils.h",
     "message_pipe_unittest.cc",
-    "multiprocess_message_pipe_unittest.cc",
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
     "shared_buffer_dispatcher_unittest.cc",
@@ -159,46 +149,38 @@ test("mojo_system_unittests2") {
     "waiter_unittest.cc",
   ]
 
+  if (!is_ios) {
+    sources += [ "multiprocess_message_pipe_unittest.cc" ]
+  }
+
   deps = [
     ":test_utils",
-
-    # TODO(use_chrome_edk): remove "2"
-    "../../../mojo/public/cpp/environment:standalone",
-    "../embedder:embedder_unittests2",
-    "../test:test_support",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/embedder:embedder_unittests",
+    "//mojo/edk/system",
     "//mojo/edk/test:run_all_unittests",
+    "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/environment:standalone",
     "//testing/gtest",
-
-    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
-    # declared in third party only for now.
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 
-  # TODO(use_chrome_edk): remove "2"
-  allow_circular_includes_from = [ "../embedder:embedder_unittests2" ]
+  allow_circular_includes_from = [ "//mojo/edk/embedder:embedder_unittests" ]
 }
 
-# TODO(use_chrome_edk): remove "2"
-test("mojo_message_pipe_perftests2") {
+test("mojo_message_pipe_perftests") {
   sources = [
     "message_pipe_perftest.cc",
-    "message_pipe_test_utils.cc",
-    "message_pipe_test_utils.h",
   ]
 
   deps = [
     ":test_utils",
-    "../../../mojo/public/cpp/environment:standalone",
-    "../test:run_all_perftests",
-    "../test:test_support",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
+    "//mojo/edk/test:run_all_perftests",
+    "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/environment:standalone",
     "//testing/gtest",
-
-    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
-    # declared in third party only for now.
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 }

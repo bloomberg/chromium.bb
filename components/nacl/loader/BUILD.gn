@@ -62,7 +62,6 @@ source_set("loader") {
     "//components/nacl/common",
     "//content/public/common",
     "//ppapi/shared_impl",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 
   data_deps = [

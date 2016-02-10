@@ -13,6 +13,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 // This class is the implementation of the Mojo JavaScript core module's
 // drainData() method. It is not intended to be used directly. The caller
@@ -58,6 +59,7 @@ class DrainData {
   ScopedVector<DataBuffer> data_buffers_;
 };
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo
 

@@ -17,6 +17,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 class WaitingCallback : public gin::Wrappable<WaitingCallback>,
                         public HandleCloseObserver {
@@ -63,6 +64,7 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback>,
   DISALLOW_COPY_AND_ASSIGN(WaitingCallback);
 };
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo
 

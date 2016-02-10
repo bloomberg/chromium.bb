@@ -50,7 +50,7 @@
         'contextual_search/common/overlay_page_notifier_service.mojom',
       ],
       'includes': [
-        '../third_party/mojo/mojom_bindings_generator.gypi',
+        '../mojo/mojom_bindings_generator.gypi',
       ],
     },
   ],

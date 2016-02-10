@@ -34,9 +34,6 @@ int main(int argc, char** argv) {
 
   base::TestSuite test_suite(argc, argv);
 
-  // TODO(use_chrome_edk): temporary to force new EDK.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch("--use-new-edk");
-
   mojo::edk::Init();
 
   mojo::test::TestSupport::Init(new mojo::edk::test::TestSupportImpl());

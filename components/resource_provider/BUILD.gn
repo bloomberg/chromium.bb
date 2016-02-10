@@ -118,10 +118,10 @@ test("resource_provider_unittests") {
     "//base",
     "//base/test:test_config",
     "//components/resource_provider/public/interfaces",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
     "//mojo/platform_handle:for_shared_library",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//url",
   ]
 }

@@ -43,7 +43,7 @@ static_library("arc") {
     "//google_apis",
     "//ipc:ipc",
     "//ipc/mojo:mojo",
-    "//third_party/mojo/src/mojo/edk/system",
+    "//mojo/edk/system",
     "//ui/arc",
     "//ui/aura",
     "//ui/base:base",

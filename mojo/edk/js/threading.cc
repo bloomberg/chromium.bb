@@ -11,6 +11,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 namespace {
 
@@ -43,5 +44,6 @@ v8::Local<v8::Value> Threading::GetModule(v8::Isolate* isolate) {
 Threading::Threading() {
 }
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo

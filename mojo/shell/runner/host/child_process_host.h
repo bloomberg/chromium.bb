@@ -21,9 +21,6 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/shell/runner/child/child_controller.mojom.h"
 #include "mojo/shell/runner/host/child_process_host.h"
-#include "third_party/mojo/src/mojo/edk/embedder/channel_info_forward.h"
-#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
-#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace base {
 class TaskRunner;

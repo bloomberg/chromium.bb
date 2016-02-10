@@ -19,7 +19,6 @@
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/core.h"
-#include "third_party/mojo/src/mojo/edk/js/handle.h"
 
 namespace extensions {
 

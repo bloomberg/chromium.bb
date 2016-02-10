@@ -61,10 +61,10 @@ source_set("shell") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//crypto:crypto",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/shell/public/cpp:sources",
     "//mojo/util:filename_util",
-    "//third_party/mojo/src/mojo/edk/system",
     "//url",
   ]
 }
@@ -107,13 +107,13 @@ test("mojo_shell_unittests") {
     ":test_support",
     "//base",
     "//mojo/edk/system:test_utils",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/public/cpp/system",
     "//mojo/shell/fetcher",
     "//mojo/shell/package_manager",
     "//mojo/shell/public/cpp",
     "//mojo/util:filename_util",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//url",
   ]
 }
@@ -192,12 +192,12 @@ executable("application_manager_apptest_driver") {
     "//build/config/sanitizers:deps",
     "//mojo/common:common_base",
     "//mojo/converters/network",
+    "//mojo/edk/system",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/interfaces",
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/child:test_native_main",
     "//mojo/shell/runner/common",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 }
 

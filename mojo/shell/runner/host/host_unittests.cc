@@ -8,11 +8,11 @@
 #include "base/logging.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/host/child_process.h"
 #include "mojo/shell/runner/init.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     return mojo::shell::ChildProcessMain();
   }
 
-  mojo::embedder::Init();
+  mojo::edk::Init();
 
   base::TestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(

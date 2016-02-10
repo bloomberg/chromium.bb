@@ -47,7 +47,7 @@
         'media_router.mojom',
       ],
       'includes': [
-        '../../../../third_party/mojo/mojom_bindings_generator.gypi',
+        '../../../../mojo/mojom_bindings_generator.gypi',
       ],
     },
     {

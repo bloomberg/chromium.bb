@@ -7,6 +7,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 class HandleCloseObserver {
  public:
@@ -16,6 +17,7 @@ class HandleCloseObserver {
   virtual ~HandleCloseObserver() {}
 };
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo
 

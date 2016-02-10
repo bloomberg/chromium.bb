@@ -17,7 +17,7 @@
         # GN version: //chrome/browser/ui/webui/plugins:mojo_bindings
         'browser/ui/webui/plugins/plugins.mojom',
       ],
-      'includes': [ '../third_party/mojo/mojom_bindings_generator.gypi' ],
+      'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
     },
   ],
 }

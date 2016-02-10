@@ -21,7 +21,7 @@ source_set("child") {
   ]
 
   public_deps = [
-    "//third_party/mojo/src/mojo/edk/system",
+    "//mojo/edk/system",
   ]
 
   deps = [

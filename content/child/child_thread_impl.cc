@@ -62,7 +62,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory.h"
@@ -696,8 +696,8 @@ void ChildThreadImpl::OnBindExternalMojoShellHandle(
 
 void ChildThreadImpl::OnSetMojoParentPipeHandle(
     const IPC::PlatformFileForTransit& file) {
-  mojo::embedder::SetParentPipeHandle(
-      mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
+  mojo::edk::SetParentPipeHandle(
+      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
           IPC::PlatformFileForTransitToPlatformFile(file))));
 }
 

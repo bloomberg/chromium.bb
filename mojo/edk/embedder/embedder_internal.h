@@ -35,12 +35,9 @@ extern Broker* g_broker;
 extern PlatformSupport* g_platform_support;
 
 // Instance of |Core| used by the system functions (|Mojo...()|).
-extern Core* g_core;
+extern MOJO_SYSTEM_IMPL_EXPORT Core* g_core;
 extern base::TaskRunner* g_delegate_thread_task_runner;
 extern ProcessDelegate* g_process_delegate;
-
-// TODO(use_chrome_edk): temporary until we have only one SDK.
-MOJO_SYSTEM_IMPL_EXPORT Core* GetCore();
 
 }  // namespace internal
 

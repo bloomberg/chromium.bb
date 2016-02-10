@@ -200,12 +200,12 @@ source_set("common") {
       "//media:shared_memory_support",
       "//media/midi",
       "//mojo/common:common_base",
+      "//mojo/edk/system",
       "//mojo/environment:chromium",
       "//mojo/shell/public/interfaces",
       "//sandbox",
       "//storage/common",
       "//third_party/boringssl",
-      "//third_party/mojo/src/mojo/edk/system",
       "//ui/gl",
     ]
 

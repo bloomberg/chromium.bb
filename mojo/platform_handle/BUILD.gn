@@ -30,8 +30,8 @@ component("platform_handle_impl") {
   defines = [ "PLATFORM_HANDLE_IMPLEMENTATION" ]
   deps = [
     "//base",
+    "//mojo/edk/embedder:headers",
     "//mojo/public/c/system:for_component",
-    "//third_party/mojo/src/mojo/edk/embedder:headers",
   ]
 }
 

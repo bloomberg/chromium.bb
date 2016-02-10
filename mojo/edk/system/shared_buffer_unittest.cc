@@ -50,6 +50,8 @@ TEST_F(SharedBufferTest, PassSharedBufferLocal) {
   ExpectBufferContents(dupe, 0, message);
 }
 
+#if !defined(OS_IOS)
+
 // Reads a single message with a shared buffer handle, maps the buffer, copies
 // the message contents into it, then exits.
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CopyToBufferClient, SharedBufferTest, h) {
@@ -159,7 +161,6 @@ TEST_F(SharedBufferTest, PassSharedBufferFromChildToChild) {
   ExpectBufferContents(b, 0, message);
 }
 
-
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBufferParent, SharedBufferTest,
                                   parent) {
   RUN_CHILD_ON_PIPE(CreateAndPassBuffer, child)
@@ -225,6 +226,8 @@ TEST_F(SharedBufferTest, PassHandleBetweenCousins) {
   // The second grandchild should have written this message.
   ExpectBufferContents(b, 0, message);
 }
+
+#endif  // !defined(OS_IOS)
 
 }  // namespace
 }  // namespace edk

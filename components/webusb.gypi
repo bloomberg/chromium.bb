@@ -34,7 +34,7 @@
         ],
       },
       'includes': [
-        '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
+        '../mojo/mojom_bindings_generator_explicit.gypi',
       ],
     },
     {

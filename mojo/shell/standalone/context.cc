@@ -25,6 +25,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/tracing/tracing_switches.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
@@ -41,7 +42,6 @@
 #include "mojo/shell/standalone/tracer.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -51,10 +51,7 @@ namespace {
 // Used to ensure we only init once.
 class Setup {
  public:
-  Setup() {
-    embedder::PreInitializeParentProcess();
-    embedder::Init();
-  }
+  Setup() { edk::Init(); }
 
   ~Setup() {}
 
@@ -170,9 +167,7 @@ void Context::Init(const base::FilePath& shell_file_root) {
       new TaskRunners(base::MessageLoop::current()->task_runner()));
 
   // TODO(vtl): This should be MASTER, not NONE.
-  embedder::InitIPCSupport(embedder::ProcessType::NONE, this,
-                           task_runners_->io_runner(),
-                           embedder::ScopedPlatformHandle());
+  edk::InitIPCSupport(this, task_runners_->io_runner());
 
   package_manager_ = new PackageManagerImpl(
       shell_file_root, task_runners_->blocking_pool(), nullptr);
@@ -244,8 +239,8 @@ void Context::Shutdown() {
   DCHECK_EQ(base::MessageLoop::current()->task_runner(),
             task_runners_->shell_runner());
   // Post a task in case OnShutdownComplete is called synchronously.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(embedder::ShutdownIPCSupport));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(edk::ShutdownIPCSupport));
   // We'll quit when we get OnShutdownComplete().
   base::MessageLoop::current()->Run();
 }

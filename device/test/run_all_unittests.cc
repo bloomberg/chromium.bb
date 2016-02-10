@@ -6,7 +6,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
   base::TestSuite test_suite(argc, argv);
 
-  mojo::embedder::Init();
+  mojo::edk::Init();
   return base::LaunchUnitTests(
       argc,
       argv,

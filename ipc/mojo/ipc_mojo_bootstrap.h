@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
-#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace IPC {
 
@@ -31,7 +31,7 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
  public:
   class Delegate {
    public:
-    virtual void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
+    virtual void OnPipeAvailable(mojo::edk::ScopedPlatformHandle handle,
                                  int32_t peer_pid) = 0;
     virtual void OnBootstrapError() = 0;
   };

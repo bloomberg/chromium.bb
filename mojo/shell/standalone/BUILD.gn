@@ -80,7 +80,7 @@ executable("standalone") {
     deps += [
       ":lib",
       ":register_local_aliases_fwd",
-      "//third_party/mojo/src/mojo/edk/system",
+      "//mojo/edk/system",
     ]
 
     # On android, the executable is also the native library used by the apk.
@@ -106,6 +106,7 @@ source_set("lib") {
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//components/tracing:startup_tracing",
+    "//mojo/edk/system",
     "//mojo/message_pump",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
@@ -117,7 +118,6 @@ source_set("lib") {
     "//mojo/shell/runner/child:interfaces",
     "//mojo/shell/runner/host:lib",
     "//mojo/util:filename_util",
-    "//third_party/mojo/src/mojo/edk/system",
     "//ui/gl",
     "//url",
   ]

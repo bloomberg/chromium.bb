@@ -53,8 +53,6 @@ source_set("url_type_converters") {
     "url_type_converters.h",
   ]
 
-  include_dirs = [ "//third_party/mojo/src/" ]
-
   deps = [
     ":common_base",
     "//base",
@@ -71,13 +69,13 @@ test("mojo_common_unittests") {
     "//base",
     "//base:message_loop_tests",
     "//base/test:test_support",
+    "//mojo/edk/test:run_all_unittests",
+    "//mojo/edk/test:test_support",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
-    "//third_party/mojo/src/mojo/edk/test:test_support",
     "//url",
   ]
 
@@ -100,11 +98,11 @@ test("mojo_common_perftests") {
   deps = [
     ":common",
     "//base",
+    "//mojo/edk/test:run_all_perftests",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/test:run_all_perftests",
   ]
 
   sources = [

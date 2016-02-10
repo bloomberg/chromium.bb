@@ -10,6 +10,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 class HandleWrapperTest : public testing::Test,
                           public HandleCloseObserver {
@@ -86,5 +87,6 @@ TEST_F(HandleWrapperTest, DestroyWithValidHandle) {
   EXPECT_EQ(1, closes_observed_);
 }
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo

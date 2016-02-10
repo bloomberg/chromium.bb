@@ -21,12 +21,9 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//mojo/public/cpp/system",
     "//testing/gtest",
-
-    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
-    # declared in third party only for now.
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 }
 
@@ -41,12 +38,9 @@ source_set("run_all_unittests") {
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//mojo/public/c/test_support",
     "//testing/gtest",
-
-    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
-    # declared in third party only for now.
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 }
 
@@ -56,12 +50,9 @@ source_set("run_all_perftests") {
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//mojo/edk/test:test_support",
     "//mojo/public/c/test_support",
-
-    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
-    # declared in third party only for now.
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 
   sources = [
@@ -92,51 +83,66 @@ source_set("test_support_impl") {
 group("public_tests") {
   testonly = true
   deps = [
-    # TODO(use_chrome_edk): remove "2"
-    ":mojo_public_bindings_unittests2",
-    ":mojo_public_environment_unittests2",
-    ":mojo_public_system_perftests2",
-    ":mojo_public_system_unittests2",
-    ":mojo_public_utility_unittests2",
+    ":mojo_public_bindings_unittests",
+    ":mojo_public_environment_unittests",
+    ":mojo_public_system_perftests",
+    ":mojo_public_system_unittests",
+    ":mojo_public_utility_unittests",
   ]
 }
 
-# TODO(use_chrome_edk): remove "2"
-test("mojo_public_bindings_unittests2") {
+test("mojo_public_bindings_unittests") {
   deps = [
     ":run_all_unittests",
+    "//mojo/edk/test:test_support",
     "//mojo/public/cpp/bindings/tests",
   ]
+
+  if (is_linux && !is_component_build) {
+    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
 }
 
-# TODO(use_chrome_edk): remove "2"
-test("mojo_public_environment_unittests2") {
+test("mojo_public_environment_unittests") {
   deps = [
     ":run_all_unittests",
     "//mojo/public/cpp/environment/tests",
   ]
+
+  if (is_linux && !is_component_build) {
+    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
 }
 
-# TODO(use_chrome_edk): remove "2"
-test("mojo_public_system_perftests2") {
+test("mojo_public_system_perftests") {
   deps = [
     ":run_all_perftests",
     "//mojo/public/c/system/tests:perftests",
   ]
+
+  if (is_linux && !is_component_build) {
+    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
 }
 
-# TODO(use_chrome_edk): remove "2"
-test("mojo_public_system_unittests2") {
+test("mojo_public_system_unittests") {
   deps = [
     ":run_all_unittests",
     "//mojo/public/cpp/system/tests",
   ]
+
+  if (is_linux && !is_component_build) {
+    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
 }
 
-# TODO(use_chrome_edk): remove "2"
-test("mojo_public_utility_unittests2") {
+test("mojo_public_utility_unittests") {
   deps = [
     ":run_all_unittests",
     "//mojo/public/cpp/utility/tests",
   ]
+
+  if (is_linux && !is_component_build) {
+    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
 }

@@ -22,11 +22,11 @@ source_set("lib") {
   deps = [
     ":interfaces",
     "//base",
+    "//mojo/edk/system",
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
     "//mojo/shell/public/interfaces",
     "//mojo/shell/runner/common",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 }
 
@@ -54,11 +54,11 @@ source_set("test_native_main") {
 
   deps = [
     "//base",
+    "//mojo/edk/system",
     "//mojo/gles2",
     "//mojo/message_pump",
     "//mojo/shell/public/cpp",
     "//mojo/shell/runner/child:lib",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 }
 

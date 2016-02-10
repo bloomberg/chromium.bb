@@ -16,7 +16,6 @@
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_bridge_service.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 namespace {
 

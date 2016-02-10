@@ -635,14 +635,14 @@
       'target_name': 'common_mojo_bindings',
       'type': 'static_library',
       'includes': [
-        '../third_party/mojo/mojom_bindings_generator.gypi'
+        '../mojo/mojom_bindings_generator.gypi'
       ],
       'sources': [
         'common/resource_usage_reporter.mojom',
       ],
       'dependencies': [
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
   ],

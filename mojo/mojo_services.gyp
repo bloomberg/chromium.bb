@@ -28,7 +28,7 @@
         'mojom_include_path': '<(DEPTH)/mojo/services',
       },
       'includes': [
-        '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
+        'mojom_bindings_generator_explicit.gypi',
       ],
     },
     {
@@ -71,7 +71,7 @@
         'mojom_include_path': '<(DEPTH)/mojo/services',
       },
       'includes': [
-        '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
+        'mojom_bindings_generator_explicit.gypi',
       ],
     },
     {

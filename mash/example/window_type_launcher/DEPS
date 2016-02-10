@@ -1,5 +1,5 @@
 include_rules = [
+  "+mojo/edk/embedder",
   "+mojo/message_pump",
   "+mojo/runner",
-  "+third_party/mojo/src/mojo/edk/embedder",
 ]

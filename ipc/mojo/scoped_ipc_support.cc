@@ -15,15 +15,13 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/process_delegate.h"
 
 namespace IPC {
 
 namespace {
-// TODO(use_chrome_edk)
-//class IPCSupportInitializer : public mojo::edk::ProcessDelegate {
-class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
+class IPCSupportInitializer : public mojo::edk::ProcessDelegate {
  public:
   IPCSupportInitializer()
       : init_count_(0),
@@ -62,7 +60,7 @@ class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
 
   void ShutDownOnIOThread();
 
-  // mojo::embedder::ProcessDelegate:
+  // mojo::edk::ProcessDelegate:
   void OnShutdownComplete() override {}
 
   static void WatchMessageLoopOnIOThread(MessageLoopObserver* observer);
@@ -106,9 +104,7 @@ void IPCSupportInitializer::Init(
     io_thread_task_runner_ = io_thread_task_runner;
     io_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WatchMessageLoopOnIOThread, observer_));
-    mojo::embedder::InitIPCSupport(
-        mojo::embedder::ProcessType::NONE, this, io_thread_task_runner_,
-        mojo::embedder::ScopedPlatformHandle());
+    mojo::edk::InitIPCSupport(this, io_thread_task_runner_);
   }
 }
 
@@ -137,7 +133,7 @@ void IPCSupportInitializer::ShutDown(bool force) {
 void IPCSupportInitializer::ShutDownOnIOThread() {
   base::AutoLock locker(lock_);
   if (shutting_down_ && !was_shut_down_) {
-    mojo::embedder::ShutdownIPCSupportOnIOThread();
+    mojo::edk::ShutdownIPCSupportOnIOThread();
     init_count_ = 0;
     shutting_down_ = false;
     io_thread_task_runner_ = nullptr;

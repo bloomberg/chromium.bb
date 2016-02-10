@@ -35,11 +35,11 @@
       'dependencies': [
         '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../skia/skia.gyp:skia_mojo',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../ui/mojo/geometry/mojo_bindings.gyp:mojo_geometry_bindings',
       ],
-      'includes': [ '../third_party/mojo/mojom_bindings_generator.gypi' ],
+      'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
     },
   ]
 }

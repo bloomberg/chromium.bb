@@ -12,8 +12,8 @@
 #include "content/common/application_setup.mojom.h"
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/service_registry_impl.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/mojo/service_registry_android.h"
@@ -41,8 +41,6 @@ class CONTENT_EXPORT MojoApplicationHost {
   bool Init();
   void Activate(IPC::Sender* sender, base::ProcessHandle process_handle);
 
-  void WillDestroySoon();
-
   ServiceRegistry* service_registry() { return &service_registry_; }
 
 #if defined(OS_ANDROID)
@@ -56,7 +54,7 @@ class CONTENT_EXPORT MojoApplicationHost {
 
  private:
   ChannelInit channel_init_;
-  mojo::embedder::ScopedPlatformHandle client_handle_;
+  mojo::edk::ScopedPlatformHandle client_handle_;
 
   bool did_activate_;
 

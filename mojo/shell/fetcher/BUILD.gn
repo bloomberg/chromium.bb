@@ -32,12 +32,12 @@ source_set("fetcher") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//crypto:crypto",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/shell",
     "//mojo/shell/public/cpp:sources",
     "//mojo/util:filename_util",
     "//net",
-    "//third_party/mojo/src/mojo/edk/system",
     "//url",
   ]
 }

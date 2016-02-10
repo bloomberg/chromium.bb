@@ -33,7 +33,6 @@ int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback) {
   if (!command_line->HasSwitch(switches::kMojoSingleProcess) &&
       !command_line->HasSwitch("gtest_list_tests"))
     command_line->AppendSwitch(switches::kEnableMultiprocess);
-  command_line->AppendSwitch("use-new-edk");
   // http://crbug.com/546644
   command_line->AppendSwitch(switches::kMojoNoSandbox);
 

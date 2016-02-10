@@ -17,6 +17,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 DrainData::DrainData(v8::Isolate* isolate, mojo::Handle handle)
     : isolate_(isolate),
@@ -130,5 +131,6 @@ void DrainData::DeliverData(MojoResult result) {
   delete this;
 }
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo

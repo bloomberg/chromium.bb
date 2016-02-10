@@ -15,10 +15,10 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 
 namespace mojo {
 namespace shell {
@@ -29,7 +29,7 @@ void ProcessReadyCallbackAdapater(const base::Closure& callback,
   callback.Run();
 }
 
-class ProcessDelegate : public embedder::ProcessDelegate {
+class ProcessDelegate : public edk::ProcessDelegate {
  public:
   ProcessDelegate() {}
   ~ProcessDelegate() override {}
@@ -48,8 +48,6 @@ class ProcessDelegate : public embedder::ProcessDelegate {
 // Just tests starting the child process and joining it (without starting an
 // app).
 TEST(ChildProcessHostTest, MAYBE_StartJoin) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch("use-new-edk");
-
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
   base::MessageLoop message_loop(
@@ -63,9 +61,7 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   io_thread.StartWithOptions(options);
 
   ProcessDelegate delegate;
-  embedder::InitIPCSupport(
-      embedder::ProcessType::NONE, &delegate, io_thread.task_runner(),
-      embedder::ScopedPlatformHandle());
+  edk::InitIPCSupport(&delegate, io_thread.task_runner());
 
   ChildProcessHost child_process_host(blocking_pool.get(), false,
                                       base::FilePath());
@@ -79,7 +75,7 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   VLOG(2) << "Joined child: exit_code = " << exit_code;
   EXPECT_EQ(123, exit_code);
   blocking_pool->Shutdown();
-  embedder::ShutdownIPCSupport();
+  edk::ShutdownIPCSupport();
 }
 
 }  // namespace

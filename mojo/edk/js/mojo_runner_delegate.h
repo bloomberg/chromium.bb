@@ -11,6 +11,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 class MojoRunnerDelegate : public gin::ModuleRunnerDelegate {
  public:
@@ -27,6 +28,7 @@ class MojoRunnerDelegate : public gin::ModuleRunnerDelegate {
   DISALLOW_COPY_AND_ASSIGN(MojoRunnerDelegate);
 };
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo
 

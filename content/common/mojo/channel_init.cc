@@ -15,57 +15,19 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 namespace content {
 
-ChannelInit::ChannelInit() : channel_info_(nullptr), weak_factory_(this) {}
+ChannelInit::ChannelInit() {}
 
-ChannelInit::~ChannelInit() {
-  if (channel_info_)
-    mojo::embedder::DestroyChannel(channel_info_,
-                                   base::Bind(&base::DoNothing), nullptr);
-}
+ChannelInit::~ChannelInit() {}
 
 mojo::ScopedMessagePipeHandle ChannelInit::Init(
     base::PlatformFile file,
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  scoped_ptr<IPC::ScopedIPCSupport> ipc_support(
-      new IPC::ScopedIPCSupport(io_thread_task_runner));
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-    ipc_support_ = std::move(ipc_support);
-    return mojo::edk::CreateMessagePipe(
-        mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(file)));
-  } else {
-    return mojo::embedder::CreateChannel(
-        mojo::embedder::ScopedPlatformHandle(
-            mojo::embedder::PlatformHandle(file)),
-        base::Bind(&ChannelInit::OnCreatedChannel, weak_factory_.GetWeakPtr(),
-                   base::Passed(&ipc_support)),
-        base::ThreadTaskRunnerHandle::Get());
-  }
-}
-
-void ChannelInit::WillDestroySoon() {
-  if (channel_info_)
-    mojo::embedder::WillDestroyChannelSoon(channel_info_);
-}
-
-// static
-void ChannelInit::OnCreatedChannel(
-    base::WeakPtr<ChannelInit> self,
-    scoped_ptr<IPC::ScopedIPCSupport> ipc_support,
-    mojo::embedder::ChannelInfo* channel) {
-  // If |self| was already destroyed, shut the channel down.
-  if (!self) {
-    mojo::embedder::DestroyChannel(channel,
-                                   base::Bind(&base::DoNothing), nullptr);
-    return;
-  }
-
-  DCHECK(!self->channel_info_);
-  self->channel_info_ = channel;
-  self->ipc_support_ = std::move(ipc_support);
+  ipc_support_.reset(new IPC::ScopedIPCSupport(io_thread_task_runner));
+  return mojo::edk::CreateMessagePipe(
+      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(file)));
 }
 
 }  // namespace content

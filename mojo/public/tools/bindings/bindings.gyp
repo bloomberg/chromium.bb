@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../../../../third_party/mojo/mojom_bindings_generator_variables.gypi',
+    '../../../mojom_bindings_generator_variables.gypi',
   ],
   'targets': [
     {

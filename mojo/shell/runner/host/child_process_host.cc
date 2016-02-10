@@ -22,7 +22,6 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/runner/common/switches.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -197,9 +196,9 @@ void ChildProcessHost::DoLaunch() {
     platform_channel_pair_.ChildProcessLaunched();
     if (node_channel_.get()) {
       node_channel_->ChildProcessLaunched();
-      mojo::embedder::ChildProcessLaunched(
+      mojo::edk::ChildProcessLaunched(
           child_process_.Handle(),
-          mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
+          mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
               node_channel_->PassServerHandle().release().handle)));
     }
   }

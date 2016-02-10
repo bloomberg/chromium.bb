@@ -182,14 +182,14 @@ test("extensions_unittests") {
     "//extensions/renderer",
     "//extensions/strings",
     "//extensions/utility",
+    "//mojo/edk/js",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//mojo/shell/public/interfaces",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/leveldatabase",
-    "//third_party/mojo/src/mojo/edk/js",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 
   data_deps = [
@@ -242,12 +242,12 @@ test("extensions_browsertests") {
     "//device/core:mocks",
     "//device/hid:mocks",
     "//device/usb:mocks",
+    "//mojo/edk/js",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/js",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 
   data_deps = [

@@ -49,7 +49,9 @@ class MojoTestBase : public testing::Test {
     friend class MojoTestBase;
 
     MojoTestBase* test_;
+#if !defined(OS_IOS)
     MultiprocessTestHelper helper_;
+#endif
     ScopedMessagePipeHandle pipe_;
     bool was_shutdown_ = false;
 
@@ -169,6 +171,7 @@ class MojoTestBase : public testing::Test {
 // |pipe_name| will be bound to the MojoHandle of a message pipe connected
 // to the parent process (see RUN_CHILD_ON_PIPE above.) This pipe handle is
 // automatically closed on test client teardown.
+#if !defined(OS_IOS)
 #define DEFINE_TEST_CLIENT_WITH_PIPE(client_name, test_base, pipe_name)     \
   class client_name##_MainFixture : public test_base {                      \
     void TestBody() override {}                                             \
@@ -203,8 +206,10 @@ class MojoTestBase : public testing::Test {
                        base::Unretained(&test)));                            \
       }                                                                      \
       void client_name##_MainFixture::Main(MojoHandle pipe_name)
-
-
+#else  // !defined(OS_IOS)
+#define DEFINE_TEST_CLIENT_WITH_PIPE(client_name, test_base, pipe_name)
+#define DEFINE_TEST_CLIENT_TEST_WITH_PIPE(client_name, test_base, pipe_name)
+#endif  // !defined(OS_IOS)
 
 }  // namespace test
 }  // namespace edk

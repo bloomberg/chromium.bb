@@ -407,6 +407,8 @@ TEST_F(MessagePipeTest, BasicWaiting) {
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 }
 
+#if !defined(OS_IOS)
+
 const size_t kPingPongIterations = 50000;
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeHandlePingPong, MessagePipeTest, h) {
@@ -459,6 +461,8 @@ TEST_F(MessagePipeTest, SharedBufferHandlePingPong) {
   END_CHILD()
   MojoClose(buffer);
 }
+
+#endif  // !defined(OS_IOS)
 
 }  // namespace
 }  // namespace edk

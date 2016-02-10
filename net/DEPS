@@ -54,7 +54,7 @@ specific_include_rules = {
   ],
 
   "run_all_unittests\.cc": [
-    "+third_party/mojo/src/mojo/edk",
+    "+mojo/edk",
   ],
 
   "brotli_filter\.cc": [

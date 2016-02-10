@@ -20,9 +20,9 @@ component("vibration") {
     ":mojo_bindings",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/edk/system",
   ]
 
   if (is_android) {

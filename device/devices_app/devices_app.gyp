@@ -30,12 +30,12 @@
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_base',
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',
-        '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_base',
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
-        '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -49,7 +49,7 @@
         ],
       },
       'includes': [
-        '../../third_party/mojo/mojom_bindings_generator_explicit.gypi',
+        '../../mojo/mojom_bindings_generator_explicit.gypi',
       ],
     },
     {

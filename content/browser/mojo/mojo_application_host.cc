@@ -10,19 +10,10 @@
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 
 namespace content {
 namespace {
-
-base::PlatformFile PlatformFileFromScopedPlatformHandle(
-    mojo::embedder::ScopedPlatformHandle handle) {
-#if defined(OS_POSIX)
-  return handle.release().fd;
-#elif defined(OS_WIN)
-  return handle.release().handle;
-#endif
-}
 
 class ApplicationSetupImpl : public ApplicationSetup {
  public:
@@ -62,7 +53,7 @@ MojoApplicationHost::~MojoApplicationHost() {
 bool MojoApplicationHost::Init() {
   DCHECK(!client_handle_.is_valid()) << "Already initialized!";
 
-  mojo::embedder::PlatformChannelPair channel_pair;
+  mojo::edk::PlatformChannelPair channel_pair;
 
   scoped_refptr<base::TaskRunner> io_task_runner;
   if (io_task_runner_override_) {
@@ -76,8 +67,7 @@ bool MojoApplicationHost::Init() {
   // Forward this to the client once we know its process handle.
   client_handle_ = channel_pair.PassClientHandle();
   mojo::ScopedMessagePipeHandle pipe = channel_init_.Init(
-      PlatformFileFromScopedPlatformHandle(channel_pair.PassServerHandle()),
-      io_task_runner);
+      channel_pair.PassServerHandle().release().handle, io_task_runner);
   application_setup_.reset(new ApplicationSetupImpl(
       &service_registry_,
       mojo::MakeRequest<ApplicationSetup>(std::move(pipe))));
@@ -89,14 +79,9 @@ void MojoApplicationHost::Activate(IPC::Sender* sender,
   DCHECK(!did_activate_);
   DCHECK(client_handle_.is_valid());
 
-  base::PlatformFile client_file =
-      PlatformFileFromScopedPlatformHandle(std::move(client_handle_));
+  base::PlatformFile client_file = client_handle_.release().handle;
   did_activate_ = sender->Send(new MojoMsg_Activate(
       IPC::GetFileHandleForProcess(client_file, process_handle, true)));
-}
-
-void MojoApplicationHost::WillDestroySoon() {
-  channel_init_.WillDestroySoon();
 }
 
 void MojoApplicationHost::OverrideIOTaskRunnerForTest(

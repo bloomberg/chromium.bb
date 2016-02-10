@@ -189,11 +189,11 @@ test("media_mojo_unittests") {
     "//media",
     "//media/base:test_support",
     "//media/mojo/interfaces",
+    "//mojo/edk/system",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
   ]
 }
 

@@ -21,7 +21,7 @@ The general pattern of use is:
 The net result is that you will force |out_path| to be wiped and all
 |gen_sources| to be regenerated any time any file in |inputs| changes.
 
-See //third_party/mojo/mojom_bindings_generator.gypi for an example use case.
+See //mojo/mojom_bindings_generator.gypi for an example use case.
 
 """
 

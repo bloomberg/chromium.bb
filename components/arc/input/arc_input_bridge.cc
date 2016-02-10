@@ -15,7 +15,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/arc/arc_bridge_service.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
@@ -346,9 +346,9 @@ base::ScopedFD ArcInputBridge::CreateBridgeInputDevice(
     return base::ScopedFD();
   }
   MojoHandle wrapped_handle;
-  MojoResult wrap_result = mojo::embedder::CreatePlatformHandleWrapper(
-      mojo::embedder::ScopedPlatformHandle(
-          mojo::embedder::PlatformHandle(read_fd.release())),
+  MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
+      mojo::edk::ScopedPlatformHandle(
+          mojo::edk::PlatformHandle(read_fd.release())),
       &wrapped_handle);
   if (wrap_result != MOJO_RESULT_OK) {
     LOG(WARNING) << "Pipe failed to wrap handles. Closing: " << wrap_result;

@@ -18,6 +18,7 @@
 
 namespace mojo {
 namespace edk {
+namespace js {
 
 namespace {
 
@@ -74,5 +75,6 @@ void MojoRunnerDelegate::UnhandledException(gin::ShellRunner* runner,
   LOG(ERROR) << try_catch.GetStackTrace();
 }
 
+}  // namespace js
 }  // namespace edk
 }  // namespace mojo

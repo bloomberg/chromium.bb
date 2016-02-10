@@ -11,8 +11,8 @@ test("mojo_public_application_unittests") {
 
   deps = [
     "//base",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/shell/public/cpp",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
   ]
 }

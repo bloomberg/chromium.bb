@@ -59,7 +59,7 @@ class WaitSetDispatcherTest : public ::testing::Test {
     MojoHandle h0, h1;
     EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &h0, &h1));
 
-    Core* core = mojo::edk::internal::GetCore();
+    Core* core = mojo::edk::internal::g_core;
     *d0 = scoped_refptr<MessagePipeDispatcher>(
         static_cast<MessagePipeDispatcher*>(core->GetDispatcher(h0).get()));
     *d1 = scoped_refptr<MessagePipeDispatcher>(
