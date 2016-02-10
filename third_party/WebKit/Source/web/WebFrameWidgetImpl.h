@@ -52,7 +52,7 @@ class LocalFrame;
 class Page;
 class PaintLayerCompositor;
 class UserGestureToken;
-class WebCompositorAnimationTimeline;
+class CompositorAnimationTimeline;
 class WebLayer;
 class WebLayerTreeView;
 class WebMouseEvent;
@@ -126,8 +126,8 @@ public:
 
     PaintLayerCompositor* compositor() const;
     void setRootGraphicsLayer(GraphicsLayer*);
-    void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
-    void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
+    void attachCompositorAnimationTimeline(CompositorAnimationTimeline*);
+    void detachCompositorAnimationTimeline(CompositorAnimationTimeline*);
 
     void setVisibilityState(WebPageVisibilityState, bool) override;
 

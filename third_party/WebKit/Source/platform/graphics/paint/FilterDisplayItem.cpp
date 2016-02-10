@@ -20,7 +20,7 @@ void BeginFilterDisplayItem::replay(GraphicsContext& context) const
 
 void BeginFilterDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendFilterItem(visualRect, *m_webFilterOperations, m_bounds);
+    list->appendFilterItem(visualRect, m_webFilterOperations->asFilterOperations(), m_bounds);
 }
 
 bool BeginFilterDisplayItem::drawsContent() const

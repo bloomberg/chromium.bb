@@ -37,10 +37,13 @@
 
 class SkBitmap;
 
+namespace cc {
+class AnimationTimeline;
+}
+
 namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback;
-class WebCompositorAnimationTimeline;
 class WebLayer;
 class WebLayoutAndPaintAsyncCallback;
 struct WebPoint;
@@ -58,8 +61,9 @@ public:
     virtual void setRootLayer(const WebLayer&) { }
     virtual void clearRootLayer() { }
 
-    virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*) { }
-    virtual void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*) { }
+    // TODO(loyso): These should use CompositorAnimationTimeline. crbug.com/584551
+    virtual void attachCompositorAnimationTimeline(cc::AnimationTimeline*) { }
+    virtual void detachCompositorAnimationTimeline(cc::AnimationTimeline*) { }
 
     // View properties ---------------------------------------------------
 

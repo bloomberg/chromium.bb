@@ -29,11 +29,11 @@
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
 #include "SkTableColorFilter.h"
+#include "platform/geometry/IntPoint.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "public/platform/WebPoint.h"
 
 namespace blink {
 
@@ -70,7 +70,7 @@ PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::transformColorSpace(
     return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), input));
 }
 
-void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& operations, WebFilterOperations* filters)
+void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& operations, CompositorFilterOperations* filters)
 {
     ColorSpace currentColorSpace = ColorSpaceDeviceRGB;
     SkImageFilter* const nullFilter = 0;
@@ -157,7 +157,7 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         }
         case FilterOperation::DROP_SHADOW: {
             const DropShadowFilterOperation& drop = toDropShadowFilterOperation(op);
-            filters->appendDropShadowFilter(WebPoint(drop.x(), drop.y()), drop.stdDeviation(), drop.color().rgb());
+            filters->appendDropShadowFilter(drop.location(), drop.stdDeviation(), drop.color());
             break;
         }
         case FilterOperation::NONE:

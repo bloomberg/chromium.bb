@@ -25,6 +25,7 @@
 
 #include "core/animation/AnimationTranslationUtil.h"
 
+#include "platform/animation/CompositorTransformOperations.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/transforms/InterpolatedTransformOperation.h"
@@ -37,11 +38,10 @@
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "public/platform/WebTransformOperations.h"
 
 namespace blink {
 
-void toWebTransformOperations(const TransformOperations& transformOperations, WebTransformOperations* webTransformOperations)
+void toCompositorTransformOperations(const TransformOperations& transformOperations, CompositorTransformOperations* webTransformOperations)
 {
     // We need to do a deep copy the transformOperations may contain ref pointers to TransformOperation objects.
     for (size_t j = 0; j < transformOperations.size(); ++j) {
@@ -113,7 +113,7 @@ void toWebTransformOperations(const TransformOperations& transformOperations, We
     } // for each operation
 }
 
-void toWebFilterOperations(const FilterOperations& inOperations, WebFilterOperations* outOperations)
+void toCompositorFilterOperations(const FilterOperations& inOperations, CompositorFilterOperations* outOperations)
 {
     SkiaImageFilterBuilder builder;
     builder.buildFilterOperations(inOperations, outOperations);

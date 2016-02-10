@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "cc/blink/web_filter_operations_impl.h"
 #include "cc/playback/clip_display_item.h"
 #include "cc/playback/clip_path_display_item.h"
 #include "cc/playback/compositing_display_item.h"
@@ -196,16 +195,13 @@ void WebDisplayItemListImpl::appendEndCompositingItem(
 
 void WebDisplayItemListImpl::appendFilterItem(
     const blink::WebRect& visual_rect,
-    const blink::WebFilterOperations& filters,
+    const cc::FilterOperations& filters,
     const blink::WebFloatRect& bounds) {
-  const WebFilterOperationsImpl& filters_impl =
-      static_cast<const WebFilterOperationsImpl&>(filters);
-
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::FilterDisplayItem>(
-        visual_rect, filters_impl.AsFilterOperations(), bounds);
+        visual_rect, filters, bounds);
   } else {
-    cc::FilterDisplayItem item(filters_impl.AsFilterOperations(), bounds);
+    cc::FilterDisplayItem item(filters, bounds);
     display_item_list_->RasterIntoCanvas(item);
   }
 }

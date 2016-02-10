@@ -32,16 +32,16 @@
 #define ScrollAnimator_h
 
 #include "platform/Timer.h"
+#include "platform/animation/CompositorAnimationPlayerClient.h"
+#include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
-#include "public/platform/WebCompositorAnimationPlayerClient.h"
-#include "public/platform/WebScrollOffsetAnimationCurve.h"
 
 namespace blink {
 
 class ScrollAnimatorTest;
-class WebCompositorAnimationTimeline;
+class CompositorAnimationTimeline;
 
 class PLATFORM_EXPORT ScrollAnimator final : public ScrollAnimatorBase {
 public:
@@ -62,12 +62,12 @@ public:
     void updateCompositorAnimations() override;
     void notifyCompositorAnimationFinished(int groupId) override;
     void notifyCompositorAnimationAborted(int groupId) override;
-    void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) override;
+    void layerForCompositedScrollingDidChange(CompositorAnimationTimeline*) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
+    OwnPtr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
     double m_startTime;
     WTF::TimeFunction m_timeFunction;
 

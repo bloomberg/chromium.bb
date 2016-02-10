@@ -6,9 +6,6 @@
 #define WebCompositorAnimationDelegate_h
 
 #include "WebCommon.h"
-#include "WebCompositorAnimation.h"
-
-#define WEB_COMPOSITOR_ANIMATION_DELEGATE_TAKES_GROUP 1
 
 namespace blink {
 

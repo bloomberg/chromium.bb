@@ -31,10 +31,11 @@
 #include "platform/scroll/ScrollAnimator.h"
 
 #include "platform/TraceEvent.h"
+#include "platform/animation/CompositorAnimation.h"
+#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimation.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassRefPtr.h"
@@ -228,22 +229,21 @@ void ScrollAnimator::updateCompositorAnimations()
         }
 
         if (!m_animationCurve) {
-            m_animationCurve = adoptPtr(Platform::current()->compositorSupport()
-                ->createScrollOffsetAnimationCurve(
-                    m_targetOffset,
-                    WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut,
-                    m_lastGranularity == ScrollByPixel ?
-                        WebScrollOffsetAnimationCurve::ScrollDurationInverseDelta :
-                        WebScrollOffsetAnimationCurve::ScrollDurationConstant));
+            m_animationCurve = adoptPtr(CompositorFactory::current().createScrollOffsetAnimationCurve(
+                m_targetOffset,
+                CompositorAnimationCurve::TimingFunctionTypeEaseInOut,
+                m_lastGranularity == ScrollByPixel ?
+                    CompositorScrollOffsetAnimationCurve::ScrollDurationInverseDelta :
+                    CompositorScrollOffsetAnimationCurve::ScrollDurationConstant));
             m_animationCurve->setInitialValue(currentPosition());
         }
 
         bool sentToCompositor = false;
         if (!m_scrollableArea->shouldScrollOnMainThread()) {
-            OwnPtr<WebCompositorAnimation> animation = adoptPtr(
-                Platform::current()->compositorSupport()->createAnimation(
+            OwnPtr<CompositorAnimation> animation = adoptPtr(
+                CompositorFactory::current().createAnimation(
                     *m_animationCurve,
-                    WebCompositorAnimation::TargetPropertyScrollOffset));
+                    CompositorAnimation::TargetPropertyScrollOffset));
             // Being here means that either there is an animation that needs
             // to be sent to the compositor, or an animation that needs to
             // be updated (a new scroll event before the previous animation
@@ -288,7 +288,7 @@ void ScrollAnimator::cancelAnimation()
 }
 
 void ScrollAnimator::layerForCompositedScrollingDidChange(
-    WebCompositorAnimationTimeline* timeline)
+    CompositorAnimationTimeline* timeline)
 {
     reattachCompositorPlayerIfNeeded(timeline);
 }

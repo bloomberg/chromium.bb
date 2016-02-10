@@ -65,7 +65,7 @@ class LinkHighlight;
 class JSONObject;
 class PaintController;
 class ScrollableArea;
-class WebCompositorAnimation;
+class CompositorAnimation;
 class WebLayer;
 
 typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
@@ -196,7 +196,7 @@ public:
     // Return true if the animation is handled by the compositing system. If this returns
     // false, the animation will be run by AnimationController.
     // These methods handle both transitions and keyframe animations.
-    bool addAnimation(PassOwnPtr<WebCompositorAnimation>);
+    bool addAnimation(PassOwnPtr<CompositorAnimation>);
     void pauseAnimation(int animationId, double /*timeOffset*/);
     void removeAnimation(int animationId);
     void abortAnimation(int animationId);

@@ -110,7 +110,7 @@
 
 namespace blink {
 
-class WebCompositorAnimationTimeline;
+class CompositorAnimationTimeline;
 
 // Converts a AXObjectCache::AXNotification to a WebAXEvent
 static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
@@ -766,7 +766,7 @@ void ChromeClientImpl::didPaint(const PaintArtifact& paintArtifact)
     m_webView->paintArtifactCompositor().update(paintArtifact);
 }
 
-void ChromeClientImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
+void ChromeClientImpl::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
 {
     // FIXME: For top-level frames we still use the WebView as a WebWidget. This
     // special case will be removed when top-level frames get WebFrameWidgets.
@@ -786,7 +786,7 @@ void ChromeClientImpl::attachCompositorAnimationTimeline(WebCompositorAnimationT
     }
 }
 
-void ChromeClientImpl::detachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
+void ChromeClientImpl::detachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
 {
     // FIXME: For top-level frames we still use the WebView as a WebWidget. This
     // special case will be removed when top-level frames get WebFrameWidgets.

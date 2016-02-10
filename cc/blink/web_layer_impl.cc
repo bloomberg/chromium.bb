@@ -18,9 +18,7 @@
 #include "cc/animation/animation.h"
 #include "cc/base/region.h"
 #include "cc/base/switches.h"
-#include "cc/blink/web_animation_impl.h"
 #include "cc/blink/web_blend_mode.h"
-#include "cc/blink/web_filter_operations_impl.h"
 #include "cc/blink/web_to_cc_animation_delegate_adapter.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -43,7 +41,6 @@ using blink::WebVector;
 using blink::WebRect;
 using blink::WebSize;
 using blink::WebColor;
-using blink::WebFilterOperations;
 
 namespace cc_blink {
 namespace {
@@ -230,16 +227,12 @@ WebColor WebLayerImpl::backgroundColor() const {
   return layer_->background_color();
 }
 
-void WebLayerImpl::setFilters(const WebFilterOperations& filters) {
-  const WebFilterOperationsImpl& filters_impl =
-      static_cast<const WebFilterOperationsImpl&>(filters);
-  layer_->SetFilters(filters_impl.AsFilterOperations());
+void WebLayerImpl::setFilters(const cc::FilterOperations& filters) {
+  layer_->SetFilters(filters);
 }
 
-void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
-  const WebFilterOperationsImpl& filters_impl =
-      static_cast<const WebFilterOperationsImpl&>(filters);
-  layer_->SetBackgroundFilters(filters_impl.AsFilterOperations());
+void WebLayerImpl::setBackgroundFilters(const cc::FilterOperations& filters) {
+  layer_->SetBackgroundFilters(filters);
 }
 
 void WebLayerImpl::setAnimationDelegate(
@@ -254,11 +247,8 @@ void WebLayerImpl::setAnimationDelegate(
   layer_->set_layer_animation_delegate(animation_delegate_adapter_.get());
 }
 
-bool WebLayerImpl::addAnimation(blink::WebCompositorAnimation* animation) {
-  bool result = layer_->AddAnimation(
-      static_cast<WebCompositorAnimationImpl*>(animation)->PassAnimation());
-  delete animation;
-  return result;
+bool WebLayerImpl::addAnimation(cc::Animation* animation) {
+  return layer_->AddAnimation(make_scoped_ptr(animation));
 }
 
 void WebLayerImpl::removeAnimation(int animation_id) {

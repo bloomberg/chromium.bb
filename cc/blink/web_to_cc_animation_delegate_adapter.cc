@@ -17,13 +17,7 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationStarted(
     cc::Animation::TargetProperty target_property,
     int group) {
   delegate_->notifyAnimationStarted(
-      (monotonic_time - base::TimeTicks()).InSecondsF(),
-#if WEB_COMPOSITOR_ANIMATION_DELEGATE_TAKES_GROUP
-      group);
-#else
-      static_cast<blink::WebCompositorAnimation::TargetProperty>(
-          target_property));
-#endif
+      (monotonic_time - base::TimeTicks()).InSecondsF(), group);
 }
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
@@ -31,13 +25,7 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
     cc::Animation::TargetProperty target_property,
     int group) {
   delegate_->notifyAnimationFinished(
-      (monotonic_time - base::TimeTicks()).InSecondsF(),
-#if WEB_COMPOSITOR_ANIMATION_DELEGATE_TAKES_GROUP
-      group);
-#else
-      static_cast<blink::WebCompositorAnimation::TargetProperty>(
-          target_property));
-#endif
+      (monotonic_time - base::TimeTicks()).InSecondsF(), group);
 }
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationAborted(

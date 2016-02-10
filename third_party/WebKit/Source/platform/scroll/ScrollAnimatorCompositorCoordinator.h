@@ -7,9 +7,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
+#include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
-#include "public/platform/WebCompositorAnimationPlayerClient.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -17,10 +17,11 @@
 namespace blink {
 
 class ScrollableArea;
-class WebCompositorAnimationPlayer;
-class WebCompositorAnimationTimeline;
+class CompositorAnimation;
+class CompositorAnimationPlayer;
+class CompositorAnimationTimeline;
 
-class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private WebCompositorAnimationPlayerClient, WebCompositorAnimationDelegate {
+class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private CompositorAnimationPlayerClient, WebCompositorAnimationDelegate {
     USING_FAST_MALLOC_WILL_BE_REMOVED(ScrollAnimatorCompositorCoordinator);
     WTF_MAKE_NONCOPYABLE(ScrollAnimatorCompositorCoordinator);
 public:
@@ -36,27 +37,27 @@ public:
     virtual void updateCompositorAnimations() = 0;
     virtual void notifyCompositorAnimationFinished(int groupId) = 0;
     virtual void notifyCompositorAnimationAborted(int groupId) = 0;
-    virtual void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) = 0;
+    virtual void layerForCompositedScrollingDidChange(CompositorAnimationTimeline*) = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit ScrollAnimatorCompositorCoordinator();
 
-    bool addAnimation(PassOwnPtr<WebCompositorAnimation>);
+    bool addAnimation(PassOwnPtr<CompositorAnimation>);
     void removeAnimation();
     void abortAnimation();
 
     void compositorAnimationFinished(int groupId);
-    void reattachCompositorPlayerIfNeeded(WebCompositorAnimationTimeline*);
+    void reattachCompositorPlayerIfNeeded(CompositorAnimationTimeline*);
 
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override;
     void notifyAnimationAborted(double monotonicTime, int group) override;
 
-    // WebCompositorAnimationPlayerClient implementation.
-    WebCompositorAnimationPlayer* compositorPlayer() const override;
+    // CompositorAnimationPlayerClient implementation.
+    CompositorAnimationPlayer* compositorPlayer() const override;
 
     friend class Internals;
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
@@ -89,7 +90,7 @@ protected:
         PostAnimationCleanup
     };
 
-    OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
+    OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
     int m_compositorAnimationAttachedToLayerId;
     RunState m_runState;
     int m_compositorAnimationId;

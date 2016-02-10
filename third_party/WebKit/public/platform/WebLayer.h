@@ -41,14 +41,15 @@ class SkMatrix44;
 class SkImageFilter;
 
 namespace cc {
+class Animation;
 class Layer;
 class LayerClient;
+class FilterOperations;
 }
 
 namespace blink {
-class WebCompositorAnimation;
+
 class WebCompositorAnimationDelegate;
-class WebFilterOperations;
 class WebLayerScrollClient;
 struct WebFloatPoint;
 struct WebLayerPositionConstraint;
@@ -132,12 +133,13 @@ public:
     virtual WebColor backgroundColor() const = 0;
 
     // Clear the filters in use by passing in a newly instantiated
-    // WebFilterOperations object.
-    virtual void setFilters(const WebFilterOperations&) = 0;
+    // FilterOperations object.
+    virtual void setFilters(const cc::FilterOperations&) = 0;
 
     // Clear the background filters in use by passing in a newly instantiated
-    // WebFilterOperations object.
-    virtual void setBackgroundFilters(const WebFilterOperations&) = 0;
+    // FilterOperations object.
+    // TODO(loyso): This should use CompositorFilterOperation. crbug.com/584551
+    virtual void setBackgroundFilters(const cc::FilterOperations&) = 0;
 
     // An animation delegate is notified when animations are started and
     // stopped. The WebLayer does not take ownership of the delegate, and it is
@@ -145,10 +147,10 @@ public:
     // deleting the delegate.
     virtual void setAnimationDelegate(WebCompositorAnimationDelegate*) = 0;
 
-
     // Returns false if the animation cannot be added.
-    // Takes ownership of the WebCompositorAnimation object.
-    virtual bool addAnimation(WebCompositorAnimation*) = 0;
+    // Takes ownership of the cc::Animation object.
+    // TODO(loyso): Erase it. crbug.com/575041
+    virtual bool addAnimation(cc::Animation*) = 0;
 
     // Removes all animations with the given id.
     virtual void removeAnimation(int animationId) = 0;

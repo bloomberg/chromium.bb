@@ -4,13 +4,14 @@
 
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 
+#include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimation.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebScrollOffsetAnimationCurve.h"
 
 namespace blink {
 
@@ -54,10 +55,10 @@ void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
 
     m_startTime = 0.0;
     m_targetOffset = offset;
-    m_animationCurve = adoptPtr(Platform::current()->compositorSupport()->createScrollOffsetAnimationCurve(
+    m_animationCurve = adoptPtr(CompositorFactory::current().createScrollOffsetAnimationCurve(
         m_targetOffset,
-        WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut,
-        WebScrollOffsetAnimationCurve::ScrollDurationDeltaBased));
+        CompositorAnimationCurve::TimingFunctionTypeEaseInOut,
+        CompositorScrollOffsetAnimationCurve::ScrollDurationDeltaBased));
 
     m_scrollableArea->registerForAnimation();
     if (!m_scrollableArea->scheduleAnimation()) {
@@ -123,7 +124,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
         bool sentToCompositor = false;
 
         if (!m_scrollableArea->shouldScrollOnMainThread()) {
-            OwnPtr<WebCompositorAnimation> animation = adoptPtr(Platform::current()->compositorSupport()->createAnimation(*m_animationCurve, WebCompositorAnimation::TargetPropertyScrollOffset));
+            OwnPtr<CompositorAnimation> animation = adoptPtr(CompositorFactory::current().createAnimation(*m_animationCurve, CompositorAnimation::TargetPropertyScrollOffset));
 
             int animationId = animation->id();
             int animationGroupId = animation->group();
@@ -147,7 +148,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
     }
 }
 
-void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline* timeline)
+void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange(CompositorAnimationTimeline* timeline)
 {
     reattachCompositorPlayerIfNeeded(timeline);
 

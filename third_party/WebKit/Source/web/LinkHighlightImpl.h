@@ -26,12 +26,12 @@
 #ifndef LinkHighlightImpl_h
 #define LinkHighlightImpl_h
 
+#include "platform/animation/CompositorAnimationPlayer.h"
+#include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/Path.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
-#include "public/platform/WebCompositorAnimationPlayer.h"
-#include "public/platform/WebCompositorAnimationPlayerClient.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
 #include "wtf/Forward.h"
@@ -49,7 +49,7 @@ class WebViewImpl;
 class LinkHighlightImpl final : public LinkHighlight
     , public WebContentLayerClient
     , public WebCompositorAnimationDelegate
-    , public WebCompositorAnimationPlayerClient {
+    , public CompositorAnimationPlayerClient {
 public:
     static PassOwnPtr<LinkHighlightImpl> create(Node*, WebViewImpl*);
     ~LinkHighlightImpl() override;
@@ -73,8 +73,8 @@ public:
     WebLayer* layer() override;
     void clearCurrentGraphicsLayer() override;
 
-    // WebCompositorAnimationPlayerClient implementation.
-    WebCompositorAnimationPlayer* compositorPlayer() const override;
+    // CompositorAnimationPlayerClient implementation.
+    CompositorAnimationPlayer* compositorPlayer() const override;
 
     GraphicsLayer* currentGraphicsLayerForTesting() const { return m_currentGraphicsLayer; }
 
@@ -97,7 +97,7 @@ private:
     RefPtrWillBePersistent<Node> m_node;
     WebViewImpl* m_owningWebViewImpl;
     GraphicsLayer* m_currentGraphicsLayer;
-    OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
+    OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
 
     bool m_geometryNeedsUpdate;
     bool m_isAnimating;

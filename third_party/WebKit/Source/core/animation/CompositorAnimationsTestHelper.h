@@ -26,12 +26,13 @@
 #define CompositorAnimationsTestHelper_h
 
 #include "core/animation/CompositorAnimations.h"
+#include "platform/animation/CompositorAnimationPlayer.h"
+#include "platform/animation/CompositorAnimationTimeline.h"
+#include "platform/animation/CompositorFloatAnimationCurve.h"
+#include "platform/animation/CompositorFloatKeyframe.h"
+#include "platform/graphics/CompositorFactory.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/WebCompositorAnimationPlayer.h"
-#include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebFloatAnimationCurve.h"
-#include "public/platform/WebFloatKeyframe.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <gmock/gmock.h>
@@ -41,28 +42,28 @@
 // -----------------------------------------------------------------------
 namespace blink {
 
-// WebFloatKeyframe is a plain struct, so we just create an == operator
+// CompositorFloatKeyframe is a plain struct, so we just create an == operator
 // for it.
-inline bool operator==(const WebFloatKeyframe& a, const WebFloatKeyframe& b)
+inline bool operator==(const CompositorFloatKeyframe& a, const CompositorFloatKeyframe& b)
 {
     return a.time == b.time && a.value == b.value;
 }
 
-inline void PrintTo(const WebFloatKeyframe& frame, ::std::ostream* os)
+inline void PrintTo(const CompositorFloatKeyframe& frame, ::std::ostream* os)
 {
-    *os << "WebFloatKeyframe@" << &frame << "(" << frame.time << ", " << frame.value << ")";
+    *os << "CompositorFloatKeyframe@" << &frame << "(" << frame.time << ", " << frame.value << ")";
 }
 
 // -----------------------------------------------------------------------
 
-class WebCompositorAnimationMock : public WebCompositorAnimation {
+class WebCompositorAnimationMock : public CompositorAnimation {
 private:
-    WebCompositorAnimation::TargetProperty m_property;
+    CompositorAnimation::TargetProperty m_property;
 
 public:
     // Target Property is set through the constructor.
-    WebCompositorAnimationMock(WebCompositorAnimation::TargetProperty p) : m_property(p) { }
-    virtual WebCompositorAnimation::TargetProperty targetProperty() const { return m_property; }
+    WebCompositorAnimationMock(CompositorAnimation::TargetProperty p) : m_property(p) { }
+    virtual CompositorAnimation::TargetProperty targetProperty() const { return m_property; }
 
     MOCK_METHOD0(id, int());
     MOCK_METHOD0(group, int());
@@ -92,46 +93,33 @@ public:
     ~WebCompositorAnimationMock() { delete_(); }
 };
 
-template<typename CurveType, WebCompositorAnimationCurve::AnimationCurveType CurveId, typename KeyframeType>
+template<typename CurveType, CompositorAnimationCurve::AnimationCurveType CurveId, typename KeyframeType>
 class WebCompositorAnimationCurveMock : public CurveType {
 public:
     MOCK_METHOD1_T(add, void(const KeyframeType&));
-    MOCK_METHOD2_T(add, void(const KeyframeType&, WebCompositorAnimationCurve::TimingFunctionType));
+    MOCK_METHOD2_T(add, void(const KeyframeType&, CompositorAnimationCurve::TimingFunctionType));
     MOCK_METHOD5_T(add, void(const KeyframeType&, double, double, double, double));
     MOCK_METHOD3_T(add, void(const KeyframeType&, int steps, float stepsStartOffset));
 
     MOCK_METHOD0(setLinearTimingFunction, void());
     MOCK_METHOD4(setCubicBezierTimingFunction, void(double, double, double, double));
-    MOCK_METHOD1(setCubicBezierTimingFunction, void(WebCompositorAnimationCurve::TimingFunctionType));
+    MOCK_METHOD1(setCubicBezierTimingFunction, void(CompositorAnimationCurve::TimingFunctionType));
     MOCK_METHOD2(setStepsTimingFunction, void(int, float));
 
-    MOCK_CONST_METHOD1_T(getValue, float(double)); // Only on WebFloatAnimationCurve, but can't hurt to have here.
+    MOCK_CONST_METHOD1_T(getValue, float(double)); // Only on CompositorFloatAnimationCurve, but can't hurt to have here.
 
-    virtual WebCompositorAnimationCurve::AnimationCurveType type() const { return CurveId; }
+    virtual CompositorAnimationCurve::AnimationCurveType type() const { return CurveId; }
 
     MOCK_METHOD0(delete_, void());
-    ~WebCompositorAnimationCurveMock() { delete_(); }
+    ~WebCompositorAnimationCurveMock() override { delete_(); }
 };
 
-using WebFloatAnimationCurveMock = WebCompositorAnimationCurveMock<WebFloatAnimationCurve, WebCompositorAnimationCurve::AnimationCurveTypeFloat, WebFloatKeyframe>;
+using WebFloatAnimationCurveMock = WebCompositorAnimationCurveMock<CompositorFloatAnimationCurve, CompositorAnimationCurve::AnimationCurveTypeFloat, CompositorFloatKeyframe>;
 
-class WebCompositorAnimationTimelineMock : public WebCompositorAnimationTimeline {
+class WebCompositorAnimationTimelineMock : public CompositorAnimationTimeline {
 public:
-    MOCK_METHOD1(playerAttached, void(const WebCompositorAnimationPlayerClient&));
-    MOCK_METHOD1(playerDestroyed, void(const WebCompositorAnimationPlayerClient&));
-};
-
-class WebCompositorAnimationPlayerMock : public WebCompositorAnimationPlayer {
-public:
-    MOCK_METHOD1(setAnimationDelegate, void(WebCompositorAnimationDelegate*));
-
-    MOCK_METHOD1(attachLayer, void(WebLayer*));
-    MOCK_METHOD0(detachLayer, void());
-    MOCK_CONST_METHOD0(isLayerAttached, bool());
-
-    MOCK_METHOD1(addAnimation, void(WebCompositorAnimation*));
-    MOCK_METHOD1(removeAnimation, void(int));
-    MOCK_METHOD2(pauseAnimation, void(int, double));
+    MOCK_METHOD1(playerAttached, void(const CompositorAnimationPlayerClient&));
+    MOCK_METHOD1(playerDestroyed, void(const CompositorAnimationPlayerClient&));
 };
 
 } // namespace blink
@@ -140,41 +128,21 @@ namespace blink {
 
 class AnimationCompositorAnimationsTestBase : public ::testing::Test {
 public:
-    AnimationCompositorAnimationsTestBase() : m_proxyPlatform(&m_mockCompositor) { }
-
-    class WebCompositorSupportMock : public WebCompositorSupport {
+    class CompositorFactoryMock : public CompositorFactory {
     public:
-        MOCK_METHOD4(createAnimation, WebCompositorAnimation*(const WebCompositorAnimationCurve& curve, WebCompositorAnimation::TargetProperty target, int groupId, int animationId));
-        MOCK_METHOD0(createFloatAnimationCurve, WebFloatAnimationCurve*());
-
-        MOCK_METHOD0(createAnimationPlayer, WebCompositorAnimationPlayer*());
-        MOCK_METHOD0(createAnimationTimeline, WebCompositorAnimationTimeline*());
+        MOCK_METHOD4(createAnimation, CompositorAnimation*(const CompositorAnimationCurve& curve, CompositorAnimation::TargetProperty target, int groupId, int animationId));
+        MOCK_METHOD0(createFloatAnimationCurve, CompositorFloatAnimationCurve*());
+        MOCK_METHOD0(createAnimationPlayer, CompositorAnimationPlayer*());
+        MOCK_METHOD0(createAnimationTimeline, CompositorAnimationTimeline*());
     };
 
 private:
-    class PlatformProxy : public TestingPlatformSupport {
-    public:
-        explicit PlatformProxy(WebCompositorSupportMock** compositor) : m_compositor(compositor) { }
-    private:
-        WebCompositorSupport* compositorSupport() override { return *m_compositor; }
-
-        WebCompositorSupportMock** m_compositor;
-    };
-
-    WebCompositorSupportMock* m_mockCompositor;
-    PlatformProxy m_proxyPlatform;
+    TestingPlatformSupport m_proxyPlatform;
 
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
-        m_mockCompositor = 0;
         Platform::initialize(&m_proxyPlatform);
-    }
-
-    void setCompositorForTesting(WebCompositorSupportMock& mock)
-    {
-        ASSERT(!m_mockCompositor);
-        m_mockCompositor = &mock;
     }
 };
 

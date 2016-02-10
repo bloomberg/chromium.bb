@@ -65,7 +65,7 @@ class Node;
 class Page;
 class PaintArtifact;
 class PopupOpeningObserver;
-class WebCompositorAnimationTimeline;
+class CompositorAnimationTimeline;
 class WebFrameScheduler;
 
 struct CompositedSelection;
@@ -190,8 +190,8 @@ public:
     // the underlying web widget to composite it.
     virtual void didPaint(const PaintArtifact&) { }
 
-    virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }
-    virtual void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }
+    virtual void attachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame* localRoot) { }
+    virtual void detachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame* localRoot) { }
 
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }

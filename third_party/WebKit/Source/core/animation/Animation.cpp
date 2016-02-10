@@ -40,8 +40,9 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
+#include "platform/animation/CompositorAnimationPlayer.h"
+#include "platform/graphics/CompositorFactory.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimationPlayer.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "wtf/MathExtras.h"
 
@@ -921,7 +922,7 @@ void Animation::createCompositorPlayer()
 {
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled() && !m_compositorPlayer) {
         ASSERT(Platform::current()->compositorSupport());
-        m_compositorPlayer = adoptPtr(Platform::current()->compositorSupport()->createAnimationPlayer());
+        m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
         ASSERT(m_compositorPlayer);
         m_compositorPlayer->setAnimationDelegate(this);
         attachCompositorTimeline();
@@ -944,7 +945,7 @@ void Animation::destroyCompositorPlayer()
 void Animation::attachCompositorTimeline()
 {
     if (m_compositorPlayer) {
-        WebCompositorAnimationTimeline* timeline = m_timeline ? m_timeline->compositorTimeline() : nullptr;
+        CompositorAnimationTimeline* timeline = m_timeline ? m_timeline->compositorTimeline() : nullptr;
         if (timeline)
             timeline->playerAttached(*this);
     }
@@ -953,7 +954,7 @@ void Animation::attachCompositorTimeline()
 void Animation::detachCompositorTimeline()
 {
     if (m_compositorPlayer) {
-        WebCompositorAnimationTimeline* timeline = m_timeline ? m_timeline->compositorTimeline() : nullptr;
+        CompositorAnimationTimeline* timeline = m_timeline ? m_timeline->compositorTimeline() : nullptr;
         if (timeline)
             timeline->playerDestroyed(*this);
     }

@@ -25,16 +25,17 @@
 #include "platform/graphics/GraphicsLayer.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/CompositorAnimationPlayer.h"
+#include "platform/animation/CompositorAnimationPlayerClient.h"
+#include "platform/animation/CompositorAnimationTimeline.h"
+#include "platform/animation/CompositorFloatAnimationCurve.h"
+#include "platform/graphics/CompositorFactory.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimationPlayer.h"
-#include "public/platform/WebCompositorAnimationPlayerClient.h"
-#include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebFloatAnimationCurve.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
@@ -100,35 +101,35 @@ private:
     MockGraphicsLayerClient m_client;
 };
 
-class AnimationPlayerForTesting : public WebCompositorAnimationPlayerClient {
+class AnimationPlayerForTesting : public CompositorAnimationPlayerClient {
 public:
     AnimationPlayerForTesting()
     {
-        m_compositorPlayer = adoptPtr(Platform::current()->compositorSupport()->createAnimationPlayer());
+        m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
     }
 
-    WebCompositorAnimationPlayer* compositorPlayer() const override
+    CompositorAnimationPlayer* compositorPlayer() const override
     {
         return m_compositorPlayer.get();
     }
 
-    OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
+    OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
 };
 
 TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 {
     ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
 
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(Platform::current()->compositorSupport()->createFloatAnimationCurve());
-    curve->add(WebFloatKeyframe(0.0, 0.0));
-    OwnPtr<WebCompositorAnimation> floatAnimation(adoptPtr(Platform::current()->compositorSupport()->createAnimation(*curve, WebCompositorAnimation::TargetPropertyOpacity)));
+    OwnPtr<CompositorFloatAnimationCurve> curve = adoptPtr(CompositorFactory::current().createFloatAnimationCurve());
+    curve->add(CompositorFloatKeyframe(0.0, 0.0));
+    OwnPtr<CompositorAnimation> floatAnimation(adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorAnimation::TargetPropertyOpacity)));
     int animationId = floatAnimation->id();
 
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-        OwnPtr<WebCompositorAnimationTimeline> compositorTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
+        OwnPtr<CompositorAnimationTimeline> compositorTimeline = adoptPtr(CompositorFactory::current().createAnimationTimeline());
         AnimationPlayerForTesting player;
 
-        layerTreeView()->attachCompositorAnimationTimeline(compositorTimeline.get());
+        layerTreeView()->attachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
         compositorTimeline->playerAttached(player);
 
         player.compositorPlayer()->attachLayer(m_platformLayer);
@@ -158,9 +159,9 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
         ASSERT_FALSE(player.compositorPlayer()->isLayerAttached());
 
         compositorTimeline->playerDestroyed(player);
-        layerTreeView()->detachCompositorAnimationTimeline(compositorTimeline.get());
+        layerTreeView()->detachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
     } else {
-        ASSERT_TRUE(m_platformLayer->addAnimation(floatAnimation.leakPtr()));
+        ASSERT_TRUE(m_platformLayer->addAnimation(floatAnimation->releaseCCAnimation()));
 
         ASSERT_TRUE(m_platformLayer->hasActiveAnimation());
 

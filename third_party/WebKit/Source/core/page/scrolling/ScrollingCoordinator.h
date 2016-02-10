@@ -49,7 +49,7 @@ class GraphicsLayer;
 class Page;
 class Region;
 class ScrollableArea;
-class WebCompositorAnimationTimeline;
+class CompositorAnimationTimeline;
 class WebLayerTreeView;
 
 class CORE_EXPORT ScrollingCoordinator final : public NoBaseWillBeGarbageCollectedFinalized<ScrollingCoordinator> {
@@ -151,7 +151,7 @@ private:
 
     bool frameViewIsDirty() const;
 
-    OwnPtr<WebCompositorAnimationTimeline> m_programmaticScrollAnimatorTimeline;
+    OwnPtr<CompositorAnimationTimeline> m_programmaticScrollAnimatorTimeline;
 
     using ScrollbarMap = WillBeHeapHashMap<RawPtrWillBeMember<ScrollableArea>, OwnPtr<WebScrollbarLayer>>;
     ScrollbarMap m_horizontalScrollbars;

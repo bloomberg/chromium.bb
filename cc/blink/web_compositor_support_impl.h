@@ -8,11 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
-#include "third_party/WebKit/public/platform/WebCompositorAnimationCurve.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebContentLayerClient.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
-#include "third_party/WebKit/public/platform/WebTransformOperations.h"
 
 namespace blink {
 class WebGraphicsContext3D;
@@ -42,24 +40,6 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
       int thumb_thickness,
       int track_start,
       bool is_left_side_vertical_scrollbar) override;
-  blink::WebCompositorAnimation* createAnimation(
-      const blink::WebCompositorAnimationCurve& curve,
-      blink::WebCompositorAnimation::TargetProperty target,
-      int group_id,
-      int animation_id) override;
-  blink::WebFilterAnimationCurve* createFilterAnimationCurve() override;
-  blink::WebFloatAnimationCurve* createFloatAnimationCurve() override;
-  blink::WebScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(
-      blink::WebFloatPoint target_value,
-      blink::WebCompositorAnimationCurve::TimingFunctionType timing_function,
-      blink::WebScrollOffsetAnimationCurve::ScrollDurationBehavior
-          duration_behavior) override;
-  blink::WebTransformAnimationCurve* createTransformAnimationCurve() override;
-  blink::WebTransformOperations* createTransformOperations() override;
-  blink::WebFilterOperations* createFilterOperations() override;
-
-  blink::WebCompositorAnimationPlayer* createAnimationPlayer() override;
-  blink::WebCompositorAnimationTimeline* createAnimationTimeline() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCompositorSupportImpl);

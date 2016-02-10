@@ -99,9 +99,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void setRootLayer(const blink::WebLayer& layer) override;
   void clearRootLayer() override;
   void attachCompositorAnimationTimeline(
-      blink::WebCompositorAnimationTimeline* compositor_timeline) override;
+      cc::AnimationTimeline* compositor_timeline) override;
   void detachCompositorAnimationTimeline(
-      blink::WebCompositorAnimationTimeline* compositor_timeline) override;
+      cc::AnimationTimeline* compositor_timeline) override;
   void setViewportSize(const blink::WebSize& device_viewport_size) override;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;

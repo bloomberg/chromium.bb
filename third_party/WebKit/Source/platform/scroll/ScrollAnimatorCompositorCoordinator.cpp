@@ -5,11 +5,12 @@
 #include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/CompositorAnimationPlayer.h"
+#include "platform/animation/CompositorAnimationTimeline.h"
+#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimationPlayer.h"
-#include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebCompositorSupport.h"
 
 namespace blink {
@@ -22,7 +23,7 @@ ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
 {
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
         ASSERT(Platform::current()->compositorSupport());
-        m_compositorPlayer = adoptPtr(Platform::current()->compositorSupport()->createAnimationPlayer());
+        m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
         ASSERT(m_compositorPlayer);
         m_compositorPlayer->setAnimationDelegate(this);
     }
@@ -61,7 +62,7 @@ bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() cons
 }
 
 bool ScrollAnimatorCompositorCoordinator::addAnimation(
-    PassOwnPtr<WebCompositorAnimation> animation)
+    PassOwnPtr<CompositorAnimation> animation)
 {
     if (m_compositorPlayer) {
         if (m_compositorPlayer->isLayerAttached()) {
@@ -151,7 +152,7 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
 }
 
 void ScrollAnimatorCompositorCoordinator::reattachCompositorPlayerIfNeeded(
-    WebCompositorAnimationTimeline* timeline)
+    CompositorAnimationTimeline* timeline)
 {
     int compositorAnimationAttachedToLayerId = 0;
     if (scrollableArea()->layerForScrolling())
@@ -196,7 +197,7 @@ void ScrollAnimatorCompositorCoordinator::notifyAnimationAborted(
     notifyCompositorAnimationFinished(group);
 }
 
-WebCompositorAnimationPlayer* ScrollAnimatorCompositorCoordinator::compositorPlayer() const
+CompositorAnimationPlayer* ScrollAnimatorCompositorCoordinator::compositorPlayer() const
 {
     return m_compositorPlayer.get();
 }

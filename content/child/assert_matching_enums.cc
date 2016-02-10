@@ -6,10 +6,8 @@
 // from Blink are valid.
 
 #include "base/macros.h"
-#include "cc/animation/animation.h"
 #include "content/public/common/screen_orientation_values.h"
 #include "media/base/mime_util.h"
-#include "third_party/WebKit/public/platform/WebCompositorAnimation.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
@@ -45,15 +43,5 @@ STATIC_ASSERT_ENUM(blink::WebMimeRegistry::IsNotSupported,
 STATIC_ASSERT_ENUM(blink::WebMimeRegistry::IsSupported, media::IsSupported);
 STATIC_ASSERT_ENUM(blink::WebMimeRegistry::MayBeSupported,
                    media::MayBeSupported);
-
-// TargetProperty
-STATIC_ASSERT_ENUM(blink::WebCompositorAnimation::TargetPropertyTransform,
-                   cc::Animation::TRANSFORM);
-STATIC_ASSERT_ENUM(blink::WebCompositorAnimation::TargetPropertyOpacity,
-                   cc::Animation::OPACITY);
-STATIC_ASSERT_ENUM(blink::WebCompositorAnimation::TargetPropertyFilter,
-                   cc::Animation::FILTER);
-STATIC_ASSERT_ENUM(blink::WebCompositorAnimation::TargetPropertyScrollOffset,
-                   cc::Animation::SCROLL_OFFSET);
 
 } // namespace content

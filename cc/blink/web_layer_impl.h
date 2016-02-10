@@ -29,7 +29,6 @@
 #include "third_party/skia/include/utils/SkMatrix44.h"
 
 namespace blink {
-class WebFilterOperations;
 struct WebFloatRect;
 }
 
@@ -40,6 +39,8 @@ class ConvertableToTraceFormat;
 }
 
 namespace cc {
+class Animation;
+class FilterOperations;
 class Layer;
 class LayerSettings;
 }
@@ -103,11 +104,11 @@ class WebLayerImpl : public blink::WebLayer {
   void setUseParentBackfaceVisibility(bool visible) override;
   void setBackgroundColor(blink::WebColor color) override;
   blink::WebColor backgroundColor() const override;
-  void setFilters(const blink::WebFilterOperations& filters) override;
-  void setBackgroundFilters(const blink::WebFilterOperations& filters) override;
+  void setFilters(const cc::FilterOperations& filters) override;
+  void setBackgroundFilters(const cc::FilterOperations& filters) override;
   void setAnimationDelegate(
       blink::WebCompositorAnimationDelegate* delegate) override;
-  bool addAnimation(blink::WebCompositorAnimation* animation) override;
+  bool addAnimation(cc::Animation* animation) override;
   void removeAnimation(int animation_id) override;
   void pauseAnimation(int animation_id, double time_offset) override;
   void abortAnimation(int animation_id) override;

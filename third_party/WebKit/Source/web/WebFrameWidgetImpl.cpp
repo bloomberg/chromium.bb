@@ -1050,17 +1050,17 @@ void WebFrameWidgetImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_layerTreeView->clearRootLayer();
 }
 
-void WebFrameWidgetImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline)
+void WebFrameWidgetImpl::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline)
 {
     if (m_layerTreeView)
-        m_layerTreeView->attachCompositorAnimationTimeline(compositorTimeline);
+        m_layerTreeView->attachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
 
 }
 
-void WebFrameWidgetImpl::detachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline)
+void WebFrameWidgetImpl::detachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline)
 {
     if (m_layerTreeView)
-        m_layerTreeView->detachCompositorAnimationTimeline(compositorTimeline);
+        m_layerTreeView->detachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
 }
 
 void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState)

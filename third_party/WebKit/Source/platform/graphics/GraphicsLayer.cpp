@@ -32,9 +32,12 @@
 #include "platform/DragImage.h"
 #include "platform/JSONValues.h"
 #include "platform/TraceEvent.h"
+#include "platform/animation/CompositorAnimation.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/CompositorFactory.h"
+#include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
@@ -46,9 +49,7 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimation.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebFilterOperations.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebLayer.h"
@@ -1109,12 +1110,11 @@ void GraphicsLayer::setContentsToImage(Image* image, RespectImageOrientationEnum
     setContentsTo(m_imageLayer ? m_imageLayer->layer() : 0);
 }
 
-bool GraphicsLayer::addAnimation(PassOwnPtr<WebCompositorAnimation> popAnimation)
+bool GraphicsLayer::addAnimation(PassOwnPtr<CompositorAnimation> animation)
 {
-    OwnPtr<WebCompositorAnimation> animation(std::move(popAnimation));
     ASSERT(animation);
     platformLayer()->setAnimationDelegate(this);
-    return platformLayer()->addAnimation(animation.leakPtr());
+    return platformLayer()->addAnimation(animation->releaseCCAnimation());
 }
 
 void GraphicsLayer::pauseAnimation(int animationId, double timeOffset)
@@ -1140,17 +1140,17 @@ WebLayer* GraphicsLayer::platformLayer() const
 void GraphicsLayer::setFilters(const FilterOperations& filters)
 {
     SkiaImageFilterBuilder builder;
-    OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+    OwnPtr<CompositorFilterOperations> webFilters = adoptPtr(CompositorFactory::current().createFilterOperations());
     builder.buildFilterOperations(filters, webFilters.get());
-    m_layer->layer()->setFilters(*webFilters);
+    m_layer->layer()->setFilters(webFilters->asFilterOperations());
 }
 
 void GraphicsLayer::setBackdropFilters(const FilterOperations& filters)
 {
     SkiaImageFilterBuilder builder;
-    OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+    OwnPtr<CompositorFilterOperations> webFilters = adoptPtr(CompositorFactory::current().createFilterOperations());
     builder.buildFilterOperations(filters, webFilters.get());
-    m_layer->layer()->setBackgroundFilters(*webFilters);
+    m_layer->layer()->setBackgroundFilters(webFilters->asFilterOperations());
 }
 
 void GraphicsLayer::setFilterQuality(SkFilterQuality filterQuality)

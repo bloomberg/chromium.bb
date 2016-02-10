@@ -35,15 +35,16 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/CompositorAnimationCurve.h"
+#include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimationCurve.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebDisplayItemList.h"
-#include "public/platform/WebFloatAnimationCurve.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebRect.h"
@@ -83,7 +84,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     m_clipLayer->setTransformOrigin(WebFloatPoint3D());
     m_clipLayer->addChild(m_contentLayer->layer());
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
-        m_compositorPlayer = adoptPtr(compositorSupport->createAnimationPlayer());
+        m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
         ASSERT(m_compositorPlayer);
         m_compositorPlayer->setAnimationDelegate(this);
         if (m_owningWebViewImpl->linkHighlightsTimeline())
@@ -294,25 +295,23 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
 
     m_contentLayer->layer()->setOpacity(startOpacity);
 
-    WebCompositorSupport* compositorSupport = Platform::current()->compositorSupport();
+    OwnPtr<CompositorFloatAnimationCurve> curve = adoptPtr(CompositorFactory::current().createFloatAnimationCurve());
 
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(compositorSupport->createFloatAnimationCurve());
-
-    curve->add(WebFloatKeyframe(0, startOpacity));
+    curve->add(CompositorFloatKeyframe(0, startOpacity));
     // Make sure we have displayed for at least minPreFadeDuration before starting to fade out.
     float extraDurationRequired = std::max(0.f, minPreFadeDuration - static_cast<float>(monotonicallyIncreasingTime() - m_startTime));
     if (extraDurationRequired)
-        curve->add(WebFloatKeyframe(extraDurationRequired, startOpacity));
+        curve->add(CompositorFloatKeyframe(extraDurationRequired, startOpacity));
     // For layout tests we don't fade out.
-    curve->add(WebFloatKeyframe(fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0));
+    curve->add(CompositorFloatKeyframe(fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0));
 
-    OwnPtr<WebCompositorAnimation> animation = adoptPtr(compositorSupport->createAnimation(*curve, WebCompositorAnimation::TargetPropertyOpacity));
+    OwnPtr<CompositorAnimation> animation = adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorAnimation::TargetPropertyOpacity));
 
     m_contentLayer->layer()->setDrawsContent(true);
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled())
         m_compositorPlayer->addAnimation(animation.leakPtr());
     else
-        m_contentLayer->layer()->addAnimation(animation.leakPtr());
+        m_contentLayer->layer()->addAnimation(animation->releaseCCAnimation());
 
     invalidate();
     m_owningWebViewImpl->scheduleAnimation();
@@ -382,7 +381,7 @@ WebLayer* LinkHighlightImpl::layer()
     return clipLayer();
 }
 
-WebCompositorAnimationPlayer* LinkHighlightImpl::compositorPlayer() const
+CompositorAnimationPlayer* LinkHighlightImpl::compositorPlayer() const
 {
     return m_compositorPlayer.get();
 }

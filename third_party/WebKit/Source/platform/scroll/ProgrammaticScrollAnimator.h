@@ -16,8 +16,8 @@
 namespace blink {
 
 class ScrollableArea;
-class WebCompositorAnimationTimeline;
-class WebScrollOffsetAnimationCurve;
+class CompositorAnimationTimeline;
+class CompositorScrollOffsetAnimationCurve;
 
 // Animator for fixed-destination scrolls, such as those triggered by
 // CSSOM View scroll APIs.
@@ -40,7 +40,7 @@ public:
     void updateCompositorAnimations() override;
     void notifyCompositorAnimationFinished(int groupId) override;
     void notifyCompositorAnimationAborted(int groupId) override { };
-    void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) override;
+    void layerForCompositedScrollingDidChange(CompositorAnimationTimeline*) override;
 
     DECLARE_TRACE();
 
@@ -50,7 +50,7 @@ private:
     void notifyPositionChanged(const DoublePoint&);
 
     RawPtrWillBeMember<ScrollableArea> m_scrollableArea;
-    OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
+    OwnPtr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
     FloatPoint m_targetOffset;
     double m_startTime;
 };

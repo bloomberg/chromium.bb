@@ -39,23 +39,23 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMException.h"
 #include "core/events/EventTarget.h"
+#include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
-#include "public/platform/WebCompositorAnimationPlayerClient.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class AnimationTimeline;
+class CompositorAnimationPlayer;
 class Element;
 class ExceptionState;
-class WebCompositorAnimationPlayer;
 
 class CORE_EXPORT Animation final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<Animation>
     , public ActiveDOMObject
     , public WebCompositorAnimationDelegate
-    , public WebCompositorAnimationPlayerClient {
+    , public CompositorAnimationPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Animation);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Animation);
@@ -158,8 +158,8 @@ public:
     void setCompositorPending(bool effectChanged = false);
     void notifyCompositorStartTime(double timelineTime);
     void notifyStartTime(double timelineTime);
-    // WebCompositorAnimationPlayerClient implementation.
-    WebCompositorAnimationPlayer* compositorPlayer() const override { return m_compositorPlayer.get(); }
+    // CompositorAnimationPlayerClient implementation.
+    CompositorAnimationPlayer* compositorPlayer() const override { return m_compositorPlayer.get(); }
 
     bool affects(const Element&, CSSPropertyID) const;
 
@@ -298,7 +298,7 @@ private:
     bool m_compositorPending;
     int m_compositorGroup;
 
-    OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
+    OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
 
     bool m_currentTimePending;
     bool m_stateIsBeingUpdated;

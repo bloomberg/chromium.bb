@@ -22,8 +22,11 @@ class SkImageFilter;
 class SkMatrix44;
 class SkPicture;
 
+namespace cc {
+class FilterOperations;
+}
+
 namespace blink {
-class WebFilterOperations;
 
 // An ordered list of items representing content to be rendered (stored in
 // 'drawing' items) and operations to be performed when rendering this content
@@ -48,7 +51,8 @@ public:
         SkXfermode::Mode, SkRect* bounds, SkColorFilter*) { }
     virtual void appendEndCompositingItem(const WebRect& visualRect) { }
 
-    virtual void appendFilterItem(const WebRect& visualRect, const WebFilterOperations&, const WebFloatRect& bounds) { }
+    // TODO(loyso): This should use CompositorFilterOperation. crbug.com/584551
+    virtual void appendFilterItem(const WebRect& visualRect, const cc::FilterOperations&, const WebFloatRect& bounds) { }
     virtual void appendEndFilterItem(const WebRect& visualRect) { }
 
     // Scroll containers are identified by an opaque pointer.

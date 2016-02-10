@@ -1145,7 +1145,7 @@ void PaintLayerCompositor::attachCompositorTimeline()
     if (!page)
         return;
 
-    WebCompositorAnimationTimeline* compositorTimeline = frame.document() ? frame.document()->timeline().compositorTimeline() : nullptr;
+    CompositorAnimationTimeline* compositorTimeline = frame.document() ? frame.document()->timeline().compositorTimeline() : nullptr;
     if (compositorTimeline)
         page->chromeClient().attachCompositorAnimationTimeline(compositorTimeline, &frame);
 }
@@ -1157,7 +1157,7 @@ void PaintLayerCompositor::detachCompositorTimeline()
     if (!page)
         return;
 
-    WebCompositorAnimationTimeline* compositorTimeline = frame.document() ? frame.document()->timeline().compositorTimeline() : nullptr;
+    CompositorAnimationTimeline* compositorTimeline = frame.document() ? frame.document()->timeline().compositorTimeline() : nullptr;
     if (compositorTimeline)
         page->chromeClient().detachCompositorAnimationTimeline(compositorTimeline, &frame);
 }

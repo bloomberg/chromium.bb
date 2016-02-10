@@ -24,23 +24,23 @@
 
 #include "core/animation/AnimationTranslationUtil.h"
 
+#include "platform/animation/CompositorTransformOperations.h"
+#include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "public/platform/WebFilterOperations.h"
-#include "public/platform/WebTransformOperations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
-class WebTransformOperationsMock : public WebTransformOperations {
+class WebTransformOperationsMock : public CompositorTransformOperations {
 public:
-    MOCK_CONST_METHOD1(canBlendWith, bool(const WebTransformOperations&));
+    MOCK_CONST_METHOD1(canBlendWith, bool(const CompositorTransformOperations&));
     MOCK_METHOD3(appendTranslate, void(double, double, double));
     MOCK_METHOD4(appendRotate, void(double, double, double, double));
     MOCK_METHOD3(appendScale, void(double, double, double));
@@ -51,7 +51,7 @@ public:
     MOCK_CONST_METHOD0(isIdentity, bool());
 };
 
-class WebFilterOperationsMock : public WebFilterOperations {
+class WebFilterOperationsMock : public CompositorFilterOperations {
 public:
     MOCK_METHOD1(appendGrayscaleFilter, void(float));
     MOCK_METHOD1(appendSepiaFilter, void(float));
@@ -62,7 +62,7 @@ public:
     MOCK_METHOD1(appendContrastFilter, void(float));
     MOCK_METHOD1(appendOpacityFilter, void(float));
     MOCK_METHOD1(appendBlurFilter, void(float));
-    MOCK_METHOD3(appendDropShadowFilter, void(WebPoint, float, WebColor));
+    MOCK_METHOD3(appendDropShadowFilter, void(IntPoint, float, Color));
     MOCK_METHOD1(appendColorMatrixFilter, void(SkScalar[20]));
     MOCK_METHOD2(appendZoomFilter, void(float, int));
     MOCK_METHOD1(appendSaturatingBrightnessFilter, void(float));
@@ -83,7 +83,7 @@ TEST(AnimationTranslationUtilTest, transformsWork)
     ops.operations().append(TranslateTransformOperation::create(Length(2, Fixed), Length(0, Fixed), TransformOperation::TranslateX));
     ops.operations().append(RotateTransformOperation::create(0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
     ops.operations().append(ScaleTransformOperation::create(50.2, 100, -4, TransformOperation::Scale3D));
-    toWebTransformOperations(ops, &outOps);
+    toCompositorTransformOperations(ops, &outOps);
 }
 
 TEST(AnimationTranslationUtilTest, filtersWork)
@@ -100,7 +100,7 @@ TEST(AnimationTranslationUtilTest, filtersWork)
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.2, FilterOperation::GRAYSCALE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.8, FilterOperation::SEPIA));
     ops.operations().append(BasicComponentTransferFilterOperation::create(0.1, FilterOperation::OPACITY));
-    toWebFilterOperations(ops, &outOps);
+    toCompositorFilterOperations(ops, &outOps);
 }
 
 } // namespace blink
