@@ -189,7 +189,29 @@ void TestWebContents::NavigateAndCommit(const GURL& url) {
 }
 
 void TestWebContents::TestSetIsLoading(bool value) {
-  SetIsLoading(value, true, nullptr);
+  if (value)
+    DidStartLoading(GetMainFrame()->frame_tree_node(), true);
+  else {
+    for (FrameTreeNode* node : frame_tree_.Nodes()) {
+      RenderFrameHostImpl* current_frame_host =
+          node->render_manager()->current_frame_host();
+      DCHECK(current_frame_host);
+      current_frame_host->ResetLoadingState();
+
+      RenderFrameHostImpl* pending_frame_host =
+          node->render_manager()->pending_frame_host();
+
+      if (IsBrowserSideNavigationEnabled()) {
+        RenderFrameHostImpl* speculative_frame_host =
+            node->render_manager()->speculative_frame_host();
+        if (speculative_frame_host)
+          speculative_frame_host->ResetLoadingState();
+      } else {
+        if (pending_frame_host)
+          pending_frame_host->ResetLoadingState();
+      }
+    }
+  }
 }
 
 void TestWebContents::CommitPendingNavigation() {

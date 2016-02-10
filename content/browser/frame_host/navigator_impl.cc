@@ -338,14 +338,24 @@ bool NavigatorImpl::NavigateToEntry(
   // Double check that here.
   CheckWebUIRendererDoesNotDisplayNormalURL(dest_render_frame_host, dest_url);
 
+  // In the case of a transfer navigation, set the destination RenderFrameHost
+  // as loading.  This ensures that the RenderFrameHost gets in a loading state
+  // without emitting a spurrious DidStartLoading notification at the
+  // FrameTreeNode level (since the FrameTreeNode was already loading). Note
+  // that this works both for a transfer to a different RenderFrameHost and in
+  // the rare case where the navigation is transferred back to the same
+  // RenderFrameHost.
+  bool is_transfer = entry.transferred_global_request_id().child_id != -1;
+  if (is_transfer)
+    dest_render_frame_host->set_is_loading(true);
+
   // Navigate in the desired RenderFrameHost.
   // We can skip this step in the rare case that this is a transfer navigation
   // which began in the chosen RenderFrameHost, since the request has already
   // been issued.  In that case, simply resume the response.
-  bool is_transfer_to_same =
-      entry.transferred_global_request_id().child_id != -1 &&
-      entry.transferred_global_request_id().child_id ==
-          dest_render_frame_host->GetProcess()->GetID();
+  bool is_transfer_to_same = is_transfer &&
+                             entry.transferred_global_request_id().child_id ==
+                                 dest_render_frame_host->GetProcess()->GetID();
   if (!is_transfer_to_same) {
     navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
                                                      entry.restore_type()));
@@ -371,6 +381,7 @@ bool NavigatorImpl::NavigateToEntry(
             controller_->GetEntryCount()));
   } else {
     // No need to navigate again.  Just resume the deferred request.
+    // Also sets the RenderFrameHost back to a loading state again.
     dest_render_frame_host->GetProcess()->ResumeDeferredNavigation(
         entry.transferred_global_request_id());
   }

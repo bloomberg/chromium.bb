@@ -214,6 +214,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
   g_routing_id_frame_map.Get().insert(std::make_pair(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_),
       this));
+  site_instance_->AddObserver(this);
 
   if (is_swapped_out) {
     rfh_state_ = STATE_SWAPPED_OUT;
@@ -261,6 +262,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
+
+  site_instance_->RemoveObserver(this);
 
   if (delegate_ && render_frame_created_)
     delegate_->RenderFrameDeleted(this);
@@ -517,7 +520,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
                                 OnDidCommitProvisionalLoad(msg))
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDropNavigation, OnDidDropNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DocumentOnLoadCompleted,
@@ -688,6 +690,13 @@ gfx::NativeViewAccessible
   if (view)
     return view->AccessibilityGetNativeViewAccessible();
   return NULL;
+}
+
+void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
+  DCHECK(site_instance == site_instance_.get());
+
+  // The render process is gone, this frame can no longer be loading.
+  ResetLoadingState();
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
@@ -1042,15 +1051,6 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     pending_commit_ = false;
 }
 
-void RenderFrameHostImpl::OnDidDropNavigation() {
-  // At the end of Navigate(), the FrameTreeNode's DidStartLoading is called to
-  // force the spinner to start, even if the renderer didn't yet begin the load.
-  // If it turns out that the renderer dropped the navigation, the spinner needs
-  // to be turned off.
-  frame_tree_node_->DidStopLoading();
-  navigation_handle_.reset();
-}
-
 void RenderFrameHostImpl::OnUpdateState(const PageState& state) {
   // TODO(creis): Verify the state's ISN matches the last committed FNE.
 
@@ -1315,6 +1315,8 @@ void RenderFrameHostImpl::OnSwappedOut() {
     // We are now deleted.
     return;
   }
+
+  ResetLoadingState();
 
   // If this RFH wasn't pending deletion, then it is now swapped out.
   SetState(RenderFrameHostImpl::STATE_SWAPPED_OUT);
@@ -1701,23 +1703,10 @@ void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
 }
 
 void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
-  // Any main frame load to a new document should reset the load since it will
-  // replace the current page and any frames.
-  if (to_different_document && !GetParent())
-    is_loading_ = false;
-
-  // This method should never be called when the frame is loading.
-  // Unfortunately, it can happen if a history navigation happens during a
-  // BeforeUnload or Unload event.
-  // TODO(fdegans): Change this to a DCHECK after LoadEventProgress has been
-  // refactored in Blink. See crbug.com/466089
-  if (is_loading_) {
-    LOG(WARNING) << "OnDidStartLoading was called twice.";
-    return;
-  }
-
-  frame_tree_node_->DidStartLoading(to_different_document);
+  bool was_previously_loading = frame_tree_node_->frame_tree()->IsLoading();
   is_loading_ = true;
+  frame_tree_node_->DidStartLoading(to_different_document,
+                                    was_previously_loading);
 }
 
 void RenderFrameHostImpl::OnDidStopLoading() {
@@ -1913,7 +1902,7 @@ void RenderFrameHostImpl::Navigate(
   // Blink doesn't send throb notifications for JavaScript URLs, so it is not
   // done here either.
   if (!common_params.url.SchemeIs(url::kJavaScriptScheme))
-    frame_tree_node_->DidStartLoading(true);
+    OnDidStartLoading(true);
 }
 
 void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
@@ -2250,6 +2239,18 @@ RenderFrameHostImpl::GetMojoImageDownloader() {
         mojo::GetProxy(&mojo_image_downloader_));
   }
   return mojo_image_downloader_;
+}
+
+void RenderFrameHostImpl::ResetLoadingState() {
+  if (is_loading()) {
+    // When pending deletion, just set the loading state to not loading.
+    // Otherwise, OnDidStopLoading will take care of that, as well as sending
+    // notification to the FrameTreeNode about the change in loading state.
+    if (rfh_state_ != STATE_DEFAULT)
+      is_loading_ = false;
+    else
+      OnDidStopLoading();
+  }
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(

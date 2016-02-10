@@ -706,12 +706,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Unsets the currently showing interstitial.
   void DetachInterstitialPage() override;
 
-  // Changes the IsLoading state and notifies the delegate as needed.
-  // |details| is used to provide details on the load that just finished
-  // (but can be null if not applicable).
-  void SetIsLoading(bool is_loading,
-                    bool to_different_document,
-                    LoadNotificationDetails* details) override;
+  // Unpause the throbber if it was paused.
+  void DidProceedOnInterstitial() override;
 
   typedef base::Callback<void(WebContents*)> CreatedCallback;
 
@@ -1016,6 +1012,16 @@ class CONTENT_EXPORT WebContentsImpl
   // the main frame if empty).
   WebUI* CreateWebUI(const GURL& url, const std::string& frame_name);
 
+  // Notifies the delegate of a change in loading state.
+  // |details| is used to provide details on the load that just finished
+  // (but can be null if not applicable).
+  // |pause_throbber_for_interstitial_| will be used to update
+  // pause_throbber_for_interstitial_.
+  void LoadingStateChanged(bool is_loading,
+                           bool to_different_document,
+                           bool pause_throbber_for_interstitial,
+                           LoadNotificationDetails* details);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1073,9 +1079,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Data for loading state ----------------------------------------------------
 
-  // Indicates whether we're currently loading a resource.
-  bool is_loading_;
-
   // Indicates whether the current load is to a different document. Only valid
   // if is_loading_ is true.
   bool is_load_to_different_document_;
@@ -1108,6 +1111,10 @@ class CONTENT_EXPORT WebContentsImpl
   // Tracks that this WebContents needs to unblock requests to the renderer.
   // See ResumeLoadingCreatedWebContents.
   bool is_resume_pending_;
+
+  // Whether the throbber is suspended while an interstial page is showing.
+  // This is set to false when the user proceeds in the interstitial.
+  bool paused_throbber_for_interstitial_;
 
   // Data for current page -----------------------------------------------------
 

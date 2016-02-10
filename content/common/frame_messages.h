@@ -916,9 +916,6 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidFailLoadWithError,
                     base::string16 /* error_description */,
                     bool /* was_ignored_by_handler */)
 
-// Sent when the renderer decides to ignore a navigation.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDropNavigation)
-
 // Sent when the renderer starts loading the page. |to_different_document| will
 // be true unless the load is a fragment navigation, or triggered by
 // history.pushState/replaceState.

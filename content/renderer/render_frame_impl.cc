@@ -4715,11 +4715,13 @@ void RenderFrameImpl::OnCommitNavigation(
                    std::move(stream_override));
 }
 
+// PlzNavigate
 void RenderFrameImpl::OnFailedNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool has_stale_copy_in_cache,
     int error_code) {
+  DCHECK(IsBrowserSideNavigationEnabled());
   bool is_reload = IsReload(common_params.navigation_type);
   bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
@@ -4745,10 +4747,9 @@ void RenderFrameImpl::OnFailedNavigation(
       frame_->isViewSourceModeEnabled());
   SendFailedProvisionalLoad(failed_request, error, frame_);
 
+  // This check should have been done on the browser side already.
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
-    // TODO(avi): Remove this; we shouldn't ever be dropping navigations.
-    // http://crbug.com/501960
-    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
+    NOTREACHED();
     return;
   }
 
@@ -5526,6 +5527,11 @@ void RenderFrameImpl::NavigateInternal(
                                       item_for_history_navigation,
                                       history_load_type, is_client_redirect);
     }
+  } else {
+    // The browser expects the frame to be loading this navigation. Inform it
+    // that the load stopped if needed.
+    if (!frame_->isLoading())
+      Send(new FrameHostMsg_DidStopLoading(routing_id_));
   }
 
   // In case LoadRequest failed before didCreateDataSource was called.
