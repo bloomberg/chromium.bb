@@ -5,23 +5,19 @@
 
 """Unit tests for rietveld.py."""
 
-import httplib
 import logging
 import os
 import socket
 import ssl
-import StringIO
 import sys
 import time
 import traceback
 import unittest
-import urllib2
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from testing_support.patches_data import GIT, RAW
 from testing_support import auto_stub
-from third_party import httplib2
 
 import patch
 import rietveld
@@ -493,30 +489,6 @@ class DefaultTimeoutTest(auto_stub.TestCase):
     with self.assertRaises(socket.timeout):
       self.rietveld.post('/api/1234', [('key', 'data')])
     self.assertNotEqual(self.sleep_time, 0)
-
-
-class OAuthRpcServerTest(auto_stub.TestCase):
-  def setUp(self):
-    super(OAuthRpcServerTest, self).setUp()
-    self.rpc_server = rietveld.OAuthRpcServer(
-        'http://www.example.com', 'foo', 'bar')
-
-  def set_mock_response(self, status):
-    def MockHttpRequest(*args, **kwargs):
-      return (httplib2.Response({'status': status}), 'body')
-    self.mock(self.rpc_server._http, 'request', MockHttpRequest)
-
-  def test_404(self):
-    self.set_mock_response(404)
-    with self.assertRaises(urllib2.HTTPError) as ctx:
-      self.rpc_server.Send('/foo')
-    self.assertEquals(404, ctx.exception.code)
-
-  def test_200(self):
-    self.set_mock_response(200)
-    ret = self.rpc_server.Send('/foo')
-    self.assertEquals('body', ret)
-
 
 if __name__ == '__main__':
   logging.basicConfig(level=[
