@@ -101,7 +101,7 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
     Document& document = element().document();
     if (isSpatialNavigationEnabled(document.frame()))
         return;
-    bool forward = (key == "Down" || key == "Right");
+    bool forward = computedTextDirection() == RTL ? (key == "Down" || key == "Left") : (key == "Down" || key == "Right");
 
     // We can only stay within the form's children if the form hasn't been demoted to a leaf because
     // of malformed HTML.

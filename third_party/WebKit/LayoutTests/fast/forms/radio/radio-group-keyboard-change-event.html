@@ -20,6 +20,17 @@ should still be dispatched but the checked radio should not change.
 <input type=radio name=bbb value=e onchange="handleChange(event)" onclick="handleClick(event)">e
 <input type=radio name=bbb value=f onchange="handleChange(event)" onclick="handleClick(event)">f
 
+<p>Test for <a href="https://code.google.com/p/chromium/issues/detail?id=556677">https://code.google.com/p/chromium/issues/detail?id=556677</a>.
+
+<p>For manual testing, focus a radio button in the first group and use the arrow keys. Changing the
+radio button should fire change events in the direction of left to right.
+
+<div dir="rtl">
+<p>
+<input type=radio name=ccc value=x onchange="handleChange(event)"><span dir="rtl">x</span>
+<input type=radio name=ccc value=y onchange="handleChange(event)"><span dir="rtl">y</span>
+<input type=radio name=ccc value=z onchange="handleChange(event)"><span dir="rtl">z</span>
+</div>
 <pre id=out></pre>
 
 <script>
@@ -92,6 +103,23 @@ if (window.eventSender) {
     assertChecked('d');
     assertNotChecked('e');
     assertNotChecked('f');
+
+    getRadio('x').focus();
+    eventSender.keyDown('rightArrow');
+    eventSender.keyDown('rightArrow');
+
+    assertNotChecked('x');
+    assertChecked('y');
+    assertNotChecked('z');
+
+    getRadio('x').focus();
+    eventSender.keyDown('downArrow');
+
+    assertNotChecked('x');
+    assertChecked('y');
+    assertNotChecked('z');
+
+
 }
 
 </script>

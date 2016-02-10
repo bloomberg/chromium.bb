@@ -8,6 +8,12 @@ For manual testing, focus a radio button in the second group and use the arrow k
 
 d e f
 
+Test for https://code.google.com/p/chromium/issues/detail?id=556677.
+
+For manual testing, focus a radio button in the first group and use the arrow keys. Changing the radio button should fire change events in the direction of left to right.
+
+x y z
+
 b dispatched change event
 c dispatched change event
 PASS: a is not checked
@@ -16,4 +22,12 @@ PASS: c is checked
 PASS: d is checked
 PASS: e is not checked
 PASS: f is not checked
+z dispatched change event
+y dispatched change event
+PASS: x is not checked
+PASS: y is checked
+PASS: z is not checked
+PASS: x is not checked
+PASS: y is checked
+PASS: z is not checked
 
