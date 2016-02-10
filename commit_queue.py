@@ -16,6 +16,8 @@ import os
 import sys
 import urllib2
 
+import breakpad  # pylint: disable=W0611
+
 import auth
 import fix_encoding
 import rietveld

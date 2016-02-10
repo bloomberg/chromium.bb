@@ -7,6 +7,8 @@
 import logging
 import sys
 
+import breakpad  # pylint: disable=W0611
+
 from scm import GIT
 import subprocess2
 import third_party.upload

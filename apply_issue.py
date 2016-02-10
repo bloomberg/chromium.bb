@@ -14,6 +14,7 @@ import subprocess
 import sys
 import urllib2
 
+import breakpad  # pylint: disable=W0611
 
 import annotated_gclient
 import auth

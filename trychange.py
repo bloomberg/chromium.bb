@@ -26,6 +26,8 @@ import urllib
 import urllib2
 import urlparse
 
+import breakpad  # pylint: disable=W0611
+
 import fix_encoding
 import gcl
 import gclient_utils

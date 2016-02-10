@@ -40,6 +40,7 @@ from third_party import httplib2
 from third_party import upload
 import auth
 from luci_hacks import trigger_luci_job as luci_trigger
+import breakpad  # pylint: disable=W0611
 import clang_format
 import commit_queue
 import dart_format
@@ -2618,6 +2619,12 @@ def SendUpstream(parser, args, cmd):
       print('Unable to determine tree status.  Please verify manually and '
             'use "git cl %s --bypass-hooks" to commit on a closed tree.' % cmd)
       return 1
+  else:
+    breakpad.SendStack(
+        'GitClHooksBypassedCommit',
+        'Issue %s/%s bypassed hook when committing (tree status was "%s")' %
+        (cl.GetRietveldServer(), cl.GetIssue(), GetTreeStatus()),
+        verbose=False)
 
   change_desc = ChangeDescription(options.message)
   if not change_desc.description and cl.GetIssue():

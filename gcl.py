@@ -20,6 +20,8 @@ import tempfile
 import time
 import urllib2
 
+import breakpad  # pylint: disable=W0611
+
 
 import auth
 import fix_encoding
@@ -741,6 +743,12 @@ def GetTreeStatus():
 
 def OptionallyDoPresubmitChecks(change_info, committing, args):
   if FilterFlag(args, "--no_presubmit") or FilterFlag(args, "--force"):
+    breakpad.SendStack(
+        breakpad.DEFAULT_URL + '/breakpad',
+        'GclHooksBypassedCommit',
+        'Issue %s/%s bypassed hook when committing (tree status was "%s")' %
+        (change_info.rietveld, change_info.issue, GetTreeStatus()),
+        verbose=False)
     return presubmit_support.PresubmitOutput()
   return DoPresubmitChecks(change_info, committing, True)
 
