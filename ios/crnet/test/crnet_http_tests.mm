@@ -194,21 +194,6 @@ class HttpTest : public ::testing::Test {
   GURL server_root_;
 };
 
-TEST_F(HttpTest, NSURLConnectionReceivesData) {
-  const char kData[] = "foobar";
-  const char kPath[] = "/foo";
-  RegisterPathText(kPath, kData);
-  StartWebServer();
-
-  NSURL* url = net::NSURLWithGURL(GetURL(kPath));
-  NSURLRequest* req = [NSURLRequest requestWithURL:url];
-  NSURLResponse* resp = nil;
-  NSData* received = [NSURLConnection sendSynchronousRequest:req
-                                           returningResponse:&resp
-                                                       error:nullptr];
-  EXPECT_EQ(0, memcmp([received bytes], kData, sizeof(kData)));
-}
-
 TEST_F(HttpTest, NSURLSessionReceivesData) {
   const char kPath[] = "/foo";
   const char kData[] = "foobar";
@@ -231,13 +216,10 @@ TEST_F(HttpTest, SdchDisabledByDefault) {
       });
   StartWebServer();
   NSURL* url = net::NSURLWithGURL(GetURL(kPath));
-  NSURLRequest* req = [NSURLRequest requestWithURL:url];
-  NSURLResponse* resp = nil;
-  NSError* error = nil;
-  NSData* received = [NSURLConnection sendSynchronousRequest:req
-                                           returningResponse:&resp
-                                                       error:&error];
-  DCHECK(received);
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([delegate_ receivedBytes]);
 }
 
 // TODO(ellyjones): There needs to be a test that enabling SDCH works, but
