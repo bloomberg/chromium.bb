@@ -48,8 +48,10 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   mus::Window* NewWindow(const std::map<std::string,
                          std::vector<uint8_t>>& properties);
 
-  NativeWidget* CreateNativeWidgetMus(const Widget::InitParams& init_params,
-                                      internal::NativeWidgetDelegate* delegate);
+  NativeWidget* CreateNativeWidgetMus(
+      const std::map<std::string, std::vector<uint8_t>>& properties,
+      const Widget::InitParams& init_params,
+      internal::NativeWidgetDelegate* delegate);
 
  private:
   explicit WindowManagerConnection(mojo::Shell* shell);

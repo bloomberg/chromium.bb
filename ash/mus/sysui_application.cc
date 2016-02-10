@@ -12,7 +12,10 @@
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
+#include "ash/shell_window_ids.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/mus/public/cpp/property_type_converters.h"
+#include "mash/wm/public/interfaces/container.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -29,6 +32,18 @@ namespace ash {
 namespace sysui {
 
 namespace {
+
+// Tries to determine the corresponding container in mash from the ash container
+// for the widget.
+mash::wm::mojom::Container GetContainerId(aura::Window* container) {
+  DCHECK(container);
+  int id = container->id();
+  if (id == kShellWindowId_DesktopBackgroundContainer)
+    return mash::wm::mojom::Container::USER_BACKGROUND;
+  if (id == kShellWindowId_ShelfContainer)
+    return mash::wm::mojom::Container::USER_SHELF;
+  return mash::wm::mojom::Container::COUNT;
+}
 
 // Creates a StubWindow, which means this window never receives any input event,
 // or displays anything to the user.
@@ -74,10 +89,19 @@ class NativeWidgetFactory {
   views::NativeWidget* InitNativeWidget(
       const views::Widget::InitParams& params,
       views::internal::NativeWidgetDelegate* delegate) {
+    std::map<std::string, std::vector<uint8_t>> properties;
+    if (params.parent) {
+      mash::wm::mojom::Container container = GetContainerId(params.parent);
+      if (container != mash::wm::mojom::Container::COUNT) {
+        properties[mash::wm::mojom::kWindowContainer_Property] =
+            mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
+                static_cast<int32_t>(container));
+      }
+    }
     views::NativeWidgetMus* native_widget =
         static_cast<views::NativeWidgetMus*>(
             views::WindowManagerConnection::Get()->CreateNativeWidgetMus(
-                params, delegate));
+                properties, params, delegate));
     // TODO: Set the correct display id here.
     InitRootWindowSettings(native_widget->GetRootWindow())->display_id =
         Shell::GetInstance()

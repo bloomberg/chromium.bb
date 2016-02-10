@@ -55,9 +55,10 @@ mus::Window* WindowManagerConnection::NewWindow(
 }
 
 NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
+    const std::map<std::string, std::vector<uint8_t>>& props,
     const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
-  std::map<std::string, std::vector<uint8_t>> properties;
+  std::map<std::string, std::vector<uint8_t>> properties = props;
   NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
   return new NativeWidgetMus(delegate, shell_, NewWindow(properties),
                              mus::mojom::SurfaceType::DEFAULT);
@@ -72,7 +73,9 @@ WindowManagerConnection::WindowManagerConnection(mojo::Shell* shell)
   screen_->Init(shell);
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
-      &WindowManagerConnection::CreateNativeWidgetMus, base::Unretained(this)));
+      &WindowManagerConnection::CreateNativeWidgetMus,
+      base::Unretained(this),
+      std::map<std::string, std::vector<uint8_t>>()));
 }
 
 WindowManagerConnection::~WindowManagerConnection() {
