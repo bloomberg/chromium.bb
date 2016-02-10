@@ -8,11 +8,14 @@ import os
 
 from devil.android import apk_helper
 from pylib.instrumentation import test_jar
+from pylib.local.device import local_device_test_run
 
 
 class TestPackage(test_jar.TestJar):
   def __init__(self, apk_path, jar_path, test_support_apk_path,
-               additional_apks=None, apk_under_test=None):
+               additional_apks=None, apk_under_test=None,
+               test_apk_incremental_install_script=None,
+               apk_under_test_incremental_install_script=None):
     test_jar.TestJar.__init__(self, jar_path)
 
     if not os.path.exists(apk_path):
@@ -25,6 +28,10 @@ class TestPackage(test_jar.TestJar):
       self._apk_under_test = None
     self._test_apk = apk_helper.ApkHelper(apk_path)
     self._test_support_apk_path = test_support_apk_path
+    self._test_apk_incremental_install_script = (
+        test_apk_incremental_install_script)
+    self._apk_under_test_incremental_install_script = (
+        apk_under_test_incremental_install_script)
 
   def GetApkPath(self):
     """Returns the absolute path to the APK."""
@@ -51,9 +58,18 @@ class TestPackage(test_jar.TestJar):
 
   # Override.
   def Install(self, device):
-    if self._apk_under_test:
-      device.Install(self._apk_under_test.path)
-    device.Install(self.GetApkPath())
+    if self._test_apk_incremental_install_script:
+      local_device_test_run.IncrementalInstall(device, self._test_apk,
+          self._test_apk_incremental_install_script)
+    else:
+      device.Install(self._test_apk)
+
+    if self._apk_under_test_incremental_install_script:
+      local_device_test_run.IncrementalInstall(device,
+          self._apk_under_test, self._apk_under_test_incremental_install_script)
+    elif self._apk_under_test:
+      device.Install(self._apk_under_test)
+
     if (self._test_support_apk_path and
         os.path.exists(self._test_support_apk_path)):
       device.Install(self._test_support_apk_path)

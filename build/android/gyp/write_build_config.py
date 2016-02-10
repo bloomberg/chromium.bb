@@ -216,6 +216,11 @@ def main(argv):
 
   # apk options
   parser.add_option('--apk-path', help='Path to the target\'s apk output.')
+  parser.add_option('--incremental-apk-path',
+                    help="Path to the target's incremental apk output.")
+  parser.add_option('--incremental-install-script-path',
+                    help="Path to the target's generated incremental install "
+                    "script.")
 
   parser.add_option('--tested-apk-config',
       help='Path to the build config of the tested apk (for an instrumentation '
@@ -343,6 +348,9 @@ def main(argv):
       deps_info['dex_path'] = options.dex_path
     if options.type == 'android_apk':
       deps_info['apk_path'] = options.apk_path
+      deps_info['incremental_apk_path'] = options.incremental_apk_path
+      deps_info['incremental_install_script_path'] = (
+          options.incremental_install_script_path)
 
     # Classpath values filled in below (after applying tested_apk_config).
     config['javac'] = {}
@@ -437,8 +445,6 @@ def main(argv):
       assert proguard_enabled, ('proguard must be enabled for instrumentation'
           ' apks if it\'s enabled for the tested apk')
       proguard_config['tested_apk_info'] = tested_apk_config['proguard_info']
-
-    deps_info['tested_apk_path'] = tested_apk_config['apk_path']
 
   # Dependencies for the final dex file of an apk or a 'deps_dex'.
   if options.type in ['android_apk', 'deps_dex']:

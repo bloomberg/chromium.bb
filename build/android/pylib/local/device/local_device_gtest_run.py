@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import collections
-import imp
 import itertools
 import os
 import posixpath
@@ -12,7 +11,6 @@ from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import ports
 from devil.utils import reraiser_thread
-from incremental_install import installer
 from pylib import constants
 from pylib.gtest import gtest_test_instance
 from pylib.local import local_test_server_spawner
@@ -99,6 +97,8 @@ class _ApkDelegate(object):
   def __init__(self, test_instance):
     self._activity = test_instance.activity
     self._apk_helper = test_instance.apk_helper
+    self._test_apk_incremental_install_script = (
+        test_instance.test_apk_incremental_install_script)
     self._package = test_instance.package
     self._runner = test_instance.runner
     self._permissions = test_instance.permissions
@@ -106,25 +106,13 @@ class _ApkDelegate(object):
     self._component = '%s/%s' % (self._package, self._runner)
     self._extras = test_instance.extras
 
-  def Install(self, device, incremental=False):
-    if not incremental:
+  def Install(self, device):
+    if self._test_apk_incremental_install_script:
+      local_device_test_run.IncrementalInstall(device, self._apk_helper,
+          self._test_apk_incremental_install_script)
+    else:
       device.Install(self._apk_helper, reinstall=True,
                      permissions=self._permissions)
-      return
-
-    installer_script = os.path.join(constants.GetOutDirectory(), 'bin',
-                                    'install_%s_apk_incremental' % self._suite)
-    try:
-      install_wrapper = imp.load_source('install_wrapper', installer_script)
-    except IOError:
-      raise Exception(('Incremental install script not found: %s\n'
-                       'Make sure to first build "%s_incremental"') %
-                      (installer_script, self._suite))
-    params = install_wrapper.GetInstallParameters()
-
-    installer.Install(device, self._apk_helper, split_globs=params['splits'],
-                      native_libs=params['native_libs'],
-                      dex_files=params['dex_files'])
 
   def Run(self, test, device, flags=None, **kwargs):
     extras = dict(self._extras)
@@ -185,8 +173,7 @@ class _ExeDelegate(object):
       self._deps_host_path = None
     self._test_run = tr
 
-  def Install(self, device, incremental=False):
-    assert not incremental
+  def Install(self, device):
     # TODO(jbudorick): Look into merging this with normal data deps pushing if
     # executables become supported on nonlocal environments.
     host_device_tuples = [(self._exe_host_path, self._exe_device_path)]
@@ -256,7 +243,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     def individual_device_set_up(dev):
       def install_apk():
         # Install test APK.
-        self._delegate.Install(dev, incremental=self._env.incremental_install)
+        self._delegate.Install(dev)
 
       def push_test_data():
         # Push data dependencies.

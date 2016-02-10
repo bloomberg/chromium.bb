@@ -146,10 +146,13 @@ class HostDrivenTestCase(object):
     test_type = base_test_result.ResultType.PASS
     log = ''
 
+    opts = self.instrumentation_options
     test_pkg = test_package.TestPackage(
-        self.instrumentation_options.test_apk_path,
-        self.instrumentation_options.test_apk_jar_path,
-        self.instrumentation_options.test_support_apk_path)
+        opts.test_apk_path,
+        opts.test_apk_jar_path,
+        opts.test_support_apk_path,
+        test_apk_incremental_install_script=
+            opts.test_apk_incremental_install_script)
 
     start_ms = int(time.time()) * 1000
     done = False

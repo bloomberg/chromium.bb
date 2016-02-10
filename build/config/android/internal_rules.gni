@@ -529,7 +529,13 @@ template("write_build_config") {
 
       if (defined(invoker.apk_path)) {
         _rebased_apk_path = rebase_path(invoker.apk_path, root_build_dir)
+        _rebased_incremental_apk_path =
+            rebase_path(invoker.incremental_apk_path, root_build_dir)
+        _rebased_incremental_install_script_path =
+            rebase_path(invoker.incremental_install_script_path, root_build_dir)
         args += [ "--apk-path=$_rebased_apk_path" ]
+        args += [ "--incremental-apk-path=$_rebased_incremental_apk_path" ]
+        args += [ "--incremental-install-script-path=$_rebased_incremental_install_script_path" ]
       }
     }
 
@@ -2027,14 +2033,28 @@ template("test_runner_script") {
   testonly = true
   _test_name = invoker.test_name
   _test_type = invoker.test_type
+  _incremental_install =
+      defined(invoker.incremental_install) && invoker.incremental_install
 
   action(target_name) {
     script = "//build/android/gyp/create_test_runner_script.py"
     depfile = "$target_gen_dir/$target_name.d"
+    deps = []
 
     datadeps = [
       "//build/android:test_runner_py",
     ]
+
+    # apk_target is not used for native executable tests
+    # (e.g. breakpad_unittests).
+    if (defined(invoker.apk_target)) {
+      deps += [ "${invoker.apk_target}__build_config" ]
+      _apk_build_config =
+          get_label_info(invoker.apk_target, "target_gen_dir") + "/" +
+          get_label_info(invoker.apk_target, "name") + ".build_config"
+      _rebased_apk_build_config = rebase_path(_apk_build_config, root_build_dir)
+      assert(_rebased_apk_build_config != "")  # Mark as used.
+    }
 
     test_runner_args = [
       _test_type,
@@ -2048,19 +2068,25 @@ template("test_runner_script") {
         invoker.test_suite,
       ]
     } else if (_test_type == "instrumentation") {
-      deps = [
-        "${invoker.apk_target}__build_config",
-      ]
-      _build_config =
-          get_label_info(invoker.apk_target, "target_gen_dir") + "/" +
-          get_label_info(invoker.apk_target, "name") + ".build_config"
-      _rebased_build_config = rebase_path(_build_config, root_build_dir)
-      test_runner_args += [
-        "--test-apk",
-        "@FileArg($_rebased_build_config:deps_info:apk_path)",
-        "--apk-under-test",
-        "@FileArg($_rebased_build_config:deps_info:tested_apk_path)",
-      ]
+      _test_apk = "@FileArg($_rebased_apk_build_config:deps_info:apk_path)"
+      if (_incremental_install) {
+        _test_apk = "@FileArg($_rebased_apk_build_config:deps_info:incremental_apk_path)"
+      }
+      test_runner_args += [ "--test-apk=$_test_apk" ]
+      if (defined(invoker.apk_under_test)) {
+        deps += [ "${invoker.apk_under_test}__build_config" ]
+        _apk_under_test_build_config =
+            get_label_info(invoker.apk_under_test, "target_gen_dir") + "/" +
+            get_label_info(invoker.apk_under_test, "name") + ".build_config"
+        _rebased_apk_under_test_build_config =
+            rebase_path(_apk_under_test_build_config, root_build_dir)
+        _apk_under_test =
+            "@FileArg($_rebased_apk_under_test_build_config:deps_info:apk_path)"
+        if (_incremental_install) {
+          _apk_under_test = "@FileArg($_rebased_apk_under_test_build_config:deps_info:incremental_apk_path)"
+        }
+        test_runner_args += [ "--apk-under-test=$_apk_under_test" ]
+      }
       if (emma_coverage) {
         # Set a default coverage output directory (can be overridden by user
         # passing the same flag).
@@ -2091,11 +2117,18 @@ template("test_runner_script") {
         rebase_path(invoker.isolate_file, root_build_dir),
       ]
     }
-    if (defined(invoker.incremental_install) && invoker.incremental_install) {
+    if (_incremental_install) {
       test_runner_args += [
-        "--incremental-install",
-        "--fast-local-dev",
+        "--test-apk-incremental-install-script",
+        "@FileArg($_rebased_apk_build_config:deps_info:incremental_install_script_path)",
       ]
+      if (defined(invoker.apk_under_test)) {
+        test_runner_args += [
+          "--apk-under-test-incremental-install-script",
+          "@FileArg($_rebased_apk_under_test_build_config:deps_info:incremental_install_script_path)",
+        ]
+      }
+      test_runner_args += [ "--fast-local-dev" ]
     }
     if (is_asan) {
       test_runner_args += [ "--tool=asan" ]

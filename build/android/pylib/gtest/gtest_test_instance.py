@@ -138,12 +138,18 @@ class GtestTestInstance(test_instance.TestInstance):
     self._skip_clear_data = args.skip_clear_data
     self._suite = args.suite_name[0]
 
-    incremental_part = '_incremental' if args.incremental_install else ''
+    self._exe_path = os.path.join(constants.GetOutDirectory(),
+                                  self._suite)
+
+    incremental_part = ''
+    if args.test_apk_incremental_install_script:
+      incremental_part = '_incremental'
+
     apk_path = os.path.join(
         constants.GetOutDirectory(), '%s_apk' % self._suite,
         '%s-debug%s.apk' % (self._suite, incremental_part))
-    self._exe_path = os.path.join(constants.GetOutDirectory(),
-                                  self._suite)
+    self._test_apk_incremental_install_script = (
+        args.test_apk_incremental_install_script)
     if not os.path.exists(apk_path):
       self._apk_helper = None
     else:
@@ -255,6 +261,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def suite(self):
     return self._suite
+
+  @property
+  def test_apk_incremental_install_script(self):
+    return self._test_apk_incremental_install_script
 
   @property
   def test_arguments(self):

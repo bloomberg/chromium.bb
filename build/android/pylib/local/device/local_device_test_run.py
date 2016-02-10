@@ -4,6 +4,7 @@
 
 import fnmatch
 import functools
+import imp
 import logging
 
 from devil import base_error
@@ -12,6 +13,27 @@ from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import test_run
 from pylib.base import test_collection
+
+
+def IncrementalInstall(device, apk_helper, installer_script):
+  """Performs an incremental install.
+
+  Args:
+    device: Device to install on.
+    apk_helper: ApkHelper instance for the _incremental.apk.
+    installer_script: Path to the installer script for the incremental apk.
+  """
+  try:
+    install_wrapper = imp.load_source('install_wrapper', installer_script)
+  except IOError:
+    raise Exception('Incremental install script not found: %s\n' %
+                    installer_script)
+  params = install_wrapper.GetInstallParameters()
+
+  from incremental_install import installer
+  installer.Install(device, apk_helper, split_globs=params['splits'],
+                    native_libs=params['native_libs'],
+                    dex_files=params['dex_files'])
 
 
 def handle_shard_failures(f):

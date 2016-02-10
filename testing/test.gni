@@ -85,6 +85,7 @@ template("test") {
     }
     test_runner_script_name = "${_test_name}__test_runner_script"
     test_runner_script(test_runner_script_name) {
+      apk_target = ":$apk_name"
       test_name = _test_name
       test_type = "gtest"
       test_suite = _test_name
@@ -95,6 +96,7 @@ template("test") {
     incremental_test_runner_script_name =
         "${_test_name}_incremental__test_runner_script"
     test_runner_script(incremental_test_runner_script_name) {
+      apk_target = ":$apk_name"
       test_name = "${_test_name}_incremental"
       test_type = "gtest"
       test_suite = _test_name

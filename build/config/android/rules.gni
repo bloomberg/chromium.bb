@@ -1201,6 +1201,7 @@ template("android_java_prebuilt") {
 #     Note: this "transitive closure" actually only includes such targets if
 #     they are depended on through android_library or android_resources targets
 #     (and so not through builtin targets like 'action', 'group', etc).
+#   install_script_name: Name of wrapper script (default=target_name).
 #   java_files: List of .java files to include in the apk.
 #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
 #      will be added to java_files and be included in this apk.
@@ -1289,6 +1290,13 @@ template("android_apk") {
                             "{{source_dir}}/{{source_name_part}}")
   _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
   assert(_final_apk_path_no_ext != "")  # Mark as used.
+
+  _install_script_name = "install_$_template_name"
+  if (defined(invoker.install_script_name)) {
+    _install_script_name = invoker.install_script_name
+  }
+  _incremental_install_script_path =
+      "${root_out_dir}/bin/${_install_script_name}_incremental"
 
   _native_libs = []
 
@@ -1390,6 +1398,8 @@ template("android_apk") {
     jar_path = _jar_path
     dex_path = final_dex_path
     apk_path = _final_apk_path
+    incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
+    incremental_install_script_path = _incremental_install_script_path
     resources_zip = resources_zip_path
     build_config = _build_config
     android_manifest = _android_manifest
@@ -1822,22 +1832,20 @@ template("android_apk") {
       _native_libs_file_arg_dep,
     ]
 
-    _generated_script_path =
-        "${root_out_dir}/bin/install_${_template_name}_incremental"
     outputs = [
       depfile,
-      _generated_script_path,
+      _incremental_install_script_path,
     ]
 
     _rebased_apk_path_no_ext =
         rebase_path(_final_apk_path_no_ext, root_build_dir)
-    _rebased_generated_script_path =
-        rebase_path(_generated_script_path, root_build_dir)
+    _rebased_incremental_install_script_path =
+        rebase_path(_incremental_install_script_path, root_build_dir)
     _rebased_depfile = rebase_path(depfile, root_build_dir)
     _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
     args = [
       "--apk-path=${_rebased_apk_path_no_ext}_incremental.apk",
-      "--script-output-path=$_rebased_generated_script_path",
+      "--script-output-path=$_rebased_incremental_install_script_path",
       "--dex-file=$_rebased_lib_dex_path",
       "--dex-file-list=@FileArg($_dex_arg_key)",
       "--depfile=$_rebased_depfile",
@@ -1933,11 +1941,13 @@ template("instrumentation_test_apk") {
   testonly = true
   _apk_target_name = "${target_name}__apk"
   _test_runner_target_name = "${target_name}__test_runner_script"
+  _install_script_name = "install_$target_name"
 
   test_runner_script(_test_runner_target_name) {
     forward_variables_from(invoker,
                            [
                              "additional_apks",
+                             "apk_under_test",
                              "isolate_file",
                            ])
     test_name = invoker.target_name
@@ -1945,10 +1955,24 @@ template("instrumentation_test_apk") {
     apk_target = ":$_apk_target_name"
   }
 
+  test_runner_script("${_test_runner_target_name}_incremental") {
+    forward_variables_from(invoker,
+                           [
+                             "additional_apks",
+                             "apk_under_test",
+                             "isolate_file",
+                           ])
+    test_name = "${invoker.target_name}_incremental"
+    test_type = "instrumentation"
+    apk_target = ":$_apk_target_name"
+    incremental_install = true
+  }
+
   android_apk(_apk_target_name) {
     deps = []
     data_deps = []
     forward_variables_from(invoker, "*")
+    install_script_name = _install_script_name
     deps += [ "//testing/android/broker:broker_java" ]
     data_deps += [
       "//testing/android/driver:driver_apk",
@@ -1972,6 +1996,14 @@ template("instrumentation_test_apk") {
 
       # Required by test runner to enumerate test list.
       ":${_apk_target_name}_dist_ijar",
+    ]
+  }
+  group("${target_name}_incremental") {
+    public_deps = [
+      ":${_apk_target_name}_dist_ijar",
+      ":${_apk_target_name}_incremental",
+      ":${_test_runner_target_name}_incremental",
+      "${invoker.apk_under_test}_incremental",
     ]
   }
 }

@@ -232,8 +232,6 @@ def AddDeviceOptions(parser):
   group.add_argument('--blacklist-file', help='Device blacklist file.')
   group.add_argument('--enable-device-cache', action='store_true',
                      help='Cache device state to disk between runs')
-  group.add_argument('--incremental-install', action='store_true',
-                     help='Use an _incremental apk.')
   group.add_argument('--enable-concurrent-adb', action='store_true',
                      help='Run multiple adb commands at the same time, even '
                           'for the same device.')
@@ -250,6 +248,8 @@ def AddGTestOptions(parser):
   group.add_argument('-s', '--suite', dest='suite_name',
                      nargs='+', metavar='SUITE_NAME', required=True,
                      help='Executable name of the test suite to run.')
+  group.add_argument('--test-apk-incremental-install-script',
+                     help='Path to install script for the test apk.')
   group.add_argument('--gtest_also_run_disabled_tests',
                      '--gtest-also-run-disabled-tests',
                      dest='run_disabled', action='store_true',
@@ -396,12 +396,16 @@ def AddInstrumentationTestOptions(parser):
   group.add_argument('-w', '--wait_debugger', dest='wait_for_debugger',
                      action='store_true',
                      help='Wait for debugger.')
-  group.add_argument('--apk-under-test', dest='apk_under_test',
-                     help=('the name of the apk under test.'))
-  group.add_argument('--test-apk', dest='test_apk', required=True,
-                     help=('The name of the apk containing the tests '
-                           '(without the .apk extension; '
-                           'e.g. "ContentShellTest").'))
+  group.add_argument('--apk-under-test',
+                     help='Path or name of the apk under test.')
+  group.add_argument('--apk-under-test-incremental-install-script',
+                     help='Path to install script for the --apk-under-test.')
+  group.add_argument('--test-apk', required=True,
+                     help='Path or name of the apk containing the tests '
+                          '(name is without the .apk extension; '
+                          'e.g. "ContentShellTest").')
+  group.add_argument('--test-apk-incremental-install-script',
+                     help='Path to install script for the --test-apk.')
   group.add_argument('--additional-apk', action='append',
                      dest='additional_apks', default=[],
                      help='Additional apk that must be installed on '
@@ -460,10 +464,14 @@ def ProcessInstrumentationOptions(args):
         constants.SDK_BUILD_APKS_DIR,
         '%s.apk' % args.test_apk)
 
+  jar_basename = args.test_apk
+  if jar_basename.endswith('_incremental'):
+    jar_basename = jar_basename[:-len('_incremental')]
+
   args.test_apk_jar_path = os.path.join(
       constants.GetOutDirectory(),
       constants.SDK_BUILD_TEST_JAVALIB_DIR,
-      '%s.jar' % args.test_apk)
+      '%s.jar' % jar_basename)
   args.test_support_apk_path = '%sSupport%s' % (
       os.path.splitext(args.test_apk_path))
 
@@ -493,7 +501,9 @@ def ProcessInstrumentationOptions(args):
       args.apk_under_test,
       args.additional_apks,
       args.strict_mode,
-      args.skip_clear_data)
+      args.skip_clear_data,
+      args.test_apk_incremental_install_script,
+      args.apk_under_test_incremental_install_script)
 
 
 def AddUIAutomatorTestOptions(parser):

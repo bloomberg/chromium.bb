@@ -80,7 +80,11 @@ def Setup(test_options, devices):
       test_options.test_apk_jar_path,
       test_options.test_support_apk_path,
       additional_apks=test_options.additional_apks,
-      apk_under_test=test_options.apk_under_test)
+      apk_under_test=test_options.apk_under_test,
+      test_apk_incremental_install_script=
+          test_options.test_apk_incremental_install_script,
+      apk_under_test_incremental_install_script=
+          test_options.apk_under_test_incremental_install_script)
   tests = test_pkg.GetAllMatchingTests(
       test_options.annotations,
       test_options.exclude_annotations,

@@ -7,6 +7,7 @@ import re
 import time
 
 from devil.android import device_errors
+from devil.utils import reraiser_thread
 from pylib import flag_changer
 from pylib import valgrind_tools
 from pylib.base import base_test_result
@@ -67,34 +68,60 @@ class LocalDeviceInstrumentationTestRun(
     @local_device_test_run.handle_shard_failures_with(
         self._env.BlacklistDevice)
     def individual_device_set_up(dev, host_device_tuples):
-      dev.Install(self._test_instance.apk_under_test,
-                  permissions=self._test_instance.apk_under_test_permissions)
-      dev.Install(self._test_instance.test_apk,
-                  permissions=self._test_instance.test_permissions)
-      for apk in self._test_instance.additional_apks:
-        dev.Install(apk)
-
-      external_storage = dev.GetExternalStoragePath()
-      host_device_tuples = [
-          (h, substitute_external_storage(d, external_storage))
-          for h, d in host_device_tuples]
-      logging.info('instrumentation data deps:')
-      for h, d in host_device_tuples:
-        logging.info('%r -> %r', h, d)
-      dev.PushChangedFiles(host_device_tuples)
-      if self._test_instance.flags:
-        if not self._test_instance.package_info:
-          logging.error("Couldn't set flags: no package info")
-        elif not self._test_instance.package_info.cmdline_file:
-          logging.error("Couldn't set flags: no cmdline_file")
+      def install_apk():
+        if self._test_instance.apk_under_test_incremental_install_script:
+          local_device_test_run.IncrementalInstall(
+              dev,
+              self._test_instance.apk_under_test,
+              self._test_instance.apk_under_test_incremental_install_script)
         else:
-          self._CreateFlagChangerIfNeeded(dev)
-          logging.debug('Attempting to set flags: %r',
-                        self._test_instance.flags)
-          self._flag_changers[str(dev)].AddFlags(self._test_instance.flags)
+          permissions = self._test_instance.apk_under_test.GetPermissions()
+          dev.Install(self._test_instance.apk_under_test,
+                      permissions=permissions)
 
-      valgrind_tools.SetChromeTimeoutScale(
-          dev, self._test_instance.timeout_scale)
+        if self._test_instance.test_apk_incremental_install_script:
+          local_device_test_run.IncrementalInstall(
+              dev,
+              self._test_instance.test_apk,
+              self._test_instance.test_apk_incremental_install_script)
+        else:
+          permissions = self._test_instance.test_apk.GetPermissions()
+          dev.Install(self._test_instance.test_apk, permissions=permissions)
+
+        for apk in self._test_instance.additional_apks:
+          dev.Install(apk)
+
+      def push_test_data():
+        external_storage = dev.GetExternalStoragePath()
+        host_device_tuples_substituted = [
+            (h, substitute_external_storage(d, external_storage))
+            for h, d in host_device_tuples]
+        logging.info('instrumentation data deps:')
+        for h, d in host_device_tuples_substituted:
+          logging.info('%r -> %r', h, d)
+        dev.PushChangedFiles(host_device_tuples_substituted)
+
+      def create_flag_changer():
+        if self._test_instance.flags:
+          if not self._test_instance.package_info:
+            logging.error("Couldn't set flags: no package info")
+          elif not self._test_instance.package_info.cmdline_file:
+            logging.error("Couldn't set flags: no cmdline_file")
+          else:
+            self._CreateFlagChangerIfNeeded(dev)
+            logging.debug('Attempting to set flags: %r',
+                          self._test_instance.flags)
+            self._flag_changers[str(dev)].AddFlags(self._test_instance.flags)
+
+        valgrind_tools.SetChromeTimeoutScale(
+            dev, self._test_instance.timeout_scale)
+
+      steps = (install_apk, push_test_data, create_flag_changer)
+      if self._env.concurrent_adb:
+        reraiser_thread.RunAsync(steps)
+      else:
+        for step in steps:
+          step()
 
     self._env.parallel_devices.pMap(
         individual_device_set_up,
