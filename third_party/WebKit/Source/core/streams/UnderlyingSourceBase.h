@@ -20,7 +20,7 @@ class ReadableStreamController;
 
 class CORE_EXPORT UnderlyingSourceBase : public GarbageCollectedFinalized<UnderlyingSourceBase>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
 public:
     DECLARE_VIRTUAL_TRACE();
