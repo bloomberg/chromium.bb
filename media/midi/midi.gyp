@@ -6,7 +6,7 @@
   'variables': {
     'chromium_code': 1,
     'conditions': [
-      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and ((embedded!=1 and chromecast==0) or is_cast_desktop_build==1)', {
+      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and (embedded==0 or chromecast==1)', {
         'use_alsa%': 1,
       }, {
         'use_alsa%': 0,

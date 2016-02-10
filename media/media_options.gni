@@ -63,12 +63,12 @@ declare_args() {
   # Enables runtime selection of ALSA library for audio.
   use_alsa = false
 
-  # Alsa should be used on non-Android, non-Mac POSIX systems, and Chromecast
-  # builds for desktop Linux.
-  if (is_posix && !is_headless && !is_android && !is_mac &&
-      (!is_chromecast || is_cast_desktop_build)) {
+  # Alsa should be used on non-Android, non-Mac POSIX systems.
+  if (is_posix && !is_headless && !is_android && !is_mac) {
     use_alsa = true
-    if (!use_cras) {
+
+    # Pulse is not supported on Chromecast platforms.
+    if (!use_cras && !is_chromecast) {
       use_pulseaudio = true
     }
   }
