@@ -58,7 +58,7 @@ class ClipboardAppTest : public mojo::test::ApplicationTestBase {
 
   void SetUp() override {
     mojo::test::ApplicationTestBase::SetUp();
-    shell()->ConnectToService("mojo:clipboard", &clipboard_);
+    shell()->ConnectToInterface("mojo:clipboard", &clipboard_);
   }
 
   uint64_t GetSequenceNumber() {

@@ -40,7 +40,7 @@ RenderWidgetHostViewMus::RenderWidgetHostViewMus(mus::Window* parent_window,
   // and embed that client inside our mus window.
   std::string url = GetMojoApplicationInstanceURL(host_->GetProcess());
   mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
-  MojoShellConnection::Get()->GetShell()->ConnectToService(url, &factory);
+  MojoShellConnection::Get()->GetShell()->ConnectToInterface(url, &factory);
 
   mus::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(

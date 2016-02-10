@@ -24,7 +24,7 @@ class VersioningApplicationTest : public ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    shell()->ConnectToService("mojo:versioning_test_service", &database_);
+    shell()->ConnectToInterface("mojo:versioning_test_service", &database_);
   }
 
   HumanResourceDatabasePtr database_;

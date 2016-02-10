@@ -37,12 +37,12 @@ class CONTENT_EXPORT MojoAppConnection {
 
   // Connects to a service within the application.
   template <typename Interface>
-  void ConnectToService(mojo::InterfacePtr<Interface>* proxy) {
-    ConnectToService(Interface::Name_, mojo::GetProxy(proxy).PassMessagePipe());
+  void GetInterface(mojo::InterfacePtr<Interface>* proxy) {
+    GetInterface(Interface::Name_, mojo::GetProxy(proxy).PassMessagePipe());
   }
 
-  virtual void ConnectToService(const std::string& service_name,
-                                mojo::ScopedMessagePipeHandle handle) = 0;
+  virtual void GetInterface(const std::string& interface_name,
+                            mojo::ScopedMessagePipeHandle handle) = 0;
 };
 
 }  // namespace content

@@ -21,10 +21,10 @@ class MojoAppConnectionImpl : public MojoAppConnection {
 
  private:
   // MojoAppConnection:
-  void ConnectToService(const std::string& service_name,
-                        mojo::ScopedMessagePipeHandle handle) override;
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle handle) override;
 
-  mojo::InterfaceProviderPtr services_;
+  mojo::InterfaceProviderPtr interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAppConnectionImpl);
 };

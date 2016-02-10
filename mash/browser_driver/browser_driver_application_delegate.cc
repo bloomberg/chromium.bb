@@ -82,7 +82,7 @@ void BrowserDriverApplicationDelegate::AddAccelerators() {
   // TODO(beng): find some other way to get the window manager. I don't like
   //             having to specify it by URL because it may differ per display.
   mus::mojom::AcceleratorRegistrarPtr registrar;
-  shell_->ConnectToService("mojo:desktop_wm", &registrar);
+  shell_->ConnectToInterface("mojo:desktop_wm", &registrar);
 
   if (binding_.is_bound())
     binding_.Unbind();

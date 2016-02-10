@@ -20,8 +20,8 @@ using NativeAppTest = mojo::test::ApplicationTestBase;
 
 TEST_F(NativeAppTest, Connect) {
   test::TestNativeServicePtr native_service;
-  shell()->ConnectToService("exe:mojo_runner_child_apptest_native_target",
-                            &native_service);
+  shell()->ConnectToInterface("exe:mojo_runner_child_apptest_native_target",
+                              &native_service);
 
   bool result = false;
   native_service->Invert(

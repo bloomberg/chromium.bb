@@ -15,7 +15,7 @@ namespace font_service {
 
 FontLoader::FontLoader(mojo::Shell* shell) {
   FontServicePtr font_service;
-  shell->ConnectToService("mojo:font_service", &font_service);
+  shell->ConnectToInterface("mojo:font_service", &font_service);
   thread_ = new internal::FontServiceThread(std::move(font_service));
 }
 

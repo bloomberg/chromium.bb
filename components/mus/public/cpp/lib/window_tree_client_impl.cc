@@ -166,7 +166,7 @@ void WindowTreeClientImpl::ConnectViaWindowTreeFactory(
   connection_id_ = 101;
 
   mojom::WindowTreeFactoryPtr factory;
-  shell->ConnectToService("mojo:mus", &factory);
+  shell->ConnectToInterface("mojo:mus", &factory);
   factory->CreateWindowTree(GetProxy(&tree_ptr_),
                             binding_.CreateInterfacePtrAndBind());
   tree_ = tree_ptr_.get();

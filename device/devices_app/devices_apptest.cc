@@ -22,7 +22,7 @@ class DevicesAppTest : public mojo::test::ApplicationTestBase {
 
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    shell()->ConnectToService("mojo:devices", &usb_device_manager_);
+    shell()->ConnectToInterface("mojo:devices", &usb_device_manager_);
   }
 
   usb::DeviceManager* usb_device_manager() { return usb_device_manager_.get(); }

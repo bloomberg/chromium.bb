@@ -78,7 +78,7 @@ ScreenMus::~ScreenMus() {}
 void ScreenMus::Init(mojo::Shell* shell) {
   gfx::Screen::SetScreenInstance(this);
 
-  shell->ConnectToService("mojo:mus", &display_manager_);
+  shell->ConnectToInterface("mojo:mus", &display_manager_);
 
   display_manager_->AddObserver(
       display_manager_observer_binding_.CreateInterfacePtrAndBind());

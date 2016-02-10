@@ -110,7 +110,7 @@ void WindowManagerApplication::Initialize(mojo::Shell* shell,
   tracing_.Initialize(shell, url);
 
   mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
-  shell_->ConnectToService("mojo:mus", &wm_factory_service);
+  shell_->ConnectToInterface("mojo:mus", &wm_factory_service);
   wm_factory_service->SetWindowManagerFactory(
       window_manager_factory_binding_.CreateInterfacePtrAndBind());
 

@@ -51,7 +51,7 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 
 ShelfModel::ShelfModel(mojo::Shell* shell)
     : next_id_(1), status_(STATUS_NORMAL), binding_(this) {
-  shell->ConnectToService("mojo:desktop_wm", &user_window_controller_);
+  shell->ConnectToInterface("mojo:desktop_wm", &user_window_controller_);
   user_window_controller_->AddUserWindowObserver(
       binding_.CreateInterfacePtrAndBind());
 }

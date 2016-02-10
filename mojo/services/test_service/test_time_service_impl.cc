@@ -27,7 +27,7 @@ TestTimeServiceImpl::~TestTimeServiceImpl() {
 void TestTimeServiceImpl::StartTrackingRequests(
     const mojo::Callback<void()>& callback) {
   TestRequestTrackerPtr tracker;
-  shell_->ConnectToService("mojo:test_request_tracker_app", &tracker);
+  shell_->ConnectToInterface("mojo:test_request_tracker_app", &tracker);
   tracking_.reset(new TrackedService(std::move(tracker), Name_, callback));
 }
 

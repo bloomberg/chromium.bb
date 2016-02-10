@@ -26,7 +26,7 @@ class TargetApplicationDelegate : public mojo::ShellClient {
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override {
     CreateInstanceForHandleTestPtr service;
-    shell->ConnectToService("mojo:mojo_shell_apptests", &service);
+    shell->ConnectToInterface("mojo:mojo_shell_apptests", &service);
     service->SetTargetID(id);
   }
 

@@ -961,7 +961,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Connect to an interface provided by the service registry.
   template <typename Interface>
-  void ConnectToService(mojo::InterfaceRequest<Interface> request);
+  void GetInterface(mojo::InterfaceRequest<Interface> request);
 
   // Connects to a Mojo application and returns a proxy to its exposed
   // ServiceProvider.

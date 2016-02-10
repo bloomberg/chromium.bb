@@ -124,7 +124,7 @@ SurfaceBinding::PerConnectionState::~PerConnectionState() {
 }
 
 void SurfaceBinding::PerConnectionState::Init() {
-  shell_->ConnectToService("mojo:mus", &gpu_);
+  shell_->ConnectToInterface("mojo:mus", &gpu_);
 }
 
 // SurfaceBinding --------------------------------------------------------------

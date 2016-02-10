@@ -38,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(MojoShellTest, TestBrowserConnection) {
   auto test_app = MojoAppConnection::Create(GURL(kInProcessTestMojoAppUrl),
                                             GURL(kBrowserMojoAppUrl));
   TestMojoServicePtr test_service;
-  test_app->ConnectToService(&test_service);
+  test_app->GetInterface(&test_service);
 
   base::RunLoop run_loop;
   test_service->DoSomething(run_loop.QuitClosure());
@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(MojoShellTest, TestUtilityConnection) {
   auto test_app = MojoAppConnection::Create(GURL(kTestMojoAppUrl),
                                             GURL(kBrowserMojoAppUrl));
   TestMojoServicePtr test_service;
-  test_app->ConnectToService(&test_service);
+  test_app->GetInterface(&test_service);
 
   base::RunLoop run_loop;
   test_service->DoSomething(run_loop.QuitClosure());

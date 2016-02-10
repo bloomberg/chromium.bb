@@ -47,7 +47,7 @@ void SendTimeResponse(
 void TestServiceImpl::ConnectToAppAndGetTime(
     const mojo::String& app_url,
     const mojo::Callback<void(int64_t)>& callback) {
-  shell_->ConnectToService(app_url.get(), &time_service_);
+  shell_->ConnectToInterface(app_url.get(), &time_service_);
   if (tracking_) {
     tracking_->RecordNewRequest();
     time_service_->StartTrackingRequests(mojo::Callback<void()>());
@@ -58,7 +58,7 @@ void TestServiceImpl::ConnectToAppAndGetTime(
 void TestServiceImpl::StartTrackingRequests(
     const mojo::Callback<void()>& callback) {
   TestRequestTrackerPtr tracker;
-  shell_->ConnectToService("mojo:test_request_tracker_app", &tracker);
+  shell_->ConnectToInterface("mojo:test_request_tracker_app", &tracker);
   tracking_.reset(new TrackedService(std::move(tracker), Name_, callback));
 }
 

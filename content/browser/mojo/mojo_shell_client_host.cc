@@ -133,7 +133,7 @@ void RegisterChildWithExternalShell(int child_process_id,
       mojo::edk::CreateMessagePipe(std::move(parent_pipe));
 
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
-  MojoShellConnection::Get()->GetShell()->ConnectToService(
+  MojoShellConnection::Get()->GetShell()->ConnectToInterface(
       "mojo:shell", &application_manager);
 
   // The content of the URL/qualifier we pass is actually meaningless, it's only

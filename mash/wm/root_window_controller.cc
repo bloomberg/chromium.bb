@@ -141,7 +141,7 @@ void RootWindowController::OnEmbed(mus::Window* root) {
   AddAccelerators();
 
   mash::shell::mojom::ShellPtr shell;
-  app_->shell()->ConnectToService("mojo:mash_shell", &shell);
+  app_->shell()->ConnectToInterface("mojo:mash_shell", &shell);
   window_manager_->Initialize(this, std::move(shell));
 
   shadow_controller_.reset(new ShadowController(root->connection()));

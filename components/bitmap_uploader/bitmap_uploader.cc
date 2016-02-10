@@ -50,7 +50,7 @@ void BitmapUploader::Init(mojo::Shell* shell) {
   surface_ = window_->RequestSurface(mus::mojom::SurfaceType::DEFAULT);
   surface_->BindToThread();
 
-  shell->ConnectToService("mojo:mus", &gpu_service_);
+  shell->ConnectToInterface("mojo:mus", &gpu_service_);
   mus::mojom::CommandBufferPtr gles2_client;
   gpu_service_->CreateOffscreenGLES2Context(GetProxy(&gles2_client));
   gles2_context_ = MojoGLES2CreateContext(

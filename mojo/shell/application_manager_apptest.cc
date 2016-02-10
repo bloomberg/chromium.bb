@@ -91,7 +91,7 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
 
   void AddListenerAndWaitForApplications() {
     mojom::ApplicationManagerPtr application_manager;
-    shell()->ConnectToService("mojo:shell", &application_manager);
+    shell()->ConnectToInterface("mojo:shell", &application_manager);
 
     application_manager->AddListener(binding_.CreateInterfacePtrAndBind());
     binding_.WaitForIncomingMethodCall();

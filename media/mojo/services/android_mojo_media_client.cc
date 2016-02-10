@@ -19,7 +19,7 @@ namespace {
 scoped_ptr<ProvisionFetcher> CreateProvisionFetcher(
     mojo::InterfaceProvider* service_provider) {
   interfaces::ProvisionFetcherPtr provision_fetcher_ptr;
-  mojo::ConnectToService(service_provider, &provision_fetcher_ptr);
+  mojo::GetInterface(service_provider, &provision_fetcher_ptr);
   return make_scoped_ptr(
       new MojoProvisionFetcher(std::move(provision_fetcher_ptr)));
 }

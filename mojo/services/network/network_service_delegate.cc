@@ -97,7 +97,7 @@ void NetworkServiceDelegate::Initialize(Shell* shell, const std::string& url,
   // to OpenFileSystem, the entire mojo system hangs to the point where writes
   // to stderr that previously would have printed to our console aren't. The
   // apptests are also fairly resistant to being run under gdb on android.
-  shell_->ConnectToService("mojo:filesystem", &files_);
+  shell_->ConnectToInterface("mojo:filesystem", &files_);
 
   filesystem::FileError error = filesystem::FileError::FAILED;
   filesystem::DirectoryPtr directory;

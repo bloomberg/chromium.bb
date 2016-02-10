@@ -99,7 +99,7 @@ class TargetApplicationDelegate : public mojo::ShellClient,
                           std::move(test_interfaces));
 
     mojo::shell::mojom::ApplicationManagerPtr application_manager;
-    shell_->ConnectToService("mojo:shell", &application_manager);
+    shell_->ConnectToInterface("mojo:shell", &application_manager);
     application_manager->CreateInstanceForHandle(
         mojo::ScopedHandle(mojo::Handle(pipe.release().value())),
         "exe:application_manager_apptest_target", std::move(filter),

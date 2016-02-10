@@ -60,7 +60,7 @@ class ScreenlockView : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, unlock_button_);
     mash::shell::mojom::ShellPtr shell;
-    shell_->ConnectToService("mojo:mash_shell", &shell);
+    shell_->ConnectToInterface("mojo:mash_shell", &shell);
     shell->UnlockScreen();
   }
 
@@ -81,7 +81,7 @@ void Screenlock::Initialize(mojo::Shell* shell, const std::string& url,
   tracing_.Initialize(shell, url);
 
   mash::shell::mojom::ShellPtr mash_shell;
-  shell_->ConnectToService("mojo:mash_shell", &mash_shell);
+  shell_->ConnectToInterface("mojo:mash_shell", &mash_shell);
   mash_shell->AddScreenlockStateListener(
       bindings_.CreateInterfacePtrAndBind(this));
 

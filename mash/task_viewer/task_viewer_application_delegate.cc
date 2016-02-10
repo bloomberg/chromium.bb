@@ -244,7 +244,7 @@ void TaskViewerApplicationDelegate::Initialize(mojo::Shell* shell,
   views::WindowManagerConnection::Create(shell);
 
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
-  shell->ConnectToService("mojo:shell", &application_manager);
+  shell->ConnectToInterface("mojo:shell", &application_manager);
 
   mojo::shell::mojom::ApplicationManagerListenerPtr listener;
   ListenerRequest request = GetProxy(&listener);

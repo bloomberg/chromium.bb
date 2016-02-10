@@ -21,7 +21,7 @@ FilesTestBase::~FilesTestBase() {
 
 void FilesTestBase::SetUp() {
   ApplicationTestBase::SetUp();
-  shell()->ConnectToService("mojo:filesystem", &files_);
+  shell()->ConnectToInterface("mojo:filesystem", &files_);
 }
 
 void FilesTestBase::OnFileSystemShutdown() {

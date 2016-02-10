@@ -27,7 +27,7 @@ void CreateWindowTreeHost(mojo::Shell* shell,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
-  shell->ConnectToService("mojo:mus", &factory);
+  shell->ConnectToInterface("mojo:mus", &factory);
   CreateWindowTreeHost(factory.get(), delegate, host, window_manager_delegate);
 }
 

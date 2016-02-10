@@ -26,7 +26,7 @@ void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {}
 scoped_ptr<PrefService> CreatePrefService(mojo::Shell* shell,
                                           PrefRegistry* pref_registry) {
   filesystem::FileSystemPtr filesystem;
-  shell->ConnectToService("mojo:filesystem", &filesystem);
+  shell->ConnectToInterface("mojo:filesystem", &filesystem);
 
   scoped_refptr<FilesystemJsonPrefStore> user_prefs =
       new FilesystemJsonPrefStore("preferences.json", std::move(filesystem),

@@ -137,7 +137,7 @@ void SQLTestBase::TruncateDatabase() {
 void SQLTestBase::SetUp() {
   ApplicationTestBase::SetUp();
 
-  shell()->ConnectToService("mojo:filesystem", &files_);
+  shell()->ConnectToInterface("mojo:filesystem", &files_);
 
   filesystem::FileError error = filesystem::FileError::FAILED;
   filesystem::DirectoryPtr directory;

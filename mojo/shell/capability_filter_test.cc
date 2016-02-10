@@ -120,7 +120,7 @@ class ServiceApplication : public ShellClient,
     shell_ = shell;
     // ServiceApplications have no capability filter and can thus connect
     // directly to the validator application.
-    shell_->ConnectToService("test:validator", &validator_);
+    shell_->ConnectToInterface("test:validator", &validator_);
   }
   bool AcceptConnection(Connection* connection) override {
     AddInterface<Safe>(connection);

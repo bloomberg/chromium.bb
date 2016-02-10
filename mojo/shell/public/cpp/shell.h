@@ -48,16 +48,17 @@ class Shell {
   // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
-  void ConnectToService(ConnectParams* params, InterfacePtr<Interface>* ptr) {
+  void ConnectToInterface(ConnectParams* params, InterfacePtr<Interface>* ptr) {
     scoped_ptr<Connection> connection = Connect(params);
     if (connection)
       connection->GetInterface(ptr);
   }
   template <typename Interface>
-  void ConnectToService(const std::string& url, InterfacePtr<Interface>* ptr) {
+  void ConnectToInterface(const std::string& url,
+                          InterfacePtr<Interface>* ptr) {
     ConnectParams params(url);
     params.set_filter(CreatePermissiveCapabilityFilter());
-    return ConnectToService(&params, ptr);
+    return ConnectToInterface(&params, ptr);
   }
 
   // Initiate shutdown of this application. This may involve a round trip to the

@@ -176,7 +176,7 @@ TEST_F(ApplicationPackageApptest, Basic) {
     // We need to do this to force the shell to read the test app's manifest and
     // register aliases.
     test::mojom::ApplicationPackageApptestServicePtr root_service;
-    shell()->ConnectToService("mojo:mojo_shell_apptests", &root_service);
+    shell()->ConnectToInterface("mojo:mojo_shell_apptests", &root_service);
     base::RunLoop run_loop;
     std::string root_name;
     root_service->GetName(base::Bind(&ReceiveName, &root_name, &run_loop));
@@ -187,7 +187,7 @@ TEST_F(ApplicationPackageApptest, Basic) {
     // Now subsequent connects to applications provided by the root app will be
     // resolved correctly.
     test::mojom::ApplicationPackageApptestServicePtr service_a;
-    shell()->ConnectToService("mojo:package_test_a", &service_a);
+    shell()->ConnectToInterface("mojo:package_test_a", &service_a);
     base::RunLoop run_loop;
     std::string a_name;
     service_a->GetName(base::Bind(&ReceiveName, &a_name, &run_loop));
@@ -197,7 +197,7 @@ TEST_F(ApplicationPackageApptest, Basic) {
 
   {
     test::mojom::ApplicationPackageApptestServicePtr service_b;
-    shell()->ConnectToService("mojo:package_test_b", &service_b);
+    shell()->ConnectToInterface("mojo:package_test_b", &service_b);
     base::RunLoop run_loop;
     std::string b_name;
     service_b->GetName(base::Bind(&ReceiveName, &b_name, &run_loop));

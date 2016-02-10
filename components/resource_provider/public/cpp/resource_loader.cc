@@ -29,7 +29,7 @@ base::File GetFileFromHandle(mojo::ScopedHandle handle) {
 ResourceLoader::ResourceLoader(mojo::Shell* shell,
                                const std::set<std::string>& paths)
     : loaded_(false), did_block_(false) {
-  shell->ConnectToService("mojo:resource_provider", &resource_provider_);
+  shell->ConnectToInterface("mojo:resource_provider", &resource_provider_);
   std::vector<std::string> paths_vector(paths.begin(), paths.end());
   resource_provider_->GetResources(
       mojo::Array<mojo::String>::From(paths_vector),

@@ -71,7 +71,7 @@ bool EmbedUrl(mojo::Shell* shell,
   base::RunLoop run_loop;
   {
     mojom::WindowTreeClientPtr client;
-    shell->ConnectToService(url.get(), &client);
+    shell->ConnectToInterface(url.get(), &client);
     ws->Embed(root_id, std::move(client),
               mojom::WindowTree::kAccessPolicyDefault,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
@@ -566,7 +566,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
     client_factory_.reset(new WindowTreeClientFactory());
 
     mojom::WindowTreeHostFactoryPtr factory;
-    shell()->ConnectToService("mojo:mus", &factory);
+    shell()->ConnectToInterface("mojo:mus", &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
     ws_client1_.reset(new TestWindowTreeClientImpl());

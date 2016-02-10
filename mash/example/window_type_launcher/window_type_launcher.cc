@@ -274,7 +274,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     }
     else if (sender == lock_button_) {
       mash::shell::mojom::ShellPtr shell;
-      shell_->ConnectToService("mojo:mash_shell", &shell);
+      shell_->ConnectToInterface("mojo:mash_shell", &shell);
       shell->LockScreen();
     }
     else if (sender == widgets_button_) {
