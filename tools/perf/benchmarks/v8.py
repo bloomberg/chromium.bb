@@ -55,9 +55,7 @@ class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
 
 # Disabled on reference builds because they don't support the new
 # Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
-@benchmark.Disabled('reference',
-                    'android',  # crbug.com/579546
-                    'linux')  # crbug.com/584634
+@benchmark.Disabled('reference', 'android')  # crbug.com/579546
 class V8InfiniteScroll(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics and memory usage while scrolling the top web pages.
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
