@@ -28,7 +28,12 @@ const char* const kValidSchemes[] = {
 
 }  // namespace
 
-FrameNavigationState::FrameState::FrameState() {}
+FrameNavigationState::FrameState::FrameState() {
+  error_occurred = false;
+  is_iframe_srcdoc = false;
+  is_loading = false;
+  is_parsing = false;
+}
 
 // static
 bool FrameNavigationState::allow_extension_scheme_ = false;
