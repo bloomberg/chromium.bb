@@ -57,17 +57,6 @@ IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)
 // Sent to all child processes to cancel trace event recording.
 IPC_MESSAGE_CONTROL0(TracingMsg_CancelTracing)
 
-// Sent to all child processes to start monitoring.
-IPC_MESSAGE_CONTROL2(TracingMsg_StartMonitoring,
-                     std::string /*  trace_config_str */,
-                     base::TimeTicks /* browser_time */)
-
-// Sent to all child processes to stop monitoring.
-IPC_MESSAGE_CONTROL0(TracingMsg_StopMonitoring)
-
-// Sent to all child processes to capture the current monitorint snapshot.
-IPC_MESSAGE_CONTROL0(TracingMsg_CaptureMonitoringSnapshot)
-
 // Sent to all child processes to get trace buffer fullness.
 IPC_MESSAGE_CONTROL0(TracingMsg_GetTraceLogStatus)
 
@@ -108,16 +97,8 @@ IPC_MESSAGE_CONTROL0(TracingHostMsg_ChildSupportsTracing)
 IPC_MESSAGE_CONTROL1(TracingHostMsg_EndTracingAck,
                      std::vector<std::string> /* known_categories */)
 
-// Reply from child processes acking TracingMsg_CaptureMonitoringSnapshot.
-IPC_MESSAGE_CONTROL0(TracingHostMsg_CaptureMonitoringSnapshotAck)
-
 // Child processes send back trace data in JSON chunks.
 IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceDataCollected,
-                     std::string /*json trace data*/)
-
-// Child processes send back trace data of the current monitoring
-// in JSON chunks.
-IPC_MESSAGE_CONTROL1(TracingHostMsg_MonitoringTraceDataCollected,
                      std::string /*json trace data*/)
 
 // Reply to TracingMsg_GetTraceLogStatus.

@@ -50,10 +50,6 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TracingMsg_BeginTracing, OnBeginTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_EndTracing, OnEndTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_CancelTracing, OnCancelTracing)
-    IPC_MESSAGE_HANDLER(TracingMsg_StartMonitoring, OnStartMonitoring)
-    IPC_MESSAGE_HANDLER(TracingMsg_StopMonitoring, OnStopMonitoring)
-    IPC_MESSAGE_HANDLER(TracingMsg_CaptureMonitoringSnapshot,
-                        OnCaptureMonitoringSnapshot)
     IPC_MESSAGE_HANDLER(TracingMsg_GetTraceLogStatus, OnGetTraceLogStatus)
     IPC_MESSAGE_HANDLER(TracingMsg_SetWatchEvent, OnSetWatchEvent)
     IPC_MESSAGE_HANDLER(TracingMsg_CancelWatchEvent, OnCancelWatchEvent)
@@ -107,28 +103,6 @@ void ChildTraceMessageFilter::OnCancelTracing() {
       base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
 }
 
-void ChildTraceMessageFilter::OnStartMonitoring(
-    const std::string& trace_config_str, base::TimeTicks browser_time) {
-  TraceLog::GetInstance()->SetEnabled(
-      base::trace_event::TraceConfig(trace_config_str),
-      base::trace_event::TraceLog::MONITORING_MODE);
-}
-
-void ChildTraceMessageFilter::OnStopMonitoring() {
-  TraceLog::GetInstance()->SetDisabled();
-}
-
-void ChildTraceMessageFilter::OnCaptureMonitoringSnapshot() {
-  // Flush will generate one or more callbacks to
-  // OnMonitoringTraceDataCollected. It's important that the last
-  // OnMonitoringTraceDataCollected gets called before
-  // CaptureMonitoringSnapshotAck below. We are already on the IO thread,
-  // so the OnMonitoringTraceDataCollected calls will not be deferred.
-  TraceLog::GetInstance()->FlushButLeaveBufferIntact(
-      base::Bind(&ChildTraceMessageFilter::OnMonitoringTraceDataCollected,
-                 this));
-}
-
 void ChildTraceMessageFilter::OnGetTraceLogStatus() {
   sender_->Send(new TracingHostMsg_TraceLogStatusReply(
       TraceLog::GetInstance()->GetStatus()));
@@ -173,23 +147,6 @@ void ChildTraceMessageFilter::OnTraceDataCollected(
     TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
     sender_->Send(new TracingHostMsg_EndTracingAck(category_groups));
   }
-}
-
-void ChildTraceMessageFilter::OnMonitoringTraceDataCollected(
-     const scoped_refptr<base::RefCountedString>& events_str_ptr,
-     bool has_more_events) {
-  if (!ipc_task_runner_->BelongsToCurrentThread()) {
-    ipc_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ChildTraceMessageFilter::OnMonitoringTraceDataCollected,
-                   this, events_str_ptr, has_more_events));
-    return;
-  }
-  sender_->Send(new TracingHostMsg_MonitoringTraceDataCollected(
-      events_str_ptr->data()));
-
-  if (!has_more_events)
-    sender_->Send(new TracingHostMsg_CaptureMonitoringSnapshotAck());
 }
 
 // Sent by the Browser's MemoryDumpManager when coordinating a global dump.

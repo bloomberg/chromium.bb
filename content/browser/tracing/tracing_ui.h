@@ -24,7 +24,6 @@ class CONTENT_EXPORT TracingUI : public WebUIController {
  public:
   explicit TracingUI(WebUI* web_ui);
   ~TracingUI() override;
-  void OnMonitoringStateChanged(bool is_monitoring);
   void OnTraceUploadProgress(int64_t current, int64_t total);
   void OnTraceUploadComplete(bool success, const std::string& feedback);
 

@@ -32,10 +32,6 @@ class TraceMessageFilter : public BrowserMessageFilter {
       const base::trace_event::TraceConfig& trace_config);
   void SendEndTracing();
   void SendCancelTracing();
-  void SendStartMonitoring(
-      const base::trace_event::TraceConfig& trace_config);
-  void SendStopMonitoring();
-  void SendCaptureMonitoringSnapshot();
   void SendGetTraceLogStatus();
   void SendSetWatchEvent(const std::string& category_name,
                          const std::string& event_name);
@@ -50,11 +46,9 @@ class TraceMessageFilter : public BrowserMessageFilter {
   // Message handlers.
   void OnChildSupportsTracing();
   void OnEndTracingAck(const std::vector<std::string>& known_categories);
-  void OnCaptureMonitoringSnapshotAcked();
   void OnWatchEventMatched();
   void OnTraceLogStatusReply(const base::trace_event::TraceLogStatus& status);
   void OnTraceDataCollected(const std::string& data);
-  void OnMonitoringTraceDataCollected(const std::string& data);
   void OnGlobalMemoryDumpRequest(
       const base::trace_event::MemoryDumpRequestArgs& args);
   void OnProcessMemoryDumpResponse(uint64_t dump_guid, bool success);
@@ -71,8 +65,6 @@ class TraceMessageFilter : public BrowserMessageFilter {
 
   // Awaiting ack for previously sent SendEndTracing
   bool is_awaiting_end_ack_;
-  // Awaiting ack for previously sent SendCaptureMonitoringSnapshot
-  bool is_awaiting_capture_monitoring_snapshot_ack_;
   // Awaiting ack for previously sent SendGetTraceLogStatus
   bool is_awaiting_buffer_percent_full_ack_;
 

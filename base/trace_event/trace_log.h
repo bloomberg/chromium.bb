@@ -47,8 +47,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
  public:
   enum Mode {
     DISABLED = 0,
-    RECORDING_MODE,
-    MONITORING_MODE,
+    RECORDING_MODE
   };
 
   // The pointer returned from GetCategoryGroupEnabledInternal() points to a
@@ -58,8 +57,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   enum CategoryGroupEnabledFlags {
     // Category group enabled for the recording mode.
     ENABLED_FOR_RECORDING = 1 << 0,
-    // Category group enabled for the monitoring mode.
-    ENABLED_FOR_MONITORING = 1 << 1,
     // Category group enabled by SetEventCallbackEnabled().
     ENABLED_FOR_EVENT_CALLBACK = 1 << 2,
     // Category group enabled to export events to ETW.
@@ -170,7 +167,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&,
                               bool has_more_events)> OutputCallback;
   void Flush(const OutputCallback& cb, bool use_worker_thread = false);
-  void FlushButLeaveBufferIntact(const OutputCallback& flush_output_callback);
 
   // Cancels tracing and discards collected data.
   void CancelTracing(const OutputCallback& cb);

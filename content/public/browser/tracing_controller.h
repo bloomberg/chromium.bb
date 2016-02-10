@@ -30,9 +30,9 @@ class TracingController {
 
   CONTENT_EXPORT static TracingController* GetInstance();
 
-  // An interface for trace data consumer. An implemnentation of this interface
-  // is passed to either DisableTracing() or CaptureMonitoringSnapshot() and
-  // receives the trace data followed by a notification that all child processes
+  // An interface for trace data consumer. An implementation of this interface
+  // is passed to DisableTracing() and receives the trace data
+  // followed by a notification that all child processes
   // have completed tracing and the data collection is over.
   // All methods are called on the UI thread.
   // Close method will be called exactly once and no methods will be
@@ -90,8 +90,8 @@ class TracingController {
     virtual ~TraceDataEndpoint() {}
   };
 
-  // Create a trace sink that may be supplied to StopTracing or
-  // CaptureMonitoringSnapshot to capture the trace data as a string.
+  // Create a trace sink that may be supplied to StopTracing
+  // to capture the trace data as a string.
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateStringSink(
       const base::Callback<void(scoped_ptr<const base::DictionaryValue>,
                                 base::RefCountedString*)>& callback);
@@ -99,8 +99,8 @@ class TracingController {
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateCompressedStringSink(
       scoped_refptr<TraceDataEndpoint> endpoint);
 
-  // Create a trace sink that may be supplied to StopTracing or
-  // CaptureMonitoringSnapshot to dump the trace data to a file.
+  // Create a trace sink that may be supplied to StopTracing
+  // to dump the trace data to a file.
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateFileSink(
       const base::FilePath& file_path,
       const base::Closure& callback);
@@ -168,54 +168,6 @@ class TracingController {
   // a notification that the trace collection is finished.
   //
   virtual bool StopTracing(
-      const scoped_refptr<TraceDataSink>& trace_data_sink) = 0;
-
-  // Start monitoring on all processes.
-  //
-  // Monitoring begins immediately locally, and asynchronously on child
-  // processes as soon as they receive the StartMonitoring request.
-  //
-  // Once all child processes have acked to the StartMonitoring request,
-  // StartMonitoringDoneCallback will be called back.
-  //
-  // |category_filter| is a filter to control what category groups should be
-  // traced.
-  //
-  // |trace_config| controls what kind of tracing is enabled.
-  typedef base::Callback<void()> StartMonitoringDoneCallback;
-  virtual bool StartMonitoring(
-      const base::trace_event::TraceConfig& trace_config,
-      const StartMonitoringDoneCallback& callback) = 0;
-
-  // Stop monitoring on all processes.
-  //
-  // Once all child processes have acked to the StopMonitoring request,
-  // StopMonitoringDoneCallback is called back.
-  typedef base::Callback<void()> StopMonitoringDoneCallback;
-  virtual bool StopMonitoring(
-      const StopMonitoringDoneCallback& callback) = 0;
-
-  // Get the current monitoring configuration.
-  virtual void GetMonitoringStatus(
-      bool* out_enabled,
-      base::trace_event::TraceConfig* out_trace_config) = 0;
-
-  // Get the current monitoring traced data.
-  //
-  // Child processes typically are caching trace data and only rarely flush
-  // and send trace data back to the browser process. That is because it may be
-  // an expensive operation to send the trace data over IPC, and we would like
-  // to avoid much runtime overhead of tracing. So, to end tracing, we must
-  // asynchronously ask all child processes to flush any pending trace data.
-  //
-  // Once all child processes have acked to the CaptureMonitoringSnapshot
-  // request, TracingFileResultCallback will be called back with a file that
-  // contains the traced data.
-  //
-  // If |trace_data_sink| is not null, it will receive chunks of trace data
-  // as a comma-separated sequences of JSON-stringified events, followed by
-  // a notification that the trace collection is finished.
-  virtual bool CaptureMonitoringSnapshot(
       const scoped_refptr<TraceDataSink>& trace_data_sink) = 0;
 
   // Get the maximum across processes of trace buffer percent full state.

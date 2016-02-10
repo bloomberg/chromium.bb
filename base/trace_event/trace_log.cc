@@ -78,8 +78,6 @@ static_assert(
     "Too many vector buffer chunks");
 const size_t kTraceEventRingBufferChunks = kTraceEventVectorBufferChunks / 4;
 
-// Can store results for 30 seconds with 1 ms sampling interval.
-const size_t kMonitorTraceEventBufferChunks = 30000 / kTraceBufferChunkSize;
 // ECHO_TO_CONSOLE needs a small buffer to hold the unfinished COMPLETE events.
 const size_t kEchoToConsoleTraceEventBufferChunks = 256;
 
@@ -453,14 +451,15 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(size_t category_index) {
   unsigned char enabled_flag = 0;
   const char* category_group = g_category_groups[category_index];
   if (mode_ == RECORDING_MODE &&
-      trace_config_.IsCategoryGroupEnabled(category_group))
+      trace_config_.IsCategoryGroupEnabled(category_group)) {
     enabled_flag |= ENABLED_FOR_RECORDING;
-  else if (mode_ == MONITORING_MODE &&
-           trace_config_.IsCategoryGroupEnabled(category_group))
-    enabled_flag |= ENABLED_FOR_MONITORING;
+  }
+
   if (event_callback_ &&
-      event_callback_trace_config_.IsCategoryGroupEnabled(category_group))
+      event_callback_trace_config_.IsCategoryGroupEnabled(category_group)) {
     enabled_flag |= ENABLED_FOR_EVENT_CALLBACK;
+  }
+
 #if defined(OS_WIN)
   if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
           category_group)) {
@@ -1018,31 +1017,6 @@ void TraceLog::OnFlushTimeout(int generation, bool discard_events) {
   FinishFlush(generation, discard_events);
 }
 
-void TraceLog::FlushButLeaveBufferIntact(
-    const TraceLog::OutputCallback& flush_output_callback) {
-  scoped_ptr<TraceBuffer> previous_logged_events;
-  ArgumentFilterPredicate argument_filter_predicate;
-  {
-    AutoLock lock(lock_);
-    AddMetadataEventsWhileLocked();
-    if (thread_shared_chunk_) {
-      // Return the chunk to the main buffer to flush the sampling data.
-      logged_events_->ReturnChunk(thread_shared_chunk_index_,
-                                  std::move(thread_shared_chunk_));
-    }
-    previous_logged_events = logged_events_->CloneForIteration();
-
-    if (trace_options() & kInternalEnableArgumentFilter) {
-      CHECK(!argument_filter_predicate_.is_null());
-      argument_filter_predicate = argument_filter_predicate_;
-    }
-  }  // release lock
-
-  ConvertTraceEventsToTraceFormat(std::move(previous_logged_events),
-                                  flush_output_callback,
-                                  argument_filter_predicate);
-}
-
 void TraceLog::UseNextTraceBuffer() {
   logged_events_.reset(CreateTraceBuffer());
   subtle::NoBarrier_AtomicIncrement(&generation_, 1);
@@ -1269,8 +1243,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 #endif  // OS_WIN
 
   std::string console_message;
-  if (*category_group_enabled &
-      (ENABLED_FOR_RECORDING | ENABLED_FOR_MONITORING)) {
+  if (*category_group_enabled & ENABLED_FOR_RECORDING) {
     OptionalAutoLock lock(&lock_);
 
     TraceEvent* trace_event = NULL;
@@ -1685,9 +1658,6 @@ TraceBuffer* TraceLog::CreateTraceBuffer() {
   if (options & kInternalRecordContinuously)
     return TraceBuffer::CreateTraceBufferRingBuffer(
         kTraceEventRingBufferChunks);
-  else if ((options & kInternalEnableSampling) && mode_ == MONITORING_MODE)
-    return TraceBuffer::CreateTraceBufferRingBuffer(
-        kMonitorTraceEventBufferChunks);
   else if (options & kInternalEchoToConsole)
     return TraceBuffer::CreateTraceBufferRingBuffer(
         kEchoToConsoleTraceEventBufferChunks);

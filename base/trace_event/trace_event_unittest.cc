@@ -134,19 +134,6 @@ class TraceEventTestFixture : public testing::Test {
                    base::Unretained(flush_complete_event)));
   }
 
-  void FlushMonitoring() {
-    WaitableEvent flush_complete_event(false, false);
-    FlushMonitoring(&flush_complete_event);
-    flush_complete_event.Wait();
-  }
-
-  void FlushMonitoring(WaitableEvent* flush_complete_event) {
-    TraceLog::GetInstance()->FlushButLeaveBufferIntact(
-        base::Bind(&TraceEventTestFixture::OnTraceDataCollected,
-                   base::Unretained(static_cast<TraceEventTestFixture*>(this)),
-                   base::Unretained(flush_complete_event)));
-  }
-
   void SetUp() override {
     const char* name = PlatformThread::GetName();
     old_thread_name_ = name ? strdup(name) : NULL;
@@ -1275,25 +1262,6 @@ TEST_F(TraceEventTestFixture, AddMetadataEvent) {
   BeginTrace();
   EndTraceAndFlush();
   ASSERT_EQ(1, num_calls);
-
-  // Flushing should cause |AppendAsTraceFormat| to be called, but if the buffer
-  // is left intact, it the flush at the end of the trace should still call it;
-  // the metadata event should not be removed.
-  TraceLog::GetInstance()->SetEnabled(
-      TraceConfig(kRecordAllCategoryFilter,
-                  "record-until-full,enable-sampling"),
-      TraceLog::MONITORING_MODE);
-  TRACE_EVENT_API_ADD_METADATA_EVENT("metadata_event_name", "metadata_arg_name",
-                                     convertable);
-  FlushMonitoring();
-  ASSERT_EQ(2, num_calls);
-
-  // Flushing the trace at this point will case |AppendAsTraceFormat| to be
-  // called twice: once for the event that was added by the monitoring flush,
-  // and once for the end trace flush; the metadata event will be duplicated.
-  // This is consistent with the other metadata events.
-  EndTraceAndFlush();
-  ASSERT_EQ(4, num_calls);
 }
 
 // Test that categories work.
@@ -2057,52 +2025,6 @@ TEST_F(TraceEventTestFixture, TraceSamplingScope) {
   EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "DDD");
 
   EndTraceAndFlush();
-}
-
-TEST_F(TraceEventTestFixture, TraceContinuousSampling) {
-  TraceLog::GetInstance()->SetEnabled(
-    TraceConfig(kRecordAllCategoryFilter, "record-until-full,enable-sampling"),
-    TraceLog::MONITORING_MODE);
-
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "AAA");
-  TraceLog::GetInstance()->WaitSamplingEventForTesting();
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "BBB");
-  TraceLog::GetInstance()->WaitSamplingEventForTesting();
-
-  FlushMonitoring();
-
-  // Make sure we can get the profiled data.
-  EXPECT_TRUE(FindNamePhase("AAA", "P"));
-  EXPECT_TRUE(FindNamePhase("BBB", "P"));
-
-  Clear();
-  TraceLog::GetInstance()->WaitSamplingEventForTesting();
-
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "CCC");
-  TraceLog::GetInstance()->WaitSamplingEventForTesting();
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "DDD");
-  TraceLog::GetInstance()->WaitSamplingEventForTesting();
-
-  FlushMonitoring();
-
-  // Make sure the profiled data is accumulated.
-  EXPECT_TRUE(FindNamePhase("AAA", "P"));
-  EXPECT_TRUE(FindNamePhase("BBB", "P"));
-  EXPECT_TRUE(FindNamePhase("CCC", "P"));
-  EXPECT_TRUE(FindNamePhase("DDD", "P"));
-
-  Clear();
-
-  TraceLog::GetInstance()->SetDisabled();
-
-  // Make sure disabling the continuous sampling thread clears
-  // the profiled data.
-  EXPECT_FALSE(FindNamePhase("AAA", "P"));
-  EXPECT_FALSE(FindNamePhase("BBB", "P"));
-  EXPECT_FALSE(FindNamePhase("CCC", "P"));
-  EXPECT_FALSE(FindNamePhase("DDD", "P"));
-
-  Clear();
 }
 
 class MyData : public ConvertableToTraceFormat {

@@ -18,7 +18,6 @@ TraceMessageFilter::TraceMessageFilter(int child_process_id)
           ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
               child_process_id)),
       is_awaiting_end_ack_(false),
-      is_awaiting_capture_monitoring_snapshot_ack_(false),
       is_awaiting_buffer_percent_full_ack_(false) {
 }
 
@@ -28,9 +27,6 @@ void TraceMessageFilter::OnChannelClosing() {
   if (has_child_) {
     if (is_awaiting_end_ack_)
       OnEndTracingAck(std::vector<std::string>());
-
-    if (is_awaiting_capture_monitoring_snapshot_ack_)
-      OnCaptureMonitoringSnapshotAcked();
 
     if (is_awaiting_buffer_percent_full_ack_)
       OnTraceLogStatusReply(base::trace_event::TraceLogStatus());
@@ -46,12 +42,8 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TracingHostMsg_ChildSupportsTracing,
                         OnChildSupportsTracing)
     IPC_MESSAGE_HANDLER(TracingHostMsg_EndTracingAck, OnEndTracingAck)
-    IPC_MESSAGE_HANDLER(TracingHostMsg_CaptureMonitoringSnapshotAck,
-                        OnCaptureMonitoringSnapshotAcked)
     IPC_MESSAGE_HANDLER(TracingHostMsg_TraceDataCollected,
                         OnTraceDataCollected)
-    IPC_MESSAGE_HANDLER(TracingHostMsg_MonitoringTraceDataCollected,
-                        OnMonitoringTraceDataCollected)
     IPC_MESSAGE_HANDLER(TracingHostMsg_WatchEventMatched,
                         OnWatchEventMatched)
     IPC_MESSAGE_HANDLER(TracingHostMsg_TraceLogStatusReply,
@@ -88,25 +80,6 @@ void TraceMessageFilter::SendCancelTracing() {
   DCHECK(!is_awaiting_end_ack_);
   is_awaiting_end_ack_ = true;
   Send(new TracingMsg_CancelTracing);
-}
-
-void TraceMessageFilter::SendStartMonitoring(
-      const base::trace_event::TraceConfig& trace_config) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Send(new TracingMsg_StartMonitoring(trace_config.ToString(),
-                                       base::TimeTicks::Now()));
-}
-
-void TraceMessageFilter::SendStopMonitoring() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Send(new TracingMsg_StopMonitoring);
-}
-
-void TraceMessageFilter::SendCaptureMonitoringSnapshot() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_awaiting_capture_monitoring_snapshot_ack_);
-  is_awaiting_capture_monitoring_snapshot_ack_ = true;
-  Send(new TracingMsg_CaptureMonitoringSnapshot);
 }
 
 void TraceMessageFilter::SendGetTraceLogStatus() {
@@ -155,30 +128,10 @@ void TraceMessageFilter::OnEndTracingAck(
   }
 }
 
-void TraceMessageFilter::OnCaptureMonitoringSnapshotAcked() {
-  // is_awaiting_capture_monitoring_snapshot_ack_ should always be true here,
-  // but check in case the child process is compromised.
-  if (is_awaiting_capture_monitoring_snapshot_ack_) {
-    is_awaiting_capture_monitoring_snapshot_ack_ = false;
-    TracingControllerImpl::GetInstance()->OnCaptureMonitoringSnapshotAcked(
-        this);
-  } else {
-    NOTREACHED();
-  }
-}
-
 void TraceMessageFilter::OnTraceDataCollected(const std::string& data) {
   scoped_refptr<base::RefCountedString> data_ptr(new base::RefCountedString());
   data_ptr->data() = data;
   TracingControllerImpl::GetInstance()->OnTraceDataCollected(data_ptr);
-}
-
-void TraceMessageFilter::OnMonitoringTraceDataCollected(
-    const std::string& data) {
-  scoped_refptr<base::RefCountedString> data_ptr(new base::RefCountedString());
-  data_ptr->data() = data;
-  TracingControllerImpl::GetInstance()->OnMonitoringTraceDataCollected(
-      data_ptr);
 }
 
 void TraceMessageFilter::OnWatchEventMatched() {

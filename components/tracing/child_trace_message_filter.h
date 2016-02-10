@@ -53,10 +53,6 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
                       uint64_t tracing_process_id);
   void OnEndTracing();
   void OnCancelTracing();
-  void OnStartMonitoring(const std::string& trace_config_str,
-                          base::TimeTicks browser_time);
-  void OnStopMonitoring();
-  void OnCaptureMonitoringSnapshot();
   void OnGetTraceLogStatus();
   void OnSetWatchEvent(const std::string& category_name,
                        const std::string& event_name);
@@ -80,10 +76,6 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
 
   // Callback from trace subsystem.
   void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& events_str_ptr,
-      bool has_more_events);
-
-  void OnMonitoringTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events);
 
