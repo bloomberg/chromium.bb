@@ -170,15 +170,9 @@
         "test": "components_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "build.id": "KTU84P",
-              "product.board": "hammerhead"
-            }
-          ]
-        },
+        "args": [
+          "--isolate_file_path=src/content/content_browsertests.isolate"
+        ],
         "test": "content_browsertests"
       },
       {
