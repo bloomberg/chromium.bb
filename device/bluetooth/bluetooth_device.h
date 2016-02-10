@@ -457,6 +457,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // empty string.
   static std::string CanonicalizeAddress(const std::string& address);
 
+  // Return associated BluetoothAdapter.
+  BluetoothAdapter* GetAdapter() { return adapter_; }
+
  protected:
   // BluetoothGattConnection is a friend to call Add/RemoveGattConnection.
   friend BluetoothGattConnection;

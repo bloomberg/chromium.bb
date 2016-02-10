@@ -128,4 +128,30 @@ BluetoothDevice* BluetoothTestWin::DiscoverLowEnergyDevice(int device_ordinal) {
 
   return nullptr;
 }
+
+void BluetoothTestWin::SimulateGattConnection(BluetoothDevice* device) {
+  bluetooth_task_runner_->RunPendingTasks();
+  ui_task_runner_->RunPendingTasks();
+
+  // Clear records caused by CreateGattConnection since we do not support it on
+  // Windows.
+  gatt_discovery_attempts_++;
+  expected_success_callback_calls_--;
+  unexpected_error_callback_ = false;
+}
+
+void BluetoothTestWin::SimulateGattServicesDiscovered(
+    BluetoothDevice* device,
+    const std::vector<std::string>& uuids) {
+  win::BLEDevice* simulated_device =
+      fake_bt_le_wrapper_->GetSimulatedBLEDevice(device->GetAddress());
+  CHECK(simulated_device);
+
+  for (auto uuid : uuids) {
+    fake_bt_le_wrapper_->SimulateBLEGattService(simulated_device, uuid);
+  }
+
+  bluetooth_task_runner_->RunPendingTasks();
+  ui_task_runner_->RunPendingTasks();
+}
 }

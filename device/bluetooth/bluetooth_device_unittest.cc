@@ -18,6 +18,8 @@
 #include "device/bluetooth/test/bluetooth_test_android.h"
 #elif defined(OS_MACOSX)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
+#elif defined(OS_WIN)
+#include "device/bluetooth/test/bluetooth_test_win.h"
 #endif
 
 namespace device {
@@ -69,7 +71,7 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_RejectsInvalidFormats) {
   }
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Verifies basic device properties, e.g. GetAddress, GetName, ...
 TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
   if (!PlatformSupportsLowEnergy()) {
@@ -80,7 +82,10 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(1);
   ASSERT_TRUE(device);
+// Bluetooth class information for BLE device is not available on Windows.
+#ifndef OS_WIN
   EXPECT_EQ(0x1F00u, device->GetBluetoothClass());
+#endif
   EXPECT_EQ(kTestDeviceAddress1, device->GetAddress());
   EXPECT_EQ(BluetoothDevice::VENDOR_ID_UNKNOWN, device->GetVendorIDSource());
   EXPECT_EQ(0, device->GetVendorID());
@@ -92,9 +97,9 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
   EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAccess)));
   EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAttribute)));
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Device with no advertised Service UUIDs.
 TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
   if (!PlatformSupportsLowEnergy()) {
@@ -108,7 +113,7 @@ TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
   BluetoothDevice::UUIDList uuids = device->GetUUIDs();
   EXPECT_EQ(0u, uuids.size());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 // TODO(scheib): Test with a device with no name. http://crbug.com/506415
 // BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() will run, which
@@ -467,8 +472,12 @@ TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothTest, GattServices_ObserversCalls) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
@@ -487,10 +496,14 @@ TEST_F(BluetoothTest, GattServices_ObserversCalls) {
   EXPECT_EQ(1, observer.gatt_services_discovered_count());
   EXPECT_EQ(2, observer.gatt_service_added_count());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothTest, GetGattServices_and_GetGattService) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
@@ -516,7 +529,7 @@ TEST_F(BluetoothTest, GetGattServices_and_GetGattService) {
   EXPECT_TRUE(device->GetGattService(service_id2));
   EXPECT_TRUE(device->GetGattService(service_id3));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, GetGattServices_DiscoveryError) {

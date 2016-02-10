@@ -534,8 +534,11 @@ bool BluetoothTaskManagerWin::DiscoverServices(
     } else {
       if (!DiscoverLowEnergyDeviceServices(device->path,
                                            service_record_states)) {
-        return SearchForGattServiceDevicePaths(device->address,
-                                               service_record_states);
+        return false;
+      }
+      if (!SearchForGattServiceDevicePaths(device->address,
+                                           service_record_states)) {
+        return false;
       }
     }
   }

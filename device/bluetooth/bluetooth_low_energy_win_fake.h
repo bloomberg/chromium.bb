@@ -81,6 +81,7 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
 
   BLEDevice* SimulateBLEDevice(std::string device_name,
                                BLUETOOTH_ADDRESS device_address);
+  BLEDevice* GetSimulatedBLEDevice(std::string device_address);
   BLEGattService* SimulateBLEGattService(BLEDevice* device, std::string uuid);
 
  private:

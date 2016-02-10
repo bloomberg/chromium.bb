@@ -95,6 +95,8 @@
         'bluetooth_remote_gatt_descriptor_android.h',
         'bluetooth_remote_gatt_service_android.cc',
         'bluetooth_remote_gatt_service_android.h',
+        'bluetooth_remote_gatt_service_win.cc',
+        'bluetooth_remote_gatt_service_win.h',
         'bluetooth_rfcomm_channel_mac.mm',
         'bluetooth_rfcomm_channel_mac.h',
         'bluetooth_service_record_win.cc',

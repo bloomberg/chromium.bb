@@ -13,6 +13,9 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 
 namespace device {
 
@@ -153,6 +156,99 @@ BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
     return NULL;
 
   return pairing_delegates_.front().first;
+}
+
+void BluetoothAdapter::NotifyGattServiceAdded(BluetoothGattService* service) {
+  DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattServiceAdded(this, service->GetDevice(), service));
+}
+
+void BluetoothAdapter::NotifyGattServiceRemoved(BluetoothGattService* service) {
+  DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattServiceRemoved(this, service->GetDevice(), service));
+}
+
+void BluetoothAdapter::NotifyGattServiceChanged(BluetoothGattService* service) {
+  DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattServiceChanged(this, service));
+}
+
+void BluetoothAdapter::NotifyGattServicesDiscovered(BluetoothDevice* device) {
+  DCHECK(device->GetAdapter() == this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattServicesDiscovered(this, device));
+}
+
+void BluetoothAdapter::NotifyGattDiscoveryComplete(
+    BluetoothGattService* service) {
+  DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattDiscoveryCompleteForService(this, service));
+}
+
+void BluetoothAdapter::NotifyGattCharacteristicAdded(
+    BluetoothGattCharacteristic* characteristic) {
+  DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattCharacteristicAdded(this, characteristic));
+}
+
+void BluetoothAdapter::NotifyGattCharacteristicRemoved(
+    BluetoothGattCharacteristic* characteristic) {
+  DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattCharacteristicRemoved(this, characteristic));
+}
+
+void BluetoothAdapter::NotifyGattDescriptorAdded(
+    BluetoothGattDescriptor* descriptor) {
+  DCHECK_EQ(
+      descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),
+      this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattDescriptorAdded(this, descriptor));
+}
+
+void BluetoothAdapter::NotifyGattDescriptorRemoved(
+    BluetoothGattDescriptor* descriptor) {
+  DCHECK_EQ(
+      descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),
+      this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattDescriptorRemoved(this, descriptor));
+}
+
+void BluetoothAdapter::NotifyGattCharacteristicValueChanged(
+    BluetoothGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value) {
+  DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(
+      BluetoothAdapter::Observer, observers_,
+      GattCharacteristicValueChanged(this, characteristic, value));
+}
+
+void BluetoothAdapter::NotifyGattDescriptorValueChanged(
+    BluetoothGattDescriptor* descriptor,
+    const std::vector<uint8_t>& value) {
+  DCHECK_EQ(
+      descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),
+      this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattDescriptorValueChanged(this, descriptor, value));
 }
 
 BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this) {

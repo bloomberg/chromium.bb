@@ -208,8 +208,7 @@ void BluetoothRemoteGattCharacteristicAndroid::OnChanged(
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jbyteArray>& value) {
   base::android::JavaByteArrayToByteVector(env, value, &value_);
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter_->GetObservers(),
-                    GattCharacteristicValueChanged(adapter_, this, value_));
+  adapter_->NotifyGattCharacteristicValueChanged(this, value_);
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::OnRead(

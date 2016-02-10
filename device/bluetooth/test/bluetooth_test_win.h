@@ -30,6 +30,10 @@ class BluetoothTestWin : public BluetoothTestBase {
   bool DenyPermission() override;
   void StartLowEnergyDiscoverySession() override;
   BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
+  void SimulateGattConnection(BluetoothDevice* device) override;
+  void SimulateGattServicesDiscovered(
+      BluetoothDevice* device,
+      const std::vector<std::string>& uuids) override;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;

@@ -245,8 +245,7 @@ void BluetoothDeviceAndroid::OnGattServicesDiscovered(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
   SetGattServicesDiscoveryComplete(true);
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, GetAdapter()->GetObservers(),
-                    GattServicesDiscovered(GetAdapter(), this));
+  adapter_->NotifyGattServicesDiscovered(this);
 }
 
 void BluetoothDeviceAndroid::CreateGattRemoteService(
@@ -262,13 +261,13 @@ void BluetoothDeviceAndroid::CreateGattRemoteService(
     return;
 
   BluetoothDevice::GattServiceMap::iterator service_iterator =
-      gatt_services_.set(instance_id_string,
-                         BluetoothRemoteGattServiceAndroid::Create(
-                             GetAdapter(), this, bluetooth_gatt_service_wrapper,
-                             instance_id_string, j_device_.obj()));
+      gatt_services_.set(
+          instance_id_string,
+          BluetoothRemoteGattServiceAndroid::Create(
+              GetAndroidAdapter(), this, bluetooth_gatt_service_wrapper,
+              instance_id_string, j_device_.obj()));
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, GetAdapter()->GetObservers(),
-                    GattServiceAdded(adapter_, this, service_iterator->second));
+  adapter_->NotifyGattServiceAdded(service_iterator->second);
 }
 
 BluetoothDeviceAndroid::BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter)

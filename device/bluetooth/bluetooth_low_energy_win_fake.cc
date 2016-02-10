@@ -152,6 +152,14 @@ BLEGattService* BluetoothLowEnergyWrapperFake::SimulateBLEGattService(
   return service;
 }
 
+BLEDevice* BluetoothLowEnergyWrapperFake::GetSimulatedBLEDevice(
+    std::string device_address) {
+  BLEDevicesMap::iterator it_d = simulated_devices_.find(device_address);
+  if (it_d == simulated_devices_.end())
+    return nullptr;
+  return it_d->second.get();
+}
+
 USHORT BluetoothLowEnergyWrapperFake::GenerateAUniqueAttributeHandle(
     std::string device_address) {
   scoped_ptr<std::set<USHORT>>& set_of_ushort =
@@ -200,7 +208,7 @@ BluetoothLowEnergyWrapperFake::ExtractDeviceAddressFromDevicePath(
     base::string16 path) {
   std::size_t found = path.find('/');
   if (found != base::string16::npos) {
-    return path.substr(0, found - 1);
+    return path.substr(0, found);
   }
   return path;
 }

@@ -125,28 +125,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void NotifyDeviceAddressChanged(BluetoothDeviceBlueZ* device,
                                   const std::string& old_address);
 
-  // The following methods are used to send various GATT observer events to
-  // observers.
-  void NotifyGattServiceAdded(BluetoothRemoteGattServiceBlueZ* service);
-  void NotifyGattServiceRemoved(BluetoothRemoteGattServiceBlueZ* service);
-  void NotifyGattServiceChanged(BluetoothRemoteGattServiceBlueZ* service);
-  void NotifyGattServicesDiscovered(BluetoothDeviceBlueZ* device);
-  void NotifyGattDiscoveryComplete(BluetoothRemoteGattServiceBlueZ* service);
-  void NotifyGattCharacteristicAdded(
-      BluetoothRemoteGattCharacteristicBlueZ* characteristic);
-  void NotifyGattCharacteristicRemoved(
-      BluetoothRemoteGattCharacteristicBlueZ* characteristic);
-  void NotifyGattDescriptorAdded(
-      BluetoothRemoteGattDescriptorBlueZ* descriptor);
-  void NotifyGattDescriptorRemoved(
-      BluetoothRemoteGattDescriptorBlueZ* descriptor);
-  void NotifyGattCharacteristicValueChanged(
-      BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-      const std::vector<uint8_t>& value);
-  void NotifyGattDescriptorValueChanged(
-      BluetoothRemoteGattDescriptorBlueZ* descriptor,
-      const std::vector<uint8_t>& value);
-
   // Returns the object path of the adapter.
   const dbus::ObjectPath& object_path() const { return object_path_; }
 

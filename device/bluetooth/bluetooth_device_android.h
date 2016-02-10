@@ -42,7 +42,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Get owning BluetoothAdapter cast to BluetoothAdapterAndroid.
-  BluetoothAdapterAndroid* GetAdapter() {
+  BluetoothAdapterAndroid* GetAndroidAdapter() {
     return static_cast<BluetoothAdapterAndroid*>(adapter_);
   }
 

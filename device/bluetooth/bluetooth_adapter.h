@@ -398,6 +398,25 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) = 0;
 
+  // The following methods are used to send various GATT observer events to
+  // observers.
+  void NotifyGattServiceAdded(BluetoothGattService* service);
+  void NotifyGattServiceRemoved(BluetoothGattService* service);
+  void NotifyGattServiceChanged(BluetoothGattService* service);
+  void NotifyGattServicesDiscovered(BluetoothDevice* device);
+  void NotifyGattDiscoveryComplete(BluetoothGattService* service);
+  void NotifyGattCharacteristicAdded(
+      BluetoothGattCharacteristic* characteristic);
+  void NotifyGattCharacteristicRemoved(
+      BluetoothGattCharacteristic* characteristic);
+  void NotifyGattDescriptorAdded(BluetoothGattDescriptor* descriptor);
+  void NotifyGattDescriptorRemoved(BluetoothGattDescriptor* descriptor);
+  void NotifyGattCharacteristicValueChanged(
+      BluetoothGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value);
+  void NotifyGattDescriptorValueChanged(BluetoothGattDescriptor* descriptor,
+                                        const std::vector<uint8_t>& value);
+
  protected:
   friend class base::RefCounted<BluetoothAdapter>;
   friend class BluetoothDiscoverySession;
