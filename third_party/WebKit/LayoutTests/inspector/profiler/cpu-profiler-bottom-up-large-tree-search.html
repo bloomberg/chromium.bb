@@ -1,0 +1,83 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="profiler-test.js"></script>
+<script>
+
+function test()
+{
+    var nodes = 1000;
+    function buildTree(count)
+    {
+        // Build a call tree of a chain form: foo1 -> foo2 -> foo3 -> ...
+        // This should give a O(n^2) nodes in bottom-up tree.
+        var node = null;
+        for (var i = count; i > 0; --i) {
+            var child = node;
+            node = {
+                "functionName": "foo" + i,
+                "scriptId": "0",
+                "url": "a.js",
+                "lineNumber": i,
+                "hitCount": 10,
+                "callUID": 10000 + i,
+                "children": []
+            };
+            if (child)
+                node.children.push(child);
+        }
+        return node;
+    }
+    var profileAndExpectations = {
+        "title": "profile1",
+        "target": function() {
+            return WebInspector.targetManager.targets()[0];
+        },
+        "_profile": {
+            "head": {
+                "functionName": "(root)",
+                "scriptId": "0",
+                "url": "a.js",
+                "lineNumber": 0,
+                "hitCount": 1,
+                "callUID": 1000,
+                "children": [
+                {
+                    "functionName": "(idle)",
+                    "scriptId": "0",
+                    "url": "a.js",
+                    "lineNumber": 1,
+                    "hitCount": 2,
+                    "callUID": 2,
+                    "children": []
+                },
+                buildTree(nodes)
+                ]
+            },
+            "idleTime": 0.002,
+            "startTime": 0,
+            "endTime": nodes * 0.01 + 0.003
+        }
+    };
+    var view = new WebInspector.CPUProfileView(profileAndExpectations);
+    view.viewSelectComboBox.setSelectedIndex(1);
+    view._changeView();
+    var tree = view.profileDataGridTree;
+    if (!tree)
+        InspectorTest.addResult("no tree");
+    tree.performSearch(new WebInspector.SearchableView.SearchConfig("foo12", true, false), false);
+    for (var item of tree._searchResults) {
+        var node = item.profileNode;
+        InspectorTest.addResult(`${node.callUID}: ${node.functionName} ${node.selfTime} ${node.totalTime}`);
+    }
+    InspectorTest.completeProfilerTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that search works for large bottom-up view of CPU profile.
+</p>
+</body>
+</html>
