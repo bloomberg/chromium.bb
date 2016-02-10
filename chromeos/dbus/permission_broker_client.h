@@ -45,16 +45,6 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   virtual void CheckPathAccess(const std::string& path,
                                const ResultCallback& callback) = 0;
 
-  // RequestPathAccess requests access to a single device node identified by
-  // |path|. If |interface_id| value is passed (different than
-  // UsbDevicePermissionData::ANY_INTERFACE), the request will check if a
-  // specific interface is claimed while requesting access.
-  // This allows devices with multiple interfaces to be accessed even if
-  // some of them are already claimed by kernel.
-  virtual void RequestPathAccess(const std::string& path,
-                                 int interface_id,
-                                 const ResultCallback& callback) = 0;
-
   // OpenPath requests that the permission broker open the device node
   // identified by |path| and return the resulting file descriptor.
   virtual void OpenPath(const std::string& path,

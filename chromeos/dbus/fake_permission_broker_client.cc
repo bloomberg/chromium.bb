@@ -54,13 +54,6 @@ void FakePermissionBrokerClient::CheckPathAccess(
   callback.Run(true);
 }
 
-void FakePermissionBrokerClient::RequestPathAccess(
-    const std::string& path,
-    int interface_id,
-    const ResultCallback& callback) {
-  callback.Run(true);
-}
-
 void FakePermissionBrokerClient::OpenPath(const std::string& path,
                                           const OpenPathCallback& callback) {
   base::WorkerPool::PostTask(FROM_HERE,

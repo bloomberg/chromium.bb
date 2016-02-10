@@ -22,7 +22,6 @@ using permission_broker::kPermissionBrokerServiceName;
 using permission_broker::kPermissionBrokerServicePath;
 using permission_broker::kReleaseTcpPort;
 using permission_broker::kReleaseUdpPort;
-using permission_broker::kRequestPathAccess;
 using permission_broker::kRequestTcpPortAccess;
 using permission_broker::kRequestUdpPortAccess;
 
@@ -38,20 +37,6 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(path);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-
-  void RequestPathAccess(const std::string& path,
-                         const int interface_id,
-                         const ResultCallback& callback) override {
-    dbus::MethodCall method_call(kPermissionBrokerInterface,
-                                 kRequestPathAccess);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(path);
-    writer.AppendInt32(interface_id);
-    proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&PermissionBrokerClientImpl::OnResponse,
                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
