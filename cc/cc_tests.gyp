@@ -373,6 +373,7 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'animation/animation_host_perftest.cc',
         'layers/layer_perftest.cc',
         'layers/picture_layer_impl_perftest.cc',
         'quads/draw_quad_perftest.cc',
