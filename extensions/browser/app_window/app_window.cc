@@ -520,7 +520,9 @@ void AppWindow::OnNativeWindowActivated() {
 }
 
 content::WebContents* AppWindow::web_contents() const {
-  return app_window_contents_->GetWebContents();
+  if (app_window_contents_)
+    return app_window_contents_->GetWebContents();
+  return nullptr;
 }
 
 const Extension* AppWindow::GetExtension() const {
