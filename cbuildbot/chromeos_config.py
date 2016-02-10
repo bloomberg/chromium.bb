@@ -1061,6 +1061,7 @@ def GetConfig():
       default_hw_tests_override,
       build_type=constants.ANDROID_PFQ_TYPE,
       builder_class_name='android_pfq_builders.AndroidPFQBuilder',
+      important=True,
       uprev=False,
       overlays=constants.BOTH_OVERLAYS,
       manifest_version=True,
