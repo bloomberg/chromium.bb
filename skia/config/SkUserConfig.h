@@ -228,10 +228,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_DITHER
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_HQ_DOWNSAMPLING
-#   define SK_SUPPORT_LEGACY_HQ_DOWNSAMPLING
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_BITMAP_FILTER
 #   define SK_SUPPORT_LEGACY_BITMAP_FILTER
 #endif

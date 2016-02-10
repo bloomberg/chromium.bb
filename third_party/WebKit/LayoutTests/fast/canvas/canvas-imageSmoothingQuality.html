@@ -80,13 +80,15 @@ var noFilterData = scaleImageData(lowCanvas, lowCanvas.imageSmoothingQuality);
 
 debug("");
 shouldNotBe("lowData", "mediumData");
-shouldNotBe("mediumData", "highData");
+// Skia uses mipmaps when downscaling, for both high and medium quality
+shouldBe("mediumData", "highData");
 shouldNotBe("lowData", "highData");
 
 debug("");
 shouldBeGreaterThan("sampleAlpha(noFilterData)", "sampleAlpha(lowData)");
 shouldBeGreaterThan("sampleAlpha(lowData)", "sampleAlpha(mediumData)");
-shouldBeGreaterThan("sampleAlpha(mediumData)", "sampleAlpha(highData)");
+// Skia uses mipmaps when downscaling, for both high and medium quality
+shouldBe("sampleAlpha(mediumData)", "sampleAlpha(highData)");
 
 
 debug("\n\nOn setting, it must be set to the new value.");
