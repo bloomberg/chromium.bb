@@ -33,8 +33,8 @@ public:
 
     ~ServiceWorkerMessageEvent() override;
 
-    ScriptValue data() const { return m_data; }
     SerializedScriptValue* serializedData() const { return m_serializedData.get(); }
+    void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) { m_serializedData = serializedData; }
     const String& origin() const { return m_origin; }
     const String& lastEventId() const { return m_lastEventId; }
     MessagePortArray ports(bool& isNull) const;
@@ -50,7 +50,6 @@ private:
     ServiceWorkerMessageEvent(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer);
     ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, ServiceWorker* source, MessagePortArray* ports);
 
-    ScriptValue m_data;
     RefPtr<SerializedScriptValue> m_serializedData;
     String m_origin;
     String m_lastEventId;

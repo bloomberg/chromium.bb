@@ -5,7 +5,11 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#serviceworkermessage-event-interface
 
 [
-    Constructor(DOMString type, optional ServiceWorkerMessageEventInit eventInitDict),
+    // TODO(bashi): Stop using CustomConstructor once we solve reference
+    // circulation between Blink and V8. http://crbug.com/501866
+    // Constructor should be:
+    // Constructor(DOMString type, optional ServiceWorkerMessageEventInit eventInitDict),
+    CustomConstructor,
     Exposed=(Window, Worker),
 ] interface ServiceWorkerMessageEvent : Event {
     [Custom=Getter] readonly attribute any data;

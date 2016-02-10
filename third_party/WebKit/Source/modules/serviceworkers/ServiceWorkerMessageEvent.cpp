@@ -25,8 +25,6 @@ ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(const AtomicString& type, c
     }
     if (initializer.hasPorts())
         m_ports = new MessagePortArray(initializer.ports());
-    if (initializer.hasData())
-        m_data = initializer.data();
 }
 
 ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, ServiceWorker* source, MessagePortArray* ports)
