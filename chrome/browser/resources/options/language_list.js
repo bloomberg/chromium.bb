@@ -389,13 +389,12 @@ cr.define('options', function() {
      */
     load_: function(languageCodes) {
       // Preserve the original selected index. See comments below.
-      var originalSelectedIndex = (this.selectionModel ?
-                                   this.selectionModel.selectedIndex : -1);
+      var originalSelectedIndex = this.selectionModel.selectedIndex;
       this.dataModel = new ArrayDataModel(languageCodes);
       if (originalSelectedIndex >= 0 &&
           originalSelectedIndex < this.dataModel.length) {
         // Restore the original selected index if the selected index is
-        // valid after the data model is loaded. This is neeeded to keep
+        // valid after the data model is loaded. This is needed to keep
         // the selected language after the languge is added or removed.
         this.selectionModel.selectedIndex = originalSelectedIndex;
         // The lead index should be updated too.
