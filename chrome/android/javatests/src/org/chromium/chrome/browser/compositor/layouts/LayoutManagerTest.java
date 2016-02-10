@@ -16,7 +16,6 @@ import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 import android.widget.FrameLayout;
 
-import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -45,8 +44,6 @@ import org.chromium.content.browser.BrowserStartupController;
 public class LayoutManagerTest extends InstrumentationTestCase
         implements MockTabModelDelegate {
     private static final String TAG = "LayoutManagerTest";
-
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content";
 
     private long mLastDownTime = 0;
 
@@ -467,9 +464,6 @@ public class LayoutManagerTest extends InstrumentationTestCase
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
-                getInstrumentation().getTargetContext());
 
         // Load the browser process.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

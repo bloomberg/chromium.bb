@@ -6,7 +6,6 @@ package org.chromium.content.browser.test;
 
 import android.test.InstrumentationTestCase;
 
-import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -18,8 +17,6 @@ import org.chromium.content.browser.test.util.ApplicationUtils;
  * Test extension that adds support for loading and dealing with native libraries.
  */
 public class NativeLibraryTestBase extends InstrumentationTestCase {
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content";
-
     /**
      * Loads the native library on the activity UI thread (must not be called from the UI thread).
      */
@@ -37,9 +34,6 @@ public class NativeLibraryTestBase extends InstrumentationTestCase {
 
     private void handleNativeInitialization(final boolean initBrowserProcess) {
         assertFalse(ThreadUtils.runningOnUiThread());
-
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
-                getInstrumentation().getTargetContext());
 
         try {
             ApplicationUtils.waitForLibraryDependencies(getInstrumentation());
