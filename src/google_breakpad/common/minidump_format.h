@@ -449,14 +449,25 @@ static const size_t MDCVInfoPDB70_minsize = offsetof(MDCVInfoPDB70,
 
 #define MD_CVINFOPDB70_SIGNATURE 0x53445352  /* cvSignature = 'SDSR' */
 
+/*
+ * Modern ELF toolchains insert a "build id" into the ELF headers that
+ * usually contains a hash of some ELF headers + sections to uniquely
+ * identify a binary.
+ *
+ * https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Developer_Guide/compiling-build-id.html
+ * https://sourceware.org/binutils/docs-2.26/ld/Options.html#index-g_t_002d_002dbuild_002did-292
+ */
 typedef struct {
-  uint32_t data1[2];
-  uint32_t data2;
-  uint32_t data3;
-  uint32_t data4;
-  uint32_t data5[3];
-  uint8_t  extra[2];
+  uint32_t cv_signature;
+  uint8_t  build_id[1];  /* Bytes of build id from GNU_BUILD_ID ELF note.
+                          * This is variable-length, but usually 20 bytes
+                          * as the binutils ld default is a SHA-1 hash. */
 } MDCVInfoELF;
+
+static const size_t MDCVInfoELF_minsize = offsetof(MDCVInfoELF,
+                                                   build_id[0]);
+
+#define MD_CVINFOELF_SIGNATURE 0x4270454c  /* cvSignature = 'BpEL' */
 
 /* In addition to the two CodeView record formats above, used for linking
  * to external pdb files, it is possible for debugging data to be carried
