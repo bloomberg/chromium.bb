@@ -42,6 +42,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -588,8 +589,15 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
 void AppListView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* widget) const {
+  if (!params->native_widget) {
+    views::ViewsDelegate* views_delegate = views::ViewsDelegate::GetInstance();
+    if (views_delegate && !views_delegate->native_widget_factory().is_null()) {
+      params->native_widget =
+          views_delegate->native_widget_factory().Run(*params, widget);
+    }
+  }
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  if (delegate_ && delegate_->ForceNativeDesktop())
+  if (!params->native_widget && delegate_ && delegate_->ForceNativeDesktop())
     params->native_widget = new views::DesktopNativeWidgetAura(widget);
 #endif
 #if defined(OS_WIN)
