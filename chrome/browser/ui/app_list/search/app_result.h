@@ -29,7 +29,7 @@ class ExtensionRegistry;
 
 namespace app_list {
 
-class AppContextMenu;
+class ExtensionAppContextMenu;
 
 class AppResult : public SearchResult,
                   public extensions::IconImage::Observer,
@@ -84,7 +84,7 @@ class AppResult : public SearchResult,
 
   bool is_platform_app_;
   scoped_ptr<extensions::IconImage> icon_;
-  scoped_ptr<AppContextMenu> context_menu_;
+  scoped_ptr<ExtensionAppContextMenu> context_menu_;
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   extensions::ExtensionRegistry* extension_registry_;

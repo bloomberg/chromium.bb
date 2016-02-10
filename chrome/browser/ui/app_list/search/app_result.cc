@@ -7,8 +7,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/extension_app_context_menu.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -121,10 +121,9 @@ scoped_ptr<SearchResult> AppResult::Duplicate() const {
 
 ui::MenuModel* AppResult::GetContextMenuModel() {
   if (!context_menu_) {
-    context_menu_.reset(new AppContextMenu(
+    context_menu_.reset(new ExtensionAppContextMenu(
         this, profile_, app_id_, controller_));
     context_menu_->set_is_platform_app(is_platform_app_);
-    context_menu_->set_is_search_result(true);
   }
 
   return context_menu_->GetMenuModel();

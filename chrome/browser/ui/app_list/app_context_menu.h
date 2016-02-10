@@ -14,16 +14,14 @@
 class AppListControllerDelegate;
 class Profile;
 
-namespace extensions {
-class ContextMenuMatcher;
-}
-
 namespace app_list {
 
 class AppContextMenuDelegate;
 
+// Base class of all context menus in app list view.
 class AppContextMenu : public ui::SimpleMenuModel::Delegate {
  public:
+  // Defines command ids, used in context menu of all types.
   enum CommandId {
     LAUNCH_NEW = 100,
     TOGGLE_PIN,
@@ -43,28 +41,11 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
     USE_LAUNCH_TYPE_COMMAND_END,
   };
 
-  AppContextMenu(AppContextMenuDelegate* delegate,
-                 Profile* profile,
-                 const std::string& app_id,
-                 AppListControllerDelegate* controller);
   ~AppContextMenu() override;
 
-  static void DisableInstalledExtensionCheckForTesting(bool disable);
+  // Note this could return nullptr if corresponding app item is gone.
+  virtual ui::MenuModel* GetMenuModel();
 
-  // Note this could return NULL if corresponding extension is gone.
-  ui::MenuModel* GetMenuModel();
-
-  void set_is_platform_app(bool is_platform_app) {
-    is_platform_app_ = is_platform_app;
-  }
-  void set_is_search_result(bool is_search_result) {
-    is_search_result_ = is_search_result;
-  }
-  void set_is_in_folder(bool is_in_folder) {
-    is_in_folder_ = is_in_folder;
-  }
-
- private:
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsItemForCommandIdDynamic(int command_id) const override;
   base::string16 GetLabelForCommandId(int command_id) const override;
@@ -74,16 +55,28 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
                                   ui::Accelerator* accelerator) override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
+ protected:
+  AppContextMenu(AppContextMenuDelegate* delegate,
+                 Profile* profile,
+                 const std::string& app_id,
+                 AppListControllerDelegate* controller);
+
+  // Creates default items, derived class may override to add their specific
+  // items.
+  virtual void BuildMenu(ui::SimpleMenuModel* menu_model);
+
+  const std::string& app_id() const { return app_id_; }
+  Profile* profile() const { return profile_; }
+  AppContextMenuDelegate* delegate() const { return delegate_; }
+  AppListControllerDelegate* controller() const { return controller_; }
+
+ private:
   AppContextMenuDelegate* delegate_;
   Profile* profile_;
   const std::string app_id_;
   AppListControllerDelegate* controller_;
-  bool is_platform_app_;
-  bool is_search_result_;
-  bool is_in_folder_;
 
   scoped_ptr<ui::SimpleMenuModel> menu_model_;
-  scoped_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContextMenu);
 };

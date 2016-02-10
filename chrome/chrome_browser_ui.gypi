@@ -2607,6 +2607,8 @@
       'browser/ui/app_list/app_list_view_delegate.h',
       'browser/ui/app_list/chrome_app_list_item.cc',
       'browser/ui/app_list/chrome_app_list_item.h',
+      'browser/ui/app_list/extension_app_context_menu.cc',
+      'browser/ui/app_list/extension_app_context_menu.h',
       'browser/ui/app_list/extension_app_item.cc',
       'browser/ui/app_list/extension_app_item.h',
       'browser/ui/app_list/extension_app_model_builder.cc',

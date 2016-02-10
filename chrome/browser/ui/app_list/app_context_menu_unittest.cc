@@ -11,10 +11,10 @@
 
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
-#include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/extension_app_context_menu.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -170,10 +170,10 @@ class AppContextMenuTest : public AppListTestBase {
     controller_->SetCanCreateShortcuts(can_create_shortcuts);
     controller_->SetCanShowAppInfo(can_show_app_info);
     controller_->SetExtensionLaunchType(profile(), app_id, launch_type);
-    app_list::AppContextMenu menu(menu_delegate(),
-                                  profile(),
-                                  app_id,
-                                  controller());
+    app_list::ExtensionAppContextMenu menu(menu_delegate(),
+                                           profile(),
+                                           app_id,
+                                           controller());
     menu.set_is_platform_app(platform_app);
     ui::MenuModel* menu_model = menu.GetMenuModel();
     ASSERT_NE(nullptr, menu_model);
@@ -245,10 +245,10 @@ class AppContextMenuTest : public AppListTestBase {
     controller_.reset(new FakeAppListControllerDelegate());
     controller_->SetCanCreateShortcuts(can_create_shortcuts);
     controller_->SetCanShowAppInfo(can_show_app_info);
-    app_list::AppContextMenu menu(menu_delegate(),
-                                  profile(),
-                                  extension_misc::kChromeAppId,
-                                  controller());
+    app_list::ExtensionAppContextMenu menu(menu_delegate(),
+                                           profile(),
+                                           extension_misc::kChromeAppId,
+                                           controller());
     ui::MenuModel* menu_model = menu.GetMenuModel();
     ASSERT_NE(nullptr, menu_model);
 
@@ -273,7 +273,8 @@ class AppContextMenuTest : public AppListTestBase {
 };
 
 TEST_F(AppContextMenuTest, ExtensionApp) {
-  app_list::AppContextMenu::DisableInstalledExtensionCheckForTesting(false);
+  app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
+      false);
   for (extensions::LaunchType launch_type = extensions::LAUNCH_TYPE_FIRST;
       launch_type < extensions::NUM_LAUNCH_TYPES;
       launch_type = static_cast<extensions::LaunchType>(launch_type+1)) {
@@ -307,7 +308,8 @@ TEST_F(AppContextMenuTest, ExtensionApp) {
 }
 
 TEST_F(AppContextMenuTest, ChromeApp) {
-  app_list::AppContextMenu::DisableInstalledExtensionCheckForTesting(true);
+  app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
+      true);
   for (size_t combinations = 0; combinations < (1 << 2); ++combinations) {
     TestChromeApp((combinations & (1 << 0)) != 0,
                   (combinations & (1 << 1)) != 0);
@@ -315,11 +317,12 @@ TEST_F(AppContextMenuTest, ChromeApp) {
 }
 
 TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
-  app_list::AppContextMenu::DisableInstalledExtensionCheckForTesting(false);
-  app_list::AppContextMenu menu(menu_delegate(),
-                                profile(),
-                                "some_non_existing_extension_app",
-                                controller());
+  app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
+      false);
+  app_list::ExtensionAppContextMenu menu(menu_delegate(),
+                                         profile(),
+                                         "some_non_existing_extension_app",
+                                         controller());
   ui::MenuModel* menu_model = menu.GetMenuModel();
   EXPECT_EQ(nullptr, menu_model);
 }

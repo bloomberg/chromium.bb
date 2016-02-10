@@ -21,7 +21,7 @@ class ExtensionEnableFlow;
 class Profile;
 
 namespace app_list {
-class AppContextMenu;
+class ExtensionAppContextMenu;
 }
 
 namespace extensions {
@@ -100,7 +100,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   void UpdatePositionFromOrdering();
 
   scoped_ptr<extensions::IconImage> icon_;
-  scoped_ptr<app_list::AppContextMenu> context_menu_;
+  scoped_ptr<app_list::ExtensionAppContextMenu> context_menu_;
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
   AppListControllerDelegate* extension_enable_flow_controller_;
 
