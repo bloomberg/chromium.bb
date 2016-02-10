@@ -421,6 +421,13 @@ class CC_EXPORT ResourceProvider
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
 
+  // Indicates if this resource is currently being used as an overlay by the
+  // windowing system.
+  // TODO(ccameron): This should be entirely hidden inside CanLockForWrite, but
+  // will erratically returns true, potentially breaking DCHECKs.
+  // http://crbug.com/577121
+  bool IsInUseByMacOSWindowServer(ResourceId id);
+
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(ResourceId id);
 

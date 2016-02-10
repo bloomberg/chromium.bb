@@ -787,8 +787,10 @@ void ResourceProvider::UnlockForRead(ResourceId id) {
 
 ResourceProvider::Resource* ResourceProvider::LockForWrite(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(CanLockForWrite(id));
-
+  // TODO(ccameron): The allowance for IsInUseByMacOSWindowServer should not
+  // be needed.
+  // http://crbug.com/577121
+  DCHECK(CanLockForWrite(id) || IsInUseByMacOSWindowServer(id));
   resource->locked_for_write = true;
   return resource;
 }
@@ -805,6 +807,12 @@ bool ResourceProvider::CanLockForWrite(ResourceId id) {
 bool ResourceProvider::IsOverlayCandidate(ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->is_overlay_candidate;
+}
+
+bool ResourceProvider::IsInUseByMacOSWindowServer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  return resource->gpu_memory_buffer &&
+         resource->gpu_memory_buffer->IsInUseByMacOSWindowServer();
 }
 
 void ResourceProvider::UnlockForWrite(ResourceProvider::Resource* resource) {

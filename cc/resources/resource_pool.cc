@@ -102,8 +102,11 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
   for (ResourceDeque::iterator it = unused_resources_.begin();
        it != unused_resources_.end(); ++it) {
     ScopedResource* resource = it->get();
-    // TODO(ccameron): Investigate why this fails (http://crbug.com/577121).
-    // DCHECK(resource_provider_->CanLockForWrite(resource->id()));
+    // TODO(ccameron): The allowance for IsInUseByMacOSWindowServer should not
+    // be needed.
+    // http://crbug.com/577121
+    DCHECK(resource_provider_->CanLockForWrite(resource->id()) ||
+           resource_provider_->IsInUseByMacOSWindowServer(resource->id()));
 
     if (resource->format() != format)
       continue;
@@ -153,7 +156,11 @@ Resource* ResourcePool::TryAcquireResourceWithContentId(uint64_t content_id) {
     return nullptr;
 
   Resource* resource = it->get();
-  DCHECK(resource_provider_->CanLockForWrite(resource->id()));
+  // TODO(ccameron): The allowance for IsInUseByMacOSWindowServer should not
+  // be needed.
+  // http://crbug.com/577121
+  DCHECK(resource_provider_->CanLockForWrite(resource->id()) ||
+         resource_provider_->IsInUseByMacOSWindowServer(resource->id()));
 
   // Transfer resource to |in_use_resources_|.
   in_use_resources_[resource->id()] = std::move(*it);
