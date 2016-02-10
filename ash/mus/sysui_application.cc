@@ -98,10 +98,24 @@ class NativeWidgetFactory {
                 static_cast<int32_t>(container));
       }
     }
+
+    // AshInit installs a stub implementation of ui::ContextFactory, so that the
+    // AshWindowTreeHost instances created do not actually show anything to the
+    // user. However, when creating a views::Widget instance, the
+    // WindowManagerConnection creates a WindowTreeHostMus instance, which
+    // creates a ui::Compositor, and it needs a real ui::ContextFactory
+    // implementation. So, unset the context-factory here temporarily when
+    // creating NativeWidgetMus. But restore the stub instance afterwards, so
+    // that it is used when new AshWindowTreeHost instances are created (e.g.
+    // when a new monitor is attached).
+    ui::ContextFactory* factory = aura::Env::GetInstance()->context_factory();
+    aura::Env::GetInstance()->set_context_factory(nullptr);
     views::NativeWidgetMus* native_widget =
         static_cast<views::NativeWidgetMus*>(
             views::WindowManagerConnection::Get()->CreateNativeWidgetMus(
                 properties, params, delegate));
+    aura::Env::GetInstance()->set_context_factory(factory);
+
     // TODO: Set the correct display id here.
     InitRootWindowSettings(native_widget->GetRootWindow())->display_id =
         Shell::GetInstance()
@@ -157,9 +171,6 @@ class AshInit {
     ash::Shell::GetInstance()->CreateShelf();
     ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
         ash::user::LOGGED_IN_USER);
-    // Reset the context factory, so that NativeWidgetMus installs the context
-    // factory for the views::Widgets correctly.
-    aura::Env::GetInstance()->set_context_factory(nullptr);
 
     ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
     SetupWallpaper(SkColorSetARGB(255, 0, 255, 0));
