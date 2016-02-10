@@ -42,7 +42,7 @@ void EndpointResolver::Start(const net::HostPortPair& address,
                              const ResultCallback& callback) {
 #if defined(OS_MACOSX)
   net::IPAddress ip_address;
-  if (!net::IPAddress::FromIPLiteral(address.host(), &ip_address)) {
+  if (!ip_address.AssignFromIPLiteral(address.host())) {
     NOTREACHED() << address.ToString();
     // Unexpected, but could be a reason for crbug.com/513505
     base::debug::DumpWithoutCrashing();

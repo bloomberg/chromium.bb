@@ -821,7 +821,7 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
   EXPECT_FALSE(http_server_props_manager_->GetSupportsQuic(&address));
 
   IPAddress actual_address;
-  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &actual_address));
+  CHECK(actual_address.AssignFromIPLiteral("127.0.0.1"));
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
   // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
@@ -889,7 +889,7 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_manager_->SetAlternativeService(
       spdy_server_mail, alternative_service, 1.0, one_day_from_now_);
   IPAddress actual_address;
-  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &actual_address));
+  CHECK(actual_address.AssignFromIPLiteral("127.0.0.1"));
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
@@ -1079,7 +1079,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 
   // Set SupportsQuic.
   IPAddress actual_address;
-  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &actual_address));
+  CHECK(actual_address.AssignFromIPLiteral("127.0.0.1"));
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
 
   // Update cache.

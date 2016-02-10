@@ -1271,7 +1271,7 @@ TEST_F(SupportsQuicServerPropertiesTest, Initialize) {
   EXPECT_TRUE(address.empty());
 
   // Check by initializing with a valid address.
-  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &initial_address));
+  CHECK(initial_address.AssignFromIPLiteral("127.0.0.1"));
   impl_.InitializeSupportsQuic(&initial_address);
 
   EXPECT_TRUE(impl_.GetSupportsQuic(&address));
@@ -1284,7 +1284,7 @@ TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
   EXPECT_TRUE(address.empty());
 
   IPAddress actual_address;
-  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &actual_address));
+  CHECK(actual_address.AssignFromIPLiteral("127.0.0.1"));
   impl_.SetSupportsQuic(true, actual_address);
 
   EXPECT_TRUE(impl_.GetSupportsQuic(&address));

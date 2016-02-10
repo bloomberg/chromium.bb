@@ -55,14 +55,12 @@ std::string IPAddress::ToString() const {
   return IPAddressToString(ip_address_);
 }
 
-// static
-bool IPAddress::FromIPLiteral(const base::StringPiece& ip_literal,
-                              IPAddress* ip_address) {
+bool IPAddress::AssignFromIPLiteral(const base::StringPiece& ip_literal) {
   std::vector<uint8_t> number;
   if (!ParseIPLiteralToNumber(ip_literal, &number))
     return false;
 
-  std::swap(number, ip_address->ip_address_);
+  std::swap(number, ip_address_);
   return true;
 }
 

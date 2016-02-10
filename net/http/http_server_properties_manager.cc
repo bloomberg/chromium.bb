@@ -757,7 +757,7 @@ bool HttpServerPropertiesManager::ReadSupportsQuic(
   std::string address;
   if (!supports_quic_dict->GetStringWithoutPathExpansion(kAddressKey,
                                                          &address) ||
-      !IPAddress::FromIPLiteral(address, last_quic_address)) {
+      !last_quic_address->AssignFromIPLiteral(address)) {
     DVLOG(1) << "Malformed SupportsQuic";
     return false;
   }

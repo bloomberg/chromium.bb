@@ -412,8 +412,7 @@ class ServiceResolverTest : public ServiceDiscoveryTest {
   ServiceResolverTest() {
     metadata_expected_.push_back("hello");
     address_expected_ = net::HostPortPair("myhello.local", 8888);
-    EXPECT_TRUE(
-        net::IPAddress::FromIPLiteral("1.2.3.4", &ip_address_expected_));
+    EXPECT_TRUE(ip_address_expected_.AssignFromIPLiteral("1.2.3.4"));
   }
 
   ~ServiceResolverTest() {

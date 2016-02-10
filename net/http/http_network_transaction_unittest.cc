@@ -12913,7 +12913,7 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   };
 
   IPAddress ip;
-  ASSERT_TRUE(IPAddress::FromIPLiteral("127.0.0.1", &ip));
+  ASSERT_TRUE(ip.AssignFromIPLiteral("127.0.0.1"));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect(ASYNC, OK, peer_addr);
   SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
@@ -13013,7 +13013,7 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   };
 
   IPAddress ip;
-  ASSERT_TRUE(IPAddress::FromIPLiteral("127.0.0.1", &ip));
+  ASSERT_TRUE(ip.AssignFromIPLiteral("127.0.0.1"));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect(ASYNC, OK, peer_addr);
   SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
@@ -13144,7 +13144,7 @@ TEST_P(HttpNetworkTransactionTest,
   };
 
   IPAddress ip;
-  ASSERT_TRUE(IPAddress::FromIPLiteral("127.0.0.1", &ip));
+  ASSERT_TRUE(ip.AssignFromIPLiteral("127.0.0.1"));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect(ASYNC, OK, peer_addr);
   SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
@@ -13873,7 +13873,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   SequencedSocketData data1(reads1, arraysize(reads1), writes1,
                             arraysize(writes1));
   IPAddress ip;
-  ASSERT_TRUE(IPAddress::FromIPLiteral(ip_addr, &ip));
+  ASSERT_TRUE(ip.AssignFromIPLiteral(ip_addr));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect_data1(ASYNC, OK, peer_addr);
   data1.set_connect_data(connect_data1);

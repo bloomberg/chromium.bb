@@ -20,7 +20,7 @@ int ServerSocket::ListenWithAddressAndPort(const std::string& address_string,
                                            uint16_t port,
                                            int backlog) {
   IPAddress ip_address;
-  if (!IPAddress::FromIPLiteral(address_string, &ip_address)) {
+  if (!ip_address.AssignFromIPLiteral(address_string)) {
     return ERR_ADDRESS_INVALID;
   }
 

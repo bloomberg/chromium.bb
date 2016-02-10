@@ -68,8 +68,8 @@ class IPEndPointTest : public PlatformTest {
   void SetUp() override {
     // This is where we populate the TestData.
     for (int index = 0; index < test_count; ++index) {
-      EXPECT_TRUE(IPAddress::FromIPLiteral(tests[index].host,
-                                           &tests[index].ip_address));
+      EXPECT_TRUE(
+          tests[index].ip_address.AssignFromIPLiteral(tests[index].host));
     }
   }
 };

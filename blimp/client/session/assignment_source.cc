@@ -31,7 +31,7 @@ net::IPAddress GetBlimpletIPAddress() {
     host = kDefaultBlimpletIPAddress;
   }
   net::IPAddress ip_address;
-  if (!net::IPAddress::FromIPLiteral(host, &ip_address))
+  if (!ip_address.AssignFromIPLiteral(host))
     CHECK(false) << "Invalid BlimpletAssignment host " << host;
   return ip_address;
 }

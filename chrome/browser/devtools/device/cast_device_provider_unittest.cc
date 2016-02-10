@@ -6,7 +6,6 @@
 
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using local_discovery::ServiceDescription;
@@ -51,8 +50,7 @@ TEST(CastDeviceProviderTest, ServiceDiscovery) {
   cast_service.metadata.push_back("id=0123456789abcdef0123456789abcdef");
   cast_service.metadata.push_back("ve=00");
   cast_service.metadata.push_back("md=" + cast_service_model);
-  ASSERT_TRUE(
-      net::IPAddress::FromIPLiteral("192.168.1.101", &cast_service.ip_address));
+  ASSERT_TRUE(cast_service.ip_address.AssignFromIPLiteral("192.168.1.101"));
 
   device_provider_->OnDeviceChanged(true, cast_service);
 
@@ -86,8 +84,7 @@ TEST(CastDeviceProviderTest, ServiceDiscovery) {
   other_service.metadata.push_back("id=0123456789abcdef0123456789abcdef");
   other_service.metadata.push_back("ve=00");
   other_service.metadata.push_back("md=" + other_service_model);
-  ASSERT_TRUE(
-      net::IPAddress::FromIPLiteral("10.64.1.101", &other_service.ip_address));
+  ASSERT_TRUE(other_service.ip_address.AssignFromIPLiteral("10.64.1.101"));
 
   // Callback should not be run, since this service is not yet discovered.
   device_provider_->QueryDeviceInfo(other_service.address.host(),

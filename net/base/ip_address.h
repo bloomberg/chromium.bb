@@ -74,9 +74,9 @@ class NET_EXPORT IPAddress {
   std::string ToString() const;
 
   // Parses an IP address literal (either IPv4 or IPv6) to its numeric value.
-  // Returns true on success and fills |ip_address| with the numeric value.
-  static bool FromIPLiteral(const base::StringPiece& ip_literal,
-                            IPAddress* ip_address) WARN_UNUSED_RESULT;
+  // Returns true on success and fills |ip_address_| with the numeric value.
+  bool AssignFromIPLiteral(const base::StringPiece& ip_literal)
+      WARN_UNUSED_RESULT;
 
   // Returns the underlying byte vector.
   const std::vector<uint8_t>& bytes() const { return ip_address_; };
