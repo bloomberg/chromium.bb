@@ -591,11 +591,11 @@ const char kFastStart[]            = "fast-start";
 const char kForceAppMode[]                  = "force-app-mode";
 
 // This option can be used to force parameters of field trials when testing
-// changes locally. The argument is a list of key/value pairs prefixed by
-// Trial/Group pair. The following shows setting parameters to 2 experiments
-// where in the first, it forces "id" to be "foo" for the "Enabled" group of
-// the "EnhancedBookmarks" trial:
-// "EnhancedBookmarks.Enabled:id/foo,Experiment2.Group1:key1/value1"
+// changes locally. The argument is a param list of (key, value) pairs prefixed
+// by an associated (trial, group) pair. You specify the param list for multiple
+// (trial, group) pairs with a comma separator.
+// Example:
+//   "Trial1.Group1:k1/v1/k2/v2,Trial2.Group2:k3/v3/k4/v4"
 // Trial names, groups names, parameter names, and value should all be URL
 // escaped for all non-alphanumeric characters.
 const char kForceFieldTrialParams[] = "force-fieldtrial-params";

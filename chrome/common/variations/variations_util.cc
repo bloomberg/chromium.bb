@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/variations/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
@@ -28,6 +29,7 @@ std::string EscapeValue(const std::string& value) {
 
 bool AssociateParamsFromString(const std::string& varations_string) {
   // Format: Trial1.Group1:k1/v1/k2/v2,Trial2.Group2:k1/v1/k2/v2
+  std::set<std::pair<std::string, std::string>> trial_groups;
   for (const base::StringPiece& experiment_group : base::SplitStringPiece(
            varations_string, ",",
            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
@@ -51,15 +53,22 @@ bool AssociateParamsFromString(const std::string& varations_string) {
       DLOG(ERROR) << "Param name and param value should be separated by '/'";
       return false;
     }
-
+    std::string trial = EscapeValue(group_parts[0]);
+    std::string group = EscapeValue(group_parts[1]);
+    auto trial_group = std::make_pair(trial, group);
+    if (trial_groups.find(trial_group) != trial_groups.end()) {
+      DLOG(ERROR) << base::StringPrintf(
+          "A (study, group) pair listed more than once. (%s, %s)",
+          trial.c_str(), group.c_str());
+      return false;
+    }
+    trial_groups.insert(trial_group);
     std::map<std::string, std::string> params;
     for (size_t i = 0; i < key_values.size(); i += 2) {
       std::string key = EscapeValue(key_values[i]);
       std::string value = EscapeValue(key_values[i + 1]);
       params[key] = value;
     }
-    std::string trial = EscapeValue(group_parts[0]);
-    std::string group = EscapeValue(group_parts[1]);
     variations::AssociateVariationParams(trial, group, params);
   }
   return true;

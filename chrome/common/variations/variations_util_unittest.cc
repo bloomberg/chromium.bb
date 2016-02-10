@@ -49,6 +49,13 @@ TEST_F(VariationsUtilTest, AssociateParamsFromString) {
   EXPECT_EQ("/", params["a"]);
 }
 
+TEST_F(VariationsUtilTest, AssociateParamsFromStringWithSameStudy) {
+  const std::string kTrialName = "AssociateVariationParams";
+  const std::string kVariationsString =
+      "AssociateVariationParams.A:a/10/b/test,AssociateVariationParams.A:a/x";
+  ASSERT_FALSE(AssociateParamsFromString(kVariationsString));
+}
+
 TEST_F(VariationsUtilTest, AssociateParamsFromFieldTrialConfig) {
   const FieldTrialGroupParams array_kFieldTrialConfig_params[] = {{"x", "1"},
                                                                   {"y", "2"}};
