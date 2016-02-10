@@ -170,9 +170,6 @@ bool NavigationHandleImpl::IsSamePage() {
 }
 
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
-  DCHECK(state_ >= WILL_REDIRECT_REQUEST)
-      << "This accessor should only be called when the request encountered a "
-         "redirect or received a response";
    return response_headers_.get();
 }
 

@@ -114,10 +114,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   NavigatorDelegate* GetDelegate() const;
 
-  // Returns the response headers for the request. This can only be accessed
-  // after a redirect was encountered or after the the navigation is ready to
-  // commit. It should not be modified, as modifications will not be reflected
-  // in the network stack.
+  // Returns the response headers for the request or nullptr if there are none.
+  // This should only be accessed after a redirect was encountered or after the
+  // navigation is ready to commit. The headers returned should not be modified,
+  // as modifications will not be reflected in the network stack.
   const net::HttpResponseHeaders* GetResponseHeaders();
 
   void set_net_error_code(net::Error net_error_code) {
