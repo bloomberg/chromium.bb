@@ -72,7 +72,7 @@ class PaintLayerReflectionInfo {
     WTF_MAKE_NONCOPYABLE(PaintLayerReflectionInfo);
 public:
     explicit PaintLayerReflectionInfo(LayoutBox&);
-    ~PaintLayerReflectionInfo();
+    void destroy();
 
     LayoutReplica* reflection() const { return m_reflection; }
     PaintLayer* reflectionLayer() const;

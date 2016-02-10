@@ -204,6 +204,9 @@ PaintLayer::~PaintLayer()
 
     clearCompositedLayerMapping(true);
 
+    if (PaintLayerReflectionInfo* reflectionInfo = this->reflectionInfo())
+        reflectionInfo->destroy();
+
     if (m_scrollableArea)
         m_scrollableArea->dispose();
 }
@@ -1423,6 +1426,7 @@ void PaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
         ensureRareData().reflectionInfo = adoptPtr(new PaintLayerReflectionInfo(*layoutBox()));
         m_rareData->reflectionInfo->updateAfterStyleChange(oldStyle);
     } else if (m_rareData && m_rareData->reflectionInfo) {
+        m_rareData->reflectionInfo->destroy();
         m_rareData->reflectionInfo = nullptr;
     }
 }

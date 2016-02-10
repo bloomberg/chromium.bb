@@ -4048,7 +4048,6 @@
             'paint/PaintControllerPaintTest.h',
             'paint/PaintInfoTest.cpp',
             'paint/PaintLayerPainterTest.cpp',
-            'paint/PaintLayerTest.cpp',
             'paint/PaintPropertyTreeBuilderTest.cpp',
             'paint/TableCellPainterTest.cpp',
             'paint/TextPainterTest.cpp',
