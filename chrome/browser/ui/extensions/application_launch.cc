@@ -11,8 +11,6 @@
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/apps/per_app_settings_service.h"
-#include "chrome/browser/apps/per_app_settings_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -316,11 +314,6 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   prefs->SetActiveBit(extension->id(), true);
 
   if (CanLaunchViaEvent(extension)) {
-    // Remember what desktop the launch happened on so that when the app opens a
-    // window we can open them on the right desktop.
-    PerAppSettingsServiceFactory::GetForBrowserContext(profile)->
-        SetDesktopLastLaunchedFrom(extension->id(), params.desktop_type);
-
     apps::LaunchPlatformAppWithCommandLine(profile,
                                            extension,
                                            params.command_line,
