@@ -29,6 +29,7 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
                 break;
             case DownloadNotificationService.ACTION_DOWNLOAD_RESUME:
             case DownloadNotificationService.ACTION_DOWNLOAD_CANCEL:
+            case DownloadNotificationService.ACTION_DOWNLOAD_PAUSE:
                 performDownloadOperation(context, intent);
                 break;
             default:

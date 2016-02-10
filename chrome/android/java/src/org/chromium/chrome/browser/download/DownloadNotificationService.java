@@ -41,6 +41,8 @@ public class DownloadNotificationService extends Service {
     static final String EXTRA_DOWNLOAD_FILE_NAME = "DownloadFileName";
     static final String ACTION_DOWNLOAD_CANCEL =
             "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";
+    static final String ACTION_DOWNLOAD_PAUSE =
+            "org.chromium.chrome.browser.download.DOWNLOAD_PAUSE";
     static final String ACTION_DOWNLOAD_RESUME =
             "org.chromium.chrome.browser.download.DOWNLOAD_RESUME";
     static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
@@ -111,10 +113,11 @@ public class DownloadNotificationService extends Service {
      *        the percentage can be determined, or -1 if it is unknown.
      * @param timeRemainingInMillis Remaining download time in milliseconds.
      * @param startTime Time when download started.
+     * @param isResumable whether the download can be resumed.
      */
     public void notifyDownloadProgress(
             int downloadId, String fileName, int percentage, long timeRemainingInMillis,
-            long startTime) {
+            long startTime, boolean isResumable) {
         boolean indeterminate = percentage == INVALID_DOWNLOAD_PERCENTAGE;
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download, fileName, null);
@@ -129,6 +132,11 @@ public class DownloadNotificationService extends Service {
         builder.addAction(android.R.drawable.ic_menu_close_clear_cancel,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(ACTION_DOWNLOAD_CANCEL, downloadId, fileName));
+        if (isResumable) {
+            builder.addAction(android.R.drawable.ic_media_pause,
+                    mContext.getResources().getString(R.string.download_notification_pause_button),
+                    buildPendingIntent(ACTION_DOWNLOAD_PAUSE, downloadId, fileName));
+        }
         updateNotification(downloadId, builder.build());
     }
 
@@ -253,6 +261,12 @@ public class DownloadNotificationService extends Service {
                 intent, DownloadNotificationService.EXTRA_DOWNLOAD_ID, -1);
         final String fileName = IntentUtils.safeGetStringExtra(
                 intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
+        // If browser process already goes away, the download should have already paused. Do nothing
+        // in that case.
+        if (ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())
+                && !DownloadManagerService.hasDownloadManagerService()) {
+            return;
+        }
         BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
@@ -265,6 +279,9 @@ public class DownloadNotificationService extends Service {
                         // don't need to restart the browser process. http://crbug.com/579643.
                         service.cancelDownload(downloadId);
                         cancelNotification(downloadId);
+                        break;
+                    case ACTION_DOWNLOAD_PAUSE:
+                        service.pauseDownload(downloadId);
                         break;
                     case ACTION_DOWNLOAD_RESUME:
                         service.resumeDownload(downloadId, fileName);
@@ -301,7 +318,8 @@ public class DownloadNotificationService extends Service {
      */
     static boolean isDownloadOperationIntent(Intent intent) {
         if (!ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())
-                && !ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
+                && !ACTION_DOWNLOAD_RESUME.equals(intent.getAction())
+                && !ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
             return false;
         }
         if (!intent.hasExtra(DownloadNotificationService.EXTRA_DOWNLOAD_ID)

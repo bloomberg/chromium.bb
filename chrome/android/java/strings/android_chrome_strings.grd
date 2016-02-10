@@ -1460,6 +1460,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSED" desc="Download notification to be displayed when a download pauses.">
         Download paused.
       </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button that pauses a download.">
+        Pause
+      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_RESUME_BUTTON" desc="Text on the button that resumes a paused download.">
         Resume
       </message>

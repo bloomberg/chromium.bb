@@ -26,6 +26,7 @@ public final class DownloadInfo {
     private final int mPercentCompleted;
     private final long mTimeRemainingInMillis;
     private final boolean mIsResumable;
+    private final boolean mIsPaused;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -46,6 +47,7 @@ public final class DownloadInfo {
         mPercentCompleted = builder.mPercentCompleted;
         mTimeRemainingInMillis = builder.mTimeRemainingInMillis;
         mIsResumable = builder.mIsResumable;
+        mIsPaused = builder.mIsPaused;
     }
 
     public String getUrl() {
@@ -123,6 +125,10 @@ public final class DownloadInfo {
         return mIsResumable;
     }
 
+    public boolean isPaused() {
+        return mIsPaused;
+    }
+
     /**
      * Helper class for building the DownloadInfo object.
      */
@@ -145,6 +151,7 @@ public final class DownloadInfo {
         private int mPercentCompleted = -1;
         private long mTimeRemainingInMillis;
         private boolean mIsResumable = true;
+        private boolean mIsPaused = false;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -237,6 +244,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setIsPaused(boolean isPaused) {
+            mIsPaused = isPaused;
+            return this;
+        }
+
         public DownloadInfo build() {
             return new DownloadInfo(this);
         }
@@ -265,7 +277,8 @@ public final class DownloadInfo {
                     .setIsSuccessful(downloadInfo.isSuccessful())
                     .setPercentCompleted(downloadInfo.getPercentCompleted())
                     .setTimeRemainingInMillis(downloadInfo.getTimeRemainingInMillis())
-                    .setIsResumable(downloadInfo.isResumable());
+                    .setIsResumable(downloadInfo.isResumable())
+                    .setIsPaused(downloadInfo.isPaused());
             return builder;
         }
 

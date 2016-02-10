@@ -67,6 +67,14 @@ void DownloadManagerService::CancelDownload(JNIEnv* env,
   CancelDownloadInternal(download_id, true);
 }
 
+void DownloadManagerService::PauseDownload(JNIEnv* env,
+                                            jobject obj,
+                                            uint32_t download_id) {
+  content::DownloadItem* item = manager_->GetDownload(download_id);
+  if (item)
+    item->Pause();
+}
+
 void DownloadManagerService::ManagerGoingDown(
     content::DownloadManager* manager) {
   manager_ = nullptr;

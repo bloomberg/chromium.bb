@@ -1120,14 +1120,24 @@ public class DownloadManagerService extends BroadcastReceiver implements
         nativeCancelDownload(mNativeDownloadManagerService, downloadId);
     }
 
+    /**
+     * Called to pause a download.
+     * @param downloadId Id of the download.
+     */
+    void pauseDownload(int downloadId) {
+        nativePauseDownload(mNativeDownloadManagerService, downloadId);
+    }
+
     @CalledByNative
     void onResumptionFailed(int downloadId, String fileName) {
         mDownloadNotifier.notifyDownloadFailed(
                 new DownloadInfo.Builder().setDownloadId(downloadId).setFileName(fileName).build());
+        removePendingDownloadFromSharedPrefs(downloadId);
     }
 
     private native long nativeInit();
     private native void nativeResumeDownload(
             long nativeDownloadManagerService, int downloadId, String fileName);
     private native void nativeCancelDownload(long nativeDownloadManagerService, int downloadId);
+    private native void nativePauseDownload(long nativeDownloadManagerService, int downloadId);
 }

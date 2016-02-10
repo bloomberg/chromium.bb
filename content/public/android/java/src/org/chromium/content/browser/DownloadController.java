@@ -136,7 +136,7 @@ public class DownloadController {
     @CalledByNative
     private void onDownloadUpdated(Context context, String url, String mimeType, String filename,
             String path, long contentLength, boolean successful, int downloadId,
-            int percentCompleted, long timeRemainingInMs, boolean hasUserGesture,
+            int percentCompleted, long timeRemainingInMs, boolean hasUserGesture, boolean isPaused,
             boolean isResumable) {
         if (sDownloadNotificationService != null) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder()
@@ -152,6 +152,7 @@ public class DownloadController {
                     .setPercentCompleted(percentCompleted)
                     .setTimeRemainingInMillis(timeRemainingInMs)
                     .setHasUserGesture(hasUserGesture)
+                    .setIsPaused(isPaused)
                     .setIsResumable(isResumable)
                     .build();
             sDownloadNotificationService.onDownloadUpdated(downloadInfo);

@@ -98,7 +98,7 @@ public class DownloadNotificationServiceTest extends
         setupService();
         startNotificationService();
         DownloadNotificationService service = bindNotificationService();
-        service.notifyDownloadProgress(1, "test", -1, 1L, 1L);
+        service.notifyDownloadProgress(1, "test", -1, 1L, 1L, true);
         assertEquals(1, getService().getNotificationIds().size());
         assertTrue(getService().getNotificationIds().contains(1));
 

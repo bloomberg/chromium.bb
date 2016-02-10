@@ -219,10 +219,16 @@ public class SystemDownloadNotifier implements DownloadNotifier {
             } else {
                 switch (type) {
                     case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
-                        mBoundService.notifyDownloadProgress(
-                                info.getDownloadId(), info.getFileName(),
-                                info.getPercentCompleted(), info.getTimeRemainingInMillis(),
-                                startTime);
+                        if (info.isPaused()) {
+                            assert info.isResumable();
+                            mBoundService.notifyDownloadPaused(
+                                    info.getDownloadId(), info.getFileName(), info.isResumable());
+                        } else {
+                            mBoundService.notifyDownloadProgress(
+                                    info.getDownloadId(), info.getFileName(),
+                                    info.getPercentCompleted(), info.getTimeRemainingInMillis(),
+                                    startTime, info.isResumable());
+                        }
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                         mBoundService.notifyDownloadSuccessful(

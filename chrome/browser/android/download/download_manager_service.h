@@ -40,6 +40,10 @@ class DownloadManagerService : public content::DownloadManager::Observer {
   // If the DownloadItem is not yet created, retry after a while.
   void CancelDownload(JNIEnv* env, jobject obj, uint32_t download_id);
 
+  // Called to pause a download item that has ID equal to |download_id|.
+  // If the DownloadItem is not yet created, do nothing as it is already paused.
+  void PauseDownload(JNIEnv* env, jobject obj, uint32_t download_id);
+
   // content::DownloadManager::Observer methods.
   void ManagerGoingDown(content::DownloadManager* manager) override;
 
