@@ -41,6 +41,7 @@ public:
     ~CallbackStack();
 
     void clear();
+    void decommit();
 
     Item* allocateEntry();
     Item* pop();
@@ -54,25 +55,15 @@ public:
 #endif
 
 private:
-    static const size_t blockSize = 8192;
+    static const size_t blockSize = (1 << 13);
 
     class Block {
         USING_FAST_MALLOC(Block);
     public:
-        explicit Block(Block* next)
-            : m_limit(&(m_buffer[blockSize]))
-            , m_current(&(m_buffer[0]))
-            , m_next(next)
-        {
-            clearUnused();
-        }
+        explicit Block(Block* next);
+        ~Block();
 
-        ~Block()
-        {
-            clearUnused();
-        }
-
-        void clear();
+        void decommit();
 
         Block* next() const { return m_next; }
         void setNext(Block* next) { m_next = next; }
@@ -80,11 +71,6 @@ private:
         bool isEmptyBlock() const
         {
             return m_current == &(m_buffer[0]);
-        }
-
-        size_t size() const
-        {
-            return blockSize - (m_limit - m_current);
         }
 
         Item* allocateEntry()
@@ -107,9 +93,7 @@ private:
 #endif
 
     private:
-        void clearUnused();
-
-        Item m_buffer[blockSize];
+        Item* m_buffer;
         Item* m_limit;
         Item* m_current;
         Block* m_next;

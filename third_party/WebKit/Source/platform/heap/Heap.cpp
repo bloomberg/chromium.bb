@@ -355,6 +355,14 @@ bool Heap::weakTableRegistered(const void* table)
 }
 #endif
 
+void Heap::decommitCallbackStacks()
+{
+    s_markingStack->decommit();
+    s_postMarkingCallbackStack->decommit();
+    s_globalWeakCallbackStack->decommit();
+    s_ephemeronStack->decommit();
+}
+
 void Heap::preGC()
 {
     ASSERT(!ThreadState::current()->isInGC());
@@ -469,6 +477,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     WTF::Partitions::reportMemoryUsageHistogram();
 
     postGC(gcType);
+    Heap::decommitCallbackStacks();
 
 #if ENABLE(ASSERT)
     // 0 is used to figure non-assigned area, so avoid to use 0 in s_gcGeneration.
@@ -511,6 +520,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         globalWeakProcessing(gcScope.visitor());
 
         state->postGC(BlinkGC::GCWithSweep);
+        Heap::decommitCallbackStacks();
     }
     state->preSweep();
 }
@@ -546,8 +556,6 @@ void Heap::postMarkingProcessing(Visitor* visitor)
     // 2. the markNoTracing callbacks on collection backings to mark them
     //    if they are only reachable from their front objects.
     while (popAndInvokePostMarkingCallback(visitor)) { }
-
-    s_ephemeronStack->clear();
 
     // Post-marking callbacks should not trace any objects and
     // therefore the marking stack should be empty after the
