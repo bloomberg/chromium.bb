@@ -539,7 +539,6 @@ private:
     bool m_delayingLoadForPreloadNone : 1;
 
     bool m_tracksAreReady : 1;
-    bool m_haveVisibleTextTrack : 1;
     bool m_processingPreferenceChange : 1;
     bool m_remoteRoutesAvailable : 1;
     bool m_playingRemotely : 1;

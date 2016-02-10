@@ -326,7 +326,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_completelyLoaded(false)
     , m_havePreparedToPlay(false)
     , m_tracksAreReady(true)
-    , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
     , m_remoteRoutesAvailable(false)
     , m_playingRemotely(false)
@@ -3365,10 +3364,10 @@ void HTMLMediaElement::configureTextTrackDisplay()
     if (m_processingPreferenceChange)
         return;
 
-    m_haveVisibleTextTrack = m_textTracks->hasShowingTracks();
-    m_closedCaptionsVisible = m_haveVisibleTextTrack;
+    bool haveVisibleTextTrack = m_textTracks->hasShowingTracks();
+    m_closedCaptionsVisible = haveVisibleTextTrack;
 
-    if (!m_haveVisibleTextTrack && !mediaControls())
+    if (!haveVisibleTextTrack && !mediaControls())
         return;
 
     if (mediaControls())
