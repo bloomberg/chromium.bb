@@ -9,16 +9,10 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 
 class Profile;
-
-namespace base {
-
-template <typename T>
-class Callback;
-
-}  // namespace base
 
 namespace chromeos {
 namespace locale_util {

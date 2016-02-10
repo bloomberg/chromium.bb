@@ -7,12 +7,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_DELAY_NETWORK_CALL_H_
 #define CHROME_BROWSER_CHROMEOS_NET_DELAY_NETWORK_CALL_H_
 
+#include "base/callback_forward.h"
+
 namespace base {
-
-template <typename T>
-class Callback;
-
-typedef Callback<void(void)> Closure;
 
 class TimeDelta;
 
