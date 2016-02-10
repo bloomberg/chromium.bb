@@ -69,8 +69,9 @@ void TouchInputScaler::InjectTouchEvent(const TouchEvent& event) {
     // This is because a HiDPI Chromebook device (e.g. Pixel) has 2 by 2
     // physical pixel mapped to a logical pixel.
     // With scaling, the size would be the same.
-    // TODO(rkuroiwa): Also clamp. Note that point->angle() affects the maximum
-    // size (crbug.com/461526).
+    // Note that there's no need to clamp the touch point size. For example on
+    // a Nexus4 device, part of the touch circle falls outside the screen on
+    // edges but still functions correctly.
     if (point->has_radius_x() || point->has_radius_y()) {
       DCHECK(point->has_radius_x() && point->has_radius_y());
       point->set_radius_x(
