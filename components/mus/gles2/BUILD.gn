@@ -17,7 +17,6 @@ source_set("gles2") {
     "command_buffer_driver_manager.h",
     "command_buffer_impl.cc",
     "command_buffer_impl.h",
-    "command_buffer_impl_observer.h",
     "command_buffer_local.cc",
     "command_buffer_local.h",
     "command_buffer_local_client.h",

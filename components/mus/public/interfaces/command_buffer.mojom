@@ -6,6 +6,8 @@ module mus.mojom;
 
 import "gpu/command_buffer/common/capabilities.mojom";
 import "gpu/command_buffer/common/command_buffer.mojom";
+import "gpu/command_buffer/common/mailbox.mojom";
+import "gpu/command_buffer/common/sync_token.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
 struct CommandBufferInitializeResult {
@@ -14,16 +16,24 @@ struct CommandBufferInitializeResult {
   gpu.mojom.Capabilities capabilities;
 };
 
-interface CommandBufferLostContextObserver {
-  DidLoseContext(int32 context_lost_reason);
+interface CommandBufferClient {
+  Destroyed(int32 context_lost_reason,
+            int32 error);
+  SignalAck(uint32 id);
+  // TODO(penghuang): support latency_info and use gfx::SwapResult for result.
+  SwapBuffersCompleted(/* array<ui.mojom.LatencyInfo> latency_info, */
+                       int32 result);
+  UpdateState(gpu.mojom.CommandBufferState state);
+  // TODO(penghuang): use base::TimeTicks & base::TimeDelta.
+  UpdateVSyncParameters(int64 timebase, int64 interval);
 };
 
 interface CommandBuffer {
   // Initialize attempts to initialize the command buffer.
   // If the context is lost after creation the LostContext method on the
-  // CommandBufferLostContextObserver's will be called then this pipe will be
+  // CommandBufferClient's will be called then this pipe will be
   // closed.
-  Initialize(CommandBufferLostContextObserver lost_observer,
+  Initialize(CommandBufferClient client,
              handle<shared_buffer> shared_state,
              array<int32> attribs) => (CommandBufferInitializeResult? result);
   SetGetBuffer(int32 buffer);
@@ -32,7 +42,6 @@ interface CommandBuffer {
   RegisterTransferBuffer(
       int32 id, handle<shared_buffer> transfer_buffer, uint32 size);
   DestroyTransferBuffer(int32 id);
-
   CreateImage(int32 id,
               handle memory_handle,
               int32 type,
@@ -40,4 +49,13 @@ interface CommandBuffer {
               int32 format,
               int32 internal_format);
   DestroyImage(int32 id);
+  CreateStreamTexture(uint32 client_texture_id)
+      => (int32 stream_id, bool succeeded);
+  ProduceFrontBuffer(gpu.mojom.Mailbox mailbox);
+  SignalQuery(uint32 query, uint32 signal_id);
+  SignalSyncToken(gpu.mojom.SyncToken sync_token, uint32 signal_id);
+  WaitForGetOffsetInRange(int32 start, int32 end)
+      => (gpu.mojom.CommandBufferState state);
+  WaitForTokenInRange(int32 start, int32 end)
+      => (gpu.mojom.CommandBufferState state);
 };

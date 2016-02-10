@@ -33,7 +33,7 @@ class CommandBufferDelegate {
 };
 
 class CommandBufferClientImpl
-    : public mus::mojom::CommandBufferLostContextObserver,
+    : public mus::mojom::CommandBufferClient,
       public gpu::CommandBuffer,
       public gpu::GpuControl {
  public:
@@ -84,8 +84,12 @@ class CommandBufferClientImpl
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
 
  private:
-  // mus::mojom::CommandBufferLostContextObserver implementation:
-  void DidLoseContext(int32_t lost_reason) override;
+  // mus::mojom::CommandBufferClient implementation:
+  void Destroyed(int32_t lost_reason, int32_t error) override;
+  void SignalAck(uint32_t id) override;
+  void SwapBuffersCompleted(int32_t result) override;
+  void UpdateState(const gpu::CommandBuffer::State& state) override;
+  void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
 
   void TryUpdateState();
   void MakeProgressAndUpdateState();
@@ -94,7 +98,7 @@ class CommandBufferClientImpl
 
   CommandBufferDelegate* delegate_;
   std::vector<int32_t> attribs_;
-  mojo::Binding<mus::mojom::CommandBufferLostContextObserver> observer_binding_;
+  mojo::Binding<mus::mojom::CommandBufferClient> client_binding_;
   mus::mojom::CommandBufferPtr command_buffer_;
 
   uint64_t command_buffer_id_;
