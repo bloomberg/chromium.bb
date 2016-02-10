@@ -38,7 +38,8 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     shell_connection_->WaitForInitialize();
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
-    shell_connection_->Connect("mojo:desktop_wm");
+    mojo::Shell* shell = shell_connection_.get();
+    shell->Connect("mojo:desktop_wm");
     WindowManagerConnection::Create(shell_connection_.get());
   }
 

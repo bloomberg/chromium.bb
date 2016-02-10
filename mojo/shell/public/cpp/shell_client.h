@@ -15,8 +15,11 @@ namespace mojo {
 
 class Shell;
 
-// An abstract class that the application may subclass to control various
-// behaviors of ShellConnection.
+// An interface representing an instance "known to the Mojo Shell". The
+// implementation receives lifecycle messages for the instance and gets the
+// opportunity to handle inbound connections brokered by the Shell. Every client
+// of ShellConnection must implement this interface, and instances of this
+// interface must outlive the ShellConnection.
 class ShellClient {
  public:
   ShellClient();
@@ -28,20 +31,25 @@ class ShellClient {
   // Called exactly once before any other method.
   virtual void Initialize(Shell* shell, const std::string& url, uint32_t id);
 
-  // Override this method to configure what services a connection supports when
-  // being connected to from an app.
-  // Return false to reject the connection entirely. The default implementation
-  // returns false.
+  // Called when a connection to this client is brokered by the shell. Override
+  // to expose services to the remote application. Return true if the connection
+  // should succeed. Return false if the connection should be rejected and the
+  // underlying pipe closed. The default implementation returns false.
   virtual bool AcceptConnection(Connection* connection);
 
-  // Called when the shell connection has a connection error.
+  // Called when ShellConnection's pipe to the Mojo Shell is closed.
   //
-  // Return true to shutdown the application. Return false to skip shutting
-  // down the connection, but user is then required to call
-  // ShellConnection::QuitNow() when done. Default implementation returns true.
+  // Returning true from this method will cause the ShellConnection instance to
+  // call this instance back via Quit(), and then run the termination closure
+  // passed to it (which may do cleanup like, for example, quitting a run loop).
+  // Returning false from this method will not do any of this. The client is
+  // then responsible for calling Shell::QuitNow() when it is ready to close.
+  // The client may do this if it wishes to continue servicing connections other
+  // than the Shell.
+  // The default implementation returns true.
   virtual bool ShellConnectionLost();
 
-  // Called before ShellConnection::Terminate(). After returning from this call
+  // Called before ShellConnection::QuitNow(). After returning from this call
   // the delegate can no longer rely on the main run loop still running.
   virtual void Quit();
 

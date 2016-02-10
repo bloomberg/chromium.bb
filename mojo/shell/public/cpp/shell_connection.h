@@ -22,40 +22,29 @@
 
 namespace mojo {
 
-// TODO(beng): This comment is hilariously out of date.
-// Utility class for communicating with the Shell, and providing Services
-// to clients.
+// Encapsulates a connection to the Mojo Shell in two parts:
+// - a bound InterfacePtr to mojo::shell::mojom::Shell, the primary mechanism
+//   by which the instantiating application interacts with other services
+//   brokered by the Mojo Shell.
+// - a bound InterfaceRequest of mojo::shell::mojom::ShellClient, an interface
+//   used by the Mojo Shell to inform this application of lifecycle events and
+//   inbound connections brokered by it.
 //
-// To use define a class that implements your specific server api, e.g. FooImpl
-// to implement a service named Foo.
-// That class must subclass an InterfaceImpl specialization.
+// This class should be used in two scenarios:
+// - During early startup to bind the mojo::shell::mojom::ShellClientRequest
+//   obtained from the Mojo Shell. This is typically in response to either
+//   MojoMain() or main().
+// - In an implementation of mojo::shell::mojom::ContentHandler to bind the
+//   mojo::shell::mojom::ShellClientRequest passed via StartApplication. In this
+//   scenario there can be many instances of this class per process.
 //
-// If there is context that is to be shared amongst all instances, define a
-// constructor with that class as its only argument, otherwise define an empty
-// constructor.
+// Instances of this class are constructed with an implementation of the Shell
+// Client Lib's mojo::ShellClient interface. See documentation in shell_client.h
+// for details.
 //
-// class FooImpl : public InterfaceImpl<Foo> {
-//  public:
-//   FooImpl(ApplicationContext* app_context) {}
-// };
-//
-// or
-//
-// class BarImpl : public InterfaceImpl<Bar> {
-//  public:
-//   // contexts will remain valid for the lifetime of BarImpl.
-//   BarImpl(ApplicationContext* app_context, BarContext* service_context)
-//          : app_context_(app_context), servicecontext_(context) {}
-//
-// Create an ShellConnection instance that collects any service implementations.
-//
-// ShellConnection app(service_provider_handle);
-// app.AddService<FooImpl>();
-//
-// BarContext context;
-// app.AddService<BarImpl>(&context);
-//
-//
+// Though this class provides the canonical implementation of the Shell Client
+// lib's mojo::Shell interface, this interface should not be reached through
+// pointers to this type.
 class ShellConnection : public Shell, public shell::mojom::ShellClient {
  public:
   class TestApi {
@@ -89,14 +78,14 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   // shell.
   void WaitForInitialize();
 
-  // Shell.
+ private:
+  // Shell:
   scoped_ptr<Connection> Connect(const std::string& url) override;
   scoped_ptr<Connection> Connect(ConnectParams* params) override;
   void Quit() override;
   scoped_ptr<AppRefCount> CreateAppRefCount() override;
 
- private:
-  // shell::mojom::Application implementation.
+  // shell::mojom::ShellClient:
   void Initialize(shell::mojom::ShellPtr shell,
                   const mojo::String& url,
                   uint32_t id) override;

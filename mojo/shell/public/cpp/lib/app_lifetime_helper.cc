@@ -63,8 +63,8 @@ scoped_ptr<AppRefCount> AppRefCount::Clone() {
       app_lifetime_helper_, app_task_runner_));
 }
 
-AppLifetimeHelper::AppLifetimeHelper(ShellConnection* app)
-    : app_(app), ref_count_(0) {
+AppLifetimeHelper::AppLifetimeHelper(Shell* shell)
+    : shell_(shell), ref_count_(0) {
 }
 
 AppLifetimeHelper::~AppLifetimeHelper() {
@@ -82,13 +82,13 @@ void AppLifetimeHelper::AddRef() {
 
 void AppLifetimeHelper::Release() {
   if (!--ref_count_) {
-    if (app_)
-      app_->Quit();
+    if (shell_)
+      shell_->Quit();
   }
 }
 
 void AppLifetimeHelper::OnQuit() {
-  app_ = nullptr;
+  shell_ = nullptr;
 }
 
 }  // namespace mojo

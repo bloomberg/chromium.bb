@@ -245,12 +245,12 @@ class TesterContext {
 // Used to test that the requestor url will be correctly passed.
 class TestAImpl : public TestA {
  public:
-  TestAImpl(ShellConnection* app_impl,
+  TestAImpl(Shell* shell,
             TesterContext* test_context,
             InterfaceRequest<TestA> request,
             InterfaceFactory<TestC>* factory)
       : test_context_(test_context), binding_(this, std::move(request)) {
-    connection_ = app_impl->Connect(kTestBURLString);
+    connection_ = shell->Connect(kTestBURLString);
     connection_->AddInterface<TestC>(factory);
     connection_->GetInterface(&b_);
   }

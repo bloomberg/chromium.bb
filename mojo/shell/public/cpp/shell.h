@@ -16,6 +16,9 @@ shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter();
 
 using ShellClientRequest = InterfaceRequest<shell::mojom::ShellClient>;
 
+// An interface that encapsulates the Mojo Shell's broker interface by which
+// connections between applications are established. Implemented by
+// ShellConnection, this is the primary interface exposed to clients.
 class Shell {
  public:
   class ConnectParams {

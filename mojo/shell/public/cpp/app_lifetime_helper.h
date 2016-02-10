@@ -11,6 +11,7 @@
 
 namespace mojo {
 
+class Shell;
 class ShellConnection;
 class AppLifetimeHelper;
 
@@ -57,7 +58,7 @@ class AppRefCount {
 // quit with a call to mojo::ShellConnection::Terminate().
 class AppLifetimeHelper {
  public:
-  explicit AppLifetimeHelper(ShellConnection* app);
+  explicit AppLifetimeHelper(Shell* shell);
   ~AppLifetimeHelper();
 
   scoped_ptr<AppRefCount> CreateAppRefCount();
@@ -70,7 +71,7 @@ class AppLifetimeHelper {
   friend ShellConnection;
   void OnQuit();
 
-  ShellConnection* app_;
+  Shell* shell_;
   int ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLifetimeHelper);

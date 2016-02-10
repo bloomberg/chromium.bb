@@ -19,8 +19,8 @@ namespace mojo {
 class InterfaceBinder;
 
 // Represents a connection to another application. An instance of this class is
-// passed to ShellClient's AcceptConnection() method each
-// time a connection is made to this app.
+// returned from Shell's ConnectToApplication(), and passed to ShellClient's
+// AcceptConnection() each time an incoming connection is received.
 //
 // To use, define a class that implements your specific interface. Then
 // implement an InterfaceFactory<Foo> that binds instances of FooImpl to
@@ -36,14 +36,15 @@ class InterfaceBinder;
 //
 // The InterfaceFactory must outlive the Connection.
 //
-// Additionally you specify a InterfaceBinder. If a InterfaceBinder has
-// been set and an InterfaceFactory has not been registered for the interface
-// request, than the interface request is sent to the InterfaceBinder.
+// Additionally you may specify a default InterfaceBinder to handle requests for
+// interfaces unhandled by any registered InterfaceFactory. Just as with
+// InterfaceFactory, the default InterfaceBinder supplied must outlive
+// Connection.
 //
-// Just as with InterfaceFactory, InterfaceBinder must outlive Connection.
-//
-// An Connection's lifetime is managed by an ShellConnection. To close a
-// connection, call CloseConnection which will destroy this object.
+// A Connection returned via Shell::ConnectToApplication() is owned by the
+// caller.
+// An Connection received via AcceptConnection is owned by the ShellConnection.
+// To close a connection, call CloseConnection which will destroy this object.
 class Connection {
  public:
   virtual ~Connection() {}
