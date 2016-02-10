@@ -16,7 +16,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -101,7 +101,8 @@ class BaseSearchProvider : public AutocompleteProvider {
 
   typedef std::pair<base::string16, std::string> MatchKey;
   typedef std::map<MatchKey, AutocompleteMatch> MatchMap;
-  typedef ScopedVector<SuggestionDeletionHandler> SuggestionDeletionHandlers;
+  typedef std::vector<scoped_ptr<SuggestionDeletionHandler>>
+      SuggestionDeletionHandlers;
 
   // Returns an AutocompleteMatch with the given |autocomplete_provider|
   // for the search |suggestion|, which represents a search via |template_url|.
