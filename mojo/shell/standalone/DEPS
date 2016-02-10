@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/devtools_service/public",
   "+components/mus",
   "+components/mus/gles2",
   "+components/mus/native_viewport",

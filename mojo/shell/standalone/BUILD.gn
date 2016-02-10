@@ -105,8 +105,6 @@ source_set("lib") {
     "//base",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
-    "//components/devtools_service/public/cpp",
-    "//components/devtools_service/public/interfaces",
     "//components/tracing:startup_tracing",
     "//mojo/message_pump",
     "//mojo/services/network/public/interfaces",
@@ -132,7 +130,6 @@ source_set("lib") {
 
   if (!is_component_build) {
     data_deps = [
-      "//components/devtools_service",
       "//mojo/services/tracing",
     ]
   }

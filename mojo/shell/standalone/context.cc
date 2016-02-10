@@ -24,8 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/devtools_service/public/cpp/switches.h"
-#include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "components/tracing/tracing_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
@@ -115,37 +113,6 @@ void InitContentHandlers(PackageManagerImpl* manager,
     // net/base/mime_util.h could do this, but we don't want to depend on net.
     manager->RegisterContentHandler(parts[i], url);
   }
-}
-
-void InitDevToolsServiceIfNeeded(ApplicationManager* manager,
-                                 const base::CommandLine& command_line) {
-  if (!command_line.HasSwitch(devtools_service::kRemoteDebuggingPort))
-    return;
-
-  std::string port_str =
-      command_line.GetSwitchValueASCII(devtools_service::kRemoteDebuggingPort);
-  unsigned port;
-  if (!base::StringToUint(port_str, &port) || port > 65535) {
-    LOG(ERROR) << "Invalid value for switch "
-               << devtools_service::kRemoteDebuggingPort << ": '" << port_str
-               << "' is not a valid port number.";
-    return;
-  }
-
-  ServiceProviderPtr devtools_service_provider;
-  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->set_source(Identity(GURL("mojo:shell"), std::string(),
-                              GetPermissiveCapabilityFilter()));
-  params->SetTarget(Identity(GURL("mojo:devtools_service"), std::string(),
-                             GetPermissiveCapabilityFilter()));
-  params->set_services(GetProxy(&devtools_service_provider));
-  manager->ConnectToApplication(std::move(params));
-
-  devtools_service::DevToolsCoordinatorPtr devtools_coordinator;
-  devtools_service_provider->ConnectToService(
-      devtools_service::DevToolsCoordinator::Name_,
-      GetProxy(&devtools_coordinator).PassMessagePipe());
-  devtools_coordinator->Initialize(static_cast<uint16_t>(port));
 }
 
 class TracingServiceProvider : public ServiceProvider {
@@ -265,8 +232,6 @@ void Context::Init(const base::FilePath& shell_file_root) {
 #endif
     collector->SetShellMainEntryPointTime(main_entry_time_.ToInternalValue());
   }
-
-  InitDevToolsServiceIfNeeded(application_manager_.get(), command_line);
 }
 
 void Context::Shutdown() {
