@@ -52,9 +52,9 @@ def PsoFromLLVMAssembly(base_name):
                              llvm_passes='')
 
 
-# The loader currently depends on the allocate_code_data() interface
-# provided by the IRT.
-is_broken = not env.Bit('tests_use_irt')
+# Under SFI NaCl, the loader currently depends on the allocate_code_data()
+# interface provided by the IRT.
+is_broken = not env.Bit('tests_use_irt') and not env.Bit('nonsfi_nacl')
 
 dso1 = MakeAndTranslatePso(
     'test_pso', [env.ComponentObject('test_pso.c')],
