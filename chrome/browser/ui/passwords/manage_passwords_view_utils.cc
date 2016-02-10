@@ -128,17 +128,6 @@ void GetAccountChooserDialogTitleTextAndLinkRange(
                              title, title_link_range);
 }
 
-void GetAutoSigninPromptFirstRunExperienceExplanation(
-    bool is_smartlock_branding_enabled,
-    base::string16* explanation,
-    gfx::Range* explanation_link_range) {
-  GetBrandedTextAndLinkRange(
-      is_smartlock_branding_enabled,
-      IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_SMART_LOCK_WELCOME,
-      IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_DEFAULT_WELCOME,
-      explanation, explanation_link_range);
-}
-
 void GetBrandedTextAndLinkRange(bool is_smartlock_branding_enabled,
                                 int smartlock_string_id,
                                 int default_string_id,

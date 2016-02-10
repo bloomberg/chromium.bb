@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/password_manager/auto_signin_first_run_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -17,22 +16,15 @@
 
 void ShowAutoSigninPrompt(content::WebContents* web_contents,
                           const base::string16& username) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   base::string16 message = l10n_util::GetStringFUTF16(
       IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE, username);
 
-  if (password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
-          profile->GetPrefs())) {
-    AutoSigninFirstRunInfoBarDelegate::Create(web_contents, message);
-  } else {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-    ScopedJavaLocalRef<jstring> java_message =
-        base::android::ConvertUTF16ToJavaString(env, message);
-    Java_AutoSigninSnackbarController_showSnackbar(
-        env, tab->GetJavaObject().obj(), java_message.obj());
-  }
+  JNIEnv* env = base::android::AttachCurrentThread();
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  ScopedJavaLocalRef<jstring> java_message =
+      base::android::ConvertUTF16ToJavaString(env, message);
+  Java_AutoSigninSnackbarController_showSnackbar(
+      env, tab->GetJavaObject().obj(), java_message.obj());
 }
 
 bool RegisterAutoSigninSnackbarController(JNIEnv* env) {

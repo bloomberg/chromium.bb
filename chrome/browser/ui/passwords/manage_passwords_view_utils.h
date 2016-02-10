@@ -70,12 +70,6 @@ void GetAccountChooserDialogTitleTextAndLinkRange(
     base::string16* title,
     gfx::Range* title_link_range);
 
-// TODO(melandory): remove as obsolete. http://crbug.com/532876
-void GetAutoSigninPromptFirstRunExperienceExplanation(
-    bool is_smartlock_branding_enabled,
-    base::string16* explanation,
-    gfx::Range* explanation_link_range);
-
 // Loads |smartlock_string_id| or |default_string_id| string from the resources
 // and substitutes the placeholder with the correct password manager branding
 // (Google Smart Lock, Google Chrome or Chromium) according to

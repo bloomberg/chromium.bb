@@ -334,7 +334,6 @@
       'browser/password_manager/save_password_infobar_delegate_unittest.cc',
     ],
     'chrome_unit_tests_android_sources': [
-      'browser/password_manager/auto_signin_infobar_delegate_unittest.cc',
       'browser/permissions/permission_queue_controller_unittest.cc',
     ],
     'chrome_unit_tests_non_mobile_sources': [

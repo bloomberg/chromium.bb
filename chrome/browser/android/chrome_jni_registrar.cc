@@ -134,7 +134,6 @@
 #include "chrome/browser/ui/android/connection_info_popup_android.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
-#include "chrome/browser/ui/android/infobars/auto_signin_first_run_infobar.h"
 #include "chrome/browser/ui/android/infobars/autofill_save_card_infobar.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
@@ -337,7 +336,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
     {"RevenueStats", RegisterRevenueStats},
     {"SavePasswordInfoBar", SavePasswordInfoBar::Register},
-    {"AutoSigninFirstRunInfoBar", AutoSigninFirstRunInfoBar::Register},
     {"SceneLayer", chrome::android::RegisterSceneLayer},
     {"ScreenshotTask", RegisterScreenshotTask},
     {"ServiceTabLauncher", service_tab_launcher::RegisterServiceTabLauncherJni},
