@@ -106,8 +106,7 @@ class SmoothnessMaps(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('android',
-                    'mac',     # crbug.com/567802
-                    'win')     # crbug.com/582472
+                    'mac')     # crbug.com/567802
 class SmoothnessKeyDesktopMoveCases(_Smoothness):
   page_set = page_sets.KeyDesktopMoveCasesPageSet
 
