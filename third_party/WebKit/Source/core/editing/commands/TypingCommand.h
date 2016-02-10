@@ -72,7 +72,7 @@ public:
     void insertLineBreak();
     void insertParagraphSeparatorInQuotedContent();
     void insertParagraphSeparator();
-    void deleteKeyPressed(TextGranularity, bool killRing);
+    void deleteKeyPressed(TextGranularity, bool killRing, EditingState*);
     void forwardDeleteKeyPressed(TextGranularity, bool killRing);
     void deleteSelection(bool smartDelete);
     void setCompositionType(TextCompositionType type) { m_compositionType = type; }

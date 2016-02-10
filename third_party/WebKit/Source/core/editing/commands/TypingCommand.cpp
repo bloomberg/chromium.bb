@@ -120,7 +120,7 @@ void TypingCommand::deleteKeyPressed(Document& document, Options options, TextGr
             if (lastTypingCommand->commandTypeOfOpenCommand() == DeleteKey) {
                 updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
                 lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
-                lastTypingCommand->deleteKeyPressed(granularity, options & KillRing);
+                lastTypingCommand->deleteKeyPressed(granularity, options & KillRing, ASSERT_NO_EDITING_ABORT);
                 return;
             }
         }
@@ -246,7 +246,7 @@ void TypingCommand::closeTyping(LocalFrame* frame)
         lastTypingCommand->closeTyping();
 }
 
-void TypingCommand::doApply(EditingState*)
+void TypingCommand::doApply(EditingState* editingState)
 {
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;
@@ -261,7 +261,7 @@ void TypingCommand::doApply(EditingState*)
         deleteSelection(m_smartDelete);
         return;
     case DeleteKey:
-        deleteKeyPressed(m_granularity, m_killRing);
+        deleteKeyPressed(m_granularity, m_killRing, editingState);
         return;
     case ForwardDeleteKey:
         forwardDeleteKeyPressed(m_granularity, m_killRing);
@@ -408,7 +408,7 @@ bool TypingCommand::makeEditableRootEmpty()
     return true;
 }
 
-void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
+void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing, EditingState* editingState)
 {
     LocalFrame* frame = document().frame();
     if (!frame)
@@ -508,7 +508,9 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
     // more text than you insert.  In that case all of the text that was around originally should be selected.
     if (frame->editor().behavior().shouldUndoOfDeleteSelectText() && m_openedByBackwardDelete)
         setStartingSelection(selectionAfterUndo);
-    CompositeEditCommand::deleteSelection(selectionToDelete, m_smartDelete);
+    CompositeEditCommand::deleteSelection(selectionToDelete, editingState, m_smartDelete);
+    if (editingState->isAborted())
+        return;
     setSmartDelete(false);
     typingAddedToOpenCommand(DeleteKey);
 }
@@ -598,7 +600,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
     // Make undo select what was deleted on Mac alone
     if (frame->editor().behavior().shouldUndoOfDeleteSelectText())
         setStartingSelection(selectionAfterUndo);
-    CompositeEditCommand::deleteSelection(selectionToDelete, m_smartDelete);
+    CompositeEditCommand::deleteSelection(selectionToDelete, ASSERT_NO_EDITING_ABORT, m_smartDelete);
     setSmartDelete(false);
     typingAddedToOpenCommand(ForwardDeleteKey);
 }
