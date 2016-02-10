@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace media {
 namespace cast {
@@ -354,7 +355,7 @@ void PacedSender::LogPacketEvent(const Packet& packet, CastLoggingEvent type) {
   success &= reader.Skip(2);
   success &= reader.ReadU16(&event.packet_id);
   success &= reader.ReadU16(&event.max_packet_id);
-  event.size = packet.size();
+  event.size = base::checked_cast<uint32_t>(packet.size());
   DCHECK(success);
 }
 

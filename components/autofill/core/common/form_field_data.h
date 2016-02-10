@@ -45,6 +45,9 @@ struct FormFieldData {
   base::string16 value;
   std::string form_control_type;
   std::string autocomplete_attribute;
+  // Note: we use uint32_t instead of size_t because this struct is sent over
+  // IPC which could span 32 & 64 bit processes. This is fine since the length
+  // shouldn't exceed UINT32_MAX even on 64 bit builds.
   uint32_t max_length;
   bool is_autofilled;
   bool is_checked;

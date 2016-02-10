@@ -118,7 +118,7 @@ void GpuMemoryManager::SendUmaStatsToBrowser() {
   GPUMemoryUmaStats params;
   params.bytes_allocated_current = GetCurrentUsage();
   params.bytes_allocated_max = bytes_allocated_historical_max_;
-  params.context_group_count = tracking_groups_.size();
+  params.context_group_count = static_cast<uint32_t>(tracking_groups_.size());
   channel_manager_->Send(new GpuHostMsg_GpuMemoryUmaStats(params));
 }
 }  // namespace content

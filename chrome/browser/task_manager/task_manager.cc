@@ -8,6 +8,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/process_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -666,7 +667,9 @@ bool TaskManagerModel::GetVideoMemory(int index,
     if (i == video_memory_usage_stats_.process_map.end())
       return false;
     values.is_video_memory_valid = true;
-    values.video_memory = i->second.video_memory;
+    // If this checked_cast asserts, then need to change this code to use
+    // uint64_t instead of size_t.
+    values.video_memory = base::checked_cast<size_t>(i->second.video_memory);
     values.video_memory_has_duplicates = i->second.has_duplicates;
   }
   *video_memory = values.video_memory;

@@ -108,6 +108,9 @@ class GFX_EXPORT Range {
   std::string ToString() const;
 
  private:
+  // Note: we use uint32_t instead of size_t because this struct is sent over
+  // IPC which could span 32 & 64 bit processes. This is fine since text spans
+  // shouldn't exceed UINT32_MAX even on 64 bit builds.
   uint32_t start_;
   uint32_t end_;
 };

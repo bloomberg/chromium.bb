@@ -188,7 +188,7 @@ void TaskGroup::RefreshGpuMemory(
     return;
   }
 
-  gpu_memory_ = static_cast<int64_t>(itr->second.video_memory);
+  gpu_memory_ = itr->second.video_memory;
   gpu_memory_has_duplicates_ = itr->second.has_duplicates;
 }
 

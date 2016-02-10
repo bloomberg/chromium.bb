@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
@@ -129,7 +130,7 @@ void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
   receive_event->frame_id = rtp_header.frame_id;
   receive_event->packet_id = rtp_header.packet_id;
   receive_event->max_packet_id = rtp_header.max_packet_id;
-  receive_event->size = payload_size;
+  receive_event->size = base::checked_cast<uint32_t>(payload_size);
   cast_environment_->logger()->DispatchPacketEvent(std::move(receive_event));
 
   bool duplicate = false;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/constants.h"
@@ -239,7 +240,7 @@ void FrameSender::SendEncodedFrame(
   encode_event->media_type = is_audio_ ? AUDIO_EVENT : VIDEO_EVENT;
   encode_event->rtp_timestamp = encoded_frame->rtp_timestamp;
   encode_event->frame_id = frame_id;
-  encode_event->size = encoded_frame->data.size();
+  encode_event->size = base::checked_cast<uint32_t>(encoded_frame->data.size());
   encode_event->key_frame = encoded_frame->dependency == EncodedFrame::KEY;
   encode_event->target_bitrate = requested_bitrate_before_encode;
   encode_event->encoder_cpu_utilization = encoded_frame->deadline_utilization;

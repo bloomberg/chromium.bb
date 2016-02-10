@@ -29,6 +29,9 @@ class SpellCheckMarker {
       : hash(hash), offset(offset) {}
 
   uint32_t hash;
+  // Note: we use uint32_t instead of size_t because this struct is sent over
+  // IPC which could span 32 & 64 bit processes. This is fine since the offset
+  // shouldn't exceed UINT32_MAX even on 64 bit builds.
   uint32_t offset;
 };
 

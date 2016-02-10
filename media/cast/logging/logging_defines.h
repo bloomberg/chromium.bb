@@ -64,6 +64,8 @@ struct FrameEvent {
   int height;
 
   // Size of encoded frame in bytes. Only set for FRAME_ENCODED event.
+  // Note: we use uint32_t instead of size_t for byte count because this struct
+  // is sent over IPC which could span 32 & 64 bit processes.
   uint32_t size;
 
   // Time of event logged.
