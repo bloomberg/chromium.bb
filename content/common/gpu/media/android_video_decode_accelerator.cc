@@ -764,9 +764,9 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
 
   // When codec is not in error state we can quickly reset (internally calls
   // flush()) for JB-MR2 and beyond. Prior to JB-MR2, flush() had several bugs
-  // (b/8125974, b/8347958) so we must stop() and reconfigure MediaCodec. The
-  // full reconfigure is much slower and may cause visible freezing if done
-  // mid-stream.
+  // (b/8125974, b/8347958) so we must delete the MediaCodec and create a new
+  // one. The full reconfigure is much slower and may cause visible freezing if
+  // done mid-stream.
   if (state_ == NO_ERROR &&
       base::android::BuildInfo::GetInstance()->sdk_int() >= 18) {
     DVLOG(3) << __FUNCTION__ << " Doing fast MediaCodec reset (flush).";
@@ -776,9 +776,9 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
     strategy_->CodecChanged(media_codec_.get(), output_picture_buffers_);
   } else {
     DVLOG(3) << __FUNCTION__
-             << " Doing slow MediaCodec reset (stop/re-configure).";
+             << " Deleting the MediaCodec and creating a new one.";
     io_timer_.Stop();
-    media_codec_->Stop();
+    media_codec_.reset();
     // Changing the codec will also notify the strategy to forget about any
     // output buffers it has currently.
     state_ = NO_ERROR;
@@ -848,7 +848,7 @@ void AndroidVideoDecodeAccelerator::Destroy() {
   weak_this_factory_.InvalidateWeakPtrs();
   if (media_codec_) {
     io_timer_.Stop();
-    media_codec_->Stop();
+    media_codec_.reset();
   }
   delete this;
 }
