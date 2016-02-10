@@ -370,8 +370,82 @@ static int ascii_strcasecmp(const char *s1, const char *s2){
   return ascii_strncasecmp(s1, s2, strlen(s1)+1);
 }
 
+/* Provide access to the pages of a SQLite database in a way similar to SQLite's
+** Pager.  Will be re-implemented in terms of sqlite3_file.
+*/
+typedef struct RecoverPager RecoverPager;
+struct RecoverPager {
+  Pager *pSqlitePager;            /* SQLite's pager. */
+};
+
+static void pagerDestroy(RecoverPager *pPager){
+  memset(pPager, 0xA5, sizeof(*pPager));
+  sqlite3_free(pPager);
+}
+
+static int pagerCreate(Pager *pSqlitePager, u32 nPageSize,
+                       RecoverPager **ppPager){
+  RecoverPager *pPager = sqlite3_malloc(sizeof(RecoverPager));
+  if( !pPager ){
+    return SQLITE_NOMEM;
+  }
+
+  memset(pPager, 0, sizeof(*pPager));
+  pPager->pSqlitePager = pSqlitePager;
+  *ppPager = pPager;
+  return SQLITE_OK;
+}
+
+/* Matches DbPage (aka PgHdr) from SQLite internals. */
+typedef struct RecoverPage RecoverPage;
+struct RecoverPage {
+  DbPage *pSqlitePage;           /* SQLite's page. */
+  Pgno pgno;                     /* Page number for this page */
+  void *pData;                   /* Page data */
+  RecoverPager *pPager;          /* The pager this page is part of */
+};
+
+static void pageDestroy(RecoverPage *pPage){
+  sqlite3PagerUnref(pPage->pSqlitePage);
+  memset(pPage, 0xA5, sizeof(*pPage));
+  sqlite3_free(pPage);
+}
+
+static int pageCreate(RecoverPager *pPager, DbPage *pSqlitePage,
+                      RecoverPage **ppPage){
+  RecoverPage *pPage = sqlite3_malloc(sizeof(RecoverPage));
+  if( !pPage ){
+    return SQLITE_NOMEM;
+  }
+
+  memset(pPage, 0, sizeof(*pPage));
+  pPage->pPager = pPager;
+  pPage->pSqlitePage = pSqlitePage;
+  pPage->pgno = pSqlitePage->pgno;
+  pPage->pData = pSqlitePage->pData;
+
+  *ppPage = pPage;
+  return SQLITE_OK;
+}
+
+static int pagerGetPage(RecoverPager *pPager, u32 iPage, RecoverPage **ppPage) {
+  DbPage *pSqlitePage;
+  int rc = sqlite3PagerGet(pPager->pSqlitePager, iPage, &pSqlitePage, 0);
+  if( rc!=SQLITE_OK ){
+    return rc;
+  }
+
+  rc = pageCreate(pPager, pSqlitePage, ppPage);
+  if( rc!=SQLITE_OK ){
+    sqlite3PagerUnref(pSqlitePage);
+    return rc;
+  }
+
+  return SQLITE_OK;
+}
+
 /* For some reason I kept making mistakes with offset calculations. */
-static const unsigned char *PageData(DbPage *pPage, unsigned iOffset){
+static const unsigned char *PageData(RecoverPage *pPage, unsigned iOffset){
   assert( iOffset<=pPage->nPageSize );
   return (unsigned char *)pPage->pData + iOffset;
 }
@@ -381,7 +455,7 @@ static const unsigned char *PageData(DbPage *pPage, unsigned iOffset){
  * the offsets in the page's header information are relative to the
  * beginning of the page, NOT the end of the page header.
  */
-static const unsigned char *PageHeader(DbPage *pPage){
+static const unsigned char *PageHeader(RecoverPage *pPage){
   if( pPage->pgno==1 ){
     const unsigned nDatabaseHeader = 100;
     return PageData(pPage, nDatabaseHeader);
@@ -392,9 +466,10 @@ static const unsigned char *PageHeader(DbPage *pPage){
 
 /* Helper to fetch the pager and page size for the named database. */
 static int GetPager(sqlite3 *db, const char *zName,
-                    Pager **pPager, unsigned *pnPageSize){
+                    RecoverPager **ppPager, unsigned *pnPageSize){
   Btree *pBt = NULL;
-  int i;
+  int i, rc;
+  RecoverPager *pPager;
   for( i=0; i<db->nDb; ++i ){
     if( ascii_strcasecmp(db->aDb[i].zName, zName)==0 ){
       pBt = db->aDb[i].pBt;
@@ -405,7 +480,12 @@ static int GetPager(sqlite3 *db, const char *zName,
     return SQLITE_ERROR;
   }
 
-  *pPager = sqlite3BtreePager(pBt);
+  rc = pagerCreate(sqlite3BtreePager(pBt), 0, &pPager);
+  if( rc!=SQLITE_OK ){
+    return rc;
+  }
+
+  *ppPager = pPager;
   *pnPageSize =
       sqlite3BtreeGetPageSize(pBt) - sqlite3BtreeGetOptimalReserve(pBt);
   return SQLITE_OK;
@@ -431,7 +511,7 @@ static u32 SerialTypeLength(u64 iSerialType){
     case 7 : return 8;  /* 64-bit float. */
     case 8 : return 0;  /* Constant 0. */
     case 9 : return 0;  /* Constant 1. */
-    case 10 : case 11 : assert( !"RESERVED TYPE"); return 0;
+    case 10 : case 11 : assert( "RESERVED TYPE"==NULL ); return 0;
   }
   return (u32)((iSerialType>>1) - 6);
 }
@@ -457,8 +537,8 @@ static int SerialTypeIsCompatible(u64 iSerialType, unsigned char mask){
     case 7  : return (mask&MASK_FLOAT)!=0;
     case 8  : return (mask&MASK_INTEGER)!=0;
     case 9  : return (mask&MASK_INTEGER)!=0;
-    case 10 : assert( !"RESERVED TYPE"); return 0;
-    case 11 : assert( !"RESERVED TYPE"); return 0;
+    case 10 : assert( "RESERVED TYPE"==NULL ); return 0;
+    case 11 : assert( "RESERVED TYPE"==NULL ); return 0;
   }
   return (mask&(SerialTypeIsBlob(iSerialType) ? MASK_BLOB : MASK_TEXT));
 }
@@ -620,7 +700,7 @@ static int getEncoding(sqlite3 *db, const char *zDb, int* piEncoding){
 typedef struct RecoverInteriorCursor RecoverInteriorCursor;
 struct RecoverInteriorCursor {
   RecoverInteriorCursor *pParent; /* Parent node to this node. */
-  DbPage *pPage;                  /* Reference to leaf page. */
+  RecoverPage *pPage;             /* Reference to leaf page. */
   unsigned nPageSize;             /* Size of page. */
   unsigned nChildren;             /* Number of children on the page. */
   unsigned iChild;                /* Index of next child to return. */
@@ -633,7 +713,7 @@ static void interiorCursorDestroy(RecoverInteriorCursor *pCursor){
     pCursor = pCursor->pParent;
 
     if( p->pPage ){
-      sqlite3PagerUnref(p->pPage);
+      pageDestroy(p->pPage);
       p->pPage = NULL;
     }
 
@@ -644,13 +724,13 @@ static void interiorCursorDestroy(RecoverInteriorCursor *pCursor){
 
 /* Internal helper.  Reset storage in preparation for iterating pPage. */
 static void interiorCursorSetPage(RecoverInteriorCursor *pCursor,
-                                  DbPage *pPage){
+                                  RecoverPage *pPage){
   const unsigned knMinCellLength = 2 + 4 + 1;
   unsigned nMaxChildren;
   assert( PageHeader(pPage)[kiPageTypeOffset]==kTableInteriorPage );
 
   if( pCursor->pPage ){
-    sqlite3PagerUnref(pCursor->pPage);
+    pageDestroy(pCursor->pPage);
     pCursor->pPage = NULL;
   }
   pCursor->pPage = pPage;
@@ -681,7 +761,7 @@ static void interiorCursorSetPage(RecoverInteriorCursor *pCursor,
 }
 
 static int interiorCursorCreate(RecoverInteriorCursor *pParent,
-                                DbPage *pPage, int nPageSize,
+                                RecoverPage *pPage, int nPageSize,
                                 RecoverInteriorCursor **ppCursor){
   RecoverInteriorCursor *pCursor =
     sqlite3_malloc(sizeof(RecoverInteriorCursor));
@@ -766,7 +846,7 @@ static int interiorCursorPageInUse(RecoverInteriorCursor *pCursor,
  * reverse the list during traversal.
  */
 static int interiorCursorNextPage(RecoverInteriorCursor **ppCursor,
-                                  DbPage **ppPage){
+                                  RecoverPage **ppPage){
   RecoverInteriorCursor *pCursor = *ppCursor;
   while( 1 ){
     int rc;
@@ -779,7 +859,7 @@ static int interiorCursorNextPage(RecoverInteriorCursor **ppCursor,
       if( interiorCursorPageInUse(pCursor, iPage) ){
         fprintf(stderr, "Loop detected at %d\n", iPage);
       }else{
-        int rc = sqlite3PagerGet(pCursor->pPage->pPager, iPage, ppPage, 0);
+        int rc = pagerGetPage(pCursor->pPage->pPager, iPage, ppPage);
         if( rc==SQLITE_OK ){
           return SQLITE_ROW;
         }
@@ -833,7 +913,7 @@ static int interiorCursorNextPage(RecoverInteriorCursor **ppCursor,
 typedef struct RecoverOverflow RecoverOverflow;
 struct RecoverOverflow {
   RecoverOverflow *pNextOverflow;
-  DbPage *pPage;
+  RecoverPage *pPage;
   unsigned nPageSize;
 };
 
@@ -843,7 +923,7 @@ static void overflowDestroy(RecoverOverflow *pOverflow){
     pOverflow = p->pNextOverflow;
 
     if( p->pPage ){
-      sqlite3PagerUnref(p->pPage);
+      pageDestroy(p->pPage);
       p->pPage = NULL;
     }
 
@@ -870,7 +950,7 @@ static int overflowPageInUse(RecoverOverflow *pOverflow, unsigned iPage){
  * overflowGetSegment() will do the right thing regardless of whether
  * those values are set to be in-page or not.
  */
-static int overflowMaybeCreate(DbPage *pPage, unsigned nPageSize,
+static int overflowMaybeCreate(RecoverPage *pPage, unsigned nPageSize,
                                unsigned iRecordOffset, unsigned nRecordBytes,
                                unsigned *pnLocalRecordBytes,
                                RecoverOverflow **ppOverflow){
@@ -923,14 +1003,14 @@ static int overflowMaybeCreate(DbPage *pPage, unsigned nPageSize,
   while( iNextPage && nBytes<nRecordBytes ){
     RecoverOverflow *pOverflow;  /* New overflow page for the list. */
 
-    rc = sqlite3PagerGet(pPage->pPager, iNextPage, &pPage, 0);
+    rc = pagerGetPage(pPage->pPager, iNextPage, &pPage);
     if( rc!=SQLITE_OK ){
       break;
     }
 
     pOverflow = sqlite3_malloc(sizeof(RecoverOverflow));
     if( !pOverflow ){
-      sqlite3PagerUnref(pPage);
+      pageDestroy(pPage);
       rc = SQLITE_NOMEM;
       break;
     }
@@ -994,7 +1074,7 @@ static int overflowMaybeCreate(DbPage *pPage, unsigned nPageSize,
  * and overflow pages consistently by adjusting the values
  * appropriately.
  */
-static int overflowGetSegment(DbPage *pPage, unsigned iRecordOffset,
+static int overflowGetSegment(RecoverPage *pPage, unsigned iRecordOffset,
                               unsigned nLocalRecordBytes,
                               RecoverOverflow *pOverflow,
                               unsigned iRequestOffset, unsigned nRequestBytes,
@@ -1101,7 +1181,8 @@ static int overflowGetSegment(DbPage *pPage, unsigned iRecordOffset,
 typedef struct RecoverLeafCursor RecoverLeafCursor;
 struct RecoverLeafCursor {
   RecoverInteriorCursor *pParent;  /* Parent node to this node. */
-  DbPage *pPage;                   /* Reference to leaf page. */
+  RecoverPager *pPager;            /* Page provider. */
+  RecoverPage *pPage;              /* Current leaf page. */
   unsigned nPageSize;              /* Size of pPage. */
   unsigned nCells;                 /* Number of cells in pPage. */
   unsigned iCell;                  /* Current cell. */
@@ -1136,13 +1217,13 @@ struct RecoverLeafCursor {
  * If SQLITE_OK is returned, the caller no longer owns pPage,
  * otherwise the caller is responsible for discarding it.
  */
-static int leafCursorLoadPage(RecoverLeafCursor *pCursor, DbPage *pPage){
+static int leafCursorLoadPage(RecoverLeafCursor *pCursor, RecoverPage *pPage){
   const unsigned char *pPageHeader;  /* Header of *pPage */
   unsigned nCells;                   /* Number of cells in the page */
 
   /* Release the current page. */
   if( pCursor->pPage ){
-    sqlite3PagerUnref(pCursor->pPage);
+    pageDestroy(pCursor->pPage);
     pCursor->pPage = NULL;
     pCursor->iCell = pCursor->nCells = 0;
   }
@@ -1164,14 +1245,14 @@ static int leafCursorLoadPage(RecoverLeafCursor *pCursor, DbPage *pPage){
 
   /* Not a leaf page, skip it. */
   if( pPageHeader[kiPageTypeOffset]!=kTableLeafPage ){
-    sqlite3PagerUnref(pPage);
+    pageDestroy(pPage);
     return SQLITE_OK;
   }
 
   /* Leaf contains no data, skip it.  Empty tables, for instance. */
   nCells = decodeUnsigned16(pPageHeader + kiPageCellCountOffset);;
   if( nCells<1 ){
-    sqlite3PagerUnref(pPage);
+    pageDestroy(pPage);
     return SQLITE_OK;
   }
 
@@ -1193,7 +1274,7 @@ static int leafCursorNextPage(RecoverLeafCursor *pCursor){
 
   /* Repeatedly load the parent's next child page until a leaf is found. */
   do {
-    DbPage *pNextPage;
+    RecoverPage *pNextPage;
     int rc = interiorCursorNextPage(&pCursor->pParent, &pNextPage);
     if( rc!=SQLITE_ROW ){
       assert( rc==SQLITE_DONE );
@@ -1202,7 +1283,7 @@ static int leafCursorNextPage(RecoverLeafCursor *pCursor){
 
     rc = leafCursorLoadPage(pCursor, pNextPage);
     if( rc!=SQLITE_OK ){
-      sqlite3PagerUnref(pNextPage);
+      pageDestroy(pNextPage);
       return rc;
     }
   } while( !pCursor->pPage );
@@ -1232,8 +1313,13 @@ static void leafCursorDestroy(RecoverLeafCursor *pCursor){
   }
 
   if( pCursor->pPage ){
-    sqlite3PagerUnref(pCursor->pPage);
+    pageDestroy(pCursor->pPage);
     pCursor->pPage = NULL;
+  }
+
+  if( pCursor->pPager ){
+    pagerDestroy(pCursor->pPager);
+    pCursor->pPager = NULL;
   }
 
   memset(pCursor, 0xA5, sizeof(*pCursor));
@@ -1253,30 +1339,31 @@ static void leafCursorDestroy(RecoverLeafCursor *pCursor){
  * - pPage is a valid interior page who's leaves contain no valid cells.
  * - pPage is not a valid leaf or interior page.
  */
-static int leafCursorCreate(Pager *pPager, unsigned nPageSize,
+static int leafCursorCreate(RecoverPager *pPager, unsigned nPageSize,
                             u32 iRootPage, RecoverLeafCursor **ppCursor){
-  DbPage *pPage;               /* Reference to page at iRootPage. */
+  RecoverPage *pPage;          /* Reference to page at iRootPage. */
   RecoverLeafCursor *pCursor;  /* Leaf cursor being constructed. */
   int rc;
 
   /* Start out with the root page. */
-  rc = sqlite3PagerGet(pPager, iRootPage, &pPage, 0);
+  rc = pagerGetPage(pPager, iRootPage, &pPage);
   if( rc!=SQLITE_OK ){
     return rc;
   }
 
   pCursor = sqlite3_malloc(sizeof(RecoverLeafCursor));
   if( !pCursor ){
-    sqlite3PagerUnref(pPage);
+    pageDestroy(pPage);
     return SQLITE_NOMEM;
   }
   memset(pCursor, 0, sizeof(*pCursor));
 
   pCursor->nPageSize = nPageSize;
+  pCursor->pPager = pPager;
 
   rc = leafCursorLoadPage(pCursor, pPage);
   if( rc!=SQLITE_OK ){
-    sqlite3PagerUnref(pPage);
+    pageDestroy(pPage);
     leafCursorDestroy(pCursor);
     return rc;
   }
@@ -1619,7 +1706,7 @@ static int recoverOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
   u32 iRootPage;                   /* Root page of the backing table. */
   int iEncoding;                   /* UTF encoding for backing database. */
   unsigned nPageSize;              /* Size of pages in backing database. */
-  Pager *pPager;                   /* Backing database pager. */
+  RecoverPager *pPager;            /* Backing database pager. */
   RecoverLeafCursor *pLeafCursor;  /* Cursor to read table's leaf pages. */
   RecoverCursor *pCursor;          /* Cursor to read rows from leaves. */
   int rc;
@@ -1646,6 +1733,7 @@ static int recoverOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
 
   rc = leafCursorCreate(pPager, nPageSize, iRootPage, &pLeafCursor);
   if( rc!=SQLITE_OK ){
+    pagerDestroy(pPager);
     return rc;
   }
 
