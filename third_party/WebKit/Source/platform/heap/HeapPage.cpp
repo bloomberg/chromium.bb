@@ -1104,19 +1104,29 @@ void NormalPage::removeFromHeap()
     heapForNormalPage()->freePage(this);
 }
 
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+static void discardPages(Address begin, Address end)
+{
+    uintptr_t beginAddress = WTF::roundUpToSystemPage(reinterpret_cast<uintptr_t>(begin));
+    uintptr_t endAddress = WTF::roundDownToSystemPage(reinterpret_cast<uintptr_t>(end));
+    if (beginAddress < endAddress)
+        WTF::discardSystemPages(reinterpret_cast<void*>(beginAddress), endAddress - beginAddress);
+}
+#endif
+
 void NormalPage::sweep()
 {
     size_t markedObjectSize = 0;
     Address startOfGap = payload();
     for (Address headerAddress = startOfGap; headerAddress < payloadEnd(); ) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
-        ASSERT(header->size() > 0);
-        ASSERT(header->size() < blinkPagePayloadSize());
+        size_t size = header->size();
+        ASSERT(size > 0);
+        ASSERT(size < blinkPagePayloadSize());
 
         if (header->isPromptlyFreed())
-            heapForNormalPage()->decreasePromptlyFreedSize(header->size());
+            heapForNormalPage()->decreasePromptlyFreedSize(size);
         if (header->isFree()) {
-            size_t size = header->size();
             // Zero the memory in the free list header to maintain the
             // invariant that memory on the free list is zero filled.
             // The rest of the memory is already on the free list and is
@@ -1129,7 +1139,6 @@ void NormalPage::sweep()
         ASSERT(header->checkHeader());
 
         if (!header->isMarked()) {
-            size_t size = header->size();
             // This is a fast version of header->payloadSize().
             size_t payloadSize = size - sizeof(HeapObjectHeader);
             Address payload = header->payload();
@@ -1146,15 +1155,27 @@ void NormalPage::sweep()
             headerAddress += size;
             continue;
         }
-        if (startOfGap != headerAddress)
+        if (startOfGap != headerAddress) {
             heapForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+            // Discarding pages increases page faults and may regress performance.
+            // So we enable this only on low-RAM devices.
+            if (Heap::isLowEndDevice())
+                discardPages(startOfGap + sizeof(FreeListEntry), headerAddress);
+#endif
+        }
         header->unmark();
-        headerAddress += header->size();
-        markedObjectSize += header->size();
+        headerAddress += size;
+        markedObjectSize += size;
         startOfGap = headerAddress;
     }
-    if (startOfGap != payloadEnd())
+    if (startOfGap != payloadEnd()) {
         heapForNormalPage()->addToFreeList(startOfGap, payloadEnd() - startOfGap);
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+        if (Heap::isLowEndDevice())
+            discardPages(startOfGap + sizeof(FreeListEntry), payloadEnd());
+#endif
+    }
 
     if (markedObjectSize)
         Heap::increaseMarkedObjectSize(markedObjectSize);

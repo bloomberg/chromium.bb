@@ -55,6 +55,7 @@ source_set("heap") {
   ]
 
   deps = [
+    "//base",
     "//third_party/WebKit/Source/platform/heap/asm",
     "//third_party/icu",
   ]

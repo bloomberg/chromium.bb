@@ -30,6 +30,7 @@
 
 #include "platform/heap/Heap.h"
 
+#include "base/sys_info.h"
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -174,6 +175,7 @@ void Heap::init()
     s_collectedWrapperCount = 0;
     s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_estimatedMarkingTimePerByte = 0.0;
+    s_isLowEndDevice = base::SysInfo::IsLowEndDevice();
 #if ENABLE(ASSERT)
     s_gcGeneration = 1;
 #endif
@@ -725,6 +727,7 @@ size_t Heap::s_wrapperCountAtLastGC = 0;
 size_t Heap::s_collectedWrapperCount = 0;
 size_t Heap::s_partitionAllocSizeAtLastGC = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
+bool Heap::s_isLowEndDevice = false;
 #if ENABLE(ASSERT)
 uint16_t Heap::s_gcGeneration = 0;
 #endif

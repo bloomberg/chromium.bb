@@ -126,6 +126,16 @@ WTF_EXPORT void recommitSystemPages(void* addr, size_t len);
 // len must be a multiple of kSystemPageSize bytes.
 WTF_EXPORT void discardSystemPages(void* addr, size_t len);
 
+WTF_EXPORT ALWAYS_INLINE uintptr_t roundUpToSystemPage(uintptr_t address)
+{
+    return (address + kSystemPageOffsetMask) & kSystemPageBaseMask;
+}
+
+WTF_EXPORT ALWAYS_INLINE uintptr_t roundDownToSystemPage(uintptr_t address)
+{
+    return address & kSystemPageBaseMask;
+}
+
 } // namespace WTF
 
 #endif // WTF_PageAllocator_h

@@ -524,16 +524,6 @@ static ALWAYS_INLINE void partitionPageSetup(PartitionPage* page, PartitionBucke
     }
 }
 
-static ALWAYS_INLINE size_t partitionRoundUpToSystemPage(size_t size)
-{
-    return (size + kSystemPageOffsetMask) & kSystemPageBaseMask;
-}
-
-static ALWAYS_INLINE size_t partitionRoundDownToSystemPage(size_t size)
-{
-    return size & kSystemPageBaseMask;
-}
-
 static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page)
 {
     ASSERT(page != &PartitionRootGeneric::gSeedPage);
@@ -555,7 +545,7 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page
     // Our goal is to fault as few system pages as possible. We calculate the
     // page containing the "end" of the returned slot, and then allow freelist
     // pointers to be written up to the end of that page.
-    char* subPageLimit = reinterpret_cast<char*>(partitionRoundUpToSystemPage(reinterpret_cast<size_t>(firstFreelistPointer)));
+    char* subPageLimit = reinterpret_cast<char*>(WTF::roundUpToSystemPage(reinterpret_cast<size_t>(firstFreelistPointer)));
     char* slotsLimit = returnObject + (size * numSlots);
     char* freelistLimit = subPageLimit;
     if (UNLIKELY(slotsLimit < freelistLimit))
@@ -1109,7 +1099,7 @@ static size_t partitionPurgePage(PartitionPage* page, bool discard)
 
     size_t rawSize = partitionPageGetRawSize(const_cast<PartitionPage*>(page));
     if (rawSize) {
-        uint32_t usedBytes = static_cast<uint32_t>(partitionRoundUpToSystemPage(rawSize));
+        uint32_t usedBytes = static_cast<uint32_t>(WTF::roundUpToSystemPage(rawSize));
         discardableBytes = bucket->slotSize - usedBytes;
         if (discardableBytes && discard) {
             char* ptr = reinterpret_cast<char*>(partitionPageToPointer(page));
@@ -1160,10 +1150,10 @@ static size_t partitionPurgePage(PartitionPage* page, bool discard)
     if (truncatedSlots) {
         beginPtr = ptr + (numSlots * slotSize);
         endPtr = beginPtr + (slotSize * truncatedSlots);
-        beginPtr = reinterpret_cast<char*>(partitionRoundUpToSystemPage(reinterpret_cast<size_t>(beginPtr)));
+        beginPtr = reinterpret_cast<char*>(WTF::roundUpToSystemPage(reinterpret_cast<size_t>(beginPtr)));
         // We round the end pointer here up and not down because we're at the
         // end of a slot span, so we "own" all the way up the page boundary.
-        endPtr = reinterpret_cast<char*>(partitionRoundUpToSystemPage(reinterpret_cast<size_t>(endPtr)));
+        endPtr = reinterpret_cast<char*>(WTF::roundUpToSystemPage(reinterpret_cast<size_t>(endPtr)));
         ASSERT(endPtr <= ptr + partitionBucketBytes(bucket));
         if (beginPtr < endPtr) {
             unprovisionedBytes = endPtr - beginPtr;
@@ -1207,8 +1197,8 @@ static size_t partitionPurgePage(PartitionPage* page, bool discard)
         char* endPtr = beginPtr + slotSize;
         if (i != lastSlot)
             beginPtr += sizeof(PartitionFreelistEntry);
-        beginPtr = reinterpret_cast<char*>(partitionRoundUpToSystemPage(reinterpret_cast<size_t>(beginPtr)));
-        endPtr = reinterpret_cast<char*>(partitionRoundDownToSystemPage(reinterpret_cast<size_t>(endPtr)));
+        beginPtr = reinterpret_cast<char*>(WTF::roundUpToSystemPage(reinterpret_cast<size_t>(beginPtr)));
+        endPtr = reinterpret_cast<char*>(WTF::roundDownToSystemPage(reinterpret_cast<size_t>(endPtr)));
         if (beginPtr < endPtr) {
             size_t partialSlotBytes = endPtr - beginPtr;
             discardableBytes += partialSlotBytes;
@@ -1270,7 +1260,7 @@ static void partitionDumpPageStats(PartitionBucketMemoryStats* statsOut, const P
     else
         statsOut->activeBytes += (page->numAllocatedSlots * statsOut->bucketSlotSize);
 
-    size_t pageBytesResident = partitionRoundUpToSystemPage((bucketNumSlots - page->numUnprovisionedSlots) * statsOut->bucketSlotSize);
+    size_t pageBytesResident = WTF::roundUpToSystemPage((bucketNumSlots - page->numUnprovisionedSlots) * statsOut->bucketSlotSize);
     statsOut->residentBytes += pageBytesResident;
     if (partitionPageStateIsEmpty(page)) {
         statsOut->decommittableBytes += pageBytesResident;

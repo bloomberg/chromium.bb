@@ -38,6 +38,7 @@
 #include "wtf/WTF.h"
 #include <base/bind.h>
 #include <base/bind_helpers.h>
+#include <base/command_line.h>
 #include <base/test/launcher/unit_test_launcher.h>
 #include <base/test/test_suite.h>
 #include <cc/blink/web_compositor_support_impl.h>
@@ -57,6 +58,8 @@ static int runTestSuite(base::TestSuite* testSuite)
 
 int main(int argc, char** argv)
 {
+    base::CommandLine::Init(argc, argv);
+
     WTF::Partitions::initialize(nullptr);
     WTF::setAlwaysZeroRandomSourceForTesting();
     WTF::initialize(CurrentTime, CurrentTime, nullptr);
