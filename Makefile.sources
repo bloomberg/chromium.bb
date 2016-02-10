@@ -22,6 +22,7 @@ LIBDRM_INCLUDE_H_FILES := \
 	include/drm/drm_fourcc.h \
 	include/drm/drm_mode.h \
 	include/drm/drm_sarea.h \
+	include/drm/evdi_drm.h \
 	include/drm/i915_drm.h \
 	include/drm/mach64_drm.h \
 	include/drm/mediatek_drm.h \
