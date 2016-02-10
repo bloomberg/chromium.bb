@@ -1,17 +1,4 @@
 {
-  "Android Aura Tester (dbg)": {
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      },
-      {
-        "test": "compositor_unittests"
-      },
-      {
-        "test": "content_unittests"
-      }
-    ]
-  },
   "Android GN Builder (dbg)": {
     "additional_compile_targets": [
       "blimp_tests",
