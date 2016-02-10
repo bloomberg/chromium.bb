@@ -421,7 +421,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeHandlePingPong, MessagePipeTest, h) {
 }
 
 // Test that sending a data pipe handle across processes doesn't leak resources.
-TEST_F(MessagePipeTest, DataPipeConsumerHandlePingPong) {
+// Currently times out on multiple platforms. crbug.com/585784
+TEST_F(MessagePipeTest, DISABLED_DataPipeConsumerHandlePingPong) {
   MojoHandle p, c;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p, &c));
   MojoClose(p);
@@ -435,7 +436,8 @@ TEST_F(MessagePipeTest, DataPipeConsumerHandlePingPong) {
   MojoClose(c);
 }
 
-TEST_F(MessagePipeTest, DataPipeProducerHandlePingPong) {
+// Currently times out on multiple platforms. crbug.com/585784
+TEST_F(MessagePipeTest, DISABLED_DataPipeProducerHandlePingPong) {
   MojoHandle p, c;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p, &c));
   MojoClose(c);

@@ -150,7 +150,8 @@ class TestChannelListenerWithExtraExpectations
 };
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_ConnectedFromClient DISABLED_ConnectedFromClient
 #else
 #define MAYBE_ConnectedFromClient ConnectedFromClient
@@ -265,7 +266,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoErraticTestClient) {
 }
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_SendFailWithPendingMessages DISABLED_SendFailWithPendingMessages
 #else
 #define MAYBE_SendFailWithPendingMessages SendFailWithPendingMessages
@@ -412,7 +414,8 @@ class ListenerThatExpectsMessagePipe : public IPC::Listener {
 };
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_SendMessagePipe DISABLED_SendMessagePipe
 #else
 #define MAYBE_SendMessagePipe SendMessagePipe
@@ -509,7 +512,8 @@ void ParamTraitMessagePipeClient(bool receiving_valid_handle,
 }
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_ParamTraitValidMessagePipe DISABLED_ParamTraitValidMessagePipe
 #else
 #define MAYBE_ParamTraitValidMessagePipe ParamTraitValidMessagePipe
@@ -543,7 +547,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ParamTraitValidMessagePipeClient) {
 }
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_ParamTraitInvalidMessagePipe DISABLED_ParamTraitInvalidMessagePipe
 #else
 #define MAYBE_ParamTraitInvalidMessagePipe ParamTraitInvalidMessagePipe
@@ -574,7 +579,13 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ParamTraitInvalidMessagePipeClient) {
   return 0;
 }
 
-TEST_F(IPCChannelMojoTest, SendFailAfterClose) {
+// Times out on Linux. crbug.com/585784
+#if defined(OS_LINUX)
+#define MAYBE_SendFailAfterClose DISABLED_SendFailAfterClose
+#else
+#define MAYBE_SendFailAfterClose SendFailAfterClose
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_SendFailAfterClose) {
   InitWithMojo("IPCChannelMojoTestSendOkClient");
 
   ListenerThatExpectsOK listener;
@@ -643,7 +654,13 @@ class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
   }
 };
 
-TEST_F(IPCChannelMojoDeadHandleTest, InvalidClientHandle) {
+// Times out on Linux. crbug.com/585784
+#if defined(OS_LINUX)
+#define MAYBE_InvalidClientHandle DISABLED_InvalidClientHandle
+#else
+#define MAYBE_InvalidClientHandle InvalidClientHandle
+#endif
+TEST_F(IPCChannelMojoDeadHandleTest, MAYBE_InvalidClientHandle) {
   // Any client type is fine as it is going to be killed anyway.
   InitWithMojo("IPCChannelMojoTestDoNothingClient");
 
@@ -706,7 +723,8 @@ class ListenerThatExpectsFile : public IPC::Listener {
 };
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_SendPlatformHandle DISABLED_SendPlatformHandle
 #else
 #define MAYBE_SendPlatformHandle SendPlatformHandle
@@ -769,7 +787,8 @@ class ListenerThatExpectsFileAndPipe : public IPC::Listener {
 };
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_SendPlatformHandleAndPipe DISABLED_SendPlatformHandleAndPipe
 #else
 #define MAYBE_SendPlatformHandleAndPipe SendPlatformHandleAndPipe
@@ -829,7 +848,13 @@ class ListenerThatVerifiesPeerPid : public IPC::Listener {
   }
 };
 
-TEST_F(IPCChannelMojoTest, VerifyGlobalPid) {
+// Times out on Linux. crbug.com/585784
+#if defined(OS_LINUX)
+#define MAYBE_VerifyGlobalPid DISABLED_VerifyGlobalPid
+#else
+#define MAYBE_VerifyGlobalPid VerifyGlobalPid
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_VerifyGlobalPid) {
   InitWithMojo("IPCChannelMojoTestVerifyGlobalPidClient");
 
   ListenerThatVerifiesPeerPid listener;
