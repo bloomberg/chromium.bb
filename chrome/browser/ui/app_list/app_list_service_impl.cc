@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/profile_loader.h"
@@ -93,8 +94,9 @@ class ProfileStoreImpl : public ProfileStore {
         weak_factory_(this) {
   }
 
-  void AddProfileObserver(ProfileInfoCacheObserver* observer) override {
-    profile_manager_->GetProfileInfoCache().AddObserver(observer);
+  void AddProfileObserver(ProfileAttributesStorage::Observer* observer)
+      override {
+    profile_manager_->GetProfileAttributesStorage().AddObserver(observer);
   }
 
   void LoadProfileAsync(const base::FilePath& path,
@@ -142,19 +144,19 @@ class ProfileStoreImpl : public ProfileStore {
   }
 
   bool IsProfileSupervised(const base::FilePath& profile_path) override {
-    ProfileInfoCache& profile_info =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t profile_index = profile_info.GetIndexOfProfileWithPath(profile_path);
-    return profile_index != std::string::npos &&
-        profile_info.ProfileIsSupervisedAtIndex(profile_index);
+    ProfileAttributesEntry* entry = nullptr;
+    bool has_entry = g_browser_process->profile_manager()->
+        GetProfileAttributesStorage().
+        GetProfileAttributesWithPath(profile_path, &entry);
+    return has_entry && entry->IsSupervised();
   }
 
   bool IsProfileLocked(const base::FilePath& profile_path) override {
-    ProfileInfoCache& profile_info =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t profile_index = profile_info.GetIndexOfProfileWithPath(profile_path);
-    return profile_index != std::string::npos &&
-        profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
+    ProfileAttributesEntry* entry = nullptr;
+    bool has_entry = g_browser_process->profile_manager()->
+        GetProfileAttributesStorage().
+        GetProfileAttributesWithPath(profile_path, &entry);
+    return has_entry && entry->IsSigninRequired();
   }
 
  private:
@@ -342,7 +344,7 @@ void AppListServiceImpl::OnProfileWillBeRemoved(
     return;
 
   // Switch the app list over to a valid profile.
-  // Before ProfileInfoCache::DeleteProfileFromCache() calls this function,
+  // Before ProfileAttributesStorage::RemoveProfile() calls this function,
   // ProfileManager::ScheduleProfileForDeletion() will have checked to see if
   // the deleted profile was also "last used", and updated that setting with
   // something valid.

@@ -19,7 +19,8 @@
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
@@ -107,16 +108,17 @@ void CreateShortcutInWebAppDir(
 }
 #endif
 
-void PopulateUsers(const ProfileInfoCache& profile_info,
-                   const base::FilePath& active_profile_path,
+void PopulateUsers(const base::FilePath& active_profile_path,
                    app_list::AppListViewDelegate::Users* users) {
   users->clear();
-  const size_t count = profile_info.GetNumberOfProfiles();
-  for (size_t i = 0; i < count; ++i) {
+  std::vector<ProfileAttributesEntry*> entries = g_browser_process->
+      profile_manager()->GetProfileAttributesStorage().
+      GetAllProfilesAttributesSortedByName();
+  for (const auto entry : entries) {
     app_list::AppListViewDelegate::User user;
-    user.name = profile_info.GetNameOfProfileAtIndex(i);
-    user.email = profile_info.GetUserNameOfProfileAtIndex(i);
-    user.profile_path = profile_info.GetPathOfProfileAtIndex(i);
+    user.name = entry->GetName();
+    user.email = entry->GetUserName();
+    user.profile_path = entry->GetPath();
     user.active = active_profile_path == user.profile_path;
     users->push_back(user);
   }
@@ -199,7 +201,7 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     }
   }
 
-  profile_manager->GetProfileInfoCache().AddObserver(this);
+  profile_manager->GetProfileAttributesStorage().AddObserver(this);
   speech_ui_.reset(new app_list::SpeechUIModel);
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -225,8 +227,8 @@ AppListViewDelegate::~AppListViewDelegate() {
   // by a leaky singleton. Essential shutdown work must be done by observing
   // chrome::NOTIFICATION_APP_TERMINATING.
   SetProfile(NULL);
-  g_browser_process->profile_manager()->GetProfileInfoCache().RemoveObserver(
-      this);
+  g_browser_process->profile_manager()->GetProfileAttributesStorage().
+      RemoveObserver(this);
 
   SigninManagerFactory* factory = SigninManagerFactory::GetInstance();
   if (factory)
@@ -330,9 +332,7 @@ void AppListViewDelegate::SetUpProfileSwitcher() {
     return;
 
   // Populate the app list users.
-  PopulateUsers(g_browser_process->profile_manager()->GetProfileInfoCache(),
-                profile_->GetPath(),
-                &users_);
+  PopulateUsers(profile_->GetPath(), &users_);
 
   FOR_EACH_OBSERVER(
       app_list::AppListViewDelegateObserver, observers_, OnProfilesChanged());

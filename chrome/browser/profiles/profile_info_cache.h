@@ -201,6 +201,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Returns a vector containing one attributes entry per known profile. They
   // are not sorted in any particular order.
   std::vector<ProfileAttributesEntry*> GetAllProfilesAttributes() override;
+  std::vector<ProfileAttributesEntry*> GetAllProfilesAttributesSortedByName()
+      override;
   bool GetProfileAttributesWithPath(
       const base::FilePath& path,
       ProfileAttributesEntry** entry) override;

@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 
 class Profile;
 
@@ -15,7 +15,8 @@ class Profile;
 class ProfileStore {
  public:
   virtual ~ProfileStore() {}
-  virtual void AddProfileObserver(ProfileInfoCacheObserver* observer) = 0;
+  virtual void AddProfileObserver(
+      ProfileAttributesStorage::Observer* observer) = 0;
 
   // Loads the profile at |path| and calls |callback| when its done. A NULL
   // Profile* represents an error.

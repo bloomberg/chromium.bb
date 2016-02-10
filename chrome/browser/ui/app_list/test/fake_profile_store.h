@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 
 class PrefService;
@@ -23,7 +24,8 @@ class FakeProfileStore : public ProfileStore {
   void RemoveProfile(Profile* profile);
 
   // ProfileStore overrides.
-  void AddProfileObserver(ProfileInfoCacheObserver* observer) override;
+  void AddProfileObserver(ProfileAttributesStorage::Observer* observer)
+      override;
   void LoadProfileAsync(const base::FilePath& path,
                         base::Callback<void(Profile*)> callback) override;
   Profile* GetProfileByPath(const base::FilePath& path) override;
@@ -38,7 +40,7 @@ class FakeProfileStore : public ProfileStore {
   typedef std::map<base::FilePath, base::Callback<void(Profile*)> >
       CallbacksByPath;
   CallbacksByPath callbacks_;
-  base::ObserverList<ProfileInfoCacheObserver> observer_list_;
+  base::ObserverList<ProfileAttributesStorage::Observer> observer_list_;
   typedef std::map<base::FilePath, Profile*> ProfilesByPath;
   ProfilesByPath loaded_profiles_;
 };

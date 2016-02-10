@@ -44,6 +44,8 @@ class ProfileAttributesStorage {
   // Returns a vector containing one attributes entry per known profile. They
   // are not sorted in any particular order.
   virtual std::vector<ProfileAttributesEntry*> GetAllProfilesAttributes() = 0;
+  virtual std::vector<ProfileAttributesEntry*>
+      GetAllProfilesAttributesSortedByName() = 0;
 
   // Populates |entry| with the data for the profile at |path| and returns true
   // if the operation is successful and |entry| can be used. Returns false

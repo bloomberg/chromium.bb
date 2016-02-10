@@ -39,7 +39,7 @@ class ProfileAttributesEntry {
   base::string16 GetUserName() const;
   // Gets the icon used as this profile's avatar. This might not be the icon
   // displayed in the UI if IsUsingGAIAPicture() is true.
-  const gfx::Image& GetAvatarIcon();
+  const gfx::Image& GetAvatarIcon() const;
   std::string GetLocalAuthCredentials() const;
   std::string GetPasswordChangeDetectionToken() const;
   // Note that a return value of false could mean an error in collection or

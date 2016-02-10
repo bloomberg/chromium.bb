@@ -17,7 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
@@ -61,7 +61,7 @@ class AppSyncUIStateWatcher;
 class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public app_list::StartPageObserver,
                             public HotwordClient,
-                            public ProfileInfoCacheObserver,
+                            public ProfileAttributesStorage::Observer,
                             public SigninManagerBase::Observer,
                             public SigninManagerFactory::Observer,
                             public content::NotificationObserver,
@@ -158,7 +158,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
 
-  // Overridden from ProfileInfoCacheObserver:
+  // Overridden from ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;

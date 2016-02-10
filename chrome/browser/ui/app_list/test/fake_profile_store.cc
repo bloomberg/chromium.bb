@@ -28,15 +28,15 @@ void FakeProfileStore::LoadProfile(Profile* profile) {
 
 void FakeProfileStore::RemoveProfile(Profile* profile) {
   base::FilePath path(profile->GetPath());
-  FOR_EACH_OBSERVER(ProfileInfoCacheObserver, observer_list_,
+  FOR_EACH_OBSERVER(ProfileAttributesStorage::Observer, observer_list_,
                     OnProfileWillBeRemoved(path));
   loaded_profiles_.erase(path);
-  FOR_EACH_OBSERVER(ProfileInfoCacheObserver, observer_list_,
+  FOR_EACH_OBSERVER(ProfileAttributesStorage::Observer, observer_list_,
                     OnProfileWasRemoved(path, base::string16()));
 }
 
 void FakeProfileStore::AddProfileObserver(
-    ProfileInfoCacheObserver* observer) {
+    ProfileAttributesStorage::Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 

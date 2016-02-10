@@ -39,7 +39,7 @@ base::string16 ProfileAttributesEntry::GetUserName() const {
   return profile_info_cache_->GetUserNameOfProfileAtIndex(profile_index());
 }
 
-const gfx::Image& ProfileAttributesEntry::GetAvatarIcon() {
+const gfx::Image& ProfileAttributesEntry::GetAvatarIcon() const {
   return profile_info_cache_->GetAvatarIconOfProfileAtIndex(profile_index());
 }
 
