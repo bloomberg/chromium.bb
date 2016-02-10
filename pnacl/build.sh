@@ -841,7 +841,7 @@ feature-version-file-install() {
   #
   # If you are adding a test that depends on a toolchain change, you
   # can increment this version number manually.
-  echo 13 > "${install_root}/FEATURE_VERSION"
+  echo 14 > "${install_root}/FEATURE_VERSION"
 }
 
 #@ driver-install-translator - Install driver scripts for translator component
