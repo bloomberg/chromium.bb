@@ -28,6 +28,7 @@
 
 #include "core/workers/WorkerMessagingProxy.h"
 
+#include "bindings/core/v8/V8GCController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/events/ErrorEvent.h"
@@ -65,7 +66,7 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
     MessagePortArray* ports = MessagePort::entanglePorts(*scriptContext, channels);
     globalScope->dispatchEvent(MessageEvent::create(ports, message));
-    workerObjectProxy->confirmMessageFromWorkerObject(scriptContext->hasPendingActivity());
+    workerObjectProxy->confirmMessageFromWorkerObject(V8GCController::hasPendingActivity(scriptContext));
 }
 
 } // namespace

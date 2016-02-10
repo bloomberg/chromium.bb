@@ -3193,6 +3193,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.ScanPendingActivityDuration" units="ms">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    Duration of time taken to scan pending activities of all V8 wrappers in a
+    worker thread.
+  </summary>
+</histogram>
+
 <histogram name="Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230"
     enum="XMLHttpRequestHeaderValueCategoryInRFC7230">
   <owner>hiroshige@chromium.org</owner>

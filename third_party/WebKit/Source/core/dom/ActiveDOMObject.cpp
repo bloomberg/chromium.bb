@@ -68,11 +68,6 @@ void ActiveDOMObject::suspendIfNeeded()
         context->suspendActiveDOMObjectIfNeeded(this);
 }
 
-bool ActiveDOMObject::hasPendingActivity() const
-{
-    return false;
-}
-
 void ActiveDOMObject::suspend()
 {
 }

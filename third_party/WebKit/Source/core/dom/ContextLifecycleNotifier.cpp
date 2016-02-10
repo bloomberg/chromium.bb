@@ -104,18 +104,6 @@ unsigned ContextLifecycleNotifier::activeDOMObjectCount() const
     return activeDOMObjects;
 }
 
-bool ContextLifecycleNotifier::hasPendingActivity() const
-{
-    for (ContextLifecycleObserver* observer : m_observers) {
-        if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
-            continue;
-        ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
-        if (activeDOMObject->hasPendingActivity())
-            return true;
-    }
-    return false;
-}
-
 #if ENABLE(ASSERT)
 bool ContextLifecycleNotifier::contains(ActiveDOMObject* object) const
 {

@@ -44,10 +44,6 @@ public:
     bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }
 #endif
 
-    // Should return true if there's any pending asynchronous activity, and so
-    // this object must not be garbage collected.
-    virtual bool hasPendingActivity() const;
-
     // These methods have an empty default implementation so that subclasses
     // which don't need special treatment can skip implementation.
     virtual void suspend();

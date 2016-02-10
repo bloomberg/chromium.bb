@@ -151,6 +151,8 @@ public:
 
     bool containsWrapper() const { return !m_wrapper.IsEmpty(); }
 
+    virtual bool hasPendingActivity() const;
+
 #if !ENABLE(OILPAN)
 protected:
     virtual ~ScriptWrappable()

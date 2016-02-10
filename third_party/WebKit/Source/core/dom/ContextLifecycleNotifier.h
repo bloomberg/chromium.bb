@@ -46,7 +46,6 @@ public:
     void notifyStoppingActiveDOMObjects();
 
     unsigned activeDOMObjectCount() const;
-    bool hasPendingActivity() const;
 
 protected:
     // Need a default constructor to link core and modules separately.

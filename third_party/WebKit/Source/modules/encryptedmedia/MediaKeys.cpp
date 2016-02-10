@@ -255,11 +255,11 @@ bool MediaKeys::hasPendingActivity() const
 {
     // Remain around if there are pending events.
     WTF_LOG(Media, "MediaKeys(%p)::hasPendingActivity %s%s%s", this,
-        ActiveDOMObject::hasPendingActivity() ? " ActiveDOMObject::hasPendingActivity()" : "",
+        ScriptWrappable::hasPendingActivity() ? " ScriptWrappable::hasPendingActivity()" : "",
         !m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "",
         m_reservedForMediaElement ? " m_reservedForMediaElement" : "");
 
-    return ActiveDOMObject::hasPendingActivity() || !m_pendingActions.isEmpty() || m_reservedForMediaElement;
+    return ScriptWrappable::hasPendingActivity() || !m_pendingActions.isEmpty() || m_reservedForMediaElement;
 }
 
 void MediaKeys::stop()

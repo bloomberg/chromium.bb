@@ -62,4 +62,9 @@ v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(v8::Isolate* isolate
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
 
+bool ScriptWrappable::hasPendingActivity() const
+{
+    return false;
+}
+
 } // namespace blink

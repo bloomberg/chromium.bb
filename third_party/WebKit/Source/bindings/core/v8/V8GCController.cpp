@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/V8GCController.h"
 
+#include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -48,6 +49,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/svg/SVGElement.h"
+#include "platform/Histogram.h"
 #include "platform/TraceEvent.h"
 #include "wtf/Partitions.h"
 #include "wtf/Vector.h"
@@ -121,11 +123,8 @@ public:
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(wrapper);
-        if (activeDOMObject && activeDOMObject->hasPendingActivity()) {
-            v8::Persistent<v8::Object>::Cast(*value).MarkActive();
+        if (type != npObjectTypeInfo() && toScriptWrappable(wrapper)->hasPendingActivity())
             return;
-        }
 
         if (classId == WrapperTypeInfo::NodeClassId) {
             ASSERT(V8Node::hasInstance(wrapper, m_isolate));
@@ -179,8 +178,7 @@ public:
 
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
 
-        ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(wrapper);
-        if (activeDOMObject && activeDOMObject->hasPendingActivity()) {
+        if (type != npObjectTypeInfo() && toScriptWrappable(wrapper)->hasPendingActivity()) {
             m_isolate->SetObjectGroupId(*value, liveRootId());
             ++m_domObjectsWithPendingActivity;
         }
@@ -428,6 +426,66 @@ void V8GCController::traceDOMWrappers(v8::Isolate* isolate, Visitor* visitor)
 {
     DOMWrapperTracer tracer(visitor);
     isolate->VisitHandlesWithClassIds(&tracer);
+}
+
+class PendingActivityVisitor : public v8::PersistentHandleVisitor {
+public:
+    explicit PendingActivityVisitor(ExecutionContext* executionContext)
+        : m_executionContext(executionContext)
+        , m_pendingActivityFound(false)
+    {
+    }
+
+    void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) override
+    {
+        // If we have already found any wrapper that has a pending activity,
+        // we don't need to check other wrappers.
+        if (m_pendingActivityFound)
+            return;
+
+        if (classId != WrapperTypeInfo::NodeClassId && classId != WrapperTypeInfo::ObjectClassId)
+            return;
+
+        const v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(*value);
+        const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
+        // The ExecutionContext check is heavy, so it should be done at the last.
+        if (type != npObjectTypeInfo()
+            && toScriptWrappable(wrapper)->hasPendingActivity()
+            // TODO(haraken): Currently we don't have a way to get a creation
+            // context from a wrapper. We should implement the way and enable
+            // the following condition.
+            //
+            // This condition affects only compositor workers, where one isolate
+            // is shared by multiple workers. If we don't have the condition,
+            // a worker object for a compositor worker doesn't get collected
+            // until all compositor workers in the same isolate lose pending
+            // activities. In other words, not having the condition delays
+            // destruction of a worker object of a compositor worker.
+            //
+            /* && toExecutionContext(wrapper->creationContext()) == m_executionContext */
+            )
+            m_pendingActivityFound = true;
+    }
+
+    bool pendingActivityFound() const { return m_pendingActivityFound; }
+
+private:
+    RawPtrWillBePersistent<ExecutionContext> m_executionContext;
+    bool m_pendingActivityFound;
+};
+
+bool V8GCController::hasPendingActivity(ExecutionContext* executionContext)
+{
+    // V8GCController::hasPendingActivity is used only when a worker checks if
+    // the worker contains any wrapper that has pending activities.
+    ASSERT(!isMainThread());
+
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scanPendingActivityHistogram, new CustomCountHistogram("Blink.ScanPendingActivityDuration", 1, 1000, 50));
+    double startTime = WTF::currentTimeMS();
+    PendingActivityVisitor visitor(executionContext);
+    toIsolate(executionContext)->VisitHandlesWithClassIds(&visitor);
+    scanPendingActivityHistogram.count(static_cast<int>(WTF::currentTimeMS() - startTime));
+    return visitor.pendingActivityFound();
 }
 
 } // namespace blink
