@@ -338,7 +338,7 @@ static Position firstEditablePositionInNode(Node* node)
     return next ? firstPositionInOrBeforeNode(next) : Position();
 }
 
-void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
     if (!node)
         return;
@@ -353,7 +353,9 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
             RefPtrWillBeRawPtr<Node> child = node->firstChild();
             while (child) {
                 RefPtrWillBeRawPtr<Node> nextChild = child->nextSibling();
-                removeNode(child.get(), shouldAssumeContentIsAlwaysEditable);
+                removeNode(child.get(), editingState, shouldAssumeContentIsAlwaysEditable);
+                if (editingState->isAborted())
+                    return;
                 // Bail if nextChild is no longer node's child.
                 if (nextChild && nextChild->parentNode() != node)
                     return;
@@ -372,7 +374,9 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
         while (child) {
             Node* remove = child;
             child = child->nextSibling();
-            removeNode(remove, shouldAssumeContentIsAlwaysEditable);
+            removeNode(remove, editingState, shouldAssumeContentIsAlwaysEditable);
+            if (editingState->isAborted())
+                return;
         }
 
         // Make sure empty cell has some height, if a placeholder can be inserted.
@@ -402,7 +406,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
     updatePositionForNodeRemoval(m_leadingWhitespace, *node);
     updatePositionForNodeRemoval(m_trailingWhitespace, *node);
 
-    CompositeEditCommand::removeNode(node, shouldAssumeContentIsAlwaysEditable);
+    CompositeEditCommand::removeNode(node, editingState, shouldAssumeContentIsAlwaysEditable);
 }
 
 static void updatePositionForTextRemoval(Text* node, int offset, int count, Position& position)
@@ -445,7 +449,7 @@ void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPr
     }
 }
 
-void DeleteSelectionCommand::handleGeneralDelete()
+void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
 {
     if (m_upstreamStart.isNull())
         return;
@@ -492,8 +496,11 @@ void DeleteSelectionCommand::handleGeneralDelete()
         }
 
         // The selection to delete is all in one node.
-        if (!startNode->layoutObject() || (!startOffset && m_downstreamEnd.atLastEditingPositionForNode()))
-            removeNode(startNode);
+        if (!startNode->layoutObject() || (!startOffset && m_downstreamEnd.atLastEditingPositionForNode())) {
+            removeNode(startNode, editingState);
+            if (editingState->isAborted())
+                return;
+        }
     } else {
         bool startNodeWasDescendantOfEndNode = m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode());
         // The selection to delete spans more than one node.
@@ -523,12 +530,16 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 // if we just removed a node from the end container, update end position so the
                 // check above will work
                 updatePositionForNodeRemoval(m_downstreamEnd, *node);
-                removeNode(node.get());
+                removeNode(node.get(), editingState);
+                if (editingState->isAborted())
+                    return;
                 node = nextNode.get();
             } else {
                 Node& n = NodeTraversal::lastWithinOrSelf(*node);
                 if (m_downstreamEnd.anchorNode() == n && m_downstreamEnd.computeEditingOffset() >= caretMaxOffset(&n)) {
-                    removeNode(node.get());
+                    removeNode(node.get(), editingState);
+                    if (editingState->isAborted())
+                        return;
                     node = nullptr;
                 } else {
                     node = NodeTraversal::next(*node);
@@ -539,7 +550,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
         if (m_downstreamEnd.anchorNode() != startNode && !m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode()) && m_downstreamEnd.inDocument() && m_downstreamEnd.computeEditingOffset() >= caretMinOffset(m_downstreamEnd.anchorNode())) {
             if (m_downstreamEnd.atLastEditingPositionForNode() && !canHaveChildrenForEditing(m_downstreamEnd.anchorNode())) {
                 // The node itself is fully selected, not just its contents.  Delete it.
-                removeNode(m_downstreamEnd.anchorNode());
+                removeNode(m_downstreamEnd.anchorNode(), editingState);
             } else {
                 if (m_downstreamEnd.anchorNode()->isTextNode()) {
                     // in a text node that needs to be trimmed
@@ -839,7 +850,9 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         return;
     }
 
-    handleGeneralDelete();
+    handleGeneralDelete(editingState);
+    if (editingState->isAborted())
+        return;
 
     fixupWhitespace();
 

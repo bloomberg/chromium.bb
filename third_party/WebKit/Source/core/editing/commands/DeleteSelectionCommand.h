@@ -60,14 +60,14 @@ private:
     void initializePositionData();
     void saveTypingStyleState();
     bool handleSpecialCaseBRDelete();
-    void handleGeneralDelete();
+    void handleGeneralDelete(EditingState*);
     void fixupWhitespace();
     void mergeParagraphs();
     void removePreviouslySelectedEmptyTableRows();
     void calculateTypingStyleAfterDelete();
     void clearTransientState();
     void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
-    void removeNode(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) override;
+    void removeNode(PassRefPtrWillBeRawPtr<Node>, EditingState* = ASSERT_NO_EDITING_ABORT, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) override;
     void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned, unsigned) override;
     void removeRedundantBlocks(EditingState*);
 

@@ -920,7 +920,7 @@ static inline HTMLElement* elementToSplitToAvoidPastingIntoInlineElementsWithSty
     return toHTMLElement(highestEnclosingNodeOfType(insertionPos, isInlineHTMLElementWithStyle, CannotCrossEditingBoundary, containingBlock));
 }
 
-void ReplaceSelectionCommand::doApply(EditingState*)
+void ReplaceSelectionCommand::doApply(EditingState* editingState)
 {
     const VisibleSelection selection = endingSelection();
     ASSERT(selection.isCaretOrRange());
@@ -974,7 +974,9 @@ void ReplaceSelectionCommand::doApply(EditingState*)
         bool mergeBlocksAfterDelete = startIsInsideMailBlockquote || isEndOfParagraph(visibleEnd) || isStartOfBlock(visibleStart);
         // FIXME: We should only expand to include fully selected special elements if we are copying a
         // selection and pasting it on top of itself.
-        deleteSelection(ASSERT_NO_EDITING_ABORT, false, mergeBlocksAfterDelete, false);
+        deleteSelection(editingState, false, mergeBlocksAfterDelete, false);
+        if (editingState->isAborted())
+            return;
         if (fragment.hasInterchangeNewlineAtStart()) {
             VisiblePosition startAfterDelete = endingSelection().visibleStart();
             if (isEndOfParagraph(startAfterDelete) && !isStartOfParagraph(startAfterDelete) && !isEndOfEditableOrNonEditableContent(startAfterDelete))

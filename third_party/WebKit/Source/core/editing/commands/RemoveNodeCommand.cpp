@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
+#include "core/editing/commands/EditingState.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -40,7 +41,7 @@ RemoveNodeCommand::RemoveNodeCommand(PassRefPtrWillBeRawPtr<Node> node, ShouldAs
     ASSERT(m_node->parentNode());
 }
 
-void RemoveNodeCommand::doApply(EditingState*)
+void RemoveNodeCommand::doApply(EditingState* editingState)
 {
     ContainerNode* parent = m_node->parentNode();
     if (!parent || (m_shouldAssumeContentIsAlwaysEditable == DoNotAssumeContentIsAlwaysEditable
@@ -52,6 +53,11 @@ void RemoveNodeCommand::doApply(EditingState*)
     m_refChild = m_node->nextSibling();
 
     m_node->remove(IGNORE_EXCEPTION);
+    // Node::remove dispatch synchronous events such as IFRAME unload events,
+    // and event handlers may break the document. We check the document state
+    // here in order to prevent further processing in bad situation.
+    ASSERT_IN_EDITING_COMMAND(m_node->document().frame());
+    ASSERT_IN_EDITING_COMMAND(m_node->document().documentElement());
 }
 
 void RemoveNodeCommand::doUnapply()

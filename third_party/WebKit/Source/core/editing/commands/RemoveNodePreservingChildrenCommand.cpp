@@ -46,11 +46,11 @@ void RemoveNodePreservingChildrenCommand::doApply(EditingState*)
 
         for (auto& currentChild : children) {
             RefPtrWillBeRawPtr<Node> child = currentChild.release();
-            removeNode(child, m_shouldAssumeContentIsAlwaysEditable);
+            removeNode(child, ASSERT_NO_EDITING_ABORT, m_shouldAssumeContentIsAlwaysEditable);
             insertNodeBefore(child.release(), m_node, m_shouldAssumeContentIsAlwaysEditable);
         }
     }
-    removeNode(m_node, m_shouldAssumeContentIsAlwaysEditable);
+    removeNode(m_node, ASSERT_NO_EDITING_ABORT, m_shouldAssumeContentIsAlwaysEditable);
 }
 
 DEFINE_TRACE(RemoveNodePreservingChildrenCommand)
