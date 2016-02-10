@@ -130,7 +130,7 @@ def CalculateHash(root, expected_hash):
     path_without_hash = str(path).replace('/', '\\')
     if expected_hash:
       path_without_hash = path_without_hash.replace(
-          os.path.join(root, expected_hash), root)
+          os.path.join(root, expected_hash).replace('/', '\\'), root)
     digest.update(path_without_hash)
     with open(path, 'rb') as f:
       digest.update(f.read())
