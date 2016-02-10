@@ -598,7 +598,6 @@ group("mojo_apptests") {
 
   if (is_win || is_linux) {
     deps += [
-      "//components/clipboard:apptests",
       "//components/filesystem:apptests",
       "//components/mus/ws:tests",
       "//components/resource_provider:apptests",

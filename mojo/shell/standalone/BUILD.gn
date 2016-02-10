@@ -262,8 +262,6 @@ if (is_android) {
     testonly = true
     deps = [
       ":android_assets",
-      "//components/clipboard:apptests_assets",
-      "//components/clipboard:clipboard_assets",
       "//components/mus/ws:apptests_assets",
       "//components/resource_provider:apptests_assets",
       "//components/resource_provider:resource_provider_assets",
