@@ -11,7 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.opengl.GLES20;
 
-import org.chromium.chromoting.jni.JniInterface;
+import org.chromium.chromoting.jni.Client;
 
 import java.nio.FloatBuffer;
 
@@ -61,6 +61,8 @@ public class Desktop {
     // Number of vertices passed to glDrawArrays().
     private static final int VERTICES_NUMBER = 6;
 
+    private final Client mClient;
+
     private int mVertexShaderHandle;
     private int mFragmentShaderHandle;
     private int mProgramHandle;
@@ -87,7 +89,8 @@ public class Desktop {
     // Lock to allow multithreaded access to mReloadTexture.
     private final Object mReloadTextureLock = new Object();
 
-    public Desktop() {
+    public Desktop(Client client) {
+        mClient = client;
         mVertexShaderHandle =
                 ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER);
         mFragmentShaderHandle =
@@ -220,7 +223,7 @@ public class Desktop {
         }
 
         // TODO(shichengfeng): Record the time desktop drawing takes.
-        Bitmap bitmap = JniInterface.getVideoFrame();
+        Bitmap bitmap = mClient.getVideoFrame();
 
         if (bitmap == null) {
             // This can happen if the client is connected, but a complete video frame has not yet

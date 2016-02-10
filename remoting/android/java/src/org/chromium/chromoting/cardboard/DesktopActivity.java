@@ -16,7 +16,7 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 
 import org.chromium.chromoting.R;
 import org.chromium.chromoting.TouchInputHandler;
-import org.chromium.chromoting.jni.JniInterface;
+import org.chromium.chromoting.jni.Client;
 
 import java.util.ArrayList;
 
@@ -28,6 +28,7 @@ public class DesktopActivity extends CardboardActivity {
     // desktop activity.
     private boolean mSwitchToDesktopActivity;
 
+    private Client mClient;
     private CardboardRenderer mRenderer;
     private SpeechRecognizer mSpeechRecognizer;
 
@@ -38,9 +39,12 @@ public class DesktopActivity extends CardboardActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cardboard_desktop);
+
+        mClient = Client.getInstance();
+
         mSwitchToDesktopActivity = false;
         CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
-        mRenderer = new CardboardRenderer(this);
+        mRenderer = new CardboardRenderer(this, mClient);
         mIsListening = false;
 
         // Associate a CardboardView.StereoRenderer with cardboard view.
@@ -75,9 +79,9 @@ public class DesktopActivity extends CardboardActivity {
         } else {
             if (mRenderer.isLookingAtDesktop()) {
                 PointF coordinates = mRenderer.getMouseCoordinates();
-                JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
+                mClient.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
                         TouchInputHandler.BUTTON_LEFT, true);
-                JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
+                mClient.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
                         TouchInputHandler.BUTTON_LEFT, false);
             } else {
                 if (mRenderer.isLookingFarawayFromDesktop()) {
@@ -92,14 +96,14 @@ public class DesktopActivity extends CardboardActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        JniInterface.enableVideoChannel(true);
+        mClient.enableVideoChannel(true);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         if (!mSwitchToDesktopActivity) {
-            JniInterface.enableVideoChannel(false);
+            mClient.enableVideoChannel(false);
         }
         if (mSpeechRecognizer != null) {
             mSpeechRecognizer.stopListening();
@@ -109,7 +113,7 @@ public class DesktopActivity extends CardboardActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        JniInterface.enableVideoChannel(true);
+        mClient.enableVideoChannel(true);
     }
 
     @Override
@@ -118,7 +122,7 @@ public class DesktopActivity extends CardboardActivity {
         if (mSwitchToDesktopActivity) {
             mSwitchToDesktopActivity = false;
         } else {
-            JniInterface.enableVideoChannel(false);
+            mClient.enableVideoChannel(false);
         }
         if (mSpeechRecognizer != null) {
             mSpeechRecognizer.stopListening();
@@ -186,7 +190,7 @@ public class DesktopActivity extends CardboardActivity {
             ArrayList<String> data =
                     results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             if (!data.isEmpty()) {
-                JniInterface.sendTextEvent(data.get(0));
+                mClient.sendTextEvent(data.get(0));
             }
         }
 

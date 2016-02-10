@@ -15,7 +15,7 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
-import org.chromium.chromoting.jni.JniInterface;
+import org.chromium.chromoting.jni.Client;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
@@ -65,6 +65,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     private static final float EPSILON = 1e-5f;
 
     private final Activity mActivity;
+    private final Client mClient;
 
     private float mCameraPosition;
 
@@ -103,8 +104,9 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     // Flag to indicate whether to show menu bar.
     private boolean mMenuBarVisible;
 
-    public CardboardRenderer(Activity activity) {
+    public CardboardRenderer(Activity activity, Client client) {
         mActivity = activity;
+        mClient = client;
         mCameraPosition = 0.0f;
 
         mCameraMatrix = new float[16];
@@ -122,7 +124,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     private void initializeRedrawCallback() {
         mActivity.runOnUiThread(new Runnable() {
             public void run() {
-                JniInterface.provideRedrawCallback(new Runnable() {
+                mClient.provideRedrawCallback(new Runnable() {
                     @Override
                     public void run() {
                         mDesktop.reloadTexture();
@@ -130,7 +132,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
                     }
                 });
 
-                JniInterface.redrawGraphics();
+                mClient.redrawGraphics();
             }
         });
     }
@@ -146,10 +148,10 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         // Enable depth testing.
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        mDesktop = new Desktop();
+        mDesktop = new Desktop(mClient);
         mMenuBar = new MenuBar(mActivity);
         mPhotosphere = new Photosphere(mActivity);
-        mCursor = new Cursor();
+        mCursor = new Cursor(mClient);
 
         initializeRedrawCallback();
     }

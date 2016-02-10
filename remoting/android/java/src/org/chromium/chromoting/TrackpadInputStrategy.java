@@ -7,7 +7,7 @@ package org.chromium.chromoting;
 import android.graphics.Point;
 import android.view.MotionEvent;
 
-import org.chromium.chromoting.jni.JniInterface;
+import org.chromium.chromoting.jni.Client;
 
 /**
  * Defines a set of behavior and methods to simulate trackpad behavior when responding to
@@ -16,12 +16,14 @@ import org.chromium.chromoting.jni.JniInterface;
  */
 public class TrackpadInputStrategy implements InputStrategyInterface {
     private final RenderData mRenderData;
+    private final Client mClient;
 
     /** Mouse-button currently held down, or BUTTON_UNDEFINED otherwise. */
     private int mHeldButton = TouchInputHandlerInterface.BUTTON_UNDEFINED;
 
-    public TrackpadInputStrategy(RenderData renderData) {
+    public TrackpadInputStrategy(RenderData renderData, Client client) {
         mRenderData = renderData;
+        mClient = client;
 
         synchronized (mRenderData) {
             mRenderData.drawCursor = true;
@@ -44,7 +46,7 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
 
     @Override
     public void onScroll(float distanceX, float distanceY) {
-        JniInterface.sendMouseWheelEvent((int) -distanceX, (int) -distanceY);
+        mClient.sendMouseWheelEvent((int) -distanceX, (int) -distanceY);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
 
     @Override
     public void injectCursorMoveEvent(int x, int y) {
-        JniInterface.sendMouseEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
+        mClient.sendMouseEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
     }
 
     @Override
@@ -81,6 +83,6 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
         synchronized (mRenderData) {
             cursorPosition = mRenderData.getCursorPosition();
         }
-        JniInterface.sendMouseEvent(cursorPosition.x, cursorPosition.y, button, pressed);
+        mClient.sendMouseEvent(cursorPosition.x, cursorPosition.y, button, pressed);
     }
 }
