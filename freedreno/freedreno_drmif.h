@@ -50,6 +50,7 @@ enum fd_param_id {
 	FD_GMEM_SIZE,
 	FD_GPU_ID,
 	FD_CHIP_ID,
+	FD_MAX_FREQ,
 };
 
 /* bo flags: */

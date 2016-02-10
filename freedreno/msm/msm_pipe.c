@@ -67,6 +67,8 @@ static int msm_pipe_get_param(struct fd_pipe *pipe,
 	case FD_CHIP_ID:
 		*value = msm_pipe->chip_id;
 		return 0;
+	case FD_MAX_FREQ:
+		return query_param(pipe, MSM_PARAM_MAX_FREQ, value);
 	default:
 		ERROR_MSG("invalid param id: %d", param);
 		return -1;
