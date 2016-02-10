@@ -344,14 +344,18 @@ source_set("test_support") {
   sources = platform_test_support_files
   visibility += [ "//third_party/WebKit/*" ]
 
+  # This should always be test-only, but see http://crbug.com/412064.
+  testonly = !is_component_build
+
   configs += [
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
     "//third_party/WebKit/Source:non_test_config",
   ]
 
-  deps = [
+  public_deps = [
     ":platform",
+    "//testing/gmock",
   ]
 
   if (is_win) {

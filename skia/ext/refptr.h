@@ -53,6 +53,8 @@ namespace skia {
 template<typename T>
 class RefPtr {
  public:
+  using element_type = T;
+
   RefPtr() : ptr_(nullptr) {}
 
   RefPtr(std::nullptr_t) : ptr_(nullptr) {}

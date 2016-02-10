@@ -30,6 +30,7 @@
 
 #include "platform/geometry/FloatQuad.h"
 
+#include "third_party/skia/include/core/SkPoint.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -107,6 +108,11 @@ FloatRect FloatQuad::boundingBox() const
 static inline bool withinEpsilon(float a, float b)
 {
     return fabs(a - b) < std::numeric_limits<float>::epsilon();
+}
+
+FloatQuad::FloatQuad(const SkPoint(&quad)[4])
+    : FloatQuad(FloatPoint(quad[0]), FloatPoint(quad[1]), FloatPoint(quad[2]), FloatPoint(quad[3]))
+{
 }
 
 bool FloatQuad::isRectilinear() const
@@ -213,6 +219,7 @@ static inline bool lineIntersectsCircle(const FloatPoint& center, float radius, 
     // The nearest point on the line is between p0 and p1?
     float x = - a * c / (a * a + b * b);
     float y = - b * c / (a * a + b * b);
+
     return (((x0 <= x && x <= x1) || (x0 >= x && x >= x1))
         && ((y0 <= y && y <= y1) || (y1 <= y && y <= y0)));
 }

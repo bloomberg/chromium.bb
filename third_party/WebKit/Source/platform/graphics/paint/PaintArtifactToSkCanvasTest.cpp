@@ -4,9 +4,11 @@
 
 #include "platform/graphics/paint/PaintArtifactToSkCanvas.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintArtifact.h"
+#include "platform/testing/TestPaintArtifact.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,16 +32,6 @@ namespace {
 static const int kCanvasWidth = 800;
 static const int kCanvasHeight = 600;
 
-static PassRefPtr<SkPicture> pictureWithRect(const SkRect& rect, SkColor color)
-{
-    SkPictureRecorder recorder;
-    SkCanvas* canvas = recorder.beginRecording(rect);
-    SkPaint paint;
-    paint.setColor(color);
-    canvas->drawRect(rect, paint);
-    return adoptRef(recorder.endRecordingAsPicture());
-}
-
 class MockCanvas : public SkCanvas {
 public:
     MockCanvas(int width, int height) : SkCanvas(width, height) {}
@@ -60,21 +52,23 @@ private:
     }
 };
 
-class DummyRectClient : public DisplayItemClient {
-public:
-    DummyRectClient(const SkRect& rect, SkColor color) : m_rect(rect), m_color(color) {}
-    const SkRect& rect() const { return m_rect; }
-    SkColor color() const { return m_color; }
-    PassRefPtr<SkPicture> makePicture() const { return pictureWithRect(m_rect, m_color); }
-    String debugName() const final { return "<dummy>"; }
-    LayoutRect visualRect() const override { return LayoutRect(); }
+class PaintArtifactToSkCanvasTest : public ::testing::Test {
+protected:
+    void SetUp() override
+    {
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
+    }
+
+    void TearDown() override
+    {
+        m_featuresBackup.restore();
+    }
 
 private:
-    SkRect m_rect;
-    SkColor m_color;
+    RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
-TEST(PaintArtifactToSkCanvasTest, Empty)
+TEST_F(PaintArtifactToSkCanvasTest, Empty)
 {
     MockCanvas canvas(kCanvasWidth, kCanvasHeight);
     EXPECT_CALL(canvas, onDrawRect(_, _, _)).Times(0);
@@ -83,35 +77,28 @@ TEST(PaintArtifactToSkCanvasTest, Empty)
     paintArtifactToSkCanvas(artifact, &canvas);
 }
 
-TEST(PaintArtifactToSkCanvasTest, OneChunkWithDrawingsInOrder)
+TEST_F(PaintArtifactToSkCanvasTest, OneChunkWithDrawingsInOrder)
 {
-    DummyRectClient client1(SkRect::MakeXYWH(100, 100, 100, 100), SK_ColorRED);
-    DummyRectClient client2(SkRect::MakeXYWH(100, 150, 300, 200), SK_ColorBLUE);
-
     MockCanvas canvas(kCanvasWidth, kCanvasHeight);
     {
         testing::InSequence sequence;
-        EXPECT_CALL(canvas, onDrawRect(client1.rect(), Property(&SkPaint::getColor, client1.color()), _));
-        EXPECT_CALL(canvas, onDrawRect(client2.rect(), Property(&SkPaint::getColor, client2.color()), _));
+        EXPECT_CALL(canvas, onDrawRect(
+            SkRect::MakeXYWH(100, 100, 100, 100),
+            Property(&SkPaint::getColor, SK_ColorRED), _));
+        EXPECT_CALL(canvas, onDrawRect(
+            SkRect::MakeXYWH(100, 150, 300, 200),
+            Property(&SkPaint::getColor, SK_ColorBLUE), _));
     }
 
-    // Build a single-chunk artifact directly.
-    PaintArtifact artifact;
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client1, DisplayItem::DrawingFirst, client1.makePicture());
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client2, DisplayItem::DrawingFirst, client2.makePicture());
-    PaintChunk chunk(0, artifact.displayItemList().size(), PaintChunkProperties());
-    artifact.paintChunks().append(chunk);
-
-    paintArtifactToSkCanvas(artifact, &canvas);
+    TestPaintArtifact artifact;
+    artifact.chunk(PaintChunkProperties())
+        .rectDrawing(FloatRect(100, 100, 100, 100), SK_ColorRED)
+        .rectDrawing(FloatRect(100, 150, 300, 200), SK_ColorBLUE);
+    paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
-TEST(PaintArtifactToSkCanvasTest, TransformCombining)
+TEST_F(PaintArtifactToSkCanvasTest, TransformCombining)
 {
-    DummyRectClient client1(SkRect::MakeXYWH(0, 0, 300, 200), SK_ColorRED);
-    DummyRectClient client2(SkRect::MakeXYWH(0, 0, 300, 200), SK_ColorBLUE);
-
     // We expect a matrix which applies the inner translation to the points
     // first, followed by the origin-adjusted scale.
     SkMatrix adjustedScale;
@@ -123,9 +110,9 @@ TEST(PaintArtifactToSkCanvasTest, TransformCombining)
     MockCanvas canvas(kCanvasWidth, kCanvasHeight);
     {
         testing::InSequence sequence;
-        EXPECT_CALL(canvas, onDrawRect(client1.rect(), Property(&SkPaint::getColor, client1.color()),
+        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorRED),
             Pointee(Property(&SkCanvas::getTotalMatrix, adjustedScale))));
-        EXPECT_CALL(canvas, onDrawRect(client2.rect(), Property(&SkPaint::getColor, client2.color()),
+        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorBLUE),
             Pointee(Property(&SkCanvas::getTotalMatrix, combinedMatrix))));
     }
 
@@ -138,66 +125,41 @@ TEST(PaintArtifactToSkCanvasTest, TransformCombining)
     matrix2.translate(5, 5);
     RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(matrix2, FloatPoint3D(), transform1.get());
 
-    // Build a two-chunk artifact directly.
-    PaintArtifact artifact;
-
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client1, DisplayItem::DrawingFirst, client1.makePicture());
-    PaintChunk chunk1(0, 1, PaintChunkProperties());
-    chunk1.properties.transform = transform1.get();
-    artifact.paintChunks().append(chunk1);
-
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client2, DisplayItem::DrawingFirst, client2.makePicture());
-    PaintChunk chunk2(1, 2, PaintChunkProperties());
-    chunk2.properties.transform = transform2.get();
-    artifact.paintChunks().append(chunk2);
-
-    paintArtifactToSkCanvas(artifact, &canvas);
+    TestPaintArtifact artifact;
+    artifact.chunk(transform1.get(), nullptr, nullptr)
+        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
+    artifact.chunk(transform2.get(), nullptr, nullptr)
+        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
+    paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
-TEST(PaintArtifactToSkCanvasTest, OpacityEffectsCombining)
+TEST_F(PaintArtifactToSkCanvasTest, OpacityEffectsCombining)
 {
-    DummyRectClient client1(SkRect::MakeXYWH(0, 0, 300, 200), SK_ColorRED);
-    DummyRectClient client2(SkRect::MakeXYWH(0, 0, 300, 200), SK_ColorBLUE);
-
     unsigned expectedFirstOpacity = 127; // floor(0.5 * 255)
     unsigned expectedSecondOpacity = 63; // floor(0.25 * 255)
     MockCanvas canvas(kCanvasWidth, kCanvasHeight);
     {
         testing::InSequence sequence;
         EXPECT_CALL(canvas, willSaveLayer(expectedFirstOpacity, _));
-        EXPECT_CALL(canvas, onDrawRect(client1.rect(), Property(&SkPaint::getColor, client1.color()), _));
+        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorRED), _));
         EXPECT_CALL(canvas, willSaveLayer(expectedSecondOpacity, _));
-        EXPECT_CALL(canvas, onDrawRect(client2.rect(), Property(&SkPaint::getColor, client2.color()), _));
+        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorBLUE), _));
     }
 
     // Build an opacity effect tree.
     RefPtr<EffectPaintPropertyNode> opacityEffect1 = EffectPaintPropertyNode::create(0.5);
     RefPtr<EffectPaintPropertyNode> opacityEffect2 = EffectPaintPropertyNode::create(0.25, opacityEffect1);
 
-    // Build a two-chunk artifact directly.
-    PaintArtifact artifact;
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client1, DisplayItem::DrawingFirst, client1.makePicture());
-    PaintChunk chunk1(0, 1, PaintChunkProperties());
-    chunk1.properties.effect = opacityEffect1.get();
-    artifact.paintChunks().append(chunk1);
-
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client2, DisplayItem::DrawingFirst, client2.makePicture());
-    PaintChunk chunk2(1, 2, PaintChunkProperties());
-    chunk2.properties.effect = opacityEffect2.get();
-    artifact.paintChunks().append(chunk2);
-
-    paintArtifactToSkCanvas(artifact, &canvas);
+    TestPaintArtifact artifact;
+    artifact.chunk(nullptr, nullptr, opacityEffect1.get())
+        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
+    artifact.chunk(nullptr, nullptr, opacityEffect2.get())
+        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
+    paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
-TEST(PaintArtifactToSkCanvasTest, ChangingOpacityEffects)
+TEST_F(PaintArtifactToSkCanvasTest, ChangingOpacityEffects)
 {
-    DummyRectClient client1(SkRect::MakeXYWH(0, 0, 300, 200), SK_ColorRED);
-    DummyRectClient client2(SkRect::MakeXYWH(0, 0, 300, 200), SK_ColorBLUE);
-
     unsigned expectedAOpacity = 25; // floor(0.1 * 255)
     unsigned expectedBOpacity = 51; // floor(0.2 * 255)
     unsigned expectedCOpacity = 76; // floor(0.3 * 255)
@@ -207,10 +169,10 @@ TEST(PaintArtifactToSkCanvasTest, ChangingOpacityEffects)
         testing::InSequence sequence;
         EXPECT_CALL(canvas, willSaveLayer(expectedAOpacity, _));
         EXPECT_CALL(canvas, willSaveLayer(expectedBOpacity, _));
-        EXPECT_CALL(canvas, onDrawRect(client1.rect(), Property(&SkPaint::getColor, client1.color()), _));
+        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorRED), _));
         EXPECT_CALL(canvas, willSaveLayer(expectedCOpacity, _));
         EXPECT_CALL(canvas, willSaveLayer(expectedDOpacity, _));
-        EXPECT_CALL(canvas, onDrawRect(client2.rect(), Property(&SkPaint::getColor, client2.color()), _));
+        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorBLUE), _));
     }
 
     // Build an opacity effect tree with the following structure:
@@ -226,20 +188,12 @@ TEST(PaintArtifactToSkCanvasTest, ChangingOpacityEffects)
 
     // Build a two-chunk artifact directly.
     // chunk1 references opacity node b, chunk2 references opacity node d.
-    PaintArtifact artifact;
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client1, DisplayItem::DrawingFirst, client1.makePicture());
-    PaintChunk chunk1(0, 1, PaintChunkProperties());
-    chunk1.properties.effect = opacityEffectB.get();
-    artifact.paintChunks().append(chunk1);
-
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client2, DisplayItem::DrawingFirst, client2.makePicture());
-    PaintChunk chunk2(1, 2, PaintChunkProperties());
-    chunk2.properties.effect = opacityEffectD.get();
-    artifact.paintChunks().append(chunk2);
-
-    paintArtifactToSkCanvas(artifact, &canvas);
+    TestPaintArtifact artifact;
+    artifact.chunk(nullptr, nullptr, opacityEffectB.get())
+        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
+    artifact.chunk(nullptr, nullptr, opacityEffectD.get())
+        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
+    paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
 static SkRegion getCanvasClipAsRegion(SkCanvas* canvas)
@@ -247,7 +201,7 @@ static SkRegion getCanvasClipAsRegion(SkCanvas* canvas)
     return SkCanvas::LayerIter(canvas, false).clip();
 }
 
-TEST(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping)
+TEST_F(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping)
 {
     // The setup is to simulate scenario similar to this html:
     // <div style="position:absolute; left:0; top:0; clip:rect(200px,200px,300px,100px);">
@@ -269,24 +223,18 @@ TEST(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping)
     RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
         nullptr, FloatRoundedRect(150, 150, 100, 100), clip1.get());
 
-    PaintArtifact artifact;
-
-    DummyRectClient client1(SkRect::MakeXYWH(0, 0, 300, 200), SK_ColorRED);
-    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
-        client1, DisplayItem::DrawingFirst, client1.makePicture());
-    PaintChunk chunk1(0, 1, PaintChunkProperties());
-    chunk1.properties.clip = clip2.get();
-    artifact.paintChunks().append(chunk1);
-
     MockCanvas canvas(kCanvasWidth, kCanvasHeight);
 
     SkRegion totalClip;
     totalClip.setRect(SkIRect::MakeXYWH(100, 100, 100, 100));
     totalClip.op(SkIRect::MakeXYWH(150, 150, 100, 100), SkRegion::kIntersect_Op);
-    EXPECT_CALL(canvas, onDrawRect(client1.rect(), Property(&SkPaint::getColor, client1.color()),
+    EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorRED),
         ResultOf(&getCanvasClipAsRegion, Eq(totalClip))));
 
-    paintArtifactToSkCanvas(artifact, &canvas);
+    TestPaintArtifact artifact;
+    artifact.chunk(nullptr, clip2.get(), nullptr)
+        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
+    paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
 } // namespace

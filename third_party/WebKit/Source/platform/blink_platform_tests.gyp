@@ -109,6 +109,7 @@
         '../config.gyp:config',
         '../wtf/wtf.gyp:wtf',
         'blink_platform.gyp:blink_platform',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
       ],
       'defines': [
         'INSIDE_BLINK',
