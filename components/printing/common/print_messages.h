@@ -42,8 +42,6 @@ struct PrintMsg_Print_Params {
   int margin_top;
   int margin_left;
   double dpi;
-  double min_shrink;
-  double max_shrink;
   int desired_dpi;
   int document_cookie;
   bool selection_only;
@@ -118,12 +116,6 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // Specifies dots per inch.
   IPC_STRUCT_TRAITS_MEMBER(dpi)
-
-  // Minimum shrink factor. See PrintSettings::min_shrink for more information.
-  IPC_STRUCT_TRAITS_MEMBER(min_shrink)
-
-  // Maximum shrink factor. See PrintSettings::max_shrink for more information.
-  IPC_STRUCT_TRAITS_MEMBER(max_shrink)
 
   // Desired apparent dpi on paper.
   IPC_STRUCT_TRAITS_MEMBER(desired_dpi)
