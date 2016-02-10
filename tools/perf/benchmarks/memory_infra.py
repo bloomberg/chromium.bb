@@ -106,8 +106,7 @@ class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
 
 # Disabled on reference builds because they don't support the new
 # Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
-@benchmark.Disabled('reference',
-                    'linux')  # http://crbug.com/585161
+@benchmark.Disabled('reference')
 class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory on top 10 mobile sites."""
 
