@@ -95,7 +95,8 @@ protected:
     //
     // sugary-sweet convenience functions to help create and apply edit commands in composite commands
     //
-    void appendNode(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> parent);
+    // TODO(yosin): EditingState argument should not be optional.
+    void appendNode(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> parent, EditingState* = ASSERT_NO_EDITING_ABORT);
     // TODO(tkent): EditingState argument should not be optional.
     void applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand>, EditingState* = ASSERT_NO_EDITING_ABORT);
     void applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand>, const VisibleSelection&, EditingState* = ASSERT_NO_EDITING_ABORT);
@@ -160,7 +161,7 @@ protected:
     void moveParagraph(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState* = ASSERT_NO_EDITING_ABORT, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
     void moveParagraphs(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState*, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
     void moveParagraphWithClones(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, HTMLElement* blockElement, Node* outerNode, EditingState* = ASSERT_NO_EDITING_ABORT);
-    void cloneParagraphUnderNewElement(const Position& start, const Position& end, Node* outerNode, Element* blockElement);
+    void cloneParagraphUnderNewElement(const Position& start, const Position& end, Node* outerNode, Element* blockElement, EditingState*);
     void cleanupAfterDeletion(VisiblePosition destination = VisiblePosition());
 
     bool breakOutOfEmptyListItem();

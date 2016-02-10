@@ -370,13 +370,18 @@ void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild
     }
 }
 
-void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRefPtrWillBeRawPtr<ContainerNode> parent)
+void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRefPtrWillBeRawPtr<ContainerNode> parent, EditingState* editingState)
 {
     // When cloneParagraphUnderNewElement() clones the fallback content
     // of an OBJECT element, the ASSERT below may fire since the return
     // value of canHaveChildrenForEditing is not reliable until the layout
     // object of the OBJECT is created. Hence we ignore this check for OBJECTs.
-    ASSERT(canHaveChildrenForEditing(parent.get())
+    // TODO(yosin): We should move following |ASSERT_IN_EDITING_COMPUTER| to
+    // |AppendNodeCommand|.
+    // TODO(yosin): We should get rid of |canHaveChildrenForEditing()|, since
+    // |cloneParagraphUnderNewElement()| attempt to clone non-well-formed HTML,
+    // produced by JavaScript.
+    ASSERT_IN_EDITING_COMMAND(canHaveChildrenForEditing(parent.get())
         || (parent->isElementNode() && toElement(parent.get())->tagQName() == objectTag));
     applyCommandToComposite(AppendNodeCommand::create(parent, node));
 }
@@ -1008,7 +1013,7 @@ void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode)
 // Clone the paragraph between start and end under blockElement,
 // preserving the hierarchy up to outerNode.
 
-void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, const Position& end, Node* passedOuterNode, Element* blockElement)
+void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, const Position& end, Node* passedOuterNode, Element* blockElement, EditingState* editingState)
 {
     ASSERT(comparePositions(start, end) <= 0);
     ASSERT(passedOuterNode);
@@ -1022,7 +1027,9 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
         lastNode = blockElement;
     } else {
         lastNode = outerNode->cloneNode(isDisplayInsideTable(outerNode.get()));
-        appendNode(lastNode, blockElement);
+        appendNode(lastNode, blockElement, editingState);
+        if (editingState->isAborted())
+            return;
     }
 
     if (start.anchorNode() != outerNode && lastNode->isElementNode() && start.anchorNode()->isDescendantOf(outerNode.get())) {
@@ -1037,7 +1044,9 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
         for (size_t i = ancestors.size(); i != 0; --i) {
             Node* item = ancestors[i - 1].get();
             RefPtrWillBeRawPtr<Node> child = item->cloneNode(isDisplayInsideTable(item));
-            appendNode(child, toElement(lastNode));
+            appendNode(child, toElement(lastNode), editingState);
+            if (editingState->isAborted())
+                return;
             lastNode = child.release();
         }
     }
@@ -1152,7 +1161,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     if (comparePositions(start, end) > 0)
         end = start;
 
-    cloneParagraphUnderNewElement(start, end, outerNode, blockElement);
+    cloneParagraphUnderNewElement(start, end, outerNode, blockElement, editingState);
 
     setEndingSelection(VisibleSelection(start, end));
     deleteSelection(editingState, false, false, false);
