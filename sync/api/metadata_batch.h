@@ -6,9 +6,10 @@
 #define SYNC_API_METADATA_BATCH_H_
 
 #include <map>
+#include <string>
 
 #include "sync/base/sync_export.h"
-#include "sync/internal_api/public/non_blocking_sync_common.h"
+#include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/entity_metadata.pb.h"
 
 namespace syncer_v2 {
@@ -32,14 +33,14 @@ class SYNC_EXPORT MetadataBatch {
                    const sync_pb::EntityMetadata& metadata);
 
   // Get the DataTypeState for this batch.
-  const DataTypeState& GetDataTypeState() const;
+  const sync_pb::DataTypeState& GetDataTypeState() const;
 
   // Set the DataTypeState for this batch.
-  void SetDataTypeState(const DataTypeState& state);
+  void SetDataTypeState(const sync_pb::DataTypeState& state);
 
  private:
   EntityMetadataMap metadata_map_;
-  DataTypeState state_;
+  sync_pb::DataTypeState state_;
 };
 
 }  // namespace syncer_v2

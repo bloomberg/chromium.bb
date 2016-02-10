@@ -26,9 +26,9 @@ class ModelTypeProcessorProxy : public ModelTypeProcessor {
   ~ModelTypeProcessorProxy() override;
 
   void OnConnect(scoped_ptr<CommitQueue> worker) override;
-  void OnCommitCompleted(const DataTypeState& type_state,
+  void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(const DataTypeState& type_state,
+  void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
                         const UpdateResponseDataList& response_list,
                         const UpdateResponseDataList& pending_updates) override;
 
@@ -51,7 +51,7 @@ void ModelTypeProcessorProxy::OnConnect(scoped_ptr<CommitQueue> worker) {
 }
 
 void ModelTypeProcessorProxy::OnCommitCompleted(
-    const DataTypeState& type_state,
+    const sync_pb::DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   processor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ModelTypeProcessor::OnCommitCompleted, processor_,
@@ -59,7 +59,7 @@ void ModelTypeProcessorProxy::OnCommitCompleted(
 }
 
 void ModelTypeProcessorProxy::OnUpdateReceived(
-    const DataTypeState& type_state,
+    const sync_pb::DataTypeState& type_state,
     const UpdateResponseDataList& response_list,
     const UpdateResponseDataList& pending_updates) {
   processor_task_runner_->PostTask(
@@ -101,7 +101,7 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
   DCHECK(entities_.empty());
   DCHECK(!IsConnected());
 
-  if (batch->GetDataTypeState().initial_sync_done) {
+  if (batch->GetDataTypeState().initial_sync_done()) {
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
     for (auto it = metadata_map.begin(); it != metadata_map.end(); it++) {
       entities_.insert(std::make_pair(
@@ -114,7 +114,7 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
     // we have data but no metadata?
   } else {
     // First time syncing; initialize metadata.
-    data_type_state_.progress_marker.set_data_type_id(
+    data_type_state_.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type_));
   }
 
@@ -274,7 +274,7 @@ void SharedModelTypeProcessor::FlushPendingCommitRequests() {
     return;
 
   // Don't send anything if the type is not ready to handle commits.
-  if (!data_type_state_.initial_sync_done)
+  if (!data_type_state_.initial_sync_done())
     return;
 
   // TODO(rlarocque): Do something smarter than iterate here.
@@ -292,7 +292,7 @@ void SharedModelTypeProcessor::FlushPendingCommitRequests() {
 }
 
 void SharedModelTypeProcessor::OnCommitCompleted(
-    const DataTypeState& type_state,
+    const sync_pb::DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   scoped_ptr<MetadataChangeList> change_list =
       service_->CreateMetadataChangeList();
@@ -311,9 +311,10 @@ void SharedModelTypeProcessor::OnCommitCompleted(
                    << " type: " << type_ << " client_tag: " << client_tag_hash;
       return;
     } else {
-      it->second->ReceiveCommitResponse(
-          response_data.id, response_data.sequence_number,
-          response_data.response_version, data_type_state_.encryption_key_name);
+      it->second->ReceiveCommitResponse(response_data.id,
+                                        response_data.sequence_number,
+                                        response_data.response_version,
+                                        data_type_state_.encryption_key_name());
       // TODO(stanisc): crbug.com/573333: Delete case.
       // This might be the right place to clear a metadata entry that has
       // been deleted locally and confirmed deleted by the server.
@@ -329,11 +330,10 @@ void SharedModelTypeProcessor::OnCommitCompleted(
 }
 
 void SharedModelTypeProcessor::OnUpdateReceived(
-    const DataTypeState& data_type_state,
+    const sync_pb::DataTypeState& data_type_state,
     const UpdateResponseDataList& response_list,
     const UpdateResponseDataList& pending_updates) {
-
-  if (!data_type_state_.initial_sync_done) {
+  if (!data_type_state_.initial_sync_done()) {
     OnInitialUpdateReceived(data_type_state, response_list, pending_updates);
   }
 
@@ -342,8 +342,9 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   EntityChangeList entity_changes;
 
   metadata_changes->UpdateDataTypeState(data_type_state);
-  bool got_new_encryption_requirements = data_type_state_.encryption_key_name !=
-                                         data_type_state.encryption_key_name;
+  bool got_new_encryption_requirements =
+      data_type_state_.encryption_key_name() !=
+      data_type_state.encryption_key_name();
   data_type_state_ = data_type_state;
 
   for (auto list_it = response_list.begin(); list_it != response_list.end();
@@ -401,14 +402,14 @@ void SharedModelTypeProcessor::OnUpdateReceived(
 
     // If the received entity has out of date encryption, we schedule another
     // commit to fix it.
-    if (data_type_state_.encryption_key_name !=
+    if (data_type_state_.encryption_key_name() !=
         response_data.encryption_key_name) {
       DVLOG(2) << ModelTypeToString(type_) << ": Requesting re-encrypt commit "
                << response_data.encryption_key_name << " -> "
-               << data_type_state_.encryption_key_name;
+               << data_type_state_.encryption_key_name();
       auto it2 = entities_.find(client_tag_hash);
       it2->second->UpdateDesiredEncryptionKey(
-          data_type_state_.encryption_key_name);
+          data_type_state_.encryption_key_name());
     }
   }
 
@@ -435,7 +436,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   if (got_new_encryption_requirements) {
     for (auto it = entities_.begin(); it != entities_.end(); ++it) {
       it->second->UpdateDesiredEncryptionKey(
-          data_type_state_.encryption_key_name);
+          data_type_state_.encryption_key_name());
     }
   }
 
@@ -448,7 +449,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
 }
 
 void SharedModelTypeProcessor::OnInitialUpdateReceived(
-    const DataTypeState& data_type_state,
+    const sync_pb::DataTypeState& data_type_state,
     const UpdateResponseDataList& response_list,
     const UpdateResponseDataList& pending_updates) {
   // TODO(maxbogue): crbug.com/569675: Generate metadata for all entities.

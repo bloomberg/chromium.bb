@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SIMPLE_METADATA_CHANGE_LIST_H_
 #define SYNC_INTERNAL_API_PUBLIC_SIMPLE_METADATA_CHANGE_LIST_H_
 
+#include <string>
+
 #include "sync/api/metadata_change_list.h"
 #include "sync/api/model_type_store.h"
 #include "sync/base/sync_export.h"
@@ -19,7 +21,8 @@ class SYNC_EXPORT SimpleMetadataChangeList : public MetadataChangeList {
   SimpleMetadataChangeList();
   ~SimpleMetadataChangeList() override;
 
-  void UpdateDataTypeState(const DataTypeState& data_type_state) override;
+  void UpdateDataTypeState(
+      const sync_pb::DataTypeState& data_type_state) override;
   void ClearDataTypeState() override;
   void UpdateMetadata(const std::string& client_tag,
                       const sync_pb::EntityMetadata& metadata) override;

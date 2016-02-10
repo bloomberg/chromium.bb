@@ -17,7 +17,7 @@ FakeMetadataChangeList::Record::Record() {}
 FakeMetadataChangeList::Record::~Record() {}
 
 void FakeMetadataChangeList::UpdateDataTypeState(
-    const DataTypeState& data_type_state) {
+    const sync_pb::DataTypeState& data_type_state) {
   Record record;
   record.action = UPDATE_DATA_TYPE_STATE;
   record.data_type_state = data_type_state;

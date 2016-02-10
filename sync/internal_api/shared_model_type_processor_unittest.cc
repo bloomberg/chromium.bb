@@ -16,6 +16,7 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/test/fake_metadata_change_list.h"
 #include "sync/internal_api/public/test/fake_model_type_service.h"
+#include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/test/engine/mock_commit_queue.h"
@@ -168,7 +169,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   MockCommitQueue* mock_queue_;
   scoped_ptr<MockCommitQueue> mock_queue_ptr_;
 
-  DataTypeState data_type_state_;
+  sync_pb::DataTypeState data_type_state_;
 
   // The last received EntityChangeList.
   scoped_ptr<EntityChangeList> entity_change_list_;
@@ -188,7 +189,7 @@ SharedModelTypeProcessorTest::SharedModelTypeProcessorTest()
 SharedModelTypeProcessorTest::~SharedModelTypeProcessorTest() {}
 
 void SharedModelTypeProcessorTest::InitializeToReadyState() {
-  data_type_state_.initial_sync_done = true;
+  data_type_state_.set_initial_sync_done(true);
   OnMetadataLoaded();
   Start();
   // TODO(maxbogue): crbug.com/569642: Remove this once entity data is loaded
@@ -261,7 +262,7 @@ void SharedModelTypeProcessorTest::DeleteItem(const std::string& tag,
 }
 
 void SharedModelTypeProcessorTest::OnInitialSyncDone() {
-  data_type_state_.initial_sync_done = true;
+  data_type_state_.set_initial_sync_done(true);
   UpdateResponseDataList empty_update_list;
 
   // TODO(stanisc): crbug/569645: replace this with loading the initial state
@@ -352,7 +353,7 @@ void SharedModelTypeProcessorTest::SuccessfulCommitResponse(
 
 void SharedModelTypeProcessorTest::UpdateDesiredEncryptionKey(
     const std::string& key_name) {
-  data_type_state_.encryption_key_name = key_name;
+  data_type_state_.set_encryption_key_name(key_name);
   type_processor()->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
                                      UpdateResponseDataList());
 }
@@ -561,7 +562,7 @@ TEST_F(SharedModelTypeProcessorTest, CreateAndModifyWithOverrides) {
   entity_data->specifics.mutable_preference()->set_value("value2");
   entity_data->non_unique_name = "name2";
   entity_data->client_tag_hash = "hash";
-  // TODO (skym): Consider removing this. The ID should never be changed by the
+  // TODO(skym): Consider removing this. The ID should never be changed by the
   // client once established.
   entity_data->id = "cid2";
 
@@ -588,7 +589,7 @@ TEST_F(SharedModelTypeProcessorTest, CreateAndModifyWithOverrides) {
   const FakeMetadataChangeList::Record& record2 = change_list.GetNthRecord(1);
   EXPECT_EQ(FakeMetadataChangeList::UPDATE_METADATA, record2.action);
   EXPECT_EQ("tag1", record2.tag);
-  // TODO (skym): Is this correct?
+  // TODO(skym): Is this correct?
   EXPECT_EQ("cid1", record2.metadata.server_id());
   EXPECT_EQ("hash", record2.metadata.client_tag_hash());
 
@@ -919,11 +920,11 @@ TEST_F(SharedModelTypeProcessorTest, DISABLED_Disable) {
   // Once we're ready to commit, all three local items should consider
   // themselves uncommitted and pending for commit.
   // TODO(maxbogue): crbug.com/569645: Fix when data is loaded.
-   EXPECT_EQ(1U, GetNumCommitRequestLists());
-   EXPECT_EQ(3U, GetNthCommitRequestList(0).size());
-   EXPECT_TRUE(HasCommitRequestForTag("tag1"));
-   EXPECT_TRUE(HasCommitRequestForTag("tag2"));
-   EXPECT_TRUE(HasCommitRequestForTag("tag3"));
+  EXPECT_EQ(1U, GetNumCommitRequestLists());
+  EXPECT_EQ(3U, GetNthCommitRequestList(0).size());
+  EXPECT_TRUE(HasCommitRequestForTag("tag1"));
+  EXPECT_TRUE(HasCommitRequestForTag("tag2"));
+  EXPECT_TRUE(HasCommitRequestForTag("tag3"));
 }
 
 // Test receipt of pending updates.

@@ -11,6 +11,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/model_type_processor.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
+#include "sync/protocol/data_type_state.pb.h"
 
 namespace syncer_v2 {
 
@@ -21,7 +22,7 @@ struct SYNC_EXPORT ActivationContext {
   ~ActivationContext();
 
   // Initial DataTypeState at the moment of activation.
-  DataTypeState data_type_state;
+  sync_pb::DataTypeState data_type_state;
 
   // Pending updates from the previous session.
   // TODO(stanisc): crbug.com/529498: should remove pending updates.

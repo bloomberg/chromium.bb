@@ -21,6 +21,7 @@
       '<(sync_proto_sources_dir)/bookmark_specifics.proto',
       '<(sync_proto_sources_dir)/client_commands.proto',
       '<(sync_proto_sources_dir)/client_debug_info.proto',
+      '<(sync_proto_sources_dir)/data_type_state.proto',
       '<(sync_proto_sources_dir)/device_info_specifics.proto',
       '<(sync_proto_sources_dir)/dictionary_specifics.proto',
       '<(sync_proto_sources_dir)/encryption.proto',

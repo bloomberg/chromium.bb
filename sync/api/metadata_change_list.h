@@ -10,11 +10,11 @@
 #include "sync/base/sync_export.h"
 
 namespace sync_pb {
+class DataTypeState;
 class EntityMetadata;
 }  // namespace sync_pb
 
 namespace syncer_v2 {
-struct DataTypeState;
 
 // Interface used by the processor and service to communicate about metadata.
 // The purpose of the interface is to record changes to data type global and
@@ -30,7 +30,8 @@ class SYNC_EXPORT MetadataChangeList {
   virtual ~MetadataChangeList() {}
 
   // Requests DataTypeState to be updated in the storage.
-  virtual void UpdateDataTypeState(const DataTypeState& data_type_state) = 0;
+  virtual void UpdateDataTypeState(
+      const sync_pb::DataTypeState& data_type_state) = 0;
 
   // Requests DataTypeState to be cleared from the storage.
   virtual void ClearDataTypeState() = 0;

@@ -6,10 +6,6 @@
 
 namespace syncer_v2 {
 
-DataTypeState::DataTypeState() {}
-
-DataTypeState::~DataTypeState() {}
-
 CommitRequestData::CommitRequestData() {}
 
 CommitRequestData::~CommitRequestData() {}

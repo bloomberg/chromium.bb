@@ -18,11 +18,11 @@ void MetadataBatch::AddMetadata(const std::string& client_tag,
   metadata_map_.insert(std::make_pair(client_tag, metadata));
 }
 
-const DataTypeState& MetadataBatch::GetDataTypeState() const {
+const sync_pb::DataTypeState& MetadataBatch::GetDataTypeState() const {
   return state_;
 }
 
-void MetadataBatch::SetDataTypeState(const DataTypeState& state) {
+void MetadataBatch::SetDataTypeState(const sync_pb::DataTypeState& state) {
   state_ = state;
 }
 

@@ -20,6 +20,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/model_type_processor.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
+#include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
@@ -85,9 +86,9 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // ModelTypeProcessor implementation.
   void OnConnect(scoped_ptr<CommitQueue> worker) override;
-  void OnCommitCompleted(const DataTypeState& type_state,
+  void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(const DataTypeState& type_state,
+  void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
                         const UpdateResponseDataList& response_list,
                         const UpdateResponseDataList& pending_updates) override;
 
@@ -101,7 +102,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   void FinishStart();
 
   // Handle the first update received from the server after being enabled.
-  void OnInitialUpdateReceived(const DataTypeState& type_state,
+  void OnInitialUpdateReceived(const sync_pb::DataTypeState& type_state,
                                const UpdateResponseDataList& response_list,
                                const UpdateResponseDataList& pending_updates);
 
@@ -114,7 +115,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   void ClearTransientSyncState();
 
   syncer::ModelType type_;
-  DataTypeState data_type_state_;
+  sync_pb::DataTypeState data_type_state_;
 
   // Stores the start callback in between Start() and FinishStart().
   StartCallback start_callback_;

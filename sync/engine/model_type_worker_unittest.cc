@@ -13,6 +13,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/model_type_processor.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
+#include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_util.h"
@@ -84,7 +85,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
       const UpdateResponseDataList& initial_pending_updates);
 
   // Initialize with a custom initial DataTypeState and pending updates.
-  void InitializeWithState(const DataTypeState& state,
+  void InitializeWithState(const sync_pb::DataTypeState& state,
                            const UpdateResponseDataList& pending_updates);
 
   // Introduce a new key that the local cryptographer can't decrypt.
@@ -148,7 +149,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   size_t GetNumModelThreadUpdateResponses() const;
   UpdateResponseDataList GetNthModelThreadUpdateResponse(size_t n) const;
   UpdateResponseDataList GetNthModelThreadPendingUpdates(size_t n) const;
-  DataTypeState GetNthModelThreadUpdateState(size_t n) const;
+  sync_pb::DataTypeState GetNthModelThreadUpdateState(size_t n) const;
 
   // Reads the latest update response datas on the model thread.
   // Note that if the model thread is in non-blocking mode, this data will not
@@ -162,7 +163,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // be updated until the response is actually processed by the model thread.
   size_t GetNumModelThreadCommitResponses() const;
   CommitResponseDataList GetNthModelThreadCommitResponse(size_t n) const;
-  DataTypeState GetNthModelThreadCommitState(size_t n) const;
+  sync_pb::DataTypeState GetNthModelThreadCommitState(size_t n) const;
 
   // Reads the latest commit response datas on the model thread.
   // Note that if the model thread is in non-blocking mode, this data will not
@@ -243,8 +244,8 @@ ModelTypeWorkerTest::ModelTypeWorkerTest()
 ModelTypeWorkerTest::~ModelTypeWorkerTest() {}
 
 void ModelTypeWorkerTest::FirstInitialize() {
-  DataTypeState initial_state;
-  initial_state.progress_marker.set_data_type_id(
+  sync_pb::DataTypeState initial_state;
+  initial_state.mutable_progress_marker()->set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
 
   InitializeWithState(initial_state, UpdateResponseDataList());
@@ -256,12 +257,13 @@ void ModelTypeWorkerTest::NormalInitialize() {
 
 void ModelTypeWorkerTest::InitializeWithPendingUpdates(
     const UpdateResponseDataList& initial_pending_updates) {
-  DataTypeState initial_state;
-  initial_state.progress_marker.set_data_type_id(
+  sync_pb::DataTypeState initial_state;
+  initial_state.mutable_progress_marker()->set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
-  initial_state.progress_marker.set_token("some_saved_progress_token");
+  initial_state.mutable_progress_marker()->set_token(
+      "some_saved_progress_token");
 
-  initial_state.initial_sync_done = true;
+  initial_state.set_initial_sync_done(true);
 
   InitializeWithState(initial_state, initial_pending_updates);
 
@@ -269,7 +271,7 @@ void ModelTypeWorkerTest::InitializeWithPendingUpdates(
 }
 
 void ModelTypeWorkerTest::InitializeWithState(
-    const DataTypeState& state,
+    const sync_pb::DataTypeState& state,
     const UpdateResponseDataList& initial_pending_updates) {
   DCHECK(!worker_);
 
@@ -513,7 +515,7 @@ UpdateResponseDataList ModelTypeWorkerTest::GetNthModelThreadPendingUpdates(
   return mock_type_processor_->GetNthPendingUpdates(n);
 }
 
-DataTypeState ModelTypeWorkerTest::GetNthModelThreadUpdateState(
+sync_pb::DataTypeState ModelTypeWorkerTest::GetNthModelThreadUpdateState(
     size_t n) const {
   DCHECK_LT(n, GetNumModelThreadUpdateResponses());
   return mock_type_processor_->GetNthTypeStateReceivedInUpdateResponse(n);
@@ -541,7 +543,7 @@ CommitResponseDataList ModelTypeWorkerTest::GetNthModelThreadCommitResponse(
   return mock_type_processor_->GetNthCommitResponse(n);
 }
 
-DataTypeState ModelTypeWorkerTest::GetNthModelThreadCommitState(
+sync_pb::DataTypeState ModelTypeWorkerTest::GetNthModelThreadCommitState(
     size_t n) const {
   DCHECK_LT(n, GetNumModelThreadCommitResponses());
   return mock_type_processor_->GetNthTypeStateReceivedInCommitResponse(n);
@@ -768,9 +770,9 @@ TEST_F(ModelTypeWorkerTest, SendInitialSyncDone) {
   EXPECT_EQ(0U, GetNthModelThreadUpdateResponse(0).size());
   EXPECT_EQ(0U, GetNthModelThreadUpdateResponse(1).size());
 
-  const DataTypeState& state = GetNthModelThreadUpdateState(1);
-  EXPECT_FALSE(state.progress_marker.token().empty());
-  EXPECT_TRUE(state.initial_sync_done);
+  const sync_pb::DataTypeState& state = GetNthModelThreadUpdateState(1);
+  EXPECT_FALSE(state.progress_marker().token().empty());
+  EXPECT_TRUE(state.initial_sync_done());
 }
 
 // Commit two new entities in two separate commit messages.
@@ -851,7 +853,7 @@ TEST_F(ModelTypeWorkerTest, EncryptedCommit) {
 
   ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
   EXPECT_EQ(GetLocalCryptographerKeyName(),
-            GetNthModelThreadUpdateState(0).encryption_key_name);
+            GetNthModelThreadUpdateState(0).encryption_key_name());
 
   // Normal commit request stuff.
   CommitRequest("tag1", "value1");
@@ -952,7 +954,7 @@ TEST_F(ModelTypeWorkerTest, InitializeWithCryptographer) {
   // necessary.
   ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
   EXPECT_EQ(GetLocalCryptographerKeyName(),
-            GetNthModelThreadUpdateState(0).encryption_key_name);
+            GetNthModelThreadUpdateState(0).encryption_key_name());
 }
 
 // Receive updates that are initially undecryptable, then ensure they get

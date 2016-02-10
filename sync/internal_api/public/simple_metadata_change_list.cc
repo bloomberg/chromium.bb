@@ -11,7 +11,7 @@ SimpleMetadataChangeList::SimpleMetadataChangeList() {}
 SimpleMetadataChangeList::~SimpleMetadataChangeList() {}
 
 void SimpleMetadataChangeList::UpdateDataTypeState(
-    const DataTypeState& data_type_state) {
+    const sync_pb::DataTypeState& data_type_state) {
   // TODO(skym): Implementation.
 }
 

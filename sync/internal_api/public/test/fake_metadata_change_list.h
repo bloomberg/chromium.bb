@@ -5,10 +5,12 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_TEST_FAKE_METADATA_CHANGE_LIST_H_
 #define SYNC_INTERNAL_API_PUBLIC_TEST_FAKE_METADATA_CHANGE_LIST_H_
 
+#include <string>
 #include <vector>
 
 #include "sync/api/metadata_change_list.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
+#include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/entity_metadata.pb.h"
 
 namespace syncer_v2 {
@@ -22,7 +24,8 @@ class FakeMetadataChangeList : public MetadataChangeList {
   FakeMetadataChangeList();
   ~FakeMetadataChangeList() override;
 
-  void UpdateDataTypeState(const DataTypeState& data_type_state) override;
+  void UpdateDataTypeState(
+      const sync_pb::DataTypeState& data_type_state) override;
   void ClearDataTypeState() override;
   void UpdateMetadata(const std::string& client_tag,
                       const sync_pb::EntityMetadata& metadata) override;
@@ -41,7 +44,7 @@ class FakeMetadataChangeList : public MetadataChangeList {
 
     Action action;
     std::string tag;
-    DataTypeState data_type_state;
+    sync_pb::DataTypeState data_type_state;
     sync_pb::EntityMetadata metadata;
   };
 

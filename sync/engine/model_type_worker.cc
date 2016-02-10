@@ -33,7 +33,7 @@ using syncer::SyncerError;
 
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
-    const DataTypeState& initial_state,
+    const sync_pb::DataTypeState& initial_state,
     const UpdateResponseDataList& saved_pending_updates,
     scoped_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
@@ -45,7 +45,7 @@ ModelTypeWorker::ModelTypeWorker(
       nudge_handler_(nudge_handler),
       weak_ptr_factory_(this) {
   // Request an initial sync if it hasn't been completed yet.
-  if (!data_type_state_.initial_sync_done) {
+  if (!data_type_state_.initial_sync_done()) {
     nudge_handler_->NudgeForInitialDownload(type_);
   }
 
@@ -94,13 +94,13 @@ void ModelTypeWorker::UpdateCryptographer(
 void ModelTypeWorker::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
   DCHECK(CalledOnValidThread());
-  progress_marker->CopyFrom(data_type_state_.progress_marker);
+  progress_marker->CopyFrom(data_type_state_.progress_marker());
 }
 
 void ModelTypeWorker::GetDataTypeContext(
     sync_pb::DataTypeContext* context) const {
   DCHECK(CalledOnValidThread());
-  context->CopyFrom(data_type_state_.type_context);
+  context->CopyFrom(data_type_state_.type_context());
 }
 
 SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
@@ -111,8 +111,8 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   DCHECK(CalledOnValidThread());
 
   // TODO(rlarocque): Handle data type context conflicts.
-  data_type_state_.type_context = mutated_context;
-  data_type_state_.progress_marker = progress_marker;
+  *data_type_state_.mutable_type_context() = mutated_context;
+  *data_type_state_.mutable_progress_marker() = progress_marker;
 
   UpdateResponseDataList response_datas;
   UpdateResponseDataList pending_updates;
@@ -206,10 +206,10 @@ void ModelTypeWorker::ApplyUpdates(syncer::sessions::StatusController* status) {
   // got a response with changes_remaining == 0.  If this is our first download
   // cycle, we should update our state so the ModelTypeProcessor knows that
   // it's safe to commit items now.
-  if (!data_type_state_.initial_sync_done) {
+  if (!data_type_state_.initial_sync_done()) {
     DVLOG(1) << "Delivering 'initial sync done' ping.";
 
-    data_type_state_.initial_sync_done = true;
+    data_type_state_.set_initial_sync_done(true);
 
     model_type_processor_->OnUpdateReceived(
         data_type_state_, UpdateResponseDataList(), UpdateResponseDataList());
@@ -271,7 +271,8 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     return scoped_ptr<CommitContribution>();
 
   return scoped_ptr<CommitContribution>(new NonBlockingTypeCommitContribution(
-      data_type_state_.type_context, commit_entities, sequence_numbers, this));
+      data_type_state_.type_context(), commit_entities, sequence_numbers,
+      this));
 }
 
 void ModelTypeWorker::StorePendingCommit(const CommitRequestData& request) {
@@ -327,8 +328,8 @@ base::WeakPtr<ModelTypeWorker> ModelTypeWorker::AsWeakPtr() {
 }
 
 bool ModelTypeWorker::IsTypeInitialized() const {
-  return data_type_state_.initial_sync_done &&
-         !data_type_state_.progress_marker.token().empty();
+  return data_type_state_.initial_sync_done() &&
+         !data_type_state_.progress_marker().token().empty();
 }
 
 bool ModelTypeWorker::CanCommitItems() const {
@@ -392,10 +393,11 @@ void ModelTypeWorker::OnCryptographerUpdated() {
   const std::string& new_key_name = cryptographer_->GetDefaultNigoriKeyName();
 
   // Handle a change in encryption key.
-  if (data_type_state_.encryption_key_name != new_key_name) {
+  if (data_type_state_.encryption_key_name() != new_key_name) {
     DVLOG(1) << ModelTypeToString(type_) << ": Updating encryption key "
-             << data_type_state_.encryption_key_name << " -> " << new_key_name;
-    data_type_state_.encryption_key_name = new_key_name;
+             << data_type_state_.encryption_key_name() << " -> "
+             << new_key_name;
+    data_type_state_.set_encryption_key_name(new_key_name);
     new_encryption_key = true;
   }
 

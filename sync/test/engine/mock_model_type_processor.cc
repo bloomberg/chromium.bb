@@ -23,7 +23,7 @@ void MockModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> commit_queue) {
 }
 
 void MockModelTypeProcessor::OnCommitCompleted(
-    const DataTypeState& type_state,
+    const sync_pb::DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   base::Closure task =
       base::Bind(&MockModelTypeProcessor::OnCommitCompletedImpl,
@@ -36,7 +36,7 @@ void MockModelTypeProcessor::OnCommitCompleted(
 }
 
 void MockModelTypeProcessor::OnUpdateReceived(
-    const DataTypeState& type_state,
+    const sync_pb::DataTypeState& type_state,
     const UpdateResponseDataList& response_list,
     const UpdateResponseDataList& pending_updates) {
   base::Closure task = base::Bind(&MockModelTypeProcessor::OnUpdateReceivedImpl,
@@ -135,7 +135,8 @@ UpdateResponseDataList MockModelTypeProcessor::GetNthPendingUpdates(
   return received_pending_updates_[n];
 }
 
-DataTypeState MockModelTypeProcessor::GetNthTypeStateReceivedInUpdateResponse(
+sync_pb::DataTypeState
+MockModelTypeProcessor::GetNthTypeStateReceivedInUpdateResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   return type_states_received_on_update_[n];
@@ -151,7 +152,8 @@ CommitResponseDataList MockModelTypeProcessor::GetNthCommitResponse(
   return received_commit_responses_[n];
 }
 
-DataTypeState MockModelTypeProcessor::GetNthTypeStateReceivedInCommitResponse(
+sync_pb::DataTypeState
+MockModelTypeProcessor::GetNthTypeStateReceivedInCommitResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitResponses());
   return type_states_received_on_commit_[n];
@@ -188,7 +190,7 @@ CommitResponseData MockModelTypeProcessor::GetCommitResponse(
 }
 
 void MockModelTypeProcessor::OnCommitCompletedImpl(
-    const DataTypeState& type_state,
+    const sync_pb::DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   received_commit_responses_.push_back(response_list);
   type_states_received_on_commit_.push_back(type_state);
@@ -203,7 +205,7 @@ void MockModelTypeProcessor::OnCommitCompletedImpl(
 }
 
 void MockModelTypeProcessor::OnUpdateReceivedImpl(
-    const DataTypeState& type_state,
+    const sync_pb::DataTypeState& type_state,
     const UpdateResponseDataList& response_list,
     const UpdateResponseDataList& pending_updates) {
   received_update_responses_.push_back(response_list);

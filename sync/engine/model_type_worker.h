@@ -21,6 +21,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
+#include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/cryptographer.h"
 
@@ -59,7 +60,7 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
                                     public base::NonThreadSafe {
  public:
   ModelTypeWorker(syncer::ModelType type,
-                  const DataTypeState& initial_state,
+                  const sync_pb::DataTypeState& initial_state,
                   const UpdateResponseDataList& saved_pending_updates,
                   scoped_ptr<syncer::Cryptographer> cryptographer,
                   syncer::NudgeHandler* nudge_handler,
@@ -139,7 +140,7 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   syncer::ModelType type_;
 
   // State that applies to the entire model type.
-  DataTypeState data_type_state_;
+  sync_pb::DataTypeState data_type_state_;
 
   // Pointer to the ModelTypeProcessor associated with this worker.
   // This is NULL when no proxy is connected..
