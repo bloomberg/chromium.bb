@@ -7380,6 +7380,11 @@ void GLES2DecoderImpl::DoUniformMatrix2fv(
     const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
+  if (transpose && !unsafe_es3_apis_enabled()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glUniformMatrix2fv", "transpose not FALSE");
+    return;
+  }
   if (!PrepForSetUniformByLocation(fake_location,
                                    "glUniformMatrix2fv",
                                    Program::kUniformMatrix2f,
@@ -7396,6 +7401,11 @@ void GLES2DecoderImpl::DoUniformMatrix3fv(
     const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
+  if (transpose && !unsafe_es3_apis_enabled()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glUniformMatrix3fv", "transpose not FALSE");
+    return;
+  }
   if (!PrepForSetUniformByLocation(fake_location,
                                    "glUniformMatrix3fv",
                                    Program::kUniformMatrix3f,
@@ -7412,6 +7422,11 @@ void GLES2DecoderImpl::DoUniformMatrix4fv(
     const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
+  if (transpose && !unsafe_es3_apis_enabled()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glUniformMatrix4fv", "transpose not FALSE");
+    return;
+  }
   if (!PrepForSetUniformByLocation(fake_location,
                                    "glUniformMatrix4fv",
                                    Program::kUniformMatrix4f,

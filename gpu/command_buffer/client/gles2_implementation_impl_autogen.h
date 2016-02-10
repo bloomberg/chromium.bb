@@ -2414,12 +2414,7 @@ void GLES2Implementation::UniformMatrix2fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix2fvImmediate(location, count, value);
+  helper_->UniformMatrix2fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 
@@ -2444,12 +2439,7 @@ void GLES2Implementation::UniformMatrix2x3fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix2x3fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2x3fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix2x3fvImmediate(location, count, value);
+  helper_->UniformMatrix2x3fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 
@@ -2475,12 +2465,7 @@ void GLES2Implementation::UniformMatrix2x4fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix2x4fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2x4fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix2x4fvImmediate(location, count, value);
+  helper_->UniformMatrix2x4fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 
@@ -2507,12 +2492,7 @@ void GLES2Implementation::UniformMatrix3fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix3fvImmediate(location, count, value);
+  helper_->UniformMatrix3fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 
@@ -2537,12 +2517,7 @@ void GLES2Implementation::UniformMatrix3x2fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix3x2fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3x2fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix3x2fvImmediate(location, count, value);
+  helper_->UniformMatrix3x2fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 
@@ -2570,12 +2545,7 @@ void GLES2Implementation::UniformMatrix3x4fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix3x4fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3x4fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix3x4fvImmediate(location, count, value);
+  helper_->UniformMatrix3x4fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 
@@ -2605,12 +2575,7 @@ void GLES2Implementation::UniformMatrix4fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix4fvImmediate(location, count, value);
+  helper_->UniformMatrix4fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 
@@ -2636,12 +2601,7 @@ void GLES2Implementation::UniformMatrix4x2fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix4x2fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4x2fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix4x2fvImmediate(location, count, value);
+  helper_->UniformMatrix4x2fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 
@@ -2669,12 +2629,7 @@ void GLES2Implementation::UniformMatrix4x3fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix4x3fv", "count < 0");
     return;
   }
-  if (transpose != false) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4x3fv",
-               "transpose GL_INVALID_VALUE");
-    return;
-  }
-  helper_->UniformMatrix4x3fvImmediate(location, count, value);
+  helper_->UniformMatrix4x3fvImmediate(location, count, transpose, value);
   CheckGLError();
 }
 

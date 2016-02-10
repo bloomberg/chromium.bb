@@ -1880,6 +1880,7 @@ void UniformBlockBinding(GLuint program, GLuint index, GLuint binding) {
 
 void UniformMatrix2fvImmediate(GLint location,
                                GLsizei count,
+                               GLboolean transpose,
                                const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix2fvImmediate::ComputeSize(count);
@@ -1887,12 +1888,13 @@ void UniformMatrix2fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix2fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 
 void UniformMatrix2x3fvImmediate(GLint location,
                                  GLsizei count,
+                                 GLboolean transpose,
                                  const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix2x3fvImmediate::ComputeSize(count);
@@ -1900,12 +1902,13 @@ void UniformMatrix2x3fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix2x3fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 
 void UniformMatrix2x4fvImmediate(GLint location,
                                  GLsizei count,
+                                 GLboolean transpose,
                                  const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix2x4fvImmediate::ComputeSize(count);
@@ -1913,12 +1916,13 @@ void UniformMatrix2x4fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix2x4fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 
 void UniformMatrix3fvImmediate(GLint location,
                                GLsizei count,
+                               GLboolean transpose,
                                const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix3fvImmediate::ComputeSize(count);
@@ -1926,12 +1930,13 @@ void UniformMatrix3fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix3fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 
 void UniformMatrix3x2fvImmediate(GLint location,
                                  GLsizei count,
+                                 GLboolean transpose,
                                  const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix3x2fvImmediate::ComputeSize(count);
@@ -1939,12 +1944,13 @@ void UniformMatrix3x2fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix3x2fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 
 void UniformMatrix3x4fvImmediate(GLint location,
                                  GLsizei count,
+                                 GLboolean transpose,
                                  const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix3x4fvImmediate::ComputeSize(count);
@@ -1952,12 +1958,13 @@ void UniformMatrix3x4fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix3x4fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 
 void UniformMatrix4fvImmediate(GLint location,
                                GLsizei count,
+                               GLboolean transpose,
                                const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix4fvImmediate::ComputeSize(count);
@@ -1965,12 +1972,13 @@ void UniformMatrix4fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix4fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 
 void UniformMatrix4x2fvImmediate(GLint location,
                                  GLsizei count,
+                                 GLboolean transpose,
                                  const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix4x2fvImmediate::ComputeSize(count);
@@ -1978,12 +1986,13 @@ void UniformMatrix4x2fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix4x2fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 
 void UniformMatrix4x3fvImmediate(GLint location,
                                  GLsizei count,
+                                 GLboolean transpose,
                                  const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix4x3fvImmediate::ComputeSize(count);
@@ -1991,7 +2000,7 @@ void UniformMatrix4x3fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix4x3fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, value);
+    c->Init(location, count, transpose, value);
   }
 }
 

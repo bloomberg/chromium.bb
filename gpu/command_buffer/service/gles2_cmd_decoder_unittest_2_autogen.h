@@ -1445,32 +1445,17 @@ TEST_P(GLES2DecoderTest2, Uniform4ivImmediateValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest2, UniformMatrix2fvImmediateValidArgs) {
-  cmds::UniformMatrix2fvImmediate& cmd =
-      *GetImmediateAs<cmds::UniformMatrix2fvImmediate>();
-  EXPECT_CALL(*gl_,
-              UniformMatrix2fv(1, 2, false, reinterpret_cast<GLfloat*>(
-                                                ImmediateDataAddress(&cmd))));
-  SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(true);
-  GLfloat temp[4 * 2] = {
-      0,
-  };
-  cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
 TEST_P(GLES2DecoderTest2, UniformMatrix2x3fvImmediateValidArgs) {
   cmds::UniformMatrix2x3fvImmediate& cmd =
       *GetImmediateAs<cmds::UniformMatrix2x3fvImmediate>();
   EXPECT_CALL(*gl_,
-              UniformMatrix2x3fv(1, 2, false, reinterpret_cast<GLfloat*>(
-                                                  ImmediateDataAddress(&cmd))));
+              UniformMatrix2x3fv(1, 2, true, reinterpret_cast<GLfloat*>(
+                                                 ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix2x3fvImmediate, 0>(true);
   GLfloat temp[6 * 2] = {
       0,
   };
-  cmd.Init(1, 2, &temp[0]);
+  cmd.Init(1, 2, true, &temp[0]);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());

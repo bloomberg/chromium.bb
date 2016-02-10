@@ -2158,21 +2158,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix2fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 4 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix2fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix2fvInvalidConstantArg2) {
-  GLfloat data[2][4] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 4; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 4 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix2fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UniformMatrix2x3fv) {
@@ -2188,21 +2176,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix2x3fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 6 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix2x3fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix2x3fvInvalidConstantArg2) {
-  GLfloat data[2][6] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 6; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 6 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix2x3fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UniformMatrix2x4fv) {
@@ -2218,21 +2194,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix2x4fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 8 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix2x4fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix2x4fvInvalidConstantArg2) {
-  GLfloat data[2][8] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 8; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 8 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix2x4fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UniformMatrix3fv) {
@@ -2248,21 +2212,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix3fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 9 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix3fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix3fvInvalidConstantArg2) {
-  GLfloat data[2][9] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 9; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 9 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix3fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UniformMatrix3x2fv) {
@@ -2278,21 +2230,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix3x2fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 6 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix3x2fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix3x2fvInvalidConstantArg2) {
-  GLfloat data[2][6] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 6; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 6 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix3x2fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UniformMatrix3x4fv) {
@@ -2308,21 +2248,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix3x4fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 12 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix3x4fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix3x4fvInvalidConstantArg2) {
-  GLfloat data[2][12] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 12; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 12 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix3x4fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UniformMatrix4fv) {
@@ -2338,21 +2266,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix4fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 16 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix4fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix4fvInvalidConstantArg2) {
-  GLfloat data[2][16] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 16; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 16 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix4fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UniformMatrix4x2fv) {
@@ -2368,21 +2284,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix4x2fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 8 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix4x2fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix4x2fvInvalidConstantArg2) {
-  GLfloat data[2][8] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 8; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 8 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix4x2fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UniformMatrix4x3fv) {
@@ -2398,21 +2302,9 @@ TEST_F(GLES2ImplementationTest, UniformMatrix4x3fv) {
       data[ii][jj] = static_cast<GLfloat>(ii * 12 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->UniformMatrix4x3fv(1, 2, false, &data[0][0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, UniformMatrix4x3fvInvalidConstantArg2) {
-  GLfloat data[2][12] = {{0}};
-  for (int ii = 0; ii < 2; ++ii) {
-    for (int jj = 0; jj < 12; ++jj) {
-      data[ii][jj] = static_cast<GLfloat>(ii * 12 + jj);
-    }
-  }
+  expected.cmd.Init(1, 2, true, &data[0][0]);
   gl_->UniformMatrix4x3fv(1, 2, true, &data[0][0]);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, UseProgram) {

@@ -6251,7 +6251,7 @@ bool WebGLRenderingContextBase::validateUniformMatrixParameters(const char* func
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
         return false;
     }
-    if (transpose) {
+    if (transpose && !isWebGL2OrHigher()) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "transpose not FALSE");
         return false;
     }

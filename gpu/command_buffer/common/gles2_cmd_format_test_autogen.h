@@ -3025,13 +3025,14 @@ TEST_F(GLES2FormatTest, UniformMatrix2fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 4;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix2fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
@@ -3057,13 +3058,14 @@ TEST_F(GLES2FormatTest, UniformMatrix2x3fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 6;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix2x3fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
@@ -3093,13 +3095,14 @@ TEST_F(GLES2FormatTest, UniformMatrix2x4fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 8;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix2x4fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
@@ -3131,13 +3134,14 @@ TEST_F(GLES2FormatTest, UniformMatrix3fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 9;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix3fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
@@ -3163,13 +3167,14 @@ TEST_F(GLES2FormatTest, UniformMatrix3x2fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 6;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix3x2fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
@@ -3207,13 +3212,14 @@ TEST_F(GLES2FormatTest, UniformMatrix3x4fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 12;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix3x4fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
@@ -3259,13 +3265,14 @@ TEST_F(GLES2FormatTest, UniformMatrix4fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 16;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix4fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
@@ -3295,13 +3302,14 @@ TEST_F(GLES2FormatTest, UniformMatrix4x2fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 8;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix4x2fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
@@ -3339,13 +3347,14 @@ TEST_F(GLES2FormatTest, UniformMatrix4x3fvImmediate) {
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLfloat) * 12;
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2),
+                           static_cast<GLboolean>(3), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix4x3fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLboolean>(3), cmd.transpose);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }

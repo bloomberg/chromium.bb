@@ -9505,15 +9505,23 @@ struct UniformMatrix2fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9521,17 +9529,19 @@ struct UniformMatrix2fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix2fvImmediate) == 12,
-              "size of UniformMatrix2fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix2fvImmediate) == 16,
+              "size of UniformMatrix2fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix2fvImmediate, header) == 0,
               "offset of UniformMatrix2fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix2fvImmediate, location) == 4,
               "offset of UniformMatrix2fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix2fvImmediate, count) == 8,
               "offset of UniformMatrix2fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix2fvImmediate, transpose) == 12,
+              "offset of UniformMatrix2fvImmediate transpose should be 12");
 
 struct UniformMatrix2x3fvImmediate {
   typedef UniformMatrix2x3fvImmediate ValueType;
@@ -9552,15 +9562,23 @@ struct UniformMatrix2x3fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9568,17 +9586,19 @@ struct UniformMatrix2x3fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix2x3fvImmediate) == 12,
-              "size of UniformMatrix2x3fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix2x3fvImmediate) == 16,
+              "size of UniformMatrix2x3fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix2x3fvImmediate, header) == 0,
               "offset of UniformMatrix2x3fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix2x3fvImmediate, location) == 4,
               "offset of UniformMatrix2x3fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix2x3fvImmediate, count) == 8,
               "offset of UniformMatrix2x3fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix2x3fvImmediate, transpose) == 12,
+              "offset of UniformMatrix2x3fvImmediate transpose should be 12");
 
 struct UniformMatrix2x4fvImmediate {
   typedef UniformMatrix2x4fvImmediate ValueType;
@@ -9599,15 +9619,23 @@ struct UniformMatrix2x4fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9615,17 +9643,19 @@ struct UniformMatrix2x4fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix2x4fvImmediate) == 12,
-              "size of UniformMatrix2x4fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix2x4fvImmediate) == 16,
+              "size of UniformMatrix2x4fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix2x4fvImmediate, header) == 0,
               "offset of UniformMatrix2x4fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix2x4fvImmediate, location) == 4,
               "offset of UniformMatrix2x4fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix2x4fvImmediate, count) == 8,
               "offset of UniformMatrix2x4fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix2x4fvImmediate, transpose) == 12,
+              "offset of UniformMatrix2x4fvImmediate transpose should be 12");
 
 struct UniformMatrix3fvImmediate {
   typedef UniformMatrix3fvImmediate ValueType;
@@ -9646,15 +9676,23 @@ struct UniformMatrix3fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9662,17 +9700,19 @@ struct UniformMatrix3fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix3fvImmediate) == 12,
-              "size of UniformMatrix3fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix3fvImmediate) == 16,
+              "size of UniformMatrix3fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix3fvImmediate, header) == 0,
               "offset of UniformMatrix3fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix3fvImmediate, location) == 4,
               "offset of UniformMatrix3fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix3fvImmediate, count) == 8,
               "offset of UniformMatrix3fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix3fvImmediate, transpose) == 12,
+              "offset of UniformMatrix3fvImmediate transpose should be 12");
 
 struct UniformMatrix3x2fvImmediate {
   typedef UniformMatrix3x2fvImmediate ValueType;
@@ -9693,15 +9733,23 @@ struct UniformMatrix3x2fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9709,17 +9757,19 @@ struct UniformMatrix3x2fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix3x2fvImmediate) == 12,
-              "size of UniformMatrix3x2fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix3x2fvImmediate) == 16,
+              "size of UniformMatrix3x2fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix3x2fvImmediate, header) == 0,
               "offset of UniformMatrix3x2fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix3x2fvImmediate, location) == 4,
               "offset of UniformMatrix3x2fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix3x2fvImmediate, count) == 8,
               "offset of UniformMatrix3x2fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix3x2fvImmediate, transpose) == 12,
+              "offset of UniformMatrix3x2fvImmediate transpose should be 12");
 
 struct UniformMatrix3x4fvImmediate {
   typedef UniformMatrix3x4fvImmediate ValueType;
@@ -9740,15 +9790,23 @@ struct UniformMatrix3x4fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9756,17 +9814,19 @@ struct UniformMatrix3x4fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix3x4fvImmediate) == 12,
-              "size of UniformMatrix3x4fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix3x4fvImmediate) == 16,
+              "size of UniformMatrix3x4fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix3x4fvImmediate, header) == 0,
               "offset of UniformMatrix3x4fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix3x4fvImmediate, location) == 4,
               "offset of UniformMatrix3x4fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix3x4fvImmediate, count) == 8,
               "offset of UniformMatrix3x4fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix3x4fvImmediate, transpose) == 12,
+              "offset of UniformMatrix3x4fvImmediate transpose should be 12");
 
 struct UniformMatrix4fvImmediate {
   typedef UniformMatrix4fvImmediate ValueType;
@@ -9787,15 +9847,23 @@ struct UniformMatrix4fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9803,17 +9871,19 @@ struct UniformMatrix4fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix4fvImmediate) == 12,
-              "size of UniformMatrix4fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix4fvImmediate) == 16,
+              "size of UniformMatrix4fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix4fvImmediate, header) == 0,
               "offset of UniformMatrix4fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix4fvImmediate, location) == 4,
               "offset of UniformMatrix4fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix4fvImmediate, count) == 8,
               "offset of UniformMatrix4fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix4fvImmediate, transpose) == 12,
+              "offset of UniformMatrix4fvImmediate transpose should be 12");
 
 struct UniformMatrix4x2fvImmediate {
   typedef UniformMatrix4x2fvImmediate ValueType;
@@ -9834,15 +9904,23 @@ struct UniformMatrix4x2fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9850,17 +9928,19 @@ struct UniformMatrix4x2fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix4x2fvImmediate) == 12,
-              "size of UniformMatrix4x2fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix4x2fvImmediate) == 16,
+              "size of UniformMatrix4x2fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix4x2fvImmediate, header) == 0,
               "offset of UniformMatrix4x2fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix4x2fvImmediate, location) == 4,
               "offset of UniformMatrix4x2fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix4x2fvImmediate, count) == 8,
               "offset of UniformMatrix4x2fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix4x2fvImmediate, transpose) == 12,
+              "offset of UniformMatrix4x2fvImmediate transpose should be 12");
 
 struct UniformMatrix4x3fvImmediate {
   typedef UniformMatrix4x3fvImmediate ValueType;
@@ -9881,15 +9961,23 @@ struct UniformMatrix4x3fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
+    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -9897,17 +9985,19 @@ struct UniformMatrix4x3fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  static const uint32_t transpose = false;
+  uint32_t transpose;
 };
 
-static_assert(sizeof(UniformMatrix4x3fvImmediate) == 12,
-              "size of UniformMatrix4x3fvImmediate should be 12");
+static_assert(sizeof(UniformMatrix4x3fvImmediate) == 16,
+              "size of UniformMatrix4x3fvImmediate should be 16");
 static_assert(offsetof(UniformMatrix4x3fvImmediate, header) == 0,
               "offset of UniformMatrix4x3fvImmediate header should be 0");
 static_assert(offsetof(UniformMatrix4x3fvImmediate, location) == 4,
               "offset of UniformMatrix4x3fvImmediate location should be 4");
 static_assert(offsetof(UniformMatrix4x3fvImmediate, count) == 8,
               "offset of UniformMatrix4x3fvImmediate count should be 8");
+static_assert(offsetof(UniformMatrix4x3fvImmediate, transpose) == 12,
+              "offset of UniformMatrix4x3fvImmediate transpose should be 12");
 
 struct UseProgram {
   typedef UseProgram ValueType;
