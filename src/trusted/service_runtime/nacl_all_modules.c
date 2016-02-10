@@ -7,7 +7,6 @@
 /*
  * Gather ye all module initializations and finalizations here.
  */
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
@@ -21,7 +20,6 @@ void  NaClAllModulesInit(void) {
   NaClNrdAllModulesInit();
   NaClFaultInjectionModuleInit();
   NaClGlobalModuleInit();  /* various global variables */
-  NaClSrpcModuleInit();
   NaClTlsInit();
   NaClThreadNiceInit();
 }
@@ -29,7 +27,6 @@ void  NaClAllModulesInit(void) {
 
 void NaClAllModulesFini(void) {
   NaClTlsFini();
-  NaClSrpcModuleFini();
   NaClGlobalModuleFini();
   NaClNrdAllModulesFini();
 }
