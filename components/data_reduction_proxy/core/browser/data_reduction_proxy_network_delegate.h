@@ -40,7 +40,6 @@ class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
-class DataReductionProxyExperimentsStats;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
 
@@ -65,16 +64,15 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   // Constructs a DataReductionProxyNetworkdelegate object with the given
   // |network_delegate|, |config|, |handler|, |configurator|,
-  // |experiments_stats|, |net_log|, and |event_creator|. Takes ownership of
-  // and wraps the |network_delegate|, calling an internal implementation for
-  // each delegate method. For example, the implementation of
-  // OnHeadersReceived() calls OnHeadersReceivedInternal().
+  // |net_log|, and |event_creator|. Takes ownership of and wraps the
+  // |network_delegate|, calling an internal implementation for each delegate
+  // method. For example, the implementation of OnHeadersReceived() calls
+  // OnHeadersReceivedInternal().
   DataReductionProxyNetworkDelegate(
       scoped_ptr<net::NetworkDelegate> network_delegate,
       DataReductionProxyConfig* config,
       DataReductionProxyRequestOptions* handler,
       const DataReductionProxyConfigurator* configurator,
-      DataReductionProxyExperimentsStats* experiments_stats,
       net::NetLog* net_log,
       DataReductionProxyEventCreator* event_creator);
   ~DataReductionProxyNetworkDelegate() override;
@@ -164,8 +162,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   DataReductionProxyIOData* data_reduction_proxy_io_data_;
 
   const DataReductionProxyConfigurator* configurator_;
-
-  DataReductionProxyExperimentsStats* experiments_stats_;
 
   net::NetLog* net_log_;
 

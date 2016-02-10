@@ -13,8 +13,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
 #include "components/data_reduction_proxy/content/browser/content_lofi_ui_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_retrieval_params.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/prefs/pref_service.h"
@@ -88,9 +86,6 @@ CreateDataReductionProxyChromeIOData(
               DataReductionProxyChromeSettings::GetClient(), flags, net_log,
               io_task_runner, ui_task_runner, enabled, enable_quic,
               GetUserAgent()));
-  data_reduction_proxy_io_data->experiments_stats()->InitializeOnUIThread(
-      data_reduction_proxy::DataReductionProxyConfigRetrievalParams::Create(
-          prefs));
 
   data_reduction_proxy_io_data->set_lofi_decider(
       make_scoped_ptr(new data_reduction_proxy::ContentLoFiDecider()));

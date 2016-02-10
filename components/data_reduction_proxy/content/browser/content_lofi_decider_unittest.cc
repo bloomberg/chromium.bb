@@ -79,7 +79,6 @@ class ContentLoFiDeciderTest : public testing::Test {
             test_context_->config(),
             test_context_->io_data()->request_options(),
             test_context_->configurator(),
-            test_context_->io_data()->experiments_stats(),
             test_context_->net_log(), test_context_->event_creator()));
 
     data_reduction_proxy_network_delegate_->InitIODataAndUMA(

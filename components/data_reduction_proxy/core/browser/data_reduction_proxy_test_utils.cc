@@ -12,7 +12,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
@@ -193,7 +192,6 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     scoped_ptr<DataReductionProxyRequestOptions> request_options,
     scoped_ptr<DataReductionProxyConfigurator> configurator,
     scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
-    scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats,
     net::NetLog* net_log,
     bool enabled)
     : DataReductionProxyIOData(), service_set_(false) {
@@ -204,7 +202,6 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
   request_options_ = std::move(request_options);
   configurator_ = std::move(configurator);
   config_client_ = std::move(config_client);
-  experiments_stats_ = std::move(experiments_stats);
   net_log_ = net_log;
   bypass_stats_.reset(new DataReductionProxyBypassStats(
       config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
@@ -455,15 +452,11 @@ DataReductionProxyTestContext::Builder::Build() {
                                                 false);
   RegisterSimpleProfilePrefs(pref_service->registry());
 
-  scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats(
-      new DataReductionProxyExperimentsStats(base::Bind(
-          &PrefService::SetInt64, base::Unretained(pref_service.get()))));
   scoped_ptr<TestDataReductionProxyIOData> io_data(
       new TestDataReductionProxyIOData(
           task_runner, std::move(config), std::move(event_creator),
           std::move(request_options), std::move(configurator),
-          std::move(config_client), std::move(experiments_stats), net_log.get(),
-          true /* enabled */));
+          std::move(config_client), net_log.get(), true /* enabled */));
   io_data->SetSimpleURLRequestContextGetter(request_context_getter);
 
   scoped_ptr<DataReductionProxyTestContext> test_context(

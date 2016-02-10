@@ -6485,6 +6485,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.ConfigFetchLostBytesCL">
+  <obsolete>
+    Removed in Feb. 2016
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <summary>
     Size of the response body. This is the actual number of bytes received,
@@ -6495,6 +6498,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.ConfigFetchLostBytesDiff">
+  <obsolete>
+    Removed in Feb. 2016
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <summary>
     The difference between the size specified in the X-Original-Content-Length
@@ -6507,6 +6513,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.ConfigFetchLostBytesOCL">
+  <obsolete>
+    Removed in Feb. 2016
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <summary>
     Size specified in the X-Original-Content-Length header. If this header is
@@ -83204,6 +83213,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="DataReductionProxyConfigFetchLostBytes" separator="_">
+  <obsolete>
+    Removed in Feb 2016.
+  </obsolete>
   <suffix name="0" label="Bucket 0 for gathering multiple data points."/>
   <suffix name="1" label="Bucket 1 for gathering multiple data points."/>
   <suffix name="2" label="Bucket 2 for gathering multiple data points."/>

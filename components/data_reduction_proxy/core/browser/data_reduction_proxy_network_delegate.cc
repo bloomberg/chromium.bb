@@ -13,7 +13,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
@@ -120,7 +119,6 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     DataReductionProxyConfig* config,
     DataReductionProxyRequestOptions* request_options,
     const DataReductionProxyConfigurator* configurator,
-    DataReductionProxyExperimentsStats* experiments_stats,
     net::NetLog* net_log,
     DataReductionProxyEventCreator* event_creator)
     : LayeredNetworkDelegate(std::move(network_delegate)),
@@ -131,13 +129,11 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       data_reduction_proxy_request_options_(request_options),
       data_reduction_proxy_io_data_(nullptr),
       configurator_(configurator),
-      experiments_stats_(experiments_stats),
       net_log_(net_log),
       event_creator_(event_creator) {
   DCHECK(data_reduction_proxy_config_);
   DCHECK(data_reduction_proxy_request_options_);
   DCHECK(configurator_);
-  DCHECK(experiments_stats_);
   DCHECK(net_log_);
   DCHECK(event_creator_);
 }
@@ -338,10 +334,6 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
               request),
       request.received_response_content_length(), original_content_length,
       freshness_lifetime);
-
-  experiments_stats_->RecordBytes(request.request_time(), request_type,
-                                  request.received_response_content_length(),
-                                  original_content_length);
 
   if (data_reduction_proxy_io_data_ && data_reduction_proxy_bypass_stats_) {
     // Record BypassedBytes histograms for the request.

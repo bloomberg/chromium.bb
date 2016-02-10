@@ -47,7 +47,6 @@ namespace data_reduction_proxy {
 class ClientConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
-class DataReductionProxyExperimentsStats;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
@@ -173,7 +172,6 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       scoped_ptr<DataReductionProxyRequestOptions> request_options,
       scoped_ptr<DataReductionProxyConfigurator> configurator,
       scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
-      scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats,
       net::NetLog* net_log,
       bool enabled);
   ~TestDataReductionProxyIOData() override;
