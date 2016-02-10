@@ -56,9 +56,6 @@ namespace test {
 // Returns the TabStrip for |browser|.
 TabStrip* GetTabStripForBrowser(Browser* browser);
 
-// Returns the center of |view| in screen coordinates.
-gfx::Point GetCenterInScreenCoordinates(const views::View* view);
-
 // Sets the id of |web_contents| to |id|.
 void SetID(content::WebContents* web_contents, int id);
 

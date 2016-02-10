@@ -493,6 +493,25 @@ if (!is_android) {
       # when we tried to pull it up to the common.gypi level, it broke other
       # things like the ui and startup tests. *shrug*
       ldflags += [ "-Wl,-ObjC" ]
+
+      # The browser window can be views or Cocoa on Mac. Test accordingly.
+      if (mac_views_browser) {
+        sources += rebase_path(
+                chrome_tests_gypi_values.chrome_interactive_ui_test_views_non_mac_sources,
+                ".",
+                "//chrome")
+
+        # Aura depended tests.
+        sources -= [
+          "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc",
+          "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc",
+        ]
+      } else {
+        sources += rebase_path(
+                chrome_tests_gypi_values.chrome_interactive_ui_test_cocoa_sources,
+                ".",
+                "//chrome")
+      }
     }
 
     if (cld_version == 2) {

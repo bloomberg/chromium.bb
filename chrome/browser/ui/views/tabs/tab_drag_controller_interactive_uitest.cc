@@ -111,12 +111,6 @@ class QuitDraggingObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(QuitDraggingObserver);
 };
 
-gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
-  gfx::Point center(view->width() / 2, view->height() / 2);
-  views::View::ConvertPointToScreen(view, &center);
-  return center;
-}
-
 void SetID(WebContents* web_contents, int id) {
   web_contents->SetUserData(&kTabDragControllerInteractiveUITestUserDataKey,
                             new TabDragControllerInteractiveUITestUserData(id));
@@ -157,7 +151,7 @@ TabStrip* GetTabStripForBrowser(Browser* browser) {
 
 }  // namespace test
 
-using test::GetCenterInScreenCoordinates;
+using ui_test_utils::GetCenterInScreenCoordinates;
 using test::SetID;
 using test::ResetIDs;
 using test::IDString;

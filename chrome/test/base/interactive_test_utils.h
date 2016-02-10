@@ -132,6 +132,9 @@ void MoveMouseToCenterAndPress(views::View* view,
                                ui_controls::MouseButton button,
                                int state,
                                const base::Closure& task);
+
+// Returns the center of |view| in screen coordinates.
+gfx::Point GetCenterInScreenCoordinates(const views::View* view);
 #endif
 
 namespace internal {

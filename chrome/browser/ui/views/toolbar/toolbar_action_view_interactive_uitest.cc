@@ -57,7 +57,7 @@ void TestOverflowedToolbarAction(Browser* browser,
 
   // Click on the toolbar action to activate it.
   gfx::Point action_view_loc =
-      test::GetCenterInScreenCoordinates(action_view);
+      ui_test_utils::GetCenterInScreenCoordinates(action_view);
   ui_controls::SendMouseMove(action_view_loc.x(), action_view_loc.y());
   ui_controls::SendMouseEventsNotifyWhenDone(
       button, ui_controls::DOWN | ui_controls::UP, quit_closure);
@@ -127,7 +127,7 @@ void TestWhileContextMenuOpen(bool* did_test_while_menu_open,
   EXPECT_TRUE(second_row_action->enabled());
 
   gfx::Point action_view_loc =
-      test::GetCenterInScreenCoordinates(second_row_action);
+      ui_test_utils::GetCenterInScreenCoordinates(second_row_action);
   gfx::Point action_view_loc_in_menu_item_bounds = action_view_loc;
   views::View::ConvertPointFromScreen(first_menu_item,
                                       &action_view_loc_in_menu_item_bounds);
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   // Click on the app button.
   gfx::Point app_button_loc =
-      test::GetCenterInScreenCoordinates(app_menu_button);
+      ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
   base::RunLoop loop;
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
   ui_controls::SendMouseEventsNotifyWhenDone(
@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser());
   // Click on the app button, and then right-click on the first toolbar action.
   gfx::Point app_button_loc =
-      test::GetCenterInScreenCoordinates(app_menu_button);
+      ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
   base::RunLoop loop;
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
   ui_controls::SendMouseEventsNotifyWhenDone(
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   // Click on the action, and wait for the popup to fully load.
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(
-      test::GetCenterInScreenCoordinates(toolbar_action_view)));
+     ui_test_utils::GetCenterInScreenCoordinates(toolbar_action_view)));
 
   EXPECT_TRUE(ui_test_utils::SendMouseEventsSync(
       ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP));
@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // keyboard.
   AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser());
   gfx::Point app_button_loc =
-      test::GetCenterInScreenCoordinates(app_menu_button);
+      ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
   base::RunLoop loop;
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
   ui_controls::SendMouseEventsNotifyWhenDone(

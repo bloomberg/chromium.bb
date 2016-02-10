@@ -1050,9 +1050,7 @@
       'browser/ui/browser_focus_uitest.cc',
       'browser/ui/cocoa/apps/app_shim_menu_controller_mac_interactive_uitest.mm',
       'browser/ui/cocoa/apps/quit_with_apps_controller_mac_interactive_uitest.mm',
-      'browser/ui/cocoa/extensions/browser_action_button_interactive_uitest.mm',
       'browser/ui/cocoa/panels/panel_cocoa_browsertest.mm',
-      'browser/ui/cocoa/translate/translate_bubble_test_utils_cocoa.mm',
       'browser/ui/exclusive_access/flash_fullscreen_interactive_browsertest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_interactive_browsertest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_state_interactive_browsertest.cc',
@@ -1087,7 +1085,7 @@
       'test/base/interactive_test_utils_aura.cc',
       'test/base/interactive_test_utils_aura.h',
       'test/base/interactive_test_utils_mac.mm',
-      'test/base/interactive_test_utils_views.cc',
+      'test/base/interactive_test_utils_common_views.cc',
       'test/base/interactive_test_utils_win.cc',
       'test/base/interactive_ui_tests_main.cc',
       'test/base/view_event_test_platform_part.h',
@@ -1120,6 +1118,12 @@
       'browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc',
       'test/base/view_event_test_base.cc',
       'test/base/view_event_test_base.h',
+    ],
+    # Mac sources, except when mac_views_browser==1.
+    'chrome_interactive_ui_test_cocoa_sources': [
+      'browser/ui/cocoa/extensions/browser_action_button_interactive_uitest.mm',
+      'browser/ui/cocoa/translate/translate_bubble_test_utils_cocoa.mm',
+      'test/base/interactive_test_utils_cocoa.mm',
     ],
     'chrome_interactive_ui_test_app_list_sources': [
       'browser/ui/app_list/app_list_service_interactive_uitest.cc',
@@ -1165,6 +1169,7 @@
       'browser/ui/views/toolbar/toolbar_action_view_interactive_uitest.cc',
       'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
       'browser/ui/views/translate/translate_bubble_test_utils_views.cc',
+      'test/base/interactive_test_utils_views.cc',
     ],
     'chrome_interactive_ui_test_notifications_sources': [
       'browser/extensions/api/notifications/notifications_apitest.cc',
@@ -1715,6 +1720,20 @@
           ],
           # See comment about the same line in chrome/chrome_tests.gypi.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+          'conditions' : [
+            # The browser window can be views or Cocoa on Mac. Test accordingly.
+            ['mac_views_browser==1', {
+              'sources': [ '<@(chrome_interactive_ui_test_views_non_mac_sources)' ],
+              # Following tests needs a refactoring to works with mac_views.
+              'sources!': [
+                # Aura depended tests.
+                'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
+                'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
+              ]
+            }, {
+              'sources': [ '<@(chrome_interactive_ui_test_cocoa_sources)' ],
+            }],  # mac_views_browser==1
+          ],
         }, {  # Non-Mac.
           'sources': [ '<@(chrome_interactive_ui_test_views_non_mac_sources)' ],
         }],
