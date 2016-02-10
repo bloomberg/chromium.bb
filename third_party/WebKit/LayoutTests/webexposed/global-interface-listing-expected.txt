@@ -3704,7 +3704,6 @@ interface Notification : EventTarget
 interface NumberValue : StyleValue
     getter value
     method constructor
-    setter value
 interface OffScreenCanvas
     getter height
     getter width

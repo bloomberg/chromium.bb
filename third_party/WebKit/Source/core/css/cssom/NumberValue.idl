@@ -6,5 +6,5 @@
     Constructor(double value),
     RuntimeEnabled=CSSTypedOM
 ] interface NumberValue : StyleValue {
-    attribute double value;
+    readonly attribute double value;
 };
