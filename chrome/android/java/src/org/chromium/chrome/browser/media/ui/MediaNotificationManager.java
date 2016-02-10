@@ -23,6 +23,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v7.media.MediaRouter;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.View;
@@ -599,9 +600,20 @@ public class MediaNotificationManager {
                 mMediaNotificationInfo.isPrivate ? NotificationCompat.VISIBILITY_PRIVATE
                                                  : NotificationCompat.VISIBILITY_PUBLIC);
 
-        if (mMediaNotificationInfo.supportsPlayPause()) {
-            if (mMediaSession == null) mMediaSession = createMediaSession();
 
+        if (mMediaNotificationInfo.supportsPlayPause()) {
+
+            if (mMediaSession == null) mMediaSession = createMediaSession();
+            try {
+                // Tell the MediaRouter about the session, so that Chrome can control the volume
+                // on the remote cast device (if any).
+                // Pre-MR1 versions of JB do not have the complete MediaRouter APIs,
+                // so getting the MediaRouter instance will throw an exception.
+                MediaRouter.getInstance(mContext).setMediaSessionCompat(mMediaSession);
+            } catch (NoSuchMethodError e) {
+                // Do nothing. Chrome can't be casting without a MediaRouter, so there is nothing
+                // to do here.
+            }
             mMediaSession.setMetadata(createMetadata());
 
             PlaybackStateCompat.Builder playbackStateBuilder = new PlaybackStateCompat.Builder()
@@ -610,7 +622,6 @@ public class MediaNotificationManager {
                 playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
                         PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
             } else {
-                // If notification only supports stop, still pretend
                 playbackStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
                         PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
             }
