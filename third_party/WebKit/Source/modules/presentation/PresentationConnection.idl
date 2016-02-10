@@ -19,6 +19,9 @@ enum PresentationConnectionState {
     [MeasureAs=PresentationConnectionClose] void close();
     [MeasureAs=PresentationConnectionTerminate] void terminate();
     attribute EventHandler onstatechange;
+    attribute EventHandler onconnect;
+    attribute EventHandler onclose;
+    attribute EventHandler onterminate;
 
     // Communication
     attribute BinaryType binaryType;

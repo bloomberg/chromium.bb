@@ -3321,18 +3321,28 @@ interface PresentationAvailability : EventTarget
 interface PresentationConnection : EventTarget
     getter binaryType
     getter id
+    getter onclose
+    getter onconnect
     getter onmessage
     getter onstatechange
+    getter onterminate
     getter state
     method close
     method constructor
     method send
     method terminate
     setter binaryType
+    setter onclose
+    setter onconnect
     setter onmessage
     setter onstatechange
+    setter onterminate
 interface PresentationConnectionAvailableEvent : Event
     getter connection
+    method constructor
+interface PresentationConnectionCloseEvent : Event
+    getter message
+    getter reason
     method constructor
 interface PresentationRequest : EventTarget
     getter onconnectionavailable

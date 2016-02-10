@@ -26,6 +26,7 @@ interface Presentation
 interface PresentationAvailability : EventTarget
 interface PresentationConnection : EventTarget
 interface PresentationConnectionAvailableEvent : Event
+interface PresentationConnectionCloseEvent : Event
 interface PresentationRequest : EventTarget
 
 # TODO(timvolodine): check screen orientation lock api

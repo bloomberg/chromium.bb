@@ -66413,6 +66413,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1154" label="NodeTreeRoot"/>
   <int value="1155" label="BluetoothDeviceConnectGATT"/>
   <int value="1156" label="CreateImageBitmap"/>
+  <int value="1157" label="PresentationConnectionConnectEventListener"/>
+  <int value="1158" label="PresentationConnectionCloseEventListener"/>
+  <int value="1159" label="PresentationConnectionTerminateEventListener"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

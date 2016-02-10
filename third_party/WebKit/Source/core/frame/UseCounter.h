@@ -1008,6 +1008,9 @@ public:
         NodeTreeRoot = 1154,
         BluetoothDeviceConnectGATT = 1155,
         CreateImageBitmap = 1156,
+        PresentationConnectionConnectEventListener = 1157,
+        PresentationConnectionCloseEventListener = 1158,
+        PresentationConnectionTerminateEventListener = 1159,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

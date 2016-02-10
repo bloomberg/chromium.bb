@@ -166,6 +166,12 @@ bool PresentationConnection::addEventListenerInternal(const AtomicString& eventT
 {
     if (eventType == EventTypeNames::statechange)
         UseCounter::count(executionContext(), UseCounter::PresentationConnectionStateChangeEventListener);
+    else if (eventType == EventTypeNames::connect)
+        UseCounter::count(executionContext(), UseCounter::PresentationConnectionConnectEventListener);
+    else if (eventType == EventTypeNames::close)
+        UseCounter::count(executionContext(), UseCounter::PresentationConnectionCloseEventListener);
+    else if (eventType == EventTypeNames::terminate)
+        UseCounter::count(executionContext(), UseCounter::PresentationConnectionTerminateEventListener);
     else if (eventType == EventTypeNames::message)
         UseCounter::count(executionContext(), UseCounter::PresentationConnectionMessageEventListener);
 
@@ -347,6 +353,20 @@ void PresentationConnection::didChangeState(WebPresentationConnectionState state
 
     m_state = state;
     dispatchEvent(Event::create(EventTypeNames::statechange));
+    switch (m_state) {
+    case WebPresentationConnectionState::Connected:
+        dispatchEvent(Event::create(EventTypeNames::connect));
+        return;
+    case WebPresentationConnectionState::Terminated:
+        dispatchEvent(Event::create(EventTypeNames::terminate));
+        return;
+    // Closed state is handled in |didClose()|.
+    // TODO(imcheng): Add didClose() method and provide reason and message.
+    // (crbug.com/574234)
+    case WebPresentationConnectionState::Closed:
+        return;
+    }
+    ASSERT_NOT_REACHED();
 }
 
 void PresentationConnection::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer)

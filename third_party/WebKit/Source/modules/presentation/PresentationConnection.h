@@ -60,6 +60,9 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(terminate);
 
     // Returns true if and only if the WebPresentationConnectionClient represents this connection.
     bool matches(WebPresentationConnectionClient*) const;

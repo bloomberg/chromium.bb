@@ -217,6 +217,7 @@ submit
 success
 suspend
 sync
+terminate
 textInput
 timeout
 timeupdate
