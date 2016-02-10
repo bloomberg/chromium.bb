@@ -1,3 +1,5 @@
+if (window.GCController)
+    GCController.collectAll();
 var initialize_InspectorTest = function() {
 
 var results = [];
