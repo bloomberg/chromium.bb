@@ -65,6 +65,19 @@ class GIN_EXPORT V8Initializer {
   // Will return -1 if the file does not exist.
   static base::PlatformFile GetOpenSnapshotFileForChildProcesses(
       base::MemoryMappedFile::Region* region_out);
+
+#if defined(OS_ANDROID)
+  static base::PlatformFile GetOpenNativesFileForChildProcesses(
+      base::MemoryMappedFile::Region* region_out,
+      bool abi_32_bit);
+  static base::PlatformFile GetOpenSnapshotFileForChildProcesses(
+      base::MemoryMappedFile::Region* region_out,
+      bool abi_32_bit);
+
+  static base::FilePath GetNativesFilePath(bool abi_32_bit);
+  static base::FilePath GetSnapshotFilePath(bool abi_32_bit);
+#endif
+
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 };
 
