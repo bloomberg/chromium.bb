@@ -103,6 +103,55 @@ static void reset(ScrollAnimator& scrollAnimator)
 
 // TODO(skobes): Add unit tests for composited scrolling paths.
 
+TEST(ScrollAnimatorTest, MainThreadStates)
+{
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea =
+        MockScrollableArea::create(true);
+    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(
+        new ScrollAnimator(scrollableArea.get(), getMockedTime));
+
+    EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
+        .WillRepeatedly(Return(IntPoint()));
+    EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1))
+        .WillRepeatedly(Return(IntPoint(1000, 1000)));
+    EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(2);
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(2);
+    EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1))
+        .WillRepeatedly(Return(true));
+
+    // Idle
+    EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::Idle);
+
+    // WaitingToSendToCompositor
+    scrollAnimator->userScroll(HorizontalScrollbar, ScrollByLine, 10, 1);
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::WaitingToSendToCompositor);
+
+    // RunningOnMainThread
+    gMockedTime += 0.05;
+    scrollAnimator->updateCompositorAnimations();
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::RunningOnMainThread);
+    scrollAnimator->tickAnimation(getMockedTime());
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::RunningOnMainThread);
+
+    // PostAnimationCleanup
+    scrollAnimator->cancelAnimation();
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::PostAnimationCleanup);
+
+    // Idle
+    scrollAnimator->updateCompositorAnimations();
+    scrollAnimator->tickAnimation(getMockedTime());
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::Idle);
+
+    reset(*scrollAnimator);
+}
+
 TEST(ScrollAnimatorTest, MainThreadEnabled)
 {
     OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
@@ -162,6 +211,8 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
     scrollAnimator->updateCompositorAnimations();
     scrollAnimator->tickAnimation(getMockedTime());
 
+    gMockedTime += 0.05;
+    scrollAnimator->updateCompositorAnimations();
     EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());
     EXPECT_EQ(100, scrollAnimator->currentPosition().x());
 
@@ -218,6 +269,8 @@ TEST(ScrollAnimatorTest, AnimatedScrollAborted)
     result = scrollAnimator->userScroll(
         HorizontalScrollbar, ScrollByPrecisePixel, 100, 1);
     EXPECT_TRUE(result.didScroll);
+    gMockedTime += 0.05;
+    scrollAnimator->updateCompositorAnimations();
     EXPECT_FALSE(scrollAnimator->hasRunningAnimation());
     EXPECT_EQ(x + 100, scrollAnimator->currentPosition().x());
     EXPECT_EQ(0, scrollAnimator->currentPosition().y());

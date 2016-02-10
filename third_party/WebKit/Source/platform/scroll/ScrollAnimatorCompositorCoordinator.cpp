@@ -49,6 +49,7 @@ bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() cons
     case RunState::Idle:
     case RunState::RunningOnCompositor:
         return false;
+    case RunState::PostAnimationCleanup:
     case RunState::WaitingToSendToCompositor:
     case RunState::RunningOnMainThread:
     case RunState::RunningOnCompositorButNeedsUpdate:
@@ -100,6 +101,7 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
     switch (m_runState) {
     case RunState::Idle:
     case RunState::WaitingToCancelOnCompositor:
+    case RunState::PostAnimationCleanup:
         break;
     case RunState::WaitingToSendToCompositor:
         if (m_compositorAnimationId) {
@@ -110,7 +112,7 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
         }
         break;
     case RunState::RunningOnMainThread:
-        resetAnimationState();
+        m_runState = RunState::PostAnimationCleanup;
         break;
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::RunningOnCompositor:
@@ -132,6 +134,7 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
 
     switch (m_runState) {
     case RunState::Idle:
+    case RunState::PostAnimationCleanup:
     case RunState::RunningOnMainThread:
         ASSERT_NOT_REACHED();
         break;
@@ -140,7 +143,10 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
     case RunState::RunningOnCompositor:
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::WaitingToCancelOnCompositor:
-        resetAnimationState();
+        m_runState = RunState::PostAnimationCleanup;
+
+        // Get serviced the next time compositor updates are allowed.
+        scrollableArea()->registerForAnimation();
     }
 }
 

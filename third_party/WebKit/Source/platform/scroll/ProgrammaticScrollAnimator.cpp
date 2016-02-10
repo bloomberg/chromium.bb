@@ -49,6 +49,9 @@ void ProgrammaticScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint
 
 void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
 {
+    if (m_runState == RunState::PostAnimationCleanup)
+        resetAnimationState();
+
     m_startTime = 0.0;
     m_targetOffset = offset;
     m_animationCurve = adoptPtr(Platform::current()->compositorSupport()->createScrollOffsetAnimationCurve(
@@ -83,7 +86,7 @@ void ProgrammaticScrollAnimator::tickAnimation(double monotonicTime)
     notifyPositionChanged(IntPoint(offset.x(), offset.y()));
 
     if (isFinished) {
-        resetAnimationState();
+        m_runState = RunState::PostAnimationCleanup;
     } else if (!m_scrollableArea->scheduleAnimation()) {
         notifyPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
         resetAnimationState();
@@ -92,6 +95,13 @@ void ProgrammaticScrollAnimator::tickAnimation(double monotonicTime)
 
 void ProgrammaticScrollAnimator::updateCompositorAnimations()
 {
+    if (m_runState == RunState::PostAnimationCleanup) {
+        // No special cleanup, simply reset animation state. We have this state
+        // here because the state machine is shared with ScrollAnimator which
+        // has to do some cleanup that requires the compositing state to be clean.
+        return resetAnimationState();
+    }
+
     if (m_compositorAnimationId && m_runState != RunState::RunningOnCompositor) {
         // If the current run state is WaitingToSendToCompositor but we have a
         // non-zero compositor animation id, there's a currently running

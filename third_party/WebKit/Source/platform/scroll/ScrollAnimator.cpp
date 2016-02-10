@@ -109,6 +109,9 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
     FloatPoint targetPos = desiredTargetPosition();
     targetPos.moveBy(pixelDelta);
 
+    if (m_runState == RunState::PostAnimationCleanup)
+        resetAnimationState();
+
     if (m_animationCurve && m_runState != RunState::WaitingToCancelOnCompositor) {
         if ((targetPos - m_targetOffset).isZero()) {
             // Report unused delta only if there is no animation running. See
@@ -178,7 +181,7 @@ void ScrollAnimator::tickAnimation(double monotonicTime)
     m_currentPosY = offset.y();
 
     if (isFinished)
-        resetAnimationState();
+        m_runState = RunState::PostAnimationCleanup;
     else
         scrollableArea()->scheduleAnimation();
 
@@ -188,6 +191,9 @@ void ScrollAnimator::tickAnimation(double monotonicTime)
 
 void ScrollAnimator::updateCompositorAnimations()
 {
+    if (m_runState == RunState::PostAnimationCleanup)
+        return resetAnimationState();
+
     if (m_compositorAnimationId && m_runState != RunState::RunningOnCompositor
         && m_runState != RunState::RunningOnCompositorButNeedsUpdate) {
         // If the current run state is WaitingToSendToCompositor but we have a
@@ -202,8 +208,7 @@ void ScrollAnimator::updateCompositorAnimations()
         m_compositorAnimationId = 0;
         m_compositorAnimationGroupId = 0;
         if (m_runState == RunState::WaitingToCancelOnCompositor) {
-            resetAnimationState();
-            return;
+            return resetAnimationState();
         }
     }
 

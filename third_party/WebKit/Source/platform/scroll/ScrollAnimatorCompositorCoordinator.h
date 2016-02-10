@@ -5,6 +5,7 @@
 #ifndef ScrollAnimatorCompositorCoordinator_h
 #define ScrollAnimatorCompositorCoordinator_h
 
+#include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
@@ -58,6 +59,7 @@ protected:
     WebCompositorAnimationPlayer* compositorPlayer() const override;
 
     friend class Internals;
+    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
 
     enum class RunState {
         // No animation.
@@ -79,7 +81,12 @@ protected:
 
         // Waiting to cancel the animation currently running on the compositor.
         // There is no pending animation to replace the canceled animation.
-        WaitingToCancelOnCompositor
+        WaitingToCancelOnCompositor,
+
+        // Finished an animation that was running on the main thread or the
+        // compositor thread. When in this state, post animation cleanup can
+        // be performed.
+        PostAnimationCleanup
     };
 
     OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
