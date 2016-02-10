@@ -51,10 +51,7 @@ private:
 
     const VisibleSelection& visibleSelection() const;
 
-    template <typename Strategy>
-    VisibleSelectionTemplate<Strategy> calcVisibleSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>&) const;
-    template <typename Strategy>
-    void commitAlgorithm(LayoutView&);
+    VisibleSelectionInFlatTree calcVisibleSelection(const VisibleSelectionInFlatTree&) const;
 
     RawPtrWillBeMember<FrameSelection> m_frameSelection;
     bool m_hasPendingSelection : 1;

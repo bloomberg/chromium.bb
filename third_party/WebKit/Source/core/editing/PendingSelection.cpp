@@ -41,58 +41,55 @@ const VisibleSelection& PendingSelection::visibleSelection() const
     return m_frameSelection->selection();
 }
 
-template <typename Strategy>
-static bool isSelectionInDocument(const VisibleSelectionTemplate<Strategy>& visibleSelection, const Document& document)
+static bool isSelectionInDocument(const VisibleSelectionInFlatTree& visibleSelection, const Document& document)
 {
-    const PositionTemplate<Strategy> start = visibleSelection.start();
+    const PositionInFlatTree& start = visibleSelection.start();
     if (start.isNotNull() && (!start.inDocument() || start.document() != document))
         return false;
-    const PositionTemplate<Strategy> end = visibleSelection.end();
+    const PositionInFlatTree& end = visibleSelection.end();
     if (end.isNotNull() && (!end.inDocument() || end.document() != document))
         return false;
-    const PositionTemplate<Strategy> extent = visibleSelection.extent();
+    const PositionInFlatTree extent = visibleSelection.extent();
     if (extent.isNotNull() && (!extent.inDocument() || extent.document() != document))
         return false;
     return true;
 }
 
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy> PendingSelection::calcVisibleSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>& originalSelection) const
+VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(const VisibleSelectionInFlatTree& originalSelection) const
 {
-    const PositionTemplate<Strategy> start = originalSelection.start();
-    const PositionTemplate<Strategy> end = originalSelection.end();
+    const PositionInFlatTree& start = originalSelection.start();
+    const PositionInFlatTree& end = originalSelection.end();
     SelectionType selectionType = originalSelection.selectionType();
     const TextAffinity affinity = originalSelection.affinity();
 
     bool paintBlockCursor = m_frameSelection->shouldShowBlockCursor() && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePosition(end, affinity));
-    VisibleSelectionTemplate<Strategy> selection;
+    VisibleSelectionInFlatTree selection;
     if (enclosingTextFormControl(start.computeContainerNode())) {
         // TODO(yosin) We should use |PositionMoveType::Character| to avoid
         // ending paint at middle of character.
-        PositionTemplate<Strategy> endPosition = paintBlockCursor ? nextPositionOf(originalSelection.extent(), PositionMoveType::CodePoint) : end;
+        PositionInFlatTree endPosition = paintBlockCursor ? nextPositionOf(originalSelection.extent(), PositionMoveType::CodePoint) : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;
     }
 
-    const VisiblePositionTemplate<Strategy> visibleStart = createVisiblePosition(start, selectionType == SelectionType::RangeSelection ? TextAffinity::Downstream : affinity);
+    const VisiblePositionInFlatTree& visibleStart = createVisiblePosition(start, selectionType == SelectionType::RangeSelection ? TextAffinity::Downstream : affinity);
     if (paintBlockCursor) {
-        VisiblePositionTemplate<Strategy> visibleExtent = createVisiblePosition(end, affinity);
+        VisiblePositionInFlatTree visibleExtent = createVisiblePosition(end, affinity);
         visibleExtent = nextPositionOf(visibleExtent, CanSkipOverEditingBoundary);
-        return VisibleSelectionTemplate<Strategy>(visibleStart, visibleExtent);
+        return VisibleSelectionInFlatTree(visibleStart, visibleExtent);
     }
-    const VisiblePositionTemplate<Strategy> visibleEnd = createVisiblePosition(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);
-    return VisibleSelectionTemplate<Strategy>(visibleStart, visibleEnd);
+    const VisiblePositionInFlatTree visibleEnd = createVisiblePosition(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);
+    return VisibleSelectionInFlatTree(visibleStart, visibleEnd);
 }
 
-template <typename Strategy>
-void PendingSelection::commitAlgorithm(LayoutView& layoutView)
+void PendingSelection::commit(LayoutView& layoutView)
 {
     if (!hasPendingSelection())
         return;
     ASSERT(!layoutView.needsLayout());
     m_hasPendingSelection = false;
 
-    const VisibleSelectionTemplate<Strategy> originalSelection = m_frameSelection->visibleSelection<Strategy>();
+    const VisibleSelectionInFlatTree& originalSelection = m_frameSelection->visibleSelection<EditingInFlatTreeStrategy>();
 
     // Skip if pending VisibilePositions became invalid before we reach here.
     if (!isSelectionInDocument(originalSelection, layoutView.document()))
@@ -102,7 +99,7 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
     // valid, and the following steps assume a valid selection.
     // See <https://bugs.webkit.org/show_bug.cgi?id=69563> and
     // <rdar://problem/10232866>.
-    const VisibleSelectionTemplate<Strategy> selection = calcVisibleSelectionAlgorithm<Strategy>(originalSelection);
+    const VisibleSelectionInFlatTree& selection = calcVisibleSelection(originalSelection);
 
     if (!selection.isRange()) {
         layoutView.clearSelection();
@@ -115,11 +112,11 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
     // If we pass [foo, 3] as the start of the selection, the selection painting
     // code will think that content on the line containing 'foo' is selected
     // and will fill the gap before 'bar'.
-    PositionTemplate<Strategy> startPos = selection.start();
-    PositionTemplate<Strategy> candidate = mostForwardCaretPosition(startPos);
+    PositionInFlatTree startPos = selection.start();
+    PositionInFlatTree candidate = mostForwardCaretPosition(startPos);
     if (isVisuallyEquivalentCandidate(candidate))
         startPos = candidate;
-    PositionTemplate<Strategy> endPos = selection.end();
+    PositionInFlatTree endPos = selection.end();
     candidate = mostBackwardCaretPosition(endPos);
     if (isVisuallyEquivalentCandidate(candidate))
         endPos = candidate;
@@ -135,13 +132,6 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
         return;
     ASSERT(layoutView == startLayoutObject->view() && layoutView == endLayoutObject->view());
     layoutView.setSelection(startLayoutObject, startPos.computeEditingOffset(), endLayoutObject, endPos.computeEditingOffset());
-}
-
-void PendingSelection::commit(LayoutView& layoutView)
-{
-    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
-        return commitAlgorithm<EditingInFlatTreeStrategy>(layoutView);
-    commitAlgorithm<EditingStrategy>(layoutView);
 }
 
 DEFINE_TRACE(PendingSelection)
