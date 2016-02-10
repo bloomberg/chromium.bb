@@ -983,7 +983,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
     visiblePos = createVisiblePosition(pos, VP_DEFAULT_AFFINITY);
     visibleParagraphStart = startOfParagraph(visiblePos);
     visibleParagraphEnd = endOfParagraph(visiblePos);
-    moveParagraphs(visibleParagraphStart, visibleParagraphEnd, createVisiblePosition(firstPositionInNode(newBlock.get())));
+    moveParagraphs(visibleParagraphStart, visibleParagraphEnd, createVisiblePosition(firstPositionInNode(newBlock.get())), ASSERT_NO_EDITING_ABORT);
 
     if (newBlock->lastChild() && isHTMLBRElement(*newBlock->lastChild()) && !endWasBr)
         removeNode(newBlock->lastChild());
@@ -1182,14 +1182,14 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     }
 }
 
-void CompositeEditCommand::moveParagraph(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
+void CompositeEditCommand::moveParagraph(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, EditingState* editingState, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
 {
     ASSERT(isStartOfParagraph(startOfParagraphToMove));
     ASSERT(isEndOfParagraph(endOfParagraphToMove));
-    moveParagraphs(startOfParagraphToMove, endOfParagraphToMove, destination, preserveSelection, preserveStyle, constrainingAncestor);
+    moveParagraphs(startOfParagraphToMove, endOfParagraphToMove, destination, editingState, preserveSelection, preserveStyle, constrainingAncestor);
 }
 
-void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
+void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, EditingState* editingState, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
 {
     if (startOfParagraphToMove.deepEquivalent() == destination.deepEquivalent() || startOfParagraphToMove.isNull())
         return;
@@ -1247,7 +1247,9 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     setEndingSelection(VisibleSelection(start, end));
     document().frame()->spellChecker().clearMisspellingsAndBadGrammar(endingSelection());
-    deleteSelection(ASSERT_NO_EDITING_ABORT, false, false, false);
+    deleteSelection(editingState, false, false, false);
+    if (editingState->isAborted())
+        return;
 
     ASSERT(destination.deepEquivalent().inDocument());
     cleanupAfterDeletion(destination);

@@ -111,7 +111,7 @@ static bool inSameTreeAndOrdered(const VisiblePosition& shouldBeFormer, const Vi
     return Position::commonAncestorTreeScope(formerPosition, laterPosition) && comparePositions(formerPosition, laterPosition) <= 0;
 }
 
-void InsertListCommand::doApply(EditingState*)
+void InsertListCommand::doApply(EditingState* editingState)
 {
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;
@@ -170,7 +170,10 @@ void InsertListCommand::doApply(EditingState*)
 
                 // Save and restore endOfSelection and startOfLastParagraph when necessary
                 // since moveParagraph and movePragraphWithClones can remove nodes.
-                if (!doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection))
+                bool singleParagraphResult = doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection, editingState);
+                if (editingState->isAborted())
+                    return;
+                if (!singleParagraphResult)
                     break;
                 if (endOfSelection.isNull() || endOfSelection.isOrphan() || startOfLastParagraph.isNull() || startOfLastParagraph.isOrphan()) {
                     endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scopeForEndOfSelection.get());
@@ -186,7 +189,9 @@ void InsertListCommand::doApply(EditingState*)
             }
             setEndingSelection(endOfSelection);
         }
-        doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection);
+        doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection, editingState);
+        if (editingState->isAborted())
+            return;
         // Fetch the end of the selection, for the reason mentioned above.
         if (endOfSelection.isNull() || endOfSelection.isOrphan()) {
             endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scopeForEndOfSelection.get());
@@ -203,10 +208,10 @@ void InsertListCommand::doApply(EditingState*)
     }
 
     ASSERT(firstRangeOf(endingSelection()));
-    doApplyForSingleParagraph(false, listTag, *firstRangeOf(endingSelection()));
+    doApplyForSingleParagraph(false, listTag, *firstRangeOf(endingSelection()), editingState);
 }
 
-bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName& listTag, Range& currentSelection)
+bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName& listTag, Range& currentSelection, EditingState* editingState)
 {
     // FIXME: This will produce unexpected results for a selection that starts just before a
     // table and ends inside the first cell, selectionForParagraphIteration should probably
@@ -285,7 +290,7 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
     }
 
     if (!listChildNode || switchListType || forceCreateList)
-        listifyParagraph(endingSelection().visibleStart(), listTag);
+        listifyParagraph(endingSelection().visibleStart(), listTag, editingState);
 
     return true;
 }
@@ -348,7 +353,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     }
 
     VisiblePosition insertionPoint = createVisiblePosition(positionBeforeNode(placeholder.get()));
-    moveParagraphs(start, end, insertionPoint, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);
+    moveParagraphs(start, end, insertionPoint, ASSERT_NO_EDITING_ABORT, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);
 }
 
 static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const VisiblePosition& adjacentPos, const HTMLQualifiedName& listTag)
@@ -370,7 +375,7 @@ static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const Visi
     return listElement;
 }
 
-void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag)
+void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag, EditingState* editingState)
 {
     const VisiblePosition& start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
     const VisiblePosition& end = endOfParagraph(start, CanSkipOverEditingBoundary);
@@ -389,7 +394,9 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
         else
             insertNodeAt(listItemElement, Position::beforeNode(nextList));
 
-        moveParagraphOverPositionIntoEmptyListItem(start, listItemElement);
+        moveParagraphOverPositionIntoEmptyListItem(start, listItemElement, editingState);
+        if (editingState->isAborted())
+            return;
 
         if (canMergeLists(previousList, nextList))
             mergeIdenticalElements(previousList, nextList);
@@ -429,14 +436,16 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
     // Layout is necessary since start's node's inline layoutObjects may have been destroyed by the insertion
     // The end of the content may have changed after the insertion and layout so update it as well.
     if (insertionPos == startPos)
-        moveParagraphOverPositionIntoEmptyListItem(originalStart, listItemElement);
+        moveParagraphOverPositionIntoEmptyListItem(originalStart, listItemElement, editingState);
     else
-        moveParagraphOverPositionIntoEmptyListItem(createVisiblePosition(startPos), listItemElement);
+        moveParagraphOverPositionIntoEmptyListItem(createVisiblePosition(startPos), listItemElement, editingState);
+    if (editingState->isAborted())
+        return;
 
     mergeWithNeighboringLists(listElement);
 }
 
-void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition& pos, PassRefPtrWillBeRawPtr<HTMLLIElement> listItemElement)
+void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition& pos, PassRefPtrWillBeRawPtr<HTMLLIElement> listItemElement, EditingState* editingState)
 {
     ASSERT(!listItemElement->hasChildren());
     const RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
@@ -446,7 +455,7 @@ void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const Visible
     document().updateLayoutIgnorePendingStylesheets();
     const VisiblePosition& start = startOfParagraph(pos, CanSkipOverEditingBoundary);
     const VisiblePosition& end = endOfParagraph(pos, CanSkipOverEditingBoundary);
-    moveParagraph(start, end, createVisiblePosition(positionBeforeNode(placeholder.get())), true);
+    moveParagraph(start, end, createVisiblePosition(positionBeforeNode(placeholder.get())), editingState, true);
 }
 
 DEFINE_TRACE(InsertListCommand)

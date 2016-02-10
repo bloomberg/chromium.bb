@@ -55,10 +55,10 @@ private:
     HTMLUListElement* fixOrphanedListChild(Node*);
     bool selectionHasListOfType(const VisibleSelection&, const HTMLQualifiedName&);
     PassRefPtrWillBeRawPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtrWillBeRawPtr<HTMLElement>);
-    bool doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection);
+    bool doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection, EditingState*);
     void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode);
-    void listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag);
-    void moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition&, PassRefPtrWillBeRawPtr<HTMLLIElement>);
+    void listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag, EditingState*);
+    void moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition&, PassRefPtrWillBeRawPtr<HTMLLIElement>, EditingState*);
 
     Type m_type;
 };

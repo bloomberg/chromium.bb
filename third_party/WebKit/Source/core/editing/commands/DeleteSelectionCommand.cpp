@@ -676,7 +676,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     // removals that it does cause the insertion of *another* placeholder.
     bool needPlaceholder = m_needPlaceholder;
     bool paragraphToMergeIsEmpty = startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent();
-    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, mergeDestination, false, !paragraphToMergeIsEmpty);
+    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, mergeDestination, ASSERT_NO_EDITING_ABORT, false, !paragraphToMergeIsEmpty);
     m_needPlaceholder = needPlaceholder;
     // The endingPosition was likely clobbered by the move, so recompute it (moveParagraph selects the moved paragraph).
     m_endingPosition = endingSelection().start();

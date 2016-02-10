@@ -211,7 +211,7 @@ void IndentOutdentCommand::outdentParagraph()
         return;
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
     insertNodeBefore(placeholder, splitBlockquoteNode);
-    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, createVisiblePosition(positionBeforeNode(placeholder.get())), true);
+    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, createVisiblePosition(positionBeforeNode(placeholder.get())), ASSERT_NO_EDITING_ABORT, true);
 }
 
 // FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection

@@ -157,8 +157,8 @@ protected:
     void pushAnchorElementDown(Element*);
 
     // FIXME: preserveSelection and preserveStyle should be enums
-    void moveParagraph(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
-    void moveParagraphs(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
+    void moveParagraph(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState* = ASSERT_NO_EDITING_ABORT, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
+    void moveParagraphs(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState*, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
     void moveParagraphWithClones(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, HTMLElement* blockElement, Node* outerNode, EditingState* = ASSERT_NO_EDITING_ABORT);
     void cloneParagraphUnderNewElement(const Position& start, const Position& end, Node* outerNode, Element* blockElement);
     void cleanupAfterDeletion(VisiblePosition destination = VisiblePosition());
