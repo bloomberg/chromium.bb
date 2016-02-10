@@ -1007,6 +1007,7 @@
       'SharedBufferTest.cpp',
       'TimerTest.cpp',
       'TracedValueTest.cpp',
+      'UserGestureIndicatorTest.cpp',
       'UUIDTest.cpp',
       'WebScreenInfoTest.cpp',
       'WebVectorTest.cpp',
