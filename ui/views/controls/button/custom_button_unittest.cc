@@ -56,35 +56,11 @@ class TestCustomButton : public CustomButton, public ButtonListener {
     canceled_ = false;
   }
 
-  // CustomButton methods:
-  bool IsChildWidget() const override { return is_child_widget_; }
-  bool FocusInChildWidget() const override { return focus_in_child_widget_; }
-
-  void set_child_widget(bool b) { is_child_widget_ = b; }
-  void set_focus_in_child_widget(bool b) { focus_in_child_widget_ = b; }
-
  private:
   bool pressed_ = false;
   bool canceled_ = false;
-  bool is_child_widget_ = false;
-  bool focus_in_child_widget_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCustomButton);
-};
-
-class TestWidget : public Widget {
- public:
-  TestWidget() : Widget() {}
-
-  // Widget method:
-  bool IsActive() const override { return active_; }
-
-  void set_active(bool active) { active_ = active; }
-
- private:
-  bool active_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWidget);
 };
 
 // An InkDropDelegate that keeps track of ink drop visibility.
@@ -165,7 +141,7 @@ class CustomButtonTest : public ViewsTestBase {
 
     // Create a widget so that the CustomButton can query the hover state
     // correctly.
-    widget_.reset(new TestWidget);
+    widget_.reset(new Widget);
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
@@ -190,13 +166,13 @@ class CustomButtonTest : public ViewsTestBase {
   }
 
  protected:
-  TestWidget* widget() { return widget_.get(); }
+  Widget* widget() { return widget_.get(); }
   TestCustomButton* button() { return button_; }
   bool ink_shown() const { return ink_shown_; }
   bool ink_hidden() const { return ink_hidden_; }
 
  private:
-  scoped_ptr<TestWidget> widget_;
+  scoped_ptr<Widget> widget_;
   TestCustomButton* button_;
   bool ink_shown_ = false;
   bool ink_hidden_ = false;
@@ -314,33 +290,6 @@ TEST_F(CustomButtonTest, NotifyAction) {
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
   EXPECT_FALSE(button()->pressed());
-}
-
-TEST_F(CustomButtonTest, HandleAccelerator) {
-  // Child widgets shouldn't handle accelerators when they are not focused.
-  EXPECT_FALSE(button()->IsChildWidget());
-  EXPECT_FALSE(button()->FocusInChildWidget());
-  EXPECT_FALSE(widget()->IsActive());
-  button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
-  EXPECT_FALSE(button()->pressed());
-  // Child without focus.
-  button()->set_child_widget(true);
-  button()->set_focus_in_child_widget(false);
-  button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
-  EXPECT_FALSE(button()->pressed());
-  button()->Reset();
-  // Child with focus.
-  button()->set_child_widget(true);
-  button()->set_focus_in_child_widget(true);
-  button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
-  EXPECT_TRUE(button()->pressed());
-  button()->Reset();
-  // Not a child, but active.
-  button()->set_child_widget(false);
-  button()->set_focus_in_child_widget(true);
-  widget()->set_active(true);
-  button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
-  EXPECT_TRUE(button()->pressed());
 }
 
 // Tests that OnClickCanceled gets called when NotifyClick is not expected

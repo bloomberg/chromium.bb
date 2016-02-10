@@ -267,13 +267,6 @@ void CustomButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  // Should only handle accelerators when active. However, only top level
-  // widgets can be active, so for child widgets check if they are focused
-  // instead.
-  if ((IsChildWidget() && !FocusInChildWidget()) ||
-      (!IsChildWidget() && !GetWidget()->IsActive())) {
-    return false;
-  }
   SetState(STATE_NORMAL);
   // TODO(beng): remove once NotifyClick takes ui::Event.
   ui::MouseEvent synthetic_event(
@@ -458,16 +451,6 @@ void CustomButton::OnClickCanceled(const ui::Event& event) {
   if (ink_drop_delegate())
     ink_drop_delegate()->OnAction(views::InkDropState::HIDDEN);
   Button::OnClickCanceled(event);
-}
-
-bool CustomButton::IsChildWidget() const {
-  return GetWidget() && GetWidget()->GetTopLevelWidget() != GetWidget();
-}
-
-bool CustomButton::FocusInChildWidget() const {
-  return GetWidget() &&
-         GetWidget()->GetRootView()->Contains(
-             GetFocusManager()->GetFocusedView());
 }
 
 }  // namespace views

@@ -1145,7 +1145,25 @@ bool View::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 bool View::CanHandleAccelerators() const {
-  return enabled() && IsDrawn() && GetWidget() && GetWidget()->IsVisible();
+  const Widget* widget = GetWidget();
+  if (!enabled() || !IsDrawn() || !widget || !widget->IsVisible())
+    return false;
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // Non-ChromeOS aura windows have an associated FocusManagerEventHandler which
+  // adds currently focused view as an event PreTarget (see
+  // DesktopNativeWidgetAura::InitNativeWidget). However, the focused view isn't
+  // always the right view to handle accelerators: It should only handle them
+  // when active. Only top level widgets can be active, so for child widgets
+  // check if they are focused instead. ChromeOS also behaves different than
+  // Linux when an extension popup is about to handle the accelerator.
+  bool child = widget && widget->GetTopLevelWidget() != widget;
+  bool focus_in_child =
+      widget &&
+      widget->GetRootView()->Contains(GetFocusManager()->GetFocusedView());
+  if ((child && !focus_in_child) || (!child && !widget->IsActive()))
+    return false;
+#endif
+  return true;
 }
 
 // Focus -----------------------------------------------------------------------

@@ -161,11 +161,6 @@ class VIEWS_EXPORT CustomButton : public Button,
   }
 
  private:
-  // Returns true if this is not a top level widget. Virtual for tests.
-  virtual bool IsChildWidget() const;
-  // Returns true if the focus is not in a top level widget. Virtual for tests.
-  virtual bool FocusInChildWidget() const;
-
   ButtonState state_;
 
   gfx::ThrobAnimation hover_animation_;

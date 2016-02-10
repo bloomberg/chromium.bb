@@ -2101,6 +2101,80 @@ bool TestView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
+// On non-ChromeOS aura there is extra logic to determine whether a view should
+// handle accelerators or not (see View::CanHandleAccelerators for details).
+// This test targets that extra logic, but should also work on other platforms.
+TEST_F(ViewTest, HandleAccelerator) {
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
+  TestView* view = new TestView();
+  view->Reset();
+  view->AddAccelerator(return_accelerator);
+  EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
+
+  // Create a window and add the view as its child.
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget->Init(params);
+  View* root = widget->GetRootView();
+  root->AddChildView(view);
+  widget->Show();
+
+  FocusManager* focus_manager = widget->GetFocusManager();
+  ASSERT_TRUE(focus_manager);
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // When a non-child view is not active, it shouldn't handle accelerators.
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(0, view->accelerator_count_map_[return_accelerator]);
+#endif
+
+  // When a non-child view is active, it should handle accelerators.
+  view->accelerator_count_map_[return_accelerator] = 0;
+  widget->Activate();
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(1, view->accelerator_count_map_[return_accelerator]);
+
+  // Add a child view associated with a child widget.
+  TestView* child_view = new TestView();
+  child_view->Reset();
+  child_view->AddAccelerator(return_accelerator);
+  EXPECT_EQ(child_view->accelerator_count_map_[return_accelerator], 0);
+  view->AddChildView(child_view);
+  Widget* child_widget = new Widget;
+  Widget::InitParams child_params =
+      CreateParams(Widget::InitParams::TYPE_CONTROL);
+  child_params.parent = widget->GetNativeView();
+  child_widget->Init(child_params);
+  child_widget->SetContentsView(child_view);
+
+  FocusManager* child_focus_manager = child_widget->GetFocusManager();
+  ASSERT_TRUE(child_focus_manager);
+
+  // When a child view is in focus, it should handle accelerators.
+  child_view->accelerator_count_map_[return_accelerator] = 0;
+  view->accelerator_count_map_[return_accelerator] = 0;
+  child_focus_manager->SetFocusedView(child_view);
+  EXPECT_FALSE(child_view->GetWidget()->IsActive());
+  EXPECT_TRUE(child_focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(1, child_view->accelerator_count_map_[return_accelerator]);
+  EXPECT_EQ(0, view->accelerator_count_map_[return_accelerator]);
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // When a child view is not in focus, its parent should handle accelerators.
+  child_view->accelerator_count_map_[return_accelerator] = 0;
+  view->accelerator_count_map_[return_accelerator] = 0;
+  child_focus_manager->ClearFocus();
+  EXPECT_FALSE(child_view->GetWidget()->IsActive());
+  EXPECT_TRUE(child_focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(0, child_view->accelerator_count_map_[return_accelerator]);
+  EXPECT_EQ(1, view->accelerator_count_map_[return_accelerator]);
+#endif
+}
+
 // TODO: these tests were initially commented out when getting aura to
 // run. Figure out if still valuable and either nuke or fix.
 #if 0
