@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.TextView;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -147,20 +148,26 @@ public class DataUseTabUIManager {
     private static void startDataUseDialog(final Activity activity, final Tab tab,
             final String url, final int pageTransitionType, final String referrerUrl) {
         View dataUseDialogView = View.inflate(activity, R.layout.data_use_dialog, null);
+        final TextView textView = (TextView) dataUseDialogView.findViewById(R.id.data_use_message);
+        textView.setText(getDataUseUIString(DataUseUIMessage.DATA_USE_TRACKING_ENDED_MESSAGE));
         final CheckBox checkBox = (CheckBox) dataUseDialogView.findViewById(R.id.data_use_checkbox);
+        checkBox.setText(
+                getDataUseUIString(DataUseUIMessage.DATA_USE_TRACKING_ENDED_CHECKBOX_MESSAGE));
         View learnMore = dataUseDialogView.findViewById(R.id.learn_more);
         learnMore.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EmbedContentViewActivity.show(activity, R.string.data_use_learn_more_title,
-                        R.string.data_use_learn_more_link_url);
+                EmbedContentViewActivity.show(activity,
+                        getDataUseUIString(DataUseUIMessage.DATA_USE_LEARN_MORE_TITLE),
+                        getDataUseUIString(DataUseUIMessage.DATA_USE_LEARN_MORE_LINK_URL));
                 recordDataUseUIAction(DataUsageUIAction.DIALOG_LEARN_MORE_CLICKED);
             }
         });
         new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
-                .setTitle(R.string.data_use_tracking_ended_title)
+                .setTitle(getDataUseUIString(DataUseUIMessage.DATA_USE_TRACKING_ENDED_TITLE))
                 .setView(dataUseDialogView)
-                .setPositiveButton(R.string.data_use_tracking_ended_continue,
+                .setPositiveButton(
+                        getDataUseUIString(DataUseUIMessage.DATA_USE_TRACKING_ENDED_CONTINUE),
                         new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -177,13 +184,14 @@ public class DataUseTabUIManager {
                                 userClickedContinueOnDialogBox(tab);
                             }
                         })
-                .setNegativeButton(R.string.cancel, new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        setOptedOutOfDataUseDialog(activity, checkBox.isChecked());
-                        recordDataUseUIAction(DataUsageUIAction.DIALOG_CANCEL_CLICKED);
-                    }
-                })
+                .setNegativeButton(R.string.cancel,
+                        new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                setOptedOutOfDataUseDialog(activity, checkBox.isChecked());
+                                recordDataUseUIAction(DataUsageUIAction.DIALOG_CANCEL_CLICKED);
+                            }
+                        })
                 .show();
         recordDataUseUIAction(DataUsageUIAction.DIALOG_SHOWN);
     }
@@ -225,6 +233,14 @@ public class DataUseTabUIManager {
                 DataUsageUIAction.INDEX_BOUNDARY);
     }
 
+    /**
+     * Gets native strings which may be overridden by Finch.
+     */
+    public static String getDataUseUIString(int messageID) {
+        assert messageID >= 0 && messageID < DataUseUIMessage.DATA_USE_UI_MESSAGE_MAX;
+        return nativeGetDataUseUIString(messageID);
+    }
+
     private static native boolean nativeCheckAndResetDataUseTrackingStarted(
             int tabId, Profile profile);
     private static native boolean nativeCheckAndResetDataUseTrackingEnded(
@@ -234,4 +250,5 @@ public class DataUseTabUIManager {
             int tabId, String url, int pageTransitionType, Profile jprofile);
     private static native void nativeOnCustomTabInitialNavigation(int tabID, String packageName,
             String url, Profile profile);
+    private static native String nativeGetDataUseUIString(int messageID);
 }

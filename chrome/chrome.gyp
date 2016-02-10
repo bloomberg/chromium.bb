@@ -540,6 +540,7 @@
             'content_setting_java',
             'content_settings_type_java',
             'connectivity_check_result_java',
+            'data_use_ui_message_enum_java',
             'document_tab_model_info_proto_java',
             'infobar_action_type_java',
             'most_visited_tile_type_java',
@@ -679,6 +680,15 @@
           'type': 'none',
           'variables': {
             'source_file': '../components/signin/core/browser/signin_metrics.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # GN: //chrome:data_use_ui_message_enum_javagen
+          'target_name': 'data_use_ui_message_enum_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/android/data_usage/data_use_tab_ui_manager_android.cc',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

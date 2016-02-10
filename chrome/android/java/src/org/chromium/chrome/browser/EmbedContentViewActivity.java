@@ -42,6 +42,14 @@ public class EmbedContentViewActivity extends FullScreenActivity {
      */
     public static void show(Context context, int titleResId, int urlResId) {
         if (context == null) return;
+        show(context, context.getString(titleResId), context.getString(urlResId));
+    }
+
+    /**
+     * Starts an EmbedContentViewActivity that shows the given title and URL.
+     */
+    public static void show(Context context, String title, String url) {
+        if (context == null) return;
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setClassName(context, EmbedContentViewActivity.class.getName());
@@ -52,8 +60,8 @@ public class EmbedContentViewActivity extends FullScreenActivity {
             // Required to handle the case when this is triggered from tests.
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        intent.putExtra(TITLE_INTENT_EXTRA, titleResId);
-        intent.putExtra(URL_INTENT_EXTRA, urlResId);
+        intent.putExtra(TITLE_INTENT_EXTRA, title);
+        intent.putExtra(URL_INTENT_EXTRA, url);
         context.startActivity(intent);
     }
 
@@ -63,15 +71,14 @@ public class EmbedContentViewActivity extends FullScreenActivity {
         getSupportActionBar().setDisplayOptions(
                 ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
 
-        final int titleResId = getIntent().getIntExtra(TITLE_INTENT_EXTRA, 0);
-        if (titleResId != 0) {
-            setTitle(getString(titleResId));
+        final String titleRes = getIntent().getStringExtra(TITLE_INTENT_EXTRA);
+        if (titleRes != null) {
+            setTitle(titleRes);
         }
 
-        final int urlResId = getIntent().getIntExtra(URL_INTENT_EXTRA, 0);
-        if (urlResId != 0) {
-            final String url = getString(urlResId);
-            getActivityTab().loadUrl(new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL));
+        final String urlRes = getIntent().getStringExtra(URL_INTENT_EXTRA);
+        if (urlRes != null) {
+            getActivityTab().loadUrl(new LoadUrlParams(urlRes, PageTransition.AUTO_TOPLEVEL));
         }
     }
 

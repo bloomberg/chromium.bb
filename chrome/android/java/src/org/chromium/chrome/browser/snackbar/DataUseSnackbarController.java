@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.snackbar;
 
 import android.content.Context;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager.DataUsageUIAction;
+import org.chromium.chrome.browser.datausage.DataUseUIMessage;
 
 /**
  * The controller for two data use snackbars:
@@ -39,20 +39,24 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
     }
 
     public void showDataUseTrackingStartedBar() {
-        mSnackbarManager.showSnackbar(Snackbar
-                .make(mContext.getString(R.string.data_use_tracking_started_snackbar_message), this,
-                        Snackbar.TYPE_NOTIFICATION)
-                .setAction(mContext.getString(R.string.data_use_tracking_snackbar_action),
-                        STARTED_SNACKBAR));
+        mSnackbarManager.showSnackbar(
+                Snackbar.make(DataUseTabUIManager.getDataUseUIString(
+                                      DataUseUIMessage.DATA_USE_TRACKING_STARTED_SNACKBAR_MESSAGE),
+                                this, Snackbar.TYPE_NOTIFICATION)
+                        .setAction(DataUseTabUIManager.getDataUseUIString(
+                                           DataUseUIMessage.DATA_USE_TRACKING_SNACKBAR_ACTION),
+                                STARTED_SNACKBAR));
         DataUseTabUIManager.recordDataUseUIAction(DataUsageUIAction.STARTED_SNACKBAR_SHOWN);
     }
 
     public void showDataUseTrackingEndedBar() {
-        mSnackbarManager.showSnackbar(Snackbar
-                .make(mContext.getString(R.string.data_use_tracking_ended_snackbar_message), this,
-                        Snackbar.TYPE_NOTIFICATION)
-                .setAction(mContext.getString(R.string.data_use_tracking_snackbar_action),
-                        ENDED_SNACKBAR));
+        mSnackbarManager.showSnackbar(
+                Snackbar.make(DataUseTabUIManager.getDataUseUIString(
+                                      DataUseUIMessage.DATA_USE_TRACKING_ENDED_SNACKBAR_MESSAGE),
+                                this, Snackbar.TYPE_NOTIFICATION)
+                        .setAction(DataUseTabUIManager.getDataUseUIString(
+                                           DataUseUIMessage.DATA_USE_TRACKING_SNACKBAR_ACTION),
+                                ENDED_SNACKBAR));
         DataUseTabUIManager.recordDataUseUIAction(DataUsageUIAction.ENDED_SNACKBAR_SHOWN);
     }
 
@@ -68,8 +72,10 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
      */
     @Override
     public void onAction(Object actionData) {
-        EmbedContentViewActivity.show(mContext, R.string.data_use_learn_more_title,
-                R.string.data_use_learn_more_link_url);
+        EmbedContentViewActivity.show(mContext,
+                DataUseTabUIManager.getDataUseUIString(DataUseUIMessage.DATA_USE_LEARN_MORE_TITLE),
+                DataUseTabUIManager.getDataUseUIString(
+                        DataUseUIMessage.DATA_USE_LEARN_MORE_LINK_URL));
 
         if (actionData == null) return;
         int snackbarType = (int) actionData;

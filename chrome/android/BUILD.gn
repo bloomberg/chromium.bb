@@ -167,6 +167,7 @@ android_library("chrome_java") {
     ":resource_id_javagen",
     "//chrome:content_setting_javagen",
     "//chrome:content_settings_type_javagen",
+    "//chrome:data_use_ui_message_enum_javagen",
     "//chrome:signin_metrics_enum_javagen",
   ]
 

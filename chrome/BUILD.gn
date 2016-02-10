@@ -938,6 +938,13 @@ group("strings") {
 }
 
 if (is_android) {
+  # GYP: //chrome/chrome.gyp:data_use_ui_message_enum_java
+  java_cpp_enum("data_use_ui_message_enum_javagen") {
+    sources = [
+      "browser/android/data_usage/data_use_tab_ui_manager_android.cc",
+    ]
+  }
+
   # GYP: //chrome/chrome.gyp:content_setting_java
   java_cpp_enum("content_setting_javagen") {
     sources = [
