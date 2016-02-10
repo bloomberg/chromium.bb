@@ -32,8 +32,6 @@ class FakeModelTypeService : public ModelTypeService {
       scoped_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
 
-  void LoadMetadata(MetadataCallback callback) override;
-
   void GetData(ClientTagList client_tags, DataCallback callback) override;
 
   void GetAllData(DataCallback callback) override;

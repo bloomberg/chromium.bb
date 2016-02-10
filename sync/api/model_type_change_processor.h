@@ -17,6 +17,7 @@ class SyncError;
 
 namespace syncer_v2 {
 
+class MetadataBatch;
 class MetadataChangeList;
 
 // Interface used by the ModelTypeService to inform sync of local
@@ -37,6 +38,10 @@ class SYNC_EXPORT ModelTypeChangeProcessor {
   // Inform the processor of a deleted entity.
   virtual void Delete(const std::string& client_tag,
                       MetadataChangeList* metadata_change_list) = 0;
+
+  // Accept the initial sync metadata loaded by the service. This should be
+  // called as soon as the metadata is available to the service.
+  virtual void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) = 0;
 };
 
 }  // namespace syncer_v2

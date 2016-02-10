@@ -72,8 +72,7 @@ void ModelTypeProcessorProxy::OnUpdateReceived(
 SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
                                                    ModelTypeService* service)
     : type_(type),
-      is_enabled_(false),
-      is_connected_(false),
+      is_metadata_loaded_(false),
       service_(service),
       weak_ptr_factory_for_ui_(this),
       weak_ptr_factory_for_sync_(this) {
@@ -82,31 +81,25 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
 
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
-void SharedModelTypeProcessor::Start(StartCallback callback) {
+void SharedModelTypeProcessor::Start(StartCallback start_callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(start_callback_.is_null());
+  DCHECK(!IsConnected());
   DVLOG(1) << "Starting " << ModelTypeToString(type_);
 
-  if (!data_type_state_.initial_sync_done) {
-    // TODO(maxbogue): Load metadata whenever the native model is ready.
-    service_->LoadMetadata(
-        base::Bind(&SharedModelTypeProcessor::OnMetadataLoaded,
-                   base::Unretained(this), callback));
-  } else {
-    FinishStart(callback);
+  start_callback_ = start_callback;
+
+  if (is_metadata_loaded_) {
+    // The metadata was already loaded, so finish starting immediately.
+    FinishStart();
   }
 }
 
 void SharedModelTypeProcessor::OnMetadataLoaded(
-    StartCallback callback,
-    syncer::SyncError error,
     scoped_ptr<MetadataBatch> batch) {
   DCHECK(CalledOnValidThread());
   DCHECK(entities_.empty());
-
-  if (error.IsSet()) {
-    callback.Run(error, nullptr);
-    return;
-  }
+  DCHECK(!IsConnected());
 
   if (batch->GetDataTypeState().initial_sync_done) {
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
@@ -125,14 +118,18 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
         GetSpecificsFieldNumberFromModelType(type_));
   }
 
+  is_metadata_loaded_ = true;
 
-  FinishStart(callback);
+  if (!start_callback_.is_null()) {
+    // If Start() was already called, finish starting.
+    FinishStart();
+  }
 }
 
-void SharedModelTypeProcessor::FinishStart(StartCallback callback) {
+void SharedModelTypeProcessor::FinishStart() {
   DCHECK(CalledOnValidThread());
-
-  is_enabled_ = true;
+  DCHECK(is_metadata_loaded_);
+  DCHECK(!start_callback_.is_null());
 
   scoped_ptr<ActivationContext> activation_context =
       make_scoped_ptr(new ActivationContext);
@@ -142,32 +139,40 @@ void SharedModelTypeProcessor::FinishStart(StartCallback callback) {
       new ModelTypeProcessorProxy(weak_ptr_factory_for_sync_.GetWeakPtr(),
                                   base::ThreadTaskRunnerHandle::Get()));
 
-  callback.Run(syncer::SyncError(), std::move(activation_context));
+  start_callback_.Run(syncer::SyncError(), std::move(activation_context));
+  start_callback_.Reset();
 }
 
-bool SharedModelTypeProcessor::IsEnabled() const {
-  DCHECK(CalledOnValidThread());
-  return is_enabled_;
+bool SharedModelTypeProcessor::IsAllowingChanges() const {
+  return is_metadata_loaded_;
 }
 
 bool SharedModelTypeProcessor::IsConnected() const {
   DCHECK(CalledOnValidThread());
-  return is_connected_;
+  return !!worker_;
 }
 
-// TODO(stanisc): crbug.com/537027: This needs to be called from
-// DataTypeController when the type is disabled
 void SharedModelTypeProcessor::Disable() {
   DCHECK(CalledOnValidThread());
-  is_enabled_ = false;
-  Stop();
-  ClearSyncState();
+  scoped_ptr<MetadataChangeList> change_list =
+      service_->CreateMetadataChangeList();
+  for (auto it = entities_.begin(); it != entities_.end(); ++it) {
+    change_list->ClearMetadata(it->second->client_tag());
+  }
+  change_list->ClearDataTypeState();
+  // Nothing to do if this fails, so just ignore the error it might return.
+  service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
+
+  // Destroy this object.
+  // TODO(pavely): Revisit whether there's a better way to do this deletion.
+  service_->clear_change_processor();
 }
 
 void SharedModelTypeProcessor::Stop() {
   DCHECK(CalledOnValidThread());
+  DCHECK(IsConnected());
+
   DVLOG(1) << "Stopping " << ModelTypeToString(type_);
-  is_connected_ = false;
   weak_ptr_factory_for_sync_.InvalidateWeakPtrs();
   worker_.reset();
 
@@ -184,7 +189,6 @@ void SharedModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> worker) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
 
-  is_connected_ = true;
   worker_ = std::move(worker);
 
   FlushPendingCommitRequests();
@@ -193,6 +197,7 @@ void SharedModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> worker) {
 void SharedModelTypeProcessor::Put(const std::string& client_tag,
                                    scoped_ptr<EntityData> entity_data,
                                    MetadataChangeList* metadata_change_list) {
+  DCHECK(IsAllowingChanges());
   DCHECK(entity_data.get());
   DCHECK(!entity_data->is_deleted());
   DCHECK(!entity_data->non_unique_name.empty());
@@ -237,6 +242,8 @@ void SharedModelTypeProcessor::Put(const std::string& client_tag,
 void SharedModelTypeProcessor::Delete(
     const std::string& client_tag,
     MetadataChangeList* metadata_change_list) {
+  DCHECK(IsAllowingChanges());
+
   const std::string client_tag_hash(
       syncer::syncable::GenerateSyncableHash(type_, client_tag));
 
@@ -461,14 +468,6 @@ void SharedModelTypeProcessor::ClearTransientSyncState() {
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
     it->second->ClearTransientSyncState();
   }
-}
-
-void SharedModelTypeProcessor::ClearSyncState() {
-  entities_.clear();
-  pending_updates_map_.clear();
-  data_type_state_ = DataTypeState();
-  // TODO(stanisc): crbug.com/561830, crbug.com/573333: Update the service to
-  // let it know that all metadata need to be cleared from the storage.
 }
 
 }  // namespace syncer_v2

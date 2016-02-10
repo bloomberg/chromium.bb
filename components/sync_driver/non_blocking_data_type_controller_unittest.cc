@@ -232,20 +232,34 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
     }
   }
 
-  void TestTypeProcessor(bool isEnabled, bool isConnected) {
+  void TestTypeProcessor(bool isAllowingChanges, bool isConnected) {
     if (model_thread_runner_->BelongsToCurrentThread()) {
-      EXPECT_EQ(isEnabled, type_processor_->IsEnabled());
+      EXPECT_EQ(isAllowingChanges, type_processor_->IsAllowingChanges());
       EXPECT_EQ(isConnected, type_processor_->IsConnected());
     } else {
       model_thread_runner_->PostTask(
           FROM_HERE,
           base::Bind(&NonBlockingDataTypeControllerTest::TestTypeProcessor,
-                     base::Unretained(this), isEnabled, isConnected));
+                     base::Unretained(this), isAllowingChanges, isConnected));
+      RunQueuedModelThreadTasks();
+    }
+  }
+
+  void OnMetadataLoaded() {
+    if (model_thread_runner_->BelongsToCurrentThread()) {
+      type_processor_->OnMetadataLoaded(
+          make_scoped_ptr(new syncer_v2::MetadataBatch()));
+    } else {
+      model_thread_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&NonBlockingDataTypeControllerTest::OnMetadataLoaded,
+                     base::Unretained(this)));
       RunQueuedModelThreadTasks();
     }
   }
 
   void LoadModels() {
+    OnMetadataLoaded();
     controller_->LoadModels(
         base::Bind(&NonBlockingDataTypeControllerTest::LoadModelsDone,
                    base::Unretained(this)));

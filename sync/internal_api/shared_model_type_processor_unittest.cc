@@ -56,6 +56,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState();
 
+  void OnMetadataLoaded();
+
   // Start our SharedModelTypeProcessor, which will be unable to commit until it
   // receives notification that initial sync has completed.
   void Start();
@@ -129,7 +131,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   size_t ProcessorEntityCount() const;
 
   MockCommitQueue* mock_queue();
-  SharedModelTypeProcessor* type_processor();
+  SharedModelTypeProcessor* type_processor() const;
 
   const EntityChangeList* entity_change_list() const;
   const FakeMetadataChangeList* metadata_change_list() const;
@@ -156,17 +158,15 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   syncer::SyncError ApplySyncChanges(
       scoped_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
-  void LoadMetadata(MetadataCallback callback) override;
 
   // This sets ThreadTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
   base::MessageLoop sync_loop_;
 
   // The current mock queue which might be owned by either |mock_queue_ptr_| or
-  // |type_processor_|.
+  // |type_processor()|.
   MockCommitQueue* mock_queue_;
   scoped_ptr<MockCommitQueue> mock_queue_ptr_;
-  scoped_ptr<SharedModelTypeProcessor> type_processor_;
 
   DataTypeState data_type_state_;
 
@@ -180,41 +180,53 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 SharedModelTypeProcessorTest::SharedModelTypeProcessorTest()
     : mock_queue_(new MockCommitQueue()),
       mock_queue_ptr_(mock_queue_),
-      type_processor_(new SharedModelTypeProcessor(kModelType, this)),
-      metadata_batch_(new MetadataBatch()) {}
+      metadata_batch_(new MetadataBatch()) {
+  set_change_processor(
+      make_scoped_ptr(new SharedModelTypeProcessor(kModelType, this)));
+}
 
 SharedModelTypeProcessorTest::~SharedModelTypeProcessorTest() {}
 
 void SharedModelTypeProcessorTest::InitializeToReadyState() {
   data_type_state_.initial_sync_done = true;
+  OnMetadataLoaded();
   Start();
   // TODO(maxbogue): crbug.com/569642: Remove this once entity data is loaded
   // for the normal startup flow.
   UpdateResponseDataList empty_update_list;
-  type_processor_->OnUpdateReceived(data_type_state_, empty_update_list,
-                                    empty_update_list);
+  type_processor()->OnUpdateReceived(data_type_state_, empty_update_list,
+                                     empty_update_list);
+}
+
+void SharedModelTypeProcessorTest::OnMetadataLoaded() {
+  metadata_batch_->SetDataTypeState(data_type_state_);
+  type_processor()->OnMetadataLoaded(std::move(metadata_batch_));
+  metadata_batch_.reset(new MetadataBatch());
 }
 
 void SharedModelTypeProcessorTest::Start() {
-  type_processor_->Start(base::Bind(&SharedModelTypeProcessorTest::StartDone,
-                                    base::Unretained(this)));
+  type_processor()->Start(base::Bind(&SharedModelTypeProcessorTest::StartDone,
+                                     base::Unretained(this)));
 }
 
 void SharedModelTypeProcessorTest::Stop() {
-  type_processor_->Stop();
+  type_processor()->Stop();
   mock_queue_ = NULL;
   mock_queue_ptr_.reset();
 }
 
 void SharedModelTypeProcessorTest::Disable() {
-  type_processor_->Disable();
+  type_processor()->Disable();
   mock_queue_ = NULL;
   mock_queue_ptr_.reset();
+  EXPECT_FALSE(type_processor());
 }
 
 void SharedModelTypeProcessorTest::Restart() {
-  DCHECK(!type_processor_->IsConnected());
-
+  if (!type_processor()) {
+    set_change_processor(
+        make_scoped_ptr(new SharedModelTypeProcessor(kModelType, this)));
+  }
   // Prepare a new MockCommitQueue instance, just as we would
   // if this happened in the real world.
   mock_queue_ptr_.reset(new MockCommitQueue());
@@ -240,12 +252,12 @@ void SharedModelTypeProcessorTest::WriteItem(const std::string& tag,
   scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
   entity_data->specifics = GenerateSpecifics(tag, value);
   entity_data->non_unique_name = tag;
-  type_processor_->Put(tag, std::move(entity_data), change_list);
+  type_processor()->Put(tag, std::move(entity_data), change_list);
 }
 
 void SharedModelTypeProcessorTest::DeleteItem(const std::string& tag,
                                               MetadataChangeList* change_list) {
-  type_processor_->Delete(tag, change_list);
+  type_processor()->Delete(tag, change_list);
 }
 
 void SharedModelTypeProcessorTest::OnInitialSyncDone() {
@@ -254,8 +266,8 @@ void SharedModelTypeProcessorTest::OnInitialSyncDone() {
 
   // TODO(stanisc): crbug/569645: replace this with loading the initial state
   // via LoadMetadata callback.
-  type_processor_->OnUpdateReceived(data_type_state_, empty_update_list,
-                                    empty_update_list);
+  type_processor()->OnUpdateReceived(data_type_state_, empty_update_list,
+                                     empty_update_list);
 }
 
 void SharedModelTypeProcessorTest::UpdateFromServer(int64_t version_offset,
@@ -267,8 +279,8 @@ void SharedModelTypeProcessorTest::UpdateFromServer(int64_t version_offset,
 
   UpdateResponseDataList list;
   list.push_back(data);
-  type_processor_->OnUpdateReceived(data_type_state_, list,
-                                    UpdateResponseDataList());
+  type_processor()->OnUpdateReceived(data_type_state_, list,
+                                     UpdateResponseDataList());
 }
 
 void SharedModelTypeProcessorTest::PendingUpdateFromServer(
@@ -283,8 +295,8 @@ void SharedModelTypeProcessorTest::PendingUpdateFromServer(
 
   UpdateResponseDataList list;
   list.push_back(data);
-  type_processor_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
-                                    list);
+  type_processor()->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
+                                     list);
 }
 
 void SharedModelTypeProcessorTest::TombstoneFromServer(int64_t version_offset,
@@ -297,14 +309,14 @@ void SharedModelTypeProcessorTest::TombstoneFromServer(int64_t version_offset,
 
   UpdateResponseDataList list;
   list.push_back(data);
-  type_processor_->OnUpdateReceived(data_type_state_, list,
-                                    UpdateResponseDataList());
+  type_processor()->OnUpdateReceived(data_type_state_, list,
+                                     UpdateResponseDataList());
 }
 
 bool SharedModelTypeProcessorTest::HasPendingUpdate(
     const std::string& tag) const {
   const std::string client_tag_hash = GenerateTagHash(tag);
-  const UpdateResponseDataList list = type_processor_->GetPendingUpdates();
+  const UpdateResponseDataList list = type_processor()->GetPendingUpdates();
   for (UpdateResponseDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
     if (it->entity->client_tag_hash == client_tag_hash)
@@ -317,7 +329,7 @@ UpdateResponseData SharedModelTypeProcessorTest::GetPendingUpdate(
     const std::string& tag) const {
   DCHECK(HasPendingUpdate(tag));
   const std::string client_tag_hash = GenerateTagHash(tag);
-  const UpdateResponseDataList list = type_processor_->GetPendingUpdates();
+  const UpdateResponseDataList list = type_processor()->GetPendingUpdates();
   for (UpdateResponseDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
     if (it->entity->client_tag_hash == client_tag_hash)
@@ -328,21 +340,21 @@ UpdateResponseData SharedModelTypeProcessorTest::GetPendingUpdate(
 }
 
 size_t SharedModelTypeProcessorTest::GetNumPendingUpdates() const {
-  return type_processor_->GetPendingUpdates().size();
+  return type_processor()->GetPendingUpdates().size();
 }
 
 void SharedModelTypeProcessorTest::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   CommitResponseDataList list;
   list.push_back(mock_queue_->SuccessfulCommitResponse(request_data));
-  type_processor_->OnCommitCompleted(data_type_state_, list);
+  type_processor()->OnCommitCompleted(data_type_state_, list);
 }
 
 void SharedModelTypeProcessorTest::UpdateDesiredEncryptionKey(
     const std::string& key_name) {
   data_type_state_.encryption_key_name = key_name;
-  type_processor_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
-                                    UpdateResponseDataList());
+  type_processor()->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
+                                     UpdateResponseDataList());
 }
 
 void SharedModelTypeProcessorTest::SetServerEncryptionKey(
@@ -362,15 +374,15 @@ void SharedModelTypeProcessorTest::AddMetadataToBatch(const std::string& tag) {
 }
 
 size_t SharedModelTypeProcessorTest::ProcessorEntityCount() const {
-  return type_processor_->entities_.size();
+  return type_processor()->entities_.size();
 }
 
 MockCommitQueue* SharedModelTypeProcessorTest::mock_queue() {
   return mock_queue_;
 }
 
-SharedModelTypeProcessor* SharedModelTypeProcessorTest::type_processor() {
-  return type_processor_.get();
+SharedModelTypeProcessor* SharedModelTypeProcessorTest::type_processor() const {
+  return static_cast<SharedModelTypeProcessor*>(change_processor());
 }
 
 const EntityChangeList* SharedModelTypeProcessorTest::entity_change_list()
@@ -439,12 +451,6 @@ syncer::SyncError SharedModelTypeProcessorTest::ApplySyncChanges(
   EXPECT_TRUE(metadata_change_list_);
   entity_change_list_.reset(new EntityChangeList(entity_changes));
   return syncer::SyncError();
-}
-
-void SharedModelTypeProcessorTest::LoadMetadata(MetadataCallback callback) {
-  metadata_batch_->SetDataTypeState(data_type_state_);
-  callback.Run(syncer::SyncError(), std::move(metadata_batch_));
-  metadata_batch_.reset(new MetadataBatch());
 }
 
 size_t SharedModelTypeProcessorTest::GetNumCommitRequestLists() {
@@ -826,6 +832,7 @@ TEST_F(SharedModelTypeProcessorTest, TwoIndependentItems) {
 // commits.
 TEST_F(SharedModelTypeProcessorTest, NoCommitsUntilInitialSyncDone) {
   Start();
+  OnMetadataLoaded();
 
   FakeMetadataChangeList change_list;
 

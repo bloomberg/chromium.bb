@@ -59,7 +59,10 @@ class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
   }
 
   scoped_ptr<SharedModelTypeProcessor> CreateModelTypeProcessor() {
-    return make_scoped_ptr(new SharedModelTypeProcessor(syncer::THEMES, this));
+    scoped_ptr<SharedModelTypeProcessor> processor =
+        make_scoped_ptr(new SharedModelTypeProcessor(syncer::THEMES, this));
+    processor->OnMetadataLoaded(make_scoped_ptr(new MetadataBatch()));
+    return processor;
   }
 
  private:

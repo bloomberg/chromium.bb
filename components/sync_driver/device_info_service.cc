@@ -70,10 +70,6 @@ SyncError DeviceInfoService::ApplySyncChanges(
   return SyncError();
 }
 
-void DeviceInfoService::LoadMetadata(MetadataCallback callback) {
-  // TODO(skym): crbug.com/543405: Implementation.
-}
-
 void DeviceInfoService::GetData(ClientTagList client_tags,
                                 DataCallback callback) {
   // TODO(skym): crbug.com/543405: Implementation.

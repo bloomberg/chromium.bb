@@ -29,8 +29,6 @@ class SYNC_EXPORT ModelTypeService {
  public:
   typedef base::Callback<void(syncer::SyncError, scoped_ptr<DataBatch>)>
       DataCallback;
-  typedef base::Callback<void(syncer::SyncError, scoped_ptr<MetadataBatch>)>
-      MetadataCallback;
   typedef std::vector<std::string> ClientTagList;
 
   ModelTypeService();
@@ -56,9 +54,6 @@ class SYNC_EXPORT ModelTypeService {
       scoped_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) = 0;
 
-  // Asynchronously retrieve the sync metadata.
-  virtual void LoadMetadata(MetadataCallback callback) = 0;
-
   // Asynchronously retrieve the corresponding sync data for |client_tags|.
   virtual void GetData(ClientTagList client_tags, DataCallback callback) = 0;
 
@@ -69,16 +64,16 @@ class SYNC_EXPORT ModelTypeService {
   virtual std::string GetClientTag(const EntityData& entity_data) = 0;
 
   // TODO(skym): See crbug/547087, do we need all these accessors?
-  syncer_v2::ModelTypeChangeProcessor* change_processor();
+  ModelTypeChangeProcessor* change_processor() const;
 
   void set_change_processor(
-      scoped_ptr<syncer_v2::ModelTypeChangeProcessor> change_processor);
+      scoped_ptr<ModelTypeChangeProcessor> change_processor);
 
   void clear_change_processor();
 
  private:
   // Recieves ownership in set_change_processor(...).
-  scoped_ptr<syncer_v2::ModelTypeChangeProcessor> change_processor_;
+  scoped_ptr<ModelTypeChangeProcessor> change_processor_;
 };
 
 }  // namespace syncer_v2

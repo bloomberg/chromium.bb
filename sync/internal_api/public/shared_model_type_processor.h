@@ -50,17 +50,15 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // stopping for the model type.
   void Stop();
 
-  // Returns true if the datatype is enabled.
-  // TODO(stanisc): crbug.com/537027: There is no explicit call to indicate
-  // that the datatype is enabled. The flag is set to true when Start is called
-  // and reset to false when Disable is called.
-  bool IsEnabled() const;
-
-  // TODO(stanisc): crbug.com/537027: This needs to be called from
-  // DataTypeController when the type is disabled
-  // Severs all ties to the sync thread and may delete local sync state.
-  // Another call to Enable() can be used to re-establish this connection.
+  // Indicates that we no longer want to do any sync-related things for this
+  // data type. Severs all ties to the sync thread, deletes all local sync
+  // metadata, and then destroys the SharedModelTypeProcessor.
+  // TODO(crbug.com/584365): This needs to be called from DataTypeController.
   void Disable();
+
+  // Whether the processor is allowing changes to its model type. If this is
+  // false, the service should not allow any changes to its data.
+  bool IsAllowingChanges() const;
 
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
@@ -71,6 +69,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& client_tag,
               MetadataChangeList* metadata_change_list) override;
+  void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) override;
 
   // Returns the list of pending updates.
   //
@@ -98,13 +97,8 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   using EntityMap = std::map<std::string, scoped_ptr<ModelTypeEntity>>;
   using UpdateMap = std::map<std::string, scoped_ptr<UpdateResponseData>>;
 
-  // Callback for ModelTypeService::LoadMetadata().
-  void OnMetadataLoaded(StartCallback callback,
-                        syncer::SyncError,
-                        scoped_ptr<MetadataBatch> batch);
-
   // Complete the start process.
-  void FinishStart(StartCallback callback);
+  void FinishStart();
 
   // Handle the first update received from the server after being enabled.
   void OnInitialUpdateReceived(const DataTypeState& type_state,
@@ -119,19 +113,14 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // the current worker.
   void ClearTransientSyncState();
 
-  // Clears any state related to our communications with the current sync
-  // account.  Useful when a user signs out of the current account.
-  void ClearSyncState();
-
   syncer::ModelType type_;
   DataTypeState data_type_state_;
 
-  // Whether or not sync is enabled by this type's DataTypeController.
-  bool is_enabled_;
+  // Stores the start callback in between Start() and FinishStart().
+  StartCallback start_callback_;
 
-  // Whether or not this object has completed its initial handshake with the
-  // SyncContextProxy.
-  bool is_connected_;
+  // Indicates whether the metadata has finished loading.
+  bool is_metadata_loaded_;
 
   // Reference to the CommitQueue.
   //
