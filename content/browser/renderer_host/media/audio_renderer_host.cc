@@ -761,7 +761,10 @@ void AudioRendererHost::CheckOutputDeviceAccess(
     const OutputDeviceAccessCB& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+  // Check security origin if nondefault device is requested.
+  // Ignore check for default device, which is always authorized.
+  if (!IsDefaultDeviceId(device_id) &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
           render_process_id_, gurl_security_origin)) {
     content::bad_message::ReceivedBadMessage(this,
                                              bad_message::ARH_UNAUTHORIZED_URL);
