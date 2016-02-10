@@ -1217,9 +1217,18 @@
       },
       {
         "test": "ui_base_unittests"
-      },
+      }
+    ],
+    "scripts": [
       {
-        "test": "url_unittests"
+        "args": [
+          "url_unittests"
+        ],
+        "name": "memory_test: url_unittests",
+        "override_compile_targets": [
+          "url_unittests"
+        ],
+        "script": "run_under_valgrind.py"
       }
     ]
   },
