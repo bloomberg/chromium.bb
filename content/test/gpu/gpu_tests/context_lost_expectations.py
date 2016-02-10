@@ -26,3 +26,9 @@ class ContextLostExpectations(GpuTestExpectations):
               ['mountainlion', 'debug'], bug=497411)
     self.Skip('ContextLost.WebGLContextLostFromSelectElement',
               ['lion', 'debug'], bug=498149)
+
+    # Temporarily disable while solution is being investigated.
+    self.Skip('ContextLost.GPUProcessCrashesExactlyOnce',
+              ['mac'], bug=584872)
+    self.Skip('ContextLost.WebGLContextLostFromGPUProcessExit',
+              ['mac'], bug=584872)
