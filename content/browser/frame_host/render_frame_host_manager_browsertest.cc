@@ -35,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
@@ -2450,21 +2451,34 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
-  RenderFrameHostImpl* pending_rfh =
-      web_contents->GetRenderManagerForTesting()->pending_frame_host();
-  ASSERT_TRUE(pending_rfh);
+  RenderFrameHostImpl* next_rfh =
+      IsBrowserSideNavigationEnabled()
+          ? web_contents->GetRenderManagerForTesting()->speculative_frame_host()
+          : web_contents->GetRenderManagerForTesting()->pending_frame_host();
+  ASSERT_TRUE(next_rfh);
 
   // Navigate to the same new site and verify that we commit in the same RFH.
   GURL cross_site_url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationObserver navigation_observer(web_contents, 1);
   shell()->LoadURL(cross_site_url2);
-  EXPECT_EQ(pending_rfh,
-            web_contents->GetRenderManagerForTesting()->pending_frame_host());
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_EQ(
+        next_rfh,
+        web_contents->GetRenderManagerForTesting()->speculative_frame_host());
+  } else {
+    EXPECT_EQ(next_rfh,
+              web_contents->GetRenderManagerForTesting()->pending_frame_host());
+  }
   navigation_observer.Wait();
   EXPECT_EQ(cross_site_url2, web_contents->GetLastCommittedURL());
-  EXPECT_EQ(pending_rfh, web_contents->GetMainFrame());
-  EXPECT_FALSE(
-      web_contents->GetRenderManagerForTesting()->pending_frame_host());
+  EXPECT_EQ(next_rfh, web_contents->GetMainFrame());
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_FALSE(
+        web_contents->GetRenderManagerForTesting()->speculative_frame_host());
+  } else {
+    EXPECT_FALSE(
+        web_contents->GetRenderManagerForTesting()->pending_frame_host());
+  }
 
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
