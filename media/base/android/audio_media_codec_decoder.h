@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_AUDIO_DECODER_H_
-#define MEDIA_BASE_ANDROID_MEDIA_CODEC_AUDIO_DECODER_H_
+#ifndef MEDIA_BASE_ANDROID_AUDIO_MEDIA_CODEC_DECODER_H_
+#define MEDIA_BASE_ANDROID_AUDIO_MEDIA_CODEC_DECODER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,12 +16,12 @@ namespace media {
 class AudioTimestampHelper;
 
 // Audio decoder for MediaCodecPlayer
-class MediaCodecAudioDecoder : public MediaCodecDecoder {
+class AudioMediaCodecDecoder : public MediaCodecDecoder {
  public:
   // For parameters see media_codec_decoder.h
   // update_current_time_cb: callback that reports current playback time.
   //                         Called for each rendered frame.
-  MediaCodecAudioDecoder(
+  AudioMediaCodecDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_runner,
       FrameStatistics* frame_statistics,
       const base::Closure& request_data_cb,
@@ -31,7 +31,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
       const base::Closure& waiting_for_decryption_key_cb,
       const base::Closure& error_cb,
       const SetTimeCallback& update_current_time_cb);
-  ~MediaCodecAudioDecoder() override;
+  ~AudioMediaCodecDecoder() override;
 
   const char* class_name() const override;
 
@@ -95,9 +95,9 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
   // The time limit for the next frame to avoid underrun.
   base::TimeTicks next_frame_time_limit_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaCodecAudioDecoder);
+  DISALLOW_COPY_AND_ASSIGN(AudioMediaCodecDecoder);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_ANDROID_MEDIA_CODEC_DECODER_H_
+#endif  // MEDIA_BASE_ANDROID_AUDIO_MEDIA_CODEC_DECODER_H_

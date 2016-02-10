@@ -158,8 +158,8 @@
 
 namespace media {
 
-class MediaCodecAudioDecoder;
-class MediaCodecVideoDecoder;
+class AudioMediaCodecDecoder;
+class VideoMediaCodecDecoder;
 
 class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
                                       public DemuxerAndroidClient {
@@ -344,8 +344,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   // Major components: demuxer, audio and video decoders.
   scoped_ptr<DemuxerAndroid> demuxer_;
-  scoped_ptr<MediaCodecAudioDecoder> audio_decoder_;
-  scoped_ptr<MediaCodecVideoDecoder> video_decoder_;
+  scoped_ptr<AudioMediaCodecDecoder> audio_decoder_;
+  scoped_ptr<VideoMediaCodecDecoder> video_decoder_;
 
   // The state of the state machine.
   PlayerState state_;

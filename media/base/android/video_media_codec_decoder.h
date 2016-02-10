@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_
-#define MEDIA_BASE_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_
+#ifndef MEDIA_BASE_ANDROID_VIDEO_MEDIA_CODEC_DECODER_H_
+#define MEDIA_BASE_ANDROID_VIDEO_MEDIA_CODEC_DECODER_H_
 
 #include <stddef.h>
 
@@ -16,7 +16,7 @@
 namespace media {
 
 // Video decoder for MediaCodecPlayer
-class MediaCodecVideoDecoder : public MediaCodecDecoder {
+class VideoMediaCodecDecoder : public MediaCodecDecoder {
  public:
   // Typedefs for the notification callbacks
   typedef base::Callback<void(const gfx::Size& video_size)>
@@ -29,7 +29,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
   // codec_created_cb: reports that video codec has been created. A controller
   //                   class might use it to release more resources so that this
   //                   decoder can use them.
-  MediaCodecVideoDecoder(
+  VideoMediaCodecDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_runner,
       FrameStatistics* frame_statistics,
       const base::Closure& request_data_cb,
@@ -40,7 +40,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
       const base::Closure& error_cb,
       const SetTimeCallback& update_current_time_cb,
       const VideoSizeChangedCallback& video_size_changed_cb);
-  ~MediaCodecVideoDecoder() override;
+  ~VideoMediaCodecDecoder() override;
 
   const char* class_name() const override;
 
@@ -122,9 +122,9 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
   // Mantain the last seen PTS for stand-alone EOS.
   base::TimeDelta last_seen_pts_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaCodecVideoDecoder);
+  DISALLOW_COPY_AND_ASSIGN(VideoMediaCodecDecoder);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_
+#endif  // MEDIA_BASE_ANDROID_VIDEO_MEDIA_CODEC_DECODER_H_

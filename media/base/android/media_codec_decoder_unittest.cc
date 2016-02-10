@@ -9,13 +9,13 @@
 #include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "media/base/android/media_codec_audio_decoder.h"
+#include "media/base/android/audio_media_codec_decoder.h"
 #include "media/base/android/media_codec_util.h"
-#include "media/base/android/media_codec_video_decoder.h"
 #include "media/base/android/media_statistics.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/android/test_data_factory.h"
 #include "media/base/android/test_statistics.h"
+#include "media/base/android/video_media_codec_decoder.h"
 #include "media/base/timestamp_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/surface_texture.h"
@@ -266,7 +266,7 @@ bool MediaCodecDecoderTest::WaitForCondition(const Predicate& condition,
 }
 
 void MediaCodecDecoderTest::CreateAudioDecoder() {
-  decoder_ = scoped_ptr<MediaCodecDecoder>(new MediaCodecAudioDecoder(
+  decoder_ = scoped_ptr<MediaCodecDecoder>(new AudioMediaCodecDecoder(
       task_runner_, &frame_statistics_,
       base::Bind(&MediaCodecDecoderTest::OnDataRequested,
                  base::Unretained(this)),
@@ -284,7 +284,7 @@ void MediaCodecDecoderTest::CreateAudioDecoder() {
 }
 
 void MediaCodecDecoderTest::CreateVideoDecoder() {
-  decoder_ = scoped_ptr<MediaCodecDecoder>(new MediaCodecVideoDecoder(
+  decoder_ = scoped_ptr<MediaCodecDecoder>(new VideoMediaCodecDecoder(
       task_runner_, &frame_statistics_,
       base::Bind(&MediaCodecDecoderTest::OnDataRequested,
                  base::Unretained(this)),
@@ -320,8 +320,8 @@ void MediaCodecDecoderTest::SetVideoSurface() {
   surface_texture_ = gfx::SurfaceTexture::Create(0);
   gfx::ScopedJavaSurface surface(surface_texture_.get());
   ASSERT_NE(nullptr, decoder_.get());
-  MediaCodecVideoDecoder* video_decoder =
-      static_cast<MediaCodecVideoDecoder*>(decoder_.get());
+  VideoMediaCodecDecoder* video_decoder =
+      static_cast<VideoMediaCodecDecoder*>(decoder_.get());
   video_decoder->SetVideoSurface(std::move(surface));
 }
 
@@ -446,8 +446,8 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureInvalidSurface) {
   // Release the surface texture.
   surface_texture = NULL;
 
-  MediaCodecVideoDecoder* video_decoder =
-      static_cast<MediaCodecVideoDecoder*>(decoder_.get());
+  VideoMediaCodecDecoder* video_decoder =
+      static_cast<VideoMediaCodecDecoder*>(decoder_.get());
   video_decoder->SetVideoSurface(std::move(surface));
 
   EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure(nullptr));

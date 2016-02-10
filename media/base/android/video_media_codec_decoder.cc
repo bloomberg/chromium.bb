@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/android/media_codec_video_decoder.h"
+#include "media/base/android/video_media_codec_decoder.h"
 
 #include <utility>
 
@@ -19,7 +19,7 @@ namespace {
 const int kDelayForStandAloneEOS = 2;  // milliseconds
 }
 
-MediaCodecVideoDecoder::MediaCodecVideoDecoder(
+VideoMediaCodecDecoder::VideoMediaCodecDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     FrameStatistics* frame_statistics,
     const base::Closure& request_data_cb,
@@ -41,26 +41,25 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
                         error_cb),
       is_protected_surface_required_(false),
       update_current_time_cb_(update_current_time_cb),
-      video_size_changed_cb_(video_size_changed_cb) {
-}
+      video_size_changed_cb_(video_size_changed_cb) {}
 
-MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
+VideoMediaCodecDecoder::~VideoMediaCodecDecoder() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "VideoDecoder::~VideoDecoder()";
   ReleaseDecoderResources();
 }
 
-const char* MediaCodecVideoDecoder::class_name() const {
+const char* VideoMediaCodecDecoder::class_name() const {
   return "VideoDecoder";
 }
 
-bool MediaCodecVideoDecoder::HasStream() const {
+bool VideoMediaCodecDecoder::HasStream() const {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   return configs_.video_codec != kUnknownVideoCodec;
 }
 
-void MediaCodecVideoDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
+void VideoMediaCodecDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   DVLOG(1) << class_name() << "::" << __FUNCTION__ << " " << configs;
 
   configs_ = configs;
@@ -72,13 +71,13 @@ void MediaCodecVideoDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   }
 }
 
-bool MediaCodecVideoDecoder::IsContentEncrypted() const {
+bool VideoMediaCodecDecoder::IsContentEncrypted() const {
   // Make sure SetDemuxerConfigs() as been called.
   DCHECK(configs_.video_codec != kUnknownVideoCodec);
   return configs_.is_video_encrypted;
 }
 
-void MediaCodecVideoDecoder::ReleaseDecoderResources() {
+void VideoMediaCodecDecoder::ReleaseDecoderResources() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
 
@@ -89,14 +88,14 @@ void MediaCodecVideoDecoder::ReleaseDecoderResources() {
   surface_ = gfx::ScopedJavaSurface();
 }
 
-void MediaCodecVideoDecoder::ReleaseMediaCodec() {
+void VideoMediaCodecDecoder::ReleaseMediaCodec() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   MediaCodecDecoder::ReleaseMediaCodec();
   delayed_buffers_.clear();
 }
 
-void MediaCodecVideoDecoder::SetVideoSurface(gfx::ScopedJavaSurface surface) {
+void VideoMediaCodecDecoder::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__
@@ -107,25 +106,25 @@ void MediaCodecVideoDecoder::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   needs_reconfigure_ = true;
 }
 
-bool MediaCodecVideoDecoder::HasVideoSurface() const {
+bool VideoMediaCodecDecoder::HasVideoSurface() const {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   return !surface_.IsEmpty();
 }
 
-void MediaCodecVideoDecoder::SetProtectedSurfaceRequired(bool value) {
+void VideoMediaCodecDecoder::SetProtectedSurfaceRequired(bool value) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   is_protected_surface_required_ = value;
 }
 
-bool MediaCodecVideoDecoder::IsProtectedSurfaceRequired() const {
+bool VideoMediaCodecDecoder::IsProtectedSurfaceRequired() const {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   return is_protected_surface_required_;
 }
 
-bool MediaCodecVideoDecoder::IsCodecReconfigureNeeded(
+bool VideoMediaCodecDecoder::IsCodecReconfigureNeeded(
     const DemuxerConfigs& next) const {
   if (always_reconfigure_for_tests_)
     return true;
@@ -143,11 +142,11 @@ bool MediaCodecVideoDecoder::IsCodecReconfigureNeeded(
   }
 
   return !static_cast<VideoCodecBridge*>(media_codec_bridge_.get())
-      ->IsAdaptivePlaybackSupported(next.video_size.width(),
-                                    next.video_size.height());
+              ->IsAdaptivePlaybackSupported(next.video_size.width(),
+                                            next.video_size.height());
 }
 
-MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal(
+MediaCodecDecoder::ConfigStatus VideoMediaCodecDecoder::ConfigureInternal(
     jobject media_crypto) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
@@ -173,11 +172,8 @@ MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal(
   bool is_secure = IsContentEncrypted() && is_protected_surface_required_;
 
   media_codec_bridge_.reset(VideoCodecBridge::CreateDecoder(
-      configs_.video_codec,
-      is_secure,
-      configs_.video_size,
-      surface_.j_surface().obj(),
-      media_crypto));
+      configs_.video_codec, is_secure, configs_.video_size,
+      surface_.j_surface().obj(), media_crypto));
 
   if (!media_codec_bridge_) {
     DVLOG(0) << class_name() << "::" << __FUNCTION__
@@ -193,7 +189,7 @@ MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal(
   return kConfigOk;
 }
 
-void MediaCodecVideoDecoder::AssociateCurrentTimeWithPTS(base::TimeDelta pts) {
+void VideoMediaCodecDecoder::AssociateCurrentTimeWithPTS(base::TimeDelta pts) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__ << " pts:" << pts;
@@ -203,13 +199,13 @@ void MediaCodecVideoDecoder::AssociateCurrentTimeWithPTS(base::TimeDelta pts) {
   last_seen_pts_ = pts;
 }
 
-void MediaCodecVideoDecoder::DissociatePTSFromTime() {
+void VideoMediaCodecDecoder::DissociatePTSFromTime() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   start_pts_ = last_seen_pts_ = kNoTimestamp();
 }
 
-void MediaCodecVideoDecoder::OnOutputFormatChanged() {
+void VideoMediaCodecDecoder::OnOutputFormatChanged() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   gfx::Size prev_size = video_size_;
@@ -224,7 +220,7 @@ void MediaCodecVideoDecoder::OnOutputFormatChanged() {
   }
 }
 
-void MediaCodecVideoDecoder::Render(int buffer_index,
+void VideoMediaCodecDecoder::Render(int buffer_index,
                                     size_t offset,
                                     size_t size,
                                     RenderMode render_mode,
@@ -299,19 +295,19 @@ void MediaCodecVideoDecoder::Render(int buffer_index,
   delayed_buffers_.insert(buffer_index);
 
   decoder_thread_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&MediaCodecVideoDecoder::ReleaseOutputBuffer,
+      FROM_HERE, base::Bind(&VideoMediaCodecDecoder::ReleaseOutputBuffer,
                             base::Unretained(this), buffer_index, pts, render,
                             update_time, eos_encountered),
       time_to_render);
 }
 
-int MediaCodecVideoDecoder::NumDelayedRenderTasks() const {
+int VideoMediaCodecDecoder::NumDelayedRenderTasks() const {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   return delayed_buffers_.size();
 }
 
-void MediaCodecVideoDecoder::ReleaseDelayedBuffers() {
+void VideoMediaCodecDecoder::ReleaseDelayedBuffers() {
   // Media thread
   // Called when there is no decoder thread
   for (int index : delayed_buffers_)
@@ -321,7 +317,7 @@ void MediaCodecVideoDecoder::ReleaseDelayedBuffers() {
 }
 
 #ifndef NDEBUG
-void MediaCodecVideoDecoder::VerifyUnitIsKeyFrame(
+void VideoMediaCodecDecoder::VerifyUnitIsKeyFrame(
     const AccessUnit* unit) const {
   // The first video frame in a sequence must be a key frame or stand-alone EOS.
   DCHECK(unit);
@@ -330,7 +326,7 @@ void MediaCodecVideoDecoder::VerifyUnitIsKeyFrame(
 }
 #endif
 
-void MediaCodecVideoDecoder::ReleaseOutputBuffer(int buffer_index,
+void VideoMediaCodecDecoder::ReleaseOutputBuffer(int buffer_index,
                                                  base::TimeDelta pts,
                                                  bool render,
                                                  bool update_time,

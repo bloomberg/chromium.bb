@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/android/media_codec_audio_decoder.h"
+#include "media/base/android/audio_media_codec_decoder.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -20,7 +20,7 @@ const int kBytesPerAudioOutputSample = 2;
 
 namespace media {
 
-MediaCodecAudioDecoder::MediaCodecAudioDecoder(
+AudioMediaCodecDecoder::AudioMediaCodecDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     FrameStatistics* frame_statistics,
     const base::Closure& request_data_cb,
@@ -43,26 +43,25 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
       bytes_per_frame_(0),
       output_sampling_rate_(0),
       frame_count_(0),
-      update_current_time_cb_(update_current_time_cb) {
-}
+      update_current_time_cb_(update_current_time_cb) {}
 
-MediaCodecAudioDecoder::~MediaCodecAudioDecoder() {
+AudioMediaCodecDecoder::~AudioMediaCodecDecoder() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "AudioDecoder::~AudioDecoder()";
   ReleaseDecoderResources();
 }
 
-const char* MediaCodecAudioDecoder::class_name() const {
+const char* AudioMediaCodecDecoder::class_name() const {
   return "AudioDecoder";
 }
 
-bool MediaCodecAudioDecoder::HasStream() const {
+bool AudioMediaCodecDecoder::HasStream() const {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   return configs_.audio_codec != kUnknownAudioCodec;
 }
 
-void MediaCodecAudioDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
+void AudioMediaCodecDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   DVLOG(1) << class_name() << "::" << __FUNCTION__ << " " << configs;
 
   configs_ = configs;
@@ -70,13 +69,13 @@ void MediaCodecAudioDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
     output_sampling_rate_ = configs.audio_sampling_rate;
 }
 
-bool MediaCodecAudioDecoder::IsContentEncrypted() const {
+bool AudioMediaCodecDecoder::IsContentEncrypted() const {
   // Make sure SetDemuxerConfigs() as been called.
   DCHECK(configs_.audio_codec != kUnknownAudioCodec);
   return configs_.is_audio_encrypted;
 }
 
-void MediaCodecAudioDecoder::ReleaseDecoderResources() {
+void AudioMediaCodecDecoder::ReleaseDecoderResources() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
 
@@ -85,14 +84,14 @@ void MediaCodecAudioDecoder::ReleaseDecoderResources() {
   ReleaseMediaCodec();
 }
 
-void MediaCodecAudioDecoder::Flush() {
+void AudioMediaCodecDecoder::Flush() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   MediaCodecDecoder::Flush();
   frame_count_ = 0;
 }
 
-void MediaCodecAudioDecoder::SetVolume(double volume) {
+void AudioMediaCodecDecoder::SetVolume(double volume) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__ << " " << volume;
@@ -101,7 +100,7 @@ void MediaCodecAudioDecoder::SetVolume(double volume) {
   SetVolumeInternal();
 }
 
-void MediaCodecAudioDecoder::SetBaseTimestamp(base::TimeDelta base_timestamp) {
+void AudioMediaCodecDecoder::SetBaseTimestamp(base::TimeDelta base_timestamp) {
   // Called from Media thread and Decoder thread. When called from Media thread
   // Decoder thread should not be running.
 
@@ -112,7 +111,7 @@ void MediaCodecAudioDecoder::SetBaseTimestamp(base::TimeDelta base_timestamp) {
     audio_timestamp_helper_->SetBaseTimestamp(base_timestamp_);
 }
 
-bool MediaCodecAudioDecoder::IsCodecReconfigureNeeded(
+bool AudioMediaCodecDecoder::IsCodecReconfigureNeeded(
     const DemuxerConfigs& next) const {
   if (always_reconfigure_for_tests_)
     return true;
@@ -127,7 +126,7 @@ bool MediaCodecAudioDecoder::IsCodecReconfigureNeeded(
                      next.audio_extra_data.begin());
 }
 
-MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal(
+MediaCodecDecoder::ConfigStatus AudioMediaCodecDecoder::ConfigureInternal(
     jobject media_crypto) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
@@ -170,7 +169,7 @@ MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal(
   return kConfigOk;
 }
 
-void MediaCodecAudioDecoder::OnOutputFormatChanged() {
+void AudioMediaCodecDecoder::OnOutputFormatChanged() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   DCHECK(media_codec_bridge_);
@@ -181,7 +180,7 @@ void MediaCodecAudioDecoder::OnOutputFormatChanged() {
     ResetTimestampHelper();
 }
 
-void MediaCodecAudioDecoder::Render(int buffer_index,
+void AudioMediaCodecDecoder::Render(int buffer_index,
                                     size_t offset,
                                     size_t size,
                                     RenderMode render_mode,
@@ -263,7 +262,7 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
   CheckLastFrame(eos_encountered, false);  // no delayed tasks
 }
 
-void MediaCodecAudioDecoder::SetVolumeInternal() {
+void AudioMediaCodecDecoder::SetVolumeInternal() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (media_codec_bridge_) {
@@ -272,7 +271,7 @@ void MediaCodecAudioDecoder::SetVolumeInternal() {
   }
 }
 
-void MediaCodecAudioDecoder::ResetTimestampHelper() {
+void AudioMediaCodecDecoder::ResetTimestampHelper() {
   // Media thread or Decoder thread
   // When this method is called on Media thread, decoder thread
   // should not be running.
