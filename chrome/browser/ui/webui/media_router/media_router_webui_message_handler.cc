@@ -450,8 +450,10 @@ void MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow(
 
 #if defined(GOOGLE_CHROME_BUILD)
   bool enabled_cloud_services = false;
+  // Do not set the relevant cloud services prefs if the user was not shown
+  // the cloud services prompt.
   if (!args->GetBoolean(0, &enabled_cloud_services)) {
-    DVLOG(1) << "Unable to extract args.";
+    DVLOG(1) << "User was not shown the enable cloud services prompt.";
     return;
   }
 

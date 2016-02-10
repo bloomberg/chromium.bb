@@ -169,14 +169,15 @@ cr.define('media_router_container', function() {
       });
 
       // Tests for 'acknowledge-first-run-flow' event firing when the
-      // 'first-run-button' button is clicked.
+      // 'first-run-button' button is clicked and the cloud preference checkbox
+      // is not shown.
       test('first run button click', function(done) {
         container.showFirstRunFlow = true;
 
         setTimeout(function() {
           container.addEventListener('acknowledge-first-run-flow',
               function(data) {
-            assertFalse(data.detail.optedIntoCloudServices);
+            assertEquals(undefined, data.detail.optedIntoCloudServices);
             done();
           });
           MockInteractions.tap(container.shadowRoot.getElementById(
