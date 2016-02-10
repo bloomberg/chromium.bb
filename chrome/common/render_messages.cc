@@ -30,31 +30,31 @@ void ParamTraits<ContentSettingsPattern>::Log(
 
 void ParamTraits<blink::WebCache::UsageStats>::Write(
     base::Pickle* m, const blink::WebCache::UsageStats& u) {
-  m->WriteUInt32(base::checked_cast<int>(u.minDeadCapacity));
-  m->WriteUInt32(base::checked_cast<int>(u.maxDeadCapacity));
-  m->WriteUInt32(base::checked_cast<int>(u.capacity));
-  m->WriteUInt32(base::checked_cast<int>(u.liveSize));
-  m->WriteUInt32(base::checked_cast<int>(u.deadSize));
+  m->WriteUInt64(static_cast<uint64_t>(u.minDeadCapacity));
+  m->WriteUInt64(static_cast<uint64_t>(u.maxDeadCapacity));
+  m->WriteUInt64(static_cast<uint64_t>(u.capacity));
+  m->WriteUInt64(static_cast<uint64_t>(u.liveSize));
+  m->WriteUInt64(static_cast<uint64_t>(u.deadSize));
 }
 
 bool ParamTraits<blink::WebCache::UsageStats>::Read(
     const base::Pickle* m,
     base::PickleIterator* iter,
     blink::WebCache::UsageStats* u) {
-  uint32_t min_capacity, max_capacity, capacity, live_size, dead_size;
-  if (!iter->ReadUInt32(&min_capacity) ||
-      !iter->ReadUInt32(&max_capacity) ||
-      !iter->ReadUInt32(&capacity) ||
-      !iter->ReadUInt32(&live_size) ||
-      !iter->ReadUInt32(&dead_size)) {
+  uint64_t min_capacity, max_capacity, capacity, live_size, dead_size;
+  if (!iter->ReadUInt64(&min_capacity) ||
+      !iter->ReadUInt64(&max_capacity) ||
+      !iter->ReadUInt64(&capacity) ||
+      !iter->ReadUInt64(&live_size) ||
+      !iter->ReadUInt64(&dead_size)) {
     return false;
   }
 
-  u->minDeadCapacity = min_capacity;
-  u->maxDeadCapacity = max_capacity;
-  u->capacity = capacity;
-  u->liveSize = live_size;
-  u->deadSize = dead_size;
+  u->minDeadCapacity = base::checked_cast<size_t>(min_capacity);
+  u->maxDeadCapacity = base::checked_cast<size_t>(max_capacity);
+  u->capacity = base::checked_cast<size_t>(capacity);
+  u->liveSize = base::checked_cast<size_t>(live_size);
+  u->deadSize = base::checked_cast<size_t>(dead_size);
 
   return true;
 }
