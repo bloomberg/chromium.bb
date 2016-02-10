@@ -220,7 +220,8 @@ void DetectFaultTolerantHeap() {
 void ShowCloseBrowserFirstMessageBox() {
   int message_id = IDS_UNINSTALL_CLOSE_APP;
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      (ShellIntegration::GetDefaultBrowser() == ShellIntegration::IS_DEFAULT)) {
+      (shell_integration::GetDefaultBrowser() ==
+       shell_integration::IS_DEFAULT)) {
     message_id = IDS_UNINSTALL_CLOSE_APP_IMMERSIVE;
   }
   chrome::ShowMessageBox(NULL,

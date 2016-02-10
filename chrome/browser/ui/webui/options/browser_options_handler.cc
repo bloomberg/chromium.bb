@@ -186,7 +186,7 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 #endif  // defined(OS_CHROMEOS)
       signin_observer_(this),
       weak_ptr_factory_(this) {
-  default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
+  default_browser_worker_ = new shell_integration::DefaultBrowserWorker(this);
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   cloud_print_mdns_ui_enabled_ = true;
@@ -1110,32 +1110,32 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const base::ListValue* args) {
 }
 
 int BrowserOptionsHandler::StatusStringIdForState(
-    ShellIntegration::DefaultWebClientState state) {
-  if (state == ShellIntegration::IS_DEFAULT)
+    shell_integration::DefaultWebClientState state) {
+  if (state == shell_integration::IS_DEFAULT)
     return IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
-  if (state == ShellIntegration::NOT_DEFAULT)
+  if (state == shell_integration::NOT_DEFAULT)
     return IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
   return IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
 }
 
 void BrowserOptionsHandler::SetDefaultWebClientUIState(
-    ShellIntegration::DefaultWebClientUIState state) {
+    shell_integration::DefaultWebClientUIState state) {
   int status_string_id;
 
-  if (state == ShellIntegration::STATE_IS_DEFAULT) {
+  if (state == shell_integration::STATE_IS_DEFAULT) {
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
     // Notify the user in the future if Chrome ceases to be the user's chosen
     // default browser.
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
-  } else if (state == ShellIntegration::STATE_NOT_DEFAULT) {
-    if (ShellIntegration::CanSetAsDefaultBrowser() ==
-            ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
+  } else if (state == shell_integration::STATE_NOT_DEFAULT) {
+    if (shell_integration::CanSetAsDefaultBrowser() ==
+        shell_integration::SET_DEFAULT_NOT_ALLOWED) {
       status_string_id = IDS_OPTIONS_DEFAULTBROWSER_SXS;
     } else {
       status_string_id = IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
     }
-  } else if (state == ShellIntegration::STATE_UNKNOWN) {
+  } else if (state == shell_integration::STATE_UNKNOWN) {
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
   } else {
     return;  // Still processing.

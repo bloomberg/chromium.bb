@@ -119,7 +119,8 @@ base::string16 GetAppModelId() {
         command_line->GetSwitchValuePath(switches::kUserDataDir).AppendASCII(
             chrome::kInitialProfile);
   }
-  return ShellIntegration::GetAppListAppModelIdForProfile(initial_profile_path);
+  return shell_integration::GetAppListAppModelIdForProfile(
+      initial_profile_path);
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -155,7 +156,7 @@ void SetDidRunForNDayActiveStats() {
 // |app_model_id|. This runs on the FILE thread and not in the blocking IO
 // thread pool as there are other tasks running (also on the FILE thread)
 // which fiddle with shortcut icons
-// (ShellIntegration::MigrateWin7ShortcutsOnPath). Having different threads
+// (shell_integration::MigrateWin7ShortcutsOnPath). Having different threads
 // fiddle with the same shortcuts could cause race issues.
 void CreateAppListShortcuts(
     const base::FilePath& user_data_dir,

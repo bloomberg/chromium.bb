@@ -204,7 +204,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   CheckExistingShortcuts();
   if (!shortcut_files_.empty()) {
     // Generates app id from web app url and profile path.
-    base::string16 app_id = ShellIntegration::GetAppModelIdForProfile(
+    base::string16 app_id = shell_integration::GetAppModelIdForProfile(
         base::UTF8ToWide(
             web_app::GenerateApplicationNameFromURL(shortcut_info_->url)),
         profile_path_);

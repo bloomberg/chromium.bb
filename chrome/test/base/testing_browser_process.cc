@@ -394,9 +394,9 @@ memory::TabManager* TestingBrowserProcess::GetTabManager() {
   return nullptr;
 }
 
-ShellIntegration::DefaultWebClientState
+shell_integration::DefaultWebClientState
 TestingBrowserProcess::CachedDefaultWebClientState() {
-  return ShellIntegration::UNKNOWN_DEFAULT;
+  return shell_integration::UNKNOWN_DEFAULT;
 }
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {

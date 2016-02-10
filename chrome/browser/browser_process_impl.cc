@@ -197,7 +197,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       tearing_down_(false),
       download_status_updater_(new DownloadStatusUpdater),
       local_state_task_runner_(local_state_task_runner),
-      cached_default_web_client_state_(ShellIntegration::UNKNOWN_DEFAULT) {
+      cached_default_web_client_state_(shell_integration::UNKNOWN_DEFAULT) {
   g_browser_process = this;
   platform_part_.reset(new BrowserProcessPlatformPart());
 
@@ -803,7 +803,7 @@ memory::TabManager* BrowserProcessImpl::GetTabManager() {
 #endif
 }
 
-ShellIntegration::DefaultWebClientState
+shell_integration::DefaultWebClientState
 BrowserProcessImpl::CachedDefaultWebClientState() {
   return cached_default_web_client_state_;
 }
@@ -1196,8 +1196,8 @@ void BrowserProcessImpl::CreateGCMDriver() {
 
 void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
   if (local_state()->GetBoolean(prefs::kDefaultBrowserSettingEnabled)) {
-    scoped_refptr<ShellIntegration::DefaultWebClientWorker>
-        set_browser_worker = new ShellIntegration::DefaultBrowserWorker(NULL);
+    scoped_refptr<shell_integration::DefaultWebClientWorker>
+        set_browser_worker = new shell_integration::DefaultBrowserWorker(NULL);
     set_browser_worker->StartSetAsDefault();
   }
 }
@@ -1219,9 +1219,9 @@ void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
 
 void BrowserProcessImpl::CacheDefaultWebClientState() {
 #if defined(OS_CHROMEOS)
-  cached_default_web_client_state_ = ShellIntegration::IS_DEFAULT;
+  cached_default_web_client_state_ = shell_integration::IS_DEFAULT;
 #elif !defined(OS_ANDROID) && !defined(OS_IOS)
-  cached_default_web_client_state_ = ShellIntegration::GetDefaultBrowser();
+  cached_default_web_client_state_ = shell_integration::GetDefaultBrowser();
 #endif
 }
 

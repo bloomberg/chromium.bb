@@ -390,7 +390,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // Active Setup versioning and on OS upgrades) instead of every startup.
   // http://crbug.com/577697
   if (process_startup)
-    ShellIntegration::MigrateTaskbarPins();
+    shell_integration::MigrateTaskbarPins();
 #endif  // defined(OS_WIN)
 
   return true;
@@ -987,7 +987,7 @@ void StartupBrowserCreatorImpl::InitializeWelcomeRunType(
 
     // Do not welcome if Chrome was the default browser at startup.
     if (g_browser_process->CachedDefaultWebClientState() ==
-        ShellIntegration::IS_DEFAULT) {
+        shell_integration::IS_DEFAULT) {
       return;
     }
 

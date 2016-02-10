@@ -131,7 +131,7 @@ std::vector<importer::SourceProfile> DetectSourceProfilesWorker(
   // The first run import will automatically take settings from the first
   // profile detected, which should be the user's current default.
 #if defined(OS_WIN)
-  if (ShellIntegration::IsFirefoxDefaultBrowser()) {
+  if (shell_integration::IsFirefoxDefaultBrowser()) {
     DetectFirefoxProfiles(locale, &profiles);
     DetectBuiltinWindowsProfiles(&profiles);
   } else {
@@ -139,7 +139,7 @@ std::vector<importer::SourceProfile> DetectSourceProfilesWorker(
     DetectFirefoxProfiles(locale, &profiles);
   }
 #elif defined(OS_MACOSX)
-  if (ShellIntegration::IsFirefoxDefaultBrowser()) {
+  if (shell_integration::IsFirefoxDefaultBrowser()) {
     DetectFirefoxProfiles(locale, &profiles);
     DetectSafariProfiles(&profiles);
   } else {

@@ -43,7 +43,7 @@ class ProtocolHandlerRegistry : public KeyedService {
   // Provides notification of when the OS level user agent settings
   // are changed.
   class DefaultClientObserver
-      : public ShellIntegration::DefaultWebClientObserver {
+      : public shell_integration::DefaultWebClientObserver {
    public:
     explicit DefaultClientObserver(ProtocolHandlerRegistry* registry);
     ~DefaultClientObserver() override;
@@ -51,16 +51,16 @@ class ProtocolHandlerRegistry : public KeyedService {
     // Get response from the worker regarding whether Chrome is the default
     // handler for the protocol.
     void SetDefaultWebClientUIState(
-        ShellIntegration::DefaultWebClientUIState state) override;
+        shell_integration::DefaultWebClientUIState state) override;
 
     bool IsInteractiveSetDefaultPermitted() override;
 
     // Give the observer a handle to the worker, so we can find out the protocol
     // when we're called and also tell the worker if we get deleted.
-    void SetWorker(ShellIntegration::DefaultProtocolClientWorker* worker);
+    void SetWorker(shell_integration::DefaultProtocolClientWorker* worker);
 
    protected:
-    ShellIntegration::DefaultProtocolClientWorker* worker_;
+    shell_integration::DefaultProtocolClientWorker* worker_;
 
    private:
     bool IsOwnedByWorker() override;
@@ -82,8 +82,8 @@ class ProtocolHandlerRegistry : public KeyedService {
     virtual void RegisterExternalHandler(const std::string& protocol);
     virtual void DeregisterExternalHandler(const std::string& protocol);
     virtual bool IsExternalHandlerRegistered(const std::string& protocol);
-    virtual ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
-        ShellIntegration::DefaultWebClientObserver* observer,
+    virtual shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
+        shell_integration::DefaultWebClientObserver* observer,
         const std::string& protocol);
     virtual DefaultClientObserver* CreateShellObserver(
         ProtocolHandlerRegistry* registry);

@@ -82,7 +82,7 @@ content::WebContents* OpenURLFromTabInternal(
 // default system browser. If it is the default, open the URL directly instead
 // of asking the system to open it.
 class OpenURLFromTabBasedOnBrowserDefault
-    : public ShellIntegration::DefaultWebClientObserver {
+    : public shell_integration::DefaultWebClientObserver {
  public:
   OpenURLFromTabBasedOnBrowserDefault(scoped_ptr<content::WebContents> source,
                                       const content::OpenURLParams& params)
@@ -91,20 +91,20 @@ class OpenURLFromTabBasedOnBrowserDefault
   // Opens a URL when called with the result of if this is the default system
   // browser or not.
   void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state) override {
+      shell_integration::DefaultWebClientUIState state) override {
     Profile* profile =
         Profile::FromBrowserContext(source_->GetBrowserContext());
     DCHECK(profile);
     if (!profile)
       return;
     switch (state) {
-      case ShellIntegration::STATE_PROCESSING:
+      case shell_integration::STATE_PROCESSING:
         break;
-      case ShellIntegration::STATE_IS_DEFAULT:
+      case shell_integration::STATE_IS_DEFAULT:
         OpenURLFromTabInternal(profile, params_);
         break;
-      case ShellIntegration::STATE_NOT_DEFAULT:
-      case ShellIntegration::STATE_UNKNOWN:
+      case shell_integration::STATE_NOT_DEFAULT:
+      case shell_integration::STATE_UNKNOWN:
         platform_util::OpenExternal(profile, params_.url);
         break;
     }
@@ -154,9 +154,9 @@ ChromeAppDelegate::NewWindowContentsDelegate::OpenURLFromTab(
     // NewWindowContentsDelegate actually sees the WebContents.
     // Here it is captured for deletion.
     scoped_ptr<content::WebContents> owned_source(source);
-    scoped_refptr<ShellIntegration::DefaultWebClientWorker>
+    scoped_refptr<shell_integration::DefaultWebClientWorker>
         check_if_default_browser_worker =
-            new ShellIntegration::DefaultBrowserWorker(
+            new shell_integration::DefaultBrowserWorker(
                 new OpenURLFromTabBasedOnBrowserDefault(std::move(owned_source),
                                                         params));
     // Object lifetime notes: The OpenURLFromTabBasedOnBrowserDefault is owned

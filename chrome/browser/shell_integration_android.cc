@@ -5,40 +5,36 @@
 #include "base/logging.h"
 #include "chrome/browser/shell_integration.h"
 
+namespace shell_integration {
+
 // TODO: crbug/115375 to track implementation for following methods.
-// static
-bool ShellIntegration::SetAsDefaultBrowser() {
+bool SetAsDefaultBrowser() {
   NOTIMPLEMENTED();
   return false;
 }
 
-// static
-bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
+bool SetAsDefaultProtocolClient(const std::string& protocol) {
   NOTIMPLEMENTED();
   return false;
 }
 
-// static
-ShellIntegration::DefaultWebClientSetPermission
-    ShellIntegration::CanSetAsDefaultBrowser() {
+DefaultWebClientSetPermission CanSetAsDefaultBrowser() {
   NOTIMPLEMENTED();
   return SET_DEFAULT_NOT_ALLOWED;
 }
 
-// static
-ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
+DefaultWebClientState GetDefaultBrowser() {
   NOTIMPLEMENTED();
   return UNKNOWN_DEFAULT;
 }
 
-// static
-bool ShellIntegration::IsFirefoxDefaultBrowser() {
+bool IsFirefoxDefaultBrowser() {
   return false;
 }
 
-// static
-ShellIntegration::DefaultWebClientState
-ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
+DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
   NOTIMPLEMENTED();
   return UNKNOWN_DEFAULT;
 }
+
+}  // namespace shell_integration

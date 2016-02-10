@@ -98,9 +98,8 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
   HWND hwnd = GetNativeAppWindowHWND();
   Profile* profile =
       Profile::FromBrowserContext(app_window()->browser_context());
-  app_model_id_ =
-      ShellIntegration::GetAppModelIdForProfile(app_name_wide,
-                                                profile->GetPath());
+  app_model_id_ = shell_integration::GetAppModelIdForProfile(
+      app_name_wide, profile->GetPath());
   ui::win::SetAppIdForWindow(app_model_id_, hwnd);
   web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd);
 

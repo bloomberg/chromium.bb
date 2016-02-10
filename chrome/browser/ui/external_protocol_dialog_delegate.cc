@@ -22,8 +22,7 @@ ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
     : ProtocolDialogDelegate(url),
       render_process_host_id_(render_process_host_id),
       tab_contents_id_(tab_contents_id),
-      program_name_(ShellIntegration::GetApplicationNameForProtocol(url)) {
-}
+      program_name_(shell_integration::GetApplicationNameForProtocol(url)) {}
 
 ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
 }

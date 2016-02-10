@@ -27,6 +27,8 @@
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace shell_integration {
+
 namespace {
 
 struct ShortcutTestObject {
@@ -55,33 +57,25 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
     base::FilePath default_profile_path =
         default_user_data_dir.AppendASCII(chrome::kInitialProfile);
-    app_list_app_id_ =
-        ShellIntegration::GetAppListAppModelIdForProfile(default_profile_path);
+    app_list_app_id_ = GetAppListAppModelIdForProfile(default_profile_path);
     non_default_user_data_dir_ = base::FilePath(FILE_PATH_LITERAL("root"))
         .Append(FILE_PATH_LITERAL("Non Default Data Dir"));
     non_default_profile_ = L"NonDefault";
-    non_default_profile_chrome_app_id_ =
-        ShellIntegration::GetChromiumModelIdForProfile(
+    non_default_profile_chrome_app_id_ = GetChromiumModelIdForProfile(
         default_user_data_dir.Append(non_default_profile_));
-    non_default_user_data_dir_chrome_app_id_ =
-        ShellIntegration::GetChromiumModelIdForProfile(
+    non_default_user_data_dir_chrome_app_id_ = GetChromiumModelIdForProfile(
         non_default_user_data_dir_.AppendASCII(chrome::kInitialProfile));
     non_default_user_data_dir_and_profile_chrome_app_id_ =
-        ShellIntegration::GetChromiumModelIdForProfile(
-        non_default_user_data_dir_.Append(non_default_profile_));
-
+        GetChromiumModelIdForProfile(
+            non_default_user_data_dir_.Append(non_default_profile_));
 
     extension_id_ = L"chromiumexampleappidforunittests";
     base::string16 app_name =
         base::UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
         base::UTF16ToUTF8(extension_id_)));
-    extension_app_id_ =
-        ShellIntegration::GetAppModelIdForProfile(app_name,
-                                                  default_profile_path);
-    non_default_profile_extension_app_id_ =
-        ShellIntegration::GetAppModelIdForProfile(
-        app_name,
-        default_user_data_dir.Append(non_default_profile_));
+    extension_app_id_ = GetAppModelIdForProfile(app_name, default_profile_path);
+    non_default_profile_extension_app_id_ = GetAppModelIdForProfile(
+        app_name, default_user_data_dir.Append(non_default_profile_));
 
     CreateShortcuts();
   }
@@ -274,8 +268,7 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, ClearDualModeAndAdjustAppIds) {
 
   // 9 shortcuts should have their app id updated below and shortcut 11 should
   // be migrated away from dual_mode for a total of 10 shortcuts migrated.
-  EXPECT_EQ(10, ShellIntegration::MigrateShortcutsInPathInternal(
-                    chrome_exe_, temp_dir_.path()));
+  EXPECT_EQ(10, MigrateShortcutsInPathInternal(chrome_exe_, temp_dir_.path()));
 
   // Shortcut 1, 3, 4, 5, 6, 7, 8, 9, and 10 should have had their app_id fixed.
   shortcuts_[1].properties.set_app_id(chrome_app_id_);
@@ -299,8 +292,7 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, ClearDualModeAndAdjustAppIds) {
   }
 
   // Make sure shortcuts are not re-migrated.
-  EXPECT_EQ(0, ShellIntegration::MigrateShortcutsInPathInternal(
-                   chrome_exe_, temp_dir_.path()));
+  EXPECT_EQ(0, MigrateShortcutsInPathInternal(chrome_exe_, temp_dir_.path()));
 }
 
 TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
@@ -309,8 +301,7 @@ TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
 
   // Empty profile path should get chrome::kBrowserAppID
   base::FilePath empty_path;
-  EXPECT_EQ(base_app_id,
-            ShellIntegration::GetAppModelIdForProfile(base_app_id, empty_path));
+  EXPECT_EQ(base_app_id, GetAppModelIdForProfile(base_app_id, empty_path));
 
   // Default profile path should get chrome::kBrowserAppID
   base::FilePath default_user_data_dir;
@@ -318,8 +309,7 @@ TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
   base::FilePath default_profile_path =
       default_user_data_dir.AppendASCII(chrome::kInitialProfile);
   EXPECT_EQ(base_app_id,
-            ShellIntegration::GetAppModelIdForProfile(base_app_id,
-                                                      default_profile_path));
+            GetAppModelIdForProfile(base_app_id, default_profile_path));
 
   // Non-default profile path should get chrome::kBrowserAppID joined with
   // profile info.
@@ -327,8 +317,7 @@ TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
   profile_path = profile_path.Append(FILE_PATH_LITERAL("udd"));
   profile_path = profile_path.Append(FILE_PATH_LITERAL("User Data - Test"));
   EXPECT_EQ(base_app_id + L".udd.UserDataTest",
-            ShellIntegration::GetAppModelIdForProfile(base_app_id,
-                                                      profile_path));
+            GetAppModelIdForProfile(base_app_id, profile_path));
 }
 
 TEST(ShellIntegrationWinTest, GetAppListAppModelIdForProfileTest) {
@@ -338,17 +327,14 @@ TEST(ShellIntegrationWinTest, GetAppListAppModelIdForProfileTest) {
 
   // Empty profile path should get chrome::kBrowserAppID + AppList
   base::FilePath empty_path;
-  EXPECT_EQ(base_app_id,
-            ShellIntegration::GetAppListAppModelIdForProfile(empty_path));
+  EXPECT_EQ(base_app_id, GetAppListAppModelIdForProfile(empty_path));
 
   // Default profile path should get chrome::kBrowserAppID + AppList
   base::FilePath default_user_data_dir;
   chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
   base::FilePath default_profile_path =
       default_user_data_dir.AppendASCII(chrome::kInitialProfile);
-  EXPECT_EQ(base_app_id,
-            ShellIntegration::GetAppListAppModelIdForProfile(
-                default_profile_path));
+  EXPECT_EQ(base_app_id, GetAppListAppModelIdForProfile(default_profile_path));
 
   // Non-default profile path should get chrome::kBrowserAppID + AppList joined
   // with profile info.
@@ -356,5 +342,7 @@ TEST(ShellIntegrationWinTest, GetAppListAppModelIdForProfileTest) {
   profile_path = profile_path.Append(FILE_PATH_LITERAL("udd"));
   profile_path = profile_path.Append(FILE_PATH_LITERAL("User Data - Test"));
   EXPECT_EQ(base_app_id + L".udd.UserDataTest",
-            ShellIntegration::GetAppListAppModelIdForProfile(profile_path));
+            GetAppListAppModelIdForProfile(profile_path));
 }
+
+}  // namespace shell_integration

@@ -26,7 +26,7 @@ namespace settings {
 // settings code to change the default browser settings.
 class DefaultBrowserHandler
     : public SettingsPageUIHandler,
-      public ShellIntegration::DefaultWebClientObserver {
+      public shell_integration::DefaultWebClientObserver {
  public:
   explicit DefaultBrowserHandler(content::WebUI* webui);
   ~DefaultBrowserHandler() override;
@@ -34,9 +34,9 @@ class DefaultBrowserHandler
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
 
-  // ShellIntegration::DefaultWebClientObserver implementation.
+  // shell_integration::DefaultWebClientObserver implementation.
   void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state) override;
+      shell_integration::DefaultWebClientUIState state) override;
   bool IsInteractiveSetDefaultPermitted() override;
   void OnSetAsDefaultConcluded(bool succeeded) override;
 
@@ -48,7 +48,8 @@ class DefaultBrowserHandler
   void SetAsDefaultBrowser(const base::ListValue* args);
 
   // Reference to a background worker that handles default browser settings.
-  scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
+  scoped_refptr<shell_integration::DefaultBrowserWorker>
+      default_browser_worker_;
 
   // Policy setting to determine if default browser setting is managed.
   BooleanPrefMember default_browser_policy_;

@@ -91,7 +91,7 @@ bool ShowFirstRun(Profile* profile) {
     // If selected set as default browser.
     BOOL make_default_browser = [dialog.get() makeDefaultBrowser];
     if (make_default_browser) {
-      bool success = ShellIntegration::SetAsDefaultBrowser();
+      bool success = shell_integration::SetAsDefaultBrowser();
       DCHECK(success);
     }
   }
@@ -139,8 +139,8 @@ bool ShowFirstRunDialog(Profile* profile) {
                                              ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     // Bound to the dialog checkboxes.
-    makeDefaultBrowser_ = ShellIntegration::CanSetAsDefaultBrowser() !=
-        ShellIntegration::SET_DEFAULT_NOT_ALLOWED;
+    makeDefaultBrowser_ = shell_integration::CanSetAsDefaultBrowser() !=
+                          shell_integration::SET_DEFAULT_NOT_ALLOWED;
     statsEnabled_ = StatsCheckboxDefault();
   }
   return self;
@@ -164,7 +164,7 @@ bool ShowFirstRunDialog(Profile* profile) {
 - (void)show {
   NSWindow* win = [self window];
 
-  if (!ShellIntegration::CanSetAsDefaultBrowser()) {
+  if (!shell_integration::CanSetAsDefaultBrowser()) {
     [setAsDefaultCheckbox_ setHidden:YES];
   }
 

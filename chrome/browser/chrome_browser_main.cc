@@ -1317,9 +1317,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       return static_cast<int>(chrome::RESULT_CODE_ACTION_DISALLOWED_BY_POLICY);
     }
 
-    return ShellIntegration::SetAsDefaultBrowser() ?
-        static_cast<int>(content::RESULT_CODE_NORMAL_EXIT) :
-        static_cast<int>(chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED);
+    return shell_integration::SetAsDefaultBrowser()
+               ? static_cast<int>(content::RESULT_CODE_NORMAL_EXIT)
+               : static_cast<int>(chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED);
   }
 
 #if defined(USE_AURA)
@@ -1403,9 +1403,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // At this point the user is willing to try chrome again.
     if (answer == TryChromeDialogView::TRY_CHROME_AS_DEFAULT) {
       // Only set in the unattended case, the interactive case is Windows 8.
-      if (ShellIntegration::CanSetAsDefaultBrowser() ==
-          ShellIntegration::SET_DEFAULT_UNATTENDED)
-        ShellIntegration::SetAsDefaultBrowser();
+      if (shell_integration::CanSetAsDefaultBrowser() ==
+          shell_integration::SET_DEFAULT_UNATTENDED)
+        shell_integration::SetAsDefaultBrowser();
     }
 #else
     // We don't support retention experiments on Mac or Linux.

@@ -51,6 +51,8 @@
 
 using content::BrowserThread;
 
+namespace shell_integration {
+
 namespace {
 
 const wchar_t kAppListAppNameSuffix[] = L"AppList";
@@ -66,7 +68,7 @@ const char kAsyncSetAsDefaultEnabledBuildNumberParamName[] =
 const char kEnableAsyncSetAsDefault[] = "enable-async-set-as-default";
 const char kDisableAsyncSetAsDefault[] = "disable-async-set-as-default";
 
-// Helper function for ShellIntegration::GetAppId to generates profile id
+// Helper function for GetAppId to generates profile id
 // from profile path. "profile_id" is composed of sanitized basenames of
 // user data dir and profile dir joined by a ".".
 base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
@@ -149,7 +151,7 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   }
   DCHECK(!app_name.empty());
 
-  return ShellIntegration::GetAppModelIdForProfile(app_name, profile_path);
+  return GetAppModelIdForProfile(app_name, profile_path);
 }
 
 void MigrateTaskbarPinsCallback() {
@@ -167,7 +169,7 @@ void MigrateTaskbarPinsCallback() {
     return;
   }
 
-  ShellIntegration::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
+  MigrateShortcutsInPathInternal(chrome_exe, pins_path);
 }
 
 // Windows 8 introduced a new protocol->executable binding system which cannot
@@ -217,18 +219,16 @@ base::string16 GetAppForProtocolUsingRegistry(const GURL& url) {
   return base::string16();
 }
 
-
-ShellIntegration::DefaultWebClientState
-    GetDefaultWebClientStateFromShellUtilDefaultState(
-        ShellUtil::DefaultState default_state) {
+DefaultWebClientState GetDefaultWebClientStateFromShellUtilDefaultState(
+    ShellUtil::DefaultState default_state) {
   switch (default_state) {
     case ShellUtil::NOT_DEFAULT:
-      return ShellIntegration::NOT_DEFAULT;
+      return DefaultWebClientState::NOT_DEFAULT;
     case ShellUtil::IS_DEFAULT:
-      return ShellIntegration::IS_DEFAULT;
+      return DefaultWebClientState::IS_DEFAULT;
     default:
       DCHECK_EQ(ShellUtil::UNKNOWN_DEFAULT, default_state);
-      return ShellIntegration::UNKNOWN_DEFAULT;
+      return DefaultWebClientState::UNKNOWN_DEFAULT;
   }
 }
 
@@ -300,13 +300,12 @@ bool RegisterBrowser() {
 
 }  // namespace
 
-// static
-bool ShellIntegration::IsSetAsDefaultAsynchronous() {
+bool IsSetAsDefaultAsynchronous() {
   return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
          IsAsyncSetAsDefaultEnabled();
 }
 
-bool ShellIntegration::SetAsDefaultBrowser() {
+bool SetAsDefaultBrowser() {
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     LOG(ERROR) << "Error getting app exe path";
@@ -325,7 +324,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   return true;
 }
 
-bool ShellIntegration::SetAsDefaultBrowserInteractive() {
+bool SetAsDefaultBrowserInteractive() {
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED() << "Error getting app exe path";
@@ -342,7 +341,7 @@ bool ShellIntegration::SetAsDefaultBrowserInteractive() {
   return true;
 }
 
-bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
+bool SetAsDefaultProtocolClient(const std::string& protocol) {
   if (protocol.empty())
     return false;
 
@@ -365,8 +364,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
   return true;
 }
 
-bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
-    const std::string& protocol) {
+bool SetAsDefaultProtocolClientInteractive(const std::string& protocol) {
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED() << "Error getting app exe path";
@@ -385,8 +383,7 @@ bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
   return true;
 }
 
-ShellIntegration::DefaultWebClientSetPermission
-    ShellIntegration::CanSetAsDefaultBrowser() {
+DefaultWebClientSetPermission CanSetAsDefaultBrowser() {
   BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   if (distribution->GetDefaultBrowserControlPolicy() !=
           BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL)
@@ -398,12 +395,11 @@ ShellIntegration::DefaultWebClientSetPermission
   return SET_DEFAULT_INTERACTIVE;
 }
 
-bool ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient() {
+bool IsElevationNeededForSettingDefaultProtocolClient() {
   return base::win::GetVersion() < base::win::VERSION_WIN8;
 }
 
-base::string16 ShellIntegration::GetApplicationNameForProtocol(
-    const GURL& url) {
+base::string16 GetApplicationNameForProtocol(const GURL& url) {
   // Windows 8 or above requires a new protocol association query.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8)
     return GetAppForProtocolUsingAssocQuery(url);
@@ -411,7 +407,7 @@ base::string16 ShellIntegration::GetApplicationNameForProtocol(
     return GetAppForProtocolUsingRegistry(url);
 }
 
-ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
+DefaultWebClientState GetDefaultBrowser() {
   return GetDefaultWebClientStateFromShellUtilDefaultState(
       ShellUtil::GetChromeDefaultState());
 }
@@ -427,7 +423,7 @@ ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
 // locations and returns true if Firefox traces are found there. In case of
 // error (or if Firefox is not found)it returns the default value which
 // is false.
-bool ShellIntegration::IsFirefoxDefaultBrowser() {
+bool IsFirefoxDefaultBrowser() {
   bool ff_default = false;
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     base::string16 app_cmd;
@@ -449,16 +445,14 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   return ff_default;
 }
 
-ShellIntegration::DefaultWebClientState
-    ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
+DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
   return GetDefaultWebClientStateFromShellUtilDefaultState(
       ShellUtil::GetChromeDefaultProtocolClientState(
           base::UTF8ToUTF16(protocol)));
 }
 
-base::string16 ShellIntegration::GetAppModelIdForProfile(
-    const base::string16& app_name,
-    const base::FilePath& profile_path) {
+base::string16 GetAppModelIdForProfile(const base::string16& app_name,
+                                       const base::FilePath& profile_path) {
   std::vector<base::string16> components;
   components.push_back(app_name);
   const base::string16 profile_id(GetProfileIdFromPath(profile_path));
@@ -467,7 +461,7 @@ base::string16 ShellIntegration::GetAppModelIdForProfile(
   return ShellUtil::BuildAppModelId(components);
 }
 
-base::string16 ShellIntegration::GetChromiumModelIdForProfile(
+base::string16 GetChromiumModelIdForProfile(
     const base::FilePath& profile_path) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::FilePath chrome_exe;
@@ -481,12 +475,12 @@ base::string16 ShellIntegration::GetChromiumModelIdForProfile(
       profile_path);
 }
 
-base::string16 ShellIntegration::GetAppListAppModelIdForProfile(
+base::string16 GetAppListAppModelIdForProfile(
     const base::FilePath& profile_path) {
   return GetAppModelIdForProfile(GetAppListAppName(), profile_path);
 }
 
-void ShellIntegration::MigrateTaskbarPins() {
+void MigrateTaskbarPins() {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
@@ -500,9 +494,8 @@ void ShellIntegration::MigrateTaskbarPins() {
       base::TimeDelta::FromSeconds(kMigrateTaskbarPinsDelaySeconds));
 }
 
-int ShellIntegration::MigrateShortcutsInPathInternal(
-    const base::FilePath& chrome_exe,
-    const base::FilePath& path) {
+int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
+                                   const base::FilePath& path) {
   DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN7);
 
   // Enumerate all pinned shortcuts in the given path directly.
@@ -609,8 +602,7 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
   return shortcuts_migrated;
 }
 
-base::FilePath ShellIntegration::GetStartMenuShortcut(
-    const base::FilePath& chrome_exe) {
+base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe) {
   static const int kFolderIds[] = {
     base::DIR_COMMON_START_MENU,
     base::DIR_START_MENU,
@@ -639,7 +631,7 @@ base::FilePath ShellIntegration::GetStartMenuShortcut(
   return base::FilePath();
 }
 
-bool ShellIntegration::DefaultBrowserWorker::InitializeSetAsDefault() {
+bool DefaultBrowserWorker::InitializeSetAsDefault() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!IsSetAsDefaultAsynchronous())
@@ -687,7 +679,7 @@ bool ShellIntegration::DefaultBrowserWorker::InitializeSetAsDefault() {
   return true;
 }
 
-void ShellIntegration::DefaultBrowserWorker::FinalizeSetAsDefault() {
+void DefaultBrowserWorker::FinalizeSetAsDefault() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(set_as_default_initialized());
 
@@ -696,7 +688,7 @@ void ShellIntegration::DefaultBrowserWorker::FinalizeSetAsDefault() {
 }
 
 // static
-bool ShellIntegration::DefaultBrowserWorker::SetAsDefaultBrowserAsynchronous() {
+bool DefaultBrowserWorker::SetAsDefaultBrowserAsynchronous() {
   DCHECK(IsSetAsDefaultAsynchronous());
 
   // Registers chrome.exe as a browser on Windows to make sure it will be shown
@@ -711,3 +703,5 @@ bool ShellIntegration::DefaultBrowserWorker::SetAsDefaultBrowserAsynchronous() {
   cmdline.AppendArgNative(StartupBrowserCreator::GetDefaultBrowserUrl());
   return base::LaunchProcess(cmdline, base::LaunchOptions()).IsValid();
 }
+
+}  // namespace shell_integration

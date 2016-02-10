@@ -152,7 +152,7 @@ class BrowserProcessImpl : public BrowserProcess,
   network_time::NetworkTimeTracker* network_time_tracker() override;
   gcm::GCMDriver* gcm_driver() override;
   memory::TabManager* GetTabManager() override;
-  ShellIntegration::DefaultWebClientState CachedDefaultWebClientState()
+  shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -332,7 +332,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<memory::TabManager> tab_manager_;
 #endif
 
-  ShellIntegration::DefaultWebClientState cached_default_web_client_state_;
+  shell_integration::DefaultWebClientState cached_default_web_client_state_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

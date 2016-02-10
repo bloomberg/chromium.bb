@@ -462,7 +462,7 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   }
 
   properties.set_app_id(
-      ShellIntegration::GetChromiumModelIdForProfile(params.profile_path));
+      shell_integration::GetChromiumModelIdForProfile(params.profile_path));
 
   ShellUtil::ShortcutOperation operation =
       ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;

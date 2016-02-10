@@ -80,10 +80,10 @@ bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
   // If the only available mode of setting the default browser requires
   // user interaction, it means this couldn't have been done yet. Therefore,
   // we launch the dialog and inform the caller of it.
-  bool show_status =
-      (ShellIntegration::CanSetAsDefaultBrowser() ==
-       ShellIntegration::SET_DEFAULT_INTERACTIVE) &&
-      (ShellIntegration::GetDefaultBrowser() == ShellIntegration::NOT_DEFAULT);
+  bool show_status = (shell_integration::CanSetAsDefaultBrowser() ==
+                      shell_integration::SET_DEFAULT_INTERACTIVE) &&
+                     (shell_integration::GetDefaultBrowser() ==
+                      shell_integration::NOT_DEFAULT);
 
   if (show_status) {
     startup_metric_utils::SetNonBrowserUIDisplayed();

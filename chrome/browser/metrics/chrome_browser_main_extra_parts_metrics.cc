@@ -151,10 +151,10 @@ void RecordStartupMetricsOnBlockingPool() {
 #endif   // defined(OS_MACOSX)
 
   // Record whether Chrome is the default browser or not.
-  ShellIntegration::DefaultWebClientState default_state =
-      ShellIntegration::GetDefaultBrowser();
+  shell_integration::DefaultWebClientState default_state =
+      shell_integration::GetDefaultBrowser();
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
-                            ShellIntegration::NUM_DEFAULT_STATES);
+                            shell_integration::NUM_DEFAULT_STATES);
 }
 
 void RecordLinuxGlibcVersion() {

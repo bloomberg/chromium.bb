@@ -462,17 +462,17 @@ installer::MasterPreferences* LoadMasterPrefs() {
 void ProcessDefaultBrowserPolicy(bool make_chrome_default_for_user) {
   // Only proceed if chrome can be made default unattended. The interactive case
   // (Windows 8+) is handled by the first run default browser prompt.
-  if (ShellIntegration::CanSetAsDefaultBrowser() ==
-          ShellIntegration::SET_DEFAULT_UNATTENDED) {
+  if (shell_integration::CanSetAsDefaultBrowser() ==
+      shell_integration::SET_DEFAULT_UNATTENDED) {
     // The policy has precedence over the user's choice.
     if (g_browser_process->local_state()->IsManagedPreference(
             prefs::kDefaultBrowserSettingEnabled)) {
       if (g_browser_process->local_state()->GetBoolean(
           prefs::kDefaultBrowserSettingEnabled)) {
-        ShellIntegration::SetAsDefaultBrowser();
+        shell_integration::SetAsDefaultBrowser();
       }
     } else if (make_chrome_default_for_user) {
-        ShellIntegration::SetAsDefaultBrowser();
+      shell_integration::SetAsDefaultBrowser();
     }
   }
 }

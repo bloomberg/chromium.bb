@@ -127,7 +127,7 @@ class TestingBrowserProcess : public BrowserProcess {
 
   gcm::GCMDriver* gcm_driver() override;
   memory::TabManager* GetTabManager() override;
-  ShellIntegration::DefaultWebClientState CachedDefaultWebClientState()
+  shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up

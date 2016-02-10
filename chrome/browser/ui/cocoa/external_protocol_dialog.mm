@@ -51,7 +51,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   creation_time_ = base::Time::Now();
 
   base::string16 appName =
-      ShellIntegration::GetApplicationNameForProtocol(url_);
+      shell_integration::GetApplicationNameForProtocol(url_);
   if (appName.length() == 0) {
     // No registered apps for this protocol; give up and go home.
     [self autorelease];

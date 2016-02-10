@@ -1068,8 +1068,8 @@ class NeverRunsExternalProtocolHandlerDelegate
     : public ExternalProtocolHandler::Delegate {
  public:
   // ExternalProtocolHandler::Delegate implementation.
-  ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
-      ShellIntegration::DefaultWebClientObserver* observer,
+  shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
+      shell_integration::DefaultWebClientObserver* observer,
       const std::string& protocol) override {
     NOTREACHED();
     // This will crash, but it shouldn't get this far with BlockState::BLOCK

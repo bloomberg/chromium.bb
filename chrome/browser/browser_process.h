@@ -266,7 +266,7 @@ class BrowserProcess {
   // Returns the default web client state of Chrome (i.e., was it the user's
   // default browser) at the time a previous check was made sometime between
   // process startup and now.
-  virtual ShellIntegration::DefaultWebClientState
+  virtual shell_integration::DefaultWebClientState
   CachedDefaultWebClientState() = 0;
 
  private:

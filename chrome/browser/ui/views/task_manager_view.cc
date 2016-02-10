@@ -476,10 +476,9 @@ void TaskManagerView::Show(Browser* browser) {
   // no parent is specified, the app id will default to that of the initial
   // process.
   if (browser) {
-    ui::win::SetAppIdForWindow(
-        ShellIntegration::GetChromiumModelIdForProfile(
-            browser->profile()->GetPath()),
-        views::HWNDForWidget(instance_->GetWidget()));
+    ui::win::SetAppIdForWindow(shell_integration::GetChromiumModelIdForProfile(
+                                   browser->profile()->GetPath()),
+                               views::HWNDForWidget(instance_->GetWidget()));
   }
 #endif
   instance_->GetWidget()->Show();

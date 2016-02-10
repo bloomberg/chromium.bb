@@ -143,7 +143,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
     base::win::ShortcutProperties expected_properties;
     expected_properties.set_app_id(
-        ShellIntegration::GetChromiumModelIdForProfile(profile_path));
+        shell_integration::GetChromiumModelIdForProfile(profile_path));
     expected_properties.set_target(GetExePath());
     expected_properties.set_description(GetDistribution()->GetAppDescription());
     expected_properties.set_dual_mode(false);

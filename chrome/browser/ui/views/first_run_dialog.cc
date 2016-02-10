@@ -127,7 +127,7 @@ bool FirstRunDialog::Accept() {
   }
 
   if (make_default_ && make_default_->checked())
-    ShellIntegration::SetAsDefaultBrowser();
+    shell_integration::SetAsDefaultBrowser();
 
   Done();
   return true;

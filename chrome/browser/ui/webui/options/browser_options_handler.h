@@ -60,7 +60,7 @@ class BrowserOptionsHandler
       public sync_driver::SyncServiceObserver,
       public SigninManagerBase::Observer,
       public ui::SelectFileDialog::Listener,
-      public ShellIntegration::DefaultWebClientObserver,
+      public shell_integration::DefaultWebClientObserver,
 #if defined(OS_CHROMEOS)
       public chromeos::system::PointerDeviceObserver::Observer,
       public policy::ConsumerManagementService::Observer,
@@ -91,9 +91,9 @@ class BrowserOptionsHandler
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
 
-  // ShellIntegration::DefaultWebClientObserver implementation.
+  // shell_integration::DefaultWebClientObserver implementation.
   void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state) override;
+      shell_integration::DefaultWebClientUIState state) override;
   bool IsInteractiveSetDefaultPermitted() override;
 
   // TemplateURLServiceObserver implementation.
@@ -166,7 +166,7 @@ class BrowserOptionsHandler
   void SetDefaultSearchEngine(const base::ListValue* args);
 
   // Returns the string ID for the given default browser state.
-  int StatusStringIdForState(ShellIntegration::DefaultWebClientState state);
+  int StatusStringIdForState(shell_integration::DefaultWebClientState state);
 
   // Returns if the "make Chrome default browser" button should be shown.
   bool ShouldShowSetDefaultBrowser();
@@ -380,7 +380,8 @@ class BrowserOptionsHandler
   // true on other platforms.
   bool IsDeviceOwnerProfile();
 
-  scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
+  scoped_refptr<shell_integration::DefaultBrowserWorker>
+      default_browser_worker_;
 
   bool page_initialized_;
 

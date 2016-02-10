@@ -196,8 +196,9 @@ bool CreateShortcutsInPaths(
   base::FilePath working_dir(chrome_exe.DirName());
 
   base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
-  cmd_line = ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
-      shortcut_info.extension_id, shortcut_info.profile_path);
+  cmd_line = shell_integration::CommandLineArgsForLauncher(
+      shortcut_info.url, shortcut_info.extension_id,
+      shortcut_info.profile_path);
 
   // TODO(evan): we rely on the fact that command_line_string() is
   // properly quoted for a Windows command line.  The method on
@@ -212,7 +213,7 @@ bool CreateShortcutsInPaths(
 
   // Generates app id from web app url and profile path.
   std::string app_name(web_app::GenerateApplicationNameFromInfo(shortcut_info));
-  base::string16 app_id(ShellIntegration::GetAppModelIdForProfile(
+  base::string16 app_id(shell_integration::GetAppModelIdForProfile(
       base::UTF8ToUTF16(app_name), shortcut_info.profile_path));
 
   bool success = true;
@@ -339,9 +340,10 @@ void CreateIconAndSetRelaunchDetails(
     HWND hwnd) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-  base::CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
-      shortcut_info->url, shortcut_info->extension_id,
-      shortcut_info->profile_path);
+  base::CommandLine command_line =
+      shell_integration::CommandLineArgsForLauncher(
+          shortcut_info->url, shortcut_info->extension_id,
+          shortcut_info->profile_path);
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {

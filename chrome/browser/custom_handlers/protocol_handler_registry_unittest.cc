@@ -150,8 +150,8 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
     registered_protocols_.erase(protocol);
   }
 
-  ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
-      ShellIntegration::DefaultWebClientObserver* observer,
+  shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
+      shell_integration::DefaultWebClientObserver* observer,
       const std::string& protocol) override;
 
   ProtocolHandlerRegistry::DefaultClientObserver* CreateShellObserver(
@@ -202,13 +202,13 @@ class FakeClientObserver
         delegate_(registry_delegate) {}
 
   void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state) override {
+      shell_integration::DefaultWebClientUIState state) override {
     ProtocolHandlerRegistry::DefaultClientObserver::SetDefaultWebClientUIState(
         state);
-    if (state == ShellIntegration::STATE_IS_DEFAULT) {
+    if (state == shell_integration::STATE_IS_DEFAULT) {
       delegate_->FakeRegisterWithOS(worker_->protocol());
     }
-    if (state != ShellIntegration::STATE_PROCESSING) {
+    if (state != shell_integration::STATE_PROCESSING) {
       base::MessageLoop::current()->QuitWhenIdle();
     }
   }
@@ -218,22 +218,23 @@ class FakeClientObserver
 };
 
 class FakeProtocolClientWorker
-    : public ShellIntegration::DefaultProtocolClientWorker {
+    : public shell_integration::DefaultProtocolClientWorker {
  public:
-  FakeProtocolClientWorker(ShellIntegration::DefaultWebClientObserver* observer,
-                           const std::string& protocol,
-                           bool force_failure)
-      : ShellIntegration::DefaultProtocolClientWorker(observer, protocol),
+  FakeProtocolClientWorker(
+      shell_integration::DefaultWebClientObserver* observer,
+      const std::string& protocol,
+      bool force_failure)
+      : shell_integration::DefaultProtocolClientWorker(observer, protocol),
         force_failure_(force_failure) {}
 
  private:
   ~FakeProtocolClientWorker() override {}
 
   void CheckIsDefault() override {
-    ShellIntegration::DefaultWebClientState state =
-        ShellIntegration::IS_DEFAULT;
+    shell_integration::DefaultWebClientState state =
+        shell_integration::IS_DEFAULT;
     if (force_failure_)
-      state = ShellIntegration::NOT_DEFAULT;
+      state = shell_integration::NOT_DEFAULT;
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -257,8 +258,8 @@ ProtocolHandlerRegistry::DefaultClientObserver*
   return new FakeClientObserver(registry, this);
 }
 
-ShellIntegration::DefaultProtocolClientWorker* FakeDelegate::CreateShellWorker(
-    ShellIntegration::DefaultWebClientObserver* observer,
+shell_integration::DefaultProtocolClientWorker* FakeDelegate::CreateShellWorker(
+    shell_integration::DefaultWebClientObserver* observer,
     const std::string& protocol) {
   return new FakeProtocolClientWorker(observer, protocol, force_os_failure_);
 }

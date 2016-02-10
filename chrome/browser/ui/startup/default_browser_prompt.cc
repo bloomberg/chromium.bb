@@ -166,7 +166,7 @@ base::string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
 // it does require registering it as the protocol handler for "http", so if
 // protocol registration in general requires elevation, this does as well.
 bool DefaultBrowserInfoBarDelegate::OKButtonTriggersUACPrompt() const {
-  return ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient();
+  return shell_integration::IsElevationNeededForSettingDefaultProtocolClient();
 }
 
 bool DefaultBrowserInfoBarDelegate::Accept() {
@@ -176,8 +176,8 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.InfoBar.UserInteraction",
                             InfoBarUserInteraction::START_SET_AS_DEFAULT,
                             NUM_INFO_BAR_USER_INTERACTION_TYPES);
-  scoped_refptr<ShellIntegration::DefaultBrowserWorker>(
-      new ShellIntegration::DefaultBrowserWorker(nullptr))
+  scoped_refptr<shell_integration::DefaultBrowserWorker>(
+      new shell_integration::DefaultBrowserWorker(nullptr))
       ->StartSetAsDefault();
   return true;
 }
@@ -194,12 +194,12 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
   return true;
 }
 
-// A ShellIntegration::DefaultWebClientObserver that handles the check to
+// A shell_integration::DefaultWebClientObserver that handles the check to
 // determine whether or not to show the default browser prompt. If Chrome is the
 // default browser, then the kCheckDefaultBrowser pref is reset.  Otherwise, the
 // prompt is shown.
 class CheckDefaultBrowserObserver
-    : public ShellIntegration::DefaultWebClientObserver {
+    : public shell_integration::DefaultWebClientObserver {
  public:
   CheckDefaultBrowserObserver(const base::FilePath& profile_path,
                               bool show_prompt,
@@ -208,7 +208,7 @@ class CheckDefaultBrowserObserver
 
  private:
   void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state) override;
+      shell_integration::DefaultWebClientUIState state) override;
   bool IsOwnedByWorker() override;
 
   void ResetCheckDefaultBrowserPref();
@@ -235,14 +235,14 @@ CheckDefaultBrowserObserver::CheckDefaultBrowserObserver(
 CheckDefaultBrowserObserver::~CheckDefaultBrowserObserver() {}
 
 void CheckDefaultBrowserObserver::SetDefaultWebClientUIState(
-    ShellIntegration::DefaultWebClientUIState state) {
-  if (state == ShellIntegration::STATE_IS_DEFAULT) {
+    shell_integration::DefaultWebClientUIState state) {
+  if (state == shell_integration::STATE_IS_DEFAULT) {
     // Notify the user in the future if Chrome ceases to be the user's chosen
     // default browser.
     ResetCheckDefaultBrowserPref();
-  } else if (show_prompt_ && state == ShellIntegration::STATE_NOT_DEFAULT &&
-             ShellIntegration::CanSetAsDefaultBrowser() !=
-                 ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
+  } else if (show_prompt_ && state == shell_integration::STATE_NOT_DEFAULT &&
+             shell_integration::CanSetAsDefaultBrowser() !=
+                 shell_integration::SET_DEFAULT_NOT_ALLOWED) {
     ShowPrompt();
   }
 }
@@ -320,8 +320,8 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
     }
   }
 
-  scoped_refptr<ShellIntegration::DefaultBrowserWorker>(
-      new ShellIntegration::DefaultBrowserWorker(
+  scoped_refptr<shell_integration::DefaultBrowserWorker>(
+      new shell_integration::DefaultBrowserWorker(
           new CheckDefaultBrowserObserver(profile->GetPath(), show_prompt,
                                           desktop_type)))
       ->StartCheckIsDefault();

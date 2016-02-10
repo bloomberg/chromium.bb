@@ -11,13 +11,13 @@
 using content::BrowserThread;
 
 class FakeExternalProtocolHandlerWorker
-    : public ShellIntegration::DefaultProtocolClientWorker {
+    : public shell_integration::DefaultProtocolClientWorker {
  public:
   FakeExternalProtocolHandlerWorker(
-      ShellIntegration::DefaultWebClientObserver* observer,
+      shell_integration::DefaultWebClientObserver* observer,
       const std::string& protocol,
-      ShellIntegration::DefaultWebClientState os_state)
-      : ShellIntegration::DefaultProtocolClientWorker(observer, protocol),
+      shell_integration::DefaultWebClientState os_state)
+      : shell_integration::DefaultProtocolClientWorker(observer, protocol),
         os_state_(os_state) {}
 
  private:
@@ -38,7 +38,7 @@ class FakeExternalProtocolHandlerWorker
             this, AttemptResult::SUCCESS));
   }
 
-  ShellIntegration::DefaultWebClientState os_state_;
+  shell_integration::DefaultWebClientState os_state_;
 };
 
 class FakeExternalProtocolHandlerDelegate
@@ -46,13 +46,13 @@ class FakeExternalProtocolHandlerDelegate
  public:
   FakeExternalProtocolHandlerDelegate()
       : block_state_(ExternalProtocolHandler::BLOCK),
-        os_state_(ShellIntegration::UNKNOWN_DEFAULT),
+        os_state_(shell_integration::UNKNOWN_DEFAULT),
         has_launched_(false),
         has_prompted_(false),
         has_blocked_(false) {}
 
-  ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
-      ShellIntegration::DefaultWebClientObserver* observer,
+  shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
+      shell_integration::DefaultWebClientObserver* observer,
       const std::string& protocol) override {
     return new FakeExternalProtocolHandlerWorker(observer, protocol, os_state_);
   }
@@ -64,7 +64,7 @@ class FakeExternalProtocolHandlerDelegate
 
   void BlockRequest() override {
     ASSERT_TRUE(block_state_ == ExternalProtocolHandler::BLOCK ||
-                os_state_ == ShellIntegration::IS_DEFAULT);
+                os_state_ == shell_integration::IS_DEFAULT);
     has_blocked_ = true;
   }
 
@@ -74,13 +74,13 @@ class FakeExternalProtocolHandlerDelegate
                                  ui::PageTransition page_transition,
                                  bool has_user_gesture) override {
     ASSERT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
-    ASSERT_NE(os_state_, ShellIntegration::IS_DEFAULT);
+    ASSERT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_prompted_ = true;
   }
 
   void LaunchUrlWithoutSecurityCheck(const GURL& url) override {
     ASSERT_EQ(block_state_, ExternalProtocolHandler::DONT_BLOCK);
-    ASSERT_NE(os_state_, ShellIntegration::IS_DEFAULT);
+    ASSERT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_launched_ = true;
   }
 
@@ -88,7 +88,7 @@ class FakeExternalProtocolHandlerDelegate
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  void set_os_state(ShellIntegration::DefaultWebClientState value) {
+  void set_os_state(shell_integration::DefaultWebClientState value) {
     os_state_ = value;
   }
 
@@ -102,7 +102,7 @@ class FakeExternalProtocolHandlerDelegate
 
  private:
   ExternalProtocolHandler::BlockState block_state_;
-  ShellIntegration::DefaultWebClientState os_state_;
+  shell_integration::DefaultWebClientState os_state_;
   bool has_launched_;
   bool has_prompted_;
   bool has_blocked_;
@@ -122,8 +122,10 @@ class ExternalProtocolHandlerTest : public testing::Test {
   }
 
   void DoTest(ExternalProtocolHandler::BlockState block_state,
-              ShellIntegration::DefaultWebClientState os_state,
-              bool should_prompt, bool should_launch, bool should_block) {
+              shell_integration::DefaultWebClientState os_state,
+              bool should_prompt,
+              bool should_launch,
+              bool should_block) {
     GURL url("mailto:test@test.com");
     ASSERT_FALSE(delegate_.has_prompted());
     ASSERT_FALSE(delegate_.has_launched());
@@ -149,55 +151,46 @@ class ExternalProtocolHandlerTest : public testing::Test {
 };
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeBlockedChromeDefault) {
-  DoTest(ExternalProtocolHandler::BLOCK,
-         ShellIntegration::IS_DEFAULT,
-         false, false, true);
+  DoTest(ExternalProtocolHandler::BLOCK, shell_integration::IS_DEFAULT, false,
+         false, true);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeBlockedChromeNotDefault) {
-  DoTest(ExternalProtocolHandler::BLOCK,
-         ShellIntegration::NOT_DEFAULT,
-         false, false, true);
+  DoTest(ExternalProtocolHandler::BLOCK, shell_integration::NOT_DEFAULT, false,
+         false, true);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeBlockedChromeUnknown) {
-  DoTest(ExternalProtocolHandler::BLOCK,
-         ShellIntegration::UNKNOWN_DEFAULT,
+  DoTest(ExternalProtocolHandler::BLOCK, shell_integration::UNKNOWN_DEFAULT,
          false, false, true);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeDefault) {
-  DoTest(ExternalProtocolHandler::DONT_BLOCK,
-         ShellIntegration::IS_DEFAULT,
+  DoTest(ExternalProtocolHandler::DONT_BLOCK, shell_integration::IS_DEFAULT,
          false, false, true);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeNotDefault) {
-  DoTest(ExternalProtocolHandler::DONT_BLOCK,
-         ShellIntegration::NOT_DEFAULT,
+  DoTest(ExternalProtocolHandler::DONT_BLOCK, shell_integration::NOT_DEFAULT,
          false, true, false);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeUnknown) {
   DoTest(ExternalProtocolHandler::DONT_BLOCK,
-         ShellIntegration::UNKNOWN_DEFAULT,
-         false, true, false);
+         shell_integration::UNKNOWN_DEFAULT, false, true, false);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeDefault) {
-  DoTest(ExternalProtocolHandler::UNKNOWN,
-         ShellIntegration::IS_DEFAULT,
-         false, false, true);
+  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::IS_DEFAULT, false,
+         false, true);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeNotDefault) {
-  DoTest(ExternalProtocolHandler::UNKNOWN,
-         ShellIntegration::NOT_DEFAULT,
-         true, false, false);
+  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT, true,
+         false, false);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeUnknown) {
-  DoTest(ExternalProtocolHandler::UNKNOWN,
-         ShellIntegration::UNKNOWN_DEFAULT,
+  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::UNKNOWN_DEFAULT,
          true, false, false);
 }
