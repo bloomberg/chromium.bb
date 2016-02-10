@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_RENDER_FRAME_OBSERVER_NATIVES_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
@@ -15,12 +16,19 @@ class ScriptContext;
 class RenderFrameObserverNatives : public ObjectBackedNativeHandler {
  public:
   explicit RenderFrameObserverNatives(ScriptContext* context);
+  ~RenderFrameObserverNatives() override;
 
  private:
+  void Invalidate() override;
+
   // Runs a callback upon creation of new document element inside a render frame
   // (document.documentElement).
   void OnDocumentElementCreated(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  void InvokeCallback(v8::Global<v8::Function> callback, bool succeeded);
+
+  base::WeakPtrFactory<RenderFrameObserverNatives> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverNatives);
 };

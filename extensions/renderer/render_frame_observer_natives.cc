@@ -19,43 +19,29 @@ namespace {
 // Deletes itself when done.
 class LoadWatcher : public content::RenderFrameObserver {
  public:
-  LoadWatcher(ScriptContext* context,
-              content::RenderFrame* frame,
-              v8::Local<v8::Function> cb)
-      : content::RenderFrameObserver(frame),
-        context_(context),
-        callback_(context->isolate(), cb) {
-    if (ExtensionFrameHelper::Get(frame)->
-            did_create_current_document_element()) {
-      // If the document element is already created, then we can call the
-      // callback immediately (though post it to the message loop so as to not
-      // call it re-entrantly).
-      // The Unretained is safe because this class manages its own lifetime.
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&LoadWatcher::CallbackAndDie, base::Unretained(this),
-                     true));
-    }
-  }
+  LoadWatcher(content::RenderFrame* frame,
+              const base::Callback<void(bool)>& callback)
+      : content::RenderFrameObserver(frame), callback_(callback) {}
 
-  void DidCreateDocumentElement() override { CallbackAndDie(true); }
+  void DidCreateDocumentElement() override {
+    // The callback must be run as soon as the root element is available.
+    // Running the callback may trigger DidCreateDocumentElement or
+    // DidFailProvisionalLoad, so delete this before running the callback.
+    base::Callback<void(bool)> callback = callback_;
+    delete this;
+    callback.Run(true);
+  }
 
   void DidFailProvisionalLoad(const blink::WebURLError& error) override {
-    CallbackAndDie(false);
-  }
-
- private:
-  void CallbackAndDie(bool succeeded) {
-    v8::Isolate* isolate = context_->isolate();
-    v8::HandleScope handle_scope(isolate);
-    v8::Local<v8::Value> args[] = {v8::Boolean::New(isolate, succeeded)};
-    context_->CallFunction(v8::Local<v8::Function>::New(isolate, callback_),
-                           arraysize(args), args);
+    // Use PostTask to avoid running user scripts while handling this
+    // DidFailProvisionalLoad notification.
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback_, false));
     delete this;
   }
 
-  ScriptContext* context_;
-  v8::Global<v8::Function> callback_;
+ private:
+  base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadWatcher);
 };
@@ -63,11 +49,18 @@ class LoadWatcher : public content::RenderFrameObserver {
 }  // namespace
 
 RenderFrameObserverNatives::RenderFrameObserverNatives(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
+    : ObjectBackedNativeHandler(context), weak_ptr_factory_(this) {
   RouteFunction(
       "OnDocumentElementCreated",
       base::Bind(&RenderFrameObserverNatives::OnDocumentElementCreated,
                  base::Unretained(this)));
+}
+
+RenderFrameObserverNatives::~RenderFrameObserverNatives() {}
+
+void RenderFrameObserverNatives::Invalidate() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  ObjectBackedNativeHandler::Invalidate();
 }
 
 void RenderFrameObserverNatives::OnDocumentElementCreated(
@@ -84,9 +77,32 @@ void RenderFrameObserverNatives::OnDocumentElementCreated(
     return;
   }
 
-  new LoadWatcher(context(), frame, args[1].As<v8::Function>());
+  v8::Global<v8::Function> v8_callback(context()->isolate(),
+                                       args[1].As<v8::Function>());
+  base::Callback<void(bool)> callback(
+      base::Bind(&RenderFrameObserverNatives::InvokeCallback,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&v8_callback)));
+  if (ExtensionFrameHelper::Get(frame)->did_create_current_document_element()) {
+    // If the document element is already created, then we can call the callback
+    // immediately (though use PostTask to ensure that the callback is called
+    // asynchronously).
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, true));
+  } else {
+    new LoadWatcher(frame, callback);
+  }
 
   args.GetReturnValue().Set(true);
+}
+
+void RenderFrameObserverNatives::InvokeCallback(
+    v8::Global<v8::Function> callback,
+    bool succeeded) {
+  v8::Isolate* isolate = context()->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Value> args[] = {v8::Boolean::New(isolate, succeeded)};
+  context()->CallFunction(v8::Local<v8::Function>::New(isolate, callback),
+                          arraysize(args), args);
 }
 
 }  // namespace extensions
