@@ -31,7 +31,6 @@ class MessageLoop;
 }  // namespace base
 
 namespace IPC {
-class AttachmentBrokerUnprivileged;
 class MessageFilter;
 class ScopedIPCSupport;
 class SyncChannel;
@@ -240,7 +239,6 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_ptr<MojoApplication> mojo_application_;
 
   std::string channel_name_;
-  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
   scoped_ptr<IPC::SyncChannel> channel_;
 
   // Allows threads other than the main thread to send sync messages.
