@@ -21,6 +21,10 @@ import java.util.List;
  * The CapabilityManager mirrors how the Chromoting host handles extension messages. For each
  * incoming extension message, runs through a list of HostExtensionSession objects, giving each one
  * a chance to handle the message.
+ *
+ * The CapabilityManager is a singleton class so we can manage client extensions on an application
+ * level. The singleton object may be used from multiple Activities, thus allowing it to support
+ * different capabilities at different stages of the application.
  */
 public class CapabilityManager {
     /** Used to allow objects to receive notifications when the host capabilites are received. */
@@ -46,6 +50,12 @@ public class CapabilityManager {
 
     private static final String TAG = "Chromoting";
 
+    /** Lazily-initialized singleton object that can be used from different Activities. */
+    private static CapabilityManager sInstance;
+
+    /** Protects access to |sInstance|. */
+    private static final Object sInstanceLock = new Object();
+
     /** List of all capabilities that are supported by the application. */
     private List<String> mLocalCapabilities;
 
@@ -58,7 +68,7 @@ public class CapabilityManager {
     /** Maintains a list of listeners to notify when host capabilities are received. */
     private List<CapabilitiesChangedListener> mCapabilitiesChangedListeners;
 
-    public CapabilityManager() {
+    private CapabilityManager() {
         mLocalCapabilities = new ArrayList<String>();
         mClientExtensions = new ArrayList<ClientExtension>();
 
@@ -66,6 +76,18 @@ public class CapabilityManager {
         mLocalCapabilities.add(Capabilities.TOUCH_CAPABILITY);
 
         mCapabilitiesChangedListeners = new ArrayList<CapabilitiesChangedListener>();
+    }
+
+    /**
+     * Returns the singleton object. Thread-safe.
+     */
+    public static CapabilityManager getInstance() {
+        synchronized (sInstanceLock) {
+            if (sInstance == null) {
+                sInstance = new CapabilityManager();
+            }
+            return sInstance;
+        }
     }
 
     /**

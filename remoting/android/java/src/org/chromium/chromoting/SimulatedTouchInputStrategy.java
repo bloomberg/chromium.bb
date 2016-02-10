@@ -10,7 +10,7 @@ import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
-import org.chromium.chromoting.jni.Client;
+import org.chromium.chromoting.jni.JniInterface;
 
 /**
  * This class receives local touch events and translates them into the appropriate mouse based
@@ -22,7 +22,6 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     private static final float DOUBLE_TAP_SLOP_SCALE_FACTOR = 0.25f;
 
     private final RenderData mRenderData;
-    private final Client mClient;
 
     /**
      * Stores the time of the most recent left button single tap processed.
@@ -49,9 +48,8 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     /** Mouse-button currently held down, or BUTTON_UNDEFINED otherwise. */
     private int mHeldButton = TouchInputHandlerInterface.BUTTON_UNDEFINED;
 
-    public SimulatedTouchInputStrategy(RenderData renderData, Client client, Context context) {
+    public SimulatedTouchInputStrategy(RenderData renderData, Context context) {
         mRenderData = renderData;
-        mClient = client;
 
         ViewConfiguration config = ViewConfiguration.get(context);
         mDoubleTapDurationInMs = config.getDoubleTapTimeout();
@@ -123,7 +121,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
 
     @Override
     public void onScroll(float distanceX, float distanceY) {
-        mClient.sendMouseWheelEvent((int) -distanceX, (int) -distanceY);
+        JniInterface.sendMouseWheelEvent((int) -distanceX, (int) -distanceY);
     }
 
     @Override
@@ -137,7 +135,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
 
     @Override
     public void injectCursorMoveEvent(int x, int y) {
-        mClient.sendMouseEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
+        JniInterface.sendMouseEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
     }
 
     @Override
@@ -182,6 +180,6 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     }
 
     private void injectMouseButtonEvent(int button, boolean pressed, Point tapPoint) {
-        mClient.sendMouseEvent(tapPoint.x, tapPoint.y, button, pressed);
+        JniInterface.sendMouseEvent(tapPoint.x, tapPoint.y, button, pressed);
     }
 }

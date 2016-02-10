@@ -25,7 +25,7 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.Log;
-import org.chromium.chromoting.jni.Client;
+import org.chromium.chromoting.jni.JniInterface;
 
 /**
  * The user interface for viewing and interacting with a specific remote host.
@@ -45,10 +45,6 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
     /** The parent Desktop activity. */
     private Desktop mDesktop;
-
-    /** The Client connection, used to inject input and fetch the video frames. */
-    private Client mClient;
-
 
     // Flag to prevent multiple repaint requests from being backed up. Requests for repainting will
     // be dropped if this is already set to true. This is used by the main thread and the painting
@@ -183,10 +179,6 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         mDesktop = desktop;
     }
 
-    public void setClient(Client client) {
-        mClient = client;
-    }
-
     /** See {@link TouchInputHandler#onSoftInputMethodVisibilityChanged} for API details. */
     public void onSoftInputMethodVisibilityChanged(boolean inputMethodVisible, Rect bounds) {
         mInputHandler.onSoftInputMethodVisibilityChanged(inputMethodVisible, bounds);
@@ -200,7 +192,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             }
             mRepaintPending = true;
         }
-        mClient.redrawGraphics();
+        JniInterface.redrawGraphics();
     }
 
     /**
@@ -215,7 +207,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             Log.w(TAG, "Canvas being redrawn on UI thread");
         }
 
-        Bitmap image = mClient.getVideoFrame();
+        Bitmap image = JniInterface.getVideoFrame();
         if (image == null) {
             // This can happen if the client is connected, but a complete video frame has not yet
             // been decoded.
@@ -228,7 +220,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         synchronized (mRenderData) {
             if (mRenderData.imageWidth != width || mRenderData.imageHeight != height) {
                 // TODO(lambroslambrou): Move this code into a sizeChanged() callback, to be
-                // triggered from native code (on the display thread) when the remote screen size
+                // triggered from JniInterface (on the display thread) when the remote screen size
                 // changes.
                 mRenderData.imageWidth = width;
                 mRenderData.imageHeight = height;
@@ -274,9 +266,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         }
 
         if (drawCursor) {
-            Bitmap cursorBitmap = mClient.getCursorBitmap();
+            Bitmap cursorBitmap = JniInterface.getCursorBitmap();
             if (cursorBitmap != null) {
-                Point hotspot = mClient.getCursorHotspot();
+                Point hotspot = JniInterface.getCursorHotspot();
                 canvas.drawBitmap(cursorBitmap, cursorPosition.x - hotspot.x,
                         cursorPosition.y - hotspot.y, new Paint());
             }
@@ -327,7 +319,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     }
 
     public void attachRedrawCallback() {
-        mClient.provideRedrawCallback(new Runnable() {
+        JniInterface.provideRedrawCallback(new Runnable() {
             @Override
             public void run() {
                 paint();
@@ -423,15 +415,15 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
         switch (inputMode) {
             case TRACKPAD:
-                mInputHandler.setInputStrategy(new TrackpadInputStrategy(mRenderData, mClient));
+                mInputHandler.setInputStrategy(new TrackpadInputStrategy(mRenderData));
                 break;
 
             case TOUCH:
                 if (hostTouchCapability.isSupported()) {
-                    mInputHandler.setInputStrategy(new TouchInputStrategy(mRenderData, mClient));
+                    mInputHandler.setInputStrategy(new TouchInputStrategy(mRenderData));
                 } else {
                     mInputHandler.setInputStrategy(
-                            new SimulatedTouchInputStrategy(mRenderData, mClient, getContext()));
+                            new SimulatedTouchInputStrategy(mRenderData, getContext()));
                 }
                 break;
 

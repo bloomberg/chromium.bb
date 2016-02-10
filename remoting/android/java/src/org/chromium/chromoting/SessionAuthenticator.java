@@ -16,7 +16,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.chromium.chromoting.jni.Client;
+import org.chromium.chromoting.jni.JniInterface;
 
 /**
  * This class performs the user-interaction needed to authenticate the session connection. This
@@ -29,18 +29,14 @@ public class SessionAuthenticator {
      */
     private Chromoting mApplicationContext;
 
-    /** Client connection being authenticated. */
-    private final Client mClient;
-
     /** Provides the tokenUrlPatterns for this host during fetchThirdPartyTokens(). */
     private HostInfo mHost;
 
     /** Object for fetching OAuth2 access tokens from third party authorization servers. */
     private ThirdPartyTokenFetcher mTokenFetcher;
 
-    public SessionAuthenticator(Chromoting context, Client client, HostInfo host) {
+    public SessionAuthenticator(Chromoting context, HostInfo host) {
         mApplicationContext = context;
-        mClient = client;
         mHost = host;
     }
 
@@ -66,8 +62,8 @@ public class SessionAuthenticator {
                 R.string.connect_button, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (mClient.isConnected()) {
-                            mClient.handleAuthenticationResponse(
+                        if (JniInterface.isConnected()) {
+                            JniInterface.handleAuthenticationResponse(
                                     String.valueOf(pinTextView.getText()),
                                     pinCheckBox.isChecked(), Build.MODEL);
                         } else {
@@ -82,7 +78,7 @@ public class SessionAuthenticator {
                 R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mClient.destroy();
+                        JniInterface.disconnectFromHost();
                     }
                 });
 
@@ -142,7 +138,7 @@ public class SessionAuthenticator {
                 // authenticate itself with the host using spake.
                 String sharedSecret = accessToken;
 
-                mClient.onThirdPartyTokenFetched(token, sharedSecret);
+                JniInterface.onThirdPartyTokenFetched(token, sharedSecret);
             }
         };
         mTokenFetcher = new ThirdPartyTokenFetcher(mApplicationContext, mHost.getTokenUrlPatterns(),

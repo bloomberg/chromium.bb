@@ -31,7 +31,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.chromium.chromoting.cardboard.DesktopActivity;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
-import org.chromium.chromoting.jni.Client;
+import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.List;
 import java.util.Set;
@@ -69,8 +69,6 @@ public class Desktop
     /** The surface that displays the remote host's desktop feed. */
     private DesktopView mRemoteHostDesktop;
 
-    private Client mClient;
-
     /** Set of pressed keys for which we've sent TextEvent. */
     private Set<Integer> mPressedTextKeys = new TreeSet<Integer>();
 
@@ -104,14 +102,11 @@ public class Desktop
         super.onCreate(savedInstanceState);
         setContentView(R.layout.desktop);
 
-        mClient = Client.getInstance();
-
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
         mRemoteHostDesktop = (DesktopView) findViewById(R.id.desktop_view);
         mRemoteHostDesktop.setDesktop(this);
-        mRemoteHostDesktop.setClient(mClient);
         mSwitchToCardboardDesktopActivity = false;
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -129,7 +124,7 @@ public class Desktop
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener(this);
 
-        mActivityLifecycleListener = mClient.getCapabilityManager().onActivityAcceptingListener(
+        mActivityLifecycleListener = CapabilityManager.getInstance().onActivityAcceptingListener(
                 this, Capabilities.CAST_CAPABILITY);
         mActivityLifecycleListener.onActivityCreated(this, savedInstanceState);
 
@@ -168,9 +163,9 @@ public class Desktop
     protected void onStart() {
         super.onStart();
         mActivityLifecycleListener.onActivityStarted(this);
-        mClient.enableVideoChannel(true);
+        JniInterface.enableVideoChannel(true);
         mRemoteHostDesktop.attachRedrawCallback();
-        mClient.getCapabilityManager().addListener(this);
+        CapabilityManager.getInstance().addListener(this);
     }
 
     @Override
@@ -178,7 +173,7 @@ public class Desktop
         if (isFinishing()) mActivityLifecycleListener.onActivityPaused(this);
         super.onPause();
         if (!mSwitchToCardboardDesktopActivity) {
-            mClient.enableVideoChannel(false);
+            JniInterface.enableVideoChannel(false);
         }
         stopActionBarAutoHideTimer();
     }
@@ -187,19 +182,19 @@ public class Desktop
     public void onResume() {
         super.onResume();
         mActivityLifecycleListener.onActivityResumed(this);
-        mClient.enableVideoChannel(true);
+        JniInterface.enableVideoChannel(true);
         startActionBarAutoHideTimer();
     }
 
     @Override
     protected void onStop() {
-        mClient.getCapabilityManager().removeListener(this);
+        CapabilityManager.getInstance().removeListener(this);
         mActivityLifecycleListener.onActivityStopped(this);
         super.onStop();
         if (mSwitchToCardboardDesktopActivity) {
             mSwitchToCardboardDesktopActivity = false;
         } else {
-            mClient.enableVideoChannel(false);
+            JniInterface.enableVideoChannel(false);
         }
     }
 
@@ -494,7 +489,7 @@ public class Desktop
             return true;
         }
         if (id == R.id.actionbar_disconnect || id == android.R.id.home) {
-            mClient.destroy();
+            JniInterface.disconnectFromHost();
             return true;
         }
         if (id == R.id.actionbar_send_ctrl_alt_del) {
@@ -504,10 +499,10 @@ public class Desktop
                 KeyEvent.KEYCODE_FORWARD_DEL,
             };
             for (int key : keys) {
-                mClient.sendKeyEvent(0, key, true);
+                JniInterface.sendKeyEvent(0, key, true);
             }
             for (int key : keys) {
-                mClient.sendKeyEvent(0, key, false);
+                JniInterface.sendKeyEvent(0, key, false);
             }
             return true;
         }
@@ -614,7 +609,7 @@ public class Desktop
 
         // Dispatch the back button to the system to handle navigation
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            mClient.destroy();
+            JniInterface.disconnectFromHost();
             return super.dispatchKeyEvent(event);
         }
 
@@ -626,7 +621,7 @@ public class Desktop
         // the keyboard layout selected on the client doesn't affect the key
         // codes sent to the host.
         if (event.getDeviceId() != KeyCharacterMap.VIRTUAL_KEYBOARD) {
-            return mClient.sendKeyEvent(event.getScanCode(), 0, pressed);
+            return JniInterface.sendKeyEvent(event.getScanCode(), 0, pressed);
         }
 
         // Events received from software keyboards generate TextEvent in two
@@ -637,7 +632,7 @@ public class Desktop
         // correspond to what user sees on the screen, while physical keyboard
         // acts as if it is connected to the remote host.
         if (event.getAction() == KeyEvent.ACTION_MULTIPLE) {
-            mClient.sendTextEvent(event.getCharacters());
+            JniInterface.sendTextEvent(event.getCharacters());
             return true;
         }
 
@@ -651,7 +646,7 @@ public class Desktop
         if (pressed && unicode != 0 && no_modifiers) {
             mPressedTextKeys.add(keyCode);
             int[] codePoints = { unicode };
-            mClient.sendTextEvent(new String(codePoints, 0, 1));
+            JniInterface.sendTextEvent(new String(codePoints, 0, 1));
             return true;
         }
 
@@ -666,28 +661,28 @@ public class Desktop
             // third-party keyboards that may still generate these events. See
             // https://source.android.com/devices/input/keyboard-devices.html#legacy-unsupported-keys
             case KeyEvent.KEYCODE_AT:
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_2, pressed);
+                JniInterface.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
+                JniInterface.sendKeyEvent(0, KeyEvent.KEYCODE_2, pressed);
                 return true;
 
             case KeyEvent.KEYCODE_POUND:
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_3, pressed);
+                JniInterface.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
+                JniInterface.sendKeyEvent(0, KeyEvent.KEYCODE_3, pressed);
                 return true;
 
             case KeyEvent.KEYCODE_STAR:
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_8, pressed);
+                JniInterface.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
+                JniInterface.sendKeyEvent(0, KeyEvent.KEYCODE_8, pressed);
                 return true;
 
             case KeyEvent.KEYCODE_PLUS:
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
-                mClient.sendKeyEvent(0, KeyEvent.KEYCODE_EQUALS, pressed);
+                JniInterface.sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
+                JniInterface.sendKeyEvent(0, KeyEvent.KEYCODE_EQUALS, pressed);
                 return true;
 
             default:
                 // We try to send all other key codes to the host directly.
-                return mClient.sendKeyEvent(0, keyCode, pressed);
+                return JniInterface.sendKeyEvent(0, keyCode, pressed);
         }
     }
 }

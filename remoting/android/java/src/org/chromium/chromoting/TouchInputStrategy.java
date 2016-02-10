@@ -8,7 +8,7 @@ import android.graphics.Matrix;
 import android.view.MotionEvent;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chromoting.jni.Client;
+import org.chromium.chromoting.jni.JniInterface;
 import org.chromium.chromoting.jni.TouchEventData;
 
 import java.util.ArrayList;
@@ -37,15 +37,15 @@ public class TouchInputStrategy implements InputStrategyInterface {
     /**
      * This class provides the default implementation for injecting remote events.
      */
-    private class DefaultInputInjector implements RemoteInputInjector {
+    private static class DefaultInputInjector implements RemoteInputInjector {
         @Override
         public void injectMouseEvent(int x, int y, int button, boolean buttonDown) {
-            mClient.sendMouseEvent(x, y, button, buttonDown);
+            JniInterface.sendMouseEvent(x, y, button, buttonDown);
         }
 
         @Override
         public void injectTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
-            mClient.sendTouchEvent(eventType, data);
+            JniInterface.sendTouchEvent(eventType, data);
         }
     }
 
@@ -77,13 +77,10 @@ public class TouchInputStrategy implements InputStrategyInterface {
 
     private final RenderData mRenderData;
 
-    private final Client mClient;
-
     private RemoteInputInjector mRemoteInputInjector;
 
-    public TouchInputStrategy(RenderData renderData, Client client) {
+    public TouchInputStrategy(RenderData renderData) {
         mRenderData = renderData;
-        mClient = client;
         mRemoteInputInjector = new DefaultInputInjector();
         mQueuedEvents = new LinkedList<MotionEvent>();
 

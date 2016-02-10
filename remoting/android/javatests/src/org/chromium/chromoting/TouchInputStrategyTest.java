@@ -197,10 +197,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
     public void setUp() {
         mRenderData = new RenderData();
         mRemoteInputInjector = new MockRemoteInputInjector();
-
-        // TODO(lambroslambrou): Provide a mock Client implementation that doesn't call out to JNI,
-        // and mock the Client methods instead of using MockRemoteInputInjector here.
-        mInputStrategy = new TouchInputStrategy(mRenderData, null);
+        mInputStrategy = new TouchInputStrategy(mRenderData);
         mInputStrategy.setRemoteInputInjectorForTest(mRemoteInputInjector);
         mEventGenerator = new TouchEventGenerator();
 

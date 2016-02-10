@@ -4,15 +4,15 @@
 
 package org.chromium.chromoting;
 
-import org.chromium.chromoting.jni.Client;
 import org.chromium.chromoting.jni.ConnectionListener;
+import org.chromium.chromoting.jni.JniInterface;
 
 /**
  * This class manages making a connection to a host, with logic for reloading the host list and
  * retrying the connection in the case of a stale host JID.
  */
-public class SessionConnector implements ConnectionListener, HostListLoader.Callback {
-    private Client mClient;
+public class SessionConnector implements ConnectionListener,
+        HostListLoader.Callback {
     private ConnectionListener mConnectionListener;
     private HostListLoader.Callback mHostListCallback;
     private HostListLoader mHostListLoader;
@@ -38,9 +38,8 @@ public class SessionConnector implements ConnectionListener, HostListLoader.Call
      * @param hostListCallback Object to be notified whenever the host list is reloaded.
      * @param hostListLoader The object used for reloading the host list.
      */
-    public SessionConnector(Client client, ConnectionListener connectionListener,
+    public SessionConnector(ConnectionListener connectionListener,
             HostListLoader.Callback hostListCallback, HostListLoader hostListLoader) {
-        mClient = client;
         mConnectionListener = connectionListener;
         mHostListCallback = hostListCallback;
         mHostListLoader = hostListLoader;
@@ -66,7 +65,7 @@ public class SessionConnector implements ConnectionListener, HostListLoader.Call
     }
 
     private void doConnect() {
-        mClient.connectToHost(mAccountName, mAuthToken, mHost.jabberId, mHost.id,
+        JniInterface.connectToHost(mAccountName, mAuthToken, mHost.jabberId, mHost.id,
                 mHost.publicKey, mAuthenticator, mFlags, this);
     }
 

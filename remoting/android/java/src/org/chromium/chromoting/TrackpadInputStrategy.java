@@ -7,7 +7,7 @@ package org.chromium.chromoting;
 import android.graphics.Point;
 import android.view.MotionEvent;
 
-import org.chromium.chromoting.jni.Client;
+import org.chromium.chromoting.jni.JniInterface;
 
 /**
  * Defines a set of behavior and methods to simulate trackpad behavior when responding to
@@ -16,14 +16,12 @@ import org.chromium.chromoting.jni.Client;
  */
 public class TrackpadInputStrategy implements InputStrategyInterface {
     private final RenderData mRenderData;
-    private final Client mClient;
 
     /** Mouse-button currently held down, or BUTTON_UNDEFINED otherwise. */
     private int mHeldButton = TouchInputHandlerInterface.BUTTON_UNDEFINED;
 
-    public TrackpadInputStrategy(RenderData renderData, Client client) {
+    public TrackpadInputStrategy(RenderData renderData) {
         mRenderData = renderData;
-        mClient = client;
 
         synchronized (mRenderData) {
             mRenderData.drawCursor = true;
@@ -46,7 +44,7 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
 
     @Override
     public void onScroll(float distanceX, float distanceY) {
-        mClient.sendMouseWheelEvent((int) -distanceX, (int) -distanceY);
+        JniInterface.sendMouseWheelEvent((int) -distanceX, (int) -distanceY);
     }
 
     @Override
@@ -60,7 +58,7 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
 
     @Override
     public void injectCursorMoveEvent(int x, int y) {
-        mClient.sendMouseEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
+        JniInterface.sendMouseEvent(x, y, TouchInputHandlerInterface.BUTTON_UNDEFINED, false);
     }
 
     @Override
@@ -83,6 +81,6 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
         synchronized (mRenderData) {
             cursorPosition = mRenderData.getCursorPosition();
         }
-        mClient.sendMouseEvent(cursorPosition.x, cursorPosition.y, button, pressed);
+        JniInterface.sendMouseEvent(cursorPosition.x, cursorPosition.y, button, pressed);
     }
 }

@@ -13,7 +13,7 @@ import android.graphics.PointF;
 import android.opengl.GLES20;
 
 import org.chromium.chromoting.TouchInputHandler;
-import org.chromium.chromoting.jni.Client;
+import org.chromium.chromoting.jni.JniInterface;
 
 import java.nio.FloatBuffer;
 
@@ -52,8 +52,6 @@ public class Cursor {
     // Threshold to determine whether to send the mouse move event.
     private static final float CURSOR_MOVE_THRESHOLD = 1.0f;
 
-    private final Client mClient;
-
     private FloatBuffer mPositionCoordinates;
 
     private int mVertexShaderHandle;
@@ -78,8 +76,7 @@ public class Cursor {
 
     private PointF mCursorPosition;
 
-    public Cursor(Client client) {
-        mClient = client;
+    public Cursor() {
         mHalfFrameSize = new PointF(0.0f, 0.0f);
         mCursorPosition = new PointF(0.0f, 0.0f);
 
@@ -123,7 +120,7 @@ public class Cursor {
      */
     public void moveTo(PointF position) {
         if (moveCursor(position)) {
-            mClient.sendMouseEvent((int) position.x, (int) position.y,
+            JniInterface.sendMouseEvent((int) position.x, (int) position.y,
                     TouchInputHandler.BUTTON_UNDEFINED, false);
         }
         mCursorPosition = position;
@@ -140,7 +137,7 @@ public class Cursor {
             }
         }
 
-        Bitmap cursorBitmap = mClient.getCursorBitmap();
+        Bitmap cursorBitmap = JniInterface.getCursorBitmap();
 
         if (cursorBitmap == mCursorBitmap) {
             // Case when cursor image has not changed.
@@ -151,7 +148,7 @@ public class Cursor {
         }
 
         mCursorBitmap = cursorBitmap;
-        updatePosition(desktop, mCursorBitmap, mClient.getCursorHotspot());
+        updatePosition(desktop, mCursorBitmap, JniInterface.getCursorHotspot());
 
         TextureHelper.linkTexture(mTextureDataHandle, cursorBitmap);
 
