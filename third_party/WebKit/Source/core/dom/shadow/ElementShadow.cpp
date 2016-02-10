@@ -287,7 +287,6 @@ void ElementShadow::distribute()
 
 void ElementShadow::distributeV0()
 {
-    host()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
     WillBeHeapVector<RawPtrWillBeMember<HTMLShadowElement>, 32> shadowInsertionPoints;
     DistributionPool pool(*host());
 
