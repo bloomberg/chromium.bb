@@ -451,7 +451,7 @@ TEST_F(MessagePipeTest, DISABLED_DataPipeProducerHandlePingPong) {
   MojoClose(p);
 }
 
-TEST_F(MessagePipeTest, SharedBufferHandlePingPong) {
+TEST_F(MessagePipeTest, DISABLED_SharedBufferHandlePingPong) {
   MojoHandle buffer;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateSharedBuffer(nullptr, 1, &buffer));
 
