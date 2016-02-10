@@ -43,9 +43,8 @@ static inline IntRect normalizeRect(const IntRect& rect)
 
 static bool frameIsValid(const SkBitmap& frameBitmap)
 {
-    ASSERT(!frameBitmap.isNull() && !frameBitmap.empty());
-    return frameBitmap.isImmutable()
-        && frameBitmap.colorType() == kN32_SkColorType;
+    ASSERT(!frameBitmap.isNull() && !frameBitmap.empty() && frameBitmap.isImmutable());
+    return frameBitmap.colorType() == kN32_SkColorType;
 }
 
 static SkImage* flipSkImageVertically(SkImage* input)
@@ -104,7 +103,6 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
         SkBitmap bitmap = frame->bitmap();
         if (!frameIsValid(bitmap))
             return nullptr;
-        ASSERT(bitmap.isImmutable());
         skiaImage = adoptRef(SkImage::NewFromBitmap(bitmap));
     }
 
