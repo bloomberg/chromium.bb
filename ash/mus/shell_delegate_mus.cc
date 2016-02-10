@@ -6,6 +6,7 @@
 
 #include "ash/default_accessibility_delegate.h"
 #include "ash/default_user_wallpaper_delegate.h"
+#include "ash/mus/shelf_delegate_mus.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
 #include "base/strings/string16.h"
@@ -143,8 +144,7 @@ app_list::AppListViewDelegate* ShellDelegateMus::GetAppListViewDelegate() {
 }
 
 ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return new ShelfDelegateMus(model);
 }
 
 ash::SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
