@@ -717,6 +717,11 @@ void WebSettingsImpl::setMediaPlaybackRequiresUserGesture(bool required)
     m_settings->setMediaPlaybackRequiresUserGesture(required);
 }
 
+void WebSettingsImpl::setPresentationRequiresUserGesture(bool required)
+{
+    m_settings->setPresentationRequiresUserGesture(required);
+}
+
 void WebSettingsImpl::setViewportEnabled(bool enabled)
 {
     m_settings->setViewportEnabled(enabled);

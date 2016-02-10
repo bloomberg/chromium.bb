@@ -133,6 +133,10 @@ const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 const char kDisableGestureRequirementForMediaPlayback[] =
     "disable-gesture-requirement-for-media-playback";
 
+// Disable user gesture requirement for presentation.
+const char kDisableGestureRequirementForPresentation[] =
+    "disable-gesture-requirement-for-presentation";
+
 // Disables GPU hardware acceleration.  If software renderer is not in place,
 // then the GPU process won't launch.
 const char kDisableGpu[]                    = "disable-gpu";

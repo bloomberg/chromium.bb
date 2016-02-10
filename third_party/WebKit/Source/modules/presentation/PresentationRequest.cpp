@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/PresentationAvailability.h"
@@ -34,6 +35,14 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext)
         return nullptr;
     PresentationController* controller = PresentationController::from(*document->frame());
     return controller ? controller->client() : nullptr;
+}
+
+Settings* settings(ExecutionContext* executionContext)
+{
+    ASSERT(executionContext && executionContext->isDocument());
+
+    Document* document = toDocument(executionContext);
+    return document->settings();
 }
 
 } // anonymous namespace
@@ -85,7 +94,10 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    if (!UserGestureIndicator::processingUserGesture()) {
+    Settings* contextSettings = settings(executionContext());
+    bool isUserGestureRequired = !contextSettings || contextSettings->presentationRequiresUserGesture();
+
+    if (isUserGestureRequired && !UserGestureIndicator::processingUserGesture()) {
         resolver->reject(DOMException::create(InvalidAccessError, "PresentationRequest::start() requires user gesture."));
         return promise;
     }

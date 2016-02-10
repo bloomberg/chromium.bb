@@ -189,6 +189,8 @@ struct CONTENT_EXPORT WebPreferences {
 
   ImageAnimationPolicy animation_policy;
 
+  bool user_gesture_required_for_presentation;
+
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;
   float font_scale_factor;

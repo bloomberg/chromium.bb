@@ -527,6 +527,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   prefs.v8_cache_options = GetV8CacheOptions();
 
+  prefs.user_gesture_required_for_presentation = !command_line.HasSwitch(
+      switches::kDisableGestureRequirementForPresentation);
+
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;
 }

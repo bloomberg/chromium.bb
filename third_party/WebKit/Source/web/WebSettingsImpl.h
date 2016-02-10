@@ -114,6 +114,7 @@ public:
     void setMaxTouchPoints(int) override;
     void setMediaControlsOverlayPlayButtonEnabled(bool) override;
     void setMediaPlaybackRequiresUserGesture(bool) override;
+    void setPresentationRequiresUserGesture(bool) override;
     void setMinimumAccelerated2dCanvasSize(int) override;
     void setMinimumFontSize(int) override;
     void setMinimumLogicalFontSize(int) override;

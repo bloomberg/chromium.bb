@@ -1063,6 +1063,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setImageAnimationPolicy(
       static_cast<WebSettings::ImageAnimationPolicy>(prefs.animation_policy));
 
+  settings->setPresentationRequiresUserGesture(
+      prefs.user_gesture_required_for_presentation);
+
   // Needs to happen before setIgnoreVIewportTagScaleLimits below.
   web_view->setDefaultPageScaleLimits(
       prefs.default_minimum_page_scale_factor,

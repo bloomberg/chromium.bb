@@ -103,6 +103,8 @@ allowRunningOfInsecureContent initial=true
 mediaControlsOverlayPlayButtonEnabled initial=false
 mediaPlaybackRequiresUserGesture initial=false
 
+presentationRequiresUserGesture initial=true
+
 scrollAnimatorEnabled initial=true
 
 # Used to disable threaded, compositor scrolling for testing purposes.
