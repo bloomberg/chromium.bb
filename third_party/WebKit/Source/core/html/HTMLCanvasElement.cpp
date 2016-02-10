@@ -135,7 +135,6 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     , m_didFailToCreateImageBuffer(false)
     , m_imageBufferIsClear(false)
 {
-    setHasCustomStyleCallbacks();
     CanvasMetrics::countCanvasContextUsage(CanvasMetrics::CanvasCreated);
 }
 
@@ -163,24 +162,6 @@ LayoutObject* HTMLCanvasElement::createLayoutObject(const ComputedStyle& style)
     if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return new LayoutHTMLCanvas(this);
     return HTMLElement::createLayoutObject(style);
-}
-
-void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)
-{
-    SkFilterQuality filterQuality;
-    const ComputedStyle* style = ensureComputedStyle();
-    if (style && style->imageRendering() == ImageRenderingPixelated) {
-        filterQuality = kNone_SkFilterQuality;
-    } else {
-        filterQuality = kLow_SkFilterQuality;
-    }
-
-    if (is3D()) {
-        m_context->setFilterQuality(filterQuality);
-        setNeedsCompositingUpdate();
-    } else if (hasImageBuffer()) {
-        m_imageBuffer->setFilterQuality(filterQuality);
-    }
 }
 
 Node::InsertionNotificationRequest HTMLCanvasElement::insertedInto(ContainerNode* node)
@@ -265,10 +246,6 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const Strin
         return nullptr;
 
     if (m_context->is3d()) {
-        document().updateLayoutTreeForNodeIfNeeded(this);
-        const ComputedStyle* style = ensureComputedStyle();
-        if (style)
-            m_context->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
         updateExternallyAllocatedMemory();
     }
     setNeedsCompositingUpdate();
@@ -458,6 +435,16 @@ void HTMLCanvasElement::paint(GraphicsContext& context, const LayoutRect& r)
     // FIXME: crbug.com/438240; there is a bug with the new CSS blending and compositing feature.
     if (!m_context)
         return;
+
+    const ComputedStyle* style = ensureComputedStyle();
+    SkFilterQuality filterQuality = (style && style->imageRendering() == ImageRenderingPixelated) ? kNone_SkFilterQuality : kLow_SkFilterQuality;
+
+    if (is3D()) {
+        m_context->setFilterQuality(filterQuality);
+    } else if (hasImageBuffer()) {
+        m_imageBuffer->setFilterQuality(filterQuality);
+    }
+
     if (!paintsIntoCanvasBuffer() && !document().printing())
         return;
 
@@ -781,10 +768,6 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
     if (!m_imageBuffer)
         return;
     m_imageBuffer->setClient(this);
-
-    document().updateLayoutTreeIfNeeded();
-    const ComputedStyle* style = ensureComputedStyle();
-    m_imageBuffer->setFilterQuality((style && (style->imageRendering() == ImageRenderingPixelated)) ? kNone_SkFilterQuality : kLow_SkFilterQuality);
 
     m_didFailToCreateImageBuffer = false;
 
