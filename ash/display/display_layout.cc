@@ -4,8 +4,9 @@
 
 #include "ash/display/display_layout.h"
 
+#include <ostream>
+
 #include "ash/ash_switches.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
 #include "ash/shell.h"
 #include "base/json/json_value_converter.h"
@@ -30,29 +31,28 @@ const char kMirroredKey[] = "mirrored";
 const char kDefaultUnifiedKey[] = "default_unified";
 const char kPrimaryIdKey[] = "primary-id";
 
-typedef std::map<DisplayLayout::Position, std::string> PositionToStringMap;
+using PositionToStringMap = std::map<DisplayPlacement::Position, std::string>;
+using DisplayPlacementMap = std::unordered_map<int64_t, DisplayPlacement>;
 
 const PositionToStringMap* GetPositionToStringMap() {
   static const PositionToStringMap* map = CreateToStringMap(
-      DisplayLayout::TOP, "top",
-      DisplayLayout::BOTTOM, "bottom",
-      DisplayLayout::RIGHT, "right",
-      DisplayLayout::LEFT, "left");
+      DisplayPlacement::TOP, "top", DisplayPlacement::BOTTOM, "bottom",
+      DisplayPlacement::RIGHT, "right", DisplayPlacement::LEFT, "left");
   return map;
 }
 
+std::string ToPositionString(DisplayPlacement::Position position) {
+  const PositionToStringMap* map = GetPositionToStringMap();
+  PositionToStringMap::const_iterator iter = map->find(position);
+  return iter != map->end() ? iter->second : std::string("unknown");
+}
+
 bool GetPositionFromString(const base::StringPiece& position,
-                           DisplayLayout::Position* field) {
+                           DisplayPlacement::Position* field) {
   if (ReverseFind(GetPositionToStringMap(), position, field))
     return true;
   LOG(ERROR) << "Invalid position value:" << position;
   return false;
-}
-
-std::string GetStringFromPosition(DisplayLayout::Position position) {
-  const PositionToStringMap* map = GetPositionToStringMap();
-  PositionToStringMap::const_iterator iter = map->find(position);
-  return iter != map->end() ? iter->second : std::string("unknown");
 }
 
 bool GetDisplayIdFromString(const base::StringPiece& position, int64_t* field) {
@@ -62,38 +62,10 @@ bool GetDisplayIdFromString(const base::StringPiece& position, int64_t* field) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// DisplayLayout
-
-// static
-DisplayLayout DisplayLayout::FromInts(int position, int offsets) {
-  return DisplayLayout(static_cast<Position>(position), offsets);
-}
-
-DisplayLayout::DisplayLayout()
-    : position(RIGHT),
-      offset(0),
-      mirrored(false),
-#if defined(OS_CHROMEOS)
-      default_unified(true),
-#else
-      default_unified(false),
-#endif
-      primary_id(gfx::Display::kInvalidDisplayID) {
-}
-
-DisplayLayout::DisplayLayout(DisplayLayout::Position position, int offset)
-    : position(position),
-      offset(offset),
-      mirrored(false),
-#if defined(OS_CHROMEOS)
-      default_unified(true),
-#else
-      default_unified(false),
-#endif
-      primary_id(gfx::Display::kInvalidDisplayID) {
+// DisplayPlacement
+DisplayPlacement::DisplayPlacement(Position p, int o) : position(p), offset(o) {
   DCHECK_LE(TOP, position);
   DCHECK_GE(LEFT, position);
-
   // Set the default value to |position| in case position is invalid.  DCHECKs
   // above doesn't stop in Release builds.
   if (TOP > position || LEFT < position)
@@ -102,44 +74,70 @@ DisplayLayout::DisplayLayout(DisplayLayout::Position position, int offset)
   DCHECK_GE(kMaxValidOffset, abs(offset));
 }
 
-DisplayLayout DisplayLayout::Invert() const {
-  Position inverted_position = RIGHT;
+DisplayPlacement& DisplayPlacement::Swap() {
   switch (position) {
     case TOP:
-      inverted_position = BOTTOM;
+      position = BOTTOM;
       break;
     case BOTTOM:
-      inverted_position = TOP;
+      position = TOP;
       break;
     case RIGHT:
-      inverted_position = LEFT;
+      position = LEFT;
       break;
     case LEFT:
-      inverted_position = RIGHT;
+      position = RIGHT;
       break;
   }
-  DisplayLayout ret = DisplayLayout(inverted_position, -offset);
-  ret.primary_id = primary_id;
-  return ret;
+  offset = -offset;
+  return *this;
 }
+
+std::string DisplayPlacement::ToString() const {
+  return base::StringPrintf("%s, %d", ToPositionString(position).c_str(),
+                            offset);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DisplayLayout
+
+DisplayLayout::DisplayLayout() : DisplayLayout(DisplayPlacement::RIGHT, 0) {}
+
+DisplayLayout::DisplayLayout(DisplayPlacement::Position position, int offset)
+    : placement(position, offset),
+      mirrored(false),
+      default_unified(true),
+      primary_id(gfx::Display::kInvalidDisplayID) {}
+
+DisplayLayout::~DisplayLayout() {}
 
 // static
 bool DisplayLayout::ConvertFromValue(const base::Value& value,
                                      DisplayLayout* layout) {
   base::JSONValueConverter<DisplayLayout> converter;
-  return converter.Convert(value, layout);
+  converter.Convert(value, layout);
+
+  const base::DictionaryValue* dict_value = nullptr;
+  if (!value.GetAsDictionary(&dict_value) || dict_value == nullptr)
+    return false;
+
+  dict_value->GetInteger(kOffsetKey, &layout->placement.offset);
+  std::string position;
+  if (dict_value->GetString(kPositionKey, &position))
+    GetPositionFromString(position, &layout->placement.position);
+  return true;
 }
 
 // static
 bool DisplayLayout::ConvertToValue(const DisplayLayout& layout,
                                    base::Value* value) {
-  base::DictionaryValue* dict_value = NULL;
-  if (!value->GetAsDictionary(&dict_value) || dict_value == NULL)
+  base::DictionaryValue* dict_value = nullptr;
+  if (!value->GetAsDictionary(&dict_value) || dict_value == nullptr)
     return false;
 
-  const std::string position_str = GetStringFromPosition(layout.position);
-  dict_value->SetString(kPositionKey, position_str);
-  dict_value->SetInteger(kOffsetKey, layout.offset);
+  dict_value->SetString(kPositionKey,
+                        ToPositionString(layout.placement.position));
+  dict_value->SetInteger(kOffsetKey, layout.placement.offset);
   dict_value->SetBoolean(kMirroredKey, layout.mirrored);
   dict_value->SetBoolean(kDefaultUnifiedKey, layout.default_unified);
   dict_value->SetString(kPrimaryIdKey, base::Int64ToString(layout.primary_id));
@@ -147,22 +145,14 @@ bool DisplayLayout::ConvertToValue(const DisplayLayout& layout,
 }
 
 std::string DisplayLayout::ToString() const {
-  const std::string position_str = GetStringFromPosition(position);
-  bool unified =
-      default_unified &&
-      Shell::GetInstance()->display_manager()->unified_desktop_enabled();
-
-  return base::StringPrintf("%s, %d%s%s", position_str.c_str(), offset,
+  return base::StringPrintf("%s%s%s", placement.ToString().c_str(),
                             mirrored ? ", mirrored" : "",
-                            unified ? ", unified" : "");
+                            default_unified ? ", default_unified" : "");
 }
 
 // static
 void DisplayLayout::RegisterJSONConverter(
     base::JSONValueConverter<DisplayLayout>* converter) {
-  converter->RegisterCustomField<Position>(
-      kPositionKey, &DisplayLayout::position, &GetPositionFromString);
-  converter->RegisterIntField(kOffsetKey, &DisplayLayout::offset);
   converter->RegisterBoolField(kMirroredKey, &DisplayLayout::mirrored);
   converter->RegisterBoolField(kDefaultUnifiedKey,
                                &DisplayLayout::default_unified);

@@ -118,13 +118,13 @@ ash::DisplayLayout GetLayoutForRectangles(const gfx::Rect& reference,
 
   bool is_bottom_right = PointIsOverRadiusVector(center, up_diag);
 
-  ash::DisplayLayout::Position position;
+  ash::DisplayPlacement::Position position;
   if (is_top_right) {
-    position =
-        is_bottom_right ? ash::DisplayLayout::RIGHT : ash::DisplayLayout::TOP;
+    position = is_bottom_right ? ash::DisplayPlacement::RIGHT
+                               : ash::DisplayPlacement::TOP;
   } else {
-    position =
-        is_bottom_right ? ash::DisplayLayout::BOTTOM : ash::DisplayLayout::LEFT;
+    position = is_bottom_right ? ash::DisplayPlacement::BOTTOM
+                               : ash::DisplayPlacement::LEFT;
   }
 
   // If the rectangle with the calculated position would not have common side
@@ -133,26 +133,26 @@ ash::DisplayLayout GetLayoutForRectangles(const gfx::Rect& reference,
   if (is_top_right == is_bottom_right) {
     if (rectangle.y() > reference.y() + reference.height()) {
       // The rectangle is left or right, but completely under the reference.
-      position = ash::DisplayLayout::BOTTOM;
+      position = ash::DisplayPlacement::BOTTOM;
     } else if (rectangle.y() + rectangle.height() < reference.y()) {
       // The rectangle is left or right, but completely over the reference.
-      position = ash::DisplayLayout::TOP;
+      position = ash::DisplayPlacement::TOP;
     }
   } else {
     if (rectangle.x() > reference.x() + reference.width()) {
       // The rectangle is over or under, but completely right of the reference.
-      position = ash::DisplayLayout::RIGHT;
+      position = ash::DisplayPlacement::RIGHT;
     } else if (rectangle.x() + rectangle.width() < reference.x()) {
       // The rectangle is over or under, but completely left of the reference.
-      position = ash::DisplayLayout::LEFT;
+      position = ash::DisplayPlacement::LEFT;
     }
   }
 
-  if (position == ash::DisplayLayout::LEFT ||
-      position == ash::DisplayLayout::RIGHT) {
-    return ash::DisplayLayout::FromInts(position, rectangle.y());
+  if (position == ash::DisplayPlacement::LEFT ||
+      position == ash::DisplayPlacement::RIGHT) {
+    return ash::DisplayLayout(position, rectangle.y());
   } else {
-    return ash::DisplayLayout::FromInts(position, rectangle.x());
+    return ash::DisplayLayout(position, rectangle.x());
   }
 }
 

@@ -50,7 +50,7 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   int64_t primary_display_id = display_ids[0];
   int64_t secondary_display_id = display_ids[1];
   display_manager->SetLayoutForCurrentDisplays(
-      DisplayLayout(DisplayLayout::LEFT, 0));
+      DisplayLayout(DisplayPlacement::LEFT, 0));
 
   // The overlay should belong to the secondary root window.
   StickyKeysOverlay overlay;

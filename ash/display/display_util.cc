@@ -224,17 +224,17 @@ bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale) {
 
 void ComputeBoundary(const gfx::Display& primary_display,
                      const gfx::Display& secondary_display,
-                     DisplayLayout::Position position,
+                     DisplayPlacement::Position position,
                      gfx::Rect* primary_edge_in_screen,
                      gfx::Rect* secondary_edge_in_screen) {
   const gfx::Rect& primary = primary_display.bounds();
   const gfx::Rect& secondary = secondary_display.bounds();
   switch (position) {
-    case DisplayLayout::TOP:
-    case DisplayLayout::BOTTOM: {
+    case DisplayPlacement::TOP:
+    case DisplayPlacement::BOTTOM: {
       int left = std::max(primary.x(), secondary.x());
       int right = std::min(primary.right(), secondary.right());
-      if (position == DisplayLayout::TOP) {
+      if (position == DisplayPlacement::TOP) {
         primary_edge_in_screen->SetRect(left, primary.y(), right - left, 1);
         secondary_edge_in_screen->SetRect(left, secondary.bottom() - 1,
                                           right - left, 1);
@@ -245,11 +245,11 @@ void ComputeBoundary(const gfx::Display& primary_display,
       }
       break;
     }
-    case DisplayLayout::LEFT:
-    case DisplayLayout::RIGHT: {
+    case DisplayPlacement::LEFT:
+    case DisplayPlacement::RIGHT: {
       int top = std::max(primary.y(), secondary.y());
       int bottom = std::min(primary.bottom(), secondary.bottom());
-      if (position == DisplayLayout::LEFT) {
+      if (position == DisplayPlacement::LEFT) {
         primary_edge_in_screen->SetRect(primary.x(), top, 1, bottom - top);
         secondary_edge_in_screen->SetRect(secondary.right() - 1, top, 1,
                                           bottom - top);

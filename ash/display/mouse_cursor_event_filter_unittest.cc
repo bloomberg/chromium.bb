@@ -42,10 +42,11 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
 
   UpdateDisplay("500x500,500x500");
 
-  ASSERT_EQ(
-      DisplayLayout::RIGHT,
-      Shell::GetInstance()->display_manager()->layout_store()->
-          default_display_layout().position);
+  ASSERT_EQ(DisplayPlacement::RIGHT, Shell::GetInstance()
+                                         ->display_manager()
+                                         ->layout_store()
+                                         ->default_display_layout()
+                                         .placement.position);
 
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 11)));
 
@@ -81,10 +82,10 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
 
   UpdateDisplay("500x500,600x600");  // the second one is larger.
 
-  ASSERT_EQ(
-      DisplayLayout::RIGHT,
-      Shell::GetInstance()->display_manager()->
-          GetCurrentDisplayLayout().position);
+  ASSERT_EQ(DisplayPlacement::RIGHT, Shell::GetInstance()
+                                         ->display_manager()
+                                         ->GetCurrentDisplayLayout()
+                                         .placement.position);
 
   // Touch the left edge of the secondary root window. Pointer should NOT warp
   // because 1px left of (0, 500) is outside the primary root window.
@@ -108,11 +109,10 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
 
   UpdateDisplay("500x500,600x600*2");
 
-  ASSERT_EQ(DisplayLayout::RIGHT,
-            Shell::GetInstance()
-                ->display_manager()
-                ->GetCurrentDisplayLayout()
-                .position);
+  ASSERT_EQ(DisplayPlacement::RIGHT, Shell::GetInstance()
+                                         ->display_manager()
+                                         ->GetCurrentDisplayLayout()
+                                         .placement.position);
 
   aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
 
@@ -157,7 +157,7 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
   UpdateDisplay("400x400,800x800*2");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetLayoutForCurrentDisplays(
-      DisplayLayout(DisplayLayout::RIGHT, 0));
+      DisplayLayout(DisplayPlacement::RIGHT, 0));
   test::CursorManagerTestApi cursor_test_api(
       Shell::GetInstance()->cursor_manager());
 

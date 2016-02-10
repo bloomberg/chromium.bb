@@ -41,10 +41,10 @@ namespace test {
 
 namespace {
 
-void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
+void SetSecondaryDisplayLayout(DisplayPlacement::Position position) {
   DisplayLayout layout =
       Shell::GetInstance()->display_manager()->GetCurrentDisplayLayout();
-  layout.position = position;
+  layout.placement.position = position;
   Shell::GetInstance()->display_manager()->
       SetLayoutForCurrentDisplays(layout);
 }
@@ -115,7 +115,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   window_->SetBoundsInScreen(
       gfx::Rect(window_pos, gfx::Size(100, 100)),
       gfx::Screen::GetScreen()->GetDisplayNearestPoint(window_pos));
-  SetSecondaryDisplayLayout(DisplayLayout::RIGHT);
+  SetSecondaryDisplayLayout(DisplayPlacement::RIGHT);
   // The point is on the primary root window.
   EXPECT_EQ("50,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
@@ -123,7 +123,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   // The point is on the secondary display.
   EXPECT_EQ("250,0", ConvertHostPointToScreen(50, 400));
 
-  SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
+  SetSecondaryDisplayLayout(DisplayPlacement::BOTTOM);
   // The point is on the primary root window.
   EXPECT_EQ("50,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
@@ -131,7 +131,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   // The point is on the secondary display.
   EXPECT_EQ("50,200", ConvertHostPointToScreen(50, 400));
 
-  SetSecondaryDisplayLayout(DisplayLayout::LEFT);
+  SetSecondaryDisplayLayout(DisplayPlacement::LEFT);
   // The point is on the primary root window.
   EXPECT_EQ("50,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
@@ -139,7 +139,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   // The point is on the secondary display.
   EXPECT_EQ("-150,0", ConvertHostPointToScreen(50, 400));
 
-  SetSecondaryDisplayLayout(DisplayLayout::TOP);
+  SetSecondaryDisplayLayout(DisplayPlacement::TOP);
   // The point is on the primary root window.
   EXPECT_EQ("50,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
@@ -147,8 +147,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   // The point is on the secondary display.
   EXPECT_EQ("50,-200", ConvertHostPointToScreen(50, 400));
 
-
-  SetSecondaryDisplayLayout(DisplayLayout::RIGHT);
+  SetSecondaryDisplayLayout(DisplayPlacement::RIGHT);
   const gfx::Point window_pos2(300, 100);
   window_->SetBoundsInScreen(
       gfx::Rect(window_pos2, gfx::Size(100, 100)),
@@ -160,7 +159,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   // The point is on the primary root window.
   EXPECT_EQ("50,0", ConvertHostPointToScreen(50, -400));
 
-  SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
+  SetSecondaryDisplayLayout(DisplayPlacement::BOTTOM);
   // The point is on the secondary display.
   EXPECT_EQ("50,250", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
@@ -168,7 +167,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   // The point is on the primary root window.
   EXPECT_EQ("50,0", ConvertHostPointToScreen(50, -400));
 
-  SetSecondaryDisplayLayout(DisplayLayout::LEFT);
+  SetSecondaryDisplayLayout(DisplayPlacement::LEFT);
   // The point is on the secondary display.
   EXPECT_EQ("-150,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
@@ -176,7 +175,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   // The point is on the primary root window.
   EXPECT_EQ("50,0", ConvertHostPointToScreen(50, -400));
 
-  SetSecondaryDisplayLayout(DisplayLayout::TOP);
+  SetSecondaryDisplayLayout(DisplayPlacement::TOP);
   // The point is on the secondary display.
   EXPECT_EQ("50,-150", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.

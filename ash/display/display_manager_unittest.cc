@@ -1269,7 +1269,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   UpdateDisplay("300x400,400x500");
 
   test::MirrorWindowTestApi test_api;
-  EXPECT_EQ(NULL, test_api.GetHost());
+  EXPECT_EQ(nullptr, test_api.GetHost());
 
   TestDisplayObserver display_observer;
   gfx::Screen::GetScreen()->AddObserver(&display_observer);
@@ -1289,7 +1289,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
 
   display_manager->SetMirrorMode(false);
   EXPECT_TRUE(display_observer.changed_and_reset());
-  EXPECT_EQ(NULL, test_api.GetHost());
+  EXPECT_EQ(nullptr, test_api.GetHost());
   EXPECT_EQ(2U, display_manager->GetNumDisplays());
   EXPECT_FALSE(display_manager->IsInMirrorMode());
 
@@ -1361,7 +1361,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
   UpdateDisplay("300x400,400x500");
 
   test::MirrorWindowTestApi test_api;
-  EXPECT_EQ(NULL, test_api.GetHost());
+  EXPECT_EQ(nullptr, test_api.GetHost());
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   DisplayInfo secondary_info = display_manager->GetDisplayInfo(
@@ -1413,39 +1413,39 @@ TEST_F(DisplayManagerTest, MirroredLayout) {
 
 TEST_F(DisplayManagerTest, InvertLayout) {
   EXPECT_EQ("left, 0",
-            DisplayLayout(DisplayLayout::RIGHT, 0).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::RIGHT, 0).Swap().ToString());
   EXPECT_EQ("left, -100",
-            DisplayLayout(DisplayLayout::RIGHT, 100).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::RIGHT, 100).Swap().ToString());
   EXPECT_EQ("left, 50",
-            DisplayLayout(DisplayLayout::RIGHT, -50).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::RIGHT, -50).Swap().ToString());
 
   EXPECT_EQ("right, 0",
-            DisplayLayout(DisplayLayout::LEFT, 0).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::LEFT, 0).Swap().ToString());
   EXPECT_EQ("right, -90",
-            DisplayLayout(DisplayLayout::LEFT, 90).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::LEFT, 90).Swap().ToString());
   EXPECT_EQ("right, 60",
-            DisplayLayout(DisplayLayout::LEFT, -60).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::LEFT, -60).Swap().ToString());
 
   EXPECT_EQ("bottom, 0",
-            DisplayLayout(DisplayLayout::TOP, 0).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::TOP, 0).Swap().ToString());
   EXPECT_EQ("bottom, -80",
-            DisplayLayout(DisplayLayout::TOP, 80).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::TOP, 80).Swap().ToString());
   EXPECT_EQ("bottom, 70",
-            DisplayLayout(DisplayLayout::TOP, -70).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::TOP, -70).Swap().ToString());
 
   EXPECT_EQ("top, 0",
-            DisplayLayout(DisplayLayout::BOTTOM, 0).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::BOTTOM, 0).Swap().ToString());
   EXPECT_EQ("top, -70",
-            DisplayLayout(DisplayLayout::BOTTOM, 70).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::BOTTOM, 70).Swap().ToString());
   EXPECT_EQ("top, 80",
-            DisplayLayout(DisplayLayout::BOTTOM, -80).Invert().ToString());
+            DisplayPlacement(DisplayPlacement::BOTTOM, -80).Swap().ToString());
 }
 
 TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("500x500,500x500");
-  Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplayForTest();
+  test::SwapPrimaryDisplay();
   reset();
   UpdateDisplay("500x500");
   EXPECT_FALSE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
@@ -1455,8 +1455,7 @@ TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
               gfx::DisplayObserver::DISPLAY_METRIC_PRIMARY);
 
   UpdateDisplay("500x500,500x500");
-  Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplayForTest();
-  reset();
+  test::SwapPrimaryDisplay();
   UpdateDisplay("500x400");
   EXPECT_TRUE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
   EXPECT_TRUE(changed_metrics() &
@@ -1909,13 +1908,13 @@ class FontTestHelper : public test::AshTestBase {
 
 bool IsTextSubpixelPositioningEnabled() {
   gfx::FontRenderParams params =
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL);
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
   return params.subpixel_positioning;
 }
 
 gfx::FontRenderParams::Hinting GetFontHintingParams() {
   gfx::FontRenderParams params =
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL);
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
   return params.hinting;
 }
 
@@ -2023,14 +2022,14 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
   int64_t id1 = 10001;
   int64_t id2 = 10002;
   ASSERT_TRUE(CompareDisplayIds(id1, id2));
-  DisplayLayout good(DisplayLayout(DisplayLayout::LEFT, 0));
+  DisplayLayout good(DisplayLayout(DisplayPlacement::LEFT, 0));
   good.primary_id = id1;
   DisplayIdList list(2);
   list[0] = id1;
   list[1] = id2;
   layout_store->RegisterLayoutForDisplayIdList(list, good);
 
-  DisplayLayout bad(DisplayLayout(DisplayLayout::BOTTOM, 0));
+  DisplayLayout bad(DisplayLayout(DisplayPlacement::BOTTOM, 0));
   good.primary_id = id2;
   list[0] = id2;
   list[1] = id1;

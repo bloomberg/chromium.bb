@@ -142,7 +142,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
   UpdateDisplay("300x400,400x500");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  DisplayLayout layout(DisplayLayout::TOP, 0);
+  DisplayLayout layout(DisplayPlacement::TOP, 0);
   Shell::GetInstance()->display_manager()->
       SetLayoutForCurrentDisplays(layout);
   EXPECT_EQ("0,-500 400x500", root_windows[1]->GetBoundsInScreen().ToString());
@@ -162,11 +162,8 @@ TEST_F(WorkspaceLayoutManagerTest, NoMinimumVisibilityForPopupWindows) {
 
   // Create a popup window out of display boundaries and make sure it is not
   // moved to have minimum visibility.
-  scoped_ptr<aura::Window> window(
-      CreateTestWindowInShellWithDelegateAndType(NULL,
-                                                 ui::wm::WINDOW_TYPE_POPUP,
-                                                 0,
-                                                 gfx::Rect(400, 100, 50, 50)));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegateAndType(
+      nullptr, ui::wm::WINDOW_TYPE_POPUP, 0, gfx::Rect(400, 100, 50, 50)));
   EXPECT_EQ("400,100 50x50", window->GetBoundsInScreen().ToString());
 }
 
@@ -304,7 +301,7 @@ TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
 // window. The secondary window mirrors the status window.
 class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
  public:
-  DontClobberRestoreBoundsWindowObserver() : window_(NULL) {}
+  DontClobberRestoreBoundsWindowObserver() : window_(nullptr) {}
 
   void set_window(aura::Window* window) { window_ = window; }
 
@@ -316,7 +313,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 
     if (wm::GetWindowState(window)->IsMaximized()) {
       aura::Window* w = window_;
-      window_ = NULL;
+      window_ = nullptr;
 
       gfx::Rect shelf_bounds(Shell::GetPrimaryRootWindowController()->
                              GetShelfLayoutManager()->GetIdealBounds());
@@ -337,7 +334,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 // doesn't effect the restore bounds.
 TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   DontClobberRestoreBoundsWindowObserver window_observer;
-  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  scoped_ptr<aura::Window> window(new aura::Window(nullptr));
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(gfx::Rect(10, 20, 30, 40));
@@ -381,8 +378,7 @@ TEST_F(WorkspaceLayoutManagerTest, ChildBoundsResetOnMaximize) {
 // bounds.
 TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithBounds(gfx::Rect(0, 0, 0, 0),
-                                             NULL));
+      aura::test::CreateTestWindowWithBounds(gfx::Rect(0, 0, 0, 0), nullptr));
   wm::GetWindowState(window.get())->Maximize();
   aura::Window* default_container = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
@@ -565,10 +561,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Minimize) {
 // becomes visible.
 class FocusDelegate : public aura::test::TestWindowDelegate {
  public:
-  FocusDelegate()
-      : window_(NULL),
-        show_state_(ui::SHOW_STATE_END) {
-  }
+  FocusDelegate() : window_(nullptr), show_state_(ui::SHOW_STATE_END) {}
   ~FocusDelegate() override {}
 
   void set_window(aura::Window* window) { window_ = window; }
@@ -933,7 +926,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
   // Get the default container and check that only a single window is in there.
   ASSERT_EQ(1U, default_container()->children().size());
   EXPECT_EQ(window1.get(), default_container()->children()[0]);
-  EXPECT_EQ("A", GetWindowOrderAsString(NULL, window1.get(), NULL, NULL));
+  EXPECT_EQ("A",
+            GetWindowOrderAsString(nullptr, window1.get(), nullptr, nullptr));
 
   // Create 2 more windows and check that they are also in the container.
   scoped_ptr<aura::Window> window2(CreateTestWindow(gfx::Rect(10, 2, 3, 4)));
@@ -941,7 +935,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
   window2->Show();
   window3->Show();
 
-  aura::Window* backdrop = NULL;
+  aura::Window* backdrop = nullptr;
   EXPECT_EQ("C,B,A",
             GetWindowOrderAsString(backdrop, window1.get(), window2.get(),
                                    window3.get()));
@@ -976,9 +970,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
             GetWindowOrderAsString(backdrop, window1.get(), window2.get(),
                                    window3.get()));
   ShowTopWindowBackdrop(false);
-  EXPECT_EQ("b",
-            GetWindowOrderAsString(NULL, window1.get(), window2.get(),
-                                   window3.get()));
+  EXPECT_EQ("b", GetWindowOrderAsString(nullptr, window1.get(), window2.get(),
+                                        window3.get()));
 }
 
 // Tests that when hidding the shelf, that the backdrop resizes to fill the

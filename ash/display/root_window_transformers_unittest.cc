@@ -35,13 +35,14 @@ const char kDesktopBackgroundView[] = "DesktopBackgroundView";
 
 class TestEventHandler : public ui::EventHandler {
  public:
-  TestEventHandler() : target_root_(NULL),
-                       touch_radius_x_(0.0),
-                       touch_radius_y_(0.0),
-                       scroll_x_offset_(0.0),
-                       scroll_y_offset_(0.0),
-                       scroll_x_offset_ordinal_(0.0),
-                       scroll_y_offset_ordinal_(0.0) {}
+  TestEventHandler()
+      : target_root_(nullptr),
+        touch_radius_x_(0.0),
+        touch_radius_y_(0.0),
+        scroll_x_offset_(0.0),
+        scroll_y_offset_(0.0),
+        scroll_x_offset_ordinal_(0.0),
+        scroll_y_offset_ordinal_(0.0) {}
   ~TestEventHandler() override {}
 
   void OnMouseEvent(ui::MouseEvent* event) override {
@@ -83,7 +84,7 @@ class TestEventHandler : public ui::EventHandler {
   std::string GetLocationAndReset() {
     std::string result = mouse_location_.ToString();
     mouse_location_.SetPoint(0, 0);
-    target_root_ = NULL;
+    target_root_ = nullptr;
     return result;
   }
 
@@ -191,7 +192,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
-  DisplayLayout display_layout(DisplayLayout::BOTTOM, 50);
+  DisplayLayout display_layout(DisplayPlacement::BOTTOM, 50);
   display_manager->SetLayoutForCurrentDisplays(display_layout);
   EXPECT_EQ("50,120 150x200",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());

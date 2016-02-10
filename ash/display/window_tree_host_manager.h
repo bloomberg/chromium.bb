@@ -122,10 +122,6 @@ class ASH_EXPORT WindowTreeHostManager
   // if the WTH does not exist.
   AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64_t id);
 
-  // Swap primary and secondary display. Only used in tests; use
-  // DisplayConfigurationController::SetPrimaryDisplayId() instead.
-  void SwapPrimaryDisplayForTest();
-
   // Sets the ID of the primary display.  If the display is not connected, it
   // will switch the primary display when connected.
   void SetPrimaryDisplayId(int64_t id);

@@ -146,8 +146,8 @@ void LoadDisplayProperties() {
       prefs::kDisplayProperties);
   for (base::DictionaryValue::Iterator it(*properties);
        !it.IsAtEnd(); it.Advance()) {
-    const base::DictionaryValue* dict_value = NULL;
-    if (!it.value().GetAsDictionary(&dict_value) || dict_value == NULL)
+    const base::DictionaryValue* dict_value = nullptr;
+    if (!it.value().GetAsDictionary(&dict_value) || dict_value == nullptr)
       continue;
     int64_t id = gfx::Display::kInvalidDisplayID;
     if (!base::StringToInt64(it.key(), &id) ||
@@ -156,7 +156,7 @@ void LoadDisplayProperties() {
     }
     gfx::Display::Rotation rotation = gfx::Display::ROTATE_0;
     float ui_scale = 1.0f;
-    const gfx::Insets* insets_to_set = NULL;
+    const gfx::Insets* insets_to_set = nullptr;
 
     int rotation_value = 0;
     if (dict_value->GetInteger("rotation", &rotation_value)) {
@@ -220,8 +220,8 @@ void StoreDisplayLayoutPref(const ash::DisplayIdList& list,
   base::DictionaryValue* pref_data = update.Get();
   scoped_ptr<base::Value> layout_value(new base::DictionaryValue());
   if (pref_data->HasKey(name)) {
-    base::Value* value = NULL;
-    if (pref_data->Get(name, &value) && value != NULL)
+    base::Value* value = nullptr;
+    if (pref_data->Get(name, &value) && value != nullptr)
       layout_value.reset(value->DeepCopy());
   }
   if (ash::DisplayLayout::ConvertToValue(display_layout, layout_value.get()))

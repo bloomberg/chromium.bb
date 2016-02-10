@@ -33,10 +33,10 @@
 namespace ash {
 namespace {
 
-void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
+void SetSecondaryDisplayLayout(DisplayPlacement::Position position) {
   DisplayLayout layout =
       Shell::GetInstance()->display_manager()->GetCurrentDisplayLayout();
-  layout.position = position;
+  layout.placement.position = position;
   Shell::GetInstance()->display_manager()->
       SetLayoutForCurrentDisplays(layout);
 }
@@ -140,15 +140,15 @@ class EventLocationHandler : public ui::EventHandler {
 class ExtendedDesktopTest : public test::AshTestBase {
  public:
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
-    return CreateTestWidgetWithParentAndContext(
-        NULL, CurrentContext(), bounds, false);
+    return CreateTestWidgetWithParentAndContext(nullptr, CurrentContext(),
+                                                bounds, false);
   }
 
   views::Widget* CreateTestWidgetWithParent(views::Widget* parent,
                                             const gfx::Rect& bounds,
                                             bool child) {
     CHECK(parent);
-    return CreateTestWidgetWithParentAndContext(parent, NULL, bounds, child);
+    return CreateTestWidgetWithParentAndContext(parent, nullptr, bounds, child);
   }
 
   views::Widget* CreateTestWidgetWithParentAndContext(views::Widget* parent,
@@ -181,7 +181,7 @@ TEST_F(ExtendedDesktopTest, Basic) {
   ASSERT_EQ(2U, root_windows.size());
   for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    EXPECT_TRUE(GetRootWindowController(*iter) != NULL);
+    EXPECT_TRUE(GetRootWindowController(*iter) != nullptr);
   }
   // Make sure root windows share the same controllers.
   EXPECT_EQ(aura::client::GetFocusClient(root_windows[0]),
@@ -310,7 +310,7 @@ TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
     return;
 
   UpdateDisplay("700x500,500x500");
-  SetSecondaryDisplayLayout(DisplayLayout::LEFT);
+  SetSecondaryDisplayLayout(DisplayPlacement::LEFT);
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-400, 100)));
@@ -331,7 +331,7 @@ TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
     return;
 
   UpdateDisplay("700x500,500x500");
-  SetSecondaryDisplayLayout(DisplayLayout::LEFT);
+  SetSecondaryDisplayLayout(DisplayPlacement::LEFT);
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
@@ -425,7 +425,7 @@ TEST_F(ExtendedDesktopTest, Capture) {
   EXPECT_EQ("1 1", r1_d2.GetMouseButtonCountsAndReset());
 
   r1_w2->ReleaseCapture();
-  EXPECT_EQ(NULL, aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));
+  EXPECT_EQ(nullptr, aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));
 
   generator.MoveMouseToCenterOf(r2_w1.get());
   generator.ClickLeftButton();
@@ -732,7 +732,7 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
   EXPECT_EQ("-1010,-10", p.ToString());
 
   // Move the 2nd display to the bottom and test again.
-  SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
+  SetSecondaryDisplayLayout(DisplayPlacement::BOTTOM);
 
   display_2 = screen->GetDisplayNearestWindow(root_windows[1]);
   EXPECT_EQ("0,600", display_2.bounds().origin().ToString());

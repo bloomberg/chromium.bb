@@ -109,11 +109,11 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
   scoped_ptr<WarpRegion> CreateHorizontalEdgeBounds(
       const gfx::Display& a,
       const gfx::Display& b,
-      DisplayLayout::Position position);
+      DisplayPlacement::Position position);
   scoped_ptr<WarpRegion> CreateVerticalEdgeBounds(
       const gfx::Display& a,
       const gfx::Display& b,
-      DisplayLayout::Position position);
+      DisplayPlacement::Position position);
 
   void allow_non_native_event_for_test() { allow_non_native_event_ = true; }
 

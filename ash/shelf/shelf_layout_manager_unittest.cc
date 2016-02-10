@@ -256,10 +256,10 @@ class TestItem : public SystemTrayItem {
  public:
   TestItem()
       : SystemTrayItem(GetSystemTray()),
-        tray_view_(NULL),
-        default_view_(NULL),
-        detailed_view_(NULL),
-        notification_view_(NULL) {}
+        tray_view_(nullptr),
+        default_view_(nullptr),
+        detailed_view_(nullptr),
+        notification_view_(nullptr) {}
 
   views::View* CreateTrayView(user::LoginStatus status) override {
     tray_view_ = new views::View;
@@ -289,13 +289,13 @@ class TestItem : public SystemTrayItem {
     return notification_view_;
   }
 
-  void DestroyTrayView() override { tray_view_ = NULL; }
+  void DestroyTrayView() override { tray_view_ = nullptr; }
 
-  void DestroyDefaultView() override { default_view_ = NULL; }
+  void DestroyDefaultView() override { default_view_ = nullptr; }
 
-  void DestroyDetailedView() override { detailed_view_ = NULL; }
+  void DestroyDetailedView() override { detailed_view_ = nullptr; }
 
-  void DestroyNotificationView() override { notification_view_ = NULL; }
+  void DestroyNotificationView() override { notification_view_ = nullptr; }
 
   void UpdateAfterLoginStatusChange(user::LoginStatus status) override {}
 
@@ -329,7 +329,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
   }
 
   aura::Window* CreateTestWindow() {
-    aura::Window* window = new aura::Window(NULL);
+    aura::Window* window = new aura::Window(nullptr);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
@@ -338,7 +338,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
   }
 
   aura::Window* CreateTestWindowInParent(aura::Window* root_window) {
-    aura::Window* window = new aura::Window(NULL);
+    aura::Window* window = new aura::Window(nullptr);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
@@ -949,7 +949,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
     return;
 
   UpdateDisplay("800x600,800x600");
-  DisplayLayout display_layout(DisplayLayout::RIGHT, 0);
+  DisplayLayout display_layout(DisplayPlacement::RIGHT, 0);
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display_layout);
   // Put the primary monitor's shelf on the display boundary.
@@ -1404,7 +1404,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   // Show app list and the shelf stays visible.
-  shell->ShowAppList(NULL);
+  shell->ShowAppList(nullptr);
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
@@ -1434,7 +1434,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Show app list.
-  shell->ShowAppList(NULL);
+  shell->ShowAppList(nullptr);
   // The shelf's auto hide state won't be changed until the timer fires, so
   // calling shell->UpdateShelfVisibility() is kind of manually helping it to
   // update the state.
@@ -1514,7 +1514,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->auto_hide_state());
 
   // Show app list.
-  shell->ShowAppList(NULL);
+  shell->ShowAppList(nullptr);
   shell->UpdateShelfVisibility();
 
   // Only the shelf in the active display should be shown, the other is hidden.
@@ -1553,7 +1553,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // Show app list.
-  shell->ShowAppList(NULL);
+  shell->ShowAppList(nullptr);
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 

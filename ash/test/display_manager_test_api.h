@@ -89,6 +89,9 @@ class ScopedSetInternalDisplayId {
 // Sets the display mode that matches the |resolution| for |display_id|.
 bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution);
 
+// Swap the primary display with the secondary.
+void SwapPrimaryDisplay();
+
 }  // namespace test
 }  // namespace ash
 

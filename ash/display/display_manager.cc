@@ -59,7 +59,7 @@ namespace {
 
 // We need to keep this in order for unittests to tell if
 // the object in gfx::Screen::GetScreenByType is for shutdown.
-gfx::Screen* screen_for_shutdown = NULL;
+gfx::Screen* screen_for_shutdown = nullptr;
 
 // The number of pixels to overlap between the primary and secondary displays,
 // in case that the offset value is too large.
@@ -127,7 +127,7 @@ using std::vector;
 int64_t DisplayManager::kUnifiedDisplayId = -10;
 
 DisplayManager::DisplayManager()
-    : delegate_(NULL),
+    : delegate_(nullptr),
       screen_(new ScreenAsh),
       layout_store_(new DisplayLayoutStore),
       first_display_id_(gfx::Display::kInvalidDisplayID),
@@ -212,7 +212,7 @@ DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
     return layout_store_->ComputeDisplayLayoutForDisplayIdList(list);
   } else if (num_connected_displays() > 2) {
     // Return fixed horizontal layout for >= 3 displays.
-    DisplayLayout layout(DisplayLayout::RIGHT, 0);
+    DisplayLayout layout(DisplayPlacement::RIGHT, 0);
     return layout;
   }
   NOTREACHED() << "DisplayLayout is requested for single display";
@@ -250,14 +250,14 @@ void DisplayManager::SetLayoutForCurrentDisplays(
   const gfx::Display& primary = screen_->GetPrimaryDisplay();
   const DisplayIdList list = GetCurrentDisplayIdList();
   // Invert if the primary was swapped.
-  DisplayLayout to_set = list[0] == primary.id()
-                             ? layout_relative_to_primary
-                             : layout_relative_to_primary.Invert();
+  DisplayLayout to_set = layout_relative_to_primary;
+  if (list[0] != primary.id())
+    to_set.placement.Swap();
 
   DisplayLayout current_layout =
       layout_store_->GetRegisteredDisplayLayout(list);
-  if (to_set.position != current_layout.position ||
-      to_set.offset != current_layout.offset) {
+  if (to_set.placement.position != current_layout.placement.position ||
+      to_set.placement.offset != current_layout.placement.offset) {
     to_set.primary_id = primary.id();
     layout_store_->RegisterLayoutForDisplayIdList(list, to_set);
     if (delegate_)
@@ -1219,7 +1219,7 @@ gfx::Display* DisplayManager::FindDisplayForId(int64_t id) {
   // been moved to normal window. Fix this.
   if (id != kUnifiedDisplayId)
     DLOG(WARNING) << "Could not find display:" << id;
-  return NULL;
+  return nullptr;
 }
 
 void DisplayManager::AddMirrorDisplayInfoIfAny(
@@ -1354,12 +1354,13 @@ void DisplayManager::UpdateDisplayBoundsForLayout(
   const gfx::Rect& secondary_bounds = secondary_display->bounds();
   gfx::Point new_secondary_origin = primary_bounds.origin();
 
-  DisplayLayout::Position position = layout.position;
+  DisplayPlacement::Position position = layout.placement.position;
 
   // Ignore the offset in case the secondary display doesn't share edges with
   // the primary display.
-  int offset = layout.offset;
-  if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM) {
+  int offset = layout.placement.offset;
+  if (position == DisplayPlacement::TOP ||
+      position == DisplayPlacement::BOTTOM) {
     offset = std::min(
         offset, primary_bounds.width() - kMinimumOverlapForInvalidOffset);
     offset = std::max(
@@ -1371,16 +1372,16 @@ void DisplayManager::UpdateDisplayBoundsForLayout(
         offset, -secondary_bounds.height() + kMinimumOverlapForInvalidOffset);
   }
   switch (position) {
-    case DisplayLayout::TOP:
+    case DisplayPlacement::TOP:
       new_secondary_origin.Offset(offset, -secondary_bounds.height());
       break;
-    case DisplayLayout::RIGHT:
+    case DisplayPlacement::RIGHT:
       new_secondary_origin.Offset(primary_bounds.width(), offset);
       break;
-    case DisplayLayout::BOTTOM:
+    case DisplayPlacement::BOTTOM:
       new_secondary_origin.Offset(offset, primary_bounds.height());
       break;
-    case DisplayLayout::LEFT:
+    case DisplayPlacement::LEFT:
       new_secondary_origin.Offset(-secondary_bounds.width(), offset);
       break;
   }

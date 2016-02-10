@@ -1375,7 +1375,7 @@ TEST_F(WindowSelectorTest, MultiMonitorReversedOrder) {
     return;
 
   UpdateDisplay("400x400,400x400");
-  DisplayLayout layout(DisplayLayout::LEFT, 0);
+  DisplayLayout layout(DisplayPlacement::LEFT, 0);
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(layout);
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   gfx::Rect bounds1(-350, 0, 100, 100);

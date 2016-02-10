@@ -9,7 +9,6 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -57,10 +56,6 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
 
   ash::DisplayManager* GetDisplayManager() const {
     return ash::Shell::GetInstance()->display_manager();
-  }
-
-  ash::WindowTreeHostManager* GetWindowTreeHostManager() const {
-    return ash::Shell::GetInstance()->window_tree_host_manager();
   }
 
   std::string SystemInfoDisplayInsetsToString(
@@ -302,7 +297,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetDPI) {
   EXPECT_EQ(96 / 2, result[1]->dpi_x);
   EXPECT_EQ(96 / 2, result[1]->dpi_y);
 
-  GetWindowTreeHostManager()->SwapPrimaryDisplayForTest();
+  ash::test::SwapPrimaryDisplay();
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -416,7 +411,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
 TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   UpdateDisplay("600x600, 400x520");
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::DisplayLayout::FromInts(ash::DisplayLayout::LEFT, -40));
+      ash::DisplayLayout(ash::DisplayPlacement::LEFT, -40));
 
   DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -426,7 +421,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
             SystemInfoDisplayBoundsToString(result[1]->bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::DisplayLayout::FromInts(ash::DisplayLayout::TOP, 40));
+      ash::DisplayLayout(ash::DisplayPlacement::TOP, 40));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -436,7 +431,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
             SystemInfoDisplayBoundsToString(result[1]->bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::DisplayLayout::FromInts(ash::DisplayLayout::BOTTOM, 80));
+      ash::DisplayLayout(ash::DisplayPlacement::BOTTOM, 80));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
   ASSERT_EQ(2u, result.size());

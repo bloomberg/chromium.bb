@@ -66,7 +66,7 @@ bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale);
 // based on the layout |position|.
 void ComputeBoundary(const gfx::Display& primary_display,
                      const gfx::Display& secondary_display,
-                     DisplayLayout::Position position,
+                     DisplayPlacement::Position position,
                      gfx::Rect* primary_edge_in_screen,
                      gfx::Rect* secondary_edge_in_screen);
 

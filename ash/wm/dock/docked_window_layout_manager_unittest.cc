@@ -68,7 +68,7 @@ class DockedWindowLayoutManagerTest
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL, window_type_, 0, bounds);
+        nullptr, window_type_, 0, bounds);
     if (window_type_ == ui::wm::WINDOW_TYPE_PANEL) {
       test::TestShelfDelegate* shelf_delegate =
           test::TestShelfDelegate::instance();
@@ -378,7 +378,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
   // Create two additional windows and test their auto-placement
   bounds = gfx::Rect(616, 32, 231, 320);
   scoped_ptr<aura::Window> window1(
-      CreateTestWindowInShellWithDelegate(NULL, 1, bounds));
+      CreateTestWindowInShellWithDelegate(nullptr, 1, bounds));
   gfx::Rect desktop_area = window1->parent()->bounds();
   wm::GetWindowState(window1.get())->set_window_position_managed(true);
   window1->Hide();
@@ -392,7 +392,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
 
   bounds = gfx::Rect(632, 48, 256, 512);
   scoped_ptr<aura::Window> window2(
-      CreateTestWindowInShellWithDelegate(NULL, 2, bounds));
+      CreateTestWindowInShellWithDelegate(nullptr, 2, bounds));
   wm::GetWindowState(window2.get())->set_window_position_managed(true);
   // To avoid any auto window manager changes due to SetBounds, the window
   // gets first hidden and then shown again.
@@ -541,7 +541,7 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   // Create two screen vertical layout.
   UpdateDisplay("600x1000,600x1000");
   // Layout the secondary display to the bottom of the primary.
-  DisplayLayout layout(DisplayLayout::BOTTOM, 0);
+  DisplayLayout layout(DisplayPlacement::BOTTOM, 0);
   ASSERT_GT(gfx::Screen::GetScreen()->GetNumDisplays(), 1);
   Shell::GetInstance()->display_manager()->
       SetLayoutForCurrentDisplays(layout);

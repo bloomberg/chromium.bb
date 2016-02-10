@@ -133,7 +133,7 @@ void UnifiedMouseWarpController::ComputeBounds() {
 
   const gfx::Display& first = display_list[0];
   const gfx::Display& second = display_list[1];
-  ComputeBoundary(first, second, DisplayLayout::RIGHT,
+  ComputeBoundary(first, second, DisplayPlacement::RIGHT,
                   &first_edge_bounds_in_native_,
                   &second_edge_bounds_in_native_);
 

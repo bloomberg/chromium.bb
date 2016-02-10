@@ -14,6 +14,7 @@
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/unified_mouse_warp_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
@@ -161,6 +162,13 @@ bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
   if (!GetDisplayModeForResolution(info, resolution, &mode))
     return false;
   return display_manager->SetDisplayMode(display_id, mode);
+}
+
+void SwapPrimaryDisplay() {
+  if (gfx::Screen::GetScreen()->GetNumDisplays() <= 1)
+    return;
+  Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplay(
+      ScreenUtil::GetSecondaryDisplay());
 }
 
 }  // namespace test

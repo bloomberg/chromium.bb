@@ -20,42 +20,51 @@ template <typename T> class JSONValueConverter;
 
 namespace ash {
 
-typedef std::vector<int64_t> DisplayIdList;
+// An identifier used to manage display layout in DisplayManager /
+// DisplayLayoutStore.
+using DisplayIdList = std::vector<int64_t>;
+
+// DisplayPlacement specifies where the secondary display is placeed
+// relative to |primary| display.  In the following example, the secondary
+// is placed at the left side of the primary display, with a negative offset.
+//
+//        +      +--------+
+// offset |      |        |
+//        +      |   S    +--------+
+//               |        |        |
+//               +--------+   P    |
+//                        |        |
+//                        +--------+
+//
+struct ASH_EXPORT DisplayPlacement {
+  // To which side the display is positioned relative to the primary display.
+  enum Position { TOP, RIGHT, BOTTOM, LEFT };
+  Position position;
+
+  // The offset of the position of the secondary display. The offset is
+  // based on the top/left edge of the primary display.
+  int offset;
+
+  DisplayPlacement(Position position, int offset);
+
+  DisplayPlacement& Swap();
+
+  std::string ToString() const;
+};
 
 struct ASH_EXPORT DisplayLayout {
-  // Layout options where the secondary display should be positioned.
-  enum Position {
-    TOP,
-    RIGHT,
-    BOTTOM,
-    LEFT
-  };
-
-  // Factory method to create DisplayLayout from ints. The |mirrored| is
-  // set to false and |primary_id| is set to gfx::Display::kInvalidDisplayId.
-  // Used for persistence and webui.
-  static DisplayLayout FromInts(int position, int offsets);
-
   DisplayLayout();
-  DisplayLayout(Position position, int offset);
-
-  // Returns an inverted display layout.
-  DisplayLayout Invert() const WARN_UNUSED_RESULT;
+  DisplayLayout(DisplayPlacement::Position position, int offset);
+  ~DisplayLayout();
 
   // Converter functions to/from base::Value.
   static bool ConvertFromValue(const base::Value& value, DisplayLayout* layout);
   static bool ConvertToValue(const DisplayLayout& layout, base::Value* value);
 
-  // This method is used by base::JSONValueConverter, you don't need to call
-  // this directly. Instead consider using converter functions above.
   static void RegisterJSONConverter(
       base::JSONValueConverter<DisplayLayout>* converter);
 
-  Position position;
-
-  // The offset of the position of the secondary display.  The offset is
-  // based on the top/left edge of the primary display.
-  int offset;
+  DisplayPlacement placement;
 
   // True if displays are mirrored.
   bool mirrored;

@@ -24,14 +24,14 @@ DisplayLayoutStore::DisplayLayoutStore() {
     int offset = 0;
     if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
       if (layout == 't')
-        default_display_layout_.position = DisplayLayout::TOP;
+        default_display_layout_.placement.position = DisplayPlacement::TOP;
       else if (layout == 'b')
-        default_display_layout_.position = DisplayLayout::BOTTOM;
+        default_display_layout_.placement.position = DisplayPlacement::BOTTOM;
       else if (layout == 'r')
-        default_display_layout_.position = DisplayLayout::RIGHT;
+        default_display_layout_.placement.position = DisplayPlacement::RIGHT;
       else if (layout == 'l')
-        default_display_layout_.position = DisplayLayout::LEFT;
-      default_display_layout_.offset = offset;
+        default_display_layout_.placement.position = DisplayPlacement::LEFT;
+      default_display_layout_.placement.offset = offset;
     }
   }
 }
@@ -70,10 +70,11 @@ DisplayLayout DisplayLayoutStore::ComputeDisplayLayoutForDisplayIdList(
   DCHECK_NE(layout.primary_id, gfx::Display::kInvalidDisplayID);
   // Invert if the primary was swapped. If mirrored, first is always
   // primary.
-  return (layout.primary_id == gfx::Display::kInvalidDisplayID ||
-          list[0] == layout.primary_id)
-             ? layout
-             : layout.Invert();
+  if (layout.primary_id != gfx::Display::kInvalidDisplayID &&
+      list[0] != layout.primary_id) {
+    layout.placement.Swap();
+  }
+  return layout;
 }
 
 void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdList& list,

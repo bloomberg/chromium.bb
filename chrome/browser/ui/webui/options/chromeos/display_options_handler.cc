@@ -332,8 +332,8 @@ void DisplayOptionsHandler::SendDisplayInfo(
   if (display_manager->GetNumDisplays() > 1) {
     const ash::DisplayLayout layout =
         display_manager->GetCurrentDisplayLayout();
-    layout_value.reset(new base::FundamentalValue(layout.position));
-    offset_value.reset(new base::FundamentalValue(layout.offset));
+    layout_value.reset(new base::FundamentalValue(layout.placement.position));
+    offset_value.reset(new base::FundamentalValue(layout.placement.offset));
   }
 
   web_ui()->CallJavascriptFunction(
@@ -383,13 +383,15 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
   int layout, offset;
   if (!args->GetInteger(1, &layout))
     NOTREACHED();
-  DCHECK_LE(ash::DisplayLayout::TOP, layout);
-  DCHECK_GE(ash::DisplayLayout::LEFT, layout);
+  DCHECK_LE(ash::DisplayPlacement::TOP, layout);
+  DCHECK_GE(ash::DisplayPlacement::LEFT, layout);
   if (!args->GetInteger(2, &offset))
     NOTREACHED();
   content::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
   GetDisplayConfigurationController()->SetDisplayLayout(
-      ash::DisplayLayout::FromInts(layout, offset), true /* user_action */);
+      ash::DisplayLayout(static_cast<ash::DisplayPlacement::Position>(layout),
+                         offset),
+      true /* user_action */);
 }
 
 void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {

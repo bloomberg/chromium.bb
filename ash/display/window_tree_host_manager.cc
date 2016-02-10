@@ -391,12 +391,6 @@ WindowTreeHostManager::GetAllRootWindowControllers() {
   return controllers;
 }
 
-void WindowTreeHostManager::SwapPrimaryDisplayForTest() {
-  if (gfx::Screen::GetScreen()->GetNumDisplays() <= 1)
-    return;
-  SetPrimaryDisplay(ScreenUtil::GetSecondaryDisplay());
-}
-
 void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   DCHECK_NE(gfx::Display::kInvalidDisplayID, id);
   if (id == gfx::Display::kInvalidDisplayID || primary_display_id == id)
