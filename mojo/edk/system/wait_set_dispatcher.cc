@@ -44,24 +44,20 @@ Dispatcher::Type WaitSetDispatcher::GetType() const {
 }
 
 MojoResult WaitSetDispatcher::Close() {
-  {
-    base::AutoLock lock(lock_);
-    if (is_closed_)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    is_closed_ = true;
-  }
+  base::AutoLock lock(lock_);
+
+  if (is_closed_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  is_closed_ = true;
 
   {
     base::AutoLock locker(awakable_lock_);
     awakable_list_.CancelAll();
   }
 
-  {
-    base::AutoLock lock(lock_);
-    for (const auto& entry : waiting_dispatchers_)
-      entry.second.dispatcher->RemoveAwakable(waiter_.get(), nullptr);
-    waiting_dispatchers_.clear();
-  }
+  for (const auto& entry : waiting_dispatchers_)
+    entry.second.dispatcher->RemoveAwakable(waiter_.get(), nullptr);
+  waiting_dispatchers_.clear();
 
   base::AutoLock locker(awoken_lock_);
   awoken_queue_.clear();
@@ -113,6 +109,9 @@ MojoResult WaitSetDispatcher::RemoveWaitingDispatcher(
   uintptr_t dispatcher_handle = reinterpret_cast<uintptr_t>(dispatcher.get());
   {
     base::AutoLock lock(lock_);
+    if (is_closed_)
+      return MOJO_RESULT_INVALID_ARGUMENT;
+
     auto it = waiting_dispatchers_.find(dispatcher_handle);
     if (it == waiting_dispatchers_.end())
       return MOJO_RESULT_NOT_FOUND;
@@ -149,6 +148,9 @@ MojoResult WaitSetDispatcher::GetReadyDispatchers(
     MojoResult* results,
     uintptr_t* contexts) {
   base::AutoLock lock(lock_);
+
+  if (is_closed_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
   dispatchers->clear();
 
@@ -223,6 +225,15 @@ MojoResult WaitSetDispatcher::GetReadyDispatchers(
 }
 
 HandleSignalsState WaitSetDispatcher::GetHandleSignalsState() const {
+  base::AutoLock lock(lock_);
+  return GetHandleSignalsStateNoLock();
+}
+
+HandleSignalsState WaitSetDispatcher::GetHandleSignalsStateNoLock() const {
+  lock_.AssertAcquired();
+  if (is_closed_)
+    return HandleSignalsState();
+
   HandleSignalsState rv;
   rv.satisfiable_signals = MOJO_HANDLE_SIGNAL_READABLE;
   base::AutoLock locker(awoken_lock_);
@@ -235,7 +246,8 @@ MojoResult WaitSetDispatcher::AddAwakable(Awakable* awakable,
                                           MojoHandleSignals signals,
                                           uintptr_t context,
                                           HandleSignalsState* signals_state) {
-  HandleSignalsState state(GetHandleSignalsState());
+  base::AutoLock lock(lock_);
+  HandleSignalsState state(GetHandleSignalsStateNoLock());
   if (state.satisfies(signals)) {
     if (signals_state)
       *signals_state = state;
@@ -254,8 +266,10 @@ MojoResult WaitSetDispatcher::AddAwakable(Awakable* awakable,
 
 void WaitSetDispatcher::RemoveAwakable(Awakable* awakable,
                                        HandleSignalsState* signals_state) {
-  base::AutoLock locker(awakable_lock_);
-  awakable_list_.Remove(awakable);
+  {
+    base::AutoLock locker(awakable_lock_);
+    awakable_list_.Remove(awakable);
+  }
   if (signals_state)
     *signals_state = GetHandleSignalsState();
 }

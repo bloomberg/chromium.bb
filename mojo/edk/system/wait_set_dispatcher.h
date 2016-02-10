@@ -61,6 +61,8 @@ class MOJO_SYSTEM_IMPL_EXPORT WaitSetDispatcher : public Dispatcher {
 
   ~WaitSetDispatcher() override;
 
+  HandleSignalsState GetHandleSignalsStateNoLock() const;
+
   // Signal that the dispatcher indexed by |context| has been woken up with
   // |result| and is now ready.
   void WakeDispatcher(MojoResult result, uintptr_t context);
@@ -68,7 +70,7 @@ class MOJO_SYSTEM_IMPL_EXPORT WaitSetDispatcher : public Dispatcher {
   // Guards |is_closed_|, |waiting_dispatchers_|, and |waiter_|.
   //
   // TODO: Consider removing this.
-  base::Lock lock_;
+  mutable base::Lock lock_;
   bool is_closed_ = false;
 
   // Map of dispatchers being waited on. Key is a Dispatcher* casted to a
