@@ -1961,17 +1961,16 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
                                       int32_t route_id,
                                       bool is_fullscreen,
                                       blink::WebPopupType popup_type) {
-  RenderProcessHost* process = GetRenderProcessHost();
+  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   // A message to create a new widget can only come from an active process for
   // this WebContentsImpl instance. If any other process sends the request,
   // it is invalid and the process must be terminated.
   if (!HasMatchingProcess(&frame_tree_, render_process_id)) {
-    RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
-    base::ProcessHandle process_handle = rph->GetHandle();
+    base::ProcessHandle process_handle = process->GetHandle();
     if (process_handle != base::kNullProcessHandle) {
       RecordAction(
           base::UserMetricsAction("Terminate_ProcessMismatch_CreateNewWidget"));
-      rph->Shutdown(RESULT_CODE_KILLED, false);
+      process->Shutdown(RESULT_CODE_KILLED, false);
     }
     return;
   }
