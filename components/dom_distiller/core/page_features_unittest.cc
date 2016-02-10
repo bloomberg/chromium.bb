@@ -169,6 +169,26 @@ TEST(DomDistillerPageFeaturesTest, TestPath3) {
   EXPECT_EQ(0, lround(derived[11]));
   EXPECT_EQ(0, lround(derived[12]));
   EXPECT_EQ(0, lround(derived[13]));
-  EXPECT_EQ(0, lround(derived[14]));
+  EXPECT_EQ(1, lround(derived[14]));
+}
+
+TEST(DomDistillerPageFeaturesTest, TestPath4) {
+  GURL url("https://example.com/trailing/");
+
+  std::vector<double> derived(DeriveFromPath(url));
+  EXPECT_EQ(0, lround(derived[1]));
+  EXPECT_EQ(0, lround(derived[2]));
+  EXPECT_EQ(0, lround(derived[3]));
+  EXPECT_EQ(0, lround(derived[4]));
+  EXPECT_EQ(0, lround(derived[5]));
+  EXPECT_EQ(0, lround(derived[6]));
+  EXPECT_EQ(0, lround(derived[7]));
+  EXPECT_EQ(0, lround(derived[8]));
+  EXPECT_EQ(10, lround(derived[9]));
+  EXPECT_EQ(0, lround(derived[10]));
+  EXPECT_EQ(1, lround(derived[11]));
+  EXPECT_EQ(0, lround(derived[12]));
+  EXPECT_EQ(0, lround(derived[13]));
+  EXPECT_EQ(9, lround(derived[14]));
 }
 }
