@@ -982,6 +982,16 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
                    ![self keyWindowIsModal] : NO;
       }
     }
+
+    // "Show as tab" should only appear when the current window is a popup.
+    // Since |validateUserInterfaceItem:| is called only when there are no
+    // key windows, we should just hide this.
+    // This is handled outside of the switch statement because we want to hide
+    // this regardless if the command is supported or not.
+    if (tag == IDC_SHOW_AS_TAB) {
+      NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
+      [menuItem setHidden:YES];
+    }
   } else if (action == @selector(terminate:)) {
     enable = YES;
   } else if (action == @selector(showPreferences:)) {

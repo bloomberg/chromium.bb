@@ -492,6 +492,11 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="530"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="^IDS_SHOW_AS_TAB" tag="34029" id="470">
+                                <connections>
+                                    <action selector="commandDispatch:" target="-1" id="559"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="551"/>
                             <menuItem title="^IDS_SHOW_DOWNLOADS_MAC" tag="40012" keyEquivalent="J" id="550">
                                 <connections>
