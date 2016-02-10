@@ -97,7 +97,7 @@ const char* kCustomPatternsWithContext[] = {
 #define PORT DIGIT "*"
 
 // This is a diversion of RFC 3987
-#define SCHEME NCG("http|https|ftp|chrome|chrome-extension|android")
+#define SCHEME NCG("http|https|ftp|chrome|chrome-extension|android|rtsp")
 
 #define IPRIVATE            \
   "["                       \

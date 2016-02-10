@@ -128,6 +128,8 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
     "chrome://extensions/",
     "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/options.html",
     "http://example.com/foo?email=foo@bar.com",
+    "rtsp://root@example.com/",
+    "https://aaaaaaaaaaaaaaaa.com",
   };
   for (size_t i = 0; i < arraysize(kURLs); ++i) {
     SCOPED_TRACE(kURLs[i]);
