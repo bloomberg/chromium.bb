@@ -49,7 +49,7 @@ if (current_toolchain == default_toolchain) {
                "-d",
                rebase_path("$dest_dir/tables", root_build_dir),
                "-e",
-               rebase_path("cvox-common.cti", root_build_dir),
+               "cvox-common.cti",
                "--depfile",
                rebase_path(depfile, root_build_dir),
              ] + rebase_path(sources, root_build_dir)
