@@ -113,6 +113,35 @@ void CheckIntArrayConversion(JNIEnv* env,
   }
 }
 
+void CheckFloatConversion(
+    JNIEnv* env,
+    const float* float_array,
+    const size_t len,
+    const ScopedJavaLocalRef<jfloatArray>& floats) {
+  ASSERT_TRUE(floats.obj());
+
+  jsize java_array_len = env->GetArrayLength(floats.obj());
+  ASSERT_EQ(static_cast<jsize>(len), java_array_len);
+
+  jfloat value;
+  for (size_t i = 0; i < len; ++i) {
+    env->GetFloatArrayRegion(floats.obj(), i, 1, &value);
+    ASSERT_EQ(float_array[i], value);
+  }
+}
+
+TEST(JniArray, FloatConversions) {
+  const float kFloats[] = { 0.0f, 1.0f, -10.0f};
+  const size_t kLen = arraysize(kFloats);
+
+  JNIEnv* env = AttachCurrentThread();
+  CheckFloatConversion(env, kFloats, kLen,
+                       ToJavaFloatArray(env, kFloats, kLen));
+
+  const std::vector<float> vec(kFloats, kFloats + kLen);
+  CheckFloatConversion(env, kFloats, kLen, ToJavaFloatArray(env, vec));
+}
+
 TEST(JniArray, JavaIntArrayToIntVector) {
   const int kInts[] = {0, 1, -1};
   const size_t kLen = arraysize(kInts);
