@@ -1137,7 +1137,7 @@ wl_closure_send(struct wl_closure *closure, struct wl_connection *connection)
 		return -1;
 
 	buffer_size = buffer_size_for_closure(closure);
-	buffer = malloc(buffer_size * sizeof buffer[0]);
+	buffer = zalloc(buffer_size * sizeof buffer[0]);
 	if (buffer == NULL)
 		return -1;
 
