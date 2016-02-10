@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
@@ -154,7 +155,8 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
       size_t chunk_size = std::min(remaining_bytes, shared_memory_size);
       memcpy(shared_memory->memory(), current_ptr, chunk_size);
       sender_->Send(new StreamHostMsg_SyncAppendSharedMemory(
-          url, shared_memory->handle(), chunk_size));
+          url, shared_memory->handle(),
+          base::checked_cast<uint32_t>(chunk_size)));
       remaining_bytes -= chunk_size;
       current_ptr += chunk_size;
     }
