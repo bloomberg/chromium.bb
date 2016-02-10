@@ -291,9 +291,11 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
     return;
   }
 
+  // TODO(hubbe): This experiment is temporary and should be removed once
+  // we have enough data to support the primacy of the new media cache.
+  // See http://crbug.com/514719 for details.
   // Otherwise it's a regular request which requires resolving the URL first.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseNewMediaCache)) {
+  if (base::FeatureList::IsEnabled(kUseNewMediaCache)) {
     // Remove this when MultiBufferDataSource becomes default.
     LOG(WARNING) << "Using MultibufferDataSource";
     data_source_.reset(new MultibufferDataSource(

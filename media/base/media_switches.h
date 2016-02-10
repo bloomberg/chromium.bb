@@ -7,6 +7,7 @@
 #ifndef MEDIA_BASE_MEDIA_SWITCHES_H_
 #define MEDIA_BASE_MEDIA_SWITCHES_H_
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
 
@@ -62,8 +63,14 @@ MEDIA_EXPORT extern const char kVideoUnderflowThresholdMs[];
 
 MEDIA_EXPORT extern const char kDisableRTCSmoothnessAlgorithm[];
 
-MEDIA_EXPORT extern const char kUseNewMediaCache[];
-
 }  // namespace switches
+
+namespace media {
+
+// All features in alphabetical order. The features should be documented
+// alongside the definition of their values in the .cc file.
+MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
+
+}  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_
