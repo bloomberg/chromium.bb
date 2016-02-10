@@ -239,7 +239,8 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
 
   EXPECT_CALL(delegate_, OnDataAvailable())
       .WillOnce(testing::Invoke(
-          CreateFunctor(this, &QuicChromiumClientStreamTest::ReadData,
+          CreateFunctor(&QuicChromiumClientStreamTest::ReadData,
+                        base::Unretained(this),
                         StringPiece(data, arraysize(data) - 1))));
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -275,7 +276,8 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
                                          /*offset=*/0, data));
   EXPECT_CALL(delegate_, OnDataAvailable())
       .WillOnce(testing::Invoke(CreateFunctor(
-          stream_, &QuicChromiumClientStream::Reset, QUIC_STREAM_CANCELLED)));
+          &QuicChromiumClientStream::Reset,
+          base::Unretained(stream_), QUIC_STREAM_CANCELLED)));
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));

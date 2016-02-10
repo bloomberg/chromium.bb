@@ -424,7 +424,8 @@ TEST_F(WorkerProcessLauncherTest, Restart) {
       EXPECT_CALL(server_listener_, OnChannelConnected(_))
           .Times(2)
           .WillOnce(InvokeWithoutArgs(CreateFunctor(
-              this, &WorkerProcessLauncherTest::TerminateWorker,
+              &WorkerProcessLauncherTest::TerminateWorker,
+              base::Unretained(this),
               CONTROL_C_EXIT)))
           .WillOnce(InvokeWithoutArgs(this,
                                       &WorkerProcessLauncherTest::StopWorker));
@@ -470,7 +471,8 @@ TEST_F(WorkerProcessLauncherTest, PermanentError) {
   EXPECT_CALL(server_listener_, OnChannelConnected(_))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(CreateFunctor(
-          this, &WorkerProcessLauncherTest::TerminateWorker,
+          &WorkerProcessLauncherTest::TerminateWorker,
+          base::Unretained(this),
           kMinPermanentErrorExitCode)));
   EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(1)
@@ -498,7 +500,8 @@ TEST_F(WorkerProcessLauncherTest, Crash) {
   EXPECT_CALL(client_listener_, OnCrash(_, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(CreateFunctor(
-          this, &WorkerProcessLauncherTest::TerminateWorker,
+          &WorkerProcessLauncherTest::TerminateWorker,
+          base::Unretained(this),
           EXCEPTION_BREAKPOINT)));
 
   StartWorker();

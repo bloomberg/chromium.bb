@@ -132,7 +132,8 @@ TEST_F(It2MeConfirmationDialogProxyTest, Show) {
       .WillOnce(
           InvokeWithoutArgs(
               CreateFunctor(
-                  dialog(), &StubIt2MeConfirmationDialog::ReportResult,
+                  &StubIt2MeConfirmationDialog::ReportResult,
+                  base::Unretained(dialog()),
                   It2MeConfirmationDialog::Result::CANCEL)));
 
   EXPECT_CALL(callback_target,

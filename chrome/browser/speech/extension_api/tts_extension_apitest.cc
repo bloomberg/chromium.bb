@@ -23,11 +23,8 @@
 #include "extensions/browser/extension_system.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-// Needed for CreateFunctor.
-#define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
@@ -317,8 +314,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakError) {
   EXPECT_CALL(mock_platform_impl_, Speak(_, "first try", _, _, _))
       .WillOnce(DoAll(
           InvokeWithoutArgs(
-              CreateFunctor(&mock_platform_impl_,
-                            &MockTtsPlatformImpl::SetErrorToEpicFail)),
+              CreateFunctor(&MockTtsPlatformImpl::SetErrorToEpicFail,
+                            base::Unretained(&mock_platform_impl_))),
           Return(false)));
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));

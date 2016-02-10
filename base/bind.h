@@ -46,12 +46,26 @@
 
 namespace base {
 
+namespace internal {
+
+// Don't use Alias Template directly here to avoid a compile error on MSVC2013.
 template <typename Functor, typename... Args>
-base::Callback<
-    typename internal::BindState<
-        typename internal::FunctorTraits<Functor>::RunnableType,
-        typename internal::FunctorTraits<Functor>::RunType,
-        typename std::decay<Args>::type...>::UnboundRunType>
+struct MakeUnboundRunTypeImpl {
+  using Type =
+      typename BindState<
+          typename FunctorTraits<Functor>::RunnableType,
+          typename FunctorTraits<Functor>::RunType,
+          typename std::decay<Args>::type...>::UnboundRunType;
+};
+
+}  // namespace internal
+
+template <typename Functor, typename... Args>
+using MakeUnboundRunType =
+    typename internal::MakeUnboundRunTypeImpl<Functor, Args...>::Type;
+
+template <typename Functor, typename... Args>
+base::Callback<MakeUnboundRunType<Functor, Args...>>
 Bind(Functor functor, Args&&... args) {
   // Type aliases for how to store and run the functor.
   using RunnableType = typename internal::FunctorTraits<Functor>::RunnableType;

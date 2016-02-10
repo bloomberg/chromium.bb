@@ -441,13 +441,15 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
   InSequence s;
   EXPECT_CALL(*stream2, OnCanWrite())
       .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &session_, &TestSession::SendLargeFakeData,
+                          &TestSession::SendLargeFakeData,
+                          base::Unretained(&session_),
                           stream2->id(), 6000))),
                       Invoke(&stream2_blocker,
                              &StreamBlocker::MarkConnectionLevelWriteBlocked)));
   EXPECT_CALL(*stream2, OnCanWrite())
       .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &session_, &TestSession::SendLargeFakeData,
+                          &TestSession::SendLargeFakeData,
+                          base::Unretained(&session_),
                           stream2->id(), 6000))),
                       Invoke(&stream2_blocker,
                              &StreamBlocker::MarkConnectionLevelWriteBlocked)));
@@ -457,13 +459,15 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
   // write quota and we move over to stream 4.
   EXPECT_CALL(*stream2, OnCanWrite())
       .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &session_, &TestSession::SendLargeFakeData,
+                          &TestSession::SendLargeFakeData,
+                          base::Unretained(&session_),
                           stream2->id(), 6000))),
                       Invoke(&stream2_blocker,
                              &StreamBlocker::MarkConnectionLevelWriteBlocked)));
   EXPECT_CALL(*stream4, OnCanWrite())
       .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &session_, &TestSession::SendLargeFakeData,
+                          &TestSession::SendLargeFakeData,
+                          base::Unretained(&session_),
                           stream4->id(), 6000))),
                       Invoke(&stream4_blocker,
                              &StreamBlocker::MarkConnectionLevelWriteBlocked)));
@@ -475,7 +479,8 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
   stream6->SetPriority(kHighestPriority);
   EXPECT_CALL(*stream4, OnCanWrite())
       .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &session_, &TestSession::SendLargeFakeData,
+                          &TestSession::SendLargeFakeData,
+                          base::Unretained(&session_),
                           stream4->id(), 6000))),
                       Invoke(&stream4_blocker,
                              &StreamBlocker::MarkConnectionLevelWriteBlocked),
@@ -483,20 +488,23 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
                              &StreamBlocker::MarkHighPriorityWriteBlocked)));
   EXPECT_CALL(*stream6, OnCanWrite())
       .WillOnce(testing::IgnoreResult(Invoke(CreateFunctor(
-          &session_, &TestSession::SendLargeFakeData, stream4->id(), 6000))));
+          &TestSession::SendLargeFakeData,
+          base::Unretained(&session_), stream4->id(), 6000))));
   session_.OnCanWrite();
 
   // Stream4 alread did 6k worth of writes, so after doing another 12k it should
   // cede and 2 should resume.
   EXPECT_CALL(*stream4, OnCanWrite())
       .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &session_, &TestSession::SendLargeFakeData,
+                          &TestSession::SendLargeFakeData,
+                          base::Unretained(&session_),
                           stream4->id(), 12000))),
                       Invoke(&stream4_blocker,
                              &StreamBlocker::MarkConnectionLevelWriteBlocked)));
   EXPECT_CALL(*stream2, OnCanWrite())
       .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &session_, &TestSession::SendLargeFakeData,
+                          &TestSession::SendLargeFakeData,
+                          base::Unretained(&session_),
                           stream2->id(), 6000))),
                       Invoke(&stream2_blocker,
                              &StreamBlocker::MarkConnectionLevelWriteBlocked)));
@@ -526,13 +534,18 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
       .WillRepeatedly(Return(kMaxPacketSize * 10));
   EXPECT_CALL(*stream2, OnCanWrite())
       .WillOnce(testing::IgnoreResult(Invoke(CreateFunctor(
-          &session_, &TestSession::SendStreamData, stream2->id()))));
+          &TestSession::SendStreamData,
+          base::Unretained(&session_), stream2->id()))));
   EXPECT_CALL(*stream4, OnCanWrite())
       .WillOnce(testing::IgnoreResult(Invoke(CreateFunctor(
-          &session_, &TestSession::SendStreamData, stream4->id()))));
+          &TestSession::SendStreamData,
+          base::Unretained(&session_),
+          stream4->id()))));
   EXPECT_CALL(*stream6, OnCanWrite())
       .WillOnce(testing::IgnoreResult(Invoke(CreateFunctor(
-          &session_, &TestSession::SendStreamData, stream6->id()))));
+          &TestSession::SendStreamData,
+          base::Unretained(&session_),
+          stream6->id()))));
 
   // Expect that we only send one packet, the writes from different streams
   // should be bundled together.
