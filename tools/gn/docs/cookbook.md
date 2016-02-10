@@ -64,7 +64,7 @@ action("foo") {
   args = [ "--la_dee_da" ]
 }
 
-executable('foo.exe') {
+executable("foo.exe") {
   ...
   deps = [ ":foo" ]  # Depend on the action to make sure it runs.
 }
@@ -72,6 +72,36 @@ executable('foo.exe') {
 
 Rules in GYP become `action_foreach` in GN which work like actions but
 iterate over a set of sources.
+
+### Copies
+
+GYP
+
+```
+'copies': [
+  {
+    'destination': '<(PRODUCT_DIR)/',
+    'files': [
+      '../build/win/dbghelp_xp/dbghelp.dll',
+    ],
+  },
+],
+```
+
+Unlike GYP, where copies are part of a target, GN copies are
+separate targets that you then depend on via deps from other targets:
+
+```
+copy("bar") {
+  sources = [ "../path/to/secret.dll" ]
+  outputs = [ "$root_out_dir/{{source_file_part}}" ]
+}
+
+component("base") {
+  ...
+  deps = [ "bar" }  # Depend on the copy to make sure it runs.
+}
+```
 
 ## Platform checking
 
