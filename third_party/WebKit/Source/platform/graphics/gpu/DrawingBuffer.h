@@ -171,7 +171,6 @@ protected: // For unittests
         SupportedExtensions();
 
         bool multisample;
-        bool packedDepthStencil;
         bool depth24;
         bool discardFramebuffer;
     };
@@ -305,7 +304,6 @@ private:
     IntSize m_size;
     WebGraphicsContext3D::Attributes m_requestedAttributes;
     bool m_multisampleExtensionSupported;
-    bool m_packedDepthStencilExtensionSupported;
     bool m_depth24ExtensionSupported;
     bool m_discardFramebufferSupported;
     Platform3DObject m_fbo;
@@ -319,12 +317,10 @@ private:
 
     OwnPtr<Closure> m_newMailboxCallback;
 
-    // This is used when we have OES_packed_depth_stencil.
     Platform3DObject m_depthStencilBuffer;
 
-    // These are used when we don't.
+    // This is used when we only request depth and the OES_depth24 extension is available.
     Platform3DObject m_depthBuffer;
-    Platform3DObject m_stencilBuffer;
 
     // For multisampling.
     Platform3DObject m_multisampleFBO;

@@ -116,7 +116,6 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
         else
             extensionsUtil->ensureExtensionEnabled("GL_EXT_multisampled_render_to_texture");
     }
-    exts.packedDepthStencil = true;
     exts.depth24 = extensionsUtil->supportsExtension("GL_OES_depth24");
     if (exts.depth24)
         extensionsUtil->ensureExtensionEnabled("GL_OES_depth24");
@@ -138,7 +137,7 @@ void DrawingBuffer::forceNextDrawingBufferCreationToFail()
 }
 
 DrawingBuffer::SupportedExtensions::SupportedExtensions() :
-    multisample(false), packedDepthStencil(false), depth24(false), discardFramebuffer(false) {}
+    multisample(false), depth24(false), discardFramebuffer(false) {}
 
 DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     PassOwnPtr<Extensions3DUtil> extensionsUtil,
@@ -156,13 +155,11 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_size(-1, -1)
     , m_requestedAttributes(requestedAttributes)
     , m_multisampleExtensionSupported(supportedExtensions.multisample)
-    , m_packedDepthStencilExtensionSupported(supportedExtensions.packedDepthStencil)
     , m_depth24ExtensionSupported(supportedExtensions.depth24)
     , m_discardFramebufferSupported(supportedExtensions.discardFramebuffer)
     , m_fbo(0)
     , m_depthStencilBuffer(0)
     , m_depthBuffer(0)
-    , m_stencilBuffer(0)
     , m_multisampleFBO(0)
     , m_multisampleColorBuffer(0)
     , m_contentsChanged(true)
@@ -621,9 +618,6 @@ void DrawingBuffer::beginDestruction()
     if (m_depthBuffer)
         m_context->deleteRenderbuffer(m_depthBuffer);
 
-    if (m_stencilBuffer)
-        m_context->deleteRenderbuffer(m_stencilBuffer);
-
     if (m_colorBuffer.textureId) {
         deleteChromiumImageForTexture(&m_colorBuffer);
         m_context->deleteTexture(m_colorBuffer.textureId);
@@ -636,7 +630,6 @@ void DrawingBuffer::beginDestruction()
     m_multisampleColorBuffer = 0;
     m_depthStencilBuffer = 0;
     m_depthBuffer = 0;
-    m_stencilBuffer = 0;
     m_multisampleFBO = 0;
     m_fbo = 0;
 
@@ -716,7 +709,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         else
             m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, size.width(), size.height());
         m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
-    } else if (m_packedDepthStencilExtensionSupported) {
+    } else {
         if (!m_depthStencilBuffer)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
@@ -727,31 +720,6 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         else
             m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
         m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthStencilBuffer);
-    } else {
-        if (m_requestedAttributes.depth) {
-            if (!m_depthBuffer)
-                m_depthBuffer = m_context->createRenderbuffer();
-            m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
-            if (m_antiAliasingMode == MSAAImplicitResolve)
-                m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
-            else if (m_antiAliasingMode == MSAAExplicitResolve)
-                m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
-            else
-                m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, size.width(), size.height());
-            m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
-        }
-        if (m_requestedAttributes.stencil) {
-            if (!m_stencilBuffer)
-                m_stencilBuffer = m_context->createRenderbuffer();
-            m_context->bindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
-            if (m_antiAliasingMode == MSAAImplicitResolve)
-                m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
-            else if (m_antiAliasingMode == MSAAExplicitResolve)
-                m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
-            else
-                m_context->renderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, size.width(), size.height());
-            m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_stencilBuffer);
-        }
     }
     m_context->bindRenderbuffer(GL_RENDERBUFFER, 0);
 }
