@@ -874,7 +874,9 @@ int BrowserMainLoop::CreateThreads() {
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::CACHE");
         thread_to_start = &cache_thread_;
+#if defined(OS_WIN)
         options = io_message_loop_options;
+#endif  // defined(OS_WIN)
         options.timer_slack = base::TIMER_SLACK_MAXIMUM;
         break;
       case BrowserThread::IO:
