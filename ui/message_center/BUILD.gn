@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+# TODO(msw|mukai|dewittj): Move ash-specific files: crbug.com/585175
 component("message_center") {
   deps = [
     "//base",
@@ -90,6 +91,10 @@ component("message_center") {
         "views/constants.h",
         "views/desktop_popup_alignment_delegate.cc",
         "views/desktop_popup_alignment_delegate.h",
+        "views/message_bubble_base.cc",
+        "views/message_bubble_base.h",
+        "views/message_center_bubble.cc",
+        "views/message_center_bubble.h",
         "views/message_center_button_bar.cc",
         "views/message_center_button_bar.h",
         "views/message_center_controller.h",
@@ -124,15 +129,6 @@ component("message_center") {
         "//ui/compositor",
         "//ui/events",
         "//ui/views",
-      ]
-    }
-
-    if (use_ash) {
-      sources += [
-        "views/message_bubble_base.cc",
-        "views/message_bubble_base.h",
-        "views/message_center_bubble.cc",
-        "views/message_center_bubble.h",
       ]
     }
   } else {

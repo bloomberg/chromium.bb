@@ -166,7 +166,7 @@
         'browser_watcher.gypi',
       ],
     }],
-    ['chromeos == 1 or use_ash == 1', {
+    ['chromeos == 1 or use_aura == 1', {
       'includes': [
         'session_manager.gypi',
         'user_manager.gypi',

@@ -17,23 +17,9 @@ class AshWindowTreeHostWin : public AshWindowTreeHostPlatform {
  private:
   // AshWindowTreeHost:
   void ToggleFullScreen() override;
-  bool ConfineCursorToRootWindow() override;
-  void UnConfineCursor() override;
-  void SetRootWindowTransformer(
-      scoped_ptr<RootWindowTransformer> transformer) override;
-  gfx::Insets GetHostInsets() const override;
-  aura::WindowTreeHost* AsWindowTreeHost() override;
 
   // WindowTreeHost:
   void SetBounds(const gfx::Rect& bounds) override;
-  void SetRootTransform(const gfx::Transform& transform) override;
-  gfx::Transform GetRootTransform() const override;
-  gfx::Transform GetInverseRootTransform() const override;
-  void UpdateRootWindowSize(const gfx::Size& host_size) override;
-
-  // ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* event) override;
 
   bool fullscreen_;
   RECT saved_window_rect_;

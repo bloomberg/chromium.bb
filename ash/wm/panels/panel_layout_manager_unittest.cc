@@ -33,7 +33,6 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
@@ -278,7 +277,7 @@ class PanelLayoutManagerTextDirectionTest
   virtual ~PanelLayoutManagerTextDirectionTest() {}
 
   void SetUp() override {
-    original_locale = l10n_util::GetApplicationLocale(std::string());
+    original_locale_ = base::i18n::GetConfiguredLocale();
     if (is_rtl_)
       base::i18n::SetICUDefaultLocale("he");
     PanelLayoutManagerTest::SetUp();
@@ -287,13 +286,13 @@ class PanelLayoutManagerTextDirectionTest
 
   void TearDown() override {
     if (is_rtl_)
-      base::i18n::SetICUDefaultLocale(original_locale);
+      base::i18n::SetICUDefaultLocale(original_locale_);
     PanelLayoutManagerTest::TearDown();
   }
 
  private:
   bool is_rtl_;
-  std::string original_locale;
+  std::string original_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManagerTextDirectionTest);
 };

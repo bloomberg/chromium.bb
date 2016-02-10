@@ -77,24 +77,20 @@
     ['<(use_aura)==0 or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_aura(_browsertest|_unittest)?\\.(h|cc)$'],
                     ['exclude', '(^|/)aura/'],
+                    ['exclude', '_ash(_browsertest|_unittest)?\\.(h|cc)$'],
+                    ['exclude', '(^|/)ash/'],
       ]
     }],
     ['<(use_aura)==0 or <(use_x11)==0 or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_aurax11(_browsertest|_unittest)?\\.(h|cc)$'] ]
     }],
     ['<(use_aura)==0 or OS!="win" or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_aurawin\\.(h|cc)$'] ]
+      'sources/': [ ['exclude', '_aurawin\\.(h|cc)$'],
+                    ['exclude', '_ashwin\\.(h|cc)$']
+      ]
     }],
     ['<(use_aura)==0 or OS!="linux" or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_auralinux\\.(h|cc)$'] ]
-    }],
-    ['<(use_ash)==0 or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_ash(_browsertest|_unittest)?\\.(h|cc)$'],
-                    ['exclude', '(^|/)ash/'],
-      ]
-    }],
-    ['<(use_ash)==0 or OS!="win" or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_ashwin\\.(h|cc)$'] ]
     }],
     ['<(use_ozone)==0 or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_ozone(_browsertest|_unittest)?\\.(h|cc)$'] ]

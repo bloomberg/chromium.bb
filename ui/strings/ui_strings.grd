@@ -593,11 +593,9 @@ need to be translated for each locale.-->
       </message>
 
       <!-- Message center -->
-      <if expr="use_ash">
-        <message name="IDS_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The accessible name for the Notification Center window.">
-          Notification Center
-        </message>
-      </if>
+      <message name="IDS_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The accessible name for the Notification Center window.">
+        Notification Center
+      </message>
       <message name="IDS_MESSAGE_CENTER_NOTIFIER_DISABLE" desc="The menu entry for disabling a notifier from a notification.">
         Disable notifications from <ph name="notifier_name">$1<ex>Notification Galore!</ex></ph>
       </message>

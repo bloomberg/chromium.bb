@@ -7,6 +7,8 @@
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/i18n/rtl.h"
+#include "base/path_service.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
@@ -49,10 +51,25 @@ void AuraShellTestSuite::Initialize() {
   gfx::RegisterPathProvider();
   ui::RegisterPathProvider();
 
-  // Force unittests to run using en-US so if we test against string
-  // output, it'll pass regardless of the system language.
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+  // Force unittests to run using en-US so if we test against string output,
+  // it'll pass regardless of the system language.
+  base::i18n::SetICUDefaultLocale("en_US");
+
+  // Load ash resources and en-US strings; not 'common' (Chrome) resources.
+  // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
+  base::FilePath path;
+  PathService::Get(base::DIR_MODULE, &path);
+  base::FilePath ash_test_strings =
+      path.Append(FILE_PATH_LITERAL("ash_test_strings.pak"));
+  base::FilePath ash_test_resources_100 =
+      path.Append(FILE_PATH_LITERAL("ash_test_resources_100_percent.pak"));
+  base::FilePath ash_test_resources_200 =
+      path.Append(FILE_PATH_LITERAL("ash_test_resources_200_percent.pak"));
+
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
+  rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   aura::Env::CreateInstance(true);

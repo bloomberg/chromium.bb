@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # TODO(msw|mukai|dewittj): Move ash-specific files: crbug.com/585175
       # GN version: //ui/message_center
       'target_name': 'message_center',
       'type': '<(component)',
@@ -129,14 +130,6 @@
         }, {
           'sources/': [
             ['exclude', 'views/'],
-          ],
-        }],
-        ['use_ash==0', {
-          'sources!': [
-            'views/message_bubble_base.cc',
-            'views/message_bubble_base.h',
-            'views/message_center_bubble.cc',
-            'views/message_center_bubble.h',
           ],
         }],
         # iOS disables notifications altogether, Android implements its own

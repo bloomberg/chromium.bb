@@ -14,6 +14,7 @@ namespace shell {
 void PreMainMessageLoopStart() {
   ui::RegisterPathProvider();
   base::i18n::InitializeICU();
+  // TODO(msw): Load ash and ui resources; not 'common' (Chrome) resources.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 }

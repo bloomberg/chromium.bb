@@ -20,11 +20,11 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "base/i18n/rtl.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -188,7 +188,7 @@ class PanelWindowResizerTextDirectionTest
   virtual ~PanelWindowResizerTextDirectionTest() {}
 
   void SetUp() override {
-    original_locale = l10n_util::GetApplicationLocale(std::string());
+    original_locale_ = base::i18n::GetConfiguredLocale();
     if (is_rtl_)
       base::i18n::SetICUDefaultLocale("he");
     PanelWindowResizerTest::SetUp();
@@ -197,13 +197,13 @@ class PanelWindowResizerTextDirectionTest
 
   void TearDown() override {
     if (is_rtl_)
-      base::i18n::SetICUDefaultLocale(original_locale);
+      base::i18n::SetICUDefaultLocale(original_locale_);
     PanelWindowResizerTest::TearDown();
   }
 
  private:
   bool is_rtl_;
-  std::string original_locale;
+  std::string original_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTextDirectionTest);
 };

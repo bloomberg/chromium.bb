@@ -13,7 +13,6 @@
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
@@ -403,7 +402,7 @@ class FrameSizeButtonTestRTL : public FrameSizeButtonTest {
   ~FrameSizeButtonTestRTL() override {}
 
   void SetUp() override {
-    original_locale_ = l10n_util::GetApplicationLocale(std::string());
+    original_locale_ = base::i18n::GetConfiguredLocale();
     base::i18n::SetICUDefaultLocale("he");
 
     FrameSizeButtonTest::SetUp();

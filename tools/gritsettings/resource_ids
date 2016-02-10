@@ -181,43 +181,43 @@
   },
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
-    "includes": [24700],
+    "includes": [24600],
   },
   # iOS resources overlap with android_webview, ash, chromeos and extensions_api,
   # as these are not used on iOS.
   "ios/chrome/app/strings/ios_locale_settings.grd": {
-    "messages": [24950],
+    "messages": [24850],
   },
   "ios/chrome/app/strings/ios_strings.grd": {
-    "messages": [24955],
+    "messages": [24855],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "ios/chrome/app/strings/ios_chromium_strings.grd": {
-    "messages": [25855],
+    "messages": [25755],
   },
   "ios/chrome/app/strings/ios_google_chrome_strings.grd": {
-    "messages": [25855],
+    "messages": [25755],
   },
   "ios/chrome/app/resources/ios_resources.grd": {
     "structures": [25950],
-    "includes": [26160],
+    "includes": [26060],
   },
   "ios/chrome/app/theme/ios_theme_resources.grd": {
-    "structures": [25970],
+    "structures": [25870],
   },
   "ios/chrome/today_extension/strings/ios_today_extension_strings.grd": {
-    "messages": [26435],
+    "messages": [26335],
   },
   "ash/ash_strings.grd": {
-    "messages": [24950],
+    "messages": [24850],
   },
   "android_webview/ui/aw_resources.grd": {
-    "includes": [24950],
+    "includes": [24850],
   },
   "android_webview/ui/aw_strings.grd": {
-    "messages": [25050],
+    "messages": [24950],
   },
   "ui/chromeos/resources/ui_chromeos_resources.grd": {
     "structures": [25150],

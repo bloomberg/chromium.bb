@@ -6,7 +6,8 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-assert(use_ash)
+assert(use_aura)
+assert(enable_hidpi)
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("ash.gyp") ],
@@ -317,12 +318,19 @@ test("ash_unittests") {
     "//ui/message_center",
     "//ui/message_center:test_support",
     "//ui/resources",
+    "//ui/strings",
     "//ui/views",
     "//ui/views:test_support",
     "//ui/views/controls/webview:test_support",
     "//ui/web_dialogs:test_support",
     "//ui/wm",
     "//url",
+  ]
+
+  data_deps = [
+    "//ash/strings:ash_test_strings",
+    "//ash/resources:ash_test_resources_100_percent",
+    "//ash/resources:ash_test_resources_200_percent",
   ]
 
   if (!is_chromeos) {

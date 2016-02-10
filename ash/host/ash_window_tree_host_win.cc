@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/host/ash_window_tree_host.h"
+#include "ash/host/ash_window_tree_host_win.h"
 
 #include "base/win/windows_version.h"
 
 namespace ash {
-namespace {
 
 AshWindowTreeHostWin::AshWindowTreeHostWin(const gfx::Rect& initial_bounds)
     : AshWindowTreeHostPlatform(initial_bounds),
@@ -17,7 +16,7 @@ AshWindowTreeHostWin::AshWindowTreeHostWin(const gfx::Rect& initial_bounds)
 
 AshWindowTreeHostWin::~AshWindowTreeHostWin() {}
 
-void AshWindowTreeHostWin::ToggleFullScreen() override {
+void AshWindowTreeHostWin::ToggleFullScreen() {
   gfx::Rect target_rect;
   gfx::AcceleratedWidget hwnd = GetAcceleratedWidget();
   if (!fullscreen_) {
@@ -47,7 +46,7 @@ void AshWindowTreeHostWin::ToggleFullScreen() override {
                SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 }
 
-void AshWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) override {
+void AshWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   if (fullscreen_) {
     saved_window_rect_.right = saved_window_rect_.left + bounds.width();
     saved_window_rect_.bottom = saved_window_rect_.top + bounds.height();

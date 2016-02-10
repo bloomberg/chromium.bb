@@ -663,7 +663,7 @@
         '<@(views_sources)',
       ],
       'conditions': [
-        ['use_ash==0', {
+        ['use_aura==0', {
           'sources!': [
             'bubble/tray_bubble_view.cc',
             'bubble/tray_bubble_view.h',

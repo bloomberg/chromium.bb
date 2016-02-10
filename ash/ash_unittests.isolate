@@ -30,9 +30,10 @@
       'variables': {
         'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/chrome_200_percent.pak',
-          '<(PRODUCT_DIR)/locales/en-US.pak',
+          '<(PRODUCT_DIR)/ash_test_resources_100_percent.pak',
+          '<(PRODUCT_DIR)/ash_test_resources_200_percent.pak',
+          '<(PRODUCT_DIR)/ash_test_strings.pak',
+          # TODO(msw): Investigate under-specified DEPS (and/or unused pak?):
           '<(PRODUCT_DIR)/keyboard_resources.pak',
         ],
       },

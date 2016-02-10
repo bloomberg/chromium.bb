@@ -472,15 +472,10 @@ group("both_gn_and_gyp") {
       deps += [ "//media:ffmpeg_regression_tests" ]
     }
 
-    if (use_ash) {
+    if (use_aura) {
       deps += [
         "//ash:ash_shell_with_content",
         "//ash:ash_unittests",
-      ]
-    }
-
-    if (use_aura) {
-      deps += [
         "//ui/aura:aura_unittests",
         "//ui/aura:bench",
         "//ui/aura:demo",

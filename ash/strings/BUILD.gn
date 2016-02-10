@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
 
 grit("strings") {
   source = "../ash_strings.grd"
@@ -63,4 +64,31 @@ grit("strings") {
     "ash_strings_zh-CN.pak",
     "ash_strings_zh-TW.pak",
   ]
+}
+
+# Creates a pak file containing strings for ash_unittests, etc.
+repack("ash_test_strings") {
+  output = "$root_build_dir/ash_test_strings.pak"
+
+  sources = [
+    "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+  ]
+
+  deps = [
+    "//ash/strings",
+    "//ui/strings",
+  ]
+
+  if (is_chromeos) {
+    sources += [
+      "$root_gen_dir/device/bluetooth/strings/bluetooth_strings_en-US.pak",
+      "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
+    ]
+    deps += [
+      "//device/bluetooth/strings",
+      "//ui/chromeos/strings",
+    ]
+  }
 }

@@ -31,6 +31,7 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shelf_item_delegate.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -39,7 +40,6 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -707,7 +707,7 @@ const char*
 class ScopedTextDirectionChange {
  public:
   explicit ScopedTextDirectionChange(bool is_rtl) : is_rtl_(is_rtl) {
-    original_locale_ = l10n_util::GetApplicationLocale(std::string());
+    original_locale_ = base::i18n::GetConfiguredLocale();
     if (is_rtl_)
       base::i18n::SetICUDefaultLocale("he");
     CheckTextDirectionIsCorrect();
