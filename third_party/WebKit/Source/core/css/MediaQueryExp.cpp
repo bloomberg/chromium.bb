@@ -173,7 +173,9 @@ bool MediaQueryExp::isViewportDependent() const
         || m_mediaFeature == minAspectRatioMediaFeature
         || m_mediaFeature == devicePixelRatioMediaFeature
         || m_mediaFeature == resolutionMediaFeature
-        || m_mediaFeature == maxAspectRatioMediaFeature;
+        || m_mediaFeature == maxAspectRatioMediaFeature
+        || m_mediaFeature == maxDevicePixelRatioMediaFeature
+        || m_mediaFeature == minDevicePixelRatioMediaFeature;
 }
 
 bool MediaQueryExp::isDeviceDependent() const
