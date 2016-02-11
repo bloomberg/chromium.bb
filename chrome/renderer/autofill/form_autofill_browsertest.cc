@@ -4477,6 +4477,17 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
       {"<INPUT type='text' id='firstname'/>"
        "<INPUT type='submit' value='Send'/>",
        false, false, false},
+      // A form with one field which is password should not be extracted.
+      {"<FORM name='TestForm' action='http://buh.com' method='post'>"
+       "  <INPUT type='password' id='pw'/>"
+       "</FORM>",
+       false, true, false},
+      // A form with two fields which are passwords should be extracted.
+      {"<FORM name='TestForm' action='http://buh.com' method='post'>"
+       "  <INPUT type='password' id='pw'/>"
+       "  <INPUT type='password' id='new_pw'/>"
+       "</FORM>",
+       true, true, false},
   };
 
   for (auto test_case : test_cases) {

@@ -305,7 +305,8 @@ FormStructure::FormStructure(const FormData& form)
       was_parsed_for_autocomplete_attributes_(false),
       has_password_field_(false),
       is_form_tag_(form.is_form_tag),
-      is_formless_checkout_(form.is_formless_checkout) {
+      is_formless_checkout_(form.is_formless_checkout),
+      all_fields_are_passwords_(true) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
@@ -320,6 +321,8 @@ FormStructure::FormStructure(const FormData& form)
 
     if (field.form_control_type == "password")
       has_password_field_ = true;
+    else
+      all_fields_are_passwords_ = false;
 
     // Generate a unique name for this field by appending a counter to the name.
     // Make sure to prepend the counter with a non-numeric digit so that we are
@@ -581,6 +584,8 @@ void FormStructure::UpdateAutofillCount() {
 
 bool FormStructure::ShouldBeParsed() const {
   if (active_field_count() < kRequiredFieldsForPredictionRoutines &&
+      (!all_fields_are_passwords() ||
+       active_field_count() < kRequiredFieldsForFormsWithOnlyPasswordFields) &&
       !has_author_specified_types_) {
     return false;
   }

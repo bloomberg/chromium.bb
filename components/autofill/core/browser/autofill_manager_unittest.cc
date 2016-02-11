@@ -4417,6 +4417,19 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   autofill_driver_->SetIsOffTheRecord(false);
   EXPECT_TRUE(autofill_manager_->ShouldUploadForm(form_structure_4));
 
+  // Has one field which is a password field.
+  form.fields.clear();
+  test::CreateTestFormField("Password", "pw", "", "password", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure_5(form);
+  EXPECT_FALSE(autofill_manager_->ShouldUploadForm(form_structure_5));
+
+  // Has two fields which are password fields.
+  test::CreateTestFormField("New Password", "new_pw", "", "password", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure_6(form);
+  EXPECT_TRUE(autofill_manager_->ShouldUploadForm(form_structure_6));
+
   // Autofill disabled.
   autofill_manager_->set_autofill_enabled(false);
   EXPECT_FALSE(autofill_manager_->ShouldUploadForm(form_structure_3));

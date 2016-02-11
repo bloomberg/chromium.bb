@@ -943,7 +943,10 @@ bool AutofillManager::IsCreditCardUploadEnabled() {
 bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
   return IsAutofillEnabled() && !driver_->IsOffTheRecord() &&
          form.ShouldBeParsed() &&
-         form.active_field_count() >= kRequiredFieldsForUpload;
+         (form.active_field_count() >= kRequiredFieldsForUpload ||
+          (form.all_fields_are_passwords() &&
+           form.active_field_count() >=
+               kRequiredFieldsForFormsWithOnlyPasswordFields));
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {

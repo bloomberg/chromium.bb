@@ -313,6 +313,23 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
   // Now, no text fields.
   form_structure.reset(new FormStructure(form));
   EXPECT_FALSE(form_structure->ShouldBeParsed());
+
+  // We have only one field, which is password, should not be parsed.
+  form.fields.clear();
+  field.label = ASCIIToUTF16("Password");
+  field.name = ASCIIToUTF16("pw");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->ShouldBeParsed());
+
+  // We have two fields, which are passwords, should be parsed.
+  field.label = ASCIIToUTF16("New password");
+  field.name = ASCIIToUTF16("new_pw");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->ShouldBeParsed());
 }
 
 // Tests that ShouldBeParsed returns true for a form containing less than three

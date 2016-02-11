@@ -65,15 +65,21 @@ bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
 
   // If the form has at least one field with an autocomplete attribute, it is a
   // candidate for autofill.
+  bool all_fields_are_passwords = true;
   for (const FormFieldData& field : form.fields) {
     if (!field.autocomplete_attribute.empty())
       return true;
+    if (field.form_control_type != "password")
+      all_fields_are_passwords = false;
   }
 
   // If there are no autocomplete attributes, the form needs to have at least
   // the required number of editable fields for the prediction routines to be a
   // candidate for autofill.
-  return num_editable_elements >= kRequiredFieldsForPredictionRoutines;
+  return num_editable_elements >= kRequiredFieldsForPredictionRoutines ||
+         (all_fields_are_passwords &&
+          num_editable_elements >=
+              kRequiredFieldsForFormsWithOnlyPasswordFields);
 }
 
 }  // namespace

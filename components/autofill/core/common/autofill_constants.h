@@ -25,6 +25,10 @@ const size_t kRequiredFieldsForPredictionRoutines = 3;
 // servers.
 const size_t kRequiredFieldsForUpload = 3;
 
+// The minimum number of fields in a form that contains only password fields to
+// upload the form to and request predictions from the Autofill servers.
+const size_t kRequiredFieldsForFormsWithOnlyPasswordFields = 2;
+
 // Options bitmask values for AutofillHostMsg_ShowPasswordSuggestions IPC
 enum ShowPasswordSuggestionsOptions {
   SHOW_ALL = 1 << 0 /* show all credentials, not just ones matching username */,
