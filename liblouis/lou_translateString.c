@@ -1969,7 +1969,6 @@ markSyllables ()
 static void
 resolveEmphasisWords(
 	int *buffer,
-	const TranslationTableOffset *offset,
 	const unsigned int bit_begin,
 	const unsigned int bit_end,
 	const unsigned int bit_word,
@@ -2608,7 +2607,7 @@ markEmphases()
 		}
 	}
 	
-	resolveEmphasisWords(emphasisBuffer, &table->firstWordCaps,
+	resolveEmphasisWords(emphasisBuffer,
 	                     CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, &table->firstWordCaps,
 	                        CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
@@ -2618,7 +2617,7 @@ markEmphases()
 		return;
 		
 	if(table->emphRules[emph2Rule][wordOffset])
-		resolveEmphasisWords(emphasisBuffer, &table->emphRules[emph2Rule][firstWordOffset],
+		resolveEmphasisWords(emphasisBuffer,
 		                     UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
 	else if(table->emphRules[emph2Rule][singleLetterOffset])
 		resolveEmphasisSymbols(emphasisBuffer, &table->emphRules[emph2Rule][firstWordOffset],
@@ -2631,7 +2630,7 @@ markEmphases()
 							UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
 	*/
 	if(table->emphRules[emph3Rule][wordOffset])
-		resolveEmphasisWords(emphasisBuffer, &table->emphRules[emph3Rule][firstWordOffset],
+		resolveEmphasisWords(emphasisBuffer,
 		                     BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
 	else if(table->emphRules[emph3Rule][singleLetterOffset])
 		resolveEmphasisSymbols(emphasisBuffer, &table->emphRules[emph3Rule][firstWordOffset],
@@ -2644,7 +2643,7 @@ markEmphases()
 							BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
 	*/
 	if(table->emphRules[emph1Rule][wordOffset])
-		resolveEmphasisWords(emphasisBuffer, &table->emphRules[emph1Rule][firstWordOffset],
+		resolveEmphasisWords(emphasisBuffer,
 		                     ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
 	else if(table->emphRules[emph1Rule][singleLetterOffset])
 		resolveEmphasisSymbols(emphasisBuffer, &table->emphRules[emph1Rule][firstWordOffset],
@@ -2657,7 +2656,7 @@ markEmphases()
 							ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
 	*/
 	if(table->emphRules[emph4Rule][wordOffset])
-		resolveEmphasisWords(emphasisBuffer, &table->emphRules[emph4Rule][firstWordOffset],
+		resolveEmphasisWords(emphasisBuffer,
 		                     SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
 	else if(table->emphRules[emph4Rule][singleLetterOffset])
 		resolveEmphasisSymbols(emphasisBuffer, &table->emphRules[emph4Rule][firstWordOffset],
@@ -2682,7 +2681,6 @@ markEmphases()
 		}
 		resolveEmphasisWords(
 			transNoteBuffer,
-			offset,
 			TRANSNOTE_BEGIN << (i * 4),
 			TRANSNOTE_END << (i * 4),
 			TRANSNOTE_WORD << (i * 4),
