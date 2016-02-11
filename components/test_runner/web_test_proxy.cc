@@ -290,20 +290,6 @@ const char* WebNavigationPolicyToString(blink::WebNavigationPolicy policy) {
   }
 }
 
-std::string DumpDeepLayout(blink::WebFrame* frame,
-                           LayoutDumpFlags flags,
-                           bool recursive) {
-  std::string result = DumpLayout(frame->toWebLocalFrame(), flags);
-
-  if (recursive) {
-    for (blink::WebFrame* child = frame->firstChild(); child;
-         child = child->nextSibling())
-      result.append(DumpDeepLayout(child, flags, recursive));
-  }
-
-  return result;
-}
-
 std::string DumpAllBackForwardLists(TestInterfaces* interfaces,
                                     WebTestDelegate* delegate) {
   std::string result;
@@ -414,26 +400,6 @@ void WebTestProxyBase::ShowValidationMessage(
                           base::UTF16ToUTF8(wrapped_main_text) +
                           " sub-message=" +
                           base::UTF16ToUTF8(wrapped_sub_text) + "\n");
-}
-
-std::string WebTestProxyBase::CaptureTree(
-    bool debug_render_tree,
-    bool dump_line_box_trees) {
-  TestRunner* test_runner = test_interfaces_->GetTestRunner();
-  blink::WebFrame* frame = GetWebView()->mainFrame();
-  std::string data_utf8;
-  if (test_runner->shouldDumpAsCustomText()) {
-    // Append a newline for the test driver.
-    data_utf8 = test_interfaces_->GetTestRunner()->customDumpText() + "\n";
-  } else {
-    LayoutDumpFlags flags = test_runner->GetLayoutDumpFlags();
-    data_utf8 = DumpDeepLayout(frame, flags, flags.dump_child_frames);
-  }
-
-  if (test_interfaces_->GetTestRunner()->ShouldDumpBackForwardList())
-    data_utf8 += DumpBackForwardLists();
-
-  return data_utf8;
 }
 
 std::string WebTestProxyBase::DumpBackForwardLists() {
