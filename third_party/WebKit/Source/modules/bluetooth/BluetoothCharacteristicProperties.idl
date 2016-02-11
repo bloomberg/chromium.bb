@@ -9,6 +9,7 @@
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
+    APIExperimentEnabled=WebBluetooth,
 ] interface BluetoothCharacteristicProperties {
     readonly attribute boolean broadcast;
     readonly attribute boolean read;

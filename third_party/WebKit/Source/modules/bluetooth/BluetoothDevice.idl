@@ -15,6 +15,7 @@ enum VendorIDSource {
     GarbageCollected,
     ActiveDOMObject,
     RuntimeEnabled=WebBluetooth,
+    APIExperimentEnabled=WebBluetooth,
 ] interface BluetoothDevice : EventTarget
 // Implement ServiceEventHandlers interface: http://crbug.com/421670
 // : ServiceEventHandlers

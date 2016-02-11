@@ -7,5 +7,8 @@
 [
     RuntimeEnabled=WebBluetooth,
 ] partial interface Navigator {
-    readonly attribute Bluetooth bluetooth;
+    // Experimental Framework doesn't support adding bindings to partial
+    // interfaces yet, so we add it to the bluetooth attribute instead.
+    // https://crbug.com/585656
+    [APIExperimentEnabled=WebBluetooth] readonly attribute Bluetooth bluetooth;
 };

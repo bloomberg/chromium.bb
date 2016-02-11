@@ -10,6 +10,7 @@
     GarbageCollected,
     ActiveDOMObject,
     RuntimeEnabled=WebBluetooth,
+    APIExperimentEnabled=WebBluetooth,
 ] interface BluetoothGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {
     // TODO(ortuno): Add test to make sure service matches the service
     // used to call getCharacteristic.

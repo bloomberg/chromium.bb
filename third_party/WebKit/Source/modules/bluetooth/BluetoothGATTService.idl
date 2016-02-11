@@ -9,6 +9,7 @@
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
+    APIExperimentEnabled=WebBluetooth,
 ] interface BluetoothGATTService { // : ServiceEventHandlers {
     readonly    attribute UUID            uuid;
     readonly    attribute boolean         isPrimary;

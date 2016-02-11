@@ -9,6 +9,7 @@
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
+    APIExperimentEnabled=WebBluetooth,
 ] interface BluetoothGATTRemoteServer
 {
     readonly attribute BluetoothDevice                   device;

@@ -254,11 +254,6 @@ BluetoothDispatcherHost::BluetoothDispatcherHost(int render_process_id)
   // Bind all future weak pointers to the UI thread.
   weak_ptr_on_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
   weak_ptr_on_ui_thread_.get();  // Associates with UI thread.
-
-  if (BluetoothAdapterFactory::IsBluetoothAdapterAvailable())
-    BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothDispatcherHost::set_adapter,
-                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothDispatcherHost::OnDestruct() const {

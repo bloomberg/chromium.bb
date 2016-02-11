@@ -3027,6 +3027,7 @@ interface Navigator
     getter appCodeName
     getter appName
     getter appVersion
+    getter bluetooth
     getter cookieEnabled
     getter doNotTrack
     getter geolocation
@@ -5835,6 +5836,13 @@ interface webkitURL
     setter search
     setter username
 [GLOBAL OBJECT]
+    attribute BluetoothAdvertisingData
+    attribute BluetoothCharacteristicProperties
+    attribute BluetoothDevice
+    attribute BluetoothGATTCharacteristic
+    attribute BluetoothGATTRemoteServer
+    attribute BluetoothGATTService
+    attribute BluetoothUUID
     attribute GCController
     attribute accessibilityController
     attribute applicationCache

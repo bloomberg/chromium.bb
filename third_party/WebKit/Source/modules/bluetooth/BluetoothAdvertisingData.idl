@@ -9,6 +9,7 @@
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
+    APIExperimentEnabled=WebBluetooth,
 ] interface BluetoothAdvertisingData {
     // readonly attribute unsigned short? appearance;
     readonly attribute byte? txPower;
