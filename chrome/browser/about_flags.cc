@@ -1784,6 +1784,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-token-binding", IDS_FLAGS_ENABLE_TOKEN_BINDING_NAME,
      IDS_FLAGS_ENABLE_TOKEN_BINDING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kTokenBinding)},
+    {"enable-scroll-anchoring", IDS_FLAGS_ENABLE_SCROLL_ANCHORING_NAME,
+     IDS_FLAGS_ENABLE_SCROLL_ANCHORING_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kScrollAnchoring)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

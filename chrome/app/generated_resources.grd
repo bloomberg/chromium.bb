@@ -5894,13 +5894,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_PASSWORD_FORCE_SAVING_DESCRIPTION" desc="Description of the flag for the password manager's force-saving option.">
         Allow the user to manually enforce password saving instead of relying on password manager's heuristics.
-      </message>           
+      </message>
       <message name="IDS_FLAGS_MANUAL_PASSWORD_GENERATION_NAME" desc="Name of the flag for manual password generation.">
         Manual password generation.
       </message>
       <message name="IDS_FLAGS_MANUAL_PASSWORD_GENERATION_DESCRIPTION" desc="Description of the flag for manual password generation.">
         Allow the user to manually enforce to generate password on a password field.
-      </message>      
+      </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_LINK_NAME" desc="Name of the flag to enable showing a link to account central on password settings page">
         Remote password management link
       </message>
@@ -13573,7 +13573,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_NONE" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox is disabled">
         Please select what to share first.
-      </message>            
+      </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME" desc="Name for screens in the desktop media picker UI when there is only one monitor.">
         Entire screen
       </message>
@@ -14323,7 +14323,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_CREDENTIAL_MANAGEMENT_ACCOUNT_CHOOSER_NO_THANKS" desc="Text of the button to dismiss the account chooser.">
         No thanks
       </message>
-      
+
       <message name="IDS_ALLOW_INSECURE_LOCALHOST" desc="Name of the 'Allow insecure localhost' flag.">
         Allow invalid certificates for resources loaded from localhost.
       </message>
@@ -14691,6 +14691,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     </message>
     <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_TRIGGER_DESCRIPTION" desc="Description for the flag to trigger WebFonts User Agent Intervention always.">
       Enable to trigger User Agent Intervention for WebFonts loading always. This flag affects only when the intervention is enabled.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_SCROLL_ANCHORING_NAME" desc="Name of the scroll anchoring flag.">
+      Scroll Anchoring
+    </message>
+    <message name="IDS_FLAGS_ENABLE_SCROLL_ANCHORING_DESCRIPTION" desc="Description of the scroll anchoring flag">
+      Adjusts scroll position to prevent visible jumps when offscreen content changes.
     </message>
 
     </messages>

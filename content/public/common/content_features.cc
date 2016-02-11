@@ -23,6 +23,10 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
+const base::Feature kScrollAnchoring{"ScrollAnchoring",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables token binding
 // (https://www.ietf.org/id/draft-ietf-tokbind-protocol-04.txt).
 const base::Feature kTokenBinding{"token-binding",
