@@ -261,7 +261,7 @@ void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, con
         // When response is received with a provisional docloader, the resource haven't committed yet, and we cannot load resources, only preconnect.
         resourceLoadingPolicy = LinkLoader::DoNotLoadResources;
     }
-    LinkLoader::loadLinkFromHeader(response.httpHeaderField(HTTPNames::Link), frame()->document(), NetworkHintsInterfaceImpl(), resourceLoadingPolicy);
+    LinkLoader::loadLinkFromHeader(response.httpHeaderField(HTTPNames::Link), response.url(), frame()->document(), NetworkHintsInterfaceImpl(), resourceLoadingPolicy);
 
     if (response.hasMajorCertificateErrors())
         MixedContentChecker::handleCertificateError(frame(), response, frameType, requestContext);

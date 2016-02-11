@@ -445,7 +445,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
     m_frame->document()->initContentSecurityPolicy(m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy() : ContentSecurityPolicy::create());
     if (m_documentLoader) {
         m_frame->document()->clientHintsPreferences().updateFrom(m_documentLoader->clientHintsPreferences());
-        LinkLoader::loadLinkFromHeader(m_documentLoader->response().httpHeaderField(HTTPNames::Link), m_frame->document(), NetworkHintsInterfaceImpl(), LinkLoader::OnlyLoadResources);
+        LinkLoader::loadLinkFromHeader(m_documentLoader->response().httpHeaderField(HTTPNames::Link), m_documentLoader->response().url(),
+            m_frame->document(), NetworkHintsInterfaceImpl(), LinkLoader::OnlyLoadResources);
     }
 
     Settings* settings = m_frame->document()->settings();

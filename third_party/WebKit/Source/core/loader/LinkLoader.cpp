@@ -244,7 +244,7 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
     return document.loader()->startPreload(type, linkRequest);
 }
 
-bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* document, const NetworkHintsInterface& networkHintsInterface, CanLoadResources canLoadResources)
+bool LinkLoader::loadLinkFromHeader(const String& headerValue, const KURL& baseURL, Document* document, const NetworkHintsInterface& networkHintsInterface, CanLoadResources canLoadResources)
 {
     if (!document)
         return false;
@@ -254,7 +254,7 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
             return false;
 
         LinkRelAttribute relAttribute(header.rel());
-        KURL url = document->completeURL(header.url());
+        KURL url(baseURL, header.url());
         if (canLoadResources != OnlyLoadResources) {
             if (RuntimeEnabledFeatures::linkHeaderEnabled())
                 dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);
