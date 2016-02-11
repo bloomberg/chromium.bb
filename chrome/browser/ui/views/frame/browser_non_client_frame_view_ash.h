@@ -121,6 +121,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // need their frames painted.
   bool ShouldPaint() const;
 
+  bool IsToolbarVisible() const;
+
   // Paints the header background when the frame is in immersive fullscreen and
   // tab light bar is visible.
   void PaintImmersiveLightbarStyleHeader(gfx::Canvas* canvas);

@@ -3213,11 +3213,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
 // Test to ensure the bounds of popup, devtool, and app windows are properly
 // restored.
 IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
+  // TODO(tdanderson|pkasting): Change this to verify that the contents bounds
+  // set by params.initial_bounds are the same as the contents bounds in the
+  // initialized window. See crbug.com/585856.
   {
-    // Minimum size that a popup window should have appended to its height when
-    // drawn (popup window bounds are for the content, not the window). This is
-    // the size of the toolbar on views platforms.
-    const int minimum_popup_padding = 29;
+    // Minimum height a popup window should have added to the supplied content
+    // bounds when drawn. This accommodates the browser toolbar.
+    const int minimum_popup_padding = 27;
 
     // Creates an untrusted popup window and asserts that the eventual height is
     // padded with the toolbar and title bar height (initial height is content

@@ -688,6 +688,9 @@ void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
 }
 
 int ToolbarView::PopupTopSpacing() const {
+  if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return 0;
+
   const int kAdditionalPopupTopSpacingNonGlass = 2;
   return views::NonClientFrameView::kClientEdgeThickness +
       (GetWidget()->ShouldWindowContentsBeTransparent() ?
@@ -735,14 +738,7 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
       size.SetToMax(
           gfx::Size(0, normal_background->height() - content_shadow_height()));
     }
-  } else if (size.height() == 0) {
-    // Location mode with a 0 height location bar. If on ash, expand by one
-    // pixel to show a border in the title bar, otherwise leave the size as zero
-    // height.
-    const int kAshBorderSpacing = 1;
-    if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-      size.Enlarge(0, kAshBorderSpacing);
-  } else {
+  } else if (size.height() > 0) {
     size.Enlarge(
         0, PopupTopSpacing() + views::NonClientFrameView::kClientEdgeThickness);
   }
