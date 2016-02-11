@@ -195,7 +195,7 @@ static bool shouldScaleColumns(LayoutTable* table)
             if (cb && cb->isTableCell()
                 && (cb->style()->width().isAuto() || cb->style()->width().hasPercent())) {
                 LayoutTableCell* cell = toLayoutTableCell(cb);
-                if (cell->colSpan() > 1 || cell->table()->style()->width().isAuto())
+                if (cell->colSpan() > 1 || cell->table()->isLogicalWidthAuto())
                     scale = false;
                 else
                     table = cell->table();

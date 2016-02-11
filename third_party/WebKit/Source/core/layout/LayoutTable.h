@@ -363,6 +363,8 @@ public:
 
     void subtractCaptionRect(LayoutRect&) const;
 
+    bool isLogicalWidthAuto() const;
+
     const char* name() const override { return "LayoutTable"; }
 
 protected:

@@ -252,6 +252,12 @@ void LayoutTable::removeColumn(const LayoutTableCol*)
     setNeedsSectionRecalc();
 }
 
+bool LayoutTable::isLogicalWidthAuto() const
+{
+    Length styleLogicalWidth = style()->logicalWidth();
+    return (!styleLogicalWidth.isSpecified() || !styleLogicalWidth.isPositive()) && !styleLogicalWidth.isIntrinsic();
+}
+
 void LayoutTable::updateLogicalWidth()
 {
     recalcSectionsIfNeeded();
@@ -272,7 +278,7 @@ void LayoutTable::updateLogicalWidth()
     LayoutUnit containerWidthInInlineDirection = hasPerpendicularContainingBlock ? perpendicularContainingBlockLogicalHeight() : availableLogicalWidth;
 
     Length styleLogicalWidth = style()->logicalWidth();
-    if ((styleLogicalWidth.isSpecified() && styleLogicalWidth.isPositive()) || styleLogicalWidth.isIntrinsic()) {
+    if (!isLogicalWidthAuto()) {
         setLogicalWidth(convertStyleLogicalWidthToComputedWidth(styleLogicalWidth, containerWidthInInlineDirection));
     } else {
         // Subtract out any fixed margins from our available width for auto width tables.
