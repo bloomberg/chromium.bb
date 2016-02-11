@@ -64,11 +64,6 @@
     </message>
   </if>
 
-  <!-- Advanced Page -->
-  <message name="IDS_SETTINGS_ADVANCED" desc="Name of the settings page which displays advanced preferences.">
-    Advanced
-  </message>
-
   <!-- Appearance Page -->
   <message name="IDS_SETTINGS_APPEARANCE" desc="Name of the settings page which displays appearance preferences.">
     Appearance
@@ -107,6 +102,16 @@
     Open the wallpaper app
   </message>
 
+  <!-- Common -->
+  <message name="IDS_SETTINGS_ADVANCED" desc="Name of the settings page which displays advanced preferences.">
+    Advanced
+  </message>
+  <message name="IDS_SETTINGS_BASIC" desc="Name of the settings page which displays advanced preferences.">
+    Basic
+  </message>
+  <message name="IDS_SETTINGS_SETTINGS" desc="The settings page title.">
+    Settings
+  </message>
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">
@@ -126,11 +131,6 @@
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVED_HEADING" desc="The title for a list of username/site/password items. These items are already saved by the browser and can be deleted/edited.">
     Saved Passwords
-  </message>
-
-  <!-- Basic Page -->
-  <message name="IDS_SETTINGS_BASIC" desc="Name of the settings page which displays advanced preferences.">
-    Basic
   </message>
 
   <!-- Default Browser Page -->
@@ -477,7 +477,7 @@
   <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD" desc="Label for Add button for adding a new search engine">
     Add
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_MAKE_DEFAULT" desc="Text of the button that makes the selected endgine the default search engine">
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_MAKE_DEFAULT" desc="Text of the button that makes the selected engine the default search engine">
     Make default
   </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_EDIT" desc="Label for a button that allows the user to edit a search engine entry">
@@ -616,7 +616,7 @@
   <message name="IDS_SETTINGS_PEOPLE" desc="Name of the settings page which manages Chrome's signed-in Google profile.">
     People
   </message>
-  <message name="IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE" desc="Label for the button that opens the multi profile user manager.">
+  <message name="IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE" desc="Label for the button that opens the multi-profile user manager.">
     Manage other people
   </message>
 

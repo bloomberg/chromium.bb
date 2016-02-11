@@ -45,6 +45,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
   html_source->AddLocalizedString("cancel", IDS_CANCEL);
   html_source->AddLocalizedString("ok", IDS_OK);
+  html_source->AddLocalizedString("settings", IDS_SETTINGS_SETTINGS);
 }
 
 #if defined(OS_CHROMEOS)
