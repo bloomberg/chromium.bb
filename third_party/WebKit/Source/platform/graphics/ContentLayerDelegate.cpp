@@ -93,8 +93,14 @@ void ContentLayerDelegate::paintContents(
         || paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
 
-    m_graphicsLayer->paint(nullptr, disabledMode);
+    // Anything other than PaintDefaultBehavior is for testing. In non-testing scenarios,
+    // it is an error to call GraphicsLayer::paint. Actual painting occurs in FrameView::synchronizedPaint;
+    // this method merely copies the painted output to the WebDisplayItemList.
+    if (paintingControl != PaintDefaultBehavior)
+        m_graphicsLayer->paint(nullptr, disabledMode);
+
     paintArtifactToWebDisplayItemList(webDisplayItemList, m_graphicsLayer, paintController.paintArtifact(), paintableRegion());
+
     paintController.setDisplayItemConstructionIsDisabled(false);
     paintController.setSubsequenceCachingIsDisabled(false);
 }

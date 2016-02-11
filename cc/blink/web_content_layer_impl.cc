@@ -34,6 +34,8 @@ PaintingControlToWeb(
   switch (painting_control) {
     case cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL:
       return blink::WebContentLayerClient::PaintDefaultBehavior;
+    case cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL_FOR_TEST:
+      return blink::WebContentLayerClient::PaintDefaultBehaviorForTest;
     case cc::ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED:
       return blink::WebContentLayerClient::DisplayListConstructionDisabled;
     case cc::ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED:

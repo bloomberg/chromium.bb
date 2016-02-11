@@ -125,7 +125,7 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
        mode_index < DisplayListRecordingSource::RECORDING_MODE_COUNT;
        mode_index++) {
     ContentLayerClient::PaintingControlSetting painting_control =
-        ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
+        ContentLayerClient::PAINTING_BEHAVIOR_NORMAL_FOR_TEST;
     switch (
         static_cast<DisplayListRecordingSource::RecordingMode>(mode_index)) {
       case DisplayListRecordingSource::RECORD_NORMALLY:

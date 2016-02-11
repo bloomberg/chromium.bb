@@ -40,7 +40,10 @@ class WebDisplayItemList;
 class BLINK_PLATFORM_EXPORT WebContentLayerClient {
 public:
     enum PaintingControlSetting {
+        // Returns the last PaintArtifact produced.
         PaintDefaultBehavior,
+        // Paints the content to simulate the behavior of FrameView::synchronizedPaint.
+        PaintDefaultBehaviorForTest,
         DisplayListConstructionDisabled,
         DisplayListCachingDisabled,
         DisplayListPaintingDisabled,
