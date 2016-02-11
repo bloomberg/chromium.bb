@@ -1699,7 +1699,7 @@ template("java_library_impl") {
   }
 
   if (_supports_android) {
-    if (defined(invoker.chromium_code) && invoker.chromium_code) {
+    if (_chromium_code) {
       _final_datadeps += [ ":${_template_name}__lint" ]
       android_lint("${_template_name}__lint") {
         android_manifest = _android_manifest
