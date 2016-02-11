@@ -120,7 +120,12 @@ TEST_F(ChromeWatcherCommandLineDeathTest, HandlesLeftUntakenCausesDeath) {
 
   // Leave the handles in the interpreter and expect it to explode upon
   // destruction.
+  // String arguments aren't passed to CHECK() in official builds.
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+  EXPECT_DEATH(interpreted_.reset(), "");
+#else
   EXPECT_DEATH(interpreted_.reset(), "Handles left untaken.");
+#endif
 
   // The above call to the destructor only runs in the context of the death test
   // child process. To prevent the parent process from exploding in a similar
