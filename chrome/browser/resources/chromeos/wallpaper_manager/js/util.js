@@ -259,10 +259,6 @@ WallpaperUtil.setCustomWallpaperFromSyncFS = function(
                   console.error(chrome.runtime.lastError.message);
                   return;
                 }
-                WallpaperUtil.storeWallpaperToLocalFS(wallpaperFilename,
-                    reader.result, Constants.WallpaperDirNameEnum.ORIGINAL);
-                WallpaperUtil.storeWallpaperToLocalFS(wallpaperFilename,
-                    thumbnailData, Constants.WallpaperDirNameEnum.THUMBNAIL);
                 if (onSuccess)
                   onSuccess();
               });
@@ -310,12 +306,15 @@ WallpaperUtil.saveToSyncStorage = function(key, value, opt_callback) {
  *     the file name.
  * @param {string} layout The wallpaper layout.
  * @param {string} source The wallpaper source.
+ * @param {string} appName The third party app name. If the current wallpaper is
+ *     set by the built-in wallpaper picker, it is set to an empty string.
  */
-WallpaperUtil.saveWallpaperInfo = function(url, layout, source) {
+WallpaperUtil.saveWallpaperInfo = function(url, layout, source, appName) {
   var wallpaperInfo = {
       url: url,
       layout: layout,
-      source: source
+      source: source,
+      appName: appName,
   };
   WallpaperUtil.saveToLocalStorage(Constants.AccessLocalWallpaperInfoKey,
                               wallpaperInfo, function() {
@@ -379,8 +378,8 @@ WallpaperUtil.setOnlineWallpaper = function(url, layout, onSuccess, onFailure) {
       if (xhr.response != null) {
         chrome.wallpaperPrivate.setWallpaper(xhr.response, layout, url,
                                              onSuccess);
-        self.saveWallpaperInfo(url, layout,
-                               Constants.WallpaperSourceEnum.Online);
+        self.saveWallpaperInfo(
+            url, layout, Constants.WallpaperSourceEnum.Online, '');
       } else {
         onFailure();
       }

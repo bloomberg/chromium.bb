@@ -275,6 +275,11 @@
           {
             "name": "layout",
             "$ref": "wallpaper.WallpaperLayout"
+          },
+          {
+            "type": "string",
+            "name": "appName",
+            "description": "The third party wallpaper app name."
           }
         ]
       }

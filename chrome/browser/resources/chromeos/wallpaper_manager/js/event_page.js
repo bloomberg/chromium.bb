@@ -272,31 +272,35 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
   WallpaperUtil.enabledSyncThemesCallback(function(syncEnabled) {
     if (!syncEnabled)
       return;
-    if (detail.status == 'synced') {
-      if (detail.direction == 'remote_to_local') {
-        if (detail.action == 'added') {
-          Constants.WallpaperLocalStorage.get(
-              Constants.AccessLocalWallpaperInfoKey,
-              function(items) {
-                var localData = items[Constants.AccessLocalWallpaperInfoKey];
-                if (localData && localData.url == detail.fileEntry.name &&
-                    localData.source == Constants.WallpaperSourceEnum.Custom) {
-                  WallpaperUtil.setCustomWallpaperFromSyncFS(localData.url,
-                                                             localData.layout);
-                } else if (!localData || localData.url !=
-                           detail.fileEntry.name.replace(
-                               Constants.CustomWallpaperThumbnailSuffix, '')) {
-                  // localData might be null on a powerwashed device.
-                  WallpaperUtil.storeWallpaperFromSyncFSToLocalFS(
-                      detail.fileEntry);
-                }
-             });
-        } else if (detail.action == 'deleted') {
-          var fileName = detail.fileEntry.name.replace(
-              Constants.CustomWallpaperThumbnailSuffix, '');
-          WallpaperUtil.deleteWallpaperFromLocalFS(fileName);
+    if (detail.status != 'synced' || detail.direction != 'remote_to_local')
+      return;
+    if (detail.action == 'added') {
+      // TODO(xdai): Get rid of this setCustomWallpaperFromSyncFS logic.
+      // WallpaperInfo might have been saved in the sync filesystem before the
+      // corresonding custom wallpaper and thumbnail are saved, thus the
+      // onChanged() might not set the custom wallpaper correctly. So we need
+      // setCustomWallpaperFromSyncFS() to be called here again to make sure
+      // custom wallpaper is set.
+      Constants.WallpaperLocalStorage.get(
+          Constants.AccessLocalWallpaperInfoKey, function(items) {
+        var localData = items[Constants.AccessLocalWallpaperInfoKey];
+        if (localData &&
+            localData.url == detail.fileEntry.name &&
+            localData.source == Constants.WallpaperSourceEnum.Custom) {
+          WallpaperUtil.setCustomWallpaperFromSyncFS(localData.url,
+                                                     localData.layout);
         }
+      });
+      // We only need to store the custom wallpaper if it was set by the
+      // built-in wallpaper picker.
+      if (detail.fileEntry.name.indexOf(
+          Constants.ThirdPartyWallpaperPrefix) != 0) {
+        WallpaperUtil.storeWallpaperFromSyncFSToLocalFS(detail.fileEntry);
       }
+    } else if (detail.action == 'deleted') {
+      var fileName = detail.fileEntry.name.replace(
+          Constants.CustomWallpaperThumbnailSuffix, '');
+      WallpaperUtil.deleteWallpaperFromLocalFS(fileName);
     }
   });
 });
@@ -319,7 +323,8 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         // If the old wallpaper is a third party wallpaper we should remove it
         // from the local & sync file system to free space.
         var oldInfo = changes[Constants.AccessLocalWallpaperInfoKey].oldValue;
-        if (oldInfo.url.indexOf(Constants.ThirdPartyWallpaperPrefix) != -1) {
+        if (oldInfo &&
+            oldInfo.url.indexOf(Constants.ThirdPartyWallpaperPrefix) != -1) {
           WallpaperUtil.deleteWallpaperFromLocalFS(oldInfo.url);
           WallpaperUtil.deleteWallpaperFromSyncFS(oldInfo.url);
         }
@@ -354,7 +359,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                 // storage are the same. If the synced value changed by sync
                 // service, they may different. In that case, change wallpaper
                 // to the one saved in sync storage and update the local value.
-                if (localInfo == undefined ||
+                if (!localInfo ||
                     localInfo.url != syncInfo.url ||
                     localInfo.layout != syncInfo.layout ||
                     localInfo.source != syncInfo.source) {
@@ -409,7 +414,7 @@ chrome.alarms.onAlarm.addListener(function() {
 });
 
 chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function(
-    wallpaper, thumbnail, layout) {
+    wallpaper, thumbnail, layout, appName) {
   WallpaperUtil.saveToLocalStorage(
       Constants.AccessLocalSurpriseMeEnabledKey, false, function() {
     WallpaperUtil.saveToSyncStorage(Constants.AccessSyncSurpriseMeEnabledKey,
@@ -418,11 +423,10 @@ chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function(
   SurpriseWallpaper.getInstance().disable();
 
   // Make third party wallpaper syncable through different devices.
-  // TODO(xdai): also sync the third party app name.
   var filename = Constants.ThirdPartyWallpaperPrefix + new Date().getTime();
   var thumbnailFilename = filename + Constants.CustomWallpaperThumbnailSuffix;
   WallpaperUtil.storeWallpaperToSyncFS(filename, wallpaper);
   WallpaperUtil.storeWallpaperToSyncFS(thumbnailFilename, thumbnail);
-  WallpaperUtil.saveWallpaperInfo(filename, layout,
-                                  Constants.WallpaperSourceEnum.Custom);
+  WallpaperUtil.saveWallpaperInfo(
+      filename, layout, Constants.WallpaperSourceEnum.Custom, appName);
 });

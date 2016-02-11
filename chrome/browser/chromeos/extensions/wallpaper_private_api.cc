@@ -634,9 +634,8 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   unsafe_wallpaper_decoder_ = NULL;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  // This API is only available to the component wallpaper picker. We do not
-  // need to show the app's name if it is the component wallpaper picker. So set
-  // the pref to empty string.
+  // TODO(xdai): This preference is unused now. For compatiblity concern, we
+  // need to keep it until it's safe to clean it up.
   profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
                                  std::string());
 

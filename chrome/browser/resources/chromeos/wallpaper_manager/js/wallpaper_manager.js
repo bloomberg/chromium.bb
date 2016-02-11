@@ -285,13 +285,30 @@ function WallpaperManager(dialogDom) {
     $('set-wallpaper-layout').addEventListener(
         'change', this.onWallpaperLayoutChanged_.bind(this));
 
-    if (loadTimeData.valueExists('wallpaperAppName')) {
-      $('wallpaper-set-by-message').textContent = loadTimeData.getStringF(
-          'currentWallpaperSetByMessage', str('wallpaperAppName'));
-      $('wallpaper-grid').classList.add('small');
-    } else {
-      $('wallpaper-grid').classList.remove('small');
-    }
+    // Always prefer the value from local filesystem to avoid the time window
+    // of setting the third party app name and the third party wallpaper.
+    var getThirdPartyAppName = function(callback) {
+      Constants.WallpaperLocalStorage.get(
+          Constants.AccessLocalWallpaperInfoKey, function(items) {
+        var localInfo = items[Constants.AccessLocalWallpaperInfoKey];
+        if (localInfo && localInfo.hasOwnProperty('appName'))
+          callback(localInfo.appName);
+        else if (loadTimeData.valueExists('wallpaperAppName'))
+          callback(str('wallpaperAppName'));
+        else
+          callback('');
+      });
+    };
+
+    getThirdPartyAppName(function(appName) {
+      if (!!appName) {
+        $('wallpaper-set-by-message').textContent = loadTimeData.getStringF(
+          'currentWallpaperSetByMessage', appName);
+        $('wallpaper-grid').classList.add('small');
+      } else {
+        $('wallpaper-grid').classList.remove('small');
+      }
+    });
 
     if (this.enableOnlineWallpaper_) {
       var self = this;
@@ -415,8 +432,8 @@ function WallpaperManager(dialogDom) {
         // to be deleted.
         chrome.wallpaperPrivate.resetWallpaper();
         this.onWallpaperChanged_(null, null);
-        WallpaperUtil.saveWallpaperInfo('', '',
-                                        Constants.WallpaperSourceEnum.Default);
+        WallpaperUtil.saveWallpaperInfo(
+            '', '', Constants.WallpaperSourceEnum.Default, '');
       } else {
         selectedIndex = Math.min(selectedIndex, customWallpaperCount - 1);
         wallpaperGrid.selectionModel.selectedIndex = selectedIndex;
@@ -598,8 +615,8 @@ function WallpaperManager(dialogDom) {
         // Resets back to default wallpaper.
         chrome.wallpaperPrivate.resetWallpaper();
         this.onWallpaperChanged_(selectedItem, selectedItem.baseURL);
-        WallpaperUtil.saveWallpaperInfo(wallpaperURL, selectedItem.layout,
-                                        selectedItem.source);
+        WallpaperUtil.saveWallpaperInfo(
+            wallpaperURL, selectedItem.layout, selectedItem.source, '');
         break;
       case Constants.WallpaperSourceEnum.Online:
         var wallpaperURL = selectedItem.baseURL +
@@ -611,8 +628,8 @@ function WallpaperManager(dialogDom) {
                                                      function(exists) {
           if (exists) {
             self.onWallpaperChanged_(selectedItem, wallpaperURL);
-            WallpaperUtil.saveWallpaperInfo(wallpaperURL, selectedItem.layout,
-                                            selectedItem.source);
+            WallpaperUtil.saveWallpaperInfo(
+                wallpaperURL, selectedItem.layout, selectedItem.source, '');
             return;
           }
 
@@ -638,8 +655,8 @@ function WallpaperManager(dialogDom) {
                     self.onWallpaperChanged_(selectedItem, wallpaperURL);
                   }
                 });
-            WallpaperUtil.saveWallpaperInfo(wallpaperURL, selectedItem.layout,
-                                            selectedItem.source);
+            WallpaperUtil.saveWallpaperInfo(
+                wallpaperURL, selectedItem.layout, selectedItem.source, '');
             self.wallpaperRequest_ = null;
           };
           var onFailure = function(status) {
@@ -967,8 +984,8 @@ function WallpaperManager(dialogDom) {
         success(opt_thumbnail);
         // Custom wallpapers are not synced yet. If login on a different
         // computer after set a custom wallpaper, wallpaper wont change by sync.
-        WallpaperUtil.saveWallpaperInfo(fileName, layout,
-                                        Constants.WallpaperSourceEnum.Custom);
+        WallpaperUtil.saveWallpaperInfo(
+            fileName, layout, Constants.WallpaperSourceEnum.Custom, '');
       }
     };
 

@@ -219,20 +219,24 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
 
   // Inform the native Wallpaper Picker Application that the current wallpaper
   // has been modified by a third party application.
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->Append(original_result);
-  event_args->Append(thumbnail_result);
-  event_args->Append(new base::StringValue(
-      extensions::api::wallpaper::ToString(params_->details.layout)));
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
-      extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
-          kEventName,
-      std::move(event_args)));
-  event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
-                                         std::move(event));
+  if (extension()->id() != extension_misc::kWallpaperManagerId) {
+    Profile* profile = Profile::FromBrowserContext(browser_context());
+    extensions::EventRouter* event_router =
+        extensions::EventRouter::Get(profile);
+    scoped_ptr<base::ListValue> event_args(new base::ListValue());
+    event_args->Append(original_result);
+    event_args->Append(thumbnail_result);
+    event_args->Append(new base::StringValue(
+        extensions::api::wallpaper::ToString(params_->details.layout)));
+    event_args->Append(new base::StringValue(extension()->name()));
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
+        extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
+            kEventName,
+        std::move(event_args)));
+    event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
+                                           std::move(event));
+  }
 }
 
 void WallpaperSetWallpaperFunction::OnWallpaperFetched(
