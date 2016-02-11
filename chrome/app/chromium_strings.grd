@@ -221,8 +221,8 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Chromium OS open source licenses
         </message>
       </if>
-      <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
-        Not used in Chromium. Placeholder to keep resource maps in sync. It expects one argument: $1.
+      <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box." translateable="false">
+        Not used in Chromium. Placeholder to keep resource maps in sync. It expects one argument: <ph name="ARGUMENT">$1</ph>.
       </message>
       <if expr="is_linux and not chromeos">
         <!-- These messages are not actually used, but they are here as placeholders to match the Chrome messages. -->
