@@ -21,6 +21,7 @@ import logging
 import re
 import socket
 import ssl
+import StringIO
 import sys
 import time
 import urllib
@@ -409,23 +410,20 @@ class Rietveld(object):
         if m:
           # Fake an HTTPError exception. Cheezy. :(
           raise urllib2.HTTPError(
-              request_path, int(m.group(1)), msg, None, None)
+              request_path, int(m.group(1)), msg, None, StringIO.StringIO())
         old_error_exit(msg)
       upload.ErrorExit = trap_http_500
 
       for retry in xrange(self._maxtries):
         try:
           logging.debug('%s' % request_path)
-          result = self.rpc_server.Send(request_path, **kwargs)
-          # Sometimes GAE returns a HTTP 200 but with HTTP 500 as the content.
-          # How nice.
-          return result
+          return self.rpc_server.Send(request_path, **kwargs)
         except urllib2.HTTPError, e:
           if retry >= (self._maxtries - 1):
             raise
-          flake_codes = [500, 502, 503]
+          flake_codes = {500, 502, 503}
           if retry_on_404:
-            flake_codes.append(404)
+            flake_codes.add(404)
           if e.code not in flake_codes:
             raise
         except urllib2.URLError, e:
@@ -440,10 +438,10 @@ class Rietveld(object):
             # The reason can be a string or another exception, e.g.,
             # socket.error or whatever else.
             reason_as_str = str(e.reason)
-            for retry_anyway in [
+            for retry_anyway in (
                 'Name or service not known',
                 'EOF occurred in violation of protocol',
-                'timed out']:
+                'timed out'):
               if retry_anyway in reason_as_str:
                 return True
             return False  # Assume permanent otherwise.
@@ -528,6 +526,11 @@ class OAuthRpcServer(object):
       payload: request is a POST if not None, GET otherwise
       timeout: in seconds
       extra_headers: (dict)
+
+    Returns: the HTTP response body as a string
+
+    Raises:
+      urllib2.HTTPError
     """
     # This method signature should match upload.py:AbstractRpcServer.Send()
     method = 'GET'
@@ -543,7 +546,6 @@ class OAuthRpcServer(object):
     try:
       if timeout:
         self._http.timeout = timeout
-      # TODO(pgervais) implement some kind of retry mechanism (see upload.py).
       url = self.host + request_path
       if kwargs:
         url += "?" + urllib.urlencode(kwargs)
@@ -571,6 +573,11 @@ class OAuthRpcServer(object):
           self.creds.access_token = None
           continue
         break
+
+      if ret[0].status >= 300:
+        raise urllib2.HTTPError(
+            request_path, int(ret[0]['status']), ret[1], None,
+            StringIO.StringIO())
 
       return ret[1]
 
