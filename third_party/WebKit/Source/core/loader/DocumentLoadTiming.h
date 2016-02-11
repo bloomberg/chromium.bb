@@ -79,6 +79,7 @@ private:
     void setRedirectStart(double);
     void markRedirectEnd();
     void notifyDocumentTimingChanged();
+    void ensureReferenceTimesSet();
     LocalFrame* frame() const;
 
     double m_referenceMonotonicTime;

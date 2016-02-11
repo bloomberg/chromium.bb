@@ -57,6 +57,7 @@ DEFINE_TRACE(DocumentLoadTiming)
     visitor->trace(m_documentLoader);
 }
 
+// TODO(csharrison): Remove the null checking logic in a later patch.
 LocalFrame* DocumentLoadTiming::frame() const
 {
     return m_documentLoader ? m_documentLoader->frame() : nullptr;
@@ -66,6 +67,14 @@ void DocumentLoadTiming::notifyDocumentTimingChanged()
 {
     if (m_documentLoader)
         m_documentLoader->didChangePerformanceTiming();
+}
+
+void DocumentLoadTiming::ensureReferenceTimesSet()
+{
+    if (!m_referenceWallTime)
+        m_referenceWallTime = currentTime();
+    if (!m_referenceMonotonicTime)
+        m_referenceMonotonicTime = monotonicallyIncreasingTime();
 }
 
 double DocumentLoadTiming::monotonicTimeToZeroBasedDocumentTime(double monotonicTime) const
@@ -98,26 +107,24 @@ void DocumentLoadTiming::markNavigationStart()
         return;
     }
     ASSERT(!m_navigationStart && !m_referenceMonotonicTime && !m_referenceWallTime);
-
-    m_navigationStart = m_referenceMonotonicTime = monotonicallyIncreasingTime();
-    m_referenceWallTime = currentTime();
+    ensureReferenceTimesSet();
+    m_navigationStart = m_referenceMonotonicTime;
     TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "navigationStart", m_navigationStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::setNavigationStart(double navigationStart)
 {
+    // |m_referenceMonotonicTime| and |m_referenceWallTime| represent
+    // navigationStart. We must set these to the current time if they haven't
+    // been set yet in order to have a valid reference time in both units.
+    ensureReferenceTimesSet();
     m_navigationStart = navigationStart;
     TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "navigationStart", m_navigationStart, "frame", frame());
 
-    // |m_referenceMonotonicTime| and |m_referenceWallTime| represent
-    // navigationStart. When the embedder sets navigationStart (because the
-    // navigation started earlied on the browser side), we need to adjust these
-    // as well.
-    if (!m_referenceWallTime)
-        m_referenceWallTime = currentTime();
-    else
-        m_referenceWallTime = monotonicTimeToPseudoWallTime(navigationStart);
+    // The reference times are adjusted based on the embedder's navigationStart.
+    ASSERT(m_referenceMonotonicTime && m_referenceWallTime);
+    m_referenceWallTime = monotonicTimeToPseudoWallTime(navigationStart);
     m_referenceMonotonicTime = navigationStart;
     notifyDocumentTimingChanged();
 }
