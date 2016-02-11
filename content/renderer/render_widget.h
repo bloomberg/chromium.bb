@@ -23,6 +23,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input/synthetic_gesture_params.h"
+#include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -85,6 +86,7 @@ class ImeEventGuard;
 class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderWidgetCompositor;
+class RenderWidgetScreenMetricsEmulator;
 class ResizingModeSelector;
 struct ContextMenuParams;
 struct DidOverscrollParams;
@@ -105,6 +107,7 @@ class CONTENT_EXPORT RenderWidget
       NON_EXPORTED_BASE(virtual public blink::WebWidgetClient),
       public RenderWidgetCompositorDelegate,
       public RenderWidgetInputHandlerDelegate,
+      public RenderWidgetScreenMetricsEmulatorDelegate,
       public base::RefCounted<RenderWidget> {
  public:
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
@@ -131,7 +134,7 @@ class CONTENT_EXPORT RenderWidget
 
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
   blink::WebWidget* webwidget() const { return webwidget_; }
-  gfx::Size size() const { return size_; }
+  const gfx::Size& size() const { return size_; }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   blink::WebDisplayMode display_mode() const { return display_mode_; }
   bool is_hidden() const { return is_hidden_; }
@@ -209,6 +212,15 @@ class CONTENT_EXPORT RenderWidget
                             ChangeSource change_source) override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
+
+  // RenderWidgetScreenMetricsDelegate
+  void Redraw() override;
+  void Resize(const ResizeParams& resize_params) override;
+  void SetScreenMetricsEmulationParameters(
+      bool enabled,
+      const blink::WebDeviceEmulationParams& params) override;
+  void SetScreenRects(const gfx::Rect& view_screen_rect,
+                      const gfx::Rect& window_screen_rect) override;
 
   // blink::WebWidgetClient
   void didAutoResize(const blink::WebSize& new_size) override;
@@ -312,13 +324,9 @@ class CONTENT_EXPORT RenderWidget
   // Returns whether we currently should handle an IME event.
   bool ShouldHandleImeEvent();
 
-  // ScreenMetricsEmulator class manages screen emulation inside a render
-  // widget. This includes resizing, placing view on the screen at desired
-  // position, changing device scale factor, and scaling down the whole
-  // widget if required to fit into the browser window.
-  class ScreenMetricsEmulator;
+  void SetPopupOriginAdjustmentsForEmulation(
+      RenderWidgetScreenMetricsEmulator* emulator);
 
-  void SetPopupOriginAdjustmentsForEmulation(ScreenMetricsEmulator* emulator);
   gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
 
 
@@ -394,24 +402,12 @@ class CONTENT_EXPORT RenderWidget
   // Close the underlying WebWidget.
   virtual void Close();
 
-  // Resizes the render widget.
-  void Resize(const gfx::Size& new_size,
-              const gfx::Size& physical_backing_size,
-              bool top_controls_shrink_blink_size,
-              float top_controls_height,
-              const gfx::Size& visible_viewport_size,
-              const gfx::Rect& resizer_rect,
-              bool is_fullscreen_granted,
-              blink::WebDisplayMode display_mode,
-              ResizeAck resize_ack);
   // Used to force the size of a window when running layout tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
-  virtual void SetScreenMetricsEmulationParameters(
-      bool enabled,
-      const blink::WebDeviceEmulationParams& params);
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void SetExternalPopupOriginAdjustmentsForEmulation(
-      ExternalPopupMenu* popup, ScreenMetricsEmulator* emulator);
+      ExternalPopupMenu* popup,
+      RenderWidgetScreenMetricsEmulator* emulator);
 #endif
 
   // RenderWidget IPC message handlers
@@ -730,7 +726,7 @@ class CONTENT_EXPORT RenderWidget
   std::deque<blink::WebTextInputInfo> text_input_info_history_;
 #endif
 
-  scoped_ptr<ScreenMetricsEmulator> screen_metrics_emulator_;
+  scoped_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
 
   // Popups may be displaced when screen metrics emulation is enabled.
   // These values are used to properly adjust popup position.

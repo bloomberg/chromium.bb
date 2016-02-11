@@ -2533,15 +2533,18 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
   webview()->disableAutoResizeMode();
 
   if (!new_size.IsEmpty()) {
-    Resize(new_size,
-           physical_backing_size_,
-           top_controls_shrink_blink_size_,
-           top_controls_height_,
-           visible_viewport_size_,
-           resizer_rect_,
-           is_fullscreen_granted_,
-           display_mode_,
-           NO_RESIZE_ACK);
+    ResizeParams resize_params;
+    resize_params.new_size = new_size;
+    resize_params.physical_backing_size = physical_backing_size_;
+    resize_params.top_controls_shrink_blink_size =
+        top_controls_shrink_blink_size_;
+    resize_params.top_controls_height = top_controls_height_;
+    resize_params.visible_viewport_size = visible_viewport_size_;
+    resize_params.resizer_rect = resizer_rect_;
+    resize_params.is_fullscreen_granted = is_fullscreen_granted();
+    resize_params.display_mode = display_mode_;
+    resize_params.needs_resize_ack = false;
+    Resize(resize_params);
   }
 }
 

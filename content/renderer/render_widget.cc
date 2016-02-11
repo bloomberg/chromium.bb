@@ -41,6 +41,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/renderer/cursor_utils.h"
+#include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/delegated_compositor_output_surface.h"
@@ -201,244 +202,6 @@ content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
 }  // namespace
 
 namespace content {
-
-// RenderWidget::ScreenMetricsEmulator ----------------------------------------
-
-class RenderWidget::ScreenMetricsEmulator {
- public:
-  ScreenMetricsEmulator(
-      RenderWidget* widget,
-      const WebDeviceEmulationParams& params);
-  virtual ~ScreenMetricsEmulator();
-
-  // Scale and offset used to convert between host coordinates
-  // and webwidget coordinates.
-  float scale() { return scale_; }
-  gfx::PointF offset() { return offset_; }
-  gfx::Rect applied_widget_rect() const { return applied_widget_rect_; }
-  gfx::Rect original_screen_rect() const { return original_view_screen_rect_; }
-  const WebScreenInfo& original_screen_info() { return original_screen_info_; }
-
-  void ChangeEmulationParams(
-      const WebDeviceEmulationParams& params);
-
-  // The following methods alter handlers' behavior for messages related to
-  // widget size and position.
-  void OnResizeMessage(const ResizeParams& params);
-  void OnUpdateScreenRectsMessage(const gfx::Rect& view_screen_rect,
-                                  const gfx::Rect& window_screen_rect);
-  void OnShowContextMenu(ContextMenuParams* params);
-  gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
-
- private:
-  void Reapply();
-  void Apply(bool top_controls_shrink_blink_size,
-             float top_controls_height,
-             gfx::Rect resizer_rect,
-             bool is_fullscreen_granted,
-             blink::WebDisplayMode display_mode);
-
-  RenderWidget* widget_;
-
-  // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.
-  WebDeviceEmulationParams params_;
-
-  // The computed scale and offset used to fit widget into browser window.
-  float scale_;
-  gfx::PointF offset_;
-
-  // Widget rect as passed to webwidget.
-  gfx::Rect applied_widget_rect_;
-
-  // Original values to restore back after emulation ends.
-  gfx::Size original_size_;
-  gfx::Size original_physical_backing_size_;
-  gfx::Size original_visible_viewport_size_;
-  blink::WebScreenInfo original_screen_info_;
-  gfx::Rect original_view_screen_rect_;
-  gfx::Rect original_window_screen_rect_;
-};
-
-RenderWidget::ScreenMetricsEmulator::ScreenMetricsEmulator(
-    RenderWidget* widget,
-    const WebDeviceEmulationParams& params)
-    : widget_(widget),
-      params_(params),
-      scale_(1.f) {
-  original_size_ = widget_->size_;
-  original_physical_backing_size_ = widget_->physical_backing_size_;
-  original_visible_viewport_size_ = widget_->visible_viewport_size_;
-  original_screen_info_ = widget_->screen_info_;
-  original_view_screen_rect_ = widget_->view_screen_rect_;
-  original_window_screen_rect_ = widget_->window_screen_rect_;
-  Apply(widget_->top_controls_shrink_blink_size_,
-        widget_->top_controls_height_,
-        widget_->resizer_rect_,
-        widget_->is_fullscreen_granted_,
-        widget_->display_mode_);
-}
-
-RenderWidget::ScreenMetricsEmulator::~ScreenMetricsEmulator() {
-  widget_->screen_info_ = original_screen_info_;
-
-  widget_->SetDeviceScaleFactor(original_screen_info_.deviceScaleFactor);
-  widget_->SetScreenMetricsEmulationParameters(false, params_);
-  widget_->view_screen_rect_ = original_view_screen_rect_;
-  widget_->window_screen_rect_ = original_window_screen_rect_;
-  widget_->Resize(original_size_,
-                  original_physical_backing_size_,
-                  widget_->top_controls_shrink_blink_size_,
-                  widget_->top_controls_height_,
-                  original_visible_viewport_size_,
-                  widget_->resizer_rect_,
-                  widget_->is_fullscreen_granted_,
-                  widget_->display_mode_,
-                  NO_RESIZE_ACK);
-}
-
-void RenderWidget::ScreenMetricsEmulator::ChangeEmulationParams(
-    const WebDeviceEmulationParams& params) {
-  params_ = params;
-  Reapply();
-}
-
-void RenderWidget::ScreenMetricsEmulator::Reapply() {
-  Apply(widget_->top_controls_shrink_blink_size_,
-        widget_->top_controls_height_,
-        widget_->resizer_rect_,
-        widget_->is_fullscreen_granted_,
-        widget_->display_mode_);
-}
-
-void RenderWidget::ScreenMetricsEmulator::Apply(
-    bool top_controls_shrink_blink_size,
-    float top_controls_height,
-    gfx::Rect resizer_rect,
-    bool is_fullscreen_granted,
-    blink::WebDisplayMode display_mode) {
-  applied_widget_rect_.set_size(gfx::Size(params_.viewSize));
-  if (!applied_widget_rect_.width())
-    applied_widget_rect_.set_width(original_size_.width());
-  if (!applied_widget_rect_.height())
-    applied_widget_rect_.set_height(original_size_.height());
-
-  if (params_.fitToView && !original_size_.IsEmpty()) {
-    int original_width = std::max(original_size_.width(), 1);
-    int original_height = std::max(original_size_.height(), 1);
-    float width_ratio =
-        static_cast<float>(applied_widget_rect_.width()) / original_width;
-    float height_ratio =
-        static_cast<float>(applied_widget_rect_.height()) / original_height;
-    float ratio = std::max(1.0f, std::max(width_ratio, height_ratio));
-    scale_ = 1.f / ratio;
-
-    // Center emulated view inside available view space.
-    offset_.set_x(
-        (original_size_.width() - scale_ * applied_widget_rect_.width()) / 2);
-    offset_.set_y(
-        (original_size_.height() - scale_ * applied_widget_rect_.height()) / 2);
-  } else {
-    scale_ = params_.scale;
-    offset_.SetPoint(params_.offset.x, params_.offset.y);
-    if (!params_.viewSize.width && !params_.viewSize.height && scale_) {
-      applied_widget_rect_.set_size(gfx::ScaleToRoundedSize(
-          original_size_, 1.f / scale_));
-    }
-  }
-
-  if (params_.screenPosition == WebDeviceEmulationParams::Desktop) {
-    applied_widget_rect_.set_origin(original_view_screen_rect_.origin());
-    widget_->screen_info_.rect = original_screen_info_.rect;
-    widget_->screen_info_.availableRect = original_screen_info_.availableRect;
-    widget_->window_screen_rect_ = original_window_screen_rect_;
-  } else {
-    applied_widget_rect_.set_origin(params_.viewPosition);
-    gfx::Rect screen_rect = applied_widget_rect_;
-    if (!params_.screenSize.isEmpty()) {
-      screen_rect =
-          gfx::Rect(0, 0, params_.screenSize.width, params_.screenSize.height);
-    }
-    widget_->screen_info_.rect = screen_rect;
-    widget_->screen_info_.availableRect = screen_rect;
-    widget_->window_screen_rect_ = applied_widget_rect_;
-  }
-
-  float applied_device_scale_factor = params_.deviceScaleFactor ?
-      params_.deviceScaleFactor : original_screen_info_.deviceScaleFactor;
-  widget_->screen_info_.deviceScaleFactor = applied_device_scale_factor;
-
-  // Pass three emulation parameters to the blink side:
-  // - we keep the real device scale factor in compositor to produce sharp image
-  //   even when emulating different scale factor;
-  // - in order to fit into view, WebView applies offset and scale to the
-  //   root layer.
-  blink::WebDeviceEmulationParams modified_params = params_;
-  modified_params.deviceScaleFactor = original_screen_info_.deviceScaleFactor;
-  modified_params.offset = blink::WebFloatPoint(offset_.x(), offset_.y());
-  modified_params.scale = scale_;
-  widget_->SetScreenMetricsEmulationParameters(true, modified_params);
-
-  widget_->SetDeviceScaleFactor(applied_device_scale_factor);
-  widget_->view_screen_rect_ = applied_widget_rect_;
-
-  gfx::Size physical_backing_size = gfx::ScaleToCeiledSize(
-      original_size_, original_screen_info_.deviceScaleFactor);
-  widget_->Resize(applied_widget_rect_.size(),
-                  physical_backing_size,
-                  top_controls_shrink_blink_size,
-                  top_controls_height,
-                  applied_widget_rect_.size(),
-                  resizer_rect,
-                  is_fullscreen_granted,
-                  display_mode,
-                  NO_RESIZE_ACK);
-}
-
-void RenderWidget::ScreenMetricsEmulator::OnResizeMessage(
-    const ResizeParams& params) {
-  bool need_ack = params.new_size != original_size_ &&
-      !params.new_size.IsEmpty() && !params.physical_backing_size.IsEmpty();
-  original_size_ = params.new_size;
-  original_physical_backing_size_ = params.physical_backing_size;
-  original_screen_info_ = params.screen_info;
-  original_visible_viewport_size_ = params.visible_viewport_size;
-  Apply(params.top_controls_shrink_blink_size,
-        params.top_controls_height,
-        params.resizer_rect,
-        params.is_fullscreen_granted,
-        params.display_mode);
-
-  if (need_ack) {
-    widget_->set_next_paint_is_resize_ack();
-    if (widget_->compositor_)
-      widget_->compositor_->SetNeedsRedrawRect(gfx::Rect(widget_->size_));
-  }
-}
-
-void RenderWidget::ScreenMetricsEmulator::OnUpdateScreenRectsMessage(
-    const gfx::Rect& view_screen_rect,
-    const gfx::Rect& window_screen_rect) {
-  original_view_screen_rect_ = view_screen_rect;
-  original_window_screen_rect_ = window_screen_rect;
-  if (params_.screenPosition == WebDeviceEmulationParams::Desktop)
-    Reapply();
-}
-
-void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
-    ContextMenuParams* params) {
-  params->x *= scale_;
-  params->x += offset_.x();
-  params->y *= scale_;
-  params->y += offset_.y();
-}
-
-gfx::Rect RenderWidget::ScreenMetricsEmulator::AdjustValidationMessageAnchor(
-    const gfx::Rect& anchor) {
-  gfx::Rect scaled = gfx::ScaleToEnclosedRect(anchor, scale_);
-  scaled.set_x(scaled.x() + offset_.x());
-  scaled.set_y(scaled.y() + offset_.y());
-  return scaled;
-}
 
 // RenderWidget ---------------------------------------------------------------
 
@@ -653,7 +416,7 @@ void RenderWidget::WasSwappedOut() {
 }
 
 void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
-    ScreenMetricsEmulator* emulator) {
+    RenderWidgetScreenMetricsEmulator* emulator) {
   popup_origin_scale_for_emulation_ = emulator->scale();
   popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
   popup_screen_origin_for_emulation_ = gfx::Point(
@@ -669,16 +432,10 @@ gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
   return anchor;
 }
 
-void RenderWidget::SetScreenMetricsEmulationParameters(
-    bool enabled,
-    const blink::WebDeviceEmulationParams& params) {
-  // This is only supported in RenderView.
-  NOTREACHED();
-}
-
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
-    ExternalPopupMenu* popup, ScreenMetricsEmulator* emulator) {
+    ExternalPopupMenu* popup,
+    RenderWidgetScreenMetricsEmulator* emulator) {
   popup->SetOriginScaleAndOffsetForEmulation(
       emulator->scale(), emulator->offset());
 }
@@ -745,97 +502,21 @@ bool RenderWidget::Send(IPC::Message* message) {
   return RenderThread::Get()->Send(message);
 }
 
-void RenderWidget::Resize(const gfx::Size& new_size,
-                          const gfx::Size& physical_backing_size,
-                          bool top_controls_shrink_blink_size,
-                          float top_controls_height,
-                          const gfx::Size& visible_viewport_size,
-                          const gfx::Rect& resizer_rect,
-                          bool is_fullscreen_granted,
-                          blink::WebDisplayMode display_mode,
-                          const ResizeAck resize_ack) {
-  if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
-    // A resize ack shouldn't be requested if we have not ACK'd the previous
-    // one.
-    DCHECK(resize_ack != SEND_RESIZE_ACK || !next_paint_is_resize_ack());
-    DCHECK(resize_ack == SEND_RESIZE_ACK || resize_ack == NO_RESIZE_ACK);
-  }
-
-  // Ignore this during shutdown.
-  if (!webwidget_)
-    return;
-
-  if (compositor_)
-    compositor_->setViewportSize(physical_backing_size);
-
-  bool resized = size_ != new_size ||
-      physical_backing_size_ != physical_backing_size;
-
-  size_ = new_size;
-  physical_backing_size_ = physical_backing_size;
-
-  top_controls_shrink_blink_size_ = top_controls_shrink_blink_size;
-  top_controls_height_ = top_controls_height;
-  visible_viewport_size_ = visible_viewport_size;
-  resizer_rect_ = resizer_rect;
-
-  // NOTE: We may have entered fullscreen mode without changing our size.
-  bool fullscreen_change = is_fullscreen_granted_ != is_fullscreen_granted;
-  is_fullscreen_granted_ = is_fullscreen_granted;
-  display_mode_ = display_mode;
-
-  webwidget_->setTopControlsHeight(top_controls_height,
-                                   top_controls_shrink_blink_size_);
-
-  if (resized) {
-    gfx::Size new_widget_size =
-        IsUseZoomForDSFEnabled() ?  physical_backing_size_ : size_;
-    // When resizing, we want to wait to paint before ACK'ing the resize.  This
-    // ensures that we only resize as fast as we can paint.  We only need to
-    // send an ACK if we are resized to a non-empty rect.
-    webwidget_->resize(new_widget_size);
-  }
-  WebSize visual_viewport_size;
-
-  if (IsUseZoomForDSFEnabled()) {
-    visual_viewport_size =
-        gfx::ScaleToCeiledSize(visible_viewport_size, device_scale_factor_);
-  } else {
-    visual_viewport_size = visible_viewport_size_;
-  }
-
-  webwidget()->resizeVisualViewport(visual_viewport_size);
-
-  if (new_size.IsEmpty() || physical_backing_size.IsEmpty()) {
-    // In this case there is no paint/composite and therefore no
-    // ViewHostMsg_UpdateRect to send the resize ack with. We'd need to send the
-    // ack through a fake ViewHostMsg_UpdateRect or a different message.
-    DCHECK_EQ(resize_ack, NO_RESIZE_ACK);
-  }
-
-  // Send the Resize_ACK flag once we paint again if requested.
-  if (resize_ack == SEND_RESIZE_ACK)
-    set_next_paint_is_resize_ack();
-
-  if (fullscreen_change)
-    DidToggleFullscreen();
-
-  // If a resize ack is requested and it isn't set-up, then no more resizes will
-  // come in and in general things will go wrong.
-  DCHECK(resize_ack != SEND_RESIZE_ACK || next_paint_is_resize_ack());
-}
-
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
-  Resize(new_window_rect.size(),
-         gfx::ScaleToCeiledSize(new_window_rect.size(), device_scale_factor_),
-         top_controls_shrink_blink_size_,
-         top_controls_height_,
-         new_window_rect.size(),
-         gfx::Rect(),
-         is_fullscreen_granted_,
-         display_mode_,
-         NO_RESIZE_ACK);
+  ResizeParams params;
+  params.new_size = new_window_rect.size();
+  params.physical_backing_size =
+      gfx::ScaleToCeiledSize(new_window_rect.size(), device_scale_factor_);
+  params.top_controls_shrink_blink_size = top_controls_shrink_blink_size_;
+  params.top_controls_height = top_controls_height_;
+  params.visible_viewport_size = new_window_rect.size();
+  params.resizer_rect = gfx::Rect();
+  params.is_fullscreen_granted = is_fullscreen_granted_;
+  params.display_mode = display_mode_;
+  params.needs_resize_ack = false;
+  Resize(params);
+
   view_screen_rect_ = new_window_rect;
   window_screen_rect_ = new_window_rect;
   if (!did_show_)
@@ -881,24 +562,14 @@ void RenderWidget::OnResize(const ResizeParams& params) {
     return;
 
   if (screen_metrics_emulator_) {
-    screen_metrics_emulator_->OnResizeMessage(params);
+    screen_metrics_emulator_->OnResize(params);
     return;
   }
 
   bool orientation_changed =
       screen_info_.orientationAngle != params.screen_info.orientationAngle;
 
-  screen_info_ = params.screen_info;
-  SetDeviceScaleFactor(screen_info_.deviceScaleFactor);
-  Resize(params.new_size,
-         params.physical_backing_size,
-         params.top_controls_shrink_blink_size,
-         params.top_controls_height,
-         params.visible_viewport_size,
-         params.resizer_rect,
-         params.is_fullscreen_granted,
-         params.display_mode,
-         params.needs_resize_ack ? SEND_RESIZE_ACK : NO_RESIZE_ACK);
+  Resize(params);
 
   if (orientation_changed)
     OnOrientationChange();
@@ -906,10 +577,23 @@ void RenderWidget::OnResize(const ResizeParams& params) {
 
 void RenderWidget::OnEnableDeviceEmulation(
    const blink::WebDeviceEmulationParams& params) {
-  if (!screen_metrics_emulator_)
-    screen_metrics_emulator_.reset(new ScreenMetricsEmulator(this, params));
-  else
+  if (!screen_metrics_emulator_) {
+    ResizeParams resize_params;
+    resize_params.new_size = size_;
+    resize_params.physical_backing_size = physical_backing_size_;
+    resize_params.visible_viewport_size = visible_viewport_size_;
+    resize_params.screen_info = screen_info_;
+    resize_params.top_controls_shrink_blink_size =
+        top_controls_shrink_blink_size_;
+    resize_params.top_controls_height = top_controls_height_;
+    resize_params.resizer_rect = resizer_rect_;
+    resize_params.is_fullscreen_granted = is_fullscreen_granted_;
+    resize_params.display_mode = display_mode_;
+    screen_metrics_emulator_.reset(new RenderWidgetScreenMetricsEmulator(
+        this, params, resize_params, view_screen_rect_, window_screen_rect_));
+  } else {
     screen_metrics_emulator_->ChangeEmulationParams(params);
+  }
 }
 
 void RenderWidget::OnDisableDeviceEmulation() {
@@ -1354,6 +1038,103 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// RenderWidgetScreenMetricsDelegate
+
+void RenderWidget::Redraw() {
+  set_next_paint_is_resize_ack();
+  if (compositor_)
+    compositor_->SetNeedsRedrawRect(gfx::Rect(size_));
+}
+
+void RenderWidget::Resize(const ResizeParams& params) {
+  screen_info_ = params.screen_info;
+  SetDeviceScaleFactor(screen_info_.deviceScaleFactor);
+
+  if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
+    // A resize ack shouldn't be requested if we have not ACK'd the previous
+    // one.
+    DCHECK(!params.needs_resize_ack || !next_paint_is_resize_ack());
+  }
+
+  // Ignore this during shutdown.
+  if (!webwidget_)
+    return;
+
+  if (compositor_)
+    compositor_->setViewportSize(params.physical_backing_size);
+
+  bool resized = size_ != params.new_size ||
+                 physical_backing_size_ != params.physical_backing_size;
+
+  size_ = params.new_size;
+  physical_backing_size_ = params.physical_backing_size;
+
+  top_controls_shrink_blink_size_ = params.top_controls_shrink_blink_size;
+  top_controls_height_ = params.top_controls_height;
+  visible_viewport_size_ = params.visible_viewport_size;
+  resizer_rect_ = params.resizer_rect;
+
+  // NOTE: We may have entered fullscreen mode without changing our size.
+  bool fullscreen_change =
+      is_fullscreen_granted_ != params.is_fullscreen_granted;
+  is_fullscreen_granted_ = params.is_fullscreen_granted;
+  display_mode_ = params.display_mode;
+
+  webwidget_->setTopControlsHeight(params.top_controls_height,
+                                   top_controls_shrink_blink_size_);
+
+  if (resized) {
+    gfx::Size new_widget_size =
+        IsUseZoomForDSFEnabled() ? physical_backing_size_ : size_;
+    // When resizing, we want to wait to paint before ACK'ing the resize.  This
+    // ensures that we only resize as fast as we can paint.  We only need to
+    // send an ACK if we are resized to a non-empty rect.
+    webwidget_->resize(new_widget_size);
+  }
+  WebSize visual_viewport_size;
+
+  if (IsUseZoomForDSFEnabled()) {
+    visual_viewport_size = gfx::ScaleToCeiledSize(params.visible_viewport_size,
+                                                  device_scale_factor_);
+  } else {
+    visual_viewport_size = visible_viewport_size_;
+  }
+
+  webwidget()->resizeVisualViewport(visual_viewport_size);
+
+  if (params.new_size.IsEmpty() || params.physical_backing_size.IsEmpty()) {
+    // In this case there is no paint/composite and therefore no
+    // ViewHostMsg_UpdateRect to send the resize ack with. We'd need to send the
+    // ack through a fake ViewHostMsg_UpdateRect or a different message.
+    DCHECK(!params.needs_resize_ack);
+  }
+
+  // Send the Resize_ACK flag once we paint again if requested.
+  if (params.needs_resize_ack)
+    set_next_paint_is_resize_ack();
+
+  if (fullscreen_change)
+    DidToggleFullscreen();
+
+  // If a resize ack is requested and it isn't set-up, then no more resizes will
+  // come in and in general things will go wrong.
+  DCHECK(!params.needs_resize_ack || next_paint_is_resize_ack());
+}
+
+void RenderWidget::SetScreenMetricsEmulationParameters(
+    bool enabled,
+    const blink::WebDeviceEmulationParams& params) {
+  // This is only supported in RenderView.
+  NOTREACHED();
+}
+
+void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
+                                  const gfx::Rect& window_screen_rect) {
+  view_screen_rect_ = view_screen_rect;
+  window_screen_rect_ = window_screen_rect;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // WebWidgetClient
 
 void RenderWidget::didAutoResize(const WebSize& new_size) {
@@ -1717,11 +1498,10 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                                        const gfx::Rect& window_screen_rect) {
   if (screen_metrics_emulator_) {
-    screen_metrics_emulator_->OnUpdateScreenRectsMessage(
-        view_screen_rect, window_screen_rect);
+    screen_metrics_emulator_->OnUpdateScreenRects(view_screen_rect,
+                                                  window_screen_rect);
   } else {
-    view_screen_rect_ = view_screen_rect;
-    window_screen_rect_ = window_screen_rect;
+    SetScreenRects(view_screen_rect, window_screen_rect);
   }
   Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
 }
