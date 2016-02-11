@@ -442,10 +442,6 @@ are declared in build/common.gypi.
         </message>
       </if>
 
-      <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
-        Show Full History
-      </message>
-
       <message name="IDS_ALTERNATE_NAV_URL_VIEW_LABEL" desc="Label displayed in an infobar when a user searches for a term he may have meant to navigate to.">
         Did you mean to go to <ph name="SITE">$1<ex>http://intranetsite/</ex></ph>?
       </message>
@@ -1310,9 +1306,6 @@ are declared in build/common.gypi.
         H&amp;elp
       </message>
       <if expr="not use_titlecase">
-        <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
-          &amp;History
-        </message>
         <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In sentence case: The app menu label to import bookmarks and settings.">
           Import bookmarks and settings...
         </message>
@@ -1348,9 +1341,6 @@ are declared in build/common.gypi.
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_SHOW_HISTORY" desc="In Title Case: The show history menu in the app menu">
-          &amp;History
-        </message>
         <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In Title Case: The app menu label to import bookmarks and settings.">
           Import Bookmarks and Settings...
         </message>

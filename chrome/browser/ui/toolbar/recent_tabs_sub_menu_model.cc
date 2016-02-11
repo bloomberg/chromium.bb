@@ -28,6 +28,7 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/synced_session.h"
 #include "content/public/browser/user_metrics.h"
@@ -402,7 +403,7 @@ void RecentTabsSubMenuModel::Build() {
   // only contain navigatable (and hence executable) tab items for local
   // recently closed tabs and tabs from other devices respectively.
   // |local_window_items_| contains the local recently closed windows.
-  InsertItemWithStringIdAt(0, IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
+  InsertItemWithStringIdAt(0, IDC_SHOW_HISTORY, IDS_HISTORY_SHOW_HISTORY);
   InsertSeparatorAt(1, ui::NORMAL_SEPARATOR);
   BuildLocalEntries();
   BuildTabsFromOtherDevices();

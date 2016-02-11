@@ -556,7 +556,7 @@ if (is_mac) {
 
   action("generate_localizer") {
     script = "//chrome/tools/build/mac/generate_localizer"
-    sources = []
+    sources = rebase_path(nib_gypi_values.mac_translated_xibs, ".", "//chrome")
     table_path = "$target_gen_dir/ui_localizer_table.h"
     outputs = [
       table_path,

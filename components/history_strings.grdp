@@ -145,6 +145,19 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
   <message name="IDS_HISTORY_SEARCHRESULTSFOR" desc="Format string for search results">
     Search results for '<ph name="SEARCH_STRING">$1</ph>'
   </message>
+  <if expr="not use_titlecase">
+    <message name="IDS_HISTORY_SHOW_HISTORY" desc="The show history menu in the app menu">
+      &amp;History
+    </message>
+  </if>
+  <if expr="use_titlecase">
+    <message name="IDS_HISTORY_SHOW_HISTORY" desc="In Title Case: The show history menu in the app menu">
+      &amp;History
+    </message>
+  </if>
+  <message name="IDS_HISTORY_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
+    Show Full History
+  </message>
   <message name="IDS_HISTORY_TITLE" desc="Title for the history tab.">
     History
   </message>
