@@ -25,7 +25,7 @@ class ModelTypeProcessorProxy : public ModelTypeProcessor {
       const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
   ~ModelTypeProcessorProxy() override;
 
-  void OnConnect(scoped_ptr<CommitQueue> worker) override;
+  void ConnectSync(scoped_ptr<CommitQueue> worker) override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
@@ -44,9 +44,9 @@ ModelTypeProcessorProxy::ModelTypeProcessorProxy(
 
 ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {}
 
-void ModelTypeProcessorProxy::OnConnect(scoped_ptr<CommitQueue> worker) {
+void ModelTypeProcessorProxy::ConnectSync(scoped_ptr<CommitQueue> worker) {
   processor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::OnConnect, processor_,
+      FROM_HERE, base::Bind(&ModelTypeProcessor::ConnectSync, processor_,
                             base::Passed(std::move(worker))));
 }
 
@@ -81,17 +81,17 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
 
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
-void SharedModelTypeProcessor::Start(StartCallback start_callback) {
+void SharedModelTypeProcessor::OnSyncStarting(StartCallback start_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(start_callback_.is_null());
   DCHECK(!IsConnected());
-  DVLOG(1) << "Starting " << ModelTypeToString(type_);
+  DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
 
   start_callback_ = start_callback;
 
   if (is_metadata_loaded_) {
-    // The metadata was already loaded, so finish starting immediately.
-    FinishStart();
+    // The metadata was already loaded, so we are ready to connect.
+    ReadyToConnect();
   }
 }
 
@@ -121,12 +121,12 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
   is_metadata_loaded_ = true;
 
   if (!start_callback_.is_null()) {
-    // If Start() was already called, finish starting.
-    FinishStart();
+    // If OnSyncStarting() was already called, we are now ready to connect.
+    ReadyToConnect();
   }
 }
 
-void SharedModelTypeProcessor::FinishStart() {
+void SharedModelTypeProcessor::ReadyToConnect() {
   DCHECK(CalledOnValidThread());
   DCHECK(is_metadata_loaded_);
   DCHECK(!start_callback_.is_null());
@@ -168,11 +168,11 @@ void SharedModelTypeProcessor::Disable() {
   service_->clear_change_processor();
 }
 
-void SharedModelTypeProcessor::Stop() {
+void SharedModelTypeProcessor::DisconnectSync() {
   DCHECK(CalledOnValidThread());
   DCHECK(IsConnected());
 
-  DVLOG(1) << "Stopping " << ModelTypeToString(type_);
+  DVLOG(1) << "Disconnecting sync for " << ModelTypeToString(type_);
   weak_ptr_factory_for_sync_.InvalidateWeakPtrs();
   worker_.reset();
 
@@ -185,7 +185,7 @@ SharedModelTypeProcessor::AsWeakPtrForUI() {
   return weak_ptr_factory_for_ui_.GetWeakPtr();
 }
 
-void SharedModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> worker) {
+void SharedModelTypeProcessor::ConnectSync(scoped_ptr<CommitQueue> worker) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
 

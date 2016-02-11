@@ -40,16 +40,16 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   typedef base::Callback<void(syncer::SyncError, scoped_ptr<ActivationContext>)>
       StartCallback;
 
-  // Called by DataTypeController to begins asynchronous operation of preparing
-  // the model to sync. Once the model is ready to be activated with Sync the
-  // callback will be invoked with the activation context. If the model is
-  // already ready it is safe to call the callback right away. Otherwise the
-  // callback needs to be stored and called when the model is ready.
-  void Start(StartCallback callback);
+  // Called by the DataTypeController to gather additional information needed
+  // before a CommitQueue object can be created for this model type. Once the
+  // metadata has been loaded, the info is collected and given to |callback|.
+  // Once called, this can only be called again if sync is disconnected.
+  void OnSyncStarting(StartCallback callback);
 
-  // Called by DataTypeController to inform the model that the sync is
-  // stopping for the model type.
-  void Stop();
+  // Disconnect this processor from the sync engine. Change metadata will
+  // continue being processed and persisted, but no commits can be made until
+  // the next time sync is connected.
+  void DisconnectSync();
 
   // Indicates that we no longer want to do any sync-related things for this
   // data type. Severs all ties to the sync thread, deletes all local sync
@@ -85,7 +85,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   base::WeakPtr<SharedModelTypeProcessor> AsWeakPtrForUI();
 
   // ModelTypeProcessor implementation.
-  void OnConnect(scoped_ptr<CommitQueue> worker) override;
+  void ConnectSync(scoped_ptr<CommitQueue> worker) override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
@@ -99,7 +99,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   using UpdateMap = std::map<std::string, scoped_ptr<UpdateResponseData>>;
 
   // Complete the start process.
-  void FinishStart();
+  void ReadyToConnect();
 
   // Handle the first update received from the server after being enabled.
   void OnInitialUpdateReceived(const sync_pb::DataTypeState& type_state,
@@ -117,7 +117,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   syncer::ModelType type_;
   sync_pb::DataTypeState data_type_state_;
 
-  // Stores the start callback in between Start() and FinishStart().
+  // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
   StartCallback start_callback_;
 
   // Indicates whether the metadata has finished loading.

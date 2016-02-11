@@ -156,7 +156,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
       worker->AsWeakPtr(), scoped_refptr<base::SequencedTaskRunner>(
                                base::ThreadTaskRunnerHandle::Get())));
 
-  type_processor->OnConnect(std::move(commit_queue_proxy));
+  type_processor->ConnectSync(std::move(commit_queue_proxy));
 
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());

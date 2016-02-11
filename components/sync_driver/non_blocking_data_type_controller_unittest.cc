@@ -96,7 +96,7 @@ class MockSyncBackend {
   void Connect(syncer::ModelType type,
                scoped_ptr<syncer_v2::ActivationContext> activation_context) {
     enabled_types_.Put(type);
-    activation_context->type_processor->OnConnect(
+    activation_context->type_processor->ConnectSync(
         make_scoped_ptr(new NullCommitQueue()));
   }
 

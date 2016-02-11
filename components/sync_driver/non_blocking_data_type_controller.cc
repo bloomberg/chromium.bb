@@ -50,7 +50,8 @@ void NonBlockingDataTypeController::LoadModels(
   if (!RunOnModelThread(
           FROM_HERE,
           base::Bind(
-              &syncer_v2::SharedModelTypeProcessor::Start, type_processor(),
+              &syncer_v2::SharedModelTypeProcessor::OnSyncStarting,
+              type_processor(),
               base::Bind(&NonBlockingDataTypeController::OnProcessorStarted,
                          this)))) {
     LoadModelsDone(
@@ -142,7 +143,8 @@ void NonBlockingDataTypeController::Stop() {
 
   RunOnModelThread(
       FROM_HERE,
-      base::Bind(&syncer_v2::SharedModelTypeProcessor::Stop, type_processor()));
+      base::Bind(&syncer_v2::SharedModelTypeProcessor::DisconnectSync,
+                 type_processor()));
 }
 
 std::string NonBlockingDataTypeController::name() const {

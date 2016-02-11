@@ -57,20 +57,16 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState();
 
+  // SharedModelTypeProcessor method wrappers.
   void OnMetadataLoaded();
-
-  // Start our SharedModelTypeProcessor, which will be unable to commit until it
-  // receives notification that initial sync has completed.
-  void Start();
-
-  // Stop and disconnect the CommitQueue from our SharedModelTypeProcessor.
-  void Stop();
+  void OnSyncStarting();
+  void DisconnectSync();
 
   // Disable sync for this SharedModelTypeProcessor.  Should cause sync state to
   // be discarded.
   void Disable();
 
-  // Restart sync after Stop() or Disable().
+  // Restart sync after DisconnectSync() or Disable().
   void Restart();
 
   // Local data modification.  Emulates signals from the model thread.
@@ -150,8 +146,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   int64_t GetServerVersion(const std::string& tag);
   void SetServerVersion(const std::string& tag, int64_t version);
 
-  void StartDone(syncer::SyncError error,
-                 scoped_ptr<ActivationContext> context);
+  void OnReadyToConnect(syncer::SyncError error,
+                        scoped_ptr<ActivationContext> context);
 
   // FakeModelTypeService overrides.
   std::string GetClientTag(const EntityData& entity_data) override;
@@ -191,7 +187,7 @@ SharedModelTypeProcessorTest::~SharedModelTypeProcessorTest() {}
 void SharedModelTypeProcessorTest::InitializeToReadyState() {
   data_type_state_.set_initial_sync_done(true);
   OnMetadataLoaded();
-  Start();
+  OnSyncStarting();
   // TODO(maxbogue): crbug.com/569642: Remove this once entity data is loaded
   // for the normal startup flow.
   UpdateResponseDataList empty_update_list;
@@ -205,13 +201,13 @@ void SharedModelTypeProcessorTest::OnMetadataLoaded() {
   metadata_batch_.reset(new MetadataBatch());
 }
 
-void SharedModelTypeProcessorTest::Start() {
-  type_processor()->Start(base::Bind(&SharedModelTypeProcessorTest::StartDone,
-                                     base::Unretained(this)));
+void SharedModelTypeProcessorTest::OnSyncStarting() {
+  type_processor()->OnSyncStarting(base::Bind(
+      &SharedModelTypeProcessorTest::OnReadyToConnect, base::Unretained(this)));
 }
 
-void SharedModelTypeProcessorTest::Stop() {
-  type_processor()->Stop();
+void SharedModelTypeProcessorTest::DisconnectSync() {
+  type_processor()->DisconnectSync();
   mock_queue_ = NULL;
   mock_queue_ptr_.reset();
 }
@@ -233,16 +229,16 @@ void SharedModelTypeProcessorTest::Restart() {
   mock_queue_ptr_.reset(new MockCommitQueue());
   mock_queue_ = mock_queue_ptr_.get();
   // Restart sync with the new CommitQueue.
-  Start();
+  OnSyncStarting();
 }
 
-void SharedModelTypeProcessorTest::StartDone(
+void SharedModelTypeProcessorTest::OnReadyToConnect(
     syncer::SyncError error,
     scoped_ptr<ActivationContext> context) {
   // Hand off ownership of |mock_queue_ptr_|, while keeping
   // an unsafe pointer to it.  This is why we can only connect once.
   DCHECK(mock_queue_ptr_);
-  context->type_processor->OnConnect(std::move(mock_queue_ptr_));
+  context->type_processor->ConnectSync(std::move(mock_queue_ptr_));
   // The context's type processor is a proxy; run the task it posted.
   sync_loop_.RunUntilIdle();
 }
@@ -832,7 +828,7 @@ TEST_F(SharedModelTypeProcessorTest, TwoIndependentItems) {
 // Verify that it waits until initial sync is complete before requesting
 // commits.
 TEST_F(SharedModelTypeProcessorTest, NoCommitsUntilInitialSyncDone) {
-  Start();
+  OnSyncStarting();
   OnMetadataLoaded();
 
   FakeMetadataChangeList change_list;
@@ -857,7 +853,7 @@ TEST_F(SharedModelTypeProcessorTest, NoCommitsUntilInitialSyncDone) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on reconnect.
-TEST_F(SharedModelTypeProcessorTest, Stop) {
+TEST_F(SharedModelTypeProcessorTest, Disconnect) {
   InitializeToReadyState();
 
   FakeMetadataChangeList change_list;
@@ -871,7 +867,7 @@ TEST_F(SharedModelTypeProcessorTest, Stop) {
   WriteItem("tag2", "value2", &change_list);
   EXPECT_TRUE(HasCommitRequestForTag("tag2"));
 
-  Stop();
+  DisconnectSync();
 
   // The third item is added after stopping.
   WriteItem("tag3", "value3", &change_list);
@@ -973,15 +969,15 @@ TEST_F(SharedModelTypeProcessorTest, DisableWithPendingUpdates) {
   EXPECT_FALSE(HasPendingUpdate("tag1"));
 }
 
-// Test that Stop does not clear pending update state.
-TEST_F(SharedModelTypeProcessorTest, StopWithPendingUpdates) {
+// Test that disconnecting does not clear pending update state.
+TEST_F(SharedModelTypeProcessorTest, DisconnectWithPendingUpdates) {
   InitializeToReadyState();
 
   PendingUpdateFromServer(5, "tag1", "value1", "key1");
   EXPECT_EQ(1U, GetNumPendingUpdates());
   ASSERT_TRUE(HasPendingUpdate("tag1"));
 
-  Stop();
+  DisconnectSync();
   Restart();
 
   EXPECT_EQ(1U, GetNumPendingUpdates());

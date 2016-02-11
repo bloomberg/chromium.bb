@@ -37,7 +37,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   ~MockModelTypeProcessor() override;
 
   // Implementation of ModelTypeProcessor.
-  void OnConnect(scoped_ptr<CommitQueue> commit_queue) override;
+  void ConnectSync(scoped_ptr<CommitQueue> commit_queue) override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,

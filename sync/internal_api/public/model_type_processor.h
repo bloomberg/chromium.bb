@@ -19,8 +19,11 @@ class SYNC_EXPORT ModelTypeProcessor {
   ModelTypeProcessor();
   virtual ~ModelTypeProcessor();
 
-  // Callback used to process the handshake response from the worker.
-  virtual void OnConnect(scoped_ptr<CommitQueue> commit_queue) = 0;
+  // Connect this processor to the sync engine via |commit_queue|. Once called,
+  // the processor will send any pending and future commits via this channel.
+  // This can only be called multiple times if the processor is disconnected
+  // (via the DataTypeController) in between.
+  virtual void ConnectSync(scoped_ptr<CommitQueue> commit_queue) = 0;
 
   // Informs this object that some of its commit requests have been
   // successfully serviced.

@@ -48,13 +48,13 @@ class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
   // function simulates such an event.
   void DisableSync() { registry_.reset(); }
 
-  void Start(SharedModelTypeProcessor* processor) {
-    processor->Start(base::Bind(&SyncContextProxyImplTest::StartDone,
-                                base::Unretained(this)));
+  void OnSyncStarting(SharedModelTypeProcessor* processor) {
+    processor->OnSyncStarting(base::Bind(
+        &SyncContextProxyImplTest::OnReadyToConnect, base::Unretained(this)));
   }
 
-  void StartDone(syncer::SyncError error,
-                 scoped_ptr<ActivationContext> context) {
+  void OnReadyToConnect(syncer::SyncError error,
+                        scoped_ptr<ActivationContext> context) {
     context_proxy_->ConnectTypeToSync(syncer::THEMES, std::move(context));
   }
 
@@ -82,7 +82,7 @@ class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
 TEST_F(SyncContextProxyImplTest, FailToConnect1) {
   scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
   DisableSync();
-  Start(processor.get());
+  OnSyncStarting(processor.get());
 
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
@@ -92,7 +92,7 @@ TEST_F(SyncContextProxyImplTest, FailToConnect1) {
 // Try to connect a type to a SyncContext as it shuts down.
 TEST_F(SyncContextProxyImplTest, FailToConnect2) {
   scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
-  Start(processor.get());
+  OnSyncStarting(processor.get());
   DisableSync();
 
   base::RunLoop run_loop_;
@@ -103,7 +103,7 @@ TEST_F(SyncContextProxyImplTest, FailToConnect2) {
 // Tests the case where the type's sync proxy shuts down first.
 TEST_F(SyncContextProxyImplTest, TypeDisconnectsFirst) {
   scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
-  Start(processor.get());
+  OnSyncStarting(processor.get());
 
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
@@ -115,7 +115,7 @@ TEST_F(SyncContextProxyImplTest, TypeDisconnectsFirst) {
 // Tests the case where the sync thread shuts down first.
 TEST_F(SyncContextProxyImplTest, SyncDisconnectsFirst) {
   scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
-  Start(processor.get());
+  OnSyncStarting(processor.get());
 
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
