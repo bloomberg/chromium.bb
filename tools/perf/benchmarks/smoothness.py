@@ -471,7 +471,7 @@ class SmoothnessToughTextureUploadCases(_Smoothness):
 
 class SmoothnessToughAdCases(_Smoothness):
   """Measures rendering statistics while displaying advertisements."""
-  page_set = page_sets.ToughAdCasesPageSet
+  page_set = page_sets.SyntheticToughAdCasesPageSet
 
   @classmethod
   def Name(cls):
@@ -510,7 +510,7 @@ class SmoothnessBidirectionallyScrollingToughAdCases(_Smoothness):
 
 class SmoothnessToughWebGLAdCases(_Smoothness):
   """Measures rendering statistics while scrolling advertisements."""
-  page_set = page_sets.ToughWebglAdCasesPageSet
+  page_set = page_sets.SyntheticToughWebglAdCasesPageSet
 
   @classmethod
   def Name(cls):

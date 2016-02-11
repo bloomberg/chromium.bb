@@ -39,6 +39,20 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('android')
+class PowerToughAdCases(perf_benchmark.PerfBenchmark):
+  """Android power test with tough ad pages."""
+  test = power.Power
+  page_set = page_sets.ToughAdCasesPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.full_performance_mode = False
+
+  @classmethod
+  def Name(cls):
+    return 'power.tough_ad_cases'
+
+
+@benchmark.Enabled('android')
 @benchmark.Disabled('all')
 class PowerTypical10MobileReload(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power reload test."""
