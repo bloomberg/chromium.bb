@@ -76,6 +76,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void SetBounds(Window* window,
                  const gfx::Rect& old_bounds,
                  const gfx::Rect& bounds);
+  void SetCapture(Window* window);
+  void ReleaseCapture(Window* window);
   void SetClientArea(Id window_id,
                      const gfx::Insets& client_area,
                      const std::vector<gfx::Rect>& additional_client_areas);
@@ -174,6 +176,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                uint32_t access_policy) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
+  void OnLostCapture(Id window_id) override;
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr data) override;
   void OnWindowBoundsChanged(Id window_id,

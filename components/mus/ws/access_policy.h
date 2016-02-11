@@ -50,6 +50,7 @@ class AccessPolicy {
   virtual bool CanSetWindowBounds(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowProperties(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowTextInputState(const ServerWindow* window) const = 0;
+  virtual bool CanSetCapture(const ServerWindow* window) const = 0;
   virtual bool CanSetFocus(const ServerWindow* window) const = 0;
   virtual bool CanSetClientArea(const ServerWindow* window) const = 0;
   // Used for all cursor properties; which cursor should be displayed,

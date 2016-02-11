@@ -291,6 +291,9 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     tracker()->OnEmbeddedAppDisconnected(window_id);
   }
   void OnUnembed(Id window_id) override { tracker()->OnUnembed(window_id); }
+  void OnLostCapture(Id window_id) override {
+    tracker()->OnLostCapture(window_id);
+  }
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr data) override {
     tracker()->OnTopLevelCreated(change_id, std::move(data));
@@ -348,6 +351,10 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
                           EventPtr event) override {
+    // Ack input events to clear the state on the server. These can be received
+    // during test startup. X11Window::DispatchEvent sends a synthetic move
+    // event to notify of entry.
+    tree()->OnWindowInputEventAck(event_id);
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
   }
@@ -1857,6 +1864,57 @@ TEST_F(WindowTreeAppTest, Ids) {
                 " new_parent=null old_parent=" +
                 IdToString(window_1_100_in_ws2),
             SingleChangeToDescription(*changes2()));
+}
+
+// Tests that setting capture fails when no input event has occurred, and there
+// is no notification of lost capture.
+TEST_F(WindowTreeAppTest, ExplicitCaptureWithoutInput) {
+  Id window_1_1 = ws_client1()->NewWindow(1);
+
+  // Add the window to the root, so that they have a WindowTreeHostImpl to
+  // handle input capture.
+  ASSERT_TRUE(ws_client1()->AddWindow(root_window_id(), window_1_1));
+  changes1()->clear();
+
+  // Since there has been no input, capture should not succeed. No lost capture
+  // message is expected.
+  ws1()->SetCapture(1, window_1_1);
+  ws_client1_->WaitForAllMessages();
+  EXPECT_TRUE(changes1()->empty());
+
+  // Since there is no window with capture, lost capture should not be notified.
+  ws1()->ReleaseCapture(3, window_1_1);
+  ws_client1_->WaitForAllMessages();
+  EXPECT_TRUE(changes1()->empty());
+}
+
+// TODO(jonross): Enable this once apptests can send input events to the server.
+// Enabling capture requires that the connection be processing events.
+TEST_F(WindowTreeAppTest, DISABLED_ExplicitCapturePropagation) {
+  Id window_1_1 = ws_client1()->NewWindow(1);
+  Id window_1_2 = ws_client1()->NewWindow(2);
+
+  // Add the windows to the root, so that they have a WindowTreeHostImpl to
+  // handle input capture.
+  ASSERT_TRUE(ws_client1()->AddWindow(root_window_id(), window_1_1));
+  ASSERT_TRUE(ws_client1()->AddWindow(root_window_id(), window_1_2));
+
+  changes1()->clear();
+  // Window 1 takes capture then Window 2 takes capture.
+  // Verify that window 1 has lost capture.
+  ws1()->SetCapture(1, window_1_1);
+  ws1()->SetCapture(2, window_1_2);
+  ws_client1_->WaitForChangeCount(1);
+
+  EXPECT_EQ("OnLostCapture window=" + IdToString(window_1_1),
+            SingleChangeToDescription(*changes1()));
+
+  changes1()->clear();
+  // Explicitly releasing capture should not notify of lost capture.
+  ws1()->ReleaseCapture(3, window_1_2);
+  ws_client1_->WaitForAllMessages();
+
+  EXPECT_TRUE(changes1()->empty());
 }
 
 // TODO(sky): need to better track changes to initial connection. For example,

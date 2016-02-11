@@ -71,6 +71,8 @@ class TestWindowTree : public mojom::WindowTree {
                      mojom::OrderDirection direction) override;
   void GetWindowTree(uint32_t window_id,
                      const GetWindowTreeCallback& callback) override;
+  void SetCapture(uint32_t change_id, uint32_t window_id) override;
+  void ReleaseCapture(uint32_t change_id, uint32_t window_id) override;
   void Embed(uint32_t window_id,
              mojom::WindowTreeClientPtr client,
              uint32_t policy_bitmask,

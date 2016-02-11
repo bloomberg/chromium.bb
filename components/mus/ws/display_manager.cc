@@ -235,6 +235,14 @@ void DefaultDisplayManager::SetTitle(const base::string16& title) {
   platform_window_->SetTitle(title);
 }
 
+void DefaultDisplayManager::SetCapture() {
+  platform_window_->SetCapture();
+}
+
+void DefaultDisplayManager::ReleaseCapture() {
+  platform_window_->ReleaseCapture();
+}
+
 void DefaultDisplayManager::SetCursorById(int32_t cursor_id) {
 #if !defined(OS_ANDROID)
   // TODO(erg): This still isn't sufficient, and will only use native cursors
@@ -353,19 +361,6 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
   delegate_->OnEvent(*event);
 
-  switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_TOUCH_PRESSED:
-      platform_window_->SetCapture();
-      break;
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_TOUCH_RELEASED:
-      platform_window_->ReleaseCapture();
-      break;
-    default:
-      break;
-  }
-
 #if defined(USE_X11)
   // We want to emulate the WM_CHAR generation behaviour of Windows.
   //
@@ -402,7 +397,9 @@ void DefaultDisplayManager::OnClosed() {
 void DefaultDisplayManager::OnWindowStateChanged(
     ui::PlatformWindowState new_state) {}
 
-void DefaultDisplayManager::OnLostCapture() {}
+void DefaultDisplayManager::OnLostCapture() {
+  delegate_->OnNativeCaptureLost();
+}
 
 void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,

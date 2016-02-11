@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/time/time.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
@@ -157,17 +158,75 @@ class EventMatcher {
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
     : delegate_(delegate),
       root_(nullptr),
+      capture_window_(nullptr),
+      capture_window_in_nonclient_area_(false),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr) {}
 
 EventDispatcher::~EventDispatcher() {
   std::set<ServerWindow*> pointer_targets;
+  if (capture_window_) {
+    pointer_targets.insert(capture_window_);
+    capture_window_->RemoveObserver(this);
+    capture_window_ = nullptr;
+  }
   for (const auto& pair : pointer_targets_) {
     if (pair.second.window &&
         pointer_targets.insert(pair.second.window).second) {
       pair.second.window->RemoveObserver(this);
     }
   }
+  pointer_targets_.clear();
+}
+
+void EventDispatcher::SetCaptureWindow(ServerWindow* window,
+                                       bool in_nonclient_area) {
+  if (window == capture_window_)
+    return;
+
+  if (capture_window_) {
+    // Stop observing old capture window. |pointer_targets_| are cleared on
+    // intial setting of a capture window.
+    delegate_->OnServerWindowCaptureLost(capture_window_);
+    capture_window_->RemoveObserver(this);
+  } else {
+    // Cancel implicit capture to all other windows.
+    std::set<ServerWindow*> unobserved_windows;
+    for (const auto& pair : pointer_targets_) {
+      ServerWindow* target = pair.second.window;
+      if (!target)
+        continue;
+      if (unobserved_windows.insert(target).second)
+        target->RemoveObserver(this);
+      if (target == window)
+        continue;
+      mojom::EventPtr cancel_event = mojom::Event::New();
+      cancel_event->action = mojom::EventType::POINTER_CANCEL;
+      cancel_event->flags = mojom::kEventFlagNone;
+      cancel_event->time_stamp = base::TimeTicks::Now().ToInternalValue();
+      cancel_event->pointer_data = mojom::PointerData::New();
+      // TODO(jonross): Track previous location in PointerTarget for sending
+      // cancels
+      cancel_event->pointer_data->location = mojom::LocationData::New();
+      cancel_event->pointer_data->pointer_id = pair.first;
+      DispatchToPointerTarget(pair.second, std::move(cancel_event));
+    }
+    pointer_targets_.clear();
+  }
+
+  // Begin tracking the capture window if it is not yet being observed.
+  if (window) {
+    window->AddObserver(this);
+    if (!capture_window_)
+      delegate_->SetNativeCapture();
+  } else {
+    delegate_->ReleaseNativeCapture();
+    if (!mouse_button_down_)
+      UpdateCursorProviderByLastKnownLocation();
+  }
+
+  capture_window_ = window;
+  capture_window_in_nonclient_area_ = in_nonclient_area;
 }
 
 void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
@@ -237,6 +296,31 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
   if (is_mouse_event)
     mouse_pointer_last_location_ = EventLocationToPoint(*event);
 
+  // Release capture on pointer up. For mouse we only release if there are
+  // no buttons down.
+  const bool is_pointer_going_up =
+      (event->action == mojom::EventType::POINTER_UP ||
+       event->action == mojom::EventType::POINTER_CANCEL) &&
+      (event->pointer_data->kind != mojom::PointerKind::MOUSE ||
+       IsOnlyOneMouseButtonDown(event->flags));
+
+  // Update mouse down state upon events which change it.
+  if (is_mouse_event) {
+    if (event->action == mojom::EventType::POINTER_DOWN)
+      mouse_button_down_ = true;
+    else if (is_pointer_going_up)
+      mouse_button_down_ = false;
+  }
+
+  if (capture_window_) {
+    mouse_cursor_source_window_ = capture_window_;
+    PointerTarget pointer_target;
+    pointer_target.window = capture_window_;
+    pointer_target.in_nonclient_area = capture_window_in_nonclient_area_;
+    DispatchToPointerTarget(pointer_target, std::move(event));
+    return;
+  }
+
   const int32_t pointer_id = event->pointer_data->pointer_id;
   if (!IsTrackingPointer(pointer_id) ||
       !pointer_targets_[pointer_id].is_pointer_down) {
@@ -247,34 +331,22 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
 
     PointerTarget& pointer_target = pointer_targets_[pointer_id];
     if (pointer_target.is_pointer_down) {
-      if (is_mouse_event) {
-        mouse_button_down_ = true;
+      if (is_mouse_event)
         mouse_cursor_source_window_ = pointer_target.window;
-      }
-      if (!any_pointers_down)
+      if (!any_pointers_down) {
         delegate_->SetFocusedWindowFromEventDispatcher(pointer_target.window);
+        delegate_->SetNativeCapture();
+      }
     }
   }
 
-  // Release capture on pointer up. For mouse we only release if there are
-  // no buttons down.
-  const bool is_pointer_going_up =
-      (event->action == mojom::EventType::POINTER_UP ||
-       event->action == mojom::EventType::POINTER_CANCEL) &&
-      (event->pointer_data->kind != mojom::PointerKind::MOUSE ||
-       IsOnlyOneMouseButtonDown(event->flags));
-
-  if (is_pointer_going_up && is_mouse_event) {
-    // When we release the mouse button, we want the cursor to be sourced from
-    // the window under the mouse pointer, even though we're sending the button
-    // up event to the window that had implicit capture. We have to set this
-    // before we perform dispatch because the Delegate is going to read this
-    // information from us.
-    mouse_button_down_ = false;
-    gfx::Point location(EventLocationToPoint(*event));
-    mouse_cursor_source_window_ =
-        FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
-  }
+  // When we release the mouse button, we want the cursor to be sourced from
+  // the window under the mouse pointer, even though we're sending the button
+  // up event to the window that had implicit capture. We have to set this
+  // before we perform dispatch because the Delegate is going to read this
+  // information from us.
+  if (is_pointer_going_up && is_mouse_event)
+    UpdateCursorProviderByLastKnownLocation();
 
   DispatchToPointerTarget(pointer_targets_[pointer_id], std::move(event));
 
@@ -283,6 +355,8 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
       pointer_targets_[pointer_id].is_pointer_down = false;
     else
       StopTrackingPointer(pointer_id);
+    if (!AreAnyPointersDown())
+      delegate_->ReleaseNativeCapture();
   }
 }
 
@@ -379,6 +453,18 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
 
 void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {
   window->RemoveObserver(this);
+
+  if (capture_window_ == window) {
+    capture_window_ = nullptr;
+    mouse_button_down_ = false;
+    // A window only cares to be informed that it lost capture if it explicitly
+    // requested capture. A window can lose capture if another window gains
+    // explicit capture.
+    delegate_->OnServerWindowCaptureLost(window);
+    delegate_->ReleaseNativeCapture();
+    UpdateCursorProviderByLastKnownLocation();
+    return;
+  }
 
   for (auto& pair : pointer_targets_) {
     if (pair.second.window == window)

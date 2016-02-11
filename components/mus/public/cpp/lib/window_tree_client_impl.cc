@@ -240,6 +240,14 @@ void WindowTreeClientImpl::SetBounds(Window* window,
   tree_->SetWindowBounds(change_id, window->id(), mojo::Rect::From(bounds));
 }
 
+void WindowTreeClientImpl::SetCapture(Window* window) {
+  NOTIMPLEMENTED();
+}
+
+void WindowTreeClientImpl::ReleaseCapture(Window* window) {
+  NOTIMPLEMENTED();
+}
+
 void WindowTreeClientImpl::SetClientArea(
     Id window_id,
     const gfx::Insets& client_area,
@@ -549,6 +557,10 @@ void WindowTreeClientImpl::OnUnembed(Id window_id) {
 
   delegate_->OnUnembed(window);
   WindowPrivate(window).LocalDestroy();
+}
+
+void WindowTreeClientImpl::OnLostCapture(Id window_id) {
+  NOTIMPLEMENTED();
 }
 
 void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,

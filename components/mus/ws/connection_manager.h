@@ -174,6 +174,7 @@ class ConnectionManager : public ServerWindowDelegate,
       const ServerWindow* window,
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& new_additional_client_areas);
+  void ProcessLostCapture(const ServerWindow* window);
   void ProcessViewportMetricsChanged(WindowTreeHostImpl* host,
                                      const mojom::ViewportMetrics& old_metrics,
                                      const mojom::ViewportMetrics& new_metrics);

@@ -103,6 +103,11 @@ bool WindowManagerAccessPolicy::CanSetWindowTextInputState(
   return window->id().connection_id == connection_id_;
 }
 
+bool WindowManagerAccessPolicy::CanSetCapture(
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_;
+}
+
 bool WindowManagerAccessPolicy::CanSetFocus(const ServerWindow* window) const {
   return true;
 }

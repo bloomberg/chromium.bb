@@ -169,6 +169,8 @@ class WindowTreeImpl : public mojom::WindowTree,
                             bool originated_change);
   void ProcessFocusChanged(const ServerWindow* old_focused_window,
                            const ServerWindow* new_focused_window);
+  void ProcessLostCapture(const ServerWindow* old_lost_capture,
+                          bool originated_change);
   void ProcessTransientWindowAdded(const ServerWindow* window,
                                    const ServerWindow* transient_window,
                                    bool originated_change);
@@ -296,6 +298,8 @@ class WindowTreeImpl : public mojom::WindowTree,
       Id window_id,
       const mojo::Callback<void(mojo::Array<mojom::WindowDataPtr>)>& callback)
       override;
+  void SetCapture(uint32_t change_id, Id window_id) override;
+  void ReleaseCapture(uint32_t change_id, Id window_id) override;
   void SetWindowBounds(uint32_t change_id,
                        Id window_id,
                        mojo::RectPtr bounds) override;

@@ -45,6 +45,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanSetWindowBounds(const ServerWindow* window) const override;
   bool CanSetWindowProperties(const ServerWindow* window) const override;
   bool CanSetWindowTextInputState(const ServerWindow* window) const override;
+  bool CanSetCapture(const ServerWindow* window) const override;
   bool CanSetFocus(const ServerWindow* window) const override;
   bool CanSetClientArea(const ServerWindow* window) const override;
   bool CanSetCursorProperties(const ServerWindow* window) const override;

@@ -123,6 +123,11 @@ bool DefaultAccessPolicy::CanSetWindowTextInputState(
          delegate_->HasRootForAccessPolicy(window);
 }
 
+bool DefaultAccessPolicy::CanSetCapture(const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window) ||
+         delegate_->HasRootForAccessPolicy(window);
+}
+
 bool DefaultAccessPolicy::CanSetFocus(const ServerWindow* window) const {
   return WasCreatedByThisConnection(window) ||
          delegate_->HasRootForAccessPolicy(window);

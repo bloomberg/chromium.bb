@@ -24,6 +24,7 @@ enum ChangeType {
   CHANGE_TYPE_EMBED,
   CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED,
   CHANGE_TYPE_UNEMBED,
+  CHANGE_TYPE_LOST_CAPTURE,
   // TODO(sky): nuke NODE.
   CHANGE_TYPE_NODE_ADD_TRANSIENT_WINDOW,
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
@@ -130,6 +131,7 @@ class TestChangeTracker {
   void OnEmbed(ConnectionSpecificId connection_id, mojom::WindowDataPtr root);
   void OnEmbeddedAppDisconnected(Id window_id);
   void OnUnembed(Id window_id);
+  void OnLostCapture(Id window_id);
   void OnTransientWindowAdded(Id window_id, Id transient_window_id);
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id);
   void OnWindowBoundsChanged(Id window_id,

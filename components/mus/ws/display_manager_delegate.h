@@ -36,6 +36,9 @@ class DisplayManagerDelegate {
   // Called when an event arrives.
   virtual void OnEvent(const ui::Event& event) = 0;
 
+  // Called when the Display loses capture.
+  virtual void OnNativeCaptureLost() = 0;
+
   // Signals that the metrics of this display's viewport has changed.
   virtual void OnViewportMetricsChanged(
       const mojom::ViewportMetrics& old_metrics,

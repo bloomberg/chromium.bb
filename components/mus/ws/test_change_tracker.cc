@@ -47,6 +47,10 @@ std::string ChangeToDescription1(const Change& change) {
       return base::StringPrintf("OnUnembed window=%s",
                                 WindowIdToString(change.window_id).c_str());
 
+    case CHANGE_TYPE_LOST_CAPTURE:
+      return base::StringPrintf("OnLostCapture window=%s",
+                                WindowIdToString(change.window_id).c_str());
+
     case CHANGE_TYPE_NODE_ADD_TRANSIENT_WINDOW:
       return base::StringPrintf("AddTransientWindow parent = %s child = %s",
                                 WindowIdToString(change.window_id).c_str(),
@@ -255,6 +259,13 @@ void TestChangeTracker::OnTransientWindowRemoved(Id window_id,
   change.type = CHANGE_TYPE_NODE_REMOVE_TRANSIENT_WINDOW_FROM_PARENT;
   change.window_id = window_id;
   change.window_id2 = transient_window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnLostCapture(Id window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_LOST_CAPTURE;
+  change.window_id = window_id;
   AddChange(change);
 }
 

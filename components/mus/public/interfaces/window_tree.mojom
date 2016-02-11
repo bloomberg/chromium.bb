@@ -105,6 +105,18 @@ interface WindowTree {
   // can delete it.
   DeleteWindow(uint32 change_id, uint32 window_id);
 
+  // Requests input event capture for the given |window_id|. Capture is only
+  // allowed if the window is processing an event. When a window gains capture,
+  // current input events are canceled. The given window will receive all
+  // subsequent input until an alternate window is set via SetCapture, or
+  // ReleaseCapture is called for |window_id|. OnLostCapture is called to notify
+  // of capture ending.
+  SetCapture(uint32 change_id, uint32 window_id);
+
+  // Releases input event capture for the given |window_id|. This does nothing
+  // if |window_id| does not currently have capture.
+  ReleaseCapture(uint32 change_id, uint32 window_id);
+
   // Sets the specified bounds of the specified window.
   SetWindowBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);
 
@@ -264,6 +276,9 @@ interface WindowTreeClient {
   // Sent when another connection is embedded in the Window this connection was
   // previously embedded in. See Embed() for more information.
   OnUnembed(uint32 window);
+
+  // Sent when a window loses capture.
+  OnLostCapture(uint32 window);
 
   // Called in response to NewTopLevelWindow() successfully completing.
   OnTopLevelCreated(uint32 change_id, WindowData data);

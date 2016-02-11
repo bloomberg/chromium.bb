@@ -77,6 +77,10 @@ class DisplayManager {
 
   virtual void SetTitle(const base::string16& title) = 0;
 
+  virtual void SetCapture() = 0;
+
+  virtual void ReleaseCapture() = 0;
+
   virtual void SetCursorById(int32_t cursor) = 0;
 
   virtual mojom::Rotation GetRotation() = 0;
@@ -119,6 +123,8 @@ class DefaultDisplayManager : public DisplayManager,
                      const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
   void SetTitle(const base::string16& title) override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
   void SetCursorById(int32_t cursor) override;
   const mojom::ViewportMetrics& GetViewportMetrics() override;
   mojom::Rotation GetRotation() override;

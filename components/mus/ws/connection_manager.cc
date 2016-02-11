@@ -344,6 +344,13 @@ void ConnectionManager::ProcessClientAreaChanged(
   }
 }
 
+void ConnectionManager::ProcessLostCapture(const ServerWindow* window) {
+  for (auto& pair : connection_map_) {
+    pair.second->service()->ProcessLostCapture(window,
+                                               IsOperationSource(pair.first));
+  }
+}
+
 void ConnectionManager::ProcessWillChangeWindowHierarchy(
     const ServerWindow* window,
     const ServerWindow* new_parent,

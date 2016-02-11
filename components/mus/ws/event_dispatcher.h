@@ -36,6 +36,12 @@ class EventDispatcher : public ServerWindowObserver {
 
   void set_surface_id(cc::SurfaceId surface_id) { surface_id_ = surface_id; }
 
+  // |capture_window_| will receive all input. See window_tree.mojom for
+  // details.
+  ServerWindow* capture_window() { return capture_window_; }
+  const ServerWindow* capture_window() const { return capture_window_; }
+  void SetCaptureWindow(ServerWindow* capture_window, bool in_nonclient_area);
+
   // Retrieves the ServerWindow of the last mouse move.
   ServerWindow* mouse_cursor_source_window() const {
     return mouse_cursor_source_window_;
@@ -57,6 +63,8 @@ class EventDispatcher : public ServerWindowObserver {
   void ProcessEvent(mojom::EventPtr event);
 
  private:
+  friend class EventDispatcherTest;
+
   // Keeps track of state associated with an active pointer.
   struct PointerTarget {
     PointerTarget()
@@ -135,7 +143,9 @@ class EventDispatcher : public ServerWindowObserver {
 
   EventDispatcherDelegate* delegate_;
   ServerWindow* root_;
+  ServerWindow* capture_window_;
 
+  bool capture_window_in_nonclient_area_;
   bool mouse_button_down_;
   ServerWindow* mouse_cursor_source_window_;
 
