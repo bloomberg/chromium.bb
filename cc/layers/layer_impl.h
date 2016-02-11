@@ -696,6 +696,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     was_ever_ready_since_last_transform_animation_ = was_ready;
   }
 
+  void NoteLayerPropertyChanged();
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,
@@ -716,7 +718,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
                              SkColor color,
                              float width) const;
 
-  void NoteLayerPropertyChanged();
   void NoteLayerPropertyChangedForSubtree();
 
   // Note carefully this does not affect the current layer.

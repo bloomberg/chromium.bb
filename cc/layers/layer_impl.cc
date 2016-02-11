@@ -304,7 +304,6 @@ void LayerImpl::PassCopyRequests(
 
   if (was_empty && layer_tree_impl()->IsActiveTree())
     layer_tree_impl()->AddLayerWithCopyOutputRequest(this);
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::TakeCopyRequestsAndTransformToTarget(
@@ -624,6 +623,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       use_local_transform_for_backface_visibility_);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
   layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
+  if (layer_property_changed_)
+    layer->NoteLayerPropertyChanged();
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
   layer->SetElementId(element_id_);
@@ -704,6 +705,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
+  layer_property_changed_ = false;
   update_rect_ = gfx::Rect();
   needs_push_properties_ = false;
   num_dependents_need_push_properties_ = 0;
@@ -1066,7 +1068,6 @@ void LayerImpl::SetMaskLayer(scoped_ptr<LayerImpl> mask_layer) {
   mask_layer_id_ = new_layer_id;
   if (mask_layer_)
     mask_layer_->SetParent(this);
-  NoteLayerPropertyChangedForSubtree();
 }
 
 scoped_ptr<LayerImpl> LayerImpl::TakeMaskLayer() {
@@ -1088,7 +1089,6 @@ void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
   replica_layer_id_ = new_layer_id;
   if (replica_layer_)
     replica_layer_->SetParent(this);
-  NoteLayerPropertyChangedForSubtree();
 }
 
 scoped_ptr<LayerImpl> LayerImpl::TakeReplicaLayer() {
@@ -1113,7 +1113,6 @@ void LayerImpl::SetHideLayerAndSubtree(bool hide) {
     return;
 
   hide_layer_and_subtree_ = hide;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetTransformOrigin(const gfx::Point3F& transform_origin) {
@@ -1201,7 +1200,6 @@ void LayerImpl::SetMasksToBounds(bool masks_to_bounds) {
     return;
 
   masks_to_bounds_ = masks_to_bounds;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetContentsOpaque(bool opaque) {
@@ -1209,7 +1207,6 @@ void LayerImpl::SetContentsOpaque(bool opaque) {
     return;
 
   contents_opaque_ = opaque;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetOpacity(float opacity) {
@@ -1284,7 +1281,6 @@ void LayerImpl::SetBlendMode(SkXfermode::Mode blend_mode) {
     return;
 
   blend_mode_ = blend_mode;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetIsRootForIsolatedGroup(bool root) {
@@ -1308,14 +1304,12 @@ void LayerImpl::SetShouldFlattenTransform(bool flatten) {
     return;
 
   should_flatten_transform_ = flatten;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::Set3dSortingContextId(int id) {
   if (id == sorting_context_id_)
     return;
   sorting_context_id_ = id;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetFrameTimingRequests(
@@ -1587,7 +1581,6 @@ void LayerImpl::SetDoubleSided(bool double_sided) {
     return;
 
   double_sided_ = double_sided;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 SimpleEnclosedRegion LayerImpl::VisibleOpaqueRegion() const {

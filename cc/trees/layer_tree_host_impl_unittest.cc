@@ -6723,6 +6723,7 @@ TEST_F(LayerTreeHostImplTest, NoPartialSwap) {
   // Without partial swap, but a layer does clip its subtree, one scissor is
   // set.
   host_impl_->active_tree()->root_layer()->SetMasksToBounds(true);
+  host_impl_->active_tree()->root_layer()->NoteLayerPropertyChanged();
   harness.MustDrawSolidQuad();
   harness.MustSetScissor(0, 0, 10, 10);
   {

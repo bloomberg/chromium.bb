@@ -2860,6 +2860,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
         child_->MakePushProperties();
         // The modified layer needs commit
         ++expected_push_properties_child_;
+        ++expected_push_properties_grandchild_;
         break;
       case 13:
         child2_->MakePushProperties();
@@ -3019,8 +3020,10 @@ class LayerTreeHostTestImplLayersPushProperties
         // The leaf that always pushes is pushed.
         ++expected_push_properties_grandchild_impl_;
 
-        // This child position was changed.
+        // This child position was changed. So the subtree needs to push
+        // properties.
         ++expected_push_properties_child2_impl_;
+        ++expected_push_properties_grandchild2_impl_;
         break;
       case 13:
         // The position of this child was changed.

@@ -1209,6 +1209,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   // Then test mask removal.
   ClearDamageForAllSurfaces(root.get());
   child->SetMaskLayer(nullptr);
+  child->NoteLayerPropertyChanged();
   ASSERT_TRUE(child->LayerPropertyChanged());
   EmulateDrawingOneFrame(root.get());
 

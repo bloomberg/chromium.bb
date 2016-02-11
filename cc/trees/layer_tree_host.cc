@@ -50,6 +50,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/property_tree_builder.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/remote_channel_impl.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -885,6 +886,17 @@ void LayerTreeHost::RecordGpuRasterizationHistogram() {
   }
 
   gpu_rasterization_histogram_recorded_ = true;
+}
+
+void LayerTreeHost::BuildPropertyTreesForTesting() {
+  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer_.get());
+  gfx::Transform identity_transform;
+  PropertyTreeBuilder::BuildPropertyTrees(
+      root_layer_.get(), page_scale_layer_.get(),
+      inner_viewport_scroll_layer_.get(), outer_viewport_scroll_layer_.get(),
+      overscroll_elasticity_layer_.get(), elastic_overscroll_,
+      page_scale_factor_, device_scale_factor_,
+      gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
 }
 
 bool LayerTreeHost::UsingSharedMemoryResources() {

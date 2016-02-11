@@ -538,6 +538,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return has_render_surface_;
   }
 
+  void SetSubtreePropertyChanged();
+  bool subtree_property_changed() const { return subtree_property_changed_; }
+
   // Sets new frame timing requests for this layer.
   void SetFrameTimingRequests(const std::vector<FrameTimingRequest>& requests);
 
@@ -741,6 +744,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool force_render_surface_ : 1;
   bool transform_is_invertible_ : 1;
   bool has_render_surface_ : 1;
+  bool subtree_property_changed_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;

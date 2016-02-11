@@ -165,24 +165,12 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       root->SetTransformOrigin(arbitrary_point_3f));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(FilterOperations()));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 9)));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMasksToBounds(true));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetContentsOpaque(true));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 10)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetPosition(arbitrary_point_f));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetShouldFlattenTransform(false));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->Set3dSortingContextId(1));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetDoubleSided(false));  // constructor initializes it to "true".
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetScrollDelta(gfx::Vector2d()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->PushScrollOffsetFromMainThread(
       gfx::ScrollOffset(arbitrary_vector2d)));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetHideLayerAndSubtree(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetOpacity(arbitrary_number));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBlendMode(arbitrary_blend_mode));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetTransform(arbitrary_transform));
 
   // Changing these properties only affects the layer itself.
@@ -344,24 +332,31 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
 
   // Unrelated functions, always set to new values, always set needs update.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4)));
+      layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4));
+      layer->NoteLayerPropertyChanged());
   host_impl.active_tree()->BuildPropertyTreesForTesting();
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true);
+                                      layer->NoteLayerPropertyChanged());
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true);
+                                      layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 5)));
+      layer->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 5));
+      layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer2->SetPosition(arbitrary_point_f));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetShouldFlattenTransform(false));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->Set3dSortingContextId(1));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetShouldFlattenTransform(false);
+                                      layer->NoteLayerPropertyChanged());
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->Set3dSortingContextId(1);
+                                      layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetDoubleSided(false));  // constructor initializes it to "true".
+      layer->SetDoubleSided(false);  // constructor initializes it to "true".
+      layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundFilters(arbitrary_filters));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetOpacity(arbitrary_number));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetBlendMode(arbitrary_blend_mode));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBlendMode(arbitrary_blend_mode);
+                                      layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetTransform(arbitrary_transform));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
 

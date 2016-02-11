@@ -416,6 +416,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool IsThreaded() const;
   bool IsRemoteServer() const;
   bool IsRemoteClient() const;
+  void BuildPropertyTreesForTesting();
 
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);

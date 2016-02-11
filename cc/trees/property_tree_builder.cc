@@ -747,6 +747,14 @@ void SetBackfaceVisibilityTransform(LayerType* layer,
   }
 }
 
+static void SetLayerPropertyChangedForChild(Layer* parent, Layer* child) {
+  if (parent->subtree_property_changed())
+    child->SetSubtreePropertyChanged();
+}
+
+static void SetLayerPropertyChangedForChild(LayerImpl* parent,
+                                            LayerImpl* child) {}
+
 template <typename LayerType>
 void BuildPropertyTreesInternal(
     LayerType* layer,
@@ -779,6 +787,7 @@ void BuildPropertyTreesInternal(
   SetBackfaceVisibilityTransform(layer, created_transform_node);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
+    SetLayerPropertyChangedForChild(layer, layer->child_at(i));
     if (!layer->child_at(i)->scroll_parent()) {
       DataForRecursionFromChild<LayerType> data_from_child;
       BuildPropertyTreesInternal(layer->child_at(i), data_for_children,

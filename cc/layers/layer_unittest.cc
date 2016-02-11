@@ -53,6 +53,25 @@ using ::testing::_;
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());               \
   } while (false)
 
+#define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test)   \
+  code_to_test;                                            \
+  root->layer_tree_host()->BuildPropertyTreesForTesting(); \
+  EXPECT_TRUE(root->subtree_property_changed());           \
+  EXPECT_TRUE(root->needs_push_properties());              \
+  EXPECT_TRUE(child->subtree_property_changed());          \
+  EXPECT_TRUE(child->needs_push_properties());             \
+  EXPECT_TRUE(grand_child->subtree_property_changed());    \
+  EXPECT_TRUE(grand_child->needs_push_properties());
+
+#define EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(code_to_test) \
+  code_to_test;                                                \
+  EXPECT_FALSE(root->subtree_property_changed());              \
+  EXPECT_FALSE(root->needs_push_properties());                 \
+  EXPECT_FALSE(child->subtree_property_changed());             \
+  EXPECT_FALSE(child->needs_push_properties());                \
+  EXPECT_FALSE(grand_child->subtree_property_changed());       \
+  EXPECT_FALSE(grand_child->needs_push_properties());
+
 namespace cc {
 
 // This class is a friend of Layer, and is used as a wrapper for all the tests
@@ -868,6 +887,92 @@ TEST_F(LayerTest, BasicCreateAndDestroy) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
   test_layer->SetLayerTreeHost(nullptr);
+}
+
+TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
+  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
+  scoped_refptr<Layer> root = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> dummy_layer1 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> dummy_layer2 = Layer::Create(layer_settings_);
+
+  layer_tree_host_->SetRootLayer(root);
+  root->AddChild(child);
+  child->AddChild(grand_child);
+  SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
+  scoped_ptr<LayerImpl> root_impl =
+      LayerImpl::Create(host_impl_.active_tree(), 1);
+  scoped_ptr<LayerImpl> child_impl =
+      LayerImpl::Create(host_impl_.active_tree(), 2);
+  scoped_ptr<LayerImpl> grand_child_impl =
+      LayerImpl::Create(host_impl_.active_tree(), 3);
+  scoped_ptr<LayerImpl> dummy_layer1_impl =
+      LayerImpl::Create(host_impl_.active_tree(), 4);
+  scoped_ptr<LayerImpl> dummy_layer2_impl =
+      LayerImpl::Create(host_impl_.active_tree(), 5);
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMaskLayer(dummy_layer1.get()));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get());
+      dummy_layer1->PushPropertiesTo(dummy_layer1_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMasksToBounds(true));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetContentsOpaque(true));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetReplicaLayer(dummy_layer2.get()));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get());
+      dummy_layer2->PushPropertiesTo(dummy_layer2_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetShouldFlattenTransform(false));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->Set3dSortingContextId(1));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get());
+      dummy_layer2->PushPropertiesTo(dummy_layer2_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetDoubleSided(false));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetHideLayerAndSubtree(true));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBlendMode(arbitrary_blend_mode));
 }
 
 TEST_F(LayerTest, AddAndRemoveChild) {
