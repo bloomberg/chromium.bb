@@ -61,6 +61,7 @@
 #include "media/midi/midi_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
@@ -1787,6 +1788,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-scroll-anchoring", IDS_FLAGS_ENABLE_SCROLL_ANCHORING_NAME,
      IDS_FLAGS_ENABLE_SCROLL_ANCHORING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollAnchoring)},
+#if !defined(OS_ANDROID)
+    {"ui-disable-compositor-animation-timelines",
+     IDS_FLAGS_DISABLE_UI_COMPOSITOR_ANIMATION_TIMELINES,
+     IDS_FLAGS_DISABLE_UI_COMPOSITOR_ANIMATION_TIMELINES_DESCRIPTION,
+     kOsDesktop, SINGLE_DISABLE_VALUE_TYPE(
+                     switches::kUIDisableCompositorAnimationTimelines)},
+#endif  // !defined(OS_ANDROID)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

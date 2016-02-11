@@ -70775,6 +70775,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="274103741" label="enable-ntp-popular-sites"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280322118" label="enable-unsafe-es3-apis"/>
+  <int value="323605372" label="ui-disable-compositor-animation-timelines"/>
   <int value="324631366" label="enable-drive-search-in-app-launcher"/>
   <int value="330138076" label="enable-clear-browsing-data-counters"/>
   <int value="346711293" label="enable-save-password-bubble"/>
