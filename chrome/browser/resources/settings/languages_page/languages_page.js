@@ -41,6 +41,24 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /** @private */
+    languagesSecondary_: {
+      type: String,
+      value: 'Placeholder, e.g. English (United States)',
+    },
+
+    /** @private */
+    inputMethodsSecondary_: {
+      type: String,
+      value: 'Placeholder, e.g. US keyboard',
+    },
+
+    /** @private */
+    spellCheckSecondary_: {
+      type: String,
+      value: 'Placeholder, e.g. English (United States)',
+    },
   },
 
   /** @private {!LanguageHelper} */
