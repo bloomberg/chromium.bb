@@ -9,7 +9,7 @@
 
 #include <windows.h>
 #include <msi.h>
-#include <shlobj.h>
+#include <shellapi.h>
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -44,8 +43,6 @@ const wchar_t kBrowserProgIdPrefix[] = L"ChromeHTML";
 const wchar_t kBrowserProgIdDesc[] = L"Chrome HTML Document";
 const wchar_t kCommandExecuteImplUuid[] =
     L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
-const wchar_t kEdgeAppId[] =
-    L"Microsoft.MicrosoftEdge_8wekyb3d8bbwe!MicrosoftEdge";
 
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
@@ -64,12 +61,16 @@ base::string16 GetUninstallSurveyUrl() {
 }
 
 bool NavigateToUrlWithEdge(const base::string16& url) {
-  base::win::ScopedComPtr<IApplicationActivationManager> activator;
-  DWORD pid = 0;
-  return SUCCEEDED(
-             activator.CreateInstance(CLSID_ApplicationActivationManager)) &&
-         SUCCEEDED(activator->ActivateApplication(kEdgeAppId, url.c_str(),
-                                                  AO_NOERRORUI, &pid));
+  base::string16 protocol_url = L"microsoft-edge:" + url;
+  SHELLEXECUTEINFO info = { sizeof(info) };
+  info.fMask = SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI;
+  info.lpVerb = L"open";
+  info.lpFile = protocol_url.c_str();
+  info.nShow = SW_SHOWNORMAL;
+  if (::ShellExecuteEx(&info))
+    return true;
+  PLOG(ERROR) << "Failed to launch Edge for uninstall survey";
+  return false;
 }
 
 void NavigateToUrlWithIExplore(const base::string16& url) {
