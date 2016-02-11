@@ -53,8 +53,6 @@ class ProtocolHandlerRegistry : public KeyedService {
     void SetDefaultWebClientUIState(
         shell_integration::DefaultWebClientUIState state) override;
 
-    bool IsInteractiveSetDefaultPermitted() override;
-
     // Give the observer a handle to the worker, so we can find out the protocol
     // when we're called and also tell the worker if we get deleted.
     void SetWorker(shell_integration::DefaultProtocolClientWorker* worker);
@@ -63,8 +61,6 @@ class ProtocolHandlerRegistry : public KeyedService {
     shell_integration::DefaultProtocolClientWorker* worker_;
 
    private:
-    bool IsOwnedByWorker() override;
-
     // This is a raw pointer, not reference counted, intentionally. In general
     // subclasses of DefaultWebClientObserver are not able to be refcounted
     // e.g. the browser options page

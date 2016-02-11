@@ -197,12 +197,6 @@ class DefaultWebClientObserver {
   // Called to notify the UI of the immediate result of invoking
   // SetAsDefault.
   virtual void OnSetAsDefaultConcluded(bool succeeded) {}
-  // Observer classes that return true to OwnedByWorker are automatically
-  // freed by the worker when they are no longer needed. False by default.
-  virtual bool IsOwnedByWorker();
-  // An observer can permit or decline set-as-default operation if it
-  // requires triggering user interaction. By default not allowed.
-  virtual bool IsInteractiveSetDefaultPermitted();
 };
 
 //  Helper objects that handle checking if Chrome is the default browser
@@ -210,10 +204,25 @@ class DefaultWebClientObserver {
 //  it as the default. These operations are performed asynchronously on the
 //  file thread since registry access (on Windows) or the preference database
 //  (on Linux) are involved and this can be slow.
+//  By default, the worker will present the user with an interactive flow if
+//  required by the platform. This can be suppressed via
+//  set_interactive_permitted(), in which case an attempt to set Chrome as
+//  the default handler will silently fail on such platforms.
 class DefaultWebClientWorker
     : public base::RefCountedThreadSafe<DefaultWebClientWorker> {
  public:
-  explicit DefaultWebClientWorker(DefaultWebClientObserver* observer);
+  // Constructor. The worker will post updates to |observer|. If
+  // |delete_observer| is true, the worker owns the observer and it will be
+  // freed in the destructor.
+  DefaultWebClientWorker(DefaultWebClientObserver* observer,
+                         bool delete_observer);
+
+  // Controls whether the worker can use user interaction to set the default
+  // web client. If false, the set-as-default operation will fail on OS where
+  // it is required.
+  void set_interactive_permitted(bool interactive_permitted) {
+    interactive_permitted_ = interactive_permitted;
+  }
 
   // Checks to see if Chrome is the default web client application. The result
   // will be passed back to the observer via the SetDefaultWebClientUIState
@@ -277,6 +286,10 @@ class DefaultWebClientWorker
     return set_as_default_initialized_;
   }
 
+  // When false, the operation to set as default will fail for interactive
+  // flows.
+  bool interactive_permitted_ = true;
+
   // Flag that indicates if the set-as-default operation is in progess to
   // prevent multiple notifications to the observer.
   bool set_as_default_in_progress_ = false;
@@ -288,10 +301,9 @@ class DefaultWebClientWorker
   virtual void CheckIsDefault() = 0;
 
   // Sets Chrome as the default web client. Always called on the FILE thread.
-  // |interactive_permitted| will make SetAsDefault() fail if it requires
-  // interaction with the user. Subclasses are responsible for calling
-  // OnSetAsDefaultAttemptComplete() on the UI thread.
-  virtual void SetAsDefault(bool interactive_permitted) = 0;
+  // Subclasses are responsible for calling OnSetAsDefaultAttemptComplete() on
+  // the UI thread.
+  virtual void SetAsDefault() = 0;
 
   // Returns the prefix used for metrics to differentiate UMA metrics for
   // setting the default browser and setting the default protocol client.
@@ -321,6 +333,9 @@ class DefaultWebClientWorker
 
   DefaultWebClientObserver* observer_;
 
+  // Indicates if the the observer will be automatically freed by the worker.
+  bool delete_observer_;
+
   // Flag that indicates the return value of InitializeSetAsDefault(). If
   // true, FinalizeSetAsDefault() will be called to clear what was
   // initialized.
@@ -339,7 +354,11 @@ class DefaultWebClientWorker
 // Worker for checking and setting the default browser.
 class DefaultBrowserWorker : public DefaultWebClientWorker {
  public:
-  explicit DefaultBrowserWorker(DefaultWebClientObserver* observer);
+  // Constructor. The worker will post updates to |observer|. If
+  // |delete_observer| is true, the worker owns the observer and it will be
+  // freed in the destructor.
+  DefaultBrowserWorker(DefaultWebClientObserver* observer,
+                       bool delete_observer);
 
  private:
   ~DefaultBrowserWorker() override;
@@ -348,7 +367,7 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
   void CheckIsDefault() override;
 
   // Set Chrome as the default browser.
-  void SetAsDefault(bool interactive_permitted) override;
+  void SetAsDefault() override;
 
   // Returns the histogram prefix for DefaultBrowserWorker.
   const char* GetHistogramPrefix() override;
@@ -379,8 +398,12 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
 // multiple protocols you should use multiple worker objects.
 class DefaultProtocolClientWorker : public DefaultWebClientWorker {
  public:
+  // Constructor. The worker will post updates to |observer|. If
+  // |delete_observer| is true, the worker owns the observer and it will be
+  // freed in the destructor.
   DefaultProtocolClientWorker(DefaultWebClientObserver* observer,
-                              const std::string& protocol);
+                              const std::string& protocol,
+                              bool delete_observer);
 
   const std::string& protocol() const { return protocol_; }
 
@@ -392,7 +415,7 @@ class DefaultProtocolClientWorker : public DefaultWebClientWorker {
   void CheckIsDefault() override;
 
   // Set Chrome as the default handler for this protocol.
-  void SetAsDefault(bool interactive_permitted) override;
+  void SetAsDefault() override;
 
   // Returns the histogram prefix for DefaultProtocolClientWorker.
   const char* GetHistogramPrefix() override;

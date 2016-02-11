@@ -147,24 +147,13 @@ base::string16 GetAppShortcutsSubdirName() {
 #endif  // !defined(OS_WIN)
 
 ///////////////////////////////////////////////////////////////////////////////
-// DefaultWebClientObserver
-//
-
-bool DefaultWebClientObserver::IsOwnedByWorker() {
-  return false;
-}
-
-bool DefaultWebClientObserver::IsInteractiveSetDefaultPermitted() {
-  return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // DefaultWebClientWorker
 //
 
 DefaultWebClientWorker::DefaultWebClientWorker(
-    DefaultWebClientObserver* observer)
-    : observer_(observer) {}
+    DefaultWebClientObserver* observer,
+    bool delete_observer)
+    : observer_(observer), delete_observer_(delete_observer) {}
 
 void DefaultWebClientWorker::StartCheckIsDefault() {
   if (observer_)
@@ -187,20 +176,17 @@ void DefaultWebClientWorker::StartSetAsDefault() {
   }
 
   set_as_default_in_progress_ = true;
-  bool interactive_permitted = true;
-  if (observer_) {
+  if (observer_)
     observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
-    interactive_permitted = observer_->IsInteractiveSetDefaultPermitted();
-  }
 
   set_as_default_initialized_ = InitializeSetAsDefault();
 
   // Remember the start time.
   start_time_ = base::TimeTicks::Now();
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&DefaultWebClientWorker::SetAsDefault,
-                                     this, interactive_permitted));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DefaultWebClientWorker::SetAsDefault, this));
 }
 
 void DefaultWebClientWorker::ObserverDestroyed() {
@@ -238,7 +224,7 @@ void DefaultWebClientWorker::OnCheckIsDefaultComplete(
 
   // The worker has finished everything it needs to do, so free the observer
   // if we own it.
-  if (observer_ && observer_->IsOwnedByWorker()) {
+  if (observer_ && delete_observer_) {
     delete observer_;
     observer_ = nullptr;
   }
@@ -363,8 +349,9 @@ const char* DefaultWebClientWorker::AttemptResultToString(
 // DefaultBrowserWorker
 //
 
-DefaultBrowserWorker::DefaultBrowserWorker(DefaultWebClientObserver* observer)
-    : DefaultWebClientWorker(observer) {}
+DefaultBrowserWorker::DefaultBrowserWorker(DefaultWebClientObserver* observer,
+                                           bool delete_observer)
+    : DefaultWebClientWorker(observer, delete_observer) {}
 
 DefaultBrowserWorker::~DefaultBrowserWorker() {}
 
@@ -378,7 +365,7 @@ void DefaultBrowserWorker::CheckIsDefault() {
       base::Bind(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this, state));
 }
 
-void DefaultBrowserWorker::SetAsDefault(bool interactive_permitted) {
+void DefaultBrowserWorker::SetAsDefault() {
   AttemptResult result = AttemptResult::FAILURE;
   switch (CanSetAsDefaultBrowser()) {
     case SET_DEFAULT_NOT_ALLOWED:
@@ -389,12 +376,12 @@ void DefaultBrowserWorker::SetAsDefault(bool interactive_permitted) {
         result = AttemptResult::SUCCESS;
       break;
     case SET_DEFAULT_INTERACTIVE:
-      if (interactive_permitted && SetAsDefaultBrowserInteractive())
+      if (interactive_permitted_ && SetAsDefaultBrowserInteractive())
         result = AttemptResult::SUCCESS;
       break;
     case SET_DEFAULT_ASYNCHRONOUS:
 #if defined(OS_WIN)
-      if (!interactive_permitted)
+      if (!interactive_permitted_)
         break;
       if (GetDefaultBrowser() == IS_DEFAULT) {
         // Don't start the asynchronous operation since it could result in
@@ -430,8 +417,9 @@ const char* DefaultBrowserWorker::GetHistogramPrefix() {
 
 DefaultProtocolClientWorker::DefaultProtocolClientWorker(
     DefaultWebClientObserver* observer,
-    const std::string& protocol)
-    : DefaultWebClientWorker(observer), protocol_(protocol) {}
+    const std::string& protocol,
+    bool delete_observer)
+    : DefaultWebClientWorker(observer, delete_observer), protocol_(protocol) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultProtocolClientWorker, private:
@@ -446,7 +434,7 @@ void DefaultProtocolClientWorker::CheckIsDefault() {
                  state));
 }
 
-void DefaultProtocolClientWorker::SetAsDefault(bool interactive_permitted) {
+void DefaultProtocolClientWorker::SetAsDefault() {
   AttemptResult result = AttemptResult::FAILURE;
   switch (CanSetAsDefaultProtocolClient()) {
     case SET_DEFAULT_NOT_ALLOWED:
@@ -457,7 +445,7 @@ void DefaultProtocolClientWorker::SetAsDefault(bool interactive_permitted) {
         result = AttemptResult::SUCCESS;
       break;
     case SET_DEFAULT_INTERACTIVE:
-      if (interactive_permitted &&
+      if (interactive_permitted_ &&
           SetAsDefaultProtocolClientInteractive(protocol_)) {
         result = AttemptResult::SUCCESS;
       }

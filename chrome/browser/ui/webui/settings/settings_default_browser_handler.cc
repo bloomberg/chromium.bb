@@ -13,8 +13,9 @@
 namespace settings {
 
 DefaultBrowserHandler::DefaultBrowserHandler(content::WebUI* webui)
-    : default_browser_worker_(
-          new shell_integration::DefaultBrowserWorker(this)) {
+    : default_browser_worker_(new shell_integration::DefaultBrowserWorker(
+          this,
+          /*delete_observer=*/false)) {
   default_browser_policy_.Init(
       prefs::kDefaultBrowserSettingEnabled, g_browser_process->local_state(),
       base::Bind(&DefaultBrowserHandler::RequestDefaultBrowserState,
@@ -58,10 +59,6 @@ void DefaultBrowserHandler::SetDefaultWebClientUIState(
 
   web_ui()->CallJavascriptFunction("Settings.updateDefaultBrowserState",
                                    is_default, can_be_default);
-}
-
-bool DefaultBrowserHandler::IsInteractiveSetDefaultPermitted() {
-  return true;
 }
 
 void DefaultBrowserHandler::OnSetAsDefaultConcluded(bool succeeded) {

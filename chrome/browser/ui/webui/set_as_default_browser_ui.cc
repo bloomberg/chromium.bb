@@ -109,7 +109,6 @@ class SetAsDefaultBrowserHandler
   void SetDefaultWebClientUIState(
       shell_integration::DefaultWebClientUIState state) override;
   void OnSetAsDefaultConcluded(bool close_chrome) override;
-  bool IsInteractiveSetDefaultPermitted() override;
 
  private:
   // Handler for the 'Next' (or 'make Chrome the Metro browser') button.
@@ -118,6 +117,9 @@ class SetAsDefaultBrowserHandler
   // Close this web ui.
   void ConcludeInteraction(MakeChromeDefaultResult interaction_result);
 
+  // The worker pointer is reference counted. While it is running, the
+  // message loops of the FILE and UI thread will hold references to it
+  // and it will be automatically freed once all its tasks have finished.
   scoped_refptr<shell_integration::DefaultBrowserWorker>
       default_browser_worker_;
   bool set_default_returned_;
@@ -129,8 +131,9 @@ class SetAsDefaultBrowserHandler
 
 SetAsDefaultBrowserHandler::SetAsDefaultBrowserHandler(
     const base::WeakPtr<ResponseDelegate>& response_delegate)
-    : default_browser_worker_(
-          new shell_integration::DefaultBrowserWorker(this)),
+    : default_browser_worker_(new shell_integration::DefaultBrowserWorker(
+          this,
+          /*delete_observer=*/false)),
       set_default_returned_(false),
       set_default_result_(false),
       response_delegate_(response_delegate) {}
@@ -169,10 +172,6 @@ void SetAsDefaultBrowserHandler::SetDefaultWebClientUIState(
 void SetAsDefaultBrowserHandler::OnSetAsDefaultConcluded(bool call_result) {
   set_default_returned_ = true;
   set_default_result_ = call_result;
-}
-
-bool SetAsDefaultBrowserHandler::IsInteractiveSetDefaultPermitted() {
-  return true;
 }
 
 void SetAsDefaultBrowserHandler::HandleLaunchSetDefaultBrowserFlow(

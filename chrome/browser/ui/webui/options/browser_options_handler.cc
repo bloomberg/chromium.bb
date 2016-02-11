@@ -186,7 +186,11 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 #endif  // defined(OS_CHROMEOS)
       signin_observer_(this),
       weak_ptr_factory_(this) {
-  default_browser_worker_ = new shell_integration::DefaultBrowserWorker(this);
+  // The worker pointer is reference counted. While it is running, the
+  // message loops of the FILE and UI thread will hold references to it
+  // and it will be automatically freed once all its tasks have finished.
+  default_browser_worker_ = new shell_integration::DefaultBrowserWorker(
+      this, /*delete_observer=*/false);
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   cloud_print_mdns_ui_enabled_ = true;
@@ -1142,10 +1146,6 @@ void BrowserOptionsHandler::SetDefaultWebClientUIState(
   }
 
   SetDefaultBrowserUIString(status_string_id);
-}
-
-bool BrowserOptionsHandler::IsInteractiveSetDefaultPermitted() {
-  return true;  // This is UI so we can allow it.
 }
 
 void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {

@@ -176,8 +176,12 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.InfoBar.UserInteraction",
                             InfoBarUserInteraction::START_SET_AS_DEFAULT,
                             NUM_INFO_BAR_USER_INTERACTION_TYPES);
+  // The worker pointer is reference counted. While it is running, the
+  // message loops of the FILE and UI thread will hold references to it
+  // and it will be automatically freed once all its tasks have finished.
   scoped_refptr<shell_integration::DefaultBrowserWorker>(
-      new shell_integration::DefaultBrowserWorker(nullptr))
+      new shell_integration::DefaultBrowserWorker(nullptr,
+                                                  /*delete_observer=*/false))
       ->StartSetAsDefault();
   return true;
 }
@@ -208,7 +212,6 @@ class CheckDefaultBrowserObserver
  private:
   void SetDefaultWebClientUIState(
       shell_integration::DefaultWebClientUIState state) override;
-  bool IsOwnedByWorker() override;
 
   void ResetCheckDefaultBrowserPref();
   void ShowPrompt();
@@ -240,11 +243,6 @@ void CheckDefaultBrowserObserver::SetDefaultWebClientUIState(
                  shell_integration::SET_DEFAULT_NOT_ALLOWED) {
     ShowPrompt();
   }
-}
-
-bool CheckDefaultBrowserObserver::IsOwnedByWorker() {
-  // Instruct the DefaultBrowserWorker to delete this instance when it is done.
-  return true;
 }
 
 void CheckDefaultBrowserObserver::ResetCheckDefaultBrowserPref() {
@@ -317,7 +315,8 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
 
   scoped_refptr<shell_integration::DefaultBrowserWorker>(
       new shell_integration::DefaultBrowserWorker(
-          new CheckDefaultBrowserObserver(profile->GetPath(), show_prompt)))
+          new CheckDefaultBrowserObserver(profile->GetPath(), show_prompt),
+          /*delete_observer=*/true))
       ->StartCheckIsDefault();
 }
 

@@ -38,14 +38,16 @@ static bool g_accept_requests = true;
 namespace {
 
 // Functions enabling unit testing. Using a NULL delegate will use the default
-// behavior; if a delegate is provided it will be used instead.
+// behavior; if a delegate is provided it will be used instead. Also, Ownership
+// of |observer| is passed to the new worker.
 shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
     shell_integration::DefaultWebClientObserver* observer,
     const std::string& protocol,
     ExternalProtocolHandler::Delegate* delegate) {
   if (!delegate)
-    return new shell_integration::DefaultProtocolClientWorker(observer,
-                                                              protocol);
+    return new shell_integration::DefaultProtocolClientWorker(
+        observer, protocol,
+        /*delete_observer=*/true);
 
   return delegate->CreateShellWorker(observer, protocol);
 }
@@ -145,8 +147,6 @@ class ExternalDefaultProtocolObserver
     LaunchUrlWithoutSecurityCheckWithDelegate(
         escaped_url_, render_process_host_id_, tab_contents_id_, delegate_);
   }
-
-  bool IsOwnedByWorker() override { return true; }
 
  private:
   ExternalProtocolHandler::Delegate* delegate_;

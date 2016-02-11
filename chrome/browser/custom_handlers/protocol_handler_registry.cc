@@ -261,18 +261,9 @@ void ProtocolHandlerRegistry::DefaultClientObserver::SetDefaultWebClientUIState(
   }
 }
 
-bool ProtocolHandlerRegistry::DefaultClientObserver::
-    IsInteractiveSetDefaultPermitted() {
-  return true;
-}
-
 void ProtocolHandlerRegistry::DefaultClientObserver::SetWorker(
     shell_integration::DefaultProtocolClientWorker* worker) {
   worker_ = worker;
-}
-
-bool ProtocolHandlerRegistry::DefaultClientObserver::IsOwnedByWorker() {
-  return true;
 }
 
 // Delegate --------------------------------------------------------------------
@@ -303,7 +294,8 @@ shell_integration::DefaultProtocolClientWorker*
 ProtocolHandlerRegistry::Delegate::CreateShellWorker(
     shell_integration::DefaultWebClientObserver* observer,
     const std::string& protocol) {
-  return new shell_integration::DefaultProtocolClientWorker(observer, protocol);
+  return new shell_integration::DefaultProtocolClientWorker(
+      observer, protocol, /*delete_observer=*/true);
 }
 
 ProtocolHandlerRegistry::DefaultClientObserver*
@@ -315,7 +307,7 @@ ProtocolHandlerRegistry::Delegate::CreateShellObserver(
 void ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(
     const std::string& protocol, ProtocolHandlerRegistry* registry) {
   DefaultClientObserver* observer = CreateShellObserver(registry);
-  // The worker pointer is reference counted. While it is running the
+  // The worker pointer is reference counted. While it is running, the
   // message loops of the FILE and UI thread will hold references to it
   // and it will be automatically freed once all its tasks have finished.
   scoped_refptr<shell_integration::DefaultProtocolClientWorker> worker;

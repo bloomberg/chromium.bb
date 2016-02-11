@@ -110,8 +110,6 @@ class OpenURLFromTabBasedOnBrowserDefault
     }
   }
 
-  bool IsOwnedByWorker() override { return true; }
-
  private:
   scoped_ptr<content::WebContents> source_;
   const content::OpenURLParams params_;
@@ -158,7 +156,8 @@ ChromeAppDelegate::NewWindowContentsDelegate::OpenURLFromTab(
         check_if_default_browser_worker =
             new shell_integration::DefaultBrowserWorker(
                 new OpenURLFromTabBasedOnBrowserDefault(std::move(owned_source),
-                                                        params));
+                                                        params),
+                /*delete_observer=*/true);
     // Object lifetime notes: The OpenURLFromTabBasedOnBrowserDefault is owned
     // by check_if_default_browser_worker. StartCheckIsDefault() takes lifetime
     // ownership of check_if_default_browser_worker and will clean up after

@@ -17,7 +17,10 @@ class FakeExternalProtocolHandlerWorker
       shell_integration::DefaultWebClientObserver* observer,
       const std::string& protocol,
       shell_integration::DefaultWebClientState os_state)
-      : shell_integration::DefaultProtocolClientWorker(observer, protocol),
+      : shell_integration::DefaultProtocolClientWorker(
+            observer,
+            protocol,
+            /*delete_observer=*/true),
         os_state_(os_state) {}
 
  private:
@@ -30,7 +33,7 @@ class FakeExternalProtocolHandlerWorker
                    this, os_state_));
   }
 
-  void SetAsDefault(bool interactive_permitted) override {
+  void SetAsDefault() override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(

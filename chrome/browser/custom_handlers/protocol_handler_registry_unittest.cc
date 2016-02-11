@@ -224,7 +224,10 @@ class FakeProtocolClientWorker
       shell_integration::DefaultWebClientObserver* observer,
       const std::string& protocol,
       bool force_failure)
-      : shell_integration::DefaultProtocolClientWorker(observer, protocol),
+      : shell_integration::DefaultProtocolClientWorker(
+            observer,
+            protocol,
+            /*delete_observer*/ true),
         force_failure_(force_failure) {}
 
  private:
@@ -242,7 +245,7 @@ class FakeProtocolClientWorker
                    state));
   }
 
-  void SetAsDefault(bool interactive_permitted) override {
+  void SetAsDefault() override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&FakeProtocolClientWorker::OnSetAsDefaultAttemptComplete,
