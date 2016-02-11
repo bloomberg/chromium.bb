@@ -210,6 +210,7 @@ class Shell : public WebContentsDelegate,
   void ToggleFullscreenModeForTab(WebContents* web_contents,
                                   bool enter_fullscreen);
   // WebContentsObserver
+  void RenderViewCreated(RenderViewHost* render_view_host) override;
   void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
 
   void InnerShowDevTools();

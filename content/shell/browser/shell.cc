@@ -119,11 +119,13 @@ Shell* Shell::CreateShell(WebContents* web_contents,
 
   shell->PlatformResizeSubViews();
 
+  // Note: Do not make RenderFrameHost or RenderViewHost specific state changes
+  // here, because they will be forgotten after a cross-process navigation. Use
+  // RenderFrameCreated or RenderViewCreated instead.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kRunLayoutTest)) {
     web_contents->GetMutableRendererPrefs()->use_custom_colors = false;
     web_contents->GetRenderViewHost()->SyncRendererPrefs();
-    web_contents->GetRenderViewHost()->AllowBindings(BINDINGS_POLICY_MOJO);
   }
 
 #if defined(ENABLE_WEBRTC)
@@ -434,6 +436,13 @@ gfx::Size Shell::GetShellDefaultSize() {
       kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip);
   }
   return default_shell_size;
+}
+
+void Shell::RenderViewCreated(RenderViewHost* render_view_host) {
+  // All RenderViewHosts in layout tests should get Mojo bindings.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kRunLayoutTest))
+    render_view_host->AllowBindings(BINDINGS_POLICY_MOJO);
 }
 
 void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
