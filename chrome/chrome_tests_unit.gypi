@@ -1473,6 +1473,7 @@
       'browser/importer/firefox_profile_lock_unittest.cc',
       'browser/importer/profile_writer_unittest.cc',
       'browser/media/combined_desktop_media_list_unittest.cc',
+      'browser/media/tab_desktop_media_list_unittest.cc',
       'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
       'browser/media_galleries/gallery_watch_manager_unittest.cc',
       'browser/media_galleries/linux/mtp_device_object_enumerator_unittest.cc',
