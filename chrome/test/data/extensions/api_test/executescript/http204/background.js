@@ -274,19 +274,33 @@ function checkManifestScriptsAfter204Navigation(tabId) {
     allFrames: true,
     code: '[' +
       '[window.documentStart,' +
-      ' window.documentEnd],' +
+      ' window.documentEnd,' +
+      ' performance.timing.domContentLoadedEventStart > 0],' +
       '[window.didRunAtDocumentStartUnexpected,' +
       ' window.didRunAtDocumentEndUnexpected],' +
       ']',
   }, chrome.test.callbackPass(function(results) {
     chrome.test.assertEq(2, results.length);
     // Main frame. Should not be affected by child frame navigations.
-    chrome.test.assertEq([[1, 1], [null, null]], results[0]);
+    chrome.test.assertEq([[1, 1, true], [null, null]], results[0]);
 
     // Child frame.
+    if (!results[1][0][2]) {  // = if DOMContentLoaded did not run.
+      // If the 204 reply was handled faster than the parsing of the frame
+      // document, then the DOMContentLoaded event won't be triggered.
+      chrome.test.assertEq([
+          // The 204 navigation was triggered by the page, so the document_start
+          // script should have run by then. But since DOMContentLoaded is not
+          // triggered, the document_end script should not run either.
+          [1, null, false],
+          // Should not inject non-matching scripts.
+          [null, null],
+      ], results[1]);
+      return;
+    }
     chrome.test.assertEq([
         // Should run the content scripts even after a navigation to 204.
-        [1, 1],
+        [1, 1, true],
         // Should not inject non-matching scripts.
         [null, null],
     ], results[1]);
