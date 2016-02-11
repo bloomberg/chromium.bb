@@ -29,7 +29,6 @@ const float kInactiveIconAlpha = 0.2f;
 // pressed states.
 // TODO(tdanderson|estade): Request these colors from ThemeProvider.
 const int kHoveredAlpha = 0x14;
-const SkColor kHoveredPressedColor = SK_ColorBLACK;
 const int kPressedAlpha = 0x24;
 
 }  // namespace
@@ -116,8 +115,10 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
   else if (state() == STATE_PRESSED)
     bg_alpha = kPressedAlpha;
 
-  if (bg_alpha != SK_AlphaTRANSPARENT)
-    canvas->DrawColor(SkColorSetA(kHoveredPressedColor, bg_alpha));
+  if (bg_alpha != SK_AlphaTRANSPARENT) {
+    canvas->DrawColor(SkColorSetA(
+        use_light_images_ ? SK_ColorWHITE : SK_ColorBLACK, bg_alpha));
+  }
 
   int icon_alpha = swap_images_animation_->CurrentValueBetween(0, 255);
   int crossfade_icon_alpha = 0;
