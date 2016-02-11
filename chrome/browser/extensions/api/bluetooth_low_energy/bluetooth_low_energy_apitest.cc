@@ -406,12 +406,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
-      "bluetooth_low_energy/get_included_services")));
-
   // Wait for initial call to end with failure as there is no mapping.
   ExtensionTestMessageListener listener("ready", true);
   listener.set_failure_message("fail");
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "bluetooth_low_energy/get_included_services")));
+
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   // Set up for the rest of the calls before replying. Included services can be
@@ -597,10 +598,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
       mock_adapter_, device0_.get(), service0_.get());
   event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
 
+  ExtensionTestMessageListener listener(true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/get_removed_characteristic")));
 
-  ExtensionTestMessageListener listener(true);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   ASSERT_EQ("ready", listener.message()) << listener.message();
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
@@ -890,10 +891,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
   event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
   event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
 
+  ExtensionTestMessageListener listener(true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/get_removed_descriptor")));
 
-  ExtensionTestMessageListener listener(true);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   ASSERT_EQ("ready", listener.message()) << listener.message();
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
