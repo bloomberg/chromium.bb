@@ -67,6 +67,7 @@ source_set("test_support") {
     "//ui/aura",
     "//ui/compositor",
     "//ui/gfx/geometry",
+    "//ui/wm:wm",
   ]
 }
 

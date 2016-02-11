@@ -88,6 +88,8 @@ ShellSurface::~ShellSurface() {
   }
   if (widget_) {
     ash::wm::GetWindowState(widget_->GetNativeWindow())->RemoveObserver(this);
+    if (widget_->IsVisible())
+      widget_->Hide();
     widget_->CloseNow();
   }
 }
