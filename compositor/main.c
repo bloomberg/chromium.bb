@@ -1524,9 +1524,30 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 	return -1;
 }
 
+static char *
+copy_command_line(int argc, char * const argv[])
+{
+	FILE *fp;
+	char *str = NULL;
+	size_t size = 0;
+	int i;
+
+	fp = open_memstream(&str, &size);
+	if (!fp)
+		return NULL;
+
+	fprintf(fp, "%s", argv[0]);
+	for (i = 1; i < argc; i++)
+		fprintf(fp, " %s", argv[i]);
+	fclose(fp);
+
+	return str;
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
+	char *cmdline;
 	struct wl_display *display;
 	struct weston_compositor *ec;
 	struct wl_event_source *signals[4];
@@ -1564,13 +1585,18 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "config", 'c', &config_file },
 	};
 
+	cmdline = copy_command_line(argc, argv);
 	parse_options(core_options, ARRAY_LENGTH(core_options), &argc, argv);
 
-	if (help)
+	if (help) {
+		free(cmdline);
 		usage(EXIT_SUCCESS);
+	}
 
 	if (version) {
 		printf(PACKAGE_STRING "\n");
+		free(cmdline);
+
 		return EXIT_SUCCESS;
 	}
 
@@ -1583,6 +1609,8 @@ int main(int argc, char *argv[])
 		   STAMP_SPACE "Build: %s\n",
 		   PACKAGE_STRING, PACKAGE_URL, PACKAGE_BUGREPORT,
 		   BUILD_ID);
+	weston_log("Command line: %s\n", cmdline);
+	free(cmdline);
 	log_uname();
 
 	verify_xdg_runtime_dir();
