@@ -284,8 +284,8 @@ std::wstring GenerateEventName(DWORD pid) {
 // This is the function that is called when testing thread creation.
 // It is expected to set an event that the caller is waiting on.
 DWORD TestThreadFunc(LPVOID lpdwThreadParam) {
-  std::wstring event_name =
-      GenerateEventName(reinterpret_cast<DWORD>(lpdwThreadParam));
+  std::wstring event_name = GenerateEventName(
+      static_cast<DWORD>(reinterpret_cast<uintptr_t>(lpdwThreadParam)));
   if (!event_name.length()) {
     return 1;
   }
@@ -314,7 +314,8 @@ SBOX_TESTS_COMMAND int Process_CreateThread(int argc, wchar_t** argv) {
   DWORD thread_id = 0;
   HANDLE thread = NULL;
   thread = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&TestThreadFunc,
-                          reinterpret_cast<LPVOID>(pid), 0, &thread_id);
+                          reinterpret_cast<LPVOID>(static_cast<uintptr_t>(pid)),
+                          0, &thread_id);
 
   if (!thread) {
     return SBOX_TEST_THIRD_ERROR;
@@ -499,9 +500,9 @@ TEST(ProcessPolicyTest, TestCreateThreadOutsideSandbox) {
 
   DWORD thread_id = 0;
   HANDLE thread = NULL;
-  thread = TargetCreateThread(::CreateThread, NULL, 0,
-                              (LPTHREAD_START_ROUTINE)&TestThreadFunc,
-                              reinterpret_cast<LPVOID>(pid), 0, &thread_id);
+  thread = TargetCreateThread(
+      ::CreateThread, NULL, 0, (LPTHREAD_START_ROUTINE)&TestThreadFunc,
+      reinterpret_cast<LPVOID>(static_cast<uintptr_t>(pid)), 0, &thread_id);
   EXPECT_NE(static_cast<HANDLE>(NULL), thread);
   EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(thread, INFINITE));
   EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(event, INFINITE));
