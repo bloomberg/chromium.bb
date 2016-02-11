@@ -1184,42 +1184,117 @@
     ]
   },
   "Linux Tests (valgrind)(1)": {
-    "gtest_tests": [
-      {
-        "test": "crypto_unittests"
-      },
-      {
-        "test": "display_unittests"
-      },
-      {
-        "test": "ipc_tests"
-      },
-      {
-        "test": "jingle_unittests"
-      },
-      {
-        "test": "net_unittests"
-      },
-      {
-        "test": "ppapi_unittests"
-      },
-      {
-        "test": "printing_unittests"
-      },
-      {
-        "test": "sandbox_linux_unittests"
-      },
-      {
-        "test": "sql_unittests"
-      },
-      {
-        "test": "sync_unit_tests"
-      },
-      {
-        "test": "ui_base_unittests"
-      }
-    ],
     "scripts": [
+      {
+        "args": [
+          "crypto_unittests"
+        ],
+        "name": "memory_test: crypto_unittests",
+        "override_compile_targets": [
+          "crypto_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "display_unittests"
+        ],
+        "name": "memory_test: display_unittests",
+        "override_compile_targets": [
+          "display_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "ipc_tests"
+        ],
+        "name": "memory_test: ipc_tests",
+        "override_compile_targets": [
+          "ipc_tests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "jingle_unittests"
+        ],
+        "name": "memory_test: jingle_unittests",
+        "override_compile_targets": [
+          "jingle_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "net_unittests"
+        ],
+        "name": "memory_test: net_unittests",
+        "override_compile_targets": [
+          "net_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "ppapi_unittests"
+        ],
+        "name": "memory_test: ppapi_unittests",
+        "override_compile_targets": [
+          "ppapi_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "printing_unittests"
+        ],
+        "name": "memory_test: printing_unittests",
+        "override_compile_targets": [
+          "printing_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "sandbox_linux_unittests"
+        ],
+        "name": "memory_test: sandbox_linux_unittests",
+        "override_compile_targets": [
+          "sandbox_linux_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "sql_unittests"
+        ],
+        "name": "memory_test: sql_unittests",
+        "override_compile_targets": [
+          "sql_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "sync_unit_tests"
+        ],
+        "name": "memory_test: sync_unit_tests",
+        "override_compile_targets": [
+          "sync_unit_tests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "ui_base_unittests"
+        ],
+        "name": "memory_test: ui_base_unittests",
+        "override_compile_targets": [
+          "ui_base_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
       {
         "args": [
           "url_unittests"
@@ -1233,57 +1308,119 @@
     ]
   },
   "Linux Tests (valgrind)(2)": {
-    "gtest_tests": [
+    "scripts": [
       {
-        "test": "extensions_unittests"
+        "args": [
+          "extensions_unittests"
+        ],
+        "name": "memory_test: extensions_unittests",
+        "override_compile_targets": [
+          "extensions_unittests"
+        ],
+        "script": "run_under_valgrind.py"
       }
     ]
   },
   "Linux Tests (valgrind)(3)": {
     "gtest_tests": [
       {
-        "test": "media_unittests"
-      },
-      {
-        "test": "midi_unittests"
-      },
-      {
-        "test": "remoting_unittests"
-      },
-      {
         "shard_index": 0,
         "test": "unit_tests",
         "total_shards": 3
+      }
+    ],
+    "scripts": [
+      {
+        "args": [
+          "media_unittests"
+        ],
+        "name": "memory_test: media_unittests",
+        "override_compile_targets": [
+          "media_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "midi_unittests"
+        ],
+        "name": "memory_test: midi_unittests",
+        "override_compile_targets": [
+          "midi_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "remoting_unittests"
+        ],
+        "name": "memory_test: remoting_unittests",
+        "override_compile_targets": [
+          "remoting_unittests"
+        ],
+        "script": "run_under_valgrind.py"
       }
     ]
   },
   "Linux Tests (valgrind)(4)": {
     "gtest_tests": [
       {
-        "test": "components_unittests"
-      },
-      {
-        "test": "content_unittests"
-      },
-      {
         "shard_index": 1,
         "test": "unit_tests",
         "total_shards": 3
+      }
+    ],
+    "scripts": [
+      {
+        "args": [
+          "components_unittests"
+        ],
+        "name": "memory_test: components_unittests",
+        "override_compile_targets": [
+          "components_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "content_unittests"
+        ],
+        "name": "memory_test: content_unittests",
+        "override_compile_targets": [
+          "content_unittests"
+        ],
+        "script": "run_under_valgrind.py"
       }
     ]
   },
   "Linux Tests (valgrind)(5)": {
     "gtest_tests": [
       {
-        "test": "base_unittests"
-      },
-      {
-        "test": "gpu_unittests"
-      },
-      {
         "shard_index": 2,
         "test": "unit_tests",
         "total_shards": 3
+      }
+    ],
+    "scripts": [
+      {
+        "args": [
+          "base_unittests"
+        ],
+        "name": "memory_test: base_unittests",
+        "override_compile_targets": [
+          "base_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "gpu_unittests"
+        ],
+        "name": "memory_test: gpu_unittests",
+        "override_compile_targets": [
+          "gpu_unittests"
+        ],
+        "script": "run_under_valgrind.py"
       }
     ]
   },
