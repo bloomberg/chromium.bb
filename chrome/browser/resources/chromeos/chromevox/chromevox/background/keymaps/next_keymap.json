@@ -1,7 +1,7 @@
 {
   "bindings": [
     {
-      "command": "previousElement",
+      "command": "previousObject",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -19,7 +19,7 @@
       }
     },
     {
-      "command": "nextElement",
+      "command": "nextObject",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -98,7 +98,7 @@
       }
     },
     {
-      "command": "nextCheckBox",
+      "command": "nextCheckbox",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -107,7 +107,7 @@
       }
     },
     {
-      "command": "previousCheckBox",
+      "command": "previousCheckbox",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -117,7 +117,7 @@
       }
     },
     {
-      "command": "nextCombobox",
+      "command": "nextComboBox",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -126,7 +126,7 @@
       }
     },
     {
-      "command": "previousCombobox",
+      "command": "previousComboBox",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -250,7 +250,7 @@
       }
     },
     {
-      "command": "goToEnd",
+      "command": "jumpToBottom",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -260,7 +260,7 @@
       }
     },
     {
-      "command": "goToBeginning",
+      "command": "jumpToTop",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -270,7 +270,7 @@
       }
     },
     {
-      "command": "doDefault",
+      "command": "performDefaultAction",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -279,7 +279,7 @@
       }
     },
     {
-      "command": "showContextMenu",
+      "command": "contextMenu",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -289,7 +289,7 @@
       }
     },
     {
-      "command": "continuousRead",
+      "command": "readFromHere",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -347,6 +347,61 @@
         "keys": {
           "keyCode": [27],
           "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "openChromeVoxMenus",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [190]
+        }
+      }
+    },
+    {
+      "command": "stopSpeech",
+      "sequence": {
+        "cvoxModifier": false,
+        "keys": {
+          "ctrlKey": [true],
+          "keyCode": [17]
+        }
+      }
+    },
+    {
+      "command": "decreaseTtsRate",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [219]
+        }
+      }
+    },
+    {
+      "command": "increaseTtsRate",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [221]
+        }
+      }
+    },
+    {
+      "command": "decreaseTtsPitch",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [186]
+        }
+      }
+    },
+    {
+      "command": "increaseTtsPitch",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [222]
         }
       }
     }

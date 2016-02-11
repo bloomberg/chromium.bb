@@ -110,29 +110,29 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
         .expectSpeech('Heading 1', 'charlie')
         .expectBraille('h1 charlie');
 
-    mockFeedback.call(doCmd('nextElement'))
+    mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('delta', 'Link')
         .expectBraille('delta lnk');
-    mockFeedback.call(doCmd('nextElement'))
+    mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('echo', 'Link')
         .expectBraille('echo lnk');
-    mockFeedback.call(doCmd('nextElement'))
+    mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('Heading 2', 'foxtraut')
         .expectBraille('h2 foxtraut');
-    mockFeedback.call(doCmd('nextElement'))
+    mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('end')
         .expectBraille('end');
-    mockFeedback.call(doCmd('previousElement'))
+    mockFeedback.call(doCmd('previousObject'))
         .expectSpeech('Heading 2', 'foxtraut')
         .expectBraille('h2 foxtraut');
     mockFeedback.call(doCmd('nextLine'))
         .expectSpeech('end', 'of test')
         .expectBraille('end of test');
 
-    mockFeedback.call(doCmd('goToBeginning'))
+    mockFeedback.call(doCmd('jumpToTop'))
         .expectSpeech('start')
         .expectBraille('start');
-    mockFeedback.call(doCmd('goToEnd'))
+    mockFeedback.call(doCmd('jumpToBottom'))
         .expectSpeech('of test')
         .expectBraille('of test');
 
@@ -206,7 +206,7 @@ TEST_F('BackgroundTest', 'ContinuousRead', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
     mockFeedback.expectSpeech('start')
-        .call(this.doCmd('continuousRead'))
+        .call(this.doCmd('readFromHere'))
         .expectSpeech(
             'start',
             'alpha', 'Link',
@@ -256,7 +256,7 @@ TEST_F('BackgroundTest', 'ShowContextMenu', function() {
 
       var go = rootNode.find({ role: RoleType.link });
       this.listenOnce(go, 'focus', function(e) {
-        this.doCmd('showContextMenu')();
+        this.doCmd('contextMenu')();
       }.bind(this), true);
       go.focus();
     }.bind(this));
@@ -374,28 +374,28 @@ TEST_F('BackgroundTest', 'EarconsForControls', function() {
     function(rootNode) {
       var doCmd = this.doCmd.bind(this);
 
-      mockFeedback.call(doCmd('nextElement'))
+      mockFeedback.call(doCmd('nextObject'))
           .expectSpeech('MyLink')
           .expectEarcon(cvox.Earcon.LINK)
-          .call(doCmd('nextElement'))
+          .call(doCmd('nextObject'))
           .expectSpeech('MyButton')
           .expectEarcon(cvox.Earcon.BUTTON)
-          .call(doCmd('nextElement'))
+          .call(doCmd('nextObject'))
           .expectSpeech('Check box')
           .expectEarcon(cvox.Earcon.CHECK_OFF)
-          .call(doCmd('nextElement'))
+          .call(doCmd('nextObject'))
           .expectSpeech('Check box')
           .expectEarcon(cvox.Earcon.CHECK_ON)
-          .call(doCmd('nextElement'))
+          .call(doCmd('nextObject'))
           .expectSpeech('Edit text')
           .expectEarcon(cvox.Earcon.EDITABLE_TEXT)
-          .call(doCmd('nextElement'))
+          .call(doCmd('nextObject'))
           .expectSpeech('List box')
           .expectEarcon(cvox.Earcon.LISTBOX)
-          .call(doCmd('nextElement'))
+          .call(doCmd('nextObject'))
           .expectSpeech('Button', 'has pop up')
           .expectEarcon(cvox.Earcon.POP_UP_BUTTON)
-          .call(doCmd('nextElement'))
+          .call(doCmd('nextObject'))
           .expectSpeech(/slider/)
           .expectEarcon(cvox.Earcon.SLIDER);
 

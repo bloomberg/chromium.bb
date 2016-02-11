@@ -2390,14 +2390,17 @@
       <message desc="Title of the ChromeVox panel, a window that displays the text ChromeVox is speaking and contains controls to manipulate ChromeVox." name="IDS_CHROMEVOX_PANEL_TITLE">
         ChromeVox Panel
       </message>
-      <message desc="Title of the button that opens up the ChromeVox menu." name="IDS_CHROMEVOX_MENU_TITLE">
-        ChromeVox Menu
+      <message desc="Title of the button that opens up the ChromeVox menus." name="IDS_CHROMEVOX_MENUS_TITLE">
+        ChromeVox Menus
       </message>
-      <message desc="Title of the button that opens up the ChromeVox menu." name="IDS_CHROMEVOX_OPTIONS">
+      <message desc="Title of the button that opens up ChromeVox options." name="IDS_CHROMEVOX_OPTIONS">
         ChromeVox Options
       </message>
       <message desc="Title of the button that disables ChromeVox." name="IDS_CHROMEVOX_DISABLE_CHROMEVOX">
         Disable ChromeVox
+      </message>
+      <message desc="Text in parentheses to be appended next to a tab that's currently active." name="IDS_CHROMEVOX_ACTIVE_TAB">
+        (active)
       </message>
     </messages>
   </release>

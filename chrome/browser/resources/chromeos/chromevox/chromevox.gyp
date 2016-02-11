@@ -74,6 +74,7 @@
               'destination': '<(chromevox_dest_dir)/cvox2/background',
               'files': [
                 'cvox2/background/background.html',
+                'cvox2/background/panel.css',
                 'cvox2/background/panel.html',
               ],
             },

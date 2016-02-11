@@ -147,6 +147,7 @@ run_jsbundler("chromevox_copied_files") {
     "chromevox/background/options.html",
     "chromevox/injected/api.js",
     "cvox2/background/background.html",
+    "cvox2/background/panel.css",
     "cvox2/background/panel.html",
   ]
   if (chromevox_compress_js) {

@@ -320,17 +320,46 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+
+  // Wait for it to say "Launcher", "Button".
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
     if (base::MatchPattern(utterance, "Button"))
       break;
   }
 
+  // Click on the launcher, it brings up the app list UI.
   SendKeyPress(ui::VKEY_RETURN);
-
   EXPECT_EQ("Search or type URL", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
 
+  // Close it and open it again.
+  SendKeyPress(ui::VKEY_ESCAPE);
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (base::MatchPattern(utterance, "*window*"))
+      break;
+  }
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (base::MatchPattern(utterance, "Button"))
+      break;
+  }
+  SendKeyPress(ui::VKEY_RETURN);
+
+  // Now type a space into the text field and wait until we hear "space".
+  // This makes the test more robust as it allows us to skip over other
+  // speech along the way.
+  SendKeyPress(ui::VKEY_SPACE);
+  while (true) {
+    if ("space" == speech_monitor_.GetNextUtterance())
+      break;
+  }
+
+  // Now press the down arrow and we should be focused on an app button
+  // in a dialog.
   SendKeyPress(ui::VKEY_DOWN);
   EXPECT_EQ("Dialog", speech_monitor_.GetNextUtterance());
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
