@@ -87,22 +87,26 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
 {
     if (!m_image)
         return;
+
+#if ENABLE(OILPAN)
+    // The SVGImageChromeClient object's lifetime is dependent on
+    // the ImageObserver (an ImageResource) of its image. Should it
+    // be dead and about to be lazily swept out, do not proceed.
+    //
+    // TODO(Oilpan): move (SVG)Image to the Oilpan heap, and avoid
+    // this explicit lifetime check.
+    if (Heap::willObjectBeLazilySwept(m_image->imageObserver()))
+        return;
+#endif
+
     // serviceScriptedAnimations runs requestAnimationFrame callbacks, but SVG
     // images can't have any so we assert there's no script.
     ScriptForbiddenScope forbidScript;
 
-    // As neither SVGImage nor this chrome client object are on the Oilpan heap,
-    // this object's reference to the SVGImage will not be traced should a GC
-    // strike below. Hence, we must ensure that they both remain alive for
-    // duration of this call.
-    //
-    // This is cannot arise non-Oilpan as an ImageResource is an owned object
-    // and will be promptly released along with its (SVG)Image..and everything
-    // below, including this object and its timer. For code simplicity, the
-    // object protection isn't made the conditional on Oilpan.
-    //
-    // TODO(oilpan): move SVGImage to the Oilpan heap and remove this protection.
-    RefPtr<SVGImage> protect(m_image);
+    // The calls below may trigger GCs, so set up the required persistent
+    // reference on the ImageResource which owns this SVGImage. By transitivity,
+    // that will keep this SVGImageChromeClient object alive.
+    RawPtrWillBePersistent<ImageObserver> protect(m_image->imageObserver());
     m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
     m_image->frameView()->updateAllLifecyclePhases();
 }

@@ -136,7 +136,7 @@ public:
     }
 private:
     Image* m_image;
-    ImageObserver* m_observer;
+    RawPtrWillBeMember<ImageObserver> m_observer;
 };
 
 } // namespace blink

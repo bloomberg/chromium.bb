@@ -32,6 +32,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
+#include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/Assertions.h"
@@ -53,9 +54,6 @@ class GraphicsContext;
 class Length;
 class SharedBuffer;
 class Image;
-
-// This class gets notified when an image creates or destroys decoded frames and when it advances animation frames.
-class ImageObserver;
 
 class PLATFORM_EXPORT Image : public RefCounted<Image> {
     friend class GeneratedImage;
@@ -164,7 +162,12 @@ protected:
 
 private:
     RefPtr<SharedBuffer> m_encodedImageData;
-    ImageObserver* m_imageObserver;
+    // TODO(Oilpan): consider having Image on the Oilpan heap and
+    // turn this into a Member<>.
+    //
+    // The observer (an ImageResource) is an untraced member, with the ImageResource
+    // being responsible of clearing itself out.
+    RawPtrWillBeUntracedMember<ImageObserver> m_imageObserver;
 };
 
 #define DEFINE_IMAGE_TYPE_CASTS(typeName) \

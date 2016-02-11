@@ -44,7 +44,7 @@ class SecurityOrigin;
 
 class CORE_EXPORT ImageResource final : public Resource, public ImageObserver {
     friend class MemoryCache;
-
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageResource);
 public:
     using ClientType = ImageResourceClient;
 
@@ -120,6 +120,8 @@ public:
     bool shouldPauseAnimation(const blink::Image*) override;
     void animationAdvanced(const blink::Image*) override;
     void changedInRect(const blink::Image*, const IntRect&) override;
+
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     bool isSafeToUnlock() const override;

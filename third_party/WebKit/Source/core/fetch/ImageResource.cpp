@@ -97,6 +97,12 @@ ImageResource::~ImageResource()
     clearImage();
 }
 
+DEFINE_TRACE(ImageResource)
+{
+    Resource::trace(visitor);
+    ImageObserver::trace(visitor);
+}
+
 void ImageResource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
 {
     if (!fetcher || fetcher->autoLoadImages())
@@ -278,10 +284,12 @@ inline void ImageResource::createImage()
 
 inline void ImageResource::clearImage()
 {
+    if (!m_image)
+        return;
+
     // If our Image has an observer, it's always us so we need to clear the back pointer
     // before dropping our reference.
-    if (m_image)
-        m_image->setImageObserver(nullptr);
+    m_image->setImageObserver(nullptr);
     m_image.clear();
 }
 
