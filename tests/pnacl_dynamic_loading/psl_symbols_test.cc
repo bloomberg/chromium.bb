@@ -13,32 +13,41 @@
 namespace {
 
 struct PSLRoot {
+  const char *string_table;
+
   // Exports.
   void *const *exported_ptrs;
-  const char *const *exported_names;
+  const size_t *exported_names;
   size_t export_count;
 
-  // Imports.
   void *const *imported_ptrs;
-  const char *const *imported_names;
+  const size_t *imported_names;
   size_t import_count;
 };
 
+const char *GetExportedSymbolName(const PSLRoot *root, size_t i) {
+  return root->string_table + root->exported_names[i];
+}
+
+const char *GetImportedSymbolName(const PSLRoot *root, size_t i) {
+  return root->string_table + root->imported_names[i];
+}
+
 void DumpExportedSymbols(const PSLRoot *root) {
   for (size_t i = 0; i < root->export_count; i++) {
-    printf("exported symbol: %s\n", root->exported_names[i]);
+    printf("exported symbol: %s\n", GetExportedSymbolName(root, i));
   }
 }
 
 void DumpImportedSymbols(const PSLRoot *root) {
   for (size_t i = 0; i < root->import_count; i++) {
-    printf("imported symbol: %s\n", root->imported_names[i]);
+    printf("imported symbol: %s\n", GetImportedSymbolName(root, i));
   }
 }
 
 void *GetExportedSym(const PSLRoot *root, const char *name) {
   for (size_t i = 0; i < root->export_count; i++) {
-    if (strcmp(root->exported_names[i], name) == 0) {
+    if (strcmp(GetExportedSymbolName(root, i), name) == 0) {
       return root->exported_ptrs[i];
     }
   }
@@ -71,7 +80,8 @@ void TestImportReloc(const PSLRoot *psl_root,
       found = true;
 
       // Check name of symbol being imported.
-      ASSERT_EQ(strcmp(psl_root->imported_names[index], imported_sym_name), 0);
+      ASSERT_EQ(strcmp(GetImportedSymbolName(psl_root, index),
+                       imported_sym_name), 0);
     }
   }
   ASSERT(found);
