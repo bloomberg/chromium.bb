@@ -137,7 +137,7 @@ def x400_address():
 
 def directory_name(name):
   return str(name).replace(
-      'asn1 = SEQUENCE', 'directoryName = IMPLICIT:4,SEQUENCE')
+      'asn1 = SEQUENCE', 'directoryName = EXPLICIT:4,SEQUENCE')
 
 
 def edi_party_name():

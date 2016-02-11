@@ -179,13 +179,22 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
       name_type = GENERAL_NAME_X400_ADDRESS;
       break;
     // directoryName                   [4]     Name,
-    case 4:
+    case 4: {
       if (!der::IsConstructed(tag))
         return false;
       name_type = GENERAL_NAME_DIRECTORY_NAME;
-      subtrees->directory_names.push_back(std::vector<uint8_t>(
-          value.UnsafeData(), value.UnsafeData() + value.Length()));
+      // Name is a CHOICE { rdnSequence  RDNSequence }, therefore the SEQUENCE
+      // tag is explicit. Remove it, since the name matching functions expect
+      // only the value portion.
+      der::Parser name_parser(value);
+      der::Input name_value;
+      if (!name_parser.ReadTag(der::kSequence, &name_value) || parser.HasMore())
+        return false;
+      subtrees->directory_names.push_back(
+          std::vector<uint8_t>(name_value.UnsafeData(),
+                               name_value.UnsafeData() + name_value.Length()));
       break;
+    }
     // ediPartyName                    [5]     EDIPartyName,
     case 5:
       if (!der::IsConstructed(tag))
