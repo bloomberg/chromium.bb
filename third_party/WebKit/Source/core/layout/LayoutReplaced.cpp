@@ -33,7 +33,6 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ReplacedPainter.h"
-#include "core/svg/SVGSVGElement.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -163,11 +162,8 @@ void LayoutReplaced::computeIntrinsicSizingInfoForLayoutBox(LayoutBox* contentLa
         if (intrinsicSizingInfo.aspectRatio && !intrinsicSizingInfo.size.isEmpty())
             m_intrinsicSize = LayoutSize(intrinsicSizingInfo.size);
 
-        if (!isHorizontalWritingMode()) {
-            if (intrinsicSizingInfo.aspectRatio)
-                intrinsicSizingInfo.aspectRatio = 1 / intrinsicSizingInfo.aspectRatio;
-            intrinsicSizingInfo.size = intrinsicSizingInfo.size.transposedSize();
-        }
+        if (!isHorizontalWritingMode())
+            intrinsicSizingInfo.transpose();
     } else {
         computeIntrinsicSizingInfo(intrinsicSizingInfo);
         if (intrinsicSizingInfo.aspectRatio && !intrinsicSizingInfo.size.isEmpty())
@@ -544,28 +540,6 @@ void LayoutReplaced::computeIntrinsicSizingInfo(IntrinsicSizingInfo& intrinsicSi
     intrinsicSizingInfo.aspectRatio = intrinsicSizingInfo.size.width() / intrinsicSizingInfo.size.height();
 }
 
-static bool hasIntrinsicWidthForLayoutBox(LayoutBox* layoutObject)
-{
-    if (layoutObject && layoutObject->isSVGRoot()) {
-        SVGSVGElement* svg = toSVGSVGElement(layoutObject->node());
-        ASSERT(svg);
-        return svg->hasIntrinsicWidth();
-    }
-
-    return false;
-}
-
-static bool hasIntrinsicHeightForLayoutBox(LayoutBox* layoutObject)
-{
-    if (layoutObject && layoutObject->isSVGRoot()) {
-        SVGSVGElement* svg = toSVGSVGElement(layoutObject->node());
-        ASSERT(svg);
-        return svg->hasIntrinsicHeight();
-    }
-
-    return false;
-}
-
 LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred shouldComputePreferred) const
 {
     if (style()->logicalWidth().isSpecified() || style()->logicalWidth().isIntrinsic())
@@ -580,21 +554,16 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
 
     if (style()->logicalWidth().isAuto()) {
         bool computedHeightIsAuto = hasAutoHeightOrContainingBlockWithAutoHeight();
-        // TODO(shanmuga.m@samsung.com): hasIntrinsicWidth/Height information should be obtained
-        // from LayoutBox::computeIntrinsicSizingInfo().
-        bool hasIntrinsicWidth = constrainedSize.width() > 0 || hasIntrinsicWidthForLayoutBox(contentLayoutObject);
 
         // If 'height' and 'width' both have computed values of 'auto' and the element also has an intrinsic width, then that intrinsic width is the used value of 'width'.
-        if (computedHeightIsAuto && hasIntrinsicWidth)
+        if (computedHeightIsAuto && intrinsicSizingInfo.hasWidth)
             return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(constrainedSize.width()), shouldComputePreferred);
-
-        bool hasIntrinsicHeight = constrainedSize.height() > 0 || hasIntrinsicHeightForLayoutBox(contentLayoutObject);
 
         if (intrinsicSizingInfo.aspectRatio) {
             // If 'height' and 'width' both have computed values of 'auto' and the element has no intrinsic width, but does have an intrinsic height and intrinsic ratio;
             // or if 'width' has a computed value of 'auto', 'height' has some other computed value, and the element does have an intrinsic ratio; then the used value
             // of 'width' is: (used height) * (intrinsic ratio)
-            if (intrinsicSizingInfo.aspectRatio && ((computedHeightIsAuto && !hasIntrinsicWidth && hasIntrinsicHeight) || !computedHeightIsAuto)) {
+            if ((computedHeightIsAuto && !intrinsicSizingInfo.hasWidth && intrinsicSizingInfo.hasHeight) || !computedHeightIsAuto) {
                 LayoutUnit logicalHeight = computeReplacedLogicalHeight();
                 return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(logicalHeight * intrinsicSizingInfo.aspectRatio), shouldComputePreferred);
             }
@@ -602,7 +571,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
             // If 'height' and 'width' both have computed values of 'auto' and the element has an intrinsic ratio but no intrinsic height or width, then the used value of
             // 'width' is undefined in CSS 2.1. However, it is suggested that, if the containing block's width does not itself depend on the replaced element's width, then
             // the used value of 'width' is calculated from the constraint equation used for block-level, non-replaced elements in normal flow.
-            if (computedHeightIsAuto && !hasIntrinsicWidth && !hasIntrinsicHeight) {
+            if (computedHeightIsAuto && !intrinsicSizingInfo.hasWidth && !intrinsicSizingInfo.hasHeight) {
                 if (shouldComputePreferred == ComputePreferred)
                     return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(), ComputePreferred);
                 // The aforementioned 'constraint equation' used for block-level, non-replaced elements in normal flow:
@@ -618,7 +587,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
         }
 
         // Otherwise, if 'width' has a computed value of 'auto', and the element has an intrinsic width, then that intrinsic width is the used value of 'width'.
-        if (hasIntrinsicWidth)
+        if (intrinsicSizingInfo.hasWidth)
             return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(constrainedSize.width()), shouldComputePreferred);
 
         // Otherwise, if 'width' has a computed value of 'auto', but none of the conditions above are met, then the used value of 'width' becomes 300px. If 300px is too
@@ -645,12 +614,9 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
     FloatSize constrainedSize = constrainIntrinsicSizeToMinMax(intrinsicSizingInfo);
 
     bool widthIsAuto = style()->logicalWidth().isAuto();
-    // TODO(shanmuga.m@samsung.com): hasIntrinsicWidth/Height information should be obtained
-    // from LayoutBox::computeIntrinsicSizingInfo().
-    bool hasIntrinsicHeight = constrainedSize.height() > 0 || hasIntrinsicHeightForLayoutBox(contentLayoutObject);
 
     // If 'height' and 'width' both have computed values of 'auto' and the element also has an intrinsic height, then that intrinsic height is the used value of 'height'.
-    if (widthIsAuto && hasIntrinsicHeight)
+    if (widthIsAuto && intrinsicSizingInfo.hasHeight)
         return computeReplacedLogicalHeightRespectingMinMaxHeight(constrainedSize.height());
 
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic ratio then the used value of 'height' is:
@@ -659,7 +625,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
         return computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit(availableLogicalWidth() / intrinsicSizingInfo.aspectRatio));
 
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic height, then that intrinsic height is the used value of 'height'.
-    if (hasIntrinsicHeight)
+    if (intrinsicSizingInfo.hasHeight)
         return computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit(constrainedSize.height()));
 
     // Otherwise, if 'height' has a computed value of 'auto', but none of the conditions above are met, then the used value of 'height' must be set to the height
