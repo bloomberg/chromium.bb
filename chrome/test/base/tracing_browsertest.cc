@@ -169,7 +169,13 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
 }
 
 // Single-process mode.
-IN_PROC_BROWSER_TEST_F(SingleProcessTracingBrowserTest, TestMemoryInfra) {
+// Flaky (leaking) on linux_chromium_asan_rel_ng: https://crbug.com/585026
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestMemoryInfra DISABLED_TestMemoryInfra
+#else
+#define MAYBE_TestMemoryInfra TestMemoryInfra
+#endif
+IN_PROC_BROWSER_TEST_F(SingleProcessTracingBrowserTest, MAYBE_TestMemoryInfra) {
   PerformDumpMemoryTestActions();
 }
 
