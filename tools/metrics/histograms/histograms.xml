@@ -3165,11 +3165,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.MemoryCache.RevalidationPolicy.Dead"
+    enum="RevalidationPolicy">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    RevalidationPolicy used for requests that hit Resource only referenced from
+    MemoryCache for each resource type. https://crbug.com/579496 Requests
+    counted by this are also counted by Blink.MemoryCache.RevalidationPolicy or
+    Blink.MemoryCache.RevalidationPolicy.Preload.
+  </summary>
+</histogram>
+
 <histogram name="Blink.MemoryCache.RevalidationPolicy.Preload"
     enum="RevalidationPolicy">
   <owner>hiroshige@chromium.org</owner>
   <summary>
-    RevalidationPolicy of used for preloading requests for each resource type.
+    RevalidationPolicy used for preloading requests for each resource type.
     https://crbug.com/579496
   </summary>
 </histogram>
@@ -86964,6 +86975,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Media"/>
   <suffix name="Manifest"/>
   <affected-histogram name="Blink.MemoryCache.RevalidationPolicy"/>
+  <affected-histogram name="Blink.MemoryCache.RevalidationPolicy.Dead"/>
   <affected-histogram name="Blink.MemoryCache.RevalidationPolicy.Preload"/>
 </histogram_suffixes>
 
