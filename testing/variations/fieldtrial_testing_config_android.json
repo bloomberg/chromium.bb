@@ -188,6 +188,11 @@
             }
         }
     ],
+    "OfferUploadCreditCards": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "OfflinePages": [
         {
             "group_name": "EnabledAsBookmarks"

@@ -156,6 +156,11 @@
             "group_name": "Enabled"
         }
     ],
+    "OfferUploadCreditCards": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "PageRevisitInstrumentation": [
         {
             "group_name": "Enabled"
