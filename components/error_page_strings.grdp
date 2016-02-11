@@ -31,7 +31,7 @@
   </if>
   <if expr="is_android">
     <message name="IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES_AS_BOOKMARKS" desc="Label for the button on an error page to show bookmarks that have been saved offline">
-      Show all bookmarks
+      Show offline bookmarks
     </message>
     <message name="IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES" desc="Label for the button on an error page to show pages that have been saved offline">
       Show all saved pages
