@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 # Config for us and everybody else depending on BoringSSL.
 config("openssl_config") {
@@ -117,4 +118,40 @@ component("boringssl") {
   if (is_nacl) {
     deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
   }
+}
+
+fuzzer_test("boringssl_d2i_x509_fuzzer") {
+  sources = [
+    "src/fuzz/cert.cc",
+  ]
+  deps = [
+    ":boringssl",
+  ]
+}
+
+fuzzer_test("boringssl_client_bio_write_fuzzer") {
+  sources = [
+    "src/fuzz/client.cc",
+  ]
+  deps = [
+    ":boringssl",
+  ]
+}
+
+fuzzer_test("boringssl_d2i_autoprivatekey_fuzzer") {
+  sources = [
+    "src/fuzz/privkey.cc",
+  ]
+  deps = [
+    ":boringssl",
+  ]
+}
+
+fuzzer_test("boringssl_server_bio_write_fuzzer") {
+  sources = [
+    "src/fuzz/server.cc",
+  ]
+  deps = [
+    ":boringssl",
+  ]
 }
