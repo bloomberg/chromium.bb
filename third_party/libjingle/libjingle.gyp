@@ -354,6 +354,8 @@
             '<(DEPTH)/third_party/webrtc/media/base/turnutils.h',
             '<(DEPTH)/third_party/webrtc/media/base/videoadapter.cc',
             '<(DEPTH)/third_party/webrtc/media/base/videoadapter.h',
+            '<(DEPTH)/third_party/webrtc/media/base/videobroadcaster.cc',
+            '<(DEPTH)/third_party/webrtc/media/base/videobroadcaster.h',
             '<(DEPTH)/third_party/webrtc/media/base/videocapturer.cc',
             '<(DEPTH)/third_party/webrtc/media/base/videocapturer.h',
             '<(DEPTH)/third_party/webrtc/media/base/videocommon.cc',
