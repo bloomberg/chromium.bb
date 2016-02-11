@@ -895,7 +895,7 @@ base::char16 KeyEvent::GetCharacter() const {
       // For a control character, key_ contains the corresponding printable
       // character. To preserve existing behaviour for now, return the control
       // character here; this will likely change -- see e.g. crbug.com/471488.
-      if (ucs2_character >= 0x40 && ucs2_character <= 0x7A)
+      if (ucs2_character >= 0x20 && ucs2_character <= 0x7E)
         return ucs2_character & 0x1F;
       if (ucs2_character == '\r')
         return '\n';

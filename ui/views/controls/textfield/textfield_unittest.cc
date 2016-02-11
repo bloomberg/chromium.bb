@@ -726,6 +726,10 @@ TEST_F(TextfieldTest, KeysWithModifiersTest) {
   SendKeyPress(ui::VKEY_2, command);
   SendKeyPress(ui::VKEY_3, 0);
   SendKeyPress(ui::VKEY_4, 0);
+  SendKeyPress(ui::VKEY_OEM_PLUS, ctrl);
+  SendKeyPress(ui::VKEY_OEM_PLUS, ctrl | shift);
+  SendKeyPress(ui::VKEY_OEM_MINUS, ctrl);
+  SendKeyPress(ui::VKEY_OEM_MINUS, ctrl | shift);
 
   if (TestingNativeCrOs())
     EXPECT_STR_EQ("TeTEx34", textfield_->text());
