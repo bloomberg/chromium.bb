@@ -5207,6 +5207,8 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
 
   const long long stop = pos + s.size;
 
+  Colour* colour = NULL;
+
   while (pos < stop) {
     long long id, size;
 
@@ -5254,7 +5256,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
       if (rate <= 0)
         return E_FILE_FORMAT_INVALID;
     } else if (id == mkvmuxer::kMkvColour) {
-      if (!Colour::Parse(pReader, pos, size, &pResult->m_colour))
+      if (!Colour::Parse(pReader, pos, size, &colour))
         return E_FILE_FORMAT_INVALID;
     }
 
@@ -5286,6 +5288,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   pTrack->m_display_unit = display_unit;
   pTrack->m_stereo_mode = stereo_mode;
   pTrack->m_rate = rate;
+  pTrack->m_colour = colour;
 
   pResult = pTrack;
   return 0;  // success
