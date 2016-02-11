@@ -30,6 +30,9 @@ test("components_unittests") {
       "$root_out_dir/ui_test.pak",
     ]
   }
+  if (is_win) {
+    data += [ "//chrome/test/data/policy/" ]
+  }
 
   # Add only ":unit_tests" dependencies here. If your tests have dependencies
   # (this would at least include the component itself), they should be on the
