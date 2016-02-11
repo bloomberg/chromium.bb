@@ -21,7 +21,6 @@
           'nacl_desc_cond.c',
           'nacl_desc_cond.h',
           'nacl_desc_custom.c',
-          'nacl_desc_custom.h',
           'nacl_desc_dir.c',
           'nacl_desc_dir.h',
           'nacl_desc_effector.h',

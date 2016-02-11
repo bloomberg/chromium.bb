@@ -6,10 +6,10 @@
 
 #include <string.h>
 
+#include "native_client/src/public/nacl_desc_custom.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/desc/nacl_desc_custom.h"
 #include "native_client/src/trusted/service_runtime/load_file.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
