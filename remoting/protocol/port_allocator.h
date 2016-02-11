@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_PORT_ALLOCATOR_BASE_H_
-#define REMOTING_PROTOCOL_PORT_ALLOCATOR_BASE_H_
+#ifndef REMOTING_PROTOCOL_PORT_ALLOCATOR_H_
+#define REMOTING_PROTOCOL_PORT_ALLOCATOR_H_
 
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "remoting/base/url_request.h"
 #include "third_party/webrtc/p2p/client/basicportallocator.h"
 
 namespace remoting {
@@ -16,27 +17,22 @@ namespace protocol {
 
 class TransportContext;
 
-class PortAllocatorBase : public cricket::BasicPortAllocator {
+class PortAllocator : public cricket::BasicPortAllocator {
  public:
-  // The number of HTTP requests we should attempt before giving up.
-  static const int kNumRetries;
-
-  PortAllocatorBase(scoped_ptr<rtc::NetworkManager> network_manager,
-                    scoped_ptr<rtc::PacketSocketFactory> socket_factory,
-                    scoped_refptr<TransportContext> transport_context);
-  ~PortAllocatorBase() override;
+  PortAllocator(scoped_ptr<rtc::NetworkManager> network_manager,
+                scoped_ptr<rtc::PacketSocketFactory> socket_factory,
+                scoped_refptr<TransportContext> transport_context);
+  ~PortAllocator() override;
 
   scoped_refptr<TransportContext> transport_context() {
     return transport_context_;
   }
 
-  // CreateSession is defined in cricket::BasicPortAllocator but is
-  // redefined here as pure virtual.
   cricket::PortAllocatorSession* CreateSessionInternal(
       const std::string& content_name,
       int component,
       const std::string& ice_ufrag,
-      const std::string& ice_pwd) override = 0;
+      const std::string& ice_pwd) override;
 
  private:
   scoped_ptr<rtc::NetworkManager> network_manager_;
@@ -44,30 +40,25 @@ class PortAllocatorBase : public cricket::BasicPortAllocator {
   scoped_refptr<TransportContext> transport_context_;
 };
 
-class PortAllocatorSessionBase : public cricket::BasicPortAllocatorSession {
+class PortAllocatorSession : public cricket::BasicPortAllocatorSession {
  public:
-  PortAllocatorSessionBase(PortAllocatorBase* allocator,
-                           const std::string& content_name,
-                           int component,
-                           const std::string& ice_ufrag,
-                           const std::string& ice_pwd);
-  ~PortAllocatorSessionBase() override;
+  PortAllocatorSession(PortAllocator* allocator,
+                       const std::string& content_name,
+                       int component,
+                       const std::string& ice_ufrag,
+                       const std::string& ice_pwd);
+  ~PortAllocatorSession() override;
 
-  virtual void SendSessionRequest(const std::string& host) = 0;
-  void ReceiveSessionResponse(const std::string& response);
-
- protected:
-  std::string GetSessionRequestUrl();
-
+private:
   void GetPortConfigurations() override;
   void OnJingleInfo(std::vector<rtc::SocketAddress> stun_hosts,
                     std::vector<std::string> relay_hosts,
                     std::string relay_token);
   void TryCreateRelaySession();
+  void OnSessionRequestResult(const UrlRequest::Result& result);
 
   const std::string& relay_token() const { return relay_token_; }
 
- private:
   scoped_refptr<TransportContext> transport_context_;
 
   std::vector<rtc::SocketAddress> stun_hosts_;
@@ -76,10 +67,12 @@ class PortAllocatorSessionBase : public cricket::BasicPortAllocatorSession {
 
   int attempts_ = 0;
 
-  base::WeakPtrFactory<PortAllocatorSessionBase> weak_factory_;
+  std::set<scoped_ptr<UrlRequest>> url_requests_;
+
+  base::WeakPtrFactory<PortAllocatorSession> weak_factory_;
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_PORT_ALLOCATOR_BASE_H_
+#endif  // REMOTING_PROTOCOL_PORT_ALLOCATOR_H_

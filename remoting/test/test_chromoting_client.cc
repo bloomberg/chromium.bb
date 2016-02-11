@@ -13,12 +13,13 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/request_priority.h"
 #include "net/socket/client_socket_factory.h"
+#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/token_fetcher_proxy.h"
-#include "remoting/protocol/chromium_port_allocator.h"
+#include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/network_settings.h"
@@ -125,12 +126,12 @@ void TestChromotingClient::StartConnection(
   protocol::NetworkSettings network_settings(
       protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
 
-  scoped_ptr<protocol::ChromiumPortAllocatorFactory> port_allocator_factory(
-      new protocol::ChromiumPortAllocatorFactory(request_context_getter));
-
   scoped_refptr<protocol::TransportContext> transport_context(
       new protocol::TransportContext(
-          signal_strategy_.get(), std::move(port_allocator_factory),
+          signal_strategy_.get(),
+          make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory()),
+          make_scoped_ptr(
+              new ChromiumUrlRequestFactory(request_context_getter)),
           network_settings, protocol::TransportRole::CLIENT));
 
   scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>

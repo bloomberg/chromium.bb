@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
+#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/client_status_logger.h"
@@ -21,7 +22,7 @@
 #include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/client/token_fetcher_proxy.h"
-#include "remoting/protocol/chromium_port_allocator.h"
+#include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
@@ -424,17 +425,14 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
                              signaling_.get(),
                              ServiceUrls::GetInstance()->directory_bot_jid()));
 
-  protocol::NetworkSettings network_settings(
-      protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
-
-  // Use Chrome's network stack to allocate ports for peer-to-peer channels.
-  scoped_ptr<protocol::ChromiumPortAllocatorFactory> port_allocator_factory(
-      new protocol::ChromiumPortAllocatorFactory(
-          jni_runtime_->url_requester()));
-
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          signaling_.get(), std::move(port_allocator_factory), network_settings,
+          signaling_.get(),
+          make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory()),
+          make_scoped_ptr(
+              new ChromiumUrlRequestFactory(jni_runtime_->url_requester())),
+          protocol::NetworkSettings(
+              protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT);
 
   if (flags_.find("useWebrtc") != std::string::npos) {

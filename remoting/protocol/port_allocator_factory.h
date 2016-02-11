@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_PORT_ALLOCATOR_FACTORY_H_
 #define REMOTING_PROTOCOL_PORT_ALLOCATOR_FACTORY_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace cricket {

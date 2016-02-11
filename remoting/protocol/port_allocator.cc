@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/port_allocator_base.h"
+#include "remoting/protocol/port_allocator.h"
 
 #include <algorithm>
 #include <map>
@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/base/escape.h"
+#include "net/http/http_status_code.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport_context.h"
 
@@ -32,14 +33,14 @@ StringMap ParseMap(const std::string& string) {
   return map;
 }
 
+const int kNumRetries = 5;
+
 }  // namespace
 
 namespace remoting {
 namespace protocol {
 
-const int PortAllocatorBase::kNumRetries = 5;
-
-PortAllocatorBase::PortAllocatorBase(
+PortAllocator::PortAllocator(
     scoped_ptr<rtc::NetworkManager> network_manager,
     scoped_ptr<rtc::PacketSocketFactory> socket_factory,
     scoped_refptr<TransportContext> transport_context)
@@ -68,14 +69,22 @@ PortAllocatorBase::PortAllocatorBase(
                        network_settings.port_range.max_port);
 }
 
-PortAllocatorBase::~PortAllocatorBase() {}
+PortAllocator::~PortAllocator() {}
 
-PortAllocatorSessionBase::PortAllocatorSessionBase(
-    PortAllocatorBase* allocator,
+cricket::PortAllocatorSession* PortAllocator::CreateSessionInternal(
     const std::string& content_name,
     int component,
-    const std::string& ice_ufrag,
-    const std::string& ice_pwd)
+    const std::string& ice_username_fragment,
+    const std::string& ice_password) {
+  return new PortAllocatorSession(this, content_name, component,
+                                  ice_username_fragment, ice_password);
+}
+
+PortAllocatorSession::PortAllocatorSession(PortAllocator* allocator,
+                                           const std::string& content_name,
+                                           int component,
+                                           const std::string& ice_ufrag,
+                                           const std::string& ice_pwd)
     : BasicPortAllocatorSession(allocator,
                                 content_name,
                                 component,
@@ -84,14 +93,14 @@ PortAllocatorSessionBase::PortAllocatorSessionBase(
       transport_context_(allocator->transport_context()),
       weak_factory_(this) {}
 
-PortAllocatorSessionBase::~PortAllocatorSessionBase() {}
+PortAllocatorSession::~PortAllocatorSession() {}
 
-void PortAllocatorSessionBase::GetPortConfigurations() {
+void PortAllocatorSession::GetPortConfigurations() {
   transport_context_->GetJingleInfo(base::Bind(
-      &PortAllocatorSessionBase::OnJingleInfo, weak_factory_.GetWeakPtr()));
+      &PortAllocatorSession::OnJingleInfo, weak_factory_.GetWeakPtr()));
 }
 
-void PortAllocatorSessionBase::OnJingleInfo(
+void PortAllocatorSession::OnJingleInfo(
     std::vector<rtc::SocketAddress> stun_hosts,
     std::vector<std::string> relay_hosts,
     std::string relay_token) {
@@ -115,11 +124,11 @@ void PortAllocatorSessionBase::OnJingleInfo(
   TryCreateRelaySession();
 }
 
-void PortAllocatorSessionBase::TryCreateRelaySession() {
+void PortAllocatorSession::TryCreateRelaySession() {
   if (flags() & cricket::PORTALLOCATOR_DISABLE_RELAY)
     return;
 
-  if (attempts_ == PortAllocatorBase::kNumRetries) {
+  if (attempts_ == kNumRetries) {
     LOG(ERROR) << "PortAllocator: maximum number of requests reached; "
                   << "giving up on relay.";
     return;
@@ -138,20 +147,33 @@ void PortAllocatorSessionBase::TryCreateRelaySession() {
   // Choose the next host to try.
   std::string host = relay_hosts_[attempts_ % relay_hosts_.size()];
   attempts_++;
-  SendSessionRequest(host);
+
+  DCHECK(!username().empty());
+  DCHECK(!password().empty());
+  std::string url = "https://" + host + "/create_session?username=" +
+                    net::EscapeUrlEncodedData(username(), false) +
+                    "&password=" +
+                    net::EscapeUrlEncodedData(password(), false) + "&sn=1";
+  scoped_ptr<UrlRequest> url_request =
+      transport_context_->url_request_factory()->CreateUrlRequest(url);
+  url_request->AddHeader("X-Talk-Google-Relay-Auth: " + relay_token());
+  url_request->AddHeader("X-Google-Relay-Auth: " + relay_token());
+  url_request->AddHeader("X-Stream-Type: chromoting");
+  url_request->Start(base::Bind(&PortAllocatorSession::OnSessionRequestResult,
+                                base::Unretained(this)));
+  url_requests_.insert(std::move(url_request));
 }
 
-std::string PortAllocatorSessionBase::GetSessionRequestUrl() {
-  ASSERT(!username().empty());
-  ASSERT(!password().empty());
-  return "/create_session?username=" +
-         net::EscapeUrlEncodedData(username(), false) + "&password=" +
-         net::EscapeUrlEncodedData(password(), false);
-}
+void PortAllocatorSession::OnSessionRequestResult(
+    const UrlRequest::Result& result) {
+  if (!result.success || result.status != net::HTTP_OK) {
+    LOG(WARNING) << "Received error when allocating relay session: "
+                 << result.status;
+    TryCreateRelaySession();
+    return;
+  }
 
-void PortAllocatorSessionBase::ReceiveSessionResponse(
-    const std::string& response) {
-  StringMap map = ParseMap(response);
+  StringMap map = ParseMap(result.response_body);
 
   if (!username().empty() && map["username"] != username()) {
     LOG(WARNING) << "Received unexpected username value from relay server.";

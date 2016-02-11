@@ -15,7 +15,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/protocol/chromium_port_allocator.h"
+#include "remoting/base/url_request.h"
+#include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/message_channel_factory.h"
@@ -117,8 +118,8 @@ class IceTransportTest : public testing::Test {
 
     host_transport_.reset(new IceTransport(
         new TransportContext(
-            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-            network_settings_, TransportRole::SERVER),
+            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory()),
+            nullptr, network_settings_, TransportRole::SERVER),
         &host_event_handler_));
     if (!host_authenticator_) {
       host_authenticator_.reset(new FakeAuthenticator(
@@ -127,8 +128,8 @@ class IceTransportTest : public testing::Test {
 
     client_transport_.reset(new IceTransport(
         new TransportContext(
-            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-            network_settings_, TransportRole::CLIENT),
+            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory()),
+            nullptr, network_settings_, TransportRole::CLIENT),
         &client_event_handler_));
     if (!client_authenticator_) {
       client_authenticator_.reset(new FakeAuthenticator(

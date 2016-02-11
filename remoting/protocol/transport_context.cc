@@ -10,13 +10,14 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "remoting/base/url_request.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "third_party/webrtc/base/socketaddress.h"
 
 #if !defined(OS_NACL)
 #include "jingle/glue/thread_wrapper.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/protocol/chromium_port_allocator.h"
+#include "remoting/protocol/chromium_port_allocator_factory.h"
 #endif  // !defined(OS_NACL)
 
 namespace remoting {
@@ -30,10 +31,9 @@ static const int kJingleInfoUpdatePeriodSeconds = 3600;
 scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   return new protocol::TransportContext(
-      nullptr,
-      make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory(nullptr)),
-      protocol::NetworkSettings(
-          protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
+      nullptr, make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory()),
+      nullptr, protocol::NetworkSettings(
+                   protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
       role);
 }
 #endif  // !defined(OS_NACL)
@@ -41,10 +41,12 @@ scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
 TransportContext::TransportContext(
     SignalStrategy* signal_strategy,
     scoped_ptr<PortAllocatorFactory> port_allocator_factory,
+    scoped_ptr<UrlRequestFactory> url_request_factory,
     const NetworkSettings& network_settings,
     TransportRole role)
     : signal_strategy_(signal_strategy),
       port_allocator_factory_(std::move(port_allocator_factory)),
+      url_request_factory_(std::move(url_request_factory)),
       network_settings_(network_settings),
       role_(role) {}
 

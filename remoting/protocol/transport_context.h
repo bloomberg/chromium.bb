@@ -16,13 +16,11 @@
 #include "remoting/protocol/transport.h"
 #include "remoting/signaling/jingle_info_request.h"
 
-namespace cricket {
-class PortAllocator;
-}  // namespace cricket
 
 namespace remoting {
 
 class SignalStrategy;
+class UrlRequestFactory;
 
 namespace protocol {
 
@@ -41,6 +39,7 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
 
   TransportContext(SignalStrategy* signal_strategy,
                    scoped_ptr<PortAllocatorFactory> port_allocator_factory,
+                   scoped_ptr<UrlRequestFactory> url_request_factory,
                    const NetworkSettings& network_settings,
                    TransportRole role);
 
@@ -54,6 +53,9 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
 
   PortAllocatorFactory* port_allocator_factory() {
     return port_allocator_factory_.get();
+  }
+  UrlRequestFactory* url_request_factory() {
+    return url_request_factory_.get();
   }
   const NetworkSettings& network_settings() const { return network_settings_; }
   TransportRole role() const { return role_; }
@@ -70,6 +72,7 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
 
   SignalStrategy* signal_strategy_;
   scoped_ptr<PortAllocatorFactory> port_allocator_factory_;
+  scoped_ptr<UrlRequestFactory> url_request_factory_;
   NetworkSettings network_settings_;
   TransportRole role_;
 

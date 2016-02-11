@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/stream_message_pipe_adapter.h"
 #include "remoting/protocol/transport_context.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"

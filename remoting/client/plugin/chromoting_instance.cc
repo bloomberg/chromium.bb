@@ -46,7 +46,8 @@
 #include "remoting/client/plugin/pepper_audio_player.h"
 #include "remoting/client/plugin/pepper_main_thread_task_runner.h"
 #include "remoting/client/plugin/pepper_mouse_locker.h"
-#include "remoting/client/plugin/pepper_port_allocator.h"
+#include "remoting/client/plugin/pepper_port_allocator_factory.h"
+#include "remoting/client/plugin/pepper_url_request.h"
 #include "remoting/client/plugin/pepper_video_renderer_2d.h"
 #include "remoting/client/plugin/pepper_video_renderer_3d.h"
 #include "remoting/client/software_video_renderer.h"
@@ -55,6 +56,7 @@
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/transport_context.h"
+#include "third_party/webrtc/base/helpers.h"
 #include "url/gurl.h"
 
 namespace remoting {
@@ -690,6 +692,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       new protocol::TransportContext(
           signal_strategy_.get(),
           make_scoped_ptr(new PepperPortAllocatorFactory(this)),
+          make_scoped_ptr(new PepperUrlRequestFactory(this)),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT));
