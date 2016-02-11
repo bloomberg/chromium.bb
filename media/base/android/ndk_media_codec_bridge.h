@@ -56,10 +56,10 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
   void GetInputBuffer(int input_buffer_index,
                       uint8_t** data,
                       size_t* capacity) override;
-  bool CopyFromOutputBuffer(int index,
+  void CopyFromOutputBuffer(int index,
                             size_t offset,
                             void* dst,
-                            int dst_size) override;
+                            size_t num) override;
 
  protected:
   NdkMediaCodecBridge(const std::string& mime,

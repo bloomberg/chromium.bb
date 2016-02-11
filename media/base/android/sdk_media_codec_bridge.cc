@@ -296,30 +296,28 @@ void SdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
       base::checked_cast<size_t>(env->GetDirectBufferCapacity(j_buffer.obj()));
 }
 
-bool SdkMediaCodecBridge::CopyFromOutputBuffer(int index,
+void SdkMediaCodecBridge::CopyFromOutputBuffer(int index,
                                                size_t offset,
                                                void* dst,
-                                               int dst_size) {
+                                               size_t num) {
   void* src_data = nullptr;
-  size_t src_capacity = GetOutputBufferAddress(index, offset, &src_data);
-  if (src_capacity < offset ||
-      src_capacity - offset < static_cast<size_t>(dst_size)) {
-    return false;
-  }
-  memcpy(dst, static_cast<uint8_t*>(src_data) + offset, dst_size);
-  return true;
+  const size_t src_capacity = GetOutputBufferAddress(index, offset, &src_data);
+  CHECK_GE(src_capacity, num);
+  memcpy(dst, src_data, num);
 }
 
-int SdkMediaCodecBridge::GetOutputBufferAddress(int index,
-                                                size_t offset,
-                                                void** addr) {
+size_t SdkMediaCodecBridge::GetOutputBufferAddress(int index,
+                                                   size_t offset,
+                                                   void** addr) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_buffer(
       Java_MediaCodecBridge_getOutputBuffer(env, j_media_codec_.obj(), index));
+  const size_t total_capacity = env->GetDirectBufferCapacity(j_buffer.obj());
+  CHECK_GE(total_capacity, offset);
   *addr =
       reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(j_buffer.obj())) +
       offset;
-  return env->GetDirectBufferCapacity(j_buffer.obj()) - offset;
+  return total_capacity - offset;
 }
 
 // static

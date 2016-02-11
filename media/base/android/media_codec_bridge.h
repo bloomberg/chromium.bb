@@ -156,12 +156,13 @@ class MEDIA_EXPORT MediaCodecBridge {
                               uint8_t** data,
                               size_t* capacity) = 0;
 
-  // Copy |dst_size| bytes from output buffer |index|'s |offset| onwards into
-  // |*dst|.
-  virtual bool CopyFromOutputBuffer(int index,
+  // Copy |num| bytes from output buffer |index|'s |offset| into the memory
+  // region pointed to by |*dst|. To avoid overflows, the size of both source
+  // and destination must be at least |num| bytes, and should not overlap.
+  virtual void CopyFromOutputBuffer(int index,
                                     size_t offset,
                                     void* dst,
-                                    int dst_size) = 0;
+                                    size_t num) = 0;
 
  protected:
   MediaCodecBridge();

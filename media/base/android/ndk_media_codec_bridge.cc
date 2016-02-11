@@ -220,19 +220,15 @@ void NdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
                                      capacity);
 }
 
-bool NdkMediaCodecBridge::CopyFromOutputBuffer(int index,
+void NdkMediaCodecBridge::CopyFromOutputBuffer(int index,
                                                size_t offset,
                                                void* dst,
-                                               int dst_size) {
+                                               size_t num) {
   size_t capacity;
-  uint8_t* src_data =
+  const uint8_t* src_data =
       AMediaCodec_getOutputBuffer(media_codec_.get(), index, &capacity);
-
-  if (capacity < offset || capacity - offset < static_cast<size_t>(dst_size))
-    return false;
-
-  memcpy(dst, src_data + offset, dst_size);
-  return true;
+  CHECK_GE(capacity, offset + num);
+  memcpy(dst, src_data + offset, num);
 }
 
 }  // namespace media

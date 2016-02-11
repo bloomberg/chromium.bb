@@ -65,10 +65,10 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
   void GetInputBuffer(int input_buffer_index,
                       uint8_t** data,
                       size_t* capacity) override;
-  bool CopyFromOutputBuffer(int index,
+  void CopyFromOutputBuffer(int index,
                             size_t offset,
                             void* dst,
-                            int dst_size) override;
+                            size_t num) override;
 
   static bool RegisterSdkMediaCodecBridge(JNIEnv* env);
 
@@ -78,9 +78,9 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
                       MediaCodecDirection direction);
 
   // Called to get the buffer address given the output buffer index and offset.
-  // This function returns the size of the output and |addr| is the pointer to
-  // the address to read.
-  int GetOutputBufferAddress(int index, size_t offset, void** addr);
+  // This function returns the size of available data to read and |addr| is the
+  // pointer to the address to read.
+  size_t GetOutputBufferAddress(int index, size_t offset, void** addr);
 
   jobject media_codec() { return j_media_codec_.obj(); }
   MediaCodecDirection direction_;
