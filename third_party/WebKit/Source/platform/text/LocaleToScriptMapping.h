@@ -42,6 +42,9 @@ namespace blink {
 PLATFORM_EXPORT UScriptCode localeToScriptCodeForFontSelection(const String&);
 PLATFORM_EXPORT UScriptCode scriptNameToCode(const String&);
 
+PLATFORM_EXPORT UScriptCode scriptCodeForHanFromLocale(const String&, char delimiter = '-');
+PLATFORM_EXPORT UScriptCode scriptCodeForHanFromLocale(UScriptCode, const String&, char delimiter = '-');
+
 }
 
 #endif

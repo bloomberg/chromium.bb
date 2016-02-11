@@ -443,4 +443,76 @@ UScriptCode localeToScriptCodeForFontSelection(const String& locale)
     return USCRIPT_COMMON;
 }
 
+static bool isUnambiguousHanScript(UScriptCode script)
+{
+    // localeToScriptCodeForFontSelection() does not return these values.
+    ASSERT(script != USCRIPT_HIRAGANA && script != USCRIPT_KATAKANA);
+    return script == USCRIPT_KATAKANA_OR_HIRAGANA
+        || script == USCRIPT_SIMPLIFIED_HAN
+        || script == USCRIPT_TRADITIONAL_HAN
+        || script == USCRIPT_HANGUL;
+}
+
+static UScriptCode scriptCodeForHanFromSubtag(const String& subtag)
+{
+    struct SubtagScript {
+        const char* subtag;
+        UScriptCode script;
+    };
+
+    static const SubtagScript subtagScriptList[] = {
+        { "cn", USCRIPT_SIMPLIFIED_HAN },
+        { "hans", USCRIPT_SIMPLIFIED_HAN },
+        { "hant", USCRIPT_TRADITIONAL_HAN },
+        { "hk", USCRIPT_TRADITIONAL_HAN },
+        { "jp", USCRIPT_KATAKANA_OR_HIRAGANA },
+        { "kr", USCRIPT_HANGUL },
+        { "tw", USCRIPT_TRADITIONAL_HAN },
+    };
+
+    typedef HashMap<String, UScriptCode> SubtagScriptMap;
+    DEFINE_STATIC_LOCAL(SubtagScriptMap, subtagScriptMap, ());
+    if (subtagScriptMap.isEmpty()) {
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(subtagScriptList); ++i)
+            subtagScriptMap.set(subtagScriptList[i].subtag, subtagScriptList[i].script);
+    }
+
+    const auto& it = subtagScriptMap.find(subtag.lower());
+    return it != subtagScriptMap.end() ? it->value : USCRIPT_COMMON;
+}
+
+static UScriptCode scriptCodeForHanFromSubtags(const String& locale, char delimiter)
+{
+    // Some sites emit lang="en-JP" when English is set as the preferred
+    // language. Use script/region subtags of the content locale to pick the
+    // fallback font for unified Han ideographs.
+    for (size_t end = locale.find(delimiter); end != kNotFound; ) {
+        size_t begin = end + 1;
+        end = locale.find(delimiter, begin);
+        UScriptCode script = scriptCodeForHanFromSubtag(
+            locale.substring(begin,
+                end == kNotFound ? UINT_MAX : end - begin));
+        if (script != USCRIPT_COMMON)
+            return script;
+    }
+
+    return USCRIPT_COMMON;
+}
+
+UScriptCode scriptCodeForHanFromLocale(UScriptCode script, const String& locale, char delimiter)
+{
+    if (isUnambiguousHanScript(script))
+        return script;
+
+    // Identify the script for Han if the UScriptCode is ambiguous.
+    // Check subtags only, because the UScriptCode covers the language part.
+    return scriptCodeForHanFromSubtags(locale, delimiter);
+}
+
+UScriptCode scriptCodeForHanFromLocale(const String& locale, char delimiter)
+{
+    UScriptCode script = localeToScriptCodeForFontSelection(locale);
+    return scriptCodeForHanFromLocale(script, locale, delimiter);
+}
+
 } // namespace blink

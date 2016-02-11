@@ -42,86 +42,6 @@
 
 namespace blink {
 
-static bool isUnambiguousUnifiedHanScript(UScriptCode script)
-{
-    // localeToScriptCodeForFontSelection() does not return these values.
-    ASSERT(script != USCRIPT_HIRAGANA && script != USCRIPT_KATAKANA);
-    return script == USCRIPT_KATAKANA_OR_HIRAGANA
-        || script == USCRIPT_SIMPLIFIED_HAN
-        || script == USCRIPT_TRADITIONAL_HAN
-        || script == USCRIPT_HANGUL;
-}
-
-static UScriptCode scriptCodeForUnifiedHanFromSubtag(const String& subtag)
-{
-    struct SubtagScript {
-        const char* subtag;
-        UScriptCode script;
-    };
-
-    static const SubtagScript subtagScriptList[] = {
-        { "cn", USCRIPT_SIMPLIFIED_HAN },
-        { "hans", USCRIPT_SIMPLIFIED_HAN },
-        { "hant", USCRIPT_TRADITIONAL_HAN },
-        { "hk", USCRIPT_TRADITIONAL_HAN },
-        { "jp", USCRIPT_HIRAGANA },
-        { "kr", USCRIPT_HANGUL },
-        { "tw", USCRIPT_TRADITIONAL_HAN },
-    };
-
-    typedef HashMap<String, UScriptCode> SubtagScriptMap;
-    DEFINE_STATIC_LOCAL(SubtagScriptMap, subtagScriptMap, ());
-    if (subtagScriptMap.isEmpty()) {
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(subtagScriptList); ++i)
-            subtagScriptMap.set(subtagScriptList[i].subtag, subtagScriptList[i].script);
-    }
-
-    const auto& it = subtagScriptMap.find(subtag.lower());
-    return it != subtagScriptMap.end() ? it->value : USCRIPT_COMMON;
-}
-
-UScriptCode scriptCodeForUnifiedHanFromSubtags(const String& locale)
-{
-    // Some sites emit lang="en-JP" when English is set as the preferred
-    // language. Use script/region subtags of the content locale to pick the
-    // fallback font for unified Han ideographs.
-    for (size_t delimiter = locale.find('-'); delimiter != kNotFound; ) {
-        ++delimiter;
-        size_t end = locale.find('-', delimiter);
-        UScriptCode script = scriptCodeForUnifiedHanFromSubtag(
-            locale.substring(delimiter,
-                end == kNotFound ? UINT_MAX : end - delimiter));
-        if (script != USCRIPT_COMMON)
-            return script;
-        delimiter = end;
-    }
-
-    // Fallback to the UI locale.
-    return USCRIPT_HAN;
-}
-
-UScriptCode scriptCodeForUnifiedHanFromLocale(const icu::Locale& locale)
-{
-    // ICU default locale may have country as an empty string or differently.
-    // Avoid fullName comparisons for Japanese and Korean where language()
-    // can safely disambiguate.
-    if (strcasecmp(locale.getLanguage(), icu::Locale::getJapanese().getLanguage()) == 0)
-        return USCRIPT_HIRAGANA;
-    if (strcasecmp(locale.getLanguage(), icu::Locale::getKorean().getLanguage()) == 0)
-        return USCRIPT_HANGUL;
-
-    // Chinese and non-CJK languages may be able to determine from subtags.
-    UScriptCode script = scriptCodeForUnifiedHanFromSubtag(locale.getScript());
-    if (script != USCRIPT_COMMON)
-        return script;
-    script = scriptCodeForUnifiedHanFromSubtag(locale.getCountry());
-    if (script != USCRIPT_COMMON)
-        return script;
-
-    // For other locales, use the simplified Chinese font for Han.
-    return USCRIPT_SIMPLIFIED_HAN;
-}
-
 namespace {
 
 static inline bool isFontPresent(const UChar* fontName, SkFontMgr* fontManager)
@@ -301,8 +221,11 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     // Initialize the locale-dependent mapping.
     // Since Chrome synchronizes the ICU default locale with its UI locale,
     // this ICU locale tells the current UI locale of Chrome.
-    const UChar* localeFamily = scriptFontMap[scriptCodeForUnifiedHanFromLocale(
-        icu::Locale::getDefault())];
+    UScriptCode hanScript = scriptCodeForHanFromLocale(
+        icu::Locale::getDefault().getName(), '_');
+    // For other locales, use the simplified Chinese font for Han.
+    const UChar* localeFamily = scriptFontMap[hanScript == USCRIPT_COMMON
+        ? USCRIPT_SIMPLIFIED_HAN : hanScript];
     if (localeFamily)
         scriptFontMap[USCRIPT_HAN] = localeFamily;
 }
@@ -319,7 +242,7 @@ UScriptCode getScriptBasedOnUnicodeBlock(int ucs4)
         return USCRIPT_HAN;
     case UBLOCK_HIRAGANA:
     case UBLOCK_KATAKANA:
-        return USCRIPT_HIRAGANA;
+        return USCRIPT_KATAKANA_OR_HIRAGANA;
     case UBLOCK_ARABIC:
         return USCRIPT_ARABIC;
     case UBLOCK_THAI:
@@ -487,10 +410,10 @@ const UChar* getFallbackFamily(UChar32 character,
 
     // For unified-Han scripts, try the lang attribute.
     if (script == USCRIPT_HAN) {
-        if (isUnambiguousUnifiedHanScript(contentScript))
-            script = contentScript;
-        else
-            script = scriptCodeForUnifiedHanFromSubtags(contentLocale);
+        script = scriptCodeForHanFromLocale(contentScript, contentLocale);
+        // Use the UI locale if it is still ambiguous.
+        if (script == USCRIPT_COMMON)
+            script = USCRIPT_SIMPLIFIED_HAN;
     }
 
     family = getFontFamilyForScript(script, generic, fontManager);
