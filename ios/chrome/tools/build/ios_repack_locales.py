@@ -56,6 +56,10 @@ def calc_inputs(options, locale):
   inputs.append(os.path.join(options.share_int_dir, 'ui', 'strings',
                 'ui_strings_%s.pak' % locale))
 
+  #e.g. 'out/Debug/gen/ui/strings/app_locale_settings_da.pak',
+  inputs.append(os.path.join(options.share_int_dir, 'ui', 'strings',
+                'app_locale_settings_%s.pak' % locale))
+
   #e.g. 'out/Debug/gen/ios/chrome/ios_locale_settings_da.pak'
   inputs.append(os.path.join(options.share_int_dir, 'ios', 'chrome',
                 'ios_locale_settings_%s.pak' % locale))
