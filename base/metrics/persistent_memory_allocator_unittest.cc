@@ -86,10 +86,10 @@ TEST_F(PersistentMemoryAllocatorTest, AllocateAndIterate) {
   std::string base_name(TEST_NAME);
   EXPECT_EQ(TEST_ID, allocator_->Id());
   EXPECT_TRUE(allocator_->used_histogram_);
-  EXPECT_EQ(base_name + ".UsedKiB",
+  EXPECT_EQ("UMA.PersistentAllocator." + base_name + ".UsedPct",
             allocator_->used_histogram_->histogram_name());
   EXPECT_TRUE(allocator_->allocs_histogram_);
-  EXPECT_EQ(base_name + ".Allocs",
+  EXPECT_EQ("UMA.PersistentAllocator." + base_name + ".Allocs",
             allocator_->allocs_histogram_->histogram_name());
 
   // Get base memory info for later comparison.

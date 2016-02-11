@@ -52339,6 +52339,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.PersistentAllocator.BrowserMetrics.Allocs" units="bytes">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory. This is
+    updated with every allocation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.BrowserMetrics.UsedPct" units="%">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Percentage of persistent memory segment that has been allocated. This is
+    updated only once per reporting cycle.
+  </summary>
+</histogram>
+
 <histogram name="UMA.ProfilesCount.AfterErase">
   <owner>asvitkine@chromium.org</owner>
   <owner>yiyaoliu@chromium.org</owner>

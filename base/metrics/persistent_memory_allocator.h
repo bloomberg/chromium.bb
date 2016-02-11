@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 #include <atomic>
-#include <string>
 
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 
@@ -104,7 +104,7 @@ class BASE_EXPORT PersistentMemoryAllocator {
   // method below) before construction if the definition of the segment can
   // vary in any way at run-time. Invalid memory segments will cause a crash.
   PersistentMemoryAllocator(void* base, size_t size, size_t page_size,
-                            uint64_t id, const std::string& name,
+                            uint64_t id, base::StringPiece name,
                             bool readonly);
   virtual ~PersistentMemoryAllocator();
 
@@ -129,7 +129,12 @@ class BASE_EXPORT PersistentMemoryAllocator {
   // for allocator of |name| (which can simply be the result of Name()). This
   // is done seperately from construction for situations such as when the
   // histograms will be backed by memory provided by this very allocator.
-  void CreateTrackingHistograms(const std::string& name);
+  //
+  // IMPORTANT: Callers must update tools/metrics/histograms/histograms.xml
+  // with the following histograms:
+  //    UMA.PersistentAllocator.name.Allocs
+  //    UMA.PersistentAllocator.name.UsedPct
+  void CreateTrackingHistograms(base::StringPiece name);
 
   // Direct access to underlying memory segment. If the segment is shared
   // across threads or processes, reading data through these values does
@@ -301,7 +306,7 @@ class BASE_EXPORT LocalPersistentMemoryAllocator
     : public PersistentMemoryAllocator {
  public:
   LocalPersistentMemoryAllocator(size_t size, uint64_t id,
-                                 const std::string& name);
+                                 base::StringPiece name);
   ~LocalPersistentMemoryAllocator() override;
 
  private:
@@ -316,7 +321,7 @@ class BASE_EXPORT FilePersistentMemoryAllocator
     : public PersistentMemoryAllocator {
  public:
   FilePersistentMemoryAllocator(MemoryMappedFile* file, uint64_t id,
-                                const std::string& name);
+                                base::StringPiece name);
   ~FilePersistentMemoryAllocator() override;
 
   // Ensure that the file isn't so invalid that it won't crash when passing it

@@ -29,7 +29,7 @@ namespace {
 // create an appropriate allocator for such if so.
 void InstantiatePersistentHistograms() {
   if (base::FeatureList::IsEnabled(base::kPersistentHistogramsFeature)) {
-    const std::string allocator_name("BrowserMetricsAllocator");
+    const std::string allocator_name("BrowserMetrics");
     // Create persistent/shared memory and allow histograms to be stored in it.
     // TODO(bcwhite): Update this with correct allocator and memory size.
     base::SetPersistentHistogramMemoryAllocator(

@@ -131,12 +131,13 @@ bool PersistentMemoryAllocator::IsMemoryAcceptable(const void* base,
           (page_size == 0 || size % page_size == 0 || readonly));
 }
 
-PersistentMemoryAllocator::PersistentMemoryAllocator(void* base,
-                                                     size_t size,
-                                                     size_t page_size,
-                                                     uint64_t id,
-                                                     const std::string& name,
-                                                     bool readonly)
+PersistentMemoryAllocator::PersistentMemoryAllocator(
+    void* base,
+    size_t size,
+    size_t page_size,
+    uint64_t id,
+    base::StringPiece name,
+    bool readonly)
     : mem_base_(static_cast<char*>(base)),
       mem_size_(static_cast<uint32_t>(size)),
       mem_page_(static_cast<uint32_t>((page_size ? page_size : size))),
@@ -211,7 +212,7 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(void* base,
       shared_meta()->name = Allocate(name_length, 0);
       char* name_cstr = GetAsObject<char>(shared_meta()->name, 0);
       if (name_cstr)
-        strcpy(name_cstr, name.c_str());
+        memcpy(name_cstr, name.data(), name.length());
     }
   } else {
     if (!readonly) {
@@ -254,17 +255,20 @@ const char* PersistentMemoryAllocator::Name() const {
 }
 
 void PersistentMemoryAllocator::CreateTrackingHistograms(
-    const std::string& name) {
+    base::StringPiece name) {
   if (name.empty() || readonly_)
     return;
 
+  std::string name_string = name.as_string();
   DCHECK(!used_histogram_);
-  used_histogram_ = Histogram::FactoryGet(
-      name + ".UsedKiB", 1, 256 << 10, 100, HistogramBase::kNoFlags);
+  used_histogram_ = LinearHistogram::FactoryGet(
+      "UMA.PersistentAllocator." + name_string + ".UsedPct", 1, 101, 21,
+      HistogramBase::kUmaTargetedHistogramFlag);
 
   DCHECK(!allocs_histogram_);
   allocs_histogram_ = Histogram::FactoryGet(
-      name + ".Allocs", 1, 10000, 50, HistogramBase::kNoFlags);
+      "UMA.PersistentAllocator." + name_string + ".Allocs", 1, 10000, 50,
+      HistogramBase::kUmaTargetedHistogramFlag);
 }
 
 size_t PersistentMemoryAllocator::used() const {
@@ -643,7 +647,7 @@ void PersistentMemoryAllocator::UpdateTrackingHistograms() {
 LocalPersistentMemoryAllocator::LocalPersistentMemoryAllocator(
     size_t size,
     uint64_t id,
-    const std::string& name)
+    base::StringPiece name)
     : PersistentMemoryAllocator(memset(new char[size], 0, size),
                                 size, 0, id, name, false) {}
 
@@ -657,7 +661,7 @@ LocalPersistentMemoryAllocator::~LocalPersistentMemoryAllocator() {
 FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
     MemoryMappedFile* file,
     uint64_t id,
-    const std::string& name)
+    base::StringPiece name)
     : PersistentMemoryAllocator(const_cast<uint8_t*>(file->data()),
                                 file->length(), 0, id, name, true),
       mapped_file_(file) {}
