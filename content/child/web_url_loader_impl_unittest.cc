@@ -84,6 +84,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
     EXPECT_FALSE(peer_);
     peer_ = std::move(peer);
     url_ = request_info.url;
+    stream_url_ = request_info.resource_body_stream_url;
     return 1;
   }
 
@@ -97,11 +98,13 @@ class TestResourceDispatcher : public ResourceDispatcher {
   bool canceled() { return canceled_; }
 
   const GURL& url() { return url_; }
+  const GURL& stream_url() { return stream_url_; }
 
  private:
   scoped_ptr<RequestPeer> peer_;
   bool canceled_;
   GURL url_;
+  GURL stream_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcher);
 };
@@ -668,11 +671,12 @@ TEST_F(WebURLLoaderImplTest, MultipartDeleteFail) {
 // navigation commit are properly applied.
 TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   // Initialize the request and the stream override.
+  const GURL kNavigationURL = GURL(kTestURL);
   const GURL kStreamURL = GURL("http://bar");
   const std::string kMimeType = "text/html";
   blink::WebURLRequest request;
   request.initialize();
-  request.setURL(GURL(kTestURL));
+  request.setURL(kNavigationURL);
   request.setFrameType(blink::WebURLRequest::FrameTypeTopLevel);
   request.setRequestContext(blink::WebURLRequest::RequestContextFrame);
   scoped_ptr<StreamOverrideParameters> stream_override(
@@ -687,9 +691,10 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
 
   client()->loader()->loadAsynchronously(request, client());
 
-  // The stream url should have been requestead instead of the request url.
+  // The stream url should have been added to the RequestInfo.
   ASSERT_TRUE(peer());
-  EXPECT_EQ(kStreamURL, dispatcher()->url());
+  EXPECT_EQ(kNavigationURL, dispatcher()->url());
+  EXPECT_EQ(kStreamURL, dispatcher()->stream_url());
 
   EXPECT_FALSE(client()->did_receive_response());
   peer()->OnReceivedResponse(content::ResourceResponseInfo());

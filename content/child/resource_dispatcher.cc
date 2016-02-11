@@ -864,6 +864,7 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
       extra_data->service_worker_provider_id();
   request->lofi_state = extra_data->lofi_state();
   request->request_body = request_body;
+  request->resource_body_stream_url = request_info.resource_body_stream_url;
   if (frame_origin)
     *frame_origin = extra_data->frame_origin();
   return request;

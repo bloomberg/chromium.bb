@@ -468,17 +468,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   GURL url = request.url();
 
-  // PlzNavigate: during navigation, the renderer should request a stream which
-  // contains the body of the response. The request has already been made by the
-  // browser.
-  if (stream_override_.get()) {
-    CHECK(IsBrowserSideNavigationEnabled());
-    DCHECK(!sync_load_response);
-    DCHECK_NE(WebURLRequest::FrameTypeNone, request.frameType());
-    DCHECK_EQ("GET", request.httpMethod().latin1());
-    url = stream_override_->stream_url;
-  }
-
   if (CanHandleDataURLRequestLocally()) {
     if (sync_load_response) {
       // This is a sync load. Do the work now.
@@ -557,6 +546,17 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   scoped_refptr<ResourceRequestBody> request_body =
       GetRequestBodyForWebURLRequest(request).get();
+
+  // PlzNavigate: during navigation, the renderer should request a stream which
+  // contains the body of the response. The network request has already been
+  // made by the browser.
+  if (stream_override_.get()) {
+    CHECK(IsBrowserSideNavigationEnabled());
+    DCHECK(!sync_load_response);
+    DCHECK_NE(WebURLRequest::FrameTypeNone, request.frameType());
+    DCHECK_EQ("GET", request.httpMethod().latin1());
+    request_info.resource_body_stream_url = stream_override_->stream_url;
+  }
 
   if (sync_load_response) {
     resource_dispatcher_->StartSync(

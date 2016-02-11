@@ -294,6 +294,11 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // Whether or not to request a LoFi version of the resource or let the browser
   // decide.
   IPC_STRUCT_MEMBER(content::LoFiState, lofi_state)
+
+  // PlzNavigate: the stream url associated with a navigation. Used to get
+  // access to the body of the response that has already been fetched by the
+  // browser.
+  IPC_STRUCT_MEMBER(GURL, resource_body_stream_url)
 IPC_STRUCT_END()
 
 // Parameters for a ResourceMsg_RequestComplete

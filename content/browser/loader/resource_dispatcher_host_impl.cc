@@ -1412,9 +1412,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   // PlzNavigate: reject invalid renderer main resource request.
-  if (IsBrowserSideNavigationEnabled() &&
-      IsResourceTypeFrame(request_data.resource_type) &&
-      !request_data.url.SchemeIs(url::kBlobScheme)) {
+  bool is_navigation_stream_request =
+      IsBrowserSideNavigationEnabled() &&
+      IsResourceTypeFrame(request_data.resource_type);
+  if (is_navigation_stream_request &&
+      !request_data.resource_body_stream_url.SchemeIs(url::kBlobScheme)) {
     bad_message::ReceivedBadMessage(filter_, bad_message::RDH_INVALID_URL);
     return;
   }
@@ -1482,7 +1484,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Construct the request.
   scoped_ptr<net::URLRequest> new_request = request_context->CreateRequest(
-      request_data.url, request_data.priority, NULL);
+      is_navigation_stream_request ? request_data.resource_body_stream_url
+                                   : request_data.url,
+      request_data.priority, nullptr);
 
   new_request->set_method(request_data.method);
   new_request->set_first_party_for_cookies(
