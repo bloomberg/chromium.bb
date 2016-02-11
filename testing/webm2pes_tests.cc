@@ -93,23 +93,28 @@ class Webm2PesTests : public ::testing::Test {
 
   Webm2PesTests() : read_pos_(0), parse_state_(kParsePesHeader) {}
 
-  bool CreateAndLoadTestInput() {
+  void CreateAndLoadTestInput() {
     libwebm::Webm2Pes converter(input_file_name_, temp_file_name_.name());
-    EXPECT_TRUE(converter.ConvertToFile());
+    ASSERT_TRUE(converter.ConvertToFile());
     pes_file_size_ = libwebm::test::GetFileSize(pes_file_name());
-    EXPECT_GT(pes_file_size_, 0);
+    ASSERT_GT(pes_file_size_, 0);
     pes_file_data_.reserve(pes_file_size_);
-    EXPECT_EQ(pes_file_size_, pes_file_data_.capacity());
     libwebm::FilePtr file = libwebm::FilePtr(
         std::fopen(pes_file_name().c_str(), "rb"), libwebm::FILEDeleter());
-    EXPECT_EQ(std::fread(&pes_file_data_[0], 1, pes_file_size_, file.get()),
-              pes_file_size_);
+
+    int byte;
+    while ((byte = fgetc(file.get())) != EOF)
+      pes_file_data_.push_back(static_cast<std::uint8_t>(byte));
+
+    ASSERT_TRUE(feof(file.get()) && !ferror(file.get()));
+    ASSERT_EQ(pes_file_size_, pes_file_data_.size());
     read_pos_ = 0;
     parse_state_ = kParsePesHeader;
-    return true;
   }
 
   bool VerifyPacketStartCode() {
+    EXPECT_LT(read_pos_ + 2, pes_file_data_.size());
+
     // PES packets all start with the byte sequence 0x0 0x0 0x1.
     if (pes_file_data_[read_pos_] != 0 || pes_file_data_[read_pos_ + 1] != 0 ||
         pes_file_data_[read_pos_ + 2] != 1) {
@@ -118,9 +123,13 @@ class Webm2PesTests : public ::testing::Test {
     return true;
   }
 
-  std::uint8_t ReadStreamId() { return pes_file_data_[read_pos_ + 3]; }
+  std::uint8_t ReadStreamId() {
+    EXPECT_LT(read_pos_ + 3, pes_file_data_.size());
+    return pes_file_data_[read_pos_ + 3]; }
 
   std::uint16_t ReadPacketLength() {
+    EXPECT_LT(read_pos_ + 5, pes_file_data_.size());
+
     // Read and byte swap 16 bit big endian length.
     return (pes_file_data_[read_pos_ + 4] << 8) | pes_file_data_[read_pos_ + 5];
   }
@@ -245,12 +254,10 @@ class Webm2PesTests : public ::testing::Test {
   ParseState parse_state_;
 };
 
-TEST_F(Webm2PesTests, CreatePesFile) {
-  ASSERT_TRUE(CreateAndLoadTestInput());
-}
+TEST_F(Webm2PesTests, CreatePesFile) { CreateAndLoadTestInput(); }
 
 TEST_F(Webm2PesTests, CanParseFirstPacket) {
-  ASSERT_TRUE(CreateAndLoadTestInput());
+  CreateAndLoadTestInput();
 
   //
   // Parse the PES Header.
