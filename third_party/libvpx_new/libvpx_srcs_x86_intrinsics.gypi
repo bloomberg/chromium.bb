@@ -57,6 +57,7 @@
       'sources': [
         '<(libvpx_source)/vp8/encoder/x86/quantize_ssse3.c',
         '<(libvpx_source)/vp9/encoder/x86/vp9_dct_ssse3.c',
+        '<(libvpx_source)/vp9/encoder/x86/vp9_frame_scale_ssse3.c',
         '<(libvpx_source)/vpx_dsp/x86/vpx_subpixel_8t_intrin_ssse3.c',
       ],
       'cflags': [ '-mssse3', ],

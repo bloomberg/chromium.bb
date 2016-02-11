@@ -418,6 +418,7 @@ libvpx_srcs_x86_sse3 = []
 libvpx_srcs_x86_ssse3 = [
   "//third_party/libvpx_new/source/libvpx/vp8/encoder/x86/quantize_ssse3.c",
   "//third_party/libvpx_new/source/libvpx/vp9/encoder/x86/vp9_dct_ssse3.c",
+  "//third_party/libvpx_new/source/libvpx/vp9/encoder/x86/vp9_frame_scale_ssse3.c",
   "//third_party/libvpx_new/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_ssse3.c",
 ]
 libvpx_srcs_x86_sse4_1 =
@@ -856,6 +857,7 @@ libvpx_srcs_x86_64_sse3 = []
 libvpx_srcs_x86_64_ssse3 = [
   "//third_party/libvpx_new/source/libvpx/vp8/encoder/x86/quantize_ssse3.c",
   "//third_party/libvpx_new/source/libvpx/vp9/encoder/x86/vp9_dct_ssse3.c",
+  "//third_party/libvpx_new/source/libvpx/vp9/encoder/x86/vp9_frame_scale_ssse3.c",
   "//third_party/libvpx_new/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_ssse3.c",
 ]
 libvpx_srcs_x86_64_sse4_1 =
