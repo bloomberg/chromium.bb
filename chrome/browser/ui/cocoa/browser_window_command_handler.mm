@@ -222,9 +222,10 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
       break;
     }
     case IDC_SHOW_AS_TAB: {
-      // Hide this menu option if the window is tabbed.
+      // Hide this menu option if the window is tabbed or is the devtools
+      // window.
       NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
-      [menuItem setHidden:browser->is_type_tabbed()];
+      [menuItem setHidden:browser->is_type_tabbed() || browser->is_devtools()];
       break;
     }
     default:
