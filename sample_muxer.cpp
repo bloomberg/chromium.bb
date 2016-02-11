@@ -141,6 +141,95 @@ int ParseArgWebVTT(char* argv[], int* argv_index, int argc_check,
   return 0;  // not a WebVTT arg
 }
 
+typedef std::auto_ptr<mkvmuxer::PrimaryChromaticity> PrimaryChromaticityPtr;
+bool CopyPrimaryChromaticity(const mkvparser::PrimaryChromaticity& parser_pc,
+                             PrimaryChromaticityPtr* muxer_pc) {
+  muxer_pc->reset(new (std::nothrow)
+                      mkvmuxer::PrimaryChromaticity(parser_pc.x, parser_pc.y));
+  if (!muxer_pc->get())
+    return false;
+  return true;
+}
+
+bool MasteringMetadataValuePresent(double value) {
+  return value != mkvparser::MasteringMetadata::kValueNotPresent;
+}
+
+bool CopyMasteringMetadata(const mkvparser::MasteringMetadata& parser_mm,
+                           mkvmuxer::MasteringMetadata* muxer_mm) {
+  if (MasteringMetadataValuePresent(parser_mm.luminance_max))
+    muxer_mm->luminance_max = parser_mm.luminance_max;
+  if (MasteringMetadataValuePresent(parser_mm.luminance_min))
+    muxer_mm->luminance_min = parser_mm.luminance_min;
+
+  PrimaryChromaticityPtr r_ptr(NULL);
+  PrimaryChromaticityPtr g_ptr(NULL);
+  PrimaryChromaticityPtr b_ptr(NULL);
+  PrimaryChromaticityPtr wp_ptr(NULL);
+
+  if (parser_mm.r) {
+    if (!CopyPrimaryChromaticity(*parser_mm.r, &r_ptr))
+      return false;
+  }
+  if (parser_mm.g) {
+    if (!CopyPrimaryChromaticity(*parser_mm.g, &g_ptr))
+      return false;
+  }
+  if (parser_mm.b) {
+    if (!CopyPrimaryChromaticity(*parser_mm.b, &b_ptr))
+      return false;
+  }
+  if (parser_mm.white_point) {
+    if (!CopyPrimaryChromaticity(*parser_mm.white_point, &wp_ptr))
+      return false;
+  }
+
+  if (!muxer_mm->SetChromaticity(r_ptr.get(), g_ptr.get(), b_ptr.get(),
+                                 wp_ptr.get())) {
+    return false;
+  }
+
+  return true;
+}
+
+bool ColourValuePresent(long long value) {
+  return value != mkvparser::Colour::kValueNotPresent;
+}
+
+bool CopyColour(const mkvparser::Colour& parser_colour,
+                mkvmuxer::Colour* muxer_colour) {
+  if (!muxer_colour)
+    return false;
+
+  if (ColourValuePresent(parser_colour.matrix))
+    muxer_colour->matrix = parser_colour.matrix;
+  if (ColourValuePresent(parser_colour.bits_per_channel))
+    muxer_colour->bits_per_channel = parser_colour.bits_per_channel;
+  if (ColourValuePresent(parser_colour.chroma_subsampling))
+    muxer_colour->chroma_subsampling = parser_colour.chroma_subsampling;
+  if (ColourValuePresent(parser_colour.chroma_siting_horz))
+    muxer_colour->chroma_siting_horz = parser_colour.chroma_siting_horz;
+  if (ColourValuePresent(parser_colour.chroma_siting_vert))
+    muxer_colour->chroma_siting_vert = parser_colour.chroma_siting_vert;
+  if (ColourValuePresent(parser_colour.range))
+    muxer_colour->range = parser_colour.range;
+  if (ColourValuePresent(parser_colour.transfer_function))
+    muxer_colour->transfer_function = parser_colour.transfer_function;
+  if (ColourValuePresent(parser_colour.primaries))
+    muxer_colour->primaries = parser_colour.primaries;
+  if (ColourValuePresent(parser_colour.max_cll))
+    muxer_colour->max_cll = parser_colour.max_cll;
+  if (ColourValuePresent(parser_colour.max_fall))
+    muxer_colour->max_fall = parser_colour.max_fall;
+
+  if (parser_colour.mastering_metadata) {
+    mkvmuxer::MasteringMetadata muxer_mm;
+    if (!CopyMasteringMetadata(*parser_colour.mastering_metadata, &muxer_mm))
+      return false;
+  }
+  return true;
+}
+
 }  // end namespace
 
 int main(int argc, char* argv[]) {
@@ -371,6 +460,14 @@ int main(int argc, char* argv[]) {
       if (!video) {
         printf("\n Could not get video track.\n");
         return EXIT_FAILURE;
+      }
+
+      if (pVideoTrack->GetColour()) {
+        mkvmuxer::Colour muxer_colour;
+        if (!CopyColour(*pVideoTrack->GetColour(), &muxer_colour))
+          return EXIT_FAILURE;
+        if (!video->SetColour(muxer_colour))
+          return EXIT_FAILURE;
       }
 
       if (track_name)
