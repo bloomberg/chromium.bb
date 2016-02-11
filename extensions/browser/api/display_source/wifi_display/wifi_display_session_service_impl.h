@@ -61,11 +61,9 @@ class WiFiDisplaySessionServiceImpl
   WiFiDisplaySessionServiceClientPtr client_;
   DisplaySourceConnectionDelegate* delegate_;
 
-  // Id of the currenty connected sink (if any), obtained from connection
-  // delegate. Keep it so that we know if a session has been ended.
-  int last_connected_sink_;
+  api::display_source::SinkState sink_state_;
   // Id of the sink of the session this object is associated with.
-  int own_sink_;
+  int sink_id_;
 
   base::WeakPtrFactory<WiFiDisplaySessionServiceImpl> weak_factory_;
 

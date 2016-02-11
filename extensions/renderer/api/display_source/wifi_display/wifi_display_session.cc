@@ -42,6 +42,8 @@ void WiFiDisplaySession::Start() {
   DCHECK(state_ == DisplaySourceSession::Idle);
   service_->Connect(params_.sink_id, params_.auth_method, params_.auth_data);
   state_ = DisplaySourceSession::Establishing;
+  if (!started_callback_.is_null())
+    started_callback_.Run(params_.sink_id);
 }
 
 void WiFiDisplaySession::Terminate() {
@@ -61,35 +63,26 @@ void WiFiDisplaySession::Terminate() {
   }
 }
 
-void WiFiDisplaySession::OnConnected(
-    int32_t sink_id, const mojo::String& ip_address) {
-  if (sink_id == params_.sink_id) {
-    DCHECK(state_ != DisplaySourceSession::Established);
-    ip_address_ = ip_address;
-    state_ = DisplaySourceSession::Established;
-  }
-
-  if (!started_callback_.is_null())
-    started_callback_.Run(sink_id);
+void WiFiDisplaySession::OnEstablished(const mojo::String& ip_address) {
+  DCHECK(state_ != DisplaySourceSession::Established);
+  ip_address_ = ip_address;
+  state_ = DisplaySourceSession::Established;
 }
 
-void WiFiDisplaySession::OnDisconnected(int32_t sink_id) {
-  if (sink_id == params_.sink_id) {
-    DCHECK(state_ == DisplaySourceSession::Established ||
-           state_ == DisplaySourceSession::Terminating);
-    state_ = DisplaySourceSession::Idle;
-  }
-
+void WiFiDisplaySession::OnTerminated() {
+  DCHECK(state_ != DisplaySourceSession::Idle);
+  state_ = DisplaySourceSession::Idle;
   if (!terminated_callback_.is_null())
-    terminated_callback_.Run(sink_id);
+    terminated_callback_.Run(params_.sink_id);
 }
 
-void WiFiDisplaySession::OnError(
-    int32_t sink_id, int32_t type, const mojo::String& description) {
+void WiFiDisplaySession::OnError(int32_t type,
+                                 const mojo::String& description) {
   DCHECK(type > api::display_source::ERROR_TYPE_NONE
          && type <= api::display_source::ERROR_TYPE_LAST);
   if (!error_callback_.is_null())
-    error_callback_.Run(sink_id, static_cast<ErrorType>(type), description);
+    error_callback_.Run(params_.sink_id, static_cast<ErrorType>(type),
+                        description);
 }
 
 void WiFiDisplaySession::OnMessage(const mojo::String& data) {
@@ -103,8 +96,7 @@ void WiFiDisplaySession::OnConnectionError() {
                         kErrorInternal);
   }
 
-  if (state_ == DisplaySourceSession::Established ||
-      state_ == DisplaySourceSession::Terminating) {
+  if (state_ != DisplaySourceSession::Idle) {
     // We must explicitly notify the session termination as it will never
     // arrive from browser process (IPC is broken).
     if (!terminated_callback_.is_null())

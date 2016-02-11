@@ -144,9 +144,6 @@ namespace displaySource {
     // or properties)
     // |sinks| the list of all currently available sinks
     static void onSinksUpdated(SinkInfo[] sinks);
-    // Event fired when the Display session is started.
-    // |sinkId| Id of the peer sink
-    [nocompile] static void onSessionStarted(long sinkId);
     // Event fired when the Display session is terminated.
     // |sinkId| Id of the peer sink
     [nocompile] static void onSessionTerminated(long sinkId);

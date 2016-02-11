@@ -8,34 +8,62 @@ var binding = require('binding').Binding.create('displaySource');
 var chrome = requireNative('chrome').GetChrome();
 var lastError = require('lastError');
 var natives = requireNative('display_source');
+var logging = requireNative('logging');
+
+var callbacksInfo = {};
+
+function callbackWrapper(callback, method, message) {
+  if (callback == undefined)
+    return;
+
+  try {
+    if (message !== null)
+      lastError.set('displaySource.startSession', message, null, chrome);
+    callback();
+  } finally {
+    lastError.clear(chrome);
+  }
+}
+
+function callCompletionCallback(callbackId, error_message) {
+  try {
+    var callbackInfo = callbacksInfo[callbackId];
+    logging.DCHECK(callbackInfo != null);
+    callbackWrapper(callbackInfo.callback, callbackInfo.method, error_message);
+  } finally {
+    delete callbacksInfo[callbackId];
+  }
+}
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  apiFunctions.setHandleRequest('startSession',
-      function(sessionInfo, callback) {
+  apiFunctions.setHandleRequest(
+      'startSession', function(sessionInfo, callback) {
         try {
-          natives.StartSession(sessionInfo);
+          var callId = natives.StartSession(sessionInfo, callbackWrapper);
+          callbacksInfo[callId] = {
+            callback: callback,
+            method: 'displaySource.startSession'
+          };
         } catch (e) {
-          lastError.set('displaySource.startSession', e.message, null, chrome);
-        } finally {
-           if (callback !== undefined)
-             callback();
-           lastError.clear(chrome);
+          callbackWrapper(callback, 'displaySource.startSession', e.message);
         }
-  });
-  apiFunctions.setHandleRequest('terminateSession',
-      function(sink_id, callback) {
+      });
+  apiFunctions.setHandleRequest(
+      'terminateSession', function(sink_id, callback) {
         try {
-          natives.TerminateSession(sink_id);
+          var callId = natives.TerminateSession(sink_id, callbackWrapper);
+          callbacksInfo[callId] = {
+            callback: callback,
+            method: 'displaySource.terminateSession'
+          };
         } catch (e) {
-          lastError.set(
-              'displaySource.terminateSession', e.message, null, chrome);
-        } finally {
-           if (callback !== undefined)
-             callback();
-           lastError.clear(chrome);
+          callbackWrapper(
+              callback, 'displaySource.terminateSession', e.message);
         }
-  });
+      });
 });
 
 exports.$set('binding', binding.generate());
+// Called by C++.
+exports.$set('callCompletionCallback', callCompletionCallback);

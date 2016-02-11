@@ -26,12 +26,9 @@ class WiFiDisplaySession: public DisplaySourceSession,
   void Terminate() override;
 
   // WiFiDisplaySessionServiceClient overrides.
-  void OnConnected(int32_t sink_id,
-                   const mojo::String& ip_address) override;
-  void OnDisconnected(int32_t sink_id) override;
-  void OnError(int32_t sink_id,
-               int32_t type,
-               const mojo::String& description) override;
+  void OnEstablished(const mojo::String& ip_address) override;
+  void OnTerminated() override;
+  void OnError(int32_t type, const mojo::String& description) override;
   void OnMessage(const mojo::String& data) override;
 
   // A connection error handler for the mojo objects used in this class.
