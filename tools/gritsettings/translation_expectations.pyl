@@ -70,7 +70,6 @@
     "cloud_print/service/win/service_resources.grd": "Separate release process",
     "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": "Separate release process",
     "components/components_locale_settings.grd": "Not UI strings; localized separately",
-    "ios/chrome/app/strings/ios_locale_settings.grd": "Not UI strings; localized separately",
     "tools/grit/grit/testdata/buildinfo.grd": "Test data",
     "tools/grit/grit/testdata/chrome/app/generated_resources.grd": "Test data",
     "tools/grit/grit/testdata/substitute.grd": "Test data",

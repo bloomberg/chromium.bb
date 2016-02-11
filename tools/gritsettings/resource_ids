@@ -184,11 +184,8 @@
   },
   # iOS resources overlap with android_webview, ash, chromeos and extensions_api,
   # as these are not used on iOS.
-  "ios/chrome/app/strings/ios_locale_settings.grd": {
-    "messages": [24850],
-  },
   "ios/chrome/app/strings/ios_strings.grd": {
-    "messages": [24855],
+    "messages": [24850],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or

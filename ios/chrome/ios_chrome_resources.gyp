@@ -47,14 +47,6 @@
       'hard_dependency': 1,
       'actions': [
         {
-          # GN version: //ios/chrome/app/strings:ios_locale_settings
-          'action_name': 'generate_ios_locale_settings',
-          'variables': {
-            'grit_grd_file': 'app/strings/ios_locale_settings.grd',
-          },
-          'includes': [ '../../build/grit_action.gypi' ],
-        },
-        {
           # GN version: //ios/chrome/app/strings:ios_strings
           'action_name': 'generate_ios_strings',
           'variables': {
