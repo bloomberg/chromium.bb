@@ -376,6 +376,11 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 9));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 14));
+  EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
+              HasOneSample(DependingOnPolicy(0, 0, 114)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.ProxyCountPerBrowsingInstance"),
+              HasOneSample(DependingOnPolicy(0, 0, 114)));
 
   // Navigate to a different, disjoint set of 7 sites.
   GURL pqrstuv_url = embedded_test_server()->GetURL(
@@ -426,6 +431,11 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 7));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 11));
+  EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
+              HasOneSample(DependingOnPolicy(0, 0, 68)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.ProxyCountPerBrowsingInstance"),
+              HasOneSample(DependingOnPolicy(0, 0, 68)));
 
   // Open a second tab (different BrowsingInstance) with 4 sites (a through d).
   GURL abcd_url = embedded_test_server()->GetURL(
@@ -475,6 +485,13 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 2, 11));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 14));
+  EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
+              HasOneSample(DependingOnPolicy(0, 0, 81)));
+  EXPECT_THAT(
+      details->uma()->GetAllSamples(
+          "SiteIsolation.ProxyCountPerBrowsingInstance"),
+      DependingOnPolicy(ElementsAre(Bucket(0, 2)), ElementsAre(Bucket(0, 2)),
+                        ElementsAre(Bucket(12, 1), Bucket(68, 1))));
 
   // Open a third tab (different BrowsingInstance) with the same 4 sites.
   AddTabAtIndex(2, abcd_url, ui::PAGE_TRANSITION_TYPED);
@@ -522,6 +539,13 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 15));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 17));
+  EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
+              HasOneSample(DependingOnPolicy(0, 0, 96)));
+  EXPECT_THAT(
+      details->uma()->GetAllSamples(
+          "SiteIsolation.ProxyCountPerBrowsingInstance"),
+      DependingOnPolicy(ElementsAre(Bucket(0, 3)), ElementsAre(Bucket(0, 3)),
+                        ElementsAre(Bucket(12, 2), Bucket(68, 1))));
 
   // From the third tab, window.open() a fourth tab in the same
   // BrowsingInstance, to a page using the same four sites "a-d" as third tab,
@@ -582,6 +606,13 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 16));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 21));
+  EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
+              HasOneSample(DependingOnPolicy(0, 0, 114)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.ProxyCountPerBrowsingInstance"),
+              DependingOnPolicy(
+                  ElementsAre(Bucket(0, 3)), ElementsAre(Bucket(0, 3)),
+                  ElementsAre(Bucket(12, 1), Bucket(29, 1), Bucket(68, 1))));
 
   // This test doesn't navigate to any extensions URLs, so it should not be
   // in any of the field trial groups.
@@ -1100,6 +1131,11 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest,
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.SiteInstancesPerBrowsingInstance"),
               HasOneSample(DependingOnPolicy(1, 1, 9)));
+  EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
+              HasOneSample(DependingOnPolicy(0, 0, 114)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.ProxyCountPerBrowsingInstance"),
+              HasOneSample(DependingOnPolicy(0, 0, 114)));
 
   // Open another tab through window.open(), which will be in the same
   // BrowsingInstance.
@@ -1119,6 +1155,11 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest,
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.SiteInstancesPerBrowsingInstance"),
               HasOneSample(DependingOnPolicy(1, 1, 11)));
+  EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
+              HasOneSample(DependingOnPolicy(0, 0, 160)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.ProxyCountPerBrowsingInstance"),
+              HasOneSample(DependingOnPolicy(0, 0, 160)));
 
   // Open a tab, which will be in a different BrowsingInstance.
   GURL abcd_url = embedded_test_server()->GetURL(
@@ -1132,6 +1173,13 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest,
           "SiteIsolation.SiteInstancesPerBrowsingInstance"),
       DependingOnPolicy(ElementsAre(Sample(1, 2)), ElementsAre(Sample(1, 2)),
                         ElementsAre(Sample(4, 1), Sample(11, 1))));
+  EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
+              HasOneSample(DependingOnPolicy(0, 0, 160)));
+  EXPECT_THAT(
+      details->uma()->GetAllSamples(
+          "SiteIsolation.ProxyCountPerBrowsingInstance"),
+      DependingOnPolicy(ElementsAre(Sample(0, 2)), ElementsAre(Sample(0, 2)),
+                        ElementsAre(Sample(12, 1), Sample(160, 1))));
 }
 
 // Verifies that the UMA counter for SiteInstances in a BrowsingInstance is

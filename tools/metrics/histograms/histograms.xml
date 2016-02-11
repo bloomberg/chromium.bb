@@ -46826,11 +46826,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteIsolation.ProxyCount">
+  <owner>nick@chromium.org</owner>
+  <summary>
+    The count of all RenderFrameProxyHosts.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.ProxyCountPerBrowsingInstance">
+  <owner>nick@chromium.org</owner>
+  <summary>
+    The count of RenderFrameProxyHosts in each BrowsingInstance.  Recorded each
+    UMA ping, once per BrowsingInstance.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.SiteInstancesPerBrowsingInstance">
   <owner>nasko@chromium.org</owner>
   <summary>
-    The count of SiteInstances in a single BrowsingInstance. Recorded once per
-    UMA ping.
+    The count of SiteInstances in a single BrowsingInstance. Recorded each UMA
+    ping, once per BrowsingInstance.
   </summary>
 </histogram>
 

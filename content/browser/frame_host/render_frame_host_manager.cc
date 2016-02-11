@@ -2336,6 +2336,10 @@ RenderFrameProxyHost* RenderFrameHostManager::GetRenderFrameProxyHost(
   return nullptr;
 }
 
+int RenderFrameHostManager::GetProxyCount() {
+  return proxy_hosts_.size();
+}
+
 std::map<int, RenderFrameProxyHost*>
 RenderFrameHostManager::GetAllProxyHostsForTesting() {
   std::map<int, RenderFrameProxyHost*> result;

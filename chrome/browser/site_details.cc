@@ -90,11 +90,11 @@ BrowsingInstanceInfo::BrowsingInstanceInfo() {}
 
 BrowsingInstanceInfo::~BrowsingInstanceInfo() {}
 
-IsolationScenario::IsolationScenario() : policy(ISOLATE_ALL_SITES) {}
+IsolationScenario::IsolationScenario() {}
 
 IsolationScenario::~IsolationScenario() {}
 
-SiteData::SiteData() : out_of_process_frames(0) {
+SiteData::SiteData() {
   for (int i = 0; i <= ISOLATION_SCENARIO_LAST; i++)
     scenarios[i].policy = static_cast<IsolationScenarioType>(i);
 }
@@ -108,9 +108,25 @@ SiteDetails::~SiteDetails() {}
 void SiteDetails::CollectSiteInfo(WebContents* contents,
                                   SiteData* site_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserContext* context = contents->GetBrowserContext();
+
+  // The primary should be the same for the whole tab.
   SiteInstance* primary =
       DeterminePrimarySiteInstance(contents->GetSiteInstance(), site_data);
-  BrowserContext* context = primary->GetBrowserContext();
+  BrowsingInstanceInfo* browsing_instance =
+      &site_data->browsing_instances[primary];
+
+  for (RenderFrameHost* frame : contents->GetAllFrames()) {
+    // Ensure that we add the frame's SiteInstance to |site_instances|.
+    DCHECK(frame->GetSiteInstance()->IsRelatedSiteInstance(primary));
+    browsing_instance->site_instances.insert(frame->GetSiteInstance());
+    browsing_instance->proxy_count += frame->GetProxyCount();
+
+    if (frame->GetParent()) {
+      if (frame->GetSiteInstance() != frame->GetParent()->GetSiteInstance())
+        site_data->out_of_process_frames++;
+    }
+  }
 
   // Now keep track of how many sites we have in this BrowsingInstance (and
   // overall), including sites in iframes.
@@ -155,13 +171,6 @@ void SiteDetails::CollectSiteInfo(WebContents* contents,
     }
   }
 
-  for (RenderFrameHost* frame : contents->GetAllFrames()) {
-    if (frame->GetParent()) {
-      if (frame->GetSiteInstance() != frame->GetParent()->GetSiteInstance())
-        site_data->out_of_process_frames++;
-    }
-    DeterminePrimarySiteInstance(frame->GetSiteInstance(), site_data);
-  }
 }
 
 void SiteDetails::UpdateHistograms(
@@ -177,6 +186,7 @@ void SiteDetails::UpdateHistograms(
   int num_isolated_site_instances[ISOLATION_SCENARIO_LAST + 1] = {};
   int num_browsing_instances = 0;
   int num_oopifs = 0;
+  int num_proxies = 0;
   for (auto& site_data_map_entry : site_data_map) {
     const SiteData& site_data = site_data_map_entry.second;
     for (const IsolationScenario& scenario : site_data.scenarios) {
@@ -192,6 +202,9 @@ void SiteDetails::UpdateHistograms(
       const BrowsingInstanceInfo& browsing_instance_info = entry.second;
       UMA_HISTOGRAM_COUNTS_100("SiteIsolation.SiteInstancesPerBrowsingInstance",
                                browsing_instance_info.site_instances.size());
+      UMA_HISTOGRAM_COUNTS_10000("SiteIsolation.ProxyCountPerBrowsingInstance",
+                                 browsing_instance_info.proxy_count);
+      num_proxies += browsing_instance_info.proxy_count;
     }
     num_browsing_instances += site_data.browsing_instances.size();
     num_oopifs += site_data.out_of_process_frames;
@@ -215,6 +228,7 @@ void SiteDetails::UpdateHistograms(
   UMA_HISTOGRAM_COUNTS_100(
       "SiteIsolation.BrowsingInstanceCount",
       num_browsing_instances);
+  UMA_HISTOGRAM_COUNTS_10000("SiteIsolation.ProxyCount", num_proxies);
   UMA_HISTOGRAM_COUNTS_100("SiteIsolation.OutOfProcessIframes", num_oopifs);
 
   // ISOLATE_NOTHING metrics.

@@ -30,6 +30,7 @@ struct BrowsingInstanceInfo {
   ~BrowsingInstanceInfo();
 
   std::set<content::SiteInstance*> site_instances;
+  int proxy_count = 0;
 };
 using BrowsingInstanceMap =
     base::hash_map<content::SiteInstance*, BrowsingInstanceInfo>;
@@ -50,7 +51,7 @@ struct IsolationScenario {
   IsolationScenario();
   ~IsolationScenario();
 
-  IsolationScenarioType policy;
+  IsolationScenarioType policy = ISOLATE_NOTHING;
   std::set<GURL> all_sites;
   ScenarioBrowsingInstanceMap browsing_instances;
 };
@@ -71,7 +72,7 @@ struct SiteData {
 
   // A count of all RenderFrameHosts, which are in a different SiteInstance from
   // their parents.
-  int out_of_process_frames;
+  int out_of_process_frames = 0;
 };
 
 // Maps a BrowserContext to information about the sites it contains.

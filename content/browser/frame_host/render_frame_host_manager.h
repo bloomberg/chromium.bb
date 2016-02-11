@@ -483,6 +483,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // an inner WebContents.
   void SetRWHViewForInnerContents(RenderWidgetHostView* child_rwhv);
 
+  // Returns the number of RenderFrameProxyHosts for this frame.
+  int GetProxyCount();
+
   // Returns a copy of the map of proxy hosts. The keys are SiteInstance IDs,
   // the values are RenderFrameProxyHosts.
   std::map<int, RenderFrameProxyHost*> GetAllProxyHostsForTesting();

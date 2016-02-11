@@ -140,6 +140,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   AXTreeIDRegistry::AXTreeID GetAXTreeID() override;
   SiteInstanceImpl* GetSiteInstance() override;
   RenderProcessHost* GetProcess() override;
+  RenderWidgetHostView* GetView() override;
   RenderFrameHost* GetParent() override;
   int GetFrameTreeNodeId() override;
   const std::string& GetFrameName() override;
@@ -152,24 +153,23 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExecuteJavaScript(const base::string16& javascript) override;
   void ExecuteJavaScript(const base::string16& javascript,
                          const JavaScriptResultCallback& callback) override;
+  void ExecuteJavaScriptInIsolatedWorld(
+      const base::string16& javascript,
+      const JavaScriptResultCallback& callback,
+      int world_id) override;
   void ExecuteJavaScriptForTests(const base::string16& javascript) override;
   void ExecuteJavaScriptForTests(
       const base::string16& javascript,
       const JavaScriptResultCallback& callback) override;
   void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript) override;
-  void ExecuteJavaScriptInIsolatedWorld(
-      const base::string16& javascript,
-      const JavaScriptResultCallback& callback,
-      int world_id) override;
   void ActivateFindInPageResultForAccessibility(int request_id) override;
+  void InsertVisualStateCallback(const VisualStateCallback& callback) override;
   RenderViewHost* GetRenderViewHost() override;
   ServiceRegistry* GetServiceRegistry() override;
   blink::WebPageVisibilityState GetVisibilityState() override;
-  void InsertVisualStateCallback(
-      const VisualStateCallback& callback) override;
   bool IsRenderFrameLive() override;
-  RenderWidgetHostView* GetView() override;
+  int GetProxyCount() override;
 #if defined(OS_ANDROID)
   void ActivateNearestFindResult(int request_id, float x, float y) override;
   void RequestFindMatchRects(int current_version) override;

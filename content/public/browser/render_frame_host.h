@@ -193,6 +193,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // and still has a connection.  This is valid for all frames.
   virtual bool IsRenderFrameLive() = 0;
 
+  // Get the number of proxies to this frame, in all processes. Exposed for
+  // use by resource metrics.
+  virtual int GetProxyCount() = 0;
+
 #if defined(OS_ANDROID)
   // Selects and zooms to the find result nearest to the point (x,y)
   // defined in find-in-page coordinates.
