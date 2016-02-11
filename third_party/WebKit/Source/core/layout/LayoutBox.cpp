@@ -640,7 +640,7 @@ LayoutUnit LayoutBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logica
     // to avoid recursing up through our containing blocks again to determine it.
     const ComputedStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxHeight().isMaxSizeNone()) {
-        if (styleToUse.logicalMaxHeight().hasPercent() && styleToUse.logicalHeight().hasPercent()) {
+        if (styleToUse.logicalMaxHeight().type() == Percent && styleToUse.logicalHeight().type() == Percent) {
             LayoutUnit availableLogicalHeight(logicalHeight / styleToUse.logicalHeight().value() * 100);
             logicalHeight = std::min(logicalHeight, valueForLength(styleToUse.logicalMaxHeight(), availableLogicalHeight));
         } else {
@@ -650,7 +650,7 @@ LayoutUnit LayoutBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logica
         }
     }
 
-    if (styleToUse.logicalMinHeight().hasPercent() && styleToUse.logicalHeight().hasPercent()) {
+    if (styleToUse.logicalMinHeight().type() == Percent && styleToUse.logicalHeight().type() == Percent) {
         LayoutUnit availableLogicalHeight(logicalHeight / styleToUse.logicalHeight().value() * 100);
         logicalHeight = std::max(logicalHeight, valueForLength(styleToUse.logicalMinHeight(), availableLogicalHeight));
     } else {
