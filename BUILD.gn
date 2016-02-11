@@ -604,9 +604,15 @@ group("mojo_apptests") {
       "//components/resource_provider:resource_provider_unittests",
       "//mash/wm:tests",
       "//media/mojo/services:tests",
+      "//mojo/services/network:apptests",
+      "//mojo/shell:apptests",
       "//sql/mojo:apptests",
       "//ui/views/mus:tests",
     ]
+  }
+
+  if (is_android) {
+    deps += [ "//mojo/shell/standalone:mojo_shell_standalone_apptests_apk" ]
   }
 }
 
