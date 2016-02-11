@@ -25,7 +25,7 @@ MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
     QuicChromiumClientSession* session,
     scoped_ptr<ProofVerifyContext> /*proof_verify_context*/,
     QuicCryptoClientConfig* crypto_config) {
-  const ProofVerifyDetails* proof_verify_details = nullptr;
+  const ProofVerifyDetailsChromium* proof_verify_details = nullptr;
   if (!proof_verify_details_queue_.empty()) {
     proof_verify_details = proof_verify_details_queue_.front();
     proof_verify_details_queue_.pop();

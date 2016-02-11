@@ -72,7 +72,7 @@ static const char kQuicAlternativeService50pctHeader[] =
 static const char kQuicAlternativeServiceDifferentPortHeader[] =
     "Alt-Svc: quic=\":137\"\r\n\r\n";
 
-const char kDefaultServerHostName[] = "mail.example.com";
+const char kDefaultServerHostName[] = "mail.example.org";
 
 }  // namespace
 
@@ -205,7 +205,7 @@ class QuicNetworkTransactionTest
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
     scoped_refptr<X509Certificate> cert(
-        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+        ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
     verify_details_.cert_verify_result.verified_cert = cert;
     verify_details_.cert_verify_result.is_issued_by_known_root = true;
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
@@ -433,9 +433,9 @@ class QuicNetworkTransactionTest
     params_.http_server_properties = http_server_properties_.GetWeakPtr();
     params_.quic_supported_versions = SupportedVersions(GetParam());
     for (const char* host :
-         {kDefaultServerHostName, "www.example.com", "news.example.com",
-          "bar.example.com", "foo.example.com", "www.example.org",
-          "invalid.example.org", "docs.example.org"}) {
+         {kDefaultServerHostName, "www.example.org", "news.example.org",
+          "bar.example.org", "foo.example.org", "invalid.example.org",
+          "mail.example.com"}) {
       params_.quic_host_whitelist.insert(host);
     }
 
@@ -603,7 +603,7 @@ INSTANTIATE_TEST_CASE_P(Version,
 
 TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   params_.origin_to_force_quic_on =
-      HostPortPair::FromString("mail.example.com:443");
+      HostPortPair::FromString("mail.example.org:443");
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
@@ -670,7 +670,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   params_.enable_quic_for_proxies = true;
   proxy_service_ =
-      ProxyService::CreateFixedFromPacResult("QUIC mail.example.com:70");
+      ProxyService::CreateFixedFromPacResult("QUIC mail.example.org:70");
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
@@ -690,7 +690,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   // There is no need to set up an alternate protocol job, because
   // no attempt will be made to speak to the proxy over TCP.
 
-  request_.url = GURL("http://mail.example.com/");
+  request_.url = GURL("http://mail.example.org/");
   CreateSession();
 
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
@@ -701,7 +701,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
 // connection through a QUIC proxy, the certificate exhibited by the proxy is
 // checked against the proxy hostname, not the origin hostname.
 TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
-  const std::string origin_host = "news.example.com";
+  const std::string origin_host = "mail.example.com";
   const std::string proxy_host = "www.example.org";
 
   params_.enable_quic_for_proxies = true;
@@ -723,7 +723,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   scoped_refptr<X509Certificate> cert(
-      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
   ASSERT_TRUE(cert.get());
   // This certificate is valid for the proxy, but not for the origin.
   bool common_name_fallback_used;
@@ -745,7 +745,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
 
 TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   params_.origin_to_force_quic_on =
-      HostPortPair::FromString("mail.example.com:443");
+      HostPortPair::FromString("mail.example.org:443");
 
   MockQuicData mock_quic_data1;
   mock_quic_data1.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
@@ -891,7 +891,7 @@ TEST_P(QuicNetworkTransactionTest,
 TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead("Alt-Svc: quic=\"foo.example.com:443\", quic=\":444\"\r\n\r\n"),
+      MockRead("Alt-Svc: quic=\"foo.example.org:443\", quic=\":444\"\r\n\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
@@ -904,7 +904,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
   QuicStreamOffset request_header_offset = 0;
   QuicStreamOffset response_header_offset = 0;
   // First QUIC request data.
-  // Open a session to foo.example.com:443 using the first entry of the
+  // Open a session to foo.example.org:443 using the first entry of the
   // alternative service list.
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(ConstructRequestHeadersPacket(
@@ -912,8 +912,8 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
       GetRequestHeaders("GET", "https", "/"), &request_header_offset));
 
   std::string alt_svc_list =
-      "quic=\"mail.example.com:444\", quic=\"foo.example.com:443\", "
-      "quic=\"bar.example.com:445\"";
+      "quic=\"mail.example.org:444\", quic=\"foo.example.org:443\", "
+      "quic=\"bar.example.org:445\"";
   mock_quic_data.AddRead(ConstructResponseHeadersPacket(
       1, kClientDataStreamId1, false, false,
       GetResponseHeaders("200 OK", alt_svc_list), &response_header_offset));
@@ -953,7 +953,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
 TEST_P(QuicNetworkTransactionTest, UseFirstExistingAlternativeServiceForQuic) {
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead("Alt-Svc: quic=\"foo.example.com:443\", quic=\":446\"\r\n\r\n"),
+      MockRead("Alt-Svc: quic=\"foo.example.org:443\", quic=\":446\"\r\n\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
@@ -972,14 +972,14 @@ TEST_P(QuicNetworkTransactionTest, UseFirstExistingAlternativeServiceForQuic) {
   MockQuicData mock_quic_data2;
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
   // First QUIC request data.
-  // Open a QUIC session to foo.example.com:443.
+  // Open a QUIC session to foo.example.org:443.
   mock_quic_data.AddWrite(ConstructRequestHeadersPacket(
       1, kClientDataStreamId1, true, true,
       GetRequestHeaders("GET", "https", "/"), &request_header_offset));
 
   std::string alt_svc_list =
-      "quic=\"bar.example.com:444\", quic=\"frog.example.com:445\", "
-      "quic=\"mail.example.com:446\"";
+      "quic=\"bar.example.org:444\", quic=\"frog.example.org:445\", "
+      "quic=\"mail.example.org:446\"";
   // Response header from the server resets the alt_svc list for the origin.
   mock_quic_data.AddRead(ConstructResponseHeadersPacket(
       1, kClientDataStreamId1, false, false,
@@ -989,15 +989,15 @@ TEST_P(QuicNetworkTransactionTest, UseFirstExistingAlternativeServiceForQuic) {
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
 
   // Second QUIC request data.
-  // Existing QUIC session to foo.example.com is not viable from the updated
+  // Existing QUIC session to foo.example.org is not viable from the updated
   // alt_svc. Unable to pool the existing QUIC session.
-  // Open a new QUIC session to bar.example.com:443.
+  // Open a new QUIC session to bar.example.org:443.
   mock_quic_data2.AddWrite(ConstructRequestHeadersPacket(
       1, kClientDataStreamId1, true, true,
       GetRequestHeaders("GET", "https", "/"), &maker));
   alt_svc_list =
-      "quic=\"foo.example.com:443\", quic=\"mail.example.com:446\", "
-      "quic=\"bar.example.com:444\"";
+      "quic=\"foo.example.org:443\", quic=\"mail.example.org:446\", "
+      "quic=\"bar.example.org:444\"";
   // Response header from the server resets the alt_svc list for the origin.
   mock_quic_data2.AddRead(ConstructResponseHeadersPacket(
       1, kClientDataStreamId1, false, false,
@@ -1009,7 +1009,7 @@ TEST_P(QuicNetworkTransactionTest, UseFirstExistingAlternativeServiceForQuic) {
   mock_quic_data2.AddRead(ASYNC, 0);               // EOF
 
   // Third QUIC request data.
-  // Connection pooling, using the first existing session to foo.example.com
+  // Connection pooling, using the first existing session to foo.example.org
   mock_quic_data.AddWrite(ConstructRequestHeadersPacket(
       3, kClientDataStreamId2, false, true,
       GetRequestHeaders("GET", "https", "/"), &request_header_offset));
@@ -1043,14 +1043,13 @@ TEST_P(QuicNetworkTransactionTest, UseFirstExistingAlternativeServiceForQuic) {
 // if this is also the first existing QUIC session.
 TEST_P(QuicNetworkTransactionTest,
        UseSharedExistingAlternativeServiceForQuicWithValidCert) {
-  // Default cert is valid for the following origins:
-  // mail.example.com, mail.example.org, and www.example.org.
+  // Default cert is valid for *.example.org
 
-  // HTTP data for request to mail.example.com.
+  // HTTP data for request to www.example.org.
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Alt-Svc: quic=\":443\"\r\n\r\n"),
-      MockRead("hello world from mail.example.com"),
+      MockRead("hello world from www.example.org"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
@@ -1062,7 +1061,7 @@ TEST_P(QuicNetworkTransactionTest,
   // HTTP data for request to mail.example.org.
   MockRead http_reads2[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead("Alt-Svc: quic=\":444\", quic=\"mail.example.com:443\"\r\n\r\n"),
+      MockRead("Alt-Svc: quic=\":444\", quic=\"www.example.org:443\"\r\n\r\n"),
       MockRead("hello world from mail.example.org"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
@@ -1075,8 +1074,8 @@ TEST_P(QuicNetworkTransactionTest,
   QuicStreamOffset request_header_offset = 0;
   QuicStreamOffset response_header_offset = 0;
 
-  QuicTestPacketMaker maker(GetParam(), 0, clock_, kDefaultServerHostName);
-  maker.set_hostname("mail.example.org");
+  QuicTestPacketMaker maker(GetParam(), 0, clock_, "mail.example.org");
+  maker_.set_hostname("www.example.org");
   MockQuicData mock_quic_data;
 
   // First QUIC request data.
@@ -1090,7 +1089,6 @@ TEST_P(QuicNetworkTransactionTest,
   mock_quic_data.AddRead(ConstructDataPacket(2, kClientDataStreamId1, false,
                                              true, 0, "hello from mail QUIC!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
-
   // Second QUIC request data.
   mock_quic_data.AddWrite(ConstructRequestHeadersPacket(
       3, kClientDataStreamId2, false, true,
@@ -1111,16 +1109,17 @@ TEST_P(QuicNetworkTransactionTest,
   CreateSessionWithNextProtos();
 
   // Send two HTTP requests, responses set up alt-svc lists for the origins.
-  SendRequestAndExpectHttpResponse("hello world from mail.example.com");
+  request_.url = GURL("https://www.example.org/");
+  SendRequestAndExpectHttpResponse("hello world from www.example.org");
   request_.url = GURL("https://mail.example.org/");
   SendRequestAndExpectHttpResponse("hello world from mail.example.org");
 
-  // Open a QUIC session to mail.example.com:443 when making request
-  // to mail.example.com.
-  request_.url = GURL("https://mail.example.com/");
+  // Open a QUIC session to mail.example.org:443 when making request
+  // to mail.example.org.
+  request_.url = GURL("https://www.example.org/");
   SendRequestAndExpectQuicResponseOnPort("hello from mail QUIC!", 443);
 
-  // Uses the existing QUIC session when making request to mail.example.org.
+  // Uses the existing QUIC session when making request to www.example.org.
   request_.url = GURL("https://mail.example.org/");
   SendRequestAndExpectQuicResponseOnPort("hello from mail QUIC!", 443);
 }
@@ -1130,15 +1129,14 @@ TEST_P(QuicNetworkTransactionTest,
 // if the cert is NOT valid, should ignore this QUIC session.
 TEST_P(QuicNetworkTransactionTest,
        DoNotUseSharedExistingAlternativeServiceForQuicWithInvalidCert) {
-  // Default cert is only valid for the following origins:
-  // mail.example.com, mail.example.org, and www.example.org.
-  // NOT valid for docs.example.org.
+  // Default cert is valid *.example.org
+  // NOT valid for mail.example.com.
 
-  // HTTP data for request to mail.example.com.
+  // HTTP data for request to mail.example.org.
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Alt-Svc: quic=\":443\"\r\n\r\n"),
-      MockRead("hello world from mail.example.com"),
+      MockRead("hello world from mail.example.org"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
@@ -1147,11 +1145,11 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  // HTTP data for request to docs.example.org.
+  // HTTP data for request to mail.example.com.
   MockRead http_reads2[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead("Alt-Svc: quic=\":444\", quic=\"mail.example.com:443\"\r\n\r\n"),
-      MockRead("hello world from docs.example.org"),
+      MockRead("Alt-Svc: quic=\":444\", quic=\"mail.example.org:443\"\r\n\r\n"),
+      MockRead("hello world from mail.example.com"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
@@ -1160,15 +1158,15 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSocketDataProvider(&http_data2);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  QuicTestPacketMaker maker(GetParam(), 0, clock_, kDefaultServerHostName);
-  maker.set_hostname("docs.example.org");
+  QuicTestPacketMaker maker(GetParam(), 0, clock_, "mail.example.org");
+  maker.set_hostname("mail.example.com");
   MockQuicData mock_quic_data;
   MockQuicData mock_quic_data2;
 
   // Adding a valid cert for *.example.org but not mail.example.com.
   ProofVerifyDetailsChromium verify_details;
   scoped_refptr<X509Certificate> cert(
-      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
   verify_details.cert_verify_result.verified_cert = cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -1207,17 +1205,17 @@ TEST_P(QuicNetworkTransactionTest,
   CreateSessionWithNextProtos();
 
   // Send HTTP requests, responses set up the alt-svc lists for the origins.
-  SendRequestAndExpectHttpResponse("hello world from mail.example.com");
-  request_.url = GURL("https://docs.example.org/");
-  SendRequestAndExpectHttpResponse("hello world from docs.example.org");
-
-  // Open a QUIC session to mail.example.com:443 when making request
-  // to mail.example.com.
+  SendRequestAndExpectHttpResponse("hello world from mail.example.org");
   request_.url = GURL("https://mail.example.com/");
+  SendRequestAndExpectHttpResponse("hello world from mail.example.com");
+
+  // Open a QUIC session to mail.example.org:443 when making request
+  // to mail.example.org.
+  request_.url = GURL("https://mail.example.org/");
   SendRequestAndExpectQuicResponseOnPort("hello from mail QUIC!", 443);
 
-  // Open another new QUIC session to docs.example.org:444.
-  request_.url = GURL("https://docs.example.org/");
+  // Open another new QUIC session to mail.example.com:444.
+  request_.url = GURL("https://mail.example.com/");
   SendRequestAndExpectQuicResponseOnPort("hello from docs QUIC!", 444);
 }
 
@@ -1650,8 +1648,7 @@ class QuicAltSvcCertificateVerificationTest
     : public QuicNetworkTransactionTest {
  public:
   void Run(bool valid) {
-    HostPortPair origin(valid ? "mail.example.org" : "invalid.example.org",
-                        443);
+    HostPortPair origin(valid ? "mail.example.org" : "mail.example.com", 443);
     HostPortPair alternative("www.example.org", 443);
     std::string url("https://");
     url.append(origin.host());
@@ -1672,7 +1669,7 @@ class QuicAltSvcCertificateVerificationTest
     mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
     scoped_refptr<X509Certificate> cert(
-        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+        ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
     ASSERT_TRUE(cert.get());
     bool common_name_fallback_used;
     EXPECT_EQ(valid,
@@ -1735,7 +1732,7 @@ TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
 
   MockWrite http_writes[] = {
       MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
-      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.com\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.org\r\n"),
       MockWrite(SYNCHRONOUS, 2, "Connection: keep-alive\r\n\r\n")};
 
   MockRead http_reads[] = {
@@ -1824,9 +1821,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   // without racing an HTTP connection, we need the host resolution to happen
   // synchronously.
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule("mail.example.com", "192.168.0.1",
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
@@ -1841,8 +1838,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
 
   // Since we are using a proxy, the QUIC job will not succeed.
   MockWrite http_writes[] = {
-      MockWrite(SYNCHRONOUS, 0, "GET http://mail.example.com/ HTTP/1.1\r\n"),
-      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.com\r\n"),
+      MockWrite(SYNCHRONOUS, 0, "GET http://mail.example.org/ HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.org\r\n"),
       MockWrite(SYNCHRONOUS, 2, "Proxy-Connection: keep-alive\r\n\r\n")};
 
   MockRead http_reads[] = {
@@ -1858,14 +1855,14 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
   // without racing an HTTP connection, we need the host resolution to happen
   // synchronously.
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule("mail.example.com", "192.168.0.1",
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
 
-  request_.url = GURL("http://mail.example.com/");
+  request_.url = GURL("http://mail.example.org/");
   CreateSessionWithNextProtos();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectHttpResponse("hello world");
@@ -1894,9 +1891,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   // connection to the the server, in this test we require confirmation
   // before encrypting so the HTTP job will still start.
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule("mail.example.com", "192.168.0.1",
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
@@ -1940,9 +1937,9 @@ TEST_P(QuicNetworkTransactionTest,
   // connection to the the server, in this test we require confirmation
   // before encrypting so the HTTP job will still start.
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule("mail.example.com", "192.168.0.1",
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
@@ -1995,9 +1992,9 @@ TEST_P(QuicNetworkTransactionTest,
   // connection to the the server, in this test we require confirmation
   // before encrypting so the HTTP job will still start.
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule("mail.example.com", "192.168.0.1",
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
@@ -2225,9 +2222,9 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   // without racing an HTTP connection, we need the host resolution to happen
   // synchronously.
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule("mail.example.com", "192.168.0.1",
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
                                            "");
-  HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
@@ -2262,7 +2259,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
 
 TEST_P(QuicNetworkTransactionTest, QuicUpload) {
   params_.origin_to_force_quic_on =
-      HostPortPair::FromString("mail.example.com:443");
+      HostPortPair::FromString("mail.example.org:443");
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_FAILED, 1)};

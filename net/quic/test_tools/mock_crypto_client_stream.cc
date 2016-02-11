@@ -20,13 +20,14 @@ MockCryptoClientStream::MockCryptoClientStream(
     ProofVerifyContext* verify_context,
     QuicCryptoClientConfig* crypto_config,
     HandshakeMode handshake_mode,
-    const ProofVerifyDetails* proof_verify_details)
+    const ProofVerifyDetailsChromium* proof_verify_details)
     : QuicCryptoClientStream(server_id,
                              session,
                              verify_context,
                              crypto_config,
                              session),
       handshake_mode_(handshake_mode),
+      server_id_(server_id),
       proof_verify_details_(proof_verify_details) {}
 
 MockCryptoClientStream::~MockCryptoClientStream() {}
@@ -38,6 +39,17 @@ void MockCryptoClientStream::OnHandshakeMessage(
 }
 
 void MockCryptoClientStream::CryptoConnect() {
+  if (proof_verify_details_) {
+    bool unused = false;
+    if (!proof_verify_details_->cert_verify_result.verified_cert
+             ->VerifyNameMatch(server_id_.host(), &unused)) {
+      handshake_confirmed_ = false;
+      encryption_established_ = false;
+      session()->connection()->CloseConnection(QUIC_PROOF_INVALID, false);
+      return;
+    }
+  }
+
   switch (handshake_mode_) {
     case ZERO_RTT: {
       encryption_established_ = true;

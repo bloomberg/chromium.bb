@@ -60,7 +60,7 @@ namespace test {
 namespace {
 
 const char kUploadData[] = "Really nifty data!";
-const char kDefaultServerHostName[] = "www.google.com";
+const char kDefaultServerHostName[] = "www.example.org";
 const uint16_t kDefaultServerPort = 80;
 
 class TestQuicConnection : public QuicConnection {
@@ -379,7 +379,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
@@ -428,7 +428,7 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
@@ -478,7 +478,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendRequest) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
@@ -498,7 +498,7 @@ TEST_P(QuicHttpStreamTest, GetSSLInfoAfterSessionClosed) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
@@ -525,7 +525,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
@@ -555,7 +555,7 @@ TEST_P(QuicHttpStreamTest, DoNotLogGranularQuicErrorIfHandshakeNotConfirmed) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
@@ -589,7 +589,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeReadResponseHeaders) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
@@ -623,7 +623,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
       new UploadBytesElementReader(kUploadData, strlen(kUploadData))));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
   request_.method = "POST";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
 
@@ -685,7 +685,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   upload_data_stream.AppendData(kUploadData, chunk_size, false);
 
   request_.method = "POST";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
                     TestCompletionCallback().callback()));
@@ -752,7 +752,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   upload_data_stream.AppendData(kUploadData, chunk_size, false);
 
   request_.method = "POST";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
                     TestCompletionCallback().callback()));
@@ -814,7 +814,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
   ChunkedUploadDataStream upload_data_stream(0);
 
   request_.method = "POST";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
                     TestCompletionCallback().callback()));
@@ -874,7 +874,7 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
@@ -912,7 +912,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, MEDIUM, net_log_,
                                           callback_.callback()));
@@ -961,7 +961,7 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   Initialize();
 
   request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, MEDIUM, net_log_,
                                           callback_.callback()));
@@ -992,7 +992,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
   ChunkedUploadDataStream upload_data_stream(0);
 
   request_.method = "POST";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
                     TestCompletionCallback().callback()));
@@ -1016,7 +1016,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
   upload_data_stream.AppendData(kUploadData, chunk_size, false);
 
   request_.method = "POST";
-  request_.url = GURL("http://www.google.com/");
+  request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
                     TestCompletionCallback().callback()));
