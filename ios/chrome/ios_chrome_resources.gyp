@@ -5,8 +5,7 @@
 {
   'variables': {
     'chromium_code': 1,
-    'grit_base_dir': '<(SHARED_INTERMEDIATE_DIR)',
-    'grit_out_dir': '<(grit_base_dir)/ios/chrome',
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ios/chrome',
     'ui_string_overrider_inputs': [
       '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_strings.h',
       '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/grit/ios_strings.h',
@@ -79,18 +78,11 @@
           'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
-      'includes': [ '../../build/grit_target.gypi' ],
-      # Override the exported include-dirs; ios/chrome/grit/ios_*strings.h
-      # should only be referenceable as ios/chrome/grit to allow DEPS-time
-      # checking of usage.
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_base_dir)',
+          '<(SHARED_INTERMEDIATE_DIR)',
         ],
-        'include_dirs!': [
-          '<(grit_out_dir)',
-        ],
-      }
+      },
     },
     {
       # GN version: //ios/chrome/app/resources
@@ -106,15 +98,9 @@
           'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
-      'includes': [ '../../build/grit_target.gypi' ],
-      # Override the exported include-dirs; ios_theme_resources.h should only be
-      # referencable as ios/chrome/grit/ to allow DEPS-time checking of usage.
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_base_dir)',
-        ],
-        'include_dirs!': [
-          '<(grit_out_dir)',
+          '<(SHARED_INTERMEDIATE_DIR)',
         ],
       },
     },
@@ -132,15 +118,9 @@
           'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
-      'includes': [ '../../build/grit_target.gypi' ],
-      # Override the exported include-dirs; ios_theme_resources.h should only be
-      # referencable as ios/chrome/grit/ to allow DEPS-time checking of usage.
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_base_dir)',
-        ],
-        'include_dirs!': [
-          '<(grit_out_dir)',
+          '<(SHARED_INTERMEDIATE_DIR)',
         ],
       },
     },
@@ -161,7 +141,7 @@
             'repack_locales_path': 'tools/build/ios_repack_locales.py',
           },
           'inputs': [
-            'tools/build/ios_repack_locales.py',
+            '<(repack_locales_path)',
             '<!@pymod_do_main(ios_repack_locales -i '
               '-s <(SHARED_INTERMEDIATE_DIR) '
               '-x <(SHARED_INTERMEDIATE_DIR)/repack_ios '
@@ -176,7 +156,7 @@
           ],
           'action': [
             'python',
-            'tools/build/ios_repack_locales.py',
+            '<(repack_locales_path)',
             '-x', '<(SHARED_INTERMEDIATE_DIR)/repack_ios',
             '-s', '<(SHARED_INTERMEDIATE_DIR)',
             '-b', '<(branding_path_component)',
