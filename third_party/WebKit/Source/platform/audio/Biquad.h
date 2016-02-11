@@ -35,10 +35,6 @@
 #include <complex>
 #include <sys/types.h>
 
-#if USE(WEBAUDIO_IPP)
-#include <ipps.h>
-#endif // USE(WEBAUDIO_IPP)
-
 namespace blink {
 
 // A basic biquad (two-zero / two-pole digital filter)
@@ -93,10 +89,6 @@ private:
 
     AudioDoubleArray m_inputBuffer;
     AudioDoubleArray m_outputBuffer;
-
-#elif USE(WEBAUDIO_IPP)
-    IppsIIRState64f_32f* m_biquadState;
-    Ipp8u* m_ippInternalBuffer;
 
 #else
     // Filter memory

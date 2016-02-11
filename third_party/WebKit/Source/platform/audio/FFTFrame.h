@@ -42,8 +42,6 @@
 #include <dl/sp/api/omxSP.h>
 #elif USE(WEBAUDIO_FFMPEG)
 struct RDFTContext;
-#elif USE(WEBAUDIO_IPP)
-#include <ipps.h>
 #endif
 
 namespace blink {
@@ -101,11 +99,6 @@ private:
     static RDFTContext* contextForSize(unsigned fftSize, int trans);
     RDFTContext* m_forwardContext;
     RDFTContext* m_inverseContext;
-    float* getUpToDateComplexData();
-    AudioFloatArray m_complexData;
-#elif USE(WEBAUDIO_IPP)
-    Ipp8u* m_buffer;
-    IppsDFTSpec_R_32f* m_DFTSpec;
     float* getUpToDateComplexData();
     AudioFloatArray m_complexData;
 #elif USE(WEBAUDIO_OPENMAX_DL_FFT)

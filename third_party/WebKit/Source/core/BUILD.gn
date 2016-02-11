@@ -155,10 +155,6 @@ source_set("core") {
   ]
 
   public_configs = [ ":core_include_dirs" ]
-
-  # TODO(GYP) IPP libraries pkg-config. These seem to be experimental and used
-  # only on x86 Android. See also below. There should be one pkg-config call
-  # that creates a config used in both of these cases.
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_dom
@@ -475,15 +471,6 @@ source_set("core_generated") {
       "/wd4702",
     ]
   }
-
-  # TODO(GYP) More IPP libraries, see above.
-  #if ((is_linux || is_android) && use_webaudio_ipp)
-  #  ["OS in ("linux", "android") and "WTF_USE_WEBAUDIO_IPP=1" in feature_defines", {
-  #    "cflags": [
-  #      "<!@(pkg-config --cflags-only-I ipp)",
-  #    ],
-  #  }],
-  #],
 }
 
 # core_bindings_generated ------------------------------------------------------

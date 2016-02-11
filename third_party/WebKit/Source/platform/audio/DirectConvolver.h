@@ -34,10 +34,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
-#if USE(WEBAUDIO_IPP)
-#include <ipps.h>
-#endif // USE(WEBAUDIO_IPP)
-
 namespace blink {
 
 class PLATFORM_EXPORT DirectConvolver {
@@ -53,9 +49,6 @@ public:
 private:
     size_t m_inputBlockSize;
 
-#if USE(WEBAUDIO_IPP)
-    AudioFloatArray m_overlayBuffer;
-#endif // USE(WEBAUDIO_IPP)
     AudioFloatArray m_buffer;
 };
 
