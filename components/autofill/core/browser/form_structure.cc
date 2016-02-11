@@ -555,6 +555,8 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
       annotated_field.server_type =
           AutofillType(field->server_type()).ToString();
       annotated_field.overall_type = field->Type().ToString();
+      annotated_field.parseable_name =
+          base::UTF16ToUTF8(field->parseable_name());
       form.fields.push_back(annotated_field);
     }
 

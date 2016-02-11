@@ -123,8 +123,10 @@
     overall type: <ph name="OVERALL_TYPE">$1<ex>NAME_FIRST</ex></ph>
     server type: <ph name="SERVER_TYPE">$2<ex>NAME_FIRST</ex></ph>
     heuristic type: <ph name="HEURISTIC_TYPE">$3<ex>NAME_FIRST</ex></ph>
-    field signature: <ph name="FIELD_SIGNATURE">$4<ex>12345678</ex></ph>
-    form signature: <ph name="FORM_SIGNATURE">$5<ex>1234567812345678</ex></ph>
+    label: <ph name="LABEL">$4<ex>SOME LABEL</ex></ph>
+    parseable name: <ph name="PARSEABLE_NAME">$5<ex>SOME_NAME</ex></ph>
+    field signature: <ph name="FIELD_SIGNATURE">$6<ex>12345678</ex></ph>
+    form signature: <ph name="FORM_SIGNATURE">$7<ex>1234567812345678</ex></ph>
   </message>
 
   <!-- Autofill dialog: legal documents -->

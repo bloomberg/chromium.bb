@@ -15,7 +15,8 @@ FormFieldDataPredictions::FormFieldDataPredictions(
       signature(other.signature),
       heuristic_type(other.heuristic_type),
       server_type(other.server_type),
-      overall_type(other.overall_type) {
+      overall_type(other.overall_type),
+      parseable_name(other.parseable_name) {
 }
 
 FormFieldDataPredictions::~FormFieldDataPredictions() {
@@ -27,7 +28,8 @@ bool FormFieldDataPredictions::operator==(
           signature == predictions.signature &&
           heuristic_type == predictions.heuristic_type &&
           server_type == predictions.server_type &&
-          overall_type == predictions.overall_type);
+          overall_type == predictions.overall_type &&
+          parseable_name == predictions.parseable_name);
 }
 
 bool FormFieldDataPredictions::operator!=(

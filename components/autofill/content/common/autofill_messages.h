@@ -63,6 +63,7 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::FormFieldDataPredictions)
   IPC_STRUCT_TRAITS_MEMBER(heuristic_type)
   IPC_STRUCT_TRAITS_MEMBER(server_type)
   IPC_STRUCT_TRAITS_MEMBER(overall_type)
+  IPC_STRUCT_TRAITS_MEMBER(parseable_name)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::FormDataPredictions)

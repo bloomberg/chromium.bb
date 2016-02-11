@@ -23,6 +23,7 @@ struct FormFieldDataPredictions {
   std::string heuristic_type;
   std::string server_type;
   std::string overall_type;
+  std::string parseable_name;
 
   // Added for the sake of testing.
   bool operator==(const FormFieldDataPredictions& predictions) const;
