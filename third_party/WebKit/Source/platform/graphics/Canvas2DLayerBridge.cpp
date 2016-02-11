@@ -26,6 +26,7 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
@@ -631,6 +632,9 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     GrContext* grContext = m_contextProvider->grContext();
     if (!grContext)
         return true; // for testing: skip gl stuff when using a mock graphics context.
+
+    if (RuntimeEnabledFeatures::forceDisable2dCanvasCopyOnWriteEnabled())
+        m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
 
     // Need to flush skia's internal queue because texture is about to be accessed directly
     grContext->flush();

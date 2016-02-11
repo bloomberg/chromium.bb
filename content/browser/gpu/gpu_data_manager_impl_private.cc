@@ -796,6 +796,9 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
     prefs->pepper_accelerated_video_decode_enabled = true;
   }
+  prefs->disable_2d_canvas_copy_on_write =
+      IsDriverBugWorkaroundActive(gpu::BROKEN_EGL_IMAGE_REF_COUNTING) &&
+      command_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {

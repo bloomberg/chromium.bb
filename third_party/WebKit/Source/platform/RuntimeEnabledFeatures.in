@@ -65,6 +65,8 @@ DeviceOrientationAbsolute status=stable
 DisplayList2dCanvas status=stable
 DurableStorage status=experimental
 ForceDisplayList2dCanvas
+// See crbug.com/585250.
+ForceDisable2dCanvasCopyOnWrite
 EncryptedMedia status=stable
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
