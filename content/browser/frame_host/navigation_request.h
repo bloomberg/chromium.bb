@@ -65,6 +65,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const FrameNavigationEntry& frame_entry,
       const NavigationEntryImpl& entry,
       FrameMsg_Navigate_Type::Value navigation_type,
+      LoFiState lofi_state,
       bool is_same_document_history_load,
       const base::TimeTicks& navigation_start,
       NavigationControllerImpl* controller);

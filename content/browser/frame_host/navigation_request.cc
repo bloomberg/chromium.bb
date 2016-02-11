@@ -67,6 +67,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
     FrameMsg_Navigate_Type::Value navigation_type,
+    LoFiState lofi_state,
     bool is_same_document_history_load,
     const base::TimeTicks& navigation_start,
     NavigationControllerImpl* controller) {
@@ -93,8 +94,8 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, entry.ConstructCommonNavigationParams(
-                           dest_url, dest_referrer, navigation_type,
-                           LOFI_UNSPECIFIED, navigation_start),
+                           dest_url, dest_referrer, navigation_type, lofi_state,
+                           navigation_start),
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type),
                             false,  // has_user_gestures
@@ -276,6 +277,12 @@ void NavigationRequest::OnResponseStarted(
         navigation_handle_->service_worker_handle()
             ->service_worker_provider_host_id();
   }
+
+  // Update the lofi state of the request.
+  if (response->head.is_using_lofi)
+    common_params_.lofi_state = LOFI_ON;
+  else
+    common_params_.lofi_state = LOFI_OFF;
 
   frame_tree_node_->navigator()->CommitNavigation(
       frame_tree_node_, response.get(), std::move(body));

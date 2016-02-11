@@ -290,13 +290,19 @@ bool NavigatorImpl::NavigateToEntry(
       "navigation", "NavigationTiming navigationStart",
       TRACE_EVENT_SCOPE_GLOBAL, navigation_start.ToInternalValue());
 
+  LoFiState lofi_state =
+      (reload_type ==
+       NavigationController::ReloadType::RELOAD_DISABLE_LOFI_MODE)
+          ? LOFI_OFF
+          : LOFI_UNSPECIFIED;
+
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
   if (IsBrowserSideNavigationEnabled()) {
     navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
                                                      entry.restore_type()));
     RequestNavigation(frame_tree_node, dest_url, dest_referrer, frame_entry,
-                      entry, reload_type, is_same_document_history_load,
-                      navigation_start);
+                      entry, reload_type, lofi_state,
+                      is_same_document_history_load, navigation_start);
     if (frame_tree_node->IsMainFrame() &&
         frame_tree_node->navigation_request()) {
       // TODO(carlosk): extend these traces to support subframes and
@@ -352,11 +358,6 @@ bool NavigatorImpl::NavigateToEntry(
     // Create the navigation parameters.
     FrameMsg_Navigate_Type::Value navigation_type =
         GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
-    LoFiState lofi_state =
-        (reload_type ==
-                 NavigationController::ReloadType::RELOAD_DISABLE_LOFI_MODE
-             ? LOFI_OFF
-             : LOFI_UNSPECIFIED);
     dest_render_frame_host->Navigate(
         entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
                                               navigation_type, lofi_state,
@@ -927,6 +928,7 @@ void NavigatorImpl::RequestNavigation(
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type,
+    LoFiState lofi_state,
     bool is_same_document_history_load,
     base::TimeTicks navigation_start) {
   CHECK(IsBrowserSideNavigationEnabled());
@@ -941,8 +943,8 @@ void NavigatorImpl::RequestNavigation(
   frame_tree_node->CreatedNavigationRequest(
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
-          navigation_type, is_same_document_history_load, navigation_start,
-          controller_));
+          navigation_type, lofi_state, is_same_document_history_load,
+          navigation_start, controller_));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   navigation_request->CreateNavigationHandle();
 

@@ -521,6 +521,7 @@ WebURLRequest CreateURLRequestForNavigation(
 
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_stream_override(std::move(stream_override));
+  extra_data->set_lofi_state(common_params.lofi_state);
   request.setExtraData(extra_data);
 
   // Set the ui timestamp for this navigation. Currently the timestamp here is
@@ -592,7 +593,7 @@ CommonNavigationParams MakeCommonNavigationParams(
   return CommonNavigationParams(
       request->url(), referrer, extra_data->transition_type(),
       FrameMsg_Navigate_Type::NORMAL, true, should_replace_current_entry,
-      ui_timestamp, report_type, GURL(), GURL(), LOFI_UNSPECIFIED,
+      ui_timestamp, report_type, GURL(), GURL(), extra_data->lofi_state(),
       base::TimeTicks::Now());
 }
 
