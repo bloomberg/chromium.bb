@@ -2897,6 +2897,30 @@
    fun:_ZN10extensions12_GLOBAL__N_111TestNatives24GetObjectTemplateBuilderEPN2v87IsolateE
 }
 {
+   bug_431213_e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gin22CreateFunctionTemplateIF*IsolateEN4base8CallbackIT_EEi
+   fun:_ZN3gin12_GLOBAL__N_114CallbackTraitsIF*
+   fun:_ZN3gin21ObjectTemplateBuilder9SetMethodIF*
+   fun:_ZN4mojo3edk2js4Core9GetModuleEPN2v87IsolateE
+   fun:_ZN10extensions18ApiTestEnvironment15RegisterModulesEv
+   fun:_ZN10extensions18ApiTestEnvironmentC1EPNS_27ModuleSystemTestEnvironmentE
+   fun:_ZN10extensions11ApiTestBase5SetUpEv
+}
+{
+   bug_431213_f
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gin22CreateFunctionTemplateIF*IsolateEN4base8CallbackIT_EEi
+   fun:_ZN3gin12_GLOBAL__N_114CallbackTraitsIF*
+   fun:_ZN3gin21ObjectTemplateBuilder9SetMethodIF*
+   fun:_ZN4mojo3edk2js7Support9GetModuleEPN2v87IsolateE
+   fun:_ZN10extensions18ApiTestEnvironment15RegisterModulesEv
+   fun:_ZN10extensions18ApiTestEnvironmentC1EPNS_27ModuleSystemTestEnvironmentE
+   fun:_ZN10extensions11ApiTestBase5SetUpEv
+}
+{
    bug_436172
    Memcheck:Leak
    fun:_Znw*
