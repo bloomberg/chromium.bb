@@ -224,7 +224,6 @@
       'target_name': 'mojo_application_base',
       'type': 'static_library',
       'sources': [
-        'shell/public/cpp/app_lifetime_helper.h',
         'shell/public/cpp/application_runner.h',
         'shell/public/cpp/connect.h',
         'shell/public/cpp/connection.h',
@@ -233,7 +232,6 @@
         'shell/public/cpp/interface_binder.h',
         'shell/public/cpp/interface_factory.h',
         'shell/public/cpp/interface_factory_impl.h',
-        'shell/public/cpp/lib/app_lifetime_helper.cc',
         'shell/public/cpp/lib/application_runner.cc',
         'shell/public/cpp/lib/connection_impl.cc',
         'shell/public/cpp/lib/connection_impl.h',

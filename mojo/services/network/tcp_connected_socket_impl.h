@@ -10,7 +10,7 @@
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/network/public/interfaces/tcp_connected_socket.mojom.h"
-#include "mojo/shell/public/cpp/app_lifetime_helper.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "net/socket/tcp_socket.h"
 
 namespace mojo {

@@ -10,6 +10,7 @@
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace mojo {
 class AppRefCount;

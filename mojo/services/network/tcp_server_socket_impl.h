@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/tcp_server_socket.mojom.h"
-#include "mojo/shell/public/cpp/app_lifetime_helper.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/tcp_socket.h"
 

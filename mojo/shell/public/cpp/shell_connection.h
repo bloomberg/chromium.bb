@@ -14,13 +14,14 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/shell/public/cpp/app_lifetime_helper.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
+
+class AppRefCountImpl;
 
 // Encapsulates a connection to the Mojo Shell in two parts:
 // - a bound InterfacePtr to mojo::shell::mojom::Shell, the primary mechanism
@@ -79,6 +80,8 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   void WaitForInitialize();
 
  private:
+  friend AppRefCountImpl;
+
   // Shell:
   scoped_ptr<Connection> Connect(const std::string& url) override;
   scoped_ptr<Connection> Connect(ConnectParams* params) override;
@@ -109,6 +112,10 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   void UnbindConnections(InterfaceRequest<shell::mojom::ShellClient>* request,
                          shell::mojom::ShellPtr* shell);
 
+  // Called from AppRefCountImpl.
+  void AddRef();
+  void Release();
+
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.
   ScopedVector<Connection> incoming_connections_;
@@ -116,8 +123,8 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   Binding<shell::mojom::ShellClient> binding_;
   shell::mojom::ShellPtr shell_;
   Closure termination_closure_;
-  AppLifetimeHelper app_lifetime_helper_;
   bool quit_requested_;
+  int ref_count_;
   base::WeakPtrFactory<ShellConnection> weak_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ShellConnection);

@@ -26,6 +26,66 @@ void DefaultTerminationClosure() {
 
 }  // namespace
 
+class AppRefCountImpl : public AppRefCount {
+ public:
+  AppRefCountImpl(ShellConnection* connection,
+                  scoped_refptr<base::SingleThreadTaskRunner> app_task_runner)
+      : connection_(connection),
+        app_task_runner_(app_task_runner) {}
+  ~AppRefCountImpl() override {
+#ifndef NDEBUG
+    // Ensure that this object is used on only one thread at a time, or else
+    // there could be races where the object is being reset on one thread and
+    // cloned on another.
+    if (clone_task_runner_)
+      DCHECK(clone_task_runner_->BelongsToCurrentThread());
+#endif
+
+    if (app_task_runner_->BelongsToCurrentThread()) {
+      connection_->Release();
+    } else {
+      app_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&ShellConnection::Release, base::Unretained(connection_)));
+    }
+  }
+
+ private:
+  // AppRefCount:
+  scoped_ptr<AppRefCount> Clone() override {
+    if (app_task_runner_->BelongsToCurrentThread()) {
+      connection_->AddRef();
+    } else {
+      app_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&ShellConnection::AddRef, base::Unretained(connection_)));
+    }
+
+#ifndef NDEBUG
+    // Ensure that this object is used on only one thread at a time, or else
+    // there could be races where the object is being reset on one thread and
+    // cloned on another.
+    if (clone_task_runner_) {
+      DCHECK(clone_task_runner_->BelongsToCurrentThread());
+    } else {
+      clone_task_runner_ = base::MessageLoop::current()->task_runner();
+    }
+#endif
+
+    return make_scoped_ptr(new AppRefCountImpl(connection_, app_task_runner_));
+  }
+
+  ShellConnection* connection_;
+  scoped_refptr<base::SingleThreadTaskRunner> app_task_runner_;
+
+#ifndef NDEBUG
+  scoped_refptr<base::SingleThreadTaskRunner> clone_task_runner_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(AppRefCountImpl);
+};
+
+
 ShellConnection::ConnectParams::ConnectParams(const std::string& url)
     : ConnectParams(URLRequest::From(url)) {}
 ShellConnection::ConnectParams::ConnectParams(URLRequestPtr request)
@@ -34,6 +94,9 @@ ShellConnection::ConnectParams::ConnectParams(URLRequestPtr request)
   filter_->filter.mark_non_null();
 }
 ShellConnection::ConnectParams::~ConnectParams() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellConnection, public:
 
 ShellConnection::ShellConnection(
     mojo::ShellClient* client,
@@ -49,18 +112,19 @@ ShellConnection::ShellConnection(
     : client_(client),
       binding_(this, std::move(request)),
       termination_closure_(termination_closure),
-      app_lifetime_helper_(this),
       quit_requested_(false),
+      ref_count_(0),
       weak_factory_(this) {}
 
-ShellConnection::~ShellConnection() {
-  app_lifetime_helper_.OnQuit();
-}
+ShellConnection::~ShellConnection() {}
 
 void ShellConnection::WaitForInitialize() {
   DCHECK(!shell_.is_bound());
   binding_.WaitForIncomingMethodCall();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellConnection, Shell implementation:
 
 scoped_ptr<Connection> ShellConnection::Connect(const std::string& url) {
   ConnectParams params(url);
@@ -110,8 +174,13 @@ void ShellConnection::Quit() {
 }
 
 scoped_ptr<AppRefCount> ShellConnection::CreateAppRefCount() {
-  return app_lifetime_helper_.CreateAppRefCount();
+  AddRef();
+  return make_scoped_ptr(
+      new AppRefCountImpl(this, base::MessageLoop::current()->task_runner()));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellConnection, shell::mojom::ShellClient implementation:
 
 void ShellConnection::Initialize(shell::mojom::ShellPtr shell,
                                  const mojo::String& url,
@@ -152,6 +221,9 @@ void ShellConnection::OnQuitRequested(const Callback<void(bool)>& callback) {
     QuitNow();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ShellConnection, private:
+
 void ShellConnection::OnConnectionError() {
   base::WeakPtr<ShellConnection> ptr(weak_factory_.GetWeakPtr());
 
@@ -177,6 +249,15 @@ void ShellConnection::UnbindConnections(
     shell::mojom::ShellPtr* shell) {
   *request = binding_.Unbind();
   shell->Bind(shell_.PassInterface());
+}
+
+void ShellConnection::AddRef() {
+  ++ref_count_;
+}
+
+void ShellConnection::Release() {
+  if (!--ref_count_)
+    Quit();
 }
 
 shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter() {

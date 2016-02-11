@@ -5,7 +5,6 @@
 #ifndef MOJO_SHELL_PUBLIC_CPP_SHELL_H_
 #define MOJO_SHELL_PUBLIC_CPP_SHELL_H_
 
-#include "mojo/shell/public/cpp/app_lifetime_helper.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
@@ -15,6 +14,20 @@ namespace mojo {
 shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter();
 
 using ShellClientRequest = InterfaceRequest<shell::mojom::ShellClient>;
+
+// An interface implementation can keep this object as a member variable to
+// hold a reference to the ShellConnection, keeping it alive as long as the
+// bound implementation exists.
+// Since interface implementations can be bound on different threads than the
+// ShellConnection, this class is safe to use on any thread. However, each
+// instance should only be used on one thread at a time (otherwise there'll be
+// races between the AddRef resulting from cloning and destruction).
+class AppRefCount {
+ public:
+  virtual ~AppRefCount() {}
+
+  virtual scoped_ptr<AppRefCount> Clone() = 0;
+};
 
 // An interface that encapsulates the Mojo Shell's broker interface by which
 // connections between applications are established. Implemented by
