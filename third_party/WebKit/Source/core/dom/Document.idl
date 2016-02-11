@@ -62,7 +62,7 @@ interface Document : Node {
     [NewObject, RaisesException, MeasureAs=DocumentCreateAttribute] Attr createAttribute(DOMString localName);
     [NewObject, RaisesException, MeasureAs=DocumentCreateAttributeNS] Attr createAttributeNS(DOMString? namespaceURI, DOMString qualifiedName);
 
-    [NewObject, RaisesException] Event createEvent(DOMString eventType);
+    [NewObject, RaisesException, CallWith=ExecutionContext] Event createEvent(DOMString eventType);
 
     [NewObject] Range createRange();
 

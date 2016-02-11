@@ -21,7 +21,7 @@ public:
         return adoptPtr(new EventModulesFactory());
     }
 
-    PassRefPtrWillBeRawPtr<Event> create(const String& eventType) override;
+    PassRefPtrWillBeRawPtr<Event> create(ExecutionContext*, const String& eventType) override;
 };
 
 } // namespace blink

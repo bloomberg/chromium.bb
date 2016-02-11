@@ -3979,11 +3979,11 @@ void Document::registerEventFactory(PassOwnPtr<EventFactoryBase> eventFactory)
     eventFactories().add(eventFactory);
 }
 
-PassRefPtrWillBeRawPtr<Event> Document::createEvent(const String& eventType, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Event> Document::createEvent(ExecutionContext* executionContext, const String& eventType, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<Event> event = nullptr;
     for (const auto& factory : eventFactories()) {
-        event = factory->create(eventType);
+        event = factory->create(executionContext, eventType);
         if (event)
             return event.release();
     }

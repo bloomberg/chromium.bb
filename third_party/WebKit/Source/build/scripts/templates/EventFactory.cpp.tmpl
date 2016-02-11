@@ -12,7 +12,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<{{namespace}}> {{namespace}}{{suffix}}Factory::create(const String& type)
+PassRefPtrWillBeRawPtr<{{namespace}}> {{namespace}}{{suffix}}Factory::create(ExecutionContext*, const String& type)
 {
     {% for event in events %}
     {% if event|script_name|case_insensitive_matching %}
