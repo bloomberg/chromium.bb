@@ -54,7 +54,8 @@ class MessageCenterSettingsController
 #endif
       public extensions::AppIconLoader::Delegate {
  public:
-  explicit MessageCenterSettingsController(ProfileAttributesStorage& storage);
+  explicit MessageCenterSettingsController(
+      ProfileAttributesStorage& profile_attributes_storage);
   ~MessageCenterSettingsController() override;
 
   // Overridden from message_center::NotifierSettingsProvider.
@@ -135,7 +136,7 @@ class MessageCenterSettingsController
 
   content::NotificationRegistrar registrar_;
 
-  ProfileAttributesStorage& storage_;
+  ProfileAttributesStorage& profile_attributes_storage_;
 
   base::WeakPtrFactory<MessageCenterSettingsController> weak_factory_;
 

@@ -119,9 +119,9 @@ class NotifierComparator {
 }  // namespace
 
 MessageCenterSettingsController::MessageCenterSettingsController(
-    ProfileAttributesStorage& storage)
+    ProfileAttributesStorage& profile_attributes_storage)
     : current_notifier_group_(0),
-      storage_(storage),
+      profile_attributes_storage_(profile_attributes_storage),
       weak_factory_(this) {
   // The following events all represent changes that may need to be reflected in
   // the profile selector context menu, so listen for them all.  We'll just
@@ -135,7 +135,7 @@ MessageCenterSettingsController::MessageCenterSettingsController(
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  storage_.AddObserver(this);
+  profile_attributes_storage_.AddObserver(this);
   RebuildNotifierGroups(false);
 
 #if defined(OS_CHROMEOS)
@@ -146,7 +146,7 @@ MessageCenterSettingsController::MessageCenterSettingsController(
 }
 
 MessageCenterSettingsController::~MessageCenterSettingsController() {
-  storage_.RemoveObserver(this);
+  profile_attributes_storage_.RemoveObserver(this);
 #if defined(OS_CHROMEOS)
   // UserManager may not exist in some tests.
   if (user_manager::UserManager::IsInitialized())
@@ -504,7 +504,7 @@ void MessageCenterSettingsController::RebuildNotifierGroups(bool notify) {
   current_notifier_group_ = 0;
 
   std::vector<ProfileAttributesEntry*> entries =
-      storage_.GetAllProfilesAttributes();
+      profile_attributes_storage_.GetAllProfilesAttributes();
   for (const auto entry : entries) {
     scoped_ptr<message_center::ProfileNotifierGroup> group(
         new message_center::ProfileNotifierGroup(
