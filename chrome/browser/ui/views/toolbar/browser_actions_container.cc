@@ -588,11 +588,10 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
   toolbar_actions_bar_->OnDragStarted();
   DCHECK(data);
 
-  ToolbarActionViews::iterator iter = std::find(toolbar_action_views_.begin(),
-                                                toolbar_action_views_.end(),
-                                                sender);
-  DCHECK(iter != toolbar_action_views_.end());
-  ToolbarActionViewController* view_controller = (*iter)->view_controller();
+  auto it = std::find(toolbar_action_views_.cbegin(),
+                      toolbar_action_views_.cend(), sender);
+  DCHECK(it != toolbar_action_views_.cend());
+  ToolbarActionViewController* view_controller = (*it)->view_controller();
   gfx::Size size(ToolbarActionsBar::IconWidth(false),
                  ToolbarActionsBar::IconHeight());
   drag_utils::SetDragImageOnDataObject(
@@ -601,7 +600,7 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
       data);
   // Fill in the remaining info.
   BrowserActionDragData drag_data(view_controller->GetId(),
-                                  iter - toolbar_action_views_.begin());
+                                  it - toolbar_action_views_.cbegin());
   drag_data.Write(browser_->profile(), data);
 }
 

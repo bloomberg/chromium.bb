@@ -3505,12 +3505,8 @@ TEST_F(ViewTest, GetViewByID) {
   View::Views views;
   v1.GetViewsInGroup(kGroup, &views);
   EXPECT_EQ(2U, views.size());
-
-  View::Views::const_iterator i(std::find(views.begin(), views.end(), &v3));
-  EXPECT_NE(views.end(), i);
-
-  i = std::find(views.begin(), views.end(), &v4);
-  EXPECT_NE(views.end(), i);
+  EXPECT_NE(views.cend(), std::find(views.cbegin(), views.cend(), &v3));
+  EXPECT_NE(views.cend(), std::find(views.cbegin(), views.cend(), &v4));
 }
 
 TEST_F(ViewTest, AddExistingChild) {

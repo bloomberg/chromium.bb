@@ -357,13 +357,10 @@ Note that &lt;algorithm&gt; contains a range-based <code>move</code> method.  Th
 <tr>
 <td>Begin and End Non-Member Functions</td>
 <td><code>std::begin()</code> and <code>std::end()</code></td>
-<td>Allows use of free functions on any container, including
-fixed-size arrays</td>
-<td><a href="http://en.cppreference.com/w/cpp/iterator/begin">
-std::begin</a> and
-<a href="http://en.cppreference.com/w/cpp/iterator/end">
-std::end</a></td>
-<td>Useful for fixed-size arrays. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/5iFNE8P5qT4/discussion">Discussion thread</a></td>
+<td>Allows use of free functions on any container, including fixed-size arrays</td>
+<td><a href="http://en.cppreference.com/w/cpp/iterator/begin">std::begin</a> and <a href="http://en.cppreference.com/w/cpp/iterator/end">std::end</a></td>
+<td>Useful for fixed-size arrays. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/5iFNE8P5qT4/discussion">Discussion thread</a><br>
+Note that non-member <code>cbegin()</code> and <code>cend()</code> are not available until C++14.</td>
 </tr>
 
 <tr>
@@ -372,6 +369,14 @@ std::end</a></td>
 <td>Enables compile-time conditional type selection</td>
 <td><a href="http://en.cppreference.com/w/cpp/types/enable_if">std::enable_if</a> and <a href="http://en.cppreference.com/w/cpp/types/conditional">conditional</a></td>
 <td>Usage should be rare. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Constant Iterator Methods on Containers</td>
+<td><code>std::vector::cbegin()</code>, <code>std::vector::cend()</code></td>
+<td>Allows more widespread use of <code>const_iterator</code></td>
+<td>E.g. <a href="http://en.cppreference.com/w/cpp/container/vector/begin">std::vector::cbegin<a> and <a href="http://en.cppreference.com/w/cpp/container/vector/end">std::vector::cend<a></td>
+<td>Applies to all containers, not just <code>vector</code>.  Consider using <code>const_iterator</code> over <code>iterator</code> where possible for the same reason as using <code>const</code> variables and functions where possible; see Effective Modern C++ item 13 for motivation.  <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/cS83F_buqLM/discussion">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -843,14 +848,6 @@ compilers not supporting these reliably.</td>
 the <code>&lt;complex&gt;</code> library.</td>
 <td><a href="http://en.cppreference.com/w/cpp/numeric/complex">std::complex</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Constant Iterator Methods on Containers</td>
-<td><code>std::vector::cbegin()</code> and <code>std::vector::cend()</code></td>
-<td>Enforces iteration methods that don't change container contents</td>
-<td><a href="http://en.cppreference.com/w/cpp/container/vector/begin">std::vector::cbegin<a></td>
-<td>This applies to all containers, std::vector is just an example. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/cS83F_buqLM/discussion">Discussion thread</a></td>
 </tr>
 
 <tr>
