@@ -21,7 +21,8 @@ namespace internal {
 // A ConnectionImpl represents each half of a connection between two
 // applications, allowing customization of which interfaces are published to the
 // other.
-class ConnectionImpl : public Connection, public InterfaceProvider {
+class ConnectionImpl : public Connection,
+                       public shell::mojom::InterfaceProvider {
  public:
   class TestApi {
   public:
@@ -48,8 +49,8 @@ class ConnectionImpl : public Connection, public InterfaceProvider {
   ConnectionImpl(const std::string& connection_url,
                  const std::string& remote_url,
                  uint32_t remote_id,
-                 InterfaceProviderPtr remote_interfaces,
-                 InterfaceRequest<InterfaceProvider> local_interfaces,
+                 shell::mojom::InterfaceProviderPtr remote_interfaces,
+                 shell::mojom::InterfaceProviderRequest local_interfaces,
                  const std::set<std::string>& allowed_interfaces);
   ~ConnectionImpl() override;
 
@@ -65,8 +66,8 @@ class ConnectionImpl : public Connection, public InterfaceProvider {
                                  const std::string& interface_name) override;
   const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
-  InterfaceProvider* GetRemoteInterfaces() override;
-  InterfaceProvider* GetLocalInterfaces() override;
+  shell::mojom::InterfaceProvider* GetRemoteInterfaces() override;
+  shell::mojom::InterfaceProvider* GetLocalInterfaces() override;
   void SetRemoteInterfaceProviderConnectionErrorHandler(
       const Closure& handler) override;
   bool GetRemoteApplicationID(uint32_t* remote_id) const override;
@@ -92,8 +93,8 @@ class ConnectionImpl : public Connection, public InterfaceProvider {
   bool remote_ids_valid_;
   std::vector<Closure> remote_id_callbacks_;
 
-  Binding<InterfaceProvider> local_binding_;
-  InterfaceProviderPtr remote_interfaces_;
+  Binding<shell::mojom::InterfaceProvider> local_binding_;
+  shell::mojom::InterfaceProviderPtr remote_interfaces_;
 
   const std::set<std::string> allowed_interfaces_;
   const bool allow_all_interfaces_;

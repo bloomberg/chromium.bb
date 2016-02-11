@@ -77,8 +77,8 @@ void ApplicationInstance::BindPIDReceiver(
 // Shell implementation:
 void ApplicationInstance::ConnectToApplication(
     URLRequestPtr app_request,
-    InterfaceRequest<InterfaceProvider> remote_interfaces,
-    InterfaceProviderPtr local_interfaces,
+    shell::mojom::InterfaceProviderRequest remote_interfaces,
+    shell::mojom::InterfaceProviderPtr local_interfaces,
     mojom::CapabilityFilterPtr filter,
     const ConnectToApplicationCallback& callback) {
   std::string url_string = app_request->url.To<std::string>();

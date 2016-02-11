@@ -107,8 +107,8 @@ class AboutFetcherTest : public testing::Test {
   void ConnectAndWait(const std::string& url) {
     base::RunLoop run_loop;
 
-    InterfaceProviderPtr remote_interfaces;
-    InterfaceRequest<InterfaceProvider> remote_request =
+    shell::mojom::InterfaceProviderPtr remote_interfaces;
+    shell::mojom::InterfaceProviderRequest remote_request =
         GetProxy(&remote_interfaces);
     // This connection error handler will be called when:
     // - TestContentHandler::StartApplication() has been called (please see

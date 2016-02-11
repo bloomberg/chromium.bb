@@ -21,14 +21,14 @@ ServiceRegistryImpl::~ServiceRegistryImpl() {
 }
 
 void ServiceRegistryImpl::Bind(
-    mojo::InterfaceRequest<mojo::InterfaceProvider> request) {
+    mojo::shell::mojom::InterfaceProviderRequest request) {
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(base::Bind(
       &ServiceRegistryImpl::OnConnectionError, base::Unretained(this)));
 }
 
 void ServiceRegistryImpl::BindRemoteServiceProvider(
-    mojo::InterfaceProviderPtr service_provider) {
+    mojo::shell::mojom::InterfaceProviderPtr service_provider) {
   CHECK(!remote_provider_);
   remote_provider_ = std::move(service_provider);
   while (!pending_connects_.empty()) {

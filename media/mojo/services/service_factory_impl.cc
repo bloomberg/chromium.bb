@@ -17,7 +17,7 @@ namespace media {
 
 ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<interfaces::ServiceFactory> request,
-    mojo::InterfaceProvider* interfaces,
+    mojo::shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<MediaLog> media_log,
     scoped_ptr<mojo::AppRefCount> parent_app_refcount,
     MojoMediaClient* mojo_media_client)

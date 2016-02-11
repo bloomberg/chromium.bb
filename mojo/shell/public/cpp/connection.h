@@ -79,7 +79,7 @@ class Connection {
   // interface.
   template <typename Interface>
   void GetInterface(InterfacePtr<Interface>* ptr) {
-    if (InterfaceProvider* ip = GetRemoteInterfaces()) {
+    if (shell::mojom::InterfaceProvider* ip = GetRemoteInterfaces()) {
       MessagePipe pipe;
       ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
       ip->GetInterface(Interface::Name_, std::move(pipe.handle1));
@@ -104,11 +104,11 @@ class Connection {
   // Returns the raw proxy to the remote application's InterfaceProvider
   // interface. Most applications will just use GetInterface() instead.
   // Caller does not take ownership.
-  virtual InterfaceProvider* GetRemoteInterfaces() = 0;
+  virtual shell::mojom::InterfaceProvider* GetRemoteInterfaces() = 0;
 
   // Returns the local application's InterfaceProvider interface. The return
   // value is owned by this connection.
-  virtual InterfaceProvider* GetLocalInterfaces() = 0;
+  virtual shell::mojom::InterfaceProvider* GetLocalInterfaces() = 0;
 
   // Register a handler to receive an error notification on the pipe to the
   // remote application's InterfaceProvider.

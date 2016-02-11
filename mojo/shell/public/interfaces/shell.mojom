@@ -62,8 +62,8 @@ interface Shell {
   // establish the connection to |application_url|. If no content handler is
   // used |content_handler_id| is kInvalidApplicationID.
   ConnectToApplication(mojo.URLRequest application_url,
-                       mojo.InterfaceProvider&? remote_interfaces,
-                       mojo.InterfaceProvider? local_interfaces,
+                       InterfaceProvider&? remote_interfaces,
+                       InterfaceProvider? local_interfaces,
                        CapabilityFilter filter) =>
       (uint32 application_id, uint32 content_handler_id);
 

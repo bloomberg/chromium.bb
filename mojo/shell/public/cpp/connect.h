@@ -13,7 +13,7 @@ namespace mojo {
 
 // Binds |ptr| to a remote implementation of Interface from |interfaces|.
 template <typename Interface>
-inline void GetInterface(InterfaceProvider* interfaces,
+inline void GetInterface(shell::mojom::InterfaceProvider* interfaces,
                          InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));

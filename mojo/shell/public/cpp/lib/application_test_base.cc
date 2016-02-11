@@ -51,12 +51,13 @@ class ShellGrabber : public shell::mojom::ShellClient {
     g_shell = std::move(shell);
   }
 
-  void AcceptConnection(const String& requestor_url,
-                        uint32_t requestor_id,
-                        InterfaceRequest<InterfaceProvider> local_interfaces,
-                        InterfaceProviderPtr remote_interfaces,
-                        Array<String> allowed_interfaces,
-                        const String& url) override {
+  void AcceptConnection(
+      const String& requestor_url,
+      uint32_t requestor_id,
+      shell::mojom::InterfaceProviderRequest local_interfaces,
+      shell::mojom::InterfaceProviderPtr remote_interfaces,
+      Array<String> allowed_interfaces,
+      const String& url) override {
     MOJO_CHECK(false);
   }
 

@@ -7,6 +7,7 @@ module content;
 import "mojo/shell/public/interfaces/interface_provider.mojom";
 
 interface ApplicationSetup {
-  ExchangeInterfaceProviders(mojo.InterfaceProvider& remote_interfaces,
-                             mojo.InterfaceProvider local_interfaces);
+  ExchangeInterfaceProviders(
+      mojo.shell.mojom.InterfaceProvider& remote_interfaces,
+      mojo.shell.mojom.InterfaceProvider local_interfaces);
 };

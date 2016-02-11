@@ -31,7 +31,7 @@ MojoAppConnectionImpl::MojoAppConnectionImpl(const GURL& url,
                                              const GURL& requestor_url) {
   MojoShellContext::ConnectToApplication(
       url, requestor_url, mojo::GetProxy(&interfaces_),
-      mojo::InterfaceProviderPtr(),
+      mojo::shell::mojom::InterfaceProviderPtr(),
       mojo::shell::GetPermissiveCapabilityFilter(),
       base::Bind(&OnGotRemoteIDs));
 }

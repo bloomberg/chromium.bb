@@ -14,7 +14,11 @@
 
 namespace mojo {
 class AppRefCount;
+namespace shell {
+namespace mojom {
 class InterfaceProvider;
+}
+}
 }
 
 namespace media {
@@ -27,7 +31,7 @@ class RendererFactory;
 class ServiceFactoryImpl : public interfaces::ServiceFactory {
  public:
   ServiceFactoryImpl(mojo::InterfaceRequest<interfaces::ServiceFactory> request,
-                     mojo::InterfaceProvider* interfaces,
+                     mojo::shell::mojom::InterfaceProvider* interfaces,
                      scoped_refptr<MediaLog> media_log,
                      scoped_ptr<mojo::AppRefCount> parent_app_refcount,
                      MojoMediaClient* mojo_media_client);
@@ -46,7 +50,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   MojoCdmServiceContext cdm_service_context_;
 
   mojo::StrongBinding<interfaces::ServiceFactory> binding_;
-  mojo::InterfaceProvider* interfaces_;
+  mojo::shell::mojom::InterfaceProvider* interfaces_;
   scoped_refptr<MediaLog> media_log_;
   scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
   MojoMediaClient* mojo_media_client_;

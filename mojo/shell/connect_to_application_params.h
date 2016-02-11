@@ -50,17 +50,17 @@ class ConnectToApplicationParams {
     return std::move(target_url_request_);
   }
 
-  void set_remote_interfaces(InterfaceRequest<InterfaceProvider> value) {
+  void set_remote_interfaces(shell::mojom::InterfaceProviderRequest value) {
     remote_interfaces_ = std::move(value);
   }
-  InterfaceRequest<InterfaceProvider> TakeRemoteInterfaces() {
+  shell::mojom::InterfaceProviderRequest TakeRemoteInterfaces() {
     return std::move(remote_interfaces_);
   }
 
-  void set_local_interfaces(InterfaceProviderPtr value) {
+  void set_local_interfaces(shell::mojom::InterfaceProviderPtr value) {
     local_interfaces_ = std::move(value);
   }
-  InterfaceProviderPtr TakeLocalInterfaces() {
+  shell::mojom::InterfaceProviderPtr TakeLocalInterfaces() {
     return std::move(local_interfaces_);
   }
 
@@ -91,8 +91,8 @@ class ConnectToApplicationParams {
   // remains unchanged.
   URLRequestPtr target_url_request_;
 
-  InterfaceRequest<InterfaceProvider> remote_interfaces_;
-  InterfaceProviderPtr local_interfaces_;
+  shell::mojom::InterfaceProviderRequest remote_interfaces_;
+  shell::mojom::InterfaceProviderPtr local_interfaces_;
   base::Closure on_application_end_;
   shell::mojom::Shell::ConnectToApplicationCallback connect_callback_;
 

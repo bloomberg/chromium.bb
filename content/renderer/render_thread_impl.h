@@ -450,8 +450,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void RegisterPendingRenderFrameConnect(
       int routing_id,
-      mojo::InterfaceRequest<mojo::InterfaceProvider> services,
-      mojo::InterfaceProviderPtr exposed_services);
+      mojo::shell::mojom::InterfaceProviderRequest services,
+      mojo::shell::mojom::InterfaceProviderPtr exposed_services);
 
  protected:
   RenderThreadImpl(const InProcessChildThreadParams& params,
@@ -673,14 +673,16 @@ class CONTENT_EXPORT RenderThreadImpl
    public:
     PendingRenderFrameConnect(
         int routing_id,
-        mojo::InterfaceRequest<mojo::InterfaceProvider> services,
-        mojo::InterfaceProviderPtr exposed_services);
+        mojo::shell::mojom::InterfaceProviderRequest services,
+        mojo::shell::mojom::InterfaceProviderPtr exposed_services);
 
-    mojo::InterfaceRequest<mojo::InterfaceProvider>& services() {
+    mojo::shell::mojom::InterfaceProviderRequest& services() {
       return services_;
     }
 
-    mojo::InterfaceProviderPtr& exposed_services() { return exposed_services_; }
+    mojo::shell::mojom::InterfaceProviderPtr& exposed_services() {
+      return exposed_services_;
+    }
 
    private:
     friend class base::RefCounted<PendingRenderFrameConnect>;
@@ -691,8 +693,8 @@ class CONTENT_EXPORT RenderThreadImpl
     void OnConnectionError();
 
     int routing_id_;
-    mojo::InterfaceRequest<mojo::InterfaceProvider> services_;
-    mojo::InterfaceProviderPtr exposed_services_;
+    mojo::shell::mojom::InterfaceProviderRequest services_;
+    mojo::shell::mojom::InterfaceProviderPtr exposed_services_;
   };
 
   typedef std::map<int, scoped_refptr<PendingRenderFrameConnect>>

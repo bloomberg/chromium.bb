@@ -144,11 +144,11 @@ scoped_ptr<Connection> ShellConnection::Connect(ConnectParams* params) {
   //             filter here too?
   std::set<std::string> allowed;
   allowed.insert("*");
-  InterfaceProviderPtr local_interfaces;
-  InterfaceRequest<InterfaceProvider> local_request =
+  shell::mojom::InterfaceProviderPtr local_interfaces;
+  shell::mojom::InterfaceProviderRequest local_request =
       GetProxy(&local_interfaces);
-  InterfaceProviderPtr remote_interfaces;
-  InterfaceRequest<InterfaceProvider> remote_request =
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderRequest remote_request =
       GetProxy(&remote_interfaces);
   scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
       application_url, application_url,
@@ -193,8 +193,8 @@ void ShellConnection::Initialize(shell::mojom::ShellPtr shell,
 void ShellConnection::AcceptConnection(
     const String& requestor_url,
     uint32_t requestor_id,
-    InterfaceRequest<InterfaceProvider> local_interfaces,
-    InterfaceProviderPtr remote_interfaces,
+    shell::mojom::InterfaceProviderRequest local_interfaces,
+    shell::mojom::InterfaceProviderPtr remote_interfaces,
     Array<String> allowed_interfaces,
     const String& url) {
   scoped_ptr<Connection> registry(new internal::ConnectionImpl(

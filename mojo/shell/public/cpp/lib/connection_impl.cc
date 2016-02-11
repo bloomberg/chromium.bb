@@ -23,8 +23,8 @@ ConnectionImpl::ConnectionImpl(
     const std::string& connection_url,
     const std::string& remote_url,
     uint32_t remote_id,
-    InterfaceProviderPtr remote_interfaces,
-    InterfaceRequest<InterfaceProvider> local_interfaces,
+    shell::mojom::InterfaceProviderPtr remote_interfaces,
+    shell::mojom::InterfaceProviderRequest local_interfaces,
     const std::set<std::string>& allowed_interfaces)
     : connection_url_(connection_url),
       remote_url_(remote_url),
@@ -94,11 +94,11 @@ const std::string& ConnectionImpl::GetRemoteApplicationURL() {
   return remote_url_;
 }
 
-InterfaceProvider* ConnectionImpl::GetRemoteInterfaces() {
+shell::mojom::InterfaceProvider* ConnectionImpl::GetRemoteInterfaces() {
   return remote_interfaces_.get();
 }
 
-InterfaceProvider* ConnectionImpl::GetLocalInterfaces() {
+shell::mojom::InterfaceProvider* ConnectionImpl::GetLocalInterfaces() {
   return this;
 }
 
@@ -137,7 +137,7 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConnectionImpl, InterfaceProvider implementation:
+// ConnectionImpl, shell::mojom::InterfaceProvider implementation:
 
 void ConnectionImpl::GetInterface(const mojo::String& interface_name,
                                   ScopedMessagePipeHandle handle) {

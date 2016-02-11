@@ -70,8 +70,8 @@ class ApplicationInstance : public mojom::Shell,
   // Shell implementation:
   void ConnectToApplication(
       URLRequestPtr app_request,
-      InterfaceRequest<InterfaceProvider> remote_interfaces,
-      InterfaceProviderPtr local_interfaces,
+      shell::mojom::InterfaceProviderRequest remote_interfaces,
+      shell::mojom::InterfaceProviderPtr local_interfaces,
       mojom::CapabilityFilterPtr filter,
       const ConnectToApplicationCallback& callback) override;
   void QuitApplication() override;

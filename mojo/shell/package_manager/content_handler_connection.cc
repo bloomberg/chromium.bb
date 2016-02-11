@@ -28,7 +28,7 @@ ContentHandlerConnection::ContentHandlerConnection(
       connection_closed_(false),
       id_(id),
       ref_count_(0) {
-  InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
 
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->set_source(source);

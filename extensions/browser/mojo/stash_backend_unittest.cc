@@ -191,7 +191,7 @@ TEST_F(StashServiceTest, NotifyOnReadableHandle) {
   stashed_object->id = "test type";
   stashed_object->data.push_back(0);
   stashed_object->monitor_handles = true;
-  mojo::InterfaceProviderPtr service_provider;
+  mojo::shell::mojom::InterfaceProviderPtr service_provider;
 
   // Stash the ServiceProvider request. When we make a call on
   // |service_provider|, the stashed handle will become readable.

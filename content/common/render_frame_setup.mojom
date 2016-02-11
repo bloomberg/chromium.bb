@@ -7,7 +7,8 @@ module content;
 import "mojo/shell/public/interfaces/interface_provider.mojom";
 
 interface RenderFrameSetup {
-  ExchangeInterfaceProviders(int32 frame_routing_id,
-                             mojo.InterfaceProvider& remote_interfaces,
-                             mojo.InterfaceProvider local_interfaces);
+  ExchangeInterfaceProviders(
+      int32 frame_routing_id,
+      mojo.shell.mojom.InterfaceProvider& remote_interfaces,
+      mojo.shell.mojom.InterfaceProvider local_interfaces);
 };

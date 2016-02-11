@@ -27,7 +27,7 @@ VideoRendererSink* MojoMediaClient::CreateVideoRendererSink(
 }
 
 scoped_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
-    mojo::InterfaceProvider* service_provider) {
+    mojo::shell::mojom::InterfaceProvider* service_provider) {
   return nullptr;
 }
 

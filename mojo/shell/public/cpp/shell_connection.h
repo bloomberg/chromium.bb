@@ -92,12 +92,13 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   void Initialize(shell::mojom::ShellPtr shell,
                   const mojo::String& url,
                   uint32_t id) override;
-  void AcceptConnection(const String& requestor_url,
-                        uint32_t requestor_id,
-                        InterfaceRequest<InterfaceProvider> remote_interfaces,
-                        InterfaceProviderPtr local_interfaces,
-                        Array<String> allowed_interfaces,
-                        const String& url) override;
+  void AcceptConnection(
+      const String& requestor_url,
+      uint32_t requestor_id,
+      shell::mojom::InterfaceProviderRequest remote_interfaces,
+      shell::mojom::InterfaceProviderPtr local_interfaces,
+      Array<String> allowed_interfaces,
+      const String& url) override;
   void OnQuitRequested(const Callback<void(bool)>& callback) override;
 
   void OnConnectionError();

@@ -2113,10 +2113,10 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&setup));
 
-  mojo::InterfaceProviderPtr exposed_services;
+  mojo::shell::mojom::InterfaceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));
 
-  mojo::InterfaceProviderPtr services;
+  mojo::shell::mojom::InterfaceProviderPtr services;
   setup->ExchangeInterfaceProviders(routing_id_, GetProxy(&services),
                                     std::move(exposed_services));
   service_registry_->BindRemoteServiceProvider(std::move(services));

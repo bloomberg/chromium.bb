@@ -64,8 +64,8 @@ interface ShellClient {
   //
   AcceptConnection(string requestor_url,
                    uint32 requestor_id,
-                   mojo.InterfaceProvider&? local_interfaces,
-                   mojo.InterfaceProvider? remote_interfaces,
+                   InterfaceProvider&? local_interfaces,
+                   InterfaceProvider? remote_interfaces,
                    array<string> allowed_interfaces,
                    string resolved_url);
 

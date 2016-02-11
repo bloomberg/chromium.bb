@@ -635,8 +635,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Binds this render frame's service registry.
   void BindServiceRegistry(
-      mojo::InterfaceRequest<mojo::InterfaceProvider> services,
-      mojo::InterfaceProviderPtr exposed_services);
+      mojo::shell::mojom::InterfaceProviderRequest services,
+      mojo::shell::mojom::InterfaceProviderPtr exposed_services);
 
   ManifestManager* manifest_manager();
 
@@ -965,7 +965,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Connects to a Mojo application and returns a proxy to its exposed
   // ServiceProvider.
-  mojo::InterfaceProviderPtr ConnectToApplication(const GURL& url);
+  mojo::shell::mojom::InterfaceProviderPtr ConnectToApplication(
+      const GURL& url);
 
   // Returns the media delegate for WebMediaPlayer usage.  If
   // |media_player_delegate_| is NULL, one is created.

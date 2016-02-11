@@ -28,8 +28,8 @@ class ApplicationSetupImpl : public ApplicationSetup {
  private:
   // ApplicationSetup implementation.
   void ExchangeInterfaceProviders(
-      mojo::InterfaceRequest<mojo::InterfaceProvider> services,
-      mojo::InterfaceProviderPtr exposed_services) override {
+      mojo::shell::mojom::InterfaceProviderRequest services,
+      mojo::shell::mojom::InterfaceProviderPtr exposed_services) override {
     service_registry_->Bind(std::move(services));
     service_registry_->BindRemoteServiceProvider(std::move(exposed_services));
   }

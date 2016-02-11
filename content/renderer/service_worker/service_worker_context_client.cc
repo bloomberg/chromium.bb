@@ -286,8 +286,8 @@ void ServiceWorkerContextClient::OnMessageReceived(
 }
 
 void ServiceWorkerContextClient::BindServiceRegistry(
-    mojo::InterfaceRequest<mojo::InterfaceProvider> services,
-    mojo::InterfaceProviderPtr exposed_services) {
+    mojo::shell::mojom::InterfaceProviderRequest services,
+    mojo::shell::mojom::InterfaceProviderPtr exposed_services) {
   context_->service_registry.Bind(std::move(services));
   context_->service_registry.BindRemoteServiceProvider(
       std::move(exposed_services));

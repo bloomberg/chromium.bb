@@ -158,8 +158,8 @@ class MojoShellContext::Proxy {
   void ConnectToApplication(
       const GURL& url,
       const GURL& requestor_url,
-      mojo::InterfaceRequest<mojo::InterfaceProvider> request,
-      mojo::InterfaceProviderPtr exposed_services,
+      mojo::shell::mojom::InterfaceProviderRequest request,
+      mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
       const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
@@ -260,8 +260,8 @@ MojoShellContext::~MojoShellContext() {
 void MojoShellContext::ConnectToApplication(
     const GURL& url,
     const GURL& requestor_url,
-    mojo::InterfaceRequest<mojo::InterfaceProvider> request,
-    mojo::InterfaceProviderPtr exposed_services,
+    mojo::shell::mojom::InterfaceProviderRequest request,
+    mojo::shell::mojom::InterfaceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
     const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
   proxy_.Get()->ConnectToApplication(url, requestor_url, std::move(request),
@@ -272,8 +272,8 @@ void MojoShellContext::ConnectToApplication(
 void MojoShellContext::ConnectToApplicationOnOwnThread(
     const GURL& url,
     const GURL& requestor_url,
-    mojo::InterfaceRequest<mojo::InterfaceProvider> request,
-    mojo::InterfaceProviderPtr exposed_services,
+    mojo::shell::mojom::InterfaceProviderRequest request,
+    mojo::shell::mojom::InterfaceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
     const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
   scoped_ptr<mojo::shell::ConnectToApplicationParams> params(

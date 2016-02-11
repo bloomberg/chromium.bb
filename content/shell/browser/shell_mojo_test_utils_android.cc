@@ -48,11 +48,11 @@ static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
   content::ServiceRegistryImpl* registry_b = new ServiceRegistryImpl();
   test_environment->registries.push_back(registry_b);
 
-  mojo::InterfaceProviderPtr exposed_services_a;
+  mojo::shell::mojom::InterfaceProviderPtr exposed_services_a;
   registry_a->Bind(GetProxy(&exposed_services_a));
   registry_b->BindRemoteServiceProvider(std::move(exposed_services_a));
 
-  mojo::InterfaceProviderPtr exposed_services_b;
+  mojo::shell::mojom::InterfaceProviderPtr exposed_services_b;
   registry_b->Bind(GetProxy(&exposed_services_b));
   registry_a->BindRemoteServiceProvider(std::move(exposed_services_b));
 

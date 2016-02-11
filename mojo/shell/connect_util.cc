@@ -17,7 +17,7 @@ ScopedMessagePipeHandle ConnectToInterfaceByName(
     ApplicationManager* application_manager,
     const GURL& application_url,
     const std::string& interface_name) {
-  InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->SetTarget(Identity(application_url, std::string(),
                              GetPermissiveCapabilityFilter()));

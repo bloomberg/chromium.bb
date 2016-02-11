@@ -24,7 +24,7 @@ class MojoAppConnectionImpl : public MojoAppConnection {
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle handle) override;
 
-  mojo::InterfaceProviderPtr interfaces_;
+  mojo::shell::mojom::InterfaceProviderPtr interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAppConnectionImpl);
 };

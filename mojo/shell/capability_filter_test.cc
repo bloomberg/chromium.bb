@@ -291,17 +291,17 @@ void CapabilityFilterTest::TearDown() {
   application_manager_.reset();
 }
 
-class InterfaceProviderImpl : public InterfaceProvider {
+class InterfaceProviderImpl : public shell::mojom::InterfaceProvider {
  public:
   explicit InterfaceProviderImpl(
-      InterfaceRequest<InterfaceProvider> interfaces,
+      shell::mojom::InterfaceProviderRequest interfaces,
       InterfaceFactory<Validator>* factory)
       : binding_(this, std::move(interfaces)),
         factory_(factory) {}
   ~InterfaceProviderImpl() override {}
 
  private:
-  // InterfaceProvider method.
+  // shell::mojom::InterfaceProvider method.
   void GetInterface(const mojo::String& interface_name,
                     ScopedMessagePipeHandle client_handle) override {
     if (interface_name == Validator::Name_) {
@@ -318,12 +318,12 @@ class InterfaceProviderImpl : public InterfaceProvider {
 
 void CapabilityFilterTest::RunApplication(const std::string& url,
                                           const CapabilityFilter& filter) {
-  InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
 
   // We expose Validator to the test application via ConnectToApplication
   // because we don't allow the test application to connect to test:validator.
   // Adding it to the CapabilityFilter would interfere with the test.
-  InterfaceProviderPtr local_interfaces;
+  shell::mojom::InterfaceProviderPtr local_interfaces;
   new InterfaceProviderImpl(GetProxy(&local_interfaces), validator_);
   scoped_ptr<ConnectToApplicationParams> params(
       new ConnectToApplicationParams);

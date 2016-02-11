@@ -112,13 +112,14 @@ void InitContentHandlers(PackageManagerImpl* manager,
   }
 }
 
-class TracingInterfaceProvider : public InterfaceProvider {
+class TracingInterfaceProvider : public shell::mojom::InterfaceProvider {
  public:
   TracingInterfaceProvider(Tracer* tracer,
-                           InterfaceRequest<InterfaceProvider> request)
+                           shell::mojom::InterfaceProviderRequest request)
       : tracer_(tracer), binding_(this, std::move(request)) {}
   ~TracingInterfaceProvider() override {}
 
+  // shell::mojom::InterfaceProvider:
   void GetInterface(const mojo::String& interface_name,
                     ScopedMessagePipeHandle client_handle) override {
     if (tracer_ && interface_name == tracing::TraceProvider::Name_) {
@@ -129,7 +130,7 @@ class TracingInterfaceProvider : public InterfaceProvider {
 
  private:
   Tracer* tracer_;
-  StrongBinding<InterfaceProvider> binding_;
+  StrongBinding<shell::mojom::InterfaceProvider> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingInterfaceProvider);
 };
@@ -192,8 +193,8 @@ void Context::Init(const base::FilePath& shell_file_root) {
       make_scoped_ptr(package_manager_), std::move(runner_factory),
       task_runners_->blocking_pool()));
 
-  InterfaceProviderPtr tracing_remote_interfaces;
-  InterfaceProviderPtr tracing_local_interfaces;
+  shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
+  shell::mojom::InterfaceProviderPtr tracing_local_interfaces;
   new TracingInterfaceProvider(&tracer_, GetProxy(&tracing_local_interfaces));
 
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
@@ -253,8 +254,8 @@ void Context::OnShutdownComplete() {
 
 void Context::Run(const GURL& url) {
   DCHECK(app_complete_callback_.is_null());
-  InterfaceProviderPtr remote_interfaces;
-  InterfaceProviderPtr local_interfaces;
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderPtr local_interfaces;
 
   app_urls_.insert(url);
 
