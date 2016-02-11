@@ -2474,8 +2474,9 @@ def CMDupload(parser, args):
     options.squash = ((settings.GetSquashGerritUploads() or options.squash) and
                       not options.no_squash)
 
-    return GerritUpload(options, args, cl, change)
-  ret = RietveldUpload(options, args, cl, change)
+    ret = GerritUpload(options, args, cl, change)
+  else:
+    ret = RietveldUpload(options, args, cl, change)
   if not ret:
     git_set_branch_value('last-upload-hash',
                          RunGit(['rev-parse', 'HEAD']).strip())

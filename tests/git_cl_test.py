@@ -227,6 +227,11 @@ class TestGitCl(TestCase):
            'https://codereview.example.com'],), ''),
         ((['git',
            'config', 'branch.master.rietveldpatchset', '2'],), ''),
+    ] + cls._git_post_upload_calls()
+
+  @classmethod
+  def _git_post_upload_calls(cls):
+    return [
         ((['git', 'rev-parse', 'HEAD'],), 'hash'),
         ((['git', 'symbolic-ref', 'HEAD'],), 'hash'),
         ((['git',
@@ -574,8 +579,8 @@ class TestGitCl(TestCase):
          '+dat'),
         ]
 
-  @staticmethod
-  def _gerrit_upload_calls(description, reviewers, squash,
+  @classmethod
+  def _gerrit_upload_calls(cls, description, reviewers, squash,
                            expected_upstream_ref='origin/refs/heads/master'):
     calls = [
         ((['git', 'config', '--bool', 'gerrit.squash-uploads'],), 'false'),
@@ -640,7 +645,7 @@ class TestGitCl(TestCase):
             'refs/heads/git_cl_uploads/master', 'abcdef0123456789'],),
            '')
           ]
-
+    calls += cls._git_post_upload_calls()
     return calls
 
   def _run_gerrit_upload_test(
