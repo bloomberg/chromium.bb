@@ -5,6 +5,8 @@
 #ifndef TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
 #define TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -39,6 +41,7 @@ class BattOrAgent : public BattOrConnection::Listener,
     virtual void OnStartTracingComplete(BattOrError error) = 0;
     virtual void OnStopTracingComplete(const std::string& trace,
                                        BattOrError error) = 0;
+    virtual void OnRecordClockSyncMarkerComplete(BattOrError error) = 0;
   };
 
   BattOrAgent(
@@ -50,10 +53,11 @@ class BattOrAgent : public BattOrConnection::Listener,
 
   void StartTracing();
   void StopTracing();
+  void RecordClockSyncMarker(const std::string& marker);
 
   // Returns whether the BattOr is able to record clock sync markers in its own
   // trace log.
-  static bool SupportsExplicitClockSync() { return false; }
+  static bool SupportsExplicitClockSync() { return true; }
 
   // BattOrConnection::Listener implementation.
   void OnConnectionOpened(bool success) override;
@@ -73,6 +77,7 @@ class BattOrAgent : public BattOrConnection::Listener,
     INVALID,
     START_TRACING,
     STOP_TRACING,
+    RECORD_CLOCK_SYNC_MARKER,
   };
 
   enum class Action {
@@ -96,6 +101,10 @@ class BattOrAgent : public BattOrConnection::Listener,
     SEND_SAMPLES_REQUEST,
     READ_CALIBRATION_FRAME,
     READ_DATA_FRAME,
+
+    // Actions required for recording a clock sync marker.
+    SEND_CURRENT_SAMPLE_REQUEST,
+    READ_CURRENT_SAMPLE,
   };
 
   // Performs an action.
@@ -126,6 +135,18 @@ class BattOrAgent : public BattOrConnection::Listener,
 
   // The tracing command currently being executed by the agent.
   Command command_;
+
+  // A map from the sample number (including samples from the calibration frame)
+  // to the ID of the clock sync marker that is associated with that sample
+  // number. If we ever have to store a large number of these, consider using an
+  // unordered map.
+  std::map<uint32_t, std::string> clock_sync_markers_;
+
+  // The clock sync marker being recorded (if we're currently recording one).
+  std::string pending_clock_sync_marker_;
+
+  // The time at which the last clock sync marker was recorded.
+  base::TimeTicks last_clock_sync_time_;
 
   // Checker to make sure that this is only ever called on the IO thread.
   base::ThreadChecker thread_checker_;

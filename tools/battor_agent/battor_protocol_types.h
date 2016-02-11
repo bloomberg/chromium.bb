@@ -56,6 +56,9 @@ enum BattOrControlMessageType : uint8_t {
   // Tells the BattOr to start streaming the samples stored on its SD card over
   // the connection.
   BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART,
+  // Tells the BattOr to send back the number of samples it's collected so far.
+  // This is used for syncing the clocks between the agent and the BattOr.
+  BATTOR_CONTROL_MESSAGE_TYPE_READ_SAMPLE_COUNT,
 };
 
 // The gain level for the BattOr to use.

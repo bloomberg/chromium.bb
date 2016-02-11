@@ -869,7 +869,11 @@ void TracingControllerImpl::OnClockSyncMarkerRecordedByAgent(
     const base::TimeTicks& issue_end_ts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  TRACE_EVENT_CLOCK_SYNC_ISSUER(sync_id, issue_ts, issue_end_ts);
+  // TODO(charliea): Change this function so that it can accept a boolean
+  // success indicator instead of having to rely on sentinel issue_ts and
+  // issue_end_ts values to signal failure.
+  if (!(issue_ts == base::TimeTicks() || issue_end_ts == base::TimeTicks()))
+    TRACE_EVENT_CLOCK_SYNC_ISSUER(sync_id, issue_ts, issue_end_ts);
 
   // Timer is not running means that clock sync already timed out.
   if (!clock_sync_timer_.IsRunning())

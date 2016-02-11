@@ -30,6 +30,10 @@ class PowerTracingAgent : public base::trace_event::TracingAgent,
   void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
                          const StartAgentTracingCallback& callback) override;
   void StopAgentTracing(const StopAgentTracingCallback& callback) override;
+  void RecordClockSyncMarker(
+      const std::string& sync_id,
+      const RecordClockSyncMarkerCallback& callback) override;
+
   bool SupportsExplicitClockSync() override;
 
   // base::trace_event::TracingAgent implementation.
@@ -40,6 +44,7 @@ class PowerTracingAgent : public base::trace_event::TracingAgent,
   void OnStartTracingComplete(battor::BattOrError error) override;
   void OnStopTracingComplete(const std::string& trace,
                              battor::BattOrError error) override;
+  void OnRecordClockSyncMarkerComplete(battor::BattOrError error) override;
 
  private:
   // This allows constructor and destructor to be private and usable only
@@ -53,6 +58,9 @@ class PowerTracingAgent : public base::trace_event::TracingAgent,
   void StartAgentTracingOnIOThread(const std::string& path,
                                    const StartAgentTracingCallback& callback);
   void StopAgentTracingOnIOThread(const StopAgentTracingCallback& callback);
+  void RecordClockSyncMarkerOnIOThread(
+      const std::string& sync_id,
+      const RecordClockSyncMarkerCallback& callback);
 
   // Returns the path of a BattOr (e.g. /dev/ttyUSB0), or an empty string if
   // none are found.
@@ -65,6 +73,9 @@ class PowerTracingAgent : public base::trace_event::TracingAgent,
 
   StartAgentTracingCallback start_tracing_callback_;
   StopAgentTracingCallback stop_tracing_callback_;
+  std::string record_clock_sync_marker_sync_id_;
+  base::TimeTicks record_clock_sync_marker_start_time_;
+  RecordClockSyncMarkerCallback record_clock_sync_marker_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTracingAgent);
 };

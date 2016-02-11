@@ -187,6 +187,13 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     done_.Signal();
   }
 
+  void OnRecordClockSyncMarkerComplete(BattOrError error) override {
+    // TODO(charliea): Implement RecordClockSyncMarker for this binary. This
+    // will probably involve reading an external file for the actual sample
+    // number to clock sync ID map.
+    NOTREACHED();
+  }
+
   // Postable task for creating the BattOrAgent. Because the BattOrAgent has
   // uber thread safe dependencies, all interactions with it, including creating
   // and deleting it, MUST happen on the IO thread.

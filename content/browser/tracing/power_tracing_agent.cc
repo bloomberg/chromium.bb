@@ -132,6 +132,52 @@ void PowerTracingAgent::OnStopTracingComplete(const std::string& trace,
   battor_agent_.reset();
 }
 
+void PowerTracingAgent::RecordClockSyncMarker(
+    const std::string& sync_id,
+    const RecordClockSyncMarkerCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(SupportsExplicitClockSync());
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PowerTracingAgent::RecordClockSyncMarkerOnIOThread,
+                 base::Unretained(this), sync_id, callback));
+}
+
+void PowerTracingAgent::RecordClockSyncMarkerOnIOThread(
+    const std::string& sync_id,
+    const RecordClockSyncMarkerCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(battor_agent_);
+
+  record_clock_sync_marker_sync_id_ = sync_id;
+  record_clock_sync_marker_callback_ = callback;
+  record_clock_sync_marker_start_time_ = base::TimeTicks::Now();
+  battor_agent_->RecordClockSyncMarker(sync_id);
+}
+
+void PowerTracingAgent::OnRecordClockSyncMarkerComplete(
+    battor::BattOrError error) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::TimeTicks issue_start_ts = record_clock_sync_marker_start_time_;
+  base::TimeTicks issue_end_ts = base::TimeTicks::Now();
+
+  if (error != battor::BATTOR_ERROR_NONE)
+    issue_start_ts = issue_end_ts = base::TimeTicks();
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(record_clock_sync_marker_callback_,
+                 record_clock_sync_marker_sync_id_,
+                 issue_start_ts,
+                 issue_end_ts));
+
+  record_clock_sync_marker_callback_.Reset();
+  record_clock_sync_marker_sync_id_ = std::string();
+  record_clock_sync_marker_start_time_ = base::TimeTicks();
+}
+
 bool PowerTracingAgent::SupportsExplicitClockSync() {
   return battor_agent_->SupportsExplicitClockSync();
 }

@@ -22,6 +22,7 @@ BattOrControlMessageAck kInitAck{BATTOR_CONTROL_MESSAGE_TYPE_INIT, 0};
 BattOrControlMessageAck kSetGainAck{BATTOR_CONTROL_MESSAGE_TYPE_SET_GAIN, 0};
 BattOrControlMessageAck kStartTracingAck{
     BATTOR_CONTROL_MESSAGE_TYPE_START_SAMPLING_SD, 0};
+const char kClockSyncId[] = "MY_MARKER";
 
 // Creates a byte vector copy of the specified object.
 template <typename T>
@@ -107,6 +108,11 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     trace_ = trace;
   }
 
+  void OnRecordClockSyncMarkerComplete(BattOrError error) override {
+    is_command_complete_ = true;
+    command_error_ = error;
+  }
+
   void OnBytesSent(bool success) {
     agent_->OnBytesSent(success);
     task_runner_->RunUntilIdle();
@@ -146,6 +152,10 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     EEPROM_RECEIVED,
     SAMPLES_REQUEST_SENT,
     CALIBRATION_FRAME_RECEIVED,
+
+    // States required to RecordClockSyncMarker.
+    CURRENT_SAMPLE_REQUEST_SENT,
+    RECORD_CLOCK_SYNC_MARKER_COMPLETE,
   };
 
   // Runs BattOrAgent::StartTracing until it reaches the specified state by
@@ -237,6 +247,31 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     RawBattOrSample cal_frame[] = {RawBattOrSample{1, 1}};
     OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                   CreateFrame(cal_frame_header, cal_frame, 1));
+  }
+
+  // Runs BattOrAgent::RecordClockSyncMarker until it reaches the specified
+  // state by feeding it the callbacks it needs to progress.
+  void RunRecordClockSyncMarkerTo(BattOrAgentState end_state) {
+    is_command_complete_ = false;
+
+    GetAgent()->RecordClockSyncMarker(kClockSyncId);
+    GetTaskRunner()->RunUntilIdle();
+
+    GetAgent()->OnConnectionOpened(true);
+    GetTaskRunner()->RunUntilIdle();
+
+    if (end_state == BattOrAgentState::CONNECTED)
+      return;
+
+    OnBytesSent(true);
+    if (end_state == BattOrAgentState::CURRENT_SAMPLE_REQUEST_SENT)
+      return;
+
+    DCHECK(end_state == BattOrAgentState::RECORD_CLOCK_SYNC_MARKER_COMPLETE);
+
+    uint32_t current_sample = 1;
+    OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                  ToCharVector(current_sample));
   }
 
   TestableBattOrAgent* GetAgent() { return agent_.get(); }
@@ -720,6 +755,115 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfFrameArrivesOutOfOrder) {
 
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header, frame, 1));
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_UNEXPECTED_MESSAGE, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, RecordClockSyncMarker) {
+  testing::InSequence s;
+  EXPECT_CALL(*GetAgent()->GetConnection(), Open());
+
+  BattOrControlMessage request_current_sample_msg{
+      BATTOR_CONTROL_MESSAGE_TYPE_READ_SAMPLE_COUNT, 0, 0};
+  EXPECT_CALL(*GetAgent()->GetConnection(),
+              SendBytes(BATTOR_MESSAGE_TYPE_CONTROL,
+                        BufferEq(&request_current_sample_msg,
+                                 sizeof(request_current_sample_msg)),
+                        sizeof(request_current_sample_msg)));
+
+  EXPECT_CALL(*GetAgent()->GetConnection(),
+              ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK));
+
+  RunRecordClockSyncMarkerTo(
+      BattOrAgentState::RECORD_CLOCK_SYNC_MARKER_COMPLETE);
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, RecordClockSyncMarkerPrintsInStopTracingResult) {
+  // Record a clock sync marker that says CLOCK_SYNC_ID happened at sample #2.
+  RunRecordClockSyncMarkerTo(BattOrAgentState::CURRENT_SAMPLE_REQUEST_SENT);
+
+  uint32_t current_sample = 1;
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                ToCharVector(current_sample));
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
+
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
+
+  // Now run StopTracing, and make sure that CLOCK_SYNC_ID gets printed out with
+  // sample #2 (including calibration frame samples).
+  BattOrFrameHeader cal_frame_header{0, 1 * sizeof(RawBattOrSample)};
+  RawBattOrSample cal_frame[] = {RawBattOrSample{1, 1}};
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
+                CreateFrame(cal_frame_header, cal_frame, 1));
+
+  BattOrFrameHeader frame_header1{1, 2 * sizeof(RawBattOrSample)};
+  RawBattOrSample frame1[] = {RawBattOrSample{1, 1}, RawBattOrSample{2, 2}};
+
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
+                CreateFrame(frame_header1, frame1, 2));
+
+  BattOrFrameHeader frame_header2{2, 0};
+
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
+                CreateFrame(frame_header2, {}, 0));
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
+  EXPECT_EQ(
+      "# BattOr\n# voltage_range [-2401.2, 2398.8] mV\n# "
+      "current_range [-1200.6, 1199.4] mA\n"
+      "# sample_rate 1000 Hz, gain 1.0x\n"
+      "0.00 0.0 0.0 <MY_MARKER>\n"
+      "1.00 0.6 1.2\n",
+      GetTrace());
+
+}
+
+TEST_F(BattOrAgentTest, RecordClockSyncMarkerFailsWithoutConnection) {
+  GetAgent()->RecordClockSyncMarker("my_marker");
+  GetTaskRunner()->RunUntilIdle();
+
+  GetAgent()->OnConnectionOpened(false);
+  GetTaskRunner()->RunUntilIdle();
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_CONNECTION_FAILED, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, RecordClockSyncMarkerFailsIfSampleRequestSendFails) {
+  RunRecordClockSyncMarkerTo(BattOrAgentState::CONNECTED);
+  OnBytesSent(false);
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_SEND_ERROR, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, RecordClockSyncMarkerRetriesCurrentSampleRead) {
+  RunRecordClockSyncMarkerTo(BattOrAgentState::CURRENT_SAMPLE_REQUEST_SENT);
+
+  OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
+
+  uint32_t current_sample = 1;
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                ToCharVector(current_sample));
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest,
+       RecordClockSyncMarkerFailsIfCurrentSampleReadHasWrongType) {
+  RunRecordClockSyncMarkerTo(BattOrAgentState::CURRENT_SAMPLE_REQUEST_SENT);
+
+  uint32_t current_sample = 1;
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL,
+                ToCharVector(current_sample));
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_UNEXPECTED_MESSAGE, GetCommandError());
