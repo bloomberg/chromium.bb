@@ -32,6 +32,18 @@ int CurrentWorkerId() {
   return WorkerThread::GetCurrentId();
 }
 
+// Checks whether |notification_data| specifies any non-empty resources that
+// need to be fetched.
+bool HasResourcesToFetch(const blink::WebNotificationData& notification_data) {
+  if (!notification_data.icon.isEmpty())
+    return true;
+  for (const auto& action : notification_data.actions) {
+    if (!action.icon.isEmpty())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 static base::LazyInstance<base::ThreadLocalPointer<NotificationManager>>::Leaky
@@ -73,13 +85,15 @@ void NotificationManager::show(
     const blink::WebSecurityOrigin& origin,
     const blink::WebNotificationData& notification_data,
     blink::WebNotificationDelegate* delegate) {
-  if (notification_data.icon.isEmpty()) {
+  DCHECK_EQ(0u, notification_data.actions.size());
+
+  if (!HasResourcesToFetch(notification_data)) {
     DisplayPageNotification(origin, notification_data, delegate,
                             NotificationResources());
     return;
   }
 
-  notifications_tracker_.FetchPageNotificationResources(
+  notifications_tracker_.FetchResources(
       notification_data, delegate,
       base::Bind(&NotificationManager::DisplayPageNotification,
                  base::Unretained(this),  // this owns |notifications_tracker_|
@@ -92,6 +106,7 @@ void NotificationManager::showPersistent(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebNotificationShowCallbacks* callbacks) {
   DCHECK(service_worker_registration);
+
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)
@@ -116,15 +131,24 @@ void NotificationManager::showPersistent(
     return;
   }
 
-  if (notification_data.icon.isEmpty()) {
+  if (!HasResourcesToFetch(notification_data)) {
+    NotificationResources notification_resources;
+
+    // Action indices are expected to have a corresponding icon bitmap, which
+    // may be empty when the developer provided no (or an invalid) icon.
+    if (!notification_data.actions.isEmpty()) {
+      notification_resources.action_icons.resize(
+          notification_data.actions.size());
+    }
+
     DisplayPersistentNotification(
         origin, notification_data, service_worker_registration_id,
-        std::move(owned_callbacks), NotificationResources());
+        std::move(owned_callbacks), notification_resources);
     return;
   }
 
-  notifications_tracker_.FetchPersistentNotificationResources(
-      notification_data,
+  notifications_tracker_.FetchResources(
+      notification_data, nullptr /* delegate */,
       base::Bind(&NotificationManager::DisplayPersistentNotification,
                  base::Unretained(this),  // this owns |notifications_tracker_|
                  origin, notification_data, service_worker_registration_id,
@@ -159,7 +183,7 @@ void NotificationManager::getNotifications(
 }
 
 void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
-  if (notifications_tracker_.CancelPageNotificationFetches(delegate))
+  if (notifications_tracker_.CancelResourceFetches(delegate))
     return;
 
   for (auto& iter : active_page_notifications_) {
@@ -189,7 +213,7 @@ void NotificationManager::closePersistent(
 
 void NotificationManager::notifyDelegateDestroyed(
     blink::WebNotificationDelegate* delegate) {
-  if (notifications_tracker_.CancelPageNotificationFetches(delegate))
+  if (notifications_tracker_.CancelResourceFetches(delegate))
     return;
 
   for (auto& iter : active_page_notifications_) {
@@ -306,6 +330,9 @@ void NotificationManager::DisplayPageNotification(
     const blink::WebNotificationData& notification_data,
     blink::WebNotificationDelegate* delegate,
     const NotificationResources& notification_resources) {
+  DCHECK_EQ(0u, notification_data.actions.size());
+  DCHECK_EQ(0u, notification_resources.action_icons.size());
+
   int notification_id =
       notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
 
@@ -324,6 +351,9 @@ void NotificationManager::DisplayPersistentNotification(
     int64_t service_worker_registration_id,
     scoped_ptr<blink::WebNotificationShowCallbacks> callbacks,
     const NotificationResources& notification_resources) {
+  DCHECK_EQ(notification_data.actions.size(),
+            notification_resources.action_icons.size());
+
   // TODO(peter): GenerateNotificationId is more of a request id. Consider
   // renaming the method in the NotificationDispatcher if this makes sense.
   int request_id =

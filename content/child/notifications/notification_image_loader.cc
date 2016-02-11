@@ -4,9 +4,10 @@
 
 #include "content/child/notifications/notification_image_loader.h"
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
-#include "content/child/child_thread_impl.h"
+#include "base/single_thread_task_runner.h"
 #include "content/child/image_decoder.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -23,24 +24,20 @@ namespace content {
 
 NotificationImageLoader::NotificationImageLoader(
     const ImageLoadCompletedCallback& callback,
-    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
     : callback_(callback),
       worker_task_runner_(worker_task_runner),
-      notification_id_(0),
+      main_task_runner_(main_task_runner),
       completed_(false) {}
 
 NotificationImageLoader::~NotificationImageLoader() {
-  if (main_thread_task_runner_)
-    DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 }
 
-void NotificationImageLoader::StartOnMainThread(int notification_id,
-                                                const GURL& image_url) {
-  DCHECK(ChildThreadImpl::current());
+void NotificationImageLoader::StartOnMainThread(const GURL& image_url) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!url_loader_);
-
-  main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  notification_id_ = notification_id;
 
   WebURL image_web_url(image_url);
   WebURLRequest request(image_web_url);
@@ -84,10 +81,9 @@ void NotificationImageLoader::RunCallbackOnWorkerThread() {
   SkBitmap icon = GetDecodedImage();
 
   if (worker_task_runner_->BelongsToCurrentThread()) {
-    callback_.Run(notification_id_, icon);
+    callback_.Run(icon);
   } else {
-    worker_task_runner_->PostTask(
-        FROM_HERE, base::Bind(callback_, notification_id_, icon));
+    worker_task_runner_->PostTask(FROM_HERE, base::Bind(callback_, icon));
   }
 }
 
@@ -101,8 +97,8 @@ SkBitmap NotificationImageLoader::GetDecodedImage() const {
 }
 
 void NotificationImageLoader::DeleteOnCorrectThread() const {
-  if (!ChildThreadImpl::current()) {
-    main_thread_task_runner_->DeleteSoon(FROM_HERE, this);
+  if (!main_task_runner_->BelongsToCurrentThread()) {
+    main_task_runner_->DeleteSoon(FROM_HERE, this);
     return;
   }
 

@@ -100,6 +100,7 @@
       'public/common/mojo_shell_connection.h',
       'public/common/navigator_connect_client.cc',
       'public/common/navigator_connect_client.h',
+      'public/common/notification_resources.cc',
       'public/common/notification_resources.h',
       'public/common/origin_util.h',
       'public/common/page_state.cc',

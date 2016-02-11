@@ -33,6 +33,10 @@ namespace content {
 
 struct NotificationImageLoaderDeleter;
 
+// The |image| may be empty if the request failed or the image data could not be
+// decoded.
+using ImageLoadCompletedCallback = base::Callback<void(const SkBitmap& image)>;
+
 // Downloads the image associated with a notification and decodes the received
 // image. This must be completed before notifications are shown to the user.
 // Image downloaders must not be re-used for multiple notifications.
@@ -43,16 +47,15 @@ class NotificationImageLoader
     : public blink::WebURLLoaderClient,
       public base::RefCountedThreadSafe<NotificationImageLoader,
                                         NotificationImageLoaderDeleter> {
-  using ImageLoadCompletedCallback = base::Callback<void(int, const SkBitmap&)>;
-
  public:
   NotificationImageLoader(
       const ImageLoadCompletedCallback& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
 
   // Asynchronously starts loading |image_url| using a Blink WebURLLoader. Must
   // only be called on the main thread.
-  void StartOnMainThread(int notification_id, const GURL& image_url);
+  void StartOnMainThread(const GURL& image_url);
 
   // blink::WebURLLoaderClient implementation.
   void didReceiveData(blink::WebURLLoader* loader,
@@ -88,9 +91,8 @@ class NotificationImageLoader
   ImageLoadCompletedCallback callback_;
 
   scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  int notification_id_;
   bool completed_;
 
   scoped_ptr<blink::WebURLLoader> url_loader_;

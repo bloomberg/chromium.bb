@@ -5,17 +5,25 @@
 #ifndef CONTENT_PUBLIC_COMMON_NOTIFICATION_RESOURCES_H_
 #define CONTENT_PUBLIC_COMMON_NOTIFICATION_RESOURCES_H_
 
+#include <vector>
+
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 
 // Structure to hold the resources associated with a Web Notification.
-// TODO(mvanouwerkerk): Add resources for e.g. action icons - crbug.com/581336.
 struct CONTENT_EXPORT NotificationResources {
+  NotificationResources();
+  ~NotificationResources();
+
   // Main icon for the notification. The bitmap may be empty if the developer
   // did not provide an icon, or fetching of the icon failed.
   SkBitmap notification_icon;
+
+  // Icons for the actions. A bitmap may be empty if the developer did not
+  // provide an icon, or fetching of the icon failed.
+  std::vector<SkBitmap> action_icons;
 };
 
 }  // namespace content

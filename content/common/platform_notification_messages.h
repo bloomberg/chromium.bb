@@ -60,6 +60,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::NotificationResources)
   IPC_STRUCT_TRAITS_MEMBER(notification_icon)
+  IPC_STRUCT_TRAITS_MEMBER(action_icons)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.

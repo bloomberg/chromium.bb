@@ -139,6 +139,8 @@
       'child/notifications/notification_image_loader.h',
       'child/notifications/notification_manager.cc',
       'child/notifications/notification_manager.h',
+      'child/notifications/pending_notification.cc',
+      'child/notifications/pending_notification.h',
       'child/notifications/pending_notifications_tracker.cc',
       'child/notifications/pending_notifications_tracker.h',
       'child/npapi/np_channel_base.cc',

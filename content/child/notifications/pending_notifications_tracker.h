@@ -7,13 +7,11 @@
 
 #include <map>
 
+#include "base/callback_forward.h"
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-
-class SkBitmap;
+#include "content/common/content_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,76 +24,57 @@ class WebNotificationDelegate;
 
 namespace content {
 
-class NotificationImageLoader;
+class PendingNotification;
+class PendingNotificationsTrackerTest;
 struct NotificationResources;
 
-// Type definition for the callback signature which is to be invoked when the
-// resources associated with a notification have been fetched.
-using NotificationResourcesFetchedCallback =
-    base::Callback<void(const NotificationResources&)>;
-
-// Tracks all aspects of all pending Web Notifications. Most notably, it's in
-// charge of ensuring that all resource fetches associated with the notification
-// are completed as expected. The data associated with the notifications is
-// stored in this class, to maintain thread integrity of their members.
-//
+// Tracks all pending Web Notifications as PendingNotification instances. The
+// pending notifications (and their associated data) are stored in this class.
 // The pending notification tracker is owned by the NotificationManager, and
 // lives on the thread that manager has been associated with.
-class PendingNotificationsTracker {
+class CONTENT_EXPORT PendingNotificationsTracker {
  public:
   explicit PendingNotificationsTracker(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
   ~PendingNotificationsTracker();
 
-  // Adds a page notification to the tracker. Resource fetches for the
-  // notification will be started on asynchronously the main thread.
-  void FetchPageNotificationResources(
-      const blink::WebNotificationData& notification_data,
-      blink::WebNotificationDelegate* delegate,
-      const NotificationResourcesFetchedCallback& callback);
+  // Type definition for the callback signature which is to be invoked when the
+  // resources associated with a notification have been fetched.
+  using ResourcesCallback = base::Callback<void(const NotificationResources&)>;
 
-  // Adds a persistent notification to the tracker. Resource fetches for the
-  // notification will be started asynchronously on the main thread.
-  void FetchPersistentNotificationResources(
-      const blink::WebNotificationData& notification_data,
-      const NotificationResourcesFetchedCallback& callback);
+  // Adds a pending notification for which to fetch resources. The |delegate|
+  // may be null, but non-null values can be used to cancel the fetches.
+  // Resource fetches will be started asynchronously on the main thread.
+  void FetchResources(const blink::WebNotificationData& notification_data,
+                      blink::WebNotificationDelegate* delegate,
+                      const ResourcesCallback& resources_callback);
 
-  // Cancels all pending and in-fligth fetches for the page notification
-  // identified by |delegate|. Returns if the notification was cancelled.
-  bool CancelPageNotificationFetches(blink::WebNotificationDelegate* delegate);
+  // Cancels all pending and in-flight fetches for the notification identified
+  // by |delegate|, which may not be null. Returns whether the notification was
+  // cancelled.
+  bool CancelResourceFetches(blink::WebNotificationDelegate* delegate);
 
  private:
-  // To be called on the worker thread when the pending page notification
-  // identified by |notification_id| has finished fetching the icon.
-  void DidFetchPageNotification(blink::WebNotificationDelegate* delegate,
-                                int notification_id,
-                                const SkBitmap& icon);
+  friend class PendingNotificationsTrackerTest;
 
-  // To be called on the worker thread when the pending persistent notification
-  // identified by |notification_id| has finished fetching the icon.
-  void DidFetchPersistentNotification(int notification_id,
-                                      const SkBitmap& icon);
+  // To be called on the worker thread when the pending notification
+  // identified by |notification_id| has finished fetching the resources. The
+  // |delegate| may be null.
+  void FetchesFinished(blink::WebNotificationDelegate* delegate,
+                       int notification_id,
+                       const ResourcesCallback& resources_callback);
 
-  // Common code for starting to fetch resources associated with any kind of
-  // notification. Will return the id of the pending notification as allocated
-  // in the |pending_notifications_| map.
-  int FetchNotificationResources(
-      const blink::WebNotificationData& notification_data,
-      const NotificationResourcesFetchedCallback& callback,
-      const scoped_refptr<NotificationImageLoader>& image_loader);
+  // Used to generate ids for tracking pending notifications.
+  int32_t next_notification_id_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  struct PendingNotification;
-
-  // List of the notifications whose resources are still being fetched.
+  // The notifications whose resources are still being fetched.
   IDMap<PendingNotification, IDMapOwnPointer> pending_notifications_;
 
   // In order to be able to cancel pending page notifications by delegate, store
   // a mapping of the delegate to the pending notification id as well.
   std::map<blink::WebNotificationDelegate*, int> delegate_to_pending_id_map_;
-
-  base::WeakPtrFactory<PendingNotificationsTracker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingNotificationsTracker);
 };
