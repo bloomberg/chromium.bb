@@ -43,13 +43,11 @@ public:
     const Length& rightMargin() const { return m_rightMargin; }
     const Length& bottomMargin() const { return m_bottomMargin; }
     const Length& leftMargin() const { return m_leftMargin; }
-    bool isDescendantOfRoot(const Element*) const;
     void computeIntersectionObservations();
     void enqueueIntersectionObserverEntry(IntersectionObserverEntry&);
     void applyRootMargin(LayoutRect&) const;
     unsigned firstThresholdGreaterThan(float ratio) const;
     void deliver();
-    void setActive(bool);
     void disconnect();
     void removeObservation(IntersectionObservation&);
     bool hasEntries() const { return m_entries.size(); }

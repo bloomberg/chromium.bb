@@ -172,30 +172,6 @@ LayoutObject* IntersectionObserver::rootLayoutObject() const
     return toElement(node)->layoutObject();
 }
 
-bool IntersectionObserver::isDescendantOfRoot(const Element* target) const
-{
-    // Is m_root an ancestor, through the DOM and frame trees, of target?
-    Node* node = rootNode();
-    if (!node || !target || target == node)
-        return false;
-    if (!target->inDocument() || !node->inDocument())
-        return false;
-
-    Document* rootDocument = &node->document();
-    Document* targetDocument = &target->document();
-    while (targetDocument != rootDocument) {
-        target = targetDocument->ownerElement();
-        if (!target)
-            return false;
-        targetDocument = &target->document();
-    }
-    if (node->isDocumentNode()) {
-        ASSERT(targetDocument == node);
-        return true;
-    }
-    return target->isDescendantOf(node);
-}
-
 void IntersectionObserver::observe(Element* target, ExceptionState& exceptionState)
 {
     if (!m_root) {
@@ -208,10 +184,6 @@ void IntersectionObserver::observe(Element* target, ExceptionState& exceptionSta
     }
     if (m_root.get() == target) {
         exceptionState.throwDOMException(HierarchyRequestError, "Cannot use the same element for root and target.");
-        return;
-    }
-    if (!isDescendantOfRoot(target)) {
-        exceptionState.throwDOMException(HierarchyRequestError, "Observed element must be a descendant of the observer's root element.");
         return;
     }
 
@@ -241,7 +213,7 @@ void IntersectionObserver::unobserve(Element* target, ExceptionState&)
 
 void IntersectionObserver::computeIntersectionObservations()
 {
-    if (!m_root)
+    if (!m_root || !m_root->inDocument())
         return;
     Document* callbackDocument = toDocument(m_callback->executionContext());
     if (!callbackDocument)
@@ -356,12 +328,6 @@ void IntersectionObserver::deliver()
     HeapVector<Member<IntersectionObserverEntry>> entries;
     entries.swap(m_entries);
     m_callback->handleEvent(entries, *this);
-}
-
-void IntersectionObserver::setActive(bool active)
-{
-    for (auto& observation : m_observations)
-        observation->setActive(m_root && active && isDescendantOfRoot(observation->target()));
 }
 
 bool IntersectionObserver::hasPercentMargin() const

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script src="helper-functions.js"></script>
+<style>
+#root {
+  width: 200px;
+  height: 200px;
+  overflow-y: scroll;
+}
+#target {
+  width: 100px;
+  height: 100px;
+  background-color: green;
+  position: absolute;
+}
+</style>
+<div id="root" style="position: absolute">
+  <div id="target" style="left: 50px; top: 250px"></div>
+</div>
+
+<script>
+  description("Test that no notifications are generated when root is not in the containing block chain of target.");
+  var root = document.getElementById("root");
+  var target = document.getElementById("target");
+  var entries = [];
+
+  function observer_callback(changes) {
+    changes.forEach(function(e) { entries.push(e) });
+  }
+  new IntersectionObserver(observer_callback, {root: root}).observe(target);
+
+  function step0() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 0);
+      target.style.top = "10px";
+      requestAnimationFrame(step1);
+    });
+  }
+
+  function step1() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 1);
+      shouldBeEqualToNumber("entries[0].boundingClientRect.left", 58);
+      shouldBeEqualToNumber("entries[0].boundingClientRect.right", 158);
+      shouldBeEqualToNumber("entries[0].boundingClientRect.top", 18);
+      shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 118);
+      shouldBeEqualToNumber("entries[0].intersectionRect.left", 58);
+      shouldBeEqualToNumber("entries[0].intersectionRect.right", 158);
+      shouldBeEqualToNumber("entries[0].intersectionRect.top", 18);
+      shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 118);
+      shouldBeEqualToNumber("entries[0].rootBounds.left", 8);
+      shouldBeEqualToNumber("entries[0].rootBounds.right", 193);
+      shouldBeEqualToNumber("entries[0].rootBounds.top", 8);
+      shouldBeEqualToNumber("entries[0].rootBounds.bottom", 208);
+      shouldEvaluateToSameObject("entries[0].target", target);
+      target.style.top = "250px";
+      requestAnimationFrame(step2);
+    });
+  }
+
+  function step2() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 2);
+      shouldBeEqualToNumber("entries[1].boundingClientRect.left", 58);
+      shouldBeEqualToNumber("entries[1].boundingClientRect.right", 158);
+      shouldBeEqualToNumber("entries[1].boundingClientRect.top", 258);
+      shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", 358);
+      shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
+      shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
+      shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
+      shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
+      shouldBeEqualToNumber("entries[1].rootBounds.left", 8);
+      shouldBeEqualToNumber("entries[1].rootBounds.right", 193);
+      shouldBeEqualToNumber("entries[1].rootBounds.top", 8);
+      shouldBeEqualToNumber("entries[1].rootBounds.bottom", 208);
+      shouldEvaluateToSameObject("entries[1].target", target);
+      root.style.position = "static";
+      target.style.top = "10px";
+      requestAnimationFrame(step3);
+    });
+  }
+
+  function step3() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 2);
+      target.style.top = "250px";
+      requestAnimationFrame(step4);
+    });
+  }
+
+  function step4() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 2);
+      finishJSTest();
+    });
+  }
+
+  step0();
+</script>

@@ -46,26 +46,13 @@ void NodeIntersectionObserverData::removeObservation(IntersectionObserver& obser
 void NodeIntersectionObserverData::activateValidIntersectionObservers(Node& node)
 {
     IntersectionObserverController& controller = node.document().ensureIntersectionObserverController();
-    // Activate observers for which node is root.
-    for (auto& observer : m_intersectionObservers) {
+    for (auto& observer : m_intersectionObservers)
         controller.addTrackedObserver(*observer);
-        observer->setActive(true);
-    }
-    // A document can be root, but not target.
-    if (node.isDocumentNode())
-        return;
-    // Active observers for which node is target.
-    for (auto& observation : m_intersectionObservations)
-        observation.value->setActive(observation.key->isDescendantOfRoot(&toElement(node)));
 }
 
 void NodeIntersectionObserverData::deactivateAllIntersectionObservers(Node& node)
 {
     node.document().ensureIntersectionObserverController().removeTrackedObserversForRoot(node);
-    for (auto& observer : m_intersectionObservers)
-        observer->setActive(false);
-    for (auto& observation : m_intersectionObservations)
-        observation.value->setActive(false);
 }
 
 #if !ENABLE(OILPAN)
