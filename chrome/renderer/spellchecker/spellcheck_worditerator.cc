@@ -165,8 +165,13 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
 
   // Treat numbers as word characters except for Arabic and Hebrew.
   const char* aletter_extra = " [0123456789]";
-  if (script_code_ == USCRIPT_HEBREW || script_code_ == USCRIPT_ARABIC)
+  if (script_code_ == USCRIPT_HEBREW)
     aletter_extra = "";
+  else if (script_code_ == USCRIPT_ARABIC)
+    // When "script=Arabic", it does not include tatweel, which is
+    // "script=Common" so add it back. Otherwise, it creates unwanted
+    // word breaks.
+    aletter_extra = " [\\u0640]";
 
   const char kMidLetterExtra[] = "";
   // For Hebrew, treat single/double quoation marks as MidLetter.
@@ -219,12 +224,11 @@ bool SpellcheckCharAttribute::OutputChar(UChar c,
 
 bool SpellcheckCharAttribute::OutputArabic(UChar c,
                                            base::string16* output) const {
-  // Discard characters not from Arabic alphabets. We also discard vowel marks
-  // of Arabic (Damma, Fatha, Kasra, etc.) to prevent our Arabic dictionary from
-  // marking an Arabic word including vowel marks as misspelled. (We need to
-  // check these vowel marks manually and filter them out since their script
-  // codes are USCRIPT_ARABIC.)
-  if (0x0621 <= c && c <= 0x064D)
+  // Include non-Arabic characters (which should trigger a spelling error)
+  // and Arabic characters excluding vowel marks and class "Lm".
+  // We filter the latter because, while they are "letters", they are
+  // optional and so don't affect the correctness of the rest of the word.
+  if (!(0x0600 <= c && c <= 0x06FF) || (u_isalpha(c) && c != 0x0640))
     output->push_back(c);
   return true;
 }
