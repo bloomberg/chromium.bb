@@ -54,7 +54,8 @@ void EnforceMaxPromptSize(const base::string16& in_string,
 
 ChromeJavaScriptDialogExtraData::ChromeJavaScriptDialogExtraData()
     : has_already_shown_a_dialog_(false),
-      suppress_javascript_messages_(false) {}
+      suppress_javascript_messages_(false),
+      suppressed_dialog_count_(0) {}
 
 JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     content::WebContents* web_contents,

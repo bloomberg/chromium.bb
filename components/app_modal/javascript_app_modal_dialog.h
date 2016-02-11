@@ -26,6 +26,9 @@ class ChromeJavaScriptDialogExtraData {
 
   // True if the user has decided to block future JavaScript dialogs.
   bool suppress_javascript_messages_;
+
+  // Number of dialogs from the origin that were suppressed.
+  int suppressed_dialog_count_;
 };
 
 // A controller + model class for JavaScript alert, confirm, prompt, and
