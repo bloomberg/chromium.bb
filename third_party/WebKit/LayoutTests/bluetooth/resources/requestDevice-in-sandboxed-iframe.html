@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<button onclick="RequestDevice()">Request</button>
+<script>
+  window.onmessage = messageEvent => {
+    // For requestDevice to work, 'Go' should be sent while
+    // handling a user gesture.
+    if (messageEvent.data === 'Go') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]
+      }).then(() => {
+        parent.postMessage('Should have failed.', '*');
+      }).catch(err => {
+        parent.postMessage(err.name + ': ' + err.message, '*');
+      });
+    }
+  };
+  parent.postMessage("Ready", "*");
+</script>

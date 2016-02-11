@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<body>
+  <script>
+  "use strict";
+  async_test(test => {
+    window.onmessage = messageEvent => test.step(() => {
+      if (messageEvent.data === 'Ready') {
+        let iframe = document.querySelector('iframe');
+        callWithKeyDown(() => {
+          iframe.contentWindow.postMessage('Go', '*');
+        });
+      } else {
+        assert_equals(messageEvent.data, 'SecurityError: requestDevice() ' +
+                                         'called from sandboxed or otherwise ' +
+                                         'unique origin.');
+        test.done();
+      }
+    });
+    testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+    let iframe = document.createElement('iframe');
+    iframe.sandbox.add('allow-scripts');
+    iframe.src = 'resources/requestDevice-in-sandboxed-iframe.html';
+    document.body.appendChild(iframe);
+  }, 'Request device from a unique origin. Should reject with SecurityError.');
+  </script>
+</body>
