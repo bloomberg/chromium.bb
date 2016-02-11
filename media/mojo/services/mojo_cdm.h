@@ -11,6 +11,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/media_keys.h"
@@ -18,8 +21,8 @@
 #include "media/mojo/services/mojo_type_trait.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace mojo {
-class ServiceProvider;
+namespace base {
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -65,7 +68,8 @@ class MojoCdm : public MediaKeys,
                      scoped_ptr<SimpleCdmPromise> promise) final;
   CdmContext* GetCdmContext() final;
 
-  // CdmContext implementation.
+  // CdmContext implementation. Can be called on a different thread.
+  // All GetDecryptor() calls must be made on the same thread.
   media::Decryptor* GetDecryptor() final;
   int GetCdmId() const final;
 
@@ -111,6 +115,9 @@ class MojoCdm : public MediaKeys,
                         int cdm_id,
                         interfaces::DecryptorPtr decryptor);
 
+  // Callback when new decryption key is available.
+  void OnKeyAdded();
+
   // Callbacks to handle CDM promises.
   // We have to inline this method, since MS VS 2013 compiler fails to compile
   // it when this method is not inlined. It fails with error C2244
@@ -125,14 +132,30 @@ class MojoCdm : public MediaKeys,
       RejectPromise(std::move(promise), std::move(result));
   }
 
+  base::ThreadChecker thread_checker_;
+
   interfaces::ContentDecryptionModulePtr remote_cdm_;
   mojo::Binding<ContentDecryptionModuleClient> binding_;
+
+  // Protects |cdm_id_|, |decryptor_ptr_|, |decryptor_| and
+  // |decryptor_task_runner_| which could be accessed from other threads.
+  // See CdmContext implementation above.
+  mutable base::Lock lock_;
+
+  // CDM ID of the remote CDM. Set after initialization is completed. Must not
+  // be invalid if initialization succeeded.
   int cdm_id_;
 
-  // Keep track of the DecryptorPtr in order to do lazy initialization of
-  // MojoDecryptor.
+  // The DecryptorPtr exposed by the remote CDM. Set after initialization is
+  // completed and cleared after |decryptor_| is created. May be null after
+  // initialization if the CDM doesn't support a Decryptor.
   interfaces::DecryptorPtr decryptor_ptr_;
+
+  // Decryptor based on |decryptor_ptr_|, lazily created in GetDecryptor().
+  // Since GetDecryptor() can be called on a different thread, use
+  // |decryptor_task_runner_| to bind |decryptor_| to that thread.
   scoped_ptr<MojoDecryptor> decryptor_;
+  scoped_refptr<base::SingleThreadTaskRunner> decryptor_task_runner_;
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
@@ -143,6 +166,9 @@ class MojoCdm : public MediaKeys,
 
   // Pending promise for InitializeCdm().
   scoped_ptr<CdmInitializedPromise> pending_init_promise_;
+
+  // This must be the last member.
+  base::WeakPtrFactory<MojoCdm> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdm);
 };

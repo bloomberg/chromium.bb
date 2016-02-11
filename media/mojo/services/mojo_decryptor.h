@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/decryptor.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -14,6 +15,10 @@
 
 namespace media {
 
+// A Decryptor implementation based on interfaces::DecryptorPtr.
+// This class is single threaded. The |remote_decryptor| is connected before
+// being passed to MojoDecryptor, but it is bound to the thread MojoDecryptor
+// lives on the first time it is used in this class.
 class MojoDecryptor : public Decryptor {
  public:
   explicit MojoDecryptor(interfaces::DecryptorPtr remote_decryptor);
@@ -62,6 +67,8 @@ class MojoDecryptor : public Decryptor {
       const scoped_refptr<DecoderBuffer>& buffer);
   scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
       interfaces::DecoderBufferPtr buffer);
+
+  base::ThreadChecker thread_checker_;
 
   interfaces::DecryptorPtr remote_decryptor_;
 
