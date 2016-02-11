@@ -1544,11 +1544,25 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 }
 
 #if defined(OS_ANDROID)
+
+namespace {
+base::LazyInstance<scoped_refptr<StreamTextureFactory>>
+    g_stream_texture_factory_override;
+}
+
+// static
+void RenderThreadImpl::SetStreamTextureFactory(
+    scoped_refptr<StreamTextureFactory> factory) {
+  g_stream_texture_factory_override.Get() = factory;
+}
+
 scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
   DCHECK(IsMainThread());
-  if (!stream_texture_factory_.get() ||
-      stream_texture_factory_->ContextGL()->GetGraphicsResetStatusKHR() !=
-          GL_NO_ERROR) {
+  if (g_stream_texture_factory_override.Get()) {
+    stream_texture_factory_ = g_stream_texture_factory_override.Get();
+  } else if (!stream_texture_factory_.get() ||
+             stream_texture_factory_->ContextGL()
+                     ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     if (!SharedMainThreadContextProvider().get()) {
       stream_texture_factory_ = NULL;
       return NULL;
@@ -1565,6 +1579,12 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
   }
   return stream_texture_factory_;
 }
+
+bool RenderThreadImpl::EnableStreamTextureCopy() {
+  return !g_stream_texture_factory_override.Get() &&
+         sync_compositor_message_filter_.get();
+}
+
 #endif
 
 AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {

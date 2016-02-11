@@ -43,9 +43,6 @@ class SynchronousCompositorImpl
   // is implicitly that of the in-process renderer.
   static SynchronousCompositorImpl* FromRoutingID(int routing_id);
 
-  static void SetGpuServiceInProc(
-      scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
-
   ~SynchronousCompositorImpl() override;
 
   // Called by SynchronousCompositorRegistry.
