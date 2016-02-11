@@ -36,6 +36,7 @@ import org.chromium.chromoting.accountswitcher.AccountSwitcher;
 import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
+import org.chromium.chromoting.jni.Client;
 import org.chromium.chromoting.jni.ConnectionListener;
 import org.chromium.chromoting.jni.JniInterface;
 
@@ -116,6 +117,9 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     private ActionBarDrawerToggle mDrawerToggle;
 
     private AccountSwitcher mAccountSwitcher;
+
+    /** The currently-connected Client, if any. */
+    private Client mClient;
 
     /** Shows a warning explaining that a Google account is required, then closes the activity. */
     private void showNoAccountsDialog() {
@@ -349,8 +353,14 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     @Override
     public void onDestroy() {
         super.onDestroy();
-        JniInterface.disconnectFromHost();
         mAccountSwitcher.destroy();
+
+        // TODO(lambroslambrou): Determine whether we really need to tear down the connection here,
+        // so we can remove this code.
+        if (mClient != null) {
+            mClient.destroy();
+            mClient = null;
+        }
     }
 
     /** Called when a child Activity exits and sends a result back to this Activity. */
@@ -444,6 +454,11 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     }
 
     private void connectToHost(HostInfo host) {
+        if (mClient != null) {
+            mClient.destroy();
+        }
+
+        mClient = new Client();
         mProgressIndicator = ProgressDialog.show(
                 this,
                 host.name,
@@ -453,11 +468,15 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                 new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        JniInterface.disconnectFromHost();
+                        if (mClient != null) {
+                            mClient.destroy();
+                            mClient = null;
+                        }
                     }
                 });
-        SessionConnector connector = new SessionConnector(this, this, mHostListLoader);
-        mAuthenticator = new SessionAuthenticator(this, host);
+
+        SessionConnector connector = new SessionConnector(mClient, this, this, mHostListLoader);
+        mAuthenticator = new SessionAuthenticator(this, mClient, host);
         connector.connectToHost(mAccount, mToken, host, mAuthenticator,
                 getPreferences(MODE_PRIVATE).getString(PREFERENCE_EXPERIMENTAL_FLAGS, ""));
     }
