@@ -130,6 +130,7 @@ public class ChromeLauncherActivity extends Activity
     private boolean mIsFinishDelayed;
 
     private boolean mIsCustomTabIntent;
+    private boolean mIsHerbIntent;
 
     /** When started with an intent, maybe pre-resolve the domain. */
     private void maybePrefetchDnsInBackground() {
@@ -171,6 +172,10 @@ public class ChromeLauncherActivity extends Activity
         mIsInMultiInstanceMode = MultiWindowUtils.getInstance().shouldRunInMultiInstanceMode(this);
         mIntentHandler = new IntentHandler(this, getPackageName());
         mIsCustomTabIntent = isCustomTabIntent();
+        if (!mIsCustomTabIntent) {
+            mIsHerbIntent = isHerbIntent();
+            mIsCustomTabIntent = mIsHerbIntent;
+        }
 
         Intent intent = getIntent();
         // Check if a LIVE WebappActivity has to be brought back to the foreground.  We can't
@@ -288,14 +293,14 @@ public class ChromeLauncherActivity extends Activity
     }
 
     /**
-     * @return Whether or not a Custom Tab will be used for the incoming Intent.
+     * @return Whether or not a Custom Tab will be forcefully used for the incoming Intent.
      */
-    private boolean isIntentHandledByHerb() {
-        String flavor = ChromePreferenceManager.getHerbFlavor();
-        if (TextUtils.isEmpty(flavor)) return false;
-
-        // Only VIEW Intents are rerouted to Custom Tabs.
-        if (!TextUtils.equals(getIntent().getAction(), Intent.ACTION_VIEW)) return false;
+    private boolean isHerbIntent() {
+        // Only VIEW Intents with URLs are rerouted to Custom Tabs.
+        if (getIntent() == null || !TextUtils.equals(Intent.ACTION_VIEW, getIntent().getAction())
+                || TextUtils.isEmpty(IntentHandler.getUrlFromIntent(getIntent()))) {
+            return false;
+        }
 
         // Don't reroute Chrome Intents.
         if (TextUtils.equals(getPackageName(),
@@ -303,7 +308,14 @@ public class ChromeLauncherActivity extends Activity
             return false;
         }
 
-        if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ANISE)
+        // Custom Tabs have to be available.
+        if (!ChromePreferenceManager.getInstance(this).getCustomTabsEnabled()) return false;
+
+        // Different Herb flavors handle incoming intents differently.
+        String flavor = ChromePreferenceManager.getHerbFlavor();
+        if (TextUtils.isEmpty(flavor)) {
+            return false;
+        } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ANISE)
                 || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_BASIL)) {
             // Only Intents without NEW_TASK and NEW_DOCUMENT will trigger a Custom Tab.
             boolean isSameTask = (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) == 0;
@@ -351,8 +363,7 @@ public class ChromeLauncherActivity extends Activity
      * @return Whether the intent sent is for launching a Custom Tab.
      */
     private boolean isCustomTabIntent() {
-        if (getIntent() == null || (!getIntent().hasExtra(CustomTabsIntent.EXTRA_SESSION)
-                && !isIntentHandledByHerb())) {
+        if (getIntent() == null || !getIntent().hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
         }
 
@@ -379,7 +390,7 @@ public class ChromeLauncherActivity extends Activity
         newIntent.setAction(Intent.ACTION_VIEW);
         newIntent.setClassName(this, CustomTabActivity.class.getName());
         newIntent.setData(uri);
-        if (isIntentHandledByHerb()) addHerbIntentExtras(newIntent, uri);
+        if (!isCustomTabIntent() && mIsHerbIntent) addHerbIntentExtras(newIntent, uri);
 
         startActivity(newIntent);
     }
