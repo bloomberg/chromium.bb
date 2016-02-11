@@ -1826,6 +1826,13 @@ function TouchHandler(targetElement, slideMode) {
   this.touchStarted_ = false;
 
   /**
+   * Whether the element is being clicked now or not.
+   * @type {boolean}
+   * @private
+   */
+  this.clickStarted_ = false;
+
+  /**
    * The swipe action that should happen only once in an operation is already
    * done or not.
    * @type {boolean}
@@ -1867,6 +1874,11 @@ function TouchHandler(targetElement, slideMode) {
   targetElement.ownerDocument.addEventListener('touchmove', onTouchEventBound);
   targetElement.ownerDocument.addEventListener('touchend', onTouchEventBound);
 
+  targetElement.addEventListener('mousedown', this.onMouseDown_.bind(this));
+  targetElement.ownerDocument.addEventListener('mousemove',
+      this.onMouseMove_.bind(this));
+  targetElement.ownerDocument.addEventListener('mouseup',
+      this.onMouseUp_.bind(this));
   targetElement.addEventListener('mousewheel', this.onMouseWheel_.bind(this));
 }
 
@@ -2042,6 +2054,13 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
 };
 
 /**
+ * Zoom magnification of one scroll event.
+ * @private {number}
+ * @const
+ */
+TouchHandler.WHEEL_ZOOM_FACTOR = 1.05;
+
+/**
  * Handles mouse wheel events.
  * @param {!Event} event Wheel event.
  * @private
@@ -2049,11 +2068,60 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
 TouchHandler.prototype.onMouseWheel_ = function(event) {
   var event = assertInstanceof(event, MouseEvent);
   var viewport = this.slideMode_.getViewport();
-  if (!this.enabled_ || !viewport.isZoomed())
+  if (!this.enabled_)
+    return;
+
+  this.stopOperation();
+  this.lastZoom_ = viewport.getZoom();
+  var zoom = this.lastZoom_;
+  if (event.wheelDeltaY > 0) {
+    zoom *= TouchHandler.WHEEL_ZOOM_FACTOR;
+  } else {
+    zoom /= TouchHandler.WHEEL_ZOOM_FACTOR;
+  }
+  viewport.setZoom(zoom);
+  this.slideMode_.imageView_.applyViewportChange();
+};
+
+/**
+ * Handles mouse down events.
+ * @param {!Event} event Wheel event.
+ * @private
+ */
+TouchHandler.prototype.onMouseDown_ = function(event) {
+  var event = assertInstanceof(event, MouseEvent);
+  var viewport = this.slideMode_.getViewport();
+  if (!this.enabled_ || event.button !== 0)
+    return;
+  this.clickStarted_ = true;
+};
+
+/**
+ * Handles mouse move events.
+ * @param {!Event} event Wheel event.
+ * @private
+ */
+TouchHandler.prototype.onMouseMove_ = function(event) {
+  var event = assertInstanceof(event, MouseEvent);
+  var viewport = this.slideMode_.getViewport();
+  if (!this.enabled_ || !this.clickStarted_)
     return;
   this.stopOperation();
   viewport.setOffset(
-      viewport.getOffsetX() + event.wheelDeltaX,
-      viewport.getOffsetY() + event.wheelDeltaY);
-  this.slideMode_.applyViewportChange();
+      viewport.getOffsetX() +
+          (/** @type {{movementX: number}} */(event)).movementX,
+      viewport.getOffsetY() +
+          (/** @type {{movementY: number}} */(event)).movementY);
+  this.slideMode_.imageView_.applyViewportChange();
+};
+
+/**
+ * Handles mouse up events.
+ * @param {!Event} event Wheel event.
+ * @private
+ */
+TouchHandler.prototype.onMouseUp_ = function(event) {
+  if (event.button !== 0)
+    return;
+  this.clickStarted_ = false;
 };
