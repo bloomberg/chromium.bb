@@ -12,8 +12,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.Action;
 import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -31,6 +29,11 @@ import java.util.Date;
  * Builds a notification using the given inputs. Uses RemoteViews to provide a custom layout.
  */
 public class CustomNotificationBuilder extends NotificationBuilderBase {
+    /**
+     * The maximum width of action icons in dp units.
+     */
+    private static final int MAX_ACTION_ICON_WIDTH_DP = 32;
+
     /**
      * The maximum number of lines of body text for the expanded state. Fewer lines are used when
      * the text is scaled up, with a minimum of one line.
@@ -116,7 +119,9 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             bigView.setViewVisibility(R.id.small_icon_footer, View.VISIBLE);
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
+        // Note: this is not a NotificationCompat builder so be mindful of the
+        // API level of methods you call on the builder.
+        Notification.Builder builder = new Notification.Builder(mContext);
         builder.setTicker(mTickerText);
         builder.setSmallIcon(mSmallIconId);
         builder.setContentIntent(mContentIntent);
@@ -134,10 +139,10 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         builder.setSubText(mOrigin);
         builder.setLargeIcon(mLargeIcon);
         for (Action action : mActions) {
-            builder.addAction(action);
+            addActionToBuilder(builder, action);
         }
         if (mSettingsAction != null) {
-            builder.addAction(mSettingsAction);
+            addActionToBuilder(builder, mSettingsAction);
         }
 
         Notification notification = builder.build();
@@ -164,30 +169,41 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             RemoteViews view =
                     new RemoteViews(mContext.getPackageName(), R.layout.web_notification_button);
 
-            if (action.getIcon() != 0) {
-                // TODO(mvanouwerkerk): If the icon can be provided by web developers, limit its
-                // dimensions and decide whether or not to paint it.
+            // If there is an icon then set it and add some padding.
+            if (action.iconBitmap != null || action.iconId != 0) {
+                // TODO(mvanouwerkerk): Scale down the bitmaps - crbug.com/586082.
+                // TODO(mvanouwerkerk): Paint bitmaps white for Holo - crbug.com/585840.
                 if (useMaterial()) {
                     view.setInt(R.id.button_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
                 }
-                view.setImageViewResource(R.id.button_icon, action.getIcon());
+
+                int iconWidth = 0;
+                if (action.iconBitmap != null) {
+                    view.setImageViewBitmap(R.id.button_icon, action.iconBitmap);
+                    iconWidth = action.iconBitmap.getWidth();
+                } else if (action.iconId != 0) {
+                    view.setImageViewResource(R.id.button_icon, action.iconId);
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inJustDecodeBounds = true;
+                    BitmapFactory.decodeResource(resources, action.iconId, options);
+                    iconWidth = options.outWidth;
+                }
+                iconWidth = dpToPx(
+                        Math.min(pxToDp(iconWidth, metrics), MAX_ACTION_ICON_WIDTH_DP), metrics);
 
                 // Set the padding of the button so the text does not overlap with the icon. Flip
                 // between left and right manually as RemoteViews does not expose a method that sets
                 // padding in a writing-direction independent way.
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                BitmapFactory.decodeResource(resources, action.getIcon(), options);
                 int buttonPadding =
                         dpToPx(BUTTON_PADDING_START_DP + BUTTON_ICON_PADDING_DP, metrics)
-                        + options.outWidth;
+                        + iconWidth;
                 int buttonPaddingLeft = LocalizationUtils.isLayoutRtl() ? 0 : buttonPadding;
                 int buttonPaddingRight = LocalizationUtils.isLayoutRtl() ? buttonPadding : 0;
                 view.setViewPadding(R.id.button, buttonPaddingLeft, 0, buttonPaddingRight, 0);
             }
 
-            view.setTextViewText(R.id.button, action.getTitle());
-            view.setOnClickPendingIntent(R.id.button, action.getActionIntent());
+            view.setTextViewText(R.id.button, action.title);
+            view.setOnClickPendingIntent(R.id.button, action.intent);
             bigView.addView(R.id.buttons, view);
         }
     }
@@ -196,7 +212,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         if (mSettingsAction == null) {
             return;
         }
-        bigView.setOnClickPendingIntent(R.id.origin, mSettingsAction.getActionIntent());
+        bigView.setOnClickPendingIntent(R.id.origin, mSettingsAction.intent);
         if (useMaterial()) {
             bigView.setInt(R.id.origin_settings_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
         }
@@ -255,21 +271,27 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
      * @return The amount of padding to be used, in pixels.
      */
     @VisibleForTesting
-    static int calculateScaledPadding(float fontScale, DisplayMetrics displayMetrics) {
+    static int calculateScaledPadding(float fontScale, DisplayMetrics metrics) {
         float paddingScale = 1.0f;
         if (fontScale > 1.0f) {
             fontScale = Math.min(fontScale, FONT_SCALE_LARGE);
             paddingScale = (FONT_SCALE_LARGE - fontScale) / (FONT_SCALE_LARGE - 1.0f);
         }
-        return dpToPx(paddingScale * MAX_SCALABLE_PADDING_DP, displayMetrics);
+        return dpToPx(paddingScale * MAX_SCALABLE_PADDING_DP, metrics);
     }
 
     /**
      * Converts a dp value to a px value.
      */
-    private static int dpToPx(float value, DisplayMetrics displayMetrics) {
-        return Math.round(
-                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, displayMetrics));
+    private static int dpToPx(float value, DisplayMetrics metrics) {
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, metrics));
+    }
+
+    /**
+     * Converts a px value to a dp value.
+     */
+    private static int pxToDp(float value, DisplayMetrics metrics) {
+        return Math.round(value / ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     /**

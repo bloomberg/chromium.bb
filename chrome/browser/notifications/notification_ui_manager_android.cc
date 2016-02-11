@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/notification_ui_manager_android.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
@@ -20,6 +21,7 @@
 #include "content/public/common/persistent_notification_status.h"
 #include "content/public/common/platform_notification_data.h"
 #include "jni/NotificationUIManager_jni.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -27,6 +29,33 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
+
+namespace {
+
+ScopedJavaLocalRef<jobjectArray> ConvertToJavaBitmaps(
+    const std::vector<message_center::ButtonInfo>& buttons) {
+  std::vector<SkBitmap> skbitmaps;
+  for (const message_center::ButtonInfo& button : buttons)
+    skbitmaps.push_back(button.icon.AsBitmap());
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jclass> clazz =
+      base::android::GetClass(env, "android/graphics/Bitmap");
+  jobjectArray array = env->NewObjectArray(skbitmaps.size(), clazz.obj(),
+                                           nullptr /* initialElement */);
+  base::android::CheckException(env);
+
+  for (size_t i = 0; i < skbitmaps.size(); ++i) {
+    if (!skbitmaps[i].drawsNothing()) {
+      env->SetObjectArrayElement(
+          array, i, gfx::ConvertToJavaBitmap(&(skbitmaps[i])).obj());
+    }
+  }
+
+  return ScopedJavaLocalRef<jobjectArray>(env, array);
+}
+
+}  // namespace
 
 // Called by the Java side when a notification event has been received, but the
 // NotificationUIManager has not been initialized yet. Enforce initialization of
@@ -131,17 +160,19 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   ScopedJavaLocalRef<jstring> body = ConvertUTF16ToJavaString(
       env, notification.message());
 
-  ScopedJavaLocalRef<jobject> icon;
-
-  SkBitmap icon_bitmap = notification.icon().AsBitmap();
-  if (!icon_bitmap.isNull())
-    icon = gfx::ConvertToJavaBitmap(&icon_bitmap);
+  ScopedJavaLocalRef<jobject> notification_icon;
+  SkBitmap notification_icon_bitmap = notification.icon().AsBitmap();
+  if (!notification_icon_bitmap.drawsNothing())
+    notification_icon = gfx::ConvertToJavaBitmap(&notification_icon_bitmap);
 
   std::vector<base::string16> action_titles_vector;
   for (const message_center::ButtonInfo& button : notification.buttons())
     action_titles_vector.push_back(button.title);
   ScopedJavaLocalRef<jobjectArray> action_titles =
       base::android::ToJavaArrayOfStrings(env, action_titles_vector);
+
+  ScopedJavaLocalRef<jobjectArray> action_icons =
+      ConvertToJavaBitmaps(notification.buttons());
 
   ScopedJavaLocalRef<jintArray> vibration_pattern =
       base::android::ToJavaIntArray(env, notification.vibration_pattern());
@@ -152,9 +183,9 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   Java_NotificationUIManager_displayNotification(
       env, java_object_.obj(), persistent_notification_id, origin.obj(),
       profile_id.obj(), profile->IsOffTheRecord(), tag.obj(), title.obj(),
-      body.obj(), icon.obj(), vibration_pattern.obj(),
+      body.obj(), notification_icon.obj(), vibration_pattern.obj(),
       notification.timestamp().ToJavaTime(), notification.renotify(),
-      notification.silent(), action_titles.obj());
+      notification.silent(), action_titles.obj(), action_icons.obj());
 
   regenerated_notification_infos_[persistent_notification_id] =
       std::make_pair(origin_url.spec(), notification.tag());

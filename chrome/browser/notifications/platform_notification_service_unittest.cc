@@ -231,9 +231,12 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
   notification_data.actions[0].title = base::ASCIIToUTF16("Button 1");
   notification_data.actions[1].title = base::ASCIIToUTF16("Button 2");
 
+  NotificationResources notification_resources;
+  notification_resources.action_icons.resize(notification_data.actions.size());
+
   service()->DisplayPersistentNotification(
       profile(), 0u /* persistent notification */, GURL("https://chrome.com/"),
-      notification_data, NotificationResources());
+      notification_data, notification_resources);
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
 

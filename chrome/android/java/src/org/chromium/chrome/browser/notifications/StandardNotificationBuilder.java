@@ -6,12 +6,9 @@ package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 import android.content.Context;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.Action;
 
 /**
- * Builds a notification using the given inputs. Relies on NotificationCompat and
- * NotificationCompat.BigTextStyle to provide a standard layout.
+ * Builds a notification using the standard Notification.BigTextStyle layout.
  */
 public class StandardNotificationBuilder extends NotificationBuilderBase {
     private final Context mContext;
@@ -22,10 +19,11 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
 
     @Override
     public Notification build() {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
+        // Note: this is not a NotificationCompat builder so be mindful of the
+        // API level of methods you call on the builder.
+        Notification.Builder builder = new Notification.Builder(mContext);
         builder.setContentTitle(mTitle);
-        builder.setContentText(mBody).setStyle(
-                new NotificationCompat.BigTextStyle().bigText(mBody));
+        builder.setContentText(mBody).setStyle(new Notification.BigTextStyle().bigText(mBody));
         builder.setSubText(mOrigin);
         builder.setTicker(mTickerText);
         builder.setLargeIcon(mLargeIcon);
@@ -33,10 +31,10 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);
         for (Action action : mActions) {
-            builder.addAction(action);
+            addActionToBuilder(builder, action);
         }
         if (mSettingsAction != null) {
-            builder.addAction(mSettingsAction);
+            addActionToBuilder(builder, mSettingsAction);
         }
         builder.setDefaults(mDefaults);
         builder.setVibrate(mVibratePattern);

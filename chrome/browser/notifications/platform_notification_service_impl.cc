@@ -341,6 +341,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
   DCHECK_EQ(0u, notification_data.actions.size());
+  DCHECK_EQ(0u, notification_resources.action_icons.size());
 
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(browser_context, std::move(delegate));
@@ -458,10 +459,11 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     const content::PlatformNotificationData& notification_data,
     const content::NotificationResources& notification_resources,
     NotificationDelegate* delegate) const {
-  // TODO(peter): Icons for Web Notifications are currently always requested for
-  // 1x scale, whereas the displays on which they can be displayed can have a
-  // different pixel density. Be smarter about this when the API gets updated
-  // with a way for developers to specify images of different resolutions.
+  DCHECK_EQ(notification_data.actions.size(),
+            notification_resources.action_icons.size());
+
+  // TODO(peter): Handle different screen densities instead of always using the
+  // 1x bitmap - crbug.com/585815.
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_data.title,
       notification_data.body,
@@ -477,12 +479,16 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   notification.set_renotify(notification_data.renotify);
   notification.set_silent(notification_data.silent);
 
+  // Developer supplied action buttons.
   std::vector<message_center::ButtonInfo> buttons;
-
-  // Developer supplied buttons.
-  for (const auto& action : notification_data.actions)
-    buttons.push_back(message_center::ButtonInfo(action.title));
-
+  for (size_t i = 0; i < notification_data.actions.size(); i++) {
+    message_center::ButtonInfo button(notification_data.actions[i].title);
+    // TODO(peter): Handle different screen densities instead of always using
+    // the 1x bitmap - crbug.com/585815.
+    button.icon =
+        gfx::Image::CreateFrom1xBitmap(notification_resources.action_icons[i]);
+    buttons.push_back(button);
+  }
   notification.set_buttons(buttons);
 
   // On desktop, notifications with require_interaction==true stay on-screen

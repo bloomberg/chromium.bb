@@ -425,13 +425,18 @@ public class NotificationUIManager {
      *                 notification is replacing another notification.
      * @param silent Whether the default sound, vibration and lights should be suppressed.
      * @param actionTitles Titles of actions to display alongside the notification.
+     * @param actionIcons Icons of actions to display alongside the notification.
      * @see https://developer.android.com/reference/android/app/Notification.html
      */
     @CalledByNative
     private void displayNotification(long persistentNotificationId, String origin, String profileId,
             boolean incognito, String tag, String title, String body, Bitmap icon,
             int[] vibrationPattern, long timestamp, boolean renotify, boolean silent,
-            String[] actionTitles) {
+            String[] actionTitles, Bitmap[] actionIcons) {
+        if (actionTitles.length != actionIcons.length) {
+            throw new IllegalArgumentException("The number of action titles and icons must match.");
+        }
+
         Resources res = mAppContext.getResources();
 
         // Record whether it's known whether notifications can be shown to the user at all.
@@ -473,7 +478,7 @@ public class NotificationUIManager {
                                 origin, false /* showScheme */));
 
         for (int actionIndex = 0; actionIndex < actionTitles.length; actionIndex++) {
-            notificationBuilder.addAction(0 /* actionIcon */, actionTitles[actionIndex],
+            notificationBuilder.addAction(actionIcons[actionIndex], actionTitles[actionIndex],
                     makePendingIntent(NotificationConstants.ACTION_CLICK_NOTIFICATION,
                                                   persistentNotificationId, origin, profileId,
                                                   incognito, tag, actionIndex));
@@ -588,11 +593,11 @@ public class NotificationUIManager {
         // Query the field trial state first to ensure correct UMA reporting.
         String groupName = FieldTrialList.findFullName("WebNotificationCustomLayouts");
         CommandLine commandLine = CommandLine.getInstance();
-        if (commandLine.hasSwitch(ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
-            return false;
-        }
         if (commandLine.hasSwitch(ChromeSwitches.ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
             return true;
+        }
+        if (commandLine.hasSwitch(ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
+            return false;
         }
         return !groupName.equals("Disabled");
     }

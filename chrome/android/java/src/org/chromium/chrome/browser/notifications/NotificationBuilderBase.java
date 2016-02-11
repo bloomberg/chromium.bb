@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.graphics.Bitmap;
-import android.support.v4.app.NotificationCompat.Action;
+import android.graphics.drawable.Icon;
+import android.os.Build;
 
 import org.chromium.base.VisibleForTesting;
 
@@ -21,6 +23,25 @@ import javax.annotation.Nullable;
  * Abstract base class for building a notification. Stores all given arguments for later use.
  */
 public abstract class NotificationBuilderBase {
+    protected static class Action {
+        public int iconId;
+        public Bitmap iconBitmap;
+        public CharSequence title;
+        public PendingIntent intent;
+
+        Action(int iconId, CharSequence title, PendingIntent intent) {
+            this.iconId = iconId;
+            this.title = title;
+            this.intent = intent;
+        }
+
+        Action(Bitmap iconBitmap, CharSequence title, PendingIntent intent) {
+            this.iconBitmap = iconBitmap;
+            this.title = title;
+            this.intent = intent;
+        }
+    }
+
     /**
      * Maximum length of CharSequence inputs to prevent excessive memory consumption. At current
      * screen sizes we display about 500 characters at most, so this is a pretty generous limit, and
@@ -30,10 +51,10 @@ public abstract class NotificationBuilderBase {
     static final int MAX_CHARSEQUENCE_LENGTH = 5 * 1024;
 
     /**
-     * The maximum number of action buttons. One is for the settings button, and two more slots are
-     * for developer provided buttons.
+     * The maximum number of author provided action buttons. The settings button is not part of this
+     * count.
      */
-    private static final int MAX_ACTION_BUTTONS = 3;
+    private static final int MAX_AUTHOR_PROVIDED_ACTION_BUTTONS = 2;
 
     protected CharSequence mTitle;
     protected CharSequence mBody;
@@ -43,7 +64,7 @@ public abstract class NotificationBuilderBase {
     protected int mSmallIconId;
     protected PendingIntent mContentIntent;
     protected PendingIntent mDeleteIntent;
-    protected List<Action> mActions = new ArrayList<>(MAX_ACTION_BUTTONS);
+    protected List<Action> mActions = new ArrayList<>(MAX_AUTHOR_PROVIDED_ACTION_BUTTONS);
     protected Action mSettingsAction;
     protected int mDefaults = Notification.DEFAULT_ALL;
     protected long[] mVibratePattern;
@@ -124,13 +145,13 @@ public abstract class NotificationBuilderBase {
      * Adds an action to the notification. Actions are typically displayed as a button adjacent to
      * the notification content.
      */
-    public NotificationBuilderBase addAction(
-            int iconId, @Nullable CharSequence title, @Nullable PendingIntent intent) {
-        if (mActions.size() == MAX_ACTION_BUTTONS) {
+    public NotificationBuilderBase addAction(@Nullable Bitmap iconBitmap,
+            @Nullable CharSequence title, @Nullable PendingIntent intent) {
+        if (mActions.size() == MAX_AUTHOR_PROVIDED_ACTION_BUTTONS) {
             throw new IllegalStateException(
-                    "Cannot add more than " + MAX_ACTION_BUTTONS + " actions.");
+                    "Cannot add more than " + MAX_AUTHOR_PROVIDED_ACTION_BUTTONS + " actions.");
         }
-        mActions.add(new Action(iconId, limitLength(title), intent));
+        mActions.add(new Action(iconBitmap, limitLength(title), intent));
         return this;
     }
 
@@ -191,5 +212,21 @@ public abstract class NotificationBuilderBase {
             return input.subSequence(0, MAX_CHARSEQUENCE_LENGTH);
         }
         return input;
+    }
+
+    /**
+     * Adds an action to {@code builder} using a {@code Bitmap} if a bitmap is provided and the API
+     * level is high enough, otherwise a resource id is used.
+     */
+    @SuppressWarnings("deprecation") // For addAction(int, CharSequence, PendingIntent)
+    @TargetApi(Build.VERSION_CODES.M) // For the Icon class.
+    protected static void addActionToBuilder(Notification.Builder builder, Action action) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && action.iconBitmap != null) {
+            Icon icon = Icon.createWithBitmap(action.iconBitmap);
+            builder.addAction(
+                    new Notification.Action.Builder(icon, action.title, action.intent).build());
+        } else {
+            builder.addAction(action.iconId, action.title, action.intent);
+        }
     }
 }
