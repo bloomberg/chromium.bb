@@ -2,6 +2,9 @@
   "Linux Tests (ANGLE)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       }
     ]
@@ -9,6 +12,9 @@
   "Linux Tests (dbg) (ANGLE)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       }
     ]
@@ -16,6 +22,9 @@
   "Mac10.8 Tests (ANGLE)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       }
     ]
@@ -23,6 +32,9 @@
   "Mac10.8 Tests (dbg) (ANGLE)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       }
     ]
@@ -30,6 +42,9 @@
   "Win7 Tests (ANGLE)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       }
     ]
@@ -37,6 +52,9 @@
   "Win7 Tests (dbg) (ANGLE)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       }
     ]
@@ -44,6 +62,9 @@
   "Win7 Tests x64 (ANGLE)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       }
     ]
@@ -51,6 +72,9 @@
   "Win7 Tests x64 (dbg) (ANGLE)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       }
     ]
