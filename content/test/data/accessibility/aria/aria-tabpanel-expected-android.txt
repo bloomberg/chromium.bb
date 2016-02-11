@@ -1,4 +1,4 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View
-++++android.view.View clickable name='Item'
-++++android.view.View clickable name='Prices'
+++android.view.View role_description='tab panel'
+++++android.view.View role_description='tab' clickable name='Item'
+++++android.view.View role_description='tab' clickable name='Prices'

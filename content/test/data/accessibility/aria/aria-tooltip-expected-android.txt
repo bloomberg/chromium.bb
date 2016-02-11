@@ -1,4 +1,4 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
 ++++android.widget.EditText clickable editable_text focusable name='Your username should be your email id' input_type=1
-++android.view.View clickable name='Your username should be your email id'
+++android.view.View role_description='tooltip' clickable name='Your username should be your email id'

@@ -1017,13 +1017,13 @@ bool InitializeAccessibilityTreeSearch(
         IDS_AX_ROLE_COMPLEMENTARY));
   case ui::AX_ROLE_CONTENT_INFO:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-        IDS_AX_ROLE_ADDRESS));
+        IDS_AX_ROLE_CONTENT_INFO));
   case ui::AX_ROLE_DESCRIPTION_LIST:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_DESCRIPTION_LIST));
   case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-        IDS_AX_ROLE_DESCRIPTION_DETAIL));
+        IDS_AX_ROLE_DEFINITION));
   case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_DESCRIPTION_TERM));

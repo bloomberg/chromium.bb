@@ -1,3 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View collection hierarchical
-
+++android.view.View role_description='tree' collection hierarchical

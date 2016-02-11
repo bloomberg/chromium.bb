@@ -336,6 +336,11 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
       absolute_rect.width(), absolute_rect.height(),
       is_root);
 
+  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoKitKatAttributes(
+      env, obj, info,
+      base::android::ConvertUTF16ToJavaString(
+          env, node->GetRoleDescription()).obj());
+
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoLollipopAttributes(
       env, obj, info,
       node->CanOpenPopup(),

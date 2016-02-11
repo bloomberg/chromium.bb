@@ -56,6 +56,8 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     filters->push_back(Filter(base::ASCIIToUTF16("FOCUSABLE"), Filter::ALLOW));
     filters->push_back(Filter(base::ASCIIToUTF16("READONLY"), Filter::ALLOW));
     filters->push_back(Filter(base::ASCIIToUTF16("name=*"), Filter::ALLOW));
+    filters->push_back(Filter(base::ASCIIToUTF16("roleDescription=*"),
+                              Filter::ALLOW));
     filters->push_back(Filter(base::ASCIIToUTF16("*=''"), Filter::DENY));
   }
 

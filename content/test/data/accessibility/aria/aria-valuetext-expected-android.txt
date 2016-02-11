@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.widget.ProgressBar clickable range name='three' item_count=100 range_min=1 range_max=96
+++android.widget.ProgressBar role_description='progress indicator' clickable range name='three' item_count=100 range_min=1 range_max=96

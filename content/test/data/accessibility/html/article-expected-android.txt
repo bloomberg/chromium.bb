@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable name='This is an article element.'
+++android.view.View role_description='article' clickable name='This is an article element.'

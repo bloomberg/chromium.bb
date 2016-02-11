@@ -75,6 +75,9 @@ public class BrowserAccessibilityManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             return new LollipopBrowserAccessibilityManager(
                     nativeBrowserAccessibilityManagerAndroid, contentViewCore);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return new KitKatBrowserAccessibilityManager(
+                    nativeBrowserAccessibilityManagerAndroid, contentViewCore);
         } else {
             return new BrowserAccessibilityManager(
                     nativeBrowserAccessibilityManagerAndroid, contentViewCore);
@@ -856,6 +859,12 @@ public class BrowserAccessibilityManager {
                 moveAccessibilityFocusToIdAndRefocusIfNeeded(virtualViewId);
             }
         }
+    }
+
+    @CalledByNative
+    protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
+            String roleDescription) {
+        // Requires KitKat or higher.
     }
 
     @CalledByNative

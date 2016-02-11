@@ -1,5 +1,5 @@
 android.webkit.WebView focusable focused scrollable
-++android.widget.Spinner clickable name='autocomplete=inline'
-++android.widget.Spinner clickable name='autocomplete=list'
-++android.widget.Spinner clickable name='autocomplete=both'
-++android.widget.Spinner clickable name='autocomplete=none'
+++android.widget.Spinner role_description='combo box' clickable name='autocomplete=inline'
+++android.widget.Spinner role_description='combo box' clickable name='autocomplete=list'
+++android.widget.Spinner role_description='combo box' clickable name='autocomplete=both'
+++android.widget.Spinner role_description='combo box' clickable name='autocomplete=none'

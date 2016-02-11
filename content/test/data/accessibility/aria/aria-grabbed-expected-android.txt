@@ -3,12 +3,12 @@ android.webkit.WebView focusable focused scrollable
 ++++android.view.View collection_item
 ++++++android.view.View clickable name='•'
 ++++++android.view.View clickable name='grabbed-true '
-++++++android.widget.Image clickable name='blue'
+++++++android.widget.Image role_description='graphic' clickable name='blue'
 ++++android.view.View collection_item item_index=1 row_index=1
 ++++++android.view.View clickable name='•'
 ++++++android.view.View clickable name='grabbed-false '
-++++++android.widget.Image clickable name='blue'
+++++++android.widget.Image role_description='graphic' clickable name='blue'
 ++++android.view.View collection_item item_index=2 row_index=2
 ++++++android.view.View clickable name='•'
 ++++++android.view.View clickable name='grabbed-undefined '
-++++++android.widget.Image clickable name='blue'
+++++++android.widget.Image role_description='graphic' clickable name='blue'

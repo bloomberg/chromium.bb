@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.app.Dialog clickable name='This is ARIA dialog.'
+++android.app.Dialog role_description='dialog' clickable name='This is ARIA dialog.'

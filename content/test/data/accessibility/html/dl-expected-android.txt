@@ -1,5 +1,5 @@
 android.webkit.WebView focusable focused scrollable
 ++android.widget.ListView collection hierarchical item_count=2 row_count=2
 ++++android.view.View clickable collection_item name='Term'
-++++android.view.View clickable name='Description'
-++android.view.View clickable name='Definition'
+++++android.view.View role_description='definition' clickable name='Description'
+++android.view.View role_description='definition' clickable name='Definition'

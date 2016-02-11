@@ -15,12 +15,11 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
- * Subclass of BrowserAccessibilityManager for Lollipop that creates an
- * AccessibilityNodeProvider and delegates its implementation to this object.
+ * Subclass of BrowserAccessibilityManager for Lollipop.
  */
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class LollipopBrowserAccessibilityManager extends BrowserAccessibilityManager {
+public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibilityManager {
     LollipopBrowserAccessibilityManager(long nativeBrowserAccessibilityManagerAndroid,
             ContentViewCore contentViewCore) {
         super(nativeBrowserAccessibilityManagerAndroid, contentViewCore);

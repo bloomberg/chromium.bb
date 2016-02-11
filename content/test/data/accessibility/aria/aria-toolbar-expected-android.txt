@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable name='A toolbar'
+++android.view.View role_description='toolbar' clickable name='A toolbar'

@@ -127,6 +127,7 @@ void AccessibilityTreeFormatterAndroid::AddProperties(
 
   // String attributes.
   dict->SetString("name", android_node->GetText());
+  dict->SetString("role_description", android_node->GetRoleDescription());
 
   // Int attributes.
   dict->SetInteger("item_index", android_node->GetItemIndex());
@@ -170,6 +171,15 @@ base::string16 AccessibilityTreeFormatterAndroid::ToString(
   base::string16 class_value;
   dict.GetString("class", &class_value);
   WriteAttribute(true, base::UTF16ToUTF8(class_value), &line);
+
+  std::string role_description;
+  dict.GetString("role_description", &role_description);
+  if (!role_description.empty()) {
+    WriteAttribute(
+        true,
+        StringPrintf("role_description='%s'", role_description.c_str()),
+        &line);
+  }
 
   for (unsigned i = 0; i < arraysize(BOOL_ATTRIBUTES); i++) {
     const char* attribute_name = BOOL_ATTRIBUTES[i];

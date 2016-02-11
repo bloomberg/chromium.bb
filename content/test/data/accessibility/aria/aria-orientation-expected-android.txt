@@ -1,40 +1,40 @@
 android.webkit.WebView focusable focused scrollable
-++android.widget.Spinner
-++android.widget.Spinner
-++android.widget.Spinner
-++android.widget.ListView collection
-++android.widget.ListView collection
-++android.widget.ListView collection
-++android.view.View
-++android.view.View
-++android.view.View
-++android.view.View
-++android.view.View
-++android.view.View
-++android.view.View
-++android.view.View
-++android.view.View
-++android.view.View range
-++android.view.View range
-++android.view.View range
-++android.widget.SeekBar range item_count=100
-++android.widget.SeekBar range item_count=100
-++android.widget.SeekBar range item_count=100
-++android.view.View
-++android.view.View
-++android.view.View
-++android.widget.TabWidget
-++android.widget.TabWidget
-++android.widget.TabWidget
-++android.view.View
-++android.view.View
-++android.view.View
-++android.view.View collection hierarchical
-++android.view.View collection hierarchical
-++android.view.View collection hierarchical
-++android.widget.GridView collection
+++android.widget.Spinner role_description='combo box'
+++android.widget.Spinner role_description='combo box'
+++android.widget.Spinner role_description='combo box'
+++android.widget.ListView role_description='list box' collection
+++android.widget.ListView role_description='list box' collection
+++android.widget.ListView role_description='list box' collection
+++android.view.View role_description='menu'
+++android.view.View role_description='menu'
+++android.view.View role_description='menu'
+++android.view.View role_description='menu bar'
+++android.view.View role_description='menu bar'
+++android.view.View role_description='menu bar'
+++android.view.View role_description='radio group'
+++android.view.View role_description='radio group'
+++android.view.View role_description='radio group'
+++android.view.View role_description='scroll bar' range
+++android.view.View role_description='scroll bar' range
+++android.view.View role_description='scroll bar' range
+++android.widget.SeekBar role_description='slider' range item_count=100
+++android.widget.SeekBar role_description='slider' range item_count=100
+++android.widget.SeekBar role_description='slider' range item_count=100
+++android.view.View role_description='splitter'
+++android.view.View role_description='splitter'
+++android.view.View role_description='splitter'
+++android.widget.TabWidget role_description='tab list'
+++android.widget.TabWidget role_description='tab list'
+++android.widget.TabWidget role_description='tab list'
+++android.view.View role_description='toolbar'
+++android.view.View role_description='toolbar'
+++android.view.View role_description='toolbar'
+++android.view.View role_description='tree' collection hierarchical
+++android.view.View role_description='tree' collection hierarchical
+++android.view.View role_description='tree' collection hierarchical
+++android.widget.GridView role_description='table' collection
 ++++android.view.View
-++android.widget.GridView collection
+++android.widget.GridView role_description='table' collection
 ++++android.view.View
-++android.widget.GridView collection
+++android.widget.GridView role_description='table' collection
 ++++android.view.View

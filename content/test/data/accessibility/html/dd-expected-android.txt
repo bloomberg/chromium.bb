@@ -1,4 +1,4 @@
 android.webkit.WebView focusable focused scrollable
 ++android.widget.ListView collection hierarchical item_count=2 row_count=2
 ++++android.view.View clickable collection_item name='Coffee'
-++++android.view.View clickable name='Black hot drink'
+++++android.view.View role_description='definition' clickable name='Black hot drink'

@@ -1,6 +1,6 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
-++++android.view.View clickable focusable link name='Link with image at start.'
-++++android.view.View clickable focusable link name='Link with image in the middle.'
-++++android.view.View clickable focusable link name='Link with broken in the middle.'
-++++android.view.View clickable focusable link name='Link with image at the end'
+++++android.view.View role_description='link' clickable focusable link name='Link with image at start.'
+++++android.view.View role_description='link' clickable focusable link name='Link with image in the middle.'
+++++android.view.View role_description='link' clickable focusable link name='Link with broken in the middle.'
+++++android.view.View role_description='link' clickable focusable link name='Link with image at the end'

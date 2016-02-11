@@ -1,4 +1,4 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View
+++android.view.View role_description='blockquote'
 ++++android.view.View clickable name='First blockquote has a child element.'
-++android.view.View clickable name='Second blockquote has no child.'
+++android.view.View role_description='blockquote' clickable name='Second blockquote has no child.'

@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable name='This test is for aria role="alert"' live_region_type=2
+++android.view.View role_description='alert' clickable name='This test is for aria role="alert"' live_region_type=2
