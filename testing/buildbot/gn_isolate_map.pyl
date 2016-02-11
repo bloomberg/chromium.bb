@@ -315,11 +315,10 @@
     "label": "//ui/keyboard:keyboard_unittests",
     "type": "unknown",
   },
-  # See http://crbug.com/585151
-  #"libaddressinput_unittests": {
-    #"label": "//third_party/libaddressinput:libaddressinput_unittests",
-    #"type": "console_test_launcher",
-  #},
+  "libaddressinput_unittests": {
+    "label": "//third_party/libaddressinput:libaddressinput_unittests",
+    "type": "console_test_launcher",
+  },
   # See http://crbug.com/585151
   #"libphonenumber_unittests": {
     #"label": "//third_party/libphonenumber:libphonenumber_unittests",

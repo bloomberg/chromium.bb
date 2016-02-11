@@ -186,34 +186,51 @@ if (!is_android || use_aura) {
     ]
   }
 
-  test("libaddressinput_unittests") {
-    sources =
-        rebase_path(gypi_values.libaddressinput_test_files, ".", "src/cpp")
-    sources += [
-      "chromium/addressinput_util_unittest.cc",
-      "chromium/chrome_address_validator_unittest.cc",
-      "chromium/chrome_metadata_source_unittest.cc",
-      "chromium/chrome_storage_impl_unittest.cc",
-      "chromium/fallback_data_store_unittest.cc",
-      "chromium/storage_test_runner.cc",
-      "chromium/string_compare_unittest.cc",
-      "chromium/trie_unittest.cc",
-    ]
+  template("unittests") {
+    test(target_name) {
+      sources =
+          rebase_path(gypi_values.libaddressinput_test_files, ".", "src/cpp")
+      sources += [
+        "chromium/addressinput_util_unittest.cc",
+        "chromium/chrome_address_validator_unittest.cc",
+        "chromium/chrome_metadata_source_unittest.cc",
+        "chromium/chrome_storage_impl_unittest.cc",
+        "chromium/fallback_data_store_unittest.cc",
+        "chromium/storage_test_runner.cc",
+        "chromium/string_compare_unittest.cc",
+        "chromium/trie_unittest.cc",
+      ]
+      data = [
+        "src/testdata/",
+      ]
 
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [ "//build/config/compiler:no_chromium_code" ]
 
-    defines = [ "TEST_DATA_DIR=\"third_party/libaddressinput/src/testdata\"" ]
+      defines = invoker.defines
 
-    include_dirs = [ "src/cpp/src" ]
+      include_dirs = [ "src/cpp/src" ]
 
-    deps = [
-      ":libaddressinput",
-      ":strings",
-      "//base/test:run_all_unittests",
-      "//components/prefs",
-      "//net:test_support",
-      "//testing/gtest",
-    ]
+      deps = [
+        ":libaddressinput",
+        ":strings",
+        "//base/test:run_all_unittests",
+        "//components/prefs",
+        "//net:test_support",
+        "//testing/gtest",
+      ]
+    }
+  }
+
+  # Can be used to run tests locally, from the checkout directory (not src).
+  unittests("libaddressinput_unittests_local") {
+    defines =
+        [ "TEST_DATA_DIR=\"src/third_party/libaddressinput/src/testdata\"" ]
+  }
+
+  # Used only for swarming.
+  unittests("libaddressinput_unittests") {
+    defines = [ "TEST_DATA_DIR=\"" + rebase_path("../..", root_out_dir) +
+                "/third_party/libaddressinput/src/testdata\"" ]
   }
 }
