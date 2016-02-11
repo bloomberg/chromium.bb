@@ -3514,3 +3514,21 @@
    fun:_ZN10disk_cache17SimpleBackendImpl23CreateOrFindActiveEntryEmRKSs
    fun:_ZN10disk_cache17SimpleBackendImpl11CreateEntryERKSsPPNS_5EntryERKN4base8CallbackIFviEEE
 }
+{
+   bug_586203
+   Memcheck:Unaddressable
+   fun:XInternAtoms
+   fun:_ZN2ui12X11AtomCacheC1EP9_XDisplayPPKc
+   fun:_ZN2ui20DeviceDataManagerX11C1Ev
+   fun:_ZN2ui20DeviceDataManagerX1114CreateInstanceEv
+   fun:_ZN2ui14X11EventSourceC1EPNS_22X11EventSourceDelegateEP9_XDisplay
+   fun:_ZN2ui18X11EventSourceGlibC1EP9_XDisplay
+   fun:_ZN2ui19PlatformEventSource13CreateDefaultEv
+}
+{
+   bug_586206
+   Memcheck:Leak
+   fun:calloc
+   fun:_XConnectXCB
+   fun:XOpenDisplay
+}
