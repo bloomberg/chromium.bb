@@ -1196,17 +1196,6 @@ class VideoDecodeAcceleratorParamTest
         base::Tuple<int, int, int, ResetPoint, ClientState, bool, bool> > {
 };
 
-// Helper so that gtest failures emit a more readable version of the tuple than
-// its byte representation.
-::std::ostream& operator<<(
-    ::std::ostream& os,
-    const base::Tuple<int, int, int, ResetPoint, ClientState, bool, bool>& t) {
-  return os << base::get<0>(t) << ", " << base::get<1>(t) << ", "
-            << base::get<2>(t) << ", " << base::get<3>(t) << ", "
-            << base::get<4>(t) << ", " << base::get<5>(t) << ", "
-            << base::get<6>(t);
-}
-
 // Wait for |note| to report a state and if it's not |expected_state| then
 // assert |client| has deleted its decoder.
 static void AssertWaitForStateOrDeleted(
