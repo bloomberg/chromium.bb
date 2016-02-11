@@ -516,7 +516,7 @@ private:
     typedef unsigned PendingActionFlags;
     PendingActionFlags m_pendingActionFlags;
 
-    // FIXME: MediaElement has way too many state bits.
+    // FIXME: HTMLMediaElement has way too many state bits.
     bool m_userGestureRequiredForPlay : 1;
     bool m_playing : 1;
     bool m_shouldDelayLoadEvent : 1;
@@ -534,9 +534,7 @@ private:
 
     bool m_closedCaptionsVisible : 1;
 
-    bool m_completelyLoaded : 1;
     bool m_havePreparedToPlay : 1;
-    bool m_delayingLoadForPreloadNone : 1;
 
     bool m_tracksAreReady : 1;
     bool m_processingPreferenceChange : 1;

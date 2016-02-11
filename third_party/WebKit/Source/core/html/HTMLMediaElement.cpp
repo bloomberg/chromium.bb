@@ -323,7 +323,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_sentStalledEvent(false)
     , m_sentEndEvent(false)
     , m_closedCaptionsVisible(false)
-    , m_completelyLoaded(false)
     , m_havePreparedToPlay(false)
     , m_tracksAreReady(true)
     , m_processingPreferenceChange(false)
@@ -715,7 +714,6 @@ void HTMLMediaElement::prepareForLoad()
     m_sentEndEvent = false;
     m_sentStalledEvent = false;
     m_haveFiredLoadedData = false;
-    m_completelyLoaded = false;
     m_havePreparedToPlay = false;
     m_displayMode = Unknown;
 
@@ -963,7 +961,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
         ASSERT(!webMediaPlayer());
 
-        if (!m_havePreparedToPlay && !autoplay() && preloadType() == WebMediaPlayer::PreloadNone) {
+        if (!m_havePreparedToPlay && effectivePreloadType() == WebMediaPlayer::PreloadNone) {
             WTF_LOG(Media, "HTMLMediaElement::loadResource(%p) : Delaying load because preload == 'none'", this);
             deferLoad();
         } else {
@@ -1387,13 +1385,11 @@ void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
         if (m_networkState < NETWORK_LOADING || m_networkState == NETWORK_NO_SOURCE)
             startProgressEventTimer();
         setNetworkState(NETWORK_LOADING);
-        m_completelyLoaded = false;
     }
 
     if (state == WebMediaPlayer::NetworkStateLoaded) {
         if (m_networkState != NETWORK_IDLE)
             changeNetworkStateFromLoadingToIdle();
-        m_completelyLoaded = true;
     }
 }
 
