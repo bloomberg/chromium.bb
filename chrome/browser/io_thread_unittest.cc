@@ -564,6 +564,8 @@ TEST_F(IOThreadTest, QuicEnableAlternativeServicesFromFieldTrialParams) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_alternative_service_with_different_host);
+  // QUIC AltSvc pooling parameter should also enable AltSvc parsing.
+  EXPECT_TRUE(params.parse_alternative_services);
 }
 
 TEST_F(IOThreadTest, QuicMaxNumberOfLossyConnectionsFieldTrialParams) {

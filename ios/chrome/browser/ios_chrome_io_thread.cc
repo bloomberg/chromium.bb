@@ -445,6 +445,8 @@ void IOSChromeIOThread::Init() {
     globals_->testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kIOSTestingFixedHttpsPort);
   }
+  ConfigureAltSvcGlobals(
+      base::FieldTrialList::FindFullName(kAltSvcFieldTrialName), globals_);
   ConfigureQuic();
   InitializeNetworkOptions();
 
@@ -501,9 +503,6 @@ void IOSChromeIOThread::InitializeNetworkOptions() {
     params.clear();
   }
   ConfigureSpdyGlobals(group, params, globals_);
-
-  ConfigureAltSvcGlobals(
-      base::FieldTrialList::FindFullName(kAltSvcFieldTrialName), globals_);
 
   ConfigureSSLTCPFastOpen();
 
@@ -742,8 +741,14 @@ void IOSChromeIOThread::ConfigureQuicGlobals(
   globals->enable_quic.set(enable_quic);
   bool enable_quic_for_proxies = ShouldEnableQuicForProxies(quic_trial_group);
   globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
-  globals->enable_alternative_service_with_different_host.set(
-      ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params));
+
+  if (ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params)) {
+    globals->enable_alternative_service_with_different_host.set(true);
+    globals->parse_alternative_services.set(true);
+  } else {
+    globals->enable_alternative_service_with_different_host.set(false);
+  }
+
   if (enable_quic) {
     globals->quic_always_require_handshake_confirmation.set(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));

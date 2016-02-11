@@ -795,6 +795,9 @@ void IOThread::Init() {
     globals_->testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
+  ConfigureAltSvcGlobals(
+      command_line, base::FieldTrialList::FindFullName(kAltSvcFieldTrialName),
+      globals_);
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile12_5(
@@ -895,10 +898,6 @@ void IOThread::InitializeNetworkOptions(const base::CommandLine& command_line) {
     }
     ConfigureSpdyGlobals(command_line, group, params, globals_);
   }
-
-  ConfigureAltSvcGlobals(
-      command_line, base::FieldTrialList::FindFullName(kAltSvcFieldTrialName),
-      globals_);
 
   ConfigureTCPFastOpen(command_line);
 
@@ -1246,9 +1245,15 @@ void IOThread::ConfigureQuicGlobals(
   bool enable_quic_for_proxies = ShouldEnableQuicForProxies(
       command_line, quic_trial_group, quic_allowed_by_policy);
   globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
-  globals->enable_alternative_service_with_different_host.set(
-      ShouldQuicEnableAlternativeServicesForDifferentHost(command_line,
-                                                          quic_trial_params));
+
+  if (ShouldQuicEnableAlternativeServicesForDifferentHost(command_line,
+                                                          quic_trial_params)) {
+    globals->enable_alternative_service_with_different_host.set(true);
+    globals->parse_alternative_services.set(true);
+  } else {
+    globals->enable_alternative_service_with_different_host.set(false);
+  }
+
   if (enable_quic) {
     globals->quic_always_require_handshake_confirmation.set(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
