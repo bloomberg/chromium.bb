@@ -389,7 +389,9 @@ test("content_browsertests") {
         ]
       }
       if (is_win) {
-        data += [ "$root_out_dir/plugins/np_test_netscape_plugin.dll" ]
+        # TODO(GYP): Add this once //content/shell:copy_test_netscape_plugin
+        # exists.
+        #data += [ "$root_out_dir/plugins/np_test_netscape_plugin.dll" ]
       }
     }
   }
