@@ -350,6 +350,375 @@ class LayerSerializationTest : public testing::Test {
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
   }
 
+  void RunNonDestructiveDeserializationBaseCaseTest() {
+    /* Testing serialization and deserialization of a tree that initially looks
+       like this:
+            root
+            /
+           a
+       The source tree is then deserialized from the same structure which should
+       re-use the Layers from last deserialization and importantly it should
+       not have called InvalidatePropertyTreesIndices() for any of the layers,
+       which would happen in for example SetLayerTreeHost(...) calls.
+    */
+    scoped_refptr<Layer> layer_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    layer_root->AddChild(layer_src_a);
+    layer_root->transform_tree_index_ = 33;
+    layer_src_a->transform_tree_index_ = 42;
+
+    proto::LayerNode root_proto;
+    layer_root->ToLayerNodeProto(&root_proto);
+
+    Layer::LayerIdMap dest_layer_map;
+    dest_layer_map[layer_root->id()] = layer_root;
+    dest_layer_map[layer_src_a->id()] = layer_src_a;
+    layer_root->FromLayerNodeProto(root_proto, dest_layer_map);
+
+    EXPECT_EQ(33, layer_root->transform_tree_index_);
+    ASSERT_EQ(1u, layer_root->children().size());
+    scoped_refptr<Layer> layer_dest_a = layer_root->children()[0];
+    EXPECT_EQ(layer_src_a, layer_dest_a);
+    EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+  }
+
+  void RunNonDestructiveDeserializationReorderChildrenTest() {
+    /* Testing serialization and deserialization of a tree that initially looks
+       like this:
+            root
+            /  \
+           a    b
+       The children are then re-ordered to:
+           root
+           /  \
+          b    a
+       The tree is then serialized and deserialized again, and the the end
+       result should have the same structure and importantly it should
+       not have called InvalidatePropertyTreesIndices() for any of the layers,
+       which would happen in for example SetLayerTreeHost(...) calls.
+    */
+    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    layer_src_root->AddChild(layer_src_a);
+    layer_src_root->AddChild(layer_src_b);
+
+    // Copy tree-structure to new root.
+    proto::LayerNode root_proto_1;
+    layer_src_root->ToLayerNodeProto(&root_proto_1);
+    Layer::LayerIdMap dest_layer_map;
+    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+
+    // Ensure initial copy is correct.
+    ASSERT_EQ(2u, layer_dest_root->children().size());
+    scoped_refptr<Layer> layer_dest_a = layer_dest_root->children()[0];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    scoped_refptr<Layer> layer_dest_b = layer_dest_root->children()[1];
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+
+    // Swap order of the children.
+    scoped_refptr<Layer> tmp_a = layer_src_root->children_[0];
+    layer_src_root->children_[0] = layer_src_root->children_[1];
+    layer_src_root->children_[1] = tmp_a;
+
+    // Fake the fact that the destination layers have valid indexes.
+    layer_dest_root->transform_tree_index_ = 33;
+    layer_dest_a->transform_tree_index_ = 42;
+    layer_dest_b->transform_tree_index_ = 24;
+
+    // Now serialize and deserialize again.
+    proto::LayerNode root_proto_2;
+    layer_src_root->ToLayerNodeProto(&root_proto_2);
+    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
+    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
+    dest_layer_map[layer_dest_b->id()] = layer_dest_b;
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+
+    // Ensure second copy is correct.
+    EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
+    ASSERT_EQ(2u, layer_dest_root->children().size());
+    layer_dest_b = layer_dest_root->children()[0];
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+    EXPECT_EQ(24, layer_dest_b->transform_tree_index_);
+    layer_dest_a = layer_dest_root->children()[1];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+  }
+
+  void RunNonDestructiveDeserializationAddChildTest() {
+    /* Testing serialization and deserialization of a tree that initially looks
+       like this:
+            root
+            /
+           a
+       A child is then added to the root:
+           root
+           /  \
+          b    a
+       The tree is then serialized and deserialized again, and the the end
+       result should have the same structure and importantly it should
+       not have called InvalidatePropertyTreesIndices() for any of the layers,
+       which would happen in for example SetLayerTreeHost(...) calls.
+    */
+    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    layer_src_root->AddChild(layer_src_a);
+
+    // Copy tree-structure to new root.
+    proto::LayerNode root_proto_1;
+    layer_src_root->ToLayerNodeProto(&root_proto_1);
+    Layer::LayerIdMap dest_layer_map;
+    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+
+    // Ensure initial copy is correct.
+    ASSERT_EQ(1u, layer_dest_root->children().size());
+    scoped_refptr<Layer> layer_dest_a = layer_dest_root->children()[0];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+
+    // Fake the fact that the destination layer |a| now has a valid index.
+    layer_dest_root->transform_tree_index_ = 33;
+    layer_dest_a->transform_tree_index_ = 42;
+
+    // Add another child.
+    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    layer_src_root->AddChild(layer_src_b);
+
+    // Now serialize and deserialize again.
+    proto::LayerNode root_proto_2;
+    layer_src_root->ToLayerNodeProto(&root_proto_2);
+    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
+    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+
+    // Ensure second copy is correct.
+    EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
+    ASSERT_EQ(2u, layer_dest_root->children().size());
+    layer_dest_a = layer_dest_root->children()[0];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+    scoped_refptr<Layer> layer_dest_b = layer_dest_root->children()[1];
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+  }
+
+  void RunNonDestructiveDeserializationRemoveChildTest() {
+    /* Testing serialization and deserialization of a tree that initially looks
+       like this:
+            root
+            /  \
+           a    b
+       The |b| child is the removed from the root:
+           root
+           /
+          b
+       The tree is then serialized and deserialized again, and the the end
+       result should have the same structure and importantly it should
+       not have called InvalidatePropertyTreesIndices() for any of the layers,
+       which would happen in for example SetLayerTreeHost(...) calls.
+    */
+    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    layer_src_root->AddChild(layer_src_a);
+    layer_src_root->AddChild(layer_src_b);
+
+    // Copy tree-structure to new root.
+    proto::LayerNode root_proto_1;
+    layer_src_root->ToLayerNodeProto(&root_proto_1);
+    Layer::LayerIdMap dest_layer_map;
+    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+
+    // Ensure initial copy is correct.
+    ASSERT_EQ(2u, layer_dest_root->children().size());
+    scoped_refptr<Layer> layer_dest_a = layer_dest_root->children()[0];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    scoped_refptr<Layer> layer_dest_b = layer_dest_root->children()[1];
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+
+    // Remove one child.
+    layer_src_b->RemoveFromParent();
+
+    // Fake the fact that the destination layers have valid indexes.
+    layer_dest_root->transform_tree_index_ = 33;
+    layer_dest_a->transform_tree_index_ = 42;
+    layer_dest_b->transform_tree_index_ = 24;
+
+    // Now serialize and deserialize again.
+    proto::LayerNode root_proto_2;
+    layer_src_root->ToLayerNodeProto(&root_proto_2);
+    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
+    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
+    dest_layer_map[layer_dest_b->id()] = layer_dest_b;
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+
+    // Ensure second copy is correct.
+    EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
+    ASSERT_EQ(1u, layer_dest_root->children().size());
+    layer_dest_a = layer_dest_root->children()[0];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+  }
+
+  void RunNonDestructiveDeserializationMoveChildEarlierTest() {
+    /* Testing serialization and deserialization of a tree that initially looks
+       like this:
+            root
+            /   \
+           a     b
+                  \
+                   c
+       The |c| child of |b| is then moved to become a child of |a|:
+            root
+           /    \
+          a      b
+         /
+        c
+       The tree is then serialized and deserialized again, and the the end
+       result should have the same structure and importantly it should
+       not have called InvalidatePropertyTreesIndices() for any of the layers,
+       which would happen in for example SetLayerTreeHost(...) calls.
+    */
+    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+    layer_src_root->AddChild(layer_src_a);
+    layer_src_root->AddChild(layer_src_b);
+    layer_src_b->AddChild(layer_src_c);
+
+    // Copy tree-structure to new root.
+    proto::LayerNode root_proto_1;
+    layer_src_root->ToLayerNodeProto(&root_proto_1);
+    Layer::LayerIdMap dest_layer_map;
+    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+
+    // Ensure initial copy is correct.
+    ASSERT_EQ(2u, layer_dest_root->children().size());
+    scoped_refptr<Layer> layer_dest_a = layer_dest_root->children()[0];
+    scoped_refptr<Layer> layer_dest_b = layer_dest_root->children()[1];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+    ASSERT_EQ(1u, layer_dest_b->children().size());
+    scoped_refptr<Layer> layer_dest_c = layer_dest_b->children()[0];
+    EXPECT_EQ(layer_src_c->id(), layer_dest_c->id());
+
+    // Move child |c| from |b| to |a|.
+    layer_src_c->RemoveFromParent();
+    layer_src_a->AddChild(layer_src_c);
+
+    // Moving a child invalidates the |transform_tree_index_|, so forcefully
+    // set it afterwards on the destination layer.
+    layer_dest_root->transform_tree_index_ = 33;
+    layer_dest_a->transform_tree_index_ = 42;
+    layer_dest_b->transform_tree_index_ = 24;
+    layer_dest_c->transform_tree_index_ = 99;
+
+    // Now serialize and deserialize again.
+    proto::LayerNode root_proto_2;
+    layer_src_root->ToLayerNodeProto(&root_proto_2);
+    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
+    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
+    dest_layer_map[layer_dest_b->id()] = layer_dest_b;
+    dest_layer_map[layer_dest_c->id()] = layer_dest_c;
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+
+    // Ensure second copy is correct.
+    EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
+    ASSERT_EQ(2u, layer_dest_root->children().size());
+    layer_dest_a = layer_dest_root->children()[0];
+    layer_dest_b = layer_dest_root->children()[1];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+    EXPECT_EQ(24, layer_dest_b->transform_tree_index_);
+    ASSERT_EQ(1u, layer_dest_a->children().size());
+    layer_dest_c = layer_dest_a->children()[0];
+    EXPECT_EQ(layer_src_c->id(), layer_dest_c->id());
+    EXPECT_EQ(99, layer_dest_c->transform_tree_index_);
+  }
+
+  void RunNonDestructiveDeserializationMoveChildLaterTest() {
+    /* Testing serialization and deserialization of a tree that initially looks
+       like this:
+            root
+           /    \
+          a      b
+         /
+        c
+       The |c| child of |a| is then moved to become a child of |b|:
+            root
+           /    \
+          a      b
+                  \
+                   c
+       The tree is then serialized and deserialized again, and the the end
+       result should have the same structure and importantly it should
+       not have called InvalidatePropertyTreesIndices() for any of the layers,
+       which would happen in for example SetLayerTreeHost(...) calls.
+    */
+    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+    layer_src_root->AddChild(layer_src_a);
+    layer_src_root->AddChild(layer_src_b);
+    layer_src_a->AddChild(layer_src_c);
+
+    // Copy tree-structure to new root.
+    proto::LayerNode root_proto_1;
+    layer_src_root->ToLayerNodeProto(&root_proto_1);
+    Layer::LayerIdMap dest_layer_map;
+    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+
+    // Ensure initial copy is correct.
+    ASSERT_EQ(2u, layer_dest_root->children().size());
+    scoped_refptr<Layer> layer_dest_a = layer_dest_root->children()[0];
+    scoped_refptr<Layer> layer_dest_b = layer_dest_root->children()[1];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+    ASSERT_EQ(1u, layer_dest_a->children().size());
+    scoped_refptr<Layer> layer_dest_c = layer_dest_a->children()[0];
+    EXPECT_EQ(layer_src_c->id(), layer_dest_c->id());
+
+    // Move child |c| from |b| to |a|.
+    layer_src_c->RemoveFromParent();
+    layer_src_b->AddChild(layer_src_c);
+
+    // Moving a child invalidates the |transform_tree_index_|, so forcefully
+    // set it afterwards on the destination layer.
+    layer_dest_root->transform_tree_index_ = 33;
+    layer_dest_a->transform_tree_index_ = 42;
+    layer_dest_b->transform_tree_index_ = 24;
+    layer_dest_c->transform_tree_index_ = 99;
+
+    // Now serialize and deserialize again.
+    proto::LayerNode root_proto_2;
+    layer_src_root->ToLayerNodeProto(&root_proto_2);
+    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
+    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
+    dest_layer_map[layer_dest_b->id()] = layer_dest_b;
+    dest_layer_map[layer_dest_c->id()] = layer_dest_c;
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+
+    // Ensure second copy is correct.
+    EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
+    ASSERT_EQ(2u, layer_dest_root->children().size());
+    layer_dest_a = layer_dest_root->children()[0];
+    layer_dest_b = layer_dest_root->children()[1];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+    EXPECT_EQ(24, layer_dest_b->transform_tree_index_);
+    ASSERT_EQ(1u, layer_dest_b->children().size());
+    layer_dest_c = layer_dest_b->children()[0];
+    EXPECT_EQ(layer_src_c->id(), layer_dest_c->id());
+    EXPECT_EQ(99, layer_dest_c->transform_tree_index_);
+  }
+
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostClient fake_client_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
@@ -1945,6 +2314,32 @@ TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
 
   EXPECT_EQ(nullptr, layer_dest_root->mask_layer());
   EXPECT_EQ(nullptr, layer_dest_root->replica_layer());
+}
+
+TEST_F(LayerSerializationTest, NonDestructiveDeserializationBaseCase) {
+  RunNonDestructiveDeserializationBaseCaseTest();
+}
+
+TEST_F(LayerSerializationTest, NonDestructiveDeserializationReorderChildren) {
+  RunNonDestructiveDeserializationReorderChildrenTest();
+}
+
+TEST_F(LayerSerializationTest, NonDestructiveDeserializationAddChild) {
+  RunNonDestructiveDeserializationAddChildTest();
+}
+
+TEST_F(LayerSerializationTest, NonDestructiveDeserializationRemoveChild) {
+  RunNonDestructiveDeserializationRemoveChildTest();
+}
+
+TEST_F(LayerSerializationTest,
+       NonDestructiveDeserializationMoveChildEarlierTest) {
+  RunNonDestructiveDeserializationMoveChildEarlierTest();
+}
+
+TEST_F(LayerSerializationTest,
+       NonDestructiveDeserializationMoveChildLaterTest) {
+  RunNonDestructiveDeserializationMoveChildLaterTest();
 }
 
 TEST_F(LayerTest, SimplePropertiesSerialization) {

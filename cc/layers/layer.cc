@@ -1388,19 +1388,35 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
   DCHECK(proto.has_id());
   layer_id_ = proto.id();
 
-  // Recursively remove all children. In the case of when the updated
-  // hierarchy has no children, or the children has changed, the old list
-  // of children must be removed. The whole hierarchy is always sent, so
-  // if there were no change in the children, they will be correctly added back
-  // below.
-  RemoveAllChildren();
+  // To deserialize the new children, make a copy of the old list, before
+  // inserting each of the new children in a new list, reusing old Layer objects
+  // if the Layer already exists.
+  LayerList old_children = children_;
+  children_.clear();
   for (int i = 0; i < proto.children_size(); ++i) {
     const proto::LayerNode& child_proto = proto.children(i);
     DCHECK(child_proto.has_type());
     scoped_refptr<Layer> child =
         LayerProtoConverter::FindOrAllocateAndConstruct(child_proto, layer_map);
     child->FromLayerNodeProto(child_proto, layer_map);
-    AddChild(child);
+    children_.push_back(child);
+    // The child must now refer to this layer as its parent, and must also have
+    // the same LayerTreeHost.
+    child->parent_ = this;
+    child->layer_tree_host_ = layer_tree_host_;
+  }
+
+  // Remove now-unused children from the tree.
+  for (auto& child : old_children) {
+    // A child might have been moved to a different parent.
+    if (child->parent_ != this)
+      continue;
+    // Our own child is not part of our new children, so remove it.
+    if (std::find(children_.begin(), children_.end(), child) ==
+        children_.end()) {
+      child->parent_ = nullptr;
+      child->layer_tree_host_ = nullptr;
+    }
   }
 
   if (mask_layer_)
