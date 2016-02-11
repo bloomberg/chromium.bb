@@ -19,6 +19,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
+#include "grit/components_strings.h"
 #include "jni/ConnectionInfoPopup_jni.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"

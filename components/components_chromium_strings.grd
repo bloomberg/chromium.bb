@@ -219,6 +219,11 @@
       <message name="IDS_VERSION_UI_LICENSE" desc="The label below the copyright message, containing the URLs.">
         Chromium is made possible by the <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Chromium<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> open source project and other <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$2"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
       </message>
+
+      <!-- Page Info bubble -->
+      <message name="IDS_PAGE_INFO_INTERNAL_PAGE" desc="Message to display in the page info bubble when the page you are on is a chrome:// page or about:something.">
+        You are viewing a secure Chromium page.
+      </message>
     </messages>
   </release>
 </grit>

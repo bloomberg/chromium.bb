@@ -198,6 +198,7 @@
       <part file="history_strings.grdp" />
       <part file="login_dialog_strings.grdp" />
       <part file="omnibox_strings.grdp" />
+      <part file="pageinfo_strings.grdp" />
       <part file="password_manager_strings.grdp" />
       <part file="pdf_strings.grdp" />
       <part file="policy_strings.grdp" />

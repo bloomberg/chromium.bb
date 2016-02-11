@@ -518,10 +518,6 @@ Chromium is unable to recover your settings.
           A module with the same name has been known to conflict with Chromium.
         </message>
       </if>
-      <!-- Page Info bubble -->
-      <message name="IDS_PAGE_INFO_INTERNAL_PAGE" desc="Message to display in the page info bubble when the page you are on is a chrome:// page or about:something.">
-        You are viewing a secure Chromium page.
-      </message>
 
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">
