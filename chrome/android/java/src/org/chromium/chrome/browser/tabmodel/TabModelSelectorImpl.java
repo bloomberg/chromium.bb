@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * TabModel methods to the active model that it contains.
  */
 public class TabModelSelectorImpl extends TabModelSelectorBase implements TabModelDelegate {
+    public static final int CUSTOM_TABS_SELECTOR_INDEX = -1;
 
     private final ChromeActivity mActivity;
 

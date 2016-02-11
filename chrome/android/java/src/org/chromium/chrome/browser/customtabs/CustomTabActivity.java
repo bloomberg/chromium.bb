@@ -181,7 +181,8 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void postInflationStartup() {
         super.postInflationStartup();
-        setTabModelSelector(new TabModelSelectorImpl(this, 0, getWindowAndroid(), false));
+        setTabModelSelector(new TabModelSelectorImpl(this,
+                TabModelSelectorImpl.CUSTOM_TABS_SELECTOR_INDEX, getWindowAndroid(), false));
         getToolbarManager().setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
                 == CustomTabsIntent.SHOW_PAGE_TITLE);

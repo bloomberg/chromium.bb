@@ -22,6 +22,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -543,6 +544,10 @@ public class TabPersistentStore extends TabPersister {
     }
 
     public void addTabToSaveQueue(Tab tab) {
+        // TODO(ianwen): remove this check once we figure out a better plan to disable tab saving.
+        if (tab.getDelegateFactory() instanceof CustomTabDelegateFactory) {
+            return;
+        }
         if (!mTabsToSave.contains(tab) && tab.isTabStateDirty() && !isTabUrlContentScheme(tab)) {
             mTabsToSave.addLast(tab);
         }
