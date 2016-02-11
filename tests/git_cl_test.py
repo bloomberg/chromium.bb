@@ -88,8 +88,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl, 'BranchExists', lambda _: True)
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: '')
     self.mock(git_cl, 'ask_for_data', self._mocked_call)
-    self.mock(git_cl.breakpad, 'post', self._mocked_call)
-    self.mock(git_cl.breakpad, 'SendStack', self._mocked_call)
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
     self.mock(git_cl.rietveld, 'Rietveld', RietveldMock)
     self.mock(git_cl.rietveld, 'CachingRietveld', RietveldMock)
@@ -333,10 +331,6 @@ class TestGitCl(TestCase):
          'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
-      ((['git', 'config', 'rietveld.tree-status-url'],), ''),
-      (('GitClHooksBypassedCommit',
-        'Issue https://codereview.example.com/12345 bypassed hook when '
-        'committing (tree status was "unset")'), None),
   ]
 
   @classmethod

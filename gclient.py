@@ -95,8 +95,6 @@ import time
 import urllib
 import urlparse
 
-import breakpad  # pylint: disable=W0611
-
 import fix_encoding
 import gclient_scm
 import gclient_utils
