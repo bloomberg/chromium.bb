@@ -159,6 +159,10 @@ TEST_F(MicrodumpProcessorTest, TestProcessArm) {
 
   ASSERT_EQ(6U, state.modules()->module_count());
   ASSERT_EQ("arm", state.system_info()->cpu);
+  ASSERT_EQ("OpenGL ES 3.0 V@104.0 AU@  (GIT@Id3510ff6dc)",
+            state.system_info()->gl_version);
+  ASSERT_EQ("Qualcomm", state.system_info()->gl_vendor);
+  ASSERT_EQ("Adreno (TM) 330", state.system_info()->gl_renderer);
   ASSERT_EQ("OS VERSION INFO", state.system_info()->os_version);
   ASSERT_EQ(8U, state.threads()->at(0)->frames()->size());
   ASSERT_EQ("MicrodumpWriterTest_Setup_Test::TestBody",

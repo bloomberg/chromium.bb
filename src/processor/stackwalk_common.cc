@@ -803,6 +803,20 @@ void PrintProcessState(const ProcessState& process_state,
          process_state.system_info()->cpu_count != 1 ? "s" : "");
   printf("\n");
 
+  // Print GPU information
+  string gl_version = process_state.system_info()->gl_version;
+  string gl_vendor = process_state.system_info()->gl_vendor;
+  string gl_renderer = process_state.system_info()->gl_renderer;
+  printf("GPU:");
+  if (!gl_version.empty() || !gl_vendor.empty() || !gl_renderer.empty()) {
+    printf(" %s\n", gl_version.c_str());
+    printf("     %s\n", gl_vendor.c_str());
+    printf("     %s\n", gl_renderer.c_str());
+  } else {
+    printf(" UNKNOWN\n");
+  }
+  printf("\n");
+
   // Print crash information.
   if (process_state.crashed()) {
     printf("Crash reason:  %s\n", process_state.crash_reason().c_str());
@@ -865,6 +879,7 @@ void PrintProcessStateMachineReadable(const ProcessState& process_state) {
   // Print OS and CPU information.
   // OS|{OS Name}|{OS Version}
   // CPU|{CPU Name}|{CPU Info}|{Number of CPUs}
+  // GPU|{GPU version}|{GPU vendor}|{GPU renderer}
   printf("OS%c%s%c%s\n", kOutputSeparator,
          StripSeparator(process_state.system_info()->os).c_str(),
          kOutputSeparator,
@@ -876,6 +891,12 @@ void PrintProcessStateMachineReadable(const ProcessState& process_state) {
          StripSeparator(process_state.system_info()->cpu_info).c_str(),
          kOutputSeparator,
          process_state.system_info()->cpu_count);
+  printf("GPU%c%s%c%s%c%s\n", kOutputSeparator,
+         StripSeparator(process_state.system_info()->gl_version).c_str(),
+         kOutputSeparator,
+         StripSeparator(process_state.system_info()->gl_vendor).c_str(),
+         kOutputSeparator,
+         StripSeparator(process_state.system_info()->gl_renderer).c_str());
 
   int requesting_thread = process_state.requesting_thread();
 

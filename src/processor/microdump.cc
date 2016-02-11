@@ -54,11 +54,13 @@ static const char kMicrodumpBegin[] = "-----BEGIN BREAKPAD MICRODUMP-----";
 static const char kMicrodumpEnd[] = "-----END BREAKPAD MICRODUMP-----";
 static const char kOsKey[] = ": O ";
 static const char kCpuKey[] = ": C ";
+static const char kGpuKey[] = ": G ";
 static const char kMmapKey[] = ": M ";
 static const char kStackKey[] = ": S ";
 static const char kStackFirstLineKey[] = ": S 0 ";
 static const char kArmArchitecture[] = "arm";
 static const char kArm64Architecture[] = "arm64";
+static const char kGpuUnknown[] = "UNKNOWN";
 
 template<typename T>
 T HexStrToL(const string& str) {
@@ -291,6 +293,14 @@ Microdump::Microdump(const string& contents)
         context_->SetContextARM64(arm);
       } else {
         std::cerr << "Unsupported architecture: " << arch << std::endl;
+      }
+    } else if ((pos = line.find(kGpuKey)) != string::npos) {
+      string gpu_str(line, pos + strlen(kGpuKey));
+      if (strcmp(gpu_str.c_str(), kGpuUnknown) != 0) {
+        std::istringstream gpu_tokens(gpu_str);
+        std::getline(gpu_tokens, system_info_->gl_version, '|');
+        std::getline(gpu_tokens, system_info_->gl_vendor, '|');
+        std::getline(gpu_tokens, system_info_->gl_renderer, '|');
       }
     } else if ((pos = line.find(kMmapKey)) != string::npos) {
       string mmap_line(line, pos + strlen(kMmapKey));
