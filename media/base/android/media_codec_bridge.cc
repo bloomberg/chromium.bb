@@ -42,14 +42,6 @@ MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
                                 subsamples.size(), presentation_time);
 }
 
-int MediaCodecBridge::GetOutputBuffersCount() {
-  return 0;
-}
-
-size_t MediaCodecBridge::GetOutputBuffersCapacity() {
-  return 0;
-}
-
 bool MediaCodecBridge::FillInputBuffer(int index,
                                        const uint8_t* data,
                                        size_t size) {

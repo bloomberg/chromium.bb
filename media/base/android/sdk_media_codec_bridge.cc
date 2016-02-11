@@ -274,17 +274,6 @@ void SdkMediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {
                                             render);
 }
 
-int SdkMediaCodecBridge::GetOutputBuffersCount() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecBridge_getOutputBuffersCount(env, j_media_codec_.obj());
-}
-
-size_t SdkMediaCodecBridge::GetOutputBuffersCapacity() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecBridge_getOutputBuffersCapacity(env,
-                                                        j_media_codec_.obj());
-}
-
 void SdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
                                          uint8_t** data,
                                          size_t* capacity) {

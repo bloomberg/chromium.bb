@@ -60,8 +60,6 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
                                        bool* end_of_stream,
                                        bool* key_frame) override;
   void ReleaseOutputBuffer(int index, bool render) override;
-  int GetOutputBuffersCount() override;
-  size_t GetOutputBuffersCapacity() override;
   void GetInputBuffer(int input_buffer_index,
                       uint8_t** data,
                       size_t* capacity) override;

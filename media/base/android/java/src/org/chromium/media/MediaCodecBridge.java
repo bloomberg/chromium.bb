@@ -299,23 +299,10 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private int getOutputBuffersCount() {
-        return mOutputBuffers != null ? mOutputBuffers.length : -1;
-    }
-
-    @CalledByNative
-    private int getOutputBuffersCapacity() {
-        return mOutputBuffers != null ? mOutputBuffers[0].capacity() : -1;
-    }
-
-    @CalledByNative
     private int queueInputBuffer(
             int index, int offset, int size, long presentationTimeUs, int flags) {
         resetLastPresentationTimeIfNeeded(presentationTimeUs);
         try {
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-                mMediaCodec.getInputBuffer(index);
-            }
             mMediaCodec.queueInputBuffer(index, offset, size, presentationTimeUs, flags);
         } catch (Exception e) {
             Log.e(TAG, "Failed to queue input buffer", e);
@@ -368,9 +355,6 @@ class MediaCodecBridge {
     @CalledByNative
     private void releaseOutputBuffer(int index, boolean render) {
         try {
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-                mMediaCodec.getOutputBuffer(index);
-            }
             mMediaCodec.releaseOutputBuffer(index, render);
         } catch (IllegalStateException e) {
             // TODO(qinmin): May need to report the error to the caller. crbug.com/356498.
@@ -398,6 +382,7 @@ class MediaCodecBridge {
                 status = MEDIA_CODEC_OK;
                 index = indexOrStatus;
             } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+                assert Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT;
                 mOutputBuffers = mMediaCodec.getOutputBuffers();
                 status = MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED;
             } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {

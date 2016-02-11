@@ -67,9 +67,6 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
   void QueueInput();
   void DequeueOutput();
 
-  // Returns true if we don't need more or bigger output buffers.
-  bool DoOutputBuffersSuffice();
-
   // Start & stop |io_timer_| if the time seems right.
   void MaybeStartIOTimer();
   void MaybeStopIOTimer();
@@ -103,9 +100,9 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
   // appearing to move forward.
   base::TimeDelta fake_input_timestamp_;
 
-  // Number of requested output buffers and their capacity.
-  int num_output_buffers_;          // -1 until RequireBitstreamBuffers.
-  size_t output_buffers_capacity_;  // 0 until RequireBitstreamBuffers.
+  // Resolution of input stream. Set once in initialization and not allowed to
+  // change after.
+  gfx::Size frame_size_;
 
   uint32_t last_set_bitrate_;  // In bps.
 

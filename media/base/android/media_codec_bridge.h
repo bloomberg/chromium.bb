@@ -143,14 +143,6 @@ class MEDIA_EXPORT MediaCodecBridge {
   // configuring this video decoder you can optionally render the buffer.
   virtual void ReleaseOutputBuffer(int index, bool render) = 0;
 
-  // Returns the number of output buffers used by the codec.
-  // TODO(qinmin): this call is deprecated in Lollipop.
-  virtual int GetOutputBuffersCount();
-
-  // Returns the capacity of each output buffer used by the codec.
-  // TODO(qinmin): this call is deprecated in Lollipop.
-  virtual size_t GetOutputBuffersCapacity();
-
   // Returns an input buffer's base pointer and capacity.
   virtual void GetInputBuffer(int input_buffer_index,
                               uint8_t** data,
