@@ -13,6 +13,8 @@ namespace blink {
 DOMException* USBError::take(ScriptPromiseResolver*, const WebUSBError& webError)
 {
     switch (webError.error) {
+    case WebUSBError::Error::InvalidState:
+        return DOMException::create(InvalidStateError, webError.message);
     case WebUSBError::Error::Network:
         return DOMException::create(NetworkError, webError.message);
     case WebUSBError::Error::NotFound:

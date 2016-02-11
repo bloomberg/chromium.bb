@@ -10,6 +10,9 @@ enum OpenDeviceError {
 
   // The operating system denied access to the device.
   ACCESS_DENIED,
+
+  // The device is already open.
+  ALREADY_OPEN,
 };
 
 enum TransferDirection {

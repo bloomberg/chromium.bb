@@ -251,8 +251,11 @@ void DeviceImpl::GetConfiguration(const GetConfigurationCallback& callback) {
 }
 
 void DeviceImpl::Open(const OpenCallback& callback) {
-  device_->Open(
-      base::Bind(&DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), callback));
+  if (device_handle_)
+    callback.Run(OpenDeviceError::ALREADY_OPEN);
+  else
+    device_->Open(
+        base::Bind(&DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), callback));
 }
 
 void DeviceImpl::Close(const CloseCallback& callback) {

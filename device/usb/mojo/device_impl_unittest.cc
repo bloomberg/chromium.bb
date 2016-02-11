@@ -459,10 +459,19 @@ TEST_F(USBDeviceImplTest, Open) {
 
   EXPECT_CALL(mock_device(), Open(_));
 
-  base::RunLoop loop;
-  device->Open(
-      base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK, loop.QuitClosure()));
-  loop.Run();
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::ALREADY_OPEN,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
 
   EXPECT_CALL(mock_handle(), Close());
 }
