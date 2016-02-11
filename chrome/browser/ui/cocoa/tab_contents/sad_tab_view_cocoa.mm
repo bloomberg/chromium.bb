@@ -10,7 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/theme_resources.h"
+#include "components/grit/components_scaled_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
@@ -91,7 +91,7 @@ static const CGFloat kMaxTopMargin = 130;
   if ((self = [super initWithFrame:NSZeroRect])) {
     // Load resource for image and set it.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    NSImage* iconImage = rb.GetNativeImageNamed(IDR_SAD_TAB).ToNSImage();
+    NSImage* iconImage = rb.GetNativeImageNamed(IDR_CRASH_SAD_TAB).ToNSImage();
     NSRect imageFrame = NSZeroRect;
     imageFrame.size = [iconImage size];
     image_.reset([[NSImageView alloc] initWithFrame:imageFrame]);

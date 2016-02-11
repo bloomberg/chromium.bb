@@ -754,9 +754,6 @@
         <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="common/browser_reload_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_RESTORE_BUTTON_MASK" file="common/restore_button_mask.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_SAD_TAB" file="legacy/sadtab.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="common/safebrowsing_warning.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD_ACTIVE" file="legacy/save_password_active.png" />
