@@ -149,9 +149,9 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   ~SimpleEntryImpl() override;
 
   // Must be used to invoke a client-provided completion callback for an
-  // operation initiated through the backend (e.g. create, open) so that clients
-  // don't get notified after they deleted the backend (which they would not
-  // expect).
+  // operation initiated through the backend (e.g. create, open, doom) so that
+  // clients don't get notified after they deleted the backend (which they would
+  // not expect).
   void PostClientCallback(const CompletionCallback& callback, int result);
 
   // Sets entry to STATE_UNINITIALIZED.
