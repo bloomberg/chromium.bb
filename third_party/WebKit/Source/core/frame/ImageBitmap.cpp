@@ -47,15 +47,20 @@ static bool frameIsValid(const SkBitmap& frameBitmap)
     return frameBitmap.colorType() == kN32_SkColorType;
 }
 
+static PassOwnPtr<uint8_t[]> copySkImageData(SkImage* input, SkImageInfo info)
+{
+    OwnPtr<uint8_t[]> dstPixels = adoptArrayPtr(new uint8_t[input->width() * input->height() * info.bytesPerPixel()]);
+    input->readPixels(info, dstPixels.get(), input->width() * info.bytesPerPixel(), 0, 0);
+    return dstPixels.release();
+}
+
 static SkImage* flipSkImageVertically(SkImage* input)
 {
     int width = input->width();
     int height = input->height();
     SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
-    OwnPtr<uint8_t[]> imagePixels = adoptArrayPtr(new uint8_t[width * height * info.bytesPerPixel()]);
-    int imageRowBytes = info.bytesPerPixel() * width;
-    input->readPixels(info, imagePixels.get(), imageRowBytes, 0, 0);
-
+    int imageRowBytes = width * info.bytesPerPixel();
+    OwnPtr<uint8_t[]> imagePixels = copySkImageData(input, info);
     for (int i = 0; i < height / 2; i++) {
         int topFirstElement = i * imageRowBytes;
         int topLastElement = (i + 1) * imageRowBytes;
@@ -65,17 +70,11 @@ static SkImage* flipSkImageVertically(SkImage* input)
     return SkImage::NewRasterCopy(info, imagePixels.get(), imageRowBytes);
 }
 
-// TODO(xidachen): the part of read an SkImage to a OwnPtr<uint8_t[]> has been used in multiple places,
-// we should write it as a utility function here.
 static SkImage* premulSkImageToUnPremul(SkImage* input)
 {
-    int width = input->width();
-    int height = input->height();
-    SkImageInfo info = SkImageInfo::Make(width, height, kN32_SkColorType, kUnpremul_SkAlphaType);
-    OwnPtr<uint8_t[]> dstPixels = adoptArrayPtr(new uint8_t[width * height * info.bytesPerPixel()]);
-    size_t dstRowBytes = info.bytesPerPixel() * width;
-    input->readPixels(info, dstPixels.get(), dstRowBytes, 0, 0);
-    return SkImage::NewRasterCopy(info, dstPixels.get(), dstRowBytes);
+    SkImageInfo info = SkImageInfo::Make(input->width(), input->height(), kN32_SkColorType, kUnpremul_SkAlphaType);
+    OwnPtr<uint8_t[]> dstPixels = copySkImageData(input, info);
+    return SkImage::NewRasterCopy(info, dstPixels.get(), input->width() * info.bytesPerPixel());
 }
 
 static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipYEnabled, bool premultiplyAlphaEnabled)
@@ -297,9 +296,7 @@ void ImageBitmap::close()
 PassOwnPtr<uint8_t[]> ImageBitmap::copyBitmapData()
 {
     SkImageInfo info = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-    OwnPtr<uint8_t[]> dstPixels = adoptArrayPtr(new uint8_t[width() * height() * info.bytesPerPixel()]);
-    size_t dstRowBytes = info.bytesPerPixel() * width();
-    m_image->imageForCurrentFrame()->readPixels(info, dstPixels.get(), dstRowBytes, 0, 0);
+    OwnPtr<uint8_t[]> dstPixels = copySkImageData(m_image->imageForCurrentFrame().get(), info);
     return dstPixels.release();
 }
 
