@@ -189,6 +189,14 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public static boolean willChromeHandleIntent(
             Context context, Intent intent, boolean matchDefaultOnly) {
         try {
+            // Early-out if the intent targets Chrome.
+            if (intent.getComponent() != null
+                    && context.getPackageName().equals(intent.getComponent().getPackageName())) {
+                return true;
+            }
+
+            // Fall back to the more expensive querying of Android when the intent doesn't target
+            // Chrome.
             ResolveInfo info = context.getPackageManager().resolveActivity(
                     intent, matchDefaultOnly ? PackageManager.MATCH_DEFAULT_ONLY : 0);
             return info != null
