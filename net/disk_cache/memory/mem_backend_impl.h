@@ -9,13 +9,17 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
+#include "base/time/time.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/disk_cache/memory/mem_rankings.h"
+#include "net/disk_cache/memory/mem_entry_impl.h"
 
 namespace net {
 class NetLog;
@@ -23,11 +27,9 @@ class NetLog;
 
 namespace disk_cache {
 
-class MemEntryImpl;
-
 // This class implements the Backend interface. An object of this class handles
 // the operations of the cache without writing to disk.
-class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
+class NET_EXPORT_PRIVATE MemBackendImpl final : public Backend {
  public:
   explicit MemBackendImpl(net::NetLog* net_log);
   ~MemBackendImpl() override;
@@ -45,26 +47,29 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
   // Sets the maximum size for the total amount of data stored by this instance.
   bool SetMaxSize(int max_bytes);
 
-  // Permanently deletes an entry.
-  void InternalDoomEntry(MemEntryImpl* entry);
-
-  // Updates the ranking information for an entry.
-  void UpdateRank(MemEntryImpl* node);
-
-  // A user data block is being created, extended or truncated.
-  void ModifyStorageSize(int32_t old_size, int32_t new_size);
-
   // Returns the maximum size for a file to reside on the cache.
   int MaxFileSize() const;
 
-  // Insert an MemEntryImpl into the ranking list. This method is only called
-  // from MemEntryImpl to insert child entries. The reference can be removed
-  // by calling RemoveFromRankingList(|entry|).
-  void InsertIntoRankingList(MemEntryImpl* entry);
+  // These next methods (before the implementation of the Backend interface) are
+  // called by MemEntryImpl to update the state of the backend during the entry
+  // lifecycle.
 
-  // Remove |entry| from ranking list. This method is only called from
-  // MemEntryImpl to remove a child entry from the ranking list.
-  void RemoveFromRankingList(MemEntryImpl* entry);
+  // Signals that new entry has been created, and should be placed in
+  // |lru_list_| so that it is eligable for eviction.
+  void OnEntryInserted(MemEntryImpl* entry);
+
+  // Signals that an entry has been updated, and thus should be moved to the end
+  // of |lru_list_|.
+  void OnEntryUpdated(MemEntryImpl* entry);
+
+  // Signals that an entry has been doomed, and so it should be removed from the
+  // list of active entries as appropriate, as well as removed from the
+  // |lru_list_|.
+  void OnEntryDoomed(MemEntryImpl* entry);
+
+  // Adjust the current size of this backend by |delta|. This is used to
+  // determine if eviction is neccessary and when eviction is finished.
+  void ModifyStorageSize(int32_t delta);
 
   // Backend interface.
   net::CacheType GetCacheType() const override;
@@ -94,26 +99,15 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
 
   typedef base::hash_map<std::string, MemEntryImpl*> EntryMap;
 
-  // Old Backend interface.
-  bool OpenEntry(const std::string& key, Entry** entry);
-  bool CreateEntry(const std::string& key, Entry** entry);
-  bool DoomEntry(const std::string& key);
-  bool DoomAllEntries();
-  bool DoomEntriesBetween(const base::Time initial_time,
-                          const base::Time end_time);
-  bool DoomEntriesSince(const base::Time initial_time);
-
   // Deletes entries from the cache until the current size is below the limit.
-  // If empty is true, the whole cache will be trimmed, regardless of being in
-  // use.
-  void TrimCache(bool empty);
-
-  // Handles the used storage count.
-  void AddStorageSize(int32_t bytes);
-  void SubstractStorageSize(int32_t bytes);
+  void EvictIfNeeded();
 
   EntryMap entries_;
-  MemRankings rankings_;  // Rankings to be able to trim the cache.
+
+  // Stored in increasing order of last use time, from least recently used to
+  // most recently used.
+  base::LinkedList<MemEntryImpl> lru_list_;
+
   int32_t max_size_;      // Maximum data size for this instance.
   int32_t current_size_;
 

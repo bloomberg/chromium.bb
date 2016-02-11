@@ -715,8 +715,6 @@
       'disk_cache/memory/mem_backend_impl.h',
       'disk_cache/memory/mem_entry_impl.cc',
       'disk_cache/memory/mem_entry_impl.h',
-      'disk_cache/memory/mem_rankings.cc',
-      'disk_cache/memory/mem_rankings.h',
       'disk_cache/net_log_parameters.cc',
       'disk_cache/net_log_parameters.h',
       'disk_cache/simple/simple_backend_impl.cc',

@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/memory/mem_backend_impl.h"
 
+#include <algorithm>
+#include <functional>
 #include <utility>
 
 #include "base/logging.h"
@@ -14,36 +16,39 @@
 
 using base::Time;
 
+namespace disk_cache {
+
 namespace {
 
 const int kDefaultInMemoryCacheSize = 10 * 1024 * 1024;
-const int kCleanUpMargin = 1024 * 1024;
+const int kDefaultEvictionSize = kDefaultInMemoryCacheSize / 10;
 
-int LowWaterAdjust(int high_water) {
-  if (high_water < kCleanUpMargin)
-    return 0;
-
-  return high_water - kCleanUpMargin;
+bool CheckLRUListOrder(const base::LinkedList<MemEntryImpl>& lru_list) {
+  // TODO(gavinp): Check MemBackendImpl::current_size_ here as well.
+  base::Time previous_last_use_time;
+  for (base::LinkNode<MemEntryImpl>* node = lru_list.head();
+       node != lru_list.end(); node = node->next()) {
+    if (node->value()->GetLastUsed() < previous_last_use_time)
+      return false;
+    previous_last_use_time = node->value()->GetLastUsed();
+  }
+  return true;
 }
 
 }  // namespace
-
-namespace disk_cache {
 
 MemBackendImpl::MemBackendImpl(net::NetLog* net_log)
     : max_size_(0), current_size_(0), net_log_(net_log), weak_factory_(this) {
 }
 
 MemBackendImpl::~MemBackendImpl() {
-  EntryMap::iterator it = entries_.begin();
-  while (it != entries_.end()) {
-    it->second->Doom();
-    it = entries_.begin();
-  }
+  DCHECK(CheckLRUListOrder(lru_list_));
+  while (!entries_.empty())
+    entries_.begin()->second->Doom();
   DCHECK(!current_size_);
 }
 
-// Static.
+// static
 scoped_ptr<Backend> MemBackendImpl::CreateBackend(int max_bytes,
                                                   net::NetLog* net_log) {
   scoped_ptr<MemBackendImpl> cache(new MemBackendImpl(net_log));
@@ -67,7 +72,7 @@ bool MemBackendImpl::Init() {
   }
 
   // We want to use up to 2% of the computer's memory, with a limit of 50 MB,
-  // reached on systemd with more than 2.5 GB of RAM.
+  // reached on system with more than 2.5 GB of RAM.
   total_memory = total_memory * 2 / 100;
   if (total_memory > kDefaultInMemoryCacheSize * 5)
     max_size_ = kDefaultInMemoryCacheSize * 5;
@@ -91,41 +96,32 @@ bool MemBackendImpl::SetMaxSize(int max_bytes) {
   return true;
 }
 
-void MemBackendImpl::InternalDoomEntry(MemEntryImpl* entry) {
-  // Only parent entries can be passed into this method.
-  DCHECK(entry->type() == MemEntryImpl::kParentEntry);
-
-  rankings_.Remove(entry);
-  EntryMap::iterator it = entries_.find(entry->GetKey());
-  if (it != entries_.end())
-    entries_.erase(it);
-  else
-    NOTREACHED();
-
-  entry->InternalDoom();
-}
-
-void MemBackendImpl::UpdateRank(MemEntryImpl* node) {
-  rankings_.UpdateRank(node);
-}
-
-void MemBackendImpl::ModifyStorageSize(int32_t old_size, int32_t new_size) {
-  if (old_size >= new_size)
-    SubstractStorageSize(old_size - new_size);
-  else
-    AddStorageSize(new_size - old_size);
-}
-
 int MemBackendImpl::MaxFileSize() const {
   return max_size_ / 8;
 }
 
-void MemBackendImpl::InsertIntoRankingList(MemEntryImpl* entry) {
-  rankings_.Insert(entry);
+void MemBackendImpl::OnEntryInserted(MemEntryImpl* entry) {
+  lru_list_.Append(entry);
 }
 
-void MemBackendImpl::RemoveFromRankingList(MemEntryImpl* entry) {
-  rankings_.Remove(entry);
+void MemBackendImpl::OnEntryUpdated(MemEntryImpl* entry) {
+  DCHECK(CheckLRUListOrder(lru_list_));
+  // LinkedList<>::RemoveFromList() removes |entry| from |lru_list_|.
+  entry->RemoveFromList();
+  lru_list_.Append(entry);
+}
+
+void MemBackendImpl::OnEntryDoomed(MemEntryImpl* entry) {
+  DCHECK(CheckLRUListOrder(lru_list_));
+  if (entry->type() == MemEntryImpl::PARENT_ENTRY)
+    entries_.erase(entry->key());
+  // LinkedList<>::RemoveFromList() removes |entry| from |lru_list_|.
+  entry->RemoveFromList();
+}
+
+void MemBackendImpl::ModifyStorageSize(int32_t delta) {
+  current_size_ += delta;
+  EvictIfNeeded();
 }
 
 net::CacheType MemBackendImpl::GetCacheType() const {
@@ -136,52 +132,71 @@ int32_t MemBackendImpl::GetEntryCount() const {
   return static_cast<int32_t>(entries_.size());
 }
 
-int MemBackendImpl::OpenEntry(const std::string& key, Entry** entry,
+int MemBackendImpl::OpenEntry(const std::string& key,
+                              Entry** entry,
                               const CompletionCallback& callback) {
-  if (OpenEntry(key, entry))
-    return net::OK;
+  EntryMap::iterator it = entries_.find(key);
+  if (it == entries_.end())
+    return net::ERR_FAILED;
 
-  return net::ERR_FAILED;
+  it->second->Open();
+
+  *entry = it->second;
+  return net::OK;
 }
 
-int MemBackendImpl::CreateEntry(const std::string& key, Entry** entry,
+int MemBackendImpl::CreateEntry(const std::string& key,
+                                Entry** entry,
                                 const CompletionCallback& callback) {
-  if (CreateEntry(key, entry))
-    return net::OK;
+  std::pair<EntryMap::iterator, bool> create_result =
+      entries_.insert(EntryMap::value_type(key, nullptr));
+  const bool did_insert = create_result.second;
+  if (!did_insert)
+    return net::ERR_FAILED;
 
-  return net::ERR_FAILED;
+  MemEntryImpl* cache_entry = new MemEntryImpl(this, key, net_log_);
+  create_result.first->second = cache_entry;
+  *entry = cache_entry;
+  return net::OK;
 }
 
 int MemBackendImpl::DoomEntry(const std::string& key,
                               const CompletionCallback& callback) {
-  if (DoomEntry(key))
-    return net::OK;
+  EntryMap::iterator it = entries_.find(key);
+  if (it == entries_.end())
+    return net::ERR_FAILED;
 
-  return net::ERR_FAILED;
+  it->second->Doom();
+  return net::OK;
 }
 
 int MemBackendImpl::DoomAllEntries(const CompletionCallback& callback) {
-  if (DoomAllEntries())
-    return net::OK;
-
-  return net::ERR_FAILED;
+  return DoomEntriesBetween(Time(), Time(), callback);
 }
 
-int MemBackendImpl::DoomEntriesBetween(const base::Time initial_time,
-                                       const base::Time end_time,
+int MemBackendImpl::DoomEntriesBetween(Time initial_time,
+                                       Time end_time,
                                        const CompletionCallback& callback) {
-  if (DoomEntriesBetween(initial_time, end_time))
-    return net::OK;
+  if (end_time.is_null())
+    end_time = Time::Max();
 
-  return net::ERR_FAILED;
+  DCHECK_GE(end_time, initial_time);
+
+  base::LinkNode<MemEntryImpl>* node = lru_list_.head();
+  while (node != lru_list_.end() && node->value()->GetLastUsed() < initial_time)
+    node = node->next();
+  while (node != lru_list_.end() && node->value()->GetLastUsed() < end_time) {
+    MemEntryImpl* to_doom = node->value();
+    node = node->next();
+    to_doom->Doom();
+  }
+
+  return net::OK;
 }
 
-int MemBackendImpl::DoomEntriesSince(const base::Time initial_time,
+int MemBackendImpl::DoomEntriesSince(Time initial_time,
                                      const CompletionCallback& callback) {
-  if (DoomEntriesSince(initial_time))
-    return net::OK;
-
-  return net::ERR_FAILED;
+  return DoomEntriesBetween(initial_time, Time::Max(), callback);
 }
 
 int MemBackendImpl::CalculateSizeOfAllEntries(
@@ -189,35 +204,41 @@ int MemBackendImpl::CalculateSizeOfAllEntries(
   return current_size_;
 }
 
-class MemBackendImpl::MemIterator : public Backend::Iterator {
+class MemBackendImpl::MemIterator final : public Backend::Iterator {
  public:
   explicit MemIterator(base::WeakPtr<MemBackendImpl> backend)
-      : backend_(backend), current_(NULL) {
-  }
+      : backend_(backend), current_(nullptr) {}
 
   int OpenNextEntry(Entry** next_entry,
                     const CompletionCallback& callback) override {
     if (!backend_)
       return net::ERR_FAILED;
 
-    MemEntryImpl* node = backend_->rankings_.GetNext(current_);
+    // Iterate using |lru_list_|, from most recently used to least recently
+    // used, for compatibility with the unit tests that assume this behaviour.
+    // Consider the last element if we are beginning an iteration, otherwise
+    // progressively move earlier in the LRU list.
+    current_ = current_ ? current_->previous() : backend_->lru_list_.tail();
+
     // We should never return a child entry so iterate until we hit a parent
     // entry.
-    while (node && node->type() != MemEntryImpl::kParentEntry)
-      node = backend_->rankings_.GetNext(node);
-    *next_entry = node;
-    current_ = node;
-
-    if (node) {
-      node->Open();
-      return net::OK;
+    while (current_ != backend_->lru_list_.end() &&
+           current_->value()->type() != MemEntryImpl::PARENT_ENTRY) {
+      current_ = current_->previous();
     }
-    return net::ERR_FAILED;
+    if (current_ == backend_->lru_list_.end()) {
+      *next_entry = nullptr;
+      return net::ERR_FAILED;
+    }
+
+    current_->value()->Open();
+    *next_entry = current_->value();
+    return net::OK;
   }
 
  private:
   base::WeakPtr<MemBackendImpl> backend_;
-  MemEntryImpl* current_;
+  base::LinkNode<MemEntryImpl>* current_;
 };
 
 scoped_ptr<Backend::Iterator> MemBackendImpl::CreateIterator() {
@@ -227,127 +248,23 @@ scoped_ptr<Backend::Iterator> MemBackendImpl::CreateIterator() {
 
 void MemBackendImpl::OnExternalCacheHit(const std::string& key) {
   EntryMap::iterator it = entries_.find(key);
-  if (it != entries_.end()) {
-    UpdateRank(it->second);
-  }
-}
-
-bool MemBackendImpl::OpenEntry(const std::string& key, Entry** entry) {
-  EntryMap::iterator it = entries_.find(key);
-  if (it == entries_.end())
-    return false;
-
-  it->second->Open();
-
-  *entry = it->second;
-  return true;
-}
-
-bool MemBackendImpl::CreateEntry(const std::string& key, Entry** entry) {
-  EntryMap::iterator it = entries_.find(key);
   if (it != entries_.end())
-    return false;
-
-  MemEntryImpl* cache_entry = new MemEntryImpl(this);
-  if (!cache_entry->CreateEntry(key, net_log_)) {
-    delete entry;
-    return false;
-  }
-
-  rankings_.Insert(cache_entry);
-  entries_[key] = cache_entry;
-
-  *entry = cache_entry;
-  return true;
+    it->second->UpdateStateOnUse(MemEntryImpl::ENTRY_WAS_NOT_MODIFIED);
 }
 
-bool MemBackendImpl::DoomEntry(const std::string& key) {
-  Entry* entry;
-  if (!OpenEntry(key, &entry))
-    return false;
-
-  entry->Doom();
-  entry->Close();
-  return true;
-}
-
-bool MemBackendImpl::DoomAllEntries() {
-  TrimCache(true);
-  return true;
-}
-
-bool MemBackendImpl::DoomEntriesBetween(const Time initial_time,
-                                        const Time end_time) {
-  if (end_time.is_null())
-    return DoomEntriesSince(initial_time);
-
-  DCHECK(end_time >= initial_time);
-
-  MemEntryImpl* node = rankings_.GetNext(NULL);
-  // Last valid entry before |node|.
-  // Note, that entries after |node| may become invalid during |node| doom in
-  // case when they are child entries of it. It is guaranteed that
-  // parent node will go prior to it childs in ranking list (see
-  // InternalReadSparseData and InternalWriteSparseData).
-  MemEntryImpl* last_valid = NULL;
-
-  // rankings_ is ordered by last used, this will descend through the cache
-  // and start dooming items before the end_time, and will stop once it reaches
-  // an item used before the initial time.
-  while (node) {
-    if (node->GetLastUsed() < initial_time)
-      break;
-
-    if (node->GetLastUsed() < end_time)
-      node->Doom();
-    else
-      last_valid = node;
-    node = rankings_.GetNext(last_valid);
-  }
-
-  return true;
-}
-
-bool MemBackendImpl::DoomEntriesSince(const Time initial_time) {
-  for (;;) {
-    // Get the entry in the front.
-    Entry* entry = rankings_.GetNext(NULL);
-
-    // Break the loop when there are no more entries or the entry is too old.
-    if (!entry || entry->GetLastUsed() < initial_time)
-      return true;
-    entry->Doom();
-  }
-}
-
-void MemBackendImpl::TrimCache(bool empty) {
-  MemEntryImpl* next = rankings_.GetPrev(NULL);
-  if (!next)
+void MemBackendImpl::EvictIfNeeded() {
+  if (current_size_ <= max_size_)
     return;
 
-  int target_size = empty ? 0 : LowWaterAdjust(max_size_);
-  while (current_size_ > target_size && next) {
-    MemEntryImpl* node = next;
-    next = rankings_.GetPrev(next);
-    if (!node->InUse() || empty) {
-      node->Doom();
-    }
+  int target_size = std::max(0, max_size_ - kDefaultEvictionSize);
+
+  base::LinkNode<MemEntryImpl>* entry = lru_list_.head();
+  while (current_size_ > target_size && entry != lru_list_.end()) {
+    MemEntryImpl* to_doom = entry->value();
+    entry = entry->next();
+    if (!to_doom->InUse())
+      to_doom->Doom();
   }
-
-  return;
-}
-
-void MemBackendImpl::AddStorageSize(int32_t bytes) {
-  current_size_ += bytes;
-  DCHECK_GE(current_size_, 0);
-
-  if (current_size_ > max_size_)
-    TrimCache(false);
-}
-
-void MemBackendImpl::SubstractStorageSize(int32_t bytes) {
-  current_size_ -= bytes;
-  DCHECK_GE(current_size_, 0);
 }
 
 }  // namespace disk_cache
