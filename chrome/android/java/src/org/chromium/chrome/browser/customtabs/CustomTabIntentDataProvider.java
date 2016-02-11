@@ -26,6 +26,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
@@ -43,6 +44,13 @@ public class CustomTabIntentDataProvider {
      * Extra used to keep the caller alive. Its value is an Intent.
      */
     public static final String EXTRA_KEEP_ALIVE = "android.support.customtabs.extra.KEEP_ALIVE";
+
+    /**
+     * Extra used by Chrome to tell the CustomTabActivity to finish itself and open the current URL
+     * in the browser.  Guarded explicitly for use only by PendingIntents with the Chrome package.
+     */
+    public static final String EXTRA_FINISH_AFTER_OPENING_IN_BROWSER =
+            "org.chromium.chrome.browser.customtabs.FINISH_AFTER_OPENING_IN_BROWSER";
 
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
     private static final String ANIMATION_BUNDLE_PREFIX =
@@ -63,6 +71,7 @@ public class CustomTabIntentDataProvider {
     private List<Pair<String, PendingIntent>> mMenuEntries = new ArrayList<>();
     private Bundle mAnimationBundle;
     private boolean mShowShareItem;
+    private boolean mFinishAfterOpeningInBrowser;
     private CustomButtonParams mToolbarButton;
     private List<CustomButtonParams> mBottombarButtons = new ArrayList<>(2);
     // OnFinished listener for PendingIntents. Used for testing only.
@@ -74,6 +83,10 @@ public class CustomTabIntentDataProvider {
     public CustomTabIntentDataProvider(Intent intent, Context context) {
         if (intent == null) assert false;
         mSession = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
+        mFinishAfterOpeningInBrowser = !TextUtils.isEmpty(ChromePreferenceManager.getHerbFlavor())
+                && IntentUtils.safeGetBooleanExtra(
+                        intent, EXTRA_FINISH_AFTER_OPENING_IN_BROWSER, false);
+
         retrieveCustomButtons(intent, context);
         retrieveToolbarColor(intent, context);
         retrieveBottomBarColor(intent);
@@ -358,5 +371,12 @@ public class CustomTabIntentDataProvider {
     @VisibleForTesting
     void setPendingIntentOnFinishedForTesting(PendingIntent.OnFinished onFinished) {
         mOnFinished = onFinished;
+    }
+
+    /**
+     * @return See {@link #EXTRA_FINISH_AFTER_OPENING_IN_BROWSER}.
+     */
+    public boolean finishAfterOpeningInBrowser() {
+        return mFinishAfterOpeningInBrowser;
     }
 }

@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUma;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
@@ -81,6 +82,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content.browser.ContentVideoView;
@@ -467,7 +469,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             getToolbarManager().getToolbar().setReturnButtonListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (getActivityTab() != null) closeForegroundTab();
+                    if (getActivityTab() != null) handleBackPressedWithoutBackStack();
                 }
             });
 
@@ -695,7 +697,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     break;
                 case OPEN_NEW_TAB:
                     Tab newTab = launchIntent(url, referer, headers, externalAppId, true, intent);
-                    newTab.setIsAllowedToReturnToExternalApp(true);
+                    newTab.setIsAllowedToReturnToExternalApp(IntentUtils.safeGetBooleanExtra(intent,
+                            ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, true));
                     RecordUserAction.record("MobileReceivedExternalIntent");
                     break;
                 case OPEN_NEW_INCOGNITO_TAB:
@@ -1012,7 +1015,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         if (!getToolbarManager().back()) {
             Log.i(TAG, "handleBackPressed() - no back stack");
-            if (closeForegroundTab()) return true;
+            if (handleBackPressedWithoutBackStack()) return true;
         } else {
             Log.i(TAG, "handleBackPressed() - moving back in navigation");
             RecordUserAction.record("SystemBackForNavigation");
@@ -1024,11 +1027,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     }
 
     /**
-     * Closes the foreground tab, potentially sending the user back to the app that launched Chrome.
+     * Additional logic for handling situations where a user hits a 'back' or 'return' button.
+     *
+     * May result in closing the foreground tab or returning to the app that opened Chrome.
      *
      * @return Whether the tab closed was opened for a help page.
      */
-    private boolean closeForegroundTab() {
+    private boolean handleBackPressedWithoutBackStack() {
         final Tab currentTab = getActivityTab();
         final TabLaunchType type = currentTab.getLaunchType();
         final int parentId = currentTab.getParentId();
@@ -1039,7 +1044,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         // actual redirected URL is a different system language based help url.
         if (type == TabLaunchType.FROM_MENU_OR_OVERVIEW && helpUrl) {
             getCurrentTabModel().closeTab(currentTab);
-            Log.i(TAG, "closeForegroundTab() - help url");
+            Log.i(TAG, "handleBackPressedWithoutBackStack() - help url");
             return true;
         }
 
@@ -1060,7 +1065,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         final boolean minimizeApp = !shouldCloseTab || currentTab.isCreatedForExternalApp();
 
         if (minimizeApp) {
-            Log.i(TAG, "closeForegroundTab() - moveTaskToBack");
+            Log.i(TAG, "handleBackPressedWithoutBackStack() - moveTaskToBack");
             moveTaskToBack(true);
             if (shouldCloseTab) {
                 // In the case of closing a tab upon minimalization, don't allow the close

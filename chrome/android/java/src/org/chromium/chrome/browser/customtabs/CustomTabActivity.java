@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -66,6 +67,7 @@ import java.util.List;
  */
 public class CustomTabActivity extends ChromeActivity {
     private static final String TAG = "CustomTabActivity";
+
     private static CustomTabContentHandler sActiveContentHandler;
 
     private FindToolbarManager mFindToolbarManager;
@@ -172,7 +174,6 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void preInflationStartup() {
         super.preInflationStartup();
-
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
     }
@@ -444,7 +445,7 @@ public class CustomTabActivity extends ChromeActivity {
      * Configures the custom button on toolbar. Does nothing if invalid data is provided by clients.
      */
     private void showCustomButtonOnToolbar() {
-        CustomButtonParams params = mIntentDataProvider.getCustomButtonOnToolbar();
+        final CustomButtonParams params = mIntentDataProvider.getCustomButtonOnToolbar();
         if (params == null) return;
         getToolbarManager().setCustomActionButton(
                 params.getIcon(getResources()),
@@ -452,9 +453,17 @@ public class CustomTabActivity extends ChromeActivity {
                 new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mIntentDataProvider.sendButtonPendingIntentWithUrl(
-                                getApplicationContext(), getActivityTab().getUrl());
-                        RecordUserAction.record("CustomTabsCustomActionButtonClick");
+                        String creatorPackage =
+                                ApiCompatibilityUtils.getCreatorPackage(params.getPendingIntent());
+                        if (mIntentDataProvider.finishAfterOpeningInBrowser()
+                                && TextUtils.equals(getPackageName(), creatorPackage)) {
+                            openCurrentUrlInBrowser();
+                            finish();
+                        } else {
+                            mIntentDataProvider.sendButtonPendingIntentWithUrl(
+                                    getApplicationContext(), getActivityTab().getUrl());
+                            RecordUserAction.record("CustomTabsCustomActionButtonClick");
+                        }
                     }
                 });
     }
@@ -561,22 +570,7 @@ public class CustomTabActivity extends ChromeActivity {
                 || id == R.id.new_tab_menu_id || id == R.id.open_history_menu_id) {
             return true;
         } else if (id == R.id.open_in_browser_id) {
-            String url = getTabModelSelector().getCurrentTab().getUrl();
-            if (DomDistillerUrlUtils.isDistilledPage(url)) {
-                url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-            }
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            StrictMode.allowThreadDiskWrites();
-            try {
-                startActivity(intent);
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
-
+            openCurrentUrlInBrowser();
             RecordUserAction.record("CustomTabsMenuOpenInChrome");
             return true;
         } else if (id == R.id.find_in_page_id) {
@@ -620,5 +614,27 @@ public class CustomTabActivity extends ChromeActivity {
     @VisibleForTesting
     CustomTabIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
+    }
+
+    /**
+     * Opens the URL currently being displayed in the Custom Tab in the regular browser.
+     */
+    void openCurrentUrlInBrowser() {
+        String url = getTabModelSelector().getCurrentTab().getUrl();
+        if (DomDistillerUrlUtils.isDistilledPage(url)) {
+            url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
+        }
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
+
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            startActivity(intent);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 }

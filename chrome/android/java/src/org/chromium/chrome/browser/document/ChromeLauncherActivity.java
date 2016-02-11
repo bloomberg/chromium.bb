@@ -18,6 +18,8 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +33,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -41,6 +44,7 @@ import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -79,6 +83,12 @@ public class ChromeLauncherActivity extends Activity
      */
     public static final String EXTRA_LAUNCH_MODE =
             "com.google.android.apps.chrome.EXTRA_LAUNCH_MODE";
+
+    /**
+     * Whether or not the toolbar should indicate that a tab was spawned by another Activity.
+     */
+    public static final String EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT =
+            "org.chromium.chrome.browser.document.IS_ALLOWED_TO_RETURN_TO_PARENT";
 
     /**
      * Action fired when the user selects the "Close all incognito tabs" notification.
@@ -314,6 +324,29 @@ public class ChromeLauncherActivity extends Activity
         }
     }
 
+    private void addHerbIntentExtras(Intent newIntent, Uri uri) {
+        Bundle herbBundle = new Bundle();
+
+        Bitmap herbIcon =
+                BitmapFactory.decodeResource(getResources(), R.drawable.btn_open_in_chrome);
+        herbBundle.putParcelable(CustomTabsIntent.KEY_ICON, herbIcon);
+
+        // Fallback in case the Custom Tab fails to trigger opening in Chrome.
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
+
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        herbBundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pendingIntent);
+
+        herbBundle.putString(CustomTabsIntent.KEY_DESCRIPTION,
+                getResources().getString(R.string.menu_open_in_chrome));
+
+        newIntent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE, herbBundle);
+        newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_FINISH_AFTER_OPENING_IN_BROWSER, true);
+    }
+
     /**
      * @return Whether the intent sent is for launching a Custom Tab.
      */
@@ -340,10 +373,14 @@ public class ChromeLauncherActivity extends Activity
 
         // Create and fire a launch intent. Use the copy constructor to carry over the myriad of
         // extras.
+        Uri uri = Uri.parse(IntentHandler.getUrlFromIntent(getIntent()));
+
         Intent newIntent = new Intent(getIntent());
         newIntent.setAction(Intent.ACTION_VIEW);
         newIntent.setClassName(this, CustomTabActivity.class.getName());
-        newIntent.setData(Uri.parse(IntentHandler.getUrlFromIntent(getIntent())));
+        newIntent.setData(uri);
+        if (isIntentHandledByHerb()) addHerbIntentExtras(newIntent, uri);
+
         startActivity(newIntent);
     }
 
