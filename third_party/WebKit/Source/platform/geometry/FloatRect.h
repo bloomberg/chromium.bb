@@ -42,6 +42,10 @@ typedef struct CGRect CGRect;
 #endif
 #endif
 
+namespace gfx {
+class RectF;
+}
+
 namespace blink {
 
 class IntRect;
@@ -181,6 +185,7 @@ public:
 #endif
 
     operator SkRect() const { return SkRect::MakeXYWH(x(), y(), width(), height()); }
+    operator gfx::RectF() const;
 
 #if ENABLE(ASSERT)
     // Prints the rect to the screen.

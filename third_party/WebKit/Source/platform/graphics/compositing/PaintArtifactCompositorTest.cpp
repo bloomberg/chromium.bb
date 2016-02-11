@@ -65,6 +65,7 @@ TEST_F(PaintArtifactCompositorTest, OneChunkWithAnOffset)
     EXPECT_THAT(child->GetPicture(),
         Pointee(drawsRectangle(FloatRect(0, 0, 100, 100), Color::white)));
     EXPECT_EQ(translation(50, -50), child->transform());
+    EXPECT_EQ(gfx::Size(100, 100), child->bounds());
 }
 
 TEST_F(PaintArtifactCompositorTest, OneTransform)
@@ -138,6 +139,168 @@ TEST_F(PaintArtifactCompositorTest, TransformCombining)
         gfx::RectF mappedRect(0, 0, 300, 200);
         layer->transform().TransformRect(&mappedRect);
         EXPECT_EQ(gfx::RectF(0, 0, 600, 400), mappedRect);
+    }
+}
+
+TEST_F(PaintArtifactCompositorTest, OneClip)
+{
+    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
+        nullptr, FloatRoundedRect(100, 100, 300, 200));
+
+    TestPaintArtifact artifact;
+    artifact.chunk(nullptr, clip, nullptr)
+        .rectDrawing(FloatRect(220, 80, 300, 200), Color::black);
+    update(artifact.build());
+
+    ASSERT_EQ(1u, rootLayer()->children().size());
+    cc::Layer* clipLayer = rootLayer()->child_at(0);
+    EXPECT_TRUE(clipLayer->masks_to_bounds());
+    EXPECT_EQ(gfx::Size(300, 200), clipLayer->bounds());
+    EXPECT_EQ(translation(100, 100), clipLayer->transform());
+
+    ASSERT_EQ(1u, clipLayer->children().size());
+    const cc::Layer* layer = clipLayer->child_at(0);
+    EXPECT_THAT(layer->GetPicture(),
+        Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::black)));
+    EXPECT_EQ(translation(120, -20), layer->transform());
+}
+
+TEST_F(PaintArtifactCompositorTest, NestedClips)
+{
+    RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
+        nullptr, FloatRoundedRect(100, 100, 700, 700));
+    RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
+        nullptr, FloatRoundedRect(200, 200, 700, 100), clip1);
+
+    TestPaintArtifact artifact;
+    artifact.chunk(nullptr, clip1, nullptr)
+        .rectDrawing(FloatRect(300, 350, 100, 100), Color::white);
+    artifact.chunk(nullptr, clip2, nullptr)
+        .rectDrawing(FloatRect(300, 350, 100, 100), Color::lightGray);
+    artifact.chunk(nullptr, clip1, nullptr)
+        .rectDrawing(FloatRect(300, 350, 100, 100), Color::darkGray);
+    artifact.chunk(nullptr, clip2, nullptr)
+        .rectDrawing(FloatRect(300, 350, 100, 100), Color::black);
+    update(artifact.build());
+
+    ASSERT_EQ(1u, rootLayer()->children().size());
+    cc::Layer* clipLayer1 = rootLayer()->child_at(0);
+    EXPECT_TRUE(clipLayer1->masks_to_bounds());
+    EXPECT_EQ(gfx::Size(700, 700), clipLayer1->bounds());
+    EXPECT_EQ(translation(100, 100), clipLayer1->transform());
+
+    ASSERT_EQ(4u, clipLayer1->children().size());
+    {
+        const cc::Layer* whiteLayer = clipLayer1->child_at(0);
+        EXPECT_THAT(whiteLayer->GetPicture(),
+            Pointee(drawsRectangle(FloatRect(0, 0, 100, 100), Color::white)));
+        EXPECT_EQ(translation(200, 250), whiteLayer->transform());
+    }
+    {
+        cc::Layer* lightGrayClip = clipLayer1->child_at(1);
+        EXPECT_TRUE(lightGrayClip->masks_to_bounds());
+        EXPECT_EQ(gfx::Size(700, 100), lightGrayClip->bounds());
+        EXPECT_EQ(translation(100, 100), lightGrayClip->transform());
+        ASSERT_EQ(1u, lightGrayClip->children().size());
+        const cc::Layer* lightGrayLayer = lightGrayClip->child_at(0);
+        EXPECT_THAT(lightGrayLayer->GetPicture(),
+            Pointee(drawsRectangle(FloatRect(0, 0, 100, 100), Color::lightGray)));
+        EXPECT_EQ(translation(100, 150), lightGrayLayer->transform());
+    }
+    {
+        const cc::Layer* darkGrayLayer = clipLayer1->child_at(2);
+        EXPECT_THAT(darkGrayLayer->GetPicture(),
+            Pointee(drawsRectangle(FloatRect(0, 0, 100, 100), Color::darkGray)));
+        EXPECT_EQ(translation(200, 250), darkGrayLayer->transform());
+    }
+    {
+        cc::Layer* blackClip = clipLayer1->child_at(3);
+        EXPECT_TRUE(blackClip->masks_to_bounds());
+        EXPECT_EQ(gfx::Size(700, 100), blackClip->bounds());
+        EXPECT_EQ(translation(100, 100), blackClip->transform());
+        ASSERT_EQ(1u, blackClip->children().size());
+        const cc::Layer* blackLayer = blackClip->child_at(0);
+        EXPECT_THAT(blackLayer->GetPicture(),
+            Pointee(drawsRectangle(FloatRect(0, 0, 100, 100), Color::black)));
+        EXPECT_EQ(translation(100, 150), blackLayer->transform());
+    }
+}
+
+TEST_F(PaintArtifactCompositorTest, DeeplyNestedClips)
+{
+    Vector<RefPtr<ClipPaintPropertyNode>> clips;
+    for (unsigned i = 1; i <= 10; i++) {
+        clips.append(ClipPaintPropertyNode::create(
+            nullptr, FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i),
+            clips.isEmpty() ? nullptr : clips.last()));
+    }
+
+    TestPaintArtifact artifact;
+    artifact.chunk(nullptr, clips.last(), nullptr)
+        .rectDrawing(FloatRect(0, 0, 200, 200), Color::white);
+    update(artifact.build());
+
+    // Check the clip layers.
+    cc::Layer* layer = rootLayer();
+    for (const auto& clipNode : clips) {
+        ASSERT_EQ(1u, layer->children().size());
+        layer = layer->child_at(0);
+        EXPECT_EQ(clipNode->clipRect().rect().width(), layer->bounds().width());
+        EXPECT_EQ(clipNode->clipRect().rect().height(), layer->bounds().height());
+        EXPECT_EQ(translation(5, 0), layer->transform());
+    }
+
+    // Check the drawing layer.
+    ASSERT_EQ(1u, layer->children().size());
+    cc::Layer* drawingLayer = layer->child_at(0);
+    EXPECT_THAT(drawingLayer->GetPicture(),
+        Pointee(drawsRectangle(FloatRect(0, 0, 200, 200), Color::white)));
+    EXPECT_EQ(translation(-50, 0), drawingLayer->transform());
+}
+
+TEST_F(PaintArtifactCompositorTest, SiblingClips)
+{
+    RefPtr<ClipPaintPropertyNode> commonClip = ClipPaintPropertyNode::create(
+        nullptr, FloatRoundedRect(0, 0, 800, 600));
+    RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
+        nullptr, FloatRoundedRect(0, 0, 400, 600), commonClip);
+    RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
+        nullptr, FloatRoundedRect(400, 0, 400, 600), commonClip);
+
+    TestPaintArtifact artifact;
+    artifact.chunk(nullptr, clip1, nullptr)
+        .rectDrawing(FloatRect(0, 0, 640, 480), Color::white);
+    artifact.chunk(nullptr, clip2, nullptr)
+        .rectDrawing(FloatRect(0, 0, 640, 480), Color::black);
+    update(artifact.build());
+
+    ASSERT_EQ(1u, rootLayer()->children().size());
+    cc::Layer* commonClipLayer = rootLayer()->child_at(0);
+    EXPECT_TRUE(commonClipLayer->masks_to_bounds());
+    EXPECT_EQ(gfx::Size(800, 600), commonClipLayer->bounds());
+    EXPECT_EQ(gfx::Transform(), commonClipLayer->transform());
+    ASSERT_EQ(2u, commonClipLayer->children().size());
+    {
+        cc::Layer* clipLayer1 = commonClipLayer->child_at(0);
+        EXPECT_TRUE(clipLayer1->masks_to_bounds());
+        EXPECT_EQ(gfx::Size(400, 600), clipLayer1->bounds());
+        EXPECT_EQ(gfx::Transform(), clipLayer1->transform());
+        ASSERT_EQ(1u, clipLayer1->children().size());
+        cc::Layer* whiteLayer = clipLayer1->child_at(0);
+        EXPECT_THAT(whiteLayer->GetPicture(),
+            Pointee(drawsRectangle(FloatRect(0, 0, 640, 480), Color::white)));
+        EXPECT_EQ(gfx::Transform(), whiteLayer->transform());
+    }
+    {
+        cc::Layer* clipLayer2 = commonClipLayer->child_at(1);
+        EXPECT_TRUE(clipLayer2->masks_to_bounds());
+        EXPECT_EQ(gfx::Size(400, 600), clipLayer2->bounds());
+        EXPECT_EQ(translation(400, 0), clipLayer2->transform());
+        ASSERT_EQ(1u, clipLayer2->children().size());
+        cc::Layer* blackLayer = clipLayer2->child_at(0);
+        EXPECT_THAT(blackLayer->GetPicture(),
+            Pointee(drawsRectangle(FloatRect(0, 0, 640, 480), Color::black)));
+        EXPECT_EQ(translation(-400, 0), blackLayer->transform());
     }
 }
 
