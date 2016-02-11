@@ -27,7 +27,9 @@ BUILD_TYPE_MAP = {
 
 
 BuildTiming = collections.namedtuple(
-    'BuildTiming', ['id', 'build_config', 'duration', 'stages'])
+    'BuildTiming', ['id', 'build_config',
+                    'start', 'finish', 'duration',
+                    'stages'])
 
 
 # Sometimes used with TimeDeltas, and sometimes with TimeDeltaStats.
@@ -177,6 +179,8 @@ def GetBuildTimings(build_status):
 
   return BuildTiming(build_status['id'],
                      build_status['build_config'],
+                     build_status['start_time'],
+                     build_status['finish_time'],
                      safeDuration(start, build_status['finish_time']),
                      stage_times)
 
@@ -254,17 +258,52 @@ def CalculateStageStats(builds_timings):
   return stage_stats
 
 
-def Report(focus_build, builds_timings):
+def FindAndSortStageStats(focus_build, builds_timings):
+  """Return a list of stage names, sorted by median start time.
+
+  Args:
+    focus_build: BuildTiming object for a single build, or None.
+    builds_timings: List of BuildTiming objects.
+
+  Returns:
+    tuple (
+      [stage names as strings, sorted by start time.],
+      {name: StageTiming from focus_build},
+      {name: StageTiming with TimeDeltaStats},
+    )
+  """
+  stage_stats = CalculateStageStats(builds_timings)
+
+  # Map name to StageTiming.
+  focus_stages = {}
+  if focus_build:
+    focus_stages = {s.name: s for s in focus_build.stages}
+  stats_stages = {s.name: s for s in stage_stats}
+
+  # Order the stage names to display, sorted by median start time.
+  stage_names = list(set(focus_stages.keys() + stats_stages.keys()))
+  def name_key(name):
+    f, s = focus_stages.get(name), stats_stages.get(name)
+    return s.start.median if s else f.start or datetime.timedelta()
+  stage_names.sort(key=name_key)
+
+  return stage_names, focus_stages, stats_stages
+
+
+def Report(focus_build, builds_timings, stages=True):
   """Generate a report describing our stats.
 
   Args:
     focus_build: A BuildTiming object for a build to compare against stats.
     builds_timings: List of BuildTiming objects to display stats for.
+    stages: Include a per-stage break down in the report.
+
+  Returns:
+    The generated report as a multi-line string.
   """
   result = ""
 
   build_stats = CalculateBuildStats(builds_timings)
-  stage_stats = CalculateStageStats(builds_timings)
 
   if focus_build:
     result += 'Focus build: %s\n' % focus_build.id
@@ -285,28 +324,87 @@ def Report(focus_build, builds_timings):
 
   result += '\n'
 
-  # Map name to StageTiming.
-  focus_stages = {}
-  if focus_build:
-    focus_stages = {s.name: s for s in focus_build.stages}
-  stats_stages = {s.name: s for s in stage_stats}
+  if stages:
+    stage_names, focus_stages, stats_stages = FindAndSortStageStats(
+        focus_build, builds_timings)
 
-  # Order the stage names to display, sorted by median start time.
-  stage_names = list(set(focus_stages.keys() + stats_stages.keys()))
-  def name_key(name):
-    f, s = focus_stages.get(name), stats_stages.get(name)
-    return s.start.median if s else f.start or datetime.timedelta()
-  stage_names.sort(key=name_key)
+    # Display info about each stage.
+    for name in stage_names:
+      result += '  %s:\n' % name
+      f, s = focus_stages.get(name), stats_stages.get(name)
+      result += '    start:    %s %s\n' % (f.start if f else '',
+                                           s.start if s else '')
+      result += '    duration: %s %s\n' % (f.duration if f else '',
+                                           s.duration if s else '')
+      result += '    finish:   %s %s\n' % (f.finish if f else '',
+                                           s.finish if s else '')
 
-  # Display info about each stage.
-  for name in stage_names:
-    result += '  %s:\n' % name
-    f, s = focus_stages.get(name), stats_stages.get(name)
-    result += '    start:    %s %s\n' % (f.start if f else '',
-                                         s.start if s else '')
-    result += '    duration: %s %s\n' % (f.duration if f else '',
-                                         s.duration if s else '')
-    result += '    finish:   %s %s\n' % (f.finish if f else '',
-                                         s.finish if s else '')
+  return result
+
+
+def ReportTrendingStats(timings, stages=True):
+  """Generate a report describing our stats over time.
+
+  Describes build time stats for all timings, and for timings broken down by
+  month. Does not describe stages.
+
+  Args:
+    timings: List of BuildTiming objects to display stats for.
+    stages: Include stage information in the report (MUCH more verbose).
+
+  Returns:
+    The generated report as a multi-line string.
+  """
+  if not timings:
+    return 'No builds found.'
+
+  result = ''
+
+  # Break builds into months.
+  all_months = []
+  month = 0
+  month_timings = []
+  for timing in timings:
+    if timing.start.month == month:
+      month_timings.append(timing)
+    else:
+      month = timing.start.month
+      month_timings = [timing]
+      all_months.append(month_timings)
+
+  # Report stats for all builds found.
+  over_all_stats = CalculateBuildStats(timings)
+
+  result = '%s(%s) - %s(%s)\n' % (timings[0].start.date(), timings[0].id,
+                                  timings[-1].start.date(), timings[-1].id)
+  result += 'ALL:     %s\n' % (over_all_stats,)
+
+  if stages:
+    stage_names, _, stats_stages = FindAndSortStageStats(None, timings)
+
+    for name in stage_names:
+      result += '  %s:\n' % name
+      s = stats_stages.get(name)
+      result += '    start:    %s\n' % (s.start,)
+      result += '    duration: %s\n' % (s.duration,)
+      result += '    finish:   %s\n' % (s.finish,)
+
+
+  # Report stats per month.
+  for month_timings in all_months:
+    month_stats = CalculateBuildStats(month_timings)
+    prefix = '%s-%s:' % (month_timings[0].start.year,
+                         month_timings[0].start.month)
+    result += '%s%s\n' % (prefix.ljust(9), month_stats)
+
+    if stages:
+      stage_names, _, stats_stages = FindAndSortStageStats(None, month_timings)
+
+      for name in stage_names:
+        result += '  %s:\n' % name
+        s = stats_stages.get(name)
+        result += '    start:    %s\n' % (s.start,)
+        result += '    duration: %s\n' % (s.duration,)
+        result += '    finish:   %s\n' % (s.finish,)
 
   return result

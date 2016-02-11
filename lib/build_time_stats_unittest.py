@@ -61,6 +61,8 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
     expected_good = build_time_stats.BuildTiming(
         id=1,
         build_config='test_config',
+        start=startTime,
+        finish=startTime + datetime.timedelta(hours=6),
         duration=datetime.timedelta(hours=6),
         stages=[
             build_time_stats.StageTiming(
@@ -98,6 +100,8 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
     expected_bad = build_time_stats.BuildTiming(
         id=2,
         build_config='test_config',
+        start=startTime,
+        finish=None,
         duration=None,
         stages=[
             build_time_stats.StageTiming(
@@ -146,4 +150,7 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
     """TODO(dgarrett)"""
 
   def testReport(self):
+    """TODO(dgarrett)"""
+
+  def testReportTrendingStats(self):
     """TODO(dgarrett)"""

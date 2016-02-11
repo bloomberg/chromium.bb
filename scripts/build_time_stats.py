@@ -57,27 +57,36 @@ def GetParser():
   start_group.add_argument('--start-date', action='store', type='date',
                            default=None,
                            help='Limit scope to a start date in the past.')
-  start_group.add_argument('--past-month', action='store_true', default=False,
+  start_group.add_argument('--month', action='store_true', default=False,
                            help='Limit scope to the past 30 days up to now.')
-  start_group.add_argument('--past-week', action='store_true', default=False,
+  start_group.add_argument('--week', action='store_true', default=False,
                            help='Limit scope to the past week up to now.')
-  start_group.add_argument('--past-day', action='store_true', default=False,
+  start_group.add_argument('--day', action='store_true', default=False,
                            help='Limit scope to the past day up to now.')
 
   parser.add_argument('--end-date', action='store', type='date', default=None,
                       help='Limit scope to an end date in the past.')
+
+  parser.add_argument('--trending', action='store_true', default=False,
+                      help='Show stats for all day/weeks/months we have.')
+
+  parser.add_argument('--stages', action='store_true', default=True,
+                      help='Do not show stats for all stages run.')
+  parser.add_argument('--nostages', dest='stages', action='store_false',
+                      help='Do not show stats for all stages run.')
 
   return parser
 
 
 def OptionsToStartEndDates(options):
   end_date = options.end_date or datetime.datetime.now().date()
-  start_date = end_date - datetime.timedelta(days=7)
 
-  if options.past_month:
+  if options.month:
     start_date = end_date - datetime.timedelta(days=30)
-  elif options.past_day:
+  elif options.day:
     start_date = end_date - datetime.timedelta(days=1)
+  elif options.start_date:
+    start_date = options.start_date
   else:
     # Default of past_week.
     start_date = end_date - datetime.timedelta(days=7)
@@ -89,10 +98,23 @@ def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
 
+  db = cidb.CIDBConnection(options.cred_dir)
+
   # Timeframe for discovering builds, if options.build_id not used.
   start_date, end_date = OptionsToStartEndDates(options)
 
-  db = cidb.CIDBConnection(options.cred_dir)
+  if options.trending:
+    # Trending is sufficiently different to be handled on it's own.
+    assert options.build_config, 'A build config is required for trending.'
+
+    # Gather data for all builds with the given config.
+    statuses = build_time_stats.BuildConfigToStatuses(
+        db, options.build_config, None, None)
+    timings = [build_time_stats.GetBuildTimings(status) for status in statuses]
+    timings.sort(key=lambda b: b.id)
+
+    print(build_time_stats.ReportTrendingStats(timings, options.stages))
+    return
 
   # Data about a single build (optional).
   focus_build = None
@@ -118,4 +140,4 @@ def main(argv):
                     for status in builds_statuses]
 
   # Report average data.
-  print(build_time_stats.Report(focus_build, builds_timings))
+  print(build_time_stats.Report(focus_build, builds_timings, options.stages))
