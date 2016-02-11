@@ -165,19 +165,10 @@ void PrintTo(const SampleMatcherP2<P1, P2>& matcher, std::ostream* os) {
 
 }  // namespace
 
-class SiteDetailsBrowserTest : public ExtensionBrowserTest,
-                               public testing::WithParamInterface<const char*> {
+class SiteDetailsBrowserTest : public ExtensionBrowserTest {
  public:
   SiteDetailsBrowserTest() {}
   ~SiteDetailsBrowserTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    std::string switch_name = GetParam();
-    if (!switch_name.empty()) {
-      command_line->AppendSwitch(switch_name);
-    }
-  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -324,7 +315,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest,
 // Test the accuracy of SiteDetails process estimation, in the presence of
 // multiple iframes, navigation, multiple BrowsingInstances, and multiple tabs
 // in the same BrowsingInstance.
-IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ManyIframes) {
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   // Page with 14 nested oopifs across 9 sites (a.com through i.com).
   // None of these are https.
   GURL abcdefghi_url = embedded_test_server()->GetURL(
@@ -619,7 +610,7 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_FALSE(IsInTrial("SiteIsolationExtensionsActive"));
 }
 
-IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, IsolateExtensions) {
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   // We start on "about:blank", which should be credited with a process in this
   // case.
   scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
@@ -899,7 +890,7 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, IsolateExtensions) {
 
 // Exercises accounting in the case where an extension has two different-site
 // web iframes.
-IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
   scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
   details->StartFetchAndWait();
 
@@ -937,7 +928,7 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
 }
 
 // Verifies that --isolate-extensions doesn't isolate hosted apps.
-IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
   GURL app_with_web_iframe_url = embedded_test_server()->GetURL(
       "app.org", "/cross_site_iframe_factory.html?app.org(b.com)");
   GURL app_in_web_iframe_url = embedded_test_server()->GetURL(
@@ -1083,7 +1074,7 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
 }
 
 // Verifies that the client is put in the appropriate field trial group.
-IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, VerifyFieldTrialGroup) {
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, VerifyFieldTrialGroup) {
   const Extension* extension = CreateExtension("Extension", false);
   GURL tab1_url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)");
@@ -1114,7 +1105,7 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest, VerifyFieldTrialGroup) {
 
 // Verifies that the UMA counter for SiteInstances in a BrowsingInstance is
 // correct when using tabs with web pages.
-IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest,
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
                        VerifySiteInstanceCountInBrowsingInstance) {
   // Page with 14 nested oopifs across 9 sites (a.com through i.com).
   GURL abcdefghi_url = embedded_test_server()->GetURL(
@@ -1184,7 +1175,7 @@ IN_PROC_BROWSER_TEST_P(SiteDetailsBrowserTest,
 
 // Verifies that the UMA counter for SiteInstances in a BrowsingInstance is
 // correct when extensions and web pages are mixed together.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     SiteDetailsBrowserTest,
     VerifySiteInstanceCountInBrowsingInstanceWithExtensions) {
   // Open two a.com tabs (with cross site http iframes). IsolateExtensions mode
@@ -1241,10 +1232,3 @@ IN_PROC_BROWSER_TEST_P(
                                 ElementsAre(Bucket(1, 1), Bucket(3, 1)),
                                 ElementsAre(Bucket(1, 1), Bucket(5, 1))));
 }
-
-INSTANTIATE_TEST_CASE_P(
-    ,
-    SiteDetailsBrowserTest,
-    testing::Values("",
-                    extensions::switches::kIsolateExtensions,
-                    switches::kSitePerProcess));
