@@ -101,7 +101,9 @@ class Surface : public aura::Window, public ui::CompositorObserver {
   // Returns a trace value representing the state of the surface.
   scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
 
-  bool HasPendingDamageForTesting() const { return !pending_damage_.IsEmpty(); }
+  bool HasPendingDamageForTesting(const gfx::Rect& damage) const {
+    return pending_damage_.contains(gfx::RectToSkIRect(damage));
+  }
 
   // Overridden from ui::CompositorObserver:
   void OnCompositingDidCommit(ui::Compositor* compositor) override;
@@ -128,9 +130,7 @@ class Surface : public aura::Window, public ui::CompositorObserver {
   base::WeakPtr<Buffer> pending_buffer_;
 
   // The damage region to schedule paint for when Commit() is called.
-  // TODO(reveman): Use SkRegion here after adding a version of
-  // ui::Layer::SchedulePaint that takes a SkRegion.
-  gfx::Rect pending_damage_;
+  SkRegion pending_damage_;
 
   // These lists contains the callbacks to notify the client when it is a good
   // time to start producing a new frame. These callbacks move to

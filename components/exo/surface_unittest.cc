@@ -56,10 +56,13 @@ TEST_F(SurfaceTest, Damage) {
   // the surface to the buffer size.
   surface->Attach(buffer.get());
 
-  // Mark area inside the bounds of the surface as damaged. This should result
+  // Mark areas inside the bounds of the surface as damaged. This should result
   // in pending damage.
   surface->Damage(gfx::Rect(0, 0, 10, 10));
-  EXPECT_TRUE(surface->HasPendingDamageForTesting());
+  surface->Damage(gfx::Rect(10, 10, 10, 10));
+  EXPECT_TRUE(surface->HasPendingDamageForTesting(gfx::Rect(0, 0, 10, 10)));
+  EXPECT_TRUE(surface->HasPendingDamageForTesting(gfx::Rect(10, 10, 10, 10)));
+  EXPECT_FALSE(surface->HasPendingDamageForTesting(gfx::Rect(5, 5, 10, 10)));
 }
 
 void SetFrameTime(base::TimeTicks* result, base::TimeTicks frame_time) {

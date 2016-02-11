@@ -138,7 +138,7 @@ void Surface::Attach(Buffer* buffer) {
 void Surface::Damage(const gfx::Rect& damage) {
   TRACE_EVENT1("exo", "Surface::Damage", "damage", damage.ToString());
 
-  pending_damage_.Union(damage);
+  pending_damage_.op(gfx::RectToSkIRect(damage), SkRegion::kUnion_Op);
 }
 
 void Surface::RequestFrameCallback(const FrameCallback& callback) {
@@ -296,8 +296,11 @@ void Surface::CommitSurfaceHierarchy() {
     }
 
     // Schedule redraw of the damage region.
-    layer()->SchedulePaint(pending_damage_);
-    pending_damage_ = gfx::Rect();
+    for (SkRegion::Iterator it(pending_damage_); !it.done(); it.next())
+      layer()->SchedulePaint(gfx::SkIRectToRect(it.rect()));
+
+    // Reset damage.
+    pending_damage_.setEmpty();
   }
 
   ui::Compositor* compositor = layer()->GetCompositor();
