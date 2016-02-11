@@ -6,15 +6,16 @@
 #define COMPONENTS_CERTIFICATE_TRANSPARENCY_LOG_PROOF_FETCHER_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
-#include <map>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "net/url_request/url_request.h"
 
 namespace base {
 class Value;
@@ -34,13 +35,19 @@ class GURL;
 
 namespace certificate_transparency {
 
+class LogResponseHandler;
+
 // Fetches Signed Tree Heads (STHs) and consistency proofs from Certificate
 // Transparency logs using the URLRequestContext provided during the instance
 // construction.
 // Must outlive the provided URLRequestContext.
-class LogProofFetcher : public net::URLRequest::Delegate {
+class LogProofFetcher {
  public:
-  static const size_t kMaxLogResponseSizeInBytes = 600;
+  // Buffer size for log replies - currently the reply to
+  // get-consistency-proof is the biggest one this class handles. 1500 bytes
+  // should be enough to accommodate 31 proof nodes + JSON overhead, supporting
+  // trees with up to 100 million entries.
+  static const size_t kMaxLogResponseSizeInBytes = 1500;
 
   // Callback for successful retrieval of Signed Tree Heads. Called
   // with the log_id of the log the STH belogs to (as supplied by the caller
@@ -52,11 +59,20 @@ class LogProofFetcher : public net::URLRequest::Delegate {
   // Callback for failure of Signed Tree Head retrieval. Called with the log_id
   // that the log fetching was requested for and a net error code of the
   // failure.
+  // |http_response_code| is meaningful only if |net_error| is net::OK.
   using FetchFailedCallback = base::Callback<
       void(const std::string& log_id, int net_error, int http_response_code)>;
 
+  // Callback for successful retrieval of consistency proofs between two
+  // STHs. Called with the log_id of the log the consistency belongs to (as
+  // supplied by the caller to FetchConsistencyProof) and the vector of
+  // proof nodes.
+  using ConsistencyProofFetchedCallback =
+      base::Callback<void(const std::string& log_id,
+                          const std::vector<std::string>& consistency_proof)>;
+
   explicit LogProofFetcher(net::URLRequestContext* request_context);
-  ~LogProofFetcher() override;
+  ~LogProofFetcher();
 
   // Fetch the latest Signed Tree Head from the log identified by |log_id|
   // from |base_log_url|. The |log_id| will be passed into the callbacks to
@@ -75,44 +91,37 @@ class LogProofFetcher : public net::URLRequest::Delegate {
       const SignedTreeHeadFetchedCallback& fetched_callback,
       const FetchFailedCallback& failed_callback);
 
-  // net::URLRequest::Delegate
-  void OnResponseStarted(net::URLRequest* request) override;
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
+  // Fetch a consistency proof between the Merkle trees identified by
+  // |old_tree_size| and |new_tree_size| of the log identified by |log_id|
+  // from |base_log_url|.
+  //
+  // See the documentation of FetchSignedTreeHead regarding request destruction
+  // and multiple requests to the same log.
+  void FetchConsistencyProof(
+      const GURL& base_log_url,
+      const std::string& log_id,
+      uint64_t old_tree_size,
+      uint64_t new_tree_size,
+      const ConsistencyProofFetchedCallback& fetched_callback,
+      const FetchFailedCallback& failed_callback);
 
  private:
-  struct FetchState;
-  // Handles the final result of a URLRequest::Read call on |request|.
-  // Returns true if another read should be started, false if the read
-  // failed completely or we have to wait for OnResponseStarted to
-  // be called.
-  bool HandleReadResult(net::URLRequest* request,
-                        FetchState* params,
-                        int bytes_read);
+  // Starts the fetch (by delegating to the LogResponseHandler)
+  // and stores the |log_handler| in |inflight_fetches_| for later
+  // cleanup.
+  void StartFetch(const GURL& request_url, LogResponseHandler* log_handler);
 
-  // Calls URLRequest::Read on |request| repeatedly, until HandleReadResult
-  // indicates it should no longer be called. Usually this would be when there
-  // is pending IO that requires waiting for OnResponseStarted to be called.
-  void StartNextRead(net::URLRequest* request, FetchState* params);
-
-  // Performs post-report cleanup.
-  void RequestComplete(net::URLRequest* request);
-  // Deletes the request and associated FetchState from the internal map.
-  void CleanupRequest(net::URLRequest* request);
-  // Invokes the failure callback with the supplied arguments, then cleans up
-  // the request.
-  void InvokeFailureCallback(net::URLRequest* request,
-                             int net_error,
-                             int http_response_code);
-
-  // Callbacks for parsing the STH's JSON by the SafeJsonParser
-  void OnSTHJsonParseSuccess(net::URLRequest* request,
-                             scoped_ptr<base::Value> parsed_json);
-  void OnSTHJsonParseError(net::URLRequest* request, const std::string& error);
+  // Callback for when the fetch was done (successfully or not).
+  // Deletes, and removes, the |log_handler| from the |inflight_fetches_|.
+  // Additionally, invokes |caller_callback| which is typically
+  // one of the callbacks provided to the Fetch... method, bound to
+  // success/failure parameters.
+  void OnFetchDone(LogResponseHandler* log_handler,
+                   const base::Closure& caller_callback);
 
   net::URLRequestContext* const request_context_;
 
-  // Owns the contained requests, as well as FetchState.
-  std::map<net::URLRequest*, FetchState*> inflight_requests_;
+  std::set<LogResponseHandler*> inflight_fetches_;
 
   base::WeakPtrFactory<LogProofFetcher> weak_factory_;
 
