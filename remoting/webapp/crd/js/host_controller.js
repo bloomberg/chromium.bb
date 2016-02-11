@@ -56,8 +56,7 @@ remoting.HostController.State.fromString = function(state) {
 remoting.HostController.AsyncResult = {
   OK: 0,
   FAILED: 1,
-  CANCELLED: 2,
-  FAILED_DIRECTORY: 3
+  CANCELLED: 2
 };
 
 /**

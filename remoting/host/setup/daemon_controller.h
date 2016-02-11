@@ -58,9 +58,6 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     // TODO(sergeyu): Current implementations don't return this value.
     RESULT_CANCELLED = 2,
 
-    // Failed to access host directory.
-    RESULT_FAILED_DIRECTORY = 3
-
     // TODO(sergeyu): Add more error codes when we know how to handle
     // them in the webapp.
   };

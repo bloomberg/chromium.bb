@@ -505,9 +505,6 @@ void Me2MeNativeMessagingHost::SendAsyncResult(
     case DaemonController::RESULT_CANCELLED:
       response->SetString("result", "CANCELLED");
       break;
-    case DaemonController::RESULT_FAILED_DIRECTORY:
-      response->SetString("result", "FAILED_DIRECTORY");
-      break;
   }
   channel_->SendMessage(std::move(response));
 }
