@@ -202,7 +202,8 @@ unsigned ImageInternalFormat(VideoPixelFormat format, size_t plane) {
       return GL_RED_EXT;
     case PIXEL_FORMAT_NV12:
       DCHECK_LE(plane, 1u);
-      return GL_RGB_YCBCR_420V_CHROMIUM;
+      DLOG(WARNING) << "NV12 format not supported yet";
+      return 0;  // TODO(andresantoso): Implement extension for NV12.
     case PIXEL_FORMAT_UYVY:
       DCHECK_EQ(0u, plane);
       return GL_RGB_YCBCR_422_CHROMIUM;
