@@ -78,8 +78,13 @@ public class AwContentsTest extends AwTestBase {
         destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
     }
 
+    /**
+     * Disabled for the sandboxed-renderer case due to flakiness.
+     * @see https://crbug.com/585952
+     */
     @LargeTest
     @Feature({"AndroidWebView"})
+    @ParameterizedTest.Set
     public void testCreateLoadDestroyManyTimes() throws Throwable {
         for (int i = 0; i < 10; ++i) {
             AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
