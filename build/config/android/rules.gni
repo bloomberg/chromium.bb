@@ -1535,9 +1535,6 @@ template("android_apk") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    if (defined(invoker.apk_under_test)) {
-      deps += [ "${invoker.apk_under_test}__java" ]
-    }
   }
 
   # TODO(cjhopman): This is only ever needed to calculate the list of tests to
@@ -1999,7 +1996,6 @@ template("instrumentation_test_apk") {
 
       # Required by test runner to enumerate test list.
       ":${_apk_target_name}_dist_ijar",
-      invoker.apk_under_test,
     ]
   }
   group("${target_name}_incremental") {
