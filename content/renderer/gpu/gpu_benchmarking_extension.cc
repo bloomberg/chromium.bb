@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/layer.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
@@ -467,6 +468,7 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("runMicroBenchmark", &GpuBenchmarking::RunMicroBenchmark)
       .SetMethod("sendMessageToMicroBenchmark",
                  &GpuBenchmarking::SendMessageToMicroBenchmark)
+      .SetMethod("hasGpuChannel", &GpuBenchmarking::HasGpuChannel)
       .SetMethod("hasGpuProcess", &GpuBenchmarking::HasGpuProcess);
 }
 
@@ -868,9 +870,18 @@ bool GpuBenchmarking::SendMessageToMicroBenchmark(
                                                            std::move(value));
 }
 
+bool GpuBenchmarking::HasGpuChannel() {
+  GpuChannelHost* gpu_channel = RenderThreadImpl::current()->GetGpuChannel();
+  return !!gpu_channel;
+}
+
 bool GpuBenchmarking::HasGpuProcess() {
-    GpuChannelHost* gpu_channel = RenderThreadImpl::current()->GetGpuChannel();
-    return !!gpu_channel;
+  bool has_gpu_process = false;
+  if (!RenderThreadImpl::current()->Send(
+          new GpuHostMsg_HasGpuProcess(&has_gpu_process)))
+    return false;
+
+  return has_gpu_process;
 }
 
 }  // namespace content

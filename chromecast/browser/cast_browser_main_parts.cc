@@ -321,6 +321,14 @@ int CastBrowserMainParts::PreCreateThreads() {
   // AudioManager is created immediately after threads are created, requiring
   // AudioManagerFactory to be set beforehand.
   ::media::AudioManager::SetFactory(new media::CastAudioManagerFactory());
+
+  // Set GL strings so GPU config code can make correct feature blacklisting/
+  // whitelisting decisions.
+  // Note: SetGLStrings can be called before GpuDataManager::Initialize.
+  scoped_ptr<CastSysInfo> sys_info = CreateSysInfo();
+  content::GpuDataManager::GetInstance()->SetGLStrings(
+      sys_info->GetGlVendor(), sys_info->GetGlRenderer(),
+      sys_info->GetGlVersion());
 #endif
 
 #if defined(USE_AURA)
@@ -339,16 +347,6 @@ int CastBrowserMainParts::PreCreateThreads() {
 }
 
 void CastBrowserMainParts::PreMainMessageLoopRun() {
-#if !defined(OS_ANDROID)
-  // Set GL strings so GPU config code can make correct feature blacklisting/
-  // whitelisting decisions.
-  // Note: SetGLStrings MUST be called after GpuDataManager::Initialize.
-  scoped_ptr<CastSysInfo> sys_info = CreateSysInfo();
-  content::GpuDataManager::GetInstance()->SetGLStrings(
-      sys_info->GetGlVendor(), sys_info->GetGlRenderer(),
-      sys_info->GetGlVersion());
-#endif  // !defined(OS_ANDROID)
-
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
   metrics::RegisterPrefs(pref_registry.get());
   cast_browser_process_->SetPrefService(

@@ -874,6 +874,20 @@ int ChromeBrowserMainParts::PreCreateThreads() {
       chrome_extra_parts_[i]->PreCreateThreads();
   }
 
+  // It is important to call gl_string_manager()->Initialize() before starting
+  // the gpu process. Internally it properly setup the black listed features.
+  // Which it is used to decide whether to start or not the gpu process from
+  // BrowserMainLoop::BrowserThreadsStarted.
+
+  // Retrieve cached GL strings from local state and use them for GPU
+  // blacklist decisions.
+
+  if (g_browser_process->gl_string_manager())
+    g_browser_process->gl_string_manager()->Initialize();
+
+  // Create an instance of GpuModeManager to watch gpu mode pref change.
+  g_browser_process->gpu_mode_manager();
+
   return result_code_;
 }
 
@@ -1485,14 +1499,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).
   PostProfileInit();
-
-  // Retrieve cached GL strings from local state and use them for GPU
-  // blacklist decisions.
-  if (g_browser_process->gl_string_manager())
-    g_browser_process->gl_string_manager()->Initialize();
-
-  // Create an instance of GpuModeManager to watch gpu mode pref change.
-  g_browser_process->gpu_mode_manager();
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // Show the First Run UI if this is the first time Chrome has been run on

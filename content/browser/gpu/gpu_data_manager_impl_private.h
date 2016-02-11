@@ -265,10 +265,17 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool gpu_process_accessible_;
 
+  // True if Initialize() has been completed.
+  bool is_initialized_;
+
   // True if all future Initialize calls should be ignored.
   bool finalized_;
 
   std::string disabled_extensions_;
+
+  // If one tries to call a member before initialization then it is defered
+  // until Initialize() is completed.
+  std::vector<base::Closure> post_init_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

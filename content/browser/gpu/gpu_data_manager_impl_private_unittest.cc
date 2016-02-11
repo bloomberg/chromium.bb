@@ -233,6 +233,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideExceptions) {
 
 TEST_F(GpuDataManagerImplPrivateTest, DisableHardwareAcceleration) {
   ScopedGpuDataManagerImplPrivate manager;
+  manager->InitializeForTesting("", gpu::GPUInfo());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   std::string reason;
   EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
@@ -248,6 +249,7 @@ TEST_F(GpuDataManagerImplPrivateTest, DisableHardwareAcceleration) {
 TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering) {
   // Blacklist, then register SwiftShader.
   ScopedGpuDataManagerImplPrivate manager;
+  manager->InitializeForTesting("", gpu::GPUInfo());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_FALSE(manager->ShouldUseSwiftShader());
@@ -270,6 +272,7 @@ TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering) {
 TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering2) {
   // Register SwiftShader, then blacklist.
   ScopedGpuDataManagerImplPrivate manager;
+  manager->InitializeForTesting("", gpu::GPUInfo());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_FALSE(manager->ShouldUseSwiftShader());
@@ -311,6 +314,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuInfoUpdate) {
 
 TEST_F(GpuDataManagerImplPrivateTest, NoGpuInfoUpdateWithSwiftShader) {
   ScopedGpuDataManagerImpl manager;
+  manager->InitializeForTesting("", gpu::GPUInfo());
 
   manager->DisableHardwareAcceleration();
   const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
@@ -589,6 +593,43 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsNoEffects) {
   // SetGLStrings() has no effects because GPUInfo already got these strings.
   // (Otherwise the entry should not apply.)
   manager->SetGLStrings(kGLVendorMesa, kGLRendererMesa, kGLVersionMesa802);
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
+  EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
+  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsDefered) {
+  const char* kGLVendorMesa = "Tungsten Graphics, Inc";
+  const char* kGLRendererMesa = "Mesa DRI Intel(R) G41";
+  const char* kGLVersionMesa801 = "2.1 Mesa 8.0.1-DEVEL";
+
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
+
+  const std::string blacklist_json = LONG_STRING_CONST({
+    "name" : "gpu blacklist",
+    "version" : "0.1",
+    "entries" : [ {
+      "id" : 1,
+      "vendor_id" : "0x8086",
+      "device_id" : ["0x0042"],
+      "driver_vendor" : "Mesa",
+      "driver_version" : {"op" : ">=", "value" : "8.0.0"},
+      "features" : ["webgl"]
+    } ]
+  });
+
+  // Check that it is allowed to call SetGLStrings before Initialize.
+
+  // Assume browser gets GL strings from local state.
+  manager->SetGLStrings(kGLVendorMesa, kGLRendererMesa, kGLVersionMesa801);
+
+  gpu::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.device_id = 0x0042;
+  manager->InitializeForTesting(blacklist_json, gpu_info);
+
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));

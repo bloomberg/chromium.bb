@@ -36,10 +36,14 @@ class GpuMessageFilter : public BrowserMessageFilter {
   // Message handlers called on the browser IO thread:
   void OnEstablishGpuChannel(CauseForGpuLaunch,
                              IPC::Message* reply);
+  void OnHasGpuProcess(IPC::Message* reply);
   // Helper callbacks for the message handlers.
   void EstablishChannelCallback(scoped_ptr<IPC::Message> reply,
                                 const IPC::ChannelHandle& channel,
                                 const gpu::GPUInfo& gpu_info);
+  void GetGpuProcessHandlesCallback(
+      scoped_ptr<IPC::Message> reply,
+      const std::list<base::ProcessHandle>& handles);
 
   int gpu_process_id_;
   int render_process_id_;

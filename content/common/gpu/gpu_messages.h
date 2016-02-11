@@ -412,6 +412,9 @@ IPC_SYNC_MESSAGE_CONTROL1_3(GpuHostMsg_EstablishGpuChannel,
                             IPC::ChannelHandle /* handle to channel */,
                             gpu::GPUInfo /* stats about GPU process*/)
 
+// A renderer sends this when it wants to know whether a gpu process exists.
+IPC_SYNC_MESSAGE_CONTROL0_1(GpuHostMsg_HasGpuProcess, bool /* result */)
+
 // Response from GPU to a GputMsg_Initialize message.
 IPC_MESSAGE_CONTROL2(GpuHostMsg_Initialized,
                      bool /* result */,

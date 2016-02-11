@@ -10,6 +10,13 @@
 namespace switches {
 
 GPU_EXPORT extern const char kGpuDriverBugWorkarounds[];
+GPU_EXPORT extern const char kGpuTestingNoCompleteInfoCollection[];
+GPU_EXPORT extern const char kGpuTestingOsVersion[];
+GPU_EXPORT extern const char kGpuTestingVendorId[];
+GPU_EXPORT extern const char kGpuTestingDeviceId[];
+GPU_EXPORT extern const char kGpuTestingGLVendor[];
+GPU_EXPORT extern const char kGpuTestingGLRenderer[];
+GPU_EXPORT extern const char kGpuTestingGLVersion[];
 
 }  // namespace switches
 

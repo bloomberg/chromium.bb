@@ -34,6 +34,7 @@ bool GpuMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuMessageFilter, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_EstablishGpuChannel,
                                     OnEstablishGpuChannel)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_HasGpuProcess, OnHasGpuProcess)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -80,6 +81,13 @@ void GpuMessageFilter::OnEstablishGpuChannel(
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }
 
+void GpuMessageFilter::OnHasGpuProcess(IPC::Message* reply_ptr) {
+  scoped_ptr<IPC::Message> reply(reply_ptr);
+  GpuProcessHost::GetProcessHandles(
+      base::Bind(&GpuMessageFilter::GetGpuProcessHandlesCallback,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
+}
+
 void GpuMessageFilter::EstablishChannelCallback(
     scoped_ptr<IPC::Message> reply,
     const IPC::ChannelHandle& channel,
@@ -88,6 +96,14 @@ void GpuMessageFilter::EstablishChannelCallback(
 
   GpuHostMsg_EstablishGpuChannel::WriteReplyParams(
       reply.get(), render_process_id_, channel, gpu_info);
+  Send(reply.release());
+}
+
+void GpuMessageFilter::GetGpuProcessHandlesCallback(
+    scoped_ptr<IPC::Message> reply,
+    const std::list<base::ProcessHandle>& handles) {
+  bool has_gpu_process = handles.size() > 0;
+  GpuHostMsg_HasGpuProcess::WriteReplyParams(reply.get(), has_gpu_process);
   Send(reply.release());
 }
 

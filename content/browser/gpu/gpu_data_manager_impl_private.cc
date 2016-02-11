@@ -373,8 +373,12 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
 }
 
 void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
-  if (complete_gpu_info_already_requested_ || IsCompleteGpuInfoAvailable())
+  if (complete_gpu_info_already_requested_ || IsCompleteGpuInfoAvailable() ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGpuTestingNoCompleteInfoCollection)) {
     return;
+  }
+
   complete_gpu_info_already_requested_ = true;
 
   GpuProcessHost::SendOnIO(
@@ -463,6 +467,13 @@ void GpuDataManagerImplPrivate::SetGLStrings(const std::string& gl_vendor,
   if (gl_vendor.empty() && gl_renderer.empty() && gl_version.empty())
     return;
 
+  if (!is_initialized_) {
+    post_init_tasks_.push_back(
+        base::Bind(&GpuDataManagerImplPrivate::SetGLStrings,
+                   base::Unretained(this), gl_vendor, gl_renderer, gl_version));
+    return;
+  }
+
   // If GPUInfo already got GL strings, do nothing.  This is for the rare
   // situation where GPU process collected GL strings before this call.
   if (!gpu_info_.gl_vendor.empty() ||
@@ -523,6 +534,18 @@ void GpuDataManagerImplPrivate::Initialize() {
     TRACE_EVENT0("startup",
       "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
     gpu::CollectBasicGraphicsInfo(&gpu_info);
+
+    if (command_line->HasSwitch(switches::kGpuTestingVendorId) &&
+        command_line->HasSwitch(switches::kGpuTestingDeviceId)) {
+      base::HexStringToUInt(
+          command_line->GetSwitchValueASCII(switches::kGpuTestingVendorId),
+          &gpu_info.gpu.vendor_id);
+      base::HexStringToUInt(
+          command_line->GetSwitchValueASCII(switches::kGpuTestingDeviceId),
+          &gpu_info.gpu.device_id);
+      gpu_info.gpu.active = true;
+      gpu_info.secondary_gpus.clear();
+    }
   }
 #if defined(ARCH_CPU_X86_FAMILY)
   if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id) {
@@ -556,9 +579,17 @@ void GpuDataManagerImplPrivate::Initialize() {
 void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
   GetContentClient()->SetGpuInfo(gpu_info_);
 
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
+  std::string os_version;
+  if (command_line->HasSwitch(switches::kGpuTestingOsVersion))
+    os_version =
+        command_line->GetSwitchValueASCII(switches::kGpuTestingOsVersion);
+
   if (gpu_blacklist_) {
     std::set<int> features = gpu_blacklist_->MakeDecision(
-        gpu::GpuControlList::kOsAny, std::string(), gpu_info_);
+        gpu::GpuControlList::kOsAny, os_version, gpu_info_);
     if (update_histograms_)
       UpdateStats(gpu_info_, gpu_blacklist_.get(), features);
 
@@ -566,13 +597,11 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
   }
   if (gpu_driver_bug_list_) {
     gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
-        gpu::GpuControlList::kOsAny, std::string(), gpu_info_);
+        gpu::GpuControlList::kOsAny, os_version, gpu_info_);
 
     std::set<std::string> disabled_ext_set;
 
     // Merge disabled extensions from the command line with gpu driver bug list.
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
     if (command_line) {
       const std::vector<std::string>& disabled_command_line_exts =
           base::SplitString(
@@ -770,6 +799,13 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
+  if (!is_initialized_) {
+    post_init_tasks_.push_back(
+        base::Bind(&GpuDataManagerImplPrivate::DisableHardwareAcceleration,
+                   base::Unretained(this)));
+    return;
+  }
+
   card_blacklisted_ = true;
 
   for (int i = 0; i < gpu::NUMBER_OF_GPU_FEATURE_TYPES; ++i)
@@ -961,8 +997,7 @@ GpuDataManagerImplPrivate* GpuDataManagerImplPrivate::Create(
   return new GpuDataManagerImplPrivate(owner);
 }
 
-GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
-    GpuDataManagerImpl* owner)
+GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
     : complete_gpu_info_already_requested_(false),
       observer_list_(new GpuDataManagerObserverList),
       use_swiftshader_(false),
@@ -973,6 +1008,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
       owner_(owner),
       display_count_(0),
       gpu_process_accessible_(true),
+      is_initialized_(false),
       finalized_(false) {
   DCHECK(owner_);
   const base::CommandLine* command_line =
@@ -1029,6 +1065,13 @@ void GpuDataManagerImplPrivate::InitializeImpl(
   UpdateGpuInfo(gpu_info);
   UpdateGpuSwitchingManager(gpu_info);
   UpdatePreliminaryBlacklistedFeatures();
+
+  // Set initialized before running callbacks.
+  is_initialized_ = true;
+
+  for (const auto& callback : post_init_tasks_)
+    callback.Run();
+  post_init_tasks_.clear();
 }
 
 void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(
