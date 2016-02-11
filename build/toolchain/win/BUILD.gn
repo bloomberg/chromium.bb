@@ -155,6 +155,7 @@ template("msvc_toolchain") {
       ]
       link_output = libname
       depend_output = libname
+      runtime_link_output = dllname
 
       # Since the above commands only updates the .lib file when it changes, ask
       # Ninja to check if the timestamp actually changed to know if downstream
