@@ -135,6 +135,7 @@ if (is_android) {
 
   # GYP: //third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib
   android_library("cacheinvalidation_javalib") {
+    chromium_code = false
     emma_never_instrument = true
     deps = [
       ":cacheinvalidation_proto_java",

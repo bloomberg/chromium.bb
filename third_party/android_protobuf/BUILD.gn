@@ -149,6 +149,7 @@ if (is_android) {
 
   # GYP: //third_party/android_protobuf/android_protobuf.gyp:protobuf_nano_javalib
   android_library("protobuf_nano_javalib") {
+    chromium_code = false
     java_files = [
       "src/java/src/main/java/com/google/protobuf/nano/CodedInputByteBufferNano.java",
       "src/java/src/main/java/com/google/protobuf/nano/CodedOutputByteBufferNano.java",

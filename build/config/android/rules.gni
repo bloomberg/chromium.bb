@@ -2316,6 +2316,7 @@ template("proto_java_library") {
   }
 
   android_library(target_name) {
+    chromium_code = false
     java_files = []
     srcjar_deps = [ ":${_template_name}__protoc_java" ]
     deps = [
