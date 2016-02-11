@@ -170,6 +170,12 @@ void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
                   new base::FundamentalValue(false),
                   nullptr);
+  policy_map->Set(key::kArcEnabled,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER,
+                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                  new base::FundamentalValue(false),
+                  nullptr);
 #endif
 }
 
@@ -227,6 +233,12 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
                 new base::FundamentalValue(false),
                 nullptr);
   expected->Set(key::kAllowDinosaurEasterEgg,
+                POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER,
+                POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                new base::FundamentalValue(false),
+                nullptr);
+  expected->Set(key::kArcEnabled,
                 POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER,
                 POLICY_SOURCE_ENTERPRISE_DEFAULT,

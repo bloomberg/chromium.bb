@@ -62802,6 +62802,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="315" label="Block key generation on these sites"/>
   <int value="316"
       label="Configure the required domain name for remote access clients"/>
+  <int value="317" label="ARC Enabled"/>
+  <int value="318" label="Configure ARC apps"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
