@@ -4,11 +4,11 @@
         "service_worker_038.wpr": [
             "https://jakearchibald.github.io/trained-to-thrill/"
         ], 
-        "service_worker_039.wpr": [
+        "service_worker_040.wpr": [
             "third_load", 
-            "svgomg_first_load", 
-            "first_load", 
             "svgomg_second_load", 
+            "first_load", 
+            "svgomg_first_load", 
             "second_load"
         ]
     }
