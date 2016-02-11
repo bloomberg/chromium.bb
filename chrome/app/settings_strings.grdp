@@ -357,8 +357,8 @@
   <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE" desc="Title for the list of input methods (keyboard layouts and input method editors) that are enabled.">
     Input methods
   </message>
-  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE" desc="Button under the list of input methods which opens a sub-page that lets the user enable or disable input methods.">
-    Manage inputs
+  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE" desc="Button under the list of input methods which opens a sub-page that lets the user enable or disable devices (such as keyboards).">
+    Manage devices
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE" desc="Title for the section containing the dropdown used to select the language to use for spell checking. The dropdown contains the enabled languages which support spell checking.">
     Spell check
