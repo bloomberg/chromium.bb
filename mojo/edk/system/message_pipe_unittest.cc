@@ -427,14 +427,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(HandlePingPong, MessagePipeTest, h) {
   EXPECT_EQ(MOJO_RESULT_OK, ReadMessage(h, msg, &num_bytes));
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_DataPipeConsumerHandlePingPong \
-    DISABLED_DataPipeConsumerHandlePingPong
-#else
-#define MAYBE_DataPipeConsumerHandlePingPong DataPipeConsumerHandlePingPong
-#endif
-TEST_F(MessagePipeTest, MAYBE_DataPipeConsumerHandlePingPong) {
+// This test is flaky: http://crbug.com/585784
+TEST_F(MessagePipeTest, DISABLED_DataPipeConsumerHandlePingPong) {
   MojoHandle p, c[kPingPongHandlesPerIteration];
   for (size_t i = 0; i < kPingPongHandlesPerIteration; ++i) {
     EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p, &c[i]));
@@ -452,14 +446,8 @@ TEST_F(MessagePipeTest, MAYBE_DataPipeConsumerHandlePingPong) {
     MojoClose(c[i]);
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_DataPipeProducerHandlePingPong \
-    DISABLED_DataPipeProducerHandlePingPong
-#else
-#define MAYBE_DataPipeProducerHandlePingPong DataPipeProducerHandlePingPong
-#endif
-TEST_F(MessagePipeTest, MAYBE_DataPipeProducerHandlePingPong) {
+// This test is flaky: http://crbug.com/585784
+TEST_F(MessagePipeTest, DISABLED_DataPipeProducerHandlePingPong) {
   MojoHandle p[kPingPongHandlesPerIteration], c;
   for (size_t i = 0; i < kPingPongHandlesPerIteration; ++i) {
     EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p[i], &c));
