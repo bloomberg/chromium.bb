@@ -75,7 +75,7 @@ function test()
 
         function step12(next)
         {
-            executionContext.completionsForExpression("arr1[", "arr1[", 5, "", false, checkAgainstGolden.bind(this, ["0]", "1]", "2]", "\"length\"]"], ["3]"], next));
+            executionContext.completionsForExpression("arr1[", "arr1[", 5, "", false, checkAgainstGolden.bind(this, ["\"length\"]"], ["3]"], next));
         },
 
         function step13_ShouldNotCrash(next)
