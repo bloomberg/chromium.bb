@@ -10,8 +10,8 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/NotImplemented.h"
+#include "platform/WaitableEvent.h"
 #include "public/platform/WebScheduler.h"
-#include "public/platform/WebWaitableEvent.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -100,7 +100,7 @@ public:
         WorkerReportingProxy& mockWorkerReportingProxy)
         : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy)
         , m_thread(WebThreadSupportingGC::create("Test thread"))
-        , m_scriptLoadedEvent(adoptPtr(Platform::current()->createWaitableEvent()))
+        , m_scriptLoadedEvent(adoptPtr(new WaitableEvent()))
     {
     }
 
@@ -134,7 +134,7 @@ public:
 
 private:
     OwnPtr<WebThreadSupportingGC> m_thread;
-    OwnPtr<WebWaitableEvent> m_scriptLoadedEvent;
+    OwnPtr<WaitableEvent> m_scriptLoadedEvent;
 };
 
 void notifyScriptLoadedEventToWorkerThreadForTest(WorkerThread* thread)
@@ -168,7 +168,10 @@ public:
 
 class SignalTask : public WebTaskRunner::Task {
 public:
-    SignalTask(WebWaitableEvent* completionEvent) : m_completionEvent(completionEvent) { }
+    SignalTask(WaitableEvent* completionEvent)
+        : m_completionEvent(completionEvent)
+    {
+    }
 
     ~SignalTask() override { }
 
@@ -178,7 +181,7 @@ public:
     }
 
 private:
-    WebWaitableEvent* m_completionEvent; // Not owned.
+    WaitableEvent* m_completionEvent; // Not owned.
 };
 
 } // namespace
@@ -227,7 +230,7 @@ public:
 
     void waitForInit()
     {
-        OwnPtr<WebWaitableEvent> completionEvent = adoptPtr(Platform::current()->createWaitableEvent());
+        OwnPtr<WaitableEvent> completionEvent = adoptPtr(new WaitableEvent());
         m_workerThread->backingThread().postTask(BLINK_FROM_HERE, new SignalTask(completionEvent.get()));
         completionEvent->wait();
     }

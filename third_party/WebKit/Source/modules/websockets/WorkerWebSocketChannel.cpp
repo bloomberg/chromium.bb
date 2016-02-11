@@ -41,9 +41,9 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
+#include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebWaitableEvent.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
@@ -60,7 +60,7 @@ typedef WorkerWebSocketChannel::Peer Peer;
 // thread. signalWorkerThread() must be called before any getters are called.
 class WebSocketChannelSyncHelper : public GarbageCollectedFinalized<WebSocketChannelSyncHelper> {
 public:
-    static WebSocketChannelSyncHelper* create(PassOwnPtr<WebWaitableEvent> event)
+    static WebSocketChannelSyncHelper* create(PassOwnPtr<WaitableEvent> event)
     {
         return new WebSocketChannelSyncHelper(event);
     }
@@ -95,13 +95,13 @@ public:
     DEFINE_INLINE_TRACE() { }
 
 private:
-    explicit WebSocketChannelSyncHelper(PassOwnPtr<WebWaitableEvent> event)
+    explicit WebSocketChannelSyncHelper(PassOwnPtr<WaitableEvent> event)
         : m_event(event)
         , m_connectRequestResult(false)
     {
     }
 
-    OwnPtr<WebWaitableEvent> m_event;
+    OwnPtr<WaitableEvent> m_event;
     bool m_connectRequestResult;
 };
 
@@ -373,7 +373,7 @@ Bridge::Bridge(WebSocketChannelClient* client, WorkerGlobalScope& workerGlobalSc
     : m_client(client)
     , m_workerGlobalScope(workerGlobalScope)
     , m_loaderProxy(m_workerGlobalScope->thread()->workerLoaderProxy())
-    , m_syncHelper(WebSocketChannelSyncHelper::create(adoptPtr(Platform::current()->createWaitableEvent())))
+    , m_syncHelper(WebSocketChannelSyncHelper::create(adoptPtr(new WaitableEvent())))
     , m_peer(new Peer(this, m_loaderProxy, m_syncHelper))
 {
 }

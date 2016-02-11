@@ -9,11 +9,11 @@
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "public/platform/WebWaitableEvent.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -57,7 +57,7 @@ public:
     void run(PassOwnPtr<Handle> src, OwnPtr<Handle>* dest1, OwnPtr<Handle>* dest2)
     {
         m_thread = adoptPtr(new Thread("src thread", Thread::WithExecutionContext));
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
+        m_waitableEvent = adoptPtr(new WaitableEvent());
         m_thread->thread()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&TeeCreationThread<Handle>::runInternal, AllowCrossThreadAccess(this), src, AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2))));
         m_waitableEvent->wait();
     }
@@ -72,7 +72,7 @@ private:
     }
 
     OwnPtr<Thread> m_thread;
-    OwnPtr<WebWaitableEvent> m_waitableEvent;
+    OwnPtr<WaitableEvent> m_waitableEvent;
 };
 
 TEST(DataConsumerTeeTest, CreateDone)

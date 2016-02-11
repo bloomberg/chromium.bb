@@ -32,6 +32,7 @@
 #define HTMLParserThread_h
 
 #include "core/CoreExport.h"
+#include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
@@ -59,7 +60,7 @@ private:
     HTMLParserThread();
     ~HTMLParserThread();
     void setupHTMLParserThread();
-    void cleanupHTMLParserThread(WebWaitableEvent*);
+    void cleanupHTMLParserThread(WaitableEvent*);
 
     OwnPtr<WebThreadSupportingGC> m_thread;
 };

@@ -67,7 +67,6 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "ui/base/layout.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -86,27 +85,6 @@ namespace content {
 
 namespace {
 
-class WebWaitableEventImpl : public blink::WebWaitableEvent {
- public:
-  WebWaitableEventImpl(ResetPolicy policy, InitialState state) {
-    bool manual_reset = policy == ResetPolicy::Manual;
-    bool initially_signaled = state == InitialState::Signaled;
-    impl_.reset(new base::WaitableEvent(manual_reset, initially_signaled));
-  }
-  ~WebWaitableEventImpl() override {}
-
-  void reset() override { impl_->Reset(); }
-  void wait() override { impl_->Wait(); }
-  void signal() override { impl_->Signal(); }
-
-  base::WaitableEvent* impl() {
-    return impl_.get();
-  }
-
- private:
-  scoped_ptr<base::WaitableEvent> impl_;
-  DISALLOW_COPY_AND_ASSIGN(WebWaitableEventImpl);
-};
 
 }  // namespace
 
@@ -507,22 +485,6 @@ void BlinkPlatformImpl::SetCompositorThread(
 
 blink::WebThread* BlinkPlatformImpl::currentThread() {
   return static_cast<blink::WebThread*>(current_thread_slot_.Get());
-}
-
-blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent(
-    blink::WebWaitableEvent::ResetPolicy policy,
-    blink::WebWaitableEvent::InitialState state) {
-  return new WebWaitableEventImpl(policy, state);
-}
-
-blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(
-    const blink::WebVector<blink::WebWaitableEvent*>& web_events) {
-  std::vector<base::WaitableEvent*> events;
-  for (size_t i = 0; i < web_events.size(); ++i)
-    events.push_back(static_cast<WebWaitableEventImpl*>(web_events[i])->impl());
-  size_t idx = base::WaitableEvent::WaitMany(events.data(), events.size());
-  DCHECK_LT(idx, web_events.size());
-  return web_events[idx];
 }
 
 void BlinkPlatformImpl::registerMemoryDumpProvider(

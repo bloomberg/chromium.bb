@@ -52,7 +52,7 @@ class ExecutionContextTask;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
-class WebWaitableEvent;
+class WaitableEvent;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
 struct CrossThreadResourceRequestData;
@@ -182,7 +182,7 @@ private:
         void forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask>) override;
 
         bool m_done;
-        OwnPtr<WebWaitableEvent> m_loaderDoneEvent;
+        OwnPtr<WaitableEvent> m_loaderDoneEvent;
         // Thread-safety: |m_clientTasks| can be written (i.e. Closures are added)
         // on the main thread only before |m_loaderDoneEvent| is signaled and can be read
         // on the worker context thread only after |m_loaderDoneEvent| is signaled.

@@ -7,11 +7,11 @@
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "public/platform/WebWaitableEvent.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Locker.h"
@@ -58,7 +58,7 @@ public:
     void run()
     {
         ThreadHolder holder(this);
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
+        m_waitableEvent = adoptPtr(new WaitableEvent());
 
         postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
         postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
@@ -97,7 +97,7 @@ public:
     void run()
     {
         ThreadHolder holder(this);
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
+        m_waitableEvent = adoptPtr(new WaitableEvent());
 
         postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
         postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
@@ -138,7 +138,7 @@ public:
     void run()
     {
         ThreadHolder holder(this);
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
+        m_waitableEvent = adoptPtr(new WaitableEvent());
 
         postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
         postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
@@ -179,8 +179,8 @@ public:
     void run()
     {
         ThreadHolder holder(this);
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_updateEvent = adoptPtr(Platform::current()->createWaitableEvent());
+        m_waitableEvent = adoptPtr(new WaitableEvent());
+        m_updateEvent = adoptPtr(new WaitableEvent());
 
         postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
         postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
@@ -220,7 +220,7 @@ private:
 
     OwnPtr<WebDataConsumerHandle> m_handle;
     CrossThreadPersistent<CompositeDataConsumerHandle::Updater> m_updater;
-    OwnPtr<WebWaitableEvent> m_updateEvent;
+    OwnPtr<WaitableEvent> m_updateEvent;
 };
 
 class ThreadingRegistrationUpdateTwiceAtOneTimeTest : public DataConsumerHandleTestUtil::ThreadingTestBase {
@@ -231,8 +231,8 @@ public:
     void run()
     {
         ThreadHolder holder(this);
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_updateEvent = adoptPtr(Platform::current()->createWaitableEvent());
+        m_waitableEvent = adoptPtr(new WaitableEvent());
+        m_updateEvent = adoptPtr(new WaitableEvent());
 
         postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
         postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
@@ -266,7 +266,7 @@ private:
 
     OwnPtr<WebDataConsumerHandle> m_handle;
     CrossThreadPersistent<CompositeDataConsumerHandle::Updater> m_updater;
-    OwnPtr<WebWaitableEvent> m_updateEvent;
+    OwnPtr<WaitableEvent> m_updateEvent;
 };
 
 TEST(CompositeDataConsumerHandleTest, Read)

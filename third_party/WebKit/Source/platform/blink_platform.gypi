@@ -137,6 +137,8 @@
       'UUID.h',
       'UserGestureIndicator.cpp',
       'UserGestureIndicator.h',
+      'WaitableEvent.cpp',
+      'WaitableEvent.h',
       'WebScheduler.cpp',
       'WebTaskRunner.cpp',
       'WebThreadSupportingGC.cpp',

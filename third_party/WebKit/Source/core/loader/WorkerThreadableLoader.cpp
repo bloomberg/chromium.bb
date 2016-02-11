@@ -38,6 +38,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
@@ -45,7 +46,6 @@
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebWaitableEvent.h"
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -284,21 +284,23 @@ WorkerThreadableLoader::MainThreadSyncBridge::MainThreadSyncBridge(
     : MainThreadBridgeBase(workerClientWrapper, workerGlobalScope.thread()->workerLoaderProxy())
     , m_done(false)
 {
-    WebWaitableEvent* shutdownEvent = workerGlobalScope.thread()->shutdownEvent();
-    m_loaderDoneEvent = adoptPtr(Platform::current()->createWaitableEvent());
+    WaitableEvent* shutdownEvent = workerGlobalScope.thread()->shutdownEvent();
+    m_loaderDoneEvent = adoptPtr(new WaitableEvent());
 
     createLoader(request, options, resourceLoaderOptions, referrerPolicy, outgoingReferrer);
 
-    WebWaitableEvent* signalled;
+    size_t signaledIndex;
     {
-        Vector<WebWaitableEvent*> events;
+        Vector<WaitableEvent*> events;
+        // Order is important; indicies are used later.
         events.append(shutdownEvent);
         events.append(m_loaderDoneEvent.get());
 
         SafePointScope scope(BlinkGC::HeapPointersOnStack);
-        signalled = Platform::current()->waitMultipleEvents(events);
+        signaledIndex = WaitableEvent::waitMultiple(events);
     }
-    if (signalled == shutdownEvent) {
+    // |signaledIndex| is 0; which is shutdownEvent.
+    if (signaledIndex == 0) {
         cancel();
         return;
     }

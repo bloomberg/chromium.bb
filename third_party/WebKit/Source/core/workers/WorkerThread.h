@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class WebWaitableEvent;
+class WaitableEvent;
 class WorkerGlobalScope;
 class WorkerInspectorController;
 class WorkerMicrotaskRunner;
@@ -77,7 +77,7 @@ public:
     // Can be used to wait for this worker thread to shut down.
     // (This is signaled on the main thread, so it's assumed to be waited on
     // the worker context thread)
-    WebWaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }
+    WaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }
 
     // Called in shutdown sequence. Internally calls terminate() (or
     // terminateInternal) and wait (by *blocking* the calling thread) until the
@@ -175,10 +175,10 @@ private:
     v8::Isolate* m_isolate;
 
     // Used to signal thread shutdown.
-    OwnPtr<WebWaitableEvent> m_shutdownEvent;
+    OwnPtr<WaitableEvent> m_shutdownEvent;
 
     // Used to signal thread termination.
-    OwnPtr<WebWaitableEvent> m_terminationEvent;
+    OwnPtr<WaitableEvent> m_terminationEvent;
 };
 
 } // namespace blink

@@ -11,7 +11,7 @@ namespace blink {
 DataConsumerHandleTestUtil::Thread::Thread(const char* name, InitializationPolicy initializationPolicy)
     : m_thread(WebThreadSupportingGC::create(name))
     , m_initializationPolicy(initializationPolicy)
-    , m_waitableEvent(adoptPtr(Platform::current()->createWaitableEvent()))
+    , m_waitableEvent(adoptPtr(new WaitableEvent()))
 {
     m_thread->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&Thread::initialize, AllowCrossThreadAccess(this))));
     m_waitableEvent->wait();
@@ -165,7 +165,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::Context()
     , m_client(nullptr)
     , m_result(ShouldWait)
     , m_isHandleAttached(true)
-    , m_detached(adoptPtr(Platform::current()->createWaitableEvent()))
+    , m_detached(adoptPtr(new WaitableEvent()))
 {
 }
 

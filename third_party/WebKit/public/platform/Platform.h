@@ -53,7 +53,6 @@
 #include "WebString.h"
 #include "WebURLError.h"
 #include "WebVector.h"
-#include "WebWaitableEvent.h"
 
 class GrContext;
 
@@ -347,19 +346,6 @@ public:
     // Returns an interface to the current thread. This is owned by the
     // embedder.
     virtual WebThread* currentThread() { return nullptr; }
-
-    // WaitableEvent -------------------------------------------------------
-
-    // Creates an embedder-defined waitable event object.
-    WebWaitableEvent* createWaitableEvent() { return createWaitableEvent(WebWaitableEvent::ResetPolicy::Auto, WebWaitableEvent::InitialState::NonSignaled); }
-    virtual WebWaitableEvent* createWaitableEvent(WebWaitableEvent::ResetPolicy, WebWaitableEvent::InitialState) { return nullptr; }
-
-    // Waits on multiple events and returns the event object that has been
-    // signaled. This may return nullptr if it fails to wait events.
-    // Any event objects given to this method must not deleted while this
-    // wait is happening.
-    virtual WebWaitableEvent* waitMultipleEvents(const WebVector<WebWaitableEvent*>& events) { return nullptr; }
-
 
     // Resources -----------------------------------------------------------
 

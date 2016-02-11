@@ -218,7 +218,6 @@
       "platform/WebURLResponse.h",
       "platform/WebUnitTestSupport.h",
       "platform/WebVector.h",
-      "platform/WebWaitableEvent.h",
       "platform/linux/WebFallbackFont.h",
       "platform/linux/WebFontInfo.h",
       "platform/linux/WebFontRenderStyle.h",

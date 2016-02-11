@@ -28,16 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebWaitableEvent_h
-#define WebWaitableEvent_h
+#ifndef WaitableEvent_h
+#define WaitableEvent_h
 
-#include "WebCommon.h"
+#include "platform/PlatformExport.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
+
+namespace base {
+class WaitableEvent;
+}; // namespace base
 
 namespace blink {
 
 // Provides a thread synchronization that can be used to allow one thread to
 // wait until another thread to finish some work.
-class WebWaitableEvent {
+class PLATFORM_EXPORT WaitableEvent {
 public:
     // If ResetPolicy::Manual is specified on creation, to set the event state
     // to non-signaled, a consumer must call reset().  Otherwise, the system
@@ -48,20 +54,33 @@ public:
     // Specify the initial state on creation.
     enum class InitialState { NonSignaled, Signaled };
 
-    virtual ~WebWaitableEvent() {}
+    explicit WaitableEvent(ResetPolicy = ResetPolicy::Auto, InitialState = InitialState::NonSignaled);
+
+    ~WaitableEvent();
 
     // Puts the event in the un-signaled state.
-    virtual void reset() {}
+    void reset();
 
     // Waits indefinitely for the event to be signaled.
-    virtual void wait() {}
+    void wait();
 
     // Puts the event in the signaled state. Causing any thread blocked on Wait
     // to be woken up. The event state is reset to non-signaled after
     // a waiting thread has been released.
-    virtual void signal() {}
+    void signal();
+
+    // Waits on multiple events and returns the index of the object that
+    // has been signaled. Any event objects given to this method must
+    // not deleted while this wait is happening.
+    static size_t waitMultiple(const WTF::Vector<WaitableEvent*>& events);
+
+private:
+    WaitableEvent(const WaitableEvent&) = delete;
+    void operator=(const WaitableEvent&) = delete;
+
+    OwnPtr<base::WaitableEvent> m_impl;
 };
 
 } // namespace blink
 
-#endif // WebWaitableEvent_h
+#endif // WaitableEvent_h

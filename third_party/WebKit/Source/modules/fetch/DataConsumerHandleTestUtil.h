@@ -13,12 +13,12 @@
 #include "modules/fetch/FetchDataLoader.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "public/platform/WebTraceLocation.h"
-#include "public/platform/WebWaitableEvent.h"
 #include "wtf/Deque.h"
 #include "wtf/Locker.h"
 #include "wtf/OwnPtr.h"
@@ -72,7 +72,7 @@ public:
 
         OwnPtr<WebThreadSupportingGC> m_thread;
         const InitializationPolicy m_initializationPolicy;
-        OwnPtr<WebWaitableEvent> m_waitableEvent;
+        OwnPtr<WaitableEvent> m_waitableEvent;
         RefPtrWillBePersistent<NullExecutionContext> m_executionContext;
         OwnPtr<gin::IsolateHolder> m_isolateHolder;
         RefPtr<ScriptState> m_scriptState;
@@ -243,7 +243,7 @@ public:
 
         RefPtr<Context> m_context;
         OwnPtr<WebDataConsumerHandle::Reader> m_reader;
-        OwnPtr<WebWaitableEvent> m_waitableEvent;
+        OwnPtr<WaitableEvent> m_waitableEvent;
         NoopClient m_client;
     };
 
@@ -255,7 +255,7 @@ public:
         void run(PassOwnPtr<WebDataConsumerHandle> handle)
         {
             ThreadHolder holder(this);
-            m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
+            m_waitableEvent = adoptPtr(new WaitableEvent());
             m_handle = handle;
 
             postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
@@ -284,7 +284,7 @@ public:
         void run(PassOwnPtr<WebDataConsumerHandle> handle)
         {
             ThreadHolder holder(this);
-            m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
+            m_waitableEvent = adoptPtr(new WaitableEvent());
             m_handle = handle;
 
             postTaskToReadingThreadAndWait(BLINK_FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
@@ -408,7 +408,7 @@ public:
             void detachHandle();
             Result beginRead(const void** buffer, Flags, size_t* available);
             Result endRead(size_t readSize);
-            WebWaitableEvent* detached() { return m_detached.get(); }
+            WaitableEvent* detached() { return m_detached.get(); }
 
         private:
             Context();
@@ -426,7 +426,7 @@ public:
             Result m_result;
             bool m_isHandleAttached;
             Mutex m_mutex;
-            OwnPtr<WebWaitableEvent> m_detached;
+            OwnPtr<WaitableEvent> m_detached;
         };
 
         Context* context() { return m_context.get(); }
@@ -498,7 +498,7 @@ public:
     public:
         explicit HandleReaderRunner(PassOwnPtr<WebDataConsumerHandle> handle)
             : m_thread(adoptPtr(new Thread("reading thread")))
-            , m_event(adoptPtr(Platform::current()->createWaitableEvent()))
+            , m_event(adoptPtr(new WaitableEvent()))
             , m_isDone(false)
         {
             m_thread->thread()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&HandleReaderRunner::start, AllowCrossThreadAccess(this), handle)));
@@ -531,7 +531,7 @@ public:
         }
 
         OwnPtr<Thread> m_thread;
-        OwnPtr<WebWaitableEvent> m_event;
+        OwnPtr<WaitableEvent> m_event;
         OwnPtr<HandleReadResult> m_result;
         bool m_isDone;
 

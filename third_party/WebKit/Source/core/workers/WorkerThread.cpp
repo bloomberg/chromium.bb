@@ -39,13 +39,13 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebWaitableEvent.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
@@ -217,12 +217,12 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_workerReportingProxy(workerReportingProxy)
     , m_webScheduler(nullptr)
     , m_isolate(nullptr)
-    , m_shutdownEvent(adoptPtr(Platform::current()->createWaitableEvent(
-        WebWaitableEvent::ResetPolicy::Manual,
-        WebWaitableEvent::InitialState::NonSignaled)))
-    , m_terminationEvent(adoptPtr(Platform::current()->createWaitableEvent(
-        WebWaitableEvent::ResetPolicy::Manual,
-        WebWaitableEvent::InitialState::NonSignaled)))
+    , m_shutdownEvent(adoptPtr(new WaitableEvent(
+        WaitableEvent::ResetPolicy::Manual,
+        WaitableEvent::InitialState::NonSignaled)))
+    , m_terminationEvent(adoptPtr(new WaitableEvent(
+        WaitableEvent::ResetPolicy::Manual,
+        WaitableEvent::InitialState::NonSignaled)))
 {
     MutexLocker lock(threadSetMutex());
     workerThreads().add(this);
