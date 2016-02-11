@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import datetime
 import os
 import sys
 
@@ -22,6 +23,7 @@ from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import build_time_stats
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -401,6 +403,8 @@ class ReportStage(generic_stages.BuilderStage,
 <body>
 <h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
 
+  _STATS_HISTORY_DAYS = 7
+
   def __init__(self, builder_run, completion_instance, **kwargs):
     super(ReportStage, self).__init__(builder_run, **kwargs)
 
@@ -641,6 +645,34 @@ class ReportStage(generic_stages.BuilderStage,
 
     return archive_urls
 
+  def CollectComparativeBuildTimings(self, build_id, db):
+    """Create a report comparing this build to recent history.
+
+    Compare the timings for this build to the recent history of the
+    same build config.
+
+    Args:
+      build_id: CIDB id for the current build.
+      db: CIDBConnection instance.
+
+    Returns:
+      The generated report as a multiline string.
+    """
+    current_status = build_time_stats.BuildIdToBuildStatus(db, build_id)
+    current_build = build_time_stats.GetBuildTimings(current_status)
+
+    # We compare against seven days of history.
+    end_date = datetime.datetime.now().date()
+    start_date = end_date - datetime.timedelta(days=self._STATS_HISTORY_DAYS)
+
+    historical_statuses = build_time_stats.BuildConfigToStatuses(
+        db, current_status['build_config'], start_date, end_date)
+
+    historical_timing = [build_time_stats.GetBuildTimings(status)
+                         for status in historical_statuses]
+
+    return build_time_stats.Report(current_build, historical_timing)
+
   def PerformStage(self):
     """Perform the actual work for this stage.
 
@@ -709,6 +741,10 @@ class ReportStage(generic_stages.BuilderStage,
                      summary=build_data.failure_message,
                      metadata_url=metadata_url)
 
+      #
+      # Dump performance stats for this build versus recent builds.
+      #
+      print(self.CollectComparativeBuildTimings(build_id, db))
 
 class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
   """Stage to detect irrelevant changes for slave per board base.
