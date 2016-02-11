@@ -1429,6 +1429,8 @@ PassRefPtrWillBeRawPtr<DOMWindow> LocalDOMWindow::open(const String& urlString, 
 {
     if (!isCurrentlyDisplayedInFrame())
         return nullptr;
+    if (!callingWindow->frame())
+        return nullptr;
     Document* activeDocument = callingWindow->document();
     if (!activeDocument)
         return nullptr;
