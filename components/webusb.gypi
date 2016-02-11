@@ -11,7 +11,7 @@
         '../base/base.gyp:base',
         '../device/core/core.gyp:device_core',
         '../device/usb/usb.gyp:device_usb',
-        'components_webusb_mojo_bindings_lib',
+        'components_webusb_mojo_bindings',
       ],
       'include_dirs': [
         '..',
@@ -24,24 +24,15 @@
     },
     {
       'target_name': 'components_webusb_mojo_bindings',
-      'type': 'none',
-      'variables': {
-        'mojom_files': [
-          'webusb/public/interfaces/webusb_permission_bubble.mojom',
-        ],
-        'dependencies': [
-          '../device/usb/usb.gyp:device_usb_mojo_bindings',
-        ],
-      },
-      'includes': [
-        '../mojo/mojom_bindings_generator_explicit.gypi',
-      ],
-    },
-    {
-      'target_name': 'components_webusb_mojo_bindings_lib',
       'type': 'static_library',
       'dependencies': [
-        'components_webusb_mojo_bindings',
+        '../device/usb/usb.gyp:device_usb_mojo_bindings',
+      ],
+      'sources': [
+        'webusb/public/interfaces/webusb_permission_bubble.mojom',
+      ],
+      'includes': [
+        '../mojo/mojom_bindings_generator.gypi',
       ],
     },
   ],
