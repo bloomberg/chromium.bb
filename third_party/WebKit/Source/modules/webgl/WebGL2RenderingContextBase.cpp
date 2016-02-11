@@ -805,10 +805,6 @@ bool WebGL2RenderingContextBase::validateTexStorage(const char* functionName, GL
         }
     }
 
-    WebGLTexture* tex = validateTextureBinding(functionName, target, false);
-    if (!tex)
-        return false;
-
     if (functionType == TexStorageType3D && target != GL_TEXTURE_2D_ARRAY && m_compressedTextureFormatsETC2EAC.find(internalformat) != m_compressedTextureFormatsETC2EAC.end()) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "target for ETC2/EAC internal formats must be TEXTURE_2D_ARRAY");
         return false;
@@ -816,11 +812,6 @@ bool WebGL2RenderingContextBase::validateTexStorage(const char* functionName, GL
 
     if (m_supportedInternalFormatsStorage.find(internalformat) == m_supportedInternalFormatsStorage.end()) {
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
-        return false;
-    }
-
-    if (tex->isImmutable()) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "attempted to modify immutable texture");
         return false;
     }
 
@@ -854,9 +845,7 @@ void WebGL2RenderingContextBase::texStorage2D(GLenum target, GLsizei levels, GLe
     if (isContextLost() || !validateTexStorage("texStorage2D", target, levels, internalformat, width, height, 1, TexStorageType2D))
         return;
 
-    WebGLTexture* tex = validateTextureBinding("texStorage2D", target, false);
     webContext()->texStorage2DEXT(target, levels, internalformat, width, height);
-    tex->setTexStorageInfo(target, levels, internalformat, width, height, 1);
 }
 
 void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
@@ -864,9 +853,7 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
     if (isContextLost() || !validateTexStorage("texStorage3D", target, levels, internalformat, width, height, depth, TexStorageType3D))
         return;
 
-    WebGLTexture* tex = validateTextureBinding("texStorage3D", target, false);
     webContext()->texStorage3D(target, levels, internalformat, width, height, depth);
-    tex->setTexStorageInfo(target, levels, internalformat, width, height, depth);
 }
 
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
@@ -884,10 +871,7 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
         return;
     }
 
-    WebGLTexture* tex = validateTextureBinding("texImage3D", target, true);
-    ASSERT(tex);
     webContext()->texImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, data);
-    tex->setLevelInfo(target, level, internalformat, width, height, depth, type);
 }
 
 void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
@@ -1002,18 +986,9 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
         || !validateTexFunc("texSubImage3D", TexSubImage, SourceHTMLCanvasElement, target, level, 0, canvas->width(), canvas->height(), 1, 0, format, type, xoffset, yoffset, zoffset))
         return;
 
-    WebGLTexture* texture = validateTextureBinding("texSubImage3D", target, false);
-    ASSERT(texture);
-    GLenum internalformat = texture->getInternalFormat(target, level);
-
-    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageCanvasByGPU(internalformat, type)) {
-        // 2D canvas has only FrontBuffer.
-        texSubImage3DImpl(target, level, xoffset, yoffset, zoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
-            WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
-        return;
-    }
-
-    texImageCanvasByGPU(TexSubImage3DByGPU, texture, target, level, GL_RGBA, type, xoffset, yoffset, zoffset, canvas);
+    // FIXME: Implement GPU-to-GPU copy path.
+    texSubImage3DImpl(target, level, xoffset, yoffset, zoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
+        WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
@@ -1050,12 +1025,6 @@ void WebGL2RenderingContextBase::copyTexSubImage3D(GLenum target, GLint level, G
         return;
     if (!validateReadBufferAndGetInfo("copyTexSubImage3D", readFramebufferBinding))
         return;
-    WebGLTexture* tex = validateTextureBinding("copyTexSubImage3D", target, true);
-    ASSERT(tex);
-    if (!isTexInternalFormatColorBufferCombinationValid(tex->getInternalFormat(target, level), boundFramebufferColorFormat())) {
-        synthesizeGLError(GL_INVALID_OPERATION, "copyTexSubImage3D", "framebuffer is incompatible format");
-        return;
-    }
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width, height);
@@ -1080,16 +1049,7 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
     if (!validateCompressedTexFuncData("compressedTexImage3D", width, height, depth, internalformat, data))
         return;
 
-    WebGLTexture* tex = validateTextureBinding("compressedTexImage3D", target, true);
-    if (!tex)
-        return;
-    if (tex->isImmutable()) {
-        synthesizeGLError(GL_INVALID_OPERATION, "compressedTexImage3D", "attempted to modify immutable texture");
-        return;
-    }
-
     webContext()->compressedTexImage3D(target, level, internalformat, width, height, depth, border, data->byteLength(), data->baseAddress());
-    tex->setLevelInfo(target, level, internalformat, width, height, depth, GL_UNSIGNED_BYTE);
 }
 
 void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, DOMArrayBufferView* data)
@@ -1105,10 +1065,6 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target, GLint le
         return;
     if (!validateCompressedTexFormat("compressedTexSubImage3D", format))
         return;
-    if (format != tex->getInternalFormat(target, level)) {
-        synthesizeGLError(GL_INVALID_OPERATION, "compressedTexSubImage3D", "format does not match texture format");
-        return;
-    }
     if (!validateCompressedTexSubDimensions("compressedTexSubImage3D", target, level, xoffset, yoffset, zoffset, width, height, depth, format, tex))
         return;
     if (!validateCompressedTexFuncData("compressedTexSubImage3D", width, height, depth, format, data))
@@ -3463,15 +3419,6 @@ void WebGL2RenderingContextBase::restoreCurrentFramebuffer()
 {
     bindFramebuffer(nullptr, GL_DRAW_FRAMEBUFFER, m_framebufferBinding.get());
     bindFramebuffer(nullptr, GL_READ_FRAMEBUFFER, m_readFramebufferBinding.get());
-}
-
-GLenum WebGL2RenderingContextBase::boundFramebufferColorFormat()
-{
-    if (m_readFramebufferBinding && m_readFramebufferBinding->object())
-        return m_readFramebufferBinding->colorBufferFormat();
-    if (m_requestedAttributes.alpha())
-        return GL_RGBA;
-    return GL_RGB;
 }
 
 const WebGLSamplerState* WebGL2RenderingContextBase::getTextureUnitSamplerState(GLenum target, GLuint unit) const

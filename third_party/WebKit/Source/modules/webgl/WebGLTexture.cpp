@@ -37,13 +37,7 @@ WebGLTexture* WebGLTexture::create(WebGLRenderingContextBase* ctx)
 WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
     , m_target(0)
-    , m_isNPOT(false)
-    , m_isCubeComplete(false)
-    , m_isComplete(false)
-    , m_isFloatType(false)
-    , m_isHalfFloatType(false)
     , m_isWebGL2OrHigher(ctx->isWebGL2OrHigher())
-    , m_immutable(false)
     , m_baseLevel(0)
     , m_maxLevel(1000)
 {
@@ -63,21 +57,7 @@ void WebGLTexture::setTarget(GLenum target, GLint maxLevel)
     // Target is finalized the first time bindTexture() is called.
     if (m_target)
         return;
-    switch (target) {
-    case GL_TEXTURE_2D:
-    case GL_TEXTURE_2D_ARRAY:
-    case GL_TEXTURE_3D:
-        m_target = target;
-        m_info.resize(1);
-        m_info[0].resize(maxLevel);
-        break;
-    case GL_TEXTURE_CUBE_MAP:
-        m_target = target;
-        m_info.resize(6);
-        for (int ii = 0; ii < 6; ++ii)
-            m_info[ii].resize(maxLevel);
-        break;
-    }
+    m_target = target;
 }
 
 void WebGLTexture::setParameteri(GLenum pname, GLint param)
@@ -143,7 +123,6 @@ void WebGLTexture::setParameteri(GLenum pname, GLint param)
     default:
         return;
     }
-    update();
 }
 
 void WebGLTexture::setParameterf(GLenum pname, GLfloat param)
@@ -154,129 +133,6 @@ void WebGLTexture::setParameterf(GLenum pname, GLfloat param)
     setParameteri(pname, iparam);
 }
 
-void WebGLTexture::setLevelInfo(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLenum type)
-{
-    ASSERT(!m_immutable);
-
-    if (!object() || !m_target)
-        return;
-    // We assume level, internalFormat, width, height, depth, and type have all been
-    // validated already.
-    int index = mapTargetToIndex(target);
-    if (index < 0)
-        return;
-    m_info[index][level].setInfo(internalFormat, width, height, depth, type);
-    update();
-}
-
-void WebGLTexture::setTexStorageInfo(GLenum target, GLint levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth)
-{
-    ASSERT(!m_immutable);
-
-    // We assume level, internalFormat, width, height, and depth have all been
-    // validated already.
-    if (!object() || !m_target || target != m_target)
-        return;
-
-    GLenum type = getValidTypeForInternalFormat(internalFormat);
-    if (type == GL_NONE)
-        return;
-
-    for (size_t ii = 0; ii < m_info.size(); ++ii) {
-        GLsizei levelWidth = width;
-        GLsizei levelHeight = height;
-        GLsizei levelDepth = depth;
-        for (GLint level = 0; level < levels; ++level) {
-            LevelInfo& info = m_info[ii][level];
-            info.setInfo(internalFormat, levelWidth, levelHeight, levelDepth, type);
-            levelWidth = std::max(1, levelWidth >> 1);
-            levelHeight = std::max(1, levelHeight >> 1);
-            levelDepth = m_target == GL_TEXTURE_2D_ARRAY ? levelDepth : std::max(1, levelDepth >> 1);
-        }
-    }
-    update();
-
-    m_immutable = true;
-}
-
-void WebGLTexture::generateMipmapLevelInfo()
-{
-    if (!object() || !m_target)
-        return;
-    if (!canGenerateMipmaps())
-        return;
-    if (!m_isComplete) {
-        for (size_t ii = 0; ii < m_info.size(); ++ii) {
-            const LevelInfo& info0 = m_info[ii][m_baseLevel];
-            GLsizei width = info0.width;
-            GLsizei height = info0.height;
-            GLsizei depth = info0.depth;
-            GLint levelCount = computeLevelCount(width, height, (m_target == GL_TEXTURE_2D_ARRAY ? 0 : depth));
-            size_t maxLevel = 0;
-            if (m_baseLevel + levelCount > 0)
-                maxLevel = m_baseLevel + levelCount - 1;
-            maxLevel = m_isWebGL2OrHigher ? std::min(m_maxLevel, maxLevel) : maxLevel;
-            ASSERT(maxLevel < m_info[ii].size());
-            for (size_t level = m_baseLevel + 1; level <= maxLevel; ++level) {
-                width = std::max(1, width >> 1);
-                height = std::max(1, height >> 1);
-                depth = m_target == GL_TEXTURE_2D_ARRAY ? depth : std::max(1, depth >> 1);
-                LevelInfo& info = m_info[ii][level];
-                info.setInfo(info0.internalFormat, width, height, depth, info0.type);
-            }
-        }
-        m_isComplete = true;
-    }
-}
-
-GLenum WebGLTexture::getInternalFormat(GLenum target, GLint level) const
-{
-    const LevelInfo* info = getLevelInfo(target, level);
-    if (!info)
-        return 0;
-    return info->internalFormat;
-}
-
-GLenum WebGLTexture::getType(GLenum target, GLint level) const
-{
-    const LevelInfo* info = getLevelInfo(target, level);
-    if (!info)
-        return 0;
-    return info->type;
-}
-
-GLsizei WebGLTexture::getWidth(GLenum target, GLint level) const
-{
-    const LevelInfo* info = getLevelInfo(target, level);
-    if (!info)
-        return 0;
-    return info->width;
-}
-
-GLsizei WebGLTexture::getHeight(GLenum target, GLint level) const
-{
-    const LevelInfo* info = getLevelInfo(target, level);
-    if (!info)
-        return 0;
-    return info->height;
-}
-
-GLsizei WebGLTexture::getDepth(GLenum target, GLint level) const
-{
-    const LevelInfo* info = getLevelInfo(target, level);
-    if (!info)
-        return 0;
-    return info->depth;
-}
-
-bool WebGLTexture::isValid(GLenum target, GLint level) const
-{
-    const LevelInfo* info = getLevelInfo(target, level);
-    if (!info)
-        return 0;
-    return info->valid;
-}
-
 bool WebGLTexture::isNPOT(GLsizei width, GLsizei height)
 {
     ASSERT(width >= 0 && height >= 0);
@@ -285,13 +141,6 @@ bool WebGLTexture::isNPOT(GLsizei width, GLsizei height)
     if ((width & (width - 1)) || (height & (height - 1)))
         return true;
     return false;
-}
-
-bool WebGLTexture::isNPOT() const
-{
-    if (!object())
-        return false;
-    return m_isNPOT;
 }
 
 void WebGLTexture::deleteObjectImpl(WebGraphicsContext3D* context3d)
@@ -330,20 +179,6 @@ int WebGLTexture::mapTargetToIndex(GLenum target) const
     return -1;
 }
 
-bool WebGLTexture::canGenerateMipmaps()
-{
-    if (!m_isWebGL2OrHigher && isNPOT())
-        return false;
-
-    if (m_baseLevel >= m_info[0].size())
-        return false;
-
-    if (m_info.size() > 1 && !m_isCubeComplete)
-        return false;
-
-    return true;
-}
-
 GLint WebGLTexture::computeLevelCount(GLsizei width, GLsizei height, GLsizei depth)
 {
     // return 1 + log2Floor(std::max(width, height));
@@ -362,77 +197,6 @@ GLint WebGLTexture::computeLevelCount(GLsizei width, GLsizei height, GLsizei dep
     }
     ASSERT(value == 1);
     return log + 1;
-}
-
-void WebGLTexture::update()
-{
-    m_isNPOT = false;
-    for (size_t ii = 0; ii < m_info.size(); ++ii) {
-        if (isNPOT(m_info[ii][0].width, m_info[ii][0].height)) {
-            m_isNPOT = true;
-            break;
-        }
-    }
-    m_isComplete = true;
-    m_isCubeComplete = true;
-
-    if (m_baseLevel > m_maxLevel || m_baseLevel >= m_info[0].size()) {
-        m_isComplete = false;
-    }
-    else {
-        const LevelInfo& base = m_info[0][m_baseLevel];
-        size_t levelCount = computeLevelCount(base.width, base.height, (m_target == GL_TEXTURE_2D_ARRAY ? 0 : base.depth));
-        size_t maxLevel = 0;
-        if (m_baseLevel + levelCount > 0)
-            maxLevel = m_baseLevel + levelCount - 1;
-        maxLevel = m_isWebGL2OrHigher ? std::min(m_maxLevel, maxLevel) : maxLevel;
-        for (size_t ii = 0; ii < m_info.size(); ++ii) {
-            const LevelInfo& info0 = m_info[ii][m_baseLevel];
-            if (!info0.valid
-                || info0.width != base.width || info0.height != base.height || info0.depth != base.depth
-                || info0.internalFormat != base.internalFormat || info0.type != base.type
-                || (m_info.size() > 1 && info0.width != info0.height)) {
-                if (m_info.size() > 1)
-                    m_isCubeComplete = false;
-                m_isComplete = false;
-                break;
-            }
-
-            if (!m_isComplete)
-                continue;
-            GLsizei width = info0.width;
-            GLsizei height = info0.height;
-            GLsizei depth = info0.depth;
-            ASSERT(maxLevel < m_info[ii].size());
-            for (size_t level = m_baseLevel + 1; level <= maxLevel; ++level) {
-                width = std::max(1, width >> 1);
-                height = std::max(1, height >> 1);
-                depth = m_target == GL_TEXTURE_2D_ARRAY ? depth : std::max(1, depth >> 1);
-                const LevelInfo& info = m_info[ii][level];
-                if (!info.valid
-                    || info.width != width || info.height != height || info.depth != depth
-                    || info.internalFormat != info0.internalFormat || info.type != info0.type) {
-                    m_isComplete = false;
-                    break;
-                }
-
-            }
-        }
-    }
-    m_isFloatType = m_info[0][0].type == GL_FLOAT;
-    m_isHalfFloatType = m_info[0][0].type == GL_HALF_FLOAT_OES;
-}
-
-const WebGLTexture::LevelInfo* WebGLTexture::getLevelInfo(GLenum target, GLint level) const
-{
-    if (!object() || !m_target)
-        return nullptr;
-    int targetIndex = mapTargetToIndex(target);
-    if (targetIndex < 0 || targetIndex >= static_cast<int>(m_info.size()))
-        return nullptr;
-    if (level < 0 || level >= static_cast<GLint>(m_info[targetIndex].size()))
-        return nullptr;
-    return &(m_info[targetIndex][level]);
 }
 
 // TODO(bajones): Logic surrounding relationship of internalFormat, format, and type needs to be revisisted for WebGL 2.0

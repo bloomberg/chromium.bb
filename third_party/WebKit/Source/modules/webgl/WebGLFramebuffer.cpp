@@ -44,12 +44,6 @@ private:
     explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
     WebGLRenderbufferAttachment() { }
 
-    GLsizei width() const override;
-    GLsizei height() const override;
-    GLsizei depth() const override;
-    GLenum format() const override;
-    GLenum type() const override;
-    bool isCubeComplete() const override;
     WebGLSharedObject* object() const override;
     bool isSharedObject(WebGLSharedObject*) const override;
     bool valid() const override;
@@ -74,26 +68,6 @@ DEFINE_TRACE(WebGLRenderbufferAttachment)
 WebGLRenderbufferAttachment::WebGLRenderbufferAttachment(WebGLRenderbuffer* renderbuffer)
     : m_renderbuffer(renderbuffer)
 {
-}
-
-GLsizei WebGLRenderbufferAttachment::width() const
-{
-    return m_renderbuffer->width();
-}
-
-GLsizei WebGLRenderbufferAttachment::height() const
-{
-    return m_renderbuffer->height();
-}
-
-GLsizei WebGLRenderbufferAttachment::depth() const
-{
-    return 1;
-}
-
-GLenum WebGLRenderbufferAttachment::format() const
-{
-    return m_renderbuffer->internalFormat();
 }
 
 WebGLSharedObject* WebGLRenderbufferAttachment::object() const
@@ -127,17 +101,6 @@ void WebGLRenderbufferAttachment::unattach(WebGraphicsContext3D* context, GLenum
     context->framebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, 0);
 }
 
-GLenum WebGLRenderbufferAttachment::type() const
-{
-    return WebGLTexture::getValidTypeForInternalFormat(m_renderbuffer->internalFormat());
-}
-
-bool WebGLRenderbufferAttachment::isCubeComplete() const
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
 class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
 public:
     static WebGLFramebuffer::WebGLAttachment* create(WebGLTexture*, GLenum target, GLint level, GLint layer);
@@ -148,12 +111,6 @@ private:
     WebGLTextureAttachment(WebGLTexture*, GLenum target, GLint level, GLint layer);
     WebGLTextureAttachment() { }
 
-    GLsizei width() const override;
-    GLsizei height() const override;
-    GLsizei depth() const override;
-    GLenum format() const override;
-    GLenum type() const override;
-    bool isCubeComplete() const override;
     WebGLSharedObject* object() const override;
     bool isSharedObject(WebGLSharedObject*) const override;
     bool valid() const override;
@@ -184,26 +141,6 @@ WebGLTextureAttachment::WebGLTextureAttachment(WebGLTexture* texture, GLenum tar
     , m_level(level)
     , m_layer(layer)
 {
-}
-
-GLsizei WebGLTextureAttachment::width() const
-{
-    return m_texture->getWidth(m_target, m_level);
-}
-
-GLsizei WebGLTextureAttachment::height() const
-{
-    return m_texture->getHeight(m_target, m_level);
-}
-
-GLsizei WebGLTextureAttachment::depth() const
-{
-    return m_texture->getDepth(m_target, m_level);
-}
-
-GLenum WebGLTextureAttachment::format() const
-{
-    return m_texture->getInternalFormat(m_target, m_level);
 }
 
 WebGLSharedObject* WebGLTextureAttachment::object() const
@@ -243,95 +180,6 @@ void WebGLTextureAttachment::unattach(WebGraphicsContext3D* context, GLenum targ
         context->framebufferTextureLayer(target, attachment, 0, m_level, m_layer);
     } else {
         context->framebufferTexture2D(target, attachment, m_target, 0, m_level);
-    }
-}
-
-GLenum WebGLTextureAttachment::type() const
-{
-    return m_texture->getType(m_target, m_level);
-}
-
-bool WebGLTextureAttachment::isCubeComplete() const
-{
-    return m_texture->isCubeComplete();
-}
-
-bool isColorRenderable(GLenum internalformat, bool includesFloat)
-{
-    switch (internalformat) {
-    case GL_RGB:
-    case GL_RGBA:
-    case GL_SRGB_ALPHA_EXT:
-    case GL_R8:
-    case GL_R8UI:
-    case GL_R8I:
-    case GL_R16UI:
-    case GL_R16I:
-    case GL_R32UI:
-    case GL_R32I:
-    case GL_RG8:
-    case GL_RG8UI:
-    case GL_RG8I:
-    case GL_RG16UI:
-    case GL_RG16I:
-    case GL_RG32UI:
-    case GL_RG32I:
-    case GL_RGB8:
-    case GL_RGB565:
-    case GL_RGBA8:
-    case GL_SRGB8_ALPHA8:
-    case GL_RGB5_A1:
-    case GL_RGBA4:
-    case GL_RGB10_A2:
-    case GL_RGBA8UI:
-    case GL_RGBA8I:
-    case GL_RGB10_A2UI:
-    case GL_RGBA16UI:
-    case GL_RGBA16I:
-    case GL_RGBA32UI:
-    case GL_RGBA32I:
-        return true;
-    case GL_R16F:
-    case GL_RG16F:
-    case GL_RGBA16F:
-    case GL_R32F:
-    case GL_RG32F:
-    case GL_RGBA32F:
-    case GL_R11F_G11F_B10F:
-        return includesFloat;
-    default:
-        return false;
-    }
-}
-
-bool isDepthRenderable(GLenum internalformat, bool includesDepthStencil)
-{
-    switch (internalformat) {
-    case GL_DEPTH_COMPONENT:
-    case GL_DEPTH_COMPONENT16:
-    case GL_DEPTH_COMPONENT24:
-    case GL_DEPTH_COMPONENT32F:
-        return true;
-    case GL_DEPTH_STENCIL:
-    case GL_DEPTH24_STENCIL8:
-    case GL_DEPTH32F_STENCIL8:
-        return includesDepthStencil;
-    default:
-        return false;
-    }
-}
-
-bool isStencilRenderable(GLenum internalformat, bool includesDepthStencil)
-{
-    switch (internalformat) {
-    case GL_STENCIL_INDEX8:
-        return true;
-    case GL_DEPTH_STENCIL:
-    case GL_DEPTH24_STENCIL8:
-    case GL_DEPTH32F_STENCIL8:
-        return includesDepthStencil;
-    default:
-        return false;
     }
 }
 
@@ -412,55 +260,6 @@ WebGLSharedObject* WebGLFramebuffer::getAttachmentObject(GLenum attachment) cons
     return attachmentObject ? attachmentObject->object() : nullptr;
 }
 
-bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLenum attachment, const char** reason) const
-{
-    ASSERT(attachedObject && attachedObject->valid());
-    ASSERT(reason);
-
-    GLenum internalformat = attachedObject->format();
-
-    switch (attachment) {
-    case GL_DEPTH_ATTACHMENT:
-        if (!isDepthRenderable(internalformat, context()->isWebGL2OrHigher())) {
-            *reason = "the internalformat of the attached image is not depth-renderable";
-            return false;
-        }
-        break;
-    case GL_STENCIL_ATTACHMENT:
-        if (!isStencilRenderable(internalformat, context()->isWebGL2OrHigher())) {
-            *reason = "the internalformat of the attached image is not stencil-renderable";
-            return false;
-        }
-        break;
-    case GL_DEPTH_STENCIL_ATTACHMENT:
-        ASSERT(!context()->isWebGL2OrHigher());
-        if (internalformat != GL_DEPTH_STENCIL_OES) {
-            *reason = "the internalformat of the attached image is not DEPTH_STENCIL";
-            return false;
-        }
-        break;
-    default:
-        ASSERT(attachment == GL_COLOR_ATTACHMENT0 || (attachment > GL_COLOR_ATTACHMENT0 && attachment < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + context()->maxColorAttachments())));
-        if (!isColorRenderable(internalformat, context()->extensionEnabled(EXTColorBufferFloatName))) {
-            *reason = "the internalformat of the attached image is not color-renderable";
-            return false;
-        }
-        break;
-    }
-
-    if (!attachedObject->width() || !attachedObject->height()) {
-        *reason = "attachment has a 0 dimension";
-        return false;
-    }
-
-    if (attachedObject->object()->isTexture() && !attachedObject->isCubeComplete()) {
-        *reason = "attachment is not cube complete";
-        return false;
-    }
-
-    return true;
-}
-
 WebGLFramebuffer::WebGLAttachment* WebGLFramebuffer::getAttachment(GLenum attachment) const
 {
     const AttachmentMap::const_iterator it = m_attachments.find(attachment);
@@ -513,82 +312,6 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(GLenum target, WebGL
             }
         }
     }
-}
-
-GLenum WebGLFramebuffer::colorBufferFormat() const
-{
-    if (!m_object)
-        return 0;
-    WebGLAttachment* attachment = getAttachment(GL_COLOR_ATTACHMENT0);
-    if (!attachment)
-        return 0;
-    return attachment->format();
-}
-
-GLenum WebGLFramebuffer::checkStatus(const char** reason) const
-{
-    unsigned count = 0;
-    GLsizei width = 0, height = 0, depth = 0;
-    WebGLAttachment* depthAttachment = nullptr;
-    WebGLAttachment* stencilAttachment = nullptr;
-    WebGLAttachment* depthStencilAttachment = nullptr;
-    bool isWebGL2OrHigher = context()->isWebGL2OrHigher();
-    for (const auto& it : m_attachments) {
-        WebGLAttachment* attachment = it.value.get();
-        if (!isAttachmentComplete(attachment, it.key, reason))
-            return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-        if (!attachment->valid()) {
-            *reason = "attachment is not valid";
-            return GL_FRAMEBUFFER_UNSUPPORTED;
-        }
-        if (!attachment->format()) {
-            *reason = "attachment is an unsupported format";
-            return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-        }
-        switch (it.key) {
-        case GL_DEPTH_ATTACHMENT:
-            depthAttachment = attachment;
-            break;
-        case GL_STENCIL_ATTACHMENT:
-            stencilAttachment = attachment;
-            break;
-        case GL_DEPTH_STENCIL_ATTACHMENT:
-            depthStencilAttachment = attachment;
-            break;
-        }
-        // Note: In GLES 3, images for a framebuffer need not to have the same dimensions to be framebuffer complete.
-        // However, in Direct3D 11, on top of which OpenGL ES 3 behavior is emulated in Windows, all render targets
-        // must have the same size in all dimensions. In order to have consistent WebGL 2 behaviors across platforms,
-        // we generate FRAMEBUFFER_INCOMPLETE_DIMENSIONS in this situation.
-        if (!count) {
-            width = attachment->width();
-            height = attachment->height();
-            depth = attachment->depth();
-        } else {
-            if (width != attachment->width() || height != attachment->height() || depth != attachment->depth()) {
-                *reason = "attachments do not have the same dimensions";
-                return GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS;
-            }
-        }
-        ++count;
-    }
-    if (!count) {
-        *reason = "no attachments";
-        return GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT;
-    }
-    // WebGL 1 specific: no conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments.
-    if (!isWebGL2OrHigher
-        && ((depthStencilAttachment && (depthAttachment || stencilAttachment))
-            || (depthAttachment && stencilAttachment))) {
-        *reason = "conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments";
-        return GL_FRAMEBUFFER_UNSUPPORTED;
-    }
-    if (isWebGL2OrHigher
-        && (depthAttachment && stencilAttachment && depthAttachment->object() != stencilAttachment->object())) {
-        *reason = "both DEPTH/STENCIL attachments are present and not the same image";
-        return GL_FRAMEBUFFER_UNSUPPORTED;
-    }
-    return GL_FRAMEBUFFER_COMPLETE;
 }
 
 GLenum WebGLFramebuffer::checkDepthStencilStatus(const char** reason) const
@@ -696,20 +419,6 @@ GLenum WebGLFramebuffer::getDrawBuffer(GLenum drawBuffer)
     if (drawBuffer == GL_DRAW_BUFFER0_EXT)
         return GL_COLOR_ATTACHMENT0;
     return GL_NONE;
-}
-
-bool WebGLFramebuffer::getReadBufferFormatAndType(GLenum* format, GLenum* type) const
-{
-    if (m_readBuffer == GL_NONE)
-        return false;
-    WebGLAttachment* image = getAttachment(m_readBuffer);
-    if (!image)
-        return false;
-    if (format)
-        *format = image->format();
-    if (type)
-        *type = image->type();
-    return true;
 }
 
 DEFINE_TRACE(WebGLFramebuffer)

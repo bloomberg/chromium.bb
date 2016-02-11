@@ -232,7 +232,6 @@ protected:
     WebGLFramebuffer* getReadFramebufferBinding() override;
     GLint getMaxTextureLevelForTarget(GLenum target) override;
     void renderbufferStorageImpl(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName) override;
-    GLenum boundFramebufferColorFormat() override;
     const WebGLSamplerState* getTextureUnitSamplerState(GLenum target, GLuint unit) const override;
 
     // Helper function to validate the target for compressedTex{Sub}Image3D.

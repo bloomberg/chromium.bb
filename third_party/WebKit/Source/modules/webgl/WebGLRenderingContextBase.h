@@ -837,9 +837,6 @@ protected:
     // is valid.
     bool isTexInternalFormatColorBufferCombinationValid(GLenum texInternalFormat, GLenum colorBufferFormat);
 
-    // Helper function to get the bound framebuffer's color buffer format.
-    virtual GLenum boundFramebufferColorFormat();
-
     // Helper function to verify limits on the length of uniform and attribute locations.
     virtual unsigned getMaxWebGLLocationLength() const { return 256; }
     bool validateLocationLength(const char* functionName, const String&);

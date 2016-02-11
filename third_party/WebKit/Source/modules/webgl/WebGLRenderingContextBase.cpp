@@ -1882,17 +1882,12 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
     if (!validateCompressedTexFuncData("compressedTexImage2D", width, height, 1, internalformat, data))
         return;
 
-    if (tex->isImmutable()) {
-        synthesizeGLError(GL_INVALID_OPERATION, "compressedTexImage2D", "attempted to modify immutable texture");
-        return;
-    }
     if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
         synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D", "level > 0 not power of 2");
         return;
     }
     webContext()->compressedTexImage2D(target, level, internalformat, width, height,
         border, data->byteLength(), data->baseAddress());
-    tex->setLevelInfo(target, level, internalformat, width, height, 1, GL_UNSIGNED_BYTE);
 }
 
 void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, DOMArrayBufferView* data)
@@ -1906,10 +1901,6 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
         return;
     if (!validateCompressedTexFormat("compressedTexSubImage2D", format))
         return;
-    if (format != tex->getInternalFormat(target, level)) {
-        synthesizeGLError(GL_INVALID_OPERATION, "compressedTexSubImage2D", "format does not match texture format");
-        return;
-    }
     if (!validateCompressedTexSubDimensions("compressedTexSubImage2D", target, level, xoffset, yoffset, 0, width, height, 1, format, tex))
         return;
     if (!validateCompressedTexFuncData("compressedTexSubImage2D", width, height, 1, format, data))
@@ -1917,6 +1908,7 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
     webContext()->compressedTexSubImage2D(target, level, xoffset, yoffset,
         width, height, format, data->byteLength(), data->baseAddress());
 }
+
 
 bool WebGLRenderingContextBase::validateSettableTexFormat(const char* functionName, GLenum format)
 {
@@ -1964,17 +1956,9 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
     }
     if (!validateSettableTexFormat("copyTexImage2D", internalformat))
         return;
-    if (tex->isImmutable()) {
-        synthesizeGLError(GL_INVALID_OPERATION, "copyTexImage2D", "attempted to modify immutable texture");
-        return;
-    }
     WebGLFramebuffer* readFramebufferBinding = nullptr;
     if (!validateReadBufferAndGetInfo("copyTexImage2D", readFramebufferBinding))
         return;
-    if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
-        synthesizeGLError(GL_INVALID_OPERATION, "copyTexImage2D", "framebuffer is incompatible format");
-        return;
-    }
     if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
         synthesizeGLError(GL_INVALID_VALUE, "copyTexImage2D", "level > 0 not power of 2");
         return;
@@ -1982,7 +1966,6 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
-    tex->setLevelInfo(target, level, internalformat, width, height, 1, WebGLTexture::getValidTypeForInternalFormat(internalformat));
 }
 
 void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
@@ -1994,12 +1977,6 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GL
         return;
     if (!validateReadBufferAndGetInfo("copyTexSubImage2D", readFramebufferBinding))
         return;
-    WebGLTexture* tex = validateTextureBinding("copyTexSubImage2D", target, true);
-    ASSERT(tex);
-    if (!isTexInternalFormatColorBufferCombinationValid(tex->getInternalFormat(target, level), boundFramebufferColorFormat())) {
-        synthesizeGLError(GL_INVALID_OPERATION, "copyTexSubImage2D", "framebuffer is incompatible format");
-        return;
-    }
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
@@ -2478,18 +2455,7 @@ void WebGLRenderingContextBase::generateMipmap(GLenum target)
     WebGLTexture* tex = validateTextureBinding("generateMipmap", target, false);
     if (!tex)
         return;
-    if (!tex->canGenerateMipmaps()) {
-        synthesizeGLError(GL_INVALID_OPERATION, "generateMipmap", "cannot generate mipmaps");
-        return;
-    }
-    if (tex->getInternalFormat(target, 0) == GL_SRGB_EXT || tex->getInternalFormat(target, 0) == GL_SRGB_ALPHA_EXT) {
-        synthesizeGLError(GL_INVALID_OPERATION, "generateMipmap", "cannot generate mipmaps for sRGB textures");
-        return;
-    }
-    if (!validateSettableTexFormat("generateMipmap", tex->getInternalFormat(target, 0)))
-        return;
     webContext()->generateMipmap(target);
-    tex->generateMipmapLevelInfo();
 }
 
 WebGLActiveInfo* WebGLRenderingContextBase::getActiveAttrib(WebGLProgram* program, GLuint index)
@@ -3673,12 +3639,8 @@ bool WebGLRenderingContextBase::validateReadBufferAndGetInfo(const char* functio
     readFramebufferBinding = getReadFramebufferBinding();
     if (readFramebufferBinding) {
         const char* reason = "framebuffer incomplete";
-        if (readFramebufferBinding->checkStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
+        if (readFramebufferBinding->checkDepthStencilStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
             synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
-            return false;
-        }
-        if (!readFramebufferBinding->getReadBufferFormatAndType(nullptr, nullptr)) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no image to read from");
             return false;
         }
     } else {
@@ -4050,10 +4012,7 @@ GLenum WebGLRenderingContextBase::convertTexInternalFormat(GLenum internalformat
 void WebGLRenderingContextBase::texImage2DBase(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
-    WebGLTexture* tex = validateTextureBinding("texImage2D", target, true);
-    ASSERT(tex);
     webContext()->texImage2D(target, level, convertTexInternalFormat(internalformat, type), width, height, border, format, type, pixels);
-    tex->setLevelInfo(target, level, internalformat, width, height, 1, type);
 }
 
 void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
@@ -4096,15 +4055,6 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
     if (!texture)
         return false;
 
-    if (functionType == TexSubImage) {
-        if (!texture->isValid(target, level)) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no previously defined texture image");
-            return false;
-        }
-    }
-
-    if (internalformat == 0)
-        internalformat = texture->getInternalFormat(target, level);
     if (!validateTexFuncParameters(functionName, functionType, target, level, internalformat, width, height, depth, border, format, type))
         return false;
 
@@ -4113,28 +4063,7 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
             return false;
         if (!validateSize(functionName, xoffset, yoffset, zoffset))
             return false;
-        // Before checking if it is in the range, check if overflow happens first.
-        CheckedInt<GLint> maxX = xoffset, maxY = yoffset, maxZ = zoffset;
-        maxX += width;
-        maxY += height;
-        maxZ += depth;
-        if (!maxX.isValid() || !maxY.isValid() || !maxZ.isValid()
-            || maxX.value() > texture->getWidth(target, level)
-            || maxY.value() > texture->getHeight(target, level)
-            || maxZ.value() > texture->getDepth(target, level)) {
-            synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
-            return false;
-        }
-        if (!isWebGL2OrHigher() && texture->getType(target, level) != type) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type of incoming data does not match that used to define the texture");
-            return false;
-        }
     } else {
-        if (texture->isImmutable()) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "attempted to modify immutable texture");
-            return false;
-        }
-
         // Depth is for WebGL 2.0 only where iSNPOTStrict() is always false.
         if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
             synthesizeGLError(GL_INVALID_VALUE, functionName, "level > 0 not power of 2");
@@ -4344,9 +4273,6 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
     if (isContextLost() || !validateHTMLCanvasElement("texImage2D", canvas, exceptionState) || !validateTexFunc("texImage2D", TexImage, SourceHTMLCanvasElement, target, level, internalformat, canvas->width(), canvas->height(), 1, 0, format, type, 0, 0, 0))
         return;
 
-    WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
-    ASSERT(texture);
-
     // texImageCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
     // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
     if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageCanvasByGPU(internalformat, type)) {
@@ -4357,8 +4283,9 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
     }
 
     texImage2DBase(target, level, internalformat, canvas->width(), canvas->height(), 0, format, type, 0);
+    WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
+    ASSERT(texture);
     texImageCanvasByGPU(TexImage2DByGPU, texture, target, level, internalformat, type, 0, 0, 0, canvas);
-    texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), 1, type);
 }
 
 PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement* video)
@@ -4388,7 +4315,6 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
     if (GL_TEXTURE_2D == target) {
         if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat, type, level)
             && video->copyVideoTextureToPlatformTexture(webContext(), texture->object(), internalformat, type, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
-            texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
             return;
         }
 
@@ -4405,7 +4331,6 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
                 // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
                 if (imageBuffer->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
                     level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
-                    texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
                     return;
                 }
             }
@@ -4615,10 +4540,14 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     WebGLTexture* texture = validateTextureBinding("texSubImage2D", target, true);
     ASSERT(texture);
 
-    GLint internalformat = texture->getInternalFormat(target, level);
+    // FIXME: Implement GPU-to-GPU path for WebGL 2 and more internal formats.
+    bool useReadBackPath = isWebGL2OrHigher()
+        || extensionEnabled(OESTextureFloatName)
+        || extensionEnabled(OESTextureHalfFloatName)
+        || extensionEnabled(EXTsRGBName);
     // texImageCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
     // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
-    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageCanvasByGPU(internalformat, type)) {
+    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || useReadBackPath) {
         // 2D canvas has only FrontBuffer.
         texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
             WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
@@ -5378,22 +5307,6 @@ ScriptValue WebGLRenderingContextBase::getWebGLIntArrayParameter(ScriptState* sc
     return WebGLAny(scriptState, DOMInt32Array::create(value, length));
 }
 
-bool WebGLRenderingContextBase::isTexInternalFormatColorBufferCombinationValid(GLenum texInternalFormat, GLenum colorBufferFormat)
-{
-    unsigned need = WebGLImageConversion::getChannelBitsByFormat(texInternalFormat);
-    unsigned have = WebGLImageConversion::getChannelBitsByFormat(colorBufferFormat);
-    return (need & have) == need;
-}
-
-GLenum WebGLRenderingContextBase::boundFramebufferColorFormat()
-{
-    if (m_framebufferBinding && m_framebufferBinding->object())
-        return m_framebufferBinding->colorBufferFormat();
-    if (m_requestedAttributes.alpha())
-        return GL_RGBA;
-    return GL_RGB;
-}
-
 WebGLTexture* WebGLRenderingContextBase::validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap)
 {
     WebGLTexture* tex = nullptr;
@@ -5503,7 +5416,7 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
         }
     }
 
-    if (m_supportedInternalFormats.find(internalformat) == m_supportedInternalFormats.end()) {
+    if (internalformat != 0 && m_supportedInternalFormats.find(internalformat) == m_supportedInternalFormats.end()) {
         if (functionType == TexImage) {
             synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid internalformat");
         } else {
@@ -5520,7 +5433,7 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
         return false;
     }
     FormatType combinationQuery = { internalformat, format, type };
-    if (m_supportedFormatTypeCombinations.find(combinationQuery) == m_supportedFormatTypeCombinations.end()) {
+    if (internalformat != 0 && m_supportedFormatTypeCombinations.find(combinationQuery) == m_supportedFormatTypeCombinations.end()) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid internalformat/format/type combination");
         return false;
     }
@@ -5755,14 +5668,6 @@ bool WebGLRenderingContextBase::validateCopyTexSubImage(const char* functionName
         synthesizeGLError(GL_INVALID_VALUE, functionName, "bad dimensions");
         return false;
     }
-    if (maxX.value() > tex->getWidth(target, level) || maxY.value() > tex->getHeight(target, level) || zoffset >= tex->getDepth(target, level)) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "rectangle out of range");
-        return false;
-    }
-    GLenum internalformat = tex->getInternalFormat(target, level);
-    if (!validateSettableTexFormat(functionName, internalformat))
-        return false;
-
     return true;
 }
 
@@ -6025,17 +5930,6 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "xoffset or yoffset not multiple of 4");
             return false;
         }
-        CheckedInt<GLint> maxX = xoffset, maxY = yoffset;
-        maxX += width;
-        maxY += height;
-        if (!maxX.isValid() || ((width % kBlockWidth) && maxX.value() != tex->getWidth(target, level))) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "width not multiple of 4 and width + xoffset not equal to width of the texture level for ETC2/EAC format texture");
-            return false;
-        }
-        if (!maxY.isValid() || ((height % kBlockHeight) && maxY.value() != tex->getHeight(target, level))) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "height not multiple of 4 and height + yoffset not equal to height of the texture level for ETC2/EAC format texture");
-            return false;
-        }
         return validateCompressedTexDimensions(functionName, TexSubImage, target, level, width, height, depth, format);
     }
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -6048,15 +5942,6 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "xoffset or yoffset not multiple of 4");
             return false;
         }
-        // Before checking if it is in the range, check if overflow happens first.
-        CheckedInt<GLint> maxX = xoffset, maxY = yoffset;
-        maxX += width;
-        maxY += height;
-        if (!maxX.isValid() || !maxY.isValid() || maxX.value() > tex->getWidth(target, level)
-            || maxY.value() > tex->getHeight(target, level)) {
-            synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
-            return false;
-        }
         return validateCompressedTexDimensions(functionName, TexSubImage, target, level, width, height, depth, format);
     }
     case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
@@ -6065,11 +5950,6 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
     case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: {
         if ((xoffset != 0) || (yoffset != 0)) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "xoffset and yoffset must be zero");
-            return false;
-        }
-        if (width != tex->getWidth(target, level)
-            || height != tex->getHeight(target, level)) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "dimensions must match existing level");
             return false;
         }
         return validateCompressedTexDimensions(functionName, TexSubImage, target, level, width, height, depth, format);
