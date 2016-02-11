@@ -1,8 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="IDS_ACCEPT_LANGUAGES">vi-VN,vi,fr-FR,fr,en-US,en</translation>
-<translation id="IDS_DEFAULT_ENCODING">windows-1258</translation>
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">vi</translation>
 <translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">360</translation>

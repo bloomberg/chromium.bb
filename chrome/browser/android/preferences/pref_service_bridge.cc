@@ -40,6 +40,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/strings/grit/components_locale_settings.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/version_info/version_info.h"

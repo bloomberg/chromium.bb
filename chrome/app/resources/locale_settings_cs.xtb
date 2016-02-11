@@ -1,8 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="IDS_ACCEPT_LANGUAGES">cs-CZ,cs</translation>
-<translation id="IDS_DEFAULT_ENCODING">windows-1250</translation>
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">cs</translation>
 <translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">350</translation>

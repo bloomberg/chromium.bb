@@ -1,8 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="IDS_ACCEPT_LANGUAGES">hu-HU,hu,en-US,en</translation>
-<translation id="IDS_DEFAULT_ENCODING">ISO-8859-2</translation>
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">hu-HU</translation>
 <translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">350</translation>

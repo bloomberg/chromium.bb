@@ -36,6 +36,14 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        {
+          # GN version: //components/strings:components_locale_settings
+          'action_name': 'generate_components_locale_settings',
+          'variables': {
+            'grit_grd_file': 'components_locale_settings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },

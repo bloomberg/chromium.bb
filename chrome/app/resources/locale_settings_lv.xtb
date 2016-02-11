@@ -1,8 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
-<translation id="IDS_ACCEPT_LANGUAGES">lv-LV,lv,en-US,en</translation>
-<translation id="IDS_DEFAULT_ENCODING">windows-1257</translation>
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">lv</translation>
 <translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">350</translation>

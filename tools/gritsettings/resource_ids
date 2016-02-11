@@ -77,8 +77,7 @@
     "messages": [9000],
   },
   "chrome/app/resources/locale_settings.grd": {
-    "includes": [9500],
-    "messages": [10000],
+    "messages": [9500],
   },
   # These each start with the same resource id because we only use one
   # file for each build (chromiumos, google_chromeos, linux, mac, or win).
@@ -274,8 +273,12 @@
   "remoting/resources/remoting_strings.grd": {
     "messages": [27830],
   },
+  "components/components_locale_settings.grd": {
+    "includes": [28280],
+    "messages": [28285],
+  },
   "components/components_strings.grd": {
-    "messages": [28280],
+    "messages": [28290],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or

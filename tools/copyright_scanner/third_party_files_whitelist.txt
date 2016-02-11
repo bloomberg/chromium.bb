@@ -49,6 +49,49 @@ chrome/utility/importer/nss_decryptor_system_nss.cc
 chrome/utility/importer/nss_decryptor_win.h
 # Copyright Google Inc; BSD license. Test code only.
 chrome/tools/test/generate_mime_tests.pl
+# String 'copyright' used in the text presented to the user as part of
+# Google Chrome terms of service.
+components/resources/terms/chromeos/terms_en.html
+components/resources/terms/terms_am.html
+components/resources/terms/terms_ca.html
+components/resources/terms/terms_cs.html
+components/resources/terms/terms_da.html
+components/resources/terms/terms_de.html
+components/resources/terms/terms_en-GB.html
+components/resources/terms/terms_en.html
+components/resources/terms/terms_es-419.html
+components/resources/terms/terms_es.html
+components/resources/terms/terms_et.html
+components/resources/terms/terms_fi.html
+components/resources/terms/terms_fil.html
+components/resources/terms/terms_fr.html
+components/resources/terms/terms_he.html
+components/resources/terms/terms_hr.html
+components/resources/terms/terms_hu.html
+components/resources/terms/terms_id.html
+components/resources/terms/terms_it.html
+components/resources/terms/terms_ja.html
+components/resources/terms/terms_kn.html
+components/resources/terms/terms_ko.html
+components/resources/terms/terms_lt.html
+components/resources/terms/terms_lv.html
+components/resources/terms/terms_ml.html
+components/resources/terms/terms_nb.html
+components/resources/terms/terms_nl.html
+components/resources/terms/terms_pl.html
+components/resources/terms/terms_pt-BR.html
+components/resources/terms/terms_pt-PT.html
+components/resources/terms/terms_ro.html
+components/resources/terms/terms_sk.html
+components/resources/terms/terms_sl.html
+components/resources/terms/terms_sr.html
+components/resources/terms/terms_sv.html
+components/resources/terms/terms_sw.html
+components/resources/terms/terms_ta.html
+components/resources/terms/terms_te.html
+components/resources/terms/terms_th.html
+components/resources/terms/terms_tr.html
+components/resources/terms/terms_vi.html
 # Copyright Apple Inc, Nokia Corporation and Torch Mobile Inc; BSD license.
 # Contains code moved from third_party/WebKit/.
 content/browser/frame_host/navigation_controller_impl.cc

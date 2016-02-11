@@ -1,8 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
-<translation id="IDS_ACCEPT_LANGUAGES">ru-RU,ru,en-US,en</translation>
-<translation id="IDS_DEFAULT_ENCODING">windows-1251</translation>
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">ru</translation>
 <translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">410</translation>

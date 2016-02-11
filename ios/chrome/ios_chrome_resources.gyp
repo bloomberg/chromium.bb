@@ -7,6 +7,7 @@
     'chromium_code': 1,
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ios/chrome',
     'ui_string_overrider_inputs': [
+      '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_locale_settings.h',
       '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_strings.h',
       '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/grit/ios_strings.h',
     ],
