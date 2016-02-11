@@ -2925,6 +2925,10 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
   if (!feature_info_->gl_version_info().BehavesLikeGLES()) {
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glEnable(GL_POINT_SPRITE);
+  } else if (feature_info_->gl_version_info().is_desktop_core_profile) {
+    // The desktop core profile changed how program point size mode is
+    // enabled.
+    glEnable(GL_PROGRAM_POINT_SIZE);
   }
 
   has_robustness_extension_ =
@@ -5542,6 +5546,10 @@ GLenum GLES2DecoderImpl::AdjustGetPname(GLenum pname) {
   if (GL_MAX_SAMPLES == pname &&
       features().use_img_for_multisampled_render_to_texture) {
     return GL_MAX_SAMPLES_IMG;
+  }
+  if (GL_ALIASED_POINT_SIZE_RANGE == pname &&
+      feature_info_->gl_version_info().is_desktop_core_profile) {
+    return GL_POINT_SIZE_RANGE;
   }
   return pname;
 }
