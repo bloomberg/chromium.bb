@@ -65,9 +65,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   aura::Window* GetContainerWindow();
 
   // Whether the container window for the keyboard has been initialized.
-  bool keyboard_container_initialized() const {
-    return container_.get() != NULL;
-  }
+  bool keyboard_container_initialized() const { return container_; }
 
   // Reloads the content of the keyboard. No-op if the keyboard content is not
   // loaded yet.

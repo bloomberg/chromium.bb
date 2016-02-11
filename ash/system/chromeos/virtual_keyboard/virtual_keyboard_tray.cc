@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 
+#include "ash/keyboard/keyboard_ui.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -17,7 +18,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
@@ -35,18 +35,14 @@ VirtualKeyboardTray::VirtualKeyboardTray(StatusAreaWidget* status_area_widget)
   tray_container()->AddChildView(button_);
   SetContentsBackground();
   // The Shell may not exist in some unit tests.
-  if (Shell::HasInstance()) {
-    Shell::GetInstance()->system_tray_notifier()->
-        AddAccessibilityObserver(this);
-  }
+  if (Shell::HasInstance())
+    Shell::GetInstance()->keyboard_ui()->AddObserver(this);
 }
 
 VirtualKeyboardTray::~VirtualKeyboardTray() {
   // The Shell may not exist in some unit tests.
-  if (Shell::HasInstance()) {
-    Shell::GetInstance()->system_tray_notifier()->
-        RemoveAccessibilityObserver(this);
-  }
+  if (Shell::HasInstance())
+    Shell::GetInstance()->keyboard_ui()->RemoveObserver(this);
 }
 
 void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -92,7 +88,7 @@ bool VirtualKeyboardTray::ClickedOutsideBubble() {
 }
 
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
-  keyboard::KeyboardController::GetInstance()->ShowKeyboard(true);
+  Shell::GetInstance()->keyboard_ui()->Show();
   return true;
 }
 
@@ -102,10 +98,8 @@ void VirtualKeyboardTray::ButtonPressed(views::Button* sender,
   PerformAction(event);
 }
 
-void VirtualKeyboardTray::OnAccessibilityModeChanged(
-    ui::AccessibilityNotificationVisibility notify) {
-  SetVisible(Shell::GetInstance()->accessibility_delegate()->
-      IsVirtualKeyboardEnabled());
+void VirtualKeyboardTray::OnKeyboardEnabledStateChanged(bool new_value) {
+  SetVisible(Shell::GetInstance()->keyboard_ui()->IsEnabled());
 }
 
 }  // namespace ash

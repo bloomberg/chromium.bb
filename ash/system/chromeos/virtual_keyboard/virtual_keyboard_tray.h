@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_CHROMEOS_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 #define ASH_SYSTEM_CHROMEOS_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 
+#include "ash/keyboard/keyboard_ui_observer.h"
 #include "ash/system/tray/tray_background_view.h"
-#include "ash/system/tray_accessibility.h"
 #include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -18,9 +18,10 @@ class ImageButton;
 namespace ash {
 class StatusAreaWidget;
 
+// TODO(sky): make this visible on non-chromeos platforms.
 class VirtualKeyboardTray : public TrayBackgroundView,
                             public views::ButtonListener,
-                            public AccessibilityObserver {
+                            public KeyboardUIObserver {
  public:
   explicit VirtualKeyboardTray(StatusAreaWidget* status_area_widget);
   ~VirtualKeyboardTray() override;
@@ -35,9 +36,8 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // AccessibilityObserver:
-  void OnAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify) override;
+  // KeyboardUIObserver:
+  void OnKeyboardEnabledStateChanged(bool new_value) override;
 
  private:
   views::ImageButton* button_;  // Not owned.

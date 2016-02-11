@@ -7,12 +7,14 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
+#include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/stub_context_factory.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_window_ids.h"
+#include "base/bind.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -175,6 +177,8 @@ class AshInit {
     init_params.delegate = ash_delegate_;
     init_params.context_factory = new StubContextFactory;
     init_params.blocking_pool = worker_pool_.get();
+    init_params.in_mus = true;
+    init_params.keyboard_factory = base::Bind(&KeyboardUIMus::Create, shell);
     ash::Shell::CreateInstance(init_params);
     ash::Shell::GetInstance()->CreateShelf();
     ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(

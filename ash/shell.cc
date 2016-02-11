@@ -31,6 +31,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/input_method_event_handler.h"
+#include "ash/keyboard/keyboard_ui.h"
 #include "ash/keyboard_uma_event_filter.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -444,6 +445,8 @@ void Shell::OnShelfCreatedForRootWindow(aura::Window* root_window) {
 }
 
 void Shell::CreateKeyboard() {
+  if (in_mus_)
+    return;
   // TODO(bshe): Primary root window controller may not be the controller to
   // attach virtual keyboard. See http://crbug.com/303429
   InitKeyboard();
@@ -452,6 +455,9 @@ void Shell::CreateKeyboard() {
 }
 
 void Shell::DeactivateKeyboard() {
+  keyboard_ui_->Hide();
+  if (in_mus_)
+    return;
   if (keyboard::KeyboardController::GetInstance()) {
     RootWindowControllerList controllers = GetAllRootWindowControllers();
     for (RootWindowControllerList::iterator iter = controllers.begin();
@@ -841,6 +847,8 @@ Shell::~Shell() {
 }
 
 void Shell::Init(const ShellInitParams& init_params) {
+  in_mus_ = init_params.in_mus;
+
   delegate_->PreInit();
   bool display_initialized = display_manager_->InitFromCommandLine();
 
@@ -1045,6 +1053,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   touch_transformer_controller_.reset(new TouchTransformerController());
 #endif  // defined(OS_CHROMEOS)
 
+  keyboard_ui_ = init_params.keyboard_factory.is_null()
+                     ? KeyboardUI::Create()
+                     : init_params.keyboard_factory.Run();
+
   window_tree_host_manager_->InitHosts();
 
 #if defined(OS_CHROMEOS)
@@ -1090,6 +1102,9 @@ void Shell::Init(const ShellInitParams& init_params) {
 }
 
 void Shell::InitKeyboard() {
+  if (in_mus_)
+    return;
+
   if (keyboard::IsKeyboardEnabled()) {
     if (keyboard::KeyboardController::GetInstance()) {
       RootWindowControllerList controllers = GetAllRootWindowControllers();

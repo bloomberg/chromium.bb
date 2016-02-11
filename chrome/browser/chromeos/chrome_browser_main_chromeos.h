@@ -22,6 +22,7 @@ class ArcServiceManager;
 
 namespace chromeos {
 
+class ChromeInterfaceFactory;
 class DataPromoNotification;
 class EventRewriter;
 class EventRewriterController;
@@ -83,6 +84,10 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
   scoped_ptr<arc::ArcServiceManager> arc_service_manager_;
+
+#if defined(MOJO_SHELL_CLIENT)
+  scoped_ptr<ChromeInterfaceFactory> interface_factory_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

@@ -41,7 +41,7 @@ class ChromeKeyboardUI : public keyboard::KeyboardUIContent,
   bool ShouldWindowOverscroll(aura::Window* window) const override;
 
  private:
-  // keyboard::KeyboardControllerProxy overrides
+  // keyboard::KeyboardUIContent overrides
   ui::InputMethod* GetInputMethod() override;
   void RequestAudioInput(
       content::WebContents* web_contents,

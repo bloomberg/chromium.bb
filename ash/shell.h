@@ -98,6 +98,7 @@ class FirstRunHelper;
 class FocusCycler;
 class GPUSupport;
 class HighContrastController;
+class KeyboardUI;
 class KeyboardUMAEventFilter;
 class LastWindowClosedLogoutReminder;
 class LocaleNotificationController;
@@ -564,6 +565,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return is_touch_hud_projection_enabled_;
   }
 
+  KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
+
+  bool in_mus() const { return in_mus_; }
+
 #if defined(OS_CHROMEOS)
   // Creates instance of FirstRunHelper. Caller is responsible for deleting
   // returned object.
@@ -765,6 +770,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<GPUSupport> gpu_support_;
 
   base::SequencedWorkerPool* blocking_pool_;
+
+  bool in_mus_ = false;
+
+  scoped_ptr<KeyboardUI> keyboard_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

@@ -67,7 +67,7 @@ class TestShellDelegate : public ShellDelegate {
   void SetMediaCaptureState(MediaCaptureState state);
   void SetForceMaximizeOnFirstRun(bool maximize) {
     force_maximize_on_first_run_ = maximize;
-  };
+  }
 
  private:
   int num_exit_requests_;

@@ -88,6 +88,8 @@ source_set("chromeos") {
     "//device/hid",
     "//media",
     "//media/mojo/interfaces",
+    "//mojo/common",
+    "//mojo/shell/public/cpp",
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
 
@@ -117,6 +119,7 @@ source_set("chromeos") {
     "//ui/events/devices",
     "//ui/events/platform",
     "//ui/file_manager",
+    "//ui/keyboard:mojom",
     "//ui/message_center",
     "//ui/surface",
     "//ui/views",
@@ -126,12 +129,16 @@ source_set("chromeos") {
     "//v8",
   ]
 
-  defines = []
+  defines = [ "MOJO_SHELL_CLIENT" ]
 
   sources = rebase_path(gypi_values.browser_chromeos_sources, ".", "//chrome") +
             rebase_path(gypi_values.browser_chromeos_extension_sources,
                         ".",
                         "//chrome")
+  sources += [
+    "chrome_interface_factory.cc",
+    "chrome_interface_factory.h",
+  ]
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/events/devices" ]
