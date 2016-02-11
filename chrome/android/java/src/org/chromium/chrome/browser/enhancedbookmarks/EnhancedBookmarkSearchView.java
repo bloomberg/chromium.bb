@@ -14,7 +14,6 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -295,7 +294,7 @@ public class EnhancedBookmarkSearchView extends LinearLayout implements OnItemCl
     private void saveHistoryList(List<String> history) {
         JSONArray jsonArray = new JSONArray(history);
         PreferenceManager.getDefaultSharedPreferences(getContext()).edit()
-                .putString(PREF_SEARCH_HISTORY, jsonArray.toString()).commit();
+                .putString(PREF_SEARCH_HISTORY, jsonArray.toString()).apply();
     }
 
     private List<String> readHistoryList() {

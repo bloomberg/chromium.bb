@@ -62,7 +62,7 @@ public class WebappRegistry {
                 // that the used time will be set (ie. != WebappDataStorage.INVALID_LAST_USED) if a
                 // web app appears in the registry.
                 new WebappDataStorage(context, webappId).updateLastUsedTime();
-                preferences.edit().putStringSet(KEY_WEBAPP_SET, webapps).commit();
+                preferences.edit().putStringSet(KEY_WEBAPP_SET, webapps).apply();
                 return null;
             }
         }.execute();
@@ -116,7 +116,7 @@ public class WebappRegistry {
                 preferences.edit()
                         .putLong(KEY_LAST_CLEANUP, currentTime)
                         .putStringSet(KEY_WEBAPP_SET, retainedWebapps)
-                        .commit();
+                        .apply();
                 return null;
             }
         }.execute();
@@ -134,7 +134,7 @@ public class WebappRegistry {
                 for (String id : getRegisteredWebappIds(preferences)) {
                     WebappDataStorage.deleteDataForWebapp(context, id);
                 }
-                preferences.edit().clear().commit();
+                preferences.edit().clear().apply();
                 return null;
             }
 

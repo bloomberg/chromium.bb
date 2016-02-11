@@ -93,7 +93,7 @@ public class WebappDataStorage {
      */
     static void deleteDataForWebapp(final Context context, final String webappId) {
         assert !ThreadUtils.runningOnUiThread();
-        openSharedPreferences(context, webappId).edit().clear().commit();
+        openSharedPreferences(context, webappId).edit().clear().apply();
     }
 
     /**
@@ -133,7 +133,7 @@ public class WebappDataStorage {
 
     void updateLastUsedTime() {
         assert !ThreadUtils.runningOnUiThread();
-        mPreferences.edit().putLong(KEY_LAST_USED, System.currentTimeMillis()).commit();
+        mPreferences.edit().putLong(KEY_LAST_USED, System.currentTimeMillis()).apply();
     }
 
     long getLastUsedTime() {
@@ -200,7 +200,7 @@ public class WebappDataStorage {
         protected Void doInBackground(Void... nothing) {
             mPreferences.edit()
                     .putString(KEY_SPLASH_ICON, ShortcutHelper.encodeBitmapAsString(mSplashImage))
-                    .commit();
+                    .apply();
             return null;
         }
     }
