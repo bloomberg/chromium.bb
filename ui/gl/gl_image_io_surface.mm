@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/stringize_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -29,6 +30,11 @@ namespace {
 
 using WidgetToLayerMap = std::map<gfx::AcceleratedWidget, CALayer*>;
 base::LazyInstance<WidgetToLayerMap> g_widget_to_layer_map;
+
+const char kGLSLVersion[] = "#version 110";
+
+const char kTextureRectangleRequired[] =
+    "#extension GL_ARB_texture_rectangle : require";
 
 // clang-format off
 const char kVertexShader[] =
@@ -282,9 +288,14 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
   if (!framebuffer_) {
     glGenFramebuffersEXT(1, &framebuffer_);
     vertex_buffer_ = gfx::GLHelper::SetupQuadVertexBuffer();
-    vertex_shader_ = gfx::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
-    fragment_shader_ =
-        gfx::GLHelper::LoadShader(GL_FRAGMENT_SHADER, kFragmentShader);
+    vertex_shader_ = gfx::GLHelper::LoadShader(
+        GL_VERTEX_SHADER,
+        base::StringPrintf("%s\n%s", kGLSLVersion, kVertexShader).c_str());
+    fragment_shader_ = gfx::GLHelper::LoadShader(
+        GL_FRAGMENT_SHADER,
+        base::StringPrintf("%s\n%s\n%s", kGLSLVersion,
+                           kTextureRectangleRequired, kFragmentShader)
+            .c_str());
     program_ = gfx::GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
     gfx::ScopedUseProgram use_program(program_);
 
