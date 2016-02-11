@@ -59,7 +59,7 @@ If you're working on the plugin, you can build it locally like so:
 To test the FindBadConstructs plugin, run:
 
     (cd tools/clang/plugins/tests && \
-     ./test.sh ../../../../third_party/llvm-build/Release+Asserts/bin/clang \
+     ./test.py ../../../../third_party/llvm-build/Release+Asserts/bin/clang \
                ../../../../third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so)
 
 To run [other plugins](writing_clang_plugins.md), add these to your
