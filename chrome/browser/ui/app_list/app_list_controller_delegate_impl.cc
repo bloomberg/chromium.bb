@@ -124,7 +124,6 @@ void AppListControllerDelegateImpl::LaunchApp(
         AppListSourceToString(source));
   }
 
-  FillLaunchParams(&params);
   OpenApplication(params);
 }
 
@@ -137,8 +136,6 @@ void AppListControllerDelegateImpl::ShowForProfileByPath(
 bool AppListControllerDelegateImpl::ShouldShowUserIcon() {
   return g_browser_process->profile_manager()->GetNumberOfProfiles() > 1;
 }
-
-void AppListControllerDelegateImpl::FillLaunchParams(AppLaunchParams* params) {}
 
 void AppListControllerDelegateImpl::OnCloseCreateShortcutsPrompt(
     bool created) {

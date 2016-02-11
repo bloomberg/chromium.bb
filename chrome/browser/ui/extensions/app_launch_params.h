@@ -29,21 +29,12 @@ struct AppLaunchParams {
                   WindowOpenDisposition disposition,
                   extensions::AppLaunchSource source);
 
-  // Helper to create AppLaunchParams using extensions::GetLaunchContainer with
-  // LAUNCH_TYPE_REGULAR to check for a user-configured container.
-  AppLaunchParams(Profile* profile,
-                  const extensions::Extension* extension,
-                  WindowOpenDisposition disposition,
-                  extensions::AppLaunchSource source);
-
   // Helper to create AppLaunchParams using event flags that allows user to
   // override the user-configured container using modifier keys, falling back to
-  // extensions::GetLaunchContainer() with no modifiers. |desktop_type|
-  // indicates the desktop upon which to launch (Ash or Native).
+  // extensions::GetLaunchContainer() with no modifiers.
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,
                   WindowOpenDisposition disposition,
-                  chrome::HostDesktopType desktop_type,
                   extensions::AppLaunchSource source);
 
   ~AppLaunchParams();
@@ -59,9 +50,6 @@ struct AppLaunchParams {
 
   // If container is TAB, this field controls how the tab is opened.
   WindowOpenDisposition disposition;
-
-  // The desktop type to launch on. Uses GetActiveDesktop() if unspecified.
-  chrome::HostDesktopType desktop_type;
 
   // If non-empty, use override_url in place of the application's launch url.
   GURL override_url;

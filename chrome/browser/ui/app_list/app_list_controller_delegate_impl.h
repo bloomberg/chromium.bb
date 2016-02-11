@@ -55,10 +55,6 @@ class AppListControllerDelegateImpl : public AppListControllerDelegate {
   void ShowForProfileByPath(const base::FilePath& profile_path) override;
   bool ShouldShowUserIcon() override;
 
- protected:
-  // Perform platform-specific adjustments of |params| before OpenApplication().
-  virtual void FillLaunchParams(AppLaunchParams* params);
-
  private:
   void OnCloseCreateShortcutsPrompt(bool created);
 

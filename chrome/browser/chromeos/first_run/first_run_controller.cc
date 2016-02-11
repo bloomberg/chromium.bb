@@ -123,9 +123,7 @@ void FirstRunController::OnNextButtonClicked(const std::string& step_name) {
 
 void FirstRunController::OnHelpButtonClicked() {
   RecordCompletion(first_run::TUTORIAL_COMPLETED_WITH_KEEP_EXPLORING);
-  on_actor_finalized_ = base::Bind(chrome::ShowHelpForProfile,
-                                   user_profile_,
-                                   chrome::HOST_DESKTOP_TYPE_ASH,
+  on_actor_finalized_ = base::Bind(chrome::ShowHelpForProfile, user_profile_,
                                    chrome::HELP_SOURCE_MENU);
   actor_->Finalize();
 }

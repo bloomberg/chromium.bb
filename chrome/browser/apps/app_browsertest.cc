@@ -1229,7 +1229,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest, IncognitoComponentApp) {
   registry->AddObserver(this);
 
   OpenApplication(AppLaunchParams(incognito_profile, file_manager, CURRENT_TAB,
-                                  chrome::HOST_DESKTOP_TYPE_NATIVE,
                                   extensions::SOURCE_TEST));
 
   while (!ContainsKey(opener_app_ids_, file_manager->id())) {

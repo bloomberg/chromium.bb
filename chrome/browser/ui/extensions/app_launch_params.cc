@@ -22,41 +22,19 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       extension_id(extension ? extension->id() : std::string()),
       container(container),
       disposition(disposition),
-      desktop_type(chrome::GetActiveDesktop()),
       override_url(),
       override_bounds(),
       command_line(base::CommandLine::NO_PROGRAM),
       source(source) {
-}
-
-AppLaunchParams::AppLaunchParams(Profile* profile,
-                                 const extensions::Extension* extension,
-                                 WindowOpenDisposition disposition,
-                                 extensions::AppLaunchSource source)
-    : profile(profile),
-      extension_id(extension ? extension->id() : std::string()),
-      container(extensions::LAUNCH_CONTAINER_NONE),
-      disposition(disposition),
-      desktop_type(chrome::GetActiveDesktop()),
-      override_url(),
-      override_bounds(),
-      command_line(base::CommandLine::NO_PROGRAM),
-      source(source) {
-  // Look up the app preference to find out the right launch container. Default
-  // is to launch as a regular tab.
-  container =
-      extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
 }
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
                                  const extensions::Extension* extension,
                                  WindowOpenDisposition raw_disposition,
-                                 chrome::HostDesktopType desktop_type,
                                  extensions::AppLaunchSource source)
     : profile(profile),
       extension_id(extension ? extension->id() : std::string()),
       container(extensions::LAUNCH_CONTAINER_NONE),
-      desktop_type(desktop_type),
       override_url(),
       override_bounds(),
       command_line(base::CommandLine::NO_PROGRAM),

@@ -40,14 +40,12 @@ void ChromeNewWindowDelegateChromeos::OpenFileManager() {
   const extensions::Extension* const extension =
       service->GetInstalledExtension(kFileManagerAppId);
   OpenApplication(AppLaunchParams(profile, extension, CURRENT_TAB,
-                                  chrome::HOST_DESKTOP_TYPE_ASH,
                                   extensions::SOURCE_KEYBOARD));
 }
 
 void ChromeNewWindowDelegateChromeos::OpenGetHelp() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  chrome::ShowHelpForProfile(
-      profile, chrome::HOST_DESKTOP_TYPE_ASH, chrome::HELP_SOURCE_KEYBOARD);
+  chrome::ShowHelpForProfile(profile, chrome::HELP_SOURCE_KEYBOARD);
 }
 
 void ChromeNewWindowDelegateChromeos::OpenCrosh() {

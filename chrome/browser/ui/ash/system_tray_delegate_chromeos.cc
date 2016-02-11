@@ -516,7 +516,6 @@ void SystemTrayDelegateChromeOS::ShowIMESettings() {
 
 void SystemTrayDelegateChromeOS::ShowHelp() {
   chrome::ShowHelpForProfile(ProfileManager::GetActiveUserProfile(),
-                             chrome::HOST_DESKTOP_TYPE_ASH,
                              chrome::HELP_SOURCE_MENU);
 }
 
