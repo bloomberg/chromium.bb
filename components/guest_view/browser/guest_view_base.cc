@@ -601,13 +601,6 @@ void GuestViewBase::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   if (attached() && ZoomPropagatesFromEmbedderToGuest())
     SetGuestZoomLevelToMatchEmbedder();
-
-  // TODO(lazyboy): This breaks guest visibility in --site-per-process because
-  // we do not take the widget's visibility into account.  We need to also
-  // stay hidden during "visibility:none" state.
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
-    web_contents()->WasShown();
-  }
 }
 
 void GuestViewBase::ActivateContents(WebContents* web_contents) {

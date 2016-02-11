@@ -919,6 +919,10 @@ void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
 
 void BrowserPluginGuest::OnSetVisibility(int browser_plugin_instance_id,
                                          bool visible) {
+  // For OOPIF-<webivew>, the remote frame will handle visibility state.
+  if (BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+    return;
+
   guest_visible_ = visible;
   if (embedder_visible_ && guest_visible_)
     GetWebContents()->WasShown();

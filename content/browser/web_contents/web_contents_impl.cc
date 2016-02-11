@@ -1780,6 +1780,13 @@ void WebContentsImpl::ForwardCompositorProto(
     delegate_->ForwardCompositorProto(proto);
 }
 
+void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {
+  if (visible)
+    WasShown();
+  else
+    WasHidden();
+}
+
 void WebContentsImpl::CreateNewWindow(
     SiteInstance* source_site_instance,
     int32_t route_id,

@@ -616,6 +616,7 @@ class CONTENT_EXPORT WebContentsImpl
   void LostMouseLock(RenderWidgetHostImpl* render_widget_host) override;
   void ForwardCompositorProto(RenderWidgetHostImpl* render_widget_host,
                               const std::vector<uint8_t>& proto) override;
+  void OnRenderFrameProxyVisibilityChanged(bool visible) override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

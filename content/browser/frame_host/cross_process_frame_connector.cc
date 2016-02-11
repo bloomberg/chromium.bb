@@ -199,6 +199,19 @@ void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
   if (!view_)
     return;
 
+  // If there is an inner WebContents, it should be notified of the change in
+  // the visibility. The Show/Hide methods will not be called if an inner
+  // WebContents exists since the corresponding WebContents will itself call
+  // Show/Hide on all the RenderWidgetHostViews (including this) one.
+  if (frame_proxy_in_parent_renderer_->frame_tree_node()
+          ->render_manager()
+          ->ForInnerDelegate()) {
+    RenderWidgetHostImpl::From(view_->GetRenderWidgetHost())
+        ->delegate()
+        ->OnRenderFrameProxyVisibilityChanged(visible);
+    return;
+  }
+
   if (visible)
     view_->Show();
   else

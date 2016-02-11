@@ -175,10 +175,16 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif
 
-  // Called when the widget has sent a compositor proto.  This is used in Blimp
+  // Called when the widget has sent a compositor proto.  This is used in Btlimp
   // mode with the RemoteChannel compositor.
   virtual void ForwardCompositorProto(RenderWidgetHostImpl* render_widget_host,
                                       const std::vector<uint8_t>& proto) {}
+
+  // Called when the visibility of the RenderFrameProxyHost in outter
+  // WebContents changes. This method is only called on an inner WebContents and
+  // will eventually notify all the RenderWidgetHostViews belonging to that
+  // WebContents.
+  virtual void OnRenderFrameProxyVisibilityChanged(bool visible) {}
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

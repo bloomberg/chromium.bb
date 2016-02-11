@@ -757,9 +757,7 @@ INSTANTIATE_TEST_CASE_P(WebViewTests,
                         testing::Values(false));
 
 class WebViewVisibilityTest : public WebViewTest {};
-INSTANTIATE_TEST_CASE_P(WebViewTests,
-                        WebViewVisibilityTest,
-                        testing::Values(false));
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewVisibilityTest, testing::Bool());
 
 class WebViewDPITest : public WebViewTest {
  protected:
