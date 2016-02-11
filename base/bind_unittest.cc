@@ -334,8 +334,8 @@ TEST_F(BindTest, CurryingRvalueResultOfBind) {
 //     preserve virtual dispatch).
 TEST_F(BindTest, FunctionTypeSupport) {
   EXPECT_CALL(static_func_mock_, VoidMethod0());
-  EXPECT_CALL(has_ref_, AddRef()).Times(5);
-  EXPECT_CALL(has_ref_, Release()).Times(5);
+  EXPECT_CALL(has_ref_, AddRef()).Times(4);
+  EXPECT_CALL(has_ref_, Release()).Times(4);
   EXPECT_CALL(has_ref_, VoidMethod0()).Times(2);
   EXPECT_CALL(has_ref_, VoidConstMethod0()).Times(2);
 

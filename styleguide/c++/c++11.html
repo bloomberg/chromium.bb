@@ -478,6 +478,16 @@ and <a href="http://en.cppreference.com/w/cpp/container/unordered_set">std::unor
 <td>Per the <a href="https://google.github.io/styleguide/cppguide.html#std_hash">Google style guide</a>, specify custom hashers instead of specializing <code>std::hash</code> for custom types. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/nCdjQqnouO4">Discussion thread</a>.</td>
 </tr>
 
+<tr>
+<td>Tuples</td>
+<td><code>std::tuple</code></td>
+<td>A fixed-size ordered collection of values of mixed types</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/tuple">std::tuple</a></td>
+<td><a href="https://crbug.com/554987">Tracking bug</a> to plan moving from <code>base::Tuple</code> to <code>std::tuple</code>. See also <code>std::tie</code>.
+<code>base::Tuple</code> is now an alias for <code>std::tuple</code>. In class template specializations, use <code>std::tuple</code> instead of <code>base::Tuple</code> to work around a MSVS2013 internal compiler error (Error code: C1001).
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -1023,14 +1033,6 @@ std::stof, std::stod, std::stold</a> </td>
 <td><a href="http://en.cppreference.com/w/cpp/language/function">
 Declaring functions</a></td>
 <td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Tuples</td>
-<td><code>std::tuple</code></td>
-<td>A fixed-size ordered collection of values of mixed types</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/tuple">std::tuple</a></td>
-<td><a href="https://crbug.com/554987">Tracking bug</a> to plan moving from <code>base::Tuple</code> to <code>std::tuple</code>. See also <code>std::tie</code></td>
 </tr>
 
 <tr>

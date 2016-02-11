@@ -649,8 +649,8 @@ struct IPC_EXPORT ParamTraits<base::TimeTicks> {
 };
 
 template <>
-struct ParamTraits<base::Tuple<>> {
-  typedef base::Tuple<> param_type;
+struct ParamTraits<std::tuple<>> {
+  typedef std::tuple<> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {}
   static void Write(base::Pickle* m, const param_type& p) {}
   static bool Read(const base::Pickle* m,
@@ -663,8 +663,8 @@ struct ParamTraits<base::Tuple<>> {
 };
 
 template <class A>
-struct ParamTraits<base::Tuple<A>> {
-  typedef base::Tuple<A> param_type;
+struct ParamTraits<std::tuple<A>> {
+  typedef std::tuple<A> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
     GetParamSize(sizer, base::get<0>(p));
   }
@@ -682,8 +682,8 @@ struct ParamTraits<base::Tuple<A>> {
 };
 
 template <class A, class B>
-struct ParamTraits<base::Tuple<A, B>> {
-  typedef base::Tuple<A, B> param_type;
+struct ParamTraits<std::tuple<A, B>> {
+  typedef std::tuple<A, B> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
     GetParamSize(sizer, base::get<0>(p));
     GetParamSize(sizer, base::get<1>(p));
@@ -706,8 +706,8 @@ struct ParamTraits<base::Tuple<A, B>> {
 };
 
 template <class A, class B, class C>
-struct ParamTraits<base::Tuple<A, B, C>> {
-  typedef base::Tuple<A, B, C> param_type;
+struct ParamTraits<std::tuple<A, B, C>> {
+  typedef std::tuple<A, B, C> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
     GetParamSize(sizer, base::get<0>(p));
     GetParamSize(sizer, base::get<1>(p));
@@ -735,8 +735,8 @@ struct ParamTraits<base::Tuple<A, B, C>> {
 };
 
 template <class A, class B, class C, class D>
-struct ParamTraits<base::Tuple<A, B, C, D>> {
-  typedef base::Tuple<A, B, C, D> param_type;
+struct ParamTraits<std::tuple<A, B, C, D>> {
+  typedef std::tuple<A, B, C, D> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
     GetParamSize(sizer, base::get<0>(p));
     GetParamSize(sizer, base::get<1>(p));
@@ -769,8 +769,8 @@ struct ParamTraits<base::Tuple<A, B, C, D>> {
 };
 
 template <class A, class B, class C, class D, class E>
-struct ParamTraits<base::Tuple<A, B, C, D, E>> {
-  typedef base::Tuple<A, B, C, D, E> param_type;
+struct ParamTraits<std::tuple<A, B, C, D, E>> {
+  typedef std::tuple<A, B, C, D, E> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
     GetParamSize(sizer, base::get<0>(p));
     GetParamSize(sizer, base::get<1>(p));

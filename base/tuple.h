@@ -29,6 +29,7 @@
 #define BASE_TUPLE_H_
 
 #include <stddef.h>
+#include <tuple>
 
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
@@ -145,60 +146,10 @@ struct TupleTraits<P&> {
 // want filled by the dispatchee, and the tuple is merely a container for that
 // output (a "tier").  See MakeRefTuple and its usages.
 
-template <typename IxSeq, typename... Ts>
-struct TupleBaseImpl;
 template <typename... Ts>
-using TupleBase = TupleBaseImpl<MakeIndexSequence<sizeof...(Ts)>, Ts...>;
-template <size_t N, typename T>
-struct TupleLeaf;
+using Tuple = std::tuple<Ts...>;
 
-template <typename... Ts>
-struct Tuple final : TupleBase<Ts...> {
-  Tuple() : TupleBase<Ts...>() {}
-  explicit Tuple(typename TupleTraits<Ts>::ParamType... args)
-      : TupleBase<Ts...>(args...) {}
-};
-
-// Avoids ambiguity between Tuple's two constructors.
-template <>
-struct Tuple<> final {};
-
-template <size_t... Ns, typename... Ts>
-struct TupleBaseImpl<IndexSequence<Ns...>, Ts...> : TupleLeaf<Ns, Ts>... {
-  TupleBaseImpl() : TupleLeaf<Ns, Ts>()... {}
-  explicit TupleBaseImpl(typename TupleTraits<Ts>::ParamType... args)
-      : TupleLeaf<Ns, Ts>(args)... {}
-};
-
-template <size_t N, typename T>
-struct TupleLeaf {
-  TupleLeaf() {}
-  explicit TupleLeaf(typename TupleTraits<T>::ParamType x) : x(x) {}
-
-  T& get() { return x; }
-  const T& get() const { return x; }
-
-  T x;
-};
-
-// Tuple getters --------------------------------------------------------------
-//
-// Allows accessing an arbitrary tuple element by index.
-//
-// Example usage:
-//   base::Tuple<int, double> t2;
-//   base::get<0>(t2) = 42;
-//   base::get<1>(t2) = 3.14;
-
-template <size_t I, typename T>
-T& get(TupleLeaf<I, T>& leaf) {
-  return leaf.get();
-}
-
-template <size_t I, typename T>
-const T& get(const TupleLeaf<I, T>& leaf) {
-  return leaf.get();
-}
+using std::get;
 
 // Tuple types ----------------------------------------------------------------
 //
