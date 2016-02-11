@@ -88,5 +88,10 @@ if (is_win) {
       "//testing/gmock",
       "//testing/gtest",
     ]
+
+    data = [
+      "//chrome/installer/test/data/",
+      "//chrome/test/data/installer/",
+    ]
   }
 }
