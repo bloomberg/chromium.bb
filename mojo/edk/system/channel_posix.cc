@@ -66,6 +66,10 @@ class MessageView {
   ScopedPlatformHandleVectorPtr TakeHandles() { return std::move(handles_); }
   Channel::MessagePtr TakeMessage() { return std::move(message_); }
 
+  void SetHandles(ScopedPlatformHandleVectorPtr handles) {
+    handles_ = std::move(handles);
+  }
+
  private:
   Channel::MessagePtr message_;
   size_t offset_;
@@ -277,33 +281,35 @@ class ChannelPosix : public Channel,
         // TODO: Handle lots of handles.
         result = PlatformChannelSendmsgWithHandles(
             handle_.get(), &iov, 1, handles->data(), handles->size());
+        if (result >= 0) {
 #if defined(OS_MACOSX)
-        // There is a bug on OSX which makes it dangerous to close
-        // a file descriptor while it is in transit. So instead we
-        // store the file descriptor in a set and send a message to
-        // the recipient, which is queued AFTER the message that
-        // sent the FD. The recipient will reply to the message,
-        // letting us know that it is now safe to close the file
-        // descriptor. For more information, see:
-        // http://crbug.com/298276
-        std::vector<int> fds;
-        for (auto& handle : *handles)
-          fds.push_back(handle.handle);
-        {
-          base::AutoLock l(handles_to_close_lock_);
+          // There is a bug on OSX which makes it dangerous to close
+          // a file descriptor while it is in transit. So instead we
+          // store the file descriptor in a set and send a message to
+          // the recipient, which is queued AFTER the message that
+          // sent the FD. The recipient will reply to the message,
+          // letting us know that it is now safe to close the file
+          // descriptor. For more information, see:
+          // http://crbug.com/298276
+          std::vector<int> fds;
           for (auto& handle : *handles)
-            handles_to_close_->push_back(handle);
-        }
-        MessagePtr fds_message(
-            new Channel::Message(sizeof(fds[0]) * fds.size(), 0,
-                                 Message::Header::MessageType::HANDLES_SENT));
-        memcpy(fds_message->mutable_payload(), fds.data(),
-               sizeof(fds[0]) * fds.size());
-        outgoing_messages_.emplace_back(std::move(fds_message), 0);
-        handles->clear();
+            fds.push_back(handle.handle);
+          {
+            base::AutoLock l(handles_to_close_lock_);
+            for (auto& handle : *handles)
+              handles_to_close_->push_back(handle);
+          }
+          MessagePtr fds_message(
+              new Channel::Message(sizeof(fds[0]) * fds.size(), 0,
+                                   Message::Header::MessageType::HANDLES_SENT));
+          memcpy(fds_message->mutable_payload(), fds.data(),
+                 sizeof(fds[0]) * fds.size());
+          outgoing_messages_.emplace_back(std::move(fds_message), 0);
+          handles->clear();
 #else
-        handles.reset();
+          handles.reset();
 #endif  // defined(OS_MACOSX)
+        }
       } else {
         result = PlatformChannelWrite(handle_.get(), message_view.data(),
                                       message_view.data_num_bytes());
@@ -312,6 +318,7 @@ class ChannelPosix : public Channel,
       if (result < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
           return false;
+        message_view.SetHandles(std::move(handles));
         outgoing_messages_.emplace_front(std::move(message_view));
         WaitForWriteOnIOThreadNoLock();
         return true;

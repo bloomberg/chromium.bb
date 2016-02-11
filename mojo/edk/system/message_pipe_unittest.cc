@@ -409,59 +409,94 @@ TEST_F(MessagePipeTest, BasicWaiting) {
 
 #if !defined(OS_IOS)
 
-const size_t kPingPongIterations = 50000;
+const size_t kPingPongHandlesPerIteration = 50;
+const size_t kPingPongIterations = 500;
 
-DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeHandlePingPong, MessagePipeTest, h) {
-  // Wait for the consumer to become readable.
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(HandlePingPong, MessagePipeTest, h) {
+  // Waits for a handle to become readable and writes it back to the sender.
   for (size_t i = 0; i < kPingPongIterations; i++) {
-    MojoHandle handle;
-    ReadMessageWithHandles(h, &handle, 1);
-    WriteMessageWithHandles(h, "", &handle, 1);
+    MojoHandle handles[kPingPongHandlesPerIteration];
+    ReadMessageWithHandles(h, handles, kPingPongHandlesPerIteration);
+    WriteMessageWithHandles(h, "", handles, kPingPongHandlesPerIteration);
   }
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+  char msg[4];
+  uint32_t num_bytes = 4;
+  EXPECT_EQ(MOJO_RESULT_OK, ReadMessage(h, msg, &num_bytes));
 }
 
-// Test that sending a data pipe handle across processes doesn't leak resources.
-// Currently times out on multiple platforms. crbug.com/585784
-TEST_F(MessagePipeTest, DISABLED_DataPipeConsumerHandlePingPong) {
-  MojoHandle p, c;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p, &c));
-  MojoClose(p);
-
-  RUN_CHILD_ON_PIPE(DataPipeHandlePingPong, h)
-  for (size_t i = 0; i < kPingPongIterations; i++) {
-    WriteMessageWithHandles(h, "", &c, 1);
-    ReadMessageWithHandles(h, &c, 1);
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_DataPipeConsumerHandlePingPong \
+    DISABLED_DataPipeConsumerHandlePingPong
+#else
+#define MAYBE_DataPipeConsumerHandlePingPong DataPipeConsumerHandlePingPong
+#endif
+TEST_F(MessagePipeTest, MAYBE_DataPipeConsumerHandlePingPong) {
+  MojoHandle p, c[kPingPongHandlesPerIteration];
+  for (size_t i = 0; i < kPingPongHandlesPerIteration; ++i) {
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p, &c[i]));
+    MojoClose(p);
   }
+
+  RUN_CHILD_ON_PIPE(HandlePingPong, h)
+    for (size_t i = 0; i < kPingPongIterations; i++) {
+      WriteMessageWithHandles(h, "", c, kPingPongHandlesPerIteration);
+      ReadMessageWithHandles(h, c, kPingPongHandlesPerIteration);
+    }
+    WriteMessage(h, "quit", 4);
   END_CHILD()
-  MojoClose(c);
+  for (size_t i = 0; i < kPingPongHandlesPerIteration; ++i)
+    MojoClose(c[i]);
 }
 
-// Currently times out on multiple platforms. crbug.com/585784
-TEST_F(MessagePipeTest, DISABLED_DataPipeProducerHandlePingPong) {
-  MojoHandle p, c;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p, &c));
-  MojoClose(c);
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_DataPipeProducerHandlePingPong \
+    DISABLED_DataPipeProducerHandlePingPong
+#else
+#define MAYBE_DataPipeProducerHandlePingPong DataPipeProducerHandlePingPong
+#endif
+TEST_F(MessagePipeTest, MAYBE_DataPipeProducerHandlePingPong) {
+  MojoHandle p[kPingPongHandlesPerIteration], c;
+  for (size_t i = 0; i < kPingPongHandlesPerIteration; ++i) {
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p[i], &c));
+    MojoClose(c);
+  }
 
-  RUN_CHILD_ON_PIPE(DataPipeHandlePingPong, h)
+  RUN_CHILD_ON_PIPE(HandlePingPong, h)
     for (size_t i = 0; i < kPingPongIterations; i++) {
-      WriteMessageWithHandles(h, "", &p, 1);
-      ReadMessageWithHandles(h, &p, 1);
+      WriteMessageWithHandles(h, "", p, kPingPongHandlesPerIteration);
+      ReadMessageWithHandles(h, p, kPingPongHandlesPerIteration);
     }
+    WriteMessage(h, "quit", 4);
   END_CHILD()
-  MojoClose(p);
+  for (size_t i = 0; i < kPingPongHandlesPerIteration; ++i)
+    MojoClose(p[i]);
 }
 
-TEST_F(MessagePipeTest, DISABLED_SharedBufferHandlePingPong) {
-  MojoHandle buffer;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateSharedBuffer(nullptr, 1, &buffer));
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_SharedBufferHandlePingPong DISABLED_SharedBufferHandlePingPong
+#else
+#define MAYBE_SharedBufferHandlePingPong SharedBufferHandlePingPong
+#endif
+TEST_F(MessagePipeTest, MAYBE_SharedBufferHandlePingPong) {
+  MojoHandle buffers[kPingPongHandlesPerIteration];
+  for (size_t i = 0; i <kPingPongHandlesPerIteration; ++i)
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateSharedBuffer(nullptr, 1, &buffers[i]));
 
-  RUN_CHILD_ON_PIPE(DataPipeHandlePingPong, h)
+  RUN_CHILD_ON_PIPE(HandlePingPong, h)
     for (size_t i = 0; i < kPingPongIterations; i++) {
-      WriteMessageWithHandles(h, "", &buffer, 1);
-      ReadMessageWithHandles(h, &buffer, 1);
+      WriteMessageWithHandles(h, "", buffers, kPingPongHandlesPerIteration);
+      ReadMessageWithHandles(h, buffers, kPingPongHandlesPerIteration);
     }
+    WriteMessage(h, "quit", 4);
   END_CHILD()
-  MojoClose(buffer);
+  for (size_t i = 0; i < kPingPongHandlesPerIteration; ++i)
+    MojoClose(buffers[i]);
 }
 
 #endif  // !defined(OS_IOS)
