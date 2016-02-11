@@ -77,13 +77,13 @@
     www.example.com
   </message>
   <message name="IDS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
-    Set wallpaper
+    Wallpaper
   </message>
   <message name="IDS_SETTINGS_THEMES" desc="Name of the control which allows the user to get themes for the browser.">
     Themes
   </message>
   <message name="IDS_SETTINGS_RESET_TO_DEFAULT_THEME" desc="Name of the control which resets the browser theme back to the default theme.">
-    Reset to default theme
+    Reset to default
   </message>
   <message name="IDS_SETTINGS_SHOW_HOME_BUTTON" desc="Label for the checkbox which enables or disables showing the home button in the toolbar.">
     Show home button
@@ -102,6 +102,9 @@
   </message>
   <message name="IDS_SETTINGS_WEB_STORE" desc="Sub-label about choosing something from the Chrome Web Store.">
     Choose from the Chrome Web Store
+  </message>
+  <message name="IDS_SETTINGS_OPEN_WALLPAPER_APP" desc="Sub-label about opening the wallpaper app.">
+    Open the wallpaper app
   </message>
 
 

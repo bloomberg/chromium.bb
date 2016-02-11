@@ -36,6 +36,31 @@ span ~ a {
   -webkit-margin-start: 4px;
 }
 
+paper-button.primary-button {
+  --paper-button: {
+    color: rgb(66, 133, 244);
+    text-align: start;
+    text-transform: none;
+    font-weight: 500;
+  };
+}
+
+paper-button.secondary-button {
+  --paper-button: {
+    color: #5a5a5a;
+    text-decoration: none;
+    font-weight: 500;
+  };
+}
+
+paper-button.tertiary-button {
+  --paper-button: {
+    color: rgb(51, 103, 214);
+    text-decoration: none;
+    font-weight: 400;
+  };
+}
+
 .text-elide {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -70,6 +95,20 @@ span ~ a {
   display: flex;
   min-height: 40px;
   padding: 0;
+}
+
+/* This button has no ink ripple */
+.list-item.list-button {
+  @apply(--layout-center);
+  color: rgb(66, 133, 244);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.list-item iron-icon {
+  @apply(--layout-center);
+  height: 20px;
+  width: 20px;
 }
 
 .list-item > .middle {
@@ -132,11 +171,20 @@ span ~ a {
   min-height: 52px;
 }
 
+.settings-box iron-icon {
+  @apply(--layout-center);
+  height: 20px;
+  width: 20px;
+}
+
 .settings-box .secondary {
   color: #969696;
+  font-weight: 400;
 }
 
 .settings-box .start {
+  align-items: center;
+  display: flex;
   flex: auto;
 }
 
