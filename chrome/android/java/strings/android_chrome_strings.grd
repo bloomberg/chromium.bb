@@ -2334,6 +2334,9 @@ You can control the Physical Web in Chrome privacy settings.
       <message name="IDS_PHYSICAL_WEB_LAUNCH_BUTTON" desc="The label for a button that opens a list of nearby URLs">
         See what's nearby
       </message>
+      <message name="IDS_PHYSICAL_WEB_BOTTOM_BAR" desc="A message displayed in the nearby URLs list activity informing the user that a notification will appear whenever devices broadcasting URLs are nearby">
+        Future nearby Physical Web pages will show up in your notifications list
+      </message>
     </messages>
   </release>
 </grit>

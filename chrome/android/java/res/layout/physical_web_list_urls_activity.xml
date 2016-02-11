@@ -45,6 +45,59 @@
 
         </RelativeLayout>
 
+        <LinearLayout
+            android:id="@+id/physical_web_bottom_bar"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone" >
+
+            <org.chromium.chrome.browser.widget.FadingShadowView
+                android:id="@+id/physical_web_bottom_bar_shadow"
+                android:layout_height="@dimen/infobar_shadow_height"
+                android:layout_width="match_parent" />
+
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:gravity="top"
+                android:background="#fff" >
+
+                <ImageView
+                    android:layout_height="@dimen/infobar_big_icon_size"
+                    android:layout_width="@dimen/infobar_big_icon_size"
+                    android:layout_weight="0"
+                    android:layout_marginTop="@dimen/infobar_padding"
+                    android:layout_marginBottom="@dimen/infobar_padding"
+                    android:layout_marginStart="@dimen/infobar_padding"
+                    android:layout_marginEnd="@dimen/infobar_big_icon_margin"
+                    android:src="@drawable/physical_web_notification_large"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="@dimen/infobar_padding"
+                    android:text="@string/physical_web_bottom_bar"
+                    android:textSize="@dimen/infobar_text_size" />
+
+                <ImageButton
+                    android:id="@+id/physical_web_bottom_bar_close"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="0"
+                    android:padding="@dimen/infobar_padding"
+                    android:src="@drawable/btn_close"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/close" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
     </FrameLayout>
 
 </org.chromium.chrome.browser.physicalweb.SwipeRefreshWidget>
