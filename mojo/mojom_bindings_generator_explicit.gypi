@@ -94,9 +94,11 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/mojo/mojo_public.gyp:mojo_interface_bindings_generation',
-        '<(DEPTH)/mojo/public/tools/bindings/bindings.gyp:precompile_mojom_bindings_generator_templates',
       ],
     }],
+  ],
+  'dependencies': [
+    '<(DEPTH)/mojo/public/tools/bindings/bindings.gyp:precompile_mojom_bindings_generator_templates',
   ],
   # Prevent the generated sources from being injected into the "all" target by
   # preventing the code generator from being directly depended on by the "all"

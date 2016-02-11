@@ -63,6 +63,7 @@
           ],
         }
       ],
+      'hard_dependency': 1,
     },
   ],
 }
