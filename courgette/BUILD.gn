@@ -135,6 +135,10 @@ test("courgette_unittests") {
     "//base/test:test_support",
     "//testing/gtest",
   ]
+
+  data = [
+    "testdata/",
+  ]
 }
 
 test("courgette_fuzz") {
