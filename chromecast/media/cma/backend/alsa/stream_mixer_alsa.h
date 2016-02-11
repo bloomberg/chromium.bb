@@ -119,6 +119,7 @@ class StreamMixerAlsa {
   int output_samples_per_second() const { return output_samples_per_second_; }
   bool empty() const { return inputs_.empty(); }
   State state() const { return state_; }
+  int num_output_channels() const { return num_output_channels_; }
 
   const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() const {
     return mixer_task_runner_;
@@ -196,6 +197,7 @@ class StreamMixerAlsa {
   // User-configurable ALSA parameters. This caches the results, so the code
   // only has to interact with the command line parameters once.
   std::string alsa_device_name_;
+  int num_output_channels_;
   snd_pcm_uframes_t alsa_buffer_size_;
   bool alsa_period_explicitly_set;
   snd_pcm_uframes_t alsa_period_size_;

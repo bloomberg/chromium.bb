@@ -51,4 +51,8 @@ const char kAlsaOutputAvailMin[] = "alsa-output-avail-min";
 // remain.
 const char kAlsaCheckCloseTimeout[] = "alsa-check-close-timeout";
 
+// Number of channels on the alsa output device that the stream mixer uses.
+// Default is 2 channels.
+const char kAlsaNumOutputChannels[] = "alsa-num-output-channels";
+
 }  // namespace switches

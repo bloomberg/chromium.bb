@@ -17,6 +17,7 @@
 #include "chromecast/public/media_codec_support_shlib.h"
 #include "chromecast/public/video_plane.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 
 #define RETURN_ON_ALSA_ERROR(snd_func, ...)                    \
   do {                                                         \
@@ -44,8 +45,7 @@ class DefaultVideoPlane : public VideoPlane {
  public:
   ~DefaultVideoPlane() override {}
 
-  void SetGeometry(const RectF& display_rect,
-                   Transform transform) override {}
+  void SetGeometry(const RectF& display_rect, Transform transform) override {}
 };
 
 snd_hctl_t* g_hardware_controls = nullptr;
@@ -56,8 +56,16 @@ snd_hctl_elem_t* g_rate_offset_element = nullptr;
 void InitializeAlsaControls() {
   RETURN_ON_ALSA_ERROR(snd_ctl_elem_id_malloc, &g_rate_offset_id);
   RETURN_ON_ALSA_ERROR(snd_ctl_elem_value_malloc, &g_rate_offset_ppm);
-  RETURN_ON_ALSA_ERROR(snd_hctl_open, &g_hardware_controls, kDefaultPcmDevice,
-                       kSoundControlBlockingMode);
+
+  std::string alsa_device_name = kDefaultPcmDevice;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAlsaOutputDevice)) {
+    alsa_device_name =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kAlsaOutputDevice);
+  }
+  RETURN_ON_ALSA_ERROR(snd_hctl_open, &g_hardware_controls,
+                       alsa_device_name.c_str(), kSoundControlBlockingMode);
   RETURN_ON_ALSA_ERROR(snd_hctl_load, g_hardware_controls);
   snd_ctl_elem_id_set_interface(g_rate_offset_id, SND_CTL_ELEM_IFACE_PCM);
   snd_ctl_elem_id_set_name(g_rate_offset_id, kRateOffsetInterfaceName);
