@@ -126,7 +126,7 @@ class AudioRendererImplTest : public ::testing::Test {
   void InitializeRenderer(const PipelineStatusCB& pipeline_status_cb) {
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
     renderer_->Initialize(
-        &demuxer_stream_, pipeline_status_cb, SetCdmReadyCB(),
+        &demuxer_stream_, pipeline_status_cb, nullptr,
         base::Bind(&AudioRendererImplTest::OnStatistics,
                    base::Unretained(this)),
         base::Bind(&AudioRendererImplTest::OnBufferingStateChange,

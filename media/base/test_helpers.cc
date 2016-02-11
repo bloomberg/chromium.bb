@@ -262,21 +262,4 @@ bool VerifyFakeVideoBufferForTest(
           height == config.coded_size().height());
 }
 
-CallbackPairChecker::CallbackPairChecker() : expecting_b_(false) {
-}
-
-CallbackPairChecker::~CallbackPairChecker() {
-  EXPECT_FALSE(expecting_b_);
-}
-
-void CallbackPairChecker::RecordACalled() {
-  EXPECT_FALSE(expecting_b_);
-  expecting_b_ = true;
-}
-
-void CallbackPairChecker::RecordBCalled() {
-  EXPECT_TRUE(expecting_b_);
-  expecting_b_ = false;
-}
-
 }  // namespace media

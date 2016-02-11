@@ -13,7 +13,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
-#include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
@@ -29,6 +28,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
+class CdmContext;
 class DecryptingDemuxerStream;
 
 // Wraps a DemuxerStream and a list of Decoders and provides decoded
@@ -65,9 +65,11 @@ class MEDIA_EXPORT DecoderStream {
 
   // Initializes the DecoderStream and returns the initialization result
   // through |init_cb|. Note that |init_cb| is always called asynchronously.
+  // |cdm_context| can be used to handle encrypted stream. Can be null if the
+  // stream is not encrypted.
   void Initialize(DemuxerStream* stream,
                   const InitCB& init_cb,
-                  const SetCdmReadyCB& set_cdm_ready_cb,
+                  CdmContext* cdm_context,
                   const StatisticsCB& statistics_cb,
                   const base::Closure& waiting_for_decryption_key_cb);
 
@@ -133,7 +135,7 @@ class MEDIA_EXPORT DecoderStream {
     STATE_ERROR
   };
 
-  void SelectDecoder(const SetCdmReadyCB& set_cdm_ready_cb);
+  void SelectDecoder(CdmContext* cdm_context);
 
   // Called when |decoder_selector| selected the |selected_decoder|.
   // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream

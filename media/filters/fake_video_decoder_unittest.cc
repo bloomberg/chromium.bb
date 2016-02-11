@@ -50,7 +50,7 @@ class FakeVideoDecoderTest
   void InitializeWithConfigAndExpectResult(const VideoDecoderConfig& config,
                                            bool success) {
     decoder_->Initialize(
-        config, false, SetCdmReadyCB(), NewExpectedBoolCB(success),
+        config, false, nullptr, NewExpectedBoolCB(success),
         base::Bind(&FakeVideoDecoderTest::FrameReady, base::Unretained(this)));
     message_loop_.RunUntilIdle();
     current_config_ = config;

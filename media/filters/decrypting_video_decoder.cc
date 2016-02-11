@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline.h"
@@ -39,7 +40,7 @@ std::string DecryptingVideoDecoder::GetDisplayName() const {
 
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         bool /* low_delay */,
-                                        const SetCdmReadyCB& set_cdm_ready_cb,
+                                        CdmContext* cdm_context,
                                         const InitCB& init_cb,
                                         const OutputCB& output_cb) {
   DVLOG(2) << __FUNCTION__ << ": " << config.AsHumanReadableString();
@@ -59,19 +60,23 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   config_ = config;
 
   if (state_ == kUninitialized) {
-    DCHECK(!set_cdm_ready_cb.is_null());
-    state_ = kDecryptorRequested;
-    set_cdm_ready_cb_ = set_cdm_ready_cb;
-    set_cdm_ready_cb_.Run(BindToCurrentLoop(
-        base::Bind(&DecryptingVideoDecoder::SetCdm, weak_this_)));
-    return;
+    DCHECK(cdm_context);
+    if (!cdm_context->GetDecryptor()) {
+      MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no decryptor";
+      base::ResetAndReturn(&init_cb_).Run(false);
+      return;
+    }
+
+    decryptor_ = cdm_context->GetDecryptor();
+  } else {
+    // Reinitialization.
+    decryptor_->DeinitializeDecoder(Decryptor::kVideo);
   }
 
-  // Reinitialization.
-  decryptor_->DeinitializeDecoder(Decryptor::kVideo);
   state_ = kPendingDecoderInit;
-  decryptor_->InitializeVideoDecoder(config, BindToCurrentLoop(base::Bind(
-      &DecryptingVideoDecoder::FinishInitialization, weak_this_)));
+  decryptor_->InitializeVideoDecoder(
+      config_, BindToCurrentLoop(base::Bind(
+                   &DecryptingVideoDecoder::FinishInitialization, weak_this_)));
 }
 
 void DecryptingVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
@@ -146,8 +151,6 @@ DecryptingVideoDecoder::~DecryptingVideoDecoder() {
     decryptor_->DeinitializeDecoder(Decryptor::kVideo);
     decryptor_ = NULL;
   }
-  if (!set_cdm_ready_cb_.is_null())
-    base::ResetAndReturn(&set_cdm_ready_cb_).Run(CdmReadyCB());
   pending_buffer_to_decode_ = NULL;
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(false);
@@ -155,33 +158,6 @@ DecryptingVideoDecoder::~DecryptingVideoDecoder() {
     base::ResetAndReturn(&decode_cb_).Run(kAborted);
   if (!reset_cb_.is_null())
     base::ResetAndReturn(&reset_cb_).Run();
-}
-
-void DecryptingVideoDecoder::SetCdm(CdmContext* cdm_context,
-                                    const CdmAttachedCB& cdm_attached_cb) {
-  DVLOG(2) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, kDecryptorRequested) << state_;
-  DCHECK(!init_cb_.is_null());
-  DCHECK(!set_cdm_ready_cb_.is_null());
-  set_cdm_ready_cb_.Reset();
-
-  if (!cdm_context || !cdm_context->GetDecryptor()) {
-    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no decryptor set";
-    base::ResetAndReturn(&init_cb_).Run(false);
-    state_ = kError;
-    cdm_attached_cb.Run(false);
-    return;
-  }
-
-  decryptor_ = cdm_context->GetDecryptor();
-
-  state_ = kPendingDecoderInit;
-  decryptor_->InitializeVideoDecoder(
-      config_,
-      BindToCurrentLoop(base::Bind(
-          &DecryptingVideoDecoder::FinishInitialization, weak_this_)));
-  cdm_attached_cb.Run(true);
 }
 
 void DecryptingVideoDecoder::FinishInitialization(bool success) {

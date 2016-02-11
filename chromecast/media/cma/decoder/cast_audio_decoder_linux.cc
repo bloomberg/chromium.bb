@@ -91,8 +91,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     }
     decoder_->Initialize(
         media::DecoderConfigAdapter::ToMediaAudioDecoderConfig(config_),
-        ::media::SetCdmReadyCB(),
-        base::Bind(&CastAudioDecoderImpl::OnInitialized, self),
+        nullptr, base::Bind(&CastAudioDecoderImpl::OnInitialized, self),
         base::Bind(&CastAudioDecoderImpl::OnDecoderOutput, self));
     // Unfortunately there is no result from decoder_->Initialize() until later
     // (the pipeline status callback is posted to the task runner).

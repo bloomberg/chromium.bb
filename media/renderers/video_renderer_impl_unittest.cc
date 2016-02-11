@@ -122,7 +122,7 @@ class VideoRendererImplTest
             DoAll(SaveArg<4>(&output_cb_), RunCallback<3>(expect_to_success)));
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
     renderer_->Initialize(
-        &demuxer_stream_, status_cb, SetCdmReadyCB(),
+        &demuxer_stream_, status_cb, nullptr,
         base::Bind(&VideoRendererImplTest::OnStatisticsUpdate,
                    base::Unretained(this)),
         base::Bind(&StrictMock<MockCB>::BufferingStateChange,

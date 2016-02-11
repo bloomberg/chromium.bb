@@ -51,7 +51,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
-                  const SetCdmReadyCB& set_cdm_ready_cb,
+                  CdmContext* cdm_context,
                   const InitCB& init_cb,
                   const OutputCB& output_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
@@ -106,10 +106,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   };
 
   typedef std::map<int32_t, PictureBuffer> PictureBufferMap;
-
-  // Callback to set CDM. |cdm_attached_cb| is called when the decryptor in the
-  // CDM has been completely attached to the pipeline.
-  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
 
   void DeliverFrame(const scoped_refptr<VideoFrame>& frame);
 
@@ -170,10 +166,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   State state_;
 
   VideoDecoderConfig config_;
-
-  // Callback to request/cancel CDM ready notification.
-  SetCdmReadyCB set_cdm_ready_cb_;
-  CdmAttachedCB cdm_attached_cb_;
 
   // Shared-memory buffer pool.  Since allocating SHM segments requires a
   // round-trip to the browser process, we keep allocation out of the

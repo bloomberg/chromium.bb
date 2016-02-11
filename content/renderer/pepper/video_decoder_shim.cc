@@ -710,7 +710,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
   DCHECK_EQ(decoder_->GetMaxDecodeRequests(), 1);
 
   decoder_->Initialize(
-      config, true /* low_delay */, media::SetCdmReadyCB(),
+      config, true /* low_delay */, nullptr,
       base::Bind(&VideoDecoderShim::DecoderImpl::OnInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&VideoDecoderShim::DecoderImpl::OnOutputComplete,

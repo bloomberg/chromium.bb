@@ -91,7 +91,7 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_METHOD5(Initialize,
                void(const VideoDecoderConfig& config,
                     bool low_delay,
-                    const SetCdmReadyCB& set_cdm_ready_cb,
+                    CdmContext* cdm_context,
                     const InitCB& init_cb,
                     const OutputCB& output_cb));
   MOCK_METHOD2(Decode, void(const scoped_refptr<DecoderBuffer>& buffer,
@@ -112,7 +112,7 @@ class MockAudioDecoder : public AudioDecoder {
   virtual std::string GetDisplayName() const;
   MOCK_METHOD4(Initialize,
                void(const AudioDecoderConfig& config,
-                    const SetCdmReadyCB& set_cdm_ready_cb,
+                    CdmContext* cdm_context,
                     const InitCB& init_cb,
                     const OutputCB& output_cb));
   MOCK_METHOD2(Decode,
@@ -133,7 +133,7 @@ class MockVideoRenderer : public VideoRenderer {
   MOCK_METHOD9(Initialize,
                void(DemuxerStream* stream,
                     const PipelineStatusCB& init_cb,
-                    const SetCdmReadyCB& set_cdm_ready_cb,
+                    CdmContext* cdm_context,
                     const StatisticsCB& statistics_cb,
                     const BufferingStateCB& buffering_state_cb,
                     const base::Closure& ended_cb,
@@ -157,7 +157,7 @@ class MockAudioRenderer : public AudioRenderer {
   MOCK_METHOD8(Initialize,
                void(DemuxerStream* stream,
                     const PipelineStatusCB& init_cb,
-                    const SetCdmReadyCB& set_cdm_ready_cb,
+                    CdmContext* cdm_context,
                     const StatisticsCB& statistics_cb,
                     const BufferingStateCB& buffering_state_cb,
                     const base::Closure& ended_cb,

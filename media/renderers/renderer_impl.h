@@ -77,7 +77,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
  private:
   enum State {
     STATE_UNINITIALIZED,
-    STATE_INITIALIZING,
+    STATE_INIT_PENDING_CDM,  // Initialization is waiting for the CDM to be set.
+    STATE_INITIALIZING,      // Initializing audio/video renderers.
     STATE_FLUSHING,
     STATE_PLAYING,
     STATE_ERROR
@@ -86,11 +87,9 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool GetWallClockTimes(const std::vector<base::TimeDelta>& media_timestamps,
                          std::vector<base::TimeTicks>* wall_clock_times);
 
-  // Requests that this object notifies when a CDM is ready through the
-  // |cdm_ready_cb| provided.
-  // If |cdm_ready_cb| is null, the existing callback will be fired with
-  // nullptr immediately and reset.
-  void SetCdmReadyCallback(const CdmReadyCB& cdm_ready_cb);
+  bool HasEncryptedStream();
+
+  void FinishInitialization(PipelineStatus status);
 
   // Helper functions and callbacks for Initialize().
   void InitializeAudioRenderer();
@@ -169,14 +168,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool video_ended_;
 
   CdmContext* cdm_context_;
-
-  // Callback registered by filters (decoder or demuxer) to be informed of a
-  // CDM.
-  // Note: We could have multiple filters registering this callback. One
-  // callback is okay because:
-  // 1, We always initialize filters in sequence.
-  // 2, Filter initialization will not finish until this callback is satisfied.
-  CdmReadyCB cdm_ready_cb_;
+  CdmAttachedCB pending_cdm_attached_cb_;
 
   bool underflow_disabled_for_testing_;
   bool clockless_video_playback_enabled_for_testing_;

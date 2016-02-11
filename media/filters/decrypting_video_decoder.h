@@ -41,7 +41,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
-                  const SetCdmReadyCB& set_cdm_ready_cb,
+                  CdmContext* cdm_context,
                   const InitCB& init_cb,
                   const OutputCB& output_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
@@ -56,7 +56,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   // stabilizes.
   enum State {
     kUninitialized = 0,
-    kDecryptorRequested,
     kPendingDecoderInit,
     kIdle,
     kPendingDecode,
@@ -64,10 +63,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
     kDecodeFinished,
     kError
   };
-
-  // Callback to set CDM. |cdm_attached_cb| is called when the decryptor in the
-  // CDM has been completely attached to the pipeline.
-  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
 
   // Callback for Decryptor::InitializeVideoDecoder() during initialization.
   void FinishInitialization(bool success);
@@ -99,9 +94,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   base::Closure waiting_for_decryption_key_cb_;
 
   VideoDecoderConfig config_;
-
-  // Callback to request/cancel CDM ready notification.
-  SetCdmReadyCB set_cdm_ready_cb_;
 
   Decryptor* decryptor_;
 

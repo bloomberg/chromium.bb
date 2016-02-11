@@ -679,7 +679,7 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
     LOG_ASSERT(0) << "Invalid profile " << profile_;
 
   decoder_->Initialize(
-      config, false, media::SetCdmReadyCB(),
+      config, false, nullptr,
       base::Bind(&VideoFrameQualityValidator::InitializeCB,
                  base::Unretained(this)),
       base::Bind(&VideoFrameQualityValidator::VerifyOutputFrame,

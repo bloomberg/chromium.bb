@@ -140,7 +140,7 @@ class EndToEndFrameChecker
       : decoder_(), count_frames_checked_(0) {
     bool decoder_init_result;
     decoder_.Initialize(
-        config, false, media::SetCdmReadyCB(),
+        config, false, nullptr,
         base::Bind(&SaveDecoderInitResult, &decoder_init_result),
         base::Bind(&EndToEndFrameChecker::CompareFrameWithExpected,
                    base::Unretained(this)));

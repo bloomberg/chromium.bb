@@ -75,36 +75,22 @@ class DecryptingVideoDecoderTest : public testing::Test {
     Destroy();
   }
 
-  enum CdmType { NO_CDM, CDM_WITHOUT_DECRYPTOR, CDM_WITH_DECRYPTOR };
+  enum CdmType { CDM_WITHOUT_DECRYPTOR, CDM_WITH_DECRYPTOR };
 
   void SetCdmType(CdmType cdm_type) {
-    const bool has_cdm = cdm_type != NO_CDM;
     const bool has_decryptor = cdm_type == CDM_WITH_DECRYPTOR;
-
-    EXPECT_CALL(*this, RequestCdmNotification(_))
-        .WillOnce(RunCallback<0>(has_cdm ? cdm_context_.get() : nullptr,
-                                 base::Bind(&DecryptingVideoDecoderTest::CdmSet,
-                                            base::Unretained(this))));
-
-    if (has_cdm) {
-      EXPECT_CALL(*cdm_context_, GetDecryptor())
-          .WillRepeatedly(Return(has_decryptor ? decryptor_.get() : nullptr));
-    }
-
-    EXPECT_CALL(*this, CdmSet(has_decryptor));
+    EXPECT_CALL(*cdm_context_, GetDecryptor())
+        .WillRepeatedly(Return(has_decryptor ? decryptor_.get() : nullptr));
   }
 
   // Initializes the |decoder_| and expects |success|. Note the initialization
   // can succeed or fail.
   void InitializeAndExpectResult(const VideoDecoderConfig& config,
                                  bool success) {
-    decoder_->Initialize(
-        config, false,
-        base::Bind(&DecryptingVideoDecoderTest::RequestCdmNotification,
-                   base::Unretained(this)),
-        NewExpectedBoolCB(success),
-        base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                   base::Unretained(this)));
+    decoder_->Initialize(config, false, cdm_context_.get(),
+                         NewExpectedBoolCB(success),
+                         base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                                    base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
@@ -240,12 +226,8 @@ class DecryptingVideoDecoderTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  MOCK_METHOD1(RequestCdmNotification, void(const CdmReadyCB&));
-
   MOCK_METHOD1(FrameReady, void(const scoped_refptr<VideoFrame>&));
   MOCK_METHOD1(DecodeDone, void(VideoDecoder::Status));
-
-  MOCK_METHOD1(CdmSet, void(bool));
 
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
@@ -275,22 +257,17 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_Normal) {
   Initialize();
 }
 
-TEST_F(DecryptingVideoDecoderTest, Initialize_NoCdm) {
-  SetCdmType(NO_CDM);
-  InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
-}
-
 TEST_F(DecryptingVideoDecoderTest, Initialize_CdmWithoutDecryptor) {
   SetCdmType(CDM_WITHOUT_DECRYPTOR);
   InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
 }
 
 TEST_F(DecryptingVideoDecoderTest, Initialize_Failure) {
+  SetCdmType(CDM_WITH_DECRYPTOR);
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillRepeatedly(RunCallback<1>(false));
   EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
       .WillRepeatedly(SaveArg<1>(&key_added_cb_));
-  EXPECT_CALL(*this, RequestCdmNotification(_)).Times(2);
 
   InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
 }
@@ -426,33 +403,6 @@ TEST_F(DecryptingVideoDecoderTest, Reset_AfterReset) {
   EnterNormalDecodingState();
   Reset();
   Reset();
-}
-
-// Test destruction when the decoder is in kDecryptorRequested state.
-TEST_F(DecryptingVideoDecoderTest, Destroy_DuringDecryptorRequested) {
-  CdmReadyCB cdm_ready_cb;
-  EXPECT_CALL(*this, RequestCdmNotification(_))
-      .WillOnce(SaveArg<0>(&cdm_ready_cb));
-  decoder_->Initialize(
-      TestVideoConfig::NormalEncrypted(), false,
-      base::Bind(&DecryptingVideoDecoderTest::RequestCdmNotification,
-                 base::Unretained(this)),
-      NewExpectedBoolCB(false),
-      base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                 base::Unretained(this)));
-  message_loop_.RunUntilIdle();
-  // |cdm_ready_cb| is saved but not called here.
-  EXPECT_FALSE(cdm_ready_cb.is_null());
-
-  // During destruction, RequestCdmNotification() should be called with a
-  // NULL callback to cancel the |cdm_ready_cb|.
-  EXPECT_CALL(*this, RequestCdmNotification(IsNullCallback()))
-      .WillOnce(
-          ResetAndRunCallback(&cdm_ready_cb, nullptr,
-                              base::Bind(&DecryptingVideoDecoderTest::CdmSet,
-                                         base::Unretained(this))));
-  EXPECT_CALL(*this, CdmSet(_)).Times(0);
-  Destroy();
 }
 
 // Test destruction when the decoder is in kPendingDecoderInit state.

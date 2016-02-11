@@ -53,6 +53,7 @@ class RendererImplTest : public ::testing::Test {
     MOCK_METHOD1(OnUpdateStatistics, void(const PipelineStatistics&));
     MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
     MOCK_METHOD0(OnWaitingForDecryptionKey, void());
+    MOCK_METHOD1(OnCdmAttached, void(bool));
 
    private:
     DISALLOW_COPY_AND_ASSIGN(CallbackHelper);
@@ -65,7 +66,9 @@ class RendererImplTest : public ::testing::Test {
         renderer_impl_(
             new RendererImpl(message_loop_.task_runner(),
                              scoped_ptr<AudioRenderer>(audio_renderer_),
-                             scoped_ptr<VideoRenderer>(video_renderer_))) {
+                             scoped_ptr<VideoRenderer>(video_renderer_))),
+        cdm_context_(new StrictMock<MockCdmContext>()),
+        initialization_status_(PIPELINE_ERROR_OPERATION_PENDING) {
     // SetDemuxerExpectations() adds overriding expectations for expected
     // non-NULL streams.
     DemuxerStream* null_pointer = NULL;
@@ -73,13 +76,15 @@ class RendererImplTest : public ::testing::Test {
         .WillRepeatedly(Return(null_pointer));
   }
 
-  virtual ~RendererImplTest() {
-    renderer_impl_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
+  virtual ~RendererImplTest() { Destroy(); }
 
  protected:
   typedef std::vector<MockDemuxerStream*> MockDemuxerStreamVector;
+
+  void Destroy() {
+    renderer_impl_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
 
   scoped_ptr<StrictMock<MockDemuxerStream> > CreateStream(
       DemuxerStream::Type type) {
@@ -106,7 +111,8 @@ class RendererImplTest : public ::testing::Test {
   }
 
   void InitializeAndExpect(PipelineStatus start_status) {
-    EXPECT_CALL(callbacks_, OnInitialize(start_status));
+    EXPECT_CALL(callbacks_, OnInitialize(start_status))
+        .WillOnce(SaveArg<0>(&initialization_status_));
     EXPECT_CALL(callbacks_, OnWaitingForDecryptionKey()).Times(0);
 
     if (start_status == PIPELINE_OK && audio_stream_) {
@@ -138,13 +144,17 @@ class RendererImplTest : public ::testing::Test {
         .WillRepeatedly(Return(audio_stream_.get()));
   }
 
-  void CreateVideoStream() {
+  void CreateVideoStream(bool is_encrypted = false) {
     video_stream_ = CreateStream(DemuxerStream::VIDEO);
-    video_stream_->set_video_decoder_config(video_decoder_config_);
+    video_stream_->set_video_decoder_config(
+        is_encrypted ? TestVideoConfig::NormalEncrypted()
+                     : TestVideoConfig::Normal());
     streams_.push_back(video_stream_.get());
     EXPECT_CALL(*demuxer_, GetStream(DemuxerStream::VIDEO))
         .WillRepeatedly(Return(video_stream_.get()));
   }
+
+  void CreateEncryptedVideoStream() { CreateVideoStream(true); }
 
   void CreateAudioAndVideoStream() {
     CreateAudioStream();
@@ -248,6 +258,14 @@ class RendererImplTest : public ::testing::Test {
     return IsMediaTimeAdvancing(1.0);
   }
 
+  void SetCdmAndExpect(bool expected_result) {
+    EXPECT_CALL(callbacks_, OnCdmAttached(expected_result));
+    renderer_impl_->SetCdm(cdm_context_.get(),
+                           base::Bind(&CallbackHelper::OnCdmAttached,
+                                      base::Unretained(&callbacks_)));
+    base::RunLoop().RunUntilIdle();
+  }
+
   // Fixture members.
   base::MessageLoop message_loop_;
   StrictMock<CallbackHelper> callbacks_;
@@ -257,6 +275,7 @@ class RendererImplTest : public ::testing::Test {
   StrictMock<MockVideoRenderer>* video_renderer_;
   StrictMock<MockAudioRenderer>* audio_renderer_;
   scoped_ptr<RendererImpl> renderer_impl_;
+  scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
 
   StrictMock<MockTimeSource> time_source_;
   scoped_ptr<StrictMock<MockDemuxerStream> > audio_stream_;
@@ -268,13 +287,65 @@ class RendererImplTest : public ::testing::Test {
   base::Closure video_ended_cb_;
   PipelineStatusCB audio_error_cb_;
   VideoDecoderConfig video_decoder_config_;
+  PipelineStatus initialization_status_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererImplTest);
 };
 
-TEST_F(RendererImplTest, DestroyBeforeInitialize) {
-  // |renderer_impl_| will be destroyed in the dtor.
+TEST_F(RendererImplTest, Destroy_BeforeInitialize) {
+  Destroy();
+}
+
+TEST_F(RendererImplTest, Destroy_PendingInitialize) {
+  CreateAudioAndVideoStream();
+
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+  // Not returning the video initialization callback.
+  EXPECT_CALL(*video_renderer_,
+              Initialize(video_stream_.get(), _, _, _, _, _, _, _, _));
+
+  InitializeAndExpect(PIPELINE_ERROR_ABORT);
+  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+
+  Destroy();
+}
+
+TEST_F(RendererImplTest, Destroy_PendingInitializeWithoutCdm) {
+  CreateAudioStream();
+  CreateEncryptedVideoStream();
+
+  // Audio is clear and video is encrypted. Initialization will not start
+  // because no CDM is set. So neither AudioRenderer::Initialize() nor
+  // VideoRenderer::Initialize() should not be called. The InitCB will be
+  // aborted when |renderer_impl_| is destructed.
+  InitializeAndExpect(PIPELINE_ERROR_ABORT);
+  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+
+  Destroy();
+}
+
+TEST_F(RendererImplTest, Destroy_PendingInitializeAfterSetCdm) {
+  CreateAudioStream();
+  CreateEncryptedVideoStream();
+
+  // Audio is clear and video is encrypted. Initialization will not start
+  // because no CDM is set.
+  InitializeAndExpect(PIPELINE_ERROR_ABORT);
+  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+  // Not returning the video initialization callback. So initialization will
+  // be pending.
+  EXPECT_CALL(*video_renderer_,
+              Initialize(video_stream_.get(), _, _, _, _, _, _, _, _));
+
+  // SetCdm() will trigger the initialization to start. But it will not complete
+  // because the |video_renderer_| is not returning the initialization callback.
+  SetCdmAndExpect(false);
+  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+
+  Destroy();
 }
 
 TEST_F(RendererImplTest, InitializeWithAudio) {
@@ -313,6 +384,54 @@ TEST_F(RendererImplTest, InitializeWithAudioVideo_VideoRendererFailed) {
   SetAudioRendererInitializeExpectations(PIPELINE_OK);
   SetVideoRendererInitializeExpectations(PIPELINE_ERROR_INITIALIZATION_FAILED);
   InitializeAndExpect(PIPELINE_ERROR_INITIALIZATION_FAILED);
+}
+
+TEST_F(RendererImplTest, SetCdmBeforeInitialize) {
+  // CDM will be successfully attached immediately if set before RendererImpl
+  // initialization, regardless of the later initialization result.
+  SetCdmAndExpect(true);
+}
+
+TEST_F(RendererImplTest, SetCdmAfterInitialize_ClearStream) {
+  InitializeWithAudioAndVideo();
+  EXPECT_EQ(PIPELINE_OK, initialization_status_);
+
+  // CDM will be successfully attached immediately since initialization is
+  // completed.
+  SetCdmAndExpect(true);
+}
+
+TEST_F(RendererImplTest, SetCdmAfterInitialize_EncryptedStream_Success) {
+  CreateAudioStream();
+  CreateEncryptedVideoStream();
+
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+  SetVideoRendererInitializeExpectations(PIPELINE_OK);
+  InitializeAndExpect(PIPELINE_OK);
+  // Initialization is pending until CDM is set.
+  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+
+  SetCdmAndExpect(true);
+  EXPECT_EQ(PIPELINE_OK, initialization_status_);
+}
+
+TEST_F(RendererImplTest, SetCdmAfterInitialize_EncryptedStream_Failure) {
+  CreateAudioStream();
+  CreateEncryptedVideoStream();
+
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+  SetVideoRendererInitializeExpectations(PIPELINE_ERROR_INITIALIZATION_FAILED);
+  InitializeAndExpect(PIPELINE_ERROR_INITIALIZATION_FAILED);
+  // Initialization is pending until CDM is set.
+  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+
+  SetCdmAndExpect(false);
+  EXPECT_EQ(PIPELINE_ERROR_INITIALIZATION_FAILED, initialization_status_);
+}
+
+TEST_F(RendererImplTest, SetCdmMultipleTimes) {
+  SetCdmAndExpect(true);
+  SetCdmAndExpect(false);  // Do not support switching CDM.
 }
 
 TEST_F(RendererImplTest, StartPlayingFrom) {

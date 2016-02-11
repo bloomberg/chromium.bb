@@ -30,16 +30,6 @@ using ::testing::StrictMock;
 // times across multiple test files. Sadly we can't use static for them.
 namespace {
 
-ACTION_P3(ExecuteCallbackWithVerifier, cdm_context, done_cb, verifier) {
-  // verifier must be called first since |done_cb| call will invoke it as well.
-  verifier->RecordACalled();
-  arg0.Run(cdm_context, done_cb);
-}
-
-ACTION_P(ReportCallback, verifier) {
-  verifier->RecordBCalled();
-}
-
 MATCHER(EncryptedConfig, "") {
   return arg.is_encrypted();
 }
@@ -54,11 +44,8 @@ namespace media {
 class AudioDecoderSelectorTest : public ::testing::Test {
  public:
   enum DecryptorCapability {
-    kNoDecryptor,
-    // Used to test destruction during DecryptingAudioDecoder::Initialize() and
-    // DecryptingDemuxerStream::Initialize(). We don't need this for normal
-    // AudioDecoders since we use MockAudioDecoder.
-    kHoldSetDecryptor,
+    kNoCdm,        // No CDM. Only possible for clear stream.
+    kNoDecryptor,  // CDM is available but Decryptor is not supported.
     kDecryptOnly,
     kDecryptAndDecode
   };
@@ -66,22 +53,20 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   AudioDecoderSelectorTest()
       : demuxer_stream_(
             new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
-        cdm_context_(new StrictMock<MockCdmContext>()),
-        decryptor_(new NiceMock<MockDecryptor>()),
         decoder_1_(new StrictMock<MockAudioDecoder>()),
         decoder_2_(new StrictMock<MockAudioDecoder>()) {
     all_decoders_.push_back(decoder_1_);
     all_decoders_.push_back(decoder_2_);
+    // |cdm_context_| and |decryptor_| are conditionally created in
+    // InitializeDecoderSelector().
   }
 
   ~AudioDecoderSelectorTest() {
     message_loop_.RunUntilIdle();
   }
 
-  MOCK_METHOD1(SetCdmReadyCallback, void(const CdmReadyCB&));
   MOCK_METHOD2(OnDecoderSelected,
                void(AudioDecoder*, DecryptingDemuxerStream*));
-  MOCK_METHOD1(CdmSet, void(bool));
 
   void MockOnDecoderSelected(scoped_ptr<AudioDecoder> decoder,
                              scoped_ptr<DecryptingDemuxerStream> stream) {
@@ -105,33 +90,20 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   void InitializeDecoderSelector(DecryptorCapability decryptor_capability,
                                  int num_decoders) {
-    if (decryptor_capability == kDecryptOnly ||
-        decryptor_capability == kDecryptAndDecode) {
-      EXPECT_CALL(*cdm_context_, GetDecryptor())
-          .WillRepeatedly(Return(decryptor_.get()));
+    if (decryptor_capability != kNoCdm) {
+      cdm_context_.reset(new StrictMock<MockCdmContext>());
 
-      EXPECT_CALL(*this, SetCdmReadyCallback(_))
-          .WillRepeatedly(ExecuteCallbackWithVerifier(
-              cdm_context_.get(), base::Bind(&AudioDecoderSelectorTest::CdmSet,
-                                             base::Unretained(this)),
-              &verifier_));
-      EXPECT_CALL(*this, CdmSet(true))
-          .WillRepeatedly(ReportCallback(&verifier_));
-
-      if (decryptor_capability == kDecryptOnly) {
-        EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
-            .WillRepeatedly(RunCallback<1>(false));
+      if (decryptor_capability == kNoDecryptor) {
+        EXPECT_CALL(*cdm_context_, GetDecryptor())
+            .WillRepeatedly(Return(nullptr));
       } else {
+        decryptor_.reset(new NiceMock<MockDecryptor>());
+        EXPECT_CALL(*cdm_context_, GetDecryptor())
+            .WillRepeatedly(Return(decryptor_.get()));
         EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
-            .WillRepeatedly(RunCallback<1>(true));
+            .WillRepeatedly(
+                RunCallback<1>(decryptor_capability == kDecryptAndDecode));
       }
-    } else if (decryptor_capability == kHoldSetDecryptor) {
-      // Set and cancel CdmReadyCB but the callback is never fired.
-      EXPECT_CALL(*this, SetCdmReadyCallback(_)).Times(2);
-    } else if (decryptor_capability == kNoDecryptor) {
-      EXPECT_CALL(*this, SetCdmReadyCallback(_))
-          .WillRepeatedly(
-              RunCallback<0>(nullptr, base::Bind(&IgnoreCdmAttached)));
     }
 
     DCHECK_GE(all_decoders_.size(), static_cast<size_t>(num_decoders));
@@ -144,9 +116,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   void SelectDecoder() {
     decoder_selector_->SelectDecoder(
-        demuxer_stream_.get(),
-        base::Bind(&AudioDecoderSelectorTest::SetCdmReadyCallback,
-                   base::Unretained(this)),
+        demuxer_stream_.get(), cdm_context_.get(),
         base::Bind(&AudioDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)),
         base::Bind(&AudioDecoderSelectorTest::OnDecoderOutput),
@@ -175,6 +145,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   scoped_ptr<StrictMock<MockDemuxerStream>> demuxer_stream_;
 
   scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
+
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor>> decryptor_;
@@ -188,11 +159,11 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   base::MessageLoop message_loop_;
 
-  CallbackPairChecker verifier_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderSelectorTest);
 };
+
+// TODO(xhwang): Add kNoCdm tests for clear stream.
 
 // The stream is not encrypted but we have no clear decoder. No decoder can be
 // selected.
@@ -338,14 +309,6 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptOnly_NoClearDecoder) {
   SelectDecoder();
 }
 
-TEST_F(AudioDecoderSelectorTest,
-       Destroy_EncryptedStream_DecryptOnly_NoClearDecoder) {
-  UseEncryptedStream();
-  InitializeDecoderSelector(kHoldSetDecryptor, 0);
-
-  SelectDecoderAndDestroy();
-}
-
 // Decryptor can do decryption-only and there's a decoder available. The decoder
 // will be selected and a DecryptingDemuxerStream will be created.
 TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptOnly_OneClearDecoder) {
@@ -417,13 +380,6 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptAndDecode) {
 #endif
 
   SelectDecoder();
-}
-
-TEST_F(AudioDecoderSelectorTest, Destroy_EncryptedStream_DecryptAndDecode) {
-  UseEncryptedStream();
-  InitializeDecoderSelector(kHoldSetDecryptor, 1);
-
-  SelectDecoderAndDestroy();
 }
 
 }  // namespace media

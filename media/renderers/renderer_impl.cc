@@ -14,11 +14,13 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/media_switches.h"
 #include "media/base/time_source.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_renderer.h"
 #include "media/base/wall_clock_time_source.h"
 
@@ -72,10 +74,11 @@ RendererImpl::~RendererImpl() {
   video_renderer_.reset();
   audio_renderer_.reset();
 
-  if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
-  else if (!flush_cb_.is_null())
+  if (!init_cb_.is_null()) {
+    FinishInitialization(PIPELINE_ERROR_ABORT);
+  } else if (!flush_cb_.is_null()) {
     base::ResetAndReturn(&flush_cb_).Run();
+  }
 }
 
 void RendererImpl::Initialize(
@@ -105,6 +108,11 @@ void RendererImpl::Initialize(
   init_cb_ = init_cb;
   waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
+  if (HasEncryptedStream() && !cdm_context_) {
+    state_ = STATE_INIT_PENDING_CDM;
+    return;
+  }
+
   state_ = STATE_INITIALIZING;
   InitializeAudioRenderer();
 }
@@ -123,12 +131,17 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
 
   cdm_context_ = cdm_context;
 
-  if (cdm_ready_cb_.is_null()) {
+  if (state_ != STATE_INIT_PENDING_CDM) {
     cdm_attached_cb.Run(true);
     return;
   }
 
-  base::ResetAndReturn(&cdm_ready_cb_).Run(cdm_context, cdm_attached_cb);
+  DCHECK(!init_cb_.is_null());
+  state_ = STATE_INITIALIZING;
+  // |cdm_attached_cb| will be fired after initialization finishes.
+  pending_cdm_attached_cb_ = cdm_attached_cb;
+
+  InitializeAudioRenderer();
 }
 
 void RendererImpl::Flush(const base::Closure& flush_cb) {
@@ -254,25 +267,27 @@ bool RendererImpl::GetWallClockTimes(
   return time_source_->GetWallClockTimes(media_timestamps, wall_clock_times);
 }
 
-void RendererImpl::SetCdmReadyCallback(const CdmReadyCB& cdm_ready_cb) {
-  // Cancels the previous CDM request.
-  if (cdm_ready_cb.is_null()) {
-    if (!cdm_ready_cb_.is_null()) {
-      base::ResetAndReturn(&cdm_ready_cb_)
-          .Run(nullptr, base::Bind(IgnoreCdmAttached));
-    }
-    return;
-  }
+bool RendererImpl::HasEncryptedStream() {
+  DemuxerStream* audio_stream =
+      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
+  if (audio_stream && audio_stream->audio_decoder_config().is_encrypted())
+    return true;
 
-  // We initialize audio and video decoders in sequence.
-  DCHECK(cdm_ready_cb_.is_null());
+  DemuxerStream* video_stream =
+      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
+  if (video_stream && video_stream->video_decoder_config().is_encrypted())
+    return true;
 
-  if (cdm_context_) {
-    cdm_ready_cb.Run(cdm_context_, base::Bind(IgnoreCdmAttached));
-    return;
-  }
+  return false;
+}
 
-  cdm_ready_cb_ = cdm_ready_cb;
+void RendererImpl::FinishInitialization(PipelineStatus status) {
+  DCHECK(!init_cb_.is_null());
+
+  if (!pending_cdm_attached_cb_.is_null())
+    base::ResetAndReturn(&pending_cdm_attached_cb_).Run(status == PIPELINE_OK);
+
+  base::ResetAndReturn(&init_cb_).Run(status);
 }
 
 void RendererImpl::InitializeAudioRenderer() {
@@ -294,8 +309,7 @@ void RendererImpl::InitializeAudioRenderer() {
   // happen at any time and all future calls must guard against STATE_ERROR.
   audio_renderer_->Initialize(
       demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO), done_cb,
-      base::Bind(&RendererImpl::SetCdmReadyCallback, weak_this_),
-      base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
+      cdm_context_, base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &audio_buffering_state_),
       base::Bind(&RendererImpl::OnAudioRendererEnded, weak_this_),
@@ -316,7 +330,7 @@ void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
   }
 
   if (status != PIPELINE_OK) {
-    base::ResetAndReturn(&init_cb_).Run(status);
+    FinishInitialization(status);
     return;
   }
 
@@ -341,8 +355,7 @@ void RendererImpl::InitializeVideoRenderer() {
 
   video_renderer_->Initialize(
       demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO), done_cb,
-      base::Bind(&RendererImpl::SetCdmReadyCallback, weak_this_),
-      base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
+      cdm_context_, base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &video_buffering_state_),
       base::Bind(&RendererImpl::OnVideoRendererEnded, weak_this_),
@@ -367,7 +380,7 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
   DCHECK(!init_cb_.is_null());
 
   if (status != PIPELINE_OK) {
-    base::ResetAndReturn(&init_cb_).Run(status);
+    FinishInitialization(status);
     return;
   }
 
@@ -381,7 +394,8 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
   state_ = STATE_PLAYING;
   DCHECK(time_source_);
   DCHECK(audio_renderer_ || video_renderer_);
-  base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
+
+  FinishInitialization(PIPELINE_OK);
 }
 
 void RendererImpl::FlushAudioRenderer() {
@@ -545,6 +559,7 @@ void RendererImpl::PausePlayback() {
       break;
 
     case STATE_UNINITIALIZED:
+    case STATE_INIT_PENDING_CDM:
     case STATE_INITIALIZING:
       NOTREACHED() << "Invalid state: " << state_;
       break;
@@ -637,8 +652,10 @@ void RendererImpl::OnError(PipelineStatus error) {
   const State old_state = state_;
   state_ = STATE_ERROR;
 
-  if (old_state == STATE_INITIALIZING) {
-    base::ResetAndReturn(&init_cb_).Run(error);
+  if (!init_cb_.is_null()) {
+    DCHECK(old_state == STATE_INITIALIZING ||
+           old_state == STATE_INIT_PENDING_CDM);
+    FinishInitialization(error);
     return;
   }
 

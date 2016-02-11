@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/cdm_context.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_export.h"
@@ -20,6 +19,7 @@
 namespace media {
 
 class AudioBuffer;
+class CdmContext;
 class DemuxerStream;
 
 class MEDIA_EXPORT AudioDecoder {
@@ -56,17 +56,15 @@ class MEDIA_EXPORT AudioDecoder {
   // Returns the name of the decoder for logging purpose.
   virtual std::string GetDisplayName() const = 0;
 
-  // Initializes an AudioDecoder with the given DemuxerStream, executing the
-  // callback upon completion.
+  // Initializes an AudioDecoder with |config|, executing the |init_cb| upon
+  // completion.
   //
-  // |set_cdm_ready_cb| can be used to set/cancel a CdmReadyCB with which the
-  // decoder can be notified when a CDM is ready. The decoder can use the CDM to
-  // handle encrypted video stream.
-  //
-  //  |init_cb| is used to return initialization status.
-  //  |output_cb| is called for decoded audio buffers (see Decode()).
+  // |cdm_context| can be used to handle encrypted buffers. May be null if the
+  // stream is not encrypted.
+  // |init_cb| is used to return initialization status.
+  // |output_cb| is called for decoded audio buffers (see Decode()).
   virtual void Initialize(const AudioDecoderConfig& config,
-                          const SetCdmReadyCB& set_cdm_ready_cb,
+                          CdmContext* cdm_context,
                           const InitCB& init_cb,
                           const OutputCB& output_cb) = 0;
 

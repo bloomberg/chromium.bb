@@ -10,13 +10,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
-#include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/time_source.h"
 
 namespace media {
 
+class CdmContext;
 class DemuxerStream;
 class VideoDecoder;
 class VideoFrame;
@@ -35,8 +35,8 @@ class MEDIA_EXPORT VideoRenderer {
   // completion. If initialization fails, only |init_cb| (not |error_cb|) will
   // be called.
   //
-  // |set_cdm_ready_cb| is fired when a CDM is needed, i.e. when the |stream| is
-  // encrypted.
+  // |cdm_context| can be used to handle encrypted streams. May be null if the
+  // stream is not encrypted.
   //
   // |statistics_cb| is executed periodically with video rendering stats, such
   // as dropped frames.
@@ -56,7 +56,7 @@ class MEDIA_EXPORT VideoRenderer {
   virtual void Initialize(
       DemuxerStream* stream,
       const PipelineStatusCB& init_cb,
-      const SetCdmReadyCB& set_cdm_ready_cb,
+      CdmContext* cdm_context,
       const StatisticsCB& statistics_cb,
       const BufferingStateCB& buffering_state_cb,
       const base::Closure& ended_cb,

@@ -123,7 +123,7 @@ void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
 void VideoRendererImpl::Initialize(
     DemuxerStream* stream,
     const PipelineStatusCB& init_cb,
-    const SetCdmReadyCB& set_cdm_ready_cb,
+    CdmContext* cdm_context,
     const StatisticsCB& statistics_cb,
     const BufferingStateCB& buffering_state_cb,
     const base::Closure& ended_cb,
@@ -168,7 +168,7 @@ void VideoRendererImpl::Initialize(
   video_frame_stream_->Initialize(
       stream, base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
                          weak_factory_.GetWeakPtr()),
-      set_cdm_ready_cb, statistics_cb, waiting_for_decryption_key_cb);
+      cdm_context, statistics_cb, waiting_for_decryption_key_cb);
 }
 
 scoped_refptr<VideoFrame> VideoRendererImpl::Render(
