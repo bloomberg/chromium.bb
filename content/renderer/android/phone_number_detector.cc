@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/android_content_detection_prefixes.h"
 #include "net/base/escape.h"
-#include "third_party/libphonenumber/src/phonenumber_api.h"
+#include "third_party/libphonenumber/phonenumber_api.h"
 #include "third_party/libphonenumber/src/phonenumbers/phonenumbermatch.h"
 #include "third_party/libphonenumber/src/phonenumbers/phonenumbermatcher.h"
 #include "third_party/libphonenumber/src/phonenumbers/region_code.h"

@@ -19,7 +19,7 @@ Additional files, not in the original library:
   libphonenumber.gyp
   README.chromium
   LICENSE # Taken from https://github.com/googlei18n/libphonenumber/
-  src/phonenumber_api.h
+  phonenumber_api.h
 
 The library is mapped through the DEPS file into src/ folder. To update:
 1. Get the latest version number from
