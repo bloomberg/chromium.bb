@@ -381,11 +381,10 @@ cr.define('cr.ui', function() {
 
     /**
      * Append a card to the end of the list.
-     * @param {!Node} card A card to add at the end of the card slider.
+     * @param {!Element} card A card to add at the end of the card slider.
      */
     appendCard: function(card) {
-      assert(card instanceof Node, '|card| isn\'t a Node');
-      this.cards_.push(card);
+      this.cards_.push(assertInstanceof(card, Element));
       this.fireAddedEvent_(card, this.cards_.length - 1);
     },
 
@@ -419,11 +418,11 @@ cr.define('cr.ui', function() {
      * Removes a card by index from the card slider. If the card to be removed
      * is the current card or in front of the current card, the current card
      * will be updated (to current card - 1).
-     * @param {!Node} card A card to be removed.
+     * @param {!Element} card A card to be removed.
      */
     removeCard: function(card) {
-      assert(card instanceof Node, '|card| isn\'t a Node');
-      this.removeCardAtIndex(this.cards_.indexOf(card));
+      this.removeCardAtIndex(
+          this.cards_.indexOf(assertInstanceof(card, Element)));
     },
 
     /**
@@ -534,7 +533,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Selects a card from the stack. Passes through to selectCard.
-     * @param {Node} newCard The card that should be selected.
+     * @param {!Element} newCard The card that should be selected.
      * @param {boolean=} opt_animate Whether to animate.
      */
     selectCardByValue: function(newCard, opt_animate) {

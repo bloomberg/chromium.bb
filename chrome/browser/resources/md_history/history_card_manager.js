@@ -130,6 +130,7 @@ Polymer({
    * @param {number} overallItemCount The number of items selected.
    */
   removeDeletedHistory: function(overallItemCount) {
+    var infiniteList = /** @type {IronListElement} */(this.$['infinite-list']);
     for (var i = 0; i < this.historyDataByDay_.length; i++) {
       var items = this.historyDataByDay_[i].historyItems;
       var itemDeletedFromCard = false;
@@ -145,12 +146,12 @@ Polymer({
           this.removeEmptyCards_();
           // If the last card has been removed don't try to update its size.
           if (i < this.historyDataByDay_.length)
-            this.$['infinite-list'].updateSizeForItem(i);
+            infiniteList.updateSizeForItem(i);
           return;
         }
       }
       if (itemDeletedFromCard)
-        this.$['infinite-list'].updateSizeForItem(i);
+        infiniteList.updateSizeForItem(i);
     }
   },
 

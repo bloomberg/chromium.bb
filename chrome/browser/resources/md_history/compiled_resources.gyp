@@ -17,6 +17,7 @@
           '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/cr/ui/position_util.js',
+          '../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../ui/webui/resources/js/util.js',
           'history.js',
           'history_card.js',

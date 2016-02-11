@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * @suppress {checkTypes}
+ * @suppress {checkTypes,checkVars}
  *
  * Browser test to verify that an unauthenticated state is handled correctly
  * in the following situations:

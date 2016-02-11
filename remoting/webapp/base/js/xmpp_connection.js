@@ -206,7 +206,7 @@ remoting.XmppConnection.prototype.sendString_ = function(text) {
 };
 
 /**
- * @param {ArrayBuffer} data
+ * @param {!ArrayBuffer} data
  * @private
  */
 remoting.XmppConnection.prototype.sendBuffer_ = function(data) {

@@ -5,7 +5,7 @@
 cr.define('downloads', function() {
   /**
    * @param {!Element} root
-   * @param {?Node} boundary
+   * @param {?Element} boundary
    * @constructor
    * @extends {cr.ui.FocusRow}
    */

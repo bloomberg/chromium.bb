@@ -5,7 +5,7 @@
 cr.define('extensions', function() {
   /**
    * @param {!Element} root
-   * @param {Node} boundary
+   * @param {?Element} boundary
    * @constructor
    * @extends {cr.ui.FocusRow}
    */

@@ -21,7 +21,9 @@ var remoting = remoting || {};
 remoting.MockInputDialog = function() {};
 
 /** @override */
-remoting.MockInputDialog.prototype.show = function() {};
+remoting.MockInputDialog.prototype.show = function() {
+  return Promise.resolve();
+};
 
 /**
  * @constructor
@@ -30,7 +32,9 @@ remoting.MockInputDialog.prototype.show = function() {};
 remoting.MockMessageDialog = function() {};
 
 /** @override */
-remoting.MockMessageDialog.prototype.show = function() {};
+remoting.MockMessageDialog.prototype.show = function() {
+  return Promise.resolve();
+};
 
 /**
  * @constructor
@@ -39,7 +43,9 @@ remoting.MockMessageDialog.prototype.show = function() {};
 remoting.MockHtml5ModalDialog = function() {};
 
 /** @override */
-remoting.MockHtml5ModalDialog.prototype.show = function() {};
+remoting.MockHtml5ModalDialog.prototype.show = function() {
+  return Promise.resolve();
+};
 
 /**
  * @constructor
@@ -80,7 +86,13 @@ remoting.MockModalDialogFactory.prototype.createHtml5ModalDialog =
   return this.html5ModalDialog;
 };
 
-/** @override */
+/**
+ * @param {remoting.AppMode} mode
+ * @param {HTMLElement} primaryButton
+ * @param {HTMLElement=} opt_secondaryButton
+ * @return {remoting.MessageDialog}
+ * @override
+ */
 remoting.MockModalDialogFactory.prototype.createMessageDialog =
     function(mode, primaryButton, opt_secondaryButton) {
   return this.messageDialog;

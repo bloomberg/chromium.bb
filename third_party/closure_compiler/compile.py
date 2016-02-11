@@ -342,7 +342,10 @@ if __name__ == "__main__":
   opts = parser.parse_args()
 
   depends = opts.depends or []
+  # TODO(devlin): should we run normpath() on this first and/or do this for
+  # depends as well?
   externs = set(opts.externs or [])
+  sources = set(opts.sources)
 
   polymer_externs = os.path.join(os.path.dirname(_CURRENT_DIR), 'polymer',
                                  'v1_0', 'components-chromium',
@@ -351,7 +354,7 @@ if __name__ == "__main__":
 
   checker = Checker(verbose=opts.verbose, strict=opts.strict)
   if opts.single_file:
-    for source in opts.sources:
+    for source in sources:
       # Normalize source to the current directory.
       source = os.path.normpath(os.path.join(os.getcwd(), source))
       depends, externs = build.inputs.resolve_recursive_dependencies(
@@ -364,7 +367,7 @@ if __name__ == "__main__":
         sys.exit(1)
   else:
     found_errors, stderr = checker.check_multiple(
-        opts.sources,
+        sources,
         out_file=opts.out_file,
         externs=externs,
         closure_args=opts.closure_args)

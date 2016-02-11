@@ -236,7 +236,7 @@ class Checker(object):
 
       cwd, tmp_dir = os.getcwd(), tempfile.gettempdir()
       rel_path = lambda f: os.path.join(os.path.relpath(cwd, tmp_dir), f)
-      
+
       contents = ['<include src="%s">' % rel_path(f) for f in js_args]
       meta_file = self._create_temp_file("\n".join(contents))
       self._log_debug("Meta file: %s" % meta_file)
@@ -316,9 +316,10 @@ if __name__ == "__main__":
 
   checker = Checker(verbose=opts.verbose)
 
-  found_errors, stderr = checker.check(opts.sources, out_file=opts.out_file,
+  found_errors, stderr = checker.check(set(opts.sources),
+                                       out_file=opts.out_file,
                                        closure_args=opts.closure_args,
-                                       custom_sources=opts.custom_sources)
+                                       custom_sources=set(opts.custom_sources))
 
   if found_errors:
     if opts.custom_sources:

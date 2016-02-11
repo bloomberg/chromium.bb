@@ -20,15 +20,15 @@ var remoting = remoting || {};
  *
  * @extends {remoting.HostList}
  */
-var MockHostList = function() {};
+remoting.MockHostList = function() {};
 
 /** @override */
-MockHostList.prototype.refreshAndDisplay = function() {
+remoting.MockHostList.prototype.refreshAndDisplay = function() {
   return Promise.resolve();
 };
 
 /** @override */
-MockHostList.prototype.getHostForId = function(hostId) {
+remoting.MockHostList.prototype.getHostForId = function(hostId) {
   var host = new remoting.Host(hostId);
   host.jabberId = 'fake_jabber_id';
   host.status = 'ONLINE';
@@ -36,7 +36,7 @@ MockHostList.prototype.getHostForId = function(hostId) {
 };
 
 /** @override */
-MockHostList.prototype.getHostStatusUpdateElapsedTime = function() {
+remoting.MockHostList.prototype.getHostStatusUpdateElapsedTime = function() {
   return 2000;
 };
 
@@ -76,7 +76,7 @@ MockNetworkConnectivityDetector.prototype.dispose = function() {};
  * @constructor
  * @implements {base.Disposable}
  */
-var BaseTestDriver = function(mockHTML) {
+remoting.BaseTestDriver = function(mockHTML) {
   /** @private */
   this.deferred_ = new base.Deferred();
   /** @protected */
@@ -110,7 +110,7 @@ var BaseTestDriver = function(mockHTML) {
 /**
  * @param {string} mockHTML
  */
-BaseTestDriver.prototype.init_ = function(mockHTML) {
+remoting.BaseTestDriver.prototype.init_ = function(mockHTML) {
   document.getElementById('qunit-fixture').innerHTML = mockHTML;
   // Return a token to pretend that we are signed-in.
   chromeMocks.identity.mock$setToken('fake_token');
@@ -118,7 +118,7 @@ BaseTestDriver.prototype.init_ = function(mockHTML) {
   remoting.modalDialogFactory = this.mockDialogFactory_;
 };
 
-BaseTestDriver.prototype.dispose = function() {
+remoting.BaseTestDriver.prototype.dispose = function() {
   this.clock_.restore();
   remoting.modalDialogFactory = this.originalDialogFactory_;
   this.setModeStub_.restore();
@@ -132,17 +132,17 @@ BaseTestDriver.prototype.dispose = function() {
 };
 
 /** @return {remoting.MockConnection} */
-BaseTestDriver.prototype.mockConnection = function() {
+remoting.BaseTestDriver.prototype.mockConnection = function() {
   return this.mockConnection_;
 };
 
 /** @return {remoting.MockModalDialogFactory} */
-BaseTestDriver.prototype.mockDialogFactory = function() {
+remoting.BaseTestDriver.prototype.mockDialogFactory = function() {
   return this.mockDialogFactory_;
 };
 
 /** @param {Array<Object>} events */
-BaseTestDriver.prototype.expectEvents = function(events) {
+remoting.BaseTestDriver.prototype.expectEvents = function(events) {
   var that = this;
   events.forEach(function(/** Object */ event){
     that.eventWriterMock_.expects('write').withArgs(sinon.match(event));
@@ -152,14 +152,14 @@ BaseTestDriver.prototype.expectEvents = function(events) {
 /**
  * @return {Promise} A promise that will be resolved when endTest() is called.
  */
-BaseTestDriver.prototype.startTest = function() {
+remoting.BaseTestDriver.prototype.startTest = function() {
   return this.deferred_.promise();
 };
 
 /**
  * Resolves the promise that is returned by startTest().
  */
-BaseTestDriver.prototype.endTest = function() {
+remoting.BaseTestDriver.prototype.endTest = function() {
   try {
     this.eventWriterMock_.verify();
     this.deferred_.resolve();
@@ -174,12 +174,13 @@ BaseTestDriver.prototype.endTest = function() {
  * those components.
  *
  * @constructor
- * @extends {BaseTestDriver}
+ * @extends {remoting.BaseTestDriver}
  */
 remoting.Me2MeTestDriver = function() {
-  base.inherits(this, BaseTestDriver, remoting.Me2MeTestDriver.FIXTURE);
+  base.inherits(this, remoting.BaseTestDriver,
+                remoting.Me2MeTestDriver.FIXTURE);
   /** @private */
-  this.mockHostList_ = new MockHostList();
+  this.mockHostList_ = new remoting.MockHostList();
   /** @private {?remoting.Me2MeActivity} */
   this.me2meActivity_ = null;
 };
@@ -189,7 +190,7 @@ remoting.Me2MeTestDriver.prototype.dispose = function() {
   base.dispose(this.me2meActivity_);
   this.me2meActivity_ = null;
 
-  BaseTestDriver.prototype.dispose.call(this);
+  remoting.BaseTestDriver.prototype.dispose.call(this);
 };
 
 remoting.Me2MeTestDriver.prototype.enterPinWhenPrompted = function() {
@@ -216,7 +217,7 @@ remoting.Me2MeTestDriver.prototype.clickReconnectWhenFinished = function() {
   };
 };
 
-/** @return {MockHostList} */
+/** @return {remoting.MockHostList} */
 remoting.Me2MeTestDriver.prototype.mockHostList = function() {
   return this.mockHostList_;
 };
@@ -239,7 +240,7 @@ remoting.Me2MeTestDriver.prototype.startTest = function() {
 
   this.me2meActivity_ = new remoting.Me2MeActivity(host, this.mockHostList_);
   this.me2meActivity_.start();
-  return BaseTestDriver.prototype.startTest.call(this);
+  return remoting.BaseTestDriver.prototype.startTest.call(this);
 };
 
 remoting.Me2MeTestDriver.FIXTURE =

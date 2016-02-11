@@ -894,7 +894,7 @@ HistoryModel.prototype.getGroupByDomain = function() {
 /**
  * Provides an implementation for a single column grid.
  * @param {!Element} root
- * @param {Node} boundary
+ * @param {?Element} boundary
  * @constructor
  * @extends {cr.ui.FocusRow}
  */
@@ -1298,7 +1298,7 @@ HistoryView.prototype.positionNotificationBar = function() {
 };
 
 /**
- * @param {Element} el An element to look for.
+ * @param {!Element} el An element to look for.
  * @return {boolean} Whether |el| is in |this.focusGrid_|.
  */
 HistoryView.prototype.isInFocusGrid = function(el) {

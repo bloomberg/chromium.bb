@@ -101,8 +101,7 @@ remoting.ContextMenuDom.prototype.addToRegion = function(rects) {
 
   rects.push(rect);
   if (this.root_.classList.contains('menu-opened')) {
-    var menuRect =
-        /** @type {ClientRect} */ (this.menu_.getBoundingClientRect());
+    var menuRect = this.menu_.getBoundingClientRect();
     rects.push(menuRect);
   }
 };

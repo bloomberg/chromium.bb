@@ -82,7 +82,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * @param {Node} target A target item to find in this grid.
+     * @param {!Element} target A target item to find in this grid.
      * @return {number} The row index. -1 if not found.
      */
     getRowIndexForTarget: function(target) {
@@ -122,7 +122,7 @@ cr.define('cr.ui', function() {
     addRowBefore: function(row, nextRow) {
       row.delegate = row.delegate || this;
 
-      var nextRowIndex = this.rows.indexOf(nextRow);
+      var nextRowIndex = nextRow ? this.rows.indexOf(nextRow) : -1;
       if (nextRowIndex == -1)
         this.rows.push(row);
       else
@@ -134,7 +134,7 @@ cr.define('cr.ui', function() {
      * @param {cr.ui.FocusRow} row The row that needs to be removed.
      */
     removeRow: function(row) {
-      var nextRowIndex = this.rows.indexOf(row);
+      var nextRowIndex = row ? this.rows.indexOf(row) : -1;
       if (nextRowIndex > -1)
         this.rows.splice(nextRowIndex, 1);
     },

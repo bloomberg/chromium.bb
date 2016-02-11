@@ -450,8 +450,10 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
   }.bind(this);
 
   var onViewFilesFailure = function() {
-    if (FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) !== -1
-        || FileTasks.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1) {
+    if (extension &&
+        (FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension)
+             !== -1 ||
+         FileTasks.EXECUTABLE_EXTENSIONS.indexOf(assert(extension)) !== -1)) {
       showAlert();
       return;
     }

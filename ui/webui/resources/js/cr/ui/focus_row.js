@@ -17,7 +17,8 @@ cr.define('cr.ui', function() {
    *
    * @param {!Element} root The root of this focus row. Focus classes are
    *     applied to |root| and all added elements must live within |root|.
-   * @param {?Node} boundary Focus events are ignored outside of this node.
+   * @param {?Element} boundary Focus events are ignored outside of this
+   *     element.
    * @param {cr.ui.FocusRow.Delegate=} opt_delegate An optional event delegate.
    * @constructor
    */
@@ -25,8 +26,8 @@ cr.define('cr.ui', function() {
     /** @type {!Element} */
     this.root = root;
 
-    /** @private {!Node} */
-    this.boundary_ = boundary || document;
+    /** @private {!Element} */
+    this.boundary_ = boundary || document.documentElement;
 
     /** @type {cr.ui.FocusRow.Delegate|undefined} */
     this.delegate = opt_delegate;
@@ -221,10 +222,11 @@ cr.define('cr.ui', function() {
      * @private
      */
     onBlur_: function(e) {
-      if (!this.boundary_.contains(/** @type {Node} */(e.relatedTarget)))
+      if (!this.boundary_.contains(/** @type {Element} */(e.relatedTarget)))
         return;
 
-      if (this.getFocusableElements().indexOf(e.currentTarget) >= 0)
+      var currentTarget = /** @type {!Element} */(e.currentTarget);
+      if (this.getFocusableElements().indexOf(currentTarget) >= 0)
         this.makeActive(false);
     },
 
@@ -257,7 +259,8 @@ cr.define('cr.ui', function() {
      */
     onKeydown_: function(e) {
       var elements = this.getFocusableElements();
-      var elementIndex = elements.indexOf(e.currentTarget);
+      var currentElement = /** @type {!Element} */(e.currentTarget);
+      var elementIndex = elements.indexOf(currentElement);
       assert(elementIndex >= 0);
 
       if (this.delegate && this.delegate.onKeydown(this, e))

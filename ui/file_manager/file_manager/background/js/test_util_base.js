@@ -539,7 +539,8 @@ test.util.registerRemoteTestUtils = function() {
   chrome.runtime.onMessageExternal.addListener(
       function(request, sender, sendResponse) {
     // Check the sender.
-    if (test.util.TESTING_EXTENSION_IDS.indexOf(sender.id) === -1) {
+    if (!sender.id ||
+        test.util.TESTING_EXTENSION_IDS.indexOf(sender.id) === -1) {
       // Silently return.  Don't return false; that short-circuits the
       // propagation of messages, and there are now other listeners that want to
       // handle external messages.

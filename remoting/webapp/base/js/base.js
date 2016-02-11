@@ -487,7 +487,7 @@ base.Promise.as = function(method, params, opt_context, opt_hasErrorHandler) {
   * @constructor
   */
 base.EventEntry = function() {
-  /** @type {Array<function():void>} */
+  /** @type {Array<Function>} */
   this.listeners = [];
 };
 
@@ -604,7 +604,7 @@ base.EventSourceImpl.prototype = {
     var listeners = entry.listeners.slice(0); // Make a copy of the listeners.
 
     listeners.forEach(
-      /** @param {function(*=):void} listener */
+      /** @param {Function} listener */
       function(listener){
         if (listener) {
           listener(opt_details);
@@ -749,7 +749,7 @@ base.OneShotTimer.prototype.dispose = function() {
   * Converts UTF-8 string to ArrayBuffer.
   *
   * @param {string} string
-  * @return {ArrayBuffer}
+  * @return {!ArrayBuffer}
   */
 base.encodeUtf8 = function(string) {
   var utf8String = unescape(encodeURIComponent(string));

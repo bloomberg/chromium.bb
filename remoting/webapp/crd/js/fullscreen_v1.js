@@ -30,6 +30,11 @@ remoting.FullscreenAppsV1 = function() {
       false);
 };
 
+/**
+ * @param {boolean} fullscreen
+ * @param {function():void=} opt_onDone
+ * @override
+ */
 remoting.FullscreenAppsV1.prototype.activate = function(
     fullscreen, opt_onDone) {
   if (opt_onDone) {

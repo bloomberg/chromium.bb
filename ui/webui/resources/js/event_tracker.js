@@ -17,7 +17,7 @@
  * is fixed.
  * @typedef {{target: !EventTarget,
  *            eventType: string,
- *            listener: Function,
+ *            listener: (EventListener|Function),
  *            capture: boolean}}
  */
 var EventTrackerEntry;
