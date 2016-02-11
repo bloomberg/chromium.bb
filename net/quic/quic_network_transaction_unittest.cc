@@ -528,6 +528,18 @@ class QuicNetworkTransactionTest
         host_port_pair, alternative_service, 1.0, expiration);
   }
 
+  void AddQuicRemoteAlternativeServiceMapping(
+      MockCryptoClientStream::HandshakeMode handshake_mode,
+      const HostPortPair& alternative) {
+    crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
+    HostPortPair host_port_pair = HostPortPair::FromURL(request_.url);
+    AlternativeService alternative_service(QUIC, alternative.host(),
+                                           alternative.port());
+    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+    http_server_properties_.SetAlternativeService(
+        host_port_pair, alternative_service, 1.0, expiration);
+  }
+
   void ExpectBrokenAlternateProtocolMapping() {
     const HostPortPair origin = HostPortPair::FromURL(request_.url);
     const AlternativeServiceVector alternative_service_vector =
@@ -741,6 +753,48 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
   CreateSessionWithNextProtos();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
+}
+
+TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
+  params_.enable_alternative_service_with_different_host = true;
+  HostPortPair origin("www.example.org", 443);
+  HostPortPair alternative("mail.example.org", 443);
+
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
+  ASSERT_TRUE(cert.get());
+  // TODO(rch): the connection should be "to" the origin, so if the cert is
+  // valid for the origin but not the alternative, that should work too.
+  bool common_name_fallback_used;
+  EXPECT_TRUE(cert->VerifyNameMatch(origin.host(), &common_name_fallback_used));
+  EXPECT_TRUE(
+      cert->VerifyNameMatch(alternative.host(), &common_name_fallback_used));
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = cert;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  maker_.set_hostname(origin.host());
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                    GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  request_.url = GURL("https://" + origin.host());
+  AddQuicRemoteAlternativeServiceMapping(
+      MockCryptoClientStream::CONFIRM_HANDSHAKE, alternative);
+  AddHangingNonAlternateProtocolSocketData();
+  CreateSessionWithNextProtos();
+
+  SendRequestAndExpectQuicResponse("hello!");
 }
 
 TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
