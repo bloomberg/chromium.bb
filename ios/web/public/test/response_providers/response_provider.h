@@ -14,11 +14,7 @@
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
-#ifdef __OBJC__
 @class GCDWebServerResponse;
-#else
-class GCDWebServerResponse;
-#endif
 
 namespace web {
 

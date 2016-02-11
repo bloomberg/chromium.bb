@@ -12,11 +12,9 @@ namespace web {
 
 FileBasedResponseProviderImpl::FileBasedResponseProviderImpl(
     const base::FilePath& path)
-    : path_(path) {
-}
+    : path_(path) {}
 
-FileBasedResponseProviderImpl::~FileBasedResponseProviderImpl() {
-}
+FileBasedResponseProviderImpl::~FileBasedResponseProviderImpl() {}
 
 bool FileBasedResponseProviderImpl::CanHandleRequest(
     const ResponseProvider::Request& request) {

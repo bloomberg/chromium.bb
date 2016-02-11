@@ -13,17 +13,11 @@ ResponseProvider::Request::Request(const GURL& url,
                                    const std::string& method,
                                    const std::string& body,
                                    const net::HttpRequestHeaders& headers)
-    : url(url),
-      method(method),
-      body(body),
-      headers(headers) {
-}
+    : url(url), method(method), body(body), headers(headers) {}
 
-ResponseProvider::Request::~Request() {
-}
+ResponseProvider::Request::~Request() {}
 
-ResponseProvider::ResponseProvider() {
-}
+ResponseProvider::ResponseProvider() {}
 
 // static
 scoped_refptr<net::HttpResponseHeaders> ResponseProvider::GetResponseHeaders(
@@ -32,9 +26,8 @@ scoped_refptr<net::HttpResponseHeaders> ResponseProvider::GetResponseHeaders(
   scoped_refptr<net::HttpResponseHeaders> result(
       new net::HttpResponseHeaders(""));
   const std::string reason_phrase(net::GetHttpReasonPhrase(response_code));
-  const std::string status_line = base::StringPrintf("HTTP/1.1 %i %s",
-      static_cast<int>(response_code),
-      reason_phrase.c_str());
+  const std::string status_line = base::StringPrintf(
+      "HTTP/1.1 %i %s", static_cast<int>(response_code), reason_phrase.c_str());
   result->ReplaceStatusLine(status_line);
   const std::string content_type_header =
       base::StringPrintf("Content-type: %s", content_type.c_str());
@@ -50,13 +43,13 @@ scoped_refptr<net::HttpResponseHeaders> ResponseProvider::GetResponseHeaders(
 
 // static
 scoped_refptr<net::HttpResponseHeaders>
-    ResponseProvider::GetDefaultResponseHeaders() {
+ResponseProvider::GetDefaultResponseHeaders() {
   return GetResponseHeaders("text/html", net::HTTP_OK);
 }
 
 // static
 scoped_refptr<net::HttpResponseHeaders>
-    ResponseProvider::GetRedirectResponseHeaders(
+ResponseProvider::GetRedirectResponseHeaders(
     const std::string& destination,
     const net::HttpStatusCode& http_status) {
   scoped_refptr<net::HttpResponseHeaders> headers(
@@ -65,4 +58,4 @@ scoped_refptr<net::HttpResponseHeaders>
   return headers;
 }
 
-} // namespace web
+}  // namespace web
