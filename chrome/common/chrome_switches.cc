@@ -515,12 +515,6 @@ const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
 const char kEnableSettingsWindow[]           = "enable-settings-window";
 const char kDisableSettingsWindow[]          = "disable-settings-window";
 
-// A new user experience for transitioning into fullscreen and mouse pointer
-// lock states.
-const char kEnableSimplifiedFullscreenUI[]  = "enable-simplified-fullscreen-ui";
-const char kDisableSimplifiedFullscreenUI[] =
-    "disable-simplified-fullscreen-ui";
-
 // Enable the Site Engagement App Banner which triggers app install banners
 // using the site engagement service rather than a navigation-based heuristic.
 // Implicitly enables the site engagement service.

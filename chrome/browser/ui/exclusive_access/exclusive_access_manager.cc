@@ -18,6 +18,15 @@
 
 using content::WebContents;
 
+const base::Feature ExclusiveAccessManager::kSimplifiedUIFeature = {
+    "ViewsSimplifiedFullscreenUI",
+#if defined(USE_AURA)
+    base::FEATURE_ENABLED_BY_DEFAULT,
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT,
+#endif
+};
+
 ExclusiveAccessManager::ExclusiveAccessManager(
     ExclusiveAccessContext* exclusive_access_context)
     : exclusive_access_context_(exclusive_access_context),
@@ -91,22 +100,7 @@ GURL ExclusiveAccessManager::GetExclusiveAccessBubbleURL() const {
 
 // static
 bool ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSimplifiedFullscreenUI)) {
-    return true;
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSimplifiedFullscreenUI)) {
-    return false;
-  }
-
-  // Enabled by default on Aura platforms only.
-#if defined(USE_AURA)
-  return true;
-#else
-  return false;
-#endif  // defined(USE_AURA)
+  return base::FeatureList::IsEnabled(kSimplifiedUIFeature);
 }
 
 void ExclusiveAccessManager::OnTabDeactivated(WebContents* web_contents) {

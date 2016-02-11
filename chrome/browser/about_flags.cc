@@ -105,6 +105,10 @@
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#endif
+
 using flags_ui::FeatureEntry;
 using flags_ui::kOsMac;
 using flags_ui::kOsWin;
@@ -1615,10 +1619,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_NEW_TASK_MANAGER_DESCRIPTION, kOsDesktop,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableNewTaskManager)},
 #endif  // defined(ENABLE_TASK_MANAGER)
+#if defined(TOOLKIT_VIEWS)
     {"simplified-fullscreen-ui", IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME,
      IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION, kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSimplifiedFullscreenUI,
-                               switches::kDisableSimplifiedFullscreenUI)},
+     FEATURE_VALUE_TYPE(ExclusiveAccessManager::kSimplifiedUIFeature)},
+#endif  // defined(TOOLKIT_VIEWS)
 #if defined(OS_ANDROID)
     {"progress-bar-animation", IDS_FLAGS_PROGRESS_BAR_ANIMATION_NAME,
      IDS_FLAGS_PROGRESS_BAR_ANIMATION_DESCRIPTION, kOsAndroid,
