@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/worker_pool.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_ozone_native_pixmap.h"
@@ -36,6 +37,23 @@ using gl::GLImage;
 namespace gfx {
 
 namespace {
+
+// Helper function for base::Bind to create callback to eglChooseConfig.
+bool EglChooseConfig(EGLDisplay display,
+                     const int32_t* attribs,
+                     EGLConfig* configs,
+                     int32_t config_size,
+                     int32_t* num_configs) {
+  return eglChooseConfig(display, attribs, configs, config_size, num_configs);
+}
+
+// Helper function for base::Bind to create callback to eglGetConfigAttrib.
+bool EglGetConfigAttribute(EGLDisplay display,
+                           EGLConfig config,
+                           int32_t attribute,
+                           int32_t* value) {
+  return eglGetConfigAttrib(display, config, attribute, value);
+}
 
 void WaitForFence(EGLDisplay display, EGLSyncKHR fence) {
   eglClientWaitSyncKHR(display, fence, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
@@ -59,6 +77,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
                             GLImage* image,
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
+  EGLConfig GetConfig() override;
 
  private:
   using NativeViewGLSurfaceEGL::Initialize;
@@ -114,6 +133,22 @@ bool GLSurfaceOzoneEGL::ScheduleOverlayPlane(int z_order,
                                              const RectF& crop_rect) {
   return image->ScheduleOverlayPlane(widget_, z_order, transform, bounds_rect,
                                      crop_rect);
+}
+
+EGLConfig GLSurfaceOzoneEGL::GetConfig() {
+  if (!config_) {
+    // Setup callbacks for configuring EGL on platform.
+    EGLDisplay display = GetDisplay();
+    ui::EglConfigCallbacks egl;
+    egl.choose_config = base::Bind(EglChooseConfig, display);
+    egl.get_config_attribute = base::Bind(EglGetConfigAttribute, display);
+    egl.get_last_error_string = base::Bind(&ui::GetLastEGLErrorString);
+
+    config_ = ozone_surface_->GetEGLSurfaceConfig(egl);
+  }
+  if (config_)
+    return config_;
+  return NativeViewGLSurfaceEGL::GetConfig();
 }
 
 GLSurfaceOzoneEGL::~GLSurfaceOzoneEGL() {
@@ -206,6 +241,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
 
   base::WeakPtrFactory<GLSurfaceOzoneSurfaceless> weak_factory_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneSurfaceless);
 };
 
@@ -703,8 +739,9 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
       if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
           (size.width() == 0 && size.height() == 0)) {
         surface = new SurfacelessEGL(size);
-      } else
+      } else {
         surface = new PbufferGLSurfaceEGL(size);
+      }
 
       if (!surface->Initialize(format))
         return nullptr;

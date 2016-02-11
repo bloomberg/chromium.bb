@@ -54,28 +54,6 @@ intptr_t GbmSurfaceFactory::GetNativeDisplay() {
   return EGL_DEFAULT_DISPLAY;
 }
 
-const int32_t* GbmSurfaceFactory::GetEGLSurfaceProperties(
-    const int32_t* desired_list) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  static const int32_t kConfigAttribs[] = {EGL_BUFFER_SIZE,
-                                           32,
-                                           EGL_ALPHA_SIZE,
-                                           8,
-                                           EGL_BLUE_SIZE,
-                                           8,
-                                           EGL_GREEN_SIZE,
-                                           8,
-                                           EGL_RED_SIZE,
-                                           8,
-                                           EGL_RENDERABLE_TYPE,
-                                           EGL_OPENGL_ES2_BIT,
-                                           EGL_SURFACE_TYPE,
-                                           EGL_WINDOW_BIT,
-                                           EGL_NONE};
-
-  return kConfigAttribs;
-}
-
 bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {

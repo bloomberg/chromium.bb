@@ -62,4 +62,27 @@ bool LoadEGLGLES2Bindings(
   return true;
 }
 
+void* /* EGLConfig */ ChooseEGLConfig(const EglConfigCallbacks& egl,
+                                      const int32_t* attributes) {
+  void* config;
+  int32_t num_configs;
+  if (!egl.choose_config.Run(attributes, nullptr, 0, &num_configs)) {
+    LOG(ERROR) << "eglChooseConfig failed with error "
+               << egl.get_last_error_string.Run();
+    return nullptr;
+  }
+
+  if (num_configs == 0) {
+    LOG(ERROR) << "No suitable EGL configs found.";
+    return nullptr;
+  }
+
+  if (!egl.choose_config.Run(attributes, &config, 1, &num_configs)) {
+    LOG(ERROR) << "eglChooseConfig failed with error "
+               << egl.get_last_error_string.Run();
+    return nullptr;
+  }
+  return config;
+}
+
 }  // namespace ui

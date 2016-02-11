@@ -127,12 +127,6 @@ intptr_t WaylandSurfaceFactory::GetNativeDisplay() {
   return 0;
 }
 
-const int32_t* WaylandSurfaceFactory::GetEGLSurfaceProperties(
-    const int32_t* desired_list) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 bool WaylandSurfaceFactory::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {

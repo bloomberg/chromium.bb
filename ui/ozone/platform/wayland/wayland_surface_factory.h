@@ -13,11 +13,10 @@ class WaylandDisplay;
 
 class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  WaylandSurfaceFactory(WaylandDisplay* display);
+  explicit WaylandSurfaceFactory(WaylandDisplay* display);
   ~WaylandSurfaceFactory() override;
 
   intptr_t GetNativeDisplay() override;
-  const int32_t* GetEGLSurfaceProperties(const int32_t* desired_list) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;

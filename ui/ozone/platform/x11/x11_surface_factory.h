@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_X11_X11_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_X11_X11_SURFACE_FACTORY_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
@@ -16,12 +17,13 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
   ~X11SurfaceFactory() override;
 
   // SurfaceFactoryOzone:
+
+  scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
+      gfx::AcceleratedWidget widget) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
   intptr_t GetNativeDisplay() override;
-
-  // TODO(kylechar): add EGL rendering overrides.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(X11SurfaceFactory);

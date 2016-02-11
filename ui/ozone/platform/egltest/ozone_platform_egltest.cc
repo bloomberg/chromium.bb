@@ -241,6 +241,18 @@ class SurfaceOzoneEgltest : public SurfaceOzoneEGL {
     return nullptr;
   }
 
+  void* /* EGLConfig */ GetEGLSurfaceConfig(
+      const EglConfigCallbacks& egl) override {
+    EGLint broken_props[] = {
+        EGL_RENDERABLE_TYPE,
+        EGL_OPENGL_ES2_BIT,
+        EGL_SURFACE_TYPE,
+        EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+        EGL_NONE,
+    };
+    return ChooseEGLConfig(egl, broken_props);
+  }
+
  private:
   LibeglplatformShimLoader* eglplatform_shim_;
   intptr_t native_window_;
@@ -263,7 +275,6 @@ class SurfaceFactoryEgltest : public ui::SurfaceFactoryOzone {
   intptr_t GetNativeDisplay() override;
   scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
-  const int32_t* GetEGLSurfaceProperties(const int32_t* desired_list) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
@@ -299,19 +310,6 @@ bool SurfaceFactoryEgltest::LoadEGLGLES2Bindings(
 
   return ::ui::LoadEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address,
                                     egl_soname, gles_soname);
-}
-
-const int32_t* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
-    const int32_t* desired_list) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  static const int32_t broken_props[] = {
-      EGL_RENDERABLE_TYPE,
-      EGL_OPENGL_ES2_BIT,
-      EGL_SURFACE_TYPE,
-      EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
-      EGL_NONE,
-  };
-  return broken_props;
 }
 
 // Test platform for EGL.

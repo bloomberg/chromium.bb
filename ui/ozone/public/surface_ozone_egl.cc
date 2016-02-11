@@ -6,6 +6,10 @@
 
 namespace ui {
 
+EglConfigCallbacks::EglConfigCallbacks() {}
+
+EglConfigCallbacks::~EglConfigCallbacks() {}
+
 bool SurfaceOzoneEGL::IsUniversalDisplayLinkDevice() {
   return false;
 }

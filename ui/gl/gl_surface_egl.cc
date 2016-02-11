@@ -32,11 +32,6 @@
 #include <android/native_window_jni.h>
 #endif
 
-#if defined (USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
-#endif
-
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
 extern "C" {
 #include <X11/Xlib.h>
@@ -312,23 +307,12 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
     choose_attributes = config_attribs_565;
   }
 
-  const EGLint* config_attribs;
-#if defined(USE_OZONE)
-  config_attribs = ui::OzonePlatform::GetInstance()
-                       ->GetSurfaceFactoryOzone()
-                       ->GetEGLSurfaceProperties(choose_attributes);
-#else
-  config_attribs = choose_attributes;
-#endif
-
   EGLint num_configs;
   EGLint config_size = 1;
   EGLConfig config = nullptr;
   EGLConfig* config_data = &config;
   // Validate if there are any configs for given attribs.
-  if (!ValidateEglConfig(g_display,
-                         config_attribs,
-                         &num_configs)) {
+  if (!ValidateEglConfig(g_display, choose_attributes, &num_configs)) {
     return config;
   }
 
@@ -338,10 +322,7 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
     config_data = matching_configs.get();
   }
 
-  if (!eglChooseConfig(g_display,
-                       config_attribs,
-                       config_data,
-                       config_size,
+  if (!eglChooseConfig(g_display, choose_attributes, config_data, config_size,
                        &num_configs)) {
     LOG(ERROR) << "eglChooseConfig failed with error "
                << GetLastEGLErrorString();

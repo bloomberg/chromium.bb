@@ -40,6 +40,8 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
   void OnSwapBuffersAsync(const SwapCompletionCallback& callback) override;
   scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
   bool IsUniversalDisplayLinkDevice() override;
+  void* /* EGLConfig */ GetEGLSurfaceConfig(
+      const EglConfigCallbacks& egl) override;
 
  protected:
   scoped_ptr<DrmWindowProxy> window_;
@@ -48,6 +50,7 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
 
   std::vector<OverlayPlane> planes_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceless);
 };
 

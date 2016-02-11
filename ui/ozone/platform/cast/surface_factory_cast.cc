@@ -237,11 +237,6 @@ void SurfaceFactoryCast::ChildDestroyed() {
     DestroyWindow();
 }
 
-const int32_t* SurfaceFactoryCast::GetEGLSurfaceProperties(
-    const int32_t* desired_list) {
-  return egl_platform_->GetEGLSurfaceProperties(desired_list);
-}
-
 scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
