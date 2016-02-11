@@ -42,8 +42,8 @@ class DownloadManager;
 }
 
 namespace net {
+class CookieStore;
 class URLRequest;
-class URLRequestContext;
 class URLRequestContextGetter;
 }
 
@@ -199,14 +199,6 @@ class SafeBrowsingService
   friend class SafeBrowsingServiceTest;
   friend class SafeBrowsingURLRequestContextGetter;
 
-  void InitURLRequestContextOnIOThread(
-      net::URLRequestContextGetter* system_url_request_context_getter);
-
-  // Destroys the URLRequest and shuts down the provided getter on the
-  // IO thread.
-  void DestroyURLRequestContextOnIOThread(
-      scoped_refptr<SafeBrowsingURLRequestContextGetter> context_getter);
-
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.
   void StartOnIOThread(
@@ -254,9 +246,6 @@ class SafeBrowsingService
   // |url_request_context_|. Accessed on UI thread.
   scoped_refptr<SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
-
-  // The SafeBrowsingURLRequestContext. Accessed on IO thread.
-  scoped_ptr<net::URLRequestContext> url_request_context_;
 
   // Handles interaction with SafeBrowsing servers. Accessed on IO thread.
   SafeBrowsingProtocolManager* protocol_manager_;
