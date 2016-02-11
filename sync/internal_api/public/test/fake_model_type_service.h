@@ -37,6 +37,8 @@ class FakeModelTypeService : public ModelTypeService {
   void GetAllData(DataCallback callback) override;
 
   std::string GetClientTag(const EntityData& entity_data) override;
+
+  void OnChangeProcessorSet() override;
 };
 
 }  // namespace syncer_v2

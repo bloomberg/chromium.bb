@@ -36,4 +36,6 @@ std::string FakeModelTypeService::GetClientTag(const EntityData& entity_data) {
   return std::string();
 }
 
+void FakeModelTypeService::OnChangeProcessorSet() {}
+
 }  // namespace syncer_v2

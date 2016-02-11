@@ -4,25 +4,33 @@
 
 #include "components/sync_driver/device_info_service.h"
 
-#include <algorithm>
+#include <map>
+#include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
+#include "sync/api/metadata_batch.h"
 #include "sync/api/model_type_store.h"
 #include "sync/internal_api/public/test/model_type_store_test_util.h"
+#include "sync/protocol/data_type_state.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver_v2 {
 
 using syncer_v2::EntityData;
+using syncer_v2::MetadataBatch;
+using syncer_v2::MetadataChangeList;
+using syncer_v2::ModelTypeChangeProcessor;
 using syncer_v2::ModelTypeStore;
 using syncer_v2::ModelTypeStoreTestUtil;
 using sync_driver::DeviceInfo;
 using sync_driver::DeviceInfoTracker;
 using sync_driver::LocalDeviceInfoProviderMock;
+using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
 
@@ -45,6 +53,53 @@ void AssertEqual(const DeviceInfoSpecifics& specifics,
   ASSERT_EQ(specifics.signin_scoped_device_id(),
             model.signin_scoped_device_id());
 }
+
+DeviceInfoSpecifics TestSpecifics() {
+  DeviceInfoSpecifics specifics;
+  specifics.set_cache_guid("a");
+  specifics.set_client_name("b");
+  specifics.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  specifics.set_sync_user_agent("d");
+  specifics.set_chrome_version("e");
+  specifics.set_backup_timestamp(6);
+  return specifics;
+}
+
+// Instead of actually processing anything, simply accumulates all instructions
+// in members that can then be accessed. TODO(skym): If this ends up being
+// useful for other model type unittests it should be moved out to a shared
+// location.
+class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
+ public:
+  FakeModelTypeChangeProcessor() {}
+  ~FakeModelTypeChangeProcessor() override {}
+
+  void Put(const std::string& client_tag,
+           scoped_ptr<EntityData> entity_data,
+           MetadataChangeList* metadata_change_list) override {
+    put_map_.insert(std::make_pair(client_tag, std::move(entity_data)));
+  }
+
+  void Delete(const std::string& client_tag,
+              MetadataChangeList* metadata_change_list) override {
+    delete_set_.insert(client_tag);
+  }
+
+  void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) override {
+    std::swap(metadata_, batch);
+  }
+
+  const std::map<std::string, scoped_ptr<EntityData>>& put_map() const {
+    return put_map_;
+  }
+  const std::set<std::string>& delete_set() const { return delete_set_; }
+  const MetadataBatch* metadata() const { return metadata_.get(); }
+
+ private:
+  std::map<std::string, scoped_ptr<EntityData>> put_map_;
+  std::set<std::string> delete_set_;
+  scoped_ptr<MetadataBatch> metadata_;
+};
 
 class DeviceInfoServiceTest : public testing::Test,
                               public DeviceInfoTracker::Observer {
@@ -90,6 +145,12 @@ class DeviceInfoServiceTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetProcessorAndPump() {
+    processor_ = new FakeModelTypeChangeProcessor();
+    service()->set_change_processor(make_scoped_ptr(processor_));
+    base::RunLoop().RunUntilIdle();
+  }
+
   // Allows access to the store before that will ultimately be used to
   // initialize the service.
   ModelTypeStore* store() {
@@ -115,6 +176,11 @@ class DeviceInfoServiceTest : public testing::Test,
     return service_.get();
   }
 
+  FakeModelTypeChangeProcessor* processor() {
+    EXPECT_TRUE(processor_);
+    return processor_;
+  }
+
  private:
   int num_device_info_changed_callbacks_;
 
@@ -132,6 +198,10 @@ class DeviceInfoServiceTest : public testing::Test,
   // Not initialized immediately (upon test's constructor). This allows each
   // test case to modify the dependencies the service will be constructed with.
   scoped_ptr<DeviceInfoService> service_;
+
+  // A non-owning pointer to the processor given to the service. Will be nullptr
+  // before being given to the service, to make ownership easier.
+  FakeModelTypeChangeProcessor* processor_ = nullptr;
 };
 
 TEST_F(DeviceInfoServiceTest, EmptyDataReconciliation) {
@@ -156,12 +226,7 @@ TEST_F(DeviceInfoServiceTest, NonEmptyStoreLoad) {
   set_local_device(make_scoped_ptr(new LocalDeviceInfoProviderMock()));
 
   scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  DeviceInfoSpecifics specifics;
-  specifics.set_cache_guid("a");
-  specifics.set_client_name("b");
-  specifics.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
-  specifics.set_sync_user_agent("d");
-  specifics.set_chrome_version("e");
+  DeviceInfoSpecifics specifics(TestSpecifics());
   specifics.set_backup_timestamp(6);
   store()->WriteData(batch.get(), "tag", specifics.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
@@ -192,6 +257,52 @@ TEST_F(DeviceInfoServiceTest, GetClientTagEmpty) {
   EntityData entity_data;
   entity_data.specifics = entity_specifics;
   EXPECT_EQ("", service()->GetClientTag(entity_data));
+}
+
+TEST_F(DeviceInfoServiceTest, TestInitStoreThenProc) {
+  scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
+  DeviceInfoSpecifics specifics(TestSpecifics());
+  store()->WriteData(batch.get(), "tag", specifics.SerializeAsString());
+  DataTypeState state;
+  state.set_encryption_key_name("ekn");
+  store()->WriteGlobalMetadata(batch.get(), state.SerializeAsString());
+  store()->CommitWriteBatch(std::move(batch),
+                            base::Bind(&AssertResultIsSuccess));
+
+  InitializeAndPump();
+
+  // Verify that we have data. We do this because we're testing that the service
+  // may sometimes come up after our store init is fully completed.
+  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  ASSERT_EQ(1u, all_device_info.size());
+  AssertEqual(specifics, *all_device_info[0]);
+  AssertEqual(specifics, *service()->GetDeviceInfo("tag").get());
+
+  SetProcessorAndPump();
+  ASSERT_TRUE(processor()->metadata());
+  ASSERT_EQ(state.encryption_key_name(),
+            processor()->metadata()->GetDataTypeState().encryption_key_name());
+}
+
+TEST_F(DeviceInfoServiceTest, TestInitProcBeforeStoreFinishes) {
+  scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
+  DeviceInfoSpecifics specifics(TestSpecifics());
+  store()->WriteData(batch.get(), "tag", specifics.SerializeAsString());
+  DataTypeState state;
+  state.set_encryption_key_name("ekn");
+  store()->WriteGlobalMetadata(batch.get(), state.SerializeAsString());
+  store()->CommitWriteBatch(std::move(batch),
+                            base::Bind(&AssertResultIsSuccess));
+
+  InitializeService();
+  // Verify we have _NO_ data yet, to verify that we're testing when the
+  // processor is attached and ready before our store init is fully completed.
+  ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());
+
+  SetProcessorAndPump();
+  ASSERT_TRUE(processor()->metadata());
+  ASSERT_EQ(state.encryption_key_name(),
+            processor()->metadata()->GetDataTypeState().encryption_key_name());
 }
 
 }  // namespace

@@ -60,6 +60,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   void GetData(ClientTagList client_tags, DataCallback callback) override;
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const syncer_v2::EntityData& entity_data) override;
+  void OnChangeProcessorSet() override;
 
   // DeviceInfoTracker implementation.
   bool IsSyncing() const override;
@@ -99,15 +100,23 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   // Methods used as callbacks given to DataTypeStore.
   void OnStoreCreated(syncer_v2::ModelTypeStore::Result result,
                       scoped_ptr<syncer_v2::ModelTypeStore> store);
-  void OnLoadAllData(
+  void OnReadAllData(
       syncer_v2::ModelTypeStore::Result result,
       scoped_ptr<syncer_v2::ModelTypeStore::RecordList> record_list);
+  void OnReadAllMetadata(
+      syncer_v2::ModelTypeStore::Result result,
+      scoped_ptr<syncer_v2::ModelTypeStore::RecordList> metadata_records,
+      const std::string& global_metadata);
 
   // Checks if conditions have been met to perform reconciliation between the
   // locally provide device info and the stored device info data. If conditions
   // are met and the sets of data differ, than we condier this a local change
   // and we send it to the processor.
   void TryReconcileLocalAndStored();
+
+  // Checks if conditions have been met to load and report metadata to our
+  // current processor if able.
+  void TryLoadAllMetadata();
 
   // |local_device_backup_time_| accessors.
   int64_t local_device_backup_time() const { return local_device_backup_time_; }

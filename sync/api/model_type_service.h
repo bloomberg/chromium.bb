@@ -63,6 +63,11 @@ class SYNC_EXPORT ModelTypeService {
   // Get or generate a client tag for |entity_data|.
   virtual std::string GetClientTag(const EntityData& entity_data) = 0;
 
+  // Overridable notification for when the processor is set. This is typically
+  // when the service should start loading metadata and then subsequently giving
+  // it to the processor.
+  virtual void OnChangeProcessorSet() = 0;
+
   // TODO(skym): See crbug/547087, do we need all these accessors?
   ModelTypeChangeProcessor* change_processor() const;
 
