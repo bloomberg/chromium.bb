@@ -11,6 +11,22 @@ Start Chrome as follows:
              --trace-startup-file=/tmp/trace.json \
              --trace-startup-duration=7
 
+On Android, enable startup tracing and start Chrome as follows:
+
+    $ build/android/adb_chrome_public_command_line \
+          --trace-startup=-*,disabled-by-default-memory-infra \
+          --trace-startup-file=/sdcard/Download/trace.json \
+          --trace-startup-duration=7
+
+    $ build/android/adb_run_chrome_public
+
+    $ adb pull /sdcard/Download/trace.json  # After tracing.
+
+Note that startup tracing will be enabled upon every Chrome launch until you
+delete the command-line flags:
+
+    $ build/android/adb_chrome_public_command_line ""
+
 This will use the default configuration: one memory dump every 250 ms with a
 detailed dump ever two seconds.
 
@@ -36,6 +52,21 @@ specify a custom trace config file as follows:
     }
 
     $ chrome --no-sandbox --trace-config-file=/tmp/trace.config
+
+On Android, the config file has to be pushed to a fixed file location:
+
+    $ adb root
+    $ adb push /tmp/trace.config /data/local/chrome-trace-config.json
+
+    $ build/android/adb_run_chrome_public
+
+    $ adb pull /sdcard/Download/trace.json  # After tracing.
+
+Make sure that the "result_file" location is writable by the Chrome process on
+Android (e.g. "/sdcard/Download/trace.json"). Note that startup tracing will be
+enabled upon every Chrome launch until you delete the config file:
+
+    $ adb shell rm /data/local/chrome-trace-config.json
 
 ## Related Pages
 
