@@ -7,18 +7,33 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
+var onload_completed = false;
+
+function runGC() {
+    gc();
+    onload_completed = true;
+
+}
+
+function adoptAfterLoaded(ifr) {
+    // Wait on onload's gc() to complete.
+    if (!onload_completed) {
+        setTimeout(function () { adoptAfterLoaded(ifr); }, 1);
+        return;
+    }
+    document.adoptNode(ifr.attributes["src"]);
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
 window.onload = function()
 {
     iframe.remove();
     // Run the GC after this event handler has completed & back at the event loop.
-    setTimeout(gc);
+    setTimeout(runGC);
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    setTimeout(function() {
-        document.adoptNode(iframe.attributes["src"]);
-        if (window.testRunner)
-            testRunner.notifyDone();
-    }, 0);
+    setTimeout(function () { adoptAfterLoaded(iframe); }, 1);
 }, false);
 </script>
