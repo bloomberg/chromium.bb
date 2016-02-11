@@ -6,6 +6,8 @@
 
 #include "ash/default_accessibility_delegate.h"
 #include "ash/default_user_wallpaper_delegate.h"
+#include "ash/gpu_support_stub.h"
+#include "ash/media_delegate.h"
 #include "ash/mus/shelf_delegate_mus.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
@@ -70,6 +72,24 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   scoped_ptr<user_manager::UserInfo> user_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateStub);
+};
+
+class MediaDelegateStub : public MediaDelegate {
+ public:
+  MediaDelegateStub() {}
+  ~MediaDelegateStub() override {}
+
+  // MediaDelegate:
+  void HandleMediaNextTrack() override { NOTIMPLEMENTED(); }
+  void HandleMediaPlayPause() override { NOTIMPLEMENTED(); }
+  void HandleMediaPrevTrack() override { NOTIMPLEMENTED(); }
+  MediaCaptureState GetMediaCaptureState(UserIndex index) override {
+    NOTIMPLEMENTED();
+    return MEDIA_CAPTURE_NONE;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaDelegateStub);
 };
 
 }  // namespace
@@ -147,47 +167,47 @@ ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
   return new ShelfDelegateMus(model);
 }
 
-ash::SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
+SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
   NOTIMPLEMENTED() << " Using the default SystemTrayDelegate implementation";
   return new DefaultSystemTrayDelegate;
 }
 
-ash::UserWallpaperDelegate* ShellDelegateMus::CreateUserWallpaperDelegate() {
+UserWallpaperDelegate* ShellDelegateMus::CreateUserWallpaperDelegate() {
   NOTIMPLEMENTED() << " Using the default UserWallpaperDelegate implementation";
   return new DefaultUserWallpaperDelegate();
 }
 
-ash::SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {
+SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {
   NOTIMPLEMENTED() << " Using a stub SessionStateDeleagte implementation";
   return new SessionStateDelegateStub;
 }
 
-ash::AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
+AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
   NOTIMPLEMENTED() << " Using the default AccessibilityDelegate implementation";
   return new DefaultAccessibilityDelegate;
 }
 
-ash::NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {
+NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-ash::MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
-  NOTIMPLEMENTED();
-  return nullptr;
+MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
+  NOTIMPLEMENTED() << " Using a stub MediaDelegate implementation";
+  return new MediaDelegateStub;
 }
 
 ui::MenuModel* ShellDelegateMus::CreateContextMenu(
     aura::Window* root_window,
-    ash::ShelfItemDelegate* item_delegate,
-    ash::ShelfItem* item) {
+    ShelfItemDelegate* item_delegate,
+    ShelfItem* item) {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
 GPUSupport* ShellDelegateMus::CreateGPUSupport() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  NOTIMPLEMENTED() << " Using a stub GPUSupport implementation";
+  return new GPUSupportStub();
 }
 
 base::string16 ShellDelegateMus::GetProductName() const {

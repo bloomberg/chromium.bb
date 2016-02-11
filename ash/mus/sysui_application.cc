@@ -26,6 +26,13 @@
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/views_delegate.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "ui/events/devices/device_data_manager.h"
+#endif
+
 using views::ViewsDelegate;
 
 namespace ash {
@@ -161,7 +168,8 @@ class AshInit {
 
     ash::AshWindowTreeHost::SetFactory(base::Bind(&CreateWindowTreeHostMus));
     ash_delegate_ = new ShellDelegateMus;
-    message_center::MessageCenter::Initialize();
+
+    InitializeComponents();
 
     ash::ShellInitParams init_params;
     init_params.delegate = ash_delegate_;
@@ -192,6 +200,20 @@ class AshInit {
     ash::Shell::GetInstance()
         ->desktop_background_controller()
         ->SetWallpaperImage(wallpaper, wallpaper::WALLPAPER_LAYOUT_TILE);
+  }
+
+  void InitializeComponents() {
+    message_center::MessageCenter::Initialize();
+
+#if defined(OS_CHROMEOS)
+    ui::DeviceDataManager::CreateInstance();
+    chromeos::DBusThreadManager::Initialize();
+    bluez::BluezDBusManager::Initialize(
+        chromeos::DBusThreadManager::Get()->GetSystemBus(),
+        chromeos::DBusThreadManager::Get()->IsUsingStub(
+            chromeos::DBusClientBundle::BLUETOOTH));
+    chromeos::CrasAudioHandler::InitializeForTesting();
+#endif
   }
 
  private:
