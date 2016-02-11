@@ -1215,7 +1215,7 @@ bool VideoTrack::SetColour(const Colour& colour) {
   }
 
   colour_ptr->matrix = colour.matrix;
-  colour_ptr->primaries = colour.bits_per_channel;
+  colour_ptr->bits_per_channel = colour.bits_per_channel;
   colour_ptr->chroma_subsampling = colour.chroma_subsampling;
   colour_ptr->chroma_siting_horz = colour.chroma_siting_horz;
   colour_ptr->chroma_siting_vert = colour.chroma_siting_vert;
