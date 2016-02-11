@@ -1048,12 +1048,21 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return true;
         }
 
+        // Herb: Current spec says that tabs are closed only when there is NO "X" visible, i.e. when
+        //       the tab is NOT allowed to return to the external app.
+        boolean isAllowedToCloseTab = true;
+        String herbFlavor = ChromePreferenceManager.getHerbFlavor();
+        if (TextUtils.equals(ChromeSwitches.HERB_FLAVOR_BASIL, herbFlavor)
+                || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_CHIVE, herbFlavor)) {
+            isAllowedToCloseTab = !currentTab.isAllowedToReturnToExternalApp();
+        }
+
         // [true]: Reached the bottom of the back stack on a tab the user did not explicitly
         // create (i.e. it was created by an external app or opening a link in background, etc).
         // [false]: Reached the bottom of the back stack on a tab that the user explicitly
         // created (e.g. selecting "new tab" from menu).
         final boolean shouldCloseTab = type == TabLaunchType.FROM_LINK
-                || type == TabLaunchType.FROM_EXTERNAL_APP
+                || (type == TabLaunchType.FROM_EXTERNAL_APP && isAllowedToCloseTab)
                 || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND
                 || type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
                 || (type == TabLaunchType.FROM_RESTORE && parentId != Tab.INVALID_TAB_ID);
@@ -1068,7 +1077,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             Log.i(TAG, "handleBackPressedWithoutBackStack() - moveTaskToBack");
             moveTaskToBack(true);
             if (shouldCloseTab) {
-                // In the case of closing a tab upon minimalization, don't allow the close
+                // In the case of closing a tab upon minimization, don't allow the close
                 // action to happen until after our app is minimized to make sure we don't get a
                 // brief glimpse of the newly active tab before we exit Chrome.
                 mHandler.postDelayed(new Runnable() {
