@@ -6542,6 +6542,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Total number of authentication required responses received from the Data
     Reduction Proxy.
+
+    An &quot;Unexpired&quot; value is recorded every time a new client config is
+    fetched and parsed successfully. An &quot;Expired&quot; value is recorded
+    every time Chrome receives 407 from the data saver proxy.
   </summary>
 </histogram>
 
@@ -6551,6 +6555,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of failed attempts when retrieving the configuration from the
     Data Reduction Proxy API before a successful attempt took place.
+
+    Recorded every time a new client config is fetched and parsed successfully.
+    If the device has a valid connection type but no Internet connectivity, this
+    count will keep increasing.
   </summary>
 </histogram>
 
@@ -6559,6 +6567,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Time from when the Data Reduction Proxy configuration request starts until
     it completes.
+
+    Recorded every time a new client config is fetched and parsed successfully.
   </summary>
 </histogram>
 
