@@ -16,12 +16,12 @@ _SRC_DIR = os.path.abspath(os.path.join(
 
 sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
 from devil.android import device_utils
+from devil.android import flag_changer
 from devil.android import forwarder
 from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 from pylib import constants
-from pylib import flag_changer
 
 sys.path.append(os.path.join(_SRC_DIR, 'tools', 'perf'))
 from chrome_telemetry_build import chromium_config

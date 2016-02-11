@@ -7,8 +7,8 @@ import re
 import time
 
 from devil.android import device_errors
+from devil.android import flag_changer
 from devil.utils import reraiser_thread
-from pylib import flag_changer
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.local.device import local_device_test_run

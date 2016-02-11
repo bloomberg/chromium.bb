@@ -11,8 +11,8 @@ import re
 import time
 
 from devil.android import device_errors
+from devil.android import flag_changer
 from pylib import constants
-from pylib import flag_changer
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import base_test_runner

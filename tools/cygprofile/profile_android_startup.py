@@ -17,11 +17,15 @@ import sys
 import tempfile
 import time
 
-sys.path.append(os.path.join(sys.path[0], '..', '..', 'build', 'android'))
+sys.path.append(os.path.join(sys.path[0], '..', '..',
+    'third_party', 'catapult', 'devil'))
 from devil.android import device_errors
 from devil.android import device_utils
+from devil.android import flag_changer
 from devil.android import forwarder
 from devil.android.sdk import intent
+
+sys.path.append(os.path.join(sys.path[0], '..', '..', 'build', 'android'))
 from pylib import constants
 from pylib import flag_changer
 

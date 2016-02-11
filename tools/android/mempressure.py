@@ -15,12 +15,12 @@ _SRC_PATH = os.path.abspath(os.path.join(
 sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'catapult', 'devil')
 from devil.android import device_errors
 from devil.android import device_utils
+from devil.android import flag_changer
 from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
 import devil_chromium
 from pylib import constants
-from pylib import flag_changer
 
 # Browser Constants
 DEFAULT_BROWSER = 'chrome'
