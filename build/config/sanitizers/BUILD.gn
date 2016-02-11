@@ -258,6 +258,10 @@ config("default_sanitizer_flags") {
         cflags += [
           "-fno-sanitize-trap=cfi",
           "-fsanitize-recover=cfi",
+          "-fno-inline-functions",
+          "-fno-inline",
+          "-fno-omit-frame-pointer",
+          "-O1",
         ]
       } else {
         defines += [ "CFI_ENFORCEMENT" ]

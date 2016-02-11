@@ -43,6 +43,7 @@
 
     'gn_cfi_release_bot': ['gn', 'cfi', 'release_bot'],
     'gn_cfi_release_trybot': ['gn', 'cfi', 'release_trybot'],
+    'gn_cfi_diag_release_bot': ['gn', 'cfi', 'cfi_diag', 'release_bot'],
     'gn_debug_bot': ['gn', 'debug_bot'],
     'gn_debug_bot_minimal_symbols': ['gn', 'debug_bot_minimal_symbols'],
     'gn_debug_bot_minimal_symbols_x86': ['gn', 'debug_bot_minimal_symbols', 'x86'],
@@ -223,6 +224,11 @@
     'cfi': {
       'gn_args': 'is_cfi=true',
       'gyp_defines': 'cfi_vptr=1',
+    },
+
+    'cfi_diag': {
+      'gn_args': 'use_cfi_diag=true',
+      'gyp_defines': 'cfi_diag=1',
     },
 
     'chrome_with_codecs': {
@@ -628,6 +634,7 @@
     'chromium.fyi': {
       'CFI Linux': 'gn_cfi_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
+      'CFI Linux CF': 'gn_cfi_diag_release_bot',
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
