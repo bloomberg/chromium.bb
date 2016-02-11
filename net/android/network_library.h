@@ -82,9 +82,6 @@ NET_EXPORT std::string GetTelephonySimOperator();
 // true, it suggests that use of data may incur extra costs.
 NET_EXPORT bool GetIsRoaming();
 
-// Returns the current SSID if device is connected to a Wi-Fi network.
-NET_EXPORT std::string GetWifiSSID();
-
 // Register JNI methods
 NET_EXPORT bool RegisterNetworkLibrary(JNIEnv* env);
 
