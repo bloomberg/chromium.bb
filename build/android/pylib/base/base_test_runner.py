@@ -15,7 +15,6 @@ from devil.android import forwarder
 from devil.android import ports
 from pylib.valgrind_tools import CreateTool
 # TODO(frankf): Move this to pylib/utils
-import lighttpd_server
 
 
 # A file on device to store ports of net test server. The format of the file is
@@ -86,6 +85,7 @@ class BaseTestRunner(object):
       port: port on which we want to the http server bind.
       extra_config_contents: Extra config contents for the HTTP server.
     """
+    import lighttpd_server
     self._http_server = lighttpd_server.LighttpdServer(
         document_root, port=port, extra_config_contents=extra_config_contents)
     if self._http_server.StartupHttpServer():
