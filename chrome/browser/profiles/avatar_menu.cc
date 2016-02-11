@@ -127,13 +127,8 @@ void AvatarMenu::SwitchToProfile(size_t index,
   base::FilePath path =
       profile_info_->GetPathOfProfileAtIndex(item.profile_index);
 
-  chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-  if (browser_)
-    desktop_type = browser_->host_desktop_type();
-
-  profiles::SwitchToProfile(path, desktop_type, always_create,
-                            ProfileManager::CreateCallback(),
-                            metric);
+  profiles::SwitchToProfile(path, always_create,
+                            ProfileManager::CreateCallback(), metric);
 }
 
 void AvatarMenu::AddNewProfile(ProfileMetrics::ProfileAdd type) {

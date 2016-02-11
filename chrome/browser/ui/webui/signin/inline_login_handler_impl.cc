@@ -690,8 +690,8 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
                                        auth_code, choose_what_to_sync);
       ProfileManager::CreateCallback callback = base::Bind(
           &InlineLoginHandlerImpl::FinishCompleteLogin, params);
-      profiles::SwitchToProfile(path, chrome::GetActiveDesktop(), true,
-          callback, ProfileMetrics::SWITCH_PROFILE_UNLOCK);
+      profiles::SwitchToProfile(path, true, callback,
+                                ProfileMetrics::SWITCH_PROFILE_UNLOCK);
     }
   } else {
     FinishCompleteLogin(

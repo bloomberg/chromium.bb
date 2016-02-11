@@ -119,7 +119,6 @@ void OpenBrowserWindowForProfile(
     ProfileManager::CreateCallback callback,
     bool always_create,
     bool is_new_profile,
-    chrome::HostDesktopType desktop_type,
     Profile* profile,
     Profile::CreateStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -179,12 +178,8 @@ void OpenBrowserWindowForProfile(
   // existed, which means that here a browser definitely needs to be created.
   // Passing true for |always_create| means we won't duplicate the code that
   // tries to find a browser.
-  profiles::FindOrCreateNewWindowForProfile(
-      profile,
-      is_process_startup,
-      is_first_run,
-      desktop_type,
-      true);
+  profiles::FindOrCreateNewWindowForProfile(profile, is_process_startup,
+                                            is_first_run, true);
 }
 
 // Called after a |system_profile| is available to be used by the user manager.
@@ -270,7 +265,6 @@ void FindOrCreateNewWindowForProfile(
     Profile* profile,
     chrome::startup::IsProcessStartup process_startup,
     chrome::startup::IsFirstRun is_first_run,
-    chrome::HostDesktopType desktop_type,
     bool always_create) {
   DCHECK(profile);
 
@@ -291,7 +285,6 @@ void FindOrCreateNewWindowForProfile(
 
 #if !defined(OS_ANDROID)
 void SwitchToProfile(const base::FilePath& path,
-                     chrome::HostDesktopType desktop_type,
                      bool always_create,
                      ProfileManager::CreateCallback callback,
                      ProfileMetrics::ProfileOpen metric) {
@@ -300,32 +293,18 @@ void SwitchToProfile(const base::FilePath& path,
                                    path);
   g_browser_process->profile_manager()->CreateProfileAsync(
       path,
-      base::Bind(&OpenBrowserWindowForProfile,
-                 callback,
-                 always_create,
-                 false,
-                 desktop_type),
-      base::string16(),
-      std::string(),
-      std::string());
+      base::Bind(&OpenBrowserWindowForProfile, callback, always_create, false),
+      base::string16(), std::string(), std::string());
 }
 
-void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
-                          ProfileManager::CreateCallback callback) {
+void SwitchToGuestProfile(ProfileManager::CreateCallback callback) {
   const base::FilePath& path = ProfileManager::GetGuestProfilePath();
   ProfileMetrics::LogProfileSwitch(ProfileMetrics::SWITCH_PROFILE_GUEST,
                                    g_browser_process->profile_manager(),
                                    path);
   g_browser_process->profile_manager()->CreateProfileAsync(
-      path,
-      base::Bind(&OpenBrowserWindowForProfile,
-                 callback,
-                 false,
-                 false,
-                 desktop_type),
-      base::string16(),
-      std::string(),
-      std::string());
+      path, base::Bind(&OpenBrowserWindowForProfile, callback, false, false),
+      base::string16(), std::string(), std::string());
 }
 #endif
 
@@ -336,8 +315,7 @@ bool HasProfileSwitchTargets(Profile* profile) {
   return number_of_profiles >= min_profiles;
 }
 
-void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
-                                 ProfileManager::CreateCallback callback,
+void CreateAndSwitchToNewProfile(ProfileManager::CreateCallback callback,
                                  ProfileMetrics::ProfileAdd metric) {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -346,11 +324,7 @@ void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
   ProfileManager::CreateMultiProfileAsync(
       cache.ChooseNameForNewProfile(placeholder_avatar_index),
       profiles::GetDefaultAvatarIconUrl(placeholder_avatar_index),
-      base::Bind(&OpenBrowserWindowForProfile,
-                 callback,
-                 true,
-                 true,
-                 desktop_type),
+      base::Bind(&OpenBrowserWindowForProfile, callback, true, true),
       std::string());
   ProfileMetrics::LogProfileAddNewUser(metric);
 }

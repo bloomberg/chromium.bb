@@ -1015,7 +1015,6 @@ void BrowserOptionsHandler::InitializePage() {
   SetupPageZoomSelector();
   SetupAutoOpenFileTypes();
   SetupProxySettingsSection();
-  SetupManageCertificatesSection();
   SetupManagingSupervisedUsers();
   SetupEasyUnlock();
   SetupExtensionControlledIndicators();
@@ -1970,23 +1969,14 @@ void BrowserOptionsHandler::SetupAutoOpenFileTypes() {
 
 void BrowserOptionsHandler::SetupProxySettingsSection() {
 #if !defined(OS_CHROMEOS)
-  // Disable the button if proxy settings are managed by a sysadmin, overridden
-  // by an extension, or the browser is running in Windows Ash (on Windows the
-  // proxy settings dialog will open on the Windows desktop and be invisible
-  // to a user in Ash).
-  bool is_win_ash = false;
-#if defined(OS_WIN)
-  chrome::HostDesktopType desktop_type = helper::GetDesktopType(web_ui());
-  is_win_ash = (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH);
-#endif
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   const PrefService::Preference* proxy_config =
       pref_service->FindPreference(proxy_config::prefs::kProxy);
   bool is_extension_controlled = (proxy_config &&
                                   proxy_config->IsExtensionControlled());
 
-  base::FundamentalValue disabled(is_win_ash || (proxy_config &&
-                                  !proxy_config->IsUserModifiable()));
+  base::FundamentalValue disabled(proxy_config &&
+                                  !proxy_config->IsUserModifiable());
   base::FundamentalValue extension_controlled(is_extension_controlled);
   web_ui()->CallJavascriptFunction("BrowserOptions.setupProxySettingsButton",
                                    disabled, extension_controlled);
@@ -1996,19 +1986,6 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
 #endif  // defined(OS_WIN)
 
 #endif  // !defined(OS_CHROMEOS)
-}
-
-void BrowserOptionsHandler::SetupManageCertificatesSection() {
-#if defined(OS_WIN)
-  // Disable the button if the settings page is displayed in Windows Ash,
-  // otherwise the proxy settings dialog will open on the Windows desktop and
-  // be invisible to a user in Ash.
-  if (helper::GetDesktopType(web_ui()) == chrome::HOST_DESKTOP_TYPE_ASH) {
-    base::FundamentalValue enabled(false);
-    web_ui()->CallJavascriptFunction("BrowserOptions.enableCertificateButton",
-                                     enabled);
-  }
-#endif  // defined(OS_WIN)
 }
 
 void BrowserOptionsHandler::SetupManagingSupervisedUsers() {

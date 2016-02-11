@@ -1672,9 +1672,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     base::FilePath profile_path = profile_info_cache.GetPathOfProfileAtIndex(
         id - IDC_OPEN_LINK_IN_PROFILE_FIRST);
-    chrome::HostDesktopType desktop_type =
-        chrome::GetHostDesktopTypeForNativeView(
-            source_web_contents_->GetNativeView());
 
     Profile* profile = profile_manager->GetProfileByPath(profile_path);
     UmaEnumOpenLinkAsUser profile_state;
@@ -1691,7 +1688,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
                               profile_state, OPEN_LINK_AS_USER_LAST_ENUM_ID);
 
     profiles::SwitchToProfile(
-        profile_path, desktop_type, false,
+        profile_path, false,
         base::Bind(OnProfileCreated, params_.link_url,
                    CreateReferrer(params_.link_url, params_)),
         ProfileMetrics::SWITCH_PROFILE_CONTEXT_MENU);

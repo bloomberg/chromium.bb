@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_statistics.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -25,6 +24,7 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 class AccountId;
+class Browser;
 class GaiaAuthFetcher;
 
 namespace base {
@@ -115,9 +115,6 @@ class UserManagerScreenHandler
   // Observes the ProfileInfoCache and gets notified when a profile has been
   // modified, so that the displayed user pods can be updated.
   scoped_ptr<ProfileUpdateObserver> profileInfoCacheObserver_;
-
-  // The host desktop type this user manager belongs to.
-  chrome::HostDesktopType desktop_type_;
 
   // Authenticator used when local-auth fails.
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;

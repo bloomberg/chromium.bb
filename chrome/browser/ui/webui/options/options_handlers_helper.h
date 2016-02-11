@@ -16,12 +16,7 @@ class WebUI;
 namespace options {
 namespace helper {
 
-// Returns the current desktop type.
-chrome::HostDesktopType GetDesktopType(content::WebUI* web_ui);
-
-void OpenNewWindowForProfile(chrome::HostDesktopType desktop_type,
-                             Profile* profile,
-                             Profile::CreateStatus status);
+void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status);
 
 // Deletes the profile at the given |file_path|.
 void DeleteProfileAtPath(base::FilePath file_path, content::WebUI* web_ui);

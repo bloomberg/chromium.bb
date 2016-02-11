@@ -17,36 +17,13 @@
 namespace options {
 namespace helper {
 
-chrome::HostDesktopType GetDesktopType(content::WebUI* web_ui) {
-  DCHECK(web_ui);
-  content::WebContents* web_contents = web_ui->GetWebContents();
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser)
-    return browser->host_desktop_type();
-
-  extensions::AppWindow* app_window =
-      extensions::AppWindowRegistry::Get(Profile::FromWebUI(web_ui))
-          ->GetAppWindowForWebContents(web_contents);
-  if (app_window) {
-    return chrome::GetHostDesktopTypeForNativeWindow(
-        app_window->GetNativeWindow());
-  }
-
-  return chrome::GetActiveDesktop();
-}
-
-void OpenNewWindowForProfile(chrome::HostDesktopType desktop_type,
-                             Profile* profile,
-                             Profile::CreateStatus status) {
+void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status) {
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
 
   profiles::FindOrCreateNewWindowForProfile(
-    profile,
-    chrome::startup::IS_PROCESS_STARTUP,
-    chrome::startup::IS_FIRST_RUN,
-    desktop_type,
-    false);
+      profile, chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN, false);
 }
 
 void DeleteProfileAtPath(base::FilePath file_path, content::WebUI* web_ui) {
@@ -58,8 +35,7 @@ void DeleteProfileAtPath(base::FilePath file_path, content::WebUI* web_ui) {
   ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::DELETE_PROFILE_SETTINGS);
 
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      file_path,
-      base::Bind(&OpenNewWindowForProfile, GetDesktopType(web_ui)));
+      file_path, base::Bind(&OpenNewWindowForProfile));
 }
 
 }  // namespace helper

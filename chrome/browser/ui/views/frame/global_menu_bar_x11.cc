@@ -896,7 +896,6 @@ void GlobalMenuBarX11::OnEditProfileItemActivated(DbusmenuMenuitem* sender,
 
 void GlobalMenuBarX11::OnCreateProfileItemActivated(DbusmenuMenuitem* sender,
                                                     unsigned int timestamp) {
-  profiles::CreateAndSwitchToNewProfile(chrome::HOST_DESKTOP_TYPE_NATIVE,
-                                        ProfileManager::CreateCallback(),
+  profiles::CreateAndSwitchToNewProfile(ProfileManager::CreateCallback(),
                                         ProfileMetrics::ADD_NEW_USER_MENU);
 }

@@ -90,7 +90,6 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     : content::WebContentsObserver(web_contents),
       profile_(NULL),
       start_mode_(start_mode),
-      desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
       confirmation_required_(confirmation_required),
       current_url_(current_url),
       continue_url_(continue_url),
@@ -130,14 +129,6 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   browser_ = browser;
 
   LoginUIServiceFactory::GetForProfile(profile_)->AddObserver(this);
-
-  // Cache the parent desktop for the browser, so we can reuse that same
-  // desktop for any UI we want to display.
-  if (browser) {
-    desktop_type_ = browser->host_desktop_type();
-  } else {
-    desktop_type_ = chrome::GetActiveDesktop();
-  }
 
   signin_tracker_ = SigninTrackerFactory::CreateForProfile(profile_, this);
 
@@ -233,7 +224,7 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
   client_id_ = client_id;
 
   // Allow user to create a new profile before continuing with sign-in.
-  browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
+  browser_ = EnsureBrowser(browser_, profile_);
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!web_contents) {
@@ -287,12 +278,11 @@ void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
       base::UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
       profiles::GetDefaultAvatarIconUrl(icon_index),
       base::Bind(&OneClickSigninSyncStarter::CompleteInitForNewProfile,
-                 weak_pointer_factory_.GetWeakPtr(), desktop_type_),
+                 weak_pointer_factory_.GetWeakPtr()),
       std::string());
 }
 
 void OneClickSigninSyncStarter::CompleteInitForNewProfile(
-    chrome::HostDesktopType desktop_type,
     Profile* new_profile,
     Profile::CreateStatus status) {
   DCHECK_NE(profile_, new_profile);
@@ -343,7 +333,6 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
         new_profile,
         chrome::startup::IS_PROCESS_STARTUP,
         chrome::startup::IS_FIRST_RUN,
-        desktop_type,
         false);
       break;
     }
@@ -370,7 +359,7 @@ void OneClickSigninSyncStarter::CancelSigninAndDelete() {
 void OneClickSigninSyncStarter::ConfirmAndSignin() {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   if (confirmation_required_ == CONFIRM_UNTRUSTED_SIGNIN) {
-    browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
+    browser_ = EnsureBrowser(browser_, profile_);
     content::RecordAction(
         base::UserMetricsAction("Signin_Show_UntrustedSigninPrompt"));
     // Display a confirmation dialog to the user.
@@ -526,21 +515,19 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
 
 void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
     const base::string16& custom_message) {
-  browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
+  browser_ = EnsureBrowser(browser_, profile_);
   LoginUIServiceFactory::GetForProfile(browser_->profile())->
       DisplayLoginResult(browser_, custom_message);
 }
 
 void OneClickSigninSyncStarter::DisplayModalSyncConfirmationWindow() {
-  browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
+  browser_ = EnsureBrowser(browser_, profile_);
   browser_->ShowModalSyncConfirmationWindow();
 }
 
 // static
-Browser* OneClickSigninSyncStarter::EnsureBrowser(
-    Browser* browser,
-    Profile* profile,
-    chrome::HostDesktopType desktop_type) {
+Browser* OneClickSigninSyncStarter::EnsureBrowser(Browser* browser,
+                                                  Profile* profile) {
   if (!browser) {
     // The user just created a new profile or has closed the browser that
     // we used previously. Grab the most recently active browser or else
@@ -565,7 +552,7 @@ void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
   if (login_ui->current_login_ui()) {
     login_ui->current_login_ui()->FocusUI();
   } else {
-    browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
+    browser_ = EnsureBrowser(browser_, profile_);
 
     // If the sign in tab is showing the native signin page or the blank page
     // for web-based flow, and is not about to be closed, use it to show the

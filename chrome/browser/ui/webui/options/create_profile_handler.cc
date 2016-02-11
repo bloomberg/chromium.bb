@@ -110,18 +110,14 @@ void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
 
   profile_path_being_created_ = ProfileManager::CreateMultiProfileAsync(
-      name, icon_url,
-      base::Bind(&CreateProfileHandler::OnProfileCreated,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 create_shortcut,
-                 helper::GetDesktopType(web_ui()),
-                 supervised_user_id),
+      name, icon_url, base::Bind(&CreateProfileHandler::OnProfileCreated,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 create_shortcut, supervised_user_id),
       supervised_user_id);
 }
 
 void CreateProfileHandler::OnProfileCreated(
     bool create_shortcut,
-    chrome::HostDesktopType desktop_type,
     const std::string& supervised_user_id,
     Profile* profile,
     Profile::CreateStatus status) {
@@ -138,8 +134,8 @@ void CreateProfileHandler::OnProfileCreated(
       break;
     }
     case Profile::CREATE_STATUS_INITIALIZED: {
-      HandleProfileCreationSuccess(create_shortcut, desktop_type,
-                                   supervised_user_id, profile);
+      HandleProfileCreationSuccess(create_shortcut, supervised_user_id,
+                                   profile);
       break;
     }
     // User-initiated cancellation is handled in CancelProfileRegistration and
@@ -157,20 +153,18 @@ void CreateProfileHandler::OnProfileCreated(
 
 void CreateProfileHandler::HandleProfileCreationSuccess(
     bool create_shortcut,
-    chrome::HostDesktopType desktop_type,
     const std::string& supervised_user_id,
     Profile* profile) {
   switch (profile_creation_type_) {
     case NON_SUPERVISED_PROFILE_CREATION: {
       DCHECK(supervised_user_id.empty());
-      CreateShortcutAndShowSuccess(create_shortcut, desktop_type, profile);
+      CreateShortcutAndShowSuccess(create_shortcut, profile);
       break;
     }
 #if defined(ENABLE_SUPERVISED_USERS)
     case SUPERVISED_PROFILE_CREATION:
     case SUPERVISED_PROFILE_IMPORT:
-      RegisterSupervisedUser(create_shortcut, desktop_type,
-                             supervised_user_id, profile);
+      RegisterSupervisedUser(create_shortcut, supervised_user_id, profile);
       break;
 #endif
     case NO_CREATION_IN_PROGRESS:
@@ -179,10 +173,8 @@ void CreateProfileHandler::HandleProfileCreationSuccess(
   }
 }
 
-void CreateProfileHandler::CreateShortcutAndShowSuccess(
-    bool create_shortcut,
-    chrome::HostDesktopType desktop_type,
-    Profile* profile) {
+void CreateProfileHandler::CreateShortcutAndShowSuccess(bool create_shortcut,
+                                                        Profile* profile) {
   if (create_shortcut) {
     ProfileShortcutManager* shortcut_manager =
         g_browser_process->profile_manager()->profile_shortcut_manager();
@@ -221,8 +213,7 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(
   if (should_open_new_window) {
     // Opening the new window must be the last action, after all callbacks
     // have been run, to give them a chance to initialize the profile.
-    helper::OpenNewWindowForProfile(desktop_type,
-                                    profile,
+    helper::OpenNewWindowForProfile(profile,
                                     Profile::CREATE_STATUS_INITIALIZED);
   }
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
@@ -385,7 +376,6 @@ void CreateProfileHandler::CancelProfileRegistration(bool user_initiated) {
 
 void CreateProfileHandler::RegisterSupervisedUser(
     bool create_shortcut,
-    chrome::HostDesktopType desktop_type,
     const std::string& supervised_user_id,
     Profile* new_profile) {
   DCHECK_EQ(profile_path_being_created_.value(),
@@ -404,19 +394,17 @@ void CreateProfileHandler::RegisterSupervisedUser(
       base::Bind(&CreateProfileHandler::OnSupervisedUserRegistered,
                  weak_ptr_factory_.GetWeakPtr(),
                  create_shortcut,
-                 desktop_type,
                  new_profile));
 }
 
 void CreateProfileHandler::OnSupervisedUserRegistered(
     bool create_shortcut,
-    chrome::HostDesktopType desktop_type,
     Profile* profile,
     const GoogleServiceAuthError& error) {
   GoogleServiceAuthError::State state = error.state();
   RecordSupervisedProfileCreationMetrics(state);
   if (state == GoogleServiceAuthError::NONE) {
-    CreateShortcutAndShowSuccess(create_shortcut, desktop_type, profile);
+    CreateShortcutAndShowSuccess(create_shortcut, profile);
     return;
   }
 

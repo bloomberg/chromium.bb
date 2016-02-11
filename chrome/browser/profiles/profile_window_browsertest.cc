@@ -110,8 +110,7 @@ Browser* ProfileWindowBrowserTest::OpenGuestBrowser() {
   content::WindowedNotificationObserver browser_creation_observer(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
-  profiles::SwitchToGuestProfile(chrome::GetActiveDesktop(),
-                                 ProfileManager::CreateCallback());
+  profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
 
   browser_creation_observer.Wait();
   DCHECK_NE(static_cast<Profile*>(nullptr),

@@ -159,18 +159,9 @@ void SupervisedUserCreateConfirmHandler::SwitchToProfile(
       GetProfileByPath(profile_file_path);
   DCHECK(profile);
 
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-  if (browser)
-    desktop_type = browser->host_desktop_type();
-
   profiles::FindOrCreateNewWindowForProfile(
-      profile,
-      chrome::startup::IS_PROCESS_STARTUP,
-      chrome::startup::IS_FIRST_RUN,
-      desktop_type,
-      false);
+      profile, chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN, false);
 }
 
 }  // namespace options

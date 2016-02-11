@@ -338,9 +338,6 @@ class BrowserOptionsHandler
   // Setup the proxy settings section UI.
   void SetupProxySettingsSection();
 
-  // Setup the manage certificates section UI.
-  void SetupManageCertificatesSection();
-
   // Setup the UI specific to managing supervised users.
   void SetupManagingSupervisedUsers();
 

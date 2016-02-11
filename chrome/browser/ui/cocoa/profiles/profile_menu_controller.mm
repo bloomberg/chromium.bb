@@ -116,8 +116,7 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (IBAction)newProfile:(id)sender {
-  profiles::CreateAndSwitchToNewProfile(chrome::HOST_DESKTOP_TYPE_NATIVE,
-                                        ProfileManager::CreateCallback(),
+  profiles::CreateAndSwitchToNewProfile(ProfileManager::CreateCallback(),
                                         ProfileMetrics::ADD_NEW_USER_MENU);
 }
 

@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   Profile* other_profile = CreateSecondaryProfile(1);
   profiles::FindOrCreateNewWindowForProfile(
       other_profile, chrome::startup::IS_NOT_PROCESS_STARTUP,
-      chrome::startup::IS_NOT_FIRST_RUN, chrome::GetActiveDesktop(), false);
+      chrome::startup::IS_NOT_FIRST_RUN, false);
 
   ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
       content::NotificationService::AllSources());

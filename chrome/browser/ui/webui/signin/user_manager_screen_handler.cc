@@ -103,18 +103,12 @@ void HandleAndDoNothing(const base::ListValue* args) {
 
 // This callback is run if the only profile has been deleted, and a new
 // profile has been created to replace it.
-void OpenNewWindowForProfile(
-    chrome::HostDesktopType desktop_type,
-    Profile* profile,
-    Profile::CreateStatus status) {
+void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status) {
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
   profiles::FindOrCreateNewWindowForProfile(
-    profile,
-    chrome::startup::IS_PROCESS_STARTUP,
-    chrome::startup::IS_FIRST_RUN,
-    desktop_type,
-    false);
+      profile, chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN, false);
 }
 
 std::string GetAvatarImageAtIndex(
@@ -175,7 +169,6 @@ class UrlHashHelper : public chrome::BrowserListObserver {
  private:
   Browser* browser_;
   Profile* profile_;
-  chrome::HostDesktopType desktop_type_;
   std::string hash_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlHashHelper);
@@ -184,7 +177,6 @@ class UrlHashHelper : public chrome::BrowserListObserver {
 UrlHashHelper::UrlHashHelper(Browser* browser, const std::string& hash)
     : browser_(browser),
       profile_(browser->profile()),
-      desktop_type_(browser->host_desktop_type()),
       hash_(hash) {
   BrowserList::AddObserver(this);
 }
@@ -200,7 +192,8 @@ void UrlHashHelper::OnBrowserRemoved(Browser* browser) {
 
 void UrlHashHelper::ExecuteUrlHash() {
   if (hash_ == profiles::kUserManagerSelectProfileAppLauncher) {
-    AppListService* app_list_service = AppListService::Get(desktop_type_);
+    AppListService* app_list_service =
+        AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
     app_list_service->ShowForProfile(profile_);
     return;
   }
@@ -301,9 +294,7 @@ class UserManagerScreenHandler::ProfileUpdateObserver
 
 // UserManagerScreenHandler ---------------------------------------------------
 
-UserManagerScreenHandler::UserManagerScreenHandler()
-    : desktop_type_(chrome::GetActiveDesktop()),
-      weak_ptr_factory_(this) {
+UserManagerScreenHandler::UserManagerScreenHandler() : weak_ptr_factory_(this) {
   profileInfoCacheObserver_.reset(
       new UserManagerScreenHandler::ProfileUpdateObserver(
           g_browser_process->profile_manager(), this));
@@ -394,8 +385,6 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen",
       base::FundamentalValue(IsGuestModeEnabled()),
       base::FundamentalValue(IsAddPersonEnabled()));
-  desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
-      web_ui()->GetWebContents()->GetNativeView());
 
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(this);
 }
@@ -407,7 +396,6 @@ void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
     return;
   }
   profiles::CreateAndSwitchToNewProfile(
-      desktop_type_,
       base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
                  weak_ptr_factory_.GetWeakPtr()),
       ProfileMetrics::ADD_NEW_USER_MANAGER);
@@ -495,8 +483,7 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   }
 
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      profile_path,
-      base::Bind(&OpenNewWindowForProfile, desktop_type_));
+      profile_path, base::Bind(&OpenNewWindowForProfile));
   ProfileMetrics::LogProfileDeleteUser(
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
 }
@@ -504,7 +491,6 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
   if (IsGuestModeEnabled()) {
     profiles::SwitchToGuestProfile(
-        desktop_type_,
         base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
                    weak_ptr_factory_.GetWeakPtr()));
   } else {
@@ -542,9 +528,7 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   ProfileMetrics::LogProfileAuthResult(ProfileMetrics::AUTH_UNNECESSARY);
 
   profiles::SwitchToProfile(
-      profile_path,
-      desktop_type_,
-      false,  /* reuse any existing windows */
+      profile_path, false, /* reuse any existing windows */
       base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
                  weak_ptr_factory_.GetWeakPtr()),
       ProfileMetrics::SWITCH_PROFILE_MANAGER);
@@ -946,9 +930,7 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
 
   if (success) {
     profiles::SwitchToProfile(
-        authenticating_profile_path_,
-        desktop_type_,
-        true,
+        authenticating_profile_path_, true,
         base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
                    weak_ptr_factory_.GetWeakPtr()),
         ProfileMetrics::SWITCH_PROFILE_UNLOCK);

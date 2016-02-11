@@ -88,8 +88,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   content::WindowedNotificationObserver browser_creation_observer(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
-  profiles::SwitchToGuestProfile(chrome::GetActiveDesktop(),
-                                 ProfileManager::CreateCallback());
+  profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
 
   // RunUntilIdle() (racily) isn't sufficient to ensure browser creation, so
   // listen for the notification.
