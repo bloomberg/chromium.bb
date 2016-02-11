@@ -958,8 +958,10 @@ source_set("browser") {
     deps += [ "//chrome/browser/media/router" ]
   }
 
-  if (enable_mojo_media != "none") {
-    deps += [ "//media/mojo/services:default_application" ]
+  if (enable_mojo_media == "browser") {
+    deps += [ "//media/mojo/services:application" ]
+  } else if (enable_mojo_media != "none") {
+    configs += [ "//media/mojo/services:enable_mojo_media_config" ]
   }
 
   if (enable_wayland_server) {

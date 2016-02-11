@@ -52,6 +52,7 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#include "chromecast/media/mojo/cast_mojo_media_client.h"
 // nogncheck because of conditional dependency.
 #include "media/mojo/services/mojo_media_application.h"  // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
@@ -357,9 +358,10 @@ bool CastContentBrowserClient::CanCreateWindow(
 void CastContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  apps->insert(
-      std::make_pair(GURL("mojo:media"),
-                     base::Bind(::media::MojoMediaApplication::CreateApp)));
+  apps->insert(std::make_pair(
+      GURL("mojo:media"),
+      base::Bind(::media::MojoMediaApplication::CreateAppWithClient,
+                 base::Bind(&media::CastMojoMediaClient::Create))));
 #endif
 }
 

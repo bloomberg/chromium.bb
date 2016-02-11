@@ -5,12 +5,15 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
 #define MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
 
-#include "base/single_thread_task_runner.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
 #include "media/base/video_renderer_sink.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace mojo {
 namespace shell {
@@ -22,11 +25,9 @@ class InterfaceProvider;
 
 namespace media {
 
-class MojoMediaClient {
+class MEDIA_EXPORT MojoMediaClient {
  public:
   virtual ~MojoMediaClient();
-
-  static scoped_ptr<MojoMediaClient> Create();
 
   // Called exactly once before any other method.
   virtual void Initialize();
