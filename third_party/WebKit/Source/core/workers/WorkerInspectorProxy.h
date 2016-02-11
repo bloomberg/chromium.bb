@@ -6,6 +6,7 @@
 #define WorkerInspectorProxy_h
 
 #include "core/CoreExport.h"
+#include "core/workers/WorkerThread.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebTaskRunner.h"
 #include "wtf/Forward.h"
@@ -16,7 +17,6 @@ class ExecutionContext;
 class KURL;
 class WebTraceLocation;
 class WorkerGlobalScopeProxy;
-class WorkerThread;
 
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.
@@ -36,6 +36,7 @@ public:
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
+    WorkerThreadStartMode workerStartMode(ExecutionContext*);
     void workerThreadCreated(ExecutionContext*, WorkerThread*, const KURL&);
     void workerThreadTerminated();
 

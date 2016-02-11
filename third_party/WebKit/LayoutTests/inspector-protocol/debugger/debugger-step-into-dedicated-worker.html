@@ -37,7 +37,7 @@ function test()
         }
     }
     InspectorTest.sendCommand("Worker.enable", {}, didEnableWorkerDebugging);
-    InspectorTest.sendCommand("Worker.setAutoconnectToWorkers", { "value": true });
+    InspectorTest.sendCommand("Worker.setWaitForDebuggerOnStart", { "value": true });
     InspectorTest.sendCommand("Runtime.evaluate", { "expression": "startWorker()" });
 
     InspectorTest.eventHandler["Worker.workerCreated"] = function(messageObject)

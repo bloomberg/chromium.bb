@@ -322,9 +322,6 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     }
 
     Document* document = m_mainFrame->frame()->document();
-    WorkerThreadStartMode startMode = DontPauseWorkerGlobalScopeOnStart;
-    if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(document))
-        startMode = PauseWorkerGlobalScopeOnStart;
 
     // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
     SecurityOrigin* starterOrigin = document->securityOrigin();
@@ -334,6 +331,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
     provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
     RefPtrWillBeRawPtr<ContentSecurityPolicy> contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
+    WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         m_url,
         m_loadingDocument->userAgent(),

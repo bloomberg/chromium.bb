@@ -33,11 +33,20 @@ WorkerInspectorProxy::~WorkerInspectorProxy()
 {
 }
 
+WorkerThreadStartMode WorkerInspectorProxy::workerStartMode(ExecutionContext* context)
+{
+    if (InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(context))
+        return PauseWorkerGlobalScopeOnStart;
+    return DontPauseWorkerGlobalScopeOnStart;
+}
+
 void WorkerInspectorProxy::workerThreadCreated(ExecutionContext* context, WorkerThread* workerThread, const KURL& url)
 {
     m_workerThread = workerThread;
     m_executionContext = context;
-    InspectorInstrumentation::didStartWorker(context, this, url);
+    // We expect everyone starting worker thread to synchronously ask for workerStartMode right before.
+    bool waitingForDebugger = InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(context);
+    InspectorInstrumentation::didStartWorker(context, this, url, waitingForDebugger);
 }
 
 void WorkerInspectorProxy::workerThreadTerminated()

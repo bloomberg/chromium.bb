@@ -330,10 +330,6 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
 
     Document* document = m_mainFrame->frame()->document();
 
-    WorkerThreadStartMode startMode = DontPauseWorkerGlobalScopeOnStart;
-    if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(document))
-        startMode = PauseWorkerGlobalScopeOnStart;
-
     // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
     SecurityOrigin* starterOrigin = document->securityOrigin();
 
@@ -346,6 +342,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     document->initContentSecurityPolicy(m_mainScriptLoader->releaseContentSecurityPolicy());
 
     KURL scriptURL = m_mainScriptLoader->url();
+    WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         scriptURL,
         m_workerStartData.userAgent,
