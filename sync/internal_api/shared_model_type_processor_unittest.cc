@@ -51,110 +51,304 @@ static const syncer::ModelType kModelType = syncer::PREFERENCES;
 class SharedModelTypeProcessorTest : public ::testing::Test,
                                      public FakeModelTypeService {
  public:
-  SharedModelTypeProcessorTest();
-  ~SharedModelTypeProcessorTest() override;
+  SharedModelTypeProcessorTest()
+      : mock_queue_(new MockCommitQueue()),
+        mock_queue_ptr_(mock_queue_),
+        metadata_batch_(new MetadataBatch()) {
+    set_change_processor(
+        make_scoped_ptr(new SharedModelTypeProcessor(kModelType, this)));
+  }
+
+  ~SharedModelTypeProcessorTest() override {}
 
   // Initialize to a "ready-to-commit" state.
-  void InitializeToReadyState();
+  void InitializeToReadyState() {
+    data_type_state_.set_initial_sync_done(true);
+    OnMetadataLoaded();
+    OnSyncStarting();
+    // TODO(maxbogue): crbug.com/569642: Remove this once entity data is loaded
+    // for the normal startup flow.
+    UpdateResponseDataList empty_update_list;
+    type_processor()->OnUpdateReceived(data_type_state_, empty_update_list,
+                                       empty_update_list);
+  }
 
-  // SharedModelTypeProcessor method wrappers.
-  void OnMetadataLoaded();
-  void OnSyncStarting();
-  void DisconnectSync();
+  void OnMetadataLoaded() {
+    metadata_batch_->SetDataTypeState(data_type_state_);
+    type_processor()->OnMetadataLoaded(std::move(metadata_batch_));
+    metadata_batch_.reset(new MetadataBatch());
+  }
+
+  void OnSyncStarting() {
+    type_processor()->OnSyncStarting(
+        base::Bind(&SharedModelTypeProcessorTest::OnReadyToConnect,
+                   base::Unretained(this)));
+  }
+
+  void DisconnectSync() {
+    type_processor()->DisconnectSync();
+    mock_queue_ = NULL;
+    mock_queue_ptr_.reset();
+  }
 
   // Disable sync for this SharedModelTypeProcessor.  Should cause sync state to
   // be discarded.
-  void Disable();
+  void Disable() {
+    type_processor()->Disable();
+    mock_queue_ = NULL;
+    mock_queue_ptr_.reset();
+    EXPECT_FALSE(type_processor());
+  }
 
   // Restart sync after DisconnectSync() or Disable().
-  void Restart();
+  void Restart() {
+    if (!type_processor()) {
+      set_change_processor(
+          make_scoped_ptr(new SharedModelTypeProcessor(kModelType, this)));
+    }
+    // Prepare a new MockCommitQueue instance, just as we would
+    // if this happened in the real world.
+    mock_queue_ptr_.reset(new MockCommitQueue());
+    mock_queue_ = mock_queue_ptr_.get();
+    // Restart sync with the new CommitQueue.
+    OnSyncStarting();
+  }
 
   // Local data modification.  Emulates signals from the model thread.
   void WriteItem(const std::string& tag,
                  const std::string& value,
-                 MetadataChangeList* change_list);
-  void DeleteItem(const std::string& tag, MetadataChangeList* change_list);
+                 MetadataChangeList* change_list) {
+    scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
+    entity_data->specifics = GenerateSpecifics(tag, value);
+    entity_data->non_unique_name = tag;
+    type_processor()->Put(tag, std::move(entity_data), change_list);
+  }
 
-  // Emulates an "initial sync done" message from the
-  // CommitQueue.
-  void OnInitialSyncDone();
+  void DeleteItem(const std::string& tag, MetadataChangeList* change_list) {
+    type_processor()->Delete(tag, change_list);
+  }
+
+  // Emulates an "initial sync done" message from the CommitQueue.
+  void OnInitialSyncDone() {
+    data_type_state_.set_initial_sync_done(true);
+    UpdateResponseDataList empty_update_list;
+
+    // TODO(stanisc): crbug/569645: replace this with loading the initial state
+    // via LoadMetadata callback.
+    type_processor()->OnUpdateReceived(data_type_state_, empty_update_list,
+                                       empty_update_list);
+  }
 
   // Emulate updates from the server.
   // This harness has some functionality to help emulate server behavior.
-  // See the definitions of these methods for more information.
   void UpdateFromServer(int64_t version_offset,
                         const std::string& tag,
-                        const std::string& value);
-  void TombstoneFromServer(int64_t version_offset, const std::string& tag);
+                        const std::string& value) {
+    const std::string tag_hash = GenerateTagHash(tag);
+    UpdateResponseData data = mock_queue_->UpdateFromServer(
+        version_offset, tag_hash, GenerateSpecifics(tag, value));
+
+    UpdateResponseDataList list;
+    list.push_back(data);
+    type_processor()->OnUpdateReceived(data_type_state_, list,
+                                       UpdateResponseDataList());
+  }
+
+  void TombstoneFromServer(int64_t version_offset, const std::string& tag) {
+    // Overwrite the existing server version if this is the new highest version.
+    std::string tag_hash = GenerateTagHash(tag);
+
+    UpdateResponseData data =
+        mock_queue_->TombstoneFromServer(version_offset, tag_hash);
+
+    UpdateResponseDataList list;
+    list.push_back(data);
+    type_processor()->OnUpdateReceived(data_type_state_, list,
+                                       UpdateResponseDataList());
+  }
 
   // Emulate the receipt of pending updates from the server.
   // Pending updates are usually caused by a temporary decryption failure.
   void PendingUpdateFromServer(int64_t version_offset,
                                const std::string& tag,
                                const std::string& value,
-                               const std::string& key_name);
+                               const std::string& key_name) {
+    const std::string tag_hash = GenerateTagHash(tag);
+    UpdateResponseData data = mock_queue_->UpdateFromServer(
+        version_offset, tag_hash,
+        GenerateEncryptedSpecifics(tag, value, key_name));
+
+    UpdateResponseDataList list;
+    list.push_back(data);
+    type_processor()->OnUpdateReceived(data_type_state_,
+                                       UpdateResponseDataList(), list);
+  }
 
   // Returns true if the proxy has an pending update with specified tag.
-  bool HasPendingUpdate(const std::string& tag) const;
+  bool HasPendingUpdate(const std::string& tag) const {
+    const std::string client_tag_hash = GenerateTagHash(tag);
+    const UpdateResponseDataList list = type_processor()->GetPendingUpdates();
+    for (UpdateResponseDataList::const_iterator it = list.begin();
+         it != list.end(); ++it) {
+      if (it->entity->client_tag_hash == client_tag_hash)
+        return true;
+    }
+    return false;
+  }
 
   // Returns the pending update with the specified tag.
-  UpdateResponseData GetPendingUpdate(const std::string& tag) const;
+  UpdateResponseData GetPendingUpdate(const std::string& tag) const {
+    DCHECK(HasPendingUpdate(tag));
+    const std::string client_tag_hash = GenerateTagHash(tag);
+    const UpdateResponseDataList list = type_processor()->GetPendingUpdates();
+    for (UpdateResponseDataList::const_iterator it = list.begin();
+         it != list.end(); ++it) {
+      if (it->entity->client_tag_hash == client_tag_hash)
+        return *it;
+    }
+    NOTREACHED();
+    return UpdateResponseData();
+  }
 
   // Returns the number of pending updates.
-  size_t GetNumPendingUpdates() const;
+  size_t GetNumPendingUpdates() const {
+    return type_processor()->GetPendingUpdates().size();
+  }
 
   // Read emitted commit requests as batches.
-  size_t GetNumCommitRequestLists();
-  CommitRequestDataList GetNthCommitRequestList(size_t n);
+  size_t GetNumCommitRequestLists() {
+    return mock_queue_->GetNumCommitRequestLists();
+  }
+
+  CommitRequestDataList GetNthCommitRequestList(size_t n) {
+    return mock_queue_->GetNthCommitRequestList(n);
+  }
 
   // Read emitted commit requests by tag, most recent only.
-  bool HasCommitRequestForTag(const std::string& tag);
-  CommitRequestData GetLatestCommitRequestForTag(const std::string& tag);
+  bool HasCommitRequestForTag(const std::string& tag) {
+    const std::string tag_hash = GenerateTagHash(tag);
+    return mock_queue_->HasCommitRequestForTagHash(tag_hash);
+  }
+
+  CommitRequestData GetLatestCommitRequestForTag(const std::string& tag) {
+    const std::string tag_hash = GenerateTagHash(tag);
+    return mock_queue_->GetLatestCommitRequestForTagHash(tag_hash);
+  }
 
   // Sends the type sync proxy a successful commit response.
-  void SuccessfulCommitResponse(const CommitRequestData& request_data);
+  void SuccessfulCommitResponse(const CommitRequestData& request_data) {
+    CommitResponseDataList list;
+    list.push_back(mock_queue_->SuccessfulCommitResponse(request_data));
+    type_processor()->OnCommitCompleted(data_type_state_, list);
+  }
 
   // Sends the type sync proxy an updated DataTypeState to let it know that
   // the desired encryption key has changed.
-  void UpdateDesiredEncryptionKey(const std::string& key_name);
+  void UpdateDesiredEncryptionKey(const std::string& key_name) {
+    data_type_state_.set_encryption_key_name(key_name);
+    type_processor()->OnUpdateReceived(
+        data_type_state_, UpdateResponseDataList(), UpdateResponseDataList());
+  }
 
   // Sets the key_name that the mock CommitQueue will claim is in use
   // when receiving items.
-  void SetServerEncryptionKey(const std::string& key_name);
+  void SetServerEncryptionKey(const std::string& key_name) {
+    mock_queue_->SetServerEncryptionKey(key_name);
+  }
 
-  void AddMetadataToBatch(const std::string& tag);
+  void AddMetadataToBatch(const std::string& tag) {
+    const std::string tag_hash = GenerateTagHash(tag);
+    base::Time creation_time = base::Time::Now();
+
+    sync_pb::EntityMetadata metadata;
+    metadata.set_client_tag_hash(tag_hash);
+    metadata.set_creation_time(syncer::TimeToProtoTime(creation_time));
+
+    metadata_batch()->AddMetadata(tag, metadata);
+  }
 
   // Return the number of entities the processor has metadata for.
-  size_t ProcessorEntityCount() const;
+  size_t ProcessorEntityCount() const {
+    return type_processor()->entities_.size();
+  }
 
-  MockCommitQueue* mock_queue();
-  SharedModelTypeProcessor* type_processor() const;
+  MockCommitQueue* mock_queue() { return mock_queue_; }
 
-  const EntityChangeList* entity_change_list() const;
-  const FakeMetadataChangeList* metadata_change_list() const;
-  MetadataBatch* metadata_batch();
+  SharedModelTypeProcessor* type_processor() const {
+    return static_cast<SharedModelTypeProcessor*>(change_processor());
+  }
+
+  const EntityChangeList* entity_change_list() const {
+    return entity_change_list_.get();
+  }
+
+  const FakeMetadataChangeList* metadata_change_list() const {
+    return metadata_change_list_.get();
+  }
+
+  MetadataBatch* metadata_batch() { return metadata_batch_.get(); }
 
  private:
-  static std::string GenerateTagHash(const std::string& tag);
+  static std::string GenerateTagHash(const std::string& tag) {
+    return syncer::syncable::GenerateSyncableHash(kModelType, tag);
+  }
+
   static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
-                                                    const std::string& value);
+                                                    const std::string& value) {
+    sync_pb::EntitySpecifics specifics;
+    specifics.mutable_preference()->set_name(tag);
+    specifics.mutable_preference()->set_value(value);
+    return specifics;
+  }
+
+  // These tests never decrypt anything, so we can get away with faking the
+  // encryption for now.
   static sync_pb::EntitySpecifics GenerateEncryptedSpecifics(
       const std::string& tag,
       const std::string& value,
-      const std::string& key_name);
-
-  int64_t GetServerVersion(const std::string& tag);
-  void SetServerVersion(const std::string& tag, int64_t version);
+      const std::string& key_name) {
+    sync_pb::EntitySpecifics specifics;
+    syncer::AddDefaultFieldValue(kModelType, &specifics);
+    specifics.mutable_encrypted()->set_key_name(key_name);
+    specifics.mutable_encrypted()->set_blob("BLOB" + key_name);
+    return specifics;
+  }
 
   void OnReadyToConnect(syncer::SyncError error,
-                        scoped_ptr<ActivationContext> context);
+                        scoped_ptr<ActivationContext> context) {
+    // Hand off ownership of |mock_queue_ptr_|, while keeping
+    // an unsafe pointer to it.  This is why we can only connect once.
+    DCHECK(mock_queue_ptr_);
+    context->type_processor->ConnectSync(std::move(mock_queue_ptr_));
+    // The context's type processor is a proxy; run the task it posted.
+    sync_loop_.RunUntilIdle();
+  }
 
   // FakeModelTypeService overrides.
-  std::string GetClientTag(const EntityData& entity_data) override;
-  scoped_ptr<MetadataChangeList> CreateMetadataChangeList() override;
+
+  std::string GetClientTag(const EntityData& entity_data) override {
+    // The tag is the preference name - see GenerateSpecifics.
+    return entity_data.specifics.preference().name();
+  }
+
+  scoped_ptr<MetadataChangeList> CreateMetadataChangeList() override {
+    // Reset the current first and return a new one.
+    metadata_change_list_.reset();
+    return scoped_ptr<MetadataChangeList>(new FakeMetadataChangeList());
+  }
+
   syncer::SyncError ApplySyncChanges(
       scoped_ptr<MetadataChangeList> metadata_change_list,
-      EntityChangeList entity_changes) override;
+      EntityChangeList entity_changes) override {
+    EXPECT_FALSE(metadata_change_list_);
+    // |metadata_change_list| is expected to be an instance of
+    // FakeMetadataChangeList - see above.
+    metadata_change_list_.reset(
+        static_cast<FakeMetadataChangeList*>(metadata_change_list.release()));
+    EXPECT_TRUE(metadata_change_list_);
+    entity_change_list_.reset(new EntityChangeList(entity_changes));
+    return syncer::SyncError();
+  }
 
   // This sets ThreadTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
@@ -173,303 +367,6 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   scoped_ptr<FakeMetadataChangeList> metadata_change_list_;
   scoped_ptr<MetadataBatch> metadata_batch_;
 };
-
-SharedModelTypeProcessorTest::SharedModelTypeProcessorTest()
-    : mock_queue_(new MockCommitQueue()),
-      mock_queue_ptr_(mock_queue_),
-      metadata_batch_(new MetadataBatch()) {
-  set_change_processor(
-      make_scoped_ptr(new SharedModelTypeProcessor(kModelType, this)));
-}
-
-SharedModelTypeProcessorTest::~SharedModelTypeProcessorTest() {}
-
-void SharedModelTypeProcessorTest::InitializeToReadyState() {
-  data_type_state_.set_initial_sync_done(true);
-  OnMetadataLoaded();
-  OnSyncStarting();
-  // TODO(maxbogue): crbug.com/569642: Remove this once entity data is loaded
-  // for the normal startup flow.
-  UpdateResponseDataList empty_update_list;
-  type_processor()->OnUpdateReceived(data_type_state_, empty_update_list,
-                                     empty_update_list);
-}
-
-void SharedModelTypeProcessorTest::OnMetadataLoaded() {
-  metadata_batch_->SetDataTypeState(data_type_state_);
-  type_processor()->OnMetadataLoaded(std::move(metadata_batch_));
-  metadata_batch_.reset(new MetadataBatch());
-}
-
-void SharedModelTypeProcessorTest::OnSyncStarting() {
-  type_processor()->OnSyncStarting(base::Bind(
-      &SharedModelTypeProcessorTest::OnReadyToConnect, base::Unretained(this)));
-}
-
-void SharedModelTypeProcessorTest::DisconnectSync() {
-  type_processor()->DisconnectSync();
-  mock_queue_ = NULL;
-  mock_queue_ptr_.reset();
-}
-
-void SharedModelTypeProcessorTest::Disable() {
-  type_processor()->Disable();
-  mock_queue_ = NULL;
-  mock_queue_ptr_.reset();
-  EXPECT_FALSE(type_processor());
-}
-
-void SharedModelTypeProcessorTest::Restart() {
-  if (!type_processor()) {
-    set_change_processor(
-        make_scoped_ptr(new SharedModelTypeProcessor(kModelType, this)));
-  }
-  // Prepare a new MockCommitQueue instance, just as we would
-  // if this happened in the real world.
-  mock_queue_ptr_.reset(new MockCommitQueue());
-  mock_queue_ = mock_queue_ptr_.get();
-  // Restart sync with the new CommitQueue.
-  OnSyncStarting();
-}
-
-void SharedModelTypeProcessorTest::OnReadyToConnect(
-    syncer::SyncError error,
-    scoped_ptr<ActivationContext> context) {
-  // Hand off ownership of |mock_queue_ptr_|, while keeping
-  // an unsafe pointer to it.  This is why we can only connect once.
-  DCHECK(mock_queue_ptr_);
-  context->type_processor->ConnectSync(std::move(mock_queue_ptr_));
-  // The context's type processor is a proxy; run the task it posted.
-  sync_loop_.RunUntilIdle();
-}
-
-void SharedModelTypeProcessorTest::WriteItem(const std::string& tag,
-                                             const std::string& value,
-                                             MetadataChangeList* change_list) {
-  scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
-  entity_data->specifics = GenerateSpecifics(tag, value);
-  entity_data->non_unique_name = tag;
-  type_processor()->Put(tag, std::move(entity_data), change_list);
-}
-
-void SharedModelTypeProcessorTest::DeleteItem(const std::string& tag,
-                                              MetadataChangeList* change_list) {
-  type_processor()->Delete(tag, change_list);
-}
-
-void SharedModelTypeProcessorTest::OnInitialSyncDone() {
-  data_type_state_.set_initial_sync_done(true);
-  UpdateResponseDataList empty_update_list;
-
-  // TODO(stanisc): crbug/569645: replace this with loading the initial state
-  // via LoadMetadata callback.
-  type_processor()->OnUpdateReceived(data_type_state_, empty_update_list,
-                                     empty_update_list);
-}
-
-void SharedModelTypeProcessorTest::UpdateFromServer(int64_t version_offset,
-                                                    const std::string& tag,
-                                                    const std::string& value) {
-  const std::string tag_hash = GenerateTagHash(tag);
-  UpdateResponseData data = mock_queue_->UpdateFromServer(
-      version_offset, tag_hash, GenerateSpecifics(tag, value));
-
-  UpdateResponseDataList list;
-  list.push_back(data);
-  type_processor()->OnUpdateReceived(data_type_state_, list,
-                                     UpdateResponseDataList());
-}
-
-void SharedModelTypeProcessorTest::PendingUpdateFromServer(
-    int64_t version_offset,
-    const std::string& tag,
-    const std::string& value,
-    const std::string& key_name) {
-  const std::string tag_hash = GenerateTagHash(tag);
-  UpdateResponseData data = mock_queue_->UpdateFromServer(
-      version_offset, tag_hash,
-      GenerateEncryptedSpecifics(tag, value, key_name));
-
-  UpdateResponseDataList list;
-  list.push_back(data);
-  type_processor()->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
-                                     list);
-}
-
-void SharedModelTypeProcessorTest::TombstoneFromServer(int64_t version_offset,
-                                                       const std::string& tag) {
-  // Overwrite the existing server version if this is the new highest version.
-  std::string tag_hash = GenerateTagHash(tag);
-
-  UpdateResponseData data =
-      mock_queue_->TombstoneFromServer(version_offset, tag_hash);
-
-  UpdateResponseDataList list;
-  list.push_back(data);
-  type_processor()->OnUpdateReceived(data_type_state_, list,
-                                     UpdateResponseDataList());
-}
-
-bool SharedModelTypeProcessorTest::HasPendingUpdate(
-    const std::string& tag) const {
-  const std::string client_tag_hash = GenerateTagHash(tag);
-  const UpdateResponseDataList list = type_processor()->GetPendingUpdates();
-  for (UpdateResponseDataList::const_iterator it = list.begin();
-       it != list.end(); ++it) {
-    if (it->entity->client_tag_hash == client_tag_hash)
-      return true;
-  }
-  return false;
-}
-
-UpdateResponseData SharedModelTypeProcessorTest::GetPendingUpdate(
-    const std::string& tag) const {
-  DCHECK(HasPendingUpdate(tag));
-  const std::string client_tag_hash = GenerateTagHash(tag);
-  const UpdateResponseDataList list = type_processor()->GetPendingUpdates();
-  for (UpdateResponseDataList::const_iterator it = list.begin();
-       it != list.end(); ++it) {
-    if (it->entity->client_tag_hash == client_tag_hash)
-      return *it;
-  }
-  NOTREACHED();
-  return UpdateResponseData();
-}
-
-size_t SharedModelTypeProcessorTest::GetNumPendingUpdates() const {
-  return type_processor()->GetPendingUpdates().size();
-}
-
-void SharedModelTypeProcessorTest::SuccessfulCommitResponse(
-    const CommitRequestData& request_data) {
-  CommitResponseDataList list;
-  list.push_back(mock_queue_->SuccessfulCommitResponse(request_data));
-  type_processor()->OnCommitCompleted(data_type_state_, list);
-}
-
-void SharedModelTypeProcessorTest::UpdateDesiredEncryptionKey(
-    const std::string& key_name) {
-  data_type_state_.set_encryption_key_name(key_name);
-  type_processor()->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
-                                     UpdateResponseDataList());
-}
-
-void SharedModelTypeProcessorTest::SetServerEncryptionKey(
-    const std::string& key_name) {
-  mock_queue_->SetServerEncryptionKey(key_name);
-}
-
-void SharedModelTypeProcessorTest::AddMetadataToBatch(const std::string& tag) {
-  const std::string tag_hash = GenerateTagHash(tag);
-  base::Time creation_time = base::Time::Now();
-
-  sync_pb::EntityMetadata metadata;
-  metadata.set_client_tag_hash(tag_hash);
-  metadata.set_creation_time(syncer::TimeToProtoTime(creation_time));
-
-  metadata_batch()->AddMetadata(tag, metadata);
-}
-
-size_t SharedModelTypeProcessorTest::ProcessorEntityCount() const {
-  return type_processor()->entities_.size();
-}
-
-MockCommitQueue* SharedModelTypeProcessorTest::mock_queue() {
-  return mock_queue_;
-}
-
-SharedModelTypeProcessor* SharedModelTypeProcessorTest::type_processor() const {
-  return static_cast<SharedModelTypeProcessor*>(change_processor());
-}
-
-const EntityChangeList* SharedModelTypeProcessorTest::entity_change_list()
-    const {
-  return entity_change_list_.get();
-}
-
-const FakeMetadataChangeList*
-SharedModelTypeProcessorTest::metadata_change_list() const {
-  return metadata_change_list_.get();
-}
-
-MetadataBatch* SharedModelTypeProcessorTest::metadata_batch() {
-  return metadata_batch_.get();
-}
-
-std::string SharedModelTypeProcessorTest::GenerateTagHash(
-    const std::string& tag) {
-  return syncer::syncable::GenerateSyncableHash(kModelType, tag);
-}
-
-sync_pb::EntitySpecifics SharedModelTypeProcessorTest::GenerateSpecifics(
-    const std::string& tag,
-    const std::string& value) {
-  sync_pb::EntitySpecifics specifics;
-  specifics.mutable_preference()->set_name(tag);
-  specifics.mutable_preference()->set_value(value);
-  return specifics;
-}
-
-// These tests never decrypt anything, so we can get away with faking the
-// encryption for now.
-sync_pb::EntitySpecifics
-SharedModelTypeProcessorTest::GenerateEncryptedSpecifics(
-    const std::string& tag,
-    const std::string& value,
-    const std::string& key_name) {
-  sync_pb::EntitySpecifics specifics;
-  syncer::AddDefaultFieldValue(kModelType, &specifics);
-  specifics.mutable_encrypted()->set_key_name(key_name);
-  specifics.mutable_encrypted()->set_blob("BLOB" + key_name);
-  return specifics;
-}
-
-std::string SharedModelTypeProcessorTest::GetClientTag(
-    const EntityData& entity_data) {
-  // The tag is the preference name - see GenerateSpecifics.
-  return entity_data.specifics.preference().name();
-}
-
-scoped_ptr<MetadataChangeList>
-SharedModelTypeProcessorTest::CreateMetadataChangeList() {
-  // Reset the current first and return a new one.
-  metadata_change_list_.reset();
-  return scoped_ptr<MetadataChangeList>(new FakeMetadataChangeList());
-}
-
-syncer::SyncError SharedModelTypeProcessorTest::ApplySyncChanges(
-    scoped_ptr<MetadataChangeList> metadata_change_list,
-    EntityChangeList entity_changes) {
-  EXPECT_FALSE(metadata_change_list_);
-  // |metadata_change_list| is expected to be an instance of
-  // FakeMetadataChangeList - see above.
-  metadata_change_list_.reset(
-      static_cast<FakeMetadataChangeList*>(metadata_change_list.release()));
-  EXPECT_TRUE(metadata_change_list_);
-  entity_change_list_.reset(new EntityChangeList(entity_changes));
-  return syncer::SyncError();
-}
-
-size_t SharedModelTypeProcessorTest::GetNumCommitRequestLists() {
-  return mock_queue_->GetNumCommitRequestLists();
-}
-
-CommitRequestDataList SharedModelTypeProcessorTest::GetNthCommitRequestList(
-    size_t n) {
-  return mock_queue_->GetNthCommitRequestList(n);
-}
-
-bool SharedModelTypeProcessorTest::HasCommitRequestForTag(
-    const std::string& tag) {
-  const std::string tag_hash = GenerateTagHash(tag);
-  return mock_queue_->HasCommitRequestForTagHash(tag_hash);
-}
-
-CommitRequestData SharedModelTypeProcessorTest::GetLatestCommitRequestForTag(
-    const std::string& tag) {
-  const std::string tag_hash = GenerateTagHash(tag);
-  return mock_queue_->GetLatestCommitRequestForTagHash(tag_hash);
-}
 
 TEST_F(SharedModelTypeProcessorTest, Initialize) {
   // TODO(maxbogue): crbug.com/569642: Add data for tag1.
