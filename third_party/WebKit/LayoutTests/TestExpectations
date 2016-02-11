@@ -55,7 +55,6 @@ crbug.com/574660 [ Win7 ] fast/text/emphasis-combined-text.html [ Pass Failure ]
 crbug.com/574660 [ Win7 ] fast/text/emphasis-vertical.html [ Pass Failure ]
 
 crbug.com/581974 fast/text/justify-ideograph-vertical.html [ Pass Failure ]
-crbug.com/584209 http/tests/misc/adopt-iframe-src-attr-after-remove.html [ Pass Failure ]
 crbug.com/584211 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Pass Failure ]
 
 # ====== Oilpan-only failures until here ======

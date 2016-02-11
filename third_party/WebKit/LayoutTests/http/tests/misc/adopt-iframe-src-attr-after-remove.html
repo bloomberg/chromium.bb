@@ -10,7 +10,8 @@ if (window.testRunner) {
 window.onload = function()
 {
     iframe.remove();
-    gc();
+    // Run the GC after this event handler has completed & back at the event loop.
+    setTimeout(gc);
 }
 
 document.addEventListener("DOMContentLoaded", function() {
