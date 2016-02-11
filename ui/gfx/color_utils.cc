@@ -150,10 +150,9 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
       (lightness * (1.0 + saturation)) :
       (lightness + saturation - (lightness * saturation));
   double temp1 = 2.0 * lightness - temp2;
-  return SkColorSetARGB(alpha,
-      calcHue(temp1, temp2, hue + 1.0 / 3.0),
-      calcHue(temp1, temp2, hue),
-      calcHue(temp1, temp2, hue - 1.0 / 3.0));
+  return SkColorSetARGB(alpha, calcHue(temp1, temp2, hue + 1.0 / 3.0),
+                        calcHue(temp1, temp2, hue),
+                        calcHue(temp1, temp2, hue - 1.0 / 3.0));
 }
 
 bool IsWithinHSLRange(const HSL& hsl,
@@ -287,10 +286,10 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
   double b = (SkColorGetB(foreground) * f_weight +
               SkColorGetB(background) * b_weight) / 255.0;
 
-  return SkColorSetARGB(static_cast<int>(normalizer),
-                        static_cast<int>(r),
-                        static_cast<int>(g),
-                        static_cast<int>(b));
+  return SkColorSetARGB(static_cast<int>(std::round(normalizer)),
+                        static_cast<int>(std::round(r)),
+                        static_cast<int>(std::round(g)),
+                        static_cast<int>(std::round(b)));
 }
 
 bool IsDark(SkColor color) {
@@ -311,11 +310,8 @@ SkColor GetReadableColor(SkColor foreground, SkColor background) {
 }
 
 SkColor InvertColor(SkColor color) {
-  return SkColorSetARGB(
-      SkColorGetA(color),
-      255 - SkColorGetR(color),
-      255 - SkColorGetG(color),
-      255 - SkColorGetB(color));
+  return SkColorSetARGB(SkColorGetA(color), 255 - SkColorGetR(color),
+                        255 - SkColorGetG(color), 255 - SkColorGetB(color));
 }
 
 SkColor GetSysSkColor(int which) {
