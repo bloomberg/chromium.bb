@@ -13,8 +13,8 @@ BluetoothRemoteGattServiceWin::BluetoothRemoteGattServiceWin(
     bool is_primary,
     BluetoothRemoteGattServiceWin* parent_service,
     scoped_refptr<base::SequencedTaskRunner>& ui_task_runner)
-    : service_path_(service_path),
-      device_(device),
+    : device_(device),
+      service_path_(service_path),
       service_uuid_(service_uuid),
       service_attribute_handle_(service_attribute_handle),
       is_primary_(is_primary),
