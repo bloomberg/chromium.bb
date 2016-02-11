@@ -76,7 +76,8 @@ public class EnhancedBookmarkUtils {
 
         bookmarkModel.addBookmarkAsync(parent, bookmarkModel.getChildCount(parent), tab.getTitle(),
                 tab.getUrl(), webContentsToSave,
-                createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
+                createAddBookmarkCallback(bookmarkModel, snackbarManager, activity,
+                        webContentsToSave));
     }
 
     /**
@@ -121,12 +122,14 @@ public class EnhancedBookmarkUtils {
         if (shouldSkipSavingTabOffline(tab)) return;
 
         bookmarkModel.saveOfflinePage(bookmarkId, tab.getWebContents(),
-                createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
+                createAddBookmarkCallback(bookmarkModel, snackbarManager, activity,
+                        tab.getWebContents()));
     }
 
     private static void showSnackbarForAddingBookmark(final EnhancedBookmarksModel bookmarkModel,
             final SnackbarManager snackbarManager, final Activity activity,
-            final BookmarkId bookmarkId, final int saveResult, boolean isStorageAlmostFull) {
+            final BookmarkId bookmarkId, final int saveResult, boolean isStorageAlmostFull,
+            final WebContents webContents) {
         Snackbar snackbar;
         OfflinePageBridge offlinePageBridge = bookmarkModel.getOfflinePageBridge();
         if (offlinePageBridge == null) {
@@ -143,7 +146,8 @@ public class EnhancedBookmarkUtils {
                                 R.string.enhanced_bookmark_page_saved_folder));
             }
             snackbar = snackbar.setSingleLine(false)
-                    .setAction(activity.getString(R.string.enhanced_bookmark_item_edit), null);
+                    .setAction(activity.getString(R.string.enhanced_bookmark_item_edit),
+                            webContents);
         } else {
             SnackbarController snackbarController = null;
             int messageId;
@@ -184,7 +188,7 @@ public class EnhancedBookmarkUtils {
             snackbar = Snackbar
                     .make(activity.getString(messageId, suffix), snackbarController,
                             Snackbar.TYPE_ACTION)
-                    .setAction(activity.getString(buttonId), null).setSingleLine(false);
+                    .setAction(activity.getString(buttonId), webContents).setSingleLine(false);
         }
 
         snackbarManager.showSnackbar(snackbar);
@@ -192,7 +196,7 @@ public class EnhancedBookmarkUtils {
 
     private static AddBookmarkCallback createAddBookmarkCallback(
             final EnhancedBookmarksModel bookmarkModel, final SnackbarManager snackbarManager,
-            final Activity activity) {
+            final Activity activity, final WebContents webContents) {
         return new AddBookmarkCallback() {
             @Override
             public void onBookmarkAdded(final BookmarkId bookmarkId, final int saveResult) {
@@ -200,7 +204,7 @@ public class EnhancedBookmarkUtils {
                 // there is no need to wait to get the storage info.
                 if (bookmarkModel.getOfflinePageBridge() == null) {
                     showSnackbarForAddingBookmark(bookmarkModel, snackbarManager, activity,
-                                bookmarkId, saveResult, false);
+                            bookmarkId, saveResult, false, webContents);
                     return;
                 }
 
@@ -215,7 +219,7 @@ public class EnhancedBookmarkUtils {
                     @Override
                     protected void onPostExecute(Boolean isStorageAlmostFull) {
                         showSnackbarForAddingBookmark(bookmarkModel, snackbarManager, activity,
-                                bookmarkId, saveResult, isStorageAlmostFull);
+                                bookmarkId, saveResult, isStorageAlmostFull, webContents);
                     }
                 }.execute();
             }
@@ -241,7 +245,7 @@ public class EnhancedBookmarkUtils {
             @Override
             public void onAction(Object actionData) {
                 RecordUserAction.record("EnhancedBookmarks.EditAfterCreateButtonClicked");
-                startEditActivity(activity, bookmarkId, null);
+                startEditActivity(activity, bookmarkId, (WebContents) actionData);
                 bookmarkModel.destroy();
             }
         };
