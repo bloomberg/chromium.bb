@@ -1,6 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <AutoVisualizer
     xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="blink::Member&lt;*&gt;">
+    <DisplayString Condition="m_raw == 0">null</DisplayString>
+    <DisplayString>{*m_raw}</DisplayString>
+    <Expand>
+      <Item Name="m_raw">m_raw</Item>
+    </Expand>
+  </Type>
   <Type Name="WTF::String">
     <DisplayString Condition="m_impl.m_ptr == 0">(null)</DisplayString>
     <DisplayString IncludeView="bare">{*m_impl.m_ptr,view(bare)}</DisplayString>
@@ -123,6 +130,7 @@
   <Type Name="blink::WebString">
     <DisplayString>{(WTF::StringImpl*)(m_private.m_storage)}</DisplayString>
   </Type>
+  <!-- DOM -->
   <Type Name="blink::QualifiedName">
     <DisplayString Condition="m_impl.m_ptr == 0">(null)</DisplayString>
     <DisplayString>{*m_impl.m_ptr}</DisplayString>
@@ -136,19 +144,20 @@
   <Type Name="blink::ContainerNode">
     <Expand>
       <LinkedListItems>
-        <HeadPointer>m_firstChild.m_ptr</HeadPointer>
-        <NextPointer>m_next.m_ptr</NextPointer>
+        <HeadPointer>m_firstChild.m_raw</HeadPointer>
+        <NextPointer>m_next.m_raw</NextPointer>
         <ValueNode>this</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
   <Type Name="blink::Element">
-    <DisplayString Condition="m_firstChild.m_ptr != 0">&lt;{m_tagName}>{*m_firstChild.m_ptr}</DisplayString>
+    <DisplayString Condition="m_firstChild.m_raw != 0">&lt;{m_tagName}>{m_firstChild}</DisplayString>
     <DisplayString>&lt;{m_tagName}></DisplayString>
   </Type>
   <!-- Layout: LayoutObject -->
   <Type Name="blink::LayoutObject">
-    <DisplayString>{*m_node}</DisplayString>
+    <DisplayString Condition="m_bitfields.m_isAnonymous">Anonymous</DisplayString>
+    <DisplayString>{m_node}</DisplayString>
   </Type>
   <Type Name="blink::LayoutObjectChildList">
     <Expand>
