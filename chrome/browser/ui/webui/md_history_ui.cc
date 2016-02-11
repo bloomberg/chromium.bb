@@ -35,6 +35,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
   // Localized strings (alphabetical order).
+  source->AddLocalizedString("clearBrowsingData",
+                             IDS_CLEAR_BROWSING_DATA_TITLE);
   source->AddLocalizedString("clearSearch", IDS_MD_HISTORY_CLEAR_SEARCH);
   source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
