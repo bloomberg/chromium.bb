@@ -27,7 +27,6 @@ private:
     CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> data, const String& mimeType, const IntSize&, BlobCallback*);
     void scheduleCreateBlobAndCallOnMainThread();
     void scheduleCreateNullptrAndCallOnMainThread();
-    void scheduleClearSelfRefOnMainThread();
 
     OwnPtr<PNGImageEncoderState> m_encoderState;
     RefPtr<DOMUint8ClampedArray> m_data;

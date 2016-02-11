@@ -140,11 +140,6 @@ void CanvasAsyncBlobCreator::clearSelfReference()
     m_selfRef.clear();
 }
 
-void CanvasAsyncBlobCreator::scheduleClearSelfRefOnMainThread()
-{
-    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::clearSelfReference, AllowCrossThreadAccess(this)));
-}
-
 void CanvasAsyncBlobCreator::scheduleCreateBlobAndCallOnMainThread()
 {
     Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::createBlobAndCall, AllowCrossThreadAccess(this)));
