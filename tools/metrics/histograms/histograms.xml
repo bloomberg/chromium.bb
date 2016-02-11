@@ -70565,6 +70565,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1915854488" label="enable-offline-pages"/>
   <int value="-1911153473" label="enable-easy-signin"/>
+  <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
   <int value="-1887053262"
       label="enable-zero-suggest-most-visited-without-serp"/>

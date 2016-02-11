@@ -1788,6 +1788,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-scroll-anchoring", IDS_FLAGS_ENABLE_SCROLL_ANCHORING_NAME,
      IDS_FLAGS_ENABLE_SCROLL_ANCHORING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollAnchoring)},
+    {"disable-compositor-animation-timelines",
+     IDS_FLAGS_DISABLE_COMPOSITOR_ANIMATION_TIMELINES,
+     IDS_FLAGS_DISABLE_COMPOSITOR_ANIMATION_TIMELINES_DESCRIPTION,
+     kOsAll, SINGLE_DISABLE_VALUE_TYPE(
+         switches::kDisableCompositorAnimationTimelines)},
 #if !defined(OS_ANDROID)
     {"ui-disable-compositor-animation-timelines",
      IDS_FLAGS_DISABLE_UI_COMPOSITOR_ANIMATION_TIMELINES,
