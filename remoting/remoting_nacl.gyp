@@ -122,6 +122,7 @@
         '<@(remoting_signaling_sources)',
       ],
       'sources!': [
+        'base/chromium_url_request.cc',
         'base/url_request_context_getter.cc',
       ],
 

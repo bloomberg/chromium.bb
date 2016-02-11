@@ -24,7 +24,10 @@ source_set("base") {
     "//third_party/webrtc/modules/desktop_capture:primitives",
   ]
   if (is_nacl) {
-    sources -= [ "url_request_context_getter.cc" ]
+    sources -= [
+      "chromium_url_request.cc",
+      "url_request_context_getter.cc",
+    ]
   }
 }
 
