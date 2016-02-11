@@ -844,6 +844,9 @@ if (!is_android) {
       "$root_out_dir/test_page.css.mock-http-headers",
       "$root_out_dir/test_url_loader_data/",
     ]
+    if (is_win) {
+      data += [ "$root_out_dir/chrome_200_percent.pak" ]
+    }
 
     deps = [
       ":browser_tests_js_webui",
