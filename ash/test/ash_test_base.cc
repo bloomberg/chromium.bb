@@ -41,7 +41,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/platform_window/win/win_window.h"
-#include "win8/test/test_registrar_constants.h"
 #endif
 
 #if defined(USE_X11)

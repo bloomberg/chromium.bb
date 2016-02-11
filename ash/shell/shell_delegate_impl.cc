@@ -11,7 +11,6 @@
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/shell/content/shell_content_state_impl.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/shelf_delegate_impl.h"

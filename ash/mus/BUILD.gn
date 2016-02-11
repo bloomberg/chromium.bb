@@ -21,6 +21,8 @@ source_set("lib") {
 
   deps = [
     "//ash",
+    "//cc",
+    "//cc/surfaces",
     "//components/mus/common",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
@@ -61,5 +63,6 @@ mojo_native_application("mus") {
   ]
   deps = [
     ":lib",
+    "//mojo/shell/public/cpp",
   ]
 }

@@ -16,7 +16,7 @@ secondary_source = "//build/secondary/"
 # "gn check" or "gn gen --check".
 check_targets = [
   #"//apps/*",  # Medium-hard.
-  #"//ash/*",  # Medium-hard.
+  "//ash/*",
   "//base/*",
   "//blink/*",
   "//breakpad/*",
