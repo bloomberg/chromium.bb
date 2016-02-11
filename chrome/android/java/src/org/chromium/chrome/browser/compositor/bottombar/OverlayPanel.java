@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.View;
 import android.view.View.MeasureSpec;
 
 import org.chromium.base.ActivityState;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.Pane
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.common.TopControlsState;
@@ -333,6 +335,27 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
                             getContentViewHeightPx(),
                             MeasureSpec.EXACTLY);
                 }
+            }
+
+            @Override
+            public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+                // TODO(mdjones): Possibly enable fullscreen video in overlay panels rather than
+                // passing an empty implementation.
+                return new ContentVideoViewEmbedder() {
+                    @Override
+                    public void enterFullscreenVideo(View view) {}
+
+                    @Override
+                    public void exitFullscreenVideo() {}
+
+                    @Override
+                    public View getVideoLoadingProgressView() {
+                        return null;
+                    }
+
+                    @Override
+                    public void setSystemUiVisibility(boolean enterFullscreen) {}
+                };
             }
         });
 

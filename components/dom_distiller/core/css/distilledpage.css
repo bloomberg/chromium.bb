@@ -255,6 +255,10 @@ h6 {
   color: #55F;
 }
 
+video::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
+
 #closeReaderView {
   /*
   TODO(mdjones): Remove the "display: none;" style when the Reader Mode bar
