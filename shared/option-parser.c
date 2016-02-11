@@ -98,9 +98,32 @@ short_option(const struct weston_option *options, int count, char *arg)
 
 				return 1;
 			}
-		} else {
+		} else if (arg[2]) {
 			return handle_option(options + k, arg + 2);
+		} else {
+			return 0;
 		}
+	}
+
+	return 0;
+}
+
+static int
+short_option_with_arg(const struct weston_option *options, int count, char *arg, char *param)
+{
+	int k;
+
+	if (!arg[1])
+		return 0;
+
+	for (k = 0; k < count; k++) {
+		if (options[k].short_name != arg[1])
+			continue;
+
+		if (options[k].type == WESTON_OPTION_BOOLEAN)
+			continue;
+
+		return handle_option(options + k, param);
 	}
 
 	return 0;
@@ -115,10 +138,22 @@ parse_options(const struct weston_option *options,
 	for (i = 1, j = 1; i < *argc; i++) {
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == '-') {
+				/* Long option, e.g. --foo or --foo=bar */
 				if (long_option(options, count, argv[i]))
 					continue;
-			} else if (short_option(options, count, argv[i]))
-				continue;
+
+			} else {
+				/* Short option, e.g -f or -f42 */
+				if (short_option(options, count, argv[i]))
+					continue;
+
+				/* ...also handle -f 42 */
+				if (i+1 < *argc &&
+				    short_option_with_arg(options, count, argv[i], argv[i+1])) {
+					i++;
+					continue;
+				}
+			}
 		}
 		argv[j++] = argv[i];
 	}
