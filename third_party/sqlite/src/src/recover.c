@@ -371,19 +371,22 @@ static int ascii_strcasecmp(const char *s1, const char *s2){
 }
 
 /* Provide access to the pages of a SQLite database in a way similar to SQLite's
-** Pager.  Will be re-implemented in terms of sqlite3_file.
+** Pager.
 */
 typedef struct RecoverPager RecoverPager;
 struct RecoverPager {
-  Pager *pSqlitePager;            /* SQLite's pager. */
+  sqlite3_file *pSqliteFile;      /* Reference to database's file handle */
+  u32 nPageSize;                  /* Size of pages in pSqliteFile */
 };
 
 static void pagerDestroy(RecoverPager *pPager){
+  pPager->pSqliteFile->pMethods->xUnlock(pPager->pSqliteFile, SQLITE_LOCK_NONE);
   memset(pPager, 0xA5, sizeof(*pPager));
   sqlite3_free(pPager);
 }
 
-static int pagerCreate(Pager *pSqlitePager, u32 nPageSize,
+/* pSqliteFile should already have a SHARED lock. */
+static int pagerCreate(sqlite3_file *pSqliteFile, u32 nPageSize,
                        RecoverPager **ppPager){
   RecoverPager *pPager = sqlite3_malloc(sizeof(RecoverPager));
   if( !pPager ){
@@ -391,28 +394,35 @@ static int pagerCreate(Pager *pSqlitePager, u32 nPageSize,
   }
 
   memset(pPager, 0, sizeof(*pPager));
-  pPager->pSqlitePager = pSqlitePager;
+  pPager->pSqliteFile = pSqliteFile;
+  pPager->nPageSize = nPageSize;
   *ppPager = pPager;
   return SQLITE_OK;
 }
 
 /* Matches DbPage (aka PgHdr) from SQLite internals. */
+/* TODO(shess): SQLite by default allocates page metadata in a single allocation
+** such that the page's data and metadata are contiguous, see pcache1AllocPage
+** in pcache1.c.  I believe this was intended to reduce malloc churn.  It means
+** that Chromium's automated tooling would be unlikely to see page-buffer
+** overruns.  I believe that this code is safe, but for now replicate SQLite's
+** approach with kExcessSpace.
+*/
+const int kExcessSpace = 128;
 typedef struct RecoverPage RecoverPage;
 struct RecoverPage {
-  DbPage *pSqlitePage;           /* SQLite's page. */
   Pgno pgno;                     /* Page number for this page */
-  void *pData;                   /* Page data */
+  void *pData;                   /* Page data for pgno */
   RecoverPager *pPager;          /* The pager this page is part of */
 };
 
 static void pageDestroy(RecoverPage *pPage){
-  sqlite3PagerUnref(pPage->pSqlitePage);
+  sqlite3_free(pPage->pData);
   memset(pPage, 0xA5, sizeof(*pPage));
   sqlite3_free(pPage);
 }
 
-static int pageCreate(RecoverPager *pPager, DbPage *pSqlitePage,
-                      RecoverPage **ppPage){
+static int pageCreate(RecoverPager *pPager, u32 pgno, RecoverPage **ppPage){
   RecoverPage *pPage = sqlite3_malloc(sizeof(RecoverPage));
   if( !pPage ){
     return SQLITE_NOMEM;
@@ -420,33 +430,44 @@ static int pageCreate(RecoverPager *pPager, DbPage *pSqlitePage,
 
   memset(pPage, 0, sizeof(*pPage));
   pPage->pPager = pPager;
-  pPage->pSqlitePage = pSqlitePage;
-  pPage->pgno = pSqlitePage->pgno;
-  pPage->pData = pSqlitePage->pData;
+  pPage->pgno = pgno;
+  pPage->pData = sqlite3_malloc(pPager->nPageSize + kExcessSpace);
+  if( pPage->pData==NULL ){
+    pageDestroy(pPage);
+    return SQLITE_NOMEM;
+  }
+  memset((u8 *)pPage->pData + pPager->nPageSize, 0, kExcessSpace);
 
   *ppPage = pPage;
   return SQLITE_OK;
 }
 
 static int pagerGetPage(RecoverPager *pPager, u32 iPage, RecoverPage **ppPage) {
-  DbPage *pSqlitePage;
-  int rc = sqlite3PagerGet(pPager->pSqlitePager, iPage, &pSqlitePage, 0);
+  sqlite3_int64 iOfst;
+  sqlite3_file *pFile = pPager->pSqliteFile;
+  RecoverPage *pPage;
+  int rc = pageCreate(pPager, iPage, &pPage);
   if( rc!=SQLITE_OK ){
     return rc;
   }
 
-  rc = pageCreate(pPager, pSqlitePage, ppPage);
-  if( rc!=SQLITE_OK ){
-    sqlite3PagerUnref(pSqlitePage);
+  /* xRead() can return SQLITE_IOERR_SHORT_READ, which should be treated as
+  ** SQLITE_OK plus an EOF indicator.  The excess space is zero-filled.
+  */
+  iOfst = ((sqlite3_int64)iPage - 1) * pPager->nPageSize;
+  rc = pFile->pMethods->xRead(pFile, pPage->pData, pPager->nPageSize, iOfst);
+  if( rc!=SQLITE_OK && rc!=SQLITE_IOERR_SHORT_READ ){
+    pageDestroy(pPage);
     return rc;
   }
 
+  *ppPage = pPage;
   return SQLITE_OK;
 }
 
 /* For some reason I kept making mistakes with offset calculations. */
 static const unsigned char *PageData(RecoverPage *pPage, unsigned iOffset){
-  assert( iOffset<=pPage->nPageSize );
+  assert( iOffset<=pPage->pPager->nPageSize );
   return (unsigned char *)pPage->pData + iOffset;
 }
 
@@ -467,8 +488,10 @@ static const unsigned char *PageHeader(RecoverPage *pPage){
 /* Helper to fetch the pager and page size for the named database. */
 static int GetPager(sqlite3 *db, const char *zName,
                     RecoverPager **ppPager, unsigned *pnPageSize){
-  Btree *pBt = NULL;
   int i, rc;
+  unsigned nPageSize, nReservedSize;
+  sqlite3_file *pFile = NULL;
+  Btree *pBt = NULL;
   RecoverPager *pPager;
   for( i=0; i<db->nDb; ++i ){
     if( ascii_strcasecmp(db->aDb[i].zName, zName)==0 ){
@@ -480,14 +503,32 @@ static int GetPager(sqlite3 *db, const char *zName,
     return SQLITE_ERROR;
   }
 
-  rc = pagerCreate(sqlite3BtreePager(pBt), 0, &pPager);
+  rc = sqlite3_file_control(db, zName, SQLITE_FCNTL_FILE_POINTER, &pFile);
+  if( rc!=SQLITE_OK ) {
+    return rc;
+  } else if( pFile==NULL ){
+    /* The documentation for sqlite3PagerFile() indicates it can return NULL if
+    ** the file has not yet been opened.  That should not be possible here...
+    */
+    return SQLITE_MISUSE;
+  }
+
+  /* Get a shared lock to make sure the on-disk version of the file is truth. */
+  rc = pFile->pMethods->xLock(pFile, SQLITE_LOCK_SHARED);
+  if( rc != SQLITE_OK ){
+    return rc;
+  }
+
+  nPageSize = sqlite3BtreeGetPageSize(pBt);
+  nReservedSize = sqlite3BtreeGetOptimalReserve(pBt);
+  rc = pagerCreate(pFile, nPageSize, &pPager);
   if( rc!=SQLITE_OK ){
+    pFile->pMethods->xUnlock(pFile, SQLITE_LOCK_NONE);
     return rc;
   }
 
   *ppPager = pPager;
-  *pnPageSize =
-      sqlite3BtreeGetPageSize(pBt) - sqlite3BtreeGetOptimalReserve(pBt);
+  *pnPageSize = nPageSize - nReservedSize;
   return SQLITE_OK;
 }
 
