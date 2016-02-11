@@ -264,20 +264,13 @@ source_set("browser") {
   }
 
   if (use_udev) {
-    deps += [ "//device/udev_linux" ]
-  } else {
-    # Remove udev-specific sources.
-    sources -= [
-      "device_monitor_udev.cc",
-      "device_monitor_udev.h",
+    deps += [
+      "//device/udev_linux",
+      "//media/",
     ]
+  } else {
     if (is_linux) {
-      # Already filtered out on non-Linux.
-      sources -= [
-        "gamepad/gamepad_platform_data_fetcher_linux.cc",
-        "udev_linux.cc",
-        "udev_linux.h",
-      ]
+      sources -= [ "gamepad/gamepad_platform_data_fetcher_linux.cc" ]
     }
   }
 

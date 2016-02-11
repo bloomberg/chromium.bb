@@ -858,6 +858,15 @@
                 'audio/cras/cras_unified.h',
               ],
             }],
+            ['use_udev==1', {
+              'dependencies': [
+                '../device/udev_linux/udev.gyp:udev_linux',
+              ],
+              'sources': [
+                'capture/device_monitor_udev.cc',
+                'capture/device_monitor_udev.h',
+              ],
+            }],
           ],
         }],
         ['use_ozone==1', {

@@ -19,8 +19,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/udev_linux.h"
 #include "device/udev_linux/scoped_udev.h"
+#include "device/udev_linux/udev_linux.h"
 
 namespace {
 
@@ -77,12 +77,12 @@ GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
     pad_state_[i].button_mask = 0;
   }
 
-  std::vector<UdevLinux::UdevMonitorFilter> filters;
-  filters.push_back(UdevLinux::UdevMonitorFilter(kInputSubsystem, NULL));
-  udev_.reset(
-      new UdevLinux(filters,
-                    base::Bind(&GamepadPlatformDataFetcherLinux::RefreshDevice,
-                               base::Unretained(this))));
+  std::vector<device::UdevLinux::UdevMonitorFilter> filters;
+  filters.push_back(
+      device::UdevLinux::UdevMonitorFilter(kInputSubsystem, NULL));
+  udev_.reset(new device::UdevLinux(
+      filters, base::Bind(&GamepadPlatformDataFetcherLinux::RefreshDevice,
+                          base::Unretained(this))));
 
   EnumerateDevices();
 }

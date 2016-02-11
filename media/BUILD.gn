@@ -464,6 +464,14 @@ component("media") {
     ]
   }
 
+  if (use_udev) {
+    deps += [ "//device/udev_linux" ]
+    sources += [
+      "capture/device_monitor_udev.cc",
+      "capture/device_monitor_udev.h",
+    ]
+  }
+
   if (is_openbsd) {
     sources -= [
       "capture/video/linux/v4l2_capture_delegate_multi_plane.cc",

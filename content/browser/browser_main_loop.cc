@@ -145,7 +145,7 @@
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-#include "content/browser/device_monitor_udev.h"
+#include "media/capture/device_monitor_udev.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "content/browser/device_monitor_mac.h"
 #endif
@@ -1245,7 +1245,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-  device_monitor_linux_.reset(new DeviceMonitorLinux());
+  device_monitor_linux_.reset(
+      new media::DeviceMonitorLinux(io_thread_->task_runner()));
 #elif defined(OS_MACOSX)
   device_monitor_mac_.reset(new DeviceMonitorMac());
 #endif

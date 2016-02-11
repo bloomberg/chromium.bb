@@ -4,7 +4,7 @@
 
 // libudev is used for monitoring device changes.
 
-#include "content/browser/device_monitor_udev.h"
+#include "media/capture/device_monitor_udev.h"
 
 #include <stddef.h>
 
@@ -12,9 +12,8 @@
 
 #include "base/macros.h"
 #include "base/system_monitor/system_monitor.h"
-#include "content/browser/udev_linux.h"
-#include "content/public/browser/browser_thread.h"
 #include "device/udev_linux/udev.h"
+#include "device/udev_linux/udev_linux.h"
 
 namespace {
 
@@ -29,55 +28,55 @@ const char kVideoSubsystem[] = "video4linux";
 
 // Add more subsystems here for monitoring.
 const SubsystemMap kSubsystemMap[] = {
-  { base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE, kAudioSubsystem, NULL },
-  { base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE, kVideoSubsystem, NULL },
+    {base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE, kAudioSubsystem, NULL},
+    {base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE, kVideoSubsystem, NULL},
 };
 
 }  // namespace
 
-namespace content {
+namespace media {
 
-DeviceMonitorLinux::DeviceMonitorLinux() {
-  DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
-  BrowserThread::PostTask(BrowserThread::IO,
+DeviceMonitorLinux::DeviceMonitorLinux(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    : io_task_runner_(io_task_runner) {
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DeviceMonitorLinux::Initialize, base::Unretained(this)));
 }
 
-DeviceMonitorLinux::~DeviceMonitorLinux() {
-}
+DeviceMonitorLinux::~DeviceMonitorLinux() {}
 
 void DeviceMonitorLinux::Initialize() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // We want to be notified of IO message loop destruction to delete |udev_|.
   base::MessageLoop::current()->AddDestructionObserver(this);
 
-  std::vector<UdevLinux::UdevMonitorFilter> filters;
-  for (size_t i = 0; i < arraysize(kSubsystemMap); ++i) {
-    filters.push_back(UdevLinux::UdevMonitorFilter(
-        kSubsystemMap[i].subsystem, kSubsystemMap[i].devtype));
+  std::vector<device::UdevLinux::UdevMonitorFilter> filters;
+  for (const SubsystemMap& entry : kSubsystemMap) {
+    filters.push_back(
+        device::UdevLinux::UdevMonitorFilter(entry.subsystem, entry.devtype));
   }
-  udev_.reset(new UdevLinux(filters,
-      base::Bind(&DeviceMonitorLinux::OnDevicesChanged,
-                 base::Unretained(this))));
+  udev_.reset(new device::UdevLinux(
+      filters, base::Bind(&DeviceMonitorLinux::OnDevicesChanged,
+                          base::Unretained(this))));
 }
 
 void DeviceMonitorLinux::WillDestroyCurrentMessageLoop() {
-  // Called on IO thread.
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   udev_.reset();
 }
 
 void DeviceMonitorLinux::OnDevicesChanged(udev_device* device) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(device);
 
   base::SystemMonitor::DeviceType device_type =
       base::SystemMonitor::DEVTYPE_UNKNOWN;
-  std::string subsystem(device::udev_device_get_subsystem(device));
-  for (size_t i = 0; i < arraysize(kSubsystemMap); ++i) {
-    if (subsystem == kSubsystemMap[i].subsystem) {
-      device_type = kSubsystemMap[i].device_type;
+  const std::string subsystem(device::udev_device_get_subsystem(device));
+  for (const SubsystemMap& entry : kSubsystemMap) {
+    if (subsystem == entry.subsystem) {
+      device_type = entry.device_type;
       break;
     }
   }
@@ -86,4 +85,4 @@ void DeviceMonitorLinux::OnDevicesChanged(udev_device* device) {
   base::SystemMonitor::Get()->ProcessDevicesChanged(device_type);
 }
 
-}  // namespace content
+}  // namespace media

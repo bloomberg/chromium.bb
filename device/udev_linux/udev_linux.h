@@ -16,7 +16,7 @@
 //  public:
 //   Foo() {
 //     std::vector<UdevLinux::UdevMonitorFilter> filters;
-//     filters.push_back(content::UdevLinux::UdevMonitorFilter("block", NULL));
+//     filters.push_back(UdevLinux::UdevMonitorFilter("block", NULL));
 //     udev_.reset(new UdevLinux(filters,
 //                               base::Bind(&Foo::Notify, this)));
 //   }
@@ -33,8 +33,8 @@
 //   DISALLOW_COPY_AND_ASSIGN(Foo);
 // };
 
-#ifndef CONTENT_BROWSER_UDEV_LINUX_H_
-#define CONTENT_BROWSER_UDEV_LINUX_H_
+#ifndef DEVICE_UDEV_LINUX_UDEV_LINUX_H_
+#define DEVICE_UDEV_LINUX_UDEV_LINUX_H_
 
 #include <vector>
 
@@ -50,7 +50,7 @@ struct udev_device;
 struct udev_monitor;
 }
 
-namespace content {
+namespace device {
 
 class UdevLinux : public base::MessagePumpLibevent::Watcher {
  public:
@@ -60,9 +60,7 @@ class UdevLinux : public base::MessagePumpLibevent::Watcher {
   // udev_monitor_filter_add_match_subsystem_devtype().
   struct UdevMonitorFilter {
     UdevMonitorFilter(const char* subsystem_in, const char* devtype_in)
-        : subsystem(subsystem_in),
-          devtype(devtype_in) {
-    }
+        : subsystem(subsystem_in), devtype(devtype_in) {}
     const char* subsystem;
     const char* devtype;
   };
@@ -83,15 +81,15 @@ class UdevLinux : public base::MessagePumpLibevent::Watcher {
 
   // libudev-related items, the main context, and the monitoring context to be
   // notified about changes to device states.
-  device::ScopedUdevPtr udev_;
-  device::ScopedUdevMonitorPtr monitor_;
+  const ScopedUdevPtr udev_;
+  const ScopedUdevMonitorPtr monitor_;
   int monitor_fd_;
   base::MessagePumpLibevent::FileDescriptorWatcher monitor_watcher_;
-  UdevNotificationCallback callback_;
+  const UdevNotificationCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UdevLinux);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_UDEV_LINUX_H_
+#endif  // DEVICE_UDEV_LINUX_UDEV_LINUX_H_

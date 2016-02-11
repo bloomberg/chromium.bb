@@ -33,6 +33,9 @@ class ScopedIPCSupport;
 
 namespace media {
 class AudioManager;
+#if defined(OS_LINUX) && defined(USE_UDEV)
+class DeviceMonitorLinux;
+#endif
 class UserInputMonitor;
 namespace midi {
 class MidiManager;
@@ -63,8 +66,6 @@ struct MainFunctionParams;
 
 #if defined(OS_ANDROID)
 class ScreenOrientationDelegate;
-#elif defined(OS_LINUX)
-class DeviceMonitorLinux;
 #elif defined(OS_MACOSX)
 class DeviceMonitorMac;
 #elif defined(OS_WIN)
@@ -249,8 +250,8 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   scoped_ptr<media::midi::MidiManager> midi_manager_;
 
-#if defined(USE_UDEV)
-  scoped_ptr<DeviceMonitorLinux> device_monitor_linux_;
+#if defined(OS_LINUX) && defined(USE_UDEV)
+  scoped_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
 #endif

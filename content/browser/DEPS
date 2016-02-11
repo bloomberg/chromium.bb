@@ -16,10 +16,10 @@ include_rules = [
   "+media/media_features.h",
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration.
+  "+media/capture",  # For Device Monitoring
   "+media/filters",  # For reporting GPU decoding UMA.
   "+media/midi",  # For Web MIDI API
   "+media/mojo",  # For mojo media services.
-  "+media/capture/video",  # For Video Device monitoring in Mac.
   "+mojo",
   "+sql",
   "+ui/aura_extra",
