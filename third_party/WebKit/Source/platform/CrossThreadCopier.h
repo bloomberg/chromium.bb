@@ -69,6 +69,11 @@ namespace blink {
         STATIC_ONLY(CrossThreadCopierBase);
     };
 
+    // nullptr_t can be passed through without any changes.
+    template<> struct CrossThreadCopierBase<false, false, false, std::nullptr_t> : public CrossThreadCopierPassThrough<std::nullptr_t> {
+        STATIC_ONLY(CrossThreadCopierBase);
+    };
+
     // To allow a type to be passed across threads using its copy constructor, add a forward declaration of the type and
     // a CopyThreadCopierBase<false, false, TypeName> : public CrossThreadCopierPassThrough<TypeName> { }; to this file.
     template<> struct CrossThreadCopierBase<false, false, false, IntRect> : public CrossThreadCopierPassThrough<IntRect> {
