@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolver_delegate.h"
+#include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
@@ -214,6 +215,7 @@ class DBusServices {
     service_providers.push_back(new ScreenLockServiceProvider);
     service_providers.push_back(new ConsoleServiceProvider(
         make_scoped_ptr(new ChromeConsoleServiceProviderDelegate)));
+    service_providers.push_back(new KioskInfoService);
     CrosDBusService::Initialize(std::move(service_providers));
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.

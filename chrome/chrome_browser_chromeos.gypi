@@ -106,6 +106,8 @@
         'browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h',
         'browser/chromeos/dbus/chrome_proxy_resolver_delegate.cc',
         'browser/chromeos/dbus/chrome_proxy_resolver_delegate.h',
+        'browser/chromeos/dbus/kiosk_info_service_provider.cc',
+        'browser/chromeos/dbus/kiosk_info_service_provider.h',
         'browser/chromeos/dbus/screen_lock_service_provider.cc',
         'browser/chromeos/dbus/screen_lock_service_provider.h',
         'browser/chromeos/device/input_service_proxy.cc',
