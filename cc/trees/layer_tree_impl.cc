@@ -292,6 +292,7 @@ void LayerTreeImpl::UpdatePropertyTreesForBoundsDelta() {
   DCHECK(IsActiveTree());
   LayerImpl* inner_container = InnerViewportContainerLayer();
   LayerImpl* outer_container = OuterViewportContainerLayer();
+  LayerImpl* inner_scroll = InnerViewportScrollLayer();
 
   UpdateClipTreeForBoundsDeltaOnLayer(inner_container,
                                       &property_trees_.clip_tree);
@@ -300,11 +301,15 @@ void LayerTreeImpl::UpdatePropertyTreesForBoundsDelta() {
   UpdateClipTreeForBoundsDeltaOnLayer(outer_container,
                                       &property_trees_.clip_tree);
 
-  TransformTree& transform_tree = property_trees_.transform_tree;
   if (inner_container)
-    transform_tree.SetInnerViewportBoundsDelta(inner_container->bounds_delta());
+    property_trees_.SetInnerViewportContainerBoundsDelta(
+        inner_container->bounds_delta());
   if (outer_container)
-    transform_tree.SetOuterViewportBoundsDelta(outer_container->bounds_delta());
+    property_trees_.SetOuterViewportContainerBoundsDelta(
+        outer_container->bounds_delta());
+  if (inner_scroll)
+    property_trees_.SetInnerViewportScrollBoundsDelta(
+        inner_scroll->bounds_delta());
 }
 
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
@@ -487,8 +492,16 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
   DCHECK(IsActiveTree());
   if (page_scale_factor()->SetCurrent(
-          ClampPageScaleFactorToLimits(active_page_scale)))
+          ClampPageScaleFactorToLimits(active_page_scale))) {
     DidUpdatePageScale();
+    if (PageScaleLayer()) {
+      UpdatePageScaleFactorInPropertyTrees(
+          property_trees(), PageScaleLayer(), current_page_scale_factor(),
+          device_scale_factor(), layer_tree_host_impl_->DrawTransform());
+    } else {
+      DCHECK(!root_layer_ || active_page_scale == 1);
+    }
+  }
 }
 
 void LayerTreeImpl::PushPageScaleFromMainThread(float page_scale_factor,
@@ -503,6 +516,10 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
                                                  float max_page_scale_factor) {
   DCHECK(page_scale_factor || IsActiveTree());
   bool changed_page_scale = false;
+
+  changed_page_scale |=
+      SetPageScaleFactorLimits(min_page_scale_factor, max_page_scale_factor);
+
   if (page_scale_factor) {
     DCHECK(!IsActiveTree() || !layer_tree_host_impl_->pending_tree());
     changed_page_scale |= page_scale_factor_->Delta() != 1.f;
@@ -512,6 +529,7 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
     changed_page_scale |=
         page_scale_factor_->PushFromMainThread(*page_scale_factor);
   }
+
   if (IsActiveTree()) {
     // TODO(enne): Pushing from pending to active should never require
     // DidUpdatePageScale.  The values should already be set by the fully
@@ -520,11 +538,18 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
     changed_page_scale |= page_scale_factor_->PushPendingToActive();
   }
 
-  changed_page_scale |=
-      SetPageScaleFactorLimits(min_page_scale_factor, max_page_scale_factor);
-
   if (changed_page_scale)
     DidUpdatePageScale();
+
+  if (page_scale_factor) {
+    if (PageScaleLayer()) {
+      UpdatePageScaleFactorInPropertyTrees(
+          property_trees(), PageScaleLayer(), current_page_scale_factor(),
+          device_scale_factor(), layer_tree_host_impl_->DrawTransform());
+    } else {
+      DCHECK(!root_layer_ || *page_scale_factor == 1);
+    }
+  }
 }
 
 void LayerTreeImpl::set_top_controls_shrink_blink_size(bool shrink) {

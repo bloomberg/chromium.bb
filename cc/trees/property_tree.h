@@ -270,8 +270,11 @@ struct CC_EXPORT ScrollNodeData {
   bool scrollable;
   uint32_t main_thread_scrolling_reasons;
   bool contains_non_fast_scrollable_region;
-
-  int transform_id;
+  gfx::Size scroll_clip_layer_bounds;
+  gfx::Size bounds;
+  bool max_scroll_offset_affected_by_page_scale;
+  bool is_inner_viewport_scroll_layer;
+  bool is_outer_viewport_scroll_layer;
 
   bool operator==(const ScrollNodeData& other) const;
 
@@ -280,6 +283,8 @@ struct CC_EXPORT ScrollNodeData {
 };
 
 typedef TreeNode<ScrollNodeData> ScrollNode;
+
+class PropertyTrees;
 
 template <typename T>
 class CC_EXPORT PropertyTree {
@@ -324,11 +329,17 @@ class CC_EXPORT PropertyTree {
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto);
 
+  void SetPropertyTrees(PropertyTrees* property_trees) {
+    property_trees_ = property_trees;
+  }
+  PropertyTrees* property_trees() const { return property_trees_; }
+
  private:
   // Copy and assign are permitted. This is how we do tree sync.
   std::vector<T> nodes_;
 
   bool needs_update_;
+  PropertyTrees* property_trees_;
 };
 
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
@@ -411,15 +422,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return device_transform_scale_factor_;
   }
 
-  void SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta);
-  gfx::Vector2dF inner_viewport_bounds_delta() const {
-    return inner_viewport_bounds_delta_;
-  }
+  void UpdateInnerViewportContainerBoundsDelta();
 
-  void SetOuterViewportBoundsDelta(gfx::Vector2dF bounds_delta);
-  gfx::Vector2dF outer_viewport_bounds_delta() const {
-    return outer_viewport_bounds_delta_;
-  }
+  void UpdateOuterViewportContainerBoundsDelta();
 
   void AddNodeAffectedByInnerViewportBoundsDelta(int node_id);
   void AddNodeAffectedByOuterViewportBoundsDelta(int node_id);
@@ -481,8 +486,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   float page_scale_factor_;
   float device_scale_factor_;
   float device_transform_scale_factor_;
-  gfx::Vector2dF inner_viewport_bounds_delta_;
-  gfx::Vector2dF outer_viewport_bounds_delta_;
   std::vector<int> nodes_affected_by_inner_viewport_bounds_delta_;
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
 };
@@ -518,10 +521,15 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
  public:
+  ScrollTree();
+  ~ScrollTree() override;
+
   bool operator==(const ScrollTree& other) const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto);
+
+  gfx::ScrollOffset MaxScrollOffset(int scroll_node_id) const;
 };
 
 class CC_EXPORT PropertyTrees final {
@@ -530,6 +538,7 @@ class CC_EXPORT PropertyTrees final {
   ~PropertyTrees();
 
   bool operator==(const PropertyTrees& other) const;
+  PropertyTrees& operator=(const PropertyTrees& from);
 
   void ToProtobuf(proto::PropertyTrees* proto) const;
   void FromProtobuf(const proto::PropertyTrees& proto);
@@ -541,6 +550,27 @@ class CC_EXPORT PropertyTrees final {
   bool needs_rebuild;
   bool non_root_surfaces_enabled;
   int sequence_number;
+
+  void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
+  void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
+  void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
+
+  gfx::Vector2dF inner_viewport_container_bounds_delta() const {
+    return inner_viewport_container_bounds_delta_;
+  }
+
+  gfx::Vector2dF outer_viewport_container_bounds_delta() const {
+    return outer_viewport_container_bounds_delta_;
+  }
+
+  gfx::Vector2dF inner_viewport_scroll_bounds_delta() const {
+    return inner_viewport_scroll_bounds_delta_;
+  }
+
+ private:
+  gfx::Vector2dF inner_viewport_container_bounds_delta_;
+  gfx::Vector2dF outer_viewport_container_bounds_delta_;
+  gfx::Vector2dF inner_viewport_scroll_bounds_delta_;
 };
 
 }  // namespace cc

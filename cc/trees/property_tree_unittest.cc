@@ -100,8 +100,6 @@ TEST(PropertyTreeSerializationTest, TransformTreeSerialization) {
       gfx::Transform(1.05f, 2.15f, 3.14f, 4.13f, 5.12f, 6.11f, 7.1f, 8.9f, 9.8f,
                      10.7f, 11.6f, 12.5f, 13.4f, 14.3f, 15.2f, 16.1f);
   original.SetDeviceTransformScaleFactor(transform);
-  original.SetInnerViewportBoundsDelta(gfx::Vector2dF(0.4f, 0.6f));
-  original.SetOuterViewportBoundsDelta(gfx::Vector2dF(0.5f, 0.7f));
   original.AddNodeAffectedByInnerViewportBoundsDelta(0);
   original.AddNodeAffectedByOuterViewportBoundsDelta(1);
 
@@ -233,7 +231,11 @@ TEST(PropertyTreeSerializationTest, ScrollNodeDataSerialization) {
   original.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kScrollbarScrolling;
   original.contains_non_fast_scrollable_region = false;
-  original.transform_id = 2;
+  original.scroll_clip_layer_bounds = gfx::Size(10, 10);
+  original.bounds = gfx::Size(15, 15);
+  original.max_scroll_offset_affected_by_page_scale = true;
+  original.is_inner_viewport_scroll_layer = true;
+  original.is_outer_viewport_scroll_layer = false;
 
   proto::TreeNode proto;
   original.ToProtobuf(&proto);
@@ -259,13 +261,10 @@ TEST(PropertyTreeSerializationTest, ScrollNodeSerialization) {
 
 TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
   ScrollTree original;
-  ScrollNode& root = *original.Node(0);
-  root.data.transform_id = 2;
   ScrollNode second;
-  second.data.transform_id = 4;
   second.data.scrollable = true;
+  second.data.bounds = gfx::Size(15, 15);
   ScrollNode third;
-  third.data.transform_id = 5;
   third.data.contains_non_fast_scrollable_region = true;
 
   original.Insert(second, 0);
@@ -322,6 +321,8 @@ class PropertyTreeTest : public testing::Test {
     transform_tree.ToProtobuf(&proto);
     new_tree.FromProtobuf(proto);
 
+    new_tree.SetPropertyTrees(transform_tree.property_trees());
+
     EXPECT_EQ(transform_tree, new_tree);
     return new_tree;
   }
@@ -356,7 +357,8 @@ class PropertyTreeTest : public testing::Test {
 class PropertyTreeTestComputeTransformRoot : public PropertyTreeTest {
  protected:
   void StartTest() override {
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -390,7 +392,8 @@ DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
 class PropertyTreeTestComputeTransformChild : public PropertyTreeTest {
  protected:
   void StartTest() override {
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -442,7 +445,8 @@ DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
 class PropertyTreeTestComputeTransformSibling : public PropertyTreeTest {
  protected:
   void StartTest() override {
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -499,7 +503,8 @@ class PropertyTreeTestComputeTransformSiblingSingularAncestor
     // transform, we cannot use screen space transforms to compute change of
     // basis
     // transforms between these nodes.
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -553,7 +558,8 @@ DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
 class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
  protected:
   void StartTest() override {
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
 
     int grand_parent = tree.Insert(TransformNode(), 0);
     tree.Node(grand_parent)->data.content_target_id = grand_parent;
@@ -638,7 +644,8 @@ DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
 class PropertyTreeTestMultiplicationOrder : public PropertyTreeTest {
  protected:
   void StartTest() override {
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -679,7 +686,8 @@ class PropertyTreeTestComputeTransformWithUninvertibleTransform
     : public PropertyTreeTest {
  protected:
   void StartTest() override {
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.target_id = 0;
     tree.UpdateTransforms(0);
@@ -717,7 +725,8 @@ class PropertyTreeTestComputeTransformWithSublayerScale
     : public PropertyTreeTest {
  protected:
   void StartTest() override {
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.target_id = 0;
     tree.UpdateTransforms(0);
@@ -834,7 +843,8 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     : public PropertyTreeTest {
  protected:
   void StartTest() override {
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.target_id = 0;
     tree.UpdateTransforms(0);
@@ -909,7 +919,8 @@ class PropertyTreeTestFlatteningWhenDestinationHasOnlyFlatAncestors
     // This tests that flattening is performed correctly when
     // destination and its ancestors are flat, but there are 3d transforms
     // and flattening between the source and destination.
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.Node(parent)->data.content_target_id = parent;
@@ -985,7 +996,8 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
   void StartTest() override {
     // This tests that when a node has non-integer translation, the information
     // is propagated to the subtree.
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.Node(parent)->data.target_id = parent;
@@ -1032,7 +1044,8 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
   void StartTest() override {
     // This tests that to_target transform is not snapped when it has a singular
     // transform.
-    TransformTree tree;
+    PropertyTrees property_trees;
+    TransformTree tree = property_trees.transform_tree;
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.Node(parent)->data.target_id = parent;

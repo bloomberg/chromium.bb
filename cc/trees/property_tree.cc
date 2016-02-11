@@ -16,6 +16,7 @@
 #include "cc/proto/transform.pb.h"
 #include "cc/proto/vector2df.pb.h"
 #include "cc/trees/property_tree.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
 
@@ -476,14 +477,22 @@ ScrollNodeData::ScrollNodeData()
       main_thread_scrolling_reasons(
           MainThreadScrollingReason::kNotScrollingOnMain),
       contains_non_fast_scrollable_region(false),
-      transform_id(0) {}
+      max_scroll_offset_affected_by_page_scale(false),
+      is_inner_viewport_scroll_layer(false),
+      is_outer_viewport_scroll_layer(false) {}
 
 bool ScrollNodeData::operator==(const ScrollNodeData& other) const {
   return scrollable == other.scrollable &&
          main_thread_scrolling_reasons == other.main_thread_scrolling_reasons &&
          contains_non_fast_scrollable_region ==
              other.contains_non_fast_scrollable_region &&
-         transform_id == other.transform_id;
+         scroll_clip_layer_bounds == other.scroll_clip_layer_bounds &&
+         bounds == other.bounds &&
+         max_scroll_offset_affected_by_page_scale ==
+             other.max_scroll_offset_affected_by_page_scale &&
+         is_inner_viewport_scroll_layer ==
+             other.is_inner_viewport_scroll_layer &&
+         is_outer_viewport_scroll_layer == other.is_outer_viewport_scroll_layer;
 }
 
 void ScrollNodeData::ToProtobuf(proto::TreeNode* proto) const {
@@ -493,7 +502,13 @@ void ScrollNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons);
   data->set_contains_non_fast_scrollable_region(
       contains_non_fast_scrollable_region);
-  data->set_transform_id(transform_id);
+  SizeToProto(scroll_clip_layer_bounds,
+              data->mutable_scroll_clip_layer_bounds());
+  SizeToProto(bounds, data->mutable_bounds());
+  data->set_max_scroll_offset_affected_by_page_scale(
+      max_scroll_offset_affected_by_page_scale);
+  data->set_is_inner_viewport_scroll_layer(is_inner_viewport_scroll_layer);
+  data->set_is_outer_viewport_scroll_layer(is_outer_viewport_scroll_layer);
 }
 
 void ScrollNodeData::FromProtobuf(const proto::TreeNode& proto) {
@@ -504,7 +519,12 @@ void ScrollNodeData::FromProtobuf(const proto::TreeNode& proto) {
   main_thread_scrolling_reasons = data.main_thread_scrolling_reasons();
   contains_non_fast_scrollable_region =
       data.contains_non_fast_scrollable_region();
-  transform_id = data.transform_id();
+  scroll_clip_layer_bounds = ProtoToSize(data.scroll_clip_layer_bounds());
+  bounds = ProtoToSize(data.bounds());
+  max_scroll_offset_affected_by_page_scale =
+      data.max_scroll_offset_affected_by_page_scale();
+  is_inner_viewport_scroll_layer = data.is_inner_viewport_scroll_layer();
+  is_outer_viewport_scroll_layer = data.is_outer_viewport_scroll_layer();
 }
 
 void TransformTree::clear() {
@@ -733,15 +753,19 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
   }
 
   gfx::Vector2dF fixed_position_adjustment;
+  gfx::Vector2dF inner_viewport_bounds_delta =
+      property_trees()->inner_viewport_container_bounds_delta();
+  gfx::Vector2dF outer_viewport_bounds_delta =
+      property_trees()->outer_viewport_container_bounds_delta();
   if (node->data.affected_by_inner_viewport_bounds_delta_x)
-    fixed_position_adjustment.set_x(inner_viewport_bounds_delta_.x());
+    fixed_position_adjustment.set_x(inner_viewport_bounds_delta.x());
   else if (node->data.affected_by_outer_viewport_bounds_delta_x)
-    fixed_position_adjustment.set_x(outer_viewport_bounds_delta_.x());
+    fixed_position_adjustment.set_x(outer_viewport_bounds_delta.x());
 
   if (node->data.affected_by_inner_viewport_bounds_delta_y)
-    fixed_position_adjustment.set_y(inner_viewport_bounds_delta_.y());
+    fixed_position_adjustment.set_y(inner_viewport_bounds_delta.y());
   else if (node->data.affected_by_outer_viewport_bounds_delta_y)
-    fixed_position_adjustment.set_y(outer_viewport_bounds_delta_.y());
+    fixed_position_adjustment.set_y(outer_viewport_bounds_delta.y());
 
   transform.Translate(
       node->data.source_to_parent.x() - node->data.scroll_offset.x() +
@@ -970,12 +994,7 @@ void TransformTree::SetDeviceTransformScaleFactor(
                device_transform_scale_components.y());
 }
 
-void TransformTree::SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta) {
-  if (inner_viewport_bounds_delta_ == bounds_delta)
-    return;
-
-  inner_viewport_bounds_delta_ = bounds_delta;
-
+void TransformTree::UpdateInnerViewportContainerBoundsDelta() {
   if (nodes_affected_by_inner_viewport_bounds_delta_.empty())
     return;
 
@@ -984,12 +1003,7 @@ void TransformTree::SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta) {
     Node(i)->data.needs_local_transform_update = true;
 }
 
-void TransformTree::SetOuterViewportBoundsDelta(gfx::Vector2dF bounds_delta) {
-  if (outer_viewport_bounds_delta_ == bounds_delta)
-    return;
-
-  outer_viewport_bounds_delta_ = bounds_delta;
-
+void TransformTree::UpdateOuterViewportContainerBoundsDelta() {
   if (nodes_affected_by_outer_viewport_bounds_delta_.empty())
     return;
 
@@ -1022,8 +1036,6 @@ bool TransformTree::operator==(const TransformTree& other) const {
          device_scale_factor_ == other.device_scale_factor() &&
          device_transform_scale_factor_ ==
              other.device_transform_scale_factor() &&
-         inner_viewport_bounds_delta_ == other.inner_viewport_bounds_delta() &&
-         outer_viewport_bounds_delta_ == other.outer_viewport_bounds_delta() &&
          nodes_affected_by_inner_viewport_bounds_delta_ ==
              other.nodes_affected_by_inner_viewport_bounds_delta() &&
          nodes_affected_by_outer_viewport_bounds_delta_ ==
@@ -1041,11 +1053,6 @@ void TransformTree::ToProtobuf(proto::PropertyTree* proto) const {
   data->set_page_scale_factor(page_scale_factor_);
   data->set_device_scale_factor(device_scale_factor_);
   data->set_device_transform_scale_factor(device_transform_scale_factor_);
-
-  Vector2dFToProto(inner_viewport_bounds_delta_,
-                   data->mutable_inner_viewport_bounds_delta());
-  Vector2dFToProto(outer_viewport_bounds_delta_,
-                   data->mutable_outer_viewport_bounds_delta());
 
   for (auto i : nodes_affected_by_inner_viewport_bounds_delta_)
     data->add_nodes_affected_by_inner_viewport_bounds_delta(i);
@@ -1065,11 +1072,6 @@ void TransformTree::FromProtobuf(const proto::PropertyTree& proto) {
   page_scale_factor_ = data.page_scale_factor();
   device_scale_factor_ = data.device_scale_factor();
   device_transform_scale_factor_ = data.device_transform_scale_factor();
-
-  inner_viewport_bounds_delta_ =
-      ProtoToVector2dF(data.inner_viewport_bounds_delta());
-  outer_viewport_bounds_delta_ =
-      ProtoToVector2dF(data.outer_viewport_bounds_delta());
 
   DCHECK(nodes_affected_by_inner_viewport_bounds_delta_.empty());
   for (int i = 0; i < data.nodes_affected_by_inner_viewport_bounds_delta_size();
@@ -1205,6 +1207,10 @@ void EffectTree::FromProtobuf(const proto::PropertyTree& proto) {
   PropertyTree::FromProtobuf(proto);
 }
 
+ScrollTree::ScrollTree() {}
+
+ScrollTree::~ScrollTree() {}
+
 bool ScrollTree::operator==(const ScrollTree& other) const {
   return PropertyTree::operator==(other);
 }
@@ -1223,10 +1229,62 @@ void ScrollTree::FromProtobuf(const proto::PropertyTree& proto) {
   PropertyTree::FromProtobuf(proto);
 }
 
+gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
+  const ScrollNode* scroll_node = Node(scroll_node_id);
+  gfx::SizeF scroll_bounds = gfx::SizeF(scroll_node->data.bounds.width(),
+                                        scroll_node->data.bounds.height());
+
+  if (scroll_node->data.is_inner_viewport_scroll_layer) {
+    scroll_bounds.Enlarge(
+        property_trees()->inner_viewport_scroll_bounds_delta().x(),
+        property_trees()->inner_viewport_scroll_bounds_delta().y());
+  }
+
+  if (!scroll_node->data.scrollable || scroll_bounds.IsEmpty())
+    return gfx::ScrollOffset();
+
+  TransformTree& transform_tree = property_trees()->transform_tree;
+  float scale_factor = 1.f;
+  if (scroll_node->data.max_scroll_offset_affected_by_page_scale)
+    scale_factor = transform_tree.page_scale_factor();
+
+  gfx::SizeF scaled_scroll_bounds = gfx::ScaleSize(scroll_bounds, scale_factor);
+  scaled_scroll_bounds.SetSize(std::floor(scaled_scroll_bounds.width()),
+                               std::floor(scaled_scroll_bounds.height()));
+
+  gfx::Size scroll_clip_layer_bounds =
+      scroll_node->data.scroll_clip_layer_bounds;
+
+  gfx::Vector2dF scroll_clip_layer_bounds_delta;
+  if (scroll_node->data.is_inner_viewport_scroll_layer) {
+    scroll_clip_layer_bounds_delta.Add(
+        property_trees()->inner_viewport_container_bounds_delta());
+  } else if (scroll_node->data.is_outer_viewport_scroll_layer) {
+    scroll_clip_layer_bounds_delta.Add(
+        property_trees()->outer_viewport_container_bounds_delta());
+  }
+
+  gfx::Vector2d delta = gfx::ToCeiledVector2d(scroll_clip_layer_bounds_delta);
+  scroll_clip_layer_bounds.SetSize(
+      scroll_clip_layer_bounds.width() + delta.x(),
+      scroll_clip_layer_bounds.height() + delta.y());
+
+  gfx::ScrollOffset max_offset(
+      scaled_scroll_bounds.width() - scroll_clip_layer_bounds.width(),
+      scaled_scroll_bounds.height() - scroll_clip_layer_bounds.height());
+
+  max_offset.Scale(1 / scale_factor);
+  max_offset.SetToMax(gfx::ScrollOffset());
+  return max_offset;
+}
+
 PropertyTrees::PropertyTrees()
-    : needs_rebuild(true),
-      non_root_surfaces_enabled(true),
-      sequence_number(0) {}
+    : needs_rebuild(true), non_root_surfaces_enabled(true), sequence_number(0) {
+  transform_tree.SetPropertyTrees(this);
+  effect_tree.SetPropertyTrees(this);
+  clip_tree.SetPropertyTrees(this);
+  scroll_tree.SetPropertyTrees(this);
+}
 
 PropertyTrees::~PropertyTrees() {}
 
@@ -1237,6 +1295,27 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          needs_rebuild == other.needs_rebuild &&
          non_root_surfaces_enabled == other.non_root_surfaces_enabled &&
          sequence_number == other.sequence_number;
+}
+
+PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
+  transform_tree = from.transform_tree;
+  effect_tree = from.effect_tree;
+  clip_tree = from.clip_tree;
+  scroll_tree = from.scroll_tree;
+  needs_rebuild = from.needs_rebuild;
+  non_root_surfaces_enabled = from.non_root_surfaces_enabled;
+  sequence_number = from.sequence_number;
+  inner_viewport_container_bounds_delta_ =
+      from.inner_viewport_container_bounds_delta();
+  outer_viewport_container_bounds_delta_ =
+      from.outer_viewport_container_bounds_delta();
+  inner_viewport_scroll_bounds_delta_ =
+      from.inner_viewport_scroll_bounds_delta();
+  transform_tree.SetPropertyTrees(this);
+  effect_tree.SetPropertyTrees(this);
+  clip_tree.SetPropertyTrees(this);
+  scroll_tree.SetPropertyTrees(this);
+  return *this;
 }
 
 void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
@@ -1264,6 +1343,34 @@ void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
   needs_rebuild = proto.needs_rebuild();
   non_root_surfaces_enabled = proto.non_root_surfaces_enabled();
   sequence_number = proto.sequence_number();
+
+  transform_tree.SetPropertyTrees(this);
+  effect_tree.SetPropertyTrees(this);
+  clip_tree.SetPropertyTrees(this);
+  scroll_tree.SetPropertyTrees(this);
+}
+
+void PropertyTrees::SetInnerViewportContainerBoundsDelta(
+    gfx::Vector2dF bounds_delta) {
+  if (inner_viewport_container_bounds_delta_ == bounds_delta)
+    return;
+
+  inner_viewport_container_bounds_delta_ = bounds_delta;
+  transform_tree.UpdateInnerViewportContainerBoundsDelta();
+}
+
+void PropertyTrees::SetOuterViewportContainerBoundsDelta(
+    gfx::Vector2dF bounds_delta) {
+  if (outer_viewport_container_bounds_delta_ == bounds_delta)
+    return;
+
+  outer_viewport_container_bounds_delta_ = bounds_delta;
+  transform_tree.UpdateOuterViewportContainerBoundsDelta();
+}
+
+void PropertyTrees::SetInnerViewportScrollBoundsDelta(
+    gfx::Vector2dF bounds_delta) {
+  inner_viewport_scroll_bounds_delta_ = bounds_delta;
 }
 
 }  // namespace cc

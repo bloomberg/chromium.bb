@@ -455,8 +455,14 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
     scroll_layer->InsertChild(child2, 1);
     layer_tree_root->AddChild(scroll_layer);
     layer_tree_host_->SetRootLayer(layer_tree_root);
+
+    // Choose layer bounds to give max_scroll_offset = (8, 8).
+    layer_tree_root->SetBounds(gfx::Size(2, 2));
+    scroll_layer->SetBounds(gfx::Size(10, 10));
+
     layer_tree_host_->UpdateLayers();
   }
+
   LayerImpl* layer_impl_tree_root =
       layer_tree_host_->CommitAndCreateLayerImplTree();
   LayerImpl* scroll_layer_impl = layer_impl_tree_root->children()[0].get();
@@ -464,9 +470,6 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   auto* scrollbar_layer_impl = static_cast<ScrollbarLayerImplBase*>(
       scroll_layer_impl->children()[1].get());
 
-  // Choose layer bounds to give max_scroll_offset = (8, 8).
-  layer_impl_tree_root->SetBounds(gfx::Size(2, 2));
-  scroll_layer_impl->SetBounds(gfx::Size(10, 10));
   scroll_layer_impl->ScrollBy(gfx::Vector2dF(4.f, 0.f));
 
   scrollbar_layer_impl->SetBounds(gfx::Size(kTrackLength, kThumbThickness));

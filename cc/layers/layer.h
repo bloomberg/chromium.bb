@@ -271,6 +271,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void SetScrollClipLayerId(int clip_layer_id);
   bool scrollable() const { return scroll_clip_layer_id_ != INVALID_ID; }
+  Layer* scroll_clip_layer() const;
 
   void SetUserScrollable(bool horizontal, bool vertical);
   bool user_scrollable_horizontal() const {

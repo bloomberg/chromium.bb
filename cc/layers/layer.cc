@@ -365,15 +365,7 @@ void Layer::SetBounds(const gfx::Size& size) {
   if (!layer_tree_host_)
     return;
 
-  if (ClipNode* clip_node = layer_tree_host_->property_trees()->clip_tree.Node(
-          clip_tree_index())) {
-    if (clip_node->owner_id == id()) {
-      clip_node->data.clip.set_size(gfx::SizeF(size));
-      layer_tree_host_->property_trees()->clip_tree.set_needs_update(true);
-    }
-  }
-
-  SetNeedsCommitNoRebuild();
+  SetNeedsCommit();
 }
 
 Layer* Layer::RootLayer() {
@@ -940,6 +932,10 @@ void Layer::SetScrollClipLayerId(int clip_layer_id) {
     return;
   scroll_clip_layer_id_ = clip_layer_id;
   SetNeedsCommit();
+}
+
+Layer* Layer::scroll_clip_layer() const {
+  return layer_tree_host()->LayerById(scroll_clip_layer_id_);
 }
 
 void Layer::SetUserScrollable(bool horizontal, bool vertical) {

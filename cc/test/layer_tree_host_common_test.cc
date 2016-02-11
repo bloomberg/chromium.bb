@@ -102,7 +102,8 @@ void LayerTreeHostCommonTestBase::
 
   bool can_render_to_separate_surface = true;
 
-  Layer* page_scale_layer = nullptr;
+  const Layer* page_scale_layer =
+      root_layer->layer_tree_host()->page_scale_layer();
   Layer* inner_viewport_scroll_layer =
       root_layer->layer_tree_host()->inner_viewport_scroll_layer();
   Layer* outer_viewport_scroll_layer =

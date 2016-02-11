@@ -127,9 +127,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   child->AddChild(LayerImpl::Create(host_impl.active_tree(), 8));
   LayerImpl* grand_child = child->children()[0].get();
   host_impl.active_tree()->SetRootLayer(std::move(root_clip_ptr));
-  host_impl.active_tree()->BuildPropertyTreesForTesting();
-
   root->SetScrollClipLayer(root_clip->id());
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
 
   // Adding children is an internal operation and should not mark layers as
   // changed.
@@ -158,6 +157,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetUpdateRect(arbitrary_rect));
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(arbitrary_size));
+  host_impl.active_tree()->property_trees()->needs_rebuild = true;
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
 
   // Changing these properties affects the entire subtree of layers.
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
@@ -195,10 +196,15 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // masksToBounds.
   root->SetMasksToBounds(false);
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(gfx::Size(135, 246)));
+  host_impl.active_tree()->property_trees()->needs_rebuild = true;
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
+
   root->SetMasksToBounds(true);
   // Should be a different size than previous call, to ensure it marks tree
   // changed.
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
+  host_impl.active_tree()->property_trees()->needs_rebuild = true;
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
 
   // Changing these properties does not cause the layer to be marked as changed
   // but does cause the layer to need to push properties.
@@ -467,7 +473,6 @@ class LayerImplScrollTest : public testing::Test {
         LayerImpl::Create(host_impl_.active_tree(), root_id_));
     host_impl_.active_tree()->root_layer()->AddChild(
         LayerImpl::Create(host_impl_.active_tree(), root_id_ + 1));
-    host_impl_.active_tree()->BuildPropertyTreesForTesting();
     layer()->SetScrollClipLayer(root_id_);
     // Set the max scroll offset by noting that the root layer has bounds (1,1),
     // thus whatever bounds are set for the layer will be the max scroll
@@ -475,6 +480,7 @@ class LayerImplScrollTest : public testing::Test {
     host_impl_.active_tree()->root_layer()->SetBounds(gfx::Size(1, 1));
     gfx::Vector2d max_scroll_offset(51, 81);
     layer()->SetBounds(gfx::Size(max_scroll_offset.x(), max_scroll_offset.y()));
+    host_impl_.active_tree()->BuildPropertyTreesForTesting();
   }
 
   LayerImpl* layer() {

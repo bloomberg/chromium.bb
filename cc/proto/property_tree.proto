@@ -6,6 +6,7 @@ syntax = "proto2";
 
 import "rectf.proto";
 import "scroll_offset.proto";
+import "size.proto";
 import "transform.proto";
 import "vector2df.proto";
 
@@ -91,11 +92,16 @@ message EffectNodeData {
   optional int64 clip_id = 10;
 }
 
+// Proto for struct ScrollNodeData
 message ScrollNodeData {
   optional bool scrollable = 1;
   optional int32 main_thread_scrolling_reasons = 2;
   optional bool contains_non_fast_scrollable_region = 3;
-  optional int64 transform_id = 4;
+  optional Size scroll_clip_layer_bounds = 4;
+  optional Size bounds = 5;
+  optional bool max_scroll_offset_affected_by_page_scale = 6;
+  optional bool is_inner_viewport_scroll_layer = 7;
+  optional bool is_outer_viewport_scroll_layer = 8;
 }
 
 // This defines the proto used for all types of struct TreeNode.
@@ -143,8 +149,6 @@ message TransformTreeData {
   optional float page_scale_factor = 2;
   optional float device_scale_factor = 3;
   optional float device_transform_scale_factor = 4;
-  optional Vector2dF inner_viewport_bounds_delta = 5;
-  optional Vector2dF outer_viewport_bounds_delta = 6;
   repeated int64 nodes_affected_by_inner_viewport_bounds_delta = 7
       [packed = true];
   repeated int64 nodes_affected_by_outer_viewport_bounds_delta = 8
@@ -152,6 +156,7 @@ message TransformTreeData {
 }
 
 // Proto for class PropertyTrees.
+// NEXT ID: 11
 message PropertyTrees {
   optional PropertyTree transform_tree = 1;
   optional PropertyTree effect_tree = 2;
@@ -161,4 +166,8 @@ message PropertyTrees {
   optional bool needs_rebuild = 4;
   optional bool non_root_surfaces_enabled = 5;
   optional int64 sequence_number = 6;
+
+  optional Vector2dF inner_viewport_container_bounds_delta = 8;
+  optional Vector2dF outer_viewport_container_bounds_delta = 9;
+  optional Vector2dF inner_viewport_scroll_bounds_delta = 10;
 }

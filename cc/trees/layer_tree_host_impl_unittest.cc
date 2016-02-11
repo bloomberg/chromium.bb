@@ -423,6 +423,13 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->DidDrawAllLayers(frame);
   }
 
+  void DrawFrameWithoutRebuildPropertyTrees() {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+    host_impl_->DrawLayers(&frame);
+    host_impl_->DidDrawAllLayers(frame);
+  }
+
   void RebuildPropertyTrees() {
     host_impl_->active_tree()->property_trees()->needs_rebuild = true;
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
@@ -2455,6 +2462,31 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationCompletedNotification) {
   host_impl_->Animate();
   EXPECT_TRUE(did_complete_page_scale_animation_);
   host_impl_->DidFinishImplFrame();
+}
+
+TEST_F(LayerTreeHostImplTest, MaxScrollOffsetAffectedByBoundsDelta) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
+  DrawFrame();
+
+  LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
+  LayerImpl* inner_container = inner_scroll->scroll_clip_layer();
+  DCHECK(inner_scroll);
+  DCHECK(inner_container);
+  EXPECT_EQ(gfx::ScrollOffset(50, 50), inner_scroll->MaxScrollOffset());
+
+  inner_container->SetBoundsDelta(gfx::Vector2dF(15.f, 15.f));
+  inner_scroll->SetBoundsDelta(gfx::Vector2dF(7.f, 7.f));
+  EXPECT_EQ(gfx::ScrollOffset(42, 42), inner_scroll->MaxScrollOffset());
+
+  inner_container->SetBoundsDelta(gfx::Vector2dF());
+  inner_scroll->SetBoundsDelta(gfx::Vector2dF());
+  inner_scroll->SetBounds(gfx::Size());
+  DrawFrame();
+
+  inner_scroll->SetBoundsDelta(gfx::Vector2dF(60.f, 60.f));
+  EXPECT_EQ(gfx::ScrollOffset(10, 10), inner_scroll->MaxScrollOffset());
 }
 
 class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
@@ -5251,6 +5283,7 @@ TEST_F(LayerTreeHostImplTest, ScrollViewportRounding) {
   SetupScrollAndContentsLayers(gfx::Size(width, height));
   host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
       gfx::Size(width * scale - 1, height * scale));
+  RebuildPropertyTrees();
   host_impl_->active_tree()->SetDeviceScaleFactor(scale);
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
 
@@ -5329,6 +5362,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   LayerImpl* clip_layer = scroll_layer->parent()->parent();
   clip_layer->SetBounds(gfx::Size(10, 20));
+  RebuildPropertyTrees();
 
   host_impl_->BindToClient(&scroll_watcher);
 
@@ -5699,6 +5733,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(50, 50));
   LayerImpl* clip_layer = scroll_layer->parent()->parent();
   clip_layer->SetBounds(gfx::Size(50, 50));
+  RebuildPropertyTrees();
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   DrawFrame();
@@ -7675,7 +7710,8 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownScrollAncestorMismatch) {
   child_scroll->SetPosition(gfx::PointF(10.f, 10.f));
 
   child_scroll->AddChild(std::move(occluder_layer));
-  scroll_layer->AddChild(std::move(child_scroll));
+  child_scroll_clip->AddChild(std::move(child_scroll));
+  scroll_layer->AddChild(std::move(child_scroll_clip));
 
   DrawFrame();
 
@@ -8423,7 +8459,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
   host_impl_->SetViewportSize(gfx::Size(100, 100));
   host_impl_->top_controls_manager()->UpdateTopControlsState(BOTH, SHOWN,
                                                              false);
-  DrawFrame();
+  DrawFrameWithoutRebuildPropertyTrees();
 
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
@@ -9910,7 +9946,8 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
   TransformNode* active_tree_node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
-  EXPECT_EQ(active_tree_node->data.post_local_scale_factor, 1.f);
+  // SetPageScaleOnActiveTree also updates the factors in property trees.
+  EXPECT_EQ(active_tree_node->data.post_local_scale_factor, 2.f);
   EXPECT_EQ(host_impl_->active_tree()->current_page_scale_factor(), 2.f);
 
   TransformNode* pending_tree_node =

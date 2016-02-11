@@ -1012,6 +1012,7 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
   bounds_ = bounds;
 
   layer_tree_impl()->DidUpdateScrollState(id());
+
   if (masks_to_bounds())
     NoteLayerPropertyChangedForSubtree();
   else
@@ -1025,24 +1026,24 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
 
   bounds_delta_ = bounds_delta;
 
-  TransformTree& transform_tree =
-      layer_tree_impl()->property_trees()->transform_tree;
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
   if (this == layer_tree_impl()->InnerViewportContainerLayer())
-    transform_tree.SetInnerViewportBoundsDelta(bounds_delta);
+    property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
   else if (this == layer_tree_impl()->OuterViewportContainerLayer())
-    transform_tree.SetOuterViewportBoundsDelta(bounds_delta);
+    property_trees->SetOuterViewportContainerBoundsDelta(bounds_delta);
+  else if (this == layer_tree_impl()->InnerViewportScrollLayer())
+    property_trees->SetInnerViewportScrollBoundsDelta(bounds_delta);
 
   layer_tree_impl()->DidUpdateScrollState(id());
 
   if (masks_to_bounds()) {
     // If layer is clipping, then update the clip node using the new bounds.
-    ClipNode* clip_node =
-        layer_tree_impl()->property_trees()->clip_tree.Node(clip_tree_index());
+    ClipNode* clip_node = property_trees->clip_tree.Node(clip_tree_index());
     if (clip_node) {
       DCHECK(id() == clip_node->owner_id);
       clip_node->data.clip = gfx::RectF(
           gfx::PointF() + offset_to_transform_parent(), gfx::SizeF(bounds()));
-      layer_tree_impl()->property_trees()->clip_tree.set_needs_update(true);
+      property_trees->clip_tree.set_needs_update(true);
     }
 
     NoteLayerPropertyChangedForSubtree();
@@ -1603,33 +1604,8 @@ void LayerImpl::RecreateResources() {
 }
 
 gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
-  LayerImpl* scroll_clip_layer =
-      layer_tree_impl()->LayerById(scroll_clip_layer_id_);
-  if (!scroll_clip_layer || bounds().IsEmpty())
-    return gfx::ScrollOffset();
-
-  LayerImpl const* page_scale_layer = layer_tree_impl()->PageScaleLayer();
-  DCHECK(this != page_scale_layer);
-  DCHECK(this != layer_tree_impl()->InnerViewportScrollLayer() ||
-         IsContainerForFixedPositionLayers());
-
-  float scale_factor = 1.f;
-  DCHECK(scroll_clip_layer != page_scale_layer);
-  if (!scroll_clip_layer->IsAffectedByPageScale() && IsAffectedByPageScale())
-    scale_factor = layer_tree_impl()->current_page_scale_factor();
-
-  gfx::SizeF scaled_scroll_bounds =
-      gfx::ScaleSize(BoundsForScrolling(), scale_factor);
-  scaled_scroll_bounds.SetSize(std::floor(scaled_scroll_bounds.width()),
-                               std::floor(scaled_scroll_bounds.height()));
-
-  gfx::ScrollOffset max_offset(
-      scaled_scroll_bounds.width() - scroll_clip_layer->bounds().width(),
-      scaled_scroll_bounds.height() - scroll_clip_layer->bounds().height());
-  // We need the final scroll offset to be in CSS coords.
-  max_offset.Scale(1 / scale_factor);
-  max_offset.SetToMax(gfx::ScrollOffset());
-  return max_offset;
+  return layer_tree_impl()->property_trees()->scroll_tree.MaxScrollOffset(
+      scroll_tree_index());
 }
 
 gfx::ScrollOffset LayerImpl::ClampScrollOffsetToLimits(
