@@ -61,6 +61,9 @@
               '../../third_party/kasko/binaries/include',
             ],
           },
+          'export_dependent_settings': [
+            'kasko_features',
+          ]
         },
       ],
     }, {  # 'kasko==0'
