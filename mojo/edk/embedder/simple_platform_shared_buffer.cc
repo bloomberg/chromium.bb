@@ -69,6 +69,21 @@ SimplePlatformSharedBuffer::CreateFromPlatformHandle(
   return rv;
 }
 
+// static
+SimplePlatformSharedBuffer*
+SimplePlatformSharedBuffer::CreateFromSharedMemoryHandle(
+    size_t num_bytes,
+    bool read_only,
+    base::SharedMemoryHandle handle) {
+  DCHECK_GT(num_bytes, 0u);
+  DCHECK(!read_only);
+
+  SimplePlatformSharedBuffer* rv = new SimplePlatformSharedBuffer(num_bytes);
+  rv->InitFromSharedMemoryHandle(handle);
+
+  return rv;
+}
+
 size_t SimplePlatformSharedBuffer::GetNumBytes() const {
   return num_bytes_;
 }
@@ -174,6 +189,19 @@ bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
 
   shared_memory_.reset(new base::SharedMemory(handle, false));
   return true;
+}
+
+void SimplePlatformSharedBuffer::InitFromSharedMemoryHandle(
+    base::SharedMemoryHandle handle) {
+  DCHECK(!shared_memory_);
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // TODO(crbug.com/582468): Support Mach shared memory.
+  CHECK(handle.GetType() == base::SharedMemoryHandle::POSIX);
+#endif
+
+  // TODO(crbug.com/556587): Support read-only handles.
+  shared_memory_.reset(new base::SharedMemory(handle, false));
 }
 
 SimplePlatformSharedBufferMapping::~SimplePlatformSharedBufferMapping() {

@@ -48,6 +48,11 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       uint64_t num_bytes,
       scoped_refptr<SharedBufferDispatcher>* result);
 
+  // Create a |SharedBufferDispatcher| from |shared_buffer|.
+  static MojoResult CreateFromPlatformSharedBuffer(
+      const scoped_refptr<PlatformSharedBuffer>& shared_buffer,
+      scoped_refptr<SharedBufferDispatcher>* result);
+
   // The "opposite" of SerializeAndClose(). Called by Dispatcher::Deserialize().
   static scoped_refptr<SharedBufferDispatcher> Deserialize(
       const void* bytes,

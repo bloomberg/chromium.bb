@@ -6,16 +6,17 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/embedder/test_embedder.h"
@@ -38,6 +39,12 @@ const MojoHandleSignals kSignalReadadableWritable =
 const MojoHandleSignals kSignalAll = MOJO_HANDLE_SIGNAL_READABLE |
                                      MOJO_HANDLE_SIGNAL_WRITABLE |
                                      MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+
+// The multiprocess tests that use these don't compile on iOS.
+#if !defined(OS_IOS)
+const char kHelloWorld[] = "hello world";
+const char kByeWorld[] = "bye world";
+#endif
 
 using EmbedderTest = test::MojoTestBase;
 
@@ -282,6 +289,82 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessChannelsClient, EmbedderTest,
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp1));
+}
+
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_MultiprocessBaseSharedMemory DISABLED_MultiprocessBaseSharedMemory
+#else
+#define MAYBE_MultiprocessBaseSharedMemory MultiprocessBaseSharedMemory
+#endif  // defined(OS_ANDROID)
+TEST_F(EmbedderTest, MAYBE_MultiprocessBaseSharedMemory) {
+  RUN_CHILD_ON_PIPE(MultiprocessSharedMemoryClient, server_mp)
+    // 1. Create a base::SharedMemory object and create a mojo shared buffer
+    // from it.
+    base::SharedMemoryCreateOptions options;
+    options.size = 123;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    options.type = base::SharedMemoryHandle::POSIX;
+#endif
+    base::SharedMemory shared_memory;
+    ASSERT_TRUE(shared_memory.Create(options));
+    base::SharedMemoryHandle shm_handle = base::SharedMemory::DuplicateHandle(
+        shared_memory.handle());
+    MojoHandle sb1;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              CreateSharedBufferWrapper(shm_handle, 123, false, &sb1));
+
+    // 2. Map |sb1| and write something into it.
+    char* buffer = nullptr;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoMapBuffer(sb1, 0, 123, reinterpret_cast<void**>(&buffer), 0));
+    ASSERT_TRUE(buffer);
+    memcpy(buffer, kHelloWorld, sizeof(kHelloWorld));
+
+    // 3. Duplicate |sb1| into |sb2| and pass to |server_mp|.
+    MojoHandle sb2 = MOJO_HANDLE_INVALID;
+    EXPECT_EQ(MOJO_RESULT_OK, MojoDuplicateBufferHandle(sb1, 0, &sb2));
+    EXPECT_NE(MOJO_HANDLE_INVALID, sb2);
+    WriteMessageWithHandles(server_mp, "hello", &sb2, 1);
+
+    // 4. Read a message from |server_mp|.
+    EXPECT_EQ("bye", ReadMessage(server_mp));
+
+    // 5. Expect that the contents of the shared buffer have changed.
+    EXPECT_EQ(kByeWorld, std::string(buffer));
+
+    // 6. Map the original base::SharedMemory and expect it contains the
+    // expected value.
+    ASSERT_TRUE(shared_memory.Map(123));
+    EXPECT_EQ(kByeWorld,
+              std::string(static_cast<char*>(shared_memory.memory())));
+
+    ASSERT_EQ(MOJO_RESULT_OK, MojoClose(sb1));
+  END_CHILD()
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient, EmbedderTest,
+                                  client_mp) {
+  // 1. Read the first message from |client_mp|, which should have |sb1| which
+  // should be a shared buffer handle.
+  MojoHandle sb1;
+  EXPECT_EQ("hello", ReadMessageWithHandles(client_mp, &sb1, 1));
+
+  // 2. Map |sb1|.
+  char* buffer = nullptr;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoMapBuffer(sb1, 0, 123, reinterpret_cast<void**>(&buffer), 0));
+  ASSERT_TRUE(buffer);
+
+  // 3. Ensure |buffer| contains the values we expect.
+  EXPECT_EQ(kHelloWorld, std::string(buffer));
+
+  // 4. Write into |buffer| and send a message back.
+  memcpy(buffer, kByeWorld, sizeof(kByeWorld));
+  WriteMessage(client_mp, "bye");
+
+  // 5. Close |sb1|.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(sb1));
 }
 
 // TODO(vtl): Test immediate write & close.

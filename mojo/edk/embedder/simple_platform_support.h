@@ -30,6 +30,10 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSupport final
   PlatformSharedBuffer* CreateSharedBufferFromHandle(
       size_t num_bytes,
       ScopedPlatformHandle platform_handle) override;
+  PlatformSharedBuffer* CreateSharedBufferFromSharedMemoryHandle(
+      size_t num_bytes,
+      bool read_only,
+      base::SharedMemoryHandle handle) override;
 
  private:
   MOJO_DISALLOW_COPY_AND_ASSIGN(SimplePlatformSupport);

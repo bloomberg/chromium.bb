@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/shared_memory_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -29,6 +30,10 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSupport {
   virtual PlatformSharedBuffer* CreateSharedBufferFromHandle(
       size_t num_bytes,
       ScopedPlatformHandle platform_handle) = 0;
+  virtual PlatformSharedBuffer* CreateSharedBufferFromSharedMemoryHandle(
+      size_t num_bytes,
+      bool read_only,
+      base::SharedMemoryHandle handle) = 0;
 
  protected:
   PlatformSupport() {}

@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -190,6 +191,39 @@ TEST(SimplePlatformSharedBufferTest, MappingsOutliveBuffer) {
 
   static_cast<char*>(mapping2->GetBase())[1] = 'y';
   EXPECT_EQ('y', static_cast<char*>(mapping1->GetBase())[51]);
+}
+
+TEST(SimplePlatformSharedBufferTest, FromSharedMemoryHandle) {
+  const size_t kBufferSize = 1234;
+  base::SharedMemoryCreateOptions options;
+  options.size = kBufferSize;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  options.type = base::SharedMemoryHandle::POSIX;
+#endif
+  base::SharedMemory shared_memory;
+  ASSERT_TRUE(shared_memory.Create(options));
+  ASSERT_TRUE(shared_memory.Map(kBufferSize));
+
+  base::SharedMemoryHandle shm_handle =
+      base::SharedMemory::DuplicateHandle(shared_memory.handle());
+  scoped_refptr<SimplePlatformSharedBuffer> simple_buffer(
+      SimplePlatformSharedBuffer::CreateFromSharedMemoryHandle(
+          kBufferSize, false /* read_only */, shm_handle));
+  ASSERT_TRUE(simple_buffer);
+
+  scoped_ptr<PlatformSharedBufferMapping> mapping =
+      simple_buffer->Map(0, kBufferSize);
+  ASSERT_TRUE(mapping);
+
+  const int kOffset = 123;
+  char* base_memory = static_cast<char*>(shared_memory.memory());
+  char* mojo_memory = static_cast<char*>(mapping->GetBase());
+  base_memory[kOffset] = 0;
+  EXPECT_EQ(0, mojo_memory[kOffset]);
+  base_memory[kOffset] = 'a';
+  EXPECT_EQ('a', mojo_memory[kOffset]);
+  mojo_memory[kOffset] = 'z';
+  EXPECT_EQ('z', base_memory[kOffset]);
 }
 
 }  // namespace

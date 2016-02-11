@@ -84,6 +84,17 @@ MojoResult SharedBufferDispatcher::Create(
 }
 
 // static
+MojoResult SharedBufferDispatcher::CreateFromPlatformSharedBuffer(
+    const scoped_refptr<PlatformSharedBuffer>& shared_buffer,
+    scoped_refptr<SharedBufferDispatcher>* result) {
+  if (!shared_buffer)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  *result = CreateInternal(shared_buffer);
+  return MOJO_RESULT_OK;
+}
+
+// static
 scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     const void* bytes,
     size_t num_bytes,

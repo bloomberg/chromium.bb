@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -79,6 +80,19 @@ CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
 MOJO_SYSTEM_IMPL_EXPORT MojoResult
 PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
                           ScopedPlatformHandle* platform_handle);
+
+// Creates a |MojoHandle| that wraps the given |SharedMemoryHandle| (taking
+// ownership of it). |num_bytes| is the size of the shared memory object, and
+// |read_only| is whether the handle is a read-only handle to shared memory.
+// This |MojoHandle| is a Mojo shared buffer and can be manipulated using the
+// shared buffer functions and transferred over a message pipe.
+// TODO(crbug.com/556587): Support read-only handles. Currently, |read_only|
+// must be false.
+MOJO_SYSTEM_IMPL_EXPORT MojoResult
+CreateSharedBufferWrapper(base::SharedMemoryHandle shared_memory_handle,
+                          size_t num_bytes,
+                          bool read_only,
+                          MojoHandle* mojo_wrapper_handle);
 
 // Initialialization/shutdown for interprocess communication (IPC) -------------
 

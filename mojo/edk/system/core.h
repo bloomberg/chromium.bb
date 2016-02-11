@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -74,11 +75,18 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       const std::vector<Dispatcher::DispatcherInTransit>& dispatchers,
       MojoHandle* handles);
 
+  // See "mojo/edk/embedder/embedder.h" for more information on these functions.
   MojoResult CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
                                          MojoHandle* wrapper_handle);
 
   MojoResult PassWrappedPlatformHandle(MojoHandle wrapper_handle,
                                        ScopedPlatformHandle* platform_handle);
+
+  MojoResult CreateSharedBufferWrapper(
+      base::SharedMemoryHandle shared_memory_handle,
+      size_t num_bytes,
+      bool read_only,
+      MojoHandle* mojo_wrapper_handle);
 
   // Requests that the EDK tear itself down. |callback| will be called once
   // the shutdown process is complete. Note that |callback| is always called

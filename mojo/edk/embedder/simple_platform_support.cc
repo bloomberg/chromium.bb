@@ -31,5 +31,14 @@ PlatformSharedBuffer* SimplePlatformSupport::CreateSharedBufferFromHandle(
       num_bytes, std::move(platform_handle));
 }
 
+PlatformSharedBuffer*
+SimplePlatformSupport::CreateSharedBufferFromSharedMemoryHandle(
+    size_t num_bytes,
+    bool read_only,
+    base::SharedMemoryHandle handle) {
+  return SimplePlatformSharedBuffer::CreateFromSharedMemoryHandle(
+      num_bytes, read_only, handle);
+}
+
 }  // namespace edk
 }  // namespace mojo

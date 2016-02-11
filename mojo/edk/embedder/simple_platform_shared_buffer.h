@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -29,6 +30,11 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSharedBuffer final
   static SimplePlatformSharedBuffer* CreateFromPlatformHandle(
       size_t num_bytes,
       ScopedPlatformHandle platform_handle);
+
+  static SimplePlatformSharedBuffer* CreateFromSharedMemoryHandle(
+      size_t num_bytes,
+      bool read_only,
+      base::SharedMemoryHandle handle);
 
   // |PlatformSharedBuffer| implementation:
   size_t GetNumBytes() const override;
@@ -51,6 +57,8 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSharedBuffer final
   // should verify that |platform_handle| is an appropriate handle for the
   // claimed |num_bytes_|.)
   bool InitFromPlatformHandle(ScopedPlatformHandle platform_handle);
+
+  void InitFromSharedMemoryHandle(base::SharedMemoryHandle handle);
 
   const size_t num_bytes_;
 
