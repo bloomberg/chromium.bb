@@ -279,8 +279,6 @@ private:
     static int heapIndexForObjectSize(size_t);
     static bool isNormalHeapIndex(int);
 
-    static void decommitCallbackStacks();
-
     static CallbackStack* s_markingStack;
     static CallbackStack* s_postMarkingCallbackStack;
     static CallbackStack* s_globalWeakCallbackStack;

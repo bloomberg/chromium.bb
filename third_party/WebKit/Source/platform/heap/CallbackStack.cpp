@@ -3,46 +3,14 @@
 // found in the LICENSE file.
 
 #include "platform/heap/CallbackStack.h"
-#include "wtf/PageAllocator.h"
 
 namespace blink {
 
-CallbackStack::Block::Block(Block* next)
+void CallbackStack::Block::clear()
 {
-    static_assert((blockSize * sizeof(Item)) % WTF::kPageAllocationGranularity == 0, "CallbackStack::blockSize * sizeof(Item) must be a multiple of WTF::kPageAllocationGranularity");
-    m_buffer = static_cast<Item*>(WTF::allocPages(nullptr, blockSize * sizeof(Item), WTF::kPageAllocationGranularity, WTF::PageAccessible));
-    RELEASE_ASSERT(m_buffer);
-
-#if ENABLE(ASSERT)
-    for (size_t i = 0; i < blockSize; i++)
-        m_buffer[i] = Item(0, 0);
-#endif
-
-    m_limit = &(m_buffer[blockSize]);
-    m_current = &(m_buffer[0]);
-    m_next = next;
-}
-
-CallbackStack::Block::~Block()
-{
-    WTF::freePages(m_buffer, blockSize * sizeof(Item));
-    m_buffer = nullptr;
-    m_limit = nullptr;
-    m_current = nullptr;
-    m_next = nullptr;
-}
-
-void CallbackStack::Block::decommit()
-{
-#if ENABLE(ASSERT)
-    for (size_t i = 0; i < blockSize; i++)
-        m_buffer[i] = Item(0, 0);
-#endif
-
-    WTF::discardSystemPages(m_buffer, blockSize * sizeof(Item));
-
     m_current = &m_buffer[0];
     m_next = nullptr;
+    clearUnused();
 }
 
 void CallbackStack::Block::invokeEphemeronCallbacks(Visitor* visitor)
@@ -67,28 +35,34 @@ bool CallbackStack::Block::hasCallbackForObject(const void* object)
 }
 #endif
 
-CallbackStack::CallbackStack()
-    : m_first(new Block(0))
-    , m_last(m_first)
+void CallbackStack::Block::clearUnused()
+{
+#if ENABLE(ASSERT)
+    for (size_t i = 0; i < blockSize; i++)
+        m_buffer[i] = Item(0, 0);
+#endif
+}
+
+CallbackStack::CallbackStack() : m_first(new Block(0)), m_last(m_first)
 {
 }
 
 CallbackStack::~CallbackStack()
 {
-    RELEASE_ASSERT(isEmpty());
+    clear();
     delete m_first;
     m_first = nullptr;
     m_last = nullptr;
 }
 
-void CallbackStack::decommit()
+void CallbackStack::clear()
 {
     Block* next;
     for (Block* current = m_first->next(); current; current = next) {
         next = current->next();
         delete current;
     }
-    m_first->decommit();
+    m_first->clear();
     m_last = m_first;
 }
 
@@ -112,7 +86,7 @@ CallbackStack::Item* CallbackStack::popSlow()
         Block* next = m_first->next();
         if (!next) {
 #if ENABLE(ASSERT)
-            m_first->decommit();
+            m_first->clear();
 #endif
             return nullptr;
         }
