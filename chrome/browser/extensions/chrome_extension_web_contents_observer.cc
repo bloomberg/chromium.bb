@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -205,8 +206,17 @@ void ChromeExtensionWebContentsObserver::SetExtensionIsolationTrial(
             "SiteIsolationExtensionsActive", "FieldTrial");
       }
     } else {
-      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-          "SiteIsolationExtensionsActive", "Default");
+      if (!base::FieldTrialList::FindFullName("SiteIsolationExtensions")
+               .empty()) {
+        // The field trial is active, but we are in a control group with oopifs
+        // disabled.
+        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+            "SiteIsolationExtensionsActive", "Control");
+      } else {
+        // The field trial is not active for this version.
+        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+            "SiteIsolationExtensionsActive", "Default");
+      }
     }
 
     if (rappor::RapporService* rappor = g_browser_process->rappor_service()) {

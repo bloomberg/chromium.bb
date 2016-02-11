@@ -1097,7 +1097,10 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, VerifyFieldTrialGroup) {
       group = "FieldTrial";
     }
   } else {
-    group = "Default";
+    if (base::FieldTrialList::FindFullName("SiteIsolationExtensions").empty())
+      group = "Default";
+    else
+      group = "Control";
   }
 
   EXPECT_TRUE(IsInTrialGroup("SiteIsolationExtensionsActive", group));
