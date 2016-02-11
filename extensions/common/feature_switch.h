@@ -6,6 +6,7 @@
 #define EXTENSIONS_COMMON_FEATURE_SWITCH_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 
@@ -26,8 +27,10 @@ namespace extensions {
 //    the finch config).
 // 3. If there is a switch name, and the switch is present in the command line,
 //    the command line value will be used.
-// 4. If there is a finch experiment associated and applicable to the machine,
-//    the finch value will be used.
+// 4. If there are field trials associated with the feature, and the machine
+//    is in the "Enabled" group for all field trials, then the feature is
+//    enabled. If the machine is in the "Disabled" group for any field trials,
+//    the feature is disabled.
 // 5. Otherwise, the default value is used.
 class FeatureSwitch {
  public:
@@ -72,13 +75,17 @@ class FeatureSwitch {
   FeatureSwitch(const char* switch_name,
                 const char* field_trial_name,
                 DefaultValue default_value);
+  FeatureSwitch(const char* switch_name,
+                const std::vector<std::string>& required_field_trials,
+                DefaultValue default_value);
   FeatureSwitch(const base::CommandLine* command_line,
                 const char* switch_name,
                 DefaultValue default_value);
   FeatureSwitch(const base::CommandLine* command_line,
                 const char* switch_name,
-                const char* field_trial_name,
+                const std::vector<std::string>& required_field_trials,
                 DefaultValue default_value);
+  ~FeatureSwitch();
 
   // Consider using ScopedOverride instead.
   void SetOverrideValue(OverrideValue value);
@@ -92,7 +99,7 @@ class FeatureSwitch {
 
   const base::CommandLine* command_line_;
   const char* switch_name_;
-  const char* field_trial_name_;
+  std::vector<std::string> required_field_trials_;
   bool default_value_;
   OverrideValue override_value_;
 

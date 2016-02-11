@@ -15,10 +15,20 @@ namespace extensions {
 
 namespace {
 
+// The switch media-router is defined in chrome/common/chrome_switches.cc, but
+// we can't depend on chrome here.
+const char kMediaRouterFlag[] = "media-router";
+
 const char kEnableMediaRouterExperiment[] = "EnableMediaRouter";
 const char kEnableMediaRouterWithCastExtensionExperiment[] =
     "EnableMediaRouterWithCastExtension";
 const char kExtensionActionRedesignExperiment[] = "ExtensionActionRedesign";
+
+const char* kMediaRouterRequiredExperiments[] = {
+    kEnableMediaRouterExperiment, kExtensionActionRedesignExperiment};
+const char* kMediaRouterWithCastExtensionRequiredExperiments[] = {
+    kEnableMediaRouterWithCastExtensionExperiment,
+    kExtensionActionRedesignExperiment};
 
 class CommonSwitches {
  public:
@@ -51,14 +61,19 @@ class CommonSwitches {
                                    FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
                          FeatureSwitch::DEFAULT_ENABLED),
-        // The switch media-router is defined in
-        // chrome/common/chrome_switches.cc, but we can't depend on chrome here.
-        media_router("media-router",
-                     kEnableMediaRouterExperiment,
+        media_router(kMediaRouterFlag,
+                     std::vector<std::string>(
+                         kMediaRouterRequiredExperiments,
+                         kMediaRouterRequiredExperiments +
+                             arraysize(kMediaRouterRequiredExperiments)),
                      FeatureSwitch::DEFAULT_DISABLED),
         media_router_with_cast_extension(
-            "media-router",
-            kEnableMediaRouterWithCastExtensionExperiment,
+            kMediaRouterFlag,
+            std::vector<std::string>(
+                kMediaRouterWithCastExtensionRequiredExperiments,
+                kMediaRouterWithCastExtensionRequiredExperiments +
+                    arraysize(
+                        kMediaRouterWithCastExtensionRequiredExperiments)),
             FeatureSwitch::DEFAULT_DISABLED) {
   }
 
@@ -107,6 +122,9 @@ FeatureSwitch* FeatureSwitch::extension_action_redesign() {
   // Force-enable the redesigned extension action toolbar when the Media Router
   // is enabled. Should be removed when the toolbar redesign is used by default.
   // See crbug.com/514694
+  // Note that if Media Router is enabled by experiment, it implies that the
+  // extension action redesign is also enabled by experiment. Thus it is fine
+  // to return the override switch.
   // TODO(kmarshall): Remove this override.
   if (media_router()->IsEnabled())
     return &g_common_switches.Get().extension_action_redesign_override;
@@ -152,23 +170,38 @@ FeatureSwitch::FeatureSwitch(const char* switch_name,
                              DefaultValue default_value)
     : FeatureSwitch(base::CommandLine::ForCurrentProcess(),
                     switch_name,
-                    field_trial_name,
+                    std::vector<std::string>(1, field_trial_name),
+                    default_value) {}
+
+FeatureSwitch::FeatureSwitch(
+    const char* switch_name,
+    const std::vector<std::string>& required_field_trials,
+    DefaultValue default_value)
+    : FeatureSwitch(base::CommandLine::ForCurrentProcess(),
+                    switch_name,
+                    required_field_trials,
                     default_value) {}
 
 FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
                              const char* switch_name,
                              DefaultValue default_value)
-    : FeatureSwitch(command_line, switch_name, nullptr, default_value) {}
+    : FeatureSwitch(command_line,
+                    switch_name,
+                    std::vector<std::string>(),
+                    default_value) {}
 
-FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
-                             const char* switch_name,
-                             const char* field_trial_name,
-                             DefaultValue default_value)
+FeatureSwitch::FeatureSwitch(
+    const base::CommandLine* command_line,
+    const char* switch_name,
+    const std::vector<std::string>& required_field_trials,
+    DefaultValue default_value)
     : command_line_(command_line),
       switch_name_(switch_name),
-      field_trial_name_(field_trial_name),
+      required_field_trials_(required_field_trials),
       default_value_(default_value == DEFAULT_ENABLED),
       override_value_(OVERRIDE_NONE) {}
+
+FeatureSwitch::~FeatureSwitch(){};
 
 bool FeatureSwitch::IsEnabled() const {
   if (override_value_ != OVERRIDE_NONE)
@@ -187,19 +220,33 @@ bool FeatureSwitch::IsEnabled() const {
   if (switch_value == "0")
     return false;
 
+  // TODO(imcheng): Don't check |default_value_|. Otherwise, we could improperly
+  // ignore an enable/disable switch if there is a field trial active.
+  // crbug.com/585569
   if (!default_value_ && command_line_->HasSwitch(GetLegacyEnableFlag()))
     return true;
 
   if (default_value_ && command_line_->HasSwitch(GetLegacyDisableFlag()))
     return false;
 
-  if (field_trial_name_) {
-    std::string group_name =
-        base::FieldTrialList::FindFullName(field_trial_name_);
-    if (group_name == "Enabled")
-      return true;
-    if (group_name == "Disabled")
+  if (!required_field_trials_.empty()) {
+    bool enabled_by_field_trial = true;
+    bool disabled_by_field_trial = false;
+    for (const std::string& field_trial_name : required_field_trials_) {
+      std::string group_name =
+          base::FieldTrialList::FindFullName(field_trial_name);
+      if (group_name != "Enabled") {
+        enabled_by_field_trial = false;
+        if (group_name == "Disabled") {
+          disabled_by_field_trial = true;
+          break;
+        }
+      }
+    }
+    if (disabled_by_field_trial)
       return false;
+    if (enabled_by_field_trial)
+      return true;
   }
 
   return default_value_;
