@@ -56,7 +56,6 @@ public:
         HTMLParserOptions options;
         WeakPtr<HTMLDocumentParser> parser;
         OwnPtr<XSSAuditor> xssAuditor;
-        OwnPtr<TokenPreloadScanner> preloadScanner;
         OwnPtr<TextResourceDecoder> decoder;
         RefPtr<ParsedChunkQueue> parsedChunkQueue;
         // outstandingTokenLimit must be greater than or equal to
@@ -65,7 +64,7 @@ public:
         size_t pendingTokenLimit;
     };
 
-    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, PassOwnPtr<WebTaskRunner>);
+    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, PassOwnPtr<WebTaskRunner>);
 
     struct Checkpoint {
         USING_FAST_MALLOC(Checkpoint);
@@ -92,7 +91,7 @@ public:
     void forcePlaintextForTextDocument();
 
 private:
-    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, PassOwnPtr<WebTaskRunner>);
+    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, PassOwnPtr<WebTaskRunner>);
     ~BackgroundHTMLParser();
 
     void appendDecodedBytes(const String&);

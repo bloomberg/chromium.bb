@@ -442,7 +442,7 @@ private:
     IntegrityMetadataSet m_integrityMetadata;
 };
 
-TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters)
+TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData)
     : m_documentURL(documentURL)
     , m_inStyle(false)
     , m_inPicture(false)
@@ -450,9 +450,10 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<Cac
     , m_isCSPEnabled(false)
     , m_templateCount(0)
     , m_documentParameters(documentParameters)
+    , m_mediaValues(MediaValuesCached::create(mediaValuesCachedData))
 {
     ASSERT(m_documentParameters.get());
-    ASSERT(m_documentParameters->mediaValues.get());
+    ASSERT(m_mediaValues.get());
 }
 
 TokenPreloadScanner::~TokenPreloadScanner()
@@ -489,16 +490,16 @@ void TokenPreloadScanner::scan(const CompactHTMLToken& token, const SegmentedStr
     scanCommon(token, source, requests);
 }
 
-static void handleMetaViewport(const String& attributeValue, CachedDocumentParameters* documentParameters)
+static void handleMetaViewport(const String& attributeValue, const CachedDocumentParameters* documentParameters, MediaValuesCached* mediaValues)
 {
     if (!documentParameters->viewportMetaEnabled)
         return;
     ViewportDescription description(ViewportDescription::ViewportMeta);
     HTMLMetaElement::getViewportDescriptionFromContentAttribute(attributeValue, description, nullptr, documentParameters->viewportMetaZeroValuesQuirk);
-    FloatSize initialViewport(documentParameters->mediaValues->deviceWidth(), documentParameters->mediaValues->deviceHeight());
+    FloatSize initialViewport(mediaValues->deviceWidth(), mediaValues->deviceHeight());
     PageScaleConstraints constraints = description.resolve(initialViewport, documentParameters->defaultViewportMinWidth);
-    documentParameters->mediaValues->setViewportHeight(constraints.layoutSize.height());
-    documentParameters->mediaValues->setViewportWidth(constraints.layoutSize.width());
+    mediaValues->setViewportHeight(constraints.layoutSize.height());
+    mediaValues->setViewportWidth(constraints.layoutSize.width());
 }
 
 static void handleMetaReferrer(const String& attributeValue, CachedDocumentParameters* documentParameters, CSSPreloadScanner* cssScanner)
@@ -510,7 +511,7 @@ static void handleMetaReferrer(const String& attributeValue, CachedDocumentParam
 }
 
 template <typename Token>
-static void handleMetaNameAttribute(const Token& token, CachedDocumentParameters* documentParameters, CSSPreloadScanner* cssScanner)
+static void handleMetaNameAttribute(const Token& token, CachedDocumentParameters* documentParameters, MediaValuesCached* mediaValues, CSSPreloadScanner* cssScanner)
 {
     const typename Token::Attribute* nameAttribute = token.getAttributeItem(nameAttr);
     if (!nameAttribute)
@@ -523,7 +524,7 @@ static void handleMetaNameAttribute(const Token& token, CachedDocumentParameters
 
     String contentAttributeValue(contentAttribute->value);
     if (equalIgnoringCase(nameAttributeValue, "viewport")) {
-        handleMetaViewport(contentAttributeValue, documentParameters);
+        handleMetaViewport(contentAttributeValue, documentParameters, mediaValues);
         return;
     }
 
@@ -607,7 +608,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
                 return;
             }
 
-            handleMetaNameAttribute(token, m_documentParameters.get(), &m_cssScanner);
+            handleMetaNameAttribute(token, m_documentParameters.get(), m_mediaValues.get(), &m_cssScanner);
         }
 
         if (match(tagImpl, pictureTag)) {
@@ -616,7 +617,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             return;
         }
 
-        StartTagScanner scanner(tagImpl, m_documentParameters->mediaValues);
+        StartTagScanner scanner(tagImpl, m_mediaValues);
         scanner.processAttributes(token.attributes());
         if (m_inPicture)
             scanner.handlePictureSourceURL(m_pictureData);
@@ -641,8 +642,8 @@ void TokenPreloadScanner::updatePredictedBaseURL(const Token& token)
     }
 }
 
-HTMLPreloadScanner::HTMLPreloadScanner(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters)
-    : m_scanner(documentURL, documentParameters)
+HTMLPreloadScanner::HTMLPreloadScanner(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData)
+    : m_scanner(documentURL, documentParameters, mediaValuesCachedData)
     , m_tokenizer(HTMLTokenizer::create(options))
 {
 }
@@ -678,16 +679,11 @@ void HTMLPreloadScanner::scan(ResourcePreloader* preloader, const KURL& starting
     preloader->takeAndPreload(requests);
 }
 
-CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPtrWillBeRawPtr<MediaValuesCached> givenMediaValues)
+CachedDocumentParameters::CachedDocumentParameters(Document* document)
 {
     ASSERT(isMainThread());
     ASSERT(document);
     doHtmlPreloadScanning = !document->settings() || document->settings()->doHtmlPreloadScanning();
-    if (givenMediaValues)
-        mediaValues = givenMediaValues;
-    else
-        mediaValues = MediaValuesCached::create(*document);
-    ASSERT(mediaValues->isSafeToSendToAnotherThread());
     defaultViewportMinWidth = document->viewportDefaultMinWidth();
     viewportMetaZeroValuesQuirk = document->settings() && document->settings()->viewportMetaZeroValuesQuirk();
     viewportMetaEnabled = document->settings() && document->settings()->viewportMetaEnabled();
