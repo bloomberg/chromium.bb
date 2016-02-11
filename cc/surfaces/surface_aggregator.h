@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
@@ -154,6 +155,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // Resource list for the aggregated frame.
   TransferableResourceArray* dest_resource_list_;
+
+  base::WeakPtrFactory<SurfaceAggregator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceAggregator);
 };

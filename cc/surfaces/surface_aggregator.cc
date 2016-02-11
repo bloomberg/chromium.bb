@@ -50,7 +50,8 @@ SurfaceAggregator::SurfaceAggregator(SurfaceAggregatorClient* client,
       manager_(manager),
       provider_(provider),
       next_render_pass_id_(1),
-      aggregate_only_damaged_(aggregate_only_damaged) {
+      aggregate_only_damaged_(aggregate_only_damaged),
+      weak_factory_(this) {
   DCHECK(manager_);
 }
 
@@ -498,6 +499,11 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
 // return the combined damage rect.
 gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id,
                                          PrewalkResult* result) {
+  // This is for debugging a possible use after free.
+  // TODO(jbauman): Remove this once we have enough information.
+  // http://crbug.com/560181
+  base::WeakPtr<SurfaceAggregator> debug_weak_this = weak_factory_.GetWeakPtr();
+
   if (referenced_surfaces_.count(surface_id))
     return gfx::Rect();
   Surface* surface = manager_->GetSurfaceForId(surface_id);
@@ -521,6 +527,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id,
       surface->factory()->RefResources(frame_data->resource_list);
     provider_->ReceiveFromChild(child_id, frame_data->resource_list);
   }
+  CHECK(debug_weak_this.get());
 
   ResourceProvider::ResourceIdSet referenced_resources;
   size_t reserve_size = frame_data->resource_list.size();
@@ -531,6 +538,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id,
   const ResourceProvider::ResourceIdMap& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(child_id) : empty_map;
 
+  CHECK(debug_weak_this.get());
   // Each pair in the vector is a child surface and the transform from its
   // target to the root target of this surface.
   std::vector<std::pair<SurfaceId, gfx::Transform>> child_surfaces;
@@ -560,10 +568,12 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id,
 
   if (invalid_frame)
     return gfx::Rect();
+  CHECK(debug_weak_this.get());
   valid_surfaces_.insert(surface->surface_id());
 
   if (provider_)
     provider_->DeclareUsedResourcesFromChild(child_id, referenced_resources);
+  CHECK(debug_weak_this.get());
 
   gfx::Rect damage_rect;
   if (!frame_data->render_pass_list.empty()) {
@@ -582,6 +592,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id,
         MathUtil::MapEnclosingClippedRect(surface_info.second, surface_damage));
   }
 
+  CHECK(debug_weak_this.get());
   for (const auto& surface_id : surface_frame->metadata.referenced_surfaces) {
     if (!contained_surfaces_.count(surface_id)) {
       result->undrawn_surfaces.insert(surface_id);
@@ -589,9 +600,11 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id,
     }
   }
 
+  CHECK(debug_weak_this.get());
   if (surface->factory())
     surface->factory()->WillDrawSurface(surface->surface_id(), damage_rect);
 
+  CHECK(debug_weak_this.get());
   for (const auto& render_pass : frame_data->render_pass_list)
     result->has_copy_requests |= !render_pass->copy_requests.empty();
 
