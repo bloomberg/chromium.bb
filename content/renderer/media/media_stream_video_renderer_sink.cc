@@ -40,6 +40,10 @@ MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
 }
 
 MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {
+  if (gpu_memory_buffer_pool_) {
+    media_task_runner_->DeleteSoon(FROM_HERE,
+                                   gpu_memory_buffer_pool_.release());
+  }
 }
 
 void MediaStreamVideoRendererSink::Start() {
@@ -109,6 +113,9 @@ void MediaStreamVideoRendererSink::OnVideoFrame(
     return;
   }
 
+  //  |gpu_memory_buffer_pool_| deletion is going to be posted to
+  //  |media_task_runner_|. base::Unretained() usage is fine since
+  //  |gpu_memory_buffer_pool_| outlives the task.
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
