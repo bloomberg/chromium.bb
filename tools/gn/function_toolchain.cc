@@ -481,9 +481,10 @@ const char kTool_Help[] =
     "        that actually produces these files.\n"
     "\n"
     "        If you specify more than one output for shared library links,\n"
-    "        you should consider setting link_output and depend_output.\n"
-    "        Otherwise, the first entry in the outputs list should always be\n"
-    "        the main output which will be linked to.\n"
+    "        you should consider setting link_output, depend_output, and\n"
+    "        runtime_link_output. Otherwise, the first entry in the\n"
+    "        outputs list should always be the main output which will be\n"
+    "        linked to.\n"
     "\n"
     "        Example for a compiler tool that produces .obj files:\n"
     "          outputs = [\n"
@@ -503,20 +504,22 @@ const char kTool_Help[] =
     "\n"
     "    link_output  [string with substitutions]\n"
     "    depend_output  [string with substitutions]\n"
+    "    runtime_link_output  [string with substitutions]\n"
     "        Valid for: \"solink\" only (optional)\n"
     "\n"
-    "        These two files specify which of the outputs from the solink\n"
+    "        These three files specify which of the outputs from the solink\n"
     "        tool should be used for linking and dependency tracking. These\n"
     "        should match entries in the \"outputs\". If unspecified, the\n"
-    "        first item in the \"outputs\" array will be used for both. See\n"
+    "        first item in the \"outputs\" array will be used for all. See\n"
     "        \"Separate linking and dependencies for shared libraries\"\n"
-    "        below for more.\n"
+    "        below for more.  If link_output is set but runtime_link_output\n"
+    "        is not set, runtime_link_output defaults to link_output.\n"
     "\n"
     "        On Windows, where the tools produce a .dll shared library and\n"
-    "        a .lib import library, you will want both of these to be the\n"
-    "        import library. On Linux, if you're not doing the separate\n"
-    "        linking/dependency optimization, both of these should be the\n"
-    "        .so output.\n"
+    "        a .lib import library, you will want the first two to be the\n"
+    "        import library and the third one to be the .dll file.\n"
+    "        On Linux, if you're not doing the separate linking/dependency\n"
+    "        optimization, all of these should be the .so output.\n"
     "\n"
     "    output_prefix  [string]\n"
     "        Valid for: Linker tools (optional)\n"
@@ -827,14 +830,16 @@ Value RunTool(Scope* scope,
       !ReadDepsFormat(&block_scope, tool.get(), err) ||
       !ReadPattern(&block_scope, "description", subst_validator, tool.get(),
                    &Tool::set_description, err) ||
-      !ReadString(&block_scope, "lib_switch", tool.get(),
-                  &Tool::set_lib_switch, err) ||
+      !ReadString(&block_scope, "lib_switch", tool.get(), &Tool::set_lib_switch,
+                  err) ||
       !ReadString(&block_scope, "lib_dir_switch", tool.get(),
                   &Tool::set_lib_dir_switch, err) ||
       !ReadPattern(&block_scope, "link_output", subst_validator, tool.get(),
                    &Tool::set_link_output, err) ||
       !ReadPattern(&block_scope, "depend_output", subst_validator, tool.get(),
                    &Tool::set_depend_output, err) ||
+      !ReadPattern(&block_scope, "runtime_link_output", subst_validator,
+                   tool.get(), &Tool::set_runtime_link_output, err) ||
       !ReadString(&block_scope, "output_prefix", tool.get(),
                   &Tool::set_output_prefix, err) ||
       !ReadPrecompiledHeaderType(&block_scope, tool.get(), err) ||
@@ -854,8 +859,9 @@ Value RunTool(Scope* scope,
       return Value();
   }
 
-  // Validate that the link_output and depend_output refer to items in the
-  // outputs and aren't defined for irrelevant tool types.
+  // Validate that the link_output, depend_output, and runtime_link_output
+  // refer to items in the outputs and aren't defined for irrelevant tool
+  // types.
   if (!tool->link_output().empty()) {
     if (tool_type != Toolchain::TYPE_SOLINK &&
         tool_type != Toolchain::TYPE_SOLINK_MODULE) {
@@ -887,6 +893,19 @@ Value RunTool(Scope* scope,
     *err = Err(function, "Both link_output and depend_output should either "
         "be specified or they should both be empty.");
     return Value();
+  }
+  if (!tool->runtime_link_output().empty()) {
+    if (tool_type != Toolchain::TYPE_SOLINK &&
+        tool_type != Toolchain::TYPE_SOLINK_MODULE) {
+      *err = Err(function, "This tool specifies a runtime_link_output.",
+          "This is only valid for solink and solink_module tools.");
+      return Value();
+    }
+    if (!IsPatternInOutputList(tool->outputs(), tool->runtime_link_output())) {
+      *err = Err(function, "This tool's runtime_link_output is bad.",
+                 "It must match one of the outputs.");
+      return Value();
+    }
   }
 
   // Make sure there weren't any vars set in this tool that were unused.

@@ -2486,9 +2486,10 @@
         that actually produces these files.
 
         If you specify more than one output for shared library links,
-        you should consider setting link_output and depend_output.
-        Otherwise, the first entry in the outputs list should always be
-        the main output which will be linked to.
+        you should consider setting link_output, depend_output, and
+        runtime_link_output. Otherwise, the first entry in the
+        outputs list should always be the main output which will be
+        linked to.
 
         Example for a compiler tool that produces .obj files:
           outputs = [
@@ -2507,20 +2508,22 @@
 
     link_output  [string with substitutions]
     depend_output  [string with substitutions]
+    runtime_link_output  [string with substitutions]
         Valid for: "solink" only (optional)
 
-        These two files specify which of the outputs from the solink
+        These three files specify which of the outputs from the solink
         tool should be used for linking and dependency tracking. These
         should match entries in the "outputs". If unspecified, the
-        first item in the "outputs" array will be used for both. See
+        first item in the "outputs" array will be used for all. See
         "Separate linking and dependencies for shared libraries"
-        below for more.
+        below for more.  If link_output is set but runtime_link_output
+        is not set, runtime_link_output defaults to link_output.
 
         On Windows, where the tools produce a .dll shared library and
-        a .lib import library, you will want both of these to be the
-        import library. On Linux, if you're not doing the separate
-        linking/dependency optimization, both of these should be the
-        .so output.
+        a .lib import library, you will want the first two to be the
+        import library and the third one to be the .dll file.
+        On Linux, if you're not doing the separate linking/dependency
+        optimization, all of these should be the .so output.
 
     output_prefix  [string]
         Valid for: Linker tools (optional)

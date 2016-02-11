@@ -457,6 +457,46 @@ TEST(Target, LinkAndDepOutputs) {
 
   EXPECT_EQ("./liba.so", target.link_output_file().value());
   EXPECT_EQ("./liba.so.TOC", target.dependency_output_file().value());
+  EXPECT_EQ("./liba.so", target.runtime_link_output_file().value());
+}
+
+// Tests that runtime_link output works without an explicit link_output for
+// solink tools.
+TEST(Target, RuntimeLinkOuput) {
+  TestWithScope setup;
+  Err err;
+
+  Toolchain toolchain(setup.settings(), Label(SourceDir("//tc/"), "tc"));
+
+  scoped_ptr<Tool> solink_tool(new Tool());
+  solink_tool->set_output_prefix("");
+  solink_tool->set_default_output_extension(".dll");
+
+  const char kLibPattern[] =
+      "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.lib";
+  SubstitutionPattern lib_output =
+      SubstitutionPattern::MakeForTest(kLibPattern);
+
+  const char kDllPattern[] =
+      "{{root_out_dir}}/{{target_output_name}}{{output_extension}}";
+  SubstitutionPattern dll_output =
+      SubstitutionPattern::MakeForTest(kDllPattern);
+
+  solink_tool->set_outputs(
+      SubstitutionList::MakeForTest(kLibPattern, kDllPattern));
+
+  solink_tool->set_runtime_link_output(dll_output);
+
+  toolchain.SetTool(Toolchain::TYPE_SOLINK, std::move(solink_tool));
+
+  Target target(setup.settings(), Label(SourceDir("//a/"), "a"));
+  target.set_output_type(Target::SHARED_LIBRARY);
+  target.SetToolchain(&toolchain);
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  EXPECT_EQ("./a.dll.lib", target.link_output_file().value());
+  EXPECT_EQ("./a.dll.lib", target.dependency_output_file().value());
+  EXPECT_EQ("./a.dll", target.runtime_link_output_file().value());
 }
 
 // Shared libraries should be inherited across public shared liobrary

@@ -125,6 +125,14 @@ class Tool {
     depend_output_ = dep_out;
   }
 
+  const SubstitutionPattern& runtime_link_output() const {
+    return runtime_link_output_;
+  }
+  void set_runtime_link_output(const SubstitutionPattern& run_out) {
+    DCHECK(!complete_);
+    runtime_link_output_ = run_out;
+  }
+
   const std::string& output_prefix() const {
     return output_prefix_;
   }
@@ -187,6 +195,7 @@ class Tool {
   SubstitutionList outputs_;
   SubstitutionPattern link_output_;
   SubstitutionPattern depend_output_;
+  SubstitutionPattern runtime_link_output_;
   std::string output_prefix_;
   bool restat_;
   SubstitutionPattern rspfile_;

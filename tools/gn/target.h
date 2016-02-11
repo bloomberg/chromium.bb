@@ -257,6 +257,9 @@ class Target : public Item {
   const OutputFile& dependency_output_file() const {
     return dependency_output_file_;
   }
+  const OutputFile& runtime_link_output_file() const {
+    return runtime_link_output_file_;
+  }
 
   // Computes the set of output files resulting from compiling the given source
   // file. If the file can be compiled and the tool exists, fills the outputs
@@ -350,6 +353,7 @@ class Target : public Item {
   std::vector<OutputFile> computed_outputs_;
   OutputFile link_output_file_;
   OutputFile dependency_output_file_;
+  OutputFile runtime_link_output_file_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };

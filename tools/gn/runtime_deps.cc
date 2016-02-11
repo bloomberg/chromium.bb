@@ -53,7 +53,7 @@ void AddIfNew(const std::string& str,
 // targets. This is weird only for shared libraries.
 const OutputFile& GetMainOutput(const Target* target) {
   if (target->output_type() == Target::SHARED_LIBRARY)
-    return target->link_output_file();
+    return target->runtime_link_output_file();
   return target->dependency_output_file();
 }
 

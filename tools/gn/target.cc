@@ -531,6 +531,13 @@ void Target::FillOutputFiles() {
                   this, tool, tool->depend_output());
         }
       }
+      if (tool->runtime_link_output().empty()) {
+        runtime_link_output_file_ = link_output_file_;
+      } else {
+          runtime_link_output_file_ =
+              SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+                  this, tool, tool->runtime_link_output());
+      }
       break;
     case UNKNOWN:
     default:
