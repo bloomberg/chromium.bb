@@ -2323,3 +2323,44 @@ template("proto_java_library") {
     ]
   }
 }
+
+# Writes a script to root_out_dir/bin that passes --output-directory to the
+# wrapped script, in addition to forwarding arguments. Most / all of these
+# wrappers should be made deps of //tools/android:android_tools.
+#
+# Variables
+#   target: Script to wrap.
+#   flag_name: Default is "--output-directory"
+#
+# Example
+#   wrapper_script("foo_wrapper") {
+#     target = "//pkg/foo.py"
+#   }
+template("wrapper_script") {
+  action(target_name) {
+    _name = get_path_info(invoker.target, "name")
+    _output = "$root_out_dir/bin/$_name"
+
+    script = "//build/android/gyp/create_tool_wrapper.py"
+    outputs = [
+      _output,
+    ]
+
+    # The target isn't actually used by the script, but it's nice to have GN
+    # check that it exists.
+    inputs = [
+      invoker.target,
+    ]
+    args = [
+      "--output",
+      rebase_path(_output, root_build_dir),
+      "--target",
+      rebase_path(invoker.target, root_build_dir),
+      "--output-directory",
+      rebase_path(root_out_dir, root_build_dir),
+    ]
+    if (defined(invoker.flag_name)) {
+      args += [ "--flag-name=${invoker.flag_name}" ]
+    }
+  }
+}

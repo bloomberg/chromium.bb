@@ -8,6 +8,8 @@
 # GYP: //tools/android/android_tools.gyp:android_tools
 group("android_tools") {
   deps = [
+    "//build/android:wrapper_scripts",
+    "//third_party/android_platform:stack_wrapper",
     "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
     "//tools/android/adb_reboot",
     "//tools/android/file_poller",
@@ -15,6 +17,7 @@ group("android_tools") {
     "//tools/android/md5sum",
     "//tools/android/memtrack_helper:memtrack_helper",
     "//tools/android/purge_ashmem",
+    "//tools/perf:run_benchmark_wrapper",
   ]
 }
 

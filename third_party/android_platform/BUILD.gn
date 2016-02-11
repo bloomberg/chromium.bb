@@ -5,12 +5,12 @@
 import("//testing/test.gni")
 import("config.gni")
 
-gypi_values = exec_script("//build/gypi_to_gn.py",
-                          [ rebase_path("relocation_packer.gyp") ],
-                          "scope",
-                          [ "relocation_packer.gyp" ])
-
 if (current_toolchain == host_toolchain) {
+  gypi_values = exec_script("//build/gypi_to_gn.py",
+                            [ rebase_path("relocation_packer.gyp") ],
+                            "scope",
+                            [ "relocation_packer.gyp" ])
+
   # GYP: //third_party/android_platform/relocation_packer.gyp:android_lib_relocation_packer
   source_set("android_lib_relocation_packer") {
     deps = [
@@ -46,5 +46,13 @@ if (current_toolchain == host_toolchain) {
       "//testing/gtest",
     ]
     sources = gypi_values.relocation_packer_test_sources
+  }
+}
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  wrapper_script("stack_wrapper") {
+    target = "//third_party/android_platform/development/scripts/stack"
   }
 }
