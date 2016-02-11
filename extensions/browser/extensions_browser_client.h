@@ -246,6 +246,9 @@ class ExtensionsBrowserClient {
   virtual scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context);
 
+  // Returns the tab id for a given |web_contents|.
+  virtual int GetTabIdForWebContents(content::WebContents* web_contents);
+
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();
 

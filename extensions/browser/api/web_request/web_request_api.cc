@@ -1340,9 +1340,22 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       continue;
     }
 
+    int tab_id = -1;
+    int render_process_id = -1;
+    int render_frame_id = -1;
+    ExtensionApiFrameIdMap::FrameData frame_data;
+    // TODO(devlin): Figure out when one/both of these can fail, and if we
+    // need to address it.
+    if (content::ResourceRequestInfo::GetRenderFrameForRequest(
+            request, &render_process_id, &render_frame_id) &&
+        ExtensionApiFrameIdMap::Get()->GetCachedFrameDataOnIO(
+            render_process_id, render_frame_id, &frame_data)) {
+      tab_id = frame_data.tab_id;
+    }
     if (!is_web_view_guest &&
         !WebRequestPermissions::CanExtensionAccessURL(
-            extension_info_map, listener.extension_id, url, crosses_incognito,
+            extension_info_map, listener.extension_id, url, tab_id,
+            crosses_incognito,
             WebRequestPermissions::REQUIRE_HOST_PERMISSION)) {
       continue;
     }
@@ -2051,9 +2064,13 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
     // while having host permissions for http://www.example.com/foo/* and
     // http://www.example.com/bar/*.
     // For this reason we do only a coarse check here to warn the extension
-    // developer if he does something obviously wrong.
+    // developer if they do something obviously wrong.
     if (extension->permissions_data()
             ->GetEffectiveHostPermissions()
+            .is_empty() &&
+        extension->permissions_data()
+            ->withheld_permissions()
+            .explicit_hosts()
             .is_empty()) {
       error_ = keys::kHostPermissionsRequired;
       return false;

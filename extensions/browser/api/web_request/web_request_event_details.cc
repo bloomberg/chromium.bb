@@ -13,7 +13,6 @@
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
-#include "extensions/browser/extension_api_frame_id_map.h"
 #include "ipc/ipc_message.h"
 #include "net/base/auth.h"
 #include "net/base/upload_data_stream.h"
@@ -162,7 +161,7 @@ void WebRequestEventDetails::DetermineFrameIdOnUI() {
 void WebRequestEventDetails::DetermineFrameIdOnIO(
     const DeterminedFrameIdCallback& callback) {
   scoped_ptr<WebRequestEventDetails> self(this);
-  ExtensionApiFrameIdMap::Get()->GetFrameIdOnIO(
+  ExtensionApiFrameIdMap::Get()->GetFrameDataOnIO(
       render_process_id_, render_frame_id_,
       base::Bind(&WebRequestEventDetails::OnDeterminedFrameId,
                  base::Unretained(this), base::Passed(&self), callback));
@@ -189,10 +188,9 @@ scoped_ptr<base::DictionaryValue> WebRequestEventDetails::GetAndClearDict() {
 void WebRequestEventDetails::OnDeterminedFrameId(
     scoped_ptr<WebRequestEventDetails> self,
     const DeterminedFrameIdCallback& callback,
-    int extension_api_frame_id,
-    int extension_api_parent_frame_id) {
-  dict_.SetInteger(keys::kFrameIdKey, extension_api_frame_id);
-  dict_.SetInteger(keys::kParentFrameIdKey, extension_api_parent_frame_id);
+    const ExtensionApiFrameIdMap::FrameData& frame_data) {
+  dict_.SetInteger(keys::kFrameIdKey, frame_data.frame_id);
+  dict_.SetInteger(keys::kParentFrameIdKey, frame_data.parent_frame_id);
   callback.Run(std::move(self));
 }
 

@@ -41,6 +41,9 @@ class ActiveTabPermissionGranter
   // tab-specific permissions to it until the next page navigation or refresh.
   void GrantIfRequested(const Extension* extension);
 
+  // Clears tab-specific permissions for all extensions. Used only for testing.
+  void RevokeForTesting();
+
  private:
   // content::WebContentsObserver implementation.
   void DidNavigateMainFrame(

@@ -15,8 +15,6 @@ class ResourceContext;
 
 namespace extensions {
 
-class BrowserPermissionsPolicyDelegate;
-
 // Implements the extensions portion of ChromeContentBrowserClient.
 class ChromeContentBrowserClientExtensionsPart
     : public ChromeContentBrowserClientParts {
@@ -87,8 +85,6 @@ class ChromeContentBrowserClientExtensionsPart
       base::CommandLine* command_line,
       content::RenderProcessHost* process,
       Profile* profile) override;
-
-  scoped_ptr<BrowserPermissionsPolicyDelegate> permissions_policy_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientExtensionsPart);
 };

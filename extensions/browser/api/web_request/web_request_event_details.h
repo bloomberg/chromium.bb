@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 
 namespace net {
 class AuthChallengeInfo;
@@ -119,8 +120,7 @@ class WebRequestEventDetails {
  private:
   void OnDeterminedFrameId(scoped_ptr<WebRequestEventDetails> self,
                            const DeterminedFrameIdCallback& callback,
-                           int extension_api_frame_id,
-                           int extension_api_parent_frame_id);
+                           const ExtensionApiFrameIdMap::FrameData& frame_data);
 
   // The details that are always included in a webRequest event object.
   base::DictionaryValue dict_;

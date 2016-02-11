@@ -577,8 +577,6 @@
       'browser/extensions/browser_context_keyed_service_factories.h',
       'browser/extensions/browser_extension_window_controller.cc',
       'browser/extensions/browser_extension_window_controller.h',
-      'browser/extensions/browser_permissions_policy_delegate.cc',
-      'browser/extensions/browser_permissions_policy_delegate.h',
       'browser/extensions/bundle_installer.cc',
       'browser/extensions/bundle_installer.h',
       'browser/extensions/chrome_app_sorting.cc',

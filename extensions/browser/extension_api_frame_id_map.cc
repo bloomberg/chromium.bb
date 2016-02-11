@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
@@ -22,18 +23,32 @@ namespace {
 base::LazyInstance<ExtensionApiFrameIdMap>::Leaky g_map_instance =
     LAZY_INSTANCE_INITIALIZER;
 
+int GetTabId(content::RenderFrameHost* rfh) {
+  if (!rfh)
+    return -1;
+  return ExtensionsBrowserClient::Get()->GetTabIdForWebContents(
+      content::WebContents::FromRenderFrameHost(rfh));
+}
+
+bool IsFrameRoutingIdValid(int frame_routing_id) {
+  // frame_routing_id == -2 = MSG_ROUTING_NONE -> not a RenderFrameHost.
+  // frame_routing_id == -1 -> should be MSG_ROUTING_NONE, but there are
+  // callers that use "-1" for unknown frames.
+  return frame_routing_id > -1;
+}
+
 }  // namespace
 
 const int ExtensionApiFrameIdMap::kInvalidFrameId = -1;
 const int ExtensionApiFrameIdMap::kTopFrameId = 0;
 
-ExtensionApiFrameIdMap::CachedFrameIdPair::CachedFrameIdPair()
-    : frame_id(kInvalidFrameId), parent_frame_id(kInvalidFrameId) {}
+ExtensionApiFrameIdMap::FrameData::FrameData()
+    : frame_id(kInvalidFrameId), parent_frame_id(kInvalidFrameId), tab_id(-1) {}
 
-ExtensionApiFrameIdMap::CachedFrameIdPair::CachedFrameIdPair(
-    int frame_id,
-    int parent_frame_id)
-    : frame_id(frame_id), parent_frame_id(parent_frame_id) {}
+ExtensionApiFrameIdMap::FrameData::FrameData(int frame_id,
+                                             int parent_frame_id,
+                                             int tab_id)
+    : frame_id(frame_id), parent_frame_id(parent_frame_id), tab_id(tab_id) {}
 
 ExtensionApiFrameIdMap::RenderFrameIdKey::RenderFrameIdKey()
     : render_process_id(content::ChildProcessHost::kInvalidUniqueID),
@@ -45,10 +60,10 @@ ExtensionApiFrameIdMap::RenderFrameIdKey::RenderFrameIdKey(
     : render_process_id(render_process_id),
       frame_routing_id(frame_routing_id) {}
 
-ExtensionApiFrameIdMap::FrameIdCallbacks::FrameIdCallbacks()
+ExtensionApiFrameIdMap::FrameDataCallbacks::FrameDataCallbacks()
     : is_iterating(false) {}
 
-ExtensionApiFrameIdMap::FrameIdCallbacks::~FrameIdCallbacks() {}
+ExtensionApiFrameIdMap::FrameDataCallbacks::~FrameDataCallbacks() {}
 
 bool ExtensionApiFrameIdMap::RenderFrameIdKey::operator<(
     const RenderFrameIdKey& other) const {
@@ -125,103 +140,96 @@ content::RenderFrameHost* ExtensionApiFrameIdMap::GetRenderFrameHostById(
   return web_contents->FindFrameByFrameTreeNodeId(frame_id);
 }
 
-ExtensionApiFrameIdMap::CachedFrameIdPair ExtensionApiFrameIdMap::KeyToValue(
+ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
     const RenderFrameIdKey& key) const {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       key.render_process_id, key.frame_routing_id);
-  return CachedFrameIdPair(GetFrameId(rfh), GetParentFrameId(rfh));
+  return FrameData(GetFrameId(rfh), GetParentFrameId(rfh), GetTabId(rfh));
 }
 
-ExtensionApiFrameIdMap::CachedFrameIdPair
-ExtensionApiFrameIdMap::LookupFrameIdOnUI(const RenderFrameIdKey& key) {
+ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::LookupFrameDataOnUI(
+    const RenderFrameIdKey& key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  FrameIdMap::const_iterator frame_id_iter = frame_id_map_.find(key);
-  if (frame_id_iter != frame_id_map_.end())
+  FrameDataMap::const_iterator frame_id_iter = frame_data_map_.find(key);
+  if (frame_id_iter != frame_data_map_.end())
     return frame_id_iter->second;
 
-  CachedFrameIdPair cached_frame_id_pair = KeyToValue(key);
+  FrameData cached_frame_data = KeyToValue(key);
   // Don't save invalid values in the map.
-  if (cached_frame_id_pair.frame_id == kInvalidFrameId)
-    return cached_frame_id_pair;
+  if (cached_frame_data.frame_id == kInvalidFrameId)
+    return cached_frame_data;
 
-  auto kvpair = FrameIdMap::value_type(key, cached_frame_id_pair);
-  base::AutoLock lock(frame_id_map_lock_);
-  return frame_id_map_.insert(kvpair).first->second;
+  auto kvpair = FrameDataMap::value_type(key, cached_frame_data);
+  base::AutoLock lock(frame_data_map_lock_);
+  return frame_data_map_.insert(kvpair).first->second;
 }
 
-void ExtensionApiFrameIdMap::ReceivedFrameIdOnIO(
+void ExtensionApiFrameIdMap::ReceivedFrameDataOnIO(
     const RenderFrameIdKey& key,
-    const CachedFrameIdPair& cached_frame_id_pair) {
+    const FrameData& cached_frame_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  FrameIdCallbacksMap::iterator map_iter = callbacks_map_.find(key);
+  FrameDataCallbacksMap::iterator map_iter = callbacks_map_.find(key);
   if (map_iter == callbacks_map_.end()) {
     // Can happen if ReceivedFrameIdOnIO was called after the frame ID was
-    // resolved (e.g. via GetFrameIdOnIO), but before PostTaskAndReply replied.
+    // resolved (e.g. via GetFrameDataOnIO), but before PostTaskAndReply
+    // replied.
     return;
   }
 
-  FrameIdCallbacks& callbacks = map_iter->second;
+  FrameDataCallbacks& callbacks = map_iter->second;
 
   if (callbacks.is_iterating)
     return;
   callbacks.is_iterating = true;
 
   // Note: Extra items can be appended to |callbacks| during this loop if a
-  // callback calls GetFrameIdOnIO().
-  for (std::list<FrameIdCallback>::iterator it = callbacks.callbacks.begin();
+  // callback calls GetFrameDataOnIO().
+  for (std::list<FrameDataCallback>::iterator it = callbacks.callbacks.begin();
        it != callbacks.callbacks.end(); ++it) {
-    it->Run(cached_frame_id_pair.frame_id,
-            cached_frame_id_pair.parent_frame_id);
+    it->Run(cached_frame_data);
   }
   callbacks_map_.erase(key);
 }
 
-void ExtensionApiFrameIdMap::GetFrameIdOnIO(int render_process_id,
-                                            int frame_routing_id,
-                                            const FrameIdCallback& callback) {
+void ExtensionApiFrameIdMap::GetFrameDataOnIO(
+    int render_process_id,
+    int frame_routing_id,
+    const FrameDataCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // TODO(robwu): Enable assertion when all callers have been fixed.
+  // DCHECK_EQ(MSG_ROUTING_NONE, -1);
+  if (!IsFrameRoutingIdValid(frame_routing_id)) {
+    callback.Run(FrameData());
+    return;
+  }
 
   if (frame_routing_id <= -1) {
     // frame_routing_id == -2 = MSG_ROUTING_NONE -> not a RenderFrameHost.
     // frame_routing_id == -1 -> should be MSG_ROUTING_NONE, but there are
     // callers that use "-1" for unknown frames.
-    // TODO(robwu): Enable assertion when all callers have been fixed.
-    // DCHECK_EQ(MSG_ROUTING_NONE, -1);
-    callback.Run(kInvalidFrameId, kInvalidFrameId);
+    callback.Run(FrameData());
     return;
   }
-  // A valid routing ID is only meaningful with a valid process ID.
-  DCHECK_GE(render_process_id, 0);
+
+  FrameData cached_frame_data;
+  bool did_find_cached_frame_data = GetCachedFrameDataOnIO(
+      render_process_id, frame_routing_id, &cached_frame_data);
 
   const RenderFrameIdKey key(render_process_id, frame_routing_id);
-  CachedFrameIdPair cached_frame_id_pair;
-  bool did_find_cached_frame_id_pair = false;
+  FrameDataCallbacksMap::iterator map_iter = callbacks_map_.find(key);
 
-  {
-    base::AutoLock lock(frame_id_map_lock_);
-    FrameIdMap::const_iterator frame_id_iter = frame_id_map_.find(key);
-    if (frame_id_iter != frame_id_map_.end()) {
-      // This is very likely to happen because CacheFrameId() is called as soon
-      // as the frame is created.
-      cached_frame_id_pair = frame_id_iter->second;
-      did_find_cached_frame_id_pair = true;
-    }
-  }
-
-  FrameIdCallbacksMap::iterator map_iter = callbacks_map_.find(key);
-
-  if (did_find_cached_frame_id_pair) {
+  if (did_find_cached_frame_data) {
     // Value already cached, thread hopping is not needed.
     if (map_iter == callbacks_map_.end()) {
       // If the frame ID was cached, then it is likely that there are no pending
       // callbacks. So do not unnecessarily copy the callback, but run it.
-      callback.Run(cached_frame_id_pair.frame_id,
-                   cached_frame_id_pair.parent_frame_id);
+      callback.Run(cached_frame_data);
     } else {
       map_iter->second.callbacks.push_back(callback);
-      ReceivedFrameIdOnIO(key, cached_frame_id_pair);
+      ReceivedFrameDataOnIO(key, cached_frame_data);
     }
     return;
   }
@@ -231,37 +239,63 @@ void ExtensionApiFrameIdMap::GetFrameIdOnIO(int render_process_id,
   callbacks_map_[key].callbacks.push_back(callback);
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExtensionApiFrameIdMap::LookupFrameIdOnUI,
+      base::Bind(&ExtensionApiFrameIdMap::LookupFrameDataOnUI,
                  base::Unretained(this), key),
-      base::Bind(&ExtensionApiFrameIdMap::ReceivedFrameIdOnIO,
+      base::Bind(&ExtensionApiFrameIdMap::ReceivedFrameDataOnIO,
                  base::Unretained(this), key));
 }
 
-void ExtensionApiFrameIdMap::CacheFrameId(content::RenderFrameHost* rfh) {
+bool ExtensionApiFrameIdMap::GetCachedFrameDataOnIO(int render_process_id,
+                                                    int frame_routing_id,
+                                                    FrameData* frame_data_out) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // TODO(robwu): Enable assertion when all callers have been fixed.
+  // DCHECK_EQ(MSG_ROUTING_NONE, -1);
+  if (!IsFrameRoutingIdValid(frame_routing_id))
+    return false;
+
+  // A valid routing ID is only meaningful with a valid process ID.
+  DCHECK_GE(render_process_id, 0);
+
+  base::AutoLock lock(frame_data_map_lock_);
+  FrameDataMap::const_iterator frame_id_iter = frame_data_map_.find(
+      RenderFrameIdKey(render_process_id, frame_routing_id));
+  if (frame_id_iter != frame_data_map_.end()) {
+    // This is very likely to happen because CacheFrameId() is called as soon
+    // as the frame is created.
+    *frame_data_out = frame_id_iter->second;
+    return true;
+  }
+
+  return false;
+}
+
+void ExtensionApiFrameIdMap::CacheFrameData(content::RenderFrameHost* rfh) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  CacheFrameId(key);
-  DCHECK(frame_id_map_.find(key) != frame_id_map_.end());
+  CacheFrameData(key);
+  DCHECK(frame_data_map_.find(key) != frame_data_map_.end());
 }
 
-void ExtensionApiFrameIdMap::CacheFrameId(const RenderFrameIdKey& key) {
-  LookupFrameIdOnUI(key);
+void ExtensionApiFrameIdMap::CacheFrameData(const RenderFrameIdKey& key) {
+  LookupFrameDataOnUI(key);
 }
 
-void ExtensionApiFrameIdMap::RemoveFrameId(content::RenderFrameHost* rfh) {
+void ExtensionApiFrameIdMap::RemoveFrameData(content::RenderFrameHost* rfh) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(rfh);
 
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  RemoveFrameId(key);
+  RemoveFrameData(key);
 }
 
-void ExtensionApiFrameIdMap::RemoveFrameId(const RenderFrameIdKey& key) {
+void ExtensionApiFrameIdMap::RemoveFrameData(const RenderFrameIdKey& key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::AutoLock lock(frame_id_map_lock_);
-  frame_id_map_.erase(key);
+  base::AutoLock lock(frame_data_map_lock_);
+  frame_data_map_.erase(key);
 }
 
 }  // namespace extensions

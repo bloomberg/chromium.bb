@@ -22,6 +22,11 @@ ExtensionsBrowserClient::CreateUpdateClient(content::BrowserContext* context) {
   return scoped_refptr<update_client::UpdateClient>(nullptr);
 }
 
+int ExtensionsBrowserClient::GetTabIdForWebContents(
+    content::WebContents* web_contents) {
+  return -1;
+}
+
 void ExtensionsBrowserClient::ReportError(content::BrowserContext* context,
                                           scoped_ptr<ExtensionError> error) {
   LOG(ERROR) << error->GetDebugString();

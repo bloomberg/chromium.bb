@@ -30,9 +30,12 @@ namespace extensions {
 // - The ID does not change during the frame's lifetime and is not re-used after
 //   the frame is removed. The frame may change its current RenderFrameHost over
 //   time, so multiple RenderFrameHosts may map to the same extension frame ID.
-
+//
 // This class provides a mapping from a (render_process_id, frame_routing_id)
-// pair that maps a RenderFrameHost to an extension frame ID.
+// pair to a FrameData struct, which includes the extension's frame id (as
+// described above), the parent frame id, and the tab id (the latter can be
+// invalid if it's not in a tab).
+//
 // Unless stated otherwise, the methods can only be called on the UI thread.
 //
 // The non-static methods of this class use an internal cache. This cache is
@@ -40,11 +43,26 @@ namespace extensions {
 // attaching FrameTreeNode IDs to requests is negligible (crbug.com/524228),
 // then we can remove all key caching and remove the cache from this class.
 // TODO(robwu): Keep an eye on crbug.com/524228 and act upon the outcome.
+// TODO(devlin): Also keep an eye on FrameIOData to see if that could help.
 class ExtensionApiFrameIdMap {
  public:
-  using FrameIdCallback =
-      base::Callback<void(int extension_api_frame_id,
-                          int extension_api_parent_frame_id)>;
+  // The data for a RenderFrame. Every RenderFrameIdKey maps to a FrameData.
+  struct FrameData {
+    FrameData();
+    FrameData(int frame_id, int parent_frame_id, int tab_id);
+
+    // The extension API frame ID of the frame.
+    int frame_id;
+
+    // The extension API frame ID of the parent of the frame.
+    int parent_frame_id;
+
+    // The id of the tab that the frame is in, or -1 if the frame isn't in a
+    // tab.
+    int tab_id;
+  };
+
+  using FrameDataCallback = base::Callback<void(const FrameData&)>;
 
   // An invalid extension API frame ID.
   static const int kInvalidFrameId;
@@ -77,20 +95,27 @@ class ExtensionApiFrameIdMap {
   // on the UI thread. Thread hopping is minimized if possible. Callbacks for
   // the same |render_process_id| and |frame_routing_id| are guaranteed to be
   // run in order. The order of other callbacks is undefined.
-  void GetFrameIdOnIO(int render_process_id,
-                      int frame_routing_id,
-                      const FrameIdCallback& callback);
+  void GetFrameDataOnIO(int render_process_id,
+                        int frame_routing_id,
+                        const FrameDataCallback& callback);
+
+  // Attempts to populate |frame_data_out| with the FrameData for the specified
+  // frame, but only does so if the data is already cached. Returns true if
+  // cached frame data was found.
+  bool GetCachedFrameDataOnIO(int render_process_id,
+                              int frame_routing_id,
+                              FrameData* frame_data_out);
 
   // Looks up the frame ID and stores it in the map. This method should be
   // called as early as possible, e.g. in a
   // WebContentsObserver::RenderFrameCreated notification.
-  void CacheFrameId(content::RenderFrameHost* rfh);
+  void CacheFrameData(content::RenderFrameHost* rfh);
 
   // Removes the frame ID mapping for a given frame. This method can be called
   // at any time, but it is typically called when a frame is destroyed.
   // If this method is not called, the cached mapping for the frame is retained
   // forever.
-  void RemoveFrameId(content::RenderFrameHost* rfh);
+  void RemoveFrameData(content::RenderFrameHost* rfh);
 
  protected:
   friend struct base::DefaultLazyInstanceTraits<ExtensionApiFrameIdMap>;
@@ -110,33 +135,20 @@ class ExtensionApiFrameIdMap {
     bool operator==(const RenderFrameIdKey& other) const;
   };
 
-  // The cached pair of frame IDs of the frame. Every RenderFrameIdKey
-  // maps to a CachedFrameIdPair.
-  struct CachedFrameIdPair {
-    CachedFrameIdPair();
-    CachedFrameIdPair(int frame_id, int parent_frame_id);
-
-    // The extension API frame ID of the frame.
-    int frame_id;
-
-    // The extension API frame ID of the parent of the frame.
-    int parent_frame_id;
-  };
-
-  struct FrameIdCallbacks {
-    FrameIdCallbacks();
-    ~FrameIdCallbacks();
+  struct FrameDataCallbacks {
+    FrameDataCallbacks();
+    ~FrameDataCallbacks();
 
     // This is a std::list so that iterators are not invalidated when the list
     // is modified during an iteration.
-    std::list<FrameIdCallback> callbacks;
+    std::list<FrameDataCallback> callbacks;
 
     // To avoid re-entrant processing of callbacks.
     bool is_iterating;
   };
 
-  using FrameIdMap = std::map<RenderFrameIdKey, CachedFrameIdPair>;
-  using FrameIdCallbacksMap = std::map<RenderFrameIdKey, FrameIdCallbacks>;
+  using FrameDataMap = std::map<RenderFrameIdKey, FrameData>;
+  using FrameDataCallbacksMap = std::map<RenderFrameIdKey, FrameDataCallbacks>;
 
   ExtensionApiFrameIdMap();
   ~ExtensionApiFrameIdMap();
@@ -144,31 +156,31 @@ class ExtensionApiFrameIdMap {
   // Determines the value to be stored in |frame_id_map_| for a given key. This
   // method is only called when |key| is not in |frame_id_map_|.
   // virtual for testing.
-  virtual CachedFrameIdPair KeyToValue(const RenderFrameIdKey& key) const;
+  virtual FrameData KeyToValue(const RenderFrameIdKey& key) const;
 
-  CachedFrameIdPair LookupFrameIdOnUI(const RenderFrameIdKey& key);
+  FrameData LookupFrameDataOnUI(const RenderFrameIdKey& key);
 
   // Called as soon as the frame ID is found for the given |key|, and runs all
   // queued callbacks with |cached_frame_id_pair|.
-  void ReceivedFrameIdOnIO(const RenderFrameIdKey& key,
-                           const CachedFrameIdPair& cached_frame_id_pair);
+  void ReceivedFrameDataOnIO(const RenderFrameIdKey& key,
+                             const FrameData& cached_frame_id_pair);
 
   // Implementation of CacheFrameId(RenderFrameHost), separated for testing.
-  void CacheFrameId(const RenderFrameIdKey& key);
+  void CacheFrameData(const RenderFrameIdKey& key);
 
   // Implementation of RemoveFrameId(RenderFrameHost), separated for testing.
-  void RemoveFrameId(const RenderFrameIdKey& key);
+  void RemoveFrameData(const RenderFrameIdKey& key);
 
   // Queued callbacks for use on the IO thread.
-  FrameIdCallbacksMap callbacks_map_;
+  FrameDataCallbacksMap callbacks_map_;
 
   // This map is only modified on the UI thread and is used to minimize the
   // number of thread hops on the IO thread.
-  FrameIdMap frame_id_map_;
+  FrameDataMap frame_data_map_;
 
   // This lock protects |frame_id_map_| from being concurrently written on the
   // UI thread and read on the IO thread.
-  base::Lock frame_id_map_lock_;
+  base::Lock frame_data_map_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionApiFrameIdMap);
 };

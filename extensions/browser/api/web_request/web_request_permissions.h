@@ -40,6 +40,7 @@ class WebRequestPermissions {
       const extensions::InfoMap* extension_info_map,
       const std::string& extension_id,
       const GURL& url,
+      int tab_id,
       bool crosses_incognito,
       HostPermissionsCheck host_permissions_check);
 

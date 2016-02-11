@@ -116,6 +116,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                                      ViewType view_type) override;
   scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context) override;
+  int GetTabIdForWebContents(content::WebContents* web_contents) override;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;

@@ -108,6 +108,7 @@ bool WebRequestPermissions::CanExtensionAccessURL(
     const extensions::InfoMap* extension_info_map,
     const std::string& extension_id,
     const GURL& url,
+    int tab_id,
     bool crosses_incognito,
     HostPermissionsCheck host_permissions_check) {
   // extension_info_map can be NULL in testing.
@@ -130,9 +131,12 @@ bool WebRequestPermissions::CanExtensionAccessURL(
       // about: URLs are not covered in host permissions, but are allowed
       // anyway.
       if (!url.SchemeIs(url::kAboutScheme) &&
-          !extension->permissions_data()->HasHostPermission(url) &&
           !url::IsSameOriginWith(url, extension->url())) {
-        return false;
+        extensions::PermissionsData::AccessType access =
+            extension->permissions_data()->GetPageAccess(extension, url, tab_id,
+                                                         nullptr);
+        if (access != extensions::PermissionsData::ACCESS_ALLOWED)
+          return false;
       }
       break;
     case REQUIRE_ALL_URLS:

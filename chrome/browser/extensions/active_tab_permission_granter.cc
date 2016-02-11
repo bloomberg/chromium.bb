@@ -135,6 +135,10 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   }
 }
 
+void ActiveTabPermissionGranter::RevokeForTesting() {
+  ClearActiveExtensionsAndNotify();
+}
+
 void ActiveTabPermissionGranter::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {

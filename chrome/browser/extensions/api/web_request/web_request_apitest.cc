@@ -4,12 +4,16 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_process_policy.h"
@@ -31,8 +35,8 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
-using extensions::Feature;
-using extensions::ResultCatcher;
+
+namespace extensions {
 
 namespace {
 
@@ -59,6 +63,53 @@ class CancelLoginDialog : public content::NotificationObserver {
 
  DISALLOW_COPY_AND_ASSIGN(CancelLoginDialog);
 };
+
+// Sends an XHR request to the provided host, port, and path, and responds when
+// the request was sent.
+const char kPerformXhrJs[] =
+    "var url = 'http://%s:%d/%s';\n"
+    "var xhr = new XMLHttpRequest();\n"
+    "xhr.open('GET', url);\n"
+    "xhr.onload = function() {\n"
+    "  window.domAutomationController.send(true);\n"
+    "};\n"
+    "xhr.onerror = function() {\n"
+    "  window.domAutomationController.send(false);\n"
+    "};\n"
+    "xhr.send();\n";
+
+// Performs an XHR in the given |web_contents|, replying when complete.
+void PerformXhrInPage(content::WebContents* web_contents,
+                      const std::string& host,
+                      int port,
+                      const std::string& page) {
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents,
+      base::StringPrintf(kPerformXhrJs, host.c_str(), port, page.c_str()),
+      &success));
+  EXPECT_TRUE(success);
+}
+
+// Returns the current count of webRequests received by the |extension| in
+// the background page (assumes the extension stores a value on the window
+// object). Returns -1 if something goes awry.
+int GetWebRequestCountFromBackgroundPage(const Extension* extension,
+                                         content::BrowserContext* context) {
+  ExtensionHost* host =
+      ProcessManager::Get(context)->GetBackgroundHostForExtension(
+          extension->id());
+  if (!host || !host->host_contents())
+    return -1;
+
+  int count = -1;
+  if (!ExecuteScriptAndExtractInt(
+          host->host_contents(),
+          "window.domAutomationController.send(window.webRequestCount)",
+          &count))
+    return -1;
+  return count;
+}
 
 }  // namespace
 
@@ -144,9 +195,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestNewTab) {
 
   ResultCatcher catcher;
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
-  const extensions::Extension* extension =
+  ExtensionService* service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
+  const Extension* extension =
       service->GetExtensionById(last_loaded_extension_id(), false);
   GURL url = extension->GetResourceURL("newTab/a.html");
 
@@ -313,9 +364,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
   ExtensionTestMessageListener listener("done", true);
   ExtensionTestMessageListener listener_incognito("done_incognito", true);
 
-  const extensions::Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("webrequest_reload"),
-      kFlagEnableIncognito);
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("webrequest_reload"), kFlagEnableIncognito);
   ASSERT_TRUE(extension);
   OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
@@ -388,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   listener_main2.Reply("");
   EXPECT_TRUE(listener_result.WaitUntilSatisfied());
   if (content::AreAllSitesIsolatedForTesting() ||
-      extensions::IsIsolateExtensionsEnabled()) {
+      IsIsolateExtensionsEnabled()) {
     // With --site-per-process, the extension frame does run in the extension's
     // process.
     EXPECT_EQ("Intercepted requests: ?contentscript",
@@ -404,19 +454,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
   GURL hosted_app_url(
       embedded_test_server()->GetURL(
           "/extensions/api_test/webrequest_hosted_app/index.html"));
-  scoped_refptr<extensions::Extension> hosted_app =
-      extensions::ExtensionBuilder()
+  scoped_refptr<Extension> hosted_app =
+      ExtensionBuilder()
           .SetManifest(std::move(
-              extensions::DictionaryBuilder()
+              DictionaryBuilder()
                   .Set("name", "Some hosted app")
                   .Set("version", "1")
                   .Set("manifest_version", 2)
-                  .Set("app", std::move(extensions::DictionaryBuilder().Set(
-                                  "launch",
-                                  std::move(extensions::DictionaryBuilder().Set(
-                                      "web_url", hosted_app_url.spec())))))))
+                  .Set("app",
+                       std::move(DictionaryBuilder().Set(
+                           "launch", std::move(DictionaryBuilder().Set(
+                                         "web_url", hosted_app_url.spec())))))))
           .Build();
-  extensions::ExtensionSystem::Get(browser()->profile())->extension_service()
+  ExtensionSystem::Get(browser()->profile())
+      ->extension_service()
       ->AddExtension(hosted_app.get());
 
   ExtensionTestMessageListener listener1("main_frame", false);
@@ -430,3 +481,58 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
   EXPECT_TRUE(listener1.WaitUntilSatisfied());
   EXPECT_TRUE(listener2.WaitUntilSatisfied());
 }
+
+// Tests that webRequest works with the --scripts-require-action feature.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestWithWithheldPermissions) {
+  FeatureSwitch::ScopedOverride enable_scripts_require_action(
+      FeatureSwitch::scripts_require_action(), true);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  // Load an extension that registers a listener for webRequest events, and
+  // wait 'til it's initialized.
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("webrequest_activetab"));
+  ASSERT_TRUE(extension) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Navigate the browser to a page in a new tab.
+  const std::string kHost = "example.com";
+  GURL url = embedded_test_server()->GetURL(kHost, "/empty.html");
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  ui_test_utils::NavigateToURL(&params);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ActiveTabPermissionGranter* granter =
+      TabHelper::FromWebContents(web_contents)->active_tab_permission_granter();
+  ASSERT_TRUE(granter);
+
+  int port = embedded_test_server()->port();
+  const std::string kXhrPath = "simple.html";
+
+  // The extension shouldn't have currently received any webRequest events,
+  // since it doesn't have permission (and shouldn't receive any from an XHR).
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  PerformXhrInPage(web_contents, kHost, port, kXhrPath);
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+
+  // Grant activeTab permission, and perform another XHR. The extension should
+  // receive the event.
+  // TODO(devlin): Use the ActiveScriptController instead when it's fully wired
+  // up for webRequest.
+  granter->GrantIfRequested(extension);
+  PerformXhrInPage(web_contents, kHost, port, kXhrPath);
+  EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
+
+  // If we revoke the extension's tab permissions, it should no longer receive
+  // webRequest events.
+  granter->RevokeForTesting();
+  base::RunLoop().RunUntilIdle();
+  PerformXhrInPage(web_contents, kHost, port, kXhrPath);
+  EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
+}
+
+}  // namespace extensions

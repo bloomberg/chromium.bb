@@ -155,27 +155,23 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
       GURL("http://example.com"), net::DEFAULT_PRIORITY, NULL));
 
   EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_.get(),
-      permissionless_extension_->id(),
+      extension_info_map_.get(), permissionless_extension_->id(),
       request->url(),
-      false /*crosses_incognito*/,
-      WebRequestPermissions::DO_NOT_CHECK_HOST));
+      -1,  // No tab id.
+      false /*crosses_incognito*/, WebRequestPermissions::DO_NOT_CHECK_HOST));
   EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_.get(),
-      permissionless_extension_->id(),
+      extension_info_map_.get(), permissionless_extension_->id(),
       request->url(),
+      -1,  // No tab id.
       false /*crosses_incognito*/,
       WebRequestPermissions::REQUIRE_HOST_PERMISSION));
   EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_.get(),
-      com_extension_->id(),
-      request->url(),
+      extension_info_map_.get(), com_extension_->id(), request->url(),
+      -1,  // No tab id.
       false /*crosses_incognito*/,
       WebRequestPermissions::REQUIRE_HOST_PERMISSION));
   EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_.get(),
-      com_extension_->id(),
-      request->url(),
-      false /*crosses_incognito*/,
-      WebRequestPermissions::REQUIRE_ALL_URLS));
+      extension_info_map_.get(), com_extension_->id(), request->url(),
+      -1,  // No tab id.
+      false /*crosses_incognito*/, WebRequestPermissions::REQUIRE_ALL_URLS));
 }
