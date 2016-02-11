@@ -59,6 +59,12 @@ std::string EventTypeName(ui::EventType type) {
     CASE_TYPE(ET_TOUCH_MOVED);
     CASE_TYPE(ET_TOUCH_CANCELLED);
     CASE_TYPE(ET_DROP_TARGET_EVENT);
+    CASE_TYPE(ET_POINTER_DOWN);
+    CASE_TYPE(ET_POINTER_MOVED);
+    CASE_TYPE(ET_POINTER_UP);
+    CASE_TYPE(ET_POINTER_CANCELLED);
+    CASE_TYPE(ET_POINTER_ENTERED);
+    CASE_TYPE(ET_POINTER_EXITED);
     CASE_TYPE(ET_GESTURE_SCROLL_BEGIN);
     CASE_TYPE(ET_GESTURE_SCROLL_END);
     CASE_TYPE(ET_GESTURE_SCROLL_UPDATE);
@@ -630,6 +636,68 @@ void TouchEvent::FixRotationAngle() {
   while (rotation_angle_ >= 180)
     rotation_angle_ -= 180;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// PointerEvent
+
+PointerEvent::PointerEvent(const MouseEvent& mouse_event)
+    : LocatedEvent(mouse_event),
+      pointer_id_(kMousePointerId),
+      details_(mouse_event.pointer_details()) {
+  switch (mouse_event.type()) {
+    case ET_MOUSE_PRESSED:
+      SetType(ET_POINTER_DOWN);
+      break;
+
+    case ET_MOUSE_DRAGGED:
+    case ET_MOUSE_MOVED:
+      SetType(ET_POINTER_MOVED);
+      break;
+
+    case ET_MOUSE_ENTERED:
+      SetType(ET_POINTER_ENTERED);
+      break;
+
+    case ET_MOUSE_EXITED:
+      SetType(ET_POINTER_EXITED);
+      break;
+
+    case ET_MOUSE_RELEASED:
+      SetType(ET_POINTER_UP);
+      break;
+
+    default:
+      NOTREACHED();
+  }
+}
+
+PointerEvent::PointerEvent(const TouchEvent& touch_event)
+    : LocatedEvent(touch_event),
+      pointer_id_(touch_event.touch_id()),
+      details_(touch_event.pointer_details()) {
+  switch (touch_event.type()) {
+    case ET_TOUCH_PRESSED:
+      SetType(ET_POINTER_DOWN);
+      break;
+
+    case ET_TOUCH_MOVED:
+      SetType(ET_POINTER_MOVED);
+      break;
+
+    case ET_TOUCH_RELEASED:
+      SetType(ET_POINTER_UP);
+      break;
+
+    case ET_TOUCH_CANCELLED:
+      SetType(ET_POINTER_CANCELLED);
+      break;
+
+    default:
+      NOTREACHED();
+  }
+}
+
+const int PointerEvent::kMousePointerId = std::numeric_limits<int32_t>::max();
 
 ////////////////////////////////////////////////////////////////////////////////
 // KeyEvent

@@ -709,4 +709,86 @@ TEST(EventTest, PointerEventDetailsStylus) {
   EXPECT_EQ(0.0f, stylus_event_copy.pointer_details().radius_y);
 }
 
+TEST(EventTest, PointerEventType) {
+  const ui::EventType kMouseTypeMap[][2] = {
+      {ui::ET_MOUSE_PRESSED, ui::ET_POINTER_DOWN},
+      {ui::ET_MOUSE_DRAGGED, ui::ET_POINTER_MOVED},
+      {ui::ET_MOUSE_MOVED, ui::ET_POINTER_MOVED},
+      {ui::ET_MOUSE_ENTERED, ui::ET_POINTER_ENTERED},
+      {ui::ET_MOUSE_EXITED, ui::ET_POINTER_EXITED},
+      {ui::ET_MOUSE_RELEASED, ui::ET_POINTER_UP},
+  };
+  const ui::EventType kTouchTypeMap[][2] = {
+      {ui::ET_TOUCH_PRESSED, ui::ET_POINTER_DOWN},
+      {ui::ET_TOUCH_MOVED, ui::ET_POINTER_MOVED},
+      {ui::ET_TOUCH_RELEASED, ui::ET_POINTER_UP},
+      {ui::ET_TOUCH_CANCELLED, ui::ET_POINTER_CANCELLED},
+  };
+
+  for (size_t i = 0; i < arraysize(kMouseTypeMap); i++) {
+    ui::MouseEvent mouse_event(kMouseTypeMap[i][0], gfx::Point(0, 0),
+                               gfx::Point(0, 0), base::TimeDelta(), 0, 0);
+    ui::PointerEvent pointer_event(mouse_event);
+    EXPECT_EQ(kMouseTypeMap[i][1], pointer_event.type());
+    EXPECT_FALSE(pointer_event.IsMouseEvent());
+    EXPECT_FALSE(pointer_event.IsTouchEvent());
+    EXPECT_TRUE(pointer_event.IsPointerEvent());
+  }
+
+  for (size_t i = 0; i < arraysize(kTouchTypeMap); i++) {
+    ui::TouchEvent touch_event(kTouchTypeMap[i][0], gfx::Point(0, 0), 0,
+                               base::TimeDelta());
+    ui::PointerEvent pointer_event(touch_event);
+    EXPECT_EQ(kTouchTypeMap[i][1], pointer_event.type());
+    EXPECT_FALSE(pointer_event.IsMouseEvent());
+    EXPECT_FALSE(pointer_event.IsTouchEvent());
+    EXPECT_TRUE(pointer_event.IsPointerEvent());
+  }
+}
+
+TEST(EventTest, PointerEventId) {
+  {
+    ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
+                               gfx::Point(0, 0), base::TimeDelta(), 0, 0);
+    ui::PointerEvent pointer_event(mouse_event);
+    EXPECT_EQ(pointer_event.pointer_id(), ui::PointerEvent::kMousePointerId);
+  }
+
+  for (int touch_id = 0; touch_id < 8; touch_id++) {
+    ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), touch_id,
+                               base::TimeDelta());
+    ui::PointerEvent pointer_event(touch_event);
+    EXPECT_EQ(pointer_event.pointer_id(), touch_id);
+  }
+}
+
+TEST(EventTest, PointerEventDetailsPointer) {
+  const float kRadiusX = 10.0f;
+  const float kRadiusY = 5.0f;
+  const float kForce = 15.0f;
+  ui::TouchEvent touch_event(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0,
+                             ui::EventTimeForNow(), kRadiusX, kRadiusY, 0.0f,
+                             kForce);
+  ui::PointerEvent pointer_event_from_touch(touch_event);
+  EXPECT_EQ(kRadiusX, pointer_event_from_touch.pointer_details().radius_x);
+  EXPECT_EQ(kRadiusY, pointer_event_from_touch.pointer_details().radius_y);
+  EXPECT_EQ(kForce, pointer_event_from_touch.pointer_details().force);
+  EXPECT_EQ(kRadiusX, pointer_event_from_touch.pointer_details().radius_x);
+  EXPECT_EQ(0.0f, pointer_event_from_touch.pointer_details().tilt_x);
+  EXPECT_EQ(0.0f, pointer_event_from_touch.pointer_details().tilt_y);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
+            pointer_event_from_touch.pointer_details().pointer_type);
+
+  ui::MouseEvent mouse_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
+                             gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
+  ui::PointerEvent pointer_event_from_mouse(mouse_event);
+  EXPECT_EQ(0.0f, pointer_event_from_mouse.pointer_details().radius_x);
+  EXPECT_EQ(0.0f, pointer_event_from_mouse.pointer_details().radius_y);
+  EXPECT_TRUE(std::isnan(pointer_event_from_mouse.pointer_details().force));
+  EXPECT_EQ(0.0f, pointer_event_from_mouse.pointer_details().tilt_x);
+  EXPECT_EQ(0.0f, pointer_event_from_mouse.pointer_details().tilt_y);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_MOUSE,
+            pointer_event_from_mouse.pointer_details().pointer_type);
+}
+
 }  // namespace ui

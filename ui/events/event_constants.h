@@ -26,6 +26,14 @@ enum EventType {
   ET_TOUCH_CANCELLED,
   ET_DROP_TARGET_EVENT,
 
+  // PointerEvent types
+  ET_POINTER_DOWN,
+  ET_POINTER_MOVED,
+  ET_POINTER_UP,
+  ET_POINTER_CANCELLED,
+  ET_POINTER_ENTERED,
+  ET_POINTER_EXITED,
+
   // GestureEvent types
   ET_GESTURE_SCROLL_BEGIN,
   ET_GESTURE_TYPE_START = ET_GESTURE_SCROLL_BEGIN,
@@ -34,7 +42,7 @@ enum EventType {
   ET_GESTURE_TAP,
   ET_GESTURE_TAP_DOWN,
   ET_GESTURE_TAP_CANCEL,
-  ET_GESTURE_TAP_UNCONFIRMED, // User tapped, but the tap delay hasn't expired.
+  ET_GESTURE_TAP_UNCONFIRMED,  // User tapped, but the tap delay hasn't expired.
   ET_GESTURE_DOUBLE_TAP,
   ET_GESTURE_BEGIN,  // The first event sent when each finger is pressed.
   ET_GESTURE_END,    // Sent for each released finger.

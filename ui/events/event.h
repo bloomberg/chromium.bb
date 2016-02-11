@@ -116,6 +116,12 @@ class EVENTS_EXPORT Event {
            type_ == ET_TOUCH_CANCELLED;
   }
 
+  bool IsPointerEvent() const {
+    return type_ == ET_POINTER_DOWN || type_ == ET_POINTER_MOVED ||
+           type_ == ET_POINTER_UP || type_ == ET_POINTER_CANCELLED ||
+           type_ == ET_POINTER_ENTERED || type_ == ET_POINTER_EXITED;
+  }
+
   bool IsGestureEvent() const {
     switch (type_) {
       case ET_GESTURE_SCROLL_BEGIN:
@@ -627,6 +633,21 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   // Structure for holding pointer details for implementing PointerEvents API.
   PointerDetails pointer_details_;
+};
+
+class EVENTS_EXPORT PointerEvent : public LocatedEvent {
+ public:
+  static const int32_t kMousePointerId;
+
+  explicit PointerEvent(const MouseEvent& mouse_event);
+  explicit PointerEvent(const TouchEvent& touch_event);
+
+  int32_t pointer_id() const { return pointer_id_; }
+  const PointerDetails& pointer_details() const { return details_; }
+
+ private:
+  int32_t pointer_id_;
+  PointerDetails details_;
 };
 
 // An interface that individual platforms can use to store additional data on
