@@ -448,7 +448,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       item->TimeRemaining(&time_delta);
       Java_DownloadController_onDownloadUpdated(
           env, GetJavaObject()->Controller(env).obj(),
-          base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
+          jurl.obj(), jmime_type.obj(),
           jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true,
           item->GetId(), item->PercentComplete(), time_delta.InMilliseconds(),
           item->HasUserGesture(), item->IsPaused(),
@@ -463,22 +463,25 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
 
       // Call onDownloadCompleted
       Java_DownloadController_onDownloadCompleted(
-          env, GetJavaObject()->Controller(env).obj(),
-          base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
-          jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true,
-          item->GetId(), item->HasUserGesture());
+          env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
+          jmime_type.obj(), jfilename.obj(), jpath.obj(),
+          item->GetReceivedBytes(), true, item->GetId(),
+          item->HasUserGesture());
       break;
     case DownloadItem::CANCELLED:
+      Java_DownloadController_onDownloadCancelled(
+          env, GetJavaObject()->Controller(env).obj(), item->GetId());
+      break;
     // TODO(shashishekhar): An interrupted download can be resumed. Android
     // currently does not support resumable downloads. Add handling for
     // interrupted case based on item->CanResume().
     case DownloadItem::INTERRUPTED:
       // Call onDownloadCompleted with success = false.
       Java_DownloadController_onDownloadCompleted(
-          env, GetJavaObject()->Controller(env).obj(),
-          base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
-          jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), false,
-          item->GetId(), item->HasUserGesture());
+          env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
+          jmime_type.obj(), jfilename.obj(), jpath.obj(),
+          item->GetReceivedBytes(), false, item->GetId(),
+          item->HasUserGesture());
       break;
     case DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();

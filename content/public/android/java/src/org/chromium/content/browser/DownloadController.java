@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.Manifest.permission;
-import android.content.Context;
 import android.content.pm.PackageManager;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -37,6 +36,12 @@ public class DownloadController {
          * @param downloadInfo Information about the in-progress download.
          */
         void onDownloadUpdated(final DownloadInfo downloadInfo);
+
+        /**
+         * Notify the host application that a download is cancelled.
+         * @param downloadId Id of the download.
+         */
+        void onDownloadCancelled(final DownloadInfo downloadInfo);
     }
 
     private static DownloadNotificationService sDownloadNotificationService;
@@ -109,7 +114,7 @@ public class DownloadController {
      * download. This can be either a POST download or a GET download with authentication.
      */
     @CalledByNative
-    private void onDownloadCompleted(Context context, String url, String mimeType,
+    private void onDownloadCompleted(String url, String mimeType,
             String filename, String path, long contentLength, boolean successful, int downloadId,
             boolean hasUserGesture) {
         if (sDownloadNotificationService != null) {
@@ -130,11 +135,26 @@ public class DownloadController {
     }
 
     /**
+     * Called when a download was cancelled.
+     * @param downloadId Id of the download item.
+     */
+    @CalledByNative
+    private void onDownloadCancelled(int downloadId) {
+        if (sDownloadNotificationService != null) {
+            DownloadInfo downloadInfo = new DownloadInfo.Builder()
+                    .setDownloadId(downloadId)
+                    .setHasDownloadId(true)
+                    .build();
+            sDownloadNotificationService.onDownloadCancelled(downloadInfo);
+        }
+    }
+
+    /**
      * Notifies the download delegate about progress of a download. Downloads that use Chrome
      * network stack use custom notification to display the progress of downloads.
      */
     @CalledByNative
-    private void onDownloadUpdated(Context context, String url, String mimeType, String filename,
+    private void onDownloadUpdated(String url, String mimeType, String filename,
             String path, long contentLength, boolean successful, int downloadId,
             int percentCompleted, long timeRemainingInMs, boolean hasUserGesture, boolean isPaused,
             boolean isResumable) {

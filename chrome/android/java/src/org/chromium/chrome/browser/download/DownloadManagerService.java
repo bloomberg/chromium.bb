@@ -100,7 +100,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private enum DownloadStatus {
         IN_PROGRESS,
         COMPLETE,
-        FAILED
+        FAILED,
+        CANCELLED
     }
 
     /**
@@ -272,6 +273,12 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @Override
     public void onDownloadUpdated(final DownloadInfo downloadInfo) {
         updateDownloadProgress(downloadInfo, DownloadStatus.IN_PROGRESS);
+        scheduleUpdateIfNeeded();
+    }
+
+    @Override
+    public void onDownloadCancelled(final DownloadInfo downloadInfo) {
+        updateDownloadProgress(downloadInfo, DownloadStatus.CANCELLED);
         scheduleUpdateIfNeeded();
     }
 
@@ -514,7 +521,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
      *
      * @return A map that maps all download info to their corresponding download IDs in the
      *         download manager and whether the download can be resolved. If a download fails,
-     *         its download ID is INVALID_DOWNLOAD_ID and the launching intent is null.
+     *         its download ID is INVALID_DOWNLOAD_ID and the launching intent is null. If a
+     *         download is cancelled, return an empty map so that no action needs to be taken.
      */
     private Map<DownloadInfo, Pair<Long, Boolean>> updateAllNotifications() {
         assert !ThreadUtils.runningOnUiThread();
@@ -553,6 +561,11 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     case IN_PROGRESS:
                         mDownloadNotifier.notifyDownloadProgress(progress.mDownloadInfo,
                                 progress.mStartTimeInMillis);
+                        break;
+                    case CANCELLED:
+                        removeProgressNotificationForDownload(
+                                progress.mDownloadInfo.getDownloadId());
+                        break;
                 }
             }
         }
