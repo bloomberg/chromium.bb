@@ -153,6 +153,10 @@ class MEDIA_EXPORT AUAudioInputStream
   // Contains the desired number of audio frames in each callback.
   const size_t number_of_frames_;
 
+  // The actual I/O buffer size for the input device connected to the active
+  // AUHAL audio unit.
+  size_t io_buffer_frame_size_;
+
   // Pointer to the object that will receive the recorded audio samples.
   AudioInputCallback* sink_;
 

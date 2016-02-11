@@ -18707,6 +18707,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.ActualInputBufferFrameSizeMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Size (in audio frames) of native I/O buffers that is set by the audio
+    manager when calling AUAudioInputStream::Open(). I.e., it is the actual
+    buffer size and it can differ from the one that the client requested. Only
+    sampled when Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.AutomaticGainControlMac" enum="BooleanEnabled">
   <owner>henrika@chromium.org</owner>
   <summary>
@@ -18803,6 +18813,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     know in particular for audio processing such as echo cancellation. This
     value is logged when an audio output stream that has suffered glitches is
     stopped.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.RequestedInputBufferFrameSizeMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Size (in audio frames) the client has asked for when creating an
+    AUAudioInputStream object. It might not be able to fulfill this request. The
+    actual size is given by Media.Audio.ActualInputBufferFrameSizeMac. Only
+    sampled when Media.Audio.InputStartupSuccessMac reports 'Failure'.
   </summary>
 </histogram>
 
@@ -19463,6 +19483,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.InputInvalidSampleRateMac" units="Hz">
+  <obsolete>
+    Deprecated and removed from code as of 02/2016.
+  </obsolete>
   <owner>henrika@chromium.org</owner>
   <summary>
     Invalid input sample rate when calling AUAudioInputStream::Open on Mac.

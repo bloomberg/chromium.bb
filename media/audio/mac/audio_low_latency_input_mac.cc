@@ -59,6 +59,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
                                        AudioDeviceID audio_device_id)
     : manager_(manager),
       number_of_frames_(input_params.frames_per_buffer()),
+      io_buffer_frame_size_(0),
       sink_(nullptr),
       audio_unit_(0),
       input_device_id_(audio_device_id),
@@ -88,7 +89,12 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   DVLOG(1) << "ctor";
   DVLOG(1) << "device ID: 0x" << std::hex << audio_device_id;
   DVLOG(1) << "buffer size : " << number_of_frames_;
+  DVLOG(1) << "channels : " << input_params.channels();
   DVLOG(1) << "desired output format: " << format_;
+  // Ensure that the output format is interleaved.
+  const bool interleaved =
+      !(format_.mFormatFlags & kAudioFormatFlagIsNonInterleaved);
+  DCHECK(interleaved);
 
   // Derive size (in bytes) of the buffers that we will render to.
   UInt32 data_byte_size = number_of_frames_ * format_.mBytesPerFrame;
@@ -98,6 +104,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   // The AudioBufferList structure works as a placeholder for the
   // AudioBuffer structure, which holds a pointer to the actual data buffer.
   audio_data_buffer_.reset(new uint8_t[data_byte_size]);
+  // We ask for noninterleaved audio.
   audio_buffer_list_.mNumberBuffers = 1;
 
   AudioBuffer* audio_buffer = audio_buffer_list_.mBuffers;
@@ -127,18 +134,7 @@ bool AUAudioInputStream::Open() {
   // The requested sample-rate must match the hardware sample-rate.
   int sample_rate =
       AudioManagerMac::HardwareSampleRateForDevice(input_device_id_);
-  if (sample_rate != format_.mSampleRate) {
-    // Add UMA stat for the case when we detect a mismatch in sample rates,
-    // i.e., when the actual/current native sample rate is different from the
-    // one used when constructing this object. In addition, return false since
-    // the current design does not support changes in the native sample rate
-    // between construction and calls to Open().
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputInvalidSampleRateMac", sample_rate);
-    NOTREACHED() << "Requested sample-rate: " << format_.mSampleRate
-                 << " must match the hardware sample-rate: " << sample_rate;
-    HandleError(kAudioUnitErr_InvalidParameter);
-    return false;
-  }
+  DCHECK_EQ(sample_rate, format_.mSampleRate);
 
   // Start by obtaining an AudioOuputUnit using an AUHAL component description.
 
@@ -279,6 +275,11 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
+  // Store current I/O buffer frame size for UMA stats stored in combination
+  // with failing input callbacks.
+  DCHECK(!io_buffer_frame_size_);
+  io_buffer_frame_size_ = io_buffer_frame_size;
+
   // Ensure that value specified by the kAudioUnitProperty_MaximumFramesPerSlice
   // property of the audio unit matches the the default IO buffer size. Failure
   // to update the this property will cause audio units to not perform any
@@ -348,6 +349,7 @@ bool AUAudioInputStream::Open() {
 void AUAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
+  DCHECK(!sink_);
   DLOG_IF(ERROR, !audio_unit_) << "Open() has not been called successfully";
   DVLOG(1) << "Start";
   if (IsRunning())
@@ -413,6 +415,7 @@ void AUAudioInputStream::Stop() {
   SetInputCallbackIsActive(false);
   sink_ = nullptr;
   fifo_.Clear();
+  io_buffer_frame_size_ = 0;
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "Failed to stop acquiring data";
 }
@@ -622,8 +625,9 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
   AudioBuffer* audio_buffer = audio_buffer_list_.mBuffers;
   if (new_size != audio_buffer->mDataByteSize) {
     DVLOG(1) << "New size of number_of_frames detected: " << number_of_frames;
+    io_buffer_frame_size_ = static_cast<size_t>(number_of_frames);
     if (new_size > audio_buffer->mDataByteSize) {
-      // This can happen if the device is unpluged during recording. We
+      // This can happen if the device is unplugged during recording. We
       // allocate enough memory here to avoid depending on how CoreAudio
       // handles it.
       // See See http://www.crbug.com/434681 for one example when we can enter
@@ -929,6 +933,21 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
                             manager_->low_latency_input_streams());
   UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfBasicInputStreamsMac",
                             manager_->basic_input_streams());
+  // |number_of_frames_| is set at construction and corresponds to the requested
+  // (by the client) number of audio frames per I/O buffer connected to the
+  // selected input device. Ideally, this size will be the same as the native
+  // I/O buffer size given by |io_buffer_frame_size_|.
+  UMA_HISTOGRAM_COUNTS("Media.Audio.RequestedInputBufferFrameSizeMac",
+                       number_of_frames_);
+  DVLOG(1) << "number_of_frames_: " << number_of_frames_;
+  // This value indicates the number of frames in the IO buffers connected to
+  // the selected input device. It has been set by the audio manger in Open()
+  // and can be the same as |number_of_frames_|, which is the desired buffer
+  // size. These two values might differ if other streams are using the same
+  // device and any of these streams have asked for a smaller buffer size.
+  UMA_HISTOGRAM_COUNTS("Media.Audio.ActualInputBufferFrameSizeMac",
+                       io_buffer_frame_size_);
+  DVLOG(1) << "io_buffer_frame_size_: " << io_buffer_frame_size_;
   // TODO(henrika): this value will currently always report true. It should be
   // fixed when we understand the problem better.
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.AutomaticGainControlMac",
