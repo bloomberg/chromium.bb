@@ -1111,13 +1111,19 @@ void UsbDeviceHandleImpl::InternalClose() {
     transfer->Cancel();
   }
 
-  // Attempt-release all the interfaces.
-  // It will be retained until the transfer cancellation is finished.
-  claimed_interfaces_.clear();
+  // Release all remaining interfaces once their transfers have completed.
+  // This loop must ensure that what may be the final reference is released on
+  // the right thread.
+  for (auto& map_entry : claimed_interfaces_) {
+    InterfaceClaimer* interface_claimer = map_entry.second.get();
+    interface_claimer->AddRef();
+    map_entry.second = nullptr;
+    blocking_task_runner_->ReleaseSoon(FROM_HERE, interface_claimer);
+  }
 
   // Cannot close device handle here. Need to wait for libusb_cancel_transfer to
   // finish.
-  device_ = NULL;
+  device_ = nullptr;
 }
 
 }  // namespace device
