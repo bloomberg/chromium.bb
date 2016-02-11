@@ -47,7 +47,7 @@ class SubjectAltNameGenerator:
     self.names.append(general_name)
 
   def __str__(self):
-    s = "asn1 = OCTWRAP,SEQUENCE:subjectAltNameSequence\n"
+    s = "asn1 = SEQUENCE:subjectAltNameSequence\n"
     s += "[subjectAltNameSequence]\n"
     s_suffix = ""
     for n, name in enumerate(self.names):

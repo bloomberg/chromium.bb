@@ -86,13 +86,15 @@ class NET_EXPORT NameConstraints {
   // Tests if a certificate is allowed by the name constraints.
   // |subject_rdn_sequence| should be the DER-encoded value of the subject's
   // RDNSequence (not including Sequence tag), and may be an empty ASN.1
-  // sequence. |subject_alt_name_extnvalue_tlv| should be the extnValue of the
-  // subjectAltName extension (including the OCTET STRING tag & length), or
-  // empty if the cert did not have a subjectAltName extension.
+  // sequence. |subject_alt_name_tlv| should be the extnValue of the
+  // subjectAltName extension (not including the OCTET STRING tag & length). If
+  // the cert did not have a subjectAltName extension, |has_subject_alt_name|
+  // should be false and |subject_alt_name_tlv| should be empty.
   // Note that this method does not check hostname or IP address in commonName,
   // which is deprecated (crbug.com/308330).
   bool IsPermittedCert(const der::Input& subject_rdn_sequence,
-                       const der::Input& subject_alt_name_extnvalue_tlv) const;
+                       bool has_subject_alt_name,
+                       const der::Input& subject_alt_name_tlv) const;
 
   // Returns true if the ASCII hostname |name| is permitted.
   // |name| may be a wildcard hostname (starts with "*."). Eg, "*.bar.com"
