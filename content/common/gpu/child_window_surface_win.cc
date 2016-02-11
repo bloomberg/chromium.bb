@@ -143,7 +143,10 @@ bool ChildWindowSurfaceWin::Resize(const gfx::Size& size,
     if (size == GetSize() && has_alpha == alpha_)
       return true;
 
-    if (!MoveWindow(window_, 0, 0, size.width(), size.height(), FALSE)) {
+    // Force a resize and redraw (but not a move, activate, etc.).
+    if (!SetWindowPos(window_, nullptr, 0, 0, size.width(), size.height(),
+                      SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS |
+                          SWP_NOOWNERZORDER | SWP_NOZORDER)) {
       return false;
     }
     size_ = size;
