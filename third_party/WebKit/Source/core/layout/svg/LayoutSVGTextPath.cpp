@@ -22,8 +22,27 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGTextPathElement.h"
+#include "platform/graphics/Path.h"
 
 namespace blink {
+
+PathPositionMapper::PathPositionMapper(const Path& path)
+    : m_positionCalculator(path)
+    , m_pathLength(path.length())
+{
+}
+
+PathPositionMapper::PositionType PathPositionMapper::pointAndNormalAtLength(
+    float length, FloatPoint& point, float& angle)
+{
+    if (length < 0)
+        return BeforePath;
+    if (length > m_pathLength)
+        return AfterPath;
+    ASSERT(length >= 0 && length <= m_pathLength);
+    m_positionCalculator.pointAndNormalAtLength(length, point, angle);
+    return OnPath;
+}
 
 LayoutSVGTextPath::LayoutSVGTextPath(Element* element)
     : LayoutSVGInline(element)
@@ -38,15 +57,18 @@ bool LayoutSVGTextPath::isChildAllowed(LayoutObject* child, const ComputedStyle&
     return child->isSVGInline() && !child->isSVGTextPath();
 }
 
-Path LayoutSVGTextPath::layoutPath() const
+PassOwnPtr<PathPositionMapper> LayoutSVGTextPath::layoutPath() const
 {
-    SVGTextPathElement* textPathElement = toSVGTextPathElement(node());
-    Element* targetElement = SVGURIReference::targetElementFromIRIString(textPathElement->href()->currentValue()->value(), textPathElement->treeScope());
+    const SVGTextPathElement& textPathElement = toSVGTextPathElement(*node());
+    Element* targetElement = SVGURIReference::targetElementFromIRIString(
+        textPathElement.hrefString(), textPathElement.treeScope());
     if (!isSVGPathElement(targetElement))
-        return Path();
+        return nullptr;
 
     SVGPathElement& pathElement = toSVGPathElement(*targetElement);
     Path pathData = pathElement.asPath();
+    if (pathData.isEmpty())
+        return nullptr;
 
     // Spec:  The transform attribute on the referenced 'path' element represents a
     // supplemental transformation relative to the current user coordinate system for
@@ -54,7 +76,8 @@ Path LayoutSVGTextPath::layoutPath() const
     // system due to a possible transform attribute on the current 'text' element.
     // http://www.w3.org/TR/SVG/text.html#TextPathElement
     pathData.transform(pathElement.calculateAnimatedLocalTransform());
-    return pathData;
+
+    return PathPositionMapper::create(pathData);
 }
 
 float LayoutSVGTextPath::calculateStartOffset(float pathLength) const

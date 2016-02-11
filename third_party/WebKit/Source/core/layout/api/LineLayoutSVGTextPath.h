@@ -27,7 +27,7 @@ public:
 
     LineLayoutSVGTextPath() { }
 
-    Path layoutPath() const
+    PassOwnPtr<PathPositionMapper> layoutPath() const
     {
         return toSVGTextPath()->layoutPath();
     }

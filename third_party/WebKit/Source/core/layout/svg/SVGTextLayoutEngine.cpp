@@ -45,14 +45,15 @@ SVGTextLayoutEngine::SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>& layou
     , m_isVerticalText(false)
     , m_inPathLayout(false)
     , m_textLengthSpacingInEffect(false)
-    , m_textPathCalculator(nullptr)
-    , m_textPathLength(0)
+    , m_textPath(nullptr)
     , m_textPathCurrentOffset(0)
     , m_textPathSpacing(0)
     , m_textPathScaling(1)
 {
     ASSERT(!m_layoutAttributes.isEmpty());
 }
+
+SVGTextLayoutEngine::~SVGTextLayoutEngine() = default;
 
 void SVGTextLayoutEngine::updateCharacterPositionIfNeeded(float& x, float& y)
 {
@@ -174,12 +175,10 @@ void SVGTextLayoutEngine::beginTextPathLayout(SVGInlineFlowBox* flowBox)
     m_inPathLayout = true;
     LineLayoutSVGTextPath textPath = LineLayoutSVGTextPath(flowBox->lineLayoutItem());
 
-    Path path = textPath.layoutPath();
-    if (path.isEmpty())
+    m_textPath = textPath.layoutPath();
+    if (!m_textPath)
         return;
-    m_textPathCalculator = new Path::PositionCalculator(path);
-    m_textPathLength = path.length();
-    m_textPathStartOffset = textPath.calculateStartOffset(m_textPathLength);
+    m_textPathStartOffset = textPath.calculateStartOffset(m_textPath->length());
 
     SVGTextPathChunkBuilder textPathChunkLayoutBuilder;
     textPathChunkLayoutBuilder.processTextChunks(lineLayout.m_lineLayoutBoxes);
@@ -213,9 +212,7 @@ void SVGTextLayoutEngine::beginTextPathLayout(SVGInlineFlowBox* flowBox)
 void SVGTextLayoutEngine::endTextPathLayout()
 {
     m_inPathLayout = false;
-    delete m_textPathCalculator;
-    m_textPathCalculator = 0;
-    m_textPathLength = 0;
+    m_textPath = nullptr;
     m_textPathStartOffset = 0;
     m_textPathCurrentOffset = 0;
     m_textPathSpacing = 0;
@@ -350,7 +347,7 @@ void SVGTextLayoutEngine::advanceToNextLogicalCharacter(const SVGTextMetrics& lo
 
 void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, LineLayoutSVGInlineText textLineLayout, const ComputedStyle& style)
 {
-    if (m_inPathLayout && !m_textPathCalculator)
+    if (m_inPathLayout && !m_textPath)
         return;
 
     // Find the start of the current text box in the metrics list.
@@ -422,7 +419,6 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
         // Calculate CSS 'letter-spacing' and 'word-spacing' for next character, if needed.
         float spacing = spacingLayout.calculateCSSSpacing(currentCharacter);
 
-        float textPathOffset = 0;
         float textPathShiftX = 0;
         float textPathShiftY = 0;
         if (m_inPathLayout) {
@@ -452,24 +448,25 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
             }
 
             // Calculate current offset along path.
-            textPathOffset = m_textPathCurrentOffset + scaledGlyphAdvance / 2;
+            float textPathOffset = m_textPathCurrentOffset + scaledGlyphAdvance / 2;
 
             // Move to next character.
             m_textPathCurrentOffset += scaledGlyphAdvance + m_textPathSpacing + spacing * m_textPathScaling;
 
+            FloatPoint point;
+            PathPositionMapper::PositionType positionType = m_textPath->pointAndNormalAtLength(textPathOffset, point, angle);
+
             // Skip character, if we're before the path.
-            if (textPathOffset < 0) {
+            if (positionType == PathPositionMapper::BeforePath) {
                 advanceToNextLogicalCharacter(logicalMetrics);
                 m_visualMetricsIterator.next();
                 continue;
             }
 
-            // Stop processing, if the next character lies behind the path.
-            if (textPathOffset > m_textPathLength)
+            // Stop processing if the next character lies behind the path.
+            if (positionType == PathPositionMapper::AfterPath)
                 break;
 
-            FloatPoint point;
-            m_textPathCalculator->pointAndNormalAtLength(textPathOffset, point, angle);
             x = point.x();
             y = point.y();
 
