@@ -29,6 +29,10 @@ from chrome_telemetry_build import chromium_config
 sys.path.append(chromium_config.GetTelemetryDir())
 from telemetry.internal.util import webpagereplay
 
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'webpagereplay'))
+import adb_install_cert
+import certutils
+
 import devtools_monitor
 
 DEVTOOLS_PORT = 9222
@@ -135,6 +139,20 @@ def WprHost(device, wpr_archive_path, record=False):
       os.remove(wpr_archive_path)
   else:
     assert os.path.exists(wpr_archive_path)
+
+  # Deploy certification authority to the device.
+  temp_certificate_dir = tempfile.mkdtemp()
+  wpr_ca_cert_path = os.path.join(temp_certificate_dir, 'testca.pem')
+  certutils.write_dummy_ca_cert(*certutils.generate_dummy_ca_cert(),
+                                cert_path=wpr_ca_cert_path)
+
+  device_cert_util = adb_install_cert.AndroidCertInstaller(
+      device.adb.GetDeviceSerial(), None, wpr_ca_cert_path)
+  device_cert_util.install_cert(overwrite_cert=True)
+  wpr_server_args.extend(['--should_generate_certs',
+                          '--https_root_ca_cert_path=' + wpr_ca_cert_path])
+
+  # Set up WPR server and device forwarder.
   wpr_server = webpagereplay.ReplayServer(wpr_archive_path,
       '127.0.0.1', 0, 0, None, wpr_server_args)
   ports = wpr_server.StartServer()[:-1]
@@ -154,6 +172,10 @@ def WprHost(device, wpr_archive_path, record=False):
     forwarder.Forwarder.UnmapDevicePort(device_http_port, device)
     forwarder.Forwarder.UnmapDevicePort(device_https_port, device)
     wpr_server.StopServer()
+
+    # Remove certification authority from the device.
+    device_cert_util.remove_cert()
+    shutil.rmtree(temp_certificate_dir)
 
 @contextlib.contextmanager
 def DeviceConnection(device,
