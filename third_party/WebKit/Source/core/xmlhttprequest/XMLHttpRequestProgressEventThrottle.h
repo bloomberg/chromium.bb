@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ProgressEventThrottle_h
-#define ProgressEventThrottle_h
+#ifndef XMLHttpRequestProgressEventThrottle_h
+#define XMLHttpRequestProgressEventThrottle_h
 
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -48,13 +48,13 @@ class XMLHttpRequest;
 // - "progress" event means an event named "progress"
 // - ProgressEvent means an event using the ProgressEvent interface defined in
 //   the spec.
-class ProgressEventThrottle final : public GarbageCollectedFinalized<ProgressEventThrottle>, public TimerBase {
+class XMLHttpRequestProgressEventThrottle final : public GarbageCollectedFinalized<XMLHttpRequestProgressEventThrottle>, public TimerBase {
 public:
-    static ProgressEventThrottle* create(XMLHttpRequest* eventTarget)
+    static XMLHttpRequestProgressEventThrottle* create(XMLHttpRequest* eventTarget)
     {
-        return new ProgressEventThrottle(eventTarget);
+        return new XMLHttpRequestProgressEventThrottle(eventTarget);
     }
-    ~ProgressEventThrottle() override;
+    ~XMLHttpRequestProgressEventThrottle() override;
 
     enum DeferredEventAction {
         Ignore,
@@ -85,7 +85,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    explicit ProgressEventThrottle(XMLHttpRequest*);
+    explicit XMLHttpRequestProgressEventThrottle(XMLHttpRequest*);
 
     // Dispatches a "progress" progress event and usually a readyStateChange
     // event as well.
@@ -127,4 +127,4 @@ private:
 
 } // namespace blink
 
-#endif // ProgressEventThrottle_h
+#endif // XMLHttpRequestProgressEventThrottle_h

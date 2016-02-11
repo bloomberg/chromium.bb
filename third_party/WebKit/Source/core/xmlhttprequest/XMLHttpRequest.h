@@ -27,8 +27,8 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DocumentParserClient.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/xmlhttprequest/ProgressEventThrottle.h"
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
+#include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
@@ -250,7 +250,7 @@ private:
 
     void handleRequestError(ExceptionCode, const AtomicString&, long long, long long);
 
-    ProgressEventThrottle& progressEventThrottle();
+    XMLHttpRequestProgressEventThrottle& progressEventThrottle();
 
     Member<XMLHttpRequestUpload> m_upload;
 
@@ -289,7 +289,7 @@ private:
     // any.
     ExceptionCode m_exceptionCode;
 
-    Member<ProgressEventThrottle> m_progressEventThrottle;
+    Member<XMLHttpRequestProgressEventThrottle> m_progressEventThrottle;
 
     // An enum corresponding to the allowed string values for the responseType attribute.
     ResponseTypeCode m_responseTypeCode;
