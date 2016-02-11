@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_SERVICE_CLIENT_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_SERVICE_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -193,7 +195,7 @@ class DataReductionProxyConfigServiceClient
 
   // Used to determine the latency in retrieving the Data Reduction Proxy
   // configuration.
-  base::Time config_fetch_start_time_;
+  base::TimeTicks config_fetch_start_time_;
 
   // Keeps track of whether the previous request to a Data Reduction Proxy
   // failed to authenticate. This is necessary in the situation where a new
@@ -201,6 +203,11 @@ class DataReductionProxyConfigServiceClient
   // failed to authenticate, since the new configuration marks |backoff_entry_|
   // with a success, resulting in no net increase in the backoff timer.
   bool previous_request_failed_authentication_;
+
+  // Number of failed fetch attempts before the config is fetched successfully.
+  // It is reset to 0 every time there is a change in IP address, or when the
+  // config is fetched successfully.
+  int32_t failed_attempts_before_success_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

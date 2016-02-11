@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_TEST_UTILS_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 
@@ -117,6 +118,8 @@ class TestDataReductionProxyConfigServiceClient
   int GetBackoffErrorCount();
 
   void SetConfigServiceURL(const GURL& service_url);
+
+  int32_t failed_attempts_before_success() const;
 
  protected:
   // Overrides of DataReductionProxyConfigServiceClient

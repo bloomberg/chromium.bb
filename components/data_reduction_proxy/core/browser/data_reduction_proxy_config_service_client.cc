@@ -134,7 +134,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       enabled_(false),
       remote_config_applied_(false),
       url_request_context_getter_(nullptr),
-      previous_request_failed_authentication_(false) {
+      previous_request_failed_authentication_(false),
+      failed_attempts_before_success_(0) {
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
@@ -188,7 +189,7 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   GURL base_config_service_url =
       config_service_url_.ReplaceComponents(replacements);
   event_creator_->BeginConfigRequest(bound_net_log_, base_config_service_url);
-  config_fetch_start_time_ = base::Time::Now();
+  config_fetch_start_time_ = base::TimeTicks::Now();
 
   RetrieveRemoteConfig();
 }
@@ -263,6 +264,7 @@ base::Time DataReductionProxyConfigServiceClient::Now() {
 void DataReductionProxyConfigServiceClient::OnIPAddressChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   GetBackoffEntry()->Reset();
+  failed_attempts_before_success_ = 0;
   RetrieveConfig();
 }
 
@@ -332,8 +334,11 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   ClientConfig config;
   bool succeeded = false;
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAConfigServiceFetchResponseCode,
-                              response_code);
+  if (net::NetworkChangeNotifier::GetConnectionType() !=
+      net::NetworkChangeNotifier::CONNECTION_NONE) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAConfigServiceFetchResponseCode,
+                                response_code);
+  }
 
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       response_code == net::HTTP_OK && config.ParseFromString(config_data)) {
@@ -349,16 +354,20 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     refresh_duration =
         config_parser::DurationToTimeDelta(config.refresh_duration());
 
+    DCHECK(!config_fetch_start_time_.is_null());
     base::TimeDelta configuration_fetch_latency =
-        base::Time::Now() - config_fetch_start_time_;
+        base::TimeTicks::Now() - config_fetch_start_time_;
     RecordAuthExpiredHistogram(false);
     UMA_HISTOGRAM_MEDIUM_TIMES(kUMAConfigServiceFetchLatency,
                                configuration_fetch_latency);
     UMA_HISTOGRAM_COUNTS_100(kUMAConfigServiceFetchFailedAttemptsBeforeSuccess,
-                             GetBackoffEntry()->failure_count());
+                             failed_attempts_before_success_);
+    failed_attempts_before_success_ = 0;
     std::string encoded_config;
     base::Base64Encode(config_data, &encoded_config);
     config_storer_.Run(encoded_config);
+  } else {
+    ++failed_attempts_before_success_;
   }
 
   GetBackoffEntry()->InformOfRequest(succeeded);

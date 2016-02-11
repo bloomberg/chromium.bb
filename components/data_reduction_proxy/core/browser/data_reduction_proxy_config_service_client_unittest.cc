@@ -413,8 +413,11 @@ TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
 // Tests that backoff values increases with every time config cannot be fetched.
 TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   // Use a local/static config.
+  base::HistogramTester histogram_tester;
   AddMockFailure();
   AddMockFailure();
+
+  EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
   SetDataReductionProxyEnabled(true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
@@ -434,6 +437,10 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_EQ(base::TimeDelta::FromSeconds(40), config_client()->GetDelay());
   EXPECT_TRUE(persisted_config().empty());
+
+  EXPECT_EQ(2, config_client()->failed_attempts_before_success());
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess", 0);
 }
 
 // Tests that the config is read successfully on the first attempt.
@@ -450,8 +457,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
 // Tests that the config is read successfully on the second attempt.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        RemoteConfigSuccessAfterFailure) {
+  base::HistogramTester histogram_tester;
+
   AddMockFailure();
   AddMockSuccess();
+
+  EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
   SetDataReductionProxyEnabled(true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
@@ -460,6 +471,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   // First attempt should be unsuccessful.
   config_client()->RetrieveConfig();
   RunUntilIdle();
+  EXPECT_EQ(1, config_client()->failed_attempts_before_success());
   EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -469,6 +481,11 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess();
+  EXPECT_EQ(0, config_client()->failed_attempts_before_success());
+
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess", 1,
+      1);
 }
 
 // Verifies that the config is fetched successfully after IP address changes.

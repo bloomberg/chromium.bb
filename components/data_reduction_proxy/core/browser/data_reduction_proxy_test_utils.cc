@@ -139,6 +139,12 @@ void TestDataReductionProxyConfigServiceClient::SetConfigServiceURL(
   config_service_url_ = service_url;
 }
 
+int32_t
+TestDataReductionProxyConfigServiceClient::failed_attempts_before_success()
+    const {
+  return failed_attempts_before_success_;
+}
+
 base::Time TestDataReductionProxyConfigServiceClient::Now() {
   return tick_clock_.Now();
 }
