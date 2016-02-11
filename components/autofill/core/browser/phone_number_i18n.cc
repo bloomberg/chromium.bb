@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
-#include "third_party/libphonenumber/phonenumber_api.h"
+#include "third_party/libphonenumber/src/phonenumber_api.h"
 
 using i18n::phonenumbers::PhoneNumber;
 using i18n::phonenumbers::PhoneNumberUtil;

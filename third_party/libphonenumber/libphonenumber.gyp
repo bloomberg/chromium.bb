@@ -5,8 +5,8 @@
 {
   'target_defaults': {
     'include_dirs': [
-      'src/cpp/src',
-      'src/cpp/test',
+      'src',
+      'src/test',
       # The libphonenumber source (and test code) expects the
       # generated protocol headers to be available with "phonenumbers" include
       # path, e.g. #include "phonenumbers/foo.pb.h".
@@ -44,22 +44,22 @@
       '../protobuf/protobuf.gyp:protobuf_lite',
     ],
     'sources': [
-      'src/cpp/src/phonenumbers/asyoutypeformatter.cc',
-      'src/cpp/src/phonenumbers/base/strings/string_piece.cc',
-      'src/cpp/src/phonenumbers/default_logger.cc',
-      'src/cpp/src/phonenumbers/logger.cc',
-      'src/cpp/src/phonenumbers/phonenumber.cc',
-      'src/cpp/src/phonenumbers/phonenumbermatch.cc',
-      'src/cpp/src/phonenumbers/phonenumbermatcher.cc',
-      'src/cpp/src/phonenumbers/phonenumberutil.cc',
-      'src/cpp/src/phonenumbers/regexp_adapter_icu.cc',
-      'src/cpp/src/phonenumbers/regexp_cache.cc',
-      'src/cpp/src/phonenumbers/string_byte_sink.cc',
-      'src/cpp/src/phonenumbers/stringutil.cc',
-      'src/cpp/src/phonenumbers/unicodestring.cc',
-      'src/cpp/src/phonenumbers/utf/rune.c',
-      'src/cpp/src/phonenumbers/utf/unicodetext.cc',
-      'src/cpp/src/phonenumbers/utf/unilib.cc',
+      'src/phonenumbers/asyoutypeformatter.cc',
+      'src/phonenumbers/base/strings/string_piece.cc',
+      'src/phonenumbers/default_logger.cc',
+      'src/phonenumbers/logger.cc',
+      'src/phonenumbers/phonenumber.cc',
+      'src/phonenumbers/phonenumbermatch.cc',
+      'src/phonenumbers/phonenumbermatcher.cc',
+      'src/phonenumbers/phonenumberutil.cc',
+      'src/phonenumbers/regexp_adapter_icu.cc',
+      'src/phonenumbers/regexp_cache.cc',
+      'src/phonenumbers/string_byte_sink.cc',
+      'src/phonenumbers/stringutil.cc',
+      'src/phonenumbers/unicodestring.cc',
+      'src/phonenumbers/utf/rune.c',
+      'src/phonenumbers/utf/unicodetext.cc',
+      'src/phonenumbers/utf/unilib.cc',
       'src/resources/phonemetadata.proto',
       'src/resources/phonenumber.proto',
     ],
@@ -75,7 +75,7 @@
     'direct_dependent_settings': {
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/protoc_out/third_party/libphonenumber',
-        'src/cpp/src',
+        'src',
       ],
       'defines': [
         'I18N_PHONENUMBERS_USE_ICU_REGEXP=1',
@@ -110,8 +110,8 @@
     'sources': [
       # Comment next line and uncomment the line after, if complete metadata
       # (with examples) is needed.
-      'src/cpp/src/phonenumbers/lite_metadata.cc',
-      #'src/cpp/src/phonenumbers/metadata.cc',
+      'src/phonenumbers/lite_metadata.cc',
+      #'src/phonenumbers/metadata.cc',
     ],
   },
   {
@@ -119,15 +119,15 @@
     'target_name': 'libphonenumber_unittests',
     'type': 'executable',
     'sources': [
-      'src/cpp/src/phonenumbers/test_metadata.cc',
-      'src/cpp/test/phonenumbers/asyoutypeformatter_test.cc',
-      'src/cpp/test/phonenumbers/phonenumbermatch_test.cc',
-      'src/cpp/test/phonenumbers/phonenumbermatcher_test.cc',
-      'src/cpp/test/phonenumbers/phonenumberutil_test.cc',
-      'src/cpp/test/phonenumbers/regexp_adapter_test.cc',
-      'src/cpp/test/phonenumbers/stringutil_test.cc',
-      'src/cpp/test/phonenumbers/test_util.cc',
-      'src/cpp/test/phonenumbers/unicodestring_test.cc',
+      'src/phonenumbers/test_metadata.cc',
+      'src/test/phonenumbers/asyoutypeformatter_test.cc',
+      'src/test/phonenumbers/phonenumbermatch_test.cc',
+      'src/test/phonenumbers/phonenumbermatcher_test.cc',
+      'src/test/phonenumbers/phonenumberutil_test.cc',
+      'src/test/phonenumbers/regexp_adapter_test.cc',
+      'src/test/phonenumbers/stringutil_test.cc',
+      'src/test/phonenumbers/test_util.cc',
+      'src/test/phonenumbers/unicodestring_test.cc',
     ],
     'dependencies': [
       '../icu/icu.gyp:icui18n',
