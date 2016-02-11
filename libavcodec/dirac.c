@@ -262,6 +262,9 @@ static int parse_source_parameters(AVDiracSeqHeader *dsh, GetBitContext *gb,
 
     dsh->bit_depth = luma_depth;
 
+    /* Full range 8 bts uses the same pix_fmts as limited range 8 bits */
+    dsh->pixel_range_index += dsh->pixel_range_index == 1;
+
     if (dsh->pixel_range_index < 2U)
         return AVERROR_INVALIDDATA;
 
@@ -346,8 +349,10 @@ int av_dirac_parse_sequence_header(AVDiracSeqHeader **pdsh,
     else if (dsh->version.major > 2 && log_ctx)
         av_log(log_ctx, AV_LOG_WARNING, "Stream may have unhandled features\n");
 
-    if (video_format > 20U)
-        return AVERROR_INVALIDDATA;
+    if (video_format > 20U) {
+        ret = AVERROR_INVALIDDATA;
+        goto fail;
+    }
 
     /* Fill in defaults for the source parameters. */
     dsh->width              = dirac_source_parameters_defaults[video_format].width;

@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef AVFILTER_BLEND_H
+#define AVFILTER_BLEND_H
+
 #include "libavutil/eval.h"
 #include "avfilter.h"
 
@@ -52,6 +55,7 @@ enum BlendMode {
     BLEND_LINEARLIGHT,
     BLEND_GLOW,
     BLEND_ADDITION128,
+    BLEND_MULTIPLY128,
     BLEND_NB
 };
 
@@ -68,3 +72,5 @@ typedef struct FilterParams {
 } FilterParams;
 
 void ff_blend_init_x86(FilterParams *param, int is_16bit);
+
+#endif /* AVFILTER_BLEND_H */

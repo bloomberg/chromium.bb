@@ -527,6 +527,8 @@ static void ffmpeg_cleanup(int ret)
         av_freep(&ost->audio_channels_map);
         ost->audio_channels_mapped = 0;
 
+        av_dict_free(&ost->sws_dict);
+
         avcodec_free_context(&ost->enc_ctx);
 
         av_freep(&output_streams[i]);
@@ -1709,11 +1711,11 @@ static void flush_encoders(void)
             switch (enc->codec_type) {
             case AVMEDIA_TYPE_AUDIO:
                 encode = avcodec_encode_audio2;
-                desc   = "Audio";
+                desc   = "audio";
                 break;
             case AVMEDIA_TYPE_VIDEO:
                 encode = avcodec_encode_video2;
-                desc   = "Video";
+                desc   = "video";
                 break;
             default:
                 stop_encoding = 1;
@@ -1729,7 +1731,7 @@ static void flush_encoders(void)
 
                 update_benchmark(NULL);
                 ret = encode(enc, &pkt, NULL, &got_packet);
-                update_benchmark("flush %s %d.%d", desc, ost->file_index, ost->index);
+                update_benchmark("flush_%s %d.%d", desc, ost->file_index, ost->index);
                 if (ret < 0) {
                     av_log(NULL, AV_LOG_FATAL, "%s encoding failed: %s\n",
                            desc,
@@ -4124,16 +4126,12 @@ static int transcode(void)
         }
 
         ret = transcode_step();
-        if (ret < 0) {
-            if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN)) {
-                continue;
-            } else {
-                char errbuf[128];
-                av_strerror(ret, errbuf, sizeof(errbuf));
+        if (ret < 0 && ret != AVERROR_EOF) {
+            char errbuf[128];
+            av_strerror(ret, errbuf, sizeof(errbuf));
 
-                av_log(NULL, AV_LOG_ERROR, "Error while filtering: %s\n", errbuf);
-                break;
-            }
+            av_log(NULL, AV_LOG_ERROR, "Error while filtering: %s\n", errbuf);
+            break;
         }
 
         /* dump report by using the output first video and audio streams */

@@ -111,8 +111,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         for (i = 0; i < 4; i++) {
             snprintf(img->tmp[i], sizeof(img->tmp[i]), "%s.tmp", filename);
             av_strlcpy(img->target[i], filename, sizeof(img->target[i]));
-            if (avio_open2(&pb[i], img->use_rename ? img->tmp[i] : filename, AVIO_FLAG_WRITE,
-                           &s->interrupt_callback, NULL) < 0) {
+            if (s->io_open(s, &pb[i], img->use_rename ? img->tmp[i] : filename, AVIO_FLAG_WRITE, NULL) < 0) {
                 av_log(s, AV_LOG_ERROR, "Could not open file : %s\n", img->use_rename ? img->tmp[i] : filename);
                 return AVERROR(EIO);
             }
@@ -129,7 +128,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (img->split_planes) {
         int ysize = codec->width * codec->height;
-        int usize = FF_CEIL_RSHIFT(codec->width, desc->log2_chroma_w) * FF_CEIL_RSHIFT(codec->height, desc->log2_chroma_h);
+        int usize = AV_CEIL_RSHIFT(codec->width, desc->log2_chroma_w) * AV_CEIL_RSHIFT(codec->height, desc->log2_chroma_h);
         if (desc->comp[0].depth >= 9) {
             ysize *= 2;
             usize *= 2;
@@ -137,11 +136,11 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         avio_write(pb[0], pkt->data                , ysize);
         avio_write(pb[1], pkt->data + ysize        , usize);
         avio_write(pb[2], pkt->data + ysize + usize, usize);
-        avio_closep(&pb[1]);
-        avio_closep(&pb[2]);
+        ff_format_io_close(s, &pb[1]);
+        ff_format_io_close(s, &pb[2]);
         if (desc->nb_components > 3) {
             avio_write(pb[3], pkt->data + ysize + 2*usize, ysize);
-            avio_closep(&pb[3]);
+            ff_format_io_close(s, &pb[3]);
         }
     } else if (img->muxer) {
         int ret;
@@ -179,7 +178,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     }
     avio_flush(pb[0]);
     if (!img->is_pipe) {
-        avio_closep(&pb[0]);
+        ff_format_io_close(s, &pb[0]);
         for (i = 0; i < nb_renames; i++) {
             ff_rename(img->tmp[i], img->target[i], s);
         }

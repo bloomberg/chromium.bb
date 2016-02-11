@@ -55,8 +55,11 @@
 /* assume b>0 */
 #define ROUNDED_DIV(a,b) (((a)>0 ? (a) + ((b)>>1) : (a) - ((b)>>1))/(b))
 /* Fast a/(1<<b) rounded toward +inf. Assume a>=0 and b>=0 */
-#define FF_CEIL_RSHIFT(a,b) (!av_builtin_constant_p(b) ? -((-(a)) >> (b)) \
+#define AV_CEIL_RSHIFT(a,b) (!av_builtin_constant_p(b) ? -((-(a)) >> (b)) \
                                                        : ((a) + (1<<(b)) - 1) >> (b))
+/* Backwards compat. */
+#define FF_CEIL_RSHIFT AV_CEIL_RSHIFT
+
 #define FFUDIV(a,b) (((a)>0 ?(a):(a)-(b)+1) / (b))
 #define FFUMOD(a,b) ((a)-(b)*FFUDIV(a,b))
 
@@ -211,7 +214,7 @@ static av_always_inline av_const int32_t av_clipl_int32_c(int64_t a)
  */
 static av_always_inline av_const int av_clip_intp2_c(int a, int p)
 {
-    if ((a + (1 << p)) & ~((2 << p) - 1))
+    if (((unsigned)a + (1 << p)) & ~((2 << p) - 1))
         return (a >> 31) ^ ((1 << p) - 1);
     else
         return a;
@@ -356,13 +359,13 @@ static av_always_inline av_const int av_parity_c(uint32_t v)
  * to prevent undefined results.
  */
 #define GET_UTF8(val, GET_BYTE, ERROR)\
-    val= GET_BYTE;\
+    val= (GET_BYTE);\
     {\
         uint32_t top = (val & 128) >> 1;\
         if ((val & 0xc0) == 0x80 || val >= 0xFE)\
             ERROR\
         while (val & top) {\
-            int tmp= GET_BYTE - 128;\
+            int tmp= (GET_BYTE) - 128;\
             if(tmp>>6)\
                 ERROR\
             val= (val<<6) + tmp;\

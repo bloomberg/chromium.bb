@@ -53,7 +53,7 @@ typedef struct ShowFreqsContext {
     float **avg_data;
     float *window_func_lut;
     float overlap;
-    int skip_samples;
+    int hop_size;
     int nb_channels;
     int nb_freq;
     int win_size;
@@ -154,6 +154,15 @@ static int query_formats(AVFilterContext *ctx)
     return 0;
 }
 
+static av_cold int init(AVFilterContext *ctx)
+{
+    ShowFreqsContext *s = ctx->priv;
+
+    s->pts = AV_NOPTS_VALUE;
+
+    return 0;
+}
+
 static int config_output(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
@@ -205,8 +214,8 @@ static int config_output(AVFilterLink *outlink)
     ff_generate_window_func(s->window_func_lut, s->win_size, s->win_func, &overlap);
     if (s->overlap == 1.)
         s->overlap = overlap;
-    s->skip_samples = (1. - s->overlap) * s->win_size;
-    if (s->skip_samples < 1) {
+    s->hop_size = (1. - s->overlap) * s->win_size;
+    if (s->hop_size < 1) {
         av_log(ctx, AV_LOG_ERROR, "overlap %f too big\n", s->overlap);
         return AVERROR(EINVAL);
     }
@@ -423,7 +432,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterContext *ctx = inlink->dst;
     ShowFreqsContext *s = ctx->priv;
     AVFrame *fin = NULL;
+    int consumed = 0;
     int ret = 0;
+
+    if (s->pts == AV_NOPTS_VALUE)
+        s->pts = in->pts - av_audio_fifo_size(s->fifo);
 
     av_audio_fifo_write(s->fifo, (void **)in->extended_data, in->nb_samples);
     while (av_audio_fifo_size(s->fifo) >= s->win_size) {
@@ -433,20 +446,21 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             goto fail;
         }
 
-        fin->pts = s->pts;
-        s->pts += s->skip_samples;
+        fin->pts = s->pts + consumed;
+        consumed += s->hop_size;
         ret = av_audio_fifo_peek(s->fifo, (void **)fin->extended_data, s->win_size);
         if (ret < 0)
             goto fail;
 
         ret = plot_freqs(inlink, fin);
         av_frame_free(&fin);
-        av_audio_fifo_drain(s->fifo, s->skip_samples);
+        av_audio_fifo_drain(s->fifo, s->hop_size);
         if (ret < 0)
             goto fail;
     }
 
 fail:
+    s->pts = AV_NOPTS_VALUE;
     av_frame_free(&fin);
     av_frame_free(&in);
     return ret;
@@ -491,6 +505,7 @@ static const AVFilterPad showfreqs_outputs[] = {
 AVFilter ff_avf_showfreqs = {
     .name          = "showfreqs",
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to a frequencies video output."),
+    .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
     .priv_size     = sizeof(ShowFreqsContext),

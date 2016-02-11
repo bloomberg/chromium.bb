@@ -37,6 +37,26 @@ ID3v2.3 and ID3v2.4) are supported. The default is version 4.
 
 @end table
 
+@anchor{asf}
+@section asf
+
+Advanced Systems Format muxer.
+
+Note that Windows Media Audio (wma) and Windows Media Video (wmv) use this
+muxer too.
+
+@subsection Options
+
+It accepts the following options:
+
+@table @option
+@item packet_size
+Set the muxer packet size. By tuning this setting you may reduce data
+fragmentation or muxer overhead depending on your source. Default value is
+3200, minimum is 100, maximum is 64k.
+
+@end table
+
 @anchor{chromaprint}
 @section chromaprint
 
@@ -1099,6 +1119,28 @@ For example with @option{segment_time} set to "900" this makes it possible
 to create files at 12:00 o'clock, 12:15, 12:30, etc.
 
 Default value is "0".
+
+@item segment_clocktime_offset @var{duration}
+Delay the segment splitting times with the specified duration when using
+@option{segment_atclocktime}.
+
+For example with @option{segment_time} set to "900" and
+@option{segment_clocktime_offset} set to "300" this makes it possible to
+create files at 12:05, 12:20, 12:35, etc.
+
+Default value is "0".
+
+@item segment_clocktime_wrap_duration @var{duration}
+Force the segmenter to only start a new segment if a packet reaches the muxer
+within the specified duration after the segmenting clock time. This way you
+can make the segmenter more resilient to backward local time jumps, such as
+leap seconds or transition to standard time from daylight savings time.
+
+Assuming that the delay between the packets of your source is less than 0.5
+second you can detect a leap second by specifying 0.5 as the duration.
+
+Default is the maximum possible duration which means starting a new segment
+regardless of the elapsed time since the last clock time.
 
 @item segment_time_delta @var{delta}
 Specify the accuracy time when selecting the start time for a
