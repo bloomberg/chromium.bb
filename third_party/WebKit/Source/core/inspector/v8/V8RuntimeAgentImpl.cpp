@@ -371,8 +371,10 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(v8::Local<v8::Context> co
     InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
     if (!injectedScript)
         return;
+    int contextId = injectedScript->contextId();
+    injectedScript->setOrigin(origin);
     RefPtr<ExecutionContextDescription> description = ExecutionContextDescription::create()
-        .setId(injectedScript->contextId())
+        .setId(contextId)
         .setName(humanReadableName)
         .setOrigin(origin)
         .setFrameId(frameId);
@@ -381,12 +383,12 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(v8::Local<v8::Context> co
     m_frontend->executionContextCreated(description.release());
 }
 
-
 void V8RuntimeAgentImpl::reportExecutionContextDestroyed(v8::Local<v8::Context> context)
 {
     int contextId = m_injectedScriptManager->discardInjectedScriptFor(context);
-    if (m_enabled)
-        m_frontend->executionContextDestroyed(contextId);
+    if (!m_enabled)
+        return;
+    m_frontend->executionContextDestroyed(contextId);
 }
 
 PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> V8RuntimeAgentImpl::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)

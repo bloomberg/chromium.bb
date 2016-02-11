@@ -105,6 +105,8 @@ public:
 
     void setCustomObjectFormatterEnabled(bool);
     int contextId() { return m_contextId; }
+    String origin() const { return m_origin; }
+    void setOrigin(const String& origin) { m_origin = origin; }
 
     v8::Isolate* isolate() { return m_isolate; }
     v8::Local<v8::Context> context() const;
@@ -128,6 +130,7 @@ private:
     V8DebuggerClient* m_client;
     RefPtr<InjectedScriptNative> m_native;
     int m_contextId;
+    String m_origin;
 };
 
 } // namespace blink

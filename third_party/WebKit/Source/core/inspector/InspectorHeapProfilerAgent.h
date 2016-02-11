@@ -35,11 +35,9 @@
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
-#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace v8 {
 class Isolate;
@@ -47,7 +45,7 @@ class Isolate;
 
 namespace blink {
 
-class HeapStatsUpdateTask;
+class V8HeapProfilerAgent;
 class V8RuntimeAgent;
 
 typedef String ErrorString;
@@ -58,16 +56,19 @@ class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<I
 public:
     static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, V8RuntimeAgent*);
     ~InspectorHeapProfilerAgent() override;
-    DECLARE_VIRTUAL_TRACE();
+
+    // InspectorBaseAgent overrides.
+    void setState(PassRefPtr<JSONObject>) override;
+    void setFrontend(InspectorFrontend*) override;
+    void clearFrontend() override;
+    void restore() override;
 
     void collectGarbage(ErrorString*) override;
 
+    void disable(ErrorString*) override;
     void enable(ErrorString*) override;
     void startTrackingHeapObjects(ErrorString*, const bool* trackAllocations) override;
     void stopTrackingHeapObjects(ErrorString*, const bool* reportProgress) override;
-
-    void disable(ErrorString*) override;
-    void restore() override;
 
     void takeHeapSnapshot(ErrorString*, const bool* reportProgress) override;
 
@@ -80,17 +81,15 @@ private:
 
     InspectorHeapProfilerAgent(v8::Isolate*, V8RuntimeAgent*);
 
-    void requestHeapStatsUpdate();
+    void startUpdateStatsTimer();
+    void stopUpdateStatsTimer();
+    bool isInspectableHeapObject(unsigned id);
 
-    void startTrackingHeapObjectsInternal(bool trackAllocations);
-    void stopTrackingHeapObjectsInternal();
-
+    OwnPtr<V8HeapProfilerAgent> m_v8HeapProfilerAgent;
+    OwnPtr<HeapStatsUpdateTask> m_heapStatsUpdateTask;
     v8::Isolate* m_isolate;
-    V8RuntimeAgent* m_runtimeAgent;
-    OwnPtrWillBeMember<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 
 } // namespace blink
-
 
 #endif // !defined(InspectorHeapProfilerAgent_h)
