@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
@@ -1375,7 +1376,7 @@ TEST_F(WindowSelectorTest, MultiMonitorReversedOrder) {
     return;
 
   UpdateDisplay("400x400,400x400");
-  DisplayLayout layout(DisplayPlacement::LEFT, 0);
+  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::LEFT, 0));
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(layout);
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   gfx::Rect bounds1(-350, 0, 100, 100);

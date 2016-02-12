@@ -13,6 +13,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -380,18 +381,25 @@ void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
 
 void DisplayOptionsHandler::HandleSetDisplayLayout(
     const base::ListValue* args) {
-  int layout, offset;
-  if (!args->GetInteger(1, &layout))
+  int position, offset;
+  if (!args->GetInteger(1, &position))
     NOTREACHED();
-  DCHECK_LE(ash::DisplayPlacement::TOP, layout);
-  DCHECK_GE(ash::DisplayPlacement::LEFT, layout);
+  DCHECK_LE(ash::DisplayPlacement::TOP, position);
+  DCHECK_GE(ash::DisplayPlacement::LEFT, position);
   if (!args->GetInteger(2, &offset))
     NOTREACHED();
   content::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
-  GetDisplayConfigurationController()->SetDisplayLayout(
-      ash::DisplayLayout(static_cast<ash::DisplayPlacement::Position>(layout),
-                         offset),
-      true /* user_action */);
+
+  ash::DisplayLayout layout;
+  layout.primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
+  layout.placement.position =
+      static_cast<ash::DisplayPlacement::Position>(position);
+  layout.placement.offset = offset;
+  layout.placement.display_id = ash::ScreenUtil::GetSecondaryDisplay().id();
+  layout.placement.parent_display_id = layout.primary_id;
+
+  GetDisplayConfigurationController()->SetDisplayLayout(layout,
+                                                        true /* user_action */);
 }
 
 void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {

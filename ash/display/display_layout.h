@@ -24,20 +24,27 @@ namespace ash {
 // DisplayLayoutStore.
 using DisplayIdList = std::vector<int64_t>;
 
-// DisplayPlacement specifies where the secondary display is placeed
-// relative to |primary| display.  In the following example, the secondary
-// is placed at the left side of the primary display, with a negative offset.
+// DisplayPlacement specifies where the display (D) is placed relative
+// to parent (P) display.  In the following example, the display (D)
+// given by |display_id| is placed at the left side of the parent
+// display (P) given by |parent_display_id|, with a negative offset.
 //
 //        +      +--------+
 // offset |      |        |
-//        +      |   S    +--------+
+//        +      |   D    +--------+
 //               |        |        |
 //               +--------+   P    |
 //                        |        |
 //                        +--------+
 //
 struct ASH_EXPORT DisplayPlacement {
-  // To which side the display is positioned relative to the primary display.
+  // The id of the display this placement will be applied to.
+  int64_t display_id;
+
+  // The parent display id to which the above display is placed.
+  int64_t parent_display_id;
+
+  // To which side the parent display the display is positioned.
   enum Position { TOP, RIGHT, BOTTOM, LEFT };
   Position position;
 
@@ -54,7 +61,6 @@ struct ASH_EXPORT DisplayPlacement {
 
 struct ASH_EXPORT DisplayLayout {
   DisplayLayout();
-  DisplayLayout(DisplayPlacement::Position position, int offset);
   ~DisplayLayout();
 
   // Converter functions to/from base::Value.

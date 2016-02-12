@@ -185,7 +185,7 @@ gfx::Display GetSecondaryDisplay() {
 
 void SetSecondaryDisplayLayoutAndOffset(DisplayPlacement::Position position,
                                         int offset) {
-  DisplayLayout layout(position, offset);
+  DisplayLayout layout(test::CreateDisplayLayout(position, offset));
   ASSERT_GT(gfx::Screen::GetScreen()->GetNumDisplays(), 1);
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(layout);
 }
@@ -195,10 +195,13 @@ void SetSecondaryDisplayLayout(DisplayPlacement::Position position) {
 }
 
 void SetDefaultDisplayLayout(DisplayPlacement::Position position) {
+  DisplayLayout default_layout;
+  default_layout.placement = DisplayPlacement(position, 0);
+
   Shell::GetInstance()
       ->display_manager()
       ->layout_store()
-      ->SetDefaultDisplayLayout(DisplayLayout(position, 0));
+      ->SetDefaultDisplayLayout(default_layout);
 }
 
 class WindowTreeHostManagerShutdownTest : public test::AshTestBase {
@@ -716,8 +719,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimary) {
   gfx::Display primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenUtil::GetSecondaryDisplay();
 
-  DisplayLayout display_layout(DisplayPlacement::RIGHT, 50);
-  display_manager->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(
+      test::CreateDisplayLayout(DisplayPlacement::RIGHT, 50));
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::Window* primary_root =
@@ -806,8 +809,8 @@ TEST_F(WindowTreeHostManagerTest, FindNearestDisplay) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200,300x300");
-  DisplayLayout display_layout(DisplayPlacement::RIGHT, 50);
-  display_manager->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(
+      test::CreateDisplayLayout(DisplayPlacement::RIGHT, 50));
 
   gfx::Display primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenUtil::GetSecondaryDisplay();
@@ -870,8 +873,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   gfx::Display primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenUtil::GetSecondaryDisplay();
 
-  DisplayLayout display_layout(DisplayPlacement::RIGHT, 50);
-  display_manager->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(
+      test::CreateDisplayLayout(DisplayPlacement::RIGHT, 50));
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::Window* primary_root =
@@ -915,6 +918,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   window_tree_host_manager->SetPrimaryDisplayId(secondary_display.id());
   EXPECT_EQ(0, observer.CountAndReset());
 
+  LOG(ERROR) << "A";
+
   aura::WindowTracker tracker;
   tracker.Add(primary_root);
   tracker.Add(secondary_root);
@@ -935,6 +940,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   EXPECT_FALSE(tracker.Contains(secondary_root));
   EXPECT_TRUE(primary_root->Contains(shelf_window));
 
+  LOG(ERROR) << "B:" << primary_display.ToString();
+
   // Adding 2nd display with the same ID.  The 2nd display should become primary
   // since secondary id is still stored as desirable_primary_id.
   std::vector<DisplayInfo> display_info_list;
@@ -942,7 +949,10 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
       display_manager->GetDisplayInfo(primary_display.id()));
   display_info_list.push_back(
       display_manager->GetDisplayInfo(secondary_display.id()));
+
   display_manager->OnNativeDisplaysChanged(display_info_list);
+
+  LOG(ERROR) << "C 0";
 
   EXPECT_EQ(2, gfx::Screen::GetScreen()->GetNumDisplays());
   EXPECT_EQ(secondary_display.id(),
@@ -954,6 +964,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
                               primary_display.id()));
   EXPECT_TRUE(primary_root->Contains(shelf_window));
 
+  LOG(ERROR) << "C";
+
   // Deleting 2nd display and adding 2nd display with a different ID.  The 2nd
   // display shouldn't become primary.
   UpdateDisplay("200x200");
@@ -961,6 +973,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
                                  false);
   third_display_info.SetBounds(secondary_display.bounds());
   ASSERT_NE(primary_display.id(), third_display_info.id());
+
+  LOG(ERROR) << "D";
 
   const DisplayInfo& primary_display_info =
       display_manager->GetDisplayInfo(primary_display.id());
@@ -1066,8 +1080,8 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
   EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
-  DisplayLayout display_layout(DisplayPlacement::BOTTOM, 50);
-  display_manager->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(
+      test::CreateDisplayLayout(DisplayPlacement::BOTTOM, 50));
   EXPECT_EQ("50,120 150x200",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
 

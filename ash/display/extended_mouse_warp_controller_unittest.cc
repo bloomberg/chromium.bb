@@ -44,7 +44,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(DisplayPlacement::RIGHT, 0);
+  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::RIGHT, 0));
   display_manager->SetLayoutForCurrentDisplays(layout);
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
 
@@ -122,7 +122,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(DisplayPlacement::LEFT, 0);
+  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::LEFT, 0));
   display_manager->SetLayoutForCurrentDisplays(layout);
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
@@ -162,7 +162,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(DisplayPlacement::TOP, 0);
+  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::TOP, 0));
   display_manager->SetLayoutForCurrentDisplays(layout);
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());

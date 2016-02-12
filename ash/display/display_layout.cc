@@ -31,6 +31,10 @@ const char kMirroredKey[] = "mirrored";
 const char kDefaultUnifiedKey[] = "default_unified";
 const char kPrimaryIdKey[] = "primary-id";
 
+// TODO(oshima): Support multiple placements.
+const char kPlacementDisplayIdKey[] = "placement.display_id";
+const char kPlacementParentDisplayIdKey[] = "placement.parent_display_id";
+
 using PositionToStringMap = std::map<DisplayPlacement::Position, std::string>;
 using DisplayPlacementMap = std::unordered_map<int64_t, DisplayPlacement>;
 
@@ -59,11 +63,22 @@ bool GetDisplayIdFromString(const base::StringPiece& position, int64_t* field) {
   return base::StringToInt64(position, field);
 }
 
+bool GetDisplayIdByKey(const base::DictionaryValue* dict_value,
+                       const char* key,
+                       int64_t* id_out) {
+  std::string out;
+  return dict_value->GetString(key, &out) && base::StringToInt64(out, id_out);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // DisplayPlacement
-DisplayPlacement::DisplayPlacement(Position p, int o) : position(p), offset(o) {
+DisplayPlacement::DisplayPlacement(Position pos, int offset)
+    : display_id(gfx::Display::kInvalidDisplayID),
+      parent_display_id(gfx::Display::kInvalidDisplayID),
+      position(pos),
+      offset(offset) {
   DCHECK_LE(TOP, position);
   DCHECK_GE(LEFT, position);
   // Set the default value to |position| in case position is invalid.  DCHECKs
@@ -90,6 +105,7 @@ DisplayPlacement& DisplayPlacement::Swap() {
       break;
   }
   offset = -offset;
+  std::swap(display_id, parent_display_id);
   return *this;
 }
 
@@ -101,10 +117,8 @@ std::string DisplayPlacement::ToString() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DisplayLayout
 
-DisplayLayout::DisplayLayout() : DisplayLayout(DisplayPlacement::RIGHT, 0) {}
-
-DisplayLayout::DisplayLayout(DisplayPlacement::Position position, int offset)
-    : placement(position, offset),
+DisplayLayout::DisplayLayout()
+    : placement(DisplayPlacement::RIGHT, 0),
       mirrored(false),
       default_unified(true),
       primary_id(gfx::Display::kInvalidDisplayID) {}
@@ -125,6 +139,11 @@ bool DisplayLayout::ConvertFromValue(const base::Value& value,
   std::string position;
   if (dict_value->GetString(kPositionKey, &position))
     GetPositionFromString(position, &layout->placement.position);
+
+  GetDisplayIdByKey(dict_value, kPlacementDisplayIdKey,
+                    &layout->placement.display_id);
+  GetDisplayIdByKey(dict_value, kPlacementParentDisplayIdKey,
+                    &layout->placement.parent_display_id);
   return true;
 }
 
@@ -141,6 +160,12 @@ bool DisplayLayout::ConvertToValue(const DisplayLayout& layout,
   dict_value->SetBoolean(kMirroredKey, layout.mirrored);
   dict_value->SetBoolean(kDefaultUnifiedKey, layout.default_unified);
   dict_value->SetString(kPrimaryIdKey, base::Int64ToString(layout.primary_id));
+
+  dict_value->SetString(kPlacementDisplayIdKey,
+                        base::Int64ToString(layout.placement.display_id));
+  dict_value->SetString(
+      kPlacementParentDisplayIdKey,
+      base::Int64ToString(layout.placement.parent_display_id));
   return true;
 }
 

@@ -55,25 +55,32 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
     return;
 
   layouts_[list] = layout;
+  DisplayPlacement& placement = layouts_[list].placement;
+  // Old data may not have the display_id/parent_display_id.
+  // Guess these values based on the saved primary_id.
+  if (placement.display_id == gfx::Display::kInvalidDisplayID) {
+    if (layout.primary_id == list[1]) {
+      placement.display_id = list[0];
+      placement.parent_display_id = list[1];
+    } else {
+      placement.display_id = list[1];
+      placement.parent_display_id = list[0];
+    }
+  }
 }
 
 DisplayLayout DisplayLayoutStore::GetRegisteredDisplayLayout(
     const DisplayIdList& list) {
   std::map<DisplayIdList, DisplayLayout>::const_iterator iter =
       layouts_.find(list);
-  return iter != layouts_.end() ? iter->second : CreateDisplayLayout(list);
-}
-
-DisplayLayout DisplayLayoutStore::ComputeDisplayLayoutForDisplayIdList(
-    const DisplayIdList& list) {
-  DisplayLayout layout = GetRegisteredDisplayLayout(list);
+  DisplayLayout layout =
+      iter != layouts_.end() ? iter->second : CreateDefaultDisplayLayout(list);
+  DCHECK_EQ(layout.primary_id, layout.placement.parent_display_id);
+  DCHECK((layout.placement.display_id == list[0] &&
+          layout.placement.parent_display_id == list[1]) ||
+         (layout.placement.display_id == list[1] &&
+          layout.placement.parent_display_id == list[0]));
   DCHECK_NE(layout.primary_id, gfx::Display::kInvalidDisplayID);
-  // Invert if the primary was swapped. If mirrored, first is always
-  // primary.
-  if (layout.primary_id != gfx::Display::kInvalidDisplayID &&
-      list[0] != layout.primary_id) {
-    layout.placement.Swap();
-  }
   return layout;
 }
 
@@ -81,7 +88,7 @@ void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdList& list,
                                                  bool mirrored,
                                                  bool default_unified) {
   if (layouts_.find(list) == layouts_.end())
-    CreateDisplayLayout(list);
+    CreateDefaultDisplayLayout(list);
   layouts_[list].mirrored = mirrored;
   layouts_[list].default_unified = default_unified;
 }
@@ -89,14 +96,16 @@ void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdList& list,
 void DisplayLayoutStore::UpdatePrimaryDisplayId(const DisplayIdList& list,
                                                 int64_t display_id) {
   if (layouts_.find(list) == layouts_.end())
-    CreateDisplayLayout(list);
+    CreateDefaultDisplayLayout(list);
   layouts_[list].primary_id = display_id;
 }
 
-DisplayLayout DisplayLayoutStore::CreateDisplayLayout(
+DisplayLayout DisplayLayoutStore::CreateDefaultDisplayLayout(
     const DisplayIdList& list) {
   DisplayLayout layout = default_display_layout_;
   layout.primary_id = list[0];
+  layout.placement.display_id = list[1];
+  layout.placement.parent_display_id = list[0];
   layouts_[list] = layout;
   return layout;
 }

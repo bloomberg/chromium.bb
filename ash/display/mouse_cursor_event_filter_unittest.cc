@@ -157,7 +157,7 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
   UpdateDisplay("400x400,800x800*2");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetLayoutForCurrentDisplays(
-      DisplayLayout(DisplayPlacement::RIGHT, 0));
+      test::CreateDisplayLayout(DisplayPlacement::RIGHT, 0));
   test::CursorManagerTestApi cursor_test_api(
       Shell::GetInstance()->cursor_manager());
 

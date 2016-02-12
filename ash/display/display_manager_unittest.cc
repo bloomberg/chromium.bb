@@ -2022,23 +2022,45 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
   int64_t id1 = 10001;
   int64_t id2 = 10002;
   ASSERT_TRUE(CompareDisplayIds(id1, id2));
-  DisplayLayout good(DisplayLayout(DisplayPlacement::LEFT, 0));
+  ash::DisplayLayout good;
   good.primary_id = id1;
-  DisplayIdList list(2);
-  list[0] = id1;
-  list[1] = id2;
-  layout_store->RegisterLayoutForDisplayIdList(list, good);
+  good.placement = DisplayPlacement(DisplayPlacement::LEFT, 0);
+  good.placement.display_id = id2;
+  good.placement.parent_display_id = id1;
 
-  DisplayLayout bad(DisplayLayout(DisplayPlacement::BOTTOM, 0));
-  good.primary_id = id2;
-  list[0] = id2;
-  list[1] = id1;
-  layout_store->RegisterLayoutForDisplayIdList(list, bad);
+  DisplayIdList good_list = CreateDisplayIdList(id1, id2);
+  layout_store->RegisterLayoutForDisplayIdList(good_list, good);
 
-  EXPECT_EQ(
-      good.ToString(),
-      layout_store->GetRegisteredDisplayLayout(CreateDisplayIdList(id1, id2))
-          .ToString());
+  DisplayLayout bad;
+  bad.placement = DisplayPlacement(DisplayPlacement::BOTTOM, 0);
+  bad.primary_id = id1;
+  good.placement.display_id = id2;
+  good.placement.parent_display_id = id1;
+
+  DisplayIdList bad_list(2);
+  bad_list[0] = id2;
+  bad_list[1] = id1;
+  layout_store->RegisterLayoutForDisplayIdList(bad_list, bad);
+
+  EXPECT_EQ(good.ToString(),
+            layout_store->GetRegisteredDisplayLayout(good_list).ToString());
+}
+
+TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
+  int64_t id1 = 10001;
+  int64_t id2 = 10002;
+
+  DisplayLayout old_layout;
+  old_layout.placement = DisplayPlacement(DisplayPlacement::BOTTOM, 0);
+  old_layout.primary_id = id1;
+
+  DisplayLayoutStore* layout_store = display_manager()->layout_store();
+  DisplayIdList list = CreateDisplayIdList(id1, id2);
+  layout_store->RegisterLayoutForDisplayIdList(list, old_layout);
+  DisplayLayout stored = layout_store->GetRegisteredDisplayLayout(list);
+
+  EXPECT_EQ(id1, stored.placement.parent_display_id);
+  EXPECT_EQ(id2, stored.placement.display_id);
 }
 
 #endif  // OS_CHROMEOS

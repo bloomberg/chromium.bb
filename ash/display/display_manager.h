@@ -133,7 +133,7 @@ class ASH_EXPORT DisplayManager
   void RefreshFontParams();
 
   // Returns the display layout used for current displays.
-  DisplayLayout GetCurrentDisplayLayout();
+  DisplayLayout GetCurrentDisplayLayout() const;
 
   // Returns the current display list.
   DisplayIdList GetCurrentDisplayIdList() const;
@@ -394,16 +394,18 @@ private:
   // Returns true if any of the non-primary display's bounds has been changed
   // from current value, or false otherwise.
   bool UpdateNonPrimaryDisplayBoundsForLayout(
-      DisplayList* display_list, std::vector<size_t>* updated_indices) const;
+      DisplayList* display_list,
+      std::vector<size_t>* updated_indices);
 
   void CreateMirrorWindowIfAny();
 
   void RunPendingTasksForTest();
 
-  static void UpdateDisplayBoundsForLayout(
-      const DisplayLayout& layout,
-      const gfx::Display& primary_display,
-      gfx::Display* secondary_display);
+  void ApplyDisplayLayout(const DisplayLayout& layout,
+                          DisplayList* display_list);
+
+  void ApplyDisplayPlacement(const DisplayPlacement& placement,
+                             DisplayList* display_list);
 
   Delegate* delegate_;  // not owned.
 

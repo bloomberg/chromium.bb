@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/display/display_layout.h"
 #include "base/macros.h"
 #include "ui/display/types/display_constants.h"
 
@@ -91,6 +92,13 @@ bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution);
 
 // Swap the primary display with the secondary.
 void SwapPrimaryDisplay();
+
+// Creates the dislpay layout from position and offset for the current
+// display list. If you simply want to create a new layout that is
+// independent of current displays, simply create a new DisplayLayout
+// and set display id fields (primary, ids in placement) manually.
+DisplayLayout CreateDisplayLayout(DisplayPlacement::Position position,
+                                  int offset);
 
 }  // namespace test
 }  // namespace ash

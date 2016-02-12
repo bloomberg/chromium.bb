@@ -411,7 +411,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
 TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   UpdateDisplay("600x600, 400x520");
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::DisplayLayout(ash::DisplayPlacement::LEFT, -40));
+      ash::test::CreateDisplayLayout(ash::DisplayPlacement::LEFT, -40));
 
   DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -421,7 +421,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
             SystemInfoDisplayBoundsToString(result[1]->bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::DisplayLayout(ash::DisplayPlacement::TOP, 40));
+      ash::test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 40));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -431,7 +431,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
             SystemInfoDisplayBoundsToString(result[1]->bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
-      ash::DisplayLayout(ash::DisplayPlacement::BOTTOM, 80));
+      ash::test::CreateDisplayLayout(ash::DisplayPlacement::BOTTOM, 80));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
   ASSERT_EQ(2u, result.size());

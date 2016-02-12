@@ -171,5 +171,24 @@ void SwapPrimaryDisplay() {
       ScreenUtil::GetSecondaryDisplay());
 }
 
+DisplayLayout CreateDisplayLayout(DisplayPlacement::Position position,
+                                  int offset) {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+
+  DisplayLayout layout;
+  layout.primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
+  layout.placement.position = position;
+  layout.placement.offset = offset;
+  if (list[0] == layout.primary_id) {
+    layout.placement.display_id = list[1];
+    layout.placement.parent_display_id = list[0];
+  } else {
+    layout.placement.display_id = list[0];
+    layout.placement.parent_display_id = list[1];
+  }
+  return layout;
+}
+
 }  // namespace test
 }  // namespace ash

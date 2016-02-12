@@ -118,6 +118,13 @@ gfx::Size GetMaxNativeSize(const DisplayInfo& info) {
   return size;
 }
 
+gfx::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
+  auto iter = std::find_if(
+      display_list->begin(), display_list->end(),
+      [id](const gfx::Display& display) { return display.id() == id; });
+  return &(*iter);
+}
+
 }  // namespace
 
 using std::string;
@@ -204,16 +211,14 @@ void DisplayManager::RefreshFontParams() {
 #endif  // OS_CHROMEOS
 }
 
-DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
+DisplayLayout DisplayManager::GetCurrentDisplayLayout() const {
   DCHECK_LE(2U, num_connected_displays());
-  // Invert if the primary was swapped.
   if (num_connected_displays() == 2) {
     DisplayIdList list = GetCurrentDisplayIdList();
-    return layout_store_->ComputeDisplayLayoutForDisplayIdList(list);
+    return layout_store_->GetRegisteredDisplayLayout(list);
   } else if (num_connected_displays() > 2) {
     // Return fixed horizontal layout for >= 3 displays.
-    DisplayLayout layout(DisplayPlacement::RIGHT, 0);
-    return layout;
+    return DisplayLayout();
   }
   NOTREACHED() << "DisplayLayout is requested for single display";
   // On release build, just fallback to default instead of blowing up.
@@ -243,41 +248,46 @@ DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
   }
 }
 
-void DisplayManager::SetLayoutForCurrentDisplays(
-    const DisplayLayout& layout_relative_to_primary) {
+void DisplayManager::SetLayoutForCurrentDisplays(const DisplayLayout& layout) {
   if (GetNumDisplays() != 2)
     return;
-  const gfx::Display& primary = screen_->GetPrimaryDisplay();
   const DisplayIdList list = GetCurrentDisplayIdList();
-  // Invert if the primary was swapped.
-  DisplayLayout to_set = layout_relative_to_primary;
-  if (list[0] != primary.id())
-    to_set.placement.Swap();
+
+  DCHECK_NE(gfx::Display::kInvalidDisplayID, layout.primary_id);
+
+  DCHECK_NE(layout.placement.display_id, gfx::Display::kInvalidDisplayID);
+
+  DCHECK((list[0] == layout.placement.display_id &&
+          list[1] == layout.placement.parent_display_id) ||
+         (list[1] == layout.placement.display_id &&
+          list[0] == layout.placement.parent_display_id));
 
   DisplayLayout current_layout =
       layout_store_->GetRegisteredDisplayLayout(list);
-  if (to_set.placement.position != current_layout.placement.position ||
-      to_set.placement.offset != current_layout.placement.offset) {
-    to_set.primary_id = primary.id();
-    layout_store_->RegisterLayoutForDisplayIdList(list, to_set);
-    if (delegate_)
-      delegate_->PreDisplayConfigurationChange(false);
-    // PreDisplayConfigurationChange(false);
-    // TODO(oshima): Call UpdateDisplays instead.
-    const DisplayLayout layout = GetCurrentDisplayLayout();
-    UpdateDisplayBoundsForLayout(
-        layout, primary,
-        FindDisplayForId(ScreenUtil::GetSecondaryDisplay().id()));
 
-    // Primary's bounds stay the same. Just notify bounds change
-    // on the secondary.
-    screen_->NotifyMetricsChanged(
-        ScreenUtil::GetSecondaryDisplay(),
-        gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-            gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
-    if (delegate_)
-      delegate_->PostDisplayConfigurationChange();
+  if (layout.placement.position == current_layout.placement.position &&
+      layout.placement.offset == current_layout.placement.offset &&
+      layout.placement.display_id == current_layout.placement.display_id &&
+      layout.placement.parent_display_id ==
+          current_layout.placement.parent_display_id) {
+    return;
   }
+
+  layout_store_->RegisterLayoutForDisplayIdList(list, layout);
+  if (delegate_)
+    delegate_->PreDisplayConfigurationChange(false);
+
+  // TODO(oshima): Call UpdateDisplays instead.
+  ApplyDisplayLayout(GetCurrentDisplayLayout(), &active_display_list_);
+
+  // Primary's bounds stay the same. Just notify bounds change
+  // on the secondary.
+  screen_->NotifyMetricsChanged(
+      ScreenUtil::GetSecondaryDisplay(),
+      gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+      gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  if (delegate_)
+    delegate_->PostDisplayConfigurationChange();
 }
 
 const gfx::Display& DisplayManager::GetDisplayForId(int64_t id) const {
@@ -1285,17 +1295,16 @@ gfx::Display DisplayManager::CreateMirroringDisplayFromDisplayInfoById(
 }
 
 bool DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
-    DisplayList* displays,
-    std::vector<size_t>* updated_indices) const {
-
-  if (displays->size() < 2U)
+    DisplayList* display_list,
+    std::vector<size_t>* updated_indices) {
+  if (display_list->size() < 2U)
     return false;
 
-  if (displays->size() > 2U) {
+  if (display_list->size() > 2U) {
     // For more than 2 displays, always use horizontal layout.
-    int x_offset = displays->at(0).bounds().width();
-    for (size_t i = 1; i < displays->size(); ++i) {
-      gfx::Display& display = displays->at(i);
+    int x_offset = display_list->at(0).bounds().width();
+    for (size_t i = 1; i < display_list->size(); ++i) {
+      gfx::Display& display = display_list->at(i);
       const gfx::Rect& bounds = display.bounds();
       gfx::Point origin = gfx::Point(x_offset, 0);
       gfx::Insets insets = display.GetWorkAreaInsets();
@@ -1307,29 +1316,30 @@ bool DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
     return true;
   }
 
-  DisplayLayout layout = layout_store_->ComputeDisplayLayoutForDisplayIdList(
-      CreateDisplayIdList(displays->at(0).id(), displays->at(1).id()));
+  DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(
+      CreateDisplayIdList(display_list->at(0).id(), display_list->at(1).id()));
 
   // Ignore if a user has a old format (should be extremely rare)
   // and this will be replaced with DCHECK.
   if (layout.primary_id != gfx::Display::kInvalidDisplayID) {
-    size_t primary_index, secondary_index;
-    if (displays->at(0).id() == layout.primary_id) {
-      primary_index = 0;
-      secondary_index = 1;
-    } else {
-      primary_index = 1;
-      secondary_index = 0;
-    }
+    const int64_t display_id = layout.placement.display_id;
+    DCHECK_NE(gfx::Display::kInvalidDisplayID, display_id);
+    const auto iter = std::find_if(display_list->begin(), display_list->end(),
+                                   [display_id](const gfx::Display& display) {
+                                     return display.id() == display_id;
+                                   });
+    DCHECK(display_list->end() != iter);
+    size_t display_index = iter - display_list->begin();
+
     // This function may be called before the secondary display is
     // registered. The bounds is empty in that case and will
     // return true.
-    gfx::Rect bounds =
-        GetDisplayForId(displays->at(secondary_index).id()).bounds();
-    UpdateDisplayBoundsForLayout(
-        layout, displays->at(primary_index), &displays->at(secondary_index));
-    updated_indices->push_back(secondary_index);
-    return bounds != displays->at(secondary_index).bounds();
+    gfx::Rect bounds = GetDisplayForId(iter->id()).bounds();
+
+    ApplyDisplayLayout(layout, display_list);
+
+    updated_indices->push_back(display_index);
+    return bounds != iter->bounds();
   }
   return false;
 }
@@ -1343,52 +1353,59 @@ void DisplayManager::CreateMirrorWindowIfAny() {
   delegate_->CreateOrUpdateMirroringDisplay(list);
 }
 
-// static
-void DisplayManager::UpdateDisplayBoundsForLayout(
-    const DisplayLayout& layout,
-    const gfx::Display& primary_display,
-    gfx::Display* secondary_display) {
-  DCHECK_EQ("0,0", primary_display.bounds().origin().ToString());
+void DisplayManager::ApplyDisplayLayout(const DisplayLayout& layout,
+                                        DisplayList* display_list) {
+  ApplyDisplayPlacement(layout.placement, display_list);
+}
 
-  const gfx::Rect& primary_bounds = primary_display.bounds();
-  const gfx::Rect& secondary_bounds = secondary_display->bounds();
-  gfx::Point new_secondary_origin = primary_bounds.origin();
+void DisplayManager::ApplyDisplayPlacement(const DisplayPlacement& placement,
+                                           DisplayList* display_list) {
+  const gfx::Display& parent_display =
+      *FindDisplayById(display_list, placement.parent_display_id);
+  DCHECK(parent_display.is_valid());
+  gfx::Display* target_display =
+      FindDisplayById(display_list, placement.display_id);
+  DCHECK(target_display);
 
-  DisplayPlacement::Position position = layout.placement.position;
+  const gfx::Rect& parent_bounds = parent_display.bounds();
+  const gfx::Rect& target_bounds = target_display->bounds();
+  gfx::Point new_target_origin = parent_bounds.origin();
 
-  // Ignore the offset in case the secondary display doesn't share edges with
-  // the primary display.
-  int offset = layout.placement.offset;
+  DisplayPlacement::Position position = placement.position;
+
+  // Ignore the offset in case the target display doesn't share edges with
+  // the parent display.
+  int offset = placement.offset;
   if (position == DisplayPlacement::TOP ||
       position == DisplayPlacement::BOTTOM) {
     offset = std::min(
-        offset, primary_bounds.width() - kMinimumOverlapForInvalidOffset);
+        offset, parent_bounds.width() - kMinimumOverlapForInvalidOffset);
     offset = std::max(
-        offset, -secondary_bounds.width() + kMinimumOverlapForInvalidOffset);
+        offset, -target_bounds.width() + kMinimumOverlapForInvalidOffset);
   } else {
     offset = std::min(
-        offset, primary_bounds.height() - kMinimumOverlapForInvalidOffset);
+        offset, parent_bounds.height() - kMinimumOverlapForInvalidOffset);
     offset = std::max(
-        offset, -secondary_bounds.height() + kMinimumOverlapForInvalidOffset);
+        offset, -target_bounds.height() + kMinimumOverlapForInvalidOffset);
   }
   switch (position) {
     case DisplayPlacement::TOP:
-      new_secondary_origin.Offset(offset, -secondary_bounds.height());
+      new_target_origin.Offset(offset, -target_bounds.height());
       break;
     case DisplayPlacement::RIGHT:
-      new_secondary_origin.Offset(primary_bounds.width(), offset);
+      new_target_origin.Offset(parent_bounds.width(), offset);
       break;
     case DisplayPlacement::BOTTOM:
-      new_secondary_origin.Offset(offset, primary_bounds.height());
+      new_target_origin.Offset(offset, parent_bounds.height());
       break;
     case DisplayPlacement::LEFT:
-      new_secondary_origin.Offset(-secondary_bounds.width(), offset);
+      new_target_origin.Offset(-target_bounds.width(), offset);
       break;
   }
-  gfx::Insets insets = secondary_display->GetWorkAreaInsets();
-  secondary_display->set_bounds(
-      gfx::Rect(new_secondary_origin, secondary_bounds.size()));
-  secondary_display->UpdateWorkAreaFromInsets(insets);
+  gfx::Insets insets = target_display->GetWorkAreaInsets();
+  target_display->set_bounds(
+      gfx::Rect(new_target_origin, target_bounds.size()));
+  target_display->UpdateWorkAreaFromInsets(insets);
 }
 
 void DisplayManager::RunPendingTasksForTest() {

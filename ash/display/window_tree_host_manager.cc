@@ -403,6 +403,7 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
 
 void WindowTreeHostManager::SetPrimaryDisplay(
     const gfx::Display& new_primary_display) {
+  // TODO(oshima): Move primary display management to DisplayManager.
   DisplayManager* display_manager = GetDisplayManager();
   DCHECK(new_primary_display.is_valid());
   DCHECK(display_manager->GetDisplayForId(new_primary_display.id()).is_valid());
@@ -429,6 +430,7 @@ void WindowTreeHostManager::SetPrimaryDisplay(
 
   gfx::Display old_primary_display =
       gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  DCHECK_EQ(old_primary_display.id(), primary_display_id);
 
   // Swap root windows between current and new primary display.
   AshWindowTreeHost* primary_host = window_tree_hosts_[primary_display_id];
@@ -443,9 +445,17 @@ void WindowTreeHostManager::SetPrimaryDisplay(
   GetRootWindowSettings(GetWindow(non_primary_host))->display_id =
       old_primary_display.id();
 
+  DisplayLayout layout = GetDisplayManager()->GetCurrentDisplayLayout();
+  if (layout.primary_id != new_primary_display.id()) {
+    layout.placement.Swap();
+    layout.primary_id = new_primary_display.id();
+  }
+
+  DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+  GetDisplayManager()->layout_store()->RegisterLayoutForDisplayIdList(list,
+                                                                      layout);
+
   primary_display_id = new_primary_display.id();
-  GetDisplayManager()->layout_store()->UpdatePrimaryDisplayId(
-      display_manager->GetCurrentDisplayIdList(), primary_display_id);
 
   UpdateWorkAreaOfDisplayNearestWindow(GetWindow(primary_host),
                                        old_primary_display.GetWorkAreaInsets());
@@ -761,7 +771,6 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
     DisplayLayout layout = layout_store->GetRegisteredDisplayLayout(list);
     layout_store->UpdateMultiDisplayState(
         list, display_manager->IsInMirrorMode(), layout.default_unified);
-
     if (gfx::Screen::GetScreen()->GetNumDisplays() > 1) {
       int64_t primary_id = layout.primary_id;
       SetPrimaryDisplayId(

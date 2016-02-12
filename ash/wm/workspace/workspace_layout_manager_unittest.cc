@@ -17,6 +17,7 @@
 #include "ash/shell_observer.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -142,7 +143,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
   UpdateDisplay("300x400,400x500");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  DisplayLayout layout(DisplayPlacement::TOP, 0);
+  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::TOP, 0));
   Shell::GetInstance()->display_manager()->
       SetLayoutForCurrentDisplays(layout);
   EXPECT_EQ("0,-500 400x500", root_windows[1]->GetBoundsInScreen().ToString());

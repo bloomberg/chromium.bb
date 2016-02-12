@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -502,7 +503,8 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
 
   // Set up initial state.
   UpdateDisplay("800x600,800x600");
-  ash::DisplayLayout display_layout(ash::DisplayPlacement::TOP, 0);
+  ash::DisplayLayout display_layout(
+      test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 0));
   ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display_layout);
 

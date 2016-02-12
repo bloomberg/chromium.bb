@@ -949,7 +949,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
     return;
 
   UpdateDisplay("800x600,800x600");
-  DisplayLayout display_layout(DisplayPlacement::RIGHT, 0);
+  DisplayLayout display_layout(
+      test::CreateDisplayLayout(DisplayPlacement::RIGHT, 0));
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display_layout);
   // Put the primary monitor's shelf on the display boundary.

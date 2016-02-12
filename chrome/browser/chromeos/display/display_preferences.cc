@@ -235,10 +235,10 @@ void StoreCurrentDisplayLayoutPrefs() {
     return;
   }
 
-  ash::DisplayIdList pair = display_manager->GetCurrentDisplayIdList();
+  ash::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
   ash::DisplayLayout display_layout =
-      display_manager->layout_store()->GetRegisteredDisplayLayout(pair);
-  StoreDisplayLayoutPref(pair, display_layout);
+      display_manager->layout_store()->GetRegisteredDisplayLayout(list);
+  StoreDisplayLayoutPref(list, display_layout);
 }
 
 void StoreCurrentDisplayProperties() {

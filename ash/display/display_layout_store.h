@@ -33,12 +33,6 @@ class ASH_EXPORT DisplayLayoutStore {
   // |default_display_layout_|.
   DisplayLayout GetRegisteredDisplayLayout(const DisplayIdList& list);
 
-  // Returns the display layout for the display id list
-  // with display swapping applied.  That is, this returns
-  // flipped layout if the displays are swapped.
-  DisplayLayout ComputeDisplayLayoutForDisplayIdList(
-      const DisplayIdList& display_list);
-
   // Update the multi display state in the display layout for
   // |display_list|.  This creates new display layout if no layout is
   // registered for |display_list|.
@@ -54,7 +48,7 @@ class ASH_EXPORT DisplayLayoutStore {
 
  private:
   // Creates new layout for display list from |default_display_layout_|.
-  DisplayLayout CreateDisplayLayout(const DisplayIdList& display_list);
+  DisplayLayout CreateDefaultDisplayLayout(const DisplayIdList& display_list);
 
   // The default display layout.
   DisplayLayout default_display_layout_;

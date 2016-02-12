@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 
@@ -50,7 +51,7 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   int64_t primary_display_id = display_ids[0];
   int64_t secondary_display_id = display_ids[1];
   display_manager->SetLayoutForCurrentDisplays(
-      DisplayLayout(DisplayPlacement::LEFT, 0));
+      test::CreateDisplayLayout(DisplayPlacement::LEFT, 0));
 
   // The overlay should belong to the secondary root window.
   StickyKeysOverlay overlay;

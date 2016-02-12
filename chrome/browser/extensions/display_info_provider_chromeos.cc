@@ -96,8 +96,8 @@ bool PointIsOverRadiusVector(const gfx::Point& point,
 //
 // The rectangle shares an egde with the reference's bottom edge, but it's
 // center point is in the left area.
-ash::DisplayLayout GetLayoutForRectangles(const gfx::Rect& reference,
-                                          const gfx::Rect& rectangle) {
+ash::DisplayPlacement GetPlacementForRectangles(const gfx::Rect& reference,
+                                                const gfx::Rect& rectangle) {
   // Translate coordinate system so origin is in the reference's top left point
   // (so the reference's down-diagonal vector starts in the (0, 0)) and scale it
   // up by two (to avoid division when calculating the rectangle's center
@@ -147,24 +147,26 @@ ash::DisplayLayout GetLayoutForRectangles(const gfx::Rect& reference,
       position = ash::DisplayPlacement::LEFT;
     }
   }
-
-  if (position == ash::DisplayPlacement::LEFT ||
-      position == ash::DisplayPlacement::RIGHT) {
-    return ash::DisplayLayout(position, rectangle.y());
-  } else {
-    return ash::DisplayLayout(position, rectangle.x());
-  }
+  int offset = (position == ash::DisplayPlacement::LEFT ||
+                position == ash::DisplayPlacement::RIGHT)
+                   ? rectangle.y()
+                   : rectangle.x();
+  return ash::DisplayPlacement(position, offset);
 }
 
 // Updates the display layout for the target display in reference to the primary
 // display.
 void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
-                         int primary_display_id,
+                         int64_t primary_display_id,
                          const gfx::Rect& target_display_bounds,
-                         int target_display_id) {
-  ash::DisplayLayout layout =
-      GetLayoutForRectangles(primary_display_bounds, target_display_bounds);
+                         int64_t target_display_id) {
+  ash::DisplayLayout layout;
+  layout.placement =
+      GetPlacementForRectangles(primary_display_bounds, target_display_bounds);
   layout.primary_id = primary_display_id;
+  layout.placement.display_id = target_display_id;
+  layout.placement.parent_display_id = primary_display_id;
+
   ash::Shell::GetInstance()
       ->display_configuration_controller()
       ->SetDisplayLayout(layout, false /* user_action */);
