@@ -16,7 +16,7 @@
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
 #include "third_party/webrtc/common_video/rotation.h"
 #include "third_party/webrtc/media/base/videoframefactory.h"
-#include "third_party/webrtc/media/webrtc/webrtcvideoframe.h"
+#include "third_party/webrtc/media/engine/webrtcvideoframe.h"
 
 namespace content {
 namespace {

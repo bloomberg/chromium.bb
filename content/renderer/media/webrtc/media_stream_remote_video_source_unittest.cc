@@ -18,7 +18,7 @@
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
-#include "third_party/webrtc/media/webrtc/webrtcvideoframe.h"
+#include "third_party/webrtc/media/engine/webrtcvideoframe.h"
 
 namespace content {
 
