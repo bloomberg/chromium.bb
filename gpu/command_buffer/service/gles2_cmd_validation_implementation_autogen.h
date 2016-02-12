@@ -779,10 +779,6 @@ static const GLenum valid_read_pixel_format_table_es3[] = {
     GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER,
 };
 
-static const GLenum deprecated_read_pixel_format_table_es3[] = {
-    GL_ALPHA,
-};
-
 static const GLenum valid_read_pixel_type_table[] = {
     GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT_5_6_5, GL_UNSIGNED_SHORT_4_4_4_4,
     GL_UNSIGNED_SHORT_5_5_5_1,
@@ -1481,9 +1477,6 @@ void Validators::UpdateValuesES3() {
   pixel_type.AddValues(valid_pixel_type_table_es3,
                        arraysize(valid_pixel_type_table_es3));
   program_parameter.SetIsES3(true);
-  read_pixel_format.RemoveValues(
-      deprecated_read_pixel_format_table_es3,
-      arraysize(deprecated_read_pixel_format_table_es3));
   read_pixel_format.AddValues(valid_read_pixel_format_table_es3,
                               arraysize(valid_read_pixel_format_table_es3));
   read_pixel_type.AddValues(valid_read_pixel_type_table_es3,
