@@ -1011,8 +1011,23 @@ bool Colour::Write(IMkvWriter* writer) const {
       !WriteEbmlElement(writer, kMkvBitsPerChannel, bits_per_channel)) {
     return false;
   }
-  if (chroma_subsampling != kUnspecifiedColourValue &&
-      !WriteEbmlElement(writer, kMkvChromaSubsampling, chroma_subsampling)) {
+  if (chroma_subsampling_horz != kUnspecifiedColourValue &&
+      !WriteEbmlElement(writer, kMkvChromaSubsamplingHorz,
+                        chroma_subsampling_horz)) {
+    return false;
+  }
+  if (chroma_subsampling_vert != kUnspecifiedColourValue &&
+      !WriteEbmlElement(writer, kMkvChromaSubsamplingVert,
+                        chroma_subsampling_vert)) {
+    return false;
+  }
+
+  if (cb_subsampling_horz != kUnspecifiedColourValue &&
+      !WriteEbmlElement(writer, kMkvCbSubsamplingHorz, cb_subsampling_horz)) {
+    return false;
+  }
+  if (cb_subsampling_vert != kUnspecifiedColourValue &&
+      !WriteEbmlElement(writer, kMkvCbSubsamplingVert, cb_subsampling_vert)) {
     return false;
   }
   if (chroma_siting_horz != kUnspecifiedColourValue &&
@@ -1076,8 +1091,14 @@ uint64 Colour::PayloadSize() const {
     size += EbmlElementSize(kMkvMatrix, matrix);
   if (bits_per_channel != kUnspecifiedColourValue)
     size += EbmlElementSize(kMkvBitsPerChannel, bits_per_channel);
-  if (chroma_subsampling != kUnspecifiedColourValue)
-    size += EbmlElementSize(kMkvChromaSubsampling, chroma_subsampling);
+  if (chroma_subsampling_horz != kUnspecifiedColourValue)
+    size += EbmlElementSize(kMkvChromaSubsamplingHorz, chroma_subsampling_horz);
+  if (chroma_subsampling_vert != kUnspecifiedColourValue)
+    size += EbmlElementSize(kMkvChromaSubsamplingVert, chroma_subsampling_vert);
+  if (cb_subsampling_horz != kUnspecifiedColourValue)
+    size += EbmlElementSize(kMkvCbSubsamplingHorz, cb_subsampling_horz);
+  if (cb_subsampling_vert != kUnspecifiedColourValue)
+    size += EbmlElementSize(kMkvCbSubsamplingVert, cb_subsampling_vert);
   if (chroma_siting_horz != kUnspecifiedColourValue)
     size += EbmlElementSize(kMkvChromaSitingHorz, chroma_siting_horz);
   if (chroma_siting_vert != kUnspecifiedColourValue)
@@ -1229,7 +1250,10 @@ bool VideoTrack::SetColour(const Colour& colour) {
 
   colour_ptr->matrix = colour.matrix;
   colour_ptr->bits_per_channel = colour.bits_per_channel;
-  colour_ptr->chroma_subsampling = colour.chroma_subsampling;
+  colour_ptr->chroma_subsampling_horz = colour.chroma_subsampling_horz;
+  colour_ptr->chroma_subsampling_vert = colour.chroma_subsampling_vert;
+  colour_ptr->cb_subsampling_horz = colour.cb_subsampling_horz;
+  colour_ptr->cb_subsampling_vert = colour.cb_subsampling_vert;
   colour_ptr->chroma_siting_horz = colour.chroma_siting_horz;
   colour_ptr->chroma_siting_vert = colour.chroma_siting_vert;
   colour_ptr->range = colour.range;

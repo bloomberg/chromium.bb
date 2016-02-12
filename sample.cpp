@@ -242,8 +242,18 @@ int main(int argc, char* argv[]) {
           printf("\t\t\tMatrix: %lld\n", colour->matrix);
         if (ColourValuePresent(colour->bits_per_channel))
           printf("\t\t\tBitsPerChannel: %lld\n", colour->bits_per_channel);
-        if (ColourValuePresent(colour->chroma_subsampling))
-          printf("\t\t\tChromaSubsampling: %lld\n", colour->chroma_subsampling);
+        if (ColourValuePresent(colour->chroma_subsampling_horz))
+          printf("\t\t\tChromaSubsamplingHorz: %lld\n",
+                 colour->chroma_subsampling_horz);
+        if (ColourValuePresent(colour->chroma_subsampling_vert))
+          printf("\t\t\tChromaSubsamplingVert: %lld\n",
+                 colour->chroma_subsampling_vert);
+        if (ColourValuePresent(colour->cb_subsampling_horz))
+          printf("\t\t\tCbSubsamplingHorz: %lld\n",
+                 colour->cb_subsampling_horz);
+        if (ColourValuePresent(colour->cb_subsampling_vert))
+          printf("\t\t\tCbSubsamplingVert: %lld\n",
+                 colour->cb_subsampling_vert);
         if (ColourValuePresent(colour->chroma_siting_horz))
           printf("\t\t\tChromaSitingHorz: %lld\n", colour->chroma_siting_horz);
         if (ColourValuePresent(colour->chroma_siting_vert))

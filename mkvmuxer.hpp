@@ -396,7 +396,10 @@ class Colour {
   Colour()
       : matrix(kUnspecifiedColourValue),
         bits_per_channel(kUnspecifiedColourValue),
-        chroma_subsampling(kUnspecifiedColourValue),
+        chroma_subsampling_horz(kUnspecifiedColourValue),
+        chroma_subsampling_vert(kUnspecifiedColourValue),
+        cb_subsampling_horz(kUnspecifiedColourValue),
+        cb_subsampling_vert(kUnspecifiedColourValue),
         chroma_siting_horz(kUnspecifiedColourValue),
         chroma_siting_vert(kUnspecifiedColourValue),
         range(kUnspecifiedColourValue),
@@ -420,7 +423,10 @@ class Colour {
 
   uint64 matrix;
   uint64 bits_per_channel;
-  uint64 chroma_subsampling;
+  uint64 chroma_subsampling_horz;
+  uint64 chroma_subsampling_vert;
+  uint64 cb_subsampling_horz;
+  uint64 cb_subsampling_vert;
   uint64 chroma_siting_horz;
   uint64 chroma_siting_vert;
   uint64 range;

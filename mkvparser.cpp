@@ -5120,10 +5120,25 @@ bool Colour::Parse(IMkvReader* reader, long long colour_start,
           UnserializeUInt(reader, read_pos, child_size);
       if (colour_ptr->bits_per_channel < 0)
         return false;
-    } else if (child_id == mkvmuxer::kMkvChromaSubsampling) {
-      colour_ptr->chroma_subsampling =
+    } else if (child_id == mkvmuxer::kMkvChromaSubsamplingHorz) {
+      colour_ptr->chroma_subsampling_horz =
           UnserializeUInt(reader, read_pos, child_size);
-      if (colour_ptr->chroma_subsampling < 0)
+      if (colour_ptr->chroma_subsampling_horz < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvChromaSubsamplingVert) {
+      colour_ptr->chroma_subsampling_vert =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->chroma_subsampling_vert < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvCbSubsamplingHorz) {
+      colour_ptr->cb_subsampling_horz =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->cb_subsampling_horz < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvCbSubsamplingVert) {
+      colour_ptr->cb_subsampling_vert =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->cb_subsampling_vert < 0)
         return false;
     } else if (child_id == mkvmuxer::kMkvChromaSitingHorz) {
       colour_ptr->chroma_siting_horz =

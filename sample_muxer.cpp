@@ -205,8 +205,16 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
     muxer_colour->matrix = parser_colour.matrix;
   if (ColourValuePresent(parser_colour.bits_per_channel))
     muxer_colour->bits_per_channel = parser_colour.bits_per_channel;
-  if (ColourValuePresent(parser_colour.chroma_subsampling))
-    muxer_colour->chroma_subsampling = parser_colour.chroma_subsampling;
+  if (ColourValuePresent(parser_colour.chroma_subsampling_horz))
+    muxer_colour->chroma_subsampling_horz =
+        parser_colour.chroma_subsampling_horz;
+  if (ColourValuePresent(parser_colour.chroma_subsampling_vert))
+    muxer_colour->chroma_subsampling_vert =
+        parser_colour.chroma_subsampling_vert;
+  if (ColourValuePresent(parser_colour.cb_subsampling_horz))
+    muxer_colour->cb_subsampling_horz = parser_colour.cb_subsampling_horz;
+  if (ColourValuePresent(parser_colour.cb_subsampling_vert))
+    muxer_colour->cb_subsampling_vert = parser_colour.cb_subsampling_vert;
   if (ColourValuePresent(parser_colour.chroma_siting_horz))
     muxer_colour->chroma_siting_horz = parser_colour.chroma_siting_horz;
   if (ColourValuePresent(parser_colour.chroma_siting_vert))

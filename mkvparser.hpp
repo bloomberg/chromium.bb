@@ -439,7 +439,10 @@ struct Colour {
   Colour()
       : matrix(kValueNotPresent),
         bits_per_channel(kValueNotPresent),
-        chroma_subsampling(kValueNotPresent),
+        chroma_subsampling_horz(kValueNotPresent),
+        chroma_subsampling_vert(kValueNotPresent),
+        cb_subsampling_horz(kValueNotPresent),
+        cb_subsampling_vert(kValueNotPresent),
         chroma_siting_horz(kValueNotPresent),
         chroma_siting_vert(kValueNotPresent),
         range(kValueNotPresent),
@@ -458,7 +461,10 @@ struct Colour {
 
   long long matrix;
   long long bits_per_channel;
-  long long chroma_subsampling;
+  long long chroma_subsampling_horz;
+  long long chroma_subsampling_vert;
+  long long cb_subsampling_horz;
+  long long cb_subsampling_vert;
   long long chroma_siting_horz;
   long long chroma_siting_vert;
   long long range;
