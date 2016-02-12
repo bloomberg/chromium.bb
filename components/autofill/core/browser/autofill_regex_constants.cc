@@ -137,7 +137,7 @@ const char kNameOnCardRe[] =
 const char kNameOnCardContextualRe[] =
     "name";
 const char kCardNumberRe[] =
-    "(add)?(?:card|cc|acct).?(?:number|#|no|num)"
+    "(add)?(?:card|cc|acct).?(?:number|#|no|num|field)"
     "|nummer"  // de-DE
     "|credito|numero|número"  // es
     "|numéro"  // fr-FR
@@ -148,7 +148,7 @@ const char kCardNumberRe[] =
     "|카드";  // ko-KR
 const char kCardCvcRe[] =
     "verification|card.?identification|security.?code|card.?code"
-    "|cvn|cvv|cvc|csc|cvd|cid|ccv"
+    "|(cvn|cvv|cvc|csc|cvd|cid|ccv)(field)?"
     "|\\bcid\\b";
 
 // "Expiration date" is the most common label here, but some pages have
@@ -189,7 +189,7 @@ const char kExpirationDate2DigitYearRe[] =
 const char kExpirationDate4DigitYearRe[] =
     "^mm\\s*[-/]\\syyyy$";
 const char kExpirationDateRe[] =
-    "expir|exp.*date"
+    "expir|exp.*date|^expfield$"
     "|gueltig|gültig"  // de-DE
     "|fecha"  // es
     "|date.*exp"  // fr-FR

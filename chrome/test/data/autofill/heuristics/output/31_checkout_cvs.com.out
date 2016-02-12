@@ -1,0 +1,55 @@
+NAME_FIRST | fname | First Name |  | fname_1-default
+NAME_LAST | lname | Last Name |  | fname_1-default
+ADDRESS_HOME_LINE1 | streetAddr | Street Address |  | fname_1-default
+ADDRESS_HOME_LINE2 | aptstreetAddr | Apartment, Building, Floor, Etc |  | fname_1-default
+ADDRESS_HOME_CITY | city | City |  | fname_1-default
+ADDRESS_HOME_STATE | stateName | State | 0 | fname_1-default
+ADDRESS_HOME_ZIP | zip | ZIP Code |  | fname_1-default
+PHONE_HOME_WHOLE_NUMBER | phone | Phone Number |  | fname_1-default
+UNKNOWN_TYPE | orderConfirmation | Send order information to somebody@example.com. | on | fname_1-default
+EMAIL_ADDRESS | cemail | Specify a different email address: |  | fname_1-default
+UNKNOWN_TYPE | bopusPerson | ... will pick up order. | on | fname_1-default
+NAME_FIRST | bdfname | First Name |  | fname_1-default
+NAME_LAST | bdlname | Last Name |  | fname_1-default
+PHONE_HOME_WHOLE_NUMBER | bdphone | Phone Number |  | fname_1-default
+UNKNOWN_TYPE | bopusSMSagree | Text me information from CVS/pharmacy, including information about my order. I Agree to the Mobile Terms of Use. | on | fname_1-default
+UNKNOWN_TYPE | orderConfirmation1 | Send order information to . | on | fname_1-default
+EMAIL_ADDRESS | bdemail | Specify a different email address |  | fname_1-default
+UNKNOWN_TYPE | bopusSMSagree1 | Text me information from CVS/pharmacy�, including information about my order. | on | fname_1-default
+UNKNOWN_TYPE | fsaValue | I would like to apply $0.00 of eligible items in this order to my FSA Debit Card. | on | fname_1-default
+UNKNOWN_TYPE | fsaValue1 | I would like to apply $0.00 of eligible items in this order to my FSA Debit Card. | on | fname_1-default
+UNKNOWN_TYPE | ccfield | FSA Card |  | fname_1-default
+PHONE_HOME_WHOLE_NUMBER | expfield | First Name Last Name Street Address Apartment, Building, Floor, Etc City State ZIP Code Phone Number FSA Card Exp FSA Card Exp First Name Last Name Street Address Apartment, Building, Floor, Etc City State ZIP Code Phone Number Credit Card Exp Credit Card Exp First Name Last Name Street Address Apartment, Building, Floor, Etc City State ZIP Code Phone Number |  | fname_1-default
+UNKNOWN_TYPE | cvvfield | Specify a different email address: First Name Last Name Phone Number Specify a different email address CVV CVV CVV CVV |  | fname_1-default
+CREDIT_CARD_VERIFICATION_CODE | cvvfield | | CVV |  | fname_1-cc
+CREDIT_CARD_NUMBER | ccfield | FSA Card |  | fname_1-cc
+CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | expfield | Exp |  | fname_1-cc
+UNKNOWN_TYPE | cvvfield | CVV |  | fname_1-default
+CREDIT_CARD_VERIFICATION_CODE | cvvfield | |CVV |  | fname_1-cc
+UNKNOWN_TYPE | chk1 | Use ... as Billing Address. | on | fname_1-default
+CREDIT_CARD_NAME | ffname | First Name |  | fname_1-cc
+UNKNOWN_TYPE | flname | Last Name |  | fname_1-default
+ADDRESS_HOME_LINE1 | fstreetAddr | Street Address |  | fname_1-default
+ADDRESS_HOME_LINE2 | fstreetAddr1 | Apartment, Building, Floor, Etc |  | fname_1-default
+ADDRESS_HOME_CITY | fcity | City |  | fname_1-default
+ADDRESS_HOME_STATE | sstateName | State | 0 | fname_1-default
+ADDRESS_HOME_ZIP | fzip | ZIP Code |  | fname_1-default
+PHONE_HOME_WHOLE_NUMBER | fphone | Phone Number |  | fname_1-default
+CREDIT_CARD_NUMBER | ccfield | Credit Card |  | fname_1-cc
+CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | expfield | Exp |  | fname_1-cc
+CREDIT_CARD_VERIFICATION_CODE | cvvfield | CVV |  | fname_1-cc
+CREDIT_CARD_VERIFICATION_CODE | cvvfield | | CVV |  | fname_1-cc
+CREDIT_CARD_NUMBER | ccfield | Credit Card |  | ccfield_4-cc
+CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | expfield | Exp |  | ccfield_4-cc
+UNKNOWN_TYPE | cvvfield | CVV |  | ccfield_4-default
+UNKNOWN_TYPE | cvvfield | |CVV |  | ccfield_4-default
+UNKNOWN_TYPE | billing | Use ... | on | ccfield_4-default
+UNKNOWN_TYPE | newaddress | Specify a Different Billing Address Specify a Billing Address: |  | ccfield_4-default
+NAME_FIRST | ufname | First Name |  | ccfield_4-default
+NAME_LAST | ulname | Last Name |  | ccfield_4-default
+ADDRESS_HOME_LINE1 | ustreetAddr | Street Address |  | ccfield_4-default
+ADDRESS_HOME_LINE2 | ustreetAddr1 | Apartment, Building, Floor, Etc |  | ccfield_4-default
+ADDRESS_HOME_CITY | ucity | City |  | ccfield_4-default
+ADDRESS_HOME_STATE | ustateName | State | 0 | ccfield_4-default
+ADDRESS_HOME_ZIP | uzip | ZIP Code |  | ccfield_4-default
+PHONE_HOME_WHOLE_NUMBER | uphone | Phone Number |  | ccfield_4-default
