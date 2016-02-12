@@ -44,6 +44,12 @@ public:
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
+    // TODO(dgrogan): Remove this when we replace the operator above with UnspecifiedBoolType.
+    bool isNull() const
+    {
+        return !m_layoutObject;
+    }
+
     bool isEqual(const LayoutObject* layoutObject) const
     {
         return m_layoutObject == layoutObject;
@@ -267,6 +273,11 @@ public:
     bool isSVGInlineText() const
     {
         return m_layoutObject->isSVGInlineText();
+    }
+
+    bool isSVGText() const
+    {
+        return m_layoutObject->isSVGText();
     }
 
     bool isSVGTextPath() const
