@@ -165,6 +165,7 @@ http/tests/security/upgrade-insecure-requests/basic-upgrade.https.html [ Pass Ti
 http/tests/security/window-events-clear-domain.html [ Timeout ]
 http/tests/security/window-properties-clear-domain.html [ Timeout ]
 http/tests/security/xssAuditor/anchor-url-dom-write-location-javascript-URL.html [ Timeout ]
+http/tests/security/xssAuditor/svg-animate-href.html [ Timeout ]
 http/tests/security/xssAuditor/dom-write-location-javascript-URL.html [ Timeout ]
 http/tests/security/xssAuditor/form-action.html [ Timeout ]
 http/tests/security/xssAuditor/formaction-on-button.html [ Timeout ]
