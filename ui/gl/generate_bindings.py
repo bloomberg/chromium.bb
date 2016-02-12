@@ -1660,16 +1660,16 @@ GLX_FUNCTIONS = [
 { 'return_type': 'bool',
   'names': ['glXGetMscRateOML'],
   'arguments':
-      'Display* dpy, GLXDrawable drawable, int32* numerator, '
-      'int32* denominator' },
+      'Display* dpy, GLXDrawable drawable, int32_t* numerator, '
+      'int32_t* denominator' },
 { 'return_type': 'void',
   'names': ['glXGetSelectedEvent'],
   'arguments': 'Display* dpy, GLXDrawable drawable, unsigned long* mask', },
 { 'return_type': 'bool',
   'names': ['glXGetSyncValuesOML'],
   'arguments':
-      'Display* dpy, GLXDrawable drawable, int64* ust, int64* msc, '
-      'int64* sbc' },
+      'Display* dpy, GLXDrawable drawable, int64_t* ust, int64_t* msc, '
+      'int64_t* sbc' },
 { 'return_type': 'XVisualInfo*',
   'names': ['glXGetVisualFromFBConfig'],
   'arguments': 'Display* dpy, GLXFBConfig config', },
