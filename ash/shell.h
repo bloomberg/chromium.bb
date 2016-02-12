@@ -398,7 +398,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
   }
-  ::wm::CursorManager* cursor_manager() { return &cursor_manager_; }
+  ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
 
   ShellDelegate* delegate() { return delegate_.get(); }
 
@@ -751,13 +751,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // pointer to vend to test code.
   AshNativeCursorManager* native_cursor_manager_;
 
-// Cursor may be hidden on certain key events in ChromeOS, whereas we never hide
-// the cursor on Windows.
-#if defined(OS_CHROMEOS)
-  CursorManager cursor_manager_;
-#else  // !defined(OS_CHROMEOS)
-  ::wm::CursorManager cursor_manager_;
-#endif  // defined(OS_CHROMEOS)
+  // Cursor may be hidden on certain key events in ChromeOS, whereas we never
+  // hide the cursor on Windows.
+  scoped_ptr<::wm::CursorManager> cursor_manager_;
 
   base::ObserverList<ShellObserver> observers_;
 
