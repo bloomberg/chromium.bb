@@ -102,7 +102,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   scoped_ptr<blink::WebThread> web_thread_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  blink::WebThemeEngine* active_theme_engine_;
+  blink::WebThemeEngine* active_theme_engine_ = nullptr;
 #endif
   DISALLOW_COPY_AND_ASSIGN(TestBlinkWebUnitTestSupport);
 };
