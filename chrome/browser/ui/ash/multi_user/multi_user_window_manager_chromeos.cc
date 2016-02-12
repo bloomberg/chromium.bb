@@ -627,7 +627,11 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
 
 void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     aura::Window* window, bool visible, int animation_time_in_ms) {
-  if (window->IsVisible() == visible)
+  // For a panel window, it's possible that this panel window is in the middle
+  // of relayout animation because of hiding/reshowing shelf during profile
+  // switch. Thus the window's visibility might not be its real visibility. See
+  // crbug.com/564725 for more info.
+  if (window->TargetVisibility() == visible)
     return;
 
   // Hiding a system modal dialog should not be allowed. Instead we switch to
@@ -778,10 +782,6 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
     window->Show();
   else
     window->Hide();
-
-  // Make sure that animations have no influence on the window state after the
-  // call.
-  DCHECK_EQ(visible, window->IsVisible());
 }
 
 int MultiUserWindowManagerChromeOS::GetAdjustedAnimationTimeInMS(
