@@ -220,7 +220,7 @@ class ResourceGraph(object):
     Returns:
       A list of NodeInfo objects that describe the resources fetched.
     """
-    return self._node_info
+    return [n for n in self._node_info if n.Request() is not None]
 
   def DebugString(self):
     """Graph structure for debugging.
@@ -596,8 +596,9 @@ class ResourceGraph(object):
     """
     image_to_info = {}
     for n in self._node_info:
-      if (n.ContentType().startswith('image') and
-          not self._IsAdUrl(n.Url())):
+      if (n.ContentType() is not None and
+          n.ContentType().startswith('image') and
+          self.FilterAds(n)):
         key = str((n.Url(), n.ShortName(), n.StartTime()))
         assert key not in image_to_info, n.Url()
         image_to_info[key] = n

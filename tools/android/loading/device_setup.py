@@ -34,10 +34,10 @@ import adb_install_cert
 import certutils
 
 import devtools_monitor
+import options
 
-DEVTOOLS_PORT = 9222
-DEVTOOLS_HOSTNAME = 'localhost'
-DEFAULT_CHROME_PACKAGE = 'chrome'
+
+OPTIONS = options.OPTIONS
 
 
 @contextlib.contextmanager
@@ -178,13 +178,7 @@ def WprHost(device, wpr_archive_path, record=False):
     shutil.rmtree(temp_certificate_dir)
 
 @contextlib.contextmanager
-def DeviceConnection(device,
-                     package=DEFAULT_CHROME_PACKAGE,
-                     hostname=DEVTOOLS_HOSTNAME,
-                     port=DEVTOOLS_PORT,
-                     host_exe='out/Release/chrome',
-                     host_profile_dir=None,
-                     additional_flags=None):
+def DeviceConnection(device, additional_flags=None):
   """Context for starting recording on a device.
 
   Sets up and restores any device and tracing appropriately
@@ -192,21 +186,18 @@ def DeviceConnection(device,
   Args:
     device: Android device, or None for a local run (in which case chrome needs
       to have been started with --remote-debugging-port=XXX).
-    package: The key for chrome package info.
-    port: The port on which to enable remote debugging.
-    host_exe: The binary to execute when running on the host.
-    host_profile_dir: The profile dir to use when running on the host (if None,
-      a fresh profile dir will be used).
     additional_flags: Additional chromium arguments.
 
   Returns:
     A context manager type which evaluates to a DevToolsConnection.
   """
-  package_info = constants.PACKAGE_INFO[package]
+  package_info = OPTIONS.ChromePackage()
   command_line_path = '/data/local/chrome-command-line'
   new_flags = ['--disable-fre',
                '--enable-test-events',
-               '--remote-debugging-port=%d' % port]
+               '--remote-debugging-port=%d' % OPTIONS.devtools_port]
+  if OPTIONS.no_sandbox:
+    new_flags.append('--no-sandbox')
   if additional_flags != None:
     new_flags.extend(additional_flags)
   if device:
@@ -220,14 +211,14 @@ def DeviceConnection(device,
       device.StartActivity(start_intent, blocking=True)
     else:
       # Run on the host.
-      assert os.path.exists(host_exe)
+      assert os.path.exists(OPTIONS.local_binary)
 
-      user_data_dir = host_profile_dir
-      if not user_data_dir:
-        user_data_dir = TemporaryDirectory()
+      local_profile_dir = OPTIONS.local_profile_dir
+      if not local_profile_dir:
+        local_profile_dir = TemporaryDirectory()
 
-      new_flags += ['--user-data-dir=%s' % user_data_dir]
-      host_process = subprocess.Popen([host_exe] + new_flags,
+      new_flags.append('--user-data-dir=%s' % local_profile_dir)
+      host_process = subprocess.Popen([OPTIONS.local_binary] + new_flags,
                                       shell=False)
     if device:
       time.sleep(2)
@@ -236,27 +227,9 @@ def DeviceConnection(device,
       # in request_track.py to fire.
       time.sleep(10)
     # If no device, we don't care about chrome startup so skip the about page.
-    with ForwardPort(device, 'tcp:%d' % port,
+    with ForwardPort(device, 'tcp:%d' % OPTIONS.devtools_port,
                      'localabstract:chrome_devtools_remote'):
-      yield devtools_monitor.DevToolsConnection(hostname, port)
+      yield devtools_monitor.DevToolsConnection(
+          OPTIONS.devtools_hostname, OPTIONS.devtools_port)
     if host_process:
       host_process.kill()
-
-
-def SetUpAndExecute(device, package, fn):
-  """Start logging process.
-
-  Wrapper for DeviceConnection for those functionally inclined.
-
-  Args:
-    device: Android device, or None for a local run.
-    package: the key for chrome package info.
-    fn: the function to execute that launches chrome and performs the
-        appropriate instrumentation. The function will receive a
-        DevToolsConnection as its sole parameter.
-
-  Returns:
-    As fn() returns.
-  """
-  with DeviceConnection(device, package) as connection:
-    return fn(connection)
