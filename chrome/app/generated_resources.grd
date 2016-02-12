@@ -5978,6 +5978,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         This is to be used in conjunction with the enable-navigation-tracing flag.
         Please select the label that best describes the recorded traces. This will choose the destination the traces are uploaded to. If you are not sure, select other. If left empty, no traces will be uploaded.
       </message>
+      <message name="IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE" desc="Title for the flag to enable Audio Sharing.">
+        Enable Audio For Desktop Share
+      </message>
+      <message name="IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to enable Audio Sharing.">
+        With this flag on, desktop share picker window will let the user to choose whether to share audio.
+      </message>
       <message name="IDS_TRACE_UPLOAD_URL_CHOICE_OTHER">
         Other
       </message>

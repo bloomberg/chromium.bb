@@ -1805,6 +1805,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop, SINGLE_DISABLE_VALUE_TYPE(
                      switches::kUIDisableCompositorAnimationTimelines)},
 #endif  // !defined(OS_ANDROID)
+    {"enable-audio-support-for-desktop-share",
+     IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE,
+     IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableAudioSupportForDesktopShare)},
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
