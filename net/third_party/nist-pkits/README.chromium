@@ -14,3 +14,6 @@ most of the features specified in X.509 and RFC 3280.
 
 Local Modifications:
 Only the certs/ and crls/ directories were extracted from PKITS_data.zip.
+
+pkits_testcases-inl.h is generated from the test descriptions in PKITS.pdf
+using generate_tests.py.

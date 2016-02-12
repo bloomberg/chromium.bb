@@ -1413,6 +1413,11 @@ test("net_unittests") {
   data = [
     "data/",
   ]
+  data_deps = []
+
+  if (!is_ios) {
+    data_deps += [ "third_party/nist-pkits/" ]
+  }
 
   if (is_linux || is_mac || is_win) {
     deps += [
@@ -1420,7 +1425,7 @@ test("net_unittests") {
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
     ]
-    data_deps = [
+    data_deps += [
       "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",

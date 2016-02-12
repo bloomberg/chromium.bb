@@ -7,6 +7,8 @@
       'variables': {
         'files': [
           'data/',
+          'third_party/nist-pkits/certs/',
+          'third_party/nist-pkits/crls/',
         ],
       },
     }],
