@@ -55,7 +55,6 @@ const char kCdmSupportedCodecVorbis[] = "vorbis";
 const char kCdmSupportedCodecVp8[] = "vp8";
 const char kCdmSupportedCodecVp9[] = "vp9.0";
 #if defined(USE_PROPRIETARY_CODECS)
-const char kCdmSupportedCodecAac[] = "aac";
 const char kCdmSupportedCodecAvc1[] = "avc1";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
