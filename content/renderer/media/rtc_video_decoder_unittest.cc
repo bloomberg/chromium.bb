@@ -168,14 +168,6 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
             rtc_decoder_->Decode(input_image, missingFrames, NULL, NULL, 0));
 }
 
-TEST_F(RTCVideoDecoderTest, ResetReturnsOk) {
-  CreateDecoder(webrtc::kVideoCodecVP8);
-  Initialize();
-  EXPECT_CALL(*mock_vda_, Reset())
-      .WillOnce(Invoke(this, &RTCVideoDecoderTest::NotifyResetDone));
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Reset());
-}
-
 TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
   CreateDecoder(webrtc::kVideoCodecVP8);
   Initialize();

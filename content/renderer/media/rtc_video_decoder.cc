@@ -235,7 +235,7 @@ int32_t RTCVideoDecoder::Decode(
 
     if (need_to_reset_for_midstream_resize) {
       base::AutoUnlock auto_unlock(lock_);
-      Reset();
+      Release();
     }
 
     return WEBRTC_VIDEO_CODEC_OK;
@@ -262,11 +262,6 @@ int32_t RTCVideoDecoder::Release() {
   DVLOG(2) << "Release";
   // Do not destroy VDA because WebRTC can call InitDecode and start decoding
   // again.
-  return Reset();
-}
-
-int32_t RTCVideoDecoder::Reset() {
-  DVLOG(2) << "Reset";
   base::AutoLock auto_lock(lock_);
   if (state_ == UNINITIALIZED) {
     LOG(ERROR) << "Decoder not initialized.";
@@ -387,7 +382,7 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
       new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame), timestamp, 0,
       webrtc::kVideoRotation_0);
 
-  // Invoke decode callback. WebRTC expects no callback after Reset or Release.
+  // Invoke decode callback. WebRTC expects no callback after Release.
   {
     base::AutoLock auto_lock(lock_);
     DCHECK(decode_complete_callback_);
@@ -502,7 +497,7 @@ void RTCVideoDecoder::RequestBufferDecode() {
       shm_buffer.reset(decode_buffers_.front().first);
       buffer_data = decode_buffers_.front().second;
       decode_buffers_.pop_front();
-      // Drop the buffers before Reset or Release is called.
+      // Drop the buffers before Release is called.
       if (!IsBufferAfterReset(buffer_data.bitstream_buffer_id,
                               reset_bitstream_buffer_id_)) {
         PutSHM_Locked(std::move(shm_buffer));
@@ -591,7 +586,7 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
     const webrtc::EncodedImage& input_image = pending_buffers_.front().first;
     const BufferData& buffer_data = pending_buffers_.front().second;
 
-    // Drop the frame if it comes before Reset or Release.
+    // Drop the frame if it comes before Release.
     if (!IsBufferAfterReset(buffer_data.bitstream_buffer_id,
                             reset_bitstream_buffer_id_)) {
       delete[] input_image._buffer;

@@ -79,9 +79,6 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Called on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
   int32_t Release() override;
-  // Called on Chrome_libJingle_WorkerThread. The child thread is blocked while
-  // this runs.
-  int32_t Reset() override;
 
   // VideoDecodeAccelerator::Client implementation.
   void ProvidePictureBuffers(uint32_t count,
