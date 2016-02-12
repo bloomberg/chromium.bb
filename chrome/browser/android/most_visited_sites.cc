@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
+#include "chrome/browser/search/suggestions/suggestions_utils.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -35,7 +36,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/suggestions_service.h"
-#include "components/suggestions/suggestions_utils.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
@@ -56,7 +56,6 @@ using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
-using suggestions::SyncState;
 
 namespace {
 
@@ -112,18 +111,6 @@ void LogHistogramEvent(const std::string& histogram,
       base::Histogram::kUmaTargetedHistogramFlag);
   if (counter)
     counter->Add(position);
-}
-
-// Return the current SyncState for use with the SuggestionsService.
-SyncState GetSyncState(Profile* profile) {
-  ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  if (!sync)
-    return SyncState::SYNC_OR_HISTORY_SYNC_DISABLED;
-  return suggestions::GetSyncState(
-      sync->CanSyncStart(),
-      sync->IsSyncActive() && sync->ConfigurationDone(),
-      sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES));
 }
 
 bool ShouldShowPopularSites() {
@@ -452,7 +439,7 @@ void MostVisitedSites::QueryMostVisitedURLs() {
   if (suggestions_service) {
     // Suggestions service is enabled, initiate a query.
     suggestions_service->FetchSuggestionsData(
-        GetSyncState(profile_),
+        suggestions::GetSyncState(profile_),
         base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
                    weak_ptr_factory_.GetWeakPtr()));
   } else {

@@ -44,7 +44,8 @@ class SuggestionsStore;
 // An interface to fetch server suggestions asynchronously.
 class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
  public:
-  typedef base::Callback<void(const SuggestionsProfile&)> ResponseCallback;
+  using ResponseCallback = base::Callback<void(const SuggestionsProfile&)>;
+  using BitmapCallback = base::Callback<void(const GURL&, const SkBitmap*)>;
 
   // Class taking ownership of |suggestions_store|, |thumbnail_manager| and
   // |blacklist_store|.
@@ -67,21 +68,18 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // If state allows for a network request, it is initiated unless a pending one
   // exists, to fill the cache for next time.
   void FetchSuggestionsData(SyncState sync_state,
-                            ResponseCallback callback);
+                            const ResponseCallback& callback);
 
   // Retrieves stored thumbnail for website |url| asynchronously. Calls
   // |callback| with Bitmap pointer if found, and NULL otherwise.
-  void GetPageThumbnail(
-      const GURL& url,
-      const base::Callback<void(const GURL&, const SkBitmap*)>& callback);
+  void GetPageThumbnail(const GURL& url, const BitmapCallback& callback);
 
   // A version of |GetPageThumbnail| that explicitly supplies the download URL
   // for the thumbnail. Replaces any pre-existing thumbnail URL with the
   // supplied one.
-  void GetPageThumbnailWithURL(
-      const GURL& url,
-      const GURL& thumbnail_url,
-      const base::Callback<void(const GURL&, const SkBitmap*)>& callback);
+  void GetPageThumbnailWithURL(const GURL& url,
+                               const GURL& thumbnail_url,
+                               const BitmapCallback& callback);
 
   // Adds a URL to the blacklist cache, invoking |callback| on success or
   // |fail_callback| otherwise. The URL will eventually be uploaded to the

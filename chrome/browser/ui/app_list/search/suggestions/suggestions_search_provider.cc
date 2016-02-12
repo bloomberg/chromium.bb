@@ -11,6 +11,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
+#include "chrome/browser/search/suggestions/suggestions_utils.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/search/suggestions/url_suggestion_result.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -19,24 +20,7 @@
 #include "components/suggestions/suggestions_service.h"
 #include "components/suggestions/suggestions_utils.h"
 
-using suggestions::SyncState;
-
 namespace app_list {
-
-namespace {
-
-// Return the current SyncState for use with the SuggestionsService.
-SyncState GetSyncState(Profile* profile) {
-  ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  if (!sync)
-    return SyncState::SYNC_OR_HISTORY_SYNC_DISABLED;
-  return suggestions::GetSyncState(
-      sync->CanSyncStart(), sync->IsSyncActive(),
-      sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES));
-}
-
-}  // namespace
 
 SuggestionsSearchProvider::SuggestionsSearchProvider(
     Profile* profile,
@@ -67,7 +51,7 @@ void SuggestionsSearchProvider::Start(bool /*is_voice_query*/,
 
   // Suggestions service is enabled; initiate a query.
   suggestions_service_->FetchSuggestionsData(
-      GetSyncState(profile_),
+      suggestions::GetSyncState(profile_),
       base::Bind(&SuggestionsSearchProvider::OnSuggestionsProfileAvailable,
                  weak_ptr_factory_.GetWeakPtr()));
 }

@@ -528,6 +528,8 @@
       'browser/search/suggestions/suggestions_service_factory.h',
       'browser/search/suggestions/suggestions_source.cc',
       'browser/search/suggestions/suggestions_source.h',
+      'browser/search/suggestions/suggestions_utils.cc',
+      'browser/search/suggestions/suggestions_utils.h',
       'browser/search/thumbnail_source.cc',
       'browser/search/thumbnail_source.h',
       'browser/shell_integration.cc',

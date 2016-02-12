@@ -197,45 +197,46 @@ SuggestionsService::~SuggestionsService() {}
 
 void SuggestionsService::FetchSuggestionsData(
     SyncState sync_state,
-    SuggestionsService::ResponseCallback callback) {
+    const ResponseCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   waiting_requestors_.push_back(callback);
-  if (sync_state == SYNC_OR_HISTORY_SYNC_DISABLED) {
-    // Cancel any ongoing request, to stop interacting with the server.
-    pending_request_.reset(nullptr);
-    suggestions_store_->ClearSuggestions();
-    DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
-  } else if (sync_state == INITIALIZED_ENABLED_HISTORY ||
-             sync_state == NOT_INITIALIZED_ENABLED) {
-    // Sync is enabled. Serve previously cached suggestions if available, else
-    // an empty set of suggestions.
-    ServeFromCache();
+  switch (sync_state) {
+    case SYNC_OR_HISTORY_SYNC_DISABLED:
+      // Cancel any ongoing request, to stop interacting with the server.
+      pending_request_.reset(nullptr);
+      suggestions_store_->ClearSuggestions();
+      DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
+      break;
+    case INITIALIZED_ENABLED_HISTORY:
+    case NOT_INITIALIZED_ENABLED:
+      // TODO(treib): For NOT_INITIALIZED_ENABLED, we shouldn't issue a network
+      // request. Verify that that won't break anything.
+      // Sync is enabled. Serve previously cached suggestions if available, else
+      // an empty set of suggestions.
+      ServeFromCache();
 
-    // Issue a network request to refresh the suggestions in the cache.
-    IssueRequestIfNoneOngoing(BuildSuggestionsURL());
-  } else {
-    NOTREACHED();
+      // Issue a network request to refresh the suggestions in the cache.
+      IssueRequestIfNoneOngoing(BuildSuggestionsURL());
+      break;
   }
 }
 
-void SuggestionsService::GetPageThumbnail(
-    const GURL& url,
-    const base::Callback<void(const GURL&, const SkBitmap*)>& callback) {
+void SuggestionsService::GetPageThumbnail(const GURL& url,
+                                          const BitmapCallback& callback) {
   thumbnail_manager_->GetImageForURL(url, callback);
 }
 
 void SuggestionsService::GetPageThumbnailWithURL(
     const GURL& url,
     const GURL& thumbnail_url,
-    const base::Callback<void(const GURL&, const SkBitmap*)>& callback) {
+    const BitmapCallback& callback) {
   thumbnail_manager_->AddImageURL(url, thumbnail_url);
   GetPageThumbnail(url, callback);
 }
 
-void SuggestionsService::BlacklistURL(
-    const GURL& candidate_url,
-    const SuggestionsService::ResponseCallback& callback,
-    const base::Closure& fail_callback) {
+void SuggestionsService::BlacklistURL(const GURL& candidate_url,
+                                      const ResponseCallback& callback,
+                                      const base::Closure& fail_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!blacklist_store_->BlacklistUrl(candidate_url)) {
@@ -253,10 +254,9 @@ void SuggestionsService::BlacklistURL(
   }
 }
 
-void SuggestionsService::UndoBlacklistURL(
-    const GURL& url,
-    const SuggestionsService::ResponseCallback& callback,
-    const base::Closure& fail_callback) {
+void SuggestionsService::UndoBlacklistURL(const GURL& url,
+                                          const ResponseCallback& callback,
+                                          const base::Closure& fail_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TimeDelta time_delta;
   if (blacklist_store_->GetTimeUntilURLReadyForUpload(url, &time_delta) &&

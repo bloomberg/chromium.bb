@@ -165,7 +165,6 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   ProfileSyncServiceMock* service = static_cast<ProfileSyncServiceMock*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile, &ExtensionSessionsTest::BuildProfileSyncService));
-  browser_ = new Browser(Browser::CreateParams(profile));
 
   syncer::ModelTypeSet preferred_types;
   preferred_types.Put(syncer::SESSIONS);
@@ -183,6 +182,8 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
 
   EXPECT_CALL(*service, AddObserver(testing::_)).Times(testing::AnyNumber());
   EXPECT_CALL(*service, RemoveObserver(testing::_)).Times(testing::AnyNumber());
+
+  browser_ = new Browser(Browser::CreateParams(profile));
 
   service->Initialize();
 }

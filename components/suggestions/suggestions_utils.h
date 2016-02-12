@@ -29,6 +29,8 @@ enum SyncState {
 };
 
 // Users of SuggestionsService should always use this function to get SyncState.
+// Note: In chrome/browser/search/suggestions/suggestions_utils.h, there is
+// another variant of this function that takes a Profile* instead.
 SyncState GetSyncState(bool sync_enabled,
                        bool sync_initialized,
                        bool history_sync_enabled);

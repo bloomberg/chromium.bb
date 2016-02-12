@@ -21,6 +21,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
+#include "chrome/browser/search/suggestions/suggestions_utils.h"
 #include "chrome/browser/search/thumbnail_source.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -165,7 +166,7 @@ InstantService::InstantService(Profile* profile)
 
   if (suggestions_service_) {
     suggestions_service_->FetchSuggestionsData(
-        suggestions::INITIALIZED_ENABLED_HISTORY,
+        suggestions::GetSyncState(profile_),
         base::Bind(&InstantService::OnSuggestionsAvailable,
                    weak_ptr_factory_.GetWeakPtr()));
   }
