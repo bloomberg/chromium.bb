@@ -46,7 +46,7 @@ import v8_methods
 import v8_types
 from v8_types import cpp_ptr_type, cpp_template_type
 import v8_utilities
-from v8_utilities import (api_experiment_enabled_function, cpp_name_or_partial, capitalize, cpp_name, gc_type,
+from v8_utilities import (origin_trial_enabled_function, cpp_name_or_partial, capitalize, cpp_name, gc_type,
                           has_extended_attribute_value, runtime_enabled_function_name,
                           extended_attribute_value_as_list, is_legacy_interface_type_checking)
 
@@ -162,12 +162,11 @@ def interface_context(interface):
     cpp_class_name_or_partial = cpp_name_or_partial(interface)
     v8_class_name_or_partial = v8_utilities.v8_class_name_or_partial(interface)
 
-    if 'APIExperimentEnabled' in extended_attributes:
+    if 'OriginTrialEnabled' in extended_attributes:
         includes.add('core/inspector/ConsoleMessage.h')
         includes.add('core/origin_trials/OriginTrials.h')
 
     context = {
-        'api_experiment_name': v8_utilities.api_experiment_name(interface),
         'cpp_class': cpp_class_name,
         'cpp_class_or_partial': cpp_class_name_or_partial,
         'event_target_inheritance': 'InheritFromEventTarget' if is_event_target else 'NotInheritFromEventTarget',
@@ -196,6 +195,7 @@ def interface_context(interface):
                 is_dependent_lifetime)
             else 'Independent',
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
+        'origin_trial_name': v8_utilities.origin_trial_name(interface),
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_template_type(
             cpp_ptr_type('PassRefPtr', 'RawPtr', this_gc_type),
@@ -265,7 +265,7 @@ def interface_context(interface):
     constant_configuration_constants = []
 
     for constant in constants:
-        if constant['measure_as'] or constant['deprecate_as'] or constant['api_experiment_name']:
+        if constant['measure_as'] or constant['deprecate_as'] or constant['origin_trial_name']:
             special_getter_constants.append(constant)
             continue
         runtime_enabled_function = constant['runtime_enabled_function']
@@ -608,27 +608,27 @@ def interface_context(interface):
     return context
 
 
-# [DeprecateAs], [Reflect], [RuntimeEnabled]
+# [DeprecateAs], [OriginTrialEnabled], [Reflect], [RuntimeEnabled]
 def constant_context(constant, interface):
     extended_attributes = constant.extended_attributes
 
-    if 'APIExperimentEnabled' in extended_attributes:
+    if 'OriginTrialEnabled' in extended_attributes:
         includes.add('core/inspector/ConsoleMessage.h')
         includes.add('core/origin_trials/OriginTrials.h')
 
     return {
-        'api_experiment_enabled': v8_utilities.api_experiment_enabled_function(constant),  # [APIExperimentEnabled]
-        'api_experiment_enabled_per_interface': v8_utilities.api_experiment_enabled_function(interface),  # [APIExperimentEnabled]
-        'api_experiment_name': extended_attributes.get('APIExperimentEnabled'),  # [APIExperimentEnabled]
         'cpp_class': extended_attributes.get('PartialInterfaceImplementedAs'),
         'deprecate_as': v8_utilities.deprecate_as(constant),  # [DeprecateAs]
         'idl_type': constant.idl_type.name,
-        'is_api_experiment_enabled': v8_utilities.api_experiment_enabled_function(constant) or v8_utilities.api_experiment_enabled_function(interface),  # [APIExperimentEnabled]
+        'is_origin_trial_enabled': v8_utilities.origin_trial_enabled_function(constant) or v8_utilities.origin_trial_enabled_function(interface),  # [OriginTrialEnabled]
         'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]
         'name': constant.name,
+        'origin_trial_enabled': v8_utilities.origin_trial_enabled_function(constant),  # [OriginTrialEnabled]
+        'origin_trial_enabled_per_interface': v8_utilities.origin_trial_enabled_function(interface),  # [OriginTrialEnabled]
+        'origin_trial_name': extended_attributes.get('OriginTrialEnabled'),  # [OriginTrialEnabled]
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': extended_attributes.get('Reflect', constant.name),
-        'runtime_enabled_function': runtime_enabled_function_name(constant),
+        'runtime_enabled_function': runtime_enabled_function_name(constant),  # [RuntimeEnabled]
         'value': constant.value,
     }
 

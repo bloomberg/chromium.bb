@@ -67,11 +67,11 @@ interface TestObject {
     [RuntimeEnabled=FeatureName2] const short FEATURE2_ENABLED_CONST1 = 3;
     [RuntimeEnabled=FeatureName2] const short FEATURE2_ENABLED_CONST2 = 4;
     [RuntimeEnabled=FeatureName3] const short FEATURE3_ENABLED_CONST1 = 5;
-    [RuntimeEnabled=FeatureName1, APIExperimentEnabled=FeatureName1] const short FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 = 1;
-    [RuntimeEnabled=FeatureName1, APIExperimentEnabled=FeatureName1] const short FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2 = 2;
-    [RuntimeEnabled=FeatureName2, APIExperimentEnabled=FeatureName2] const short FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 = 3;
-    [RuntimeEnabled=FeatureName2, APIExperimentEnabled=FeatureName2] const short FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2 = 4;
-    [RuntimeEnabled=FeatureName3, APIExperimentEnabled=FeatureName3] const short FEATURE3_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 = 5;
+    [RuntimeEnabled=FeatureName1, OriginTrialEnabled=FeatureName1] const short FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 = 1;
+    [RuntimeEnabled=FeatureName1, OriginTrialEnabled=FeatureName1] const short FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2 = 2;
+    [RuntimeEnabled=FeatureName2, OriginTrialEnabled=FeatureName2] const short FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 = 3;
+    [RuntimeEnabled=FeatureName2, OriginTrialEnabled=FeatureName2] const short FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2 = 4;
+    [RuntimeEnabled=FeatureName3, OriginTrialEnabled=FeatureName3] const short FEATURE3_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 = 5;
     [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
 
     stringifier attribute DOMString stringifierAttribute;
@@ -194,7 +194,7 @@ interface TestObject {
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
-    [APIExperimentEnabled=FeatureName, RuntimeEnabled=FeatureName] attribute long experimentRuntimeEnabledLongAttribute;
+    [OriginTrialEnabled=FeatureName, RuntimeEnabled=FeatureName] attribute long experimentRuntimeEnabledLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;
     [Custom=Getter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customGetterImplementedAsLongAttribute;
@@ -266,7 +266,7 @@ interface TestObject {
     [Measure] attribute long measuredLongAttribute;
     [SameObject] attribute TestInterface sameObjectAttribute;
     [Unscopeable] attribute long unscopeableLongAttribute;
-    [Unscopeable, APIExperimentEnabled=FeatureName, RuntimeEnabled=FeatureName] attribute long unscopeableExperimentEnabledLongAttribute;
+    [Unscopeable, OriginTrialEnabled=FeatureName, RuntimeEnabled=FeatureName] attribute long unscopeableExperimentEnabledLongAttribute;
     [Unscopeable, RuntimeEnabled=FeatureName] attribute long unscopeableRuntimeEnabledLongAttribute;
     [Unscopeable] void unscopeableVoidMethod();
     [Unscopeable, RuntimeEnabled=FeatureName] void unscopeableRuntimeEnabledVoidMethod();
@@ -529,14 +529,14 @@ interface TestObject {
     [CustomElementCallbacks] void customElementCallbacksVoidMethod();
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();
     [DoNotCheckSignature] void doNotCheckSignatureVoidMethod();
-    [APIExperimentEnabled=FeatureName, RuntimeEnabled=FeatureName1] void experimentEnabledVoidMethod();
-    [PerWorldBindings, APIExperimentEnabled=FeatureName, RuntimeEnabled=FeatureName1] void perWorldBindingsExperimentEnabledVoidMethod();
-    [APIExperimentEnabled=FeatureName, RuntimeEnabled=FeatureName1] void experimentEnabledOverloadedVoidMethod(DOMString stringArg);
-    [APIExperimentEnabled=FeatureName, RuntimeEnabled=FeatureName1] void experimentEnabledOverloadedVoidMethod(long longArg);
-    [APIExperimentEnabled=FeatureName1, RuntimeEnabled=FeatureName1] void partiallyExperimentEnabledOverloadedVoidMethod(DOMString stringArg);
-    [APIExperimentEnabled=FeatureName2, RuntimeEnabled=FeatureName1] void partiallyExperimentEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
+    [OriginTrialEnabled=FeatureName, RuntimeEnabled=FeatureName1] void experimentEnabledVoidMethod();
+    [PerWorldBindings, OriginTrialEnabled=FeatureName, RuntimeEnabled=FeatureName1] void perWorldBindingsExperimentEnabledVoidMethod();
+    [OriginTrialEnabled=FeatureName, RuntimeEnabled=FeatureName1] void experimentEnabledOverloadedVoidMethod(DOMString stringArg);
+    [OriginTrialEnabled=FeatureName, RuntimeEnabled=FeatureName1] void experimentEnabledOverloadedVoidMethod(long longArg);
+    [OriginTrialEnabled=FeatureName1, RuntimeEnabled=FeatureName1] void partiallyExperimentEnabledOverloadedVoidMethod(DOMString stringArg);
+    [OriginTrialEnabled=FeatureName2, RuntimeEnabled=FeatureName1] void partiallyExperimentEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
      void partiallyExperimentEnabledOverloadedVoidMethod(long longArg, DOMString stringArg);
-    [APIExperimentEnabled=FeatureName3] void partiallyExperimentEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
+    [OriginTrialEnabled=FeatureName3] void partiallyExperimentEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
     [ImplementedAs=implementedAsMethodName] void implementedAsVoidMethod();
     [MeasureAs=TestFeature] void measureAsVoidMethod();
     [Measure] void measureMethod();

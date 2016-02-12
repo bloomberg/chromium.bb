@@ -118,7 +118,7 @@ def method_context(interface, method, is_visible=True):
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
 
-    if 'APIExperimentEnabled' in extended_attributes:
+    if 'OriginTrialEnabled' in extended_attributes:
         includes.add('core/inspector/ConsoleMessage.h')
         includes.add('core/origin_trials/OriginTrials.h')
 
@@ -128,8 +128,6 @@ def method_context(interface, method, is_visible=True):
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
-        'api_experiment_enabled': v8_utilities.api_experiment_enabled_function(method),  # [APIExperimentEnabled]
-        'api_experiment_enabled_per_interface': v8_utilities.api_experiment_enabled_function(interface),  # [APIExperimentEnabled]
         'arguments': argument_contexts,
         'argument_declarations_for_private_script':
             argument_declarations_for_private_script(interface, method),
@@ -157,7 +155,7 @@ def method_context(interface, method, is_visible=True):
             any(True for argument_context in argument_contexts
                 if argument_context['is_optional_without_default_value']),
         'idl_type': idl_type.base_type,
-        'is_api_experiment_enabled': v8_utilities.api_experiment_enabled_function(method) or v8_utilities.api_experiment_enabled_function(interface),  # [APIExperimentEnabled]
+        'is_origin_trial_enabled': v8_utilities.origin_trial_enabled_function(method) or v8_utilities.origin_trial_enabled_function(interface),  # [OriginTrialEnabled]
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
@@ -194,6 +192,8 @@ def method_context(interface, method, is_visible=True):
         'on_interface': v8_utilities.on_interface(interface, method),
         'on_prototype': v8_utilities.on_prototype(interface, method),
         'only_exposed_to_private_script': is_only_exposed_to_private_script,
+        'origin_trial_enabled': v8_utilities.origin_trial_enabled_function(method),  # [OriginTrialEnabled]
+        'origin_trial_enabled_per_interface': v8_utilities.origin_trial_enabled_function(interface),  # [OriginTrialEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', bailout_return_value='false'),
         'property_attributes': property_attributes(interface, method),

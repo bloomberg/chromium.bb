@@ -55,10 +55,10 @@ const char* validValues[] = {
 {%- endmacro %}
 
 
-{% macro check_api_experiment_internal(errorName, experiment_name) %}
-{% if experiment_name %}
+{% macro check_origin_trial_internal(errorName, origin_trial_name) %}
+{% if origin_trial_name %}
 String {{errorName}};
-if (!{{experiment_name}}(executionContext, {{errorName}})) {
+if (!{{origin_trial_name}}(executionContext, {{errorName}})) {
      v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
      if (!{{errorName}}.isEmpty()) {
          toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, {{errorName}}));
@@ -69,8 +69,8 @@ if (!{{experiment_name}}(executionContext, {{errorName}})) {
 {% endmacro %}
 
 
-{% macro check_api_experiment(member, isolate="info.GetIsolate()") -%}
+{% macro check_origin_trial(member, isolate="info.GetIsolate()") -%}
 ExecutionContext* executionContext = currentExecutionContext({{isolate}});
-{{check_api_experiment_internal("errorMessage", member.api_experiment_enabled_per_interface) -}}
-{{check_api_experiment_internal("memberErrorMessage", member.api_experiment_enabled) -}}
+{{check_origin_trial_internal("errorMessage", member.origin_trial_enabled_per_interface) -}}
+{{check_origin_trial_internal("memberErrorMessage", member.origin_trial_enabled) -}}
 {% endmacro %}

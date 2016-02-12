@@ -374,18 +374,18 @@ def runtime_feature_name(definition_or_member):
     return extended_attributes['RuntimeEnabled']
 
 
-def is_api_experiment_enabled(definition_or_member):
-    return 'APIExperimentEnabled' in definition_or_member.extended_attributes
+def is_origin_trial_enabled(definition_or_member):
+    return 'OriginTrialEnabled' in definition_or_member.extended_attributes
 
 
-def api_experiment_name(definition_or_member):
-    return definition_or_member.extended_attributes['APIExperimentEnabled'] if is_api_experiment_enabled(definition_or_member) else None
+def origin_trial_name(definition_or_member):
+    return definition_or_member.extended_attributes['OriginTrialEnabled'] if is_origin_trial_enabled(definition_or_member) else None
 
 
-def api_experiment_enabled_function(definition_or_member):
-    experiment_name = api_experiment_name(definition_or_member)
+def origin_trial_enabled_function(definition_or_member):
+    trial_name = origin_trial_name(definition_or_member)
     feature_name = runtime_feature_name(definition_or_member)
-    if not feature_name or not experiment_name:
+    if not feature_name or not trial_name:
         return
     return 'OriginTrials::%sEnabled' % uncapitalize(feature_name)
 
@@ -400,13 +400,13 @@ def runtime_enabled_function_name(definition_or_member):
     """
     feature_name = runtime_feature_name(definition_or_member)
 
-    # If an API experiment is on the method/attribute, it overrides the runtime
-    # enabled status. For now, we are unconditionally installing experimental
+    # If an origin trial is on the method/attribute, it overrides the runtime
+    # enabled status. For now, we are unconditionally installing these
     # attributes/methods, so we are acting as though the runtime enabled
     # function doesn't exist. (It is checked in the generated OriginTrials
     # function, instead)
-    experiment_name = api_experiment_name(definition_or_member)
-    if not feature_name or experiment_name:
+    trial_name = origin_trial_name(definition_or_member)
+    if not feature_name or trial_name:
         return
     return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)
 

@@ -129,7 +129,7 @@ static void convertRequestDeviceOptions(const RequestDeviceOptions& options, Web
 // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetooth-requestdevice
 ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDeviceOptions& options, ExceptionState& exceptionState)
 {
-    // By adding the "APIExperimentEnabled" extended binding, we enable the
+    // By adding the "OriginTrialEnabled" extended binding, we enable the
     // requestDevice function on all platforms for whitelisted domains. Since we
     // only support Chrome OS and Android for this experiment we reject any
     // promises from other platforms unless they have the enable-web-bluetooth

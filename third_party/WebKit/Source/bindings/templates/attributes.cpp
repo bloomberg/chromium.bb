@@ -1,4 +1,4 @@
-{% from 'utilities.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value, check_api_experiment %}
+{% from 'utilities.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value, check_origin_trial %}
 
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
@@ -9,8 +9,8 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    {% if attribute.is_api_experiment_enabled %}
-    {{check_api_experiment(attribute) | indent}}
+    {% if attribute.is_origin_trial_enabled %}
+    {{check_origin_trial(attribute) | indent}}
     {% endif %}
     {% if attribute.is_reflect and not attribute.is_url
           and attribute.idl_type == 'DOMString' and is_node
@@ -176,8 +176,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% if attribute.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
     {% endif %}
-    {% if attribute.is_api_experiment_enabled %}
-    {{check_api_experiment(attribute) | indent}}
+    {% if attribute.is_origin_trial_enabled %}
+    {{check_origin_trial(attribute) | indent}}
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
@@ -208,8 +208,8 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Loca
     {% if attribute.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
     {% endif %}
-    {% if attribute.is_api_experiment_enabled %}
-    {{check_api_experiment(attribute) | indent}}
+    {% if attribute.is_origin_trial_enabled %}
+    {{check_origin_trial(attribute) | indent}}
     {% endif %}
     v8ConstructorAttributeGetter(property, info);
 }
@@ -410,8 +410,8 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
     if (holder.IsEmpty())
         return false;
 
-    {% if attribute.is_api_experiment_enabled %}
-    {{check_api_experiment(attribute, "scriptState->isolate()") | indent}}
+    {% if attribute.is_origin_trial_enabled %}
+    {{check_origin_trial(attribute, "scriptState->isolate()") | indent}}
     {% endif %}
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
