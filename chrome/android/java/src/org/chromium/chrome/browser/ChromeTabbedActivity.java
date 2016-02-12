@@ -469,7 +469,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             getToolbarManager().getToolbar().setReturnButtonListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (getActivityTab() != null) handleBackPressedWithoutBackStack();
+                    if (getActivityTab() != null) handleBackPressedWithoutBackStack(true);
                 }
             });
 
@@ -1014,7 +1014,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         if (!getToolbarManager().back()) {
             Log.i(TAG, "handleBackPressed() - no back stack");
-            if (handleBackPressedWithoutBackStack()) return true;
+            if (handleBackPressedWithoutBackStack(false)) return true;
         } else {
             Log.i(TAG, "handleBackPressed() - moving back in navigation");
             RecordUserAction.record("SystemBackForNavigation");
@@ -1030,9 +1030,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      *
      * May result in closing the foreground tab or returning to the app that opened Chrome.
      *
+     * @param alwaysAllowTabClosure Setting this to true always allows a tab opened by an external
+     *                              app to be closed.
      * @return Whether the tab closed was opened for a help page.
      */
-    private boolean handleBackPressedWithoutBackStack() {
+    private boolean handleBackPressedWithoutBackStack(boolean alwaysAllowTabClosure) {
         final Tab currentTab = getActivityTab();
         final TabLaunchType type = currentTab.getLaunchType();
         final int parentId = currentTab.getParentId();
@@ -1050,10 +1052,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         // Herb: Current spec says that tabs are closed only when there is NO "X" visible, i.e. when
         //       the tab is NOT allowed to return to the external app.
         boolean isAllowedToCloseTab = true;
-        String herbFlavor = ChromePreferenceManager.getHerbFlavor();
-        if (TextUtils.equals(ChromeSwitches.HERB_FLAVOR_BASIL, herbFlavor)
-                || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_CHIVE, herbFlavor)) {
-            isAllowedToCloseTab = !currentTab.isAllowedToReturnToExternalApp();
+        if (alwaysAllowTabClosure) {
+            isAllowedToCloseTab = true;
+        } else {
+            String herbFlavor = ChromePreferenceManager.getHerbFlavor();
+            if (TextUtils.equals(ChromeSwitches.HERB_FLAVOR_BASIL, herbFlavor)
+                    || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_CHIVE, herbFlavor)) {
+                isAllowedToCloseTab = !currentTab.isAllowedToReturnToExternalApp();
+            }
         }
 
         // [true]: Reached the bottom of the back stack on a tab the user did not explicitly
