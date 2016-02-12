@@ -22,7 +22,7 @@
     'android_gyp_debug_static_bot': ['android', 'gyp', 'debug_static_bot'],
     'android_gyp_debug_static_bot_arm64': ['android', 'gyp', 'debug_static_bot', 'arm64'],
     'android_gyp_release_bot': ['android', 'gyp', 'release_bot'],
-    'android_gyp_release_bot_minimal_symbols': ['android', 'gyp', 'release_bot', 'minimal_symbols'],
+    'android_gyp_release_bot_minimal_symbols': ['android', 'gyp', 'release_bot_minimal_symbols'],
     'cast_gn_release_bot': ['cast', 'gn', 'release_bot'],
     'cast_gn_release_trybot': ['cast', 'gn', 'release_trybot'],
     'chromeos_gn_debug_bot': ['chromeos', 'gn', 'debug_bot'],
@@ -89,7 +89,7 @@
     'noswarming_gyp_release_bot_mac_strip': ['noswarming', 'gyp', 'release_bot', 'mac_strip'],
     'noswarming_gyp_release_bot_x86': ['noswarming', 'gyp', 'release_bot', 'x86'],
 
-    'swarming_android_gn_release_bot_minimal_symbols': ['swarming', 'android', 'gn', 'release_bot', 'minimal_symbols'],
+    'swarming_android_gn_release_bot_minimal_symbols': ['swarming', 'android', 'gn', 'release_bot_minimal_symbols'],
     'swarming_asan_lsan_gyp_release_trybot': ['swarming', 'asan', 'lsan', 'release_trybot'],
     'swarming_msan_gyp_release_trybot': ['swarming', 'chromeos', 'msan', 'gyp', 'release_trybot'],
     'swarming_deterministic_gyp_release_bot': ['swarming', 'deterministic', 'gyp', 'release_bot'],
@@ -104,8 +104,8 @@
     'swarming_gn_debug_bot_minimal_symbols_x64': ['swarming', 'gn', 'debug_bot_minimal_symbols', 'x64'],
     'swarming_gn_debug_bot_x64': ['swarming', 'gn', 'debug_bot', 'x64'],
     'swarming_gn_debug_trybot': ['swarming', 'gn', 'debug_trybot'],
-    'swarming_gn_oilpan_debug_bot_minimal_symbols_x64': ['swarming', 'gn', 'oilpan', 'debug_bot', 'minimal_symbols', 'x64'],
-    'swarming_gn_oilpan_debug_bot_x64': ['swarming', 'gn', 'oilpan', 'debug_bot', 'minimal_symbols', 'x64'],
+    'swarming_gn_oilpan_debug_bot_minimal_symbols_x64': ['swarming', 'gn', 'oilpan', 'debug_bot_minimal_symbols', 'x64'],
+    'swarming_gn_oilpan_debug_bot_x64': ['swarming', 'gn', 'oilpan', 'debug_bot_minimal_symbols', 'x64'],
     'swarming_gn_oilpan_release_bot_x64': ['swarming', 'gn', 'oilpan', 'release_bot', 'x64'],
     'swarming_gn_oilpan_release_trybot_minimal_symbols_x64': ['swarming', 'gn', 'oilpan', 'release_trybot', 'minimal_symbols', 'x64'],
     'swarming_gn_release_bot': ['swarming', 'gn', 'release_bot'],
@@ -120,9 +120,9 @@
     'swarming_gyp_debug_trybot_x86': ['swarming', 'gyp', 'debug_trybot', 'x86'],
     'swarming_gyp_msan_release_bot_x64': ['swarming', 'gyp', 'msan', 'release_bot', 'x64'],
     'swarming_gyp_oilpan_asan_lsan_release_bot_x64': ['swarming', 'gyp', 'oilpan', 'asan', 'lsan', 'release_bot', 'x64'],
-    'swarming_gyp_oilpan_debug_bot_minimal_symbols_x64': ['swarming', 'gyp', 'oilpan', 'debug_bot', 'minimal_symbols', 'x64'],
-    'swarming_gyp_oilpan_debug_bot_minimal_symbols_x86': ['swarming', 'gyp', 'oilpan', 'debug_bot', 'minimal_symbols', 'x86'],
-    'swarming_gyp_oilpan_debug_bot_x64': ['swarming', 'gyp', 'oilpan', 'debug_bot', 'minimal_symbols', 'x64'],
+    'swarming_gyp_oilpan_debug_bot_minimal_symbols_x64': ['swarming', 'gyp', 'oilpan', 'debug_bot_minimal_symbols', 'x64'],
+    'swarming_gyp_oilpan_debug_bot_minimal_symbols_x86': ['swarming', 'gyp', 'oilpan', 'debug_bot_minimal_symbols', 'x86'],
+    'swarming_gyp_oilpan_debug_bot_x64': ['swarming', 'gyp', 'oilpan', 'debug_bot_minimal_symbols', 'x64'],
     'swarming_gyp_oilpan_release_bot_minimal_symbols_x86': ['swarming', 'gyp', 'oilpan', 'release_bot', 'minimal_symbols', 'x86'],
     'swarming_gyp_oilpan_release_bot_x64': ['swarming', 'gyp', 'oilpan', 'release_bot', 'x64'],
     'swarming_gyp_oilpan_release_trybot_minimal_symbols_x64': ['swarming', 'gyp', 'oilpan', 'release_trybot', 'minimal_symbols', 'x64'],
@@ -152,8 +152,7 @@
     # added the entries yet.
     # 'tbd': ['none'],
 
-    # clang/win doesn't work with goma yet, so this can't use debug_bot:
-    'win_clang_debug_bot': ['gn', 'clang', 'debug', 'shared', 'minimal_symbols'],
+    'win_clang_debug_bot': ['gn', 'clang', 'debug_bot_minimal_symbols'],
   },
 
   # This is a list of configs that do not actually exist on any bot
