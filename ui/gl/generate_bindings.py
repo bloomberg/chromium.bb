@@ -1742,7 +1742,10 @@ FUNCTION_SETS = [
       'GL/glextchromium.h',
       'GLES2/gl2chromium.h',
       'GLES2/gl2extchromium.h'
-  ], []],
+    ], [
+      "GL_EXT_unpack_subimage",
+    ]
+  ],
   [OSMESA_FUNCTIONS, 'osmesa', [], []],
   [EGL_FUNCTIONS, 'egl', [
       'EGL/eglext.h',

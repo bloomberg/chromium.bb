@@ -261,7 +261,8 @@ scoped_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
     case BufferFormat::R_8: {
       size_t gles2_data_stride =
           RowSizeForBufferFormat(size.width(), format, 0);
-      if (stride == gles2_data_stride)
+      if (stride == gles2_data_stride ||
+          gfx::g_driver_gl.ext.b_GL_EXT_unpack_subimage)
         return nullptr;  // No data conversion needed
 
       scoped_ptr<uint8_t[]> gles2_data(

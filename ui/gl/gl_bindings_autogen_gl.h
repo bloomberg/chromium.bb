@@ -1075,6 +1075,7 @@ struct ExtensionsGL {
   bool b_GL_EXT_shader_image_load_store;
   bool b_GL_EXT_texture_storage;
   bool b_GL_EXT_timer_query;
+  bool b_GL_EXT_unpack_subimage;
   bool b_GL_IMG_multisampled_render_to_texture;
   bool b_GL_INTEL_framebuffer_CMAA;
   bool b_GL_KHR_blend_equation_advanced;

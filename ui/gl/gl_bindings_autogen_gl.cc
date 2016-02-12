@@ -552,6 +552,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_EXT_texture_storage ") != std::string::npos;
   ext.b_GL_EXT_timer_query =
       extensions.find("GL_EXT_timer_query ") != std::string::npos;
+  ext.b_GL_EXT_unpack_subimage =
+      extensions.find("GL_EXT_unpack_subimage ") != std::string::npos;
   ext.b_GL_IMG_multisampled_render_to_texture =
       extensions.find("GL_IMG_multisampled_render_to_texture ") !=
       std::string::npos;
