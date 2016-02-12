@@ -51,7 +51,6 @@ const char kWidevineCdmAdapterFileName[] =
 // component manifest) via WebPluginInfo::WebPluginMimeType's additional params.
 const char kCdmSupportedCodecsParamName[] = "codecs";
 const char kCdmSupportedCodecsValueDelimiter = ',';
-const char kCdmSupportedCodecVorbis[] = "vorbis";
 const char kCdmSupportedCodecVp8[] = "vp8";
 const char kCdmSupportedCodecVp9[] = "vp9.0";
 #if defined(USE_PROPRIETARY_CODECS)
