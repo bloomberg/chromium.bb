@@ -30,65 +30,15 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/win/HWndDC.h"
 #include "wtf/text/WTFString.h"
-#include <windows.h>
 
 namespace blink {
 
 // Converts |points| to pixels. One point is 1/72 of an inch.
 static float pointsToPixels(float points)
 {
-    static float pixelsPerInch = 0.0f;
-    if (!pixelsPerInch) {
-        HWndDC hdc(0); // What about printing? Is this the right DC?
-        if (hdc) // Can this ever actually be 0?
-            pixelsPerInch = GetDeviceCaps(hdc, LOGPIXELSY);
-        else
-            pixelsPerInch = 96.0f;
-    }
-
+    float pixelsPerInch = 96.0f * FontCache::deviceScaleFactor();
     static const float pointsPerInch = 72.0f;
     return points / pointsPerInch * pixelsPerInch;
-}
-
-static bool getNonClientMetrics(NONCLIENTMETRICS* metrics)
-{
-    metrics->cbSize = sizeof(NONCLIENTMETRICS);
-    bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), metrics, 0);
-    ASSERT_UNUSED(success, success);
-    return success;
-}
-
-// Return the height of system font |font| in pixels. We use this size by
-// default for some non-form-control elements.
-static float systemFontSize(const LOGFONT& font)
-{
-    float size = -font.lfHeight;
-    if (size < 0) {
-        HFONT hFont = CreateFontIndirect(&font);
-        if (hFont) {
-            HWndDC hdc(0); // What about printing? Is this the right DC?
-            if (hdc) {
-                HGDIOBJ hObject = SelectObject(hdc, hFont);
-                TEXTMETRIC tm;
-                GetTextMetrics(hdc, &tm);
-                SelectObject(hdc, hObject);
-                size = tm.tmAscent;
-            }
-            DeleteObject(hFont);
-        }
-    }
-
-    // The "codepage 936" bit here is from Gecko; apparently this helps make
-    // fonts more legible in Simplified Chinese where the default font size is
-    // too small.
-    //
-    // FIXME: http://b/1119883 Since this is only used for "small caption",
-    // "menu", and "status bar" objects, I'm not sure how much this even
-    // matters. Plus the Gecko patch went in back in 2002, and maybe this
-    // isn't even relevant anymore. We should investigate whether this should
-    // be removed, or perhaps broadened to be "any CJK locale".
-    //
-    return ((size < 12.0f) && (GetACP() == 936)) ? 12.0f : size;
 }
 
 // static
@@ -100,45 +50,18 @@ void LayoutThemeFontProvider::systemFont(CSSValueID systemFontID, FontStyle& fon
     fontFamily = defaultGUIFont();
 
     switch (systemFontID) {
-    case CSSValueSmallCaption: {
+    case CSSValueSmallCaption:
         fontSize = FontCache::smallCaptionFontHeight();
-        if (fontSize) {
-            fontFamily = FontCache::smallCaptionFontFamily();
-        } else {
-            NONCLIENTMETRICS metrics;
-            if (getNonClientMetrics(&metrics)) {
-                fontSize = systemFontSize(metrics.lfSmCaptionFont);
-                fontFamily = AtomicString(metrics.lfSmCaptionFont.lfFaceName, wcslen(metrics.lfSmCaptionFont.lfFaceName));
-            }
-        }
+        fontFamily = FontCache::smallCaptionFontFamily();
         break;
-    }
-    case CSSValueMenu: {
+    case CSSValueMenu:
         fontSize = FontCache::menuFontHeight();
-        if (fontSize) {
-            fontFamily = FontCache::menuFontFamily();
-        } else {
-            NONCLIENTMETRICS metrics;
-            if (getNonClientMetrics(&metrics)) {
-                fontSize = systemFontSize(metrics.lfMenuFont);
-                fontFamily = AtomicString(metrics.lfMenuFont.lfFaceName, wcslen(metrics.lfMenuFont.lfFaceName));
-            }
-        }
+        fontFamily = FontCache::menuFontFamily();
         break;
-    }
-    case CSSValueStatusBar: {
+    case CSSValueStatusBar:
         fontSize = FontCache::statusFontHeight();
-        if (fontSize) {
-            fontFamily = FontCache::statusFontFamily();
-        } else {
-            NONCLIENTMETRICS metrics;
-            if (getNonClientMetrics(&metrics)) {
-                fontSize = systemFontSize(metrics.lfStatusFont);
-                fontFamily = metrics.lfStatusFont.lfFaceName;
-            }
-        }
+        fontFamily = FontCache::statusFontFamily();
         break;
-    }
     case CSSValueWebkitMiniControl:
     case CSSValueWebkitSmallControl:
     case CSSValueWebkitControl:
