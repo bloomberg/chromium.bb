@@ -11,12 +11,8 @@
 -RedirectTest.ClientEmptyReferer
 -ReferrerPolicyTest.HttpsRedirect
 -RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*
--SSLUITest.TestGoodFrameNavigation
 -WebNavigationApiTest.ServerRedirectSingleProcess
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs*
-
-# crbug.com/574997: Navigating to a file: URL for a non-existing dir.
--SSLUITest.TestMarkNonSecureAs
 
 # crbug.com/467126: BrowserTest.WindowOpenClose is flaky in --site-per-process
 # mode:

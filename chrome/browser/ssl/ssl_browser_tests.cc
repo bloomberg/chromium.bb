@@ -1120,15 +1120,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
 
 // Ensure that non-standard origins are marked correctly when the
 // MarkNonSecureAs field trial is enabled.
-//
-// Disabled on Windows until `file:///` navigation works under OOPIF.
-// https://crbug.com/574997
-#if defined(OS_WIN)
-#define MAYBE_MarkFileAsNonSecure DISABLED_MarkFileAsNonSecure
-#else
-#define MAYBE_MarkFileAsNonSecure MarkFileAsNonSecure
-#endif
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_MarkFileAsNonSecure) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::CreateFieldTrial(
           "MarkNonSecureAs",
