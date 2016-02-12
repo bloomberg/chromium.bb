@@ -9,6 +9,7 @@
 
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace {
@@ -215,6 +216,14 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(
         memcpy(name_cstr, name.data(), name.length());
     }
   } else {
+    if (shared_meta()->size == 0 ||
+        shared_meta()->version == 0 ||
+        shared_meta()->freeptr.load() == 0 ||
+        shared_meta()->tailptr == 0 ||
+        shared_meta()->queue.cookie == 0 ||
+        shared_meta()->queue.next.load() == 0) {
+      SetCorrupt();
+    }
     if (!readonly) {
       // The allocator is attaching to a previously initialized segment of
       // memory. Make sure the embedded data matches what has been passed.
@@ -656,18 +665,37 @@ LocalPersistentMemoryAllocator::~LocalPersistentMemoryAllocator() {
 }
 
 
+//----- SharedPersistentMemoryAllocator ----------------------------------------
+
+SharedPersistentMemoryAllocator::SharedPersistentMemoryAllocator(
+    scoped_ptr<SharedMemory> memory,
+    uint64_t id,
+    base::StringPiece name,
+    bool read_only)
+    : PersistentMemoryAllocator(static_cast<uint8_t*>(memory->memory()),
+                                memory->mapped_size(), 0, id, name, read_only),
+      shared_memory_(std::move(memory)) {}
+
+SharedPersistentMemoryAllocator::~SharedPersistentMemoryAllocator() {}
+
+// static
+bool SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
+    const SharedMemory& memory) {
+  return IsMemoryAcceptable(memory.memory(), memory.mapped_size(), 0, true);
+}
+
+
 //----- FilePersistentMemoryAllocator ------------------------------------------
 
 FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
-    MemoryMappedFile* file,
+    scoped_ptr<MemoryMappedFile> file,
     uint64_t id,
     base::StringPiece name)
     : PersistentMemoryAllocator(const_cast<uint8_t*>(file->data()),
                                 file->length(), 0, id, name, true),
-      mapped_file_(file) {}
+      mapped_file_(std::move(file)) {}
 
-FilePersistentMemoryAllocator::~FilePersistentMemoryAllocator() {
-}
+FilePersistentMemoryAllocator::~FilePersistentMemoryAllocator() {}
 
 // static
 bool FilePersistentMemoryAllocator::IsFileAcceptable(

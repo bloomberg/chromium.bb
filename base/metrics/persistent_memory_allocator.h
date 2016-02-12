@@ -19,6 +19,7 @@ namespace base {
 
 class HistogramBase;
 class MemoryMappedFile;
+class SharedMemory;
 
 // Simple allocator for pieces of a memory block that may be persistent
 // to some storage or shared across multiple processes. This class resides
@@ -314,24 +315,51 @@ class BASE_EXPORT LocalPersistentMemoryAllocator
 };
 
 
+// This allocator takes a shared-memory object and performs allocation from
+// it. The memory must be previously mapped via Map() or MapAt(). The allocator
+// takes ownership of the memory object.
+class BASE_EXPORT SharedPersistentMemoryAllocator
+    : public PersistentMemoryAllocator {
+ public:
+  SharedPersistentMemoryAllocator(scoped_ptr<SharedMemory> memory, uint64_t id,
+                                  base::StringPiece name, bool read_only);
+  ~SharedPersistentMemoryAllocator() override;
+
+  SharedMemory* shared_memory() { return shared_memory_.get(); }
+
+  // Ensure that the memory isn't so invalid that it won't crash when passing it
+  // to the allocator. This doesn't guarantee the data is valid, just that it
+  // won't cause the program to abort. The existing IsCorrupt() call will handle
+  // the rest.
+  static bool IsSharedMemoryAcceptable(const SharedMemory& memory);
+
+ private:
+  scoped_ptr<SharedMemory> shared_memory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedPersistentMemoryAllocator);
+};
+
+
 // This allocator takes a memory-mapped file object and performs allocation
 // from it. The allocator takes ownership of the file object. Only read access
 // is provided due to limitions of the MemoryMappedFile class.
 class BASE_EXPORT FilePersistentMemoryAllocator
     : public PersistentMemoryAllocator {
  public:
-  FilePersistentMemoryAllocator(MemoryMappedFile* file, uint64_t id,
+  FilePersistentMemoryAllocator(scoped_ptr<MemoryMappedFile> file, uint64_t id,
                                 base::StringPiece name);
   ~FilePersistentMemoryAllocator() override;
 
   // Ensure that the file isn't so invalid that it won't crash when passing it
   // to the allocator. This doesn't guarantee the file is valid, just that it
-  // won't cause program to abort. The existing IsCorrupt() call will handle
+  // won't cause the program to abort. The existing IsCorrupt() call will handle
   // the rest.
   static bool IsFileAcceptable(const MemoryMappedFile& file);
 
  private:
   scoped_ptr<MemoryMappedFile> mapped_file_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilePersistentMemoryAllocator);
 };
 
 }  // namespace base

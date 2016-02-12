@@ -9,6 +9,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/safe_sprintf.h"
@@ -387,6 +388,96 @@ TEST(LocalPersistentMemoryAllocatorTest, CreationTest) {
 }
 
 
+//----- SharedPersistentMemoryAllocator ----------------------------------------
+
+TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
+  SharedMemoryHandle shared_handle;
+
+  PersistentMemoryAllocator::MemoryInfo meminfo1;
+  Reference r123, r456, r789;
+  {
+    scoped_ptr<SharedMemory> shmem1(new SharedMemory());
+    ASSERT_TRUE(shmem1->CreateAndMapAnonymous(TEST_MEMORY_SIZE));
+    SharedPersistentMemoryAllocator local(std::move(shmem1), TEST_ID, "",
+                                          false);
+    EXPECT_FALSE(local.IsReadonly());
+    r123 = local.Allocate(123, 123);
+    r456 = local.Allocate(456, 456);
+    r789 = local.Allocate(789, 789);
+    local.MakeIterable(r123);
+    local.SetType(r456, 654);
+    local.MakeIterable(r789);
+    local.GetMemoryInfo(&meminfo1);
+    EXPECT_FALSE(local.IsFull());
+    EXPECT_FALSE(local.IsCorrupt());
+
+    ASSERT_TRUE(local.shared_memory()->ShareToProcess(
+                    GetCurrentProcessHandle(),
+                    &shared_handle));
+  }
+
+  // Read-only test.
+  scoped_ptr<SharedMemory> shmem2(new SharedMemory(shared_handle,
+                                                   /*readonly=*/true));
+  ASSERT_TRUE(shmem2->Map(TEST_MEMORY_SIZE));
+
+  SharedPersistentMemoryAllocator shalloc2(std::move(shmem2), 0, "", true);
+  EXPECT_TRUE(shalloc2.IsReadonly());
+  EXPECT_EQ(TEST_ID, shalloc2.Id());
+  EXPECT_FALSE(shalloc2.IsFull());
+  EXPECT_FALSE(shalloc2.IsCorrupt());
+
+  PersistentMemoryAllocator::Iterator iter2;
+  uint32_t type;
+  shalloc2.CreateIterator(&iter2);
+  EXPECT_EQ(r123, shalloc2.GetNextIterable(&iter2, &type));
+  EXPECT_EQ(r789, shalloc2.GetNextIterable(&iter2, &type));
+  EXPECT_EQ(0U, shalloc2.GetNextIterable(&iter2, &type));
+
+  EXPECT_EQ(123U, shalloc2.GetType(r123));
+  EXPECT_EQ(654U, shalloc2.GetType(r456));
+  EXPECT_EQ(789U, shalloc2.GetType(r789));
+
+  PersistentMemoryAllocator::MemoryInfo meminfo2;
+  shalloc2.GetMemoryInfo(&meminfo2);
+  EXPECT_EQ(meminfo1.total, meminfo2.total);
+  EXPECT_EQ(meminfo1.free, meminfo2.free);
+
+  // Read/write test.
+  scoped_ptr<SharedMemory> shmem3(new SharedMemory(shared_handle,
+                                                   /*readonly=*/false));
+  ASSERT_TRUE(shmem3->Map(TEST_MEMORY_SIZE));
+
+  SharedPersistentMemoryAllocator shalloc3(std::move(shmem3), 0, "", false);
+  EXPECT_FALSE(shalloc3.IsReadonly());
+  EXPECT_EQ(TEST_ID, shalloc3.Id());
+  EXPECT_FALSE(shalloc3.IsFull());
+  EXPECT_FALSE(shalloc3.IsCorrupt());
+
+  PersistentMemoryAllocator::Iterator iter3;
+  shalloc3.CreateIterator(&iter3);
+  EXPECT_EQ(r123, shalloc3.GetNextIterable(&iter3, &type));
+  EXPECT_EQ(r789, shalloc3.GetNextIterable(&iter3, &type));
+  EXPECT_EQ(0U, shalloc3.GetNextIterable(&iter3, &type));
+
+  EXPECT_EQ(123U, shalloc3.GetType(r123));
+  EXPECT_EQ(654U, shalloc3.GetType(r456));
+  EXPECT_EQ(789U, shalloc3.GetType(r789));
+
+  PersistentMemoryAllocator::MemoryInfo meminfo3;
+  shalloc3.GetMemoryInfo(&meminfo3);
+  EXPECT_EQ(meminfo1.total, meminfo3.total);
+  EXPECT_EQ(meminfo1.free, meminfo3.free);
+
+  // Interconnectivity test.
+  Reference obj = shalloc3.Allocate(42, 42);
+  ASSERT_TRUE(obj);
+  shalloc3.MakeIterable(obj);
+  EXPECT_EQ(obj, shalloc2.GetNextIterable(&iter2, &type));
+  EXPECT_EQ(42U, type);
+}
+
+
 //----- FilePersistentMemoryAllocator ------------------------------------------
 
 TEST(FilePersistentMemoryAllocatorTest, CreationTest) {
@@ -420,7 +511,7 @@ TEST(FilePersistentMemoryAllocatorTest, CreationTest) {
   const size_t mmlength = mmfile->length();
   EXPECT_GE(meminfo1.total, mmlength);
 
-  FilePersistentMemoryAllocator file(mmfile.release(), 0, "");
+  FilePersistentMemoryAllocator file(std::move(mmfile), 0, "");
   EXPECT_TRUE(file.IsReadonly());
   EXPECT_EQ(TEST_ID, file.Id());
   EXPECT_FALSE(file.IsFull());
@@ -475,7 +566,7 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
     EXPECT_EQ(filesize, mmfile->length());
     if (FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile)) {
       // Make sure construction doesn't crash.
-      FilePersistentMemoryAllocator allocator(mmfile.release(), 0, "");
+      FilePersistentMemoryAllocator allocator(std::move(mmfile), 0, "");
       // Also make sure that iteration doesn't crash.
       PersistentMemoryAllocator::Iterator iter;
       allocator.CreateIterator(&iter);
@@ -515,7 +606,7 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
     EXPECT_EQ(filesize, mmfile->length());
     if (FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile)) {
       // Just need to make sure it doesn't crash.
-      FilePersistentMemoryAllocator allocator(mmfile.release(), 0, "") ;
+      FilePersistentMemoryAllocator allocator(std::move(mmfile), 0, "");
       EXPECT_TRUE(allocator.IsCorrupt());  // Garbage data so it should be.
     } else {
       // For filesize >= minsize, the file must be acceptable. This
