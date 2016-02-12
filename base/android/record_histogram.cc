@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "jni/RecordHistogram_jni.h"
@@ -28,6 +29,37 @@ namespace {
 class HistogramCache {
  public:
   HistogramCache() {}
+
+  std::string HistogramConstructionParamsToString(HistogramBase* histogram) {
+    std::string params_str = histogram->histogram_name();
+    switch (histogram->GetHistogramType()) {
+      case HISTOGRAM:
+      case LINEAR_HISTOGRAM:
+      case BOOLEAN_HISTOGRAM:
+      case CUSTOM_HISTOGRAM: {
+        Histogram* hist = static_cast<Histogram*>(histogram);
+        params_str += StringPrintf("/%d/%d/%d", hist->declared_min(),
+                                   hist->declared_max(), hist->bucket_count());
+        break;
+      }
+      case SPARSE_HISTOGRAM:
+        break;
+    }
+    return params_str;
+  }
+
+  void CheckHistogramArgs(JNIEnv* env,
+                          jstring j_histogram_name,
+                          int32_t expected_min,
+                          int32_t expected_max,
+                          int32_t expected_bucket_count,
+                          HistogramBase* histogram) {
+    DCHECK(histogram->HasConstructionArguments(expected_min, expected_max,
+                                               expected_bucket_count))
+        << ConvertJavaStringToUTF8(env, j_histogram_name) << "/" << expected_min
+        << "/" << expected_max << "/" << expected_bucket_count << " vs. "
+        << HistogramConstructionParamsToString(histogram);
+  }
 
   HistogramBase* BooleanHistogram(JNIEnv* env,
                                   jstring j_histogram_name,
@@ -51,9 +83,10 @@ class HistogramCache {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
     HistogramBase* histogram = FindLocked(j_histogram_key);
-    int boundary = static_cast<int>(j_boundary);
+    int32_t boundary = static_cast<int32_t>(j_boundary);
     if (histogram) {
-      DCHECK(histogram->HasConstructionArguments(1, boundary, boundary + 1));
+      CheckHistogramArgs(env, j_histogram_name, 1, boundary, boundary + 1,
+                         histogram);
       return histogram;
     }
 
@@ -72,12 +105,13 @@ class HistogramCache {
                                       jint j_num_buckets) {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
-    int64_t min = static_cast<int64_t>(j_min);
-    int64_t max = static_cast<int64_t>(j_max);
-    int num_buckets = static_cast<int>(j_num_buckets);
+    int32_t min = static_cast<int32_t>(j_min);
+    int32_t max = static_cast<int32_t>(j_max);
+    int32_t num_buckets = static_cast<int32_t>(j_num_buckets);
     HistogramBase* histogram = FindLocked(j_histogram_key);
     if (histogram) {
-      DCHECK(histogram->HasConstructionArguments(min, max, num_buckets));
+      CheckHistogramArgs(env, j_histogram_name, min, max, num_buckets,
+                         histogram);
       return histogram;
     }
 
@@ -96,12 +130,13 @@ class HistogramCache {
                                       jint j_num_buckets) {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
-    int64_t min = static_cast<int64_t>(j_min);
-    int64_t max = static_cast<int64_t>(j_max);
-    int num_buckets = static_cast<int>(j_num_buckets);
+    int32_t min = static_cast<int32_t>(j_min);
+    int32_t max = static_cast<int32_t>(j_max);
+    int32_t num_buckets = static_cast<int32_t>(j_num_buckets);
     HistogramBase* histogram = FindLocked(j_histogram_key);
     if (histogram) {
-      DCHECK(histogram->HasConstructionArguments(min, max, num_buckets));
+      CheckHistogramArgs(env, j_histogram_name, min, max, num_buckets,
+                         histogram);
       return histogram;
     }
 
@@ -130,17 +165,18 @@ class HistogramCache {
   HistogramBase* CustomTimesHistogram(JNIEnv* env,
                                       jstring j_histogram_name,
                                       jint j_histogram_key,
-                                      jlong j_min,
-                                      jlong j_max,
+                                      jint j_min,
+                                      jint j_max,
                                       jint j_bucket_count) {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
     HistogramBase* histogram = FindLocked(j_histogram_key);
-    int64_t min = static_cast<int64_t>(j_min);
-    int64_t max = static_cast<int64_t>(j_max);
-    int bucket_count = static_cast<int>(j_bucket_count);
+    int32_t min = static_cast<int32_t>(j_min);
+    int32_t max = static_cast<int32_t>(j_max);
+    int32_t bucket_count = static_cast<int32_t>(j_bucket_count);
     if (histogram) {
-      DCHECK(histogram->HasConstructionArguments(min, max, bucket_count));
+      CheckHistogramArgs(env, j_histogram_name, min, max, bucket_count,
+                         histogram);
       return histogram;
     }
 
@@ -155,24 +191,24 @@ class HistogramCache {
 
  private:
   HistogramBase* FindLocked(jint j_histogram_key) {
-    base::AutoLock locked(lock_);
+    AutoLock locked(lock_);
     auto histogram_it = histograms_.find(j_histogram_key);
     return histogram_it != histograms_.end() ? histogram_it->second : nullptr;
   }
 
   HistogramBase* InsertLocked(jint j_histogram_key, HistogramBase* histogram) {
-    base::AutoLock locked(lock_);
+    AutoLock locked(lock_);
     histograms_.insert(std::make_pair(j_histogram_key, histogram));
     return histogram;
   }
 
-  base::Lock lock_;
+  Lock lock_;
   std::map<jint, HistogramBase*> histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(HistogramCache);
 };
 
-base::LazyInstance<HistogramCache>::Leaky g_histograms;
+LazyInstance<HistogramCache>::Leaky g_histograms;
 
 }  // namespace
 
@@ -248,9 +284,9 @@ void RecordCustomTimesHistogramMilliseconds(
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_histogram_name,
     jint j_histogram_key,
-    jlong j_duration,
-    jlong j_min,
-    jlong j_max,
+    jint j_duration,
+    jint j_min,
+    jint j_max,
     jint j_num_buckets) {
   g_histograms.Get()
       .CustomTimesHistogram(env, j_histogram_name, j_histogram_key, j_min,

@@ -190,11 +190,23 @@ public class RecordHistogram {
                 timeUnit.toMillis(min), timeUnit.toMillis(max), numBuckets);
     }
 
+    private static int clampToInt(long value) {
+        if (value > Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        // Note: Clamping to MIN_VALUE rather than 0, to let base/ histograms code
+        // do its own handling of negative values in the future.
+        if (value < Integer.MIN_VALUE) return Integer.MIN_VALUE;
+        return (int) value;
+    }
+
     private static void recordCustomTimesHistogramMilliseconds(
             String name, long duration, long min, long max, int numBuckets) {
         if (sIsDisabledForTests) return;
-        nativeRecordCustomTimesHistogramMilliseconds(
-                name, System.identityHashCode(name), duration, min, max, numBuckets);
+        // Note: Duration, min and max are clamped to int here because that's what's expected by
+        // the native histograms API. Callers of these functions still pass longs because that's
+        // the types returned by TimeUnit and System.currentTimeMillis() APIs, from which these
+        // values come.
+        nativeRecordCustomTimesHistogramMilliseconds(name, System.identityHashCode(name),
+                clampToInt(duration), clampToInt(min), clampToInt(max), numBuckets);
     }
 
     /**
@@ -216,7 +228,7 @@ public class RecordHistogram {
     }
 
     private static native void nativeRecordCustomTimesHistogramMilliseconds(
-            String name, int key, long duration, long min, long max, int numBuckets);
+            String name, int key, int duration, int min, int max, int numBuckets);
 
     private static native void nativeRecordBooleanHistogram(String name, int key, boolean sample);
     private static native void nativeRecordEnumeratedHistogram(
