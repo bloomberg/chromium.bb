@@ -980,8 +980,7 @@ bool AndroidVideoDecodeAccelerator::UseDeferredRenderingStrategy() {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   // TODO(liberato, watk): Figure out what we want to do about zero copy for
   // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
-  return cmd_line->HasSwitch(switches::kEnableUnifiedMediaPipeline) &&
-         !cmd_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
+  return !cmd_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
 }
 
 // static

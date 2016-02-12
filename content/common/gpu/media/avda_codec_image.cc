@@ -206,9 +206,10 @@ void AVDACodecImage::InstallTextureMatrix() {
     if (program_id >= 0) {
       // This is memorized from cc/output/shader.cc .
       const char* uniformName = "texMatrix";
+
+      // Within unittests this value may be -1.
       texmatrix_uniform_location_ =
           glGetUniformLocation(program_id, uniformName);
-      DCHECK(texmatrix_uniform_location_ != -1);
     }
 
     // Only try once.
