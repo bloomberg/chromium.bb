@@ -186,6 +186,11 @@ interface ExtendableEvent : Event
     method constructor
     method waitUntil
 interface ExtendableMessageEvent : ExtendableEvent
+    getter data
+    getter lastEventId
+    getter origin
+    getter ports
+    getter source
     method constructor
 interface FetchEvent : ExtendableEvent
     getter clientId

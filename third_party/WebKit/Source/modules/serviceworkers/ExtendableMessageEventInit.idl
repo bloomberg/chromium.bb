@@ -7,10 +7,9 @@
 [
     RuntimeEnabled=ServiceWorkerExtendableMessageEvent,
 ] dictionary ExtendableMessageEventInit : ExtendableEventInit {
-    // TODO(nhiroki): Implement these attributes (crbug.com/543198).
-    // any data;
-    // DOMString origin;
-    // DOMString lastEventId;
-    // (Client or ServiceWorker or MessagePort)? source;
-    // sequence<MessagePort>? ports;
+     any data;
+     DOMString origin;
+     DOMString lastEventId;
+     (Client or ServiceWorker or MessagePort)? source;
+     sequence<MessagePort>? ports;
 };

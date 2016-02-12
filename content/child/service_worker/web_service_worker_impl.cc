@@ -14,10 +14,12 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 
 using blink::WebMessagePortChannel;
 using blink::WebMessagePortChannelArray;
 using blink::WebMessagePortChannelClient;
+using blink::WebRuntimeFeatures;
 using blink::WebString;
 
 namespace content {
@@ -43,12 +45,17 @@ void SendPostMessageToWorkerOnMainThread(
     int handle_id,
     const base::string16& message,
     scoped_ptr<WebMessagePortChannelArray> channels) {
-  // TODO(nhiroki): Switch to PostMessageToClient message after
-  // ExtendableMessageEvent is implemented (crbug.com/543198).
-  thread_safe_sender->Send(
-      new ServiceWorkerHostMsg_DeprecatedPostMessageToWorker(
-          handle_id, message, WebMessagePortChannelImpl::ExtractMessagePortIDs(
-                                  std::move(channels))));
+  if (WebRuntimeFeatures::isServiceWorkerExtendableMessageEventEnabled()) {
+    thread_safe_sender->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
+        handle_id, message,
+        WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
+  } else {
+    thread_safe_sender->Send(
+        new ServiceWorkerHostMsg_DeprecatedPostMessageToWorker(
+            handle_id, message,
+            WebMessagePortChannelImpl::ExtractMessagePortIDs(
+                std::move(channels))));
+  }
 }
 
 }  // namespace

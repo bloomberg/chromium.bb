@@ -335,4 +335,9 @@ void WebRuntimeFeatures::enableScrollAnchoring(bool enable)
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(enable);
 }
 
+bool WebRuntimeFeatures::isServiceWorkerExtendableMessageEventEnabled()
+{
+    return RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled();
+}
+
 } // namespace blink

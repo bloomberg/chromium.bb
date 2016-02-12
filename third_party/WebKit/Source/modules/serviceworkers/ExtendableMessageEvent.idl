@@ -5,14 +5,17 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#extendablemessage-event-section
 
 [
-    Constructor(DOMString type, optional ExtendableMessageEventInit eventInitDict),
+    // TODO(bashi): Stop using CustomConstructor once we solve reference
+    // circulation between Blink and V8. http://crbug.com/501866
+    // Constructor should be:
+    // Constructor(DOMString type, optional ExtendableMessageEventInit eventInitDict),
+    CustomConstructor,
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorkerExtendableMessageEvent,
 ] interface ExtendableMessageEvent : ExtendableEvent {
-    // TODO(nhiroki): Implement these attributes (crbug.com/543198).
-    // readonly attribute any data;
-    // readonly attribute DOMString origin;
-    // readonly attribute DOMString lastEventId;
-    // [SameObject] readonly attribute (Client or ServiceWorker or MessagePort)? source;
-    // [SameObject] readonly attribute MessagePort[]? ports;
+    [Custom=Getter] readonly attribute any data;
+    readonly attribute DOMString origin;
+    readonly attribute DOMString lastEventId;
+    [SameObject] readonly attribute (Client or ServiceWorker or MessagePort)? source;
+    [SameObject] readonly attribute MessagePort[]? ports;
 };

@@ -21,6 +21,43 @@ PassRefPtrWillBeRawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(co
     return adoptRefWillBeNoop(new ExtendableMessageEvent(type, initializer, observer));
 }
 
+PassRefPtrWillBeRawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(PassRefPtr<SerializedScriptValue> data, const String& origin, PassOwnPtrWillBeRawPtr<MessagePortArray> ports, WaitUntilObserver* observer)
+{
+    return adoptRefWillBeNoop(new ExtendableMessageEvent(data, origin, ports, observer));
+}
+
+MessagePortArray ExtendableMessageEvent::ports(bool& isNull) const
+{
+    // TODO(bashi): Currently we return a copied array because the binding
+    // layer could modify the content of the array while executing JS callbacks.
+    // Avoid copying once we can make sure that the binding layer won't
+    // modify the content.
+    if (m_ports) {
+        isNull = false;
+        return *m_ports;
+    }
+    isNull = true;
+    return MessagePortArray();
+}
+
+MessagePortArray ExtendableMessageEvent::ports() const
+{
+    bool unused;
+    return ports(unused);
+}
+
+void ExtendableMessageEvent::source(ClientOrServiceWorkerOrMessagePort& result) const
+{
+    if (m_sourceAsClient)
+        result = ClientOrServiceWorkerOrMessagePort::fromClient(m_sourceAsClient);
+    else if (m_sourceAsServiceWorker)
+        result = ClientOrServiceWorkerOrMessagePort::fromServiceWorker(m_sourceAsServiceWorker);
+    else if (m_sourceAsMessagePort)
+        result = ClientOrServiceWorkerOrMessagePort::fromMessagePort(m_sourceAsMessagePort);
+    else
+        result = ClientOrServiceWorkerOrMessagePort();
+}
+
 const AtomicString& ExtendableMessageEvent::interfaceName() const
 {
     return EventNames::ExtendableMessageEvent;
@@ -28,6 +65,10 @@ const AtomicString& ExtendableMessageEvent::interfaceName() const
 
 DEFINE_TRACE(ExtendableMessageEvent)
 {
+    visitor->trace(m_sourceAsClient);
+    visitor->trace(m_sourceAsServiceWorker);
+    visitor->trace(m_sourceAsMessagePort);
+    visitor->trace(m_ports);
     ExtendableEvent::trace(visitor);
 }
 
@@ -43,7 +84,29 @@ ExtendableMessageEvent::ExtendableMessageEvent(const AtomicString& type, const E
 ExtendableMessageEvent::ExtendableMessageEvent(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver* observer)
     : ExtendableEvent(type, initializer, observer)
 {
-    // TODO(nhiroki): Set attributes (crbug.com/543198).
+    if (initializer.hasOrigin())
+        m_origin = initializer.origin();
+    if (initializer.hasSource()) {
+        if (initializer.source().isClient())
+            m_sourceAsClient = initializer.source().getAsClient();
+        else if (initializer.source().isServiceWorker())
+            m_sourceAsServiceWorker = initializer.source().getAsServiceWorker();
+        else if (initializer.source().isMessagePort())
+            m_sourceAsMessagePort = initializer.source().getAsMessagePort();
+    }
+    if (initializer.hasPorts())
+        m_ports = adoptRefWillBeNoop(new MessagePortArray(initializer.ports()));
+}
+
+ExtendableMessageEvent::ExtendableMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, PassOwnPtrWillBeRawPtr<MessagePortArray> ports, WaitUntilObserver* observer)
+    : ExtendableEvent(EventTypeNames::message, ExtendableMessageEventInit(), observer)
+    , m_serializedData(data)
+    , m_origin(origin)
+    , m_lastEventId(String())
+    , m_ports(ports)
+{
+    if (m_serializedData)
+        m_serializedData->registerMemoryAllocatedWithCurrentScriptContext();
 }
 
 } // namespace blink

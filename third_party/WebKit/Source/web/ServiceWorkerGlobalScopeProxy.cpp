@@ -106,10 +106,14 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
 
-    ExtendableMessageEventInit initializer;
+    WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
+    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
+    // TODO(nhiroki): Support |origin| and |source| attributes.
+    // (http://crbug.com/543198)
+
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
 
-    RefPtrWillBeRawPtr<Event> event(ExtendableMessageEvent::create(EventTypeNames::message, initializer, observer));
+    RefPtrWillBeRawPtr<Event> event(ExtendableMessageEvent::create(value, String(), ports, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 

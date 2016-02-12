@@ -19,6 +19,15 @@ public:
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create();
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer);
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
+    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, PassOwnPtrWillBeRawPtr<MessagePortArray> ports, WaitUntilObserver*);
+
+    SerializedScriptValue* serializedData() const { return m_serializedData.get(); }
+    void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) { m_serializedData = serializedData; }
+    const String& origin() const { return m_origin; }
+    const String& lastEventId() const { return m_lastEventId; }
+    MessagePortArray ports(bool& isNull) const;
+    MessagePortArray ports() const;
+    void source(ClientOrServiceWorkerOrMessagePort& result) const;
 
     const AtomicString& interfaceName() const override;
 
@@ -28,6 +37,15 @@ private:
     ExtendableMessageEvent();
     ExtendableMessageEvent(const AtomicString& type, const ExtendableMessageEventInit& initializer);
     ExtendableMessageEvent(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
+    ExtendableMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, PassOwnPtrWillBeRawPtr<MessagePortArray> ports, WaitUntilObserver*);
+
+    RefPtr<SerializedScriptValue> m_serializedData;
+    String m_origin;
+    String m_lastEventId;
+    Member<ServiceWorkerClient> m_sourceAsClient;
+    Member<ServiceWorker> m_sourceAsServiceWorker;
+    Member<MessagePort> m_sourceAsMessagePort;
+    OwnPtrWillBeMember<MessagePortArray> m_ports;
 };
 
 } // namespace blink
