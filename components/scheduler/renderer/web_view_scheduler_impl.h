@@ -60,8 +60,6 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
     return virtual_time_domain_.get();
   }
 
-  TaskQueue::PumpPolicy GetVirtualTimePumpPolicy() const;
-
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   scoped_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
   TaskQueue::PumpPolicy virtual_time_pump_policy_;

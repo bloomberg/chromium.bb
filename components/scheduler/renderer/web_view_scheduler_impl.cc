@@ -109,15 +109,6 @@ void WebViewSchedulerImpl::setAllowVirtualTimeToAdvance(
     virtual_time_domain_->SetCanAdvanceVirtualTime(
         allow_virtual_time_to_advance);
   }
-
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
-    frame_scheduler->OnVirtualTimePumpPolicyChanged();
-  }
-}
-
-TaskQueue::PumpPolicy WebViewSchedulerImpl::GetVirtualTimePumpPolicy() const {
-  return allow_virtual_time_to_advance_ ? TaskQueue::PumpPolicy::AUTO
-                                        : TaskQueue::PumpPolicy::MANUAL;
 }
 
 }  // namespace scheduler

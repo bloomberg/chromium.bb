@@ -315,7 +315,7 @@ class DelayedRunOrderTask : public blink::WebTaskRunner::Task {
 };
 }
 
-TEST_F(WebViewSchedulerImplTest, VirtualTime_DelayedAndImmediateTaskOrdering) {
+TEST_F(WebViewSchedulerImplTest, VirtualTime_NotAllowedToAdvance) {
   std::vector<int> run_order;
 
   web_view_scheduler_->setAllowVirtualTimeToAdvance(false);
@@ -337,9 +337,32 @@ TEST_F(WebViewSchedulerImplTest, VirtualTime_DelayedAndImmediateTaskOrdering) {
       4.0);
 
   mock_task_runner_->RunUntilIdle();
-  EXPECT_TRUE(run_order.empty());
+
+  // Immediate tasks are allowed to run even if delayed tasks are not.
+  EXPECT_THAT(run_order, ElementsAre(0));
+}
+
+TEST_F(WebViewSchedulerImplTest, VirtualTime_AllowedToAdvance) {
+  std::vector<int> run_order;
 
   web_view_scheduler_->setAllowVirtualTimeToAdvance(true);
+  web_view_scheduler_->enableVirtualTime();
+
+  web_frame_scheduler_->timerTaskRunner()->postTask(
+      BLINK_FROM_HERE, new RunOrderTask(0, &run_order));
+
+  web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE,
+      new DelayedRunOrderTask(1, web_frame_scheduler_->timerTaskRunner(),
+                              &run_order),
+      2.0);
+
+  web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE,
+      new DelayedRunOrderTask(3, web_frame_scheduler_->timerTaskRunner(),
+                              &run_order),
+      4.0);
+
   mock_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(0, 1, 2, 3, 4));
@@ -377,8 +400,8 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeSettings_NewWebFrameScheduler) {
   scoped_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
       web_view_scheduler_->createWebFrameSchedulerImpl();
 
-  web_frame_scheduler->timerTaskRunner()->postTask(
-      BLINK_FROM_HERE, new RunOrderTask(1, &run_order));
+  web_frame_scheduler->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE, new RunOrderTask(1, &run_order), 0.1);
 
   mock_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());

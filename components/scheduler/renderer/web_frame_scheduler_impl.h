@@ -40,7 +40,6 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   void setFrameOrigin(const blink::WebSecurityOrigin& origin) override;
 
   void OnVirtualTimeDomainChanged();
-  void OnVirtualTimePumpPolicyChanged();
 
  private:
   friend class WebViewSchedulerImpl;
