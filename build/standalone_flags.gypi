@@ -275,7 +275,6 @@
            }, {
             'link_settings': {
               'libraries': [
-                '-lrt',
                 '-lpthread',
               ],
             }
