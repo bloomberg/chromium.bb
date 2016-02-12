@@ -9,6 +9,7 @@
 
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/validator_ragel/validator.h"
@@ -38,8 +39,7 @@ Bool NaClDfaProcessValidationError(const uint8_t *begin, const uint8_t *end,
  * RewriteAndRevalidateBundle()'s two validation passes, which
  * validate individual instruction bundles.
  */
-static Bool AllowErrorDuringBundleValidation(
-    uint32_t info, struct StubOutCallbackData *data) {
+static Bool AllowErrorDuringBundleValidation(uint32_t info) {
   if ((info & VALIDATION_ERRORS_MASK) == DIRECT_JUMP_OUT_OF_RANGE) {
     /*
      * This error can occur on valid jumps because we are validating
@@ -47,9 +47,99 @@ static Bool AllowErrorDuringBundleValidation(
      */
     return TRUE;
   }
-  if ((info & VALIDATION_ERRORS_MASK) == UNSUPPORTED_INSTRUCTION) {
-    return (data->flags & NACL_DISABLE_NONTEMPORALS_X86) == 0;
+  return FALSE;
+}
+
+#if NACL_BUILD_SUBARCH == 64
+static Bool IsREXPrefix(uint8_t byte) {
+  return byte >= 0x40 && byte <= 0x4f;
+}
+#endif
+
+static Bool RewriteNonTemporal(uint8_t *ptr, uint8_t *end, uint32_t info) {
+  /*
+   * Instruction rewriting.  Note that we only rewrite non-temporal
+   * instructions found in nexes and DSOs that are currently found in the
+   * Chrome Web Store.  If future nexes use other non-temporal
+   * instructions, they will fail validation.
+   *
+   * We usually only check and rewrite the first few bytes without
+   * examining further because this function is only called when the
+   * validator tells us that it is an 'unsupported instruction' and there
+   * are no other validation failures.
+   */
+  ptrdiff_t size = end - ptr;
+#if NACL_BUILD_SUBARCH == 32
+  UNREFERENCED_PARAMETER(end);
+  UNREFERENCED_PARAMETER(info);
+
+  if (size >= 2 && memcmp(ptr, "\x0f\xe7", 2) == 0) {
+    /* movntq => movq */
+    ptr[1] = 0x7f;
+    return TRUE;
+  } else if (size >= 3 && memcmp(ptr, "\x66\x0f\xe7", 3) == 0) {
+    /* movntdq => movdqa */
+    ptr[2] = 0x7f;
+    return TRUE;
   }
+#elif NACL_BUILD_SUBARCH == 64
+  if (size >= 3 && IsREXPrefix(ptr[0]) && ptr[1] == 0x0f) {
+    uint8_t opcode_byte2 = ptr[2];
+    switch (opcode_byte2) {
+      case 0x2b:
+        /* movntps => movaps */
+        ptr[2] = 0x29;
+        return TRUE;
+      case 0xc3:
+        /* movnti => mov, nop */
+        if ((info & RESTRICTED_REGISTER_USED) != 0) {
+          /*
+           * The rewriting for movnti is special because it changes
+           * instruction boundary: movnti is replaced by a mov and a nop so
+           * that the total size does not change.  Therefore, special care
+           * needs to be taken: if restricted register is used in this
+           * instruction, we have to put nop at the end so that the
+           * rewritten restricted register consuming instruction follows
+           * closely with the restricted register producing instruction (if
+           * there is one).
+           */
+          ptr[1] = 0x89;
+          memmove(ptr + 2, ptr + 3, size - 3);
+          ptr[size - 1] = 0x90; /* NOP */
+        } else {
+          /*
+           * There are cases where we need to preserve instruction end
+           * position, for example, when RIP-relative address is used.
+           * Fortunately, RIP-relative addressing cannot use an index
+           * register, and therefore RESTRICTED_REGISTER_USED cannot be
+           * set.  Therefore, no matter whether RIP-relative addressing is
+           * used, as long as restricted register is not used, we are safe
+           * to put nop in the beginning and preserve instruction end
+           * position.
+           */
+          ptr[2] = 0x89;
+          ptr[1] = ptr[0];
+          ptr[0] = 0x90; /* NOP */
+        }
+        return TRUE;
+      case 0x18:
+        /* prefetchnta => nop...nop */
+        memset(ptr, 0x90, size);
+        return TRUE;
+      default:
+        return FALSE;
+    }
+  } else if (size >= 4 &&
+             ptr[0] == 0x66 &&
+             IsREXPrefix(ptr[1]) &&
+             memcmp(ptr + 2, "\x0f\xe7", 2) == 0) {
+    /* movntdq => movdqa */
+    ptr[3] = 0x7f;
+    return TRUE;
+  }
+#else
+# error "Unknown architecture"
+#endif
   return FALSE;
 }
 
@@ -69,7 +159,15 @@ static Bool BundleValidationApplyRewrite(const uint8_t *begin,
     memset((uint8_t *) begin, NACL_HALT_OPCODE, end - begin);
     return TRUE;
   }
-  return AllowErrorDuringBundleValidation(info, data);
+  if ((info & VALIDATION_ERRORS_MASK) == UNSUPPORTED_INSTRUCTION &&
+      (data->flags & NACL_DISABLE_NONTEMPORALS_X86) == 0) {
+    if (RewriteNonTemporal((uint8_t *) begin, (uint8_t *) end, info)) {
+      data->did_rewrite = 1;
+      return TRUE;
+    }
+    return FALSE;
+  }
+  return AllowErrorDuringBundleValidation(info);
 }
 
 /*
@@ -80,11 +178,11 @@ static Bool BundleValidationCheckAfterRewrite(const uint8_t *begin,
                                               const uint8_t *end,
                                               uint32_t info,
                                               void *callback_data) {
-  struct StubOutCallbackData *data = callback_data;
   UNREFERENCED_PARAMETER(begin);
   UNREFERENCED_PARAMETER(end);
+  UNREFERENCED_PARAMETER(callback_data);
 
-  return AllowErrorDuringBundleValidation(info, data);
+  return AllowErrorDuringBundleValidation(info);
 }
 
 /*
@@ -143,18 +241,12 @@ Bool NaClDfaStubOutUnsupportedInstruction(const uint8_t *begin,
   /* Stub-out instructions unsupported on this CPU, but valid on other CPUs.  */
   if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
     return RewriteAndRevalidateBundle(begin, end, data);
-  } else if ((info & VALIDATION_ERRORS_MASK) == UNSUPPORTED_INSTRUCTION) {
-    if (data->flags & NACL_DISABLE_NONTEMPORALS_X86) {
-      return FALSE;
-    } else {
-      /* TODO(ruiq): rewrite instruction. For now, we keep the original
-       * instruction and indicate validation success, which is consistent
-       * with current validation results. */
-      return TRUE;
-    }
-  } else {
-    return FALSE;
   }
+  if ((info & VALIDATION_ERRORS_MASK) == UNSUPPORTED_INSTRUCTION &&
+      (data->flags & NACL_DISABLE_NONTEMPORALS_X86) == 0) {
+    return RewriteAndRevalidateBundle(begin, end, data);
+  }
+  return FALSE;
 }
 
 Bool NaClDfaProcessCodeCopyInstruction(const uint8_t *begin_new,

@@ -62,3 +62,16 @@ if env.Bit('build_x86_64'):
 
   env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
                          'run_disable_nontemporals_test')
+
+if env.Bit('build_x86'):
+  validation_rewrite_test_exe = gtest_env.ComponentProgram(
+      'validation_rewrite_test',
+      ['validation_rewrite_test.cc', 'validation_rewrite_test_data.S'],
+      EXTRA_LIBS=['validators', 'nrd_xfer'])
+
+  node = gtest_env.CommandTest(
+      'validation_rewrite_test.out',
+      command=[validation_rewrite_test_exe])
+
+  env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
+                         'run_validation_rewrite_test')

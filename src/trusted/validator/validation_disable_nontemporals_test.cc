@@ -35,11 +35,11 @@ class ValidationDisableNonTemporalsTests : public ::testing::Test {
     memset(code_buffer, NOP, sizeof(code_buffer));
   }
 
-  NaClValidationStatus Validate(uint32_t flags) {
+  NaClValidationStatus Validate(uint32_t flags, Bool readonly_text) {
     return validator->Validate(0, code_buffer, 32,
                                FALSE,  /* stubout_mode */
                                flags,
-                               FALSE,  /* readonly_text */
+                               readonly_text,
                                cpu_features,
                                metadata_ptr,
                                NULL);
@@ -52,17 +52,29 @@ class ValidationDisableNonTemporalsTests : public ::testing::Test {
 
 TEST_F(ValidationDisableNonTemporalsTests, NotDisableNonTemporals) {
   memcpy(code_buffer, movnti_code, MOVNTI_CODE_SIZE);
-  NaClValidationStatus status = Validate(0);
-  // If we are not disabling non-temporal instructions, use the original
-  // validation rule, i.e., allow them. In future, we will do rewriting.
+  NaClValidationStatus status = Validate(0, FALSE);
+  // If we are not disabling non-temporal instructions, we should rewrite
+  // them and return validation success.
   EXPECT_EQ(NaClValidationSucceeded, status);
-  // Code should not change.
+  // Just make sure code has changed.  The rewriting itself is tested in
+  // validation_rewrite_test.cc
+  EXPECT_NE(0, memcmp(code_buffer, movnti_code, MOVNTI_CODE_SIZE));
+}
+
+TEST_F(ValidationDisableNonTemporalsTests, FailAndNotRewriteWhenReadOnlyText) {
+  memcpy(code_buffer, movnti_code, MOVNTI_CODE_SIZE);
+  NaClValidationStatus status = Validate(0, TRUE);
+  // If we are not disabling non-temporal instructions, we should rewrite
+  // them.  However, readonly_text = TRUE would make the text
+  // non-modifiable.  In this case, we should return validation failed, and
+  // not do rewriting.
+  EXPECT_EQ(NaClValidationFailed, status);
   EXPECT_EQ(0, memcmp(code_buffer, movnti_code, MOVNTI_CODE_SIZE));
 }
 
 TEST_F(ValidationDisableNonTemporalsTests, DisableNonTemporals) {
   memcpy(code_buffer, movnti_code, MOVNTI_CODE_SIZE);
-  NaClValidationStatus status = Validate(NACL_DISABLE_NONTEMPORALS_X86);
+  NaClValidationStatus status = Validate(NACL_DISABLE_NONTEMPORALS_X86, FALSE);
   // Disable non-temporal instructions.
   EXPECT_EQ(NaClValidationFailed, status);
   // Code should not change.

@@ -49,7 +49,14 @@ const uint8_t sse41[] =
 
 const uint8_t sse41_plus_nontemporal[] =
     { 0x66, 0x0f, 0x3a, 0x0e, 0xd0, 0xc0,  // pblendw $0xc0,%xmm0,%xmm2
-      0x0f, 0x18, 0x04, 0x24 };  // prefetchnta (%rsp)
+      // Example of a non-temporal instruction that is rewritten without
+      // being rejected entirely.
+#if NACL_BUILD_SUBARCH == 32
+      0x66, 0x0f, 0xe7, 0x04, 0x24  // movntdq %xmm0,(%esp)
+#else
+      0x66, 0x41, 0x0f, 0xe7, 0x07  // movntdq %xmm0,(%r15)
+#endif
+    };
 
 // Example of a valid JMP to outside the bundle, in a bundle containing an
 // instruction that gets stubbed out.
