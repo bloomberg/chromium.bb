@@ -93,12 +93,23 @@ def GetAllDepsConfigsInOrder(deps_config_paths):
   return build_utils.GetSortedTransitiveDependencies(deps_config_paths, GetDeps)
 
 
+def ResolveGroups(configs):
+  while True:
+    groups = DepsOfType('group', configs)
+    if not groups:
+      return configs
+    for config in groups:
+      index = configs.index(config)
+      expanded_configs = [GetDepConfig(p) for p in config['deps_configs']]
+      configs[index:index + 1] = expanded_configs
+
+
 class Deps(object):
   def __init__(self, direct_deps_config_paths):
     self.all_deps_config_paths = GetAllDepsConfigsInOrder(
         direct_deps_config_paths)
-    self.direct_deps_configs = [
-        GetDepConfig(p) for p in direct_deps_config_paths]
+    self.direct_deps_configs = ResolveGroups(
+        [GetDepConfig(p) for p in direct_deps_config_paths])
     self.all_deps_configs = [
         GetDepConfig(p) for p in self.all_deps_config_paths]
     self.direct_deps_config_paths = direct_deps_config_paths
@@ -244,7 +255,8 @@ def main(argv):
       'android_resources': ['build_config', 'resources_zip'],
       'android_apk': ['build_config', 'jar_path', 'dex_path', 'resources_zip'],
       'deps_dex': ['build_config', 'dex_path'],
-      'resource_rewriter': ['build_config']
+      'resource_rewriter': ['build_config'],
+      'group': ['build_config'],
   }
   required_options = required_options_map.get(options.type)
   if not required_options:

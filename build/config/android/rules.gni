@@ -746,6 +746,27 @@ template("android_assets") {
   }
 }
 
+# Declare a group() that supports forwarding java dependency information.
+#
+# Example
+#  java_group("conditional_deps") {
+#    if (enable_foo) {
+#      deps = [":foo_java"]
+#    }
+#  }
+template("java_group") {
+  write_build_config("${target_name}__build_config") {
+    forward_variables_from(invoker, [ "deps" ])
+    type = "group"
+    build_config = "$target_gen_dir/${invoker.target_name}.build_config"
+  }
+  group(target_name) {
+    deps = []
+    forward_variables_from(invoker, "*")
+    deps += [ ":${target_name}__build_config" ]
+  }
+}
+
 # Declare a target that generates localized strings.xml from a .grd file.
 #
 # If this target is included in the deps of an android resources/library/apk,

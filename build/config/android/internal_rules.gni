@@ -352,7 +352,7 @@ template("write_build_config") {
     assert(type == "android_apk" || type == "java_library" ||
            type == "android_resources" || type == "deps_dex" ||
            type == "android_assets" || type == "resource_rewriter" ||
-           type == "java_binary")
+           type == "java_binary" || type == "group")
 
     deps = []
     forward_variables_from(invoker,
@@ -395,11 +395,12 @@ template("write_build_config") {
     is_android_assets = type == "android_assets"
     is_android_resources = type == "android_resources"
     is_deps_dex = type == "deps_dex"
+    is_group = type == "group"
 
-    supports_android =
-        is_apk || is_android_assets || is_android_resources || is_deps_dex ||
-        (is_java && defined(invoker.supports_android) &&
-         invoker.supports_android)
+    supports_android = is_apk || is_android_assets || is_android_resources ||
+                       is_deps_dex || is_group ||
+                       (is_java && defined(invoker.supports_android) &&
+                        invoker.supports_android)
     requires_android =
         is_apk || is_android_assets || is_android_resources || is_deps_dex ||
         (is_java && defined(invoker.requires_android) &&
@@ -413,6 +414,7 @@ template("write_build_config") {
     assert(is_apk || true)
     assert(is_android_resources || true)
     assert(is_deps_dex || true)
+    assert(is_group || true)
 
     if (is_java || is_apk) {
       args += [
