@@ -10,17 +10,19 @@
 
 namespace base {
 
-// GetBuildTime returns the time at which the current binary was built.
+// GetBuildTime returns the time at which the current binary was built,
+// rounded down to 5:00:00am at the start of the day in UTC.
 //
-// This uses the __DATE__ and __TIME__ macros, which don't trigger a rebuild
-// when they change. However, official builds will always be rebuilt from
-// scratch.
+// This uses a generated file, which doesn't trigger a rebuild when the time
+// changes. It will, however, be updated whenever //build/util/LASTCHANGE
+// changes.
 //
-// Also, since __TIME__ doesn't include a timezone, this value should only be
-// considered accurate to a day.
+// This value should only be considered accurate to within a day.
+// It will always be in the past.
 //
-// NOTE: This function is disabled except for the official builds, by default
-// the date returned is "Sep 02 2008 08:00:00 PST".
+// Note: If the build is not official (i.e. is_official_build = false)
+// this time will be set to 5:00:00am on the most recent first Sunday
+// of a month.
 Time BASE_EXPORT GetBuildTime();
 
 }  // namespace base

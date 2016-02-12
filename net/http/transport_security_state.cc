@@ -1009,18 +1009,9 @@ void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
 
 // static
 bool TransportSecurityState::IsBuildTimely() {
-  // If the build metadata aren't embedded in the binary then we can't use the
-  // build time to determine if the build is timely, return true by default. If
-  // we're building an official build then keep using the build time, even if
-  // it's invalid it'd be a date in the past and this function will return
-  // false.
-#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
-  return true;
-#else
   const base::Time build_time = base::GetBuildTime();
   // We consider built-in information to be timely for 10 weeks.
   return (base::Time::Now() - build_time).InDays() < 70 /* 10 weeks */;
-#endif
 }
 
 bool TransportSecurityState::CheckPublicKeyPinsImpl(

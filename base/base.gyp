@@ -24,6 +24,7 @@
         'allocator/allocator.gyp:allocator',
         'base_debugging_flags#target',
         'base_static',
+        'base_build_date#target',
         '../testing/gtest.gyp:gtest_prod',
         '../third_party/modp_b64/modp_b64.gyp:modp_b64',
         'third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -992,6 +993,35 @@
         ],
       },
     },
+    {
+      'type': 'none',
+      'target_name': 'base_build_date',
+      'hard_dependency': 1,
+      'actions': [{
+        'action_name': 'generate_build_date_headers',
+        'inputs': [
+          '<(DEPTH)/build/write_build_date_header.py',
+          '<(DEPTH)/build/util/LASTCHANGE'
+        ],
+        'outputs': [ '<(SHARED_INTERMEDIATE_DIR)/base/generated_build_date.h' ],
+        'action': [
+          'python', '<(DEPTH)/build/write_build_date_header.py',
+          '<(SHARED_INTERMEDIATE_DIR)/base/generated_build_date.h',
+          '<(build_type)'
+        ]
+      }],
+      'conditions': [
+        [ 'buildtype == "Official"', {
+          'variables': {
+            'build_type': 'official'
+          }
+        }, {
+          'variables': {
+            'build_type': 'default'
+          }
+        }],
+      ]
+    },
   ],
   'conditions': [
     ['OS=="ios" and "<(GENERATOR)"=="ninja"', {
@@ -1047,6 +1077,7 @@
             'base_target': 1,
           },
           'dependencies': [
+            'base_build_date',
             'base_debugging_flags#target',
             'base_static_win64',
             '../third_party/modp_b64/modp_b64.gyp:modp_b64_win64',

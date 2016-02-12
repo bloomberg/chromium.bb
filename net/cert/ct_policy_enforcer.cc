@@ -37,13 +37,9 @@ bool IsEmbeddedSCT(const scoped_refptr<ct::SignedCertificateTimestamp>& sct) {
 // built-in security information (e.g. CT Logs) is fresh enough.
 // TODO(eranm): Move to base or net/base
 bool IsBuildTimely() {
-#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
-  return true;
-#else
   const base::Time build_time = base::GetBuildTime();
   // We consider built-in information to be timely for 10 weeks.
   return (base::Time::Now() - build_time).InDays() < 70 /* 10 weeks */;
-#endif
 }
 
 bool IsGoogleIssuedSCT(

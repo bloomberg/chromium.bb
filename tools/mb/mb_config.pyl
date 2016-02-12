@@ -279,9 +279,10 @@
       'mixins': ['debug_bot_minimal_symbols'],
     },
 
+    # TODO(zforman): This doesn't do anything now, find out if it can
+    # be removed, and remove it.
     'deterministic': {
       'gn_args': 'error',
-      'gyp_defines': 'dont_embed_build_metadata=1',
     },
 
     'disable_nacl': {

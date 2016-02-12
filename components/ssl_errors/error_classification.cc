@@ -218,11 +218,7 @@ bool IsUserClockInThePast(const base::Time& time_now) {
   if (!g_testing_build_time.Get().is_null()) {
     build_time = g_testing_build_time.Get();
   } else {
-#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
-    return false;
-#else
     build_time = base::GetBuildTime();
-#endif
   }
 
   if (time_now < build_time - base::TimeDelta::FromDays(2))
@@ -235,11 +231,7 @@ bool IsUserClockInTheFuture(const base::Time& time_now) {
   if (!g_testing_build_time.Get().is_null()) {
     build_time = g_testing_build_time.Get();
   } else {
-#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
-    return false;
-#else
     build_time = base::GetBuildTime();
-#endif
   }
 
   if (time_now > build_time + base::TimeDelta::FromDays(365))
