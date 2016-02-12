@@ -369,11 +369,8 @@ bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
     return false;
   }
 
-  VAStatus va_res = VA_STATUS_SUCCESS;
-  if (!va_display_state->Initialize(&va_res)) {
-    VA_LOG_ON_ERROR(va_res, "vaInitialize failed");
+  if (!va_display_state->Initialize())
     return false;
-  }
 
   va_display_ = va_display_state->va_display();
   return true;
@@ -1218,7 +1215,7 @@ VaapiWrapper::VADisplayState::VADisplayState()
 
 VaapiWrapper::VADisplayState::~VADisplayState() {}
 
-bool VaapiWrapper::VADisplayState::Initialize(VAStatus* status) {
+bool VaapiWrapper::VADisplayState::Initialize() {
   va_lock_.AssertAcquired();
   if (refcount_++ == 0) {
 #if defined(USE_X11)
@@ -1232,9 +1229,12 @@ bool VaapiWrapper::VADisplayState::Initialize(VAStatus* status) {
       return false;
     }
 
-    *status = vaInitialize(va_display_, &major_version_, &minor_version_);
-    if (*status != VA_STATUS_SUCCESS)
+    VAStatus va_res =
+        vaInitialize(va_display_, &major_version_, &minor_version_);
+    if (va_res != VA_STATUS_SUCCESS) {
+      LOG(WARNING) << "vaInitialize failed: " << vaErrorStr(va_res);
       return false;
+    }
 
     va_initialized_ = true;
     DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;

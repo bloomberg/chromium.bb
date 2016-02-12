@@ -247,7 +247,7 @@ class CONTENT_EXPORT VaapiWrapper
     ~VADisplayState();
 
     // |va_lock_| must be held on entry.
-    bool Initialize(VAStatus* status);
+    bool Initialize();
     void Deinitialize(VAStatus* status);
 
     base::Lock* va_lock() { return &va_lock_; }
