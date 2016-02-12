@@ -50,11 +50,12 @@ Copyright @copyright{} 2004-2007 ViewPlus Technologies, Inc.
 @uref{www.viewplus.com}.
 
 @noindent
-Copyright @copyright{} 2007,2009 Abilitiessoft, Inc.
+Copyright @copyright{} 2007, 2009 Abilitiessoft, Inc.
 @uref{www.abilitiessoft.org}.
 
 @noindent
-Copyright @copyright{} 2014 Swiss Library for the Blind, Visually Impaired and Print Disabled.
+Copyright @copyright{} 2014, 2016 Swiss Library for the Blind, Visually
+Impaired and Print Disabled. @uref{www.sbs.ch}.
 
 @vskip 10pt
 
@@ -224,6 +225,7 @@ for, license information and include tables you need for your table.
 Following this, you'll write various translation rules and lastly you
 write special rules to handle certain situations.
 
+@cindex opcode
 A translation rule is composed of at least three parts: the opcode
 (translation command), character(s) and braille dots. An opcode is a
 command you give to a machine or a program to perform something on
@@ -334,6 +336,7 @@ always world 456-2456 A word and the dot pattern of its contraction
 Most opcodes have both a "characters" operand and a "dots" operand,
 though some have only one and a few have other types.
 
+@cindex characters operand
 The characters operand consists of any combination of characters and
 escape sequences proceeded and followed by whitespace. Escape
 sequences are used to represent difficult characters. They begin with
@@ -372,6 +375,7 @@ Full 32-bit value.
 
 @end table
 
+@cindex dots operand
 The dots operand is a braille dot pattern. The real braille dots, 1
 through 8, must be specified with their standard numbers.
 
@@ -382,6 +386,7 @@ purposes, such as distinguishing accent marks. There are seven virtual
 dots. They are specified by the number 9 and the letters @samp{a}
 through @samp{f}.
 
+@cindex multi-cell dot pattern
 For a multi-cell dot pattern, the cell specifications must be
 separated from one another by a dash (@samp{-}). For example, the
 contraction for the English word @samp{lord} (the letter @samp{l}
