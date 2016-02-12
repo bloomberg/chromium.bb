@@ -52,9 +52,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutSlider.h"
-#include "platform/JSONValues.h"
 #include "platform/PlatformMouseEvent.h"
 #include "wtf/MathExtras.h"
 #include "wtf/NonCopyingSort.h"
@@ -313,8 +311,7 @@ void RangeInputType::warnIfValueIsInvalid(const String& value) const
 {
     if (value.isEmpty() || !element().sanitizeValue(value).isEmpty())
         return;
-    element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel,
-        String::format("The specified value %s is not a valid number. The value must match to the following regular expression: -?(\\d+|\\d+\\.\\d+|\\.\\d+)([eE][-+]?\\d+)?", JSONValue::quoteString(value).utf8().data())));
+    addWarningToConsole("The specified value %s is not a valid number. The value must match to the following regular expression: -?(\\d+|\\d+\\.\\d+|\\.\\d+)([eE][-+]?\\d+)?", value);
 }
 
 void RangeInputType::disabledAttributeChanged()

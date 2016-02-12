@@ -65,7 +65,9 @@
 #include "core/html/forms/URLInputType.h"
 #include "core/html/forms/WeekInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutTheme.h"
+#include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
@@ -966,6 +968,12 @@ StepRange InputType::createStepRange(AnyStepHandling anyStepHandling, const Deci
     const Decimal maximum = parseToNumber(element().fastGetAttribute(maxAttr), maximumDefault);
     const Decimal step = StepRange::parseStep(anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
     return StepRange(stepBase, minimum, maximum, step, stepDescription);
+}
+
+void InputType::addWarningToConsole(const char* messageFormat, const String& value) const
+{
+    element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel,
+        String::format(messageFormat, JSONValue::quoteString(value).utf8().data())));
 }
 
 } // namespace blink

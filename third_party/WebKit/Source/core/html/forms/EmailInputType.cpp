@@ -27,9 +27,7 @@
 #include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/page/ChromeClient.h"
-#include "platform/JSONValues.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "wtf/LeakAnnotations.h"
@@ -246,8 +244,7 @@ void EmailInputType::warnIfValueIsInvalid(const String& value) const
     String invalidAddress = findInvalidAddress(value);
     if (invalidAddress.isNull())
         return;
-    element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel,
-        String::format("The specified value %s is not a valid email address.", JSONValue::quoteString(invalidAddress).utf8().data())));
+    addWarningToConsole("The specified value %s is not a valid email address.", invalidAddress);
 }
 
 bool EmailInputType::supportsSelectionAPI() const

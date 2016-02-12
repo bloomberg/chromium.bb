@@ -42,7 +42,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/MixedContentChecker.h"
-#include "platform/JSONValues.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
 #include "wtf/ASCIICType.h"

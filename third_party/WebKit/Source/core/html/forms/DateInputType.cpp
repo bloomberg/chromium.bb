@@ -35,9 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "platform/DateComponents.h"
-#include "platform/JSONValues.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -92,10 +90,8 @@ bool DateInputType::setMillisecondToDateComponents(double value, DateComponents*
 
 void DateInputType::warnIfValueIsInvalid(const String& value) const
 {
-    if (value != element().sanitizeValue(value)) {
-        element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel,
-            String::format("The specified value %s does not conform to the required format, \"yyyy-MM-dd\".", JSONValue::quoteString(value).utf8().data())));
-    }
+    if (value != element().sanitizeValue(value))
+        addWarningToConsole("The specified value %s does not conform to the required format, \"yyyy-MM-dd\".", value);
 }
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)

@@ -231,6 +231,7 @@ protected:
     Decimal findStepBase(const Decimal&) const;
 
     StepRange createStepRange(AnyStepHandling, const Decimal& stepBaseDefault, const Decimal& minimumDefault, const Decimal& maximumDefault, const StepRange::StepDescription&) const;
+    void addWarningToConsole(const char* messageFormat, const String& value) const;
 
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
