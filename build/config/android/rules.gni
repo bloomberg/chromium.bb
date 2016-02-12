@@ -1557,6 +1557,9 @@ template("android_apk") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
+    if (defined(invoker.apk_under_test)) {
+      deps += [ "${invoker.apk_under_test}__java" ]
+    }
   }
 
   # TODO(cjhopman): This is only ever needed to calculate the list of tests to
@@ -1612,12 +1615,23 @@ template("android_apk") {
                ] + _proguard_configs
 
       output_jar_path = _proguard_jar_path
-      rebased_proguard_configs = rebase_path(_proguard_configs, root_build_dir)
+      _rebased_proguard_configs = rebase_path(_proguard_configs, root_build_dir)
       args = [
-        "--proguard-configs=$rebased_proguard_configs",
-        "--tested-apk-info=@FileArg($_rebased_build_config:proguard:tested_apk_info)",
+        "--proguard-configs=$_rebased_proguard_configs",
         "--input-paths=@FileArg($_rebased_build_config:proguard:input_paths)",
       ]
+      if (defined(invoker.apk_under_test)) {
+        deps += [
+          "${invoker.apk_under_test}__build_config",
+          "${invoker.apk_under_test}__proguard",
+        ]
+        _apk_under_test_build_config =
+            get_label_info(invoker.apk_under_test, "target_gen_dir") + "/" +
+            get_label_info(invoker.apk_under_test, "name") + ".build_config"
+        _rebased_apk_under_test_build_config =
+            rebase_path(_apk_under_test_build_config, root_build_dir)
+        args += [ "--tested-apk-info=@FileArg($_rebased_apk_under_test_build_config:deps_info:proguard_info)" ]
+      }
     }
     _dex_sources = [ _proguard_jar_path ]
     _dex_deps = [ ":$_proguard_target" ]
@@ -2018,6 +2032,7 @@ template("instrumentation_test_apk") {
 
       # Required by test runner to enumerate test list.
       ":${_apk_target_name}_dist_ijar",
+      invoker.apk_under_test,
     ]
     if (defined(invoker.apk_under_test)) {
       public_deps += [ invoker.apk_under_test ]
