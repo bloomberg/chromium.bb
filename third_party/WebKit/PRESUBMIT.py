@@ -175,11 +175,11 @@ def _CheckForDangerousTestFunctions(input_api, output_api):
         input_api, None)
     errors = ['  * %s' % violation for violation in errors]
     if errors:
-        return [output_api.PresubmitError(
-                    'You should be using FrameTestHelpers::'
-                    'pumpPendingRequests() instead of '
-                    'serveAsynchronousMockedRequests() in the following '
-                    'locations:\n%s' % '\n'.join(errors))]
+        return [output_api.PresubmitPromptOrNotify(
+            'You should probably be using one of the FrameTestHelpers::'
+            '(re)load* functions instead of '
+            'serveAsynchronousMockedRequests() in the following '
+            'locations:\n%s' % '\n'.join(errors))]
     return []
 
 

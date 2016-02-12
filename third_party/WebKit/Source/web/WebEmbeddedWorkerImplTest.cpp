@@ -9,6 +9,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/web/WebEmbeddedWorkerStartData.h"
 #include "public/web/WebSettings.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
@@ -25,27 +26,26 @@ public:
     ~MockServiceWorkerContextClient() override { }
     MOCK_METHOD0(workerReadyForInspection, void());
     MOCK_METHOD0(workerContextFailedToStart, void());
+    MOCK_METHOD0(workerScriptLoaded, void());
     MOCK_METHOD1(createServiceWorkerNetworkProvider, WebServiceWorkerNetworkProvider*(WebDataSource*));
+    MOCK_METHOD0(createServiceWorkerProvider, WebServiceWorkerProvider*());
 };
 
-class WebEmbeddedWorkerImplFailureTest : public ::testing::Test {
+class WebEmbeddedWorkerImplTest : public ::testing::Test {
 protected:
     void SetUp() override
     {
         m_mockClient = new MockServiceWorkerContextClient();
         m_worker = adoptPtr(WebEmbeddedWorker::create(m_mockClient, nullptr));
 
-        WebURL invalidScriptURL = URLTestHelpers::toKURL("https://www.example.com/sw.js");
-        WebURLResponse errorResponse;
-        errorResponse.initialize();
-        errorResponse.setMIMEType("text/html");
-        errorResponse.setHTTPStatusCode(404);
-        WebURLError error;
-        error.reason = 1010;
-        error.domain = "WebEmbeddedWorkerImplTest";
-        Platform::current()->unitTestSupport()->registerMockedErrorURL(invalidScriptURL, errorResponse, error);
+        WebURL scriptURL = URLTestHelpers::toKURL("https://www.example.com/sw.js");
+        WebURLResponse response;
+        response.initialize();
+        response.setMIMEType("text/javascript");
+        response.setHTTPStatusCode(200);
+        Platform::current()->unitTestSupport()->registerMockedURL(scriptURL, response, "");
 
-        m_startData.scriptURL = invalidScriptURL;
+        m_startData.scriptURL = scriptURL;
         m_startData.userAgent = WebString("dummy user agent");
         m_startData.waitForDebuggerMode = WebEmbeddedWorkerStartData::DontWaitForDebugger;
         m_startData.v8CacheOptions = WebSettings::V8CacheOptionsDefault;
@@ -63,7 +63,7 @@ protected:
 
 } // namespace
 
-TEST_F(WebEmbeddedWorkerImplFailureTest, TerminateSoonAfterStart)
+TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart)
 {
     EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
     m_worker->startWorkerContext(m_startData);
@@ -74,7 +74,7 @@ TEST_F(WebEmbeddedWorkerImplFailureTest, TerminateSoonAfterStart)
     ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
 }
 
-TEST_F(WebEmbeddedWorkerImplFailureTest, TerminateWhileWaitingForDebugger)
+TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger)
 {
     EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
     m_startData.waitForDebuggerMode = WebEmbeddedWorkerStartData::WaitForDebugger;
@@ -86,18 +86,77 @@ TEST_F(WebEmbeddedWorkerImplFailureTest, TerminateWhileWaitingForDebugger)
     ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
 }
 
-TEST_F(WebEmbeddedWorkerImplFailureTest, TerminateWhileLoadingScript)
+TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript)
 {
     EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
     m_worker->startWorkerContext(m_startData);
     ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
 
+    // Load the shadow page.
     EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider(::testing::_)).WillOnce(::testing::Return(nullptr));
-    testing::runPendingTasks();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
 
+    // Terminate before loading the script.
     EXPECT_CALL(*m_mockClient, workerContextFailedToStart()).Times(1);
     m_worker->terminateWorkerContext();
+    ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+}
+
+TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound)
+{
+    WebURL scriptURL = URLTestHelpers::toKURL("https://www.example.com/sw-404.js");
+    WebURLResponse response;
+    response.initialize();
+    response.setMIMEType("text/javascript");
+    response.setHTTPStatusCode(404);
+    WebURLError error;
+    error.reason = 1010;
+    error.domain = "WebEmbeddedWorkerImplTest";
+    Platform::current()->unitTestSupport()->registerMockedErrorURL(scriptURL, response, error);
+    m_startData.scriptURL = scriptURL;
+
+    EXPECT_CALL(*m_mockClient, workerReadyForInspection())
+        .Times(1);
+    m_worker->startWorkerContext(m_startData);
+    ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+
+    // Load the shadow page.
+    EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider(::testing::_))
+        .WillOnce(::testing::Return(nullptr));
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+
+    // Load the script.
+    EXPECT_CALL(*m_mockClient, workerScriptLoaded())
+        .Times(0);
+    EXPECT_CALL(*m_mockClient, createServiceWorkerProvider())
+        .Times(0);
+    EXPECT_CALL(*m_mockClient, workerContextFailedToStart())
+        .Times(1);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+}
+
+TEST_F(WebEmbeddedWorkerImplTest, Success)
+{
+    EXPECT_CALL(*m_mockClient, workerReadyForInspection())
+        .Times(1);
+    m_worker->startWorkerContext(m_startData);
+    ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+
+    // Load the shadow page.
+    EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider(::testing::_))
+        .WillOnce(::testing::Return(nullptr));
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+
+    // Load the script.
+    EXPECT_CALL(*m_mockClient, workerScriptLoaded())
+        .Times(1);
+    EXPECT_CALL(*m_mockClient, createServiceWorkerProvider())
+        .WillOnce(::testing::Return(nullptr));
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
 }
 
