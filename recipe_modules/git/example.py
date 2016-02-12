@@ -26,7 +26,7 @@ def RunSteps(api):
           True)
 
   # You can use api.git.checkout to perform all the steps of a safe checkout.
-  api.git.checkout(
+  retVal = api.git.checkout(
       url,
       ref=api.properties.get('revision'),
       recursive=True,
@@ -37,6 +37,9 @@ def RunSteps(api):
       display_fetch_size=api.properties.get('display_fetch_size'),
       file_name=api.properties.get('checkout_file_name'),
       submodule_update_recursive=submodule_update_recursive)
+
+  assert retVal == "deadbeef", (
+    "expected retVal to be %r but was %r" % ("deadbeef", retVal))
 
   # count_objects shows number and size of objects in .git dir.
   api.git.count_objects(
@@ -106,10 +109,8 @@ def GenTests(api):
   )
 
   yield (
-      api.test('set_got_revision') +
-      api.properties(set_got_revision=True) +
-      api.step_data('set got_revision',
-                    stdout=api.raw_io.output('deadbeef'))
+    api.test('set_got_revision') +
+    api.properties(set_got_revision=True)
   )
 
   yield (

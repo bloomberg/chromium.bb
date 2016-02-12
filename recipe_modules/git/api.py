@@ -140,7 +140,12 @@ class GitApi(recipe_api.RecipeApi):
       file_name (str): optional path to a single file to checkout.
       submodule_update_recursive (bool): if True, updates submodules
           recursively.
+
+    Returns: If the checkout was successful, this returns the commit hash of
+      the checked-out-repo. Otherwise this returns None.
     """
+    retVal = None
+
     # TODO(robertocn): Break this function and refactor calls to it.
     #     The problem is that there are way too many unrealated use cases for
     #     it, and the function's signature is getting unwieldy and its body
@@ -247,15 +252,19 @@ class GitApi(recipe_api.RecipeApi):
         name='git checkout%s' % step_suffix,
         can_fail_build=can_fail_build)
 
-    if set_got_revision:
-      rev_parse_step = self('rev-parse', 'HEAD',
-                           cwd=dir_path,
-                           name='set got_revision',
-                           stdout=self.m.raw_io.output(),
-                           can_fail_build=False)
+    rev_parse_step = self('rev-parse', 'HEAD',
+                         cwd=dir_path,
+                         name='read revision',
+                         stdout=self.m.raw_io.output(),
+                         can_fail_build=False,
+                         step_test_data=lambda:
+                            self.m.raw_io.test_api.stream_output('deadbeef'))
 
-      if rev_parse_step.presentation.status == 'SUCCESS':
-        sha = rev_parse_step.stdout.strip()
+    if rev_parse_step.presentation.status == 'SUCCESS':
+      sha = rev_parse_step.stdout.strip()
+      retVal = sha
+      rev_parse_step.presentation.step_text = "<br/>checked out %r<br/>" % sha
+      if set_got_revision:
         rev_parse_step.presentation.properties['got_revision'] = sha
 
     clean_args = list(itertools.chain(
@@ -280,6 +289,8 @@ class GitApi(recipe_api.RecipeApi):
         name='submodule update%s' % step_suffix,
         cwd=dir_path,
         can_fail_build=can_fail_build)
+
+    return retVal
 
   def get_timestamp(self, commit='HEAD', test_data=None, **kwargs):
     """Find and return the timestamp of the given commit."""

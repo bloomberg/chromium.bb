@@ -39,6 +39,19 @@
   {
     "cmd": [
       "[DEPOT_TOOLS]\\git.bat",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "[SLAVE_BUILD]\\src",
+    "name": "read revision",
+    "stdout": "/path/to/tmp/",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>checked out 'deadbeef'<br/>@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[DEPOT_TOOLS]\\git.bat",
       "clean",
       "-f",
       "-d",
