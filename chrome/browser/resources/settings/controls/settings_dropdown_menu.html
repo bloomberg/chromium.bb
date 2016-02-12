@@ -10,7 +10,7 @@
       href="chrome://md-settings/settings_shared.css">
   <template>
     <paper-dropdown-menu id="dropdownMenu" label="[[menuLabel_]]"
-        on-iron-select="onSelect_"
+        on-iron-select="onSelect_" no-label-float$="[[noLabelFloat]]"
         disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
       <paper-menu class="dropdown-content" selected="{{selected_}}"
           attr-for-selected="data-value">

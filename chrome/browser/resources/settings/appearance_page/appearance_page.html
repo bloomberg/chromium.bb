@@ -80,7 +80,7 @@
           <div class="start" i18n-content="fontSize"></div>
           <settings-dropdown-menu id="defaultFontSize"
               pref="{{prefs.webkit.webprefs.default_font_size}}"
-              menu-options="[[fontSizeOptions_]]">
+              menu-options="[[fontSizeOptions_]]" no-label-float>
           </settings-dropdown-menu>
         </div>
         <div class="settings-box">
@@ -90,9 +90,8 @@
         </div>
         <div class="settings-box">
           <div class="start" i18n-content="pageZoom"></div>
-          <settings-dropdown-menu id="pageZoom"
-              pref="{{defaultZoomLevel_}}"
-              menu-options="[[pageZoomOptions_]]">
+          <settings-dropdown-menu id="pageZoom" pref="{{defaultZoomLevel_}}"
+              menu-options="[[pageZoomOptions_]]" no-label-float>
           </settings-dropdown-menu>
         </div>
       </neon-animatable>
