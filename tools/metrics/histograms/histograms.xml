@@ -26062,6 +26062,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicReadAvailableData.NullStream" enum="BooleanNullStream">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The number of times QuicHttpStream's stream_ is a nullptr before
+    IsDoneReading() is called.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicServerInfo.DiskCacheLoadTime" units="ms">
   <owner>rtenneti@chromium.org</owner>
   <summary>Time spent to load QUIC server information from disk cache.</summary>
@@ -58868,6 +58876,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanMissingFromDiskCache" type="int">
   <int value="0" label="Has data in disk cache"/>
   <int value="1" label="Missing data in disk cache"/>
+</enum>
+
+<enum name="BooleanNullStream" type="int">
+  <int value="0" label="Stream is not a nullptr"/>
+  <int value="1" label="Stream is a nullptr"/>
 </enum>
 
 <enum name="BooleanNullVisitor" type="int">
