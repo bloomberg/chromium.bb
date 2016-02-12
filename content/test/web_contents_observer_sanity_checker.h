@@ -88,6 +88,8 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
 
  private:
   explicit WebContentsObserverSanityChecker(WebContents* web_contents);
@@ -111,6 +113,8 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
 
   // Remembers parents to make sure RenderFrameHost::GetParent() never changes.
   std::map<GlobalRoutingID, GlobalRoutingID> parent_ids_;
+
+  bool is_loading_;
 
   bool web_contents_destroyed_;
 

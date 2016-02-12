@@ -338,7 +338,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
                   this,
                   this,
                   this),
-      is_loading_(false),
       is_load_to_different_document_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
@@ -347,6 +346,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       upload_size_(0),
       upload_position_(0),
       is_resume_pending_(false),
+      paused_throbber_for_interstitial_(false),
       displayed_insecure_content_(false),
       has_accessed_initial_document_(false),
       theme_color_(SK_ColorTRANSPARENT),
@@ -896,7 +896,7 @@ void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
   // Reload the page if a load is currently in progress to avoid having
   // different parts of the page loaded using different user agents.
   NavigationEntry* entry = controller_.GetVisibleEntry();
-  if (is_loading_ && entry != NULL && entry->GetIsOverridingUserAgent())
+  if (IsLoading() && entry != NULL && entry->GetIsOverridingUserAgent())
     controller_.ReloadIgnoringCache(true);
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -1036,11 +1036,11 @@ SiteInstanceImpl* WebContentsImpl::GetPendingSiteInstance() const {
 }
 
 bool WebContentsImpl::IsLoading() const {
-  return is_loading_;
+  return frame_tree_.IsLoading() && !paused_throbber_for_interstitial_;
 }
 
 bool WebContentsImpl::IsLoadingToDifferentDocument() const {
-  return is_loading_ && is_load_to_different_document_;
+  return IsLoading() && is_load_to_different_document_;
 }
 
 bool WebContentsImpl::IsWaitingForResponse() const {
@@ -2315,6 +2315,18 @@ void WebContentsImpl::AttachInterstitialPage(
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidAttachInterstitialPage());
+
+  // Stop the throbber if needed while the interstitial page is shown.
+  if (IsLoading())
+    LoadingStateChanged(false, true, true, nullptr);
+}
+
+void WebContentsImpl::DidProceedOnInterstitial() {
+  // Restart the throbber now that the interstitial page is going away.
+  if (paused_throbber_for_interstitial_) {
+    if (frame_tree_.IsLoading())
+      LoadingStateChanged(true, true, false, nullptr);
+  }
 }
 
 void WebContentsImpl::DetachInterstitialPage() {
@@ -2322,6 +2334,11 @@ void WebContentsImpl::DetachInterstitialPage() {
     GetRenderManager()->remove_interstitial_page();
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidDetachInterstitialPage());
+  // Restart the throbber now that the interstitial page is going away.
+  if (paused_throbber_for_interstitial_) {
+    if (frame_tree_.IsLoading())
+      LoadingStateChanged(true, true, false, nullptr);
+  }
 }
 
 void WebContentsImpl::SetHistoryOffsetAndLength(int history_offset,
@@ -3594,11 +3611,16 @@ bool WebContentsImpl::HasAccessedInitialDocument() {
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading.
-void WebContentsImpl::SetIsLoading(bool is_loading,
-                                   bool to_different_document,
-                                   LoadNotificationDetails* details) {
-  if (is_loading == is_loading_)
+void WebContentsImpl::LoadingStateChanged(bool is_loading,
+                                          bool to_different_document,
+                                          bool pause_throbber_for_interstitial,
+                                          LoadNotificationDetails* details) {
+  // Do not send notifications about loading while the interstitial is showing.
+  if (paused_throbber_for_interstitial_ && pause_throbber_for_interstitial)
     return;
+
+  // Update whether the interstitial state.
+  paused_throbber_for_interstitial_ = pause_throbber_for_interstitial;
 
   if (!is_loading) {
     load_state_ = net::LoadStateWithParam(net::LOAD_STATE_IDLE,
@@ -3610,7 +3632,6 @@ void WebContentsImpl::SetIsLoading(bool is_loading,
 
   GetRenderManager()->SetIsLoading(is_loading);
 
-  is_loading_ = is_loading;
   waiting_for_response_ = is_loading;
   is_load_to_different_document_ = to_different_document;
 
@@ -3963,15 +3984,13 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   if (delegate_)
     delegate_->HideValidationMessage(this);
 
-  SetIsLoading(false, true, nullptr);
-  NotifyDisconnected();
-  SetIsCrashed(status, error_code);
-
   // Reset the loading progress. TODO(avi): What does it mean to have a
   // "renderer crash" when there is more than one renderer process serving a
   // webpage? Once this function is called at a more granular frame level, we
   // probably will need to more granularly reset the state here.
   ResetLoadProgressState();
+  NotifyDisconnected();
+  SetIsCrashed(status, error_code);
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
@@ -4065,7 +4084,8 @@ void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
 
 void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,
                                       bool to_different_document) {
-  SetIsLoading(true, to_different_document, nullptr);
+  LoadingStateChanged(true, to_different_document,
+                      paused_throbber_for_interstitial_, nullptr);
 
   // Notify accessibility that the user is navigating away from the
   // current document.
@@ -4099,7 +4119,8 @@ void WebContentsImpl::DidStopLoading() {
         controller_.GetCurrentEntryIndex()));
   }
 
-  SetIsLoading(false, true, details.get());
+  LoadingStateChanged(false, true, paused_throbber_for_interstitial_,
+                      details.get());
 }
 
 void WebContentsImpl::DidChangeLoadProgress() {
@@ -4636,10 +4657,8 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
   last_dialog_suppressed_ = dialog_was_suppressed;
 
   if (is_showing_before_unload_dialog_ && !success) {
-    // If a beforeunload dialog is canceled, we need to stop the throbber from
-    // spinning, since we forced it to start spinning in Navigate.
     if (rfh)
-      DidStopLoading();
+      rfh->frame_tree_node()->BeforeUnloadCanceled();
     controller_.DiscardNonCommittedEntries();
 
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,

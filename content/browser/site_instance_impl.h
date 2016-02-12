@@ -23,11 +23,11 @@ class RenderProcessHostFactory;
 class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
                                         public RenderProcessHostObserver {
  public:
-  class Observer {
+  class CONTENT_EXPORT Observer {
    public:
     // Called when this SiteInstance transitions to having no active frames,
     // as measured by active_frame_count().
-    virtual void ActiveFrameCountIsZero(SiteInstanceImpl* site_instance) = 0;
+    virtual void ActiveFrameCountIsZero(SiteInstanceImpl* site_instance) {}
 
     // Called when the renderer process of this SiteInstance has exited.
     virtual void RenderProcessGone(SiteInstanceImpl* site_instance) = 0;

@@ -307,7 +307,6 @@ TEST_F(OverscrollNavigationOverlayTest, Navigation_LoadingUpdate) {
   // this is a "safety net" in case we mis-identify the destination webpage
   // (which can happen if a new navigation is performed while while a GestureNav
   // navigation is in progress).
-  contents()->TestSetIsLoading(true);
   contents()->TestSetIsLoading(false);
   EXPECT_FALSE(GetOverlay()->web_contents());
   NavigationEntry* pending = contents()->GetController().GetPendingEntry();
