@@ -67,6 +67,7 @@ template<typename T>
 class ObjectAliveTrait<T, true> {
     STATIC_ONLY(ObjectAliveTrait);
 public:
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     static bool isHeapObjectAlive(T* object)
     {
         static_assert(sizeof(T), "T must be fully defined");
