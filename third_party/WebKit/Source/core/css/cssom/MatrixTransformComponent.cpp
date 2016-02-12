@@ -86,7 +86,7 @@ MatrixTransformComponent* MatrixTransformComponent::translate(double x, double y
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM41(x);
     matrix->setM42(y);
-    return new MatrixTransformComponent(matrix.release(), TranslateType);
+    return new MatrixTransformComponent(matrix.release(), TranslationType);
 }
 
 MatrixTransformComponent* MatrixTransformComponent::translate3d(double x, double y, double z)
@@ -95,7 +95,7 @@ MatrixTransformComponent* MatrixTransformComponent::translate3d(double x, double
     matrix->setM41(x);
     matrix->setM42(y);
     matrix->setM43(z);
-    return new MatrixTransformComponent(matrix.release(), Translate3DType);
+    return new MatrixTransformComponent(matrix.release(), Translation3DType);
 }
 
 } // namespace blink

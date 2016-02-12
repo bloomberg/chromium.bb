@@ -5484,6 +5484,11 @@ interface TransitionEvent : Event
     getter propertyName
     getter pseudoElement
     method constructor
+interface Translation : TransformComponent
+    getter x
+    getter y
+    getter z
+    method constructor
 interface TreeWalker
     getter currentNode
     getter filter

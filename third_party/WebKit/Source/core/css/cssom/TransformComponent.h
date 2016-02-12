@@ -18,8 +18,8 @@ class CORE_EXPORT TransformComponent : public GarbageCollectedFinalized<Transfor
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum TransformComponentType {
-        MatrixType, PerspectiveType, RotationType, ScaleType, SkewType, TranslateType,
-        Matrix3DType, Rotation3DType, Scale3DType, Translate3DType
+        MatrixType, PerspectiveType, RotationType, ScaleType, SkewType, TranslationType,
+        Matrix3DType, Rotation3DType, Scale3DType, Translation3DType
     };
 
     virtual ~TransformComponent() { }
@@ -34,8 +34,7 @@ public:
             && transformType != PerspectiveType
             && transformType != Rotation3DType
             && transformType != Scale3DType
-            && transformType != Translate3DType
-            && transformType != PerspectiveType;
+            && transformType != Translation3DType;
     }
 
     String cssString() const

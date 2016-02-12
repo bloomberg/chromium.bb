@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+
+var simpleLength = new SimpleLength(0, "px");
+var decimalLength = new SimpleLength(1.1, "px");
+var negativeLength = new SimpleLength(-2.2, "em");
+var calcLengthPx = new CalcLength({px: 1});
+var calcLength = new CalcLength({px: 1, em: -2.2});
+
+var simplePercent = new SimpleLength(10, "percent");
+var calcPercent = new CalcLength({px: 1, percent: 2.2});
+
+var values = [
+  // 2D Translation Transform Components
+  {input: new Translation(simpleLength, simpleLength),
+    x: simpleLength, y: simpleLength, is2DComponent: true},
+  {input: new Translation(decimalLength, negativeLength),
+    x: decimalLength, y: negativeLength, is2DComponent: true},
+  {input: new Translation(negativeLength, calcLengthPx),
+    x: negativeLength, y: calcLengthPx, is2DComponent: true},
+  {input: new Translation(calcLengthPx, negativeLength),
+    x: calcLengthPx, y: negativeLength, is2DComponent: true},
+  {input: new Translation(calcLengthPx, calcLength),
+    x: calcLengthPx, y: calcLength, is2DComponent: true},
+  {input: new Translation(simplePercent, simpleLength),
+    x: simplePercent, y: simpleLength, is2DComponent: true},
+  {input: new Translation(calcLengthPx, simplePercent),
+    x: calcLengthPx, y: simplePercent, is2DComponent: true},
+  {input: new Translation(calcPercent, calcLength),
+    x: calcPercent, y: calcLength, is2DComponent: true},
+  {input: new Translation(simplePercent, calcPercent),
+    x: simplePercent, y: calcPercent, is2DComponent: true},
+
+  // 3D Translation Transform Components
+  {input: new Translation(simpleLength, simpleLength, simpleLength),
+    x: simpleLength, y: simpleLength, z: simpleLength, is2DComponent: false},
+  {input: new Translation(simpleLength, decimalLength, negativeLength),
+    x: simpleLength, y: decimalLength, z: negativeLength, is2DComponent: false},
+  {input: new Translation(simpleLength, simpleLength, calcLengthPx),
+    x: simpleLength, y: simpleLength, z: calcLengthPx, is2DComponent: false},
+  {input: new Translation(calcLengthPx, calcLength, calcLength),
+    x: calcLengthPx, y: calcLength, z: calcLength, is2DComponent: false},
+  {input: new Translation(simplePercent, decimalLength, simpleLength),
+    x: simplePercent, y: decimalLength, z: simpleLength, is2DComponent: false},
+  {input: new Translation(simpleLength, calcPercent, decimalLength),
+    x: simpleLength, y: calcPercent, z: decimalLength, is2DComponent: false},
+  {input: new Translation(calcPercent, simplePercent, calcLength),
+    x: calcPercent, y: simplePercent, z: calcLength, is2DComponent: false}
+];
+
+function expectedCssString(obj) {
+  var cssString = obj.is2DComponent ? "translate(" : "translate3d(";
+  cssString += obj.x.cssString + ", " + obj.y.cssString;
+  if (!obj.is2DComponent)
+    cssString += ", " + obj.z.cssString;
+  cssString += ")";
+  return cssString;
+}
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.x, values[i].x);
+    assert_equals(values[i].input.y, values[i].y);
+    if (values[i].is2DComponent)
+      assert_equals(values[i].input.z, null);
+    else
+      assert_equals(values[i].input.z, values[i].z);
+  }
+}, "Test that the (x, y, z) values for Translation are correct.");
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.is2DComponent(), values[i].is2DComponent);
+  }
+}, "Test that the is2DComponent values for Translation is correct.");
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.cssString, expectedCssString(values[i]));
+  }
+}, "Test that cssString values for Translation is correct.");
+
+test(function() {
+  assert_throws(null, function() { new Translation(simpleLength, simpleLength, simplePercent); });
+  assert_throws(null, function() { new Translation(simpleLength, simpleLength, calcPercent); });
+  assert_throws(null, function() { new Translation(simplePercent, simplePercent, simplePercent); });
+}, "Test that Translation constructor throws when z component contains percent.");
+
+test(function() {
+  assert_throws(null, function() { new Translation(); });
+  assert_throws(null, function() { new Translation(simpleLength); });
+}, "Test that invalid number of arguments for Translation throws an exception.");
+
+</script>
