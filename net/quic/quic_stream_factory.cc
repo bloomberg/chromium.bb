@@ -679,12 +679,14 @@ QuicStreamFactory::QuicStreamFactory(
         new PropertiesBasedQuicServerInfoFactory(http_server_properties_));
   }
 
-  // migrate_sessions_early_ should only be set to true if
-  // migrate_sessions_on_network_change_ is set to true.
-  DCHECK(migrate_sessions_on_network_change_ || !migrate_sessions_early_);
-  // close_sessions_on_ip_change_ and migrate_sessions_on_network_change_ should
+  // migrate_sessions_early should only be set to true if
+  // migrate_sessions_on_network_change is set to true.
+  if (migrate_sessions_early)
+    DCHECK(migrate_sessions_on_network_change);
+  // close_sessions_on_ip_change and migrate_sessions_on_network_change should
   // never be simultaneously set to true.
-  DCHECK(!close_sessions_on_ip_change_ || !migrate_sessions_on_network_change_);
+  DCHECK(!(close_sessions_on_ip_change && migrate_sessions_on_network_change));
+
   if (migrate_sessions_on_network_change_) {
     NetworkChangeNotifier::AddNetworkObserver(this);
   } else if (close_sessions_on_ip_change_) {
