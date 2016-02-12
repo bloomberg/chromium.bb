@@ -740,6 +740,15 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
   EXPECT_EQ(MainThreadScrollingReason::kEventHandlers,
             status.main_thread_scrolling_reasons);
 
+  host_impl_->active_tree()->set_event_listener_properties(
+      EventListenerClass::kMouseWheel,
+      EventListenerProperties::kBlockingAndPassive);
+  status = host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
+                                   InputHandler::WHEEL);
+  EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
+  EXPECT_EQ(MainThreadScrollingReason::kEventHandlers,
+            status.main_thread_scrolling_reasons);
+
   // But gesture scrolls can still be handled.
   status = host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                    InputHandler::GESTURE);

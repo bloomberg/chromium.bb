@@ -17,8 +17,9 @@ enum class WebEventListenerClass {
 // Indicates the variety of event listener types for a given WebEventListenerClass.
 enum class WebEventListenerProperties {
     Nothing, // This should be "None"; but None #defined in X11's X.h
-    Passive,
-    Blocking, // This indicates >= 1 blocking listener (and >= 0 passive listeners)
+    Passive, // This indicates solely passive listeners.
+    Blocking, // This indicates solely blocking listeners.
+    BlockingAndPassive, // This indicates >= 1 blocking listener and >= 1 passive listeners.
 };
 
 } // namespace blink

@@ -40,6 +40,8 @@ inline bool isPointerEventType(const AtomicString& eventType)
 
 WebEventListenerProperties webEventListenerProperties(bool hasBlocking, bool hasPassive)
 {
+    if (hasBlocking && hasPassive)
+        return WebEventListenerProperties::BlockingAndPassive;
     if (hasBlocking)
         return WebEventListenerProperties::Blocking;
     if (hasPassive)

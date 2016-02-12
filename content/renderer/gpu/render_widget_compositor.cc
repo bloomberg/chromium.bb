@@ -762,6 +762,10 @@ static_assert(static_cast<cc::EventListenerProperties>(
                   blink::WebEventListenerProperties::Blocking) ==
                   cc::EventListenerProperties::kBlocking,
               "EventListener and WebEventListener enums must match");
+static_assert(static_cast<cc::EventListenerProperties>(
+                  blink::WebEventListenerProperties::BlockingAndPassive) ==
+                  cc::EventListenerProperties::kBlockingAndPassive,
+              "EventListener and WebEventListener enums must match");
 
 void RenderWidgetCompositor::setEventListenerProperties(
     blink::WebEventListenerClass eventClass,

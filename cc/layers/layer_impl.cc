@@ -544,6 +544,7 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
         layer_tree_impl_->event_listener_properties(
             EventListenerClass::kMouseWheel);
     if (event_properties == EventListenerProperties::kBlocking ||
+        event_properties == EventListenerProperties::kBlockingAndPassive ||
         (!layer_tree_impl_->settings().use_mouse_wheel_gestures &&
          event_properties == EventListenerProperties::kPassive)) {
       TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");

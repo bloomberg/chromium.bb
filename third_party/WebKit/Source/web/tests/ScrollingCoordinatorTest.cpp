@@ -331,7 +331,7 @@ TEST_F(ScrollingCoordinatorTest, touchEventHandlerBoth)
     navigateTo(m_baseURL + "touch-event-handler-both.html");
     forceFullCompositingUpdate();
 
-    ASSERT_EQ(WebEventListenerProperties::Blocking, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+    ASSERT_EQ(WebEventListenerProperties::BlockingAndPassive, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
 }
 
 TEST_F(ScrollingCoordinatorTest, wheelEventHandler)
@@ -358,7 +358,7 @@ TEST_F(ScrollingCoordinatorTest, wheelEventHandlerBoth)
     navigateTo(m_baseURL + "wheel-event-handler-both.html");
     forceFullCompositingUpdate();
 
-    ASSERT_EQ(WebEventListenerProperties::Blocking, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::MouseWheel));
+    ASSERT_EQ(WebEventListenerProperties::BlockingAndPassive, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::MouseWheel));
 }
 
 TEST_F(ScrollingCoordinatorTest, scrollEventHandler)

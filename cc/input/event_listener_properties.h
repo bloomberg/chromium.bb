@@ -9,7 +9,13 @@ namespace cc {
 
 enum class EventListenerClass { kTouch, kMouseWheel, kNumClasses };
 
-enum class EventListenerProperties { kNone, kPassive, kBlocking, kMax };
+enum class EventListenerProperties {
+  kNone,
+  kPassive,
+  kBlocking,
+  kBlockingAndPassive,
+  kMax
+};
 
 }  // namespace cc
 
