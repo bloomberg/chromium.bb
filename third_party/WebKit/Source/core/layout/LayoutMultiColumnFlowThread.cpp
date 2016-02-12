@@ -81,6 +81,22 @@ static inline bool isMultiColumnContainer(const LayoutObject& object)
     return toLayoutBlockFlow(object).multiColumnFlowThread();
 }
 
+static inline bool canContainSpannerInParentFragmentationContext(const LayoutObject& object)
+{
+    if (!object.isLayoutBlockFlow())
+        return false;
+    const LayoutBlockFlow& blockFlow = toLayoutBlockFlow(object);
+    return !blockFlow.createsNewFormattingContext()
+        && blockFlow.paginationBreakability() != LayoutBox::ForbidBreaks
+        && !isMultiColumnContainer(blockFlow);
+}
+
+static inline bool hasAnyColumnSpanners(const LayoutMultiColumnFlowThread& flowThread)
+{
+    LayoutBox* firstBox = flowThread.firstMultiColumnBox();
+    return firstBox && (firstBox != flowThread.lastMultiColumnBox() || firstBox->isLayoutMultiColumnSpannerPlaceholder());
+}
+
 // Find the next layout object that has the multicol container in its containing block chain, skipping nested multicol containers.
 static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(LayoutMultiColumnFlowThread* flowThread, LayoutObject* descendant)
 {
@@ -211,10 +227,7 @@ LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnFlowThread::containingColu
 {
     ASSERT(descendant->isDescendantOf(this));
 
-    // Before we spend time on searching the ancestry, see if there's a quick way to determine
-    // whether there might be any spanners at all.
-    LayoutBox* firstBox = firstMultiColumnBox();
-    if (!firstBox || (firstBox == lastMultiColumnBox() && firstBox->isLayoutMultiColumnSet()))
+    if (!hasAnyColumnSpanners(*this))
         return nullptr;
 
     // We have spanners. See if the layoutObject in question is one or inside of one then.
@@ -596,10 +609,7 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
             ASSERT(ancestor == this);
             return true;
         }
-        if (!ancestor->isLayoutBlockFlow())
-            return false;
-        const LayoutBlockFlow& ancestorBlockFlow = *toLayoutBlockFlow(ancestor);
-        if (ancestorBlockFlow.createsNewFormattingContext() || ancestorBlockFlow.paginationBreakability() == ForbidBreaks)
+        if (!canContainSpannerInParentFragmentationContext(*ancestor))
             return false;
     }
     ASSERT_NOT_REACHED();
@@ -929,6 +939,29 @@ void LayoutMultiColumnFlowThread::contentWasLaidOut(LayoutUnit logicalBottomInFl
     if (!mayBeNested)
         return;
     appendNewFragmentainerGroupIfNeeded(logicalBottomInFlowThreadAfterPagination);
+}
+
+bool LayoutMultiColumnFlowThread::canSkipLayout(const LayoutBox& root) const
+{
+    // Objects containing spanners is all we need to worry about, so if there are no spanners at all
+    // in this multicol container, we can just return the good news right away.
+    if (!hasAnyColumnSpanners(*this))
+        return true;
+
+    LayoutObject* next;
+    for (const LayoutObject* object = &root; object; object = next) {
+        if (object->isColumnSpanAll()) {
+            // A spanner potentially ends one fragmentainer group and begins a new one, and thus
+            // determines the flow thread portion bottom and top of adjacent fragmentainer
+            // groups. It's just too hard to guess these values without laying out.
+            return false;
+        }
+        if (canContainSpannerInParentFragmentationContext(*object))
+            next = object->nextInPreOrder(&root);
+        else
+            next = object->nextInPreOrderAfterChildren(&root);
+    }
+    return true;
 }
 
 } // namespace blink

@@ -1113,6 +1113,11 @@ bool LayoutBlock::simplifiedLayout()
         if (needsPositionedMovementLayout() && !tryLayoutDoingPositionedMovementOnly())
             return false;
 
+        if (LayoutFlowThread* flowThread = flowThreadContainingBlock()) {
+            if (!flowThread->canSkipLayout(*this))
+                return false;
+        }
+
         TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
         // Lay out positioned descendants or objects that just need to recompute overflow.
