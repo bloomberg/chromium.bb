@@ -14,14 +14,10 @@ import common
 def main_run(args):
   rc = common.run_command([
       os.path.join(common.SRC_DIR, 'tools', 'valgrind', 'chrome_tests.sh'),
-      '--test',
-      args.args[0],
-      '--tool',
-      'memcheck',
+      '--tool', 'memcheck',
       '--target', args.build_config_fs,
-      '--build-dir',
-      'src/out',
-    ])
+      '--build-dir', 'src/out',
+    ] + args.args)
 
   json.dump({
       'valid': True,

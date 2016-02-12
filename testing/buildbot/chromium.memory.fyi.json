@@ -1187,6 +1187,7 @@
     "scripts": [
       {
         "args": [
+          "--test",
           "crypto_unittests"
         ],
         "name": "memory_test: crypto_unittests",
@@ -1197,6 +1198,7 @@
       },
       {
         "args": [
+          "--test",
           "display_unittests"
         ],
         "name": "memory_test: display_unittests",
@@ -1207,6 +1209,7 @@
       },
       {
         "args": [
+          "--test",
           "ipc_tests"
         ],
         "name": "memory_test: ipc_tests",
@@ -1217,6 +1220,7 @@
       },
       {
         "args": [
+          "--test",
           "jingle_unittests"
         ],
         "name": "memory_test: jingle_unittests",
@@ -1227,6 +1231,7 @@
       },
       {
         "args": [
+          "--test",
           "net_unittests"
         ],
         "name": "memory_test: net_unittests",
@@ -1237,6 +1242,7 @@
       },
       {
         "args": [
+          "--test",
           "ppapi_unittests"
         ],
         "name": "memory_test: ppapi_unittests",
@@ -1247,6 +1253,7 @@
       },
       {
         "args": [
+          "--test",
           "printing_unittests"
         ],
         "name": "memory_test: printing_unittests",
@@ -1257,6 +1264,7 @@
       },
       {
         "args": [
+          "--test",
           "sandbox_linux_unittests"
         ],
         "name": "memory_test: sandbox_linux_unittests",
@@ -1267,6 +1275,7 @@
       },
       {
         "args": [
+          "--test",
           "sql_unittests"
         ],
         "name": "memory_test: sql_unittests",
@@ -1277,6 +1286,7 @@
       },
       {
         "args": [
+          "--test",
           "sync_unit_tests"
         ],
         "name": "memory_test: sync_unit_tests",
@@ -1287,6 +1297,7 @@
       },
       {
         "args": [
+          "--test",
           "ui_base_unittests"
         ],
         "name": "memory_test: ui_base_unittests",
@@ -1297,6 +1308,7 @@
       },
       {
         "args": [
+          "--test",
           "url_unittests"
         ],
         "name": "memory_test: url_unittests",
@@ -1311,6 +1323,7 @@
     "scripts": [
       {
         "args": [
+          "--test",
           "extensions_unittests"
         ],
         "name": "memory_test: extensions_unittests",
@@ -1332,6 +1345,7 @@
     "scripts": [
       {
         "args": [
+          "--test",
           "media_unittests"
         ],
         "name": "memory_test: media_unittests",
@@ -1342,6 +1356,7 @@
       },
       {
         "args": [
+          "--test",
           "midi_unittests"
         ],
         "name": "memory_test: midi_unittests",
@@ -1352,6 +1367,7 @@
       },
       {
         "args": [
+          "--test",
           "remoting_unittests"
         ],
         "name": "memory_test: remoting_unittests",
@@ -1373,6 +1389,7 @@
     "scripts": [
       {
         "args": [
+          "--test",
           "components_unittests"
         ],
         "name": "memory_test: components_unittests",
@@ -1383,6 +1400,7 @@
       },
       {
         "args": [
+          "--test",
           "content_unittests"
         ],
         "name": "memory_test: content_unittests",
@@ -1404,6 +1422,7 @@
     "scripts": [
       {
         "args": [
+          "--test",
           "base_unittests"
         ],
         "name": "memory_test: base_unittests",
@@ -1414,10 +1433,12 @@
       },
       {
         "args": [
+          "--test",
           "gpu_unittests"
         ],
         "name": "memory_test: gpu_unittests",
         "override_compile_targets": [
+          "--test",
           "gpu_unittests"
         ],
         "script": "run_under_valgrind.py"
