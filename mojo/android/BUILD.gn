@@ -132,9 +132,7 @@ shared_library("mojo_java_unittests") {
   defines = [ "UNIT_TEST" ]
 }
 
-android_apk("mojo_test_apk") {
-  testonly = true
-  create_dist_ijar = true
+instrumentation_test_apk("mojo_test_apk") {
   deps = [
     ":mojo_java_unittests",
     ":mojo_javatests",
