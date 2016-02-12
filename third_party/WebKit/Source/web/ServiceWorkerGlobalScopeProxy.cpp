@@ -107,7 +107,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
     ASSERT(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
 
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
-    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
+    MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
     // TODO(nhiroki): Support |origin| and |source| attributes.
     // (http://crbug.com/543198)
 

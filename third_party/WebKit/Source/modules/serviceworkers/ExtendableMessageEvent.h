@@ -19,7 +19,7 @@ public:
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create();
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer);
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
-    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, PassOwnPtrWillBeRawPtr<MessagePortArray> ports, WaitUntilObserver*);
+    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);
 
     SerializedScriptValue* serializedData() const { return m_serializedData.get(); }
     void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) { m_serializedData = serializedData; }
@@ -37,15 +37,15 @@ private:
     ExtendableMessageEvent();
     ExtendableMessageEvent(const AtomicString& type, const ExtendableMessageEventInit& initializer);
     ExtendableMessageEvent(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
-    ExtendableMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, PassOwnPtrWillBeRawPtr<MessagePortArray> ports, WaitUntilObserver*);
+    ExtendableMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);
 
     RefPtr<SerializedScriptValue> m_serializedData;
     String m_origin;
     String m_lastEventId;
-    Member<ServiceWorkerClient> m_sourceAsClient;
-    Member<ServiceWorker> m_sourceAsServiceWorker;
-    Member<MessagePort> m_sourceAsMessagePort;
-    OwnPtrWillBeMember<MessagePortArray> m_ports;
+    PersistentWillBeMember<ServiceWorkerClient> m_sourceAsClient;
+    PersistentWillBeMember<ServiceWorker> m_sourceAsServiceWorker;
+    PersistentWillBeMember<MessagePort> m_sourceAsMessagePort;
+    PersistentWillBeMember<MessagePortArray> m_ports;
 };
 
 } // namespace blink

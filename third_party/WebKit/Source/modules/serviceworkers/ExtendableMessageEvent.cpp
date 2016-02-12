@@ -21,7 +21,7 @@ PassRefPtrWillBeRawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(co
     return adoptRefWillBeNoop(new ExtendableMessageEvent(type, initializer, observer));
 }
 
-PassRefPtrWillBeRawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(PassRefPtr<SerializedScriptValue> data, const String& origin, PassOwnPtrWillBeRawPtr<MessagePortArray> ports, WaitUntilObserver* observer)
+PassRefPtrWillBeRawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver* observer)
 {
     return adoptRefWillBeNoop(new ExtendableMessageEvent(data, origin, ports, observer));
 }
@@ -95,10 +95,10 @@ ExtendableMessageEvent::ExtendableMessageEvent(const AtomicString& type, const E
             m_sourceAsMessagePort = initializer.source().getAsMessagePort();
     }
     if (initializer.hasPorts())
-        m_ports = adoptRefWillBeNoop(new MessagePortArray(initializer.ports()));
+        m_ports = new MessagePortArray(initializer.ports());
 }
 
-ExtendableMessageEvent::ExtendableMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, PassOwnPtrWillBeRawPtr<MessagePortArray> ports, WaitUntilObserver* observer)
+ExtendableMessageEvent::ExtendableMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver* observer)
     : ExtendableEvent(EventTypeNames::message, ExtendableMessageEventInit(), observer)
     , m_serializedData(data)
     , m_origin(origin)
