@@ -13442,6 +13442,21 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
                          "invalid image size");
       return;
     }
+
+    // Ideally we should not need to check that the sub-texture copy rectangle
+    // is valid in two different ways, here and below. However currently there
+    // is no guarantee that a texture backed by a GLImage will have sensible
+    // level info. If this synchronization were to be enforced then this and
+    // other functions in this file could be cleaned up.
+    // See: https://crbug.com/586476
+    int32_t max_x;
+    int32_t max_y;
+    if (!SafeAddInt32(x, width, &max_x) || !SafeAddInt32(y, height, &max_y) ||
+        x < 0 || y < 0 || max_x > source_width || max_y > source_height) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
+                         "source texture bad dimensions");
+      return;
+    }
   } else {
     if (!source_texture->GetLevelSize(source_target, 0,
                                       &source_width, &source_height, nullptr)) {
@@ -13457,18 +13472,19 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
                          "source texture bad dimensions");
       return;
     }
+
+    if (!source_texture->ValidForTexture(source_target, 0, x, y, 0, width,
+                                         height, 1)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
+                         "source texture bad dimensions.");
+      return;
+    }
   }
 
   GLenum source_type = 0;
   GLenum source_internal_format = 0;
   source_texture->GetLevelType(source_target, 0, &source_type,
                                &source_internal_format);
-  if (!source_texture->ValidForTexture(source_target, 0, x, y, 0,
-                                       width, height, 1)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
-                       "source texture bad dimensions.");
-    return;
-  }
 
   GLenum dest_type = 0;
   GLenum dest_internal_format = 0;
