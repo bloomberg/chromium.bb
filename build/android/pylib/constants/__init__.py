@@ -244,6 +244,27 @@ def GetOutDirectory(build_type=None):
       GetBuildType() if build_type is None else build_type))
 
 
+def CheckOutputDirectory():
+  """Checks that CHROMIUM_OUT_DIR or CHROMIUM_OUTPUT_DIR is set.
+
+  If neither are set, but the current working directory is a build directory,
+  then CHROMIUM_OUTPUT_DIR is set to the current working directory.
+
+  Raises:
+    Exception: If no output directory is detected.
+  """
+  output_dir = os.environ.get('CHROMIUM_OUTPUT_DIR')
+  out_dir = os.environ.get('CHROMIUM_OUT_DIR')
+  if not output_dir and not out_dir:
+    # If CWD is an output directory, then assume it's the desired one.
+    if os.path.exists('build.ninja'):
+      output_dir = os.getcwd()
+      SetOutputDirectory(output_dir)
+    else:
+      raise Exception('Neither CHROMIUM_OUTPUT_DIR nor CHROMIUM_OUT_DIR '
+                      'has been set')
+
+
 # TODO(jbudorick): Convert existing callers to AdbWrapper.GetAdbPath() and
 # remove this.
 def GetAdbPath():

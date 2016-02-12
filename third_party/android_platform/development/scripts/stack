@@ -186,12 +186,18 @@ def main(argv):
     elif option == "--verbose":
       logging.basicConfig(level=logging.DEBUG)
 
-  if symbol.CHROME_SYMBOLS_DIR and not chrome_apk_dir:
-    chrome_apk_dir = os.path.join(symbol.CHROME_SYMBOLS_DIR,
-                                  '..', DEFAULT_APK_DIR)
-
   if len(arguments) > 1:
     PrintUsage()
+
+  # Do an up-front test that the output directory is known.
+  if not symbol.CHROME_SYMBOLS_DIR:
+    constants.CheckOutputDirectory()
+
+  if not chrome_apk_dir:
+    # TODO(agrieve): This directory doesn't exist with GN.
+    probable_dir = os.path.join(constants.GetOutDirectory(), DEFAULT_APK_DIR)
+    if os.path.exists(probable_dir):
+      chrome_apk_dir = probable_dir
 
   if not arguments or arguments[0] == "-":
     print "Reading native crash info from stdin"

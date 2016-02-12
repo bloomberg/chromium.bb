@@ -130,8 +130,9 @@ def _ResolveSymbols(tombstone_data, include_stack, device_abi):
   stack_tool = os.path.join(os.path.dirname(__file__), '..', '..',
                             'third_party', 'android_platform', 'development',
                             'scripts', 'stack')
-  proc = subprocess.Popen([stack_tool, '--arch', arch], stdin=subprocess.PIPE,
-                          stdout=subprocess.PIPE)
+  cmd = [stack_tool, '--arch', arch, '--output-directory',
+         constants.GetOutDirectory()]
+  proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   output = proc.communicate(input='\n'.join(tombstone_data))[0]
   for line in output.split('\n'):
     if not include_stack and 'Stack Data:' in line:
@@ -250,6 +251,8 @@ def main():
 
   if options.output_directory:
     constants.SetOutputDirectory(options.output_directory)
+  # Do an up-front test that the output directory is known.
+  constants.CheckOutputDirectory()
 
   if options.device:
     devices = [device_utils.DeviceUtils(options.device)]

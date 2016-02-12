@@ -100,6 +100,8 @@ def main():
 
   if options.output_directory:
     constants.SetOutputDirectory(options.output_directory)
+  # Do an up-front test that the output directory is known.
+  constants.CheckOutputDirectory()
 
   if options.logcat:
     asan_input = file(options.logcat, 'r')
