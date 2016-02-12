@@ -243,13 +243,6 @@
         </message>
       </if>
 
-      <!-- The URL for Google Chrome privacy policy. -->
-      <if expr="is_ios">
-        <message name="IDS_PRIVACY_POLICY_URL" translateable="false">
-          http://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/
-        </message>
-      </if>
-
       <!-- The URLs for Adobe Flash settings. We cannot rely on -->
       <!-- the automatic expansion of GRITLANGCODE here because Adobe does -->
       <!-- not use the language/locale code. -->

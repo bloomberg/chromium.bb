@@ -304,6 +304,12 @@ brand. [Length: 70em]">
       <message name="IDS_IOS_ACCNAME_VOICE_SEARCH" desc="The accessibility label for the voice search button in the location bar [Length: unlimited]">
         Voice Search
       </message>
+
+      <!-- The URL for Google Chrome privacy policy. -->
+      <message name="IDS_IOS_PRIVACY_POLICY_URL" translateable="false">
+        http://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/
+      </message>
+
     </messages>
   </release>
 </grit>
