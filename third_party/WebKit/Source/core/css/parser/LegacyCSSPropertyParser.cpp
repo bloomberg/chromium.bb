@@ -235,26 +235,6 @@ static inline bool isForwardSlashOperator(CSSParserValue* value)
     return value->m_unit == CSSParserValue::Operator && value->iValue == '/';
 }
 
-inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPrimitive(CSSValueID identifier, CSSParserValue* value)
-{
-    if (identifier)
-        return cssValuePool().createIdentifierValue(identifier);
-    if (value->unit() >= CSSPrimitiveValue::UnitType::Number && value->unit() <= CSSPrimitiveValue::UnitType::Kilohertz)
-        return createPrimitiveNumericValue(value);
-    if (value->unit() >= CSSPrimitiveValue::UnitType::Turns && value->unit() <= CSSPrimitiveValue::UnitType::Chs)
-        return createPrimitiveNumericValue(value);
-    if (value->unit() >= CSSPrimitiveValue::UnitType::ViewportWidth && value->unit() <= CSSPrimitiveValue::UnitType::ViewportMax)
-        return createPrimitiveNumericValue(value);
-    if (value->unit() >= CSSPrimitiveValue::UnitType::DotsPerPixel && value->unit() <= CSSPrimitiveValue::UnitType::DotsPerCentimeter)
-        return createPrimitiveNumericValue(value);
-    if (value->unit() == CSSPrimitiveValue::UnitType::QuirkyEms)
-        return CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::UnitType::QuirkyEms);
-    if (isCalculation(value))
-        return CSSPrimitiveValue::create(m_parsedCalculation.release());
-
-    return nullptr;
-}
-
 void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> prpValue, bool important)
 {
     const StylePropertyShorthand& shorthand = shorthandForProperty(propId);
@@ -284,15 +264,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
 {
     CSSPropertyID propId = resolveCSSPropertyID(unresolvedProperty);
 
-    CSSParserValue* value = m_valueList->current();
-
     // Note: m_parsedCalculation is used to pass the calc value to validUnit and then cleared at the end of this function.
     // FIXME: This is to avoid having to pass parsedCalc to all validUnit callers.
     ASSERT(!m_parsedCalculation);
 
-    CSSValueID id = value->id;
-
-    bool validPrimitive = false;
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
@@ -300,11 +275,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         parsedValue = parseColor(m_valueList->current(), inQuirksMode() && !inShorthand());
         if (parsedValue)
             m_valueList->next();
-        break;
-
-    case CSSPropertyImageOrientation:
-        if (RuntimeEnabledFeatures::imageOrientationEnabled())
-            validPrimitive = value->id == CSSValueFromImage || (value->unit() != CSSPrimitiveValue::UnitType::Number && validUnit(value, FAngle) && value->fValue == 0);
         break;
 
     case CSSPropertyBackgroundBlendMode:
@@ -336,21 +306,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         ASSERT(!dummyValue);
         break;
     }
-    case CSSPropertyBottom:               // <length> | <percentage> | auto | inherit
-    case CSSPropertyLeft:                 // <length> | <percentage> | auto | inherit
-    case CSSPropertyRight:                // <length> | <percentage> | auto | inherit
-    case CSSPropertyTop:                  // <length> | <percentage> | auto | inherit
-        if (id == CSSValueAuto)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FPercent | FUnitlessQuirk);
-        break;
-
-    case CSSPropertyFontSizeAdjust: // none | <number>
-        ASSERT(RuntimeEnabledFeatures::cssFontSizeAdjustEnabled());
-        validPrimitive = (id == CSSValueNone) ? true : validUnit(value, FNumber | FNonNeg);
-        break;
-
     case CSSPropertyJustifySelf:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseItemPositionOverflowPosition();
@@ -410,10 +365,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         return nullptr;
     }
 
-    if (validPrimitive) {
-        parsedValue = parseValidPrimitive(id, value);
-        m_valueList->next();
-    }
     ASSERT(!m_parsedCalculation);
     if (parsedValue) {
         if (!m_valueList->current() || inShorthand())

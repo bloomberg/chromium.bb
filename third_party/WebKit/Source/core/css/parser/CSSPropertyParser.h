@@ -124,8 +124,6 @@ private:
 
     bool consumeBorder(bool important);
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseValidPrimitive(CSSValueID ident, CSSParserValue*);
-
     bool parseShorthand(CSSPropertyID, bool important);
     bool consumeShorthandGreedily(const StylePropertyShorthand&, bool important);
     bool consume4Values(const StylePropertyShorthand&, bool important);

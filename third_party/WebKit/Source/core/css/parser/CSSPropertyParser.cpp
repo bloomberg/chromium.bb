@@ -1371,7 +1371,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeWidthOrHeight(CSSParserTokenRange
     return consumeLengthOrPercent(range, context.mode(), ValueRangeNonNegative, unitless);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeMarginWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeMarginOrOffset(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
 {
     if (range.peek().id() == CSSValueAuto)
         return consumeIdent(range);
@@ -3354,6 +3354,25 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeReflect(CSSParserTokenRange& rang
     return CSSReflectValue::create(direction.release(), offset.release(), mask.release());
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontSizeAdjust(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    return consumeNumber(range, ValueRangeNonNegative);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeImageOrientation(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueFromImage)
+        return consumeIdent(range);
+    if (range.peek().type() != NumberToken) {
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> angle = consumeAngle(range, cssParserMode);
+        if (angle && angle->getDoubleValue() == 0)
+            return angle;
+    }
+    return nullptr;
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3426,12 +3445,16 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyMarginRight:
     case CSSPropertyMarginBottom:
     case CSSPropertyMarginLeft:
-        return consumeMarginWidth(m_range, m_context.mode(), UnitlessQuirk::Allow);
+    case CSSPropertyBottom:
+    case CSSPropertyLeft:
+    case CSSPropertyRight:
+    case CSSPropertyTop:
+        return consumeMarginOrOffset(m_range, m_context.mode(), UnitlessQuirk::Allow);
     case CSSPropertyWebkitMarginStart:
     case CSSPropertyWebkitMarginEnd:
     case CSSPropertyWebkitMarginBefore:
     case CSSPropertyWebkitMarginAfter:
-        return consumeMarginWidth(m_range, m_context.mode(), UnitlessQuirk::Forbid);
+        return consumeMarginOrOffset(m_range, m_context.mode(), UnitlessQuirk::Forbid);
     case CSSPropertyPaddingTop:
     case CSSPropertyPaddingRight:
     case CSSPropertyPaddingBottom:
@@ -3674,6 +3697,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeWebkitBorderImage(property, m_range, m_context);
     case CSSPropertyWebkitBoxReflect:
         return consumeReflect(m_range, m_context);
+    case CSSPropertyFontSizeAdjust:
+        ASSERT(RuntimeEnabledFeatures::cssFontSizeAdjustEnabled());
+        return consumeFontSizeAdjust(m_range);
+    case CSSPropertyImageOrientation:
+        ASSERT(RuntimeEnabledFeatures::imageOrientationEnabled());
+        return consumeImageOrientation(m_range, m_context.mode());
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {
