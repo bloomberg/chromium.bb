@@ -22,7 +22,11 @@ class GlassAppWindowFrameViewWin : public views::NonClientFrameView {
                                       views::Widget* widget);
   ~GlassAppWindowFrameViewWin() override;
 
+  // The insets to the client area due to the glass frame.
   gfx::Insets GetGlassInsets() const;
+
+  // Additional insets to the client area.
+  gfx::Insets GetClientAreaInsets() const;
 
  private:
   // views::NonClientFrameView implementation.

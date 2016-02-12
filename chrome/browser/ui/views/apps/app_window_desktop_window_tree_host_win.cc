@@ -35,22 +35,7 @@ bool AppWindowDesktopWindowTreeHostWin::GetClientAreaInsets(
     return false;
   }
 
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
-    // This tells Windows that most of the window is a client area, meaning
-    // Chrome will draw it. Windows still fills in the glass bits because of the
-    // DwmExtendFrameIntoClientArea call in |UpdateDWMFrame|.
-    // Without this 1 pixel offset on the right and bottom:
-    //   * windows paint in a more standard way, and
-    //   * we get weird black bars at the top when maximized in multiple monitor
-    //     configurations.
-    int border_thickness = 1;
-    insets->Set(0, 0, border_thickness, border_thickness);
-  } else {
-    // On Windows 10 we use a 1 pixel non client border which is too thin as a
-    // resize target. This inset extends the resize region.
-    int resize_border = gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
-    insets->Set(0, resize_border, resize_border, resize_border);
-  }
+  *insets = app_window_->glass_frame_view()->GetClientAreaInsets();
 
   return true;
 }
