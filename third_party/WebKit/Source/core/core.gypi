@@ -3363,6 +3363,8 @@
             'svg/SVGAnimatedAngle.cpp',
             'svg/SVGAnimatedColor.cpp',
             'svg/SVGAnimatedEnumerationBase.cpp',
+            'svg/SVGAnimatedHref.cpp',
+            'svg/SVGAnimatedHref.h',
             'svg/SVGAnimatedInteger.cpp',
             'svg/SVGAnimatedIntegerOptionalInteger.cpp',
             'svg/SVGAnimatedLength.cpp',

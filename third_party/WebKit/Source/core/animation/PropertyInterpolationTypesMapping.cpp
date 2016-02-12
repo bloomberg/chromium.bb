@@ -5,7 +5,6 @@
 #include "core/animation/PropertyInterpolationTypesMapping.h"
 
 #include "core/HTMLNames.h"
-#include "core/XLinkNames.h"
 #include "core/animation/CSSColorInterpolationType.h"
 #include "core/animation/CSSFontWeightInterpolationType.h"
 #include "core/animation/CSSImageInterpolationType.h"
@@ -266,6 +265,7 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
             || attribute == SVGNames::edgeModeAttr
             || attribute == SVGNames::filterUnitsAttr
             || attribute == SVGNames::gradientUnitsAttr
+            || attribute == SVGNames::hrefAttr
             || attribute == SVGNames::inAttr
             || attribute == SVGNames::in2Attr
             || attribute == SVGNames::lengthAdjustAttr
@@ -287,8 +287,7 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
             || attribute == SVGNames::targetAttr
             || attribute == SVGNames::typeAttr
             || attribute == SVGNames::xChannelSelectorAttr
-            || attribute == SVGNames::yChannelSelectorAttr
-            || attribute == XLinkNames::hrefAttr) {
+            || attribute == SVGNames::yChannelSelectorAttr) {
             // Use default SVGValueInterpolationType.
         } else {
             fallbackToLegacy = true;

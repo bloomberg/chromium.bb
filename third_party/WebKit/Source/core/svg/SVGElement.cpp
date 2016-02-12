@@ -26,7 +26,6 @@
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
-#include "core/XLinkNames.h"
 #include "core/XMLNames.h"
 #include "core/animation/AnimationStack.h"
 #include "core/animation/DocumentAnimations.h"
@@ -1045,7 +1044,6 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 
     if (animatableAttributes.isEmpty()) {
         const QualifiedName* const animatableAttrs[] = {
-            &XLinkNames::hrefAttr,
             &SVGNames::amplitudeAttr,
             &SVGNames::azimuthAttr,
             &SVGNames::baseFrequencyAttr,
@@ -1066,6 +1064,7 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
             &SVGNames::gradientTransformAttr,
             &SVGNames::gradientUnitsAttr,
             &SVGNames::heightAttr,
+            &SVGNames::hrefAttr,
             &SVGNames::in2Attr,
             &SVGNames::inAttr,
             &SVGNames::interceptAttr,
@@ -1178,7 +1177,7 @@ void SVGElement::rebuildAllIncomingReferences()
     for (SVGElement* sourceElement : incomingReferencesSnapshot) {
         // Before rebuilding |sourceElement| ensure it was not removed from under us.
         if (incomingReferences.contains(sourceElement))
-            sourceElement->svgAttributeChanged(XLinkNames::hrefAttr);
+            sourceElement->svgAttributeChanged(SVGNames::hrefAttr);
     }
 }
 

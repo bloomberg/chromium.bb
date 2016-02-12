@@ -5,7 +5,6 @@
 #include "core/animation/AnimationInputHelpers.h"
 
 #include "core/SVGNames.h"
-#include "core/XLinkNames.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
@@ -88,6 +87,7 @@ const AttributeNameMap& getSupportedAttributes()
             &SVGNames::gradientTransformAttr,
             &SVGNames::gradientUnitsAttr,
             &SVGNames::heightAttr,
+            &SVGNames::hrefAttr,
             &SVGNames::in2Attr,
             &SVGNames::inAttr,
             &SVGNames::interceptAttr,
@@ -161,7 +161,6 @@ const AttributeNameMap& getSupportedAttributes()
             &SVGNames::yAttr,
             &SVGNames::yChannelSelectorAttr,
             &SVGNames::zAttr,
-            &XLinkNames::hrefAttr,
         };
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++)
             supportedAttributes.set(*attributes[i], attributes[i]);
@@ -172,10 +171,6 @@ const AttributeNameMap& getSupportedAttributes()
 QualifiedName svgAttributeName(const String& property)
 {
     ASSERT(!isSVGPrefixed(property));
-
-    if (property == "href")
-        return XLinkNames::hrefAttr;
-
     return QualifiedName(nullAtom, AtomicString(property), nullAtom);
 }
 

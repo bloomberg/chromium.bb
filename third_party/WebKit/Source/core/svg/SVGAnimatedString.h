@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class SVGAnimatedString final : public SVGAnimatedProperty<SVGString> {
+class SVGAnimatedString : public SVGAnimatedProperty<SVGString> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGString> initialValue)
@@ -44,9 +44,9 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedString(contextElement, attributeName, initialValue));
     }
 
-    String baseVal();
-    void setBaseVal(String, ExceptionState&);
-    String animVal();
+    virtual String baseVal();
+    virtual void setBaseVal(const String&, ExceptionState&);
+    virtual String animVal();
 
 protected:
     SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGString> initialValue)

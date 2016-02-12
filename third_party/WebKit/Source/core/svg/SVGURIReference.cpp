@@ -21,16 +21,17 @@
 #include "core/svg/SVGURIReference.h"
 
 #include "core/XLinkNames.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGElement.h"
 #include "platform/weborigin/KURL.h"
 
 namespace blink {
 
 SVGURIReference::SVGURIReference(SVGElement* element)
-    : m_href(SVGAnimatedString::create(element, XLinkNames::hrefAttr, SVGString::create()))
+    : m_href(SVGAnimatedHref::create(element))
 {
     ASSERT(element);
-    element->addToPropertyMap(m_href);
+    m_href->addToPropertyMap(element);
 }
 
 DEFINE_TRACE(SVGURIReference)
@@ -40,7 +41,19 @@ DEFINE_TRACE(SVGURIReference)
 
 bool SVGURIReference::isKnownAttribute(const QualifiedName& attrName)
 {
-    return attrName.matches(XLinkNames::hrefAttr);
+    return SVGAnimatedHref::isKnownAttribute(attrName);
+}
+
+const AtomicString& SVGURIReference::legacyHrefString(const SVGElement& element)
+{
+    if (element.hasAttribute(SVGNames::hrefAttr))
+        return element.getAttribute(SVGNames::hrefAttr);
+    return element.getAttribute(XLinkNames::hrefAttr);
+}
+
+KURL SVGURIReference::legacyHrefURL(const Document& document) const
+{
+    return document.completeURL(stripLeadingAndTrailingHTMLSpaces(hrefString()));
 }
 
 AtomicString SVGURIReference::fragmentIdentifierFromIRIString(const String& url, const TreeScope& treeScope)

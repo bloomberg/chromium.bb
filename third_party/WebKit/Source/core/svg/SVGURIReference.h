@@ -23,7 +23,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "core/svg/SVGAnimatedString.h"
+#include "core/svg/SVGAnimatedHref.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -35,6 +35,15 @@ public:
     virtual ~SVGURIReference() { }
 
     bool isKnownAttribute(const QualifiedName&);
+
+    // Use this for accesses to 'href' or 'xlink:href' (in that order) for
+    // elements where both are allowed and don't necessarily inherit from
+    // SVGURIReference.
+    static const AtomicString& legacyHrefString(const SVGElement&);
+
+    // Like above, but for elements that inherit from SVGURIReference. Resolves
+    // against the base URL of the passed Document.
+    KURL legacyHrefURL(const Document&) const;
 
     static AtomicString fragmentIdentifierFromIRIString(const String&, const TreeScope&);
     static Element* targetElementFromIRIString(const String&, const TreeScope&, AtomicString* = 0, Document* = 0);
@@ -54,7 +63,7 @@ public:
     const String& hrefString() const { return m_href->currentValue()->value(); }
 
     // JS API
-    SVGAnimatedString* href() const { return m_href.get(); }
+    SVGAnimatedHref* href() const { return m_href.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -62,7 +71,7 @@ protected:
     explicit SVGURIReference(SVGElement*);
 
 private:
-    RefPtrWillBeMember<SVGAnimatedString> m_href;
+    RefPtrWillBeMember<SVGAnimatedHref> m_href;
 };
 
 } // namespace blink
