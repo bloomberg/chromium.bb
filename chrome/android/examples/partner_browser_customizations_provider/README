@@ -1,6 +1,13 @@
 # Remount /system/ as read-write.
-adb root && adb wait-for-device
-adb shell mount -o rw,remount /system
+# < MNC instructions
+  adb root && adb wait-for-device
+  adb shell mount -o rw,remount /system
+# >= MNC instructions
+  adb root
+  adb disable-verity
+  adb reboot
+  adb root
+  adb remount
 
 # Build an example customizations content provider APK.
 android update project --path . --name PartnerCustomizationProviderExample --target 1
