@@ -352,11 +352,11 @@
     ],
     "UMA_EnableCellularLogUpload": [
         {
-            "group_name": "Enabled",
+            "group_name": "Enabled_wo_sampling",
             "params": {
                 "Enabled": "true",
                 "Optimize": "true",
-                "Sample_Probability": "50"
+                "Sample_Probability": "100"
             }
         }
     ],
