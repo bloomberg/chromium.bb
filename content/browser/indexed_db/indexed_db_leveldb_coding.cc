@@ -14,155 +14,8 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 
-// LevelDB Coding Scheme
-// =====================
-//
-// LevelDB stores key/value pairs. Keys and values are strings of bytes,
-// normally of type std::string.
-//
-// The keys in the backing store are variable-length tuples with different
-// types of fields. Each key in the backing store starts with a ternary
-// prefix: (database id, object store id, index id). For each, 0 is reserved
-// for metadata. See KeyPrefix::Decode() for details of the prefix coding.
-//
-// The prefix makes sure that data for a specific database, object store, and
-// index are grouped together. The locality is important for performance:
-// common operations should only need a minimal number of seek operations. For
-// example, all the metadata for a database is grouped together so that
-// reading that metadata only requires one seek.
-//
-// Each key type has a class (in square brackets below) which knows how to
-// encode, decode, and compare that key type.
-//
-// Strings (origins, names, etc) are encoded as UTF-16BE.
-//
-//
-// Global metadata
-// ---------------
-// The prefix is <0, 0, 0>, followed by a metadata type byte:
-//
-// <0, 0, 0, 0> => backing store schema version [SchemaVersionKey]
-// <0, 0, 0, 1> => maximum allocated database [MaxDatabaseIdKey]
-// <0, 0, 0, 2> => SerializedScriptValue version [DataVersionKey]
-// <0, 0, 0, 3>
-//   => Blob journal
-//     The format of the journal is:
-//         {database_id (var int), blobKey (var int)}*.
-//     If the blobKey is kAllBlobsKey, the whole database should be deleted.
-//     [BlobJournalKey]
-// <0, 0, 0, 4> => Live blob journal; same format. [LiveBlobJournalKey]
-// <0, 0, 0, 100, database id>
-//   => Existence implies the database id is in the free list
-//      [DatabaseFreeListKey]
-// <0, 0, 0, 201, origin, database name> => Database id (int) [DatabaseNameKey]
-//
-//
-// Database metadata: [DatabaseMetaDataKey]
-// ----------------------------------------
-// The prefix is <database id, 0, 0> followed by a metadata type byte:
-//
-// <database id, 0, 0, 0> => origin name
-// <database id, 0, 0, 1> => database name
-// <database id, 0, 0, 2> => IDB string version data (obsolete)
-// <database id, 0, 0, 3> => maximum allocated object store id
-// <database id, 0, 0, 4> => IDB integer version (var int)
-// <database id, 0, 0, 5> => blob key generator current number
-//
-//
-// Object store metadata: [ObjectStoreMetaDataKey]
-// -----------------------------------------------
-// The prefix is <database id, 0, 0>, followed by a type byte (50), then the
-// object store id (var int), then a metadata type byte.
-//
-// <database id, 0, 0, 50, object store id, 0> => object store name
-// <database id, 0, 0, 50, object store id, 1> => key path
-// <database id, 0, 0, 50, object store id, 2> => auto increment flag
-// <database id, 0, 0, 50, object store id, 3> => is evictable
-// <database id, 0, 0, 50, object store id, 4> => last "version" number
-// <database id, 0, 0, 50, object store id, 5> => maximum allocated index id
-// <database id, 0, 0, 50, object store id, 6> => has key path flag (obsolete)
-// <database id, 0, 0, 50, object store id, 7> => key generator current number
-//
-// The key path was originally just a string (#1) or null (identified by flag,
-// #6). To support null, string, or array the coding is now identified by the
-// leading bytes in #1 - see EncodeIDBKeyPath.
-//
-// The "version" field is used to weed out stale index data. Whenever new
-// object store data is inserted, it gets a new "version" number, and new
-// index data is written with this number. When the index is used for
-// look-ups, entries are validated against the "exists" entries, and records
-// with old "version" numbers are deleted when they are encountered in
-// GetPrimaryKeyViaIndex, IndexCursorImpl::LoadCurrentRow and
-// IndexKeyCursorImpl::LoadCurrentRow.
-//
-//
-// Index metadata: [IndexMetaDataKey]
-// ----------------------------------
-// The prefix is <database id, 0, 0>, followed by a type byte (100), then the
-// object store id (var int), then the index id (var int), then a metadata
-// type byte.
-//
-// <database id, 0, 0, 100, object store id, index id, 0> => index name
-// <database id, 0, 0, 100, object store id, index id, 1> => unique flag
-// <database id, 0, 0, 100, object store id, index id, 2> => key path
-// <database id, 0, 0, 100, object store id, index id, 3> => multi-entry flag
-//
-//
-// Other object store and index metadata
-// -------------------------------------
-// The prefix is <database id, 0, 0> followed by a type byte. The object
-// store and index id are variable length integers, the names are variable
-// length strings.
-//
-// <database id, 0, 0, 150, object store id>
-//   => existence implies the object store id is in the free list
-//      [ObjectStoreFreeListKey]
-// <database id, 0, 0, 151, object store id, index id>
-//   => existence implies the index id is in the free list [IndexFreeListKey]
-// <database id, 0, 0, 200, object store name>
-//   => object store id [ObjectStoreNamesKey]
-// <database id, 0, 0, 201, object store id, index name>
-//   => index id [IndexNamesKey]
-//
-//
-// Object store data: [ObjectStoreDataKey]
-// ---------------------------------------
-// The prefix is followed by a type byte and the encoded IDB primary key. The
-// data has a "version" prefix followed by the serialized script value.
-//
-// <database id, object store id, 1, user key>
-//   => "version", serialized script value
-//
-//
-// "Exists" entry: [ExistsEntryKey]
-// --------------------------------
-// The prefix is followed by a type byte and the encoded IDB primary key.
-//
-// <database id, object store id, 2, user key> => "version"
-//
-//
-// Blob entry table: [BlobEntryKey]
-// --------------------------------
-//
-// The prefix is followed by a type byte and the encoded IDB primary key.
-//
-// <database id, object store id, 3, user key> => array of IndexedDBBlobInfo
-//
-//
-// Index data
-// ----------
-// The prefix is followed by a type byte, the encoded IDB index key, a
-// "sequence" number (obsolete; var int), and the encoded IDB primary key.
-//
-// <database id, object store id, index id, index key, sequence number,
-//   primary key> => "version", primary key [IndexDataKey]
-//
-// The sequence number is obsolete; it was used to allow two entries with the
-// same user (index) key in non-unique indexes prior to the inclusion of the
-// primary key in the data.
-//
-// Note: In order to be compatible with LevelDB's Bloom filter each bit of the
-// encoded key needs to used and "not ignored" by the comparator.
+// See leveldb_coding_scheme.md for detailed documentation of the coding
+// scheme implemented here.
 
 using base::StringPiece;
 using blink::WebIDBKeyType;
@@ -196,6 +49,10 @@ static const unsigned char kIndexedDBKeyBinaryTypeByte = 6;
 
 static const unsigned char kIndexedDBKeyPathTypeCodedByte1 = 0;
 static const unsigned char kIndexedDBKeyPathTypeCodedByte2 = 0;
+
+static const unsigned char kIndexedDBKeyPathNullTypeByte = 0;
+static const unsigned char kIndexedDBKeyPathStringTypeByte = 1;
+static const unsigned char kIndexedDBKeyPathArrayTypeByte = 2;
 
 static const unsigned char kObjectStoreDataIndexId = 1;
 static const unsigned char kExistsEntryIndexId = 2;
@@ -352,6 +209,18 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       return;
   }
 }
+
+#define COMPILE_ASSERT_MATCHING_VALUES(a, b)                          \
+  static_assert(                                                      \
+      static_cast<unsigned char>(a) == static_cast<unsigned char>(b), \
+      "Blink enum and coding byte must match.")
+
+COMPILE_ASSERT_MATCHING_VALUES(WebIDBKeyPathTypeNull,
+                               kIndexedDBKeyPathNullTypeByte);
+COMPILE_ASSERT_MATCHING_VALUES(WebIDBKeyPathTypeString,
+                               kIndexedDBKeyPathStringTypeByte);
+COMPILE_ASSERT_MATCHING_VALUES(WebIDBKeyPathTypeArray,
+                               kIndexedDBKeyPathArrayTypeByte);
 
 void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
   // May be typed, or may be a raw string. An invalid leading
