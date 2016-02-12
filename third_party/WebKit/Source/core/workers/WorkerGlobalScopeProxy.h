@@ -47,7 +47,7 @@ class CORE_EXPORT WorkerGlobalScopeProxy {
 public:
     virtual ~WorkerGlobalScopeProxy() { }
 
-    virtual void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode) = 0;
+    virtual void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode) = 0;
 
     virtual void terminateWorkerGlobalScope() = 0;
 

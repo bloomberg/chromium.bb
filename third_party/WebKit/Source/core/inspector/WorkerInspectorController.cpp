@@ -215,6 +215,11 @@ void WorkerInspectorController::resumeStartup()
         m_workerThreadDebugger->quitMessageLoopOnPause();
 }
 
+bool WorkerInspectorController::isRunRequired()
+{
+    return m_paused;
+}
+
 InspectorFrontendChannel* WorkerInspectorController::frontendChannel() const
 {
     return static_cast<InspectorFrontendChannel*>(m_pageInspectorProxy.get());

@@ -342,7 +342,7 @@ interface InspectorInstrumentation {
     void didFireAnimationFrame(const InspectorInstrumentationCookie&);
 
     [Worker]
-    void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, const KURL& url, bool waitingForDebugger);
+    void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, const KURL& url);
 
     [Worker, PageConsole]
     void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
@@ -447,7 +447,7 @@ interface InspectorOverrides {
     bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
 
     [Worker, Inline=FastReturn]
-    bool shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context);
+    bool shouldPauseDedicatedWorkerOnStart(ExecutionContext* context);
 
     [Resource, Inline=FastReturn]
     bool shouldForceCORSPreflight(Document*);

@@ -169,6 +169,11 @@ void V8RuntimeAgentImpl::run(ErrorString* errorString)
     *errorString = "Not paused";
 }
 
+void V8RuntimeAgentImpl::isRunRequired(ErrorString*, bool* out_result)
+{
+    *out_result = false;
+}
+
 void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enabled)
 {
     m_state->setBoolean(V8RuntimeAgentImplState::customObjectFormatterEnabled, enabled);

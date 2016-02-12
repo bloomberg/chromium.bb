@@ -131,6 +131,11 @@ void InspectorRuntimeAgent::run(ErrorString* errorString)
     m_client->resumeStartup();
 }
 
+void InspectorRuntimeAgent::isRunRequired(ErrorString* errorString, bool* outResult)
+{
+    *outResult = m_client->isRunRequired();
+}
+
 void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString* errorString, bool enabled)
 {
     m_v8RuntimeAgent->setCustomObjectFormatterEnabled(errorString, enabled);

@@ -75,6 +75,7 @@ private:
     // InspectorRuntimeAgent::Client implementation.
     void pauseOnStart();
     void resumeStartup() override;
+    bool isRunRequired() override;
 
     class PageInspectorProxy;
     friend WTF::OwnedPtrDeleter<PageInspectorProxy>;

@@ -58,6 +58,7 @@ public:
         virtual ~Client() { }
 
         virtual void resumeStartup() { }
+        virtual bool isRunRequired() { return false; }
     };
 
     ~InspectorRuntimeAgent() override;
@@ -96,6 +97,7 @@ public:
     void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) final;
     void run(ErrorString*) override;
+    void isRunRequired(ErrorString*, bool* out_result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
     void compileScript(ErrorString*, const String& inExpression, const String& inSourceURL, bool inPersistScript, int inExecutionContextId, TypeBuilder::OptOutput<TypeBuilder::Runtime::ScriptId>* optOutScriptId, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
     void runScript(ErrorString*, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
