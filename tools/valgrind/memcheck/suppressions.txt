@@ -3523,7 +3523,6 @@
    fun:_ZN2ui20DeviceDataManagerX1114CreateInstanceEv
    fun:_ZN2ui14X11EventSourceC1EPNS_22X11EventSourceDelegateEP9_XDisplay
    fun:_ZN2ui18X11EventSourceGlibC1EP9_XDisplay
-   fun:_ZN2ui19PlatformEventSource13CreateDefaultEv
 }
 {
    bug_586206
