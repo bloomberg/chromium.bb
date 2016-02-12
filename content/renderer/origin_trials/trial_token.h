@@ -46,6 +46,7 @@ class CONTENT_EXPORT TrialToken {
   // Returns true if this token has a valid signature, and has not expired.
   bool IsValid(const base::Time& now) const;
 
+  uint8_t version() { return version_; }
   std::string signature() { return signature_; }
   std::string data() { return data_; }
   GURL origin() { return origin_; }
@@ -65,11 +66,24 @@ class CONTENT_EXPORT TrialToken {
                                 const base::StringPiece& public_key);
 
  private:
-  TrialToken(const std::string& signature,
+  TrialToken(uint8_t version,
+             const std::string& signature,
              const std::string& data,
              const GURL& origin,
              const std::string& feature_name,
              uint64_t expiry_timestamp);
+
+  // The version number for this token. The version identifies the structure of
+  // the token, as well as the algorithm used to generate/validate the token.
+  // The version number is only incremented when incompatible changes are made
+  // to either the structure (e.g. adding a field), or the algorithm (e.g.
+  // changing the hash or signing algorithm).
+  // NOTE: The version number is not part of the token signature and validation.
+  //       Thus it is possible to modify a token to use a different version from
+  //       that used to generate the signature. To mitigate cross-version
+  //       attacks, the signing key(s) should be changed whenever there are
+  //       changes to the token structure or algorithms.
+  uint8_t version_;
 
   // The base64-encoded-signature portion of the token. For the token to be
   // valid, this must be a valid signature for the data portion of the token, as
