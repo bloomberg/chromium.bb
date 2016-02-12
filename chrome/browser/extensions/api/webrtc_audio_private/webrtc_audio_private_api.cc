@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/media_device_id.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -101,9 +100,7 @@ void WebrtcAudioPrivateEventService::SignalEvent() {
   }
 }
 
-WebrtcAudioPrivateFunction::WebrtcAudioPrivateFunction()
-    : resource_context_(NULL) {
-}
+WebrtcAudioPrivateFunction::WebrtcAudioPrivateFunction() {}
 
 WebrtcAudioPrivateFunction::~WebrtcAudioPrivateFunction() {
 }
@@ -201,25 +198,24 @@ std::string WebrtcAudioPrivateFunction::CalculateHMACImpl(
     return media::AudioManagerBase::kDefaultDeviceId;
 
   GURL security_origin(source_url().GetOrigin());
-  return content::GetHMACForMediaDeviceID(
-      resource_context()->GetMediaDeviceIDSalt(),
-      security_origin,
-      raw_id);
+  return content::GetHMACForMediaDeviceID(device_id_salt(), security_origin,
+                                          raw_id);
 }
 
-void WebrtcAudioPrivateFunction::InitResourceContext() {
-  resource_context_ = GetProfile()->GetResourceContext();
+void WebrtcAudioPrivateFunction::InitDeviceIDSalt() {
+  device_id_salt_ = GetProfile()->GetResourceContext()->GetMediaDeviceIDSalt();
 }
 
-content::ResourceContext* WebrtcAudioPrivateFunction::resource_context() const {
-  DCHECK(resource_context_);  // Did you forget to InitResourceContext()?
-  return resource_context_;
+const content::ResourceContext::SaltCallback&
+WebrtcAudioPrivateFunction::device_id_salt() const {
+  DCHECK(!device_id_salt_.is_null());
+  return device_id_salt_;
 }
 
 bool WebrtcAudioPrivateGetSinksFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  InitResourceContext();
+  InitDeviceIDSalt();
   GetOutputDeviceNames();
 
   return true;
@@ -262,7 +258,7 @@ void WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread() {
 
 bool WebrtcAudioPrivateGetActiveSinkFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  InitResourceContext();
+  InitDeviceIDSalt();
 
   scoped_ptr<wap::GetActiveSink::Params> params(
       wap::GetActiveSink::Params::Create(*args_));
@@ -323,7 +319,7 @@ bool WebrtcAudioPrivateSetActiveSinkFunction::RunAsync() {
       wap::SetActiveSink::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  InitResourceContext();
+  InitDeviceIDSalt();
 
   if (params->request.guest_process_id.get()) {
     request_info_.guest_process_id.reset(
@@ -425,7 +421,7 @@ bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  InitResourceContext();
+  InitDeviceIDSalt();
 
   AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
@@ -460,11 +456,8 @@ WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread() {
        it != source_devices_.end();
        ++it) {
     const std::string& id = it->unique_id;
-    if (content::DoesMediaDeviceIDMatchHMAC(
-            resource_context()->GetMediaDeviceIDSalt(),
-            security_origin,
-            source_id_in_origin,
-            id)) {
+    if (content::DoesMediaDeviceIDMatchHMAC(device_id_salt(), security_origin,
+                                            source_id_in_origin, id)) {
       raw_source_id = id;
       DVLOG(2) << "Found raw ID " << raw_source_id
                << " for source ID in origin " << source_id_in_origin;

@@ -13,13 +13,10 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/webrtc_audio_private.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_context.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "media/audio/audio_device_name.h"
 #include "url/gurl.h"
-
-namespace content {
-class ResourceContext;
-}
 
 namespace extensions {
 
@@ -94,16 +91,16 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
   // Call only on IO thread.
   std::string CalculateHMACImpl(const std::string& raw_id);
 
-  // Initializes |resource_context_|. Must be called on the UI thread,
-  // before any calls to |resource_context()|.
-  void InitResourceContext();
+  // Initializes |device_id_salt_|. Must be called on the UI thread,
+  // before any calls to |device_id_salt()|.
+  void InitDeviceIDSalt();
 
   // Callable from any thread. Must previously have called
-  // |InitResourceContext()|.
-  content::ResourceContext* resource_context() const;
+  // |InitDeviceIDSalt()|.
+  const content::ResourceContext::SaltCallback& device_id_salt() const;
 
  private:
-  content::ResourceContext* resource_context_;
+  content::ResourceContext::SaltCallback device_id_salt_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcAudioPrivateFunction);
 };
