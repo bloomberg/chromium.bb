@@ -21,27 +21,8 @@ namespace internal {
 // A ConnectionImpl represents each half of a connection between two
 // applications, allowing customization of which interfaces are published to the
 // other.
-class ConnectionImpl : public Connection,
-                       public shell::mojom::InterfaceProvider {
+class ConnectionImpl : public Connection {
  public:
-  class TestApi {
-  public:
-    explicit TestApi(ConnectionImpl* impl) : impl_(impl) {}
-    ~TestApi() {}
-
-    void SetInterfaceBinderForName(InterfaceBinder* binder,
-                                   const std::string& interface_name) {
-      impl_->SetInterfaceBinderForName(binder, interface_name);
-    }
-    void RemoveInterfaceBinderForName(const std::string& interface_name) {
-      impl_->RemoveInterfaceBinderForName(interface_name);
-    }
-
-  private:
-    ConnectionImpl* impl_;
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
   ConnectionImpl();
   // |allowed_interfaces| are the set of interfaces that the shell has allowed
   // an application to expose to another application. If this set contains only
@@ -58,28 +39,19 @@ class ConnectionImpl : public Connection,
       GetConnectToApplicationCallback();
 
  private:
-  using NameToInterfaceBinderMap = std::map<std::string, InterfaceBinder*>;
-
   // Connection:
-  void SetDefaultInterfaceBinder(InterfaceBinder* binder) override;
-  bool SetInterfaceBinderForName(InterfaceBinder* binder,
-                                 const std::string& interface_name) override;
   const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
-  shell::mojom::InterfaceProvider* GetRemoteInterfaces() override;
-  shell::mojom::InterfaceProvider* GetLocalInterfaces() override;
   void SetRemoteInterfaceProviderConnectionErrorHandler(
       const Closure& handler) override;
   bool GetRemoteApplicationID(uint32_t* remote_id) const override;
   bool GetRemoteContentHandlerID(uint32_t* content_handler_id) const override;
   void AddRemoteIDCallback(const Closure& callback) override;
+  bool AllowsInterface(const std::string& interface_name) const override;
+  shell::mojom::InterfaceProvider* GetRemoteInterfaces() override;
+  InterfaceRegistry* GetLocalRegistry() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
-  // InterfaceProvider:
-  void GetInterface(const mojo::String& interface_name,
-                    ScopedMessagePipeHandle handle) override;
-
-  void RemoveInterfaceBinderForName(const std::string& interface_name);
   void OnGotRemoteIDs(uint32_t target_application_id,
                       uint32_t content_handler_id);
 
@@ -93,14 +65,11 @@ class ConnectionImpl : public Connection,
   bool remote_ids_valid_;
   std::vector<Closure> remote_id_callbacks_;
 
-  Binding<shell::mojom::InterfaceProvider> local_binding_;
+  InterfaceRegistry local_registry_;
   shell::mojom::InterfaceProviderPtr remote_interfaces_;
 
   const std::set<std::string> allowed_interfaces_;
   const bool allow_all_interfaces_;
-
-  InterfaceBinder* default_binder_;
-  NameToInterfaceBinderMap name_to_binder_;
 
   base::WeakPtrFactory<ConnectionImpl> weak_factory_;
 

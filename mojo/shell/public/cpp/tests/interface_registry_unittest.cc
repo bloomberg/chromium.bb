@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/public/cpp/lib/connection_impl.h"
+#include "mojo/shell/public/cpp/interface_registry.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/public/cpp/interface_binder.h"
@@ -24,32 +24,36 @@ class TestBinder : public InterfaceBinder {
   int* delete_count_;
 };
 
-TEST(ConnectionImplTest, Ownership) {
+TEST(InterfaceRegistryTest, Ownership) {
   int delete_count = 0;
 
   // Destruction.
   {
-    ConnectionImpl connection;
-    ConnectionImpl::TestApi test_api(&connection);
+    shell::mojom::InterfaceProviderRequest ir;
+    InterfaceRegistry registry(std::move(ir), nullptr);
+    InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
   }
   EXPECT_EQ(1, delete_count);
 
   // Removal.
   {
-    scoped_ptr<ConnectionImpl> connection(new ConnectionImpl);
+    shell::mojom::InterfaceProviderRequest ir;
+    scoped_ptr<InterfaceRegistry> registry(
+        new InterfaceRegistry(std::move(ir), nullptr));
     InterfaceBinder* b = new TestBinder(&delete_count);
-    ConnectionImpl::TestApi test_api(connection.get());
+    InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(b, "TC1");
     test_api.RemoveInterfaceBinderForName("TC1");
-    connection.reset();
+    registry.reset();
     EXPECT_EQ(2, delete_count);
   }
 
   // Multiple.
   {
-    ConnectionImpl connection;
-    ConnectionImpl::TestApi test_api(&connection);
+    shell::mojom::InterfaceProviderRequest ir;
+    InterfaceRegistry registry(std::move(ir), nullptr);
+    InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC2");
   }
@@ -57,8 +61,9 @@ TEST(ConnectionImplTest, Ownership) {
 
   // Re-addition.
   {
-    ConnectionImpl connection;
-    ConnectionImpl::TestApi test_api(&connection);
+    shell::mojom::InterfaceProviderRequest ir;
+    InterfaceRegistry registry(std::move(ir), nullptr);
+    InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     EXPECT_EQ(5, delete_count);

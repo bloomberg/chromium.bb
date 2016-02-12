@@ -11,7 +11,8 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
-#include "mojo/shell/public/cpp/lib/interface_factory_binder.h"
+#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/interface_registry.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace mojo {
@@ -22,24 +23,13 @@ class InterfaceBinder;
 // returned from Shell's ConnectToApplication(), and passed to ShellClient's
 // AcceptConnection() each time an incoming connection is received.
 //
-// To use, define a class that implements your specific interface. Then
-// implement an InterfaceFactory<Foo> that binds instances of FooImpl to
-// InterfaceRequest<Foo>s and register that on the connection like this:
+// Call AddService<T>(factory) to expose an interface to the remote application,
+// and GetInterface(&interface_ptr) to consume an interface exposed by the
+// remote application.
 //
-//   connection->AddInterface(&factory);
-//
-// Or, if you have multiple factories implemented by the same type, explicitly
-// specify the interface to register the factory for:
-//
-//   connection->AddInterface<Foo>(&my_foo_and_bar_factory_);
-//   connection->AddInterface<Bar>(&my_foo_and_bar_factory_);
-//
-// The InterfaceFactory must outlive the Connection.
-//
-// Additionally you may specify a default InterfaceBinder to handle requests for
-// interfaces unhandled by any registered InterfaceFactory. Just as with
-// InterfaceFactory, the default InterfaceBinder supplied must outlive
-// Connection.
+// Internally, this class wraps an InterfaceRegistry that accepts interfaces
+// that may be exposed to a remote application. See documentation in
+// interface_registry.h for more information.
 //
 // A Connection returned via Shell::ConnectToApplication() is owned by the
 // caller.
@@ -60,18 +50,13 @@ class Connection {
     Connection* connection_;
   };
 
-  // See class description for details.
-  virtual void SetDefaultInterfaceBinder(InterfaceBinder* binder) = 0;
-
   // Allow the remote application to request instances of Interface.
   // |factory| will create implementations of Interface on demand.
   // Returns true if the interface was exposed, false if capability filtering
   // from the shell prevented the interface from being exposed.
   template <typename Interface>
   bool AddInterface(InterfaceFactory<Interface>* factory) {
-    return SetInterfaceBinderForName(
-        new internal::InterfaceFactoryBinder<Interface>(factory),
-        Interface::Name_);
+    return GetLocalRegistry()->AddInterface<Interface>(factory);
   }
 
   // Binds |ptr| to an implemention of Interface in the remote application.
@@ -79,11 +64,7 @@ class Connection {
   // interface.
   template <typename Interface>
   void GetInterface(InterfacePtr<Interface>* ptr) {
-    if (shell::mojom::InterfaceProvider* ip = GetRemoteInterfaces()) {
-      MessagePipe pipe;
-      ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
-      ip->GetInterface(Interface::Name_, std::move(pipe.handle1));
-    }
+    mojo::GetInterface(GetRemoteInterfaces(), ptr);
   }
 
   // Returns the URL that was used by the source application to establish a
@@ -100,15 +81,6 @@ class Connection {
 
   // Returns the URL identifying the remote application on this connection.
   virtual const std::string& GetRemoteApplicationURL() = 0;
-
-  // Returns the raw proxy to the remote application's InterfaceProvider
-  // interface. Most applications will just use GetInterface() instead.
-  // Caller does not take ownership.
-  virtual shell::mojom::InterfaceProvider* GetRemoteInterfaces() = 0;
-
-  // Returns the local application's InterfaceProvider interface. The return
-  // value is owned by this connection.
-  virtual shell::mojom::InterfaceProvider* GetLocalInterfaces() = 0;
 
   // Register a handler to receive an error notification on the pipe to the
   // remote application's InterfaceProvider.
@@ -134,11 +106,17 @@ class Connection {
   // the ids are available, |callback| is run immediately.
   virtual void AddRemoteIDCallback(const Closure& callback) = 0;
 
+  // Returns true if the Shell allows |interface_name| to be exposed to the
+  // remote application.
+  virtual bool AllowsInterface(const std::string& interface_name) const = 0;
+
+  // Returns the raw proxy to the remote application's InterfaceProvider
+  // interface. Most applications will just use GetInterface() instead.
+  // Caller does not take ownership.
+  virtual shell::mojom::InterfaceProvider* GetRemoteInterfaces() = 0;
+
  protected:
-  // Returns true if the binder was set, false if it was not set (e.g. by
-  // some filtering policy preventing this interface from being exposed).
-   virtual bool SetInterfaceBinderForName(InterfaceBinder* binder,
-                                          const std::string& name) = 0;
+  virtual InterfaceRegistry* GetLocalRegistry() = 0;
 
   virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
 };
