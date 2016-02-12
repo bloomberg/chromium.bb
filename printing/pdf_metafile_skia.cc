@@ -167,14 +167,15 @@ bool PdfMetafileSkia::FinishDocument() {
     canvas->drawPicture(page.content_.get());
     pdf_doc->endPage();
   }
-  SkTArray<SkDocument::Attribute> info;
   const std::string& user_agent = GetAgent();
-  info.emplace_back(SkString("Creator"),
-                    user_agent.empty()
-                        ? SkString("Chromium")
-                        : SkString(user_agent.c_str(), user_agent.size()));
+  SkDocument::Attribute info[] = {
+      SkDocument::Attribute(SkString("Creator"),
+                            user_agent.empty()
+                            ? SkString("Chromium")
+                            : SkString(user_agent.c_str(), user_agent.size())),
+  };
   SkTime::DateTime now = TimeToSkTime(base::Time::Now());
-  pdf_doc->setMetadata(info, &now, &now);
+  pdf_doc->setMetadata(info, SK_ARRAY_COUNT(info), &now, &now);
   if (!pdf_doc->close())
     return false;
 
