@@ -208,6 +208,11 @@
             "group_name": "SmartLockBrandingSavePromptOnly"
         }
     ],
+    "PhysicalWeb": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "Precache": [
         {
             "group_name": "Enabled"
