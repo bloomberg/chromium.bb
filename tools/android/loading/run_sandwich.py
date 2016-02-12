@@ -31,6 +31,7 @@ import device_setup
 import devtools_monitor
 import json
 import page_track
+import pull_sandwich_metrics
 import tracing
 
 
@@ -89,7 +90,7 @@ def _SaveChromeTrace(events, directory, subdirectory):
   try:
     os.makedirs(target_directory)
     with open(filename, 'w') as f:
-      json.dump({'traceEvents': events['events'], 'metadata': {}}, f)
+      json.dump({'traceEvents': events['events'], 'metadata': {}}, f, indent=2)
   except IOError:
     logging.warning('Could not save a trace: %s' % filename)
     # Swallow the exception.
@@ -188,7 +189,7 @@ def main():
             connection.ClearCache()
           page_track.PageTrack(connection)
           tracing_track = tracing.TracingTrack(connection,
-              categories='blink,cc,netlog,renderer.scheduler,toplevel,v8')
+              categories=pull_sandwich_metrics.CATEGORIES)
           connection.SetUpMonitoring()
           connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
           connection.StartMonitoring()
