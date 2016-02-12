@@ -1438,7 +1438,6 @@
         ],
         "name": "memory_test: gpu_unittests",
         "override_compile_targets": [
-          "--test",
           "gpu_unittests"
         ],
         "script": "run_under_valgrind.py"
