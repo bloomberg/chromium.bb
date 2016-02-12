@@ -31,6 +31,7 @@ public:
 
     virtual String valueSubtype(v8::Local<v8::Value>) = 0;
     virtual bool formatAccessorsAsProperties(v8::Local<v8::Value>) = 0;
+    virtual bool hasRecursionLevel() = 0;
 };
 
 } // namespace blink
