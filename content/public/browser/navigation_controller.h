@@ -43,7 +43,7 @@ class WebContents;
 class NavigationController {
  public:
   enum ReloadType {
-    NO_RELOAD,                   // Normal load.
+    NO_RELOAD,                   // Load all from cache as much as possible.
     RELOAD,                      // Normal (cache-validating) reload.
     RELOAD_IGNORING_CACHE,       // Reload bypassing the cache (shift-reload).
     RELOAD_ORIGINAL_REQUEST_URL, // Reload using the original request URL.

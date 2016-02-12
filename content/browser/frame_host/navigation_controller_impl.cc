@@ -290,10 +290,25 @@ void NavigationControllerImpl::Reload(bool check_for_repost) {
 void NavigationControllerImpl::ReloadToRefreshContent(bool check_for_repost) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNonValidatingReloadOnRefreshContent)) {
-    ReloadInternal(check_for_repost, NO_RELOAD);
-  } else {
-    ReloadInternal(check_for_repost, RELOAD);
+    // Cause this reload to behave like NAVIGATION_TYPE_SAME_PAGE (e.g., enter
+    // in the omnibox), so that the main resource is cache-validated but all
+    // other resources use the cache as much as possible.  This requires
+    // navigating to the current URL in a new pending entry.
+    // TODO(toyoshim): Introduce a new ReloadType for this behavior if it
+    // becomes the default.
+    NavigationEntryImpl* last_committed = GetLastCommittedEntry();
+
+    // If the last committed entry does not exist, or a repost check dialog is
+    // really needed, use a standard reload instead.
+    if (last_committed &&
+        !(check_for_repost && last_committed->GetHasPostData())) {
+      LoadURL(last_committed->GetURL(), last_committed->GetReferrer(),
+              last_committed->GetTransitionType(),
+              last_committed->extra_headers());
+      return;
+    }
   }
+  ReloadInternal(check_for_repost, RELOAD);
 }
 void NavigationControllerImpl::ReloadIgnoringCache(bool check_for_repost) {
   ReloadInternal(check_for_repost, RELOAD_IGNORING_CACHE);
