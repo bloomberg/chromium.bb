@@ -27,21 +27,21 @@ MaterialHistoryBrowserTest.prototype = {
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_util.js',
-    'history_card_manager_test.js',
-    'history_card_test.js',
+    'history_list_test.js',
+    'history_item_test.js',
     'history_overflow_menu_test.js',
     'history_supervised_user_test.js',
     'history_toolbar_test.js'
   ])
 };
 
-TEST_F('MaterialHistoryBrowserTest', 'HistoryCardTest', function() {
-  md_history.history_card_test.registerTests();
+TEST_F('MaterialHistoryBrowserTest', 'HistoryItemTest', function() {
+  md_history.history_item_test.registerTests();
   mocha.run();
 });
 
-TEST_F('MaterialHistoryBrowserTest', 'HistoryCardManagerTest', function() {
-  md_history.history_card_manager_test.registerTests();
+TEST_F('MaterialHistoryBrowserTest', 'HistoryListTest', function() {
+  md_history.history_list_test.registerTests();
   mocha.run();
 });
 

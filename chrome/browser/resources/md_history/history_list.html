@@ -3,18 +3,14 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/html/cr/ui/position_util.html">
-<link rel="import" href="chrome://history/history_card.html">
+<link rel="import" href="chrome://history/history_item.html">
 
-<dom-module id="history-card-manager">
+<dom-module id="history-list">
   <template>
     <style>
       :host {
         display: flex;
         flex-direction: column;
-      }
-
-      :host([menu-open]) #overflow-menu {
-        display: block;
       }
 
       #overflow-menu {
@@ -26,9 +22,13 @@
         top: 0;
       }
 
+      :host([menu-open]) #overflow-menu {
+        display: block;
+      }
+
       #infinite-list {
         flex: 1;
-        padding: 40px 0 0 0;
+        padding: 20px 0 0 0;
       }
 
       paper-item {
@@ -41,12 +41,21 @@
         background: #eaeaea;
       }
     </style>
-    <iron-list items="{{historyDataByDay_}}" as="historyDay" id="infinite-list"
+    <iron-list items="{{historyData}}" as="historyDay" id="infinite-list"
         on-scroll="scrollHandler_">
       <template>
-        <history-card history-date="{{historyDay.date}}"
-            history-items="{{historyDay.historyItems}}">
-        </history-card>
+        <history-item history-date="[[historyDay.dateRelativeDay]]"
+            website-title="[[historyDay.title]]"
+            website-url="[[historyDay.url]]"
+            website-domain="[[historyDay.domain]]"
+            time-accessed="[[historyDay.dateTimeOfDay]]"
+            starred="[[historyDay.starred]]"
+            timestamp="[[historyDay.time]]"
+            selected="{{historyDay.selected}}"
+            is-card-start="[[historyDay.isFirstItem]]"
+            is-card-end="[[historyDay.isLastItem]]"
+            has-time-gap="[[historyDay.needsTimeGap]]">
+        </history-item>
       </template>
     </iron-list>
     <paper-menu id="overflow-menu">
@@ -57,5 +66,5 @@
       </paper-item>
     </paper-menu>
   </template>
-  <script src="chrome://history/history_card_manager.js"></script>
+  <script src="chrome://history/history_list.js"></script>
 </dom-module>

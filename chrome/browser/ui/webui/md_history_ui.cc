@@ -49,17 +49,12 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   bool allow_deleting_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
-
-  source->AddResourcePath("history_card.html",
-                          IDR_MD_HISTORY_HISTORY_CARD_HTML);
-  source->AddResourcePath("history_card.js", IDR_MD_HISTORY_HISTORY_CARD_JS);
-  source->AddResourcePath("history_card_manager.html",
-                          IDR_MD_HISTORY_HISTORY_CARD_MANAGER_HTML);
-  source->AddResourcePath("history_card_manager.js",
-                          IDR_MD_HISTORY_HISTORY_CARD_MANAGER_JS);
   source->AddResourcePath("history_item.html",
                           IDR_MD_HISTORY_HISTORY_ITEM_HTML);
   source->AddResourcePath("history_item.js", IDR_MD_HISTORY_HISTORY_ITEM_JS);
+  source->AddResourcePath("history_list.html",
+                          IDR_MD_HISTORY_HISTORY_LIST_HTML);
+  source->AddResourcePath("history_list.js", IDR_MD_HISTORY_HISTORY_LIST_JS);
   source->AddResourcePath("history_toolbar.html",
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML);
   source->AddResourcePath("history_toolbar.js",

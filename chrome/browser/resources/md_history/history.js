@@ -29,7 +29,7 @@ window.addEventListener('history-checkbox-select', function(e) {
  * checkbox to be unselected.
  */
 window.addEventListener('unselect-all', function() {
-  $('history-card-manager').unselectAllItems($('toolbar').count);
+  $('history-list').unselectAllItems($('toolbar').count);
   $('toolbar').count = 0;
 });
 
@@ -46,7 +46,7 @@ window.addEventListener('delete-selected', function() {
   // delete the selected items.
 
   var toBeRemoved =
-      $('history-card-manager').getSelectedItems($('toolbar').count);
+      $('history-list').getSelectedItems($('toolbar').count);
   chrome.send('removeVisits', toBeRemoved);
 });
 
@@ -56,7 +56,7 @@ window.addEventListener('delete-selected', function() {
 window.addEventListener('keydown', function(e) {
   // Escape button on keyboard
   if (e.keyCode == 27) {
-    $('history-card-manager').closeMenu();
+    $('history-list').closeMenu();
   }
 });
 
@@ -64,7 +64,7 @@ window.addEventListener('keydown', function(e) {
  * Resizing browser window will cause the overflow menu to close.
  */
 window.addEventListener('resize', function() {
-  $('history-card-manager').closeMenu();
+  $('history-list').closeMenu();
 });
 
 // Chrome Callbacks-------------------------------------------------------------
@@ -75,14 +75,14 @@ window.addEventListener('resize', function() {
  * @param {Array<HistoryEntry>} results A list of results.
  */
 function historyResult(info, results) {
-  $('history-card-manager').addNewResults(results);
+  $('history-list').addNewResults(results);
 }
 
 /**
  * Called by the history backend when deletion was succesful.
  */
 function deleteComplete() {
-  $('history-card-manager').removeDeletedHistory($('toolbar').count);
+  $('history-list').removeDeletedHistory($('toolbar').count);
   $('toolbar').count = 0;
 }
 

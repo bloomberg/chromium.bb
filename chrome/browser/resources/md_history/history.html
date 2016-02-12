@@ -26,7 +26,7 @@
       flex: 0 0 56px;
     }
 
-    #history-card-manager {
+    #history-list {
       flex: 1 0 0;
       overflow: auto;
     }
@@ -35,19 +35,20 @@
 
 <body>
   <history-toolbar class="paper-header" id="toolbar"></history-toolbar>
-  <history-card-manager id="history-card-manager"></history-card-manager>
+  <history-list id="history-list"></history-list>
 
   <link rel="import" href="chrome://resources/html/polymer_config.html">
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/util.html">
-  <link rel="import" href="chrome://history/history_card_manager.html">
+  <link rel="import" href="chrome://resources/html/load_time_data.html">
+  <script src="strings.js"></script>
+
+  <link rel="import" href="chrome://history/history_list.html">
   <link rel="import" href="chrome://history/history_toolbar.html">
 
   <script src="history.js"></script>
 
   <!-- Prepare strings and perform i18n substitutions. -->
-  <link rel="import" href="chrome://resources/html/load_time_data.html">
-  <script src="strings.js"></script>
   <link rel="import" href="chrome://resources/html/i18n_template.html">
 </body>
 

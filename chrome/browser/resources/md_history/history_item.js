@@ -6,12 +6,18 @@ Polymer({
   is: 'history-item',
 
   properties: {
-    timeAccessed_: {
+    // The date of these history items.
+    historyDate: {
       type: String,
       value: ''
     },
 
-    websiteTitle_: {
+    timeAccessed: {
+      type: String,
+      value: ''
+    },
+
+    websiteTitle: {
       type: String,
       value: ''
     },
@@ -20,7 +26,7 @@ Polymer({
     // Gives the user some idea of which history items are different pages
     // belonging to the same site, and can be used to look for more items
     // from the same site.
-    websiteDomain_: {
+    websiteDomain: {
       type: String,
       value: ''
     },
@@ -28,7 +34,7 @@ Polymer({
     // The website url is used to define where the link should take you if
     // you click on the title, and also to define which icon the history-item
     // should display.
-    websiteUrl_: {
+    websiteUrl: {
       type: String,
       value: '',
       observer: 'showIcon_'
@@ -42,7 +48,7 @@ Polymer({
     },
 
     // The time in seconds of when the website was accessed.
-    timestamp_: {
+    timestamp: {
       type: Number,
       value: 0
     },
@@ -51,6 +57,23 @@ Polymer({
       type: Boolean,
       value: false,
       notify: true
+    },
+
+    isCardStart: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true
+    },
+
+    isCardEnd: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true
+    },
+
+    hasTimeGap: {
+      type: Boolean,
+      value: false
     }
   },
 
@@ -72,7 +95,7 @@ Polymer({
    */
   showIcon_: function() {
     this.$['website-icon'].style.backgroundImage =
-        getFaviconImageSet(this.websiteUrl_);
+        getFaviconImageSet(this.websiteUrl);
   },
 
   /**
@@ -85,7 +108,7 @@ Polymer({
     this.fire('toggle-menu', {
       x: position.left,
       y: position.top,
-      accessTime: this.timestamp_
+      accessTime: this.timestamp
     });
 
     // Stops the 'tap' event from closing the menu when it opens.

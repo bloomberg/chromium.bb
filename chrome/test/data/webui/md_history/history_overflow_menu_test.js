@@ -21,7 +21,7 @@ cr.define('md_history.history_overflow_menu_test', function() {
       var element;
 
       suiteSetup(function() {
-        element = $('history-card-manager');
+        element = $('history-list');
       });
 
       test('opening and closing menu', function() {

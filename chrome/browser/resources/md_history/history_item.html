@@ -1,18 +1,70 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="chrome://resources/html/util.html">
 
 <dom-module id="history-item">
   <template>
     <style>
+      :host {
+        @apply(--layout-center);
+        @apply(--layout-vertical);
+        padding: 0 24px;
+      }
+
       #main-container {
+        background: #fff;
+        border-color: rgba(0, 0, 0, 0.14);
+        border-style: solid;
+        border-width: 0 1px;
+        max-width: 960px;
+        min-width: 500px;
+        width: 100%;
+      }
+
+      :host([is-card-start]) #main-container {
+        border-top-width: 1px;
+        margin-top: 20px;
+      }
+
+      :host([is-card-end]) #main-container {
+        border-bottom-width: 2px;
+      }
+
+      #date-accessed {
+        display: none;
+      }
+
+      :host([is-card-start]) #date-accessed {
+        @apply(--layout-center);
+        @apply(--layout-horizontal);
+        -webkit-padding-start: 20px;
+        background: #fafafa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+        border-radius: 2px 2px 0 0;
+        color: #333;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+      }
+
+      #item-container {
         @apply(--layout-center);
         @apply(--layout-horizontal);
         min-height: 40px;
+      }
+
+      :host([is-card-start]) #item-container {
+        padding-top: 8px;
+      }
+
+      :host([is-card-end]) #item-container {
+        padding-bottom: 8px;
       }
 
       #titleAndDomain {
@@ -84,24 +136,32 @@
         visibility: hidden;
       }
 
-      :host([starred]) #bookmark {
-        visibility: visible;
+      #time-gap-separator {
+        -webkit-border-start: 1px solid #888;
+        -webkit-margin-start: 77px;
+        height: 15px;
       }
     </style>
     <div id="main-container">
-      <paper-checkbox id="checkbox" on-tap="onCheckboxSelected_"
-          checked="{{selected}}" disabled="[[selectionNotAllowed_()]]">
-      </paper-checkbox>
-      <span id="time">{{timeAccessed_}}</span>
-      <div id="website-icon"></div>
-      <div id="titleAndDomain">
-        <a href="{{websiteUrl_}}" id="title">{{websiteTitle_}}</a>
-        <span id="domain">{{websiteDomain_}}</span>
+      <div id="date-accessed">[[historyDate]]</div>
+      <div id="item-container">
+        <paper-checkbox id="checkbox" on-tap="onCheckboxSelected_"
+            checked="{{selected}}" disabled="[[selectionNotAllowed_()]]">
+        </paper-checkbox>
+        <span id="time">{{timeAccessed}}</span>
+        <div id="website-icon"></div>
+        <div id="titleAndDomain">
+          <a href$="{{websiteUrl}}" id="title">{{websiteTitle}}</a>
+          <span id="domain">{{websiteDomain}}</span>
+        </div>
+        <iron-icon icon="star" id="bookmark"></iron-icon>
+        <paper-icon-button icon="more-vert" id="menu-button"
+            on-tap="onMenuButtonTap_">
+        </paper-icon-button>
       </div>
-      <iron-icon icon="star" id="bookmark"></iron-icon>
-      <paper-icon-button icon="more-vert" id="menu-button"
-          on-tap="onMenuButtonTap_">
-      </paper-icon-button>
+      <template is="dom-if" if="{{hasTimeGap}}">
+        <div id="time-gap-separator"></div>
+      </template>
     </div>
   </template>
   <script src="chrome://history/history_item.js"></script>

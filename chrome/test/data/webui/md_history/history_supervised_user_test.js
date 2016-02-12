@@ -12,42 +12,44 @@ cr.define('md_history.history_supervised_user_test', function() {
   ];
 
   function registerTests() {
-    suite('history-card-manager supervised-user', function() {
+    suite('history-list supervised-user', function() {
       var element;
 
       suiteSetup(function() {
-        element = $('history-card-manager');
+        element = $('history-list');
+      });
+
+      setup(function() {
+        element.addNewResults(TEST_HISTORY_RESULTS);
       });
 
       test('checkboxes disabled for supervised user', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS);
         var toolbar = $('toolbar');
 
         flush(function() {
-          var card = Polymer.dom(element.root).querySelectorAll('history-card');
-          var item = Polymer.dom(card[0].root).querySelectorAll('history-item');
+          var items =
+              Polymer.dom(element.root).querySelectorAll('history-item');
 
-          MockInteractions.tap(item[0].$['checkbox']);
+          MockInteractions.tap(items[0].$['checkbox']);
 
-          assertFalse(item[0].selected);
+          assertFalse(items[0].selected);
           done();
         });
       });
 
       test('deletion disabled for supervised user', function() {
-        element.addNewResults(TEST_HISTORY_RESULTS);
 
         // Make sure that removeVisits is not being called.
         registerMessageCallback('removeVisits', this, function (toBeRemoved) {
           assertTrue(false);
         });
 
-        element.historyDataByDay_[0].historyItems[0].selected = true;
+        element.historyData[0].selected = true;
         $('toolbar').onDeleteTap_();
       });
 
       teardown(function() {
-        element.historyDataByDay_ = [];
+        element.historyData = [];
       });
     });
   }

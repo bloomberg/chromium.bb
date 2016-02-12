@@ -202,14 +202,12 @@
       <include name="IDR_HISTORY_JS" file="resources\history\history.js" flattenhtml="true" type="BINDATA" />
 
       <if expr="not is_ios">
-        <include name="IDR_MD_HISTORY_HISTORY_CARD_HTML" file="resources\md_history\history_card.html" type="BINDATA" />
-        <include name="IDR_MD_HISTORY_HISTORY_CARD_JS" file="resources\md_history\history_card.js" type="BINDATA" />
-        <include name="IDR_MD_HISTORY_HISTORY_CARD_MANAGER_HTML" file="resources\md_history\history_card_manager.html" type="BINDATA" />
-        <include name="IDR_MD_HISTORY_HISTORY_CARD_MANAGER_JS" file="resources\md_history\history_card_manager.js" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_HTML" file="resources\md_history\history.html" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_ITEM_HTML" file="resources\md_history\history_item.html" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_ITEM_JS" file="resources\md_history\history_item.js" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_JS" file="resources\md_history\history.js" type="BINDATA" />
+        <include name="IDR_MD_HISTORY_HISTORY_LIST_HTML" file="resources\md_history\history_list.html" type="BINDATA" />
+        <include name="IDR_MD_HISTORY_HISTORY_LIST_JS" file="resources\md_history\history_list.js" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML" file="resources\md_history\history_toolbar.html" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_TOOLBAR_JS" file="resources\md_history\history_toolbar.js" type="BINDATA" />
       </if>

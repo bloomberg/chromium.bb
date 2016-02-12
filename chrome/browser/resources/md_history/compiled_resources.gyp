@@ -20,9 +20,8 @@
           '../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../ui/webui/resources/js/util.js',
           'history.js',
-          'history_card.js',
-          'history_card_manager.js',
           'history_item.js',
+          'history_list.js',
           'history_toolbar.js',
         ],
         'externs': [

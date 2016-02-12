@@ -17,7 +17,7 @@ cr.define('md_history.history_toolbar_test', function() {
       var toolbar;
 
       suiteSetup(function() {
-        element = $('history-card-manager');
+        element = $('history-list');
         toolbar = $('toolbar');
       });
 
@@ -25,7 +25,7 @@ cr.define('md_history.history_toolbar_test', function() {
         element.addNewResults(TEST_HISTORY_RESULTS);
 
         flush(function() {
-          var item = element.$$('history-card').$$('history-item');
+          var item = element.$$('history-item');
           MockInteractions.tap(item.$.checkbox);
 
           // Ensure that when an item is selected that the count held by the
