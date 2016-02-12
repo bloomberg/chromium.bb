@@ -280,29 +280,11 @@ bool AUAudioInputStream::Open() {
   DCHECK(!io_buffer_frame_size_);
   io_buffer_frame_size_ = io_buffer_frame_size;
 
-  // Ensure that value specified by the kAudioUnitProperty_MaximumFramesPerSlice
-  // property of the audio unit matches the the default IO buffer size. Failure
-  // to update the this property will cause audio units to not perform any
-  // processing (this includes not pulling on any inputs). This property ensures
-  // that the audio unit is prepared to produce a sufficient number of frames
-  // of audio data in response to a render call.
-  // See https://developer.apple.com/library/mac/qa/qa1533/_index.html for
-  // details.
-  DCHECK(io_buffer_frame_size);
-  UInt32 buffer_frame_size = static_cast<UInt32>(io_buffer_frame_size);
-  result = AudioUnitSetProperty(
-      audio_unit_, kAudioUnitProperty_MaximumFramesPerSlice,
-      kAudioUnitScope_Global, 0, &buffer_frame_size, sizeof(buffer_frame_size));
-  if (result != noErr) {
-    HandleError(result);
-    return false;
-  }
-  DVLOG(1) << "MaximumFramesPerSlice property set to: " << buffer_frame_size;
-
   // If |number_of_frames_| is out of range, the closest valid buffer size will
   // be set instead. Check the current setting and log a warning for a non
   // perfect match. Any such mismatch will be compensated for in
   // OnDataIsAvailable().
+  UInt32 buffer_frame_size = 0;
   property_size = sizeof(buffer_frame_size);
   result = AudioUnitGetProperty(
       audio_unit_, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,

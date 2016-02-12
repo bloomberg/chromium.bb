@@ -509,23 +509,6 @@ bool AUHALStream::ConfigureAUHAL() {
     return false;
   }
 
-  // Ensure that value specified by the kAudioUnitProperty_MaximumFramesPerSlice
-  // property of the audio unit matches the the default IO buffer size. Failure
-  // to update the this property will cause audio units to not perform any
-  // processing.
-  // See https://developer.apple.com/library/mac/qa/qa1533/_index.html for
-  // details.
-  UInt32 buffer_frame_size = static_cast<UInt32>(io_buffer_frame_size);
-  DCHECK_GT(buffer_frame_size, 0u);
-  result = AudioUnitSetProperty(
-      audio_unit_, kAudioUnitProperty_MaximumFramesPerSlice,
-      kAudioUnitScope_Global, 0, &buffer_frame_size, sizeof(buffer_frame_size));
-  if (result != noErr) {
-    CloseAudioUnit();
-    return false;
-  }
-  DVLOG(1) << "MaximumFramesPerSlice property set to: " << buffer_frame_size;
-
   // Setup callback.
   AURenderCallbackStruct callback;
   callback.inputProc = InputProc;
