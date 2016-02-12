@@ -339,6 +339,7 @@ executable("sel_ldr") {
     ":sel_main",
   ]
   if (is_linux) {
+    configs -= [ "//build/config:default_libs" ]
     libs = [ "rt" ]
     ldflags = [ "-pie" ]
   }
