@@ -373,13 +373,14 @@ struct EVENTS_EXPORT PointerDetails {
   // Radius of the Y (minor) axis of the touch ellipse. 0.0 if unknown.
   float radius_y = 0.0;
 
-  // Force (pressure) of the touch. Normalized to be [0, 1]. Default to be 0.0.
+  // Force (pressure) of the touch. Normalized to be [0, 1] except NaN means
+  // pressure is not supported by the input device.
   float force = 0.0;
 
-  // Angle of tilt of the X (major) axis. 0.0 if unknown.
+  // Tilt of a pen/stylus from surface normal as plane angle in degrees, values
+  // lie in [-90,90]. A positive tilt_x is to the right and a positive tilt_y
+  // is towards the user. 0.0 if unknown.
   float tilt_x = 0.0;
-
-  // Angle of tilt of the Y (minor) axis. 0.0 if unknown.
   float tilt_y = 0.0;
 };
 
