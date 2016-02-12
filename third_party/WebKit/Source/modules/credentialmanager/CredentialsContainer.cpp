@@ -137,7 +137,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* scriptState, const Credenti
                       options.suppressUI() ? UseCounter::CredentialManagerGetWithoutUI
                                            : UseCounter::CredentialManagerGetWithUI);
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchGet(options.suppressUI(), providers, new RequestCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->executionContext())->dispatchGet(options.suppressUI(), options.password(), providers, new RequestCallbacks(resolver));
     return promise;
 }
 

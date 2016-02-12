@@ -272,7 +272,7 @@ class CredentialManagerDispatcherTest
               base::get<1>(send_param).type);
   }
 
-  void ExpectZeroClickSignInSuccess() {
+  void ExpectZeroClickSignInSuccess(CredentialType type) {
     EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
         .Times(testing::Exactly(0));
     EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_))
@@ -287,8 +287,7 @@ class CredentialManagerDispatcherTest
     CredentialManagerMsg_SendCredential::Param send_param;
     CredentialManagerMsg_SendCredential::Read(message, &send_param);
 
-    EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD,
-              base::get<1>(send_param).type);
+    EXPECT_EQ(type, base::get<1>(send_param).type);
   }
 
   CredentialManagerDispatcher* dispatcher() { return dispatcher_.get(); }
@@ -510,7 +509,7 @@ TEST_F(CredentialManagerDispatcherTest,
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+  dispatcher()->OnRequestCredential(kRequestId, false, true, federations);
 
   RunAllPendingTasks();
 
@@ -536,7 +535,7 @@ TEST_F(CredentialManagerDispatcherTest,
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+  dispatcher()->OnRequestCredential(kRequestId, false, true, federations);
 
   RunAllPendingTasks();
 
@@ -560,7 +559,7 @@ TEST_F(CredentialManagerDispatcherTest,
       .Times(testing::Exactly(1));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+  dispatcher()->OnRequestCredential(kRequestId, false, true, federations);
 
   RunAllPendingTasks();
 
@@ -578,7 +577,7 @@ TEST_F(
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   RunAllPendingTasks();
 
@@ -600,9 +599,52 @@ TEST_F(CredentialManagerDispatcherTest,
   std::vector<GURL> federations;
 
   EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
-  ExpectZeroClickSignInSuccess();
+  ExpectZeroClickSignInSuccess(CredentialType::CREDENTIAL_TYPE_PASSWORD);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialWithoutPasswords) {
+  store_->AddLogin(form_);
+  client_->set_first_run_seen(true);
+
+  std::vector<GURL> federations;
+
+  EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
+  dispatcher()->OnRequestCredential(kRequestId, true, false, federations);
+
+  ExpectZeroClickSignInFailure();
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialFederatedMatch) {
+  form_.federation_url = GURL("https://example.com/");
+  store_->AddLogin(form_);
+  client_->set_first_run_seen(true);
+
+  std::vector<GURL> federations;
+  federations.push_back(GURL("https://example.com/"));
+
+  EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
+
+  ExpectZeroClickSignInSuccess(CredentialType::CREDENTIAL_TYPE_FEDERATED);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialFederatedNoMatch) {
+  form_.federation_url = GURL("https://example.com/");
+  store_->AddLogin(form_);
+  client_->set_first_run_seen(true);
+
+  std::vector<GURL> federations;
+  federations.push_back(GURL("https://not-example.com/"));
+
+  EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
+
+  ExpectZeroClickSignInFailure();
 }
 
 TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithoutFirstRun) {
@@ -614,7 +656,7 @@ TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithoutFirstRun) {
   EXPECT_CALL(*client_,
               NotifyUserAutoSigninBlockedOnFirstRunPtr(testing::Pointee(form_)))
       .Times(1);
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   ExpectZeroClickSignInFailure();
 }
@@ -627,7 +669,7 @@ TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithTLSErrors) {
   store_->AddLogin(form_);
 
   std::vector<GURL> federations;
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   ExpectZeroClickSignInFailure();
 }
@@ -642,7 +684,7 @@ TEST_F(CredentialManagerDispatcherTest,
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   RunAllPendingTasks();
 
@@ -669,7 +711,7 @@ TEST_F(CredentialManagerDispatcherTest,
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   RunAllPendingTasks();
 
@@ -698,7 +740,7 @@ TEST_F(CredentialManagerDispatcherTest,
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   RunAllPendingTasks();
 
@@ -725,8 +767,8 @@ TEST_F(CredentialManagerDispatcherTest,
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, false, federations);
-  dispatcher()->OnRequestCredential(kRequestId + 1, false, federations);
+  dispatcher()->OnRequestCredential(kRequestId, false, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId + 1, false, true, federations);
 
   // Check that the second request triggered a rejection.
   uint32_t kMsgID = CredentialManagerMsg_RejectCredentialRequest::ID;
@@ -791,7 +833,7 @@ TEST_F(CredentialManagerDispatcherTest, ResetSkipZeroClickAfterPrompt) {
       .Times(testing::Exactly(1));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+  dispatcher()->OnRequestCredential(kRequestId, false, true, federations);
   RunAllPendingTasks();
 
   passwords = store_->stored_passwords();
@@ -811,7 +853,7 @@ TEST_F(CredentialManagerDispatcherTest, IncognitoZeroClickRequestCredential) {
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   RunAllPendingTasks();
 
@@ -840,9 +882,9 @@ TEST_F(CredentialManagerDispatcherTest,
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
       dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
-  ExpectZeroClickSignInSuccess();
+  ExpectZeroClickSignInSuccess(CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerDispatcherTest,
@@ -862,7 +904,7 @@ TEST_F(CredentialManagerDispatcherTest,
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
       dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   ExpectZeroClickSignInFailure();
 }
@@ -882,7 +924,7 @@ TEST_F(CredentialManagerDispatcherTest,
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
       dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   ExpectZeroClickSignInFailure();
 }
@@ -903,9 +945,9 @@ TEST_F(CredentialManagerDispatcherTest,
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
       dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
-  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
-  ExpectZeroClickSignInSuccess();
+  ExpectZeroClickSignInSuccess(CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerDispatcherTest, GetSynthesizedFormForOrigin) {

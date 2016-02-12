@@ -31,6 +31,7 @@ class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
                      NotificationCallbacks* callbacks) override;
   void dispatchRequireUserMediation(NotificationCallbacks* callbacks) override;
   void dispatchGet(bool zero_click_only,
+                   bool include_passwords,
                    const blink::WebVector<blink::WebURL>& federations,
                    RequestCallbacks* callbacks) override;
 

@@ -34,7 +34,8 @@ void MockCredentialManagerClient::dispatchRequireUserMediation(
 }
 
 void MockCredentialManagerClient::dispatchGet(
-    bool zeroClickOnly,
+    bool zero_click_only,
+    bool include_passwords,
     const blink::WebVector<blink::WebURL>& federations,
     RequestCallbacks* callbacks) {
   callbacks->onSuccess(adoptWebPtr(credential_.release()));

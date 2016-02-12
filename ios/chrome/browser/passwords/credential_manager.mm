@@ -160,7 +160,7 @@ void CredentialManager::CredentialsRequested(
   std::vector<std::string> realms;
   pending_request_.reset(
       new password_manager::CredentialManagerPendingRequestTask(
-          this, request_id, zero_click_only, page_url, federation_urls,
+          this, request_id, zero_click_only, page_url, true, federation_urls,
           realms));
   store->GetAutofillableLogins(pending_request_.get());
 }

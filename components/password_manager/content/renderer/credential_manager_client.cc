@@ -123,7 +123,8 @@ void CredentialManagerClient::dispatchRequireUserMediation(
 }
 
 void CredentialManagerClient::dispatchGet(
-    bool zeroClickOnly,
+    bool zero_click_only,
+    bool include_passwords,
     const blink::WebVector<blink::WebURL>& federations,
     RequestCallbacks* callbacks) {
   int request_id = get_callbacks_.Add(callbacks);
@@ -131,7 +132,8 @@ void CredentialManagerClient::dispatchGet(
   for (size_t i = 0; i < std::min(federations.size(), kMaxFederations); ++i)
     federation_vector.push_back(federations[i]);
   Send(new CredentialManagerHostMsg_RequestCredential(
-      routing_id(), request_id, zeroClickOnly, federation_vector));
+      routing_id(), request_id, zero_click_only, include_passwords,
+      federation_vector));
 }
 
 void CredentialManagerClient::RespondToNotificationCallback(

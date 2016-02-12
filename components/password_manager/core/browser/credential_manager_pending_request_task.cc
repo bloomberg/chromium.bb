@@ -21,16 +21,18 @@ CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
     int request_id,
     bool request_zero_click_only,
     const GURL& request_origin,
+    bool include_passwords,
     const std::vector<GURL>& request_federations,
     const std::vector<std::string>& affiliated_realms)
     : delegate_(delegate),
       id_(request_id),
       zero_click_only_(request_zero_click_only),
       origin_(request_origin),
+      include_passwords_(include_passwords),
       affiliated_realms_(affiliated_realms.begin(), affiliated_realms.end()) {
   CHECK(!delegate_->client()->DidLastPageLoadEncounterSSLErrors());
-  for (const GURL& origin : request_federations)
-    federations_.insert(origin.spec());
+  for (const GURL& federation : request_federations)
+    federations_.insert(federation.GetOrigin().spec());
 }
 
 CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
@@ -52,8 +54,12 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     // GURL definition: scheme, host, and port.
     // So we can't compare them directly.
     if (form->origin.GetOrigin() == origin_.GetOrigin()) {
-      local_results.push_back(form);
-      form = nullptr;
+      if ((form->federation_url.is_empty() && include_passwords_) ||
+          (!form->federation_url.is_empty() &&
+           federations_.count(form->federation_url.spec()))) {
+        local_results.push_back(form);
+        form = nullptr;
+      }
     } else if (affiliated_realms_.count(form->signon_realm) &&
                AffiliatedMatchHelper::IsValidAndroidCredential(*form)) {
       form->is_affiliation_based_match = true;

@@ -144,6 +144,7 @@ void CredentialManagerDispatcher::ScheduleRequireMediationTask(
 void CredentialManagerDispatcher::OnRequestCredential(
     int request_id,
     bool zero_click_only,
+    bool include_passwords,
     const std::vector<GURL>& federations) {
   DCHECK(request_id);
   PasswordStore* store = GetPasswordStore();
@@ -173,24 +174,25 @@ void CredentialManagerDispatcher::OnRequestCredential(
         GetSynthesizedFormForOrigin(),
         base::Bind(&CredentialManagerDispatcher::ScheduleRequestTask,
                    weak_factory_.GetWeakPtr(), request_id, zero_click_only,
-                   federations));
+                   include_passwords, federations));
   } else {
     std::vector<std::string> no_affiliated_realms;
-    ScheduleRequestTask(request_id, zero_click_only, federations,
-                        no_affiliated_realms);
+    ScheduleRequestTask(request_id, zero_click_only, include_passwords,
+                        federations, no_affiliated_realms);
   }
 }
 
 void CredentialManagerDispatcher::ScheduleRequestTask(
     int request_id,
     bool zero_click_only,
+    bool include_passwords,
     const std::vector<GURL>& federations,
     const std::vector<std::string>& android_realms) {
   DCHECK(GetPasswordStore());
   pending_request_.reset(new CredentialManagerPendingRequestTask(
       this, request_id, zero_click_only,
-      web_contents()->GetLastCommittedURL().GetOrigin(), federations,
-      android_realms));
+      web_contents()->GetLastCommittedURL().GetOrigin(), include_passwords,
+      federations, android_realms));
 
   // This will result in a callback to
   // PendingRequestTask::OnGetPasswordStoreResults().

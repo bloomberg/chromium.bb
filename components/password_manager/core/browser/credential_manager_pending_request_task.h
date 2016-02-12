@@ -52,6 +52,7 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
       int request_id,
       bool request_zero_click_only,
       const GURL& request_origin,
+      bool include_passwords,
       const std::vector<GURL>& request_federations,
       const std::vector<std::string>& affiliated_realms);
   ~CredentialManagerPendingRequestTask() override;
@@ -68,6 +69,7 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
   const int id_;
   const bool zero_click_only_;
   const GURL origin_;
+  const bool include_passwords_;
   std::set<std::string> federations_;
   std::set<std::string> affiliated_realms_;
 

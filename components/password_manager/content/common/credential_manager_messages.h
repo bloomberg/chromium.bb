@@ -55,9 +55,10 @@ IPC_MESSAGE_ROUTED1(CredentialManagerHostMsg_RequireUserMediation,
 // Requests a credential from the browser process in response to a page calling
 // 'navigator.credentials.get()'. The browser process will respond with a
 // CredentialManagerMsg_SendCredential message.
-IPC_MESSAGE_ROUTED3(CredentialManagerHostMsg_RequestCredential,
+IPC_MESSAGE_ROUTED4(CredentialManagerHostMsg_RequestCredential,
                     int /* request_id */,
                     bool /* zero_click_only */,
+                    bool /* include_passwords */,
                     std::vector<GURL> /* federations */)
 
 // ----------------------------------------------------------------------------

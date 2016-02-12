@@ -58,6 +58,7 @@ class CredentialManagerDispatcher
   // while processing the request.
   virtual void OnRequestCredential(int request_id,
                                    bool zero_click_only,
+                                   bool include_passwords,
                                    const std::vector<GURL>& federations);
 
   // content::WebContentsObserver implementation.
@@ -90,6 +91,7 @@ class CredentialManagerDispatcher
   // grabs a list of realms related to the current web origin.
   void ScheduleRequestTask(int request_id,
                            bool zero_click_only,
+                           bool include_passwords,
                            const std::vector<GURL>& federations,
                            const std::vector<std::string>& android_realms);
 

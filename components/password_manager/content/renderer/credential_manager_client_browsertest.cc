@@ -70,7 +70,7 @@ class CredentialManagerClientTest : public content::RenderViewTest {
       }
 
       case CredentialManagerHostMsg_RequestCredential::ID: {
-        base::Tuple<int, bool, std::vector<GURL>> param;
+        base::Tuple<int, bool, bool, std::vector<GURL>> param;
         CredentialManagerHostMsg_RequestCredential::Read(message, &param);
         request_id = base::get<0>(param);
         break;
@@ -182,7 +182,7 @@ TEST_F(CredentialManagerClientTest, SendRequestCredential) {
 
   scoped_ptr<TestRequestCallbacks> callbacks(new TestRequestCallbacks(this));
   std::vector<GURL> federations;
-  client_->dispatchGet(false, federations, callbacks.release());
+  client_->dispatchGet(false, true, federations, callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                request_id));
@@ -201,7 +201,7 @@ TEST_F(CredentialManagerClientTest, SendRequestCredentialEmpty) {
 
   scoped_ptr<TestRequestCallbacks> callbacks(new TestRequestCallbacks(this));
   std::vector<GURL> federations;
-  client_->dispatchGet(false, federations, callbacks.release());
+  client_->dispatchGet(false, true, federations, callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                request_id));

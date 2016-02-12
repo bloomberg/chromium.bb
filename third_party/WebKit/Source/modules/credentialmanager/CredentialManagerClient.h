@@ -37,7 +37,7 @@ public:
     virtual void dispatchFailedSignIn(const WebCredential&, WebCredentialManagerClient::NotificationCallbacks*);
     virtual void dispatchStore(const WebCredential&, WebCredentialManagerClient::NotificationCallbacks*);
     virtual void dispatchRequireUserMediation(WebCredentialManagerClient::NotificationCallbacks*);
-    virtual void dispatchGet(bool zeroClickOnly, const WebVector<WebURL>& federations, WebCredentialManagerClient::RequestCallbacks*);
+    virtual void dispatchGet(bool zeroClickOnly, bool includePasswords, const WebVector<WebURL>& federations, WebCredentialManagerClient::RequestCallbacks*);
 
 private:
     WebCredentialManagerClient* m_client;
