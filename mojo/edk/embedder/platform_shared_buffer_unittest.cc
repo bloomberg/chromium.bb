@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/simple_platform_shared_buffer.h"
+#include "mojo/edk/embedder/platform_shared_buffer.h"
 
 #include <stddef.h>
 
@@ -23,15 +23,15 @@ namespace mojo {
 namespace edk {
 namespace {
 
-TEST(SimplePlatformSharedBufferTest, Basic) {
+TEST(PlatformSharedBufferTest, Basic) {
   const size_t kNumInts = 100;
   const size_t kNumBytes = kNumInts * sizeof(int);
   // A fudge so that we're not just writing zero bytes 75% of the time.
   const int kFudge = 1234567890;
 
   // Make some memory.
-  scoped_refptr<SimplePlatformSharedBuffer> buffer(
-      SimplePlatformSharedBuffer::Create(kNumBytes));
+  scoped_refptr<PlatformSharedBuffer> buffer(
+      PlatformSharedBuffer::Create(kNumBytes));
   ASSERT_TRUE(buffer);
 
   // Map it all, scribble some stuff, and then unmap it.
@@ -105,9 +105,8 @@ TEST(SimplePlatformSharedBufferTest, Basic) {
 
 // TODO(vtl): Bigger buffers.
 
-TEST(SimplePlatformSharedBufferTest, InvalidMappings) {
-  scoped_refptr<SimplePlatformSharedBuffer> buffer(
-      SimplePlatformSharedBuffer::Create(100));
+TEST(PlatformSharedBufferTest, InvalidMappings) {
+  scoped_refptr<PlatformSharedBuffer> buffer(PlatformSharedBuffer::Create(100));
   ASSERT_TRUE(buffer);
 
   // Zero length not allowed.
@@ -133,15 +132,15 @@ TEST(SimplePlatformSharedBufferTest, InvalidMappings) {
   EXPECT_FALSE(buffer->IsValidMap(51, 50));
 }
 
-TEST(SimplePlatformSharedBufferTest, TooBig) {
+TEST(PlatformSharedBufferTest, TooBig) {
   // If |size_t| is 32-bit, it's quite possible/likely that |Create()| succeeds
   // (since it only involves creating a 4 GB file).
   size_t max_size = std::numeric_limits<size_t>::max();
   if (base::SysInfo::AmountOfVirtualMemory() &&
       max_size > static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory()))
     max_size = static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory());
-  scoped_refptr<SimplePlatformSharedBuffer> buffer(
-      SimplePlatformSharedBuffer::Create(max_size));
+  scoped_refptr<PlatformSharedBuffer> buffer(
+      PlatformSharedBuffer::Create(max_size));
   // But, assuming |sizeof(size_t) == sizeof(void*)|, mapping all of it should
   // always fail.
   if (buffer)
@@ -152,19 +151,18 @@ TEST(SimplePlatformSharedBufferTest, TooBig) {
 // Note: It's not inconceivable that the OS could ref-count identical mappings
 // and reuse the same address, in which case we'd have to be more careful about
 // using the address as the key for unmapping.
-TEST(SimplePlatformSharedBufferTest, MappingsDistinct) {
-  scoped_refptr<SimplePlatformSharedBuffer> buffer(
-      SimplePlatformSharedBuffer::Create(100));
+TEST(PlatformSharedBufferTest, MappingsDistinct) {
+  scoped_refptr<PlatformSharedBuffer> buffer(PlatformSharedBuffer::Create(100));
   scoped_ptr<PlatformSharedBufferMapping> mapping1(buffer->Map(0, 100));
   scoped_ptr<PlatformSharedBufferMapping> mapping2(buffer->Map(0, 100));
   EXPECT_NE(mapping1->GetBase(), mapping2->GetBase());
 }
 
-TEST(SimplePlatformSharedBufferTest, BufferZeroInitialized) {
+TEST(PlatformSharedBufferTest, BufferZeroInitialized) {
   static const size_t kSizes[] = {10, 100, 1000, 10000, 100000};
   for (size_t i = 0; i < MOJO_ARRAYSIZE(kSizes); i++) {
-    scoped_refptr<SimplePlatformSharedBuffer> buffer(
-        SimplePlatformSharedBuffer::Create(kSizes[i]));
+    scoped_refptr<PlatformSharedBuffer> buffer(
+        PlatformSharedBuffer::Create(kSizes[i]));
     scoped_ptr<PlatformSharedBufferMapping> mapping(buffer->Map(0, kSizes[i]));
     for (size_t j = 0; j < kSizes[i]; j++) {
       // "Assert" instead of "expect" so we don't spam the output with thousands
@@ -175,13 +173,13 @@ TEST(SimplePlatformSharedBufferTest, BufferZeroInitialized) {
   }
 }
 
-TEST(SimplePlatformSharedBufferTest, MappingsOutliveBuffer) {
+TEST(PlatformSharedBufferTest, MappingsOutliveBuffer) {
   scoped_ptr<PlatformSharedBufferMapping> mapping1;
   scoped_ptr<PlatformSharedBufferMapping> mapping2;
 
   {
-    scoped_refptr<SimplePlatformSharedBuffer> buffer(
-        SimplePlatformSharedBuffer::Create(100));
+    scoped_refptr<PlatformSharedBuffer> buffer(
+        PlatformSharedBuffer::Create(100));
     mapping1 = buffer->Map(0, 100);
     mapping2 = buffer->Map(50, 50);
     static_cast<char*>(mapping1->GetBase())[50] = 'x';
@@ -193,7 +191,7 @@ TEST(SimplePlatformSharedBufferTest, MappingsOutliveBuffer) {
   EXPECT_EQ('y', static_cast<char*>(mapping1->GetBase())[51]);
 }
 
-TEST(SimplePlatformSharedBufferTest, FromSharedMemoryHandle) {
+TEST(PlatformSharedBufferTest, FromSharedMemoryHandle) {
   const size_t kBufferSize = 1234;
   base::SharedMemoryCreateOptions options;
   options.size = kBufferSize;
@@ -206,8 +204,8 @@ TEST(SimplePlatformSharedBufferTest, FromSharedMemoryHandle) {
 
   base::SharedMemoryHandle shm_handle =
       base::SharedMemory::DuplicateHandle(shared_memory.handle());
-  scoped_refptr<SimplePlatformSharedBuffer> simple_buffer(
-      SimplePlatformSharedBuffer::CreateFromSharedMemoryHandle(
+  scoped_refptr<PlatformSharedBuffer> simple_buffer(
+      PlatformSharedBuffer::CreateFromSharedMemoryHandle(
           kBufferSize, false /* read_only */, shm_handle));
   ASSERT_TRUE(simple_buffer);
 

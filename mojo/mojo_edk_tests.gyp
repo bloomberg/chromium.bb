@@ -205,7 +205,7 @@
       'sources': [
         'edk/embedder/embedder_unittest.cc',
         'edk/embedder/platform_channel_pair_posix_unittest.cc',
-        'edk/embedder/simple_platform_shared_buffer_unittest.cc',
+        'edk/embedder/platform_shared_buffer_unittest.cc',
         'edk/system/awakable_list_unittest.cc',
         'edk/system/core_test_base.cc',
         'edk/system/core_test_base.h',

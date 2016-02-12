@@ -15,7 +15,6 @@
 #include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/channel.h"
 
@@ -112,7 +111,7 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
   if (WaitForBrokerMessage(sync_channel_.get(),
                            BrokerMessageType::BUFFER_RESPONSE, 1,
                            &incoming_platform_handles)) {
-    return internal::g_platform_support->CreateSharedBufferFromHandle(
+    return PlatformSharedBuffer::CreateFromPlatformHandle(
         num_bytes, ScopedPlatformHandle(incoming_platform_handles.front()));
   }
 

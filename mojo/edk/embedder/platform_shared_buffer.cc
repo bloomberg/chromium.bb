@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/simple_platform_shared_buffer.h"
+#include "mojo/edk/embedder/platform_shared_buffer.h"
 
 #include <stddef.h>
 
@@ -28,23 +28,22 @@ ScopedPlatformHandle SharedMemoryToPlatformHandle(
   return ScopedPlatformHandle(PlatformHandle(memory_handle.GetHandle()));
 #else
   CHECK_EQ(memory_handle.GetType(), base::SharedMemoryHandle::POSIX);
-  return ScopedPlatformHandle(PlatformHandle(
-      memory_handle.GetFileDescriptor().fd));
+  return ScopedPlatformHandle(
+      PlatformHandle(memory_handle.GetFileDescriptor().fd));
 #endif
 }
 
 }  // namespace
 
 // static
-SimplePlatformSharedBuffer* SimplePlatformSharedBuffer::Create(
-    size_t num_bytes) {
+PlatformSharedBuffer* PlatformSharedBuffer::Create(size_t num_bytes) {
   DCHECK_GT(num_bytes, 0u);
 
-  SimplePlatformSharedBuffer* rv = new SimplePlatformSharedBuffer(num_bytes);
+  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes);
   if (!rv->Init()) {
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
-    scoped_refptr<SimplePlatformSharedBuffer> deleter(rv);
+    scoped_refptr<PlatformSharedBuffer> deleter(rv);
     return nullptr;
   }
 
@@ -52,17 +51,16 @@ SimplePlatformSharedBuffer* SimplePlatformSharedBuffer::Create(
 }
 
 // static
-SimplePlatformSharedBuffer*
-SimplePlatformSharedBuffer::CreateFromPlatformHandle(
+PlatformSharedBuffer* PlatformSharedBuffer::CreateFromPlatformHandle(
     size_t num_bytes,
     ScopedPlatformHandle platform_handle) {
   DCHECK_GT(num_bytes, 0u);
 
-  SimplePlatformSharedBuffer* rv = new SimplePlatformSharedBuffer(num_bytes);
+  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes);
   if (!rv->InitFromPlatformHandle(std::move(platform_handle))) {
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
-    scoped_refptr<SimplePlatformSharedBuffer> deleter(rv);
+    scoped_refptr<PlatformSharedBuffer> deleter(rv);
     return nullptr;
   }
 
@@ -70,25 +68,24 @@ SimplePlatformSharedBuffer::CreateFromPlatformHandle(
 }
 
 // static
-SimplePlatformSharedBuffer*
-SimplePlatformSharedBuffer::CreateFromSharedMemoryHandle(
+PlatformSharedBuffer* PlatformSharedBuffer::CreateFromSharedMemoryHandle(
     size_t num_bytes,
     bool read_only,
     base::SharedMemoryHandle handle) {
   DCHECK_GT(num_bytes, 0u);
   DCHECK(!read_only);
 
-  SimplePlatformSharedBuffer* rv = new SimplePlatformSharedBuffer(num_bytes);
+  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes);
   rv->InitFromSharedMemoryHandle(handle);
 
   return rv;
 }
 
-size_t SimplePlatformSharedBuffer::GetNumBytes() const {
+size_t PlatformSharedBuffer::GetNumBytes() const {
   return num_bytes_;
 }
 
-scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::Map(
+scoped_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::Map(
     size_t offset,
     size_t length) {
   if (!IsValidMap(offset, length))
@@ -97,7 +94,7 @@ scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::Map(
   return MapNoCheck(offset, length);
 }
 
-bool SimplePlatformSharedBuffer::IsValidMap(size_t offset, size_t length) {
+bool PlatformSharedBuffer::IsValidMap(size_t offset, size_t length) {
   if (offset > num_bytes_ || length == 0)
     return false;
 
@@ -109,7 +106,7 @@ bool SimplePlatformSharedBuffer::IsValidMap(size_t offset, size_t length) {
   return true;
 }
 
-scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapNoCheck(
+scoped_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::MapNoCheck(
     size_t offset,
     size_t length) {
   DCHECK(IsValidMap(offset, length));
@@ -122,15 +119,15 @@ scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapNoCheck(
   if (handle == base::SharedMemory::NULLHandle())
     return nullptr;
 
-  scoped_ptr<SimplePlatformSharedBufferMapping> mapping(
-      new SimplePlatformSharedBufferMapping(handle, offset, length));
+  scoped_ptr<PlatformSharedBufferMapping> mapping(
+      new PlatformSharedBufferMapping(handle, offset, length));
   if (mapping->Map())
     return make_scoped_ptr(mapping.release());
 
   return nullptr;
 }
 
-ScopedPlatformHandle SimplePlatformSharedBuffer::DuplicatePlatformHandle() {
+ScopedPlatformHandle PlatformSharedBuffer::DuplicatePlatformHandle() {
   DCHECK(shared_memory_);
   base::SharedMemoryHandle handle;
   {
@@ -143,7 +140,7 @@ ScopedPlatformHandle SimplePlatformSharedBuffer::DuplicatePlatformHandle() {
   return SharedMemoryToPlatformHandle(handle);
 }
 
-ScopedPlatformHandle SimplePlatformSharedBuffer::PassPlatformHandle() {
+ScopedPlatformHandle PlatformSharedBuffer::PassPlatformHandle() {
   DCHECK(HasOneRef());
 
   // The only way to pass a handle from base::SharedMemory is to duplicate it
@@ -155,14 +152,12 @@ ScopedPlatformHandle SimplePlatformSharedBuffer::PassPlatformHandle() {
   return handle;
 }
 
-SimplePlatformSharedBuffer::SimplePlatformSharedBuffer(size_t num_bytes)
-    : num_bytes_(num_bytes) {
-}
+PlatformSharedBuffer::PlatformSharedBuffer(size_t num_bytes)
+    : num_bytes_(num_bytes) {}
 
-SimplePlatformSharedBuffer::~SimplePlatformSharedBuffer() {
-}
+PlatformSharedBuffer::~PlatformSharedBuffer() {}
 
-bool SimplePlatformSharedBuffer::Init() {
+bool PlatformSharedBuffer::Init() {
   DCHECK(!shared_memory_);
 
   base::SharedMemoryCreateOptions options;
@@ -176,7 +171,7 @@ bool SimplePlatformSharedBuffer::Init() {
   return shared_memory_->Create(options);
 }
 
-bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
+bool PlatformSharedBuffer::InitFromPlatformHandle(
     ScopedPlatformHandle platform_handle) {
   DCHECK(!shared_memory_);
 
@@ -191,7 +186,7 @@ bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
   return true;
 }
 
-void SimplePlatformSharedBuffer::InitFromSharedMemoryHandle(
+void PlatformSharedBuffer::InitFromSharedMemoryHandle(
     base::SharedMemoryHandle handle) {
   DCHECK(!shared_memory_);
 
@@ -204,19 +199,19 @@ void SimplePlatformSharedBuffer::InitFromSharedMemoryHandle(
   shared_memory_.reset(new base::SharedMemory(handle, false));
 }
 
-SimplePlatformSharedBufferMapping::~SimplePlatformSharedBufferMapping() {
+PlatformSharedBufferMapping::~PlatformSharedBufferMapping() {
   Unmap();
 }
 
-void* SimplePlatformSharedBufferMapping::GetBase() const {
+void* PlatformSharedBufferMapping::GetBase() const {
   return base_;
 }
 
-size_t SimplePlatformSharedBufferMapping::GetLength() const {
+size_t PlatformSharedBufferMapping::GetLength() const {
   return length_;
 }
 
-bool SimplePlatformSharedBufferMapping::Map() {
+bool PlatformSharedBufferMapping::Map() {
   // Mojo shared buffers can be mapped at any offset. However,
   // base::SharedMemory must be mapped at a page boundary. So calculate what the
   // nearest whole page offset is, and build a mapping that's offset from that.
@@ -231,7 +226,7 @@ bool SimplePlatformSharedBufferMapping::Map() {
   return true;
 }
 
-void SimplePlatformSharedBufferMapping::Unmap() {
+void PlatformSharedBufferMapping::Unmap() {
   shared_memory_.Unmap();
 }
 

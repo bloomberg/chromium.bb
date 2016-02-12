@@ -17,7 +17,6 @@
 #include "crypto/random.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/broker_host.h"
 #include "mojo/edk/system/core.h"
@@ -194,7 +193,7 @@ void NodeController::MergePortIntoParent(const std::string& token,
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
   scoped_refptr<PlatformSharedBuffer> buffer =
-      internal::g_platform_support->CreateSharedBuffer(num_bytes);
+      PlatformSharedBuffer::Create(num_bytes);
 #if defined(OS_POSIX)
   if (!buffer && broker_) {
     // On POSIX, creating a shared buffer in a sandboxed process will fail, so

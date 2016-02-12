@@ -21,7 +21,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/async_waiter.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/configuration.h"
@@ -146,8 +145,8 @@ MojoResult Core::CreateSharedBufferWrapper(
   DCHECK(num_bytes);
   CHECK(!read_only);
   scoped_refptr<PlatformSharedBuffer> platform_buffer =
-      internal::g_platform_support->CreateSharedBufferFromSharedMemoryHandle(
-          num_bytes, read_only, shared_memory_handle);
+      PlatformSharedBuffer::CreateFromSharedMemoryHandle(num_bytes, read_only,
+                                                         shared_memory_handle);
   if (!platform_buffer)
     return MOJO_RESULT_UNKNOWN;
 
@@ -575,8 +574,8 @@ MojoResult Core::CreateSharedBuffer(
     return result;
 
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  result = SharedBufferDispatcher::Create(
-      internal::g_platform_support, validated_options, num_bytes, &dispatcher);
+  result =
+      SharedBufferDispatcher::Create(validated_options, num_bytes, &dispatcher);
   if (result != MOJO_RESULT_OK) {
     DCHECK(!dispatcher);
     return result;

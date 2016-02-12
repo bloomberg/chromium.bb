@@ -43,7 +43,6 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
   // TODO(vtl): This should probably be made to return a scoped_refptr and have
   // a MojoResult out parameter instead.
   static MojoResult Create(
-      PlatformSupport* platform_support,
       const MojoCreateSharedBufferOptions& validated_options,
       uint64_t num_bytes,
       scoped_refptr<SharedBufferDispatcher>* result);

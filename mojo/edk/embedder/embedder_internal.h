@@ -23,16 +23,12 @@ namespace edk {
 
 class Broker;
 class Core;
-class PlatformSupport;
 class ProcessDelegate;
 
 namespace internal {
 
 // Instance of |Broker| to use.
 extern Broker* g_broker;
-
-// Instance of |PlatformSupport| to use.
-extern PlatformSupport* g_platform_support;
 
 // Instance of |Core| used by the system functions (|Mojo...()|).
 extern MOJO_SYSTEM_IMPL_EXPORT Core* g_core;

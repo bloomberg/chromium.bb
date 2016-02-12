@@ -16,7 +16,6 @@
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/broker_messages.h"
 
 namespace mojo {
@@ -63,7 +62,7 @@ void BrokerHost::SendChannel(ScopedPlatformHandle handle) {
 void BrokerHost::OnBufferRequest(size_t num_bytes) {
   scoped_refptr<PlatformSharedBuffer> buffer;
   if (num_bytes <= kMaxSharedBufferSize) {
-    buffer = internal::g_platform_support->CreateSharedBuffer(num_bytes);
+    buffer = PlatformSharedBuffer::Create(num_bytes);
   } else {
     LOG(ERROR) << "Shared buffer request too large: " << num_bytes;
   }

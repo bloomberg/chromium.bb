@@ -84,13 +84,9 @@ source_set("platform") {
     "platform_handle_utils_posix.cc",
     "platform_handle_utils_win.cc",
     "platform_handle_vector.h",
+    "platform_shared_buffer.cc",
     "platform_shared_buffer.h",
-    "platform_support.h",
     "scoped_platform_handle.h",
-    "simple_platform_shared_buffer.cc",
-    "simple_platform_shared_buffer.h",
-    "simple_platform_support.cc",
-    "simple_platform_support.h",
   ]
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
@@ -140,7 +136,7 @@ source_set("embedder_unittests") {
   sources = [
     "embedder_unittest.cc",
     "platform_channel_pair_posix_unittest.cc",
-    "simple_platform_shared_buffer_unittest.cc",
+    "platform_shared_buffer_unittest.cc",
   ]
 
   deps = [

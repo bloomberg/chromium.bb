@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/embedder_internal.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/options_validation.h"
 #include "mojo/public/c/system/macros.h"
@@ -65,7 +64,6 @@ MojoResult SharedBufferDispatcher::ValidateCreateOptions(
 
 // static
 MojoResult SharedBufferDispatcher::Create(
-    PlatformSupport* platform_support,
     const MojoCreateSharedBufferOptions& /*validated_options*/,
     uint64_t num_bytes,
     scoped_refptr<SharedBufferDispatcher>* result) {
@@ -75,7 +73,7 @@ MojoResult SharedBufferDispatcher::Create(
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   scoped_refptr<PlatformSharedBuffer> shared_buffer(
-      platform_support->CreateSharedBuffer(static_cast<size_t>(num_bytes)));
+      PlatformSharedBuffer::Create(static_cast<size_t>(num_bytes)));
   if (!shared_buffer)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
@@ -130,7 +128,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   // Wrapping |platform_handle| in a |ScopedPlatformHandle| means that it'll be
   // closed even if creation fails.
   scoped_refptr<PlatformSharedBuffer> shared_buffer(
-      internal::g_platform_support->CreateSharedBufferFromHandle(
+      PlatformSharedBuffer::CreateFromPlatformHandle(
           serialization->num_bytes, ScopedPlatformHandle(platform_handle)));
   if (!shared_buffer) {
     LOG(ERROR)

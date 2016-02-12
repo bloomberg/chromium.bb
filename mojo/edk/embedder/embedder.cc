@@ -17,7 +17,6 @@
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/core.h"
 
 namespace mojo {
@@ -29,7 +28,6 @@ class PlatformSupport;
 namespace internal {
 
 Core* g_core;
-PlatformSupport* g_platform_support;
 ProcessDelegate* g_process_delegate;
 
 Core* GetCore() { return g_core; }
@@ -58,7 +56,6 @@ void SetParentPipeHandle(ScopedPlatformHandle pipe) {
 
 void Init() {
   internal::g_core = new Core();
-  internal::g_platform_support = new SimplePlatformSupport();
 }
 
 MojoResult AsyncWait(MojoHandle handle,

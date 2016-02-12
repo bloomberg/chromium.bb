@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/data_pipe_control_message.h"
@@ -349,7 +348,7 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
   PlatformHandle buffer_handle;
   std::swap(buffer_handle, handles[0]);
   scoped_refptr<PlatformSharedBuffer> ring_buffer =
-      internal::g_platform_support->CreateSharedBufferFromHandle(
+      PlatformSharedBuffer::CreateFromPlatformHandle(
           state->options.capacity_num_bytes,
           ScopedPlatformHandle(buffer_handle));
   if (!ring_buffer) {
