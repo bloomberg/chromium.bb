@@ -84,6 +84,11 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   bool ActOnIssueType(const IssueAction::Type& type,
                       const base::DictionaryValue* args);
 
+  // May update the first run flow related properties in the WebUI. This is
+  // called after the initial data is received to avoid unnecessary work when
+  // initializing the WebUI.
+  void MaybeUpdateFirstRunFlowData();
+
   // Keeps track of whether a command to close the dialog has been issued.
   bool dialog_closing_;
 

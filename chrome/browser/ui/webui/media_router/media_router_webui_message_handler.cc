@@ -62,6 +62,7 @@ const char kOnInitialDataReceived[] = "onInitialDataReceived";
 const char kSetInitialData[] = "media_router.ui.setInitialData";
 const char kOnCreateRouteResponseReceived[] =
     "media_router.ui.onCreateRouteResponseReceived";
+const char kSetFirstRunFlowData[] = "media_router.ui.setFirstRunFlowData";
 const char kSetIssue[] = "media_router.ui.setIssue";
 const char kSetSinkList[] = "media_router.ui.setSinkList";
 const char kSetRouteList[] = "media_router.ui.setRouteList";
@@ -338,13 +339,6 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   media_router_ui_->OnUIInitiallyLoaded();
   base::DictionaryValue initial_data;
 
-#if defined(GOOGLE_CHROME_BUILD)
-  // "Casting to a Hangout from Chrome" Chromecast help center page.
-  initial_data.SetString("firstRunFlowCloudPrefLearnMoreUrl",
-      base::StringPrintf(kHelpPageUrlPrefix, 6320939));
-#endif  // defined(GOOGLE_CHROME_BUILD)
-  // General Chromecast learn more page.
-  initial_data.SetString("firstRunFlowLearnMoreUrl", kCastLearnMorePageUrl);
   // "No Cast devices found?" Chromecast help center page.
   initial_data.SetString("deviceMissingUrl",
       base::StringPrintf(kHelpPageUrlPrefix, 3249268));
@@ -362,30 +356,6 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
       CastModesToValue(cast_modes,
                        media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-  bool first_run_flow_acknowledged =
-      profile->GetPrefs()->GetBoolean(
-          prefs::kMediaRouterFirstRunFlowAcknowledged);
-  initial_data.SetBoolean("wasFirstRunFlowAcknowledged",
-                          first_run_flow_acknowledged);
-  bool show_cloud_pref = false;
-#if defined(GOOGLE_CHROME_BUILD)
-  // Cloud services preference is shown if user is logged in and has sync
-  // enabled. If the user enables sync after acknowledging the first run flow,
-  // this is treated as the user opting into Google services, including cloud
-  // services, if the browser is a Chrome branded build.
-  if (!profile->GetPrefs()->GetBoolean(
-          prefs::kMediaRouterCloudServicesPrefSet) &&
-      profile->IsSyncAllowed()) {
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(profile);
-    show_cloud_pref = signin_manager && signin_manager->IsAuthenticated() &&
-        ProfileSyncServiceFactory::GetForProfile(profile)->IsSyncActive();
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD)
-  initial_data.SetBoolean("showFirstRunFlowCloudPref", show_cloud_pref);
 
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
@@ -678,6 +648,7 @@ void MediaRouterWebUIMessageHandler::OnInitialDataReceived(
     const base::ListValue* args) {
   DVLOG(1) << "OnInitialDataReceived";
   media_router_ui_->OnUIInitialDataReceived();
+  MaybeUpdateFirstRunFlowData();
 }
 
 bool MediaRouterWebUIMessageHandler::ActOnIssueType(
@@ -695,6 +666,58 @@ bool MediaRouterWebUIMessageHandler::ActOnIssueType(
     // Do nothing; no other issue action types require any other action.
     return true;
   }
+}
+
+void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
+  base::DictionaryValue first_run_flow_data;
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* pref_service = profile->GetPrefs();
+
+  bool first_run_flow_acknowledged =
+      pref_service->GetBoolean(prefs::kMediaRouterFirstRunFlowAcknowledged);
+  bool show_cloud_pref = false;
+#if defined(GOOGLE_CHROME_BUILD)
+  // Cloud services preference is shown if user is logged in and has sync
+  // enabled. If the user enables sync after acknowledging the first run flow,
+  // this is treated as the user opting into Google services, including cloud
+  // services, if the browser is a Chrome branded build.
+  if (!pref_service->GetBoolean(prefs::kMediaRouterCloudServicesPrefSet) &&
+      profile->IsSyncAllowed()) {
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(profile);
+    if (signin_manager && signin_manager->IsAuthenticated() &&
+        ProfileSyncServiceFactory::GetForProfile(profile)->IsSyncActive()) {
+      // If the user had previously acknowledged the first run flow without
+      // being shown the cloud services option, and is now logged in with sync
+      // enabled, turn on cloud services.
+      if (first_run_flow_acknowledged) {
+        pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices, true);
+        pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet,
+                                 true);
+        // Return early since the first run flow won't be surfaced.
+        return;
+      }
+
+      show_cloud_pref = true;
+      // "Casting to a Hangout from Chrome" Chromecast help center page.
+      first_run_flow_data.SetString("firstRunFlowCloudPrefLearnMoreUrl",
+          base::StringPrintf(kHelpPageUrlPrefix, 6320939));
+    }
+  }
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+  // Return early if the first run flow won't be surfaced.
+  if (first_run_flow_acknowledged && !show_cloud_pref)
+    return;
+
+  // General Chromecast learn more page.
+  first_run_flow_data.SetString("firstRunFlowLearnMoreUrl",
+                                kCastLearnMorePageUrl);
+  first_run_flow_data.SetBoolean("wasFirstRunFlowAcknowledged",
+                                 first_run_flow_acknowledged);
+  first_run_flow_data.SetBoolean("showFirstRunFlowCloudPref", show_cloud_pref);
+  web_ui()->CallJavascriptFunction(kSetFirstRunFlowData, first_run_flow_data);
 }
 
 void MediaRouterWebUIMessageHandler::SetWebUIForTest(content::WebUI* web_ui) {
