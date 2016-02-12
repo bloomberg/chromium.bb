@@ -26,11 +26,11 @@ class FormField {
   virtual ~FormField() {}
 
   // Classifies each field in |fields| with its heuristically detected type.
-  // The association is stored into |map|.  Each field has a derived unique name
-  // that is used as the key into the |map|.
-  static void ParseFormFields(const std::vector<AutofillField*>& fields,
-                              bool is_form_tag,
-                              ServerFieldTypeMap* map);
+  // Each field has a derived unique name that is used as the key into the
+  // returned ServerFieldTypeMap.
+  static ServerFieldTypeMap ParseFormFields(
+      const std::vector<AutofillField*>& fields,
+      bool is_form_tag);
 
  protected:
   // A bit-field used for matching specific parts of a field in question.

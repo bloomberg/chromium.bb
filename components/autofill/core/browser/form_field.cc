@@ -4,7 +4,9 @@
 
 #include "components/autofill/core/browser/form_field.h"
 
-#include <stddef.h>
+#include <algorithm>
+#include <cstddef>
+#include <iterator>
 #include <string>
 #include <utility>
 
@@ -26,60 +28,56 @@
 namespace autofill {
 namespace {
 
-bool ShouldBeIgnored(const AutofillField* field) {
+bool ShouldBeProcessed(const AutofillField* field) {
   // Ignore checkable fields as they interfere with parsers assuming context.
   // Eg., while parsing address, "Is PO box" checkbox after ADDRESS_LINE1
   // interferes with correctly understanding ADDRESS_LINE2.
   // Ignore fields marked as presentational. See
   // http://www.w3.org/TR/wai-aria/roles#presentation
-  return field->is_checkable ||
-         field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  return !(field->is_checkable ||
+           field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION);
 }
 
 }  // namespace
 
 // static
-void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
-                                bool is_form_tag,
-                                ServerFieldTypeMap* map) {
-  DCHECK(map->empty());
+ServerFieldTypeMap FormField::ParseFormFields(
+    const std::vector<AutofillField*>& fields,
+    bool is_form_tag) {
+  ServerFieldTypeMap map;
 
   // Set up a working copy of the fields to be processed.
-  std::vector<AutofillField*> remaining_fields(fields.size());
-  std::copy(fields.begin(), fields.end(), remaining_fields.begin());
-
-  remaining_fields.erase(
-      std::remove_if(remaining_fields.begin(), remaining_fields.end(),
-                     ShouldBeIgnored),
-      remaining_fields.end());
-
-  ServerFieldTypeMap saved_map = *map;
+  std::vector<AutofillField*> remaining_fields;
+  std::copy_if(fields.begin(), fields.end(),
+               std::back_inserter(remaining_fields), ShouldBeProcessed);
 
   // Email pass.
-  ParseFormFieldsPass(EmailField::Parse, &remaining_fields, map);
-  size_t email_count = map->size();
+  ParseFormFieldsPass(EmailField::Parse, &remaining_fields, &map);
+  const size_t email_count = map.size();
 
   // Phone pass.
-  ParseFormFieldsPass(PhoneField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(PhoneField::Parse, &remaining_fields, &map);
 
   // Address pass.
-  ParseFormFieldsPass(AddressField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(AddressField::Parse, &remaining_fields, &map);
 
   // Credit card pass.
-  ParseFormFieldsPass(CreditCardField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(CreditCardField::Parse, &remaining_fields, &map);
 
   // Name pass.
-  ParseFormFieldsPass(NameField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(NameField::Parse, &remaining_fields, &map);
 
   // Do not autofill a form if there are less than 3 recognized fields.
   // Otherwise it is very easy to have false positives. http://crbug.com/447332
   // For <form> tags, make an exception for email fields, which are commonly the
   // only recognized field on account registration sites.
-  size_t kThreshold = 3;
-  bool accept_parsing = (map->size() >= kThreshold ||
-                         (is_form_tag && email_count > 0));
+  static const size_t kThreshold = 3;
+  const bool accept_parsing =
+      (map.size() >= kThreshold || (is_form_tag && email_count > 0));
   if (!accept_parsing)
-    *map = saved_map;
+    map.clear();
+
+  return map;
 }
 
 // static

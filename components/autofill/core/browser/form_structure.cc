@@ -350,12 +350,10 @@ void FormStructure::DetermineHeuristicTypes() {
   // prediction routines.
   if (active_field_count() >= kRequiredFieldsForPredictionRoutines &&
       (is_form_tag_ || is_formless_checkout_)) {
-    ServerFieldTypeMap field_type_map;
-    FormField::ParseFormFields(fields_.get(), is_form_tag_, &field_type_map);
-    for (size_t i = 0; i < field_count(); ++i) {
-      AutofillField* field = fields_[i];
-      ServerFieldTypeMap::iterator iter =
-          field_type_map.find(field->unique_name());
+    const ServerFieldTypeMap field_type_map =
+        FormField::ParseFormFields(fields_.get(), is_form_tag_);
+    for (AutofillField* field : fields_) {
+      const auto iter = field_type_map.find(field->unique_name());
       if (iter != field_type_map.end())
         field->set_heuristic_type(iter->second);
     }

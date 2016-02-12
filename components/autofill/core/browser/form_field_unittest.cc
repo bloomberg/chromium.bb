@@ -141,17 +141,15 @@ TEST(FormFieldTest, ParseFormFields) {
   field_data.label = ASCIIToUTF16("Address line2");
   fields.push_back(new AutofillField(field_data, field_data.label));
 
-  ServerFieldTypeMap field_type_map;
-  FormField::ParseFormFields(fields.get(), true, &field_type_map);
   // Does not parse since there are only 2 recognized fields.
-  ASSERT_EQ(0U, field_type_map.size());
+  ASSERT_TRUE(FormField::ParseFormFields(fields.get(), true).empty());
 
   field_data.label = ASCIIToUTF16("City");
   fields.push_back(new AutofillField(field_data, field_data.label));
 
   // Checkable element shouldn't interfere with inference of Address line2.
-  field_type_map.clear();
-  FormField::ParseFormFields(fields.get(), true, &field_type_map);
+  const ServerFieldTypeMap field_type_map =
+      FormField::ParseFormFields(fields.get(), true);
   ASSERT_EQ(3U, field_type_map.size());
 
   EXPECT_EQ(ADDRESS_HOME_LINE1,
