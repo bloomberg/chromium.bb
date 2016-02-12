@@ -89,7 +89,7 @@ class AppListServiceImpl : public AppListService,
 
   std::string GetProfileName();
 
-  // ProfileInfoCacheObserver overrides:
+  // ProfileAttributesStorage::Observer overrides:
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
   scoped_ptr<ProfileStore> profile_store_;

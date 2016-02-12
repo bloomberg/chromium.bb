@@ -14,7 +14,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
@@ -45,8 +46,8 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 
  protected:
   Profile* profile2_;
-  ProfileInfoCache* profile_info_cache() {
-    return &(g_browser_process->profile_manager()->GetProfileInfoCache());
+  ProfileAttributesStorage& profile_attributes_storage() {
+    return g_browser_process->profile_manager()->GetProfileAttributesStorage();
   }
 
  private:
@@ -147,9 +148,10 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
       ProfileManager::GetSystemProfilePath());
 
   // Lock the second profile.
-  profile_info_cache()->SetProfileSigninRequiredAtIndex(
-      profile_info_cache()->GetIndexOfProfileWithPath(profile2_->GetPath()),
-      true);
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(profile_attributes_storage().GetProfileAttributesWithPath(
+      profile2_->GetPath(), &entry));
+  entry->SetIsSigninRequired(true);
 
   // Attempt to open the app list with the second profile.
   controller->ShowForProfileByPath(profile2_->GetPath());
