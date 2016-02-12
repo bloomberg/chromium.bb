@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_profile_bluez.h"
@@ -831,6 +832,12 @@ void BluetoothAdapterBlueZ::SetDefaultAdapterName() {
   alias = "ChromeLinux";
 #endif
 
+  // Take the lower 2 bytes of hashed Bluetooth address and combine it with the
+  // device type to create a more identifiable device name.
+  const std::string address = GetAddress();
+  alias = base::StringPrintf(
+      "%s_%04X", alias.c_str(),
+      base::SuperFastHash(address.data(), address.size()) & 0xFFFF);
   SetName(alias, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
 }
 
