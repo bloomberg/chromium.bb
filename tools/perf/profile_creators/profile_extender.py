@@ -109,6 +109,7 @@ class ProfileExtender(object):
     super class implementation.
     """
     if self._browser:
+      self._browser.platform.network_controller.Close()
       self._browser.Close()
       self._browser = None
 
@@ -128,20 +129,16 @@ class ProfileExtender(object):
 
     self.FetchWebPageReplayArchives()
 
-    # The browser options needs to be passed to both the network controller
-    # as well as the browser backend.
-    browser_options = finder_options.browser_options
     if finder_options.use_live_sites:
-      browser_options.wpr_mode = wpr_modes.WPR_OFF
+      wpr_mode = wpr_modes.WPR_OFF
     else:
-      browser_options.wpr_mode = wpr_modes.WPR_REPLAY
+      wpr_mode = wpr_modes.WPR_REPLAY
 
     network_controller = possible_browser.platform.network_controller
-    make_javascript_deterministic = True
-
-    network_controller.SetReplayArgs(
-        wpr_archive_path, browser_options.wpr_mode, browser_options.netsim,
-        browser_options.extra_wpr_args, make_javascript_deterministic)
+    network_controller.Open(wpr_mode, finder_options.browser_options.netsim,
+                            finder_options.browser_options.extra_wpr_args)
+    network_controller.StartReplay(
+        wpr_archive_path, make_javascript_deterministic=True)
 
   def _GetPossibleBrowser(self, finder_options):
     """Return a possible_browser with the given options."""
