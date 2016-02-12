@@ -96,6 +96,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         if (menuItem.getItemId() == R.id.edit_menu_id) {
             EnhancedBookmarkAddEditFolderActivity.startEditFolderActivity(getContext(),
                     mCurrentFolder.getId());
+            return true;
         } else if (menuItem.getItemId() == R.id.close_menu_id) {
             EnhancedBookmarkUtils.finishActivityOnPhone(getContext());
             return true;
