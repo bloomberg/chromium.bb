@@ -23,10 +23,16 @@ namespace sync_driver_v2 {
 NonBlockingDataTypeController::NonBlockingDataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
+    syncer::ModelType model_type,
     sync_driver::SyncClient* sync_client)
     : sync_driver::DataTypeController(ui_thread, error_callback),
+      model_type_(model_type),
       sync_client_(sync_client),
-      state_(NOT_RUNNING) {}
+      state_(NOT_RUNNING) {
+  // TODO(gangwu): should initial processor somewhere else in
+  // NonBlockingDataTypeController
+  InitializeProcessor();
+}
 
 NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
@@ -211,6 +217,33 @@ void NonBlockingDataTypeController::RecordUnrecoverableError() {
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
+}
+
+base::WeakPtr<syncer_v2::SharedModelTypeProcessor>
+NonBlockingDataTypeController::type_processor() const {
+  return type_processor_;
+}
+
+syncer::ModelType NonBlockingDataTypeController::type() const {
+  return model_type_;
+}
+
+void NonBlockingDataTypeController::InitializeProcessor() {
+  base::WeakPtr<syncer_v2::ModelTypeService> model_type_service =
+      sync_client_->GetModelTypeServiceForType(type());
+  if (!model_type_service.get()) {
+    LOG(WARNING) << "ModelTypeService destroyed before "
+                    "ModelTypeController was started.";
+    // TODO(gangwu): Add SyncError and then call start_callback with it. also
+    // set an error state to |state_|.
+  }
+
+  scoped_ptr<syncer_v2::SharedModelTypeProcessor> shared_model_type_processor(
+      make_scoped_ptr(new syncer_v2::SharedModelTypeProcessor(
+          type(), model_type_service.get())));
+  type_processor_ = shared_model_type_processor->AsWeakPtrForUI();
+  model_type_service->set_change_processor(
+      std::move(shared_model_type_processor));
 }
 
 }  // namespace sync_driver_v2

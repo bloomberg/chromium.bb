@@ -28,6 +28,7 @@
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/device_info_data_type_controller.h"
+#include "components/sync_driver/device_info_model_type_controller.h"
 #include "components/sync_driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/glue/sync_backend_host.h"
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
@@ -65,6 +66,7 @@ using sync_driver::DataTypeManagerObserver;
 using sync_driver::DeviceInfoDataTypeController;
 using sync_driver::ProxyDataTypeController;
 using sync_driver::UIDataTypeController;
+using sync_driver_v2::DeviceInfoModelTypeController;
 
 namespace {
 
@@ -142,9 +144,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   if (channel_ == version_info::Channel::UNKNOWN &&
       command_line_.HasSwitch(switches::kSyncEnableUSSDeviceInfo)) {
-    // TODO(pavely): crbug.com/547087: Register USS DataTypeController for
-    // DeviceInfo here instead of DeviceInfoDataTypeController.
-    sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
+    sync_service->RegisterDataTypeController(new DeviceInfoModelTypeController(
         ui_thread_, error_callback, sync_client_,
         sync_service->GetLocalDeviceInfoProvider()));
   } else {

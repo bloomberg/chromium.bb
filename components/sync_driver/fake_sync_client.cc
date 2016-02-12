@@ -91,6 +91,11 @@ FakeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   return base::WeakPtr<syncer::SyncableService>();
 }
 
+base::WeakPtr<syncer_v2::ModelTypeService>
+FakeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
+  return base::WeakPtr<syncer_v2::ModelTypeService>();
+}
+
 scoped_refptr<syncer::ModelSafeWorker>
 FakeSyncClient::CreateModelWorkerForGroup(
     syncer::ModelSafeGroup group,

@@ -13,6 +13,7 @@
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/shared_model_type_processor.h"
 #include "sync/util/extensions_activity.h"
 
 class BookmarkUndoService;
@@ -101,6 +102,13 @@ class SyncClient {
   // Weak pointer may be unset if service is already destroyed.
   // Note: Should only be called from the model type thread.
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) = 0;
+
+  // Returns a weak pointer to the model type service specified by |type|.
+  // Weak pointer may be unset if service is already destroyed.
+  // Note: Should only be called from the model type thread.
+  // Note: should only be called by USS.
+  virtual base::WeakPtr<syncer_v2::ModelTypeService> GetModelTypeServiceForType(
       syncer::ModelType type) = 0;
 
   // Creates and returns a new ModelSafeWorker for the group, or null if one

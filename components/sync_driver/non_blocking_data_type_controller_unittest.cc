@@ -35,7 +35,10 @@ class TestController : public NonBlockingDataTypeController {
                  const base::Closure& error_callback,
                  syncer::ModelType model_type,
                  sync_driver::SyncClient* sync_client)
-      : NonBlockingDataTypeController(ui_thread, error_callback, sync_client),
+      : NonBlockingDataTypeController(ui_thread,
+                                      error_callback,
+                                      model_type,
+                                      sync_client),
         model_type_(model_type) {}
 
   // TODO(stanisc): This will likely have to change. It should be controller's
@@ -55,11 +58,6 @@ class TestController : public NonBlockingDataTypeController {
 
   syncer::ModelType type() const override { return model_type_; }
 
-  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor()
-      const override {
-    return type_processor_;
-  }
-
   bool RunOnModelThread(const tracked_objects::Location& from_here,
                         const base::Closure& task) override {
     if (model_task_runner_) {
@@ -75,7 +73,6 @@ class TestController : public NonBlockingDataTypeController {
   ~TestController() override {}
 
   syncer::ModelType model_type_;
-  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor_;
   scoped_refptr<base::TaskRunner> model_task_runner_;
 };
 
@@ -186,6 +183,11 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
     ClearTypeProcessor();
     controller_ = NULL;
     RunQueuedUIThreadTasks();
+  }
+
+  base::WeakPtr<syncer_v2::ModelTypeService> GetModelTypeServiceForType(
+      syncer::ModelType type) override {
+    return service_.AsWeakPtr();
   }
 
  protected:

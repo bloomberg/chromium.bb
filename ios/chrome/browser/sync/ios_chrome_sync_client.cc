@@ -329,6 +329,19 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   }
 }
 
+base::WeakPtr<syncer_v2::ModelTypeService>
+IOSChromeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
+  switch (type) {
+    case syncer::DEVICE_INFO:
+      // TODO(gangwu): crbug.com/547087: after the bug(crbug.com/570080) fixed,
+      // Return a real service here.
+      return base::WeakPtr<syncer_v2::ModelTypeService>();
+    default:
+      NOTREACHED();
+      return base::WeakPtr<syncer_v2::ModelTypeService>();
+  }
+}
+
 scoped_refptr<syncer::ModelSafeWorker>
 IOSChromeSyncClient::CreateModelWorkerForGroup(
     syncer::ModelSafeGroup group,

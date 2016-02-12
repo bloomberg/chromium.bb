@@ -52,6 +52,8 @@
         'sync_driver/device_info.h',
         'sync_driver/device_info_data_type_controller.cc',
         'sync_driver/device_info_data_type_controller.h',
+        'sync_driver/device_info_model_type_controller.cc',
+        'sync_driver/device_info_model_type_controller.h',
         'sync_driver/device_info_service.cc',
         'sync_driver/device_info_service.h',
         'sync_driver/device_info_sync_service.cc',
