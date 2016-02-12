@@ -82,6 +82,8 @@ source_set("bindings") {
     "struct_ptr.h",
     "struct_traits.h",
     "type_converter.h",
+    "weak_binding_set.h",
+    "weak_interface_ptr_set.h",
   ]
 
   public_deps = [

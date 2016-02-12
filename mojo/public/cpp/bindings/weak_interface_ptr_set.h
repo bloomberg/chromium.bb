@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_WEAK_INTERFACE_PTR_SET_H_
-#define MOJO_COMMON_WEAK_INTERFACE_PTR_SET_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_WEAK_INTERFACE_PTR_SET_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_WEAK_INTERFACE_PTR_SET_H_
 
 #include <utility>
 #include <vector>
@@ -50,9 +50,10 @@ class WeakInterfacePtrSet {
   using WPWIPI = base::WeakPtr<WeakInterfacePtr<Interface>>;
 
   void ClearNullInterfacePtrs() {
-    ptrs_.erase(std::remove_if(ptrs_.begin(), ptrs_.end(), [](const WPWIPI& p) {
-      return p.get() == nullptr;
-    }), ptrs_.end());
+    ptrs_.erase(
+        std::remove_if(ptrs_.begin(), ptrs_.end(),
+                       [](const WPWIPI& p) { return p.get() == nullptr; }),
+        ptrs_.end());
   }
 
   std::vector<WPWIPI> ptrs_;
@@ -84,4 +85,4 @@ class WeakInterfacePtr {
 
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_WEAK_INTERFACE_PTR_SET_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_WEAK_INTERFACE_PTR_SET_H_

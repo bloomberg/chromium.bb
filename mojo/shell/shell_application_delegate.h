@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"

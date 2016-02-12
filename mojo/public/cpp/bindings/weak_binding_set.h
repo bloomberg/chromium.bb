@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_WEAK_BINDING_SET_H_
-#define MOJO_COMMON_WEAK_BINDING_SET_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_WEAK_BINDING_SET_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_WEAK_BINDING_SET_H_
 
 #include <algorithm>
 #include <utility>
@@ -32,8 +32,7 @@ class WeakBindingSet {
     error_handler_ = error_handler;
   }
 
-  void AddBinding(Interface* impl,
-                  InterfaceRequest<GenericInterface> request) {
+  void AddBinding(Interface* impl, InterfaceRequest<GenericInterface> request) {
     auto binding = new WeakBinding<Interface>(impl, std::move(request));
     binding->set_connection_error_handler([this]() { OnConnectionError(); });
     bindings_.push_back(binding->GetWeakPtr());
@@ -65,8 +64,8 @@ class WeakBindingSet {
     bindings_.erase(
         std::remove_if(bindings_.begin(), bindings_.end(),
                        [](const base::WeakPtr<WeakBinding<Interface>>& p) {
-          return p.get() == nullptr;
-        }),
+                         return p.get() == nullptr;
+                       }),
         bindings_.end());
 
     error_handler_.Run();
@@ -116,4 +115,4 @@ class WeakBinding {
 
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_WEAK_BINDING_SET_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_WEAK_BINDING_SET_H_

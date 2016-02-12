@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include "device/usb/public/interfaces/permission_provider.mojom.h"
-#include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 
 namespace device {
 namespace usb {

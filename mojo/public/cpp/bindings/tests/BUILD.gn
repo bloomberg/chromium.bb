@@ -48,7 +48,6 @@ source_set("tests") {
 
   deps = [
     ":mojo_public_bindings_test_utils",
-    "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",

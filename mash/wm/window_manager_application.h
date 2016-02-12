@@ -18,8 +18,8 @@
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
-#include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 

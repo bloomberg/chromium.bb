@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 
 namespace mus {
 namespace ws {

@@ -17,7 +17,7 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"

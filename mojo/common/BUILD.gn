@@ -25,8 +25,6 @@ component("common_base") {
     "data_pipe_utils.h",
     "user_agent.cc",
     "user_agent.h",
-    "weak_binding_set.h",
-    "weak_interface_ptr_set.h",
   ]
 
   defines = [ "MOJO_COMMON_IMPLEMENTATION" ]

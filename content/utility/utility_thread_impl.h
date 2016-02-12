@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/common/process_control.mojom.h"
 #include "content/public/utility/utility_thread.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 
 namespace base {
 class FilePath;

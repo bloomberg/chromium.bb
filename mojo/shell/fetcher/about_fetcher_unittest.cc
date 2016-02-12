@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"

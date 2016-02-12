@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/application_package_apptest.mojom.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/application_test_base.h"

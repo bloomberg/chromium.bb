@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/capability_filter_test.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"

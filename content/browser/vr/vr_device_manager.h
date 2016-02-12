@@ -18,7 +18,7 @@
 #include "content/browser/vr/vr_device_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/vr_service.mojom.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 
 namespace content {
 

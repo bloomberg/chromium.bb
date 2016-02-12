@@ -174,6 +174,8 @@
         'public/cpp/bindings/string.h',
         'public/cpp/bindings/strong_binding.h',
         'public/cpp/bindings/type_converter.h',
+        'public/cpp/bindings/weak_binding_set.h',
+        'public/cpp/bindings/weak_interface_ptr_set.h',
         # This comes from the mojo_interface_bindings_cpp_sources dependency.
         '>@(mojom_generated_sources)',
       ],

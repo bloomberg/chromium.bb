@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mash/wm/root_windows_observer.h"
-#include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 
 namespace mash {
 namespace wm {

@@ -12,7 +12,7 @@
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "url/gurl.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CHROME_INTERFACE_FACTORY_H_
 
 #include "content/public/common/mojo_shell_connection.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "ui/keyboard/keyboard.mojom.h"
 

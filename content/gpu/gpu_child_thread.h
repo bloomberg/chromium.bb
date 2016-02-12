@@ -23,8 +23,8 @@
 #include "content/common/gpu/x_util.h"
 #include "content/common/process_control.mojom.h"
 #include "gpu/config/gpu_info.h"
-#include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
