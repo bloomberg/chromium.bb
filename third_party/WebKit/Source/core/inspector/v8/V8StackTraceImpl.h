@@ -35,7 +35,7 @@ public:
 
     private:
         friend class V8StackTraceImpl;
-        PassRefPtr<TypeBuilder::Runtime::CallFrame> buildInspectorObject() const;
+        PassRefPtr<protocol::TypeBuilder::Runtime::CallFrame> buildInspectorObject() const;
         void toTracedValue(TracedValue*) const;
 
         String m_functionName;
@@ -58,7 +58,7 @@ public:
     int topColumnNumber() const override;
     String topScriptId() const override;
     String topFunctionName() const override;
-    PassRefPtr<TypeBuilder::Runtime::StackTrace> buildInspectorObject() const override;
+    PassRefPtr<protocol::TypeBuilder::Runtime::StackTrace> buildInspectorObject() const override;
     String toString() const override;
 
 private:

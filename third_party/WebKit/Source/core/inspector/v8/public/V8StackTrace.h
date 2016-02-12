@@ -6,7 +6,7 @@
 #define V8StackTrace_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorTypeBuilder.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -36,7 +36,7 @@ public:
     virtual String topFunctionName() const = 0;
 
     virtual ~V8StackTrace() { }
-    virtual PassRefPtr<TypeBuilder::Runtime::StackTrace> buildInspectorObject() const = 0;
+    virtual PassRefPtr<protocol::TypeBuilder::Runtime::StackTrace> buildInspectorObject() const = 0;
     virtual String toString() const = 0;
 };
 

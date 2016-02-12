@@ -30,7 +30,6 @@
 #include "modules/storage/InspectorDOMStorageAgent.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/InspectorFrontend.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -66,7 +65,7 @@ static bool hadException(ExceptionState& exceptionState, ErrorString* errorStrin
 }
 
 InspectorDOMStorageAgent::InspectorDOMStorageAgent(Page* page)
-    : InspectorBaseAgent<InspectorDOMStorageAgent, InspectorFrontend::DOMStorage>("DOMStorage")
+    : InspectorBaseAgent<InspectorDOMStorageAgent, protocol::Frontend::DOMStorage>("DOMStorage")
     , m_page(page)
     , m_isEnabled(false)
 {
@@ -108,14 +107,14 @@ void InspectorDOMStorageAgent::disable(ErrorString*)
         controller->setInspectorAgent(nullptr);
 }
 
-void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>>& items)
+void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<String>>>& items)
 {
     LocalFrame* frame;
     StorageArea* storageArea = findStorageArea(errorString, storageId, frame);
     if (!storageArea)
         return;
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>> storageItems = TypeBuilder::Array<TypeBuilder::Array<String>>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<String>>> storageItems = protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<String>>::create();
 
     TrackExceptionState exceptionState;
     for (unsigned i = 0; i < storageArea->length(exceptionState, frame); ++i) {
@@ -125,7 +124,7 @@ void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, cons
         String value(storageArea->getItem(name, exceptionState, frame));
         if (hadException(exceptionState, errorString))
             return;
-        RefPtr<TypeBuilder::Array<String>> entry = TypeBuilder::Array<String>::create();
+        RefPtr<protocol::TypeBuilder::Array<String>> entry = protocol::TypeBuilder::Array<String>::create();
         entry->addItem(name);
         entry->addItem(value);
         storageItems->addItem(entry);
@@ -168,9 +167,9 @@ void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, co
     *errorString = toErrorString(exceptionState);
 }
 
-PassRefPtr<TypeBuilder::DOMStorage::StorageId> InspectorDOMStorageAgent::storageId(SecurityOrigin* securityOrigin, bool isLocalStorage)
+PassRefPtr<protocol::TypeBuilder::DOMStorage::StorageId> InspectorDOMStorageAgent::storageId(SecurityOrigin* securityOrigin, bool isLocalStorage)
 {
-    return TypeBuilder::DOMStorage::StorageId::create()
+    return protocol::TypeBuilder::DOMStorage::StorageId::create()
         .setSecurityOrigin(securityOrigin->toRawString())
         .setIsLocalStorage(isLocalStorage).release();
 }
@@ -180,7 +179,7 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
     if (!frontend())
         return;
 
-    RefPtr<TypeBuilder::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);
+    RefPtr<protocol::TypeBuilder::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);
 
     if (key.isNull())
         frontend()->domStorageItemsCleared(id);

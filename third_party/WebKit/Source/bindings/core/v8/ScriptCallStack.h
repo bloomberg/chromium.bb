@@ -32,8 +32,8 @@
 #define ScriptCallStack_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/v8/public/V8StackTrace.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -54,7 +54,7 @@ public:
     unsigned topLineNumber() const;
     unsigned topColumnNumber() const;
 
-    PassRefPtr<TypeBuilder::Runtime::StackTrace> buildInspectorObject() const;
+    PassRefPtr<protocol::TypeBuilder::Runtime::StackTrace> buildInspectorObject() const;
     void toTracedValue(TracedValue*, const char* name) const;
     String toString() const;
 

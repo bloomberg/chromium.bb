@@ -4,10 +4,10 @@
 
 #include "modules/screen_orientation/ScreenOrientationInspectorAgent.h"
 
-#include "core/InspectorTypeBuilder.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
 
@@ -21,13 +21,13 @@ namespace {
 
 WebScreenOrientationType WebScreenOrientationTypeFromString(const String& type)
 {
-    if (type == TypeBuilder::getEnumConstantValue(TypeBuilder::ScreenOrientation::OrientationType::PortraitPrimary))
+    if (type == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::ScreenOrientation::OrientationType::PortraitPrimary))
         return WebScreenOrientationPortraitPrimary;
-    if (type == TypeBuilder::getEnumConstantValue(TypeBuilder::ScreenOrientation::OrientationType::PortraitSecondary))
+    if (type == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::ScreenOrientation::OrientationType::PortraitSecondary))
         return WebScreenOrientationPortraitSecondary;
-    if (type == TypeBuilder::getEnumConstantValue(TypeBuilder::ScreenOrientation::OrientationType::LandscapePrimary))
+    if (type == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::ScreenOrientation::OrientationType::LandscapePrimary))
         return WebScreenOrientationLandscapePrimary;
-    if (type == TypeBuilder::getEnumConstantValue(TypeBuilder::ScreenOrientation::OrientationType::LandscapeSecondary))
+    if (type == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::ScreenOrientation::OrientationType::LandscapeSecondary))
         return WebScreenOrientationLandscapeSecondary;
     return WebScreenOrientationUndefined;
 }
@@ -45,7 +45,7 @@ ScreenOrientationInspectorAgent::~ScreenOrientationInspectorAgent()
 }
 
 ScreenOrientationInspectorAgent::ScreenOrientationInspectorAgent(LocalFrame& frame)
-    : InspectorBaseAgent<ScreenOrientationInspectorAgent, InspectorFrontend::ScreenOrientation>("ScreenOrientation")
+    : InspectorBaseAgent<ScreenOrientationInspectorAgent, protocol::Frontend::ScreenOrientation>("ScreenOrientation")
     , m_frame(&frame)
 {
 }
@@ -53,7 +53,7 @@ ScreenOrientationInspectorAgent::ScreenOrientationInspectorAgent(LocalFrame& fra
 DEFINE_TRACE(ScreenOrientationInspectorAgent)
 {
     visitor->trace(m_frame);
-    InspectorBaseAgent<ScreenOrientationInspectorAgent, InspectorFrontend::ScreenOrientation>::trace(visitor);
+    InspectorBaseAgent<ScreenOrientationInspectorAgent, protocol::Frontend::ScreenOrientation>::trace(visitor);
 }
 
 void ScreenOrientationInspectorAgent::setScreenOrientationOverride(ErrorString* error, int angle, const String& typeString)

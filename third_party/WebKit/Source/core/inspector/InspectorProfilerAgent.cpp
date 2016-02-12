@@ -47,7 +47,7 @@ PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(V8
 }
 
 InspectorProfilerAgent::InspectorProfilerAgent(V8Debugger* debugger, Client* client)
-    : InspectorBaseAgent<InspectorProfilerAgent, InspectorFrontend::Profiler>("Profiler")
+    : InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>("Profiler")
     , m_client(client)
     , m_v8ProfilerAgent(V8ProfilerAgent::create(debugger))
 {
@@ -64,10 +64,10 @@ void InspectorProfilerAgent::setState(PassRefPtr<JSONObject> state)
     m_v8ProfilerAgent->setInspectorState(m_state);
 }
 
-void InspectorProfilerAgent::setFrontend(InspectorFrontend* frontend)
+void InspectorProfilerAgent::setFrontend(protocol::Frontend* frontend)
 {
     InspectorBaseAgent::setFrontend(frontend);
-    m_v8ProfilerAgent->setFrontend(InspectorFrontend::Profiler::from(frontend));
+    m_v8ProfilerAgent->setFrontend(protocol::Frontend::Profiler::from(frontend));
 }
 
 void InspectorProfilerAgent::clearFrontend()
@@ -123,7 +123,7 @@ void InspectorProfilerAgent::start(ErrorString* error)
         m_client->profilingStarted();
 }
 
-void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::Profiler::CPUProfile>& profile)
+void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>& profile)
 {
     if (m_client)
         m_client->profilingStopped();

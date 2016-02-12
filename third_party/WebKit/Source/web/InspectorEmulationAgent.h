@@ -5,7 +5,6 @@
 #ifndef InspectorEmulationAgent_h
 #define InspectorEmulationAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 
 namespace blink {
@@ -15,7 +14,7 @@ class WebViewImpl;
 
 using ErrorString = String;
 
-class InspectorEmulationAgent final : public InspectorBaseAgent<InspectorEmulationAgent, InspectorFrontend::Emulation>, public InspectorBackendDispatcher::EmulationCommandHandler {
+class InspectorEmulationAgent final : public InspectorBaseAgent<InspectorEmulationAgent, protocol::Frontend::Emulation>, public protocol::Dispatcher::EmulationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
 public:
     class Client {
@@ -28,7 +27,7 @@ public:
     static PassOwnPtrWillBeRawPtr<InspectorEmulationAgent> create(WebLocalFrameImpl*, Client*);
     ~InspectorEmulationAgent() override;
 
-    // InspectorBackendDispatcher::EmulationCommandHandler implementation.
+    // protocol::Dispatcher::EmulationCommandHandler implementation.
     void resetPageScaleFactor(ErrorString*) override;
     void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
     void setScriptExecutionDisabled(ErrorString*, bool) override;

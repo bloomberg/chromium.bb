@@ -22,10 +22,10 @@ class PathBuilder {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(PathBuilder);
 public:
-    PathBuilder() : m_path(TypeBuilder::Array<JSONValue>::create()) { }
+    PathBuilder() : m_path(protocol::TypeBuilder::Array<JSONValue>::create()) { }
     virtual ~PathBuilder() { }
 
-    PassRefPtr<TypeBuilder::Array<JSONValue>> path() const { return m_path; }
+    PassRefPtr<protocol::TypeBuilder::Array<JSONValue>> path() const { return m_path; }
     void appendPath(const Path& path)
     {
         path.apply(this, &PathBuilder::appendPathElement);
@@ -43,7 +43,7 @@ private:
     void appendPathElement(const PathElement*);
     void appendPathCommandAndPoints(const char* command, const FloatPoint points[], size_t length);
 
-    RefPtr<TypeBuilder::Array<JSONValue>> m_path;
+    RefPtr<protocol::TypeBuilder::Array<JSONValue>> m_path;
 };
 
 void PathBuilder::appendPathCommandAndPoints(const char* command, const FloatPoint points[], size_t length)
@@ -89,7 +89,7 @@ public:
         , m_layoutObject(layoutObject)
         , m_shapeOutsideInfo(shapeOutsideInfo) { }
 
-    static PassRefPtr<TypeBuilder::Array<JSONValue>> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
+    static PassRefPtr<protocol::TypeBuilder::Array<JSONValue>> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
     {
         ShapePathBuilder builder(view, layoutObject, shapeOutsideInfo);
         builder.appendPath(path);
@@ -110,9 +110,9 @@ private:
 };
 
 
-PassRefPtr<TypeBuilder::Array<double>> buildArrayForQuad(const FloatQuad& quad)
+PassRefPtr<protocol::TypeBuilder::Array<double>> buildArrayForQuad(const FloatQuad& quad)
 {
-    RefPtr<TypeBuilder::Array<double>> array = TypeBuilder::Array<double>::create();
+    RefPtr<protocol::TypeBuilder::Array<double>> array = protocol::TypeBuilder::Array<double>::create();
     array->addItem(quad.p1().x());
     array->addItem(quad.p1().y());
     array->addItem(quad.p2().x());
@@ -333,7 +333,7 @@ PassRefPtr<JSONObject> InspectorHighlight::asJSONObject() const
 }
 
 // static
-bool InspectorHighlight::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxModel>& model)
+bool InspectorHighlight::getBoxModel(Node* node, RefPtr<protocol::TypeBuilder::DOM::BoxModel>& model)
 {
     LayoutObject* layoutObject = node->layoutObject();
     FrameView* view = node->document().view();
@@ -347,7 +347,7 @@ bool InspectorHighlight::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxMod
     IntRect boundingBox = view->contentsToRootFrame(layoutObject->absoluteBoundingBoxRect());
     LayoutBoxModelObject* modelObject = layoutObject->isBoxModelObject() ? toLayoutBoxModelObject(layoutObject) : nullptr;
 
-    model = TypeBuilder::DOM::BoxModel::create()
+    model = protocol::TypeBuilder::DOM::BoxModel::create()
         .setContent(buildArrayForQuad(content))
         .setPadding(buildArrayForQuad(padding))
         .setBorder(buildArrayForQuad(border))
@@ -358,7 +358,7 @@ bool InspectorHighlight::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxMod
     Shape::DisplayPaths paths;
     FloatQuad boundsQuad;
     if (const ShapeOutsideInfo* shapeOutsideInfo = shapeOutsideInfoForNode(node, &paths, &boundsQuad)) {
-        RefPtr<TypeBuilder::DOM::ShapeOutsideInfo> shapeTypeBuilder = TypeBuilder::DOM::ShapeOutsideInfo::create()
+        RefPtr<protocol::TypeBuilder::DOM::ShapeOutsideInfo> shapeTypeBuilder = protocol::TypeBuilder::DOM::ShapeOutsideInfo::create()
             .setBounds(buildArrayForQuad(boundsQuad))
             .setShape(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.shape))
             .setMarginShape(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape));

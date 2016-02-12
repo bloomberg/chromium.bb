@@ -57,7 +57,7 @@
 #include "wtf/text/TextPosition.h"
 #include <algorithm>
 
-using blink::TypeBuilder::Array;
+using blink::protocol::TypeBuilder::Array;
 using blink::RuleSourceDataList;
 using blink::CSSRuleSourceData;
 using blink::CSSStyleSheet;
@@ -672,7 +672,7 @@ enum MediaListSource {
     MediaListSourceImportRule
 };
 
-PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheetBase::buildSourceRangeObject(const SourceRange& range)
+PassRefPtr<protocol::TypeBuilder::CSS::SourceRange> InspectorStyleSheetBase::buildSourceRangeObject(const SourceRange& range)
 {
     const LineEndings* lineEndings = this->lineEndings();
     if (!lineEndings)
@@ -680,7 +680,7 @@ PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheetBase::buildSourceRa
     TextPosition start = TextPosition::fromOffsetAndLineEndings(range.start, *lineEndings);
     TextPosition end = TextPosition::fromOffsetAndLineEndings(range.end, *lineEndings);
 
-    RefPtr<TypeBuilder::CSS::SourceRange> result = TypeBuilder::CSS::SourceRange::create()
+    RefPtr<protocol::TypeBuilder::CSS::SourceRange> result = protocol::TypeBuilder::CSS::SourceRange::create()
         .setStartLine(start.m_line.zeroBasedInt())
         .setStartColumn(start.m_column.zeroBasedInt())
         .setEndLine(end.m_line.zeroBasedInt())
@@ -701,9 +701,9 @@ InspectorStyle::InspectorStyle(PassRefPtrWillBeRawPtr<CSSStyleDeclaration> style
     ASSERT(m_style);
 }
 
-PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::buildObjectForStyle()
+PassRefPtr<protocol::TypeBuilder::CSS::CSSStyle> InspectorStyle::buildObjectForStyle()
 {
-    RefPtr<TypeBuilder::CSS::CSSStyle> result = styleWithProperties();
+    RefPtr<protocol::TypeBuilder::CSS::CSSStyle> result = styleWithProperties();
     if (m_sourceData) {
         if (m_parentStyleSheet && !m_parentStyleSheet->id().isEmpty())
             result->setStyleSheetId(m_parentStyleSheet->id());
@@ -719,14 +719,14 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::buildObjectForStyle()
     return result.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty>> InspectorStyle::buildArrayForComputedStyle()
+PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSComputedStyleProperty>> InspectorStyle::buildArrayForComputedStyle()
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty>> result = TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSComputedStyleProperty>> result = protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSComputedStyleProperty>::create();
     WillBeHeapVector<CSSPropertySourceData> properties;
     populateAllProperties(properties);
 
     for (auto& property : properties) {
-        RefPtr<TypeBuilder::CSS::CSSComputedStyleProperty> entry = TypeBuilder::CSS::CSSComputedStyleProperty::create()
+        RefPtr<protocol::TypeBuilder::CSS::CSSComputedStyleProperty> entry = protocol::TypeBuilder::CSS::CSSComputedStyleProperty::create()
             .setName(property.name)
             .setValue(property.value);
         result->addItem(entry);
@@ -781,10 +781,10 @@ void InspectorStyle::populateAllProperties(WillBeHeapVector<CSSPropertySourceDat
     }
 }
 
-PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties()
+PassRefPtr<protocol::TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties()
 {
-    RefPtr<Array<TypeBuilder::CSS::CSSProperty>> propertiesObject = Array<TypeBuilder::CSS::CSSProperty>::create();
-    RefPtr<Array<TypeBuilder::CSS::ShorthandEntry>> shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
+    RefPtr<Array<protocol::TypeBuilder::CSS::CSSProperty>> propertiesObject = Array<protocol::TypeBuilder::CSS::CSSProperty>::create();
+    RefPtr<Array<protocol::TypeBuilder::CSS::ShorthandEntry>> shorthandEntries = Array<protocol::TypeBuilder::CSS::ShorthandEntry>::create();
     HashSet<String> foundShorthands;
 
     WillBeHeapVector<CSSPropertySourceData> properties;
@@ -794,7 +794,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties()
         const CSSPropertySourceData& propertyEntry = styleProperty;
         const String& name = propertyEntry.name;
 
-        RefPtr<TypeBuilder::CSS::CSSProperty> property = TypeBuilder::CSS::CSSProperty::create()
+        RefPtr<protocol::TypeBuilder::CSS::CSSProperty> property = protocol::TypeBuilder::CSS::CSSProperty::create()
             .setName(name)
             .setValue(propertyEntry.value);
         propertiesObject->addItem(property);
@@ -822,7 +822,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties()
             String shorthand = m_style->getPropertyShorthand(name);
             if (!shorthand.isEmpty()) {
                 if (foundShorthands.add(shorthand).isNewEntry) {
-                    RefPtr<TypeBuilder::CSS::ShorthandEntry> entry = TypeBuilder::CSS::ShorthandEntry::create()
+                    RefPtr<protocol::TypeBuilder::CSS::ShorthandEntry> entry = protocol::TypeBuilder::CSS::ShorthandEntry::create()
                         .setName(shorthand)
                         .setValue(shorthandValue(shorthand));
                     if (!m_style->getPropertyPriority(name).isEmpty())
@@ -833,7 +833,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties()
         }
     }
 
-    RefPtr<TypeBuilder::CSS::CSSStyle> result = TypeBuilder::CSS::CSSStyle::create()
+    RefPtr<protocol::TypeBuilder::CSS::CSSStyle> result = protocol::TypeBuilder::CSS::CSSStyle::create()
         .setCssProperties(propertiesObject)
         .setShorthandEntries(shorthandEntries);
     return result.release();
@@ -888,7 +888,7 @@ void InspectorStyleSheetBase::onStyleSheetTextChanged()
         listener()->styleSheetChanged(this);
 }
 
-PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyleSheetBase::buildObjectForStyle(CSSStyleDeclaration* style)
+PassRefPtr<protocol::TypeBuilder::CSS::CSSStyle> InspectorStyleSheetBase::buildObjectForStyle(CSSStyleDeclaration* style)
 {
     return inspectorStyle(style)->buildObjectForStyle();
 }
@@ -916,12 +916,12 @@ bool InspectorStyleSheetBase::lineNumberAndColumnToOffset(unsigned lineNumber, u
     return true;
 }
 
-PassRefPtrWillBeRawPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorResourceAgent* resourceAgent, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
+PassRefPtrWillBeRawPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorResourceAgent* resourceAgent, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, protocol::TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
 {
     return adoptRefWillBeNoop(new InspectorStyleSheet(resourceAgent, pageStyleSheet, origin, documentURL, cssAgent));
 }
 
-InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
+InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, protocol::TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
     : InspectorStyleSheetBase(cssAgent)
     , m_cssAgent(cssAgent)
     , m_resourceAgent(resourceAgent)
@@ -1318,7 +1318,7 @@ void InspectorStyleSheet::innerSetText(const String& text, bool markAsLocallyMod
     }
 }
 
-PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectForStyleSheetInfo()
+PassRefPtr<protocol::TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectForStyleSheetInfo()
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
@@ -1327,7 +1327,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
     Document* document = styleSheet->ownerDocument();
     LocalFrame* frame = document ? document->frame() : nullptr;
 
-    RefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> result = TypeBuilder::CSS::CSSStyleSheetHeader::create()
+    RefPtr<protocol::TypeBuilder::CSS::CSSStyleSheetHeader> result = protocol::TypeBuilder::CSS::CSSStyleSheetHeader::create()
         .setStyleSheetId(id())
         .setOrigin(m_origin)
         .setDisabled(styleSheet->disabled())
@@ -1350,10 +1350,10 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
     return result.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData, const String& sheetText)
+PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::Value>> InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData, const String& sheetText)
 {
     ScriptRegexp comment("/\\*[^]*?\\*/", TextCaseSensitive, MultilineEnabled);
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> result = TypeBuilder::Array<TypeBuilder::CSS::Value>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::Value>> result = protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::Value>::create();
     const SelectorRangeList& ranges = sourceData->selectorRanges;
     for (size_t i = 0, size = ranges.size(); i < size; ++i) {
         const SourceRange& range = ranges.at(i);
@@ -1365,7 +1365,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> InspectorStyleSheet::sel
         while ((offset = comment.match(selector, offset, &matchLength)) >= 0)
             selector.replace(offset, matchLength, "");
 
-        RefPtr<TypeBuilder::CSS::Value> simpleSelector = TypeBuilder::CSS::Value::create()
+        RefPtr<protocol::TypeBuilder::CSS::Value> simpleSelector = protocol::TypeBuilder::CSS::Value::create()
             .setText(selector.stripWhiteSpace());
         simpleSelector->setRange(buildSourceRangeObject(range));
         result->addItem(simpleSelector.release());
@@ -1373,10 +1373,10 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> InspectorStyleSheet::sel
     return result.release();
 }
 
-PassRefPtr<TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSelectorList(CSSStyleRule* rule)
+PassRefPtr<protocol::TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSelectorList(CSSStyleRule* rule)
 {
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = sourceDataForRule(rule);
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> selectors;
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::Value>> selectors;
 
     // This intentionally does not rely on the source data to avoid catching the trailing comments (before the declaration starting '{').
     String selectorText = rule->selectorText();
@@ -1384,30 +1384,30 @@ PassRefPtr<TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSe
     if (sourceData) {
         selectors = selectorsFromSource(sourceData.get(), m_text);
     } else {
-        selectors = TypeBuilder::Array<TypeBuilder::CSS::Value>::create();
+        selectors = protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::Value>::create();
         const CSSSelectorList& selectorList = rule->styleRule()->selectorList();
         for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector))
-            selectors->addItem(TypeBuilder::CSS::Value::create().setText(selector->selectorText()).release());
+            selectors->addItem(protocol::TypeBuilder::CSS::Value::create().setText(selector->selectorText()).release());
     }
-    RefPtr<TypeBuilder::CSS::SelectorList> result = TypeBuilder::CSS::SelectorList::create()
+    RefPtr<protocol::TypeBuilder::CSS::SelectorList> result = protocol::TypeBuilder::CSS::SelectorList::create()
         .setSelectors(selectors)
         .setText(selectorText)
         .release();
     return result.release();
 }
 
-static bool canBind(TypeBuilder::CSS::StyleSheetOrigin::Enum origin)
+static bool canBind(protocol::TypeBuilder::CSS::StyleSheetOrigin::Enum origin)
 {
-    return origin != TypeBuilder::CSS::StyleSheetOrigin::User_agent && origin != TypeBuilder::CSS::StyleSheetOrigin::Injected;
+    return origin != protocol::TypeBuilder::CSS::StyleSheetOrigin::User_agent && origin != protocol::TypeBuilder::CSS::StyleSheetOrigin::Injected;
 }
 
-PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWithoutMedia(CSSStyleRule* rule)
+PassRefPtr<protocol::TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWithoutMedia(CSSStyleRule* rule)
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
         return nullptr;
 
-    RefPtr<TypeBuilder::CSS::CSSRule> result = TypeBuilder::CSS::CSSRule::create()
+    RefPtr<protocol::TypeBuilder::CSS::CSSRule> result = protocol::TypeBuilder::CSS::CSSRule::create()
         .setSelectorList(buildObjectForSelectorList(rule))
         .setOrigin(m_origin)
         .setStyle(buildObjectForStyle(rule->style()));
@@ -1420,15 +1420,15 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWit
     return result.release();
 }
 
-PassRefPtr<TypeBuilder::CSS::CSSKeyframeRule> InspectorStyleSheet::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule)
+PassRefPtr<protocol::TypeBuilder::CSS::CSSKeyframeRule> InspectorStyleSheet::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule)
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
         return nullptr;
 
-    RefPtr<TypeBuilder::CSS::Value> keyText = TypeBuilder::CSS::Value::create().setText(keyframeRule->keyText());
+    RefPtr<protocol::TypeBuilder::CSS::Value> keyText = protocol::TypeBuilder::CSS::Value::create().setText(keyframeRule->keyText());
     keyText->setRange(buildSourceRangeObject(sourceDataForRule(keyframeRule)->ruleHeaderRange));
-    RefPtr<TypeBuilder::CSS::CSSKeyframeRule> result = TypeBuilder::CSS::CSSKeyframeRule::create()
+    RefPtr<protocol::TypeBuilder::CSS::CSSKeyframeRule> result = protocol::TypeBuilder::CSS::CSSKeyframeRule::create()
         // TODO(samli): keyText() normalises 'from' and 'to' keyword values.
         .setKeyText(keyText)
         .setOrigin(m_origin)
@@ -1447,7 +1447,7 @@ bool InspectorStyleSheet::getText(String* result)
     return false;
 }
 
-PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceRange(CSSRule* rule)
+PassRefPtr<protocol::TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceRange(CSSRule* rule)
 {
     if (!m_sourceData)
         return nullptr;
@@ -1457,7 +1457,7 @@ PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceR
     return buildSourceRangeObject(sourceData->ruleHeaderRange);
 }
 
-PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::mediaQueryExpValueSourceRange(CSSRule* rule, size_t mediaQueryIndex, size_t mediaQueryExpIndex)
+PassRefPtr<protocol::TypeBuilder::CSS::SourceRange> InspectorStyleSheet::mediaQueryExpValueSourceRange(CSSRule* rule, size_t mediaQueryIndex, size_t mediaQueryExpIndex)
 {
     if (!m_sourceData)
         return nullptr;
@@ -1479,7 +1479,7 @@ String InspectorStyleSheet::sourceURL()
 {
     if (!m_sourceURL.isNull())
         return m_sourceURL;
-    if (m_origin != TypeBuilder::CSS::StyleSheetOrigin::Regular) {
+    if (m_origin != protocol::TypeBuilder::CSS::StyleSheetOrigin::Regular) {
         m_sourceURL = "";
         return m_sourceURL;
     }
@@ -1500,7 +1500,7 @@ String InspectorStyleSheet::sourceURL()
 String InspectorStyleSheet::url()
 {
     // "sourceURL" is present only for regular rules, otherwise "origin" should be used in the frontend.
-    if (m_origin != TypeBuilder::CSS::StyleSheetOrigin::Regular)
+    if (m_origin != protocol::TypeBuilder::CSS::StyleSheetOrigin::Regular)
         return String();
 
     CSSStyleSheet* styleSheet = pageStyleSheet();
@@ -1532,7 +1532,7 @@ bool InspectorStyleSheet::startsAtZero()
 
 String InspectorStyleSheet::sourceMapURL()
 {
-    if (m_origin != TypeBuilder::CSS::StyleSheetOrigin::Regular)
+    if (m_origin != protocol::TypeBuilder::CSS::StyleSheetOrigin::Regular)
         return String();
 
     String styleSheetText;
@@ -1670,7 +1670,7 @@ const CSSRuleVector& InspectorStyleSheet::flatRules()
 
 bool InspectorStyleSheet::resourceStyleSheetText(String* result)
 {
-    if (m_origin == TypeBuilder::CSS::StyleSheetOrigin::Injected || m_origin == TypeBuilder::CSS::StyleSheetOrigin::User_agent)
+    if (m_origin == protocol::TypeBuilder::CSS::StyleSheetOrigin::Injected || m_origin == protocol::TypeBuilder::CSS::StyleSheetOrigin::User_agent)
         return false;
 
     if (!m_pageStyleSheet->ownerDocument())

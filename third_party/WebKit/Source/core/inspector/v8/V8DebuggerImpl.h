@@ -32,9 +32,9 @@
 #define V8DebuggerImpl_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/v8/V8DebuggerScript.h"
 #include "core/inspector/v8/public/V8Debugger.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -79,7 +79,7 @@ public:
     void stepOutOfFunction();
     void clearStepping();
 
-    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged);
+    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, protocol::TypeBuilder::OptOutput<bool>* stackChanged);
     v8::Local<v8::Object> currentCallFrames();
     v8::Local<v8::Object> currentCallFramesForAsyncStack();
     PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);

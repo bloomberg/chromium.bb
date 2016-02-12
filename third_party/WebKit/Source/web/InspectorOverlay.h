@@ -29,7 +29,6 @@
 #ifndef InspectorOverlay_h
 #define InspectorOverlay_h
 
-#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/InspectorProfilerAgent.h"
@@ -37,6 +36,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "public/web/WebInputEvent.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

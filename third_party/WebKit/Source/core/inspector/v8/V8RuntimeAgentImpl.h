@@ -32,8 +32,8 @@
 #define V8RuntimeAgentImpl_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/v8/public/V8RuntimeAgent.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -53,7 +53,7 @@ public:
 
     // State management methods.
     void setInspectorState(PassRefPtr<JSONObject>) override;
-    void setFrontend(InspectorFrontend::Runtime*) override;
+    void setFrontend(protocol::Frontend::Runtime*) override;
     void clearFrontend() override;
     void restore() override;
 
@@ -68,9 +68,9 @@ public:
         const int* executionContextId,
         const bool* returnByValue,
         const bool* generatePreview,
-        RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-        TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
+        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
+        protocol::TypeBuilder::OptOutput<bool>* wasThrown,
+        RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
     void callFunctionOn(ErrorString*,
         const String& objectId,
         const String& expression,
@@ -78,16 +78,16 @@ public:
         const bool* doNotPauseOnExceptionsAndMuteConsole,
         const bool* returnByValue,
         const bool* generatePreview,
-        RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-        TypeBuilder::OptOutput<bool>* wasThrown) override;
+        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
+        protocol::TypeBuilder::OptOutput<bool>* wasThrown) override;
     void releaseObject(ErrorString*, const String& objectId) override;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
+    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) override;
     void run(ErrorString*) override;
     void isRunRequired(ErrorString*, bool* out_result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) override;
-    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<TypeBuilder::Runtime::ScriptId>*, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
-    void runScript(ErrorString*, const TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
+    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, protocol::TypeBuilder::OptOutput<protocol::TypeBuilder::Runtime::ScriptId>*, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
+    void runScript(ErrorString*, const protocol::TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
 
     V8DebuggerImpl* debugger() { return m_debugger; }
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager.get(); }
@@ -96,8 +96,8 @@ private:
     void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
     void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;
     int ensureDefaultContextAvailable(v8::Local<v8::Context>) override;
-    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) override;
-    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
+    PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) override;
+    PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
     void disposeObjectGroup(const String&) override;
     v8::Local<v8::Value> findObject(const String& objectId, v8::Local<v8::Context>* = nullptr, String* groupName = nullptr) override;
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
@@ -105,10 +105,10 @@ private:
 
     void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
-    PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
+    PassRefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
     RefPtr<JSONObject> m_state;
-    InspectorFrontend::Runtime* m_frontend;
+    protocol::Frontend::Runtime* m_frontend;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
     bool m_enabled;

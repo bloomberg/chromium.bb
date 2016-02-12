@@ -31,7 +31,6 @@
 #ifndef InspectorIndexedDBAgent_h
 #define InspectorIndexedDBAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "modules/ModulesExport.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,7 +42,7 @@ class InspectedFrames;
 
 typedef String ErrorString;
 
-class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, InspectorFrontend::IndexedDB>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
+class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, protocol::Frontend::IndexedDB>, public protocol::Dispatcher::IndexedDBCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(InspectedFrames*);
 

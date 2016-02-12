@@ -26,24 +26,24 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# THis file contains string resources for CodeGeneratorInspector.
+# THis file contains string resources for CodeGenerator.
 # Its syntax is a Python syntax subset, suitable for manual parsing.
 
 frontend_domain_class = (
-"""    class CORE_EXPORT $domainClassName {
+"""    class PLATFORM_EXPORT $domainClassName {
     public:
-        static $domainClassName* from(InspectorFrontend* frontend) { return &(frontend->m_$domainFieldName) ;}
-        $domainClassName(InspectorFrontendChannel* inspectorFrontendChannel) : m_inspectorFrontendChannel(inspectorFrontendChannel) { }
+        static $domainClassName* from(Frontend* frontend) { return &(frontend->m_$domainFieldName) ;}
+        $domainClassName(FrontendChannel* frontendChannel) : m_frontendChannel(frontendChannel) { }
 ${frontendDomainMethodDeclarations}
-        void flush() { m_inspectorFrontendChannel->flush(); }
+        void flush() { m_frontendChannel->flush(); }
     private:
-        InspectorFrontendChannel* m_inspectorFrontendChannel;
+        FrontendChannel* m_frontendChannel;
     };
 
 """)
 
 backend_method = (
-"""void InspectorBackendDispatcherImpl::${domainName}_$methodName(int sessionId, int callId, JSONObject*$requestMessageObject, JSONArray* protocolErrors)
+"""void DispatcherImpl::${domainName}_$methodName(int sessionId, int callId, JSONObject*$requestMessageObject, JSONArray* protocolErrors)
 {
     if (!$agentField)
         protocolErrors->pushString("${domainName} handler is not available.");
@@ -59,19 +59,19 @@ $responseCook
 }
 """)
 
-frontend_method = ("""void InspectorFrontend::$domainName::$eventName($parameters)
+frontend_method = ("""void Frontend::$domainName::$eventName($parameters)
 {
     RefPtr<JSONObject> jsonMessage = JSONObject::create();
     jsonMessage->setString("method", "$domainName.$eventName");
-$code    if (m_inspectorFrontendChannel)
-        m_inspectorFrontendChannel->sendProtocolNotification(jsonMessage.release());
+$code    if (m_frontendChannel)
+        m_frontendChannel->sendProtocolNotification(jsonMessage.release());
 }
 """)
 
 callback_main_methods = ("""
-InspectorBackendDispatcher::$agentName::$callbackName::$callbackName(PassRefPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id) : CallbackBase(backendImpl, sessionId, id) {}
+Dispatcher::$agentName::$callbackName::$callbackName(PassRefPtr<DispatcherImpl> backendImpl, int sessionId, int id) : CallbackBase(backendImpl, sessionId, id) {}
 
-void InspectorBackendDispatcher::$agentName::$callbackName::sendSuccess($parameters)
+void Dispatcher::$agentName::$callbackName::sendSuccess($parameters)
 {
     RefPtr<JSONObject> jsonMessage = JSONObject::create();
 $code    sendIfActive(jsonMessage, ErrorString(), PassRefPtr<JSONValue>());
@@ -79,7 +79,7 @@ $code    sendIfActive(jsonMessage, ErrorString(), PassRefPtr<JSONValue>());
 """)
 
 callback_failure_method = (
-"""void InspectorBackendDispatcher::$agentName::$callbackName::sendFailure(const ErrorString& error, $parameter)
+"""void Dispatcher::$agentName::$callbackName::sendFailure(const ErrorString& error, $parameter)
 {
     ASSERT(error.length());
     RefPtr<JSONValue> errorDataValue;
@@ -92,41 +92,44 @@ callback_failure_method = (
 
 
 frontend_h = (
-"""#ifndef InspectorFrontend_h
-#define InspectorFrontend_h
+"""#ifndef Frontend_h
+#define Frontend_h
 
-#include "InspectorTypeBuilder.h"
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorFrontendChannel.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
+
 #include "platform/JSONValues.h"
+#include "platform/PlatformExport.h"
+#include "platform/inspector_protocol/FrontendChannel.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+namespace protocol {
 
-typedef String ErrorString;
+using ErrorString = String;
 
-class CORE_EXPORT InspectorFrontend {
+class PLATFORM_EXPORT Frontend {
 public:
-    InspectorFrontend(InspectorFrontendChannel*);
-    InspectorFrontendChannel* channel() { return m_inspectorFrontendChannel; }
+    Frontend(FrontendChannel*);
+    FrontendChannel* channel() { return m_frontendChannel; }
 
 $domainClassList
 private:
-    InspectorFrontendChannel* m_inspectorFrontendChannel;
+    FrontendChannel* m_frontendChannel;
 ${fieldDeclarations}};
 
+} // namespace protocol
 } // namespace blink
-#endif // !defined(InspectorFrontend_h)
+#endif // !defined(Frontend_h)
 """)
 
 backend_h = (
-"""#ifndef InspectorBackendDispatcher_h
-#define InspectorBackendDispatcher_h
+"""#ifndef Dispatcher_h
+#define Dispatcher_h
 
-#include "InspectorTypeBuilder.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 
-#include "core/CoreExport.h"
+#include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -136,20 +139,23 @@ namespace blink {
 
 class JSONObject;
 class JSONArray;
-class InspectorFrontendChannel;
 
-typedef String ErrorString;
+namespace protocol {
 
-class InspectorBackendDispatcherImpl;
+class FrontendChannel;
 
-class CORE_EXPORT InspectorBackendDispatcher: public RefCounted<InspectorBackendDispatcher> {
+using ErrorString = String;
+
+class DispatcherImpl;
+
+class PLATFORM_EXPORT Dispatcher: public RefCounted<Dispatcher> {
 public:
-    static PassRefPtr<InspectorBackendDispatcher> create(InspectorFrontendChannel* inspectorFrontendChannel);
-    virtual ~InspectorBackendDispatcher() { }
+    static PassRefPtr<Dispatcher> create(FrontendChannel* frontendChannel);
+    virtual ~Dispatcher() { }
 
-    class CORE_EXPORT CallbackBase: public RefCounted<CallbackBase> {
+    class PLATFORM_EXPORT CallbackBase: public RefCounted<CallbackBase> {
     public:
-        CallbackBase(PassRefPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id);
+        CallbackBase(PassRefPtr<DispatcherImpl> backendImpl, int sessionId, int id);
         virtual ~CallbackBase();
         void sendFailure(const ErrorString&);
         bool isActive();
@@ -160,12 +166,12 @@ public:
     private:
         void disable() { m_alreadySent = true; }
 
-        RefPtr<InspectorBackendDispatcherImpl> m_backendImpl;
+        RefPtr<DispatcherImpl> m_backendImpl;
         int m_sessionId;
         int m_id;
         bool m_alreadySent;
 
-        friend class InspectorBackendDispatcherImpl;
+        friend class DispatcherImpl;
     };
 
 $agentInterfaces
@@ -201,8 +207,12 @@ private:
     static const unsigned short commandNamesIndex[];
 };
 
+} // namespace protocol
 } // namespace blink
-#endif // !defined(InspectorBackendDispatcher_h)
+
+using blink::protocol::ErrorString;
+
+#endif // !defined(Dispatcher_h)
 
 
 """)
@@ -210,33 +220,34 @@ private:
 backend_cpp = (
 """
 
-#include "InspectorBackendDispatcher.h"
+#include "platform/inspector_protocol/Dispatcher.h"
 
-#include "core/inspector/InspectorFrontendChannel.h"
 #include "platform/JSONParser.h"
 #include "platform/JSONValues.h"
+#include "platform/inspector_protocol/FrontendChannel.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+namespace protocol {
 
-const char InspectorBackendDispatcher::commandNames[] = {
+const char Dispatcher::commandNames[] = {
 $methodNameDeclarations
 };
 
-const unsigned short InspectorBackendDispatcher::commandNamesIndex[] = {
+const unsigned short Dispatcher::commandNamesIndex[] = {
 $methodNameDeclarationsIndex
 };
 
-const char* InspectorBackendDispatcher::commandName(MethodNames index) {
+const char* Dispatcher::commandName(MethodNames index) {
     static_assert(static_cast<int>(kMethodNamesEnumSize) == WTF_ARRAY_LENGTH(commandNamesIndex), "MethodNames enum should have the same number of elements as commandNamesIndex");
     return commandNames + commandNamesIndex[index];
 }
 
-class InspectorBackendDispatcherImpl : public InspectorBackendDispatcher {
+class DispatcherImpl : public Dispatcher {
 public:
-    InspectorBackendDispatcherImpl(InspectorFrontendChannel* inspectorFrontendChannel)
-        : m_inspectorFrontendChannel(inspectorFrontendChannel)
+    DispatcherImpl(FrontendChannel* frontendChannel)
+        : m_frontendChannel(frontendChannel)
 $constructorInit
     {
         // Initialize dispatch map.
@@ -255,22 +266,22 @@ $constructorInit
         m_commonErrors.insert(ServerError, -32000);
     }
 
-    virtual void clearFrontend() { m_inspectorFrontendChannel = 0; }
+    virtual void clearFrontend() { m_frontendChannel = 0; }
     virtual void dispatch(int sessionId, const String& message);
     virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const;
-    using InspectorBackendDispatcher::reportProtocolError;
+    using Dispatcher::reportProtocolError;
 
     void sendResponse(int sessionId, int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result);
-    bool isActive() { return m_inspectorFrontendChannel; }
+    bool isActive() { return m_frontendChannel; }
 
 $setters
 private:
-    using CallHandler = void (InspectorBackendDispatcherImpl::*)(int sessionId, int callId, JSONObject* messageObject, JSONArray* protocolErrors);
+    using CallHandler = void (DispatcherImpl::*)(int sessionId, int callId, JSONObject* messageObject, JSONArray* protocolErrors);
     using DispatchMap = HashMap<String, CallHandler>;
 
 $methodDeclarations
 
-    InspectorFrontendChannel* m_inspectorFrontendChannel;
+    FrontendChannel* m_frontendChannel;
 $fieldDeclarations
 
     template<typename R, typename V, typename V0>
@@ -297,19 +308,19 @@ $fieldDeclarations
     Vector<int> m_commonErrors;
 };
 
-const char InspectorBackendDispatcherImpl::InvalidParamsFormatString[] = "Some arguments of method '%s' can't be processed";
+const char DispatcherImpl::InvalidParamsFormatString[] = "Some arguments of method '%s' can't be processed";
 
 $methods
 
-PassRefPtr<InspectorBackendDispatcher> InspectorBackendDispatcher::create(InspectorFrontendChannel* inspectorFrontendChannel)
+PassRefPtr<Dispatcher> Dispatcher::create(FrontendChannel* frontendChannel)
 {
-    return adoptRef(new InspectorBackendDispatcherImpl(inspectorFrontendChannel));
+    return adoptRef(new DispatcherImpl(frontendChannel));
 }
 
 
-void InspectorBackendDispatcherImpl::dispatch(int sessionId, const String& message)
+void DispatcherImpl::dispatch(int sessionId, const String& message)
 {
-    RefPtr<InspectorBackendDispatcher> protect(this);
+    RefPtr<Dispatcher> protect(this);
     int callId = 0;
     RefPtr<JSONValue> parsedMessage = parseJSON(message);
     ASSERT(parsedMessage);
@@ -335,7 +346,7 @@ void InspectorBackendDispatcherImpl::dispatch(int sessionId, const String& messa
     ((*this).*it->value)(sessionId, callId, messageObject.get(), protocolErrors.get());
 }
 
-void InspectorBackendDispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result)
+void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result)
 {
     if (invocationError.length()) {
         reportProtocolError(sessionId, callId, ServerError, invocationError, errorData);
@@ -345,16 +356,16 @@ void InspectorBackendDispatcherImpl::sendResponse(int sessionId, int callId, con
     RefPtr<JSONObject> responseMessage = JSONObject::create();
     responseMessage->setNumber("id", callId);
     responseMessage->setObject("result", result);
-    if (m_inspectorFrontendChannel)
-        m_inspectorFrontendChannel->sendProtocolResponse(sessionId, callId, responseMessage.release());
+    if (m_frontendChannel)
+        m_frontendChannel->sendProtocolResponse(sessionId, callId, responseMessage.release());
 }
 
-void InspectorBackendDispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage) const
+void Dispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage) const
 {
     reportProtocolError(sessionId, callId, code, errorMessage, PassRefPtr<JSONValue>());
 }
 
-void InspectorBackendDispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<JSONValue> data) const
+void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<JSONValue> data) const
 {
     ASSERT(code >=0);
     ASSERT((unsigned)code < m_commonErrors.size());
@@ -368,12 +379,12 @@ void InspectorBackendDispatcherImpl::reportProtocolError(int sessionId, int call
     RefPtr<JSONObject> message = JSONObject::create();
     message->setObject("error", error);
     message->setNumber("id", callId);
-    if (m_inspectorFrontendChannel)
-        m_inspectorFrontendChannel->sendProtocolResponse(sessionId, callId, message.release());
+    if (m_frontendChannel)
+        m_frontendChannel->sendProtocolResponse(sessionId, callId, message.release());
 }
 
 template<typename R, typename V, typename V0>
-R InspectorBackendDispatcherImpl::getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name)
+R DispatcherImpl::getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name)
 {
     ASSERT(protocolErrors);
 
@@ -416,37 +427,37 @@ struct AsMethodBridges {
     static bool asArray(JSONValue* value, RefPtr<JSONArray>* output) { return value->asArray(output); }
 };
 
-int InspectorBackendDispatcherImpl::getInt(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
+int DispatcherImpl::getInt(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<int, int, int>(object, name, valueFound, protocolErrors, 0, AsMethodBridges::asInt, "Number");
 }
 
-double InspectorBackendDispatcherImpl::getDouble(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
+double DispatcherImpl::getDouble(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<double, double, double>(object, name, valueFound, protocolErrors, 0, AsMethodBridges::asDouble, "Number");
 }
 
-String InspectorBackendDispatcherImpl::getString(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
+String DispatcherImpl::getString(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<String, String, String>(object, name, valueFound, protocolErrors, "", AsMethodBridges::asString, "String");
 }
 
-bool InspectorBackendDispatcherImpl::getBoolean(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
+bool DispatcherImpl::getBoolean(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<bool, bool, bool>(object, name, valueFound, protocolErrors, false, AsMethodBridges::asBoolean, "Boolean");
 }
 
-PassRefPtr<JSONObject> InspectorBackendDispatcherImpl::getObject(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
+PassRefPtr<JSONObject> DispatcherImpl::getObject(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<PassRefPtr<JSONObject>, RefPtr<JSONObject>, JSONObject*>(object, name, valueFound, protocolErrors, 0, AsMethodBridges::asObject, "Object");
 }
 
-PassRefPtr<JSONArray> InspectorBackendDispatcherImpl::getArray(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
+PassRefPtr<JSONArray> DispatcherImpl::getArray(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<PassRefPtr<JSONArray>, RefPtr<JSONArray>, JSONArray*>(object, name, valueFound, protocolErrors, 0, AsMethodBridges::asArray, "Array");
 }
 
-bool InspectorBackendDispatcher::getCommandName(const String& message, String* result)
+bool Dispatcher::getCommandName(const String& message, String* result)
 {
     RefPtr<JSONValue> value = parseJSON(message);
     if (!value)
@@ -462,23 +473,23 @@ bool InspectorBackendDispatcher::getCommandName(const String& message, String* r
     return true;
 }
 
-InspectorBackendDispatcher::CallbackBase::CallbackBase(PassRefPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id)
+Dispatcher::CallbackBase::CallbackBase(PassRefPtr<DispatcherImpl> backendImpl, int sessionId, int id)
     : m_backendImpl(backendImpl), m_sessionId(sessionId), m_id(id), m_alreadySent(false) {}
 
-InspectorBackendDispatcher::CallbackBase::~CallbackBase() {}
+Dispatcher::CallbackBase::~CallbackBase() {}
 
-void InspectorBackendDispatcher::CallbackBase::sendFailure(const ErrorString& error)
+void Dispatcher::CallbackBase::sendFailure(const ErrorString& error)
 {
     ASSERT(error.length());
     sendIfActive(nullptr, error, PassRefPtr<JSONValue>());
 }
 
-bool InspectorBackendDispatcher::CallbackBase::isActive()
+bool Dispatcher::CallbackBase::isActive()
 {
     return !m_alreadySent && m_backendImpl->isActive();
 }
 
-void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObject> partialMessage, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData)
+void Dispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObject> partialMessage, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData)
 {
     if (m_alreadySent)
         return;
@@ -486,6 +497,7 @@ void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObjec
     m_alreadySent = true;
 }
 
+} // namespace protocol
 } // namespace blink
 
 """)
@@ -493,38 +505,41 @@ void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObjec
 frontend_cpp = (
 """
 
-#include "InspectorFrontend.h"
+#include "platform/inspector_protocol/Frontend.h"
 
-#include "core/inspector/InspectorFrontendChannel.h"
 #include "platform/JSONValues.h"
+#include "platform/inspector_protocol/FrontendChannel.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+namespace protocol {
 
-InspectorFrontend::InspectorFrontend(InspectorFrontendChannel* inspectorFrontendChannel)
-    : m_inspectorFrontendChannel(inspectorFrontendChannel)
+Frontend::Frontend(FrontendChannel* frontendChannel)
+    : m_frontendChannel(frontendChannel)
     , $constructorInit
 {
 }
 
 $methods
 
+} // namespace protocol
 } // namespace blink
 
 """)
 
 typebuilder_h = (
 """
-#ifndef InspectorTypeBuilder_h
-#define InspectorTypeBuilder_h
+#ifndef TypeBuilder_h
+#define TypeBuilder_h
 
-#include "core/CoreExport.h"
 #include "platform/JSONValues.h"
+#include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
+namespace protocol {
 
 namespace TypeBuilder {
 
@@ -771,9 +786,9 @@ struct ArrayItemHelper<JSONArray> {
 };
 
 template<typename T>
-struct ArrayItemHelper<TypeBuilder::Array<T>> {
+struct ArrayItemHelper<protocol::TypeBuilder::Array<T>> {
     struct Traits {
-        static void pushRefPtr(JSONArray* array, PassRefPtr<TypeBuilder::Array<T>> value)
+        static void pushRefPtr(JSONArray* array, PassRefPtr<protocol::TypeBuilder::Array<T>> value)
         {
             array->pushValue(value);
         }
@@ -789,25 +804,26 @@ struct ArrayItemHelper<TypeBuilder::Array<T>> {
 
 ${forwards}
 
-CORE_EXPORT String getEnumConstantValue(int code);
+PLATFORM_EXPORT String getEnumConstantValue(int code);
 
 ${typeBuilders}
 } // namespace TypeBuilder
 
-
+} // namespace protocol
 } // namespace blink
 
-#endif // !defined(InspectorTypeBuilder_h)
+#endif // !defined(TypeBuilder_h)
 
 """)
 
 typebuilder_cpp = (
 """
 
-#include "InspectorTypeBuilder.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/text/CString.h"
 
 namespace blink {
+namespace protocol {
 
 namespace TypeBuilder {
 
@@ -842,6 +858,7 @@ $validatorCode
 
 #endif // $validatorIfdefName
 
+} // namespace protocol
 } // namespace blink
 
 """)

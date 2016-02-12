@@ -26,7 +26,7 @@ bool asBool(const bool* value)
 
 class HeapSnapshotProgress final : public v8::ActivityControl {
 public:
-    HeapSnapshotProgress(InspectorFrontend::HeapProfiler* frontend)
+    HeapSnapshotProgress(protocol::Frontend::HeapProfiler* frontend)
         : m_frontend(frontend) { }
     ControlOption ReportProgressValue(int done, int total) override
     {
@@ -39,7 +39,7 @@ public:
         return kContinue;
     }
 private:
-    InspectorFrontend::HeapProfiler* m_frontend;
+    protocol::Frontend::HeapProfiler* m_frontend;
 };
 
 class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolver {
@@ -65,7 +65,7 @@ private:
 
 class HeapSnapshotOutputStream final : public v8::OutputStream {
 public:
-    HeapSnapshotOutputStream(InspectorFrontend::HeapProfiler* frontend)
+    HeapSnapshotOutputStream(protocol::Frontend::HeapProfiler* frontend)
         : m_frontend(frontend) { }
     void EndOfStream() override { }
     int GetChunkSize() override { return 102400; }
@@ -76,7 +76,7 @@ public:
         return kContinue;
     }
 private:
-    InspectorFrontend::HeapProfiler* m_frontend;
+    protocol::Frontend::HeapProfiler* m_frontend;
 };
 
 v8::Local<v8::Object> objectByHeapObjectId(v8::Isolate* isolate, unsigned id)
@@ -101,7 +101,7 @@ private:
 
 class HeapStatsStream final : public v8::OutputStream {
 public:
-    HeapStatsStream(InspectorFrontend::HeapProfiler* frontend)
+    HeapStatsStream(protocol::Frontend::HeapProfiler* frontend)
         : m_frontend(frontend)
     {
     }
@@ -117,7 +117,7 @@ public:
     WriteResult WriteHeapStatsChunk(v8::HeapStatsUpdate* updateData, int count) override
     {
         ASSERT(count > 0);
-        RefPtr<TypeBuilder::Array<int>> statsDiff = TypeBuilder::Array<int>::create();
+        RefPtr<protocol::TypeBuilder::Array<int>> statsDiff = protocol::TypeBuilder::Array<int>::create();
         for (int i = 0; i < count; ++i) {
             statsDiff->addItem(updateData[i].index);
             statsDiff->addItem(updateData[i].count);
@@ -128,7 +128,7 @@ public:
     }
 
 private:
-    InspectorFrontend::HeapProfiler* m_frontend;
+    protocol::Frontend::HeapProfiler* m_frontend;
 };
 
 } // namespace
@@ -218,7 +218,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const b
     const_cast<v8::HeapSnapshot*>(snapshot)->Delete();
 }
 
-void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result)
+void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result)
 {
     bool ok;
     unsigned id = heapSnapshotObjectId.toUInt(&ok);

@@ -19,9 +19,9 @@ static const char userInitiatedProfiling[] = "userInitiatedProfiling";
 
 namespace {
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> buildInspectorObjectForPositionTicks(const v8::CpuProfileNode* node)
+PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::PositionTickInfo>> buildInspectorObjectForPositionTicks(const v8::CpuProfileNode* node)
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> array = TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::PositionTickInfo>> array = protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::PositionTickInfo>::create();
     unsigned lineCount = node->GetHitLineCount();
     if (!lineCount)
         return array.release();
@@ -29,7 +29,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> buildIns
     Vector<v8::CpuProfileNode::LineTick> entries(lineCount);
     if (node->GetLineTicks(&entries[0], lineCount)) {
         for (unsigned i = 0; i < lineCount; i++) {
-            RefPtr<TypeBuilder::Profiler::PositionTickInfo> line = TypeBuilder::Profiler::PositionTickInfo::create()
+            RefPtr<protocol::TypeBuilder::Profiler::PositionTickInfo> line = protocol::TypeBuilder::Profiler::PositionTickInfo::create()
                 .setLine(entries[i].line)
                 .setTicks(entries[i].hit_count);
             array->addItem(line);
@@ -39,20 +39,20 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> buildIns
     return array.release();
 }
 
-PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Isolate* isolate, const v8::CpuProfileNode* node)
+PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Isolate* isolate, const v8::CpuProfileNode* node)
 {
     v8::HandleScope handleScope(isolate);
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::CPUProfileNode>> children = TypeBuilder::Array<TypeBuilder::Profiler::CPUProfileNode>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::CPUProfileNode>> children = protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::CPUProfileNode>::create();
     const int childrenCount = node->GetChildrenCount();
     for (int i = 0; i < childrenCount; i++) {
         const v8::CpuProfileNode* child = node->GetChild(i);
         children->addItem(buildInspectorObjectFor(isolate, child));
     }
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
 
-    RefPtr<TypeBuilder::Profiler::CPUProfileNode> result = TypeBuilder::Profiler::CPUProfileNode::create()
+    RefPtr<protocol::TypeBuilder::Profiler::CPUProfileNode> result = protocol::TypeBuilder::Profiler::CPUProfileNode::create()
         .setFunctionName(toWTFString(node->GetFunctionName()))
         .setScriptId(String::number(node->GetScriptId()))
         .setUrl(toWTFString(node->GetScriptResourceName()))
@@ -67,27 +67,27 @@ PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Is
     return result.release();
 }
 
-PassRefPtr<TypeBuilder::Array<int>> buildInspectorObjectForSamples(v8::CpuProfile* v8profile)
+PassRefPtr<protocol::TypeBuilder::Array<int>> buildInspectorObjectForSamples(v8::CpuProfile* v8profile)
 {
-    RefPtr<TypeBuilder::Array<int>> array = TypeBuilder::Array<int>::create();
+    RefPtr<protocol::TypeBuilder::Array<int>> array = protocol::TypeBuilder::Array<int>::create();
     int count = v8profile->GetSamplesCount();
     for (int i = 0; i < count; i++)
         array->addItem(v8profile->GetSample(i)->GetNodeId());
     return array.release();
 }
 
-PassRefPtr<TypeBuilder::Array<double>> buildInspectorObjectForTimestamps(v8::CpuProfile* v8profile)
+PassRefPtr<protocol::TypeBuilder::Array<double>> buildInspectorObjectForTimestamps(v8::CpuProfile* v8profile)
 {
-    RefPtr<TypeBuilder::Array<double>> array = TypeBuilder::Array<double>::create();
+    RefPtr<protocol::TypeBuilder::Array<double>> array = protocol::TypeBuilder::Array<double>::create();
     int count = v8profile->GetSamplesCount();
     for (int i = 0; i < count; i++)
         array->addItem(v8profile->GetSampleTimestamp(i));
     return array.release();
 }
 
-PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isolate, v8::CpuProfile* v8profile)
+PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isolate, v8::CpuProfile* v8profile)
 {
-    RefPtr<TypeBuilder::Profiler::CPUProfile> profile = TypeBuilder::Profiler::CPUProfile::create()
+    RefPtr<protocol::TypeBuilder::Profiler::CPUProfile> profile = protocol::TypeBuilder::Profiler::CPUProfile::create()
         .setHead(buildInspectorObjectFor(isolate, v8profile->GetTopDownRoot()))
         .setStartTime(static_cast<double>(v8profile->GetStartTime()) / 1000000)
         .setEndTime(static_cast<double>(v8profile->GetEndTime()) / 1000000);
@@ -96,10 +96,10 @@ PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isol
     return profile.release();
 }
 
-PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation(V8DebuggerImpl* debugger)
+PassRefPtr<protocol::TypeBuilder::Debugger::Location> currentDebugLocation(V8DebuggerImpl* debugger)
 {
     OwnPtr<V8StackTrace> callStack = debugger->captureStackTrace(1);
-    RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
+    RefPtr<protocol::TypeBuilder::Debugger::Location> location = protocol::TypeBuilder::Debugger::Location::create()
         .setScriptId(callStack->topScriptId())
         .setLineNumber(callStack->topLineNumber());
     location->setColumnNumber(callStack->topColumnNumber());
@@ -171,10 +171,10 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String& title)
         if (id.isEmpty())
             return;
     }
-    RefPtr<TypeBuilder::Profiler::CPUProfile> profile = stopProfiling(id, true);
+    RefPtr<protocol::TypeBuilder::Profiler::CPUProfile> profile = stopProfiling(id, true);
     if (!profile)
         return;
-    RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation(m_debugger);
+    RefPtr<protocol::TypeBuilder::Debugger::Location> location = currentDebugLocation(m_debugger);
     m_frontend->consoleProfileFinished(id, location, profile, resolvedTitle.isNull() ? 0 : &resolvedTitle);
 }
 
@@ -237,12 +237,12 @@ void V8ProfilerAgentImpl::start(ErrorString* error)
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }
 
-void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<TypeBuilder::Profiler::CPUProfile>& profile)
+void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>& profile)
 {
     stop(errorString, &profile);
 }
 
-void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<TypeBuilder::Profiler::CPUProfile>* profile)
+void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>* profile)
 {
     if (!m_recordingCPUProfile) {
         if (errorString)
@@ -250,7 +250,7 @@ void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<TypeBuilder::Pro
         return;
     }
     m_recordingCPUProfile = false;
-    RefPtr<TypeBuilder::Profiler::CPUProfile> cpuProfile = stopProfiling(m_frontendInitiatedProfileId, !!profile);
+    RefPtr<protocol::TypeBuilder::Profiler::CPUProfile> cpuProfile = stopProfiling(m_frontendInitiatedProfileId, !!profile);
     if (profile) {
         *profile = cpuProfile;
         if (!cpuProfile && errorString)
@@ -271,13 +271,13 @@ void V8ProfilerAgentImpl::startProfiling(const String& title)
     m_isolate->GetCpuProfiler()->StartProfiling(toV8String(m_isolate, title), true);
 }
 
-PassRefPtr<TypeBuilder::Profiler::CPUProfile> V8ProfilerAgentImpl::stopProfiling(const String& title, bool serialize)
+PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfile> V8ProfilerAgentImpl::stopProfiling(const String& title, bool serialize)
 {
     v8::HandleScope handleScope(m_isolate);
     v8::CpuProfile* profile = m_isolate->GetCpuProfiler()->StopProfiling(toV8String(m_isolate, title));
     if (!profile)
         return nullptr;
-    RefPtr<TypeBuilder::Profiler::CPUProfile> result;
+    RefPtr<protocol::TypeBuilder::Profiler::CPUProfile> result;
     if (serialize)
         result = createCPUProfile(m_isolate, profile);
     profile->Delete();

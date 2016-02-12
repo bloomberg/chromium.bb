@@ -6,8 +6,8 @@
 #define PromiseTracker_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
-#include "core/InspectorTypeBuilder.h"
+#include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"

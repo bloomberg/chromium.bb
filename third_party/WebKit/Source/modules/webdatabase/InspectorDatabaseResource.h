@@ -31,8 +31,8 @@
 #ifndef InspectorDatabaseResource_h
 #define InspectorDatabaseResource_h
 
-#include "core/InspectorFrontend.h"
 #include "platform/heap/Handle.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -44,7 +44,7 @@ public:
     static InspectorDatabaseResource* create(Database*, const String& domain, const String& name, const String& version);
     DECLARE_TRACE();
 
-    void bind(InspectorFrontend::Database*);
+    void bind(protocol::Frontend::Database*);
     Database* database() { return m_database.get(); }
     void setDatabase(Database* database) { m_database = database; }
     String id() const { return m_id; }

@@ -37,7 +37,7 @@ static const char animationAgentPlaybackRate[] = "animationAgentPlaybackRate";
 namespace blink {
 
 InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
-    : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
+    : InspectorBaseAgent<InspectorAnimationAgent, protocol::Frontend::Animation>("Animation")
     , m_inspectedFrames(inspectedFrames)
     , m_domAgent(domAgent)
     , m_cssAgent(cssAgent)
@@ -89,7 +89,7 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
     setPlaybackRate(nullptr, playbackRate);
 }
 
-static PassRefPtr<TypeBuilder::Animation::AnimationEffect> buildObjectForAnimationEffect(KeyframeEffect* effect, bool isTransition)
+static PassRefPtr<protocol::TypeBuilder::Animation::AnimationEffect> buildObjectForAnimationEffect(KeyframeEffect* effect, bool isTransition)
 {
     ComputedTimingProperties computedTiming;
     effect->computedTiming(computedTiming);
@@ -111,7 +111,7 @@ static PassRefPtr<TypeBuilder::Animation::AnimationEffect> buildObjectForAnimati
         }
     }
 
-    RefPtr<TypeBuilder::Animation::AnimationEffect> animationObject = TypeBuilder::Animation::AnimationEffect::create()
+    RefPtr<protocol::TypeBuilder::Animation::AnimationEffect> animationObject = protocol::TypeBuilder::Animation::AnimationEffect::create()
         .setDelay(delay)
         .setEndDelay(computedTiming.endDelay())
         .setPlaybackRate(computedTiming.playbackRate())
@@ -126,25 +126,25 @@ static PassRefPtr<TypeBuilder::Animation::AnimationEffect> buildObjectForAnimati
     return animationObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKeyframe(const StringKeyframe* keyframe)
+static PassRefPtr<protocol::TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKeyframe(const StringKeyframe* keyframe)
 {
     Decimal decimal = Decimal::fromDouble(keyframe->offset() * 100);
     String offset = decimal.toString();
     offset.append("%");
 
-    RefPtr<TypeBuilder::Animation::KeyframeStyle> keyframeObject = TypeBuilder::Animation::KeyframeStyle::create()
+    RefPtr<protocol::TypeBuilder::Animation::KeyframeStyle> keyframeObject = protocol::TypeBuilder::Animation::KeyframeStyle::create()
         .setOffset(offset)
         .setEasing(keyframe->easing().toString());
     return keyframeObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimationKeyframes(const KeyframeEffect* effect)
+static PassRefPtr<protocol::TypeBuilder::Animation::KeyframesRule> buildObjectForAnimationKeyframes(const KeyframeEffect* effect)
 {
     if (!effect || !effect->model() || !effect->model()->isKeyframeEffectModel())
         return nullptr;
     const KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
     Vector<RefPtr<Keyframe>> normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
-    RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>> keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Animation::KeyframeStyle>> keyframes = protocol::TypeBuilder::Array<protocol::TypeBuilder::Animation::KeyframeStyle>::create();
 
     for (const auto& keyframe : normalizedKeyframes) {
         // Ignore CSS Transitions
@@ -153,16 +153,16 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimation
         const StringKeyframe* stringKeyframe = toStringKeyframe(keyframe.get());
         keyframes->addItem(buildObjectForStringKeyframe(stringKeyframe));
     }
-    RefPtr<TypeBuilder::Animation::KeyframesRule> keyframesObject = TypeBuilder::Animation::KeyframesRule::create()
+    RefPtr<protocol::TypeBuilder::Animation::KeyframesRule> keyframesObject = protocol::TypeBuilder::Animation::KeyframesRule::create()
         .setKeyframes(keyframes);
     return keyframesObject.release();
 }
 
-PassRefPtr<TypeBuilder::Animation::Animation> InspectorAnimationAgent::buildObjectForAnimation(Animation& animation)
+PassRefPtr<protocol::TypeBuilder::Animation::Animation> InspectorAnimationAgent::buildObjectForAnimation(Animation& animation)
 {
     const Element* element = toKeyframeEffect(animation.effect())->target();
     CSSAnimations& cssAnimations = element->elementAnimations()->cssAnimations();
-    RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr;
+    RefPtr<protocol::TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr;
     AnimationType animationType;
 
     if (cssAnimations.isTransitionAnimationForInspector(animation)) {
@@ -178,11 +178,11 @@ PassRefPtr<TypeBuilder::Animation::Animation> InspectorAnimationAgent::buildObje
     m_idToAnimation.set(id, &animation);
     m_idToAnimationType.set(id, animationType);
 
-    RefPtr<TypeBuilder::Animation::AnimationEffect> animationEffectObject = buildObjectForAnimationEffect(toKeyframeEffect(animation.effect()), animationType == AnimationType::CSSTransition);
+    RefPtr<protocol::TypeBuilder::Animation::AnimationEffect> animationEffectObject = buildObjectForAnimationEffect(toKeyframeEffect(animation.effect()), animationType == AnimationType::CSSTransition);
     if (keyframeRule)
         animationEffectObject->setKeyframesRule(keyframeRule);
 
-    RefPtr<TypeBuilder::Animation::Animation> animationObject = TypeBuilder::Animation::Animation::create()
+    RefPtr<protocol::TypeBuilder::Animation::Animation> animationObject = protocol::TypeBuilder::Animation::Animation::create()
         .setId(id)
         .setPausedState(animation.paused())
         .setPlayState(animation.playState())
@@ -372,7 +372,7 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
     }
 }
 
-void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const String& animationId, RefPtr<TypeBuilder::Runtime::RemoteObject>& result)
+void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const String& animationId, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result)
 {
     Animation* animation = assertAnimation(errorString, animationId);
     if (!animation)

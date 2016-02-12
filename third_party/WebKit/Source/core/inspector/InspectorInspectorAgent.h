@@ -31,7 +31,6 @@
 #define InspectorInspectorAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -43,7 +42,7 @@ class JSONObject;
 
 typedef String ErrorString;
 
-class CORE_EXPORT InspectorInspectorAgent final : public InspectorBaseAgent<InspectorInspectorAgent, InspectorFrontend::Inspector>, public InspectorBackendDispatcher::InspectorCommandHandler {
+class CORE_EXPORT InspectorInspectorAgent final : public InspectorBaseAgent<InspectorInspectorAgent, protocol::Frontend::Inspector>, public protocol::Dispatcher::InspectorCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInspectorAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorInspectorAgent> create()
@@ -63,7 +62,7 @@ public:
     // Generic code called from custom implementations.
     void evaluateForTestInFrontend(long testCallId, const String& script);
 
-    void inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints);
+    void inspect(PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints);
 
 private:
     InspectorInspectorAgent();

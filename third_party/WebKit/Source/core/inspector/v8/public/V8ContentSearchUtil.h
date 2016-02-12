@@ -5,7 +5,7 @@
 #ifndef V8ContentSearchUtil_h
 #define V8ContentSearchUtil_h
 
-#include "core/InspectorTypeBuilder.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 
 #include "wtf/text/WTFString.h"
 
@@ -17,7 +17,7 @@ namespace V8ContentSearchUtil {
 
 String findSourceURL(const String& content, bool multiline);
 String findSourceMapURL(const String& content, bool multiline);
-PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> searchInTextByLines(V8Debugger*, const String& text, const String& query, const bool caseSensitive, const bool isRegex);
+PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> searchInTextByLines(V8Debugger*, const String& text, const String& query, const bool caseSensitive, const bool isRegex);
 
 }
 

@@ -31,10 +31,9 @@
 #define InspectorLayerTreeAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
-#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "platform/Timer.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -53,7 +52,7 @@ class PaintLayerCompositor;
 
 typedef String ErrorString;
 
-class CORE_EXPORT InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, InspectorFrontend::LayerTree>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
+class CORE_EXPORT InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, protocol::Frontend::LayerTree>, public protocol::Dispatcher::LayerTreeCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorLayerTreeAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(InspectedFrames* inspectedFrames)
@@ -76,16 +75,16 @@ public:
 
     // Called from the front-end.
     void enable(ErrorString*) override;
-    void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String>>&) override;
+    void compositingReasons(ErrorString*, const String& layerId, RefPtr<protocol::TypeBuilder::Array<String>>&) override;
     void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) override;
     void loadSnapshot(ErrorString*, const RefPtr<JSONArray>& tiles, String* snapshotId) override;
     void releaseSnapshot(ErrorString*, const String& snapshotId) override;
     void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, const double* scale, String* dataURL) override;
-    void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, const RefPtr<JSONObject>* clipRect, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double>>>&) override;
-    void snapshotCommandLog(ErrorString*, const String& snapshotId, RefPtr<TypeBuilder::Array<JSONObject>>&) override;
+    void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, const RefPtr<JSONObject>* clipRect, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<double>>>&) override;
+    void snapshotCommandLog(ErrorString*, const String& snapshotId, RefPtr<protocol::TypeBuilder::Array<JSONObject>>&) override;
 
     // Called by other agents.
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer>> buildLayerTree();
+    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::LayerTree::Layer>> buildLayerTree();
 
 private:
     static unsigned s_lastSnapshotId;
@@ -100,7 +99,7 @@ private:
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
     void buildLayerIdToNodeIdMap(PaintLayer*, LayerIdToNodeIdMap&);
-    void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer>>&, bool hasWheelEventHandlers, int scrollingRootLayerId);
+    void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::LayerTree::Layer>>&, bool hasWheelEventHandlers, int scrollingRootLayerId);
     int idForNode(Node*);
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;

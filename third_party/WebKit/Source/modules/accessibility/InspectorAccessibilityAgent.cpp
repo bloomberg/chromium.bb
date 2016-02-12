@@ -18,18 +18,18 @@
 
 namespace blink {
 
-using TypeBuilder::Accessibility::AXGlobalStates;
-using TypeBuilder::Accessibility::AXLiveRegionAttributes;
-using TypeBuilder::Accessibility::AXNode;
-using TypeBuilder::Accessibility::AXNodeId;
-using TypeBuilder::Accessibility::AXProperty;
-using TypeBuilder::Accessibility::AXValueSource;
-using TypeBuilder::Accessibility::AXValueType;
-using TypeBuilder::Accessibility::AXRelatedNode;
-using TypeBuilder::Accessibility::AXRelationshipAttributes;
-using TypeBuilder::Accessibility::AXValue;
-using TypeBuilder::Accessibility::AXWidgetAttributes;
-using TypeBuilder::Accessibility::AXWidgetStates;
+using protocol::TypeBuilder::Accessibility::AXGlobalStates;
+using protocol::TypeBuilder::Accessibility::AXLiveRegionAttributes;
+using protocol::TypeBuilder::Accessibility::AXNode;
+using protocol::TypeBuilder::Accessibility::AXNodeId;
+using protocol::TypeBuilder::Accessibility::AXProperty;
+using protocol::TypeBuilder::Accessibility::AXValueSource;
+using protocol::TypeBuilder::Accessibility::AXValueType;
+using protocol::TypeBuilder::Accessibility::AXRelatedNode;
+using protocol::TypeBuilder::Accessibility::AXRelationshipAttributes;
+using protocol::TypeBuilder::Accessibility::AXValue;
+using protocol::TypeBuilder::Accessibility::AXWidgetAttributes;
+using protocol::TypeBuilder::Accessibility::AXWidgetStates;
 
 using namespace HTMLNames;
 
@@ -57,7 +57,7 @@ void fillCoreProperties(AXObject* axObject, PassRefPtr<AXNode> nodeObject)
     }
 }
 
-void fillLiveRegionProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
+void fillLiveRegionProperties(AXObject* axObject, PassRefPtr<protocol::TypeBuilder::Array<AXProperty>> properties)
 {
     if (!axObject->liveRegionRoot())
         return;
@@ -71,7 +71,7 @@ void fillLiveRegionProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<
         properties->addItem(createProperty(AXLiveRegionAttributes::Root, createRelatedNodeListValue(axObject->liveRegionRoot())));
 }
 
-void fillGlobalStates(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
+void fillGlobalStates(AXObject* axObject, PassRefPtr<protocol::TypeBuilder::Array<AXProperty>> properties)
 {
     if (!axObject->isEnabled())
         properties->addItem(createProperty(AXGlobalStates::Disabled, createBooleanValue(true)));
@@ -139,7 +139,7 @@ bool roleAllowsSelected(AccessibilityRole role)
     return role == CellRole || role == ListBoxOptionRole || role == RowRole || role == TabRole || role == ColumnHeaderRole || role == MenuItemRadioRole || role == RadioButtonRole || role == RowHeaderRole || role == TreeItemRole;
 }
 
-void fillWidgetProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
+void fillWidgetProperties(AXObject* axObject, PassRefPtr<protocol::TypeBuilder::Array<AXProperty>> properties)
 {
     AccessibilityRole role = axObject->roleValue();
     String autocomplete = axObject->ariaAutoComplete();
@@ -199,7 +199,7 @@ void fillWidgetProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPr
     }
 }
 
-void fillWidgetStates(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
+void fillWidgetStates(AXObject* axObject, PassRefPtr<protocol::TypeBuilder::Array<AXProperty>> properties)
 {
     AccessibilityRole role = axObject->roleValue();
     if (roleAllowsChecked(role)) {
@@ -260,7 +260,7 @@ PassRefPtr<AXProperty> createRelatedNodeListProperty(AXRelationshipAttributes::E
     return createProperty(key, nodeListValue);
 }
 
-void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
+void fillRelationships(AXObject* axObject, PassRefPtr<protocol::TypeBuilder::Array<AXProperty>> properties)
 {
     if (AXObject* activeDescendant = axObject->activeDescendant()) {
         properties->addItem(createProperty(AXRelationshipAttributes::Activedescendant, createRelatedNodeListValue(activeDescendant)));
@@ -315,7 +315,7 @@ PassRefPtr<AXNode> buildObjectForIgnoredNode(Node* node, AXObject* axObject, AXO
         ignoredReasons.append(IgnoredReason(AXNotRendered));
     }
 
-    RefPtr<TypeBuilder::Array<AXProperty>> ignoredReasonProperties = TypeBuilder::Array<AXProperty>::create();
+    RefPtr<protocol::TypeBuilder::Array<AXProperty>> ignoredReasonProperties = protocol::TypeBuilder::Array<AXProperty>::create();
     for (size_t i = 0; i < ignoredReasons.size(); i++)
         ignoredReasonProperties->addItem(createProperty(ignoredReasons[i]));
     ignoredNodeObject->setIgnoredReasons(ignoredReasonProperties);
@@ -323,7 +323,7 @@ PassRefPtr<AXNode> buildObjectForIgnoredNode(Node* node, AXObject* axObject, AXO
     return ignoredNodeObject;
 }
 
-PassRefPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCacheImpl* cacheImpl, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
+PassRefPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCacheImpl* cacheImpl, PassRefPtr<protocol::TypeBuilder::Array<AXProperty>> properties)
 {
     AccessibilityRole role = axObject->roleValue();
     RefPtr<AXNode> nodeObject = AXNode::create().setNodeId(String::number(axObject->axObjectID())).setIgnored(false);
@@ -334,7 +334,7 @@ PassRefPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCa
     if (!nameSources.isEmpty()) {
         RefPtr<AXValue> name = createValue(computedName, AXValueType::ComputedString);
         if (!nameSources.isEmpty()) {
-            RefPtr<TypeBuilder::Array<AXValueSource>> nameSourceProperties = TypeBuilder::Array<AXValueSource>::create();
+            RefPtr<protocol::TypeBuilder::Array<AXValueSource>> nameSourceProperties = protocol::TypeBuilder::Array<AXValueSource>::create();
             for (size_t i = 0; i < nameSources.size(); ++i) {
                 NameSource& nameSource = nameSources[i];
                 nameSourceProperties->addItem(createValueSource(nameSource));
@@ -359,7 +359,7 @@ PassRefPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCa
 } // namespace
 
 InspectorAccessibilityAgent::InspectorAccessibilityAgent(Page* page)
-    : InspectorBaseAgent<InspectorAccessibilityAgent, InspectorFrontend::Accessibility>("Accessibility")
+    : InspectorBaseAgent<InspectorAccessibilityAgent, protocol::Frontend::Accessibility>("Accessibility")
     , m_page(page)
 {
 }
@@ -390,7 +390,7 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
         return;
     }
 
-    RefPtr<TypeBuilder::Array<AXProperty>> properties = TypeBuilder::Array<AXProperty>::create();
+    RefPtr<protocol::TypeBuilder::Array<AXProperty>> properties = protocol::TypeBuilder::Array<AXProperty>::create();
     fillLiveRegionProperties(axObject, properties);
     fillGlobalStates(axObject, properties);
     fillWidgetProperties(axObject, properties);

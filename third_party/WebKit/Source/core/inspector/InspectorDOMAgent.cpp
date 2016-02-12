@@ -215,53 +215,53 @@ String InspectorDOMAgent::toErrorString(ExceptionState& exceptionState)
     return "";
 }
 
-bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, TypeBuilder::DOM::PseudoType::Enum* type)
+bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, protocol::TypeBuilder::DOM::PseudoType::Enum* type)
 {
     switch (pseudoId) {
     case FIRST_LINE:
-        *type = TypeBuilder::DOM::PseudoType::First_line;
+        *type = protocol::TypeBuilder::DOM::PseudoType::First_line;
         return true;
     case FIRST_LETTER:
-        *type = TypeBuilder::DOM::PseudoType::First_letter;
+        *type = protocol::TypeBuilder::DOM::PseudoType::First_letter;
         return true;
     case BEFORE:
-        *type = TypeBuilder::DOM::PseudoType::Before;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Before;
         return true;
     case AFTER:
-        *type = TypeBuilder::DOM::PseudoType::After;
+        *type = protocol::TypeBuilder::DOM::PseudoType::After;
         return true;
     case BACKDROP:
-        *type = TypeBuilder::DOM::PseudoType::Backdrop;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Backdrop;
         return true;
     case SELECTION:
-        *type = TypeBuilder::DOM::PseudoType::Selection;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Selection;
         return true;
     case FIRST_LINE_INHERITED:
-        *type = TypeBuilder::DOM::PseudoType::First_line_inherited;
+        *type = protocol::TypeBuilder::DOM::PseudoType::First_line_inherited;
         return true;
     case SCROLLBAR:
-        *type = TypeBuilder::DOM::PseudoType::Scrollbar;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar;
         return true;
     case SCROLLBAR_THUMB:
-        *type = TypeBuilder::DOM::PseudoType::Scrollbar_thumb;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_thumb;
         return true;
     case SCROLLBAR_BUTTON:
-        *type = TypeBuilder::DOM::PseudoType::Scrollbar_button;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_button;
         return true;
     case SCROLLBAR_TRACK:
-        *type = TypeBuilder::DOM::PseudoType::Scrollbar_track;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_track;
         return true;
     case SCROLLBAR_TRACK_PIECE:
-        *type = TypeBuilder::DOM::PseudoType::Scrollbar_track_piece;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_track_piece;
         return true;
     case SCROLLBAR_CORNER:
-        *type = TypeBuilder::DOM::PseudoType::Scrollbar_corner;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_corner;
         return true;
     case RESIZER:
-        *type = TypeBuilder::DOM::PseudoType::Resizer;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Resizer;
         return true;
     case INPUT_LIST_BUTTON:
-        *type = TypeBuilder::DOM::PseudoType::Input_list_button;
+        *type = protocol::TypeBuilder::DOM::PseudoType::Input_list_button;
         return true;
     default:
         return false;
@@ -269,7 +269,7 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, TypeBuilder::DOM
 }
 
 InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
-    : InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>("DOM")
+    : InspectorBaseAgent<InspectorDOMAgent, protocol::Frontend::DOM>("DOM")
     , m_isolate(isolate)
     , m_inspectedFrames(inspectedFrames)
     , m_runtimeAgent(runtimeAgent)
@@ -544,7 +544,7 @@ void InspectorDOMAgent::disable(ErrorString* errorString)
     setDocument(nullptr);
 }
 
-void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<TypeBuilder::DOM::Node>& root)
+void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<protocol::TypeBuilder::DOM::Node>& root)
 {
     // Backward compatibility. Mark agent as enabled when it requests document.
     if (!enabled())
@@ -583,7 +583,7 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth)
         return;
     }
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodeMap);
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodeMap);
     frontend()->setChildNodes(nodeId, children.release());
 }
 
@@ -649,7 +649,7 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
         *elementId = pushNodePathToFrontend(element.get());
 }
 
-void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int>>& result)
+void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, const String& selectors, RefPtr<protocol::TypeBuilder::Array<int>>& result)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node || !node->isContainerNode())
@@ -662,7 +662,7 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
         return;
     }
 
-    result = TypeBuilder::Array<int>::create();
+    result = protocol::TypeBuilder::Array<int>::create();
 
     for (unsigned i = 0; i < elements->length(); ++i)
         result->addItem(pushNodePathToFrontend(elements->item(i)));
@@ -720,7 +720,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
     OwnPtrWillBeRawPtr<NodeToIdMap> newMap = adoptPtrWillBeNoop(new NodeToIdMap);
     NodeToIdMap* danglingMap = newMap.get();
     m_danglingNodeToIdMaps.append(newMap.release());
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> children = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>::create();
     children->addItem(buildObjectForNode(node, 0, danglingMap));
     frontend()->setChildNodes(0, children);
 
@@ -1060,7 +1060,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     *resultCount = resultsIt->size();
 }
 
-void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String& searchId, int fromIndex, int toIndex, RefPtr<TypeBuilder::Array<int>>& nodeIds)
+void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String& searchId, int fromIndex, int toIndex, RefPtr<protocol::TypeBuilder::Array<int>>& nodeIds)
 {
     SearchResults::iterator it = m_searchResults.find(searchId);
     if (it == m_searchResults.end()) {
@@ -1074,7 +1074,7 @@ void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String&
         return;
     }
 
-    nodeIds = TypeBuilder::Array<int>::create();
+    nodeIds = protocol::TypeBuilder::Array<int>::create();
     for (int i = fromIndex; i < toIndex; ++i)
         nodeIds->addItem(pushNodePathToFrontend((it->value)[i].get()));
 }
@@ -1163,13 +1163,13 @@ PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspe
 void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& mode, const RefPtr<JSONObject>* highlightConfig)
 {
     SearchMode searchMode;
-    if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::SearchForNode)) {
+    if (mode == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::DOM::InspectMode::SearchForNode)) {
         searchMode = SearchingForNormal;
-    } else if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::SearchForUAShadowDOM)) {
+    } else if (mode == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::DOM::InspectMode::SearchForUAShadowDOM)) {
         searchMode = SearchingForUAShadow;
-    } else if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::None)) {
+    } else if (mode == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::DOM::InspectMode::None)) {
         searchMode = NotSearching;
-    } else if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::ShowLayoutEditor)) {
+    } else if (mode == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::DOM::InspectMode::ShowLayoutEditor)) {
         searchMode = ShowLayoutEditor;
     } else {
         *errorString = "Unknown mode \"" + mode + "\" was provided.";
@@ -1388,7 +1388,7 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
     toHTMLInputElement(node)->setFiles(fileList);
 }
 
-void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::DOM::BoxModel>& model)
+void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr<protocol::TypeBuilder::DOM::BoxModel>& model)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node)
@@ -1416,7 +1416,7 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
     *nodeId = pushNodePathToFrontend(node);
 }
 
-void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const String* const objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result)
+void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const String* const objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result)
 {
     String objectGroupName = objectGroup ? *objectGroup : "";
     Node* node = nodeForId(nodeId);
@@ -1424,7 +1424,7 @@ void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const 
         *errorString = "No node with given id found";
         return;
     }
-    RefPtr<TypeBuilder::Runtime::RemoteObject> object = resolveNode(node, objectGroupName);
+    RefPtr<protocol::TypeBuilder::Runtime::RemoteObject> object = resolveNode(node, objectGroupName);
     if (!object) {
         *errorString = "Node with given id does not belong to the document";
         return;
@@ -1432,7 +1432,7 @@ void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const 
     result = object;
 }
 
-void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<String>>& result)
+void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, RefPtr<protocol::TypeBuilder::Array<String>>& result)
 {
     Element* element = assertElement(errorString, nodeId);
     if (!element)
@@ -1463,22 +1463,22 @@ static String documentBaseURLString(Document* document)
     return document->baseURLForOverride(document->baseURL()).string();
 }
 
-static TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowRoot)
+static protocol::TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowRoot)
 {
     switch (shadowRoot->type()) {
     case ShadowRootType::UserAgent:
-        return TypeBuilder::DOM::ShadowRootType::User_agent;
+        return protocol::TypeBuilder::DOM::ShadowRootType::User_agent;
     case ShadowRootType::V0:
     case ShadowRootType::Open:
-        return TypeBuilder::DOM::ShadowRootType::Open;
+        return protocol::TypeBuilder::DOM::ShadowRootType::Open;
     case ShadowRootType::Closed:
-        return TypeBuilder::DOM::ShadowRootType::Closed;
+        return protocol::TypeBuilder::DOM::ShadowRootType::Closed;
     }
     ASSERT_NOT_REACHED();
-    return TypeBuilder::DOM::ShadowRootType::User_agent;
+    return protocol::TypeBuilder::DOM::ShadowRootType::User_agent;
 }
 
-PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node, int depth, NodeToIdMap* nodesMap)
+PassRefPtr<protocol::TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node, int depth, NodeToIdMap* nodesMap)
 {
     int id = bind(node, nodesMap);
     String localName;
@@ -1502,7 +1502,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         break;
     }
 
-    RefPtr<TypeBuilder::DOM::Node> value = TypeBuilder::DOM::Node::create()
+    RefPtr<protocol::TypeBuilder::DOM::Node> value = protocol::TypeBuilder::DOM::Node::create()
         .setNodeId(id)
         .setNodeType(static_cast<int>(node->nodeType()))
         .setNodeName(node->nodeName())
@@ -1524,7 +1524,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
 
         ElementShadow* shadow = element->shadow();
         if (shadow) {
-            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> shadowRoots = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+            RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> shadowRoots = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>::create();
             for (ShadowRoot* root = &shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
                 shadowRoots->addItem(buildObjectForNode(root, 0, nodesMap));
             value->setShadowRoots(shadowRoots);
@@ -1544,11 +1544,11 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         }
 
         if (element->pseudoId()) {
-            TypeBuilder::DOM::PseudoType::Enum pseudoType;
+            protocol::TypeBuilder::DOM::PseudoType::Enum pseudoType;
             if (InspectorDOMAgent::getPseudoElementType(element->pseudoId(), &pseudoType))
                 value->setPseudoType(pseudoType);
         } else {
-            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> pseudoElements = buildArrayForPseudoElements(element, nodesMap);
+            RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> pseudoElements = buildArrayForPseudoElements(element, nodesMap);
             if (pseudoElements) {
                 value->setPseudoElements(pseudoElements.release());
                 forcePushChildren = true;
@@ -1585,7 +1585,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             m_cachedChildCount.set(id, nodeCount);
         if (forcePushChildren && !depth)
             depth = 1;
-        RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodesMap);
+        RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodesMap);
         if (children->length() > 0 || depth) // Push children along with shadow in any case.
             value->setChildren(children.release());
     }
@@ -1593,9 +1593,9 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
     return value.release();
 }
 
-PassRefPtr<TypeBuilder::Array<String>> InspectorDOMAgent::buildArrayForElementAttributes(Element* element)
+PassRefPtr<protocol::TypeBuilder::Array<String>> InspectorDOMAgent::buildArrayForElementAttributes(Element* element)
 {
-    RefPtr<TypeBuilder::Array<String>> attributesValue = TypeBuilder::Array<String>::create();
+    RefPtr<protocol::TypeBuilder::Array<String>> attributesValue = protocol::TypeBuilder::Array<String>::create();
     // Go through all attributes and serialize them.
     AttributeCollection attributes = element->attributes();
     for (auto& attribute : attributes) {
@@ -1606,9 +1606,9 @@ PassRefPtr<TypeBuilder::Array<String>> InspectorDOMAgent::buildArrayForElementAt
     return attributesValue.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> InspectorDOMAgent::buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap)
+PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> InspectorDOMAgent::buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap)
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> children = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>::create();
     if (depth == 0) {
         // Special-case the only text child - pretend that container's children have been requested.
         Node* firstChild = container->firstChild();
@@ -1630,12 +1630,12 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> InspectorDOMAgent::buildA
     return children.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
+PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
 {
     if (!element->pseudoElement(BEFORE) && !element->pseudoElement(AFTER))
         return nullptr;
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> pseudoElements = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> pseudoElements = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>::create();
     if (element->pseudoElement(BEFORE))
         pseudoElements->addItem(buildObjectForNode(element->pseudoElement(BEFORE), 0, nodesMap));
     if (element->pseudoElement(AFTER))
@@ -1643,15 +1643,15 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> InspectorDOMAgent::buildA
     return pseudoElements.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> InspectorDOMAgent::buildArrayForDistributedNodes(InsertionPoint* insertionPoint)
+PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::BackendNode>> InspectorDOMAgent::buildArrayForDistributedNodes(InsertionPoint* insertionPoint)
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> distributedNodes = TypeBuilder::Array<TypeBuilder::DOM::BackendNode>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::BackendNode>> distributedNodes = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::BackendNode>::create();
     for (size_t i = 0; i < insertionPoint->distributedNodesSize(); ++i) {
         Node* distributedNode = insertionPoint->distributedNodeAt(i);
         if (isWhitespace(distributedNode))
             continue;
 
-        RefPtr<TypeBuilder::DOM::BackendNode> backendNode = TypeBuilder::DOM::BackendNode::create()
+        RefPtr<protocol::TypeBuilder::DOM::BackendNode> backendNode = protocol::TypeBuilder::DOM::BackendNode::create()
             .setNodeType(distributedNode->nodeType())
             .setNodeName(distributedNode->nodeName())
             .setBackendNodeId(DOMNodeIds::idForNode(distributedNode));
@@ -1738,7 +1738,7 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
     frontend()->childNodeRemoved(parentId, frameOwnerId);
     unbind(frameOwner, m_documentNodeToIdMap.get());
 
-    RefPtr<TypeBuilder::DOM::Node> value = buildObjectForNode(frameOwner, 0, m_documentNodeToIdMap.get());
+    RefPtr<protocol::TypeBuilder::DOM::Node> value = buildObjectForNode(frameOwner, 0, m_documentNodeToIdMap.get());
     Node* previousSibling = innerPreviousSibling(frameOwner);
     int prevId = previousSibling ? m_documentNodeToIdMap->get(previousSibling) : 0;
     frontend()->childNodeInserted(parentId, prevId, value.release());
@@ -1780,7 +1780,7 @@ void InspectorDOMAgent::didInsertDOMNode(Node* node)
         // Children have been requested -> return value of a new child.
         Node* prevSibling = innerPreviousSibling(node);
         int prevId = prevSibling ? m_documentNodeToIdMap->get(prevSibling) : 0;
-        RefPtr<TypeBuilder::DOM::Node> value = buildObjectForNode(node, 0, m_documentNodeToIdMap.get());
+        RefPtr<protocol::TypeBuilder::DOM::Node> value = buildObjectForNode(node, 0, m_documentNodeToIdMap.get());
         frontend()->childNodeInserted(parentId, prevId, value.release());
     }
 }
@@ -1847,7 +1847,7 @@ void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const QualifiedName& 
 
 void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element>>& elements)
 {
-    RefPtr<TypeBuilder::Array<int>> nodeIds = TypeBuilder::Array<int>::create();
+    RefPtr<protocol::TypeBuilder::Array<int>> nodeIds = protocol::TypeBuilder::Array<int>::create();
     for (unsigned i = 0, size = elements.size(); i < size; ++i) {
         Element* element = elements.at(i);
         int id = boundNodeId(element);
@@ -2031,9 +2031,9 @@ void InspectorDOMAgent::pushNodeByPathToFrontend(ErrorString* errorString, const
         *errorString = "No node with given path found";
 }
 
-void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString, const RefPtr<JSONArray>& backendNodeIds, RefPtr<TypeBuilder::Array<int>>& result)
+void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString, const RefPtr<JSONArray>& backendNodeIds, RefPtr<protocol::TypeBuilder::Array<int>>& result)
 {
-    result = TypeBuilder::Array<int>::create();
+    result = protocol::TypeBuilder::Array<int>::create();
     for (const auto& backendNode : *backendNodeIds) {
         int backendNodeId;
 
@@ -2097,7 +2097,7 @@ void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int 
     result = highlight.asJSONObject();
 }
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
+PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
 {
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
     LocalFrame* frame = document ? document->frame() : nullptr;
@@ -2115,7 +2115,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)
 {
     if (!m_documentNodeToIdMap->contains(m_document)) {
-        RefPtr<TypeBuilder::DOM::Node> root;
+        RefPtr<protocol::TypeBuilder::DOM::Node> root;
         getDocument(errorString, root);
         return errorString->isEmpty();
     }

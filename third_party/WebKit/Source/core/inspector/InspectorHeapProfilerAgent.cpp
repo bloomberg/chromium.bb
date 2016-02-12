@@ -78,7 +78,7 @@ PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> InspectorHeapProfilerAgent::c
 }
 
 InspectorHeapProfilerAgent::InspectorHeapProfilerAgent(v8::Isolate* isolate, V8RuntimeAgent* runtimeAgent)
-    : InspectorBaseAgent<InspectorHeapProfilerAgent, InspectorFrontend::HeapProfiler>("HeapProfiler")
+    : InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>("HeapProfiler")
     , m_v8HeapProfilerAgent(V8HeapProfilerAgent::create(isolate, runtimeAgent))
     , m_isolate(isolate)
 {
@@ -95,10 +95,10 @@ void InspectorHeapProfilerAgent::setState(PassRefPtr<JSONObject> state)
     m_v8HeapProfilerAgent->setInspectorState(m_state);
 }
 
-void InspectorHeapProfilerAgent::setFrontend(InspectorFrontend* frontend)
+void InspectorHeapProfilerAgent::setFrontend(protocol::Frontend* frontend)
 {
     InspectorBaseAgent::setFrontend(frontend);
-    m_v8HeapProfilerAgent->setFrontend(InspectorFrontend::HeapProfiler::from(frontend));
+    m_v8HeapProfilerAgent->setFrontend(protocol::Frontend::HeapProfiler::from(frontend));
 }
 
 void InspectorHeapProfilerAgent::clearFrontend()
@@ -164,7 +164,7 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
     m_v8HeapProfilerAgent->takeHeapSnapshot(errorString, reportProgress);
 }
 
-void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result)
+void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result)
 {
     bool ok;
     unsigned id = heapSnapshotObjectId.toUInt(&ok);

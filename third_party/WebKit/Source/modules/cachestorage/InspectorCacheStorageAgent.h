@@ -5,7 +5,6 @@
 #ifndef InspectorCacheStorageAgent_h
 #define InspectorCacheStorageAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "modules/ModulesExport.h"
 #include "wtf/PassOwnPtr.h"
@@ -15,7 +14,7 @@ namespace blink {
 
 typedef String ErrorString;
 
-class MODULES_EXPORT InspectorCacheStorageAgent final : public InspectorBaseAgent<InspectorCacheStorageAgent, InspectorFrontend::CacheStorage>, public InspectorBackendDispatcher::CacheStorageCommandHandler {
+class MODULES_EXPORT InspectorCacheStorageAgent final : public InspectorBaseAgent<InspectorCacheStorageAgent, protocol::Frontend::CacheStorage>, public protocol::Dispatcher::CacheStorageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
 public:

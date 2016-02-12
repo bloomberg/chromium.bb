@@ -42,7 +42,7 @@
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-using blink::TypeBuilder::Runtime::ExceptionDetails;
+using blink::protocol::TypeBuilder::Runtime::ExceptionDetails;
 
 namespace blink {
 

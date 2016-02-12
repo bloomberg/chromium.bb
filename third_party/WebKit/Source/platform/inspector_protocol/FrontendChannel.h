@@ -23,22 +23,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorFrontendChannel_h
-#define InspectorFrontendChannel_h
+#ifndef FrontendChannel_h
+#define FrontendChannel_h
 
 #include "platform/JSONValues.h"
 #include "wtf/Forward.h"
 
 namespace blink {
+namespace protocol {
 
-class InspectorFrontendChannel {
+class FrontendChannel {
 public:
-    virtual ~InspectorFrontendChannel() { }
+    virtual ~FrontendChannel() { }
     virtual void sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message) = 0;
     virtual void sendProtocolNotification(PassRefPtr<JSONObject> message) = 0;
     virtual void flush() = 0;
 };
 
+} // namespace protocol
 } // namespace blink
 
-#endif // !defined(InspectorFrontendChannel_h)
+#endif // !defined(FrontendChannel_h)

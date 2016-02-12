@@ -6,7 +6,7 @@
 #define V8Debugger_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 

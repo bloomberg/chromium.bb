@@ -809,6 +809,7 @@
       'image-encoders/skia/PNGImageEncoder.h',
       'image-encoders/skia/WEBPImageEncoder.cpp',
       'image-encoders/skia/WEBPImageEncoder.h',
+      'inspector_protocol/FrontendChannel.h',
       'mac/BlockExceptions.h',
       'mac/BlockExceptions.mm',
       'mac/ColorMac.h',

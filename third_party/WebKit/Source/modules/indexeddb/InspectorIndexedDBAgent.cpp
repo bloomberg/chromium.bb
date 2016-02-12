@@ -62,20 +62,20 @@
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/Vector.h"
 
-using blink::TypeBuilder::Array;
-using blink::TypeBuilder::IndexedDB::DatabaseWithObjectStores;
-using blink::TypeBuilder::IndexedDB::DataEntry;
-using blink::TypeBuilder::IndexedDB::Key;
-using blink::TypeBuilder::IndexedDB::KeyPath;
-using blink::TypeBuilder::IndexedDB::KeyRange;
-using blink::TypeBuilder::IndexedDB::ObjectStore;
-using blink::TypeBuilder::IndexedDB::ObjectStoreIndex;
+using blink::protocol::TypeBuilder::Array;
+using blink::protocol::TypeBuilder::IndexedDB::DatabaseWithObjectStores;
+using blink::protocol::TypeBuilder::IndexedDB::DataEntry;
+using blink::protocol::TypeBuilder::IndexedDB::Key;
+using blink::protocol::TypeBuilder::IndexedDB::KeyPath;
+using blink::protocol::TypeBuilder::IndexedDB::KeyRange;
+using blink::protocol::TypeBuilder::IndexedDB::ObjectStore;
+using blink::protocol::TypeBuilder::IndexedDB::ObjectStoreIndex;
 
-typedef blink::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
-typedef blink::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDatabaseCallback RequestDatabaseCallback;
-typedef blink::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDataCallback RequestDataCallback;
-typedef blink::InspectorBackendDispatcher::CallbackBase RequestCallback;
-typedef blink::InspectorBackendDispatcher::IndexedDBCommandHandler::ClearObjectStoreCallback ClearObjectStoreCallback;
+typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
+typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::RequestDatabaseCallback RequestDatabaseCallback;
+typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::RequestDataCallback RequestDataCallback;
+typedef blink::protocol::Dispatcher::CallbackBase RequestCallback;
+typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::ClearObjectStoreCallback ClearObjectStoreCallback;
 
 namespace blink {
 
@@ -117,7 +117,7 @@ public:
         }
 
         RefPtrWillBeRawPtr<DOMStringList> databaseNamesList = requestResult->domStringList();
-        RefPtr<TypeBuilder::Array<String>> databaseNames = TypeBuilder::Array<String>::create();
+        RefPtr<protocol::TypeBuilder::Array<String>> databaseNames = protocol::TypeBuilder::Array<String>::create();
         for (size_t i = 0; i < databaseNamesList->length(); ++i)
             databaseNames->addItem(databaseNamesList->anonymousIndexedGetter(i));
         m_requestCallback->sendSuccess(databaseNames.release());
@@ -285,7 +285,7 @@ static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
         break;
     case IDBKeyPath::ArrayType: {
         keyPath = KeyPath::create().setType(KeyPath::Type::Array);
-        RefPtr<TypeBuilder::Array<String>> array = TypeBuilder::Array<String>::create();
+        RefPtr<protocol::TypeBuilder::Array<String>> array = protocol::TypeBuilder::Array<String>::create();
         const Vector<String>& stringArray = idbKeyPath.array();
         for (size_t i = 0; i < stringArray.size(); ++i)
             array->addItem(stringArray[i]);
@@ -315,12 +315,12 @@ public:
 
         const IDBDatabaseMetadata databaseMetadata = idbDatabase->metadata();
 
-        RefPtr<TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStore>> objectStores = TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStore>::create();
+        RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::IndexedDB::ObjectStore>> objectStores = protocol::TypeBuilder::Array<protocol::TypeBuilder::IndexedDB::ObjectStore>::create();
 
         for (const auto& storeMapEntry : databaseMetadata.objectStores) {
             const IDBObjectStoreMetadata& objectStoreMetadata = storeMapEntry.value;
 
-            RefPtr<TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStoreIndex>> indexes = TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStoreIndex>::create();
+            RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::IndexedDB::ObjectStoreIndex>> indexes = protocol::TypeBuilder::Array<protocol::TypeBuilder::IndexedDB::ObjectStoreIndex>::create();
 
             for (const auto& metadataMapEntry : objectStoreMetadata.indexes) {
                 const IDBIndexMetadata& indexMetadata = metadataMapEntry.value;
@@ -607,7 +607,7 @@ PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> InspectorIndexedDBAgent::create(
 }
 
 InspectorIndexedDBAgent::InspectorIndexedDBAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorIndexedDBAgent, InspectorFrontend::IndexedDB>("IndexedDB")
+    : InspectorBaseAgent<InspectorIndexedDBAgent, protocol::Frontend::IndexedDB>("IndexedDB")
     , m_inspectedFrames(inspectedFrames)
 {
 }

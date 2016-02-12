@@ -32,7 +32,6 @@
 #define InspectorRuntimeAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -49,8 +48,8 @@ class V8RuntimeAgent;
 typedef String ErrorString;
 
 class CORE_EXPORT InspectorRuntimeAgent
-    : public InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>
-    , public InspectorBackendDispatcher::RuntimeCommandHandler {
+    : public InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>
+    , public protocol::Dispatcher::RuntimeCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     class Client {
@@ -65,7 +64,7 @@ public:
 
     // InspectorBaseAgent overrides.
     void setState(PassRefPtr<JSONObject>) override;
-    void setFrontend(InspectorFrontend*) override;
+    void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
 
@@ -81,9 +80,9 @@ public:
         const int* executionContextId,
         const bool* returnByValue,
         const bool* generatePreview,
-        RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-        TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
+        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
+        protocol::TypeBuilder::OptOutput<bool>* wasThrown,
+        RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) final;
     void callFunctionOn(ErrorString*,
                         const String& objectId,
                         const String& expression,
@@ -91,16 +90,16 @@ public:
                         const bool* doNotPauseOnExceptionsAndMuteConsole,
                         const bool* returnByValue,
                         const bool* generatePreview,
-                        RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-                        TypeBuilder::OptOutput<bool>* wasThrown) final;
+                        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
+                        protocol::TypeBuilder::OptOutput<bool>* wasThrown) final;
     void releaseObject(ErrorString*, const String& objectId) final;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
+    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) final;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) final;
     void run(ErrorString*) override;
     void isRunRequired(ErrorString*, bool* out_result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
-    void compileScript(ErrorString*, const String& inExpression, const String& inSourceURL, bool inPersistScript, int inExecutionContextId, TypeBuilder::OptOutput<TypeBuilder::Runtime::ScriptId>* optOutScriptId, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
-    void runScript(ErrorString*, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
+    void compileScript(ErrorString*, const String& inExpression, const String& inSourceURL, bool inPersistScript, int inExecutionContextId, protocol::TypeBuilder::OptOutput<protocol::TypeBuilder::Runtime::ScriptId>* optOutScriptId, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
+    void runScript(ErrorString*, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
 
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;

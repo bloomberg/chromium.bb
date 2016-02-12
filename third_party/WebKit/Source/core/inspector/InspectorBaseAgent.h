@@ -32,17 +32,18 @@
 #define InspectorBaseAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorBackendDispatcher.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
+#include "platform/inspector_protocol/Dispatcher.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class InspectorFrontend;
+class Frontend;
 class InstrumentingAgents;
 class LocalFrame;
 
@@ -54,11 +55,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     virtual void init() { }
-    virtual void setFrontend(InspectorFrontend*) = 0;
+    virtual void setFrontend(protocol::Frontend*) = 0;
     virtual void clearFrontend() = 0;
     virtual void disable(ErrorString*) { }
     virtual void restore() { }
-    virtual void registerInDispatcher(InspectorBackendDispatcher*) = 0;
+    virtual void registerInDispatcher(protocol::Dispatcher*) = 0;
     virtual void discardAgent() { }
     virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
     virtual void flushPendingProtocolNotifications() { }
@@ -82,10 +83,10 @@ public:
     explicit InspectorAgentRegistry(InstrumentingAgents*);
     void append(PassOwnPtrWillBeRawPtr<InspectorAgent>);
 
-    void setFrontend(InspectorFrontend*);
+    void setFrontend(protocol::Frontend*);
     void clearFrontend();
     void restore(const String& savedState);
-    void registerInDispatcher(InspectorBackendDispatcher*);
+    void registerInDispatcher(protocol::Dispatcher*);
     void discardAgents();
     void flushPendingProtocolNotifications();
     void didCommitLoadForLocalFrame(LocalFrame*);
@@ -104,7 +105,7 @@ class InspectorBaseAgent : public InspectorAgent {
 public:
     ~InspectorBaseAgent() override { }
 
-    void setFrontend(InspectorFrontend* frontend) override
+    void setFrontend(protocol::Frontend* frontend) override
     {
         ASSERT(!m_frontend);
         m_frontend = FrontendClass::from(frontend);
@@ -118,7 +119,7 @@ public:
         m_frontend = nullptr;
     }
 
-    void registerInDispatcher(InspectorBackendDispatcher* dispatcher) final
+    void registerInDispatcher(protocol::Dispatcher* dispatcher) final
     {
         dispatcher->registerAgent(static_cast<AgentClass*>(this));
     }

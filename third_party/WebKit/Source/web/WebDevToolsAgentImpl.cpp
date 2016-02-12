@@ -32,8 +32,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/InspectorBackendDispatcher.h"
-#include "core/InspectorFrontend.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -82,6 +80,8 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/inspector_protocol/Dispatcher.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
@@ -492,7 +492,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_pageConsoleAgent->setDebuggerAgent(debuggerAgent->v8Agent());
 
     m_pageRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()));
-    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
+    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
 
     if (m_overlay)
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent.get());
@@ -515,7 +515,7 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
     initializeDeferredAgents();
     m_resourceAgent->setHostId(hostId);
 
-    m_inspectorFrontend = adoptPtr(new InspectorFrontend(this));
+    m_inspectorFrontend = adoptPtr(new protocol::Frontend(this));
     // We can reconnect to existing front-end -> unmute state.
     m_stateMuted = false;
     m_agents.setFrontend(m_inspectorFrontend.get());
@@ -523,7 +523,7 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
     InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
     InspectorInstrumentation::frontendCreated();
 
-    m_inspectorBackendDispatcher = InspectorBackendDispatcher::create(this);
+    m_inspectorBackendDispatcher = protocol::Dispatcher::create(this);
     m_agents.registerInDispatcher(m_inspectorBackendDispatcher.get());
 
     Platform::current()->currentThread()->addTaskObserver(this);
@@ -757,13 +757,13 @@ void WebDevToolsAgent::interruptAndDispatch(int sessionId, MessageDescriptor* ra
 bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
 {
     String commandName;
-    if (!InspectorBackendDispatcher::getCommandName(message, &commandName))
+    if (!protocol::Dispatcher::getCommandName(message, &commandName))
         return false;
-    return commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_pauseCmd)
-        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointCmd)
-        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointByUrlCmd)
-        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_removeBreakpointCmd)
-        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointsActiveCmd);
+    return commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_pauseCmd)
+        || commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_setBreakpointCmd)
+        || commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_setBreakpointByUrlCmd)
+        || commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_removeBreakpointCmd)
+        || commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_setBreakpointsActiveCmd);
 }
 
 } // namespace blink

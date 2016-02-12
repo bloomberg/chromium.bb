@@ -42,10 +42,10 @@
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
 
-using blink::TypeBuilder::Runtime::ExceptionDetails;
-using blink::TypeBuilder::Runtime::ExecutionContextDescription;
-using blink::TypeBuilder::Runtime::RemoteObject;
-using blink::TypeBuilder::Runtime::ScriptId;
+using blink::protocol::TypeBuilder::Runtime::ExceptionDetails;
+using blink::protocol::TypeBuilder::Runtime::ExecutionContextDescription;
+using blink::protocol::TypeBuilder::Runtime::RemoteObject;
+using blink::protocol::TypeBuilder::Runtime::ScriptId;
 
 namespace blink {
 
@@ -76,7 +76,7 @@ V8RuntimeAgentImpl::~V8RuntimeAgentImpl()
 {
 }
 
-void V8RuntimeAgentImpl::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& exceptionDetails)
+void V8RuntimeAgentImpl::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result, protocol::TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& exceptionDetails)
 {
     if (!executionContextId) {
         *errorString = "Cannot find default execution context";
@@ -93,7 +93,7 @@ void V8RuntimeAgentImpl::evaluate(ErrorString* errorString, const String& expres
     injectedScript->evaluate(errorString, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
 }
 
-void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const RefPtr<JSONArray>* const optionalArguments, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
+void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const RefPtr<JSONArray>* const optionalArguments, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result, protocol::TypeBuilder::OptOutput<bool>* wasThrown)
 {
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
     if (!remoteId) {
@@ -115,7 +115,7 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString, const String& 
     injectedScript->callFunctionOn(errorString, objectId, expression, arguments, asBool(returnByValue), asBool(generatePreview), &result, wasThrown);
 }
 
-void V8RuntimeAgentImpl::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& exceptionDetails)
+void V8RuntimeAgentImpl::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& exceptionDetails)
 {
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
     if (!remoteId) {
@@ -180,7 +180,7 @@ void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enab
     m_injectedScriptManager->setCustomObjectFormatterEnabled(enabled);
 }
 
-void V8RuntimeAgentImpl::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
+void V8RuntimeAgentImpl::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, protocol::TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     if (!m_enabled) {
         *errorString = "Runtime agent is not enabled";
@@ -272,7 +272,7 @@ void V8RuntimeAgentImpl::setInspectorState(PassRefPtr<JSONObject> state)
     m_state = state;
 }
 
-void V8RuntimeAgentImpl::setFrontend(InspectorFrontend::Runtime* frontend)
+void V8RuntimeAgentImpl::setFrontend(protocol::Frontend::Runtime* frontend)
 {
     m_frontend = frontend;
 }
@@ -323,7 +323,7 @@ void V8RuntimeAgentImpl::setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::Ins
     m_injectedScriptManager->injectedScriptHost()->setInspectObjectCallback(callback);
 }
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& groupName, bool generatePreview)
+PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& groupName, bool generatePreview)
 {
     InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
     if (!injectedScript)
@@ -331,7 +331,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> V8RuntimeAgentImpl::wrapObject(v8
     return injectedScript->wrapObject(value, groupName, generatePreview);
 }
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> V8RuntimeAgentImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
+PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> V8RuntimeAgentImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
 {
     InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
     if (!injectedScript)
@@ -396,7 +396,7 @@ void V8RuntimeAgentImpl::reportExecutionContextDestroyed(v8::Local<v8::Context> 
     m_frontend->executionContextDestroyed(contextId);
 }
 
-PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> V8RuntimeAgentImpl::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
+PassRefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails> V8RuntimeAgentImpl::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
 {
     RefPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toWTFStringWithTypeCheck(message->Get()));
     exceptionDetails->setLine(message->GetLineNumber());

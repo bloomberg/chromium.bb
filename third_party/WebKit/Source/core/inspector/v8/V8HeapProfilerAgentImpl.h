@@ -23,7 +23,7 @@ public:
     ~V8HeapProfilerAgentImpl() override;
 
     void setInspectorState(PassRefPtr<JSONObject> state) override { m_state = state; }
-    void setFrontend(InspectorFrontend::HeapProfiler* frontend) override { m_frontend = frontend; }
+    void setFrontend(protocol::Frontend::HeapProfiler* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
 
@@ -37,7 +37,7 @@ public:
 
     void takeHeapSnapshot(ErrorString*, const bool* reportProgress) override;
 
-    void getObjectByHeapObjectId(ErrorString*, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) override;
+    void getObjectByHeapObjectId(ErrorString*, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result) override;
     void addInspectedHeapObject(ErrorString*, const String& inspectedHeapObjectId) override;
     void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId) override;
 
@@ -49,7 +49,7 @@ private:
 
     v8::Isolate* m_isolate;
     V8RuntimeAgent* m_runtimeAgent;
-    InspectorFrontend::HeapProfiler* m_frontend;
+    protocol::Frontend::HeapProfiler* m_frontend;
     RefPtr<JSONObject> m_state;
 };
 

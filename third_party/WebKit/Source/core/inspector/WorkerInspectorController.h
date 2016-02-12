@@ -42,14 +42,17 @@
 
 namespace blink {
 
-class InspectorBackendDispatcher;
-class InspectorFrontend;
-class InspectorFrontendChannel;
 class InstrumentingAgents;
 class WorkerDebuggerAgent;
 class WorkerGlobalScope;
 class WorkerRuntimeAgent;
 class WorkerThreadDebugger;
+
+namespace protocol {
+class Dispatcher;
+class Frontend;
+class FrontendChannel;
+}
 
 class WorkerInspectorController final : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
@@ -80,15 +83,15 @@ private:
     class PageInspectorProxy;
     friend WTF::OwnedPtrDeleter<PageInspectorProxy>;
 
-    InspectorFrontendChannel* frontendChannel() const;
+    protocol::FrontendChannel* frontendChannel() const;
 
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     WorkerThreadDebugger* m_workerThreadDebugger;
     InspectorAgentRegistry m_agents;
     OwnPtrWillBeMember<PageInspectorProxy> m_pageInspectorProxy;
-    OwnPtr<InspectorFrontend> m_frontend;
-    RefPtr<InspectorBackendDispatcher> m_backendDispatcher;
+    OwnPtr<protocol::Frontend> m_frontend;
+    RefPtr<protocol::Dispatcher> m_backendDispatcher;
     RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
     RawPtrWillBeMember<WorkerRuntimeAgent> m_workerRuntimeAgent;
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;

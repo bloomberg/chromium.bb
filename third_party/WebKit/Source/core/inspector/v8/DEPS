@@ -5,5 +5,8 @@ include_rules = [
     "+platform/JSONParser.h",
     "+platform/JSONValues.h",
     "+platform/JSONValuesForV8.h",
-    "+platform/weborigin/KURL.h",
+    "+platform/inspector_protocol/Dispatcher.h",
+    "+platform/inspector_protocol/Frontend.h",
+    "+platform/inspector_protocol/FrontendChannel.h",
+    "+platform/inspector_protocol/TypeBuilder.h",
 ]

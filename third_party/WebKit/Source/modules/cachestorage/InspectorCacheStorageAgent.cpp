@@ -4,10 +4,10 @@
 
 #include "modules/cachestorage/InspectorCacheStorageAgent.h"
 
-#include "core/InspectorBackendDispatcher.h"
-#include "core/InspectorTypeBuilder.h"
 #include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
+#include "platform/inspector_protocol/Dispatcher.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -31,15 +31,15 @@
 
 #include <algorithm>
 
-using blink::TypeBuilder::Array;
-using blink::TypeBuilder::CacheStorage::Cache;
-using blink::TypeBuilder::CacheStorage::DataEntry;
+using blink::protocol::TypeBuilder::Array;
+using blink::protocol::TypeBuilder::CacheStorage::Cache;
+using blink::protocol::TypeBuilder::CacheStorage::DataEntry;
 
-typedef blink::InspectorBackendDispatcher::CacheStorageCommandHandler::DeleteCacheCallback DeleteCacheCallback;
-typedef blink::InspectorBackendDispatcher::CacheStorageCommandHandler::DeleteEntryCallback DeleteEntryCallback;
-typedef blink::InspectorBackendDispatcher::CacheStorageCommandHandler::RequestCacheNamesCallback RequestCacheNamesCallback;
-typedef blink::InspectorBackendDispatcher::CacheStorageCommandHandler::RequestEntriesCallback RequestEntriesCallback;
-typedef blink::InspectorBackendDispatcher::CallbackBase RequestCallback;
+typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::DeleteCacheCallback DeleteCacheCallback;
+typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::DeleteEntryCallback DeleteEntryCallback;
+typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::RequestCacheNamesCallback RequestCacheNamesCallback;
+typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::RequestEntriesCallback RequestEntriesCallback;
+typedef blink::protocol::Dispatcher::CallbackBase RequestCallback;
 typedef blink::WebServiceWorkerCache::BatchOperation BatchOperation;
 
 namespace blink {
@@ -399,7 +399,7 @@ private:
 } // namespace
 
 InspectorCacheStorageAgent::InspectorCacheStorageAgent()
-    : InspectorBaseAgent<InspectorCacheStorageAgent, InspectorFrontend::CacheStorage>("CacheStorage")
+    : InspectorBaseAgent<InspectorCacheStorageAgent, protocol::Frontend::CacheStorage>("CacheStorage")
 {
 }
 
@@ -417,7 +417,7 @@ void InspectorCacheStorageAgent::requestCacheNames(ErrorString* errorString, con
     // Cache Storage API is restricted to trustworthy origins.
     if (!secOrigin->isPotentiallyTrustworthy()) {
         // Don't treat this as an error, just don't attempt to open and enumerate the caches.
-        callback->sendSuccess(Array<TypeBuilder::CacheStorage::Cache>::create());
+        callback->sendSuccess(Array<protocol::TypeBuilder::CacheStorage::Cache>::create());
         return;
     }
 

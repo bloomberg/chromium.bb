@@ -30,7 +30,6 @@
 
 #include "core/inspector/InspectorWorkerAgent.h"
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageConsoleAgent.h"
@@ -52,7 +51,7 @@ PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(PageCo
 }
 
 InspectorWorkerAgent::InspectorWorkerAgent(PageConsoleAgent* consoleAgent)
-    : InspectorBaseAgent<InspectorWorkerAgent, InspectorFrontend::Worker>("Worker")
+    : InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>("Worker")
     , m_consoleAgent(consoleAgent)
 {
 }
@@ -190,15 +189,15 @@ DEFINE_TRACE(InspectorWorkerAgent)
     visitor->trace(m_consoleAgent);
     visitor->trace(m_workerInfos);
 #endif
-    InspectorBaseAgent<InspectorWorkerAgent, InspectorFrontend::Worker>::trace(visitor);
+    InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>::trace(visitor);
 }
 
-PassOwnPtrWillBeRawPtr<InspectorWorkerAgent::WorkerAgentClient> InspectorWorkerAgent::WorkerAgentClient::create(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
+PassOwnPtrWillBeRawPtr<InspectorWorkerAgent::WorkerAgentClient> InspectorWorkerAgent::WorkerAgentClient::create(protocol::Frontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
 {
     return adoptPtrWillBeNoop(new InspectorWorkerAgent::WorkerAgentClient(frontend, proxy, id, consoleAgent));
 }
 
-InspectorWorkerAgent::WorkerAgentClient::WorkerAgentClient(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
+InspectorWorkerAgent::WorkerAgentClient::WorkerAgentClient(protocol::Frontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
     : m_frontend(frontend)
     , m_proxy(proxy)
     , m_id(id)

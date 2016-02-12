@@ -6,12 +6,12 @@
 #define V8ProfilerAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorBackendDispatcher.h"
 #include "core/inspector/v8/public/V8Debugger.h"
+#include "platform/inspector_protocol/Dispatcher.h"
 
 namespace blink {
 
-class CORE_EXPORT V8ProfilerAgent : public InspectorBackendDispatcher::ProfilerCommandHandler, public V8Debugger::Agent<InspectorFrontend::Profiler> {
+class CORE_EXPORT V8ProfilerAgent : public protocol::Dispatcher::ProfilerCommandHandler, public V8Debugger::Agent<protocol::Frontend::Profiler> {
 public:
     static PassOwnPtr<V8ProfilerAgent> create(V8Debugger*);
     virtual ~V8ProfilerAgent() { }

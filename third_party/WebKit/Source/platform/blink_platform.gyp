@@ -184,6 +184,11 @@
       '<(blink_platform_output_dir)/HTTPNames.cpp',
       '<(blink_platform_output_dir)/RuntimeEnabledFeatures.cpp',
       '<(blink_platform_output_dir)/RuntimeEnabledFeatures.h',
+
+      # Additional .cpp files from the protocol_sources list.
+      '<(blink_platform_output_dir)/inspector_protocol/Frontend.cpp',
+      '<(blink_platform_output_dir)/inspector_protocol/Dispatcher.cpp',
+      '<(blink_platform_output_dir)/inspector_protocol/TypeBuilder.cpp',
     ],
     'sources/': [
       # Exclude all platform specific things, reinclude them below on a per-platform basis

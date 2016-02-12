@@ -31,7 +31,6 @@
 #define InspectorProfilerAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -47,7 +46,7 @@ class V8ProfilerAgent;
 
 typedef String ErrorString;
 
-class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, InspectorFrontend::Profiler>, public InspectorBackendDispatcher::ProfilerCommandHandler {
+class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>, public protocol::Dispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorProfilerAgent);
 public:
@@ -64,7 +63,7 @@ public:
 
     // InspectorBaseAgent overrides.
     void setState(PassRefPtr<JSONObject>) override;
-    void setFrontend(InspectorFrontend*) override;
+    void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
 
@@ -75,7 +74,7 @@ public:
     void disable(ErrorString*) override;
     void setSamplingInterval(ErrorString*, int) override;
     void start(ErrorString*) override;
-    void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>&) override;
+    void stop(ErrorString*, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>&) override;
 
     void willProcessTask();
     void didProcessTask();

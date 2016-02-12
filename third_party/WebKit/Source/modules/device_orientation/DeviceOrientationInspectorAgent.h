@@ -5,7 +5,6 @@
 #ifndef DeviceOrientationInspectorAgent_h
 #define DeviceOrientationInspectorAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "modules/ModulesExport.h"
 #include "wtf/text/WTFString.h"
@@ -17,7 +16,7 @@ class Page;
 
 typedef String ErrorString;
 
-class MODULES_EXPORT DeviceOrientationInspectorAgent final : public InspectorBaseAgent<DeviceOrientationInspectorAgent, InspectorFrontend::DeviceOrientation>, public InspectorBackendDispatcher::DeviceOrientationCommandHandler {
+class MODULES_EXPORT DeviceOrientationInspectorAgent final : public InspectorBaseAgent<DeviceOrientationInspectorAgent, protocol::Frontend::DeviceOrientation>, public protocol::Dispatcher::DeviceOrientationCommandHandler {
     WTF_MAKE_NONCOPYABLE(DeviceOrientationInspectorAgent);
 public:
     static PassOwnPtrWillBeRawPtr<DeviceOrientationInspectorAgent> create(Page*);

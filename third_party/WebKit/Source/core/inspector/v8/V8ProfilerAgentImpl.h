@@ -6,8 +6,8 @@
 #define V8ProfilerAgentImpl_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/v8/public/V8ProfilerAgent.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
@@ -27,7 +27,7 @@ public:
     ~V8ProfilerAgentImpl() override;
 
     void setInspectorState(PassRefPtr<JSONObject> state) override { m_state = state; }
-    void setFrontend(InspectorFrontend::Profiler* frontend) override { m_frontend = frontend; }
+    void setFrontend(protocol::Frontend::Profiler* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
 
@@ -35,7 +35,7 @@ public:
     void disable(ErrorString*) override;
     void setSamplingInterval(ErrorString*, int) override;
     void start(ErrorString*) override;
-    void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>&) override;
+    void stop(ErrorString*, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>&) override;
 
     void consoleProfile(const String& title) override;
     void consoleProfileEnd(const String& title) override;
@@ -44,18 +44,18 @@ public:
     void idleFinished();
 
 private:
-    void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
+    void stop(ErrorString*, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>*);
     String nextProfileId();
 
     void startProfiling(const String& title);
-    PassRefPtr<TypeBuilder::Profiler::CPUProfile> stopProfiling(const String& title, bool serialize);
+    PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfile> stopProfiling(const String& title, bool serialize);
 
     bool isRecording() const;
 
     V8DebuggerImpl* m_debugger;
     v8::Isolate* m_isolate;
     RefPtr<JSONObject> m_state;
-    InspectorFrontend::Profiler* m_frontend;
+    protocol::Frontend::Profiler* m_frontend;
     bool m_enabled;
     bool m_recordingCPUProfile;
     class ProfileDescriptor;

@@ -6,11 +6,11 @@
 #define V8DebuggerAgentImpl_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorBackendDispatcher.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
 #include "core/inspector/v8/public/V8DebuggerAgent.h"
+#include "platform/inspector_protocol/Dispatcher.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -58,7 +58,7 @@ public:
     ~V8DebuggerAgentImpl() override;
 
     void setInspectorState(PassRefPtr<JSONObject>) override;
-    void setFrontend(InspectorFrontend::Debugger* frontend) override { m_frontend = frontend; }
+    void setFrontend(protocol::Frontend::Debugger* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
     void disable(ErrorString*);
@@ -70,20 +70,20 @@ public:
     void setBreakpointsActive(ErrorString*, bool active) override;
     void setSkipAllPauses(ErrorString*, bool skipped) override;
 
-    void setBreakpointByUrl(ErrorString*, int lineNumber, const String* optionalURL, const String* optionalURLRegex, const int* optionalColumnNumber, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location>>& locations) override;
-    void setBreakpoint(ErrorString*, const RefPtr<JSONObject>& location, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Debugger::Location>& actualLocation) override;
+    void setBreakpointByUrl(ErrorString*, int lineNumber, const String* optionalURL, const String* optionalURLRegex, const int* optionalColumnNumber, const String* optionalCondition, protocol::TypeBuilder::Debugger::BreakpointId*, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::Location>>& locations) override;
+    void setBreakpoint(ErrorString*, const RefPtr<JSONObject>& location, const String* optionalCondition, protocol::TypeBuilder::Debugger::BreakpointId*, RefPtr<protocol::TypeBuilder::Debugger::Location>& actualLocation) override;
     void removeBreakpoint(ErrorString*, const String& breakpointId) override;
     void continueToLocation(ErrorString*, const RefPtr<JSONObject>& location, const bool* interstateLocationOpt) override;
-    void getStepInPositions(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location>>& positions) override;
-    void getBacktrace(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>>&, RefPtr<TypeBuilder::Debugger::StackTrace>&) override;
-    void searchInContent(ErrorString*, const String& scriptId, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>>&) override;
+    void getStepInPositions(ErrorString*, const String& callFrameId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::Location>>& positions) override;
+    void getBacktrace(ErrorString*, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>&, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>&) override;
+    void searchInContent(ErrorString*, const String& scriptId, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>>&) override;
     void canSetScriptSource(ErrorString*, bool* result) override { *result = true; }
-    void setScriptSource(ErrorString*, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, const String& scriptId, const String& newContent, const bool* preview, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>>& newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace) override;
-    void restartFrame(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>>& newCallFrames, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace) override;
+    void setScriptSource(ErrorString*, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>&, const String& scriptId, const String& newContent, const bool* preview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& newCallFrames, protocol::TypeBuilder::OptOutput<bool>* stackChanged, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& asyncStackTrace) override;
+    void restartFrame(ErrorString*, const String& callFrameId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& newCallFrames, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& asyncStackTrace) override;
     void getScriptSource(ErrorString*, const String& scriptId, String* scriptSource) override;
-    void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>&) override;
-    void getGeneratorObjectDetails(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Debugger::GeneratorObjectDetails>&) override;
-    void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CollectionEntry>>&) override;
+    void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<protocol::TypeBuilder::Debugger::FunctionDetails>&) override;
+    void getGeneratorObjectDetails(ErrorString*, const String& objectId, RefPtr<protocol::TypeBuilder::Debugger::GeneratorObjectDetails>&) override;
+    void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CollectionEntry>>&) override;
     void pause(ErrorString*) override;
     void resume(ErrorString*) override;
     void stepOver(ErrorString*) override;
@@ -99,24 +99,24 @@ public:
         const bool* doNotPauseOnExceptionsAndMuteConsole,
         const bool* returnByValue,
         const bool* generatePreview,
-        RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-        TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
+        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
+        protocol::TypeBuilder::OptOutput<bool>* wasThrown,
+        RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
     void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId) override;
     void setAsyncCallStackDepth(ErrorString*, int depth) override;
     void enablePromiseTracker(ErrorString*, const bool* captureStacks) override;
     void disablePromiseTracker(ErrorString*) override;
-    void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& promise) override;
+    void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& promise) override;
     void flushAsyncOperationEvents(ErrorString*) override;
     void setAsyncOperationBreakpoint(ErrorString*, int operationId) override;
     void removeAsyncOperationBreakpoint(ErrorString*, int operationId) override;
     void setBlackboxedRanges(ErrorString*, const String& scriptId, const RefPtr<JSONArray>& positions) override;
 
-    void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
+    void schedulePauseOnNextStatement(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
     void cancelPauseOnNextStatement() override;
     bool canBreakProgram() override;
-    void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
-    void breakProgramOnException(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
+    void breakProgram(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
+    void breakProgramOnException(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
     void willExecuteScript(int scriptId) override;
     void didExecuteScript() override;
 
@@ -133,7 +133,7 @@ public:
     void traceAsyncOperationCompleted(int operationId) override;
     bool trackingAsyncCalls() const override { return m_maxAsyncCallStackDepth; }
 
-    void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>);
+    void didUpdatePromise(protocol::Frontend::Debugger::EventType::Enum, PassRefPtr<protocol::TypeBuilder::Debugger::PromiseDetails>);
     void reset() override;
 
     // Interface for V8DebuggerImpl
@@ -158,8 +158,8 @@ private:
 
     void schedulePauseOnNextStatementIfSteppingInto();
 
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>> currentCallFrames();
-    PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
+    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>> currentCallFrames();
+    PassRefPtr<protocol::TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
     bool callStackForId(ErrorString*, const RemoteCallFrameId&, v8::Local<v8::Object>* callStack, bool* isAsync);
 
     void clearCurrentAsyncOperation();
@@ -169,7 +169,7 @@ private:
 
     void setPauseOnExceptionsImpl(ErrorString*, int);
 
-    PassRefPtr<TypeBuilder::Debugger::Location> resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint&, BreakpointSource);
+    PassRefPtr<protocol::TypeBuilder::Debugger::Location> resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint&, BreakpointSource);
     void removeBreakpoint(const String& breakpointId);
     void clearStepIntoAsync();
     bool assertPaused(ErrorString*);
@@ -201,7 +201,7 @@ private:
     int m_contextGroupId;
     bool m_enabled;
     RefPtr<JSONObject> m_state;
-    InspectorFrontend::Debugger* m_frontend;
+    protocol::Frontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     v8::Global<v8::Context> m_pausedContext;
     v8::Global<v8::Object> m_currentCallStack;
@@ -210,7 +210,7 @@ private:
     DebugServerBreakpointToBreakpointIdAndSourceMap m_serverBreakpoints;
     MuteBreakpoins m_muteBreakpoints;
     String m_continueToLocationBreakpointId;
-    InspectorFrontend::Debugger::Reason::Enum m_breakReason;
+    protocol::Frontend::Debugger::Reason::Enum m_breakReason;
     RefPtr<JSONObject> m_breakAuxData;
     DebuggerStep m_scheduledDebuggerStep;
     bool m_skipNextDebuggerStepOut;

@@ -31,9 +31,9 @@
 #ifndef InjectedScript_h
 #define InjectedScript_h
 
-#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/InjectedScriptNative.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include <v8.h>
@@ -60,9 +60,9 @@ public:
         bool includeCommandLineAPI,
         bool returnByValue,
         bool generatePreview,
-        RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
-        TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Runtime::ExceptionDetails>*);
+        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>* result,
+        protocol::TypeBuilder::OptOutput<bool>* wasThrown,
+        RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>*);
     void callFunctionOn(
         ErrorString*,
         const String& objectId,
@@ -70,8 +70,8 @@ public:
         const String& arguments,
         bool returnByValue,
         bool generatePreview,
-        RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
-        TypeBuilder::OptOutput<bool>* wasThrown);
+        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>* result,
+        protocol::TypeBuilder::OptOutput<bool>* wasThrown);
     void evaluateOnCallFrame(
         ErrorString*,
         v8::Local<v8::Object> callFrames,
@@ -82,23 +82,23 @@ public:
         bool includeCommandLineAPI,
         bool returnByValue,
         bool generatePreview,
-        RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
-        TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Runtime::ExceptionDetails>*);
+        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>* result,
+        protocol::TypeBuilder::OptOutput<bool>* wasThrown,
+        RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>*);
     void restartFrame(ErrorString*, v8::Local<v8::Object> callFrames, const String& callFrameId);
-    void getStepInPositions(ErrorString*, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location>>& positions);
+    void getStepInPositions(ErrorString*, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::Location>>& positions);
     void setVariableValue(ErrorString*, v8::Local<v8::Object> callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr);
-    void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>* result);
-    void getGeneratorObjectDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::GeneratorObjectDetails>* result);
-    void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CollectionEntry>>* result);
-    void getProperties(ErrorString*, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>* result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>*);
-    void getInternalProperties(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>* result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>*);
+    void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<protocol::TypeBuilder::Debugger::FunctionDetails>* result);
+    void getGeneratorObjectDetails(ErrorString*, const String& functionId, RefPtr<protocol::TypeBuilder::Debugger::GeneratorObjectDetails>* result);
+    void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CollectionEntry>>* result);
+    void getProperties(ErrorString*, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::PropertyDescriptor>>* result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>*);
+    void getInternalProperties(ErrorString*, const String& objectId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::InternalPropertyDescriptor>>* result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>*);
     void releaseObject(const String& objectId);
 
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>> wrapCallFrames(v8::Local<v8::Object>, int asyncOrdinal);
+    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>> wrapCallFrames(v8::Local<v8::Object>, int asyncOrdinal);
 
-    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) const;
-    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const;
+    PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> wrapObject(v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) const;
+    PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const;
     v8::Local<v8::Value> findObject(const RemoteObjectId&) const;
     String objectGroupName(const RemoteObjectId&) const;
     void releaseObjectGroup(const String&);
@@ -120,8 +120,8 @@ private:
     v8::Local<v8::Value> v8Value() const;
     v8::Local<v8::Value> callFunctionWithEvalEnabled(V8FunctionCall&, bool& hadException) const;
     void makeCall(V8FunctionCall&, RefPtr<JSONValue>* result);
-    void makeEvalCall(ErrorString*, V8FunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Runtime::ExceptionDetails>* = 0);
-    void makeCallWithExceptionDetails(V8FunctionCall&, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>*);
+    void makeEvalCall(ErrorString*, V8FunctionCall&, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>* result, protocol::TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>* = 0);
+    void makeCallWithExceptionDetails(V8FunctionCall&, RefPtr<JSONValue>* result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>*);
 
     InjectedScriptManager* m_manager;
     v8::Isolate* m_isolate;

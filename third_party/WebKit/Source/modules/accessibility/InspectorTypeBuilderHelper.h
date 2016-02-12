@@ -5,22 +5,22 @@
 #ifndef InspectorTypeBuilderHelper_h
 #define InspectorTypeBuilderHelper_h
 
-#include "core/InspectorTypeBuilder.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
 
-using TypeBuilder::Accessibility::AXGlobalStates;
-using TypeBuilder::Accessibility::AXLiveRegionAttributes;
-using TypeBuilder::Accessibility::AXProperty;
-using TypeBuilder::Accessibility::AXValueType;
-using TypeBuilder::Accessibility::AXRelationshipAttributes;
-using TypeBuilder::Accessibility::AXValue;
-using TypeBuilder::Accessibility::AXValueSource;
-using TypeBuilder::Accessibility::AXWidgetAttributes;
-using TypeBuilder::Accessibility::AXWidgetStates;
+using protocol::TypeBuilder::Accessibility::AXGlobalStates;
+using protocol::TypeBuilder::Accessibility::AXLiveRegionAttributes;
+using protocol::TypeBuilder::Accessibility::AXProperty;
+using protocol::TypeBuilder::Accessibility::AXValueType;
+using protocol::TypeBuilder::Accessibility::AXRelationshipAttributes;
+using protocol::TypeBuilder::Accessibility::AXValue;
+using protocol::TypeBuilder::Accessibility::AXValueSource;
+using protocol::TypeBuilder::Accessibility::AXWidgetAttributes;
+using protocol::TypeBuilder::Accessibility::AXWidgetStates;
 
 PassRefPtr<AXProperty> createProperty(String name, PassRefPtr<AXValue>);
 PassRefPtr<AXProperty> createProperty(AXGlobalStates::Enum name, PassRefPtr<AXValue>);

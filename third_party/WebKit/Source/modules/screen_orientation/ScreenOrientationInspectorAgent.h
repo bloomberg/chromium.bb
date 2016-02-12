@@ -5,7 +5,6 @@
 #ifndef ScreenOrientationInspectorAgent_h
 #define ScreenOrientationInspectorAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "modules/ModulesExport.h"
 #include "wtf/text/WTFString.h"
@@ -16,7 +15,7 @@ class ScreenOrientationController;
 
 typedef String ErrorString;
 
-class MODULES_EXPORT ScreenOrientationInspectorAgent final : public InspectorBaseAgent<ScreenOrientationInspectorAgent, InspectorFrontend::ScreenOrientation>, public InspectorBackendDispatcher::ScreenOrientationCommandHandler {
+class MODULES_EXPORT ScreenOrientationInspectorAgent final : public InspectorBaseAgent<ScreenOrientationInspectorAgent, protocol::Frontend::ScreenOrientation>, public protocol::Dispatcher::ScreenOrientationCommandHandler {
     WTF_MAKE_NONCOPYABLE(ScreenOrientationInspectorAgent);
 public:
     static PassOwnPtrWillBeRawPtr<ScreenOrientationInspectorAgent> create(LocalFrame&);

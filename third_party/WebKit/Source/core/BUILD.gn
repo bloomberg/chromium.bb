@@ -50,7 +50,6 @@ source_set("generated") {
     ":make_core_generated",
     ":prerequisites",
     "inspector:instrumentation_sources",
-    "inspector:protocol_sources",
     "inspector/v8:injected_script_sources",
     "//gin",
     "//skia",
@@ -99,7 +98,6 @@ source_set("prerequisites") {
   deps = [
     ":make_core_generated",
     "inspector:instrumentation_sources",
-    "inspector:protocol_sources",
     "inspector/v8:injected_script_sources",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
 
@@ -384,11 +382,6 @@ source_set("core_generated") {
     # Additional .cpp files from the make_core_generated rules.
     "$blink_core_output_dir/XPathGrammar.cpp",
 
-    # Additional .cpp files from the inspector_protocol_sources list.
-    "$blink_core_output_dir/InspectorBackendDispatcher.cpp",
-    "$blink_core_output_dir/InspectorFrontend.cpp",
-    "$blink_core_output_dir/InspectorTypeBuilder.cpp",
-
     # Additional .cpp files from the inspector_instrumentation_sources list.
     "$blink_core_output_dir/InspectorConsoleInstrumentationInl.h",
     "$blink_core_output_dir/InspectorInstrumentationImpl.cpp",
@@ -423,7 +416,6 @@ source_set("core_generated") {
     ":make_core_generated",
     ":prerequisites",
     "inspector:instrumentation_sources",
-    "inspector:protocol_sources",
     "inspector/v8:injected_script_sources",
     "//gin",
     "//skia",

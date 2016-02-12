@@ -8,7 +8,6 @@
 #define InspectorTracingAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -19,8 +18,8 @@ class InspectedFrames;
 class InspectorWorkerAgent;
 
 class CORE_EXPORT InspectorTracingAgent final
-    : public InspectorBaseAgent<InspectorTracingAgent, InspectorFrontend::Tracing>
-    , public InspectorBackendDispatcher::TracingCommandHandler {
+    : public InspectorBaseAgent<InspectorTracingAgent, protocol::Frontend::Tracing>
+    , public protocol::Dispatcher::TracingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
 public:
     class Client {

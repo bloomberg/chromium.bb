@@ -1757,7 +1757,6 @@
             'inspector/InspectorDOMDebuggerAgent.h',
             'inspector/InspectorDebuggerAgent.cpp',
             'inspector/InspectorDebuggerAgent.h',
-            'inspector/InspectorFrontendChannel.h',
             'inspector/InspectorHeapProfilerAgent.cpp',
             'inspector/InspectorHeapProfilerAgent.h',
             'inspector/InspectorHighlight.cpp',

@@ -30,7 +30,7 @@ DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent()
 }
 
 DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(Page& page)
-    : InspectorBaseAgent<DeviceOrientationInspectorAgent, InspectorFrontend::DeviceOrientation>("DeviceOrientation")
+    : InspectorBaseAgent<DeviceOrientationInspectorAgent, protocol::Frontend::DeviceOrientation>("DeviceOrientation")
     , m_page(&page)
 {
 }
@@ -38,7 +38,7 @@ DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(Page& page)
 DEFINE_TRACE(DeviceOrientationInspectorAgent)
 {
     visitor->trace(m_page);
-    InspectorBaseAgent<DeviceOrientationInspectorAgent, InspectorFrontend::DeviceOrientation>::trace(visitor);
+    InspectorBaseAgent<DeviceOrientationInspectorAgent, protocol::Frontend::DeviceOrientation>::trace(visitor);
 }
 
 DeviceOrientationController& DeviceOrientationInspectorAgent::controller()

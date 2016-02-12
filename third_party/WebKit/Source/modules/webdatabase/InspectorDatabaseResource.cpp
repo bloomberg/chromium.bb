@@ -55,9 +55,9 @@ DEFINE_TRACE(InspectorDatabaseResource)
     visitor->trace(m_database);
 }
 
-void InspectorDatabaseResource::bind(InspectorFrontend::Database* frontend)
+void InspectorDatabaseResource::bind(protocol::Frontend::Database* frontend)
 {
-    RefPtr<TypeBuilder::Database::Database> jsonObject = TypeBuilder::Database::Database::create()
+    RefPtr<protocol::TypeBuilder::Database::Database> jsonObject = protocol::TypeBuilder::Database::Database::create()
         .setId(m_id)
         .setDomain(m_domain)
         .setName(m_name)

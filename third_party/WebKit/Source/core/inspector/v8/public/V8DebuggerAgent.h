@@ -6,14 +6,14 @@
 #define V8DebuggerAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorBackendDispatcher.h"
 #include "core/inspector/v8/public/V8Debugger.h"
+#include "platform/inspector_protocol/Dispatcher.h"
 
 namespace blink {
 
 class V8RuntimeAgent;
 
-class CORE_EXPORT V8DebuggerAgent : public InspectorBackendDispatcher::DebuggerCommandHandler, public V8Debugger::Agent<InspectorFrontend::Debugger> {
+class CORE_EXPORT V8DebuggerAgent : public protocol::Dispatcher::DebuggerCommandHandler, public V8Debugger::Agent<protocol::Frontend::Debugger> {
 public:
     static const char backtraceObjectGroup[];
 
@@ -21,11 +21,11 @@ public:
     virtual ~V8DebuggerAgent() { }
 
     // API for the embedder to report native activities.
-    virtual void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) = 0;
+    virtual void schedulePauseOnNextStatement(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) = 0;
     virtual void cancelPauseOnNextStatement() = 0;
     virtual bool canBreakProgram() = 0;
-    virtual void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) = 0;
-    virtual void breakProgramOnException(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) = 0;
+    virtual void breakProgram(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) = 0;
+    virtual void breakProgramOnException(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) = 0;
     virtual void willExecuteScript(int scriptId) = 0;
     virtual void didExecuteScript() = 0;
     virtual void reset() = 0;

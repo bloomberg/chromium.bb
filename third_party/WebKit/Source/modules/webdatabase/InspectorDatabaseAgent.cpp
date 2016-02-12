@@ -48,7 +48,7 @@
 #include "platform/JSONValues.h"
 #include "wtf/Vector.h"
 
-typedef blink::InspectorBackendDispatcher::DatabaseCommandHandler::ExecuteSQLCallback ExecuteSQLCallback;
+typedef blink::protocol::Dispatcher::DatabaseCommandHandler::ExecuteSQLCallback ExecuteSQLCallback;
 
 namespace blink {
 
@@ -60,7 +60,7 @@ namespace {
 
 void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* error)
 {
-    RefPtr<TypeBuilder::Database::Error> errorObject = TypeBuilder::Database::Error::create()
+    RefPtr<protocol::TypeBuilder::Database::Error> errorObject = protocol::TypeBuilder::Database::Error::create()
         .setMessage(error->message())
         .setCode(error->code());
     requestCallback->sendSuccess(nullptr, nullptr, errorObject.release());
@@ -84,12 +84,12 @@ public:
     {
         SQLResultSetRowList* rowList = resultSet->rows();
 
-        RefPtr<TypeBuilder::Array<String>> columnNames = TypeBuilder::Array<String>::create();
+        RefPtr<protocol::TypeBuilder::Array<String>> columnNames = protocol::TypeBuilder::Array<String>::create();
         const Vector<String>& columns = rowList->columnNames();
         for (size_t i = 0; i < columns.size(); ++i)
             columnNames->addItem(columns[i]);
 
-        RefPtr<TypeBuilder::Array<JSONValue>> values = TypeBuilder::Array<JSONValue>::create();
+        RefPtr<protocol::TypeBuilder::Array<JSONValue>> values = protocol::TypeBuilder::Array<JSONValue>::create();
         const Vector<SQLValue>& data = rowList->values();
         for (size_t i = 0; i < data.size(); ++i) {
             const SQLValue& value = rowList->values()[i];
@@ -234,7 +234,7 @@ void InspectorDatabaseAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 }
 
 InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
-    : InspectorBaseAgent<InspectorDatabaseAgent, InspectorFrontend::Database>("Database")
+    : InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>("Database")
     , m_page(page)
     , m_enabled(false)
 {
@@ -270,14 +270,14 @@ void InspectorDatabaseAgent::restore()
     m_enabled = m_state->booleanProperty(DatabaseAgentState::databaseAgentEnabled, false);
 }
 
-void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, RefPtr<TypeBuilder::Array<String>>& names)
+void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, RefPtr<protocol::TypeBuilder::Array<String>>& names)
 {
     if (!m_enabled) {
         *error = "Database agent is not enabled";
         return;
     }
 
-    names = TypeBuilder::Array<String>::create();
+    names = protocol::TypeBuilder::Array<String>::create();
 
     Database* database = databaseForId(databaseId);
     if (database) {

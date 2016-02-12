@@ -31,7 +31,6 @@
 #ifndef InspectorFileSystemAgent_h
 #define InspectorFileSystemAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "modules/ModulesExport.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,7 +42,7 @@ class ExecutionContext;
 class InspectedFrames;
 class SecurityOrigin;
 
-class MODULES_EXPORT InspectorFileSystemAgent final : public InspectorBaseAgent<InspectorFileSystemAgent, InspectorFrontend::FileSystem>, public InspectorBackendDispatcher::FileSystemCommandHandler {
+class MODULES_EXPORT InspectorFileSystemAgent final : public InspectorBaseAgent<InspectorFileSystemAgent, protocol::Frontend::FileSystem>, public protocol::Dispatcher::FileSystemCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorFileSystemAgent> create(InspectedFrames*);
     ~InspectorFileSystemAgent() override;

@@ -9,9 +9,9 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 
-using blink::TypeBuilder::Array;
-using blink::TypeBuilder::Runtime::CallFrame;
-using blink::TypeBuilder::Debugger::PromiseDetails;
+using blink::protocol::TypeBuilder::Array;
+using blink::protocol::TypeBuilder::Runtime::CallFrame;
+using blink::protocol::TypeBuilder::Debugger::PromiseDetails;
 
 namespace blink {
 
@@ -25,7 +25,7 @@ public:
     ~PromiseWrapper()
     {
         RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create().setId(m_id);
-        m_tracker->m_agent->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseDetails.release());
+        m_tracker->m_agent->didUpdatePromise(protocol::Frontend::Debugger::EventType::Gc, promiseDetails.release());
     }
 
 private:
@@ -110,7 +110,7 @@ void PromiseTracker::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8
     bool isNewPromise = false;
     int id = promiseId(promise, &isNewPromise);
 
-    InspectorFrontend::Debugger::EventType::Enum eventType = isNewPromise ? InspectorFrontend::Debugger::EventType::New : InspectorFrontend::Debugger::EventType::Update;
+    protocol::Frontend::Debugger::EventType::Enum eventType = isNewPromise ? protocol::Frontend::Debugger::EventType::New : protocol::Frontend::Debugger::EventType::Update;
 
     PromiseDetails::Status::Enum promiseStatus;
     switch (status) {

@@ -31,7 +31,6 @@
 #define InspectorDOMAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/events/EventListenerMap.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorHighlight.h"
@@ -73,7 +72,7 @@ class ShadowRoot;
 
 typedef String ErrorString;
 
-class CORE_EXPORT InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>, public InspectorBackendDispatcher::DOMCommandHandler {
+class CORE_EXPORT InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, protocol::Frontend::DOM>, public protocol::Dispatcher::DOMCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
     struct CORE_EXPORT DOMListener : public WillBeGarbageCollectedMixin {
@@ -103,7 +102,7 @@ public:
     }
 
     static String toErrorString(ExceptionState&);
-    static bool getPseudoElementType(PseudoId, TypeBuilder::DOM::PseudoType::Enum*);
+    static bool getPseudoElementType(PseudoId, protocol::TypeBuilder::DOM::PseudoType::Enum*);
     static ShadowRoot* userAgentShadowRoot(Node*);
 
     ~InspectorDOMAgent() override;
@@ -118,8 +117,8 @@ public:
     // Methods called from the frontend for DOM nodes inspection.
     void enable(ErrorString*) override;
     void querySelector(ErrorString*, int nodeId, const String& selectors, int* elementId) override;
-    void querySelectorAll(ErrorString*, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int>>& result) override;
-    void getDocument(ErrorString*, RefPtr<TypeBuilder::DOM::Node>& root) override;
+    void querySelectorAll(ErrorString*, int nodeId, const String& selectors, RefPtr<protocol::TypeBuilder::Array<int>>& result) override;
+    void getDocument(ErrorString*, RefPtr<protocol::TypeBuilder::DOM::Node>& root) override;
     void requestChildNodes(ErrorString*, int nodeId, const int* depth) override;
     void setAttributeValue(ErrorString*, int elementId, const String& name, const String& value) override;
     void setAttributesAsText(ErrorString*, int elementId, const String& text, const String* name) override;
@@ -130,14 +129,14 @@ public:
     void setOuterHTML(ErrorString*, int nodeId, const String& outerHTML) override;
     void setNodeValue(ErrorString*, int nodeId, const String& value) override;
     void performSearch(ErrorString*, const String& whitespaceTrimmedQuery, const bool* includeUserAgentShadowDOM, String* searchId, int* resultCount) override;
-    void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, RefPtr<TypeBuilder::Array<int>>&) override;
+    void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, RefPtr<protocol::TypeBuilder::Array<int>>&) override;
     void discardSearchResults(ErrorString*, const String& searchId) override;
-    void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) override;
-    void getAttributes(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<String>>& result) override;
+    void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result) override;
+    void getAttributes(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::Array<String>>& result) override;
     void setInspectMode(ErrorString*, const String&, const RefPtr<JSONObject>* highlightConfig) override;
     void requestNode(ErrorString*, const String& objectId, int* nodeId) override;
     void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId) override;
-    void pushNodesByBackendIdsToFrontend(ErrorString*, const RefPtr<JSONArray>& nodeIds, RefPtr<TypeBuilder::Array<int>>&) override;
+    void pushNodesByBackendIdsToFrontend(ErrorString*, const RefPtr<JSONArray>& nodeIds, RefPtr<protocol::TypeBuilder::Array<int>>&) override;
     void setInspectedNode(ErrorString*, int nodeId) override;
     void hideHighlight(ErrorString*) override;
     void highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;
@@ -152,7 +151,7 @@ public:
     void markUndoableState(ErrorString*) override;
     void focus(ErrorString*, int nodeId) override;
     void setFileInputFiles(ErrorString*, int nodeId, const RefPtr<JSONArray>& files) override;
-    void getBoxModel(ErrorString*, int nodeId, RefPtr<TypeBuilder::DOM::BoxModel>&) override;
+    void getBoxModel(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::DOM::BoxModel>&) override;
     void getNodeForLocation(ErrorString*, int x, int y, int* nodeId) override;
     void getRelayoutBoundary(ErrorString*, int nodeId, int* relayoutBoundaryNodeId) override;
     void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<JSONObject>&) override;
@@ -186,7 +185,7 @@ public:
 
     static String documentURLString(Document*);
 
-    PassRefPtr<TypeBuilder::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
+    PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
 
     InspectorHistory* history() { return m_history.get(); }
 
@@ -227,11 +226,11 @@ private:
 
     void invalidateFrameOwnerElement(LocalFrame*);
 
-    PassRefPtr<TypeBuilder::DOM::Node> buildObjectForNode(Node*, int depth, NodeToIdMap*);
-    PassRefPtr<TypeBuilder::Array<String>> buildArrayForElementAttributes(Element*);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node>> buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
+    PassRefPtr<protocol::TypeBuilder::DOM::Node> buildObjectForNode(Node*, int depth, NodeToIdMap*);
+    PassRefPtr<protocol::TypeBuilder::Array<String>> buildArrayForElementAttributes(Element*);
+    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
+    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
+    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
 
     Node* nodeForPath(const String& path);
     Node* nodeForRemoteId(ErrorString*, const String& id);

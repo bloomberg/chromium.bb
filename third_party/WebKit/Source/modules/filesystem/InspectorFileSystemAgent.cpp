@@ -65,13 +65,13 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
 
-using blink::TypeBuilder::Array;
+using blink::protocol::TypeBuilder::Array;
 
-typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::RequestFileSystemRootCallback RequestFileSystemRootCallback;
-typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::RequestDirectoryContentCallback RequestDirectoryContentCallback;
-typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::RequestMetadataCallback RequestMetadataCallback;
-typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::RequestFileContentCallback RequestFileContentCallback;
-typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::DeleteEntryCallback DeleteEntryCallback;
+typedef blink::protocol::Dispatcher::FileSystemCommandHandler::RequestFileSystemRootCallback RequestFileSystemRootCallback;
+typedef blink::protocol::Dispatcher::FileSystemCommandHandler::RequestDirectoryContentCallback RequestDirectoryContentCallback;
+typedef blink::protocol::Dispatcher::FileSystemCommandHandler::RequestMetadataCallback RequestMetadataCallback;
+typedef blink::protocol::Dispatcher::FileSystemCommandHandler::RequestFileContentCallback RequestFileContentCallback;
+typedef blink::protocol::Dispatcher::FileSystemCommandHandler::DeleteEntryCallback DeleteEntryCallback;
 
 namespace blink {
 
@@ -144,7 +144,7 @@ private:
 
     bool didGetEntry(Entry*);
 
-    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<TypeBuilder::FileSystem::Entry> entry = nullptr)
+    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<protocol::TypeBuilder::FileSystem::Entry> entry = nullptr)
     {
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), entry);
     }
@@ -182,7 +182,7 @@ void FileSystemRootRequest::start(ExecutionContext* executionContext)
 
 bool FileSystemRootRequest::didGetEntry(Entry* entry)
 {
-    RefPtr<TypeBuilder::FileSystem::Entry> result = TypeBuilder::FileSystem::Entry::create()
+    RefPtr<protocol::TypeBuilder::FileSystem::Entry> result = protocol::TypeBuilder::FileSystem::Entry::create()
         .setUrl(entry->toURL())
         .setName("/")
         .setIsDirectory(true);
@@ -219,7 +219,7 @@ private:
     bool didGetEntry(Entry*);
     bool didReadDirectoryEntries(const EntryHeapVector&);
 
-    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<Array<TypeBuilder::FileSystem::Entry>> entries = nullptr)
+    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<Array<protocol::TypeBuilder::FileSystem::Entry>> entries = nullptr)
     {
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), entries);
     }
@@ -232,7 +232,7 @@ private:
 
     RefPtr<RequestDirectoryContentCallback> m_requestCallback;
     KURL m_url;
-    RefPtr<Array<TypeBuilder::FileSystem::Entry>> m_entries;
+    RefPtr<Array<protocol::TypeBuilder::FileSystem::Entry>> m_entries;
     PersistentWillBeMember<DirectoryReader> m_directoryReader;
 };
 
@@ -256,7 +256,7 @@ bool DirectoryContentRequest::didGetEntry(Entry* entry)
     }
 
     m_directoryReader = toDirectoryEntry(entry)->createReader();
-    m_entries = Array<TypeBuilder::FileSystem::Entry>::create();
+    m_entries = Array<protocol::TypeBuilder::FileSystem::Entry>::create();
     readDirectoryEntries();
     return true;
 }
@@ -282,12 +282,12 @@ bool DirectoryContentRequest::didReadDirectoryEntries(const EntryHeapVector& ent
 
     for (size_t i = 0; i < entries.size(); ++i) {
         Entry* entry = entries[i];
-        RefPtr<TypeBuilder::FileSystem::Entry> entryForFrontend = TypeBuilder::FileSystem::Entry::create()
+        RefPtr<protocol::TypeBuilder::FileSystem::Entry> entryForFrontend = protocol::TypeBuilder::FileSystem::Entry::create()
             .setUrl(entry->toURL())
             .setName(entry->name())
             .setIsDirectory(entry->isDirectory());
 
-        using TypeBuilder::Page::ResourceType;
+        using protocol::TypeBuilder::Page::ResourceType;
         if (!entry->isDirectory()) {
             String mimeType = MIMETypeRegistry::getMIMETypeForPath(entry->name());
             ResourceType::Enum resourceType;
@@ -346,7 +346,7 @@ private:
     bool didGetEntry(Entry*);
     bool didGetMetadata(Metadata*);
 
-    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<TypeBuilder::FileSystem::Metadata> metadata = nullptr)
+    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<protocol::TypeBuilder::FileSystem::Metadata> metadata = nullptr)
     {
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), metadata);
     }
@@ -386,7 +386,7 @@ bool MetadataRequest::didGetEntry(Entry* entry)
 
 bool MetadataRequest::didGetMetadata(Metadata* metadata)
 {
-    using TypeBuilder::FileSystem::Metadata;
+    using protocol::TypeBuilder::FileSystem::Metadata;
     RefPtr<Metadata> result = Metadata::create()
         .setModificationTime(metadata->modificationTime())
         .setSize(metadata->size());
@@ -729,7 +729,7 @@ void InspectorFileSystemAgent::restore()
 }
 
 InspectorFileSystemAgent::InspectorFileSystemAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorFileSystemAgent, InspectorFrontend::FileSystem>("FileSystem")
+    : InspectorBaseAgent<InspectorFileSystemAgent, protocol::Frontend::FileSystem>("FileSystem")
     , m_inspectedFrames(inspectedFrames)
     , m_enabled(false)
 {

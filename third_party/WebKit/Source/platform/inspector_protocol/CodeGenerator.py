@@ -38,7 +38,7 @@ try:
 except ImportError:
     import simplejson as json
 
-import CodeGeneratorInspectorStrings
+import CodeGeneratorStrings
 
 # Manually-filled map of type name replacements.
 TYPE_NAME_FIX_MAP = {
@@ -946,7 +946,7 @@ class TypeBindings:
                                 is_open_type = (context_domain_name + "." + class_name) in TYPES_WITH_OPEN_FIELD_LIST_SET
 
                                 fixed_type_name.output_comment(writer)
-                                writer.newline("class ")
+                                writer.newline("class PLATFORM_EXPORT ")
                                 writer.append(class_name)
                                 writer.append(" : public ")
                                 if is_open_type:
@@ -979,7 +979,7 @@ class TypeBindings:
                                 else:
                                     all_fields_set_value = "0"
 
-                                writer.newline_multiline(CodeGeneratorInspectorStrings.class_binding_builder_part_1
+                                writer.newline_multiline(CodeGeneratorStrings.class_binding_builder_part_1
                                                          % (all_fields_set_value, class_name, class_name))
 
                                 pos = 0
@@ -989,7 +989,7 @@ class TypeBindings:
                                     param_type_binding = prop_data.param_type_binding
                                     param_raw_type = param_type_binding.reduce_to_raw_type()
 
-                                    writer.newline_multiline(CodeGeneratorInspectorStrings.class_binding_builder_part_2
+                                    writer.newline_multiline(CodeGeneratorStrings.class_binding_builder_part_2
                                         % (state_enum_items[pos],
                                            Capitalizer.lower_camel_case_to_upper(prop_name),
                                            param_type_binding.get_type_model().get_input_param_type_text(),
@@ -1000,7 +1000,7 @@ class TypeBindings:
 
                                     pos += 1
 
-                                writer.newline_multiline(CodeGeneratorInspectorStrings.class_binding_builder_part_3
+                                writer.newline_multiline(CodeGeneratorStrings.class_binding_builder_part_3
                                                          % (class_name, class_name, class_name, class_name, class_name, class_name))
 
                                 writer.newline("    /*\n")
@@ -1010,7 +1010,7 @@ class TypeBindings:
                                     writer.append_multiline("\n     *     .set%s(...)" % Capitalizer.lower_camel_case_to_upper(prop_data.p["name"]))
                                 writer.append_multiline(";\n     */\n")
 
-                                writer.newline_multiline(CodeGeneratorInspectorStrings.class_binding_builder_part_4)
+                                writer.newline_multiline(CodeGeneratorStrings.class_binding_builder_part_4)
 
                                 writer.newline("    typedef TypeBuilder::StructItemTraits ItemTraits;\n")
 
@@ -1490,7 +1490,7 @@ class Templates:
             fill_recursive(os.path.dirname(path_part), depth - 1)
             components.append(os.path.basename(path_part))
 
-        # Typical path is /Source/WebCore/inspector/CodeGeneratorInspector.py
+        # Typical path is /Source/platform/inspector_protocol/CodeGenerator.py
         # Let's take 4 components from the real path then.
         fill_recursive(absolute_path, 4)
 
@@ -1502,18 +1502,18 @@ class Templates:
 // found in the LICENSE file.
 """)
 
-    frontend_domain_class = string.Template(CodeGeneratorInspectorStrings.frontend_domain_class)
-    backend_method = string.Template(CodeGeneratorInspectorStrings.backend_method)
-    frontend_method = string.Template(CodeGeneratorInspectorStrings.frontend_method)
-    callback_main_methods = string.Template(CodeGeneratorInspectorStrings.callback_main_methods)
-    callback_failure_method = string.Template(CodeGeneratorInspectorStrings.callback_failure_method)
-    frontend_h = string.Template(file_header_ + CodeGeneratorInspectorStrings.frontend_h)
-    backend_h = string.Template(file_header_ + CodeGeneratorInspectorStrings.backend_h)
-    backend_cpp = string.Template(file_header_ + CodeGeneratorInspectorStrings.backend_cpp)
-    frontend_cpp = string.Template(file_header_ + CodeGeneratorInspectorStrings.frontend_cpp)
-    typebuilder_h = string.Template(file_header_ + CodeGeneratorInspectorStrings.typebuilder_h)
-    typebuilder_cpp = string.Template(file_header_ + CodeGeneratorInspectorStrings.typebuilder_cpp)
-    param_container_access_code = CodeGeneratorInspectorStrings.param_container_access_code
+    frontend_domain_class = string.Template(CodeGeneratorStrings.frontend_domain_class)
+    backend_method = string.Template(CodeGeneratorStrings.backend_method)
+    frontend_method = string.Template(CodeGeneratorStrings.frontend_method)
+    callback_main_methods = string.Template(CodeGeneratorStrings.callback_main_methods)
+    callback_failure_method = string.Template(CodeGeneratorStrings.callback_failure_method)
+    frontend_h = string.Template(file_header_ + CodeGeneratorStrings.frontend_h)
+    backend_h = string.Template(file_header_ + CodeGeneratorStrings.backend_h)
+    backend_cpp = string.Template(file_header_ + CodeGeneratorStrings.backend_cpp)
+    frontend_cpp = string.Template(file_header_ + CodeGeneratorStrings.frontend_cpp)
+    typebuilder_h = string.Template(file_header_ + CodeGeneratorStrings.typebuilder_h)
+    typebuilder_cpp = string.Template(file_header_ + CodeGeneratorStrings.typebuilder_cpp)
+    param_container_access_code = CodeGeneratorStrings.param_container_access_code
 
 
 
@@ -1636,14 +1636,14 @@ class Generator:
             Generator.frontend_class_field_lines.append("    %s m_%s;\n" % (domain_name, domain_name_lower))
             if Generator.frontend_constructor_init_list:
                 Generator.frontend_constructor_init_list.append("    , ")
-            Generator.frontend_constructor_init_list.append("m_%s(inspectorFrontendChannel)\n" % domain_name_lower)
+            Generator.frontend_constructor_init_list.append("m_%s(frontendChannel)\n" % domain_name_lower)
             Generator.frontend_domain_class_lines.append(Templates.frontend_domain_class.substitute(None,
                 domainClassName=domain_name,
                 domainFieldName=domain_name_lower,
                 frontendDomainMethodDeclarations="".join(flatten_list(frontend_method_declaration_lines))))
 
             agent_interface_name = Capitalizer.lower_camel_case_to_upper(domain_name) + "CommandHandler"
-            Generator.backend_agent_interface_list.append("    class CORE_EXPORT %s {\n" % agent_interface_name)
+            Generator.backend_agent_interface_list.append("    class PLATFORM_EXPORT %s {\n" % agent_interface_name)
             Generator.backend_agent_interface_list.append("    public:\n")
             if "commands" in json_domain:
                 for json_command in json_domain["commands"]:
@@ -1700,7 +1700,7 @@ class Generator:
         cmd_enum_name = "k%s_%sCmd" % (domain_name, json_command["name"])
 
         Generator.method_name_enum_list.append("        %s," % cmd_enum_name)
-        Generator.method_handler_list.append("            &InspectorBackendDispatcherImpl::%s_%s," % (domain_name, json_command_name))
+        Generator.method_handler_list.append("            &DispatcherImpl::%s_%s," % (domain_name, json_command_name))
         Generator.backend_method_declaration_list.append("    void %s_%s(int sessionId, int callId, JSONObject* requestMessageObject, JSONArray* protocolErrors);" % (domain_name, json_command_name))
 
         backend_agent_interface_list = [] if "redirect" in json_command else Generator.backend_agent_interface_list
@@ -1782,8 +1782,8 @@ class Generator:
 
             callback_writer.newline("class " + callback_name + " : public CallbackBase {\n")
             callback_writer.newline("public:\n")
-            callback_writer.newline("    " + callback_name + "(PassRefPtr<InspectorBackendDispatcherImpl>, int sessionId, int id);\n")
-            callback_writer.newline("    CORE_EXPORT void sendSuccess(" + ", ".join(decl_parameter_list) + ");\n")
+            callback_writer.newline("    " + callback_name + "(PassRefPtr<DispatcherImpl>, int sessionId, int id);\n")
+            callback_writer.newline("    PLATFORM_EXPORT void sendSuccess(" + ", ".join(decl_parameter_list) + ");\n")
             error_part_writer = callback_writer.insert_writer("")
             callback_writer.newline("};\n")
 
@@ -2069,14 +2069,14 @@ def output_file(file_name):
 
 Generator.go()
 
-backend_h_file = output_file(output_dirname + "/InspectorBackendDispatcher.h")
-backend_cpp_file = output_file(output_dirname + "/InspectorBackendDispatcher.cpp")
+backend_h_file = output_file(output_dirname + "/Dispatcher.h")
+backend_cpp_file = output_file(output_dirname + "/Dispatcher.cpp")
 
-frontend_h_file = output_file(output_dirname + "/InspectorFrontend.h")
-frontend_cpp_file = output_file(output_dirname + "/InspectorFrontend.cpp")
+frontend_h_file = output_file(output_dirname + "/Frontend.h")
+frontend_cpp_file = output_file(output_dirname + "/Frontend.cpp")
 
-typebuilder_h_file = output_file(output_dirname + "/InspectorTypeBuilder.h")
-typebuilder_cpp_file = output_file(output_dirname + "/InspectorTypeBuilder.cpp")
+typebuilder_h_file = output_file(output_dirname + "/TypeBuilder.h")
+typebuilder_cpp_file = output_file(output_dirname + "/TypeBuilder.cpp")
 
 
 backend_h_file.write(Templates.backend_h.substitute(None,

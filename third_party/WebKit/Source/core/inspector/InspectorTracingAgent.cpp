@@ -24,7 +24,7 @@ const char devtoolsMetadataEventCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools
 }
 
 InspectorTracingAgent::InspectorTracingAgent(Client* client, InspectorWorkerAgent* workerAgent, InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorTracingAgent, InspectorFrontend::Tracing>("Tracing")
+    : InspectorBaseAgent<InspectorTracingAgent, protocol::Frontend::Tracing>("Tracing")
     , m_layerTreeId(0)
     , m_client(client)
     , m_workerAgent(workerAgent)

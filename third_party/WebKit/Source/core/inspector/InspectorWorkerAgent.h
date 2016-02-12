@@ -32,7 +32,6 @@
 #define InspectorWorkerAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "wtf/Forward.h"
@@ -45,7 +44,7 @@ class WorkerInspectorProxy;
 
 using ErrorString = String;
 
-class CORE_EXPORT InspectorWorkerAgent final : public InspectorBaseAgent<InspectorWorkerAgent, InspectorFrontend::Worker>, public InspectorBackendDispatcher::WorkerCommandHandler {
+class CORE_EXPORT InspectorWorkerAgent final : public InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>, public protocol::Dispatcher::WorkerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create(PageConsoleAgent*);
@@ -61,7 +60,7 @@ public:
     void didStartWorker(WorkerInspectorProxy*, const KURL&);
     void workerTerminated(WorkerInspectorProxy*);
 
-    // Called from InspectorBackendDispatcher
+    // Called from Dispatcher
     void enable(ErrorString*) override;
     void connectToWorker(ErrorString*, const String& workerId) override;
     void disconnectFromWorker(ErrorString*, const String& workerId) override;
@@ -73,8 +72,8 @@ public:
     class WorkerAgentClient final : public WorkerInspectorProxy::PageInspector {
         USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorWorkerAgent::WorkerAgentClient);
     public:
-        static PassOwnPtrWillBeRawPtr<WorkerAgentClient> create(InspectorFrontend::Worker*, WorkerInspectorProxy*, const String& id, PageConsoleAgent*);
-        WorkerAgentClient(InspectorFrontend::Worker*, WorkerInspectorProxy*, const String& id, PageConsoleAgent*);
+        static PassOwnPtrWillBeRawPtr<WorkerAgentClient> create(protocol::Frontend::Worker*, WorkerInspectorProxy*, const String& id, PageConsoleAgent*);
+        WorkerAgentClient(protocol::Frontend::Worker*, WorkerInspectorProxy*, const String& id, PageConsoleAgent*);
         ~WorkerAgentClient() override;
         DECLARE_VIRTUAL_TRACE();
 
@@ -89,7 +88,7 @@ public:
         void dispatchMessageFromWorker(const String& message) override;
         void workerConsoleAgentEnabled(WorkerGlobalScopeProxy*) override;
 
-        InspectorFrontend::Worker* m_frontend;
+        protocol::Frontend::Worker* m_frontend;
         RawPtrWillBeMember<WorkerInspectorProxy> m_proxy;
         String m_id;
         bool m_connected;

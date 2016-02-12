@@ -111,7 +111,7 @@ void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& poin
 namespace blink {
 
 InspectorInputAgent::InspectorInputAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorInputAgent, InspectorFrontend::Input>("Input")
+    : InspectorBaseAgent<InspectorInputAgent, protocol::Frontend::Input>("Input")
     , m_inspectedFrames(inspectedFrames)
 {
 }

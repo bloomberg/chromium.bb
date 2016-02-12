@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ScriptString.h"
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "platform/Timer.h"
@@ -69,7 +68,7 @@ class WebSocketHandshakeResponse;
 
 typedef String ErrorString;
 
-class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, InspectorFrontend::Network>, public InspectorBackendDispatcher::NetworkCommandHandler {
+class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, protocol::Frontend::Network>, public protocol::Dispatcher::NetworkCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(InspectedFrames* inspectedFrames)
     {
@@ -121,7 +120,7 @@ public:
     void frameScheduledNavigation(LocalFrame*, double);
     void frameClearedScheduledNavigation(LocalFrame*);
 
-    PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
+    PassRefPtr<protocol::TypeBuilder::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
 
     void didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&);
     void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest*);
@@ -181,11 +180,11 @@ private:
 
     RefPtrWillBeMember<XHRReplayData> m_pendingXHRReplayData;
 
-    typedef HashMap<String, RefPtr<TypeBuilder::Network::Initiator>> FrameNavigationInitiatorMap;
+    typedef HashMap<String, RefPtr<protocol::TypeBuilder::Network::Initiator>> FrameNavigationInitiatorMap;
     FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
 
     // FIXME: InspectorResourceAgent should now be aware of style recalculation.
-    RefPtr<TypeBuilder::Network::Initiator> m_styleRecalculationInitiator;
+    RefPtr<protocol::TypeBuilder::Network::Initiator> m_styleRecalculationInitiator;
     bool m_isRecalculatingStyle;
 
     PersistentHeapHashSetWillBeHeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;

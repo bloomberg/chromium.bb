@@ -73,9 +73,9 @@ V8StackTraceImpl::Frame::~Frame()
 
 // buildInspectorObject() and ScriptCallStack's toTracedValue() should set the same fields.
 // If either of them is modified, the other should be also modified.
-PassRefPtr<TypeBuilder::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInspectorObject() const
+PassRefPtr<protocol::TypeBuilder::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInspectorObject() const
 {
-    return TypeBuilder::Runtime::CallFrame::create()
+    return protocol::TypeBuilder::Runtime::CallFrame::create()
         .setFunctionName(m_functionName)
         .setScriptId(m_scriptId)
         .setUrl(m_scriptName)
@@ -157,13 +157,13 @@ String V8StackTraceImpl::topScriptId() const
     return m_frames[0].m_scriptId;
 }
 
-PassRefPtr<TypeBuilder::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObject() const
+PassRefPtr<protocol::TypeBuilder::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObject() const
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::CallFrame>> frames = TypeBuilder::Array<TypeBuilder::Runtime::CallFrame>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::CallFrame>> frames = protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::CallFrame>::create();
     for (size_t i = 0; i < m_frames.size(); i++)
         frames->addItem(m_frames.at(i).buildInspectorObject());
 
-    RefPtr<TypeBuilder::Runtime::StackTrace> stackTrace = TypeBuilder::Runtime::StackTrace::create()
+    RefPtr<protocol::TypeBuilder::Runtime::StackTrace> stackTrace = protocol::TypeBuilder::Runtime::StackTrace::create()
         .setCallFrames(frames.release());
     if (!m_description.isEmpty())
         stackTrace->setDescription(m_description);

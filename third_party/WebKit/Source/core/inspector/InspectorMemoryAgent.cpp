@@ -47,7 +47,7 @@ void InspectorMemoryAgent::getDOMCounters(ErrorString*, int* documents, int* nod
 }
 
 InspectorMemoryAgent::InspectorMemoryAgent()
-    : InspectorBaseAgent<InspectorMemoryAgent, InspectorFrontend::Memory>("Memory")
+    : InspectorBaseAgent<InspectorMemoryAgent, protocol::Frontend::Memory>("Memory")
 {
 }
 

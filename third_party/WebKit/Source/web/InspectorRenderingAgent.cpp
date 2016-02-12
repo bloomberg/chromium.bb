@@ -25,7 +25,7 @@ PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> InspectorRenderingAgent::create(
 }
 
 InspectorRenderingAgent::InspectorRenderingAgent(WebLocalFrameImpl* webLocalFrameImpl)
-    : InspectorBaseAgent<InspectorRenderingAgent, InspectorFrontend::Rendering>("Rendering")
+    : InspectorBaseAgent<InspectorRenderingAgent, protocol::Frontend::Rendering>("Rendering")
     , m_webLocalFrameImpl(webLocalFrameImpl)
 {
 }

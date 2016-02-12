@@ -31,11 +31,11 @@
 #ifndef WebDevToolsAgentImpl_h
 #define WebDevToolsAgentImpl_h
 
-#include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "platform/heap/Handle.h"
+#include "platform/inspector_protocol/FrontendChannel.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebDevToolsAgent.h"
@@ -74,7 +74,7 @@ class WebDevToolsAgentImpl final
     , public InspectorTracingAgent::Client
     , public InspectorPageAgent::Client
     , public InspectorRuntimeAgent::Client
-    , public InspectorFrontendChannel
+    , public protocol::FrontendChannel
     , private WebThread::TaskObserver {
 public:
     static PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
@@ -127,7 +127,7 @@ private:
     void setPausedInDebuggerMessage(const String*) override;
     void waitForCreateWindow(LocalFrame*) override;
 
-    // InspectorFrontendChannel implementation.
+    // protocol::FrontendChannel implementation.
     void sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message) override;
     void sendProtocolNotification(PassRefPtr<JSONObject> message) override;
     void flush() override;
@@ -159,8 +159,8 @@ private:
     RawPtrWillBeMember<PageRuntimeAgent> m_pageRuntimeAgent;
     RawPtrWillBeMember<PageConsoleAgent> m_pageConsoleAgent;
 
-    RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
-    OwnPtr<InspectorFrontend> m_inspectorFrontend;
+    RefPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
+    OwnPtr<protocol::Frontend> m_inspectorFrontend;
     InspectorAgentRegistry m_agents;
     bool m_deferredAgentsInitialized;
 

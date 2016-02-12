@@ -30,10 +30,7 @@
 
 #include "core/inspector/WorkerInspectorController.h"
 
-#include "core/InspectorBackendDispatcher.h"
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorConsoleAgent.h"
-#include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorProfilerAgent.h"
@@ -47,6 +44,9 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/inspector_protocol/Dispatcher.h"
+#include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/FrontendChannel.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -73,7 +73,7 @@ private:
 
 } // namespace
 
-class WorkerInspectorController::PageInspectorProxy final : public NoBaseWillBeGarbageCollectedFinalized<WorkerInspectorController::PageInspectorProxy>, public InspectorFrontendChannel {
+class WorkerInspectorController::PageInspectorProxy final : public NoBaseWillBeGarbageCollectedFinalized<WorkerInspectorController::PageInspectorProxy>, public protocol::FrontendChannel {
     USING_FAST_MALLOC_WILL_BE_REMOVED(PageInspectorProxy);
 public:
     static PassOwnPtrWillBeRawPtr<PageInspectorProxy> create(WorkerGlobalScope* workerGlobalScope)
@@ -162,8 +162,8 @@ void WorkerInspectorController::connectFrontend()
     ASSERT(!m_frontend);
     InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
     m_pageInspectorProxy = PageInspectorProxy::create(m_workerGlobalScope);
-    m_frontend = adoptPtr(new InspectorFrontend(frontendChannel()));
-    m_backendDispatcher = InspectorBackendDispatcher::create(frontendChannel());
+    m_frontend = adoptPtr(new protocol::Frontend(frontendChannel()));
+    m_backendDispatcher = protocol::Dispatcher::create(frontendChannel());
     m_agents.registerInDispatcher(m_backendDispatcher.get());
     m_agents.setFrontend(m_frontend.get());
     InspectorInstrumentation::frontendCreated();
@@ -220,9 +220,9 @@ bool WorkerInspectorController::isRunRequired()
     return m_paused;
 }
 
-InspectorFrontendChannel* WorkerInspectorController::frontendChannel() const
+protocol::FrontendChannel* WorkerInspectorController::frontendChannel() const
 {
-    return static_cast<InspectorFrontendChannel*>(m_pageInspectorProxy.get());
+    return static_cast<protocol::FrontendChannel*>(m_pageInspectorProxy.get());
 }
 
 void WorkerInspectorController::workerContextInitialized(bool shouldPauseOnStart)

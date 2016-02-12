@@ -5,7 +5,6 @@
 #ifndef InspectorRenderingAgent_h
 #define InspectorRenderingAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 
 namespace blink {
@@ -15,12 +14,12 @@ class WebViewImpl;
 
 using ErrorString = String;
 
-class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, InspectorFrontend::Rendering>, public InspectorBackendDispatcher::RenderingCommandHandler {
+class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, protocol::Frontend::Rendering>, public protocol::Dispatcher::RenderingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRenderingAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> create(WebLocalFrameImpl*);
 
-    // InspectorBackendDispatcher::PageCommandHandler implementation.
+    // protocol::Dispatcher::PageCommandHandler implementation.
     void setShowPaintRects(ErrorString*, bool show) override;
     void setShowDebugBorders(ErrorString*, bool show) override;
     void setShowFPSCounter(ErrorString*, bool show) override;

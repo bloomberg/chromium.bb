@@ -94,19 +94,19 @@ String frameId(LocalFrame* frame)
     return frame ? IdentifiersFactory::frameId(frame) : "";
 }
 
-TypeBuilder::Page::DialogType::Enum dialogTypeToProtocol(ChromeClient::DialogType dialogType)
+protocol::TypeBuilder::Page::DialogType::Enum dialogTypeToProtocol(ChromeClient::DialogType dialogType)
 {
     switch (dialogType) {
     case ChromeClient::AlertDialog:
-        return TypeBuilder::Page::DialogType::Alert;
+        return protocol::TypeBuilder::Page::DialogType::Alert;
     case ChromeClient::ConfirmDialog:
-        return TypeBuilder::Page::DialogType::Confirm;
+        return protocol::TypeBuilder::Page::DialogType::Confirm;
     case ChromeClient::PromptDialog:
-        return TypeBuilder::Page::DialogType::Prompt;
+        return protocol::TypeBuilder::Page::DialogType::Prompt;
     case ChromeClient::HTMLDialog:
-        return TypeBuilder::Page::DialogType::Beforeunload;
+        return protocol::TypeBuilder::Page::DialogType::Beforeunload;
     }
-    return TypeBuilder::Page::DialogType::Alert;
+    return protocol::TypeBuilder::Page::DialogType::Alert;
 }
 
 } // namespace
@@ -278,37 +278,37 @@ Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
     return cachedResource;
 }
 
-TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(InspectorPageAgent::ResourceType resourceType)
+protocol::TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(InspectorPageAgent::ResourceType resourceType)
 {
     switch (resourceType) {
     case DocumentResource:
-        return TypeBuilder::Page::ResourceType::Document;
+        return protocol::TypeBuilder::Page::ResourceType::Document;
     case FontResource:
-        return TypeBuilder::Page::ResourceType::Font;
+        return protocol::TypeBuilder::Page::ResourceType::Font;
     case ImageResource:
-        return TypeBuilder::Page::ResourceType::Image;
+        return protocol::TypeBuilder::Page::ResourceType::Image;
     case MediaResource:
-        return TypeBuilder::Page::ResourceType::Media;
+        return protocol::TypeBuilder::Page::ResourceType::Media;
     case ScriptResource:
-        return TypeBuilder::Page::ResourceType::Script;
+        return protocol::TypeBuilder::Page::ResourceType::Script;
     case StylesheetResource:
-        return TypeBuilder::Page::ResourceType::Stylesheet;
+        return protocol::TypeBuilder::Page::ResourceType::Stylesheet;
     case TextTrackResource:
-        return TypeBuilder::Page::ResourceType::TextTrack;
+        return protocol::TypeBuilder::Page::ResourceType::TextTrack;
     case XHRResource:
-        return TypeBuilder::Page::ResourceType::XHR;
+        return protocol::TypeBuilder::Page::ResourceType::XHR;
     case FetchResource:
-        return TypeBuilder::Page::ResourceType::Fetch;
+        return protocol::TypeBuilder::Page::ResourceType::Fetch;
     case EventSourceResource:
-        return TypeBuilder::Page::ResourceType::EventSource;
+        return protocol::TypeBuilder::Page::ResourceType::EventSource;
     case WebSocketResource:
-        return TypeBuilder::Page::ResourceType::WebSocket;
+        return protocol::TypeBuilder::Page::ResourceType::WebSocket;
     case ManifestResource:
-        return TypeBuilder::Page::ResourceType::Manifest;
+        return protocol::TypeBuilder::Page::ResourceType::Manifest;
     case OtherResource:
-        return TypeBuilder::Page::ResourceType::Other;
+        return protocol::TypeBuilder::Page::ResourceType::Other;
     }
-    return TypeBuilder::Page::ResourceType::Other;
+    return protocol::TypeBuilder::Page::ResourceType::Other;
 }
 
 InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Resource& cachedResource)
@@ -340,13 +340,13 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Re
     return InspectorPageAgent::OtherResource;
 }
 
-TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson(const Resource& cachedResource)
+protocol::TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson(const Resource& cachedResource)
 {
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
 
 InspectorPageAgent::InspectorPageAgent(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, InspectorDebuggerAgent* debuggerAgent)
-    : InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>("Page")
+    : InspectorBaseAgent<InspectorPageAgent, protocol::Frontend::Page>("Page")
     , m_inspectedFrames(inspectedFrames)
     , m_debuggerAgent(debuggerAgent)
     , m_client(client)
@@ -491,7 +491,7 @@ static WillBeHeapVector<RawPtrWillBeMember<Resource>> cachedResourcesForFrame(Lo
     return result;
 }
 
-void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>& object)
+void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<protocol::TypeBuilder::Page::FrameResourceTree>& object)
 {
     object = buildObjectForFrameTree(m_inspectedFrames->root());
 }
@@ -554,7 +554,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
         return;
     }
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> results;
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> results;
     results = V8ContentSearchUtil::searchInTextByLines(m_debuggerAgent->debugger(), content, query, caseSensitive, isRegex);
     callback->sendSuccess(results);
 }
@@ -702,9 +702,9 @@ void InspectorPageAgent::windowCreated(LocalFrame* created)
         m_client->waitForCreateWindow(created);
 }
 
-PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
+PassRefPtr<protocol::TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
 {
-    RefPtr<TypeBuilder::Page::Frame> frameObject = TypeBuilder::Page::Frame::create()
+    RefPtr<protocol::TypeBuilder::Page::Frame> frameObject = protocol::TypeBuilder::Page::Frame::create()
         .setId(frameId(frame))
         .setLoaderId(IdentifiersFactory::loaderId(frame->loader().documentLoader()))
         .setUrl(urlWithoutFragment(frame->document()->url()).string())
@@ -724,17 +724,17 @@ PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Loc
     return frameObject;
 }
 
-PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame)
+PassRefPtr<protocol::TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame)
 {
-    RefPtr<TypeBuilder::Page::Frame> frameObject = buildObjectForFrame(frame);
-    RefPtr<TypeBuilder::Array<TypeBuilder::Page::FrameResourceTree::Resources>> subresources = TypeBuilder::Array<TypeBuilder::Page::FrameResourceTree::Resources>::create();
-    RefPtr<TypeBuilder::Page::FrameResourceTree> result = TypeBuilder::Page::FrameResourceTree::create()
+    RefPtr<protocol::TypeBuilder::Page::Frame> frameObject = buildObjectForFrame(frame);
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResourceTree::Resources>> subresources = protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResourceTree::Resources>::create();
+    RefPtr<protocol::TypeBuilder::Page::FrameResourceTree> result = protocol::TypeBuilder::Page::FrameResourceTree::create()
         .setFrame(frameObject)
         .setResources(subresources);
 
     WillBeHeapVector<RawPtrWillBeMember<Resource>> allResources = cachedResourcesForFrame(frame, true);
     for (Resource* cachedResource : allResources) {
-        RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
+        RefPtr<protocol::TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = protocol::TypeBuilder::Page::FrameResourceTree::Resources::create()
             .setUrl(urlWithoutFragment(cachedResource->url()).string())
             .setType(cachedResourceTypeJson(*cachedResource))
             .setMimeType(cachedResource->response().mimeType());
@@ -747,19 +747,19 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
 
     WillBeHeapVector<RawPtrWillBeMember<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
     for (Document* import : allImports) {
-        RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
+        RefPtr<protocol::TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = protocol::TypeBuilder::Page::FrameResourceTree::Resources::create()
             .setUrl(urlWithoutFragment(import->url()).string())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
             .setMimeType(import->suggestedMIMEType());
         subresources->addItem(resourceObject);
     }
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::Page::FrameResourceTree>> childrenArray;
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResourceTree>> childrenArray;
     for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
         if (!childrenArray) {
-            childrenArray = TypeBuilder::Array<TypeBuilder::Page::FrameResourceTree>::create();
+            childrenArray = protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResourceTree>::create();
             result->setChildFrames(childrenArray);
         }
         childrenArray->addItem(buildObjectForFrameTree(toLocalFrame(child)));

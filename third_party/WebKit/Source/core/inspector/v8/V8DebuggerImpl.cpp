@@ -378,7 +378,7 @@ void V8DebuggerImpl::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, v8::Global<v8::Object>* newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged)
+bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>& errorData, v8::Global<v8::Object>* newCallFrames, protocol::TypeBuilder::OptOutput<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:
@@ -436,14 +436,14 @@ bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newCo
     // Compile error.
     case 1:
         {
-            RefPtr<TypeBuilder::Debugger::SetScriptSourceError::CompileError> compileError =
-                TypeBuilder::Debugger::SetScriptSourceError::CompileError::create()
+            RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError::CompileError> compileError =
+                protocol::TypeBuilder::Debugger::SetScriptSourceError::CompileError::create()
                     .setMessage(toWTFStringWithTypeCheck(resultTuple->Get(2)))
                     .setLineNumber(resultTuple->Get(3)->ToInteger(m_isolate)->Value())
                     .setColumnNumber(resultTuple->Get(4)->ToInteger(m_isolate)->Value());
 
             *error = toWTFStringWithTypeCheck(resultTuple->Get(1));
-            errorData = TypeBuilder::Debugger::SetScriptSourceError::create();
+            errorData = protocol::TypeBuilder::Debugger::SetScriptSourceError::create();
             errorData->setCompileError(compileError);
             return false;
         }

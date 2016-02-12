@@ -29,7 +29,6 @@
 #ifndef InspectorDOMStorageAgent_h
 #define InspectorDOMStorageAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "modules/ModulesExport.h"
 #include "modules/storage/StorageArea.h"
@@ -46,7 +45,7 @@ class StorageArea;
 
 typedef String ErrorString;
 
-class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, InspectorFrontend::DOMStorage>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
+class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, protocol::Frontend::DOMStorage>, public protocol::Dispatcher::DOMStorageCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDOMStorageAgent> create(Page* page)
     {
@@ -65,14 +64,14 @@ private:
     void disable(ErrorString*) override;
     void restore() override;
 
-    // InspectorBackendDispatcher::DOMStorageCommandHandler overrides.
+    // protocol::Dispatcher::DOMStorageCommandHandler overrides.
     void enable(ErrorString*) override;
-    void getDOMStorageItems(ErrorString*, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>>& items) override;
+    void getDOMStorageItems(ErrorString*, const RefPtr<JSONObject>& storageId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<String>>>& items) override;
     void setDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key, const String& value) override;
     void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key) override;
 
     StorageArea* findStorageArea(ErrorString*, const RefPtr<JSONObject>&, LocalFrame*&);
-    PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
+    PassRefPtr<protocol::TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
     RawPtrWillBeMember<Page> m_page;
     bool m_isEnabled;

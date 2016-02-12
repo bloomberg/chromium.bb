@@ -42,24 +42,24 @@
 #include "platform/JSONValuesForV8.h"
 #include "wtf/text/WTFString.h"
 
-using blink::TypeBuilder::Array;
-using blink::TypeBuilder::Debugger::CallFrame;
-using blink::TypeBuilder::Debugger::CollectionEntry;
-using blink::TypeBuilder::Debugger::FunctionDetails;
-using blink::TypeBuilder::Debugger::GeneratorObjectDetails;
-using blink::TypeBuilder::Runtime::PropertyDescriptor;
-using blink::TypeBuilder::Runtime::InternalPropertyDescriptor;
-using blink::TypeBuilder::Runtime::RemoteObject;
+using blink::protocol::TypeBuilder::Array;
+using blink::protocol::TypeBuilder::Debugger::CallFrame;
+using blink::protocol::TypeBuilder::Debugger::CollectionEntry;
+using blink::protocol::TypeBuilder::Debugger::FunctionDetails;
+using blink::protocol::TypeBuilder::Debugger::GeneratorObjectDetails;
+using blink::protocol::TypeBuilder::Runtime::PropertyDescriptor;
+using blink::protocol::TypeBuilder::Runtime::InternalPropertyDescriptor;
+using blink::protocol::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
 
-static PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> toExceptionDetails(PassRefPtr<JSONObject> object)
+static PassRefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails> toExceptionDetails(PassRefPtr<JSONObject> object)
 {
     String text;
     if (!object->getString("text", &text))
         return nullptr;
 
-    RefPtr<TypeBuilder::Runtime::ExceptionDetails> exceptionDetails = TypeBuilder::Runtime::ExceptionDetails::create().setText(text);
+    RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails> exceptionDetails = protocol::TypeBuilder::Runtime::ExceptionDetails::create().setText(text);
     String url;
     if (object->getString("url", &url))
         exceptionDetails->setUrl(url);
@@ -74,7 +74,7 @@ static PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> toExceptionDetails(Pas
 
     RefPtr<JSONArray> stackTrace = object->getArray("stackTrace");
     if (stackTrace && stackTrace->length() > 0) {
-        RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::CallFrame>> frames = TypeBuilder::Array<TypeBuilder::Runtime::CallFrame>::create();
+        RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::CallFrame>> frames = protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::CallFrame>::create();
         for (unsigned i = 0; i < stackTrace->length(); ++i) {
             RefPtr<JSONObject> stackFrame = stackTrace->get(i)->asObject();
             int lineNumber = 0;
@@ -91,7 +91,7 @@ static PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> toExceptionDetails(Pas
             String functionName;
             stackFrame->getString("functionName", &functionName);
 
-            RefPtr<TypeBuilder::Runtime::CallFrame> callFrame = TypeBuilder::Runtime::CallFrame::create()
+            RefPtr<protocol::TypeBuilder::Runtime::CallFrame> callFrame = protocol::TypeBuilder::Runtime::CallFrame::create()
                 .setFunctionName(functionName)
                 .setScriptId(String::number(scriptId))
                 .setUrl(sourceURL)
@@ -100,7 +100,7 @@ static PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> toExceptionDetails(Pas
 
             frames->addItem(callFrame.release());
         }
-        RefPtr<TypeBuilder::Runtime::StackTrace> stack = TypeBuilder::Runtime::StackTrace::create()
+        RefPtr<protocol::TypeBuilder::Runtime::StackTrace> stack = protocol::TypeBuilder::Runtime::StackTrace::create()
             .setCallFrames(frames.release());
         exceptionDetails->setStack(stack.release());
     }
@@ -130,7 +130,7 @@ InjectedScript::~InjectedScript()
 {
 }
 
-void InjectedScript::evaluate(ErrorString* errorString, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::evaluate(ErrorString* errorString, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>* result, protocol::TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "evaluate");
@@ -142,7 +142,7 @@ void InjectedScript::evaluate(ErrorString* errorString, const String& expression
     makeEvalCall(errorString, function, result, wasThrown, exceptionDetails);
 }
 
-void InjectedScript::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const String& arguments, bool returnByValue, bool generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown)
+void InjectedScript::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const String& arguments, bool returnByValue, bool generatePreview, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>* result, protocol::TypeBuilder::OptOutput<bool>* wasThrown)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "callFunctionOn");
@@ -154,7 +154,7 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String& obje
     makeEvalCall(errorString, function, result, wasThrown);
 }
 
-void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, bool isAsyncCallStack, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, bool isAsyncCallStack, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<RemoteObject>* result, protocol::TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "evaluateOnCallFrame");
@@ -189,7 +189,7 @@ void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object
     *errorString = "Internal error";
 }
 
-void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location>>& positions)
+void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<Array<protocol::TypeBuilder::Debugger::Location>>& positions)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getStepInPositions");
@@ -203,7 +203,7 @@ void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::
             return;
         }
         if (resultValue->type() == JSONValue::TypeArray) {
-            positions = Array<TypeBuilder::Debugger::Location>::runtimeCast(resultValue);
+            positions = Array<protocol::TypeBuilder::Debugger::Location>::runtimeCast(resultValue);
             return;
         }
     }
@@ -286,7 +286,7 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
     *result = Array<CollectionEntry>::runtimeCast(resultValue);
 }
 
-void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<Array<PropertyDescriptor>>* properties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<Array<PropertyDescriptor>>* properties, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getProperties");
@@ -309,7 +309,7 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
     *properties = Array<PropertyDescriptor>::runtimeCast(result);
 }
 
-void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, RefPtr<Array<InternalPropertyDescriptor>>* properties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, RefPtr<Array<InternalPropertyDescriptor>>* properties, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getInternalProperties");
@@ -357,7 +357,7 @@ PassRefPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
     return Array<CallFrame>::create();
 }
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local<v8::Value> value, const String& groupName, bool generatePreview) const
+PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local<v8::Value> value, const String& groupName, bool generatePreview) const
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "wrapObject");
@@ -370,10 +370,10 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Lo
     if (hadException)
         return nullptr;
     RefPtr<JSONObject> rawResult = toJSONValue(context(), r)->asObject();
-    return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
+    return protocol::TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
+PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "wrapTable");
@@ -388,7 +388,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Loc
     if (hadException)
         return nullptr;
     RefPtr<JSONObject> rawResult = toJSONValue(context(), r)->asObject();
-    return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
+    return protocol::TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 
 v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) const
@@ -474,7 +474,7 @@ void InjectedScript::makeCall(V8FunctionCall& function, RefPtr<JSONValue>* resul
     }
 }
 
-void InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& function, RefPtr<TypeBuilder::Runtime::RemoteObject>* objectResult, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& function, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>* objectResult, protocol::TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
 {
     RefPtr<JSONValue> result;
     makeCall(function, &result);
@@ -503,18 +503,18 @@ void InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& func
         if (objectExceptionDetails)
             *exceptionDetails = toExceptionDetails(objectExceptionDetails.release());
     }
-    *objectResult = TypeBuilder::Runtime::RemoteObject::runtimeCast(resultObj);
+    *objectResult = protocol::TypeBuilder::Runtime::RemoteObject::runtimeCast(resultObj);
     *wasThrown = wasThrownVal;
 }
 
-void InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, RefPtr<JSONValue>* result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();
     if (tryCatch.HasCaught()) {
         v8::Local<v8::Message> message = tryCatch.Message();
         String text = !message.IsEmpty() ? toWTFStringWithTypeCheck(message->Get()) : "Internal error";
-        *exceptionDetails = TypeBuilder::Runtime::ExceptionDetails::create().setText(text);
+        *exceptionDetails = protocol::TypeBuilder::Runtime::ExceptionDetails::create().setText(text);
     } else {
         *result = toJSONValue(function.context(), resultValue);
         if (!*result)

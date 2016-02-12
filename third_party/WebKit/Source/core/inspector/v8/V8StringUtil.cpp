@@ -112,9 +112,9 @@ Vector<std::pair<int, String>> scriptRegexpMatchesByLines(const V8Regex& regex, 
     return result;
 }
 
-PassRefPtr<TypeBuilder::Debugger::SearchMatch> buildObjectForSearchMatch(int lineNumber, const String& lineContent)
+PassRefPtr<protocol::TypeBuilder::Debugger::SearchMatch> buildObjectForSearchMatch(int lineNumber, const String& lineContent)
 {
-    return TypeBuilder::Debugger::SearchMatch::create()
+    return protocol::TypeBuilder::Debugger::SearchMatch::create()
         .setLineNumber(lineNumber)
         .setLineContent(lineContent)
         .release();
@@ -167,9 +167,9 @@ String findSourceMapURL(const String& content, bool multiline)
     return findMagicComment(content, "sourceMappingURL", multiline);
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> searchInTextByLines(V8Debugger* debugger, const String& text, const String& query, const bool caseSensitive, const bool isRegex)
+PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> searchInTextByLines(V8Debugger* debugger, const String& text, const String& query, const bool caseSensitive, const bool isRegex)
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> result = TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> result = protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>::create();
     OwnPtr<V8Regex> regex = createSearchRegex(static_cast<V8DebuggerImpl*>(debugger), query, caseSensitive, isRegex);
     Vector<std::pair<int, String>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
 

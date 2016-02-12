@@ -29,7 +29,6 @@
 #ifndef InspectorDatabaseAgent_h
 #define InspectorDatabaseAgent_h
 
-#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -47,7 +46,7 @@ class Page;
 
 typedef String ErrorString;
 
-class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, InspectorFrontend::Database>, public InspectorBackendDispatcher::DatabaseCommandHandler {
+class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>, public protocol::Dispatcher::DatabaseCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDatabaseAgent> create(Page* page)
@@ -63,7 +62,7 @@ public:
 
     // Called from the front-end.
     void enable(ErrorString*) override;
-    void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String>>& names) override;
+    void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<protocol::TypeBuilder::Array<String>>& names) override;
     void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback>) override;
 
     void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);

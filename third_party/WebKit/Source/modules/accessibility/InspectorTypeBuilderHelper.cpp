@@ -4,17 +4,17 @@
 
 #include "modules/accessibility/InspectorTypeBuilderHelper.h"
 
-#include "core/InspectorTypeBuilder.h"
 #include "core/dom/DOMNodeIds.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
 
 using namespace HTMLNames;
-using TypeBuilder::Accessibility::AXValueNativeSourceType;
-using TypeBuilder::Accessibility::AXRelatedNode;
-using TypeBuilder::Accessibility::AXValueSourceType;
+using protocol::TypeBuilder::Accessibility::AXValueNativeSourceType;
+using protocol::TypeBuilder::Accessibility::AXRelatedNode;
+using protocol::TypeBuilder::Accessibility::AXValueSourceType;
 
 PassRefPtr<AXProperty> createProperty(String name, PassRefPtr<AXValue> value)
 {
@@ -24,27 +24,27 @@ PassRefPtr<AXProperty> createProperty(String name, PassRefPtr<AXValue> value)
 
 PassRefPtr<AXProperty> createProperty(AXGlobalStates::Enum name, PassRefPtr<AXValue> value)
 {
-    return createProperty(TypeBuilder::getEnumConstantValue(name), value);
+    return createProperty(protocol::TypeBuilder::getEnumConstantValue(name), value);
 }
 
 PassRefPtr<AXProperty> createProperty(AXLiveRegionAttributes::Enum name, PassRefPtr<AXValue> value)
 {
-    return createProperty(TypeBuilder::getEnumConstantValue(name), value);
+    return createProperty(protocol::TypeBuilder::getEnumConstantValue(name), value);
 }
 
 PassRefPtr<AXProperty> createProperty(AXRelationshipAttributes::Enum name, PassRefPtr<AXValue> value)
 {
-    return createProperty(TypeBuilder::getEnumConstantValue(name), value);
+    return createProperty(protocol::TypeBuilder::getEnumConstantValue(name), value);
 }
 
 PassRefPtr<AXProperty> createProperty(AXWidgetAttributes::Enum name, PassRefPtr<AXValue> value)
 {
-    return createProperty(TypeBuilder::getEnumConstantValue(name), value);
+    return createProperty(protocol::TypeBuilder::getEnumConstantValue(name), value);
 }
 
 PassRefPtr<AXProperty> createProperty(AXWidgetStates::Enum name, PassRefPtr<AXValue> value)
 {
-    return createProperty(TypeBuilder::getEnumConstantValue(name), value);
+    return createProperty(protocol::TypeBuilder::getEnumConstantValue(name), value);
 }
 
 String ignoredReasonName(AXIgnoredReason reason)
@@ -150,7 +150,7 @@ PassRefPtr<AXValue> createRelatedNodeListValue(const AXObject* axObject, String*
 {
     RefPtr<AXValue> axValue = AXValue::create().setType(valueType);
     RefPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObject, name);
-    RefPtr<TypeBuilder::Array<AXRelatedNode>> relatedNodes = TypeBuilder::Array<AXRelatedNode>::create();
+    RefPtr<protocol::TypeBuilder::Array<AXRelatedNode>> relatedNodes = protocol::TypeBuilder::Array<AXRelatedNode>::create();
     relatedNodes->addItem(relatedNode);
     axValue->setRelatedNodes(relatedNodes);
     return axValue;
@@ -158,7 +158,7 @@ PassRefPtr<AXValue> createRelatedNodeListValue(const AXObject* axObject, String*
 
 PassRefPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObjects, AXValueType::Enum valueType)
 {
-    RefPtr<TypeBuilder::Array<AXRelatedNode>> frontendRelatedNodes = TypeBuilder::Array<AXRelatedNode>::create();
+    RefPtr<protocol::TypeBuilder::Array<AXRelatedNode>> frontendRelatedNodes = protocol::TypeBuilder::Array<AXRelatedNode>::create();
     for (unsigned i = 0; i < relatedObjects.size(); i++) {
         RefPtr<AXRelatedNode> frontendRelatedNode = relatedNodeForAXObject(relatedObjects[i]->object, &(relatedObjects[i]->text));
         if (frontendRelatedNode)
@@ -171,7 +171,7 @@ PassRefPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObj
 
 PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AXObjectVector& axObjects, AXValueType::Enum valueType)
 {
-    RefPtr<TypeBuilder::Array<AXRelatedNode>> relatedNodes = TypeBuilder::Array<AXRelatedNode>::create();
+    RefPtr<protocol::TypeBuilder::Array<AXRelatedNode>> relatedNodes = protocol::TypeBuilder::Array<AXRelatedNode>::create();
     for (unsigned i = 0; i < axObjects.size(); i++) {
         RefPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObjects[i].get());
         if (relatedNode)

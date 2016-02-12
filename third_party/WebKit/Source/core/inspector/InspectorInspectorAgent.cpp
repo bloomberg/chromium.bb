@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
-#include "core/InspectorFrontend.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
@@ -47,7 +46,7 @@ static const char inspectorAgentEnabled[] = "inspectorAgentEnabled";
 }
 
 InspectorInspectorAgent::InspectorInspectorAgent()
-    : InspectorBaseAgent<InspectorInspectorAgent, InspectorFrontend::Inspector>("Inspector")
+    : InspectorBaseAgent<InspectorInspectorAgent, protocol::Frontend::Inspector>("Inspector")
 {
 }
 
@@ -87,7 +86,7 @@ void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const Strin
     }
 }
 
-void InspectorInspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
+void InspectorInspectorAgent::inspect(PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
 {
     if (frontend() && m_state->booleanProperty(InspectorAgentState::inspectorAgentEnabled, false))
         frontend()->inspect(objectToInspect, hints);

@@ -27,7 +27,7 @@ PassOwnPtrWillBeRawPtr<InspectorEmulationAgent> InspectorEmulationAgent::create(
 }
 
 InspectorEmulationAgent::InspectorEmulationAgent(WebLocalFrameImpl* webLocalFrameImpl, Client* client)
-    : InspectorBaseAgent<InspectorEmulationAgent, InspectorFrontend::Emulation>("Emulation")
+    : InspectorBaseAgent<InspectorEmulationAgent, protocol::Frontend::Emulation>("Emulation")
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_client(client)
 {
