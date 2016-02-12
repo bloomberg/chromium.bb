@@ -323,6 +323,8 @@ Response ServiceWorkerHandler::Disable() {
   enabled_ = false;
 
   ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
+  for (const auto registration_id : force_update_enabled_registrations_)
+    context_->SetForceUpdateOnPageLoad(registration_id, false);
   for (const auto& pair : attached_hosts_)
     pair.second->DetachClient();
   attached_hosts_.clear();
@@ -423,6 +425,10 @@ Response ServiceWorkerHandler::SetForceUpdateOnPageLoad(
   int64_t id = kInvalidServiceWorkerRegistrationId;
   if (!base::StringToInt64(registration_id, &id))
     return CreateInvalidVersionIdErrorResponse();
+  if (force_update_on_page_load)
+    force_update_enabled_registrations_.insert(id);
+  else
+    force_update_enabled_registrations_.erase(id);
   context_->SetForceUpdateOnPageLoad(id, force_update_on_page_load);
   return Response::OK();
 }

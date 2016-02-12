@@ -100,6 +100,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   std::set<GURL> urls_;
   scoped_refptr<ServiceWorkerContextWatcher> context_watcher_;
   RenderFrameHostImpl* render_frame_host_;
+  std::set<int> force_update_enabled_registrations_;
 
   base::WeakPtrFactory<ServiceWorkerHandler> weak_factory_;
 
