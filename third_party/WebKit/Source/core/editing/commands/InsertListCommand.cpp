@@ -390,9 +390,11 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
         // Place list item into adjoining lists.
         const RefPtrWillBeRawPtr<HTMLLIElement> listItemElement = HTMLLIElement::create(document());
         if (previousList)
-            appendNode(listItemElement, previousList);
+            appendNode(listItemElement, previousList, editingState);
         else
-            insertNodeAt(listItemElement, Position::beforeNode(nextList));
+            insertNodeAt(listItemElement, Position::beforeNode(nextList), editingState);
+        if (editingState->isAborted())
+            return;
 
         moveParagraphOverPositionIntoEmptyListItem(start, listItemElement, editingState);
         if (editingState->isAborted())
@@ -431,7 +433,9 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
     if (editingState->isAborted())
         return;
     const RefPtrWillBeRawPtr<HTMLLIElement> listItemElement = HTMLLIElement::create(document());
-    appendNode(listItemElement, listElement);
+    appendNode(listItemElement, listElement, editingState);
+    if (editingState->isAborted())
+        return;
 
     // We inserted the list at the start of the content we're about to move
     // Update the start of content, so we don't try to move the list into itself.  bug 19066
@@ -451,7 +455,9 @@ void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const Visible
 {
     ASSERT(!listItemElement->hasChildren());
     const RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
-    appendNode(placeholder, listItemElement);
+    appendNode(placeholder, listItemElement, editingState);
+    if (editingState->isAborted())
+        return;
     // Inserting list element and list item list may change start of pargraph
     // to move. We calculate start of paragraph again.
     document().updateLayoutIgnorePendingStylesheets();

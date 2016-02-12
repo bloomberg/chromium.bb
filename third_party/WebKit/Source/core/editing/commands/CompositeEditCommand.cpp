@@ -376,13 +376,14 @@ void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRef
     // of an OBJECT element, the ASSERT below may fire since the return
     // value of canHaveChildrenForEditing is not reliable until the layout
     // object of the OBJECT is created. Hence we ignore this check for OBJECTs.
-    // TODO(yosin): We should move following |ASSERT_IN_EDITING_COMPUTER| to
+    // TODO(yosin): We should move following |ASSERT_IN_EDITING_COMMAND|s to
     // |AppendNodeCommand|.
     // TODO(yosin): We should get rid of |canHaveChildrenForEditing()|, since
     // |cloneParagraphUnderNewElement()| attempt to clone non-well-formed HTML,
     // produced by JavaScript.
     ASSERT_IN_EDITING_COMMAND(canHaveChildrenForEditing(parent.get())
         || (parent->isElementNode() && toElement(parent.get())->tagQName() == objectTag));
+    ASSERT_IN_EDITING_COMMAND(parent->hasEditableStyle() || !parent->inActiveDocument());
     applyCommandToComposite(AppendNodeCommand::create(parent, node));
 }
 
