@@ -339,9 +339,9 @@ void CompositeEditCommand::insertNodeAfter(PassRefPtrWillBeRawPtr<Node> insertCh
     }
 }
 
-void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild, const Position& editingPosition)
+void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild, const Position& editingPosition, EditingState* editingState)
 {
-    ASSERT(isEditablePosition(editingPosition, ContentIsEditable, DoNotUpdateStyle));
+    ASSERT_IN_EDITING_COMMAND(isEditablePosition(editingPosition, ContentIsEditable, DoNotUpdateStyle));
     // For editing positions like [table, 0], insert before the table,
     // likewise for replaced elements, brs, etc.
     Position p = editingPosition.parentAnchoredEquivalent();

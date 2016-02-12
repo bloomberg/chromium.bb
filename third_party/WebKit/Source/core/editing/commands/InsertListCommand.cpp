@@ -427,7 +427,9 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
         insertionPos = positionInParentBeforeNode(*listChild);
 
     const RefPtrWillBeRawPtr<HTMLElement> listElement = createHTMLElement(document(), listTag);
-    insertNodeAt(listElement, insertionPos);
+    insertNodeAt(listElement, insertionPos, editingState);
+    if (editingState->isAborted())
+        return;
     const RefPtrWillBeRawPtr<HTMLLIElement> listItemElement = HTMLLIElement::create(document());
     appendNode(listItemElement, listElement);
 

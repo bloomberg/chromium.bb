@@ -109,7 +109,8 @@ protected:
     virtual void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);
     bool isRemovableBlock(const Node*);
     void insertNodeAfter(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild);
-    void insertNodeAt(PassRefPtrWillBeRawPtr<Node>, const Position&);
+    // TODO(yosin): EditingState argument should not be optional.
+    void insertNodeAt(PassRefPtrWillBeRawPtr<Node>, const Position&, EditingState* = ASSERT_NO_EDITING_ABORT);
     void insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<Node>, const Position&);
     void insertNodeBefore(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     void insertParagraphSeparator(bool useDefaultParagraphElement = false, bool pasteBlockqutoeIntoUnquotedArea = false);
