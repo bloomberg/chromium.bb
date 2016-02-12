@@ -37,6 +37,7 @@
 
 #include <wayland-client.h>
 #include "shared/helpers.h"
+#include "shared/zalloc.h"
 #include "shared/os-compatibility.h"
 #include "presentation-time-client-protocol.h"
 
@@ -212,7 +213,7 @@ create_window(struct display *display, int width, int height,
 		 "presentation-shm: %s [Delay %i msecs]", run_mode_name[mode],
 		 commit_delay_msecs);
 
-	window = calloc(1, sizeof *window);
+	window = zalloc(sizeof *window);
 	if (!window)
 		return NULL;
 
@@ -500,7 +501,7 @@ window_create_feedback(struct window *window, uint32_t frame_stamp)
 	if (!pres)
 		return;
 
-	feedback = calloc(1, sizeof *feedback);
+	feedback = zalloc(sizeof *feedback);
 	if (!feedback)
 		return;
 
@@ -678,7 +679,7 @@ display_add_output(struct display *d, uint32_t name, uint32_t version)
 {
 	struct output *o;
 
-	o = calloc(1, sizeof(*o));
+	o = zalloc(sizeof(*o));
 	assert(o);
 
 	o->output = wl_registry_bind(d->registry, name,

@@ -68,6 +68,7 @@ typedef void *EGLContext;
 #include <wayland-client.h>
 #include "shared/cairo-util.h"
 #include "shared/helpers.h"
+#include "shared/zalloc.h"
 #include "xdg-shell-unstable-v5-client-protocol.h"
 #include "text-cursor-position-client-protocol.h"
 #include "shared/os-compatibility.h"
@@ -629,7 +630,7 @@ egl_window_surface_create(struct display *display,
 	if (display->dpy == EGL_NO_DISPLAY)
 		return NULL;
 
-	surface = calloc(1, sizeof *surface);
+	surface = zalloc(sizeof *surface);
 	if (!surface)
 		return NULL;
 

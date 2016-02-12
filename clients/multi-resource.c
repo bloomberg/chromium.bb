@@ -40,6 +40,7 @@
 
 #include <wayland-client.h>
 #include "shared/os-compatibility.h"
+#include "shared/zalloc.h"
 
 struct device {
 	enum { KEYBOARD, POINTER } type;
@@ -87,7 +88,7 @@ xzalloc(size_t s)
 {
 	void *p;
 
-	p = calloc(1, s);
+	p = zalloc(s);
 	if (p == NULL) {
 		fprintf(stderr, "%s: out of memory\n", program_invocation_short_name);
 		exit(EXIT_FAILURE);

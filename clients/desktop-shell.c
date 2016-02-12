@@ -46,6 +46,7 @@
 #include "shared/cairo-util.h"
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
+#include "shared/zalloc.h"
 
 #include "weston-desktop-shell-client-protocol.h"
 
@@ -1203,7 +1204,7 @@ create_output(struct desktop *desktop, uint32_t id)
 {
 	struct output *output;
 
-	output = calloc(1, sizeof *output);
+	output = zalloc(sizeof *output);
 	if (!output)
 		return;
 

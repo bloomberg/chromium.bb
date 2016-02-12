@@ -42,6 +42,7 @@
 #include <EGL/eglext.h>
 
 #include "shared/helpers.h"
+#include "shared/zalloc.h"
 #include "window.h"
 
 #if 0
@@ -215,7 +216,7 @@ egl_state_create(struct wl_display *display)
 	EGLint major, minor, n;
 	EGLBoolean ret;
 
-	egl = calloc(1, sizeof *egl);
+	egl = zalloc(sizeof *egl);
 	assert(egl);
 
 	egl->dpy =

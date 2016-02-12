@@ -34,6 +34,7 @@
 
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
+#include "shared/zalloc.h"
 #include "presentation-time-client-protocol.h"
 
 typedef void (*print_info_t)(void *info);
@@ -138,7 +139,7 @@ xmalloc(size_t s)
 static void *
 xzalloc(size_t s)
 {
-	return fail_on_null(calloc(1, s));
+	return fail_on_null(zalloc(s));
 }
 
 static char *

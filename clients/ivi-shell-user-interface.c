@@ -40,6 +40,7 @@
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
+#include "shared/zalloc.h"
 #include "ivi-application-client-protocol.h"
 #include "ivi-hmi-controller-client-protocol.h"
 
@@ -177,7 +178,7 @@ fail_on_null(void *p, size_t size, char *file, int32_t line)
 static void *
 mem_alloc(size_t size, char *file, int32_t line)
 {
-	return fail_on_null(calloc(1, size), size, file, line);
+	return fail_on_null(zalloc(size), size, file, line);
 }
 
 #define MEM_ALLOC(s) mem_alloc((s),__FILE__,__LINE__)

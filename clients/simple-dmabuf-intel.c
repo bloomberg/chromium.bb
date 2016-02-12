@@ -40,6 +40,7 @@
 #include <drm_fourcc.h>
 
 #include <wayland-client.h>
+#include "shared/zalloc.h"
 #include "xdg-shell-unstable-v5-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
@@ -310,7 +311,7 @@ create_window(struct display *display, int width, int height)
 	int i;
 	int ret;
 
-	window = calloc(1, sizeof *window);
+	window = zalloc(sizeof *window);
 	if (!window)
 		return NULL;
 

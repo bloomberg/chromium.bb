@@ -36,6 +36,7 @@
 #include <wayland-client.h>
 #include "window.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
+#include "shared/zalloc.h"
 
 struct fs_output {
 	struct wl_list link;
@@ -460,7 +461,11 @@ output_handler(struct output *output, void *data)
 		if (fsout->output == output)
 			return;
 
-	fsout = calloc(1, sizeof *fsout);
+	fsout = zalloc(sizeof *fsout);
+	if (fsout == NULL) {
+		fprintf(stderr, "out of memory in output_handler\n");
+		return;
+	}
 	fsout->output = output;
 	wl_list_insert(&fullscreen->output_list, &fsout->link);
 }
