@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.externalnav;
 
 import android.annotation.SuppressLint;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -1190,6 +1189,15 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         assertNull(mDelegate.startActivityIntent.getPackage());
     }
 
+    private static ResolveInfo newResolveInfo(String packageName, String name) {
+        ActivityInfo ai = new ActivityInfo();
+        ai.packageName = packageName;
+        ai.name = name;
+        ResolveInfo ri = new ResolveInfo();
+        ri.activityInfo = ai;
+        return ri;
+    }
+
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {
         private Context mContext;
 
@@ -1198,47 +1206,49 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public List<ComponentName> queryIntentActivities(Intent intent) {
-            List<ComponentName> list = new ArrayList<ComponentName>();
+        public List<ResolveInfo> queryIntentActivities(Intent intent) {
+            List<ResolveInfo> list = new ArrayList<ResolveInfo>();
             // TODO(yfriedman): We shouldn't have a separate global override just for tests - we
             // should mimic the appropriate intent resolution intead.
             if (mQueryIntentOverride != null) {
                 if (mQueryIntentOverride.booleanValue()) {
-                    list.add(new ComponentName("foo", "foo"));
+                    list.add(newResolveInfo("foo", "foo"));
                 } else {
                     return list;
                 }
             }
             if (intent.getDataString().startsWith("http://m.youtube.com")
                     || intent.getDataString().startsWith("http://youtube.com")) {
-                list.add(new ComponentName("youtube", "youtube"));
+                list.add(newResolveInfo("youtube", "youtube"));
             } else if (intent.getDataString().startsWith(PLUS_STREAM_URL)) {
-                list.add(new ComponentName("plus", "plus"));
+                list.add(newResolveInfo("plus", "plus"));
             } else if (intent.getDataString().startsWith(CALENDAR_URL)) {
-                list.add(new ComponentName("calendar", "calendar"));
+                list.add(newResolveInfo("calendar", "calendar"));
             } else if (intent.getDataString().startsWith("sms")) {
-                list.add(new ComponentName(
+                list.add(newResolveInfo(
                         TEXT_APP_1_PACKAGE_NAME, TEXT_APP_1_PACKAGE_NAME + ".cls"));
-                list.add(new ComponentName(
+                list.add(newResolveInfo(
                         TEXT_APP_2_PACKAGE_NAME, TEXT_APP_2_PACKAGE_NAME + ".cls"));
             } else {
-                list.add(new ComponentName("foo", "foo"));
+                list.add(newResolveInfo("foo", "foo"));
             }
             return list;
         }
 
         @Override
         public boolean willChromeHandleIntent(Intent intent) {
-            return !isSpecializedHandlerAvailable(intent);
+            return !isSpecializedHandlerAvailable(queryIntentActivities(intent));
         }
 
         @Override
-        public boolean isSpecializedHandlerAvailable(Intent intent) {
-            String data = intent.getDataString();
-            return (data.startsWith("http://youtube.com")
-                    || data.startsWith("http://m.youtube.com")
-                    || data.startsWith(CALENDAR_URL)
-                    || data.startsWith("wtai://wp/"));
+        public boolean isSpecializedHandlerAvailable(List<ResolveInfo> resolveInfos) {
+            for (ResolveInfo resolveInfo : resolveInfos) {
+                String packageName = resolveInfo.activityInfo.packageName;
+                if (packageName.equals("youtube") || packageName.equals("calendar")) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
@@ -1389,24 +1399,12 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
             List<ResolveInfo> resolves = new ArrayList<ResolveInfo>();
             if (intent.getDataString().startsWith("market:")) {
-                ResolveInfo info = new ResolveInfo();
-                info.activityInfo = new ActivityInfo();
-                info.activityInfo.packageName = "market";
-                info.activityInfo.name = "market";
-                resolves.add(info);
+                resolves.add(newResolveInfo("market", "market"));
             } else if (intent.getDataString().startsWith("http://m.youtube.com")
                     ||  intent.getDataString().startsWith("http://youtube.com")) {
-                ResolveInfo youTubeApp = new ResolveInfo();
-                youTubeApp.activityInfo = new ActivityInfo();
-                youTubeApp.activityInfo.packageName = "youtube";
-                youTubeApp.activityInfo.name = "youtube";
-                resolves.add(youTubeApp);
+                resolves.add(newResolveInfo("youtube", "youtube"));
             } else {
-                ResolveInfo fooApp = new ResolveInfo();
-                fooApp.activityInfo = new ActivityInfo();
-                fooApp.activityInfo.packageName = "foo";
-                fooApp.activityInfo.name = "foo";
-                resolves.add(fooApp);
+                resolves.add(newResolveInfo("foo", "foo"));
             }
             return resolves;
         }

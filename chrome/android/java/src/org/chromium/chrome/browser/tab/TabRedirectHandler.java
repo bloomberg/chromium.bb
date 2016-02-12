@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tab;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.text.TextUtils;
@@ -14,6 +15,7 @@ import android.text.TextUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.PageTransition;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -215,6 +217,15 @@ public class TabRedirectHandler {
         return mLastCommittedEntryIndexBeforeStartingNavigation;
     }
 
+    private static List<ComponentName> getIntentHandlers(Context context, Intent intent) {
+        List<ResolveInfo> list = context.getPackageManager().queryIntentActivities(intent, 0);
+        List<ComponentName> nameList = new ArrayList<ComponentName>();
+        for (ResolveInfo r : list) {
+            nameList.add(new ComponentName(r.activityInfo.packageName, r.activityInfo.name));
+        }
+        return nameList;
+    }
+
     /**
      * @return whether |intent| has a new resolver against |mIntentHistory| or not.
      */
@@ -225,9 +236,9 @@ public class TabRedirectHandler {
             return false;
         }
 
-        List<ComponentName> newList = IntentUtils.getIntentHandlers(mContext, intent);
+        List<ComponentName> newList = getIntentHandlers(mContext, intent);
         if (mCachedResolvers.isEmpty()) {
-            mCachedResolvers.addAll(IntentUtils.getIntentHandlers(mContext, mInitialIntent));
+            mCachedResolvers.addAll(getIntentHandlers(mContext, mInitialIntent));
         }
         for (ComponentName name : newList) {
             if (!mCachedResolvers.contains(name)) {

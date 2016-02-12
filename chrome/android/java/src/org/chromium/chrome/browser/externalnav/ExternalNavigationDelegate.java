@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.Tab;
@@ -20,7 +20,7 @@ interface ExternalNavigationDelegate {
     /**
      * Get the list of component name of activities which can resolve |intent|.
      */
-    List<ComponentName> queryIntentActivities(Intent intent);
+    List<ResolveInfo> queryIntentActivities(Intent intent);
 
     /**
      * Determine if Chrome is the default or only handler for a given intent. If true, Chrome
@@ -32,7 +32,7 @@ interface ExternalNavigationDelegate {
      * Search for intent handlers that are specific to this URL aka, specialized apps like
      * google maps or youtube
      */
-    boolean isSpecializedHandlerAvailable(Intent intent);
+    boolean isSpecializedHandlerAvailable(List<ResolveInfo> intent);
 
     /**
      * Get the name of the package of the currently running activity so that incoming intents

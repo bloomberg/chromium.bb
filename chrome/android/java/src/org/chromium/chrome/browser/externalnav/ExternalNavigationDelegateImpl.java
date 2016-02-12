@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.externalnav;
 
 import android.Manifest.permission;
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
@@ -36,7 +35,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
@@ -208,8 +206,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public List<ComponentName> queryIntentActivities(Intent intent) {
-        return IntentUtils.getIntentHandlers(mApplicationContext, intent);
+    public List<ResolveInfo> queryIntentActivities(Intent intent) {
+        return mApplicationContext.getPackageManager().queryIntentActivities(intent,
+                PackageManager.GET_RESOLVED_FILTER);
     }
 
     @Override
@@ -218,8 +217,32 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean isSpecializedHandlerAvailable(Intent intent) {
-        return isPackageSpecializedHandler(mApplicationContext, null, intent);
+    public boolean isSpecializedHandlerAvailable(List<ResolveInfo> infos) {
+        return isPackageSpecializedHandler(infos, null);
+    }
+
+    private static boolean isPackageSpecializedHandler(List<ResolveInfo> handlers,
+            String packageName) {
+        if (handlers == null || handlers.size() == 0) return false;
+        for (ResolveInfo resolveInfo : handlers) {
+            IntentFilter filter = resolveInfo.filter;
+            if (filter == null) {
+                // No intent filter matches this intent?
+                // Error on the side of staying in the browser, ignore
+                continue;
+            }
+            if (filter.countDataAuthorities() == 0 || filter.countDataPaths() == 0) {
+                // Generic handler, skip
+                continue;
+            }
+            if (TextUtils.isEmpty(packageName)) return true;
+            ActivityInfo activityInfo = resolveInfo.activityInfo;
+            if (activityInfo == null) continue;
+            if (!activityInfo.packageName.equals(packageName)) continue;
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -236,24 +259,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         try {
             List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
                     intent, PackageManager.GET_RESOLVED_FILTER);
-            if (handlers == null || handlers.size() == 0) return false;
-            for (ResolveInfo resolveInfo : handlers) {
-                IntentFilter filter = resolveInfo.filter;
-                if (filter == null) {
-                    // No intent filter matches this intent?
-                    // Error on the side of staying in the browser, ignore
-                    continue;
-                }
-                if (filter.countDataAuthorities() == 0 || filter.countDataPaths() == 0) {
-                    // Generic handler, skip
-                    continue;
-                }
-                if (TextUtils.isEmpty(packageName)) return true;
-                ActivityInfo activityInfo = resolveInfo.activityInfo;
-                if (activityInfo == null) continue;
-                if (!activityInfo.packageName.equals(packageName)) continue;
-                return true;
-            }
+            return isPackageSpecializedHandler(handlers, packageName);
         } catch (RuntimeException e) {
             logTransactionTooLargeOrRethrow(e, intent);
         }
