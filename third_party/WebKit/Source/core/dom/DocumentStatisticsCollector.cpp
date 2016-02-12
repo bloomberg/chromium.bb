@@ -34,7 +34,7 @@ const double kMozScoreSaturation = 175.954539583; // 6 * sqrt(kTextContentLength
 const double kMozScoreAllSqrtSaturation = 189.73665961; // 6 * sqrt(kTextContentLengthSaturation);
 const double kMozScoreAllLinearSaturation = 6 * kTextContentLengthSaturation;
 
-unsigned textContentLengthSaturated(Element& root)
+unsigned textContentLengthSaturated(const Element& root)
 {
     unsigned length = 0;
     // This skips shadow DOM intentionally, to match the JavaScript implementation.
@@ -143,6 +143,7 @@ bool isGoodForScoring(const WebDistillabilityFeatures& features, const Element& 
 void collectFeatures(Element& root, WebDistillabilityFeatures& features, bool underListItem = false)
 {
     for (Node& node : NodeTraversal::childrenOf(root)) {
+        bool isListItem = false;
         if (!node.isElementNode()) {
             continue;
         }
@@ -179,9 +180,9 @@ void collectFeatures(Element& root, WebDistillabilityFeatures& features, bool un
                 features.mozScoreAllLinear = std::min(features.mozScoreAllLinear, kMozScoreAllLinearSaturation);
             }
         } else if (element.hasTagName(liTag)) {
-            underListItem = true;
+            isListItem = true;
         }
-        collectFeatures(element, features, underListItem);
+        collectFeatures(element, features, underListItem || isListItem);
     }
 }
 

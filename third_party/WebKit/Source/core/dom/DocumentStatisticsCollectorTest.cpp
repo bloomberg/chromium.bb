@@ -121,15 +121,16 @@ TEST_F(DocumentStatisticsCollectorTest, CountScore)
         "<div style='visibility:hidden'><p>1234567</p></div>" // textContentLength = 7, skipped because invisible
         "<p style='opacity:0'>12345678</p>" // textContentLength = 8, skipped because invisible
         "<p><a href='#'>1234 </a>6 <b> 9</b></p>" // textContentLength = 9
+        "<ul><li></li><p>123456789012</p></ul>" // textContentLength = 12
     );
     WebDistillabilityFeatures features = DocumentStatisticsCollector::collectStatistics(document());
 
     EXPECT_DOUBLE_EQ(features.mozScore, sqrt(144 - kParagraphLengthThreshold));
-    EXPECT_DOUBLE_EQ(features.mozScoreAllSqrt, 1 + sqrt(144) + sqrt(9));
-    EXPECT_DOUBLE_EQ(features.mozScoreAllLinear, 1 + 144 + 9);
+    EXPECT_DOUBLE_EQ(features.mozScoreAllSqrt, 1 + sqrt(144) + sqrt(9) + sqrt(12));
+    EXPECT_DOUBLE_EQ(features.mozScoreAllLinear, 1 + 144 + 9 + 12);
 }
 
-// This test checks score calculations are correct.
+// This test checks saturation of score calculations is correct.
 TEST_F(DocumentStatisticsCollectorTest, CountScoreSaturation)
 {
     StringBuilder html;
