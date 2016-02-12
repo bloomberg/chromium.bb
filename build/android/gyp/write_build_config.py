@@ -435,6 +435,7 @@ def main(argv):
     config['proguard'] = {}
     proguard_config = config['proguard']
     proguard_config['input_paths'] = [options.jar_path] + java_full_classpath
+    proguard_config['tested_apk_info'] = ''
 
   # An instrumentation test apk should exclude the dex files that are in the apk
   # under test.
@@ -455,6 +456,7 @@ def main(argv):
     if tested_apk_config['proguard_enabled']:
       assert proguard_enabled, ('proguard must be enabled for instrumentation'
           ' apks if it\'s enabled for the tested apk')
+      proguard_config['tested_apk_info'] = tested_apk_config['proguard_info']
 
   # Dependencies for the final dex file of an apk or a 'deps_dex'.
   if options.type in ['android_apk', 'deps_dex']:
