@@ -747,6 +747,7 @@
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
       'linux_chromium_clobber_rel_ng': 'gyp_release_trybot',
       'linux_chromium_gn_upload': 'gn_linux_upload',
+      'linux_chromium_clang_upload': 'gn_release_bot',
       'cast_shell_linux': 'cast_gn_release_trybot',
       'linux_deterministic': 'swarming_deterministic_gyp_release_bot',
       'linux_ecs_ozone': 'embedded_gyp_debug_bot',
