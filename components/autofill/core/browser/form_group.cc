@@ -20,6 +20,8 @@ void FormGroup::GetMatchingTypes(const base::string16& text,
 
   base::string16 canonicalized_text =
       AutofillProfile::CanonicalizeProfileString(text);
+  if (canonicalized_text.empty())
+    return;
 
   // TODO(crbug.com/574086): Investigate whether to use |app_locale| in case
   // insensitive comparisons.

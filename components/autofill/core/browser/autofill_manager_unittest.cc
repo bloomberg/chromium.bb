@@ -3362,9 +3362,10 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
       {"12", CREDIT_CARD_EXP_2_DIGIT_YEAR},
       {"04/2012", CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
 
-      // Make sure whitespaces are trimmed properly.
+      // Make sure whitespaces and invalid characters are handled properly.
       {"", EMPTY_TYPE},
       {" ", EMPTY_TYPE},
+      {"***", UNKNOWN_TYPE},
       {" Elvis", NAME_FIRST},
       {"Elvis ", NAME_FIRST},
 
