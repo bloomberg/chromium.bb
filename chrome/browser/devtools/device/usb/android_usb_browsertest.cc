@@ -400,28 +400,18 @@ class MockUsbDevice : public UsbDevice {
                   0,
                   base::UTF8ToUTF16(kDeviceManufacturer),
                   base::UTF8ToUTF16(kDeviceModel),
-                  base::UTF8ToUTF16(kDeviceSerial)) {
-    UsbEndpointDescriptor bulk_in;
-    bulk_in.address = 0x81;
-    bulk_in.direction = device::USB_DIRECTION_INBOUND;
-    bulk_in.maximum_packet_size = 512;
-    bulk_in.transfer_type = device::USB_TRANSFER_BULK;
-
-    UsbEndpointDescriptor bulk_out;
-    bulk_out.address = 0x01;
-    bulk_out.direction = device::USB_DIRECTION_OUTBOUND;
-    bulk_out.maximum_packet_size = 512;
-    bulk_out.transfer_type = device::USB_TRANSFER_BULK;
-
-    UsbInterfaceDescriptor interface_desc;
-    interface_desc.interface_number = 0;
-    interface_desc.alternate_setting = 0;
-    interface_desc.interface_class = T::kClass;
-    interface_desc.interface_subclass = T::kSubclass;
-    interface_desc.interface_protocol = T::kProtocol;
-    interface_desc.endpoints.push_back(bulk_in);
-    interface_desc.endpoints.push_back(bulk_out);
-
+                  base::UTF8ToUTF16(kDeviceSerial)),
+        config_desc_(1, false, false, 0) {
+    UsbInterfaceDescriptor interface_desc(0, 0, T::kClass, T::kSubclass,
+                                          T::kProtocol);
+    interface_desc.endpoints.emplace_back(0x81, device::USB_DIRECTION_INBOUND,
+                                          512, device::USB_SYNCHRONIZATION_NONE,
+                                          device::USB_TRANSFER_BULK,
+                                          device::USB_USAGE_DATA, 0);
+    interface_desc.endpoints.emplace_back(0x01, device::USB_DIRECTION_OUTBOUND,
+                                          512, device::USB_SYNCHRONIZATION_NONE,
+                                          device::USB_TRANSFER_BULK,
+                                          device::USB_USAGE_DATA, 0);
     config_desc_.interfaces.push_back(interface_desc);
   }
 

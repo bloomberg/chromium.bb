@@ -23,17 +23,12 @@ UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbInterface_create(env, usb_interface.obj());
 
-  UsbInterfaceDescriptor interface;
-  interface.interface_number =
-      Java_ChromeUsbInterface_getInterfaceNumber(env, wrapper.obj());
-  interface.alternate_setting =
-      Java_ChromeUsbInterface_getAlternateSetting(env, wrapper.obj());
-  interface.interface_class =
-      Java_ChromeUsbInterface_getInterfaceClass(env, wrapper.obj());
-  interface.interface_subclass =
-      Java_ChromeUsbInterface_getInterfaceSubclass(env, wrapper.obj());
-  interface.interface_protocol =
-      Java_ChromeUsbInterface_getInterfaceProtocol(env, wrapper.obj());
+  UsbInterfaceDescriptor interface(
+      Java_ChromeUsbInterface_getInterfaceNumber(env, wrapper.obj()),
+      Java_ChromeUsbInterface_getAlternateSetting(env, wrapper.obj()),
+      Java_ChromeUsbInterface_getInterfaceClass(env, wrapper.obj()),
+      Java_ChromeUsbInterface_getInterfaceSubclass(env, wrapper.obj()),
+      Java_ChromeUsbInterface_getInterfaceProtocol(env, wrapper.obj()));
 
   ScopedJavaLocalRef<jobjectArray> endpoints =
       Java_ChromeUsbInterface_getEndpoints(env, wrapper.obj());

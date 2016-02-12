@@ -121,11 +121,8 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   void InvokeUsbAdded(uint16_t vendor_id,
                       uint16_t product_id,
                       uint8_t interface_class) {
-    device::UsbInterfaceDescriptor interface;
-    interface.interface_number = 1;
-    interface.interface_class = interface_class;
-    device::UsbConfigDescriptor config;
-    config.interfaces.push_back(interface);
+    device::UsbConfigDescriptor config(1, false, false, 0);
+    config.interfaces.emplace_back(1, 0, interface_class, 0, 0);
     usb_service_.AddDevice(
         new device::MockUsbDevice(vendor_id, product_id, config));
   }

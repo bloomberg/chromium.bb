@@ -23,15 +23,11 @@ UsbConfigDescriptor UsbConfigurationAndroid::Convert(
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbConfiguration_create(env, usb_configuration.obj());
 
-  UsbConfigDescriptor config;
-  config.configuration_value =
-      Java_ChromeUsbConfiguration_getConfigurationValue(env, wrapper.obj());
-  config.self_powered =
-      Java_ChromeUsbConfiguration_isSelfPowered(env, wrapper.obj());
-  config.remote_wakeup =
-      Java_ChromeUsbConfiguration_isRemoteWakeup(env, wrapper.obj());
-  config.maximum_power =
-      Java_ChromeUsbConfiguration_getMaxPower(env, wrapper.obj());
+  UsbConfigDescriptor config(
+      Java_ChromeUsbConfiguration_getConfigurationValue(env, wrapper.obj()),
+      Java_ChromeUsbConfiguration_isSelfPowered(env, wrapper.obj()),
+      Java_ChromeUsbConfiguration_isRemoteWakeup(env, wrapper.obj()),
+      Java_ChromeUsbConfiguration_getMaxPower(env, wrapper.obj()));
 
   ScopedJavaLocalRef<jobjectArray> interfaces =
       Java_ChromeUsbConfiguration_getInterfaces(env, wrapper.obj());

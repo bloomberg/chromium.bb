@@ -127,11 +127,8 @@ class UsbApiTest : public ShellApiTest {
     device_client_.reset(new MockDeviceClient());
 
     std::vector<UsbConfigDescriptor> configs;
-    UsbConfigDescriptor config;
-    config.configuration_value = 1;
-    configs.push_back(config);
-    config.configuration_value = 2;
-    configs.push_back(config);
+    configs.emplace_back(1, false, false, 0);
+    configs.emplace_back(2, false, false, 0);
 
     mock_device_ = new MockUsbDevice(0, 0, "Test Manufacturer", "Test Device",
                                      "ABC123", configs);
@@ -168,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, SetConfiguration) {
-  UsbConfigDescriptor config_descriptor;
+  UsbConfigDescriptor config_descriptor(1, false, false, 0);
   EXPECT_CALL(*mock_device_handle_.get(), SetConfiguration(1, _))
       .WillOnce(InvokeCallback<1>(true));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
@@ -179,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, SetConfiguration) {
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
-  UsbConfigDescriptor config_descriptor;
+  UsbConfigDescriptor config_descriptor(1, false, false, 0);
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
   EXPECT_CALL(*mock_device_.get(), GetActiveConfiguration())
       .WillOnce(Return(&config_descriptor));

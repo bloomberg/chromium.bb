@@ -20,20 +20,17 @@ UsbEndpointDescriptor UsbEndpointAndroid::Convert(
   base::android::ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbEndpoint_create(env, usb_endpoint.obj());
 
-  UsbEndpointDescriptor endpoint;
-  endpoint.address = Java_ChromeUsbEndpoint_getAddress(env, wrapper.obj());
-  endpoint.direction = static_cast<UsbEndpointDirection>(
-      Java_ChromeUsbEndpoint_getDirection(env, wrapper.obj()));
-  endpoint.maximum_packet_size =
-      Java_ChromeUsbEndpoint_getMaxPacketSize(env, wrapper.obj());
   jint attributes = Java_ChromeUsbEndpoint_getAttributes(env, wrapper.obj());
-  endpoint.synchronization_type =
-      static_cast<UsbSynchronizationType>((attributes >> 2) & 3);
-  endpoint.usage_type = static_cast<UsbUsageType>((attributes >> 4) & 3);
-  endpoint.transfer_type = static_cast<UsbTransferType>(
-      Java_ChromeUsbEndpoint_getType(env, wrapper.obj()));
-  endpoint.polling_interval =
-      Java_ChromeUsbEndpoint_getInterval(env, wrapper.obj());
+  UsbEndpointDescriptor endpoint(
+      Java_ChromeUsbEndpoint_getAddress(env, wrapper.obj()),
+      static_cast<UsbEndpointDirection>(
+          Java_ChromeUsbEndpoint_getDirection(env, wrapper.obj())),
+      Java_ChromeUsbEndpoint_getMaxPacketSize(env, wrapper.obj()),
+      static_cast<UsbSynchronizationType>((attributes >> 2) & 3),
+      static_cast<UsbTransferType>(
+          Java_ChromeUsbEndpoint_getType(env, wrapper.obj())),
+      static_cast<UsbUsageType>((attributes >> 4) & 3),
+      Java_ChromeUsbEndpoint_getInterval(env, wrapper.obj()));
 
   return endpoint;
 }

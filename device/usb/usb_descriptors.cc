@@ -86,39 +86,47 @@ void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
 
 }  // namespace
 
-UsbEndpointDescriptor::UsbEndpointDescriptor()
-    : address(0),
-      direction(USB_DIRECTION_INBOUND),
-      maximum_packet_size(0),
-      synchronization_type(USB_SYNCHRONIZATION_NONE),
-      transfer_type(USB_TRANSFER_CONTROL),
-      usage_type(USB_USAGE_DATA),
-      polling_interval(0) {
-}
+UsbEndpointDescriptor::UsbEndpointDescriptor(
+    uint8_t address,
+    UsbEndpointDirection direction,
+    uint16_t maximum_packet_size,
+    UsbSynchronizationType synchronization_type,
+    UsbTransferType transfer_type,
+    UsbUsageType usage_type,
+    uint16_t polling_interval)
+    : address(address),
+      direction(direction),
+      maximum_packet_size(maximum_packet_size),
+      synchronization_type(synchronization_type),
+      transfer_type(transfer_type),
+      usage_type(usage_type),
+      polling_interval(polling_interval) {}
 
-UsbEndpointDescriptor::~UsbEndpointDescriptor() {
-}
+UsbEndpointDescriptor::~UsbEndpointDescriptor() = default;
 
-UsbInterfaceDescriptor::UsbInterfaceDescriptor()
-    : interface_number(0),
-      alternate_setting(0),
-      interface_class(0),
-      interface_subclass(0),
-      interface_protocol(0) {
-}
+UsbInterfaceDescriptor::UsbInterfaceDescriptor(uint8_t interface_number,
+                                               uint8_t alternate_setting,
+                                               uint8_t interface_class,
+                                               uint8_t interface_subclass,
+                                               uint8_t interface_protocol)
+    : interface_number(interface_number),
+      alternate_setting(alternate_setting),
+      interface_class(interface_class),
+      interface_subclass(interface_subclass),
+      interface_protocol(interface_protocol) {}
 
-UsbInterfaceDescriptor::~UsbInterfaceDescriptor() {
-}
+UsbInterfaceDescriptor::~UsbInterfaceDescriptor() = default;
 
-UsbConfigDescriptor::UsbConfigDescriptor()
-    : configuration_value(0),
-      self_powered(false),
-      remote_wakeup(false),
-      maximum_power(0) {
-}
+UsbConfigDescriptor::UsbConfigDescriptor(uint8_t configuration_value,
+                                         bool self_powered,
+                                         bool remote_wakeup,
+                                         uint16_t maximum_power)
+    : configuration_value(configuration_value),
+      self_powered(self_powered),
+      remote_wakeup(remote_wakeup),
+      maximum_power(maximum_power) {}
 
-UsbConfigDescriptor::~UsbConfigDescriptor() {
-}
+UsbConfigDescriptor::~UsbConfigDescriptor() = default;
 
 bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
                               base::string16* output) {

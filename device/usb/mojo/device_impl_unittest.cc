@@ -37,20 +37,15 @@ namespace {
 
 class ConfigBuilder {
  public:
-  explicit ConfigBuilder(uint8_t value) { config_.configuration_value = value; }
+  explicit ConfigBuilder(uint8_t value) : config_(value, false, false, 0) {}
 
   ConfigBuilder& AddInterface(uint8_t interface_number,
                               uint8_t alternate_setting,
                               uint8_t class_code,
                               uint8_t subclass_code,
                               uint8_t protocol_code) {
-    UsbInterfaceDescriptor interface;
-    interface.interface_number = interface_number;
-    interface.alternate_setting = alternate_setting;
-    interface.interface_class = class_code;
-    interface.interface_subclass = subclass_code;
-    interface.interface_protocol = protocol_code;
-    config_.interfaces.push_back(interface);
+    config_.interfaces.emplace_back(interface_number, alternate_setting,
+                                    class_code, subclass_code, protocol_code);
     return *this;
   }
 
@@ -219,7 +214,7 @@ class USBDeviceImplTest : public testing::Test {
   void AddMockConfig(const ConfigBuilder& builder) {
     const UsbConfigDescriptor& config = builder.config();
     DCHECK(!ContainsKey(mock_configs_, config.configuration_value));
-    mock_configs_[config.configuration_value] = config;
+    mock_configs_.insert(std::make_pair(config.configuration_value, config));
   }
 
   void AddMockInboundData(const std::vector<uint8_t>& data) {

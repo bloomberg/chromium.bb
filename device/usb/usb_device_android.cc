@@ -83,11 +83,10 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
   } else {
     // Pre-lollipop only the first configuration was supported. Build a basic
     // configuration out of the available interfaces.
-    UsbConfigDescriptor config;
-    config.configuration_value = 1;  // Reasonable guess.
-    config.self_powered = false;     // Arbitrary default.
-    config.remote_wakeup = false;    // Arbitrary default.
-    config.maximum_power = 0;        // Arbitrary default.
+    UsbConfigDescriptor config(1,      // Configuration value, reasonable guess.
+                               false,  // Self powered, arbitrary default.
+                               false,  // Remote wakeup, rbitrary default.
+                               0);     // Maximum power, aitrary default.
 
     ScopedJavaLocalRef<jobjectArray> interfaces =
         Java_ChromeUsbDevice_getInterfaces(env, wrapper.obj());
