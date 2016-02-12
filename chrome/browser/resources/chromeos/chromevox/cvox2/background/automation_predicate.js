@@ -177,12 +177,8 @@ AutomationPredicate.leafDomNode = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.element = function(node) {
-  return node.role == RoleType.staticText ||
-      (node.state.focusable &&
-          (!node.firstChild || node.firstChild.role != RoleType.staticText)) ||
-      (node.role == RoleType.heading && node.children.every(function(n) {
-        return n.role == RoleType.staticText;
-      }));
+  return (node.state .focusable && node.role != RoleType.rootWebArea) ||
+      AutomationPredicate.leafDomNode(node);
 };
 
 /**
@@ -204,9 +200,9 @@ AutomationPredicate.linebreak = function(first, second) {
  * @return {boolean}
  */
 AutomationPredicate.container = function(node) {
-  return (node.state.focusable &&
-      node.role == RoleType.toolbar) ||
-      node.role == RoleType.rootWebArea;
+  return node.role == RoleType.toolbar ||
+      node.role == RoleType.rootWebArea ||
+      node.role == RoleType.window;
 };
 
 /**

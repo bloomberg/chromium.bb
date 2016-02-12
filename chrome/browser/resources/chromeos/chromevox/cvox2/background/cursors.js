@@ -313,18 +313,12 @@ cursors.WrappingCursor.prototype = {
         endpoint = endpoint.parent;
 
       // Case 2: backward (sync downwards to a leaf).
-      if (dir == Dir.BACKWARD) {
-        while (endpoint.lastChild)
-          endpoint = endpoint.lastChild;
-      }
-      var wrappedNode = endpoint;
-      if (!pred(wrappedNode))
-        wrappedNode = AutomationUtil.findNextNode(endpoint, dir, pred);
+      if (dir == Dir.BACKWARD)
+        endpoint = AutomationUtil.findNodePre(endpoint, dir, pred) || endpoint;
 
-      if (wrappedNode) {
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
-        return new cursors.WrappingCursor(wrappedNode, cursors.NODE_INDEX);
-      }
+      cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+        return new cursors.WrappingCursor(endpoint, cursors.NODE_INDEX);
+
     }
     return new cursors.WrappingCursor(result.node, result.index);
   }
