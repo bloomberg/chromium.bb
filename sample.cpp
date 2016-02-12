@@ -11,15 +11,16 @@
 
 #include <memory>
 
-#include "mkvreader.hpp"
 #include "mkvparser.hpp"
+#include "mkvreader.hpp"
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
 #pragma warning(disable : 4996)
 #endif
 
-static const wchar_t* utf8towcs(const char* str) {
+namespace {
+const wchar_t* utf8towcs(const char* str) {
   if (str == NULL)
     return NULL;
 
@@ -55,6 +56,15 @@ bool InputHasCues(const mkvparser::Segment* const segment) {
 
   return true;
 }
+
+bool MasteringMetadataValuePresent(double value) {
+  return value != mkvparser::MasteringMetadata::kValueNotPresent;
+}
+
+bool ColourValuePresent(long long value) {
+  return value != mkvparser::Colour::kValueNotPresent;
+}
+}  // namespace
 
 int main(int argc, char* argv[]) {
   if (argc == 1) {
@@ -224,6 +234,58 @@ int main(int argc, char* argv[]) {
 
       const double rate = pVideoTrack->GetFrameRate();
       printf("\t\tVideo Rate\t\t: %f\n", rate);
+
+      const mkvparser::Colour* const colour = pVideoTrack->GetColour();
+      if (colour) {
+        printf("\t\tVideo Colour:\n");
+        if (ColourValuePresent(colour->matrix))
+          printf("\t\t\tMatrix: %lld\n", colour->matrix);
+        if (ColourValuePresent(colour->bits_per_channel))
+          printf("\t\t\tBitsPerChannel: %lld\n", colour->bits_per_channel);
+        if (ColourValuePresent(colour->chroma_subsampling))
+          printf("\t\t\tChromaSubsampling: %lld\n", colour->chroma_subsampling);
+        if (ColourValuePresent(colour->chroma_siting_horz))
+          printf("\t\t\tChromaSitingHorz: %lld\n", colour->chroma_siting_horz);
+        if (ColourValuePresent(colour->chroma_siting_vert))
+          printf("\t\t\tChromaSitingVert: %lld\n", colour->chroma_siting_vert);
+        if (ColourValuePresent(colour->range))
+          printf("\t\t\tRange: %lld\n", colour->range);
+        if (ColourValuePresent(colour->transfer_function))
+          printf("\t\t\tTransferFunction: %lld\n", colour->transfer_function);
+        if (ColourValuePresent(colour->primaries))
+          printf("\t\t\tPrimaries: %lld\n", colour->primaries);
+        if (ColourValuePresent(colour->max_cll))
+          printf("\t\t\tMaxCLL: %lld\n", colour->max_cll);
+        if (ColourValuePresent(colour->max_fall))
+          printf("\t\t\tMaxFALL: %lld\n", colour->max_fall);
+        if (colour->mastering_metadata) {
+          const mkvparser::MasteringMetadata* const mm =
+              colour->mastering_metadata;
+          printf("\t\t\tMastering Metadata:\n");
+          if (MasteringMetadataValuePresent(mm->luminance_max))
+            printf("\t\t\t\tLuminanceMax: %f\n", mm->luminance_max);
+          if (MasteringMetadataValuePresent(mm->luminance_min))
+            printf("\t\t\t\tLuminanceMin: %f\n", mm->luminance_min);
+          if (mm->r) {
+            printf("\t\t\t\t\tPrimaryRChromaticityX: %f\n", mm->r->x);
+            printf("\t\t\t\t\tPrimaryRChromaticityY: %f\n", mm->r->y);
+          }
+          if (mm->g) {
+            printf("\t\t\t\t\tPrimaryGChromaticityX: %f\n", mm->g->x);
+            printf("\t\t\t\t\tPrimaryGChromaticityY: %f\n", mm->g->y);
+          }
+          if (mm->b) {
+            printf("\t\t\t\t\tPrimaryBChromaticityX: %f\n", mm->b->x);
+            printf("\t\t\t\t\tPrimaryBChromaticityY: %f\n", mm->b->y);
+          }
+          if (mm->white_point) {
+            printf("\t\t\t\t\tWhitePointChromaticityX: %f\n",
+                   mm->white_point->x);
+            printf("\t\t\t\t\tWhitePointChromaticityY: %f\n",
+                   mm->white_point->y);
+          }
+        }
+      }
     }
 
     if (trackType == mkvparser::Track::kAudio) {
