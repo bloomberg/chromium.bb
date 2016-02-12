@@ -295,8 +295,8 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
                                                       std::move(test_results));
     }
     per_iteration_data->Append(std::move(current_iteration_data));
-    summary_root->Set("per_iteration_data", std::move(per_iteration_data));
   }
+  summary_root->Set("per_iteration_data", std::move(per_iteration_data));
 
   JSONFileValueSerializer serializer(path);
   return serializer.Serialize(*summary_root);
