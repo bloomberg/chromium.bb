@@ -362,7 +362,9 @@ class MasteringMetadata {
     delete b_;
     delete white_point_;
   }
-  uint64 MasteringMetadataPayloadSize() const;
+
+  // Returns total size of the MasteringMetadata element.
+  uint64 MasteringMetadataSize() const;
   bool Write(IMkvWriter* writer) const;
 
   // Copies non-null chromaticity.
@@ -379,6 +381,9 @@ class MasteringMetadata {
   float luminance_min;
 
  private:
+  // Returns size of MasteringMetadata child elements.
+  uint64 PayloadSize() const;
+
   PrimaryChromaticity* r_;
   PrimaryChromaticity* g_;
   PrimaryChromaticity* b_;
@@ -401,7 +406,9 @@ class Colour {
         max_fall(kUnspecifiedColourValue),
         mastering_metadata_(NULL) {}
   ~Colour() { delete mastering_metadata_; }
-  uint64 ColourPayloadSize() const;
+
+  // Returns total size of the Colour element.
+  uint64 ColourSize() const;
   bool Write(IMkvWriter* writer) const;
 
   // Deep copies |mastering_metadata|.
@@ -423,6 +430,9 @@ class Colour {
   uint64 max_fall;
 
  private:
+  // Returns size of Colour child elements.
+  uint64 PayloadSize() const;
+
   MasteringMetadata* mastering_metadata_;
 };
 
