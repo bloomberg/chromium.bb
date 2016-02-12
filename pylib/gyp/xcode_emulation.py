@@ -1096,25 +1096,38 @@ class XcodeSettings(object):
       xcode, xcode_build = XcodeVersion()
       cache['DTXcode'] = xcode
       cache['DTXcodeBuild'] = xcode_build
+      compiler = self.xcode_settings[configname].get('GCC_VERSION')
+      if compiler is not None:
+        cache['DTCompiler'] = compiler
 
       sdk_root = self._SdkRoot(configname)
       if not sdk_root:
         sdk_root = self._DefaultSdkRoot()
-      cache['DTSDKName'] = sdk_root
-      if xcode >= '0430':
+      sdk_version = self._GetSdkVersionInfoItem(sdk_root, '--show-sdk-version')
+      cache['DTSDKName'] = sdk_root + sdk_version
+      if xcode >= '0700':
+        cache['DTSDKBuild'] = self._GetSdkVersionInfoItem(
+            sdk_root, '--show-sdk-build-version')
+      elif xcode >= '0430':
         cache['DTSDKBuild'] = self._GetSdkVersionInfoItem(
             sdk_root, '--show-sdk-version')
       else:
         cache['DTSDKBuild'] = cache['BuildMachineOSBuild']
 
       if self.isIOS:
-        cache['DTPlatformName'] = cache['DTSDKName']
+        cache['MinimumOSVersion'] = self.xcode_settings[configname].get(
+            'IPHONEOS_DEPLOYMENT_TARGET')
+        cache['DTPlatformName'] = sdk_root
+        cache['DTPlatformVersion'] = sdk_version
+
         if configname.endswith("iphoneos"):
-          cache['DTPlatformVersion'] = self._GetSdkVersionInfoItem(
-              sdk_root, '--show-sdk-version')
           cache['CFBundleSupportedPlatforms'] = ['iPhoneOS']
+          cache['DTPlatformBuild'] = cache['DTSDKBuild']
         else:
           cache['CFBundleSupportedPlatforms'] = ['iPhoneSimulator']
+          # This is weird, but Xcode sets DTPlatformBuild to an empty field
+          # for simulator builds.
+          cache['DTPlatformBuild'] = ""
       XcodeSettings._plist_cache[configname] = cache
 
     # Include extra plist items that are per-target, not per global

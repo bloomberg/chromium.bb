@@ -6,7 +6,6 @@
     ['CC', '/usr/bin/clang'],
   ],
   'target_defaults': {
-    'product_extension': 'bundle',
     'mac_bundle_resources': [
       'TestApp/English.lproj/InfoPlist.strings',
       'TestApp/English.lproj/MainMenu.xib',
