@@ -9,7 +9,6 @@ import argparse
 import os
 import subprocess
 import sys
-import zipfile
 
 
 PARENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -36,15 +35,8 @@ def main():
                            'isolateserver all artifacts in this dir.')
   args = parser.parse_args()
 
-  # Unzip SKPs into a directory.
-  skps_zip = os.path.join(REPOS_BASE_DIR, 'skps',
-                          'slave%d.zip' % args.slave_num)
-  skps_dir = os.path.join(REPOS_BASE_DIR, 'skps', 'slave%d' % args.slave_num)
-  os.makedirs(skps_dir)
-  with zipfile.ZipFile(skps_zip, 'r') as zip_ref:
-    zip_ref.extractall(skps_dir)
-
   tool_path = os.path.join(SKIA_SRC_DIR, 'out', args.configuration, args.tool)
+  skps_dir = os.path.join(REPOS_BASE_DIR, 'skps', 'slave%d' % args.slave_num)
   resource_path = os.path.join(SKIA_SRC_DIR, 'resources')
 
   cmd = [tool_path]
