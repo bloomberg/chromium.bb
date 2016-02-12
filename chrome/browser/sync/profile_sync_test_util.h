@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -42,29 +41,6 @@ ACTION(QuitUIMessageLoop) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::MessageLoop::current()->QuitWhenIdle();
 }
-
-class ThreadNotifier :  // NOLINT
-    public base::RefCountedThreadSafe<ThreadNotifier> {
- public:
-  explicit ThreadNotifier(base::Thread* notify_thread);
-
-  void Notify(int type, const content::NotificationDetails& details);
-
-  void Notify(int type,
-              const content::NotificationSource& source,
-              const content::NotificationDetails& details);
-
- private:
-  friend class base::RefCountedThreadSafe<ThreadNotifier>;
-  virtual ~ThreadNotifier();
-
-  void NotifyTask(int type,
-                  const content::NotificationSource& source,
-                  const content::NotificationDetails& details);
-
-  base::WaitableEvent done_event_;
-  base::Thread* notify_thread_;
-};
 
 // Helper methods for constructing ProfileSyncService mocks.
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(

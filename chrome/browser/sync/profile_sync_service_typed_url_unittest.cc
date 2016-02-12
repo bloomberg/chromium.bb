@@ -856,8 +856,6 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
 
   history::URLRows rows;
   rows.push_back(history::URLRow(GURL("http://mine.com")));
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
   SendNotificationURLsDeleted(false, false, rows, std::set<GURL>());
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -890,8 +888,6 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveExpired) {
   // Setting expired=true should cause the sync code to ignore this deletion.
   history::URLRows rows;
   rows.push_back(history::URLRow(GURL("http://mine.com")));
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
   SendNotificationURLsDeleted(false, true, rows, std::set<GURL>());
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -925,8 +921,6 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(2U, new_sync_entries.size());
 
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
   SendNotificationURLsDeleted(true, false, history::URLRows(),
                               std::set<GURL>());
 

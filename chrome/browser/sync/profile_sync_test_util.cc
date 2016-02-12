@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -20,36 +19,6 @@
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/startup_controller.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
-
-using content::BrowserThread;
-
-ThreadNotifier::ThreadNotifier(base::Thread* notify_thread)
-    : done_event_(false, false),
-      notify_thread_(notify_thread) {}
-
-void ThreadNotifier::Notify(int type,
-                            const content::NotificationDetails& details) {
-  Notify(type, content::NotificationService::AllSources(), details);
-}
-
-void ThreadNotifier::Notify(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  notify_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadNotifier::NotifyTask, this, type, source, details));
-  done_event_.Wait();
-}
-
-ThreadNotifier::~ThreadNotifier() {}
-
-void ThreadNotifier::NotifyTask(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  content::NotificationService::current()->Notify(type, source, details);
-  done_event_.Signal();
-}
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile) {
