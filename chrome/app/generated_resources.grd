@@ -12258,6 +12258,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE" desc="The title of the auto-signin toast.">
         Signing in as <ph name="username">$1<ex>chef@google.com</ex></ph>
       </message>
+      <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_FIRST_RUN_TITLE" desc="The title of the auto-signin first run dialog.">
+        Automatically sign in across your devices.
+      </message>
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_SMART_LOCK_WELCOME" desc="A warm welcome in the auto-signin toast appearing for users with Google Smart Lock enabled.">
         <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Smart Lock</ex></ph> remembers your passwords and signs you in to apps and sites automatically across devices.
       </message>

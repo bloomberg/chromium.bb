@@ -65,6 +65,7 @@
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
+#include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
 #endif
@@ -286,7 +287,7 @@ void ChromePasswordManagerClient::OnCredentialsChosen(
     const password_manager::CredentialInfo& credential) {
   callback.Run(credential);
   if (credential.type !=
-          password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY) {
+      password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY) {
     PromptUserToEnableAutosigninIfNecessary();
   }
 }
@@ -532,7 +533,10 @@ void ChromePasswordManagerClient::PromptUserToEnableAutosigninIfNecessary() {
     return;
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  // TODO(crbug.com/532876): pop up the dialog.
+  // Dialog is deleted by the Java counterpart after user interacts with it.
+  AutoSigninFirstRunDialogAndroid* auto_signin_first_run_dialog =
+      new AutoSigninFirstRunDialogAndroid(web_contents());
+  auto_signin_first_run_dialog->ShowDialog();
 #else
   PasswordsClientUIDelegateFromWebContents(web_contents())
       ->OnPromptEnableAutoSignin();
