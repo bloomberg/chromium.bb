@@ -782,13 +782,8 @@ TEST(EventTest, PointerEventDetailsPointer) {
   ui::MouseEvent mouse_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
                              gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
   ui::PointerEvent pointer_event_from_mouse(mouse_event);
-  EXPECT_EQ(0.0f, pointer_event_from_mouse.pointer_details().radius_x);
-  EXPECT_EQ(0.0f, pointer_event_from_mouse.pointer_details().radius_y);
-  EXPECT_TRUE(std::isnan(pointer_event_from_mouse.pointer_details().force));
-  EXPECT_EQ(0.0f, pointer_event_from_mouse.pointer_details().tilt_x);
-  EXPECT_EQ(0.0f, pointer_event_from_mouse.pointer_details().tilt_y);
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_MOUSE,
-            pointer_event_from_mouse.pointer_details().pointer_type);
+  EXPECT_EQ(mouse_event.pointer_details(),
+            pointer_event_from_mouse.pointer_details());
 }
 
 }  // namespace ui

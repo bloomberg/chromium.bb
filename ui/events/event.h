@@ -354,6 +354,16 @@ struct EVENTS_EXPORT PointerDetails {
         tilt_x(tilt_x),
         tilt_y(tilt_y) {}
 
+  bool operator==(const PointerDetails& other) const {
+    return pointer_type == other.pointer_type &&
+           radius_x == other.radius_x &&
+           radius_y == other.radius_y &&
+           (force == other.force ||
+            (std::isnan(force) && std::isnan(other.force))) &&
+           tilt_x == other.tilt_x &&
+           tilt_y == other.tilt_y;
+  }
+
   // The type of pointer device.
   EventPointerType pointer_type = EventPointerType::POINTER_TYPE_UNKNOWN;
 
