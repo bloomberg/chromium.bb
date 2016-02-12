@@ -40,7 +40,6 @@ class RendererMediaPlayerManager :
 
   // RenderFrameObserver overrides.
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void WasHidden() override;
 
   // Initializes a MediaPlayerAndroid object in browser process.
   void Initialize(MediaPlayerHostMsg_Initialize_Type type,

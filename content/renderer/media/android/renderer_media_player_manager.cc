@@ -61,22 +61,6 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void RendererMediaPlayerManager::WasHidden() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableMediaSuspend)) {
-    return;
-  }
-
-  // Suspend and release resources of all playing video.
-  for (auto& player_it : media_players_) {
-    media::RendererMediaPlayerInterface* player = player_it.second;
-    if (!player || player->paused() || !player->hasVideo())
-      continue;
-
-    player->SuspendAndReleaseResources();
-  }
-}
-
 void RendererMediaPlayerManager::Initialize(
     MediaPlayerHostMsg_Initialize_Type type,
     int player_id,
