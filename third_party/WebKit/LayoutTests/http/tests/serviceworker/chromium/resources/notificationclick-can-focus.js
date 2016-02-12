@@ -80,11 +80,11 @@ var TESTS = [
 
 self.onmessage = function(e) {
     if (e.data == 'start') {
-        initialize().then(runNextTestOrQuit);
+        e.waitUntil(initialize().then(runNextTestOrQuit));
     } else {
-        initialize().then(function() {
+        e.waitUntil(initialize().then(function() {
             self.postMessage('received unexpected message');
             self.postMessage('quit');
-        });
+        }));
     }
 };

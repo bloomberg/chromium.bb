@@ -1,7 +1,7 @@
 var requests = [];
 
 self.addEventListener('message', function(event) {
-    self.clients.matchAll()
+    event.waitUntil(self.clients.matchAll()
       .then(function(clients) {
           var client_urls = [];
           for(var client of clients){
@@ -10,7 +10,7 @@ self.addEventListener('message', function(event) {
           client_urls = client_urls.sort();
           event.data.port.postMessage(
               {clients: client_urls, requests: requests});
-        });
+        }));
   });
 
 self.addEventListener('fetch', function(event) {

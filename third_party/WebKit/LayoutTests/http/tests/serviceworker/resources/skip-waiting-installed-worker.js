@@ -1,3 +1,5 @@
+// TODO(nhiroki): stop using global states because service workers can be killed
+// at any point (http://crbug.com/558244).
 self.state = 'starting';
 
 self.addEventListener('install', function() {
@@ -14,7 +16,7 @@ self.addEventListener('message', function(event) {
       port.postMessage('FAIL: Worker should be waiting in installed state');
       return;
     }
-    self.skipWaiting()
+    event.waitUntil(self.skipWaiting()
       .then(function(result) {
           if (result !== undefined) {
             port.postMessage('FAIL: Promise should be resolved with undefined');
@@ -29,5 +31,5 @@ self.addEventListener('message', function(event) {
         })
       .catch(function(e) {
           port.postMessage('FAIL: unexpected exception: ' + e);
-        });
+        }));
   });

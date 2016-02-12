@@ -16,8 +16,8 @@ self.addEventListener('activate', function(e) {
   });
 
 self.addEventListener('message', function(e) {
-    self.registration.unregister()
+    e.waitUntil(self.registration.unregister()
       .then(function(result) {
           e.data.port.postMessage({result: result});
-        });
+        }));
   });

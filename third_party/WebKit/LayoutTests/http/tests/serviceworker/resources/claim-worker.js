@@ -1,5 +1,5 @@
 self.addEventListener('message', function(event) {
-    self.clients.claim()
+    event.waitUntil(self.clients.claim()
       .then(function(result) {
           if (result !== undefined) {
               event.data.port.postMessage(
@@ -10,5 +10,5 @@ self.addEventListener('message', function(event) {
         })
       .catch(function(error) {
           event.data.port.postMessage('FAIL: exception: ' + error.name);
-        });
+        }));
   });

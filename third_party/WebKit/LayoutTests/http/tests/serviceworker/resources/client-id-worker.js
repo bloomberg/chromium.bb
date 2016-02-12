@@ -2,7 +2,7 @@ self.onmessage = function(e) {
   var port = e.data.port;
   var message = [];
 
-  Promise.resolve()
+  var promise = Promise.resolve()
     .then(function() {
         // 1st matchAll()
         return self.clients.matchAll().then(function(clients) {
@@ -23,4 +23,5 @@ self.onmessage = function(e) {
         // Send an array containing ids of clients from 1st and 2nd matchAll()
         port.postMessage(message);
       });
+  e.waitUntil(promise);
 };

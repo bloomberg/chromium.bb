@@ -1,5 +1,5 @@
 self.onmessage = function(e) {
-  self.clients.matchAll().then(function(clients) {
+  e.waitUntil(self.clients.matchAll().then(function(clients) {
       clients.forEach(function(client) {
           var messageChannel = new MessageChannel();
           messageChannel.port1.onmessage =
@@ -7,7 +7,7 @@ self.onmessage = function(e) {
           client.postMessage({port: messageChannel.port2},
                              [messageChannel.port2]);
         });
-    });
+    }));
 };
 
 function onMessageViaMessagePort(client, e) {
