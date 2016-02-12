@@ -61,9 +61,6 @@ using content::WebContents;
 
 namespace {
 
-const int kContentEdgeShadowThickness =
-    OpaqueBrowserFrameViewLayout::kContentEdgeShadowThickness;
-
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
@@ -425,7 +422,8 @@ gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {
 }
 
 int OpaqueBrowserFrameView::GetToolbarLeadingCornerClientWidth() const {
-  return browser_view()->GetToolbarBounds().x() - kContentEdgeShadowThickness +
+  return browser_view()->GetToolbarBounds().x() -
+      OpaqueBrowserFrameViewLayout::kContentEdgeShadowThickness +
       GetThemeProvider()->GetImageSkiaNamed(
           IDR_CONTENT_TOP_LEFT_CORNER)->width();
 }
@@ -665,6 +663,9 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
           canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
           separator_rect, true);
     } else {
+      const int kContentEdgeShadowThickness =
+          OpaqueBrowserFrameViewLayout::kContentEdgeShadowThickness;
+
       // Background.  We need to create a separate layer so we can mask off the
       // corners before compositing onto the frame.
       canvas->sk_canvas()->saveLayer(
