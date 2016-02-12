@@ -1194,10 +1194,9 @@ bool Editor::findString(const String& target, FindOptions options)
     return true;
 }
 
-template <typename Strategy>
-static PassRefPtrWillBeRawPtr<Range> findStringAndScrollToVisibleAlgorithm(Editor& editor, const String& target, const EphemeralRangeTemplate<Strategy>& previousMatch, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* previousMatch, FindOptions options)
 {
-    RefPtrWillBeRawPtr<Range> nextMatch = editor.findRangeOfString(target, previousMatch, options);
+    RefPtrWillBeRawPtr<Range> nextMatch = findRangeOfString(target, EphemeralRangeInFlatTree(previousMatch), options);
     if (!nextMatch)
         return nullptr;
 
@@ -1205,13 +1204,6 @@ static PassRefPtrWillBeRawPtr<Range> findStringAndScrollToVisibleAlgorithm(Edito
         ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded, UserScroll);
 
     return nextMatch.release();
-}
-
-PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* range, FindOptions options)
-{
-    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
-        return findStringAndScrollToVisibleAlgorithm<EditingInFlatTreeStrategy>(*this, target, EphemeralRangeInFlatTree(range), options);
-    return findStringAndScrollToVisibleAlgorithm<EditingStrategy>(*this, target, EphemeralRange(range), options);
 }
 
 // TODO(yosin) We should return |EphemeralRange| rather than |Range|. We use

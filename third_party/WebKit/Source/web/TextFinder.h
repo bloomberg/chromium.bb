@@ -131,14 +131,6 @@ private:
     // The squared distance to the closest match is returned in the distanceSquared parameter.
     int nearestFindMatch(const FloatPoint&, float& distanceSquared);
 
-    // TODO(yosin) Templataization of |scopeStringMatchesAlgorithm| will be
-    // gone once |RuntimeEnabledFeatures::selectionForFlatTreeEnabled| is
-    // removed.
-    template <typename Strategy>
-    void scopeStringMatchesAlgorithm(
-        int identifier, const WebString& searchText, const WebFindOptions&,
-        bool reset);
-
     // Select a find-in-page match marker in the current frame using a cache
     // match index returned by nearestFindMatch. Returns the ordinal of the new
     // selected match or -1 in case of error. Also provides the bounding box of
