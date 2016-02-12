@@ -428,32 +428,23 @@ class DownloadExtensionTest : public ExtensionApiTest {
       DownloadItem* item = GetOnRecordManager()->CreateDownloadItem(
           content::DownloadItem::kInvalidId + 1 + i,
           downloads_directory().Append(history_info[i].filename),
-          downloads_directory().Append(history_info[i].filename),
-          url_chain, GURL(),    // URL Chain, referrer
-          std::string(), std::string(), // mime_type, original_mime_type
-          current, current,  // start_time, end_time
-          std::string(), std::string(), // etag, last_modified
-          1, 1,              // received_bytes, total_bytes
-          history_info[i].state,  // state
-          content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-          (history_info[i].state != content::DownloadItem::CANCELLED ?
-              content::DOWNLOAD_INTERRUPT_REASON_NONE :
-              content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED),
-          false);                 // opened
+          downloads_directory().Append(history_info[i].filename), url_chain,
+          GURL(),                        // URL Chain, referrer
+          std::string(), std::string(),  // mime_type, original_mime_type
+          current, current,              // start_time, end_time
+          std::string(), std::string(),  // etag, last_modified
+          1, 1,                          // received_bytes, total_bytes
+          history_info[i].state,         // state
+          history_info[i].danger_type,
+          (history_info[i].state != content::DownloadItem::CANCELLED
+               ? content::DOWNLOAD_INTERRUPT_REASON_NONE
+               : content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED),
+          false);  // opened
       items->push_back(item);
     }
 
     // Order by ID so that they are in the order that we created them.
     std::sort(items->begin(), items->end(), download_id_comparator);
-    // Set the danger type if necessary.
-    for (size_t i = 0; i < count; ++i) {
-      if (history_info[i].danger_type !=
-          content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-        EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
-                  history_info[i].danger_type);
-        items->at(i)->OnContentCheckCompleted(history_info[i].danger_type);
-      }
-    }
     return true;
   }
 
