@@ -8,7 +8,7 @@ http/tests/security/opened-document-security-origin-resets-on-navigation.html [ 
 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Crash ]
 
 # https://crbug.com/495132 - [Assert] content::NavigationEntryImpl::SetBindings.
-http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
+http/tests/history/cross-origin-redirect-on-back.html [ Crash Missing ]
 http/tests/inspector-enabled/console-log-before-frame-navigation.html [ Crash ]
 http/tests/inspector/change-iframe-src.html [ Crash ]
 http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Crash Failure ]
@@ -201,6 +201,7 @@ http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 
 # Uninvestigated failures under http/tests (but outside of http/tests/security):
 http/tests/appcache/remove-cache.html [ Failure ]
+http/tests/history/cross-origin-replace-history-object-child.html [ Failure Crash Timeout ]
 http/tests/inspector-protocol/access-inspected-object.html [ Failure ]
 http/tests/inspector/injected-script-for-origin.html [ Failure ]
 http/tests/inspector/resource-parameters.html [ Failure ]
