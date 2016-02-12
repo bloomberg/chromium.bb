@@ -79,7 +79,7 @@ void GpuRasterizer::RasterizeSource(
 
     SkMultiPictureDraw multi_picture_draw;
     multi_picture_draw.add(sk_surface->getCanvas(), picture.get());
-    multi_picture_draw.draw(msaa_sample_count_ > 0);
+    multi_picture_draw.draw(false);
     write_lock->ReleaseSkSurface();
   }
 }

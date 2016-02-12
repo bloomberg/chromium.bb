@@ -1049,11 +1049,18 @@ void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
     surface_props =
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
-  sk_surface_ = skia::AdoptRef(
-      SkSurface::NewWrappedRenderTarget(gr_context, desc, &surface_props));
+  gr_surface_ =
+      skia::AdoptRef(gr_context->textureProvider()->wrapBackendTexture(
+          desc, kBorrow_GrWrapOwnership));
+  if (gr_surface_)
+    sk_surface_ = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
+        gr_surface_->asRenderTarget(), &surface_props));
 }
 
 void ResourceProvider::ScopedWriteLockGr::ReleaseSkSurface() {
+  DCHECK(gr_surface_);
+  gr_surface_->prepareForExternalIO();
+  gr_surface_.clear();
   sk_surface_.clear();
 }
 

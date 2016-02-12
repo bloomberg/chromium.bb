@@ -42,6 +42,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 
 class GrContext;
+class GrSurface;
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -351,6 +352,7 @@ class CC_EXPORT ResourceProvider
     ResourceProvider::Resource* resource_;
     base::ThreadChecker thread_checker_;
     skia::RefPtr<SkSurface> sk_surface_;
+    skia::RefPtr<GrSurface> gr_surface_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGr);
   };

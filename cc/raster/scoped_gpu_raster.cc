@@ -34,9 +34,6 @@ void ScopedGpuRaster::BeginGpuRaster() {
 }
 
 void ScopedGpuRaster::EndGpuRaster() {
-  class GrContext* gr_context = context_provider_->GrContext();
-  gr_context->flush();
-
   GLES2Interface* gl = context_provider_->ContextGL();
 
   // Restore default GL unpack alignment.  TextureUploader expects this.
