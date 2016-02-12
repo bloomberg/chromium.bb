@@ -2,17 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/android/linker/config.gni")
 import("//build/config/android/rules.gni")
 
 declare_args() {
   # Whether chrome_public_apk should use the crazy linker.
-  chrome_public_apk_use_chromium_linker = true
+  chrome_public_apk_use_chromium_linker = chromium_linker_supported
 
   # Whether chrome_public_apk should use the relocation packer.
-  chrome_public_apk_use_relocation_packer = true
+  # TODO: Enable packed relocations for x64. See: b/20532404
+  chrome_public_apk_use_relocation_packer =
+      chromium_linker_supported && current_cpu != "x64"
 
   # Whether native libraries should be loaded from within the apk.
-  chrome_public_apk_load_library_from_apk = true
+  # Only attempt loading the library from the APK for 64 bit devices
+  # until the number of 32 bit devices which don't support this
+  # approach falls to a minimal level -  http://crbug.com/390618.
+  chrome_public_apk_load_library_from_apk =
+      chromium_linker_supported &&
+      (target_cpu == "arm64" || target_cpu == "x64")
 }
 
 # GYP: //chrome/android/chrome_apk.gypi
@@ -36,13 +44,16 @@ template("chrome_public_apk_tmpl") {
           [ "//chrome/android/java/proguard.flags" ] + _prev_proguard_configs
     }
 
-    if (chromium_linker_supported) {
-      if (!defined(use_chromium_linker)) {
-        use_chromium_linker = chrome_public_apk_use_chromium_linker
+    if (!defined(use_chromium_linker)) {
+      use_chromium_linker = chrome_public_apk_use_chromium_linker
+    }
+
+    if (use_chromium_linker) {
+      if (!defined(load_library_from_apk)) {
+        load_library_from_apk = chrome_public_apk_load_library_from_apk
       }
 
-      # TODO: Enable packed relocations for x64. See: b/20532404
-      if (current_cpu != "x64") {
+      if (!defined(enable_relocation_packing)) {
         enable_relocation_packing = chrome_public_apk_use_relocation_packer
       }
     }

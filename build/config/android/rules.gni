@@ -1325,20 +1325,21 @@ template("android_apk") {
   }
 
   _use_chromium_linker =
-      defined(invoker.use_chromium_linker) && invoker.use_chromium_linker &&
-      chromium_linker_supported
-  _enable_relocation_packing =
-      defined(invoker.enable_relocation_packing) &&
-      invoker.enable_relocation_packing && _use_chromium_linker
+      defined(invoker.use_chromium_linker) && invoker.use_chromium_linker
+  _enable_relocation_packing = defined(invoker.enable_relocation_packing) &&
+                               invoker.enable_relocation_packing
   _load_library_from_apk =
       defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
 
   assert(_use_chromium_linker || true)  # Mark as used.
-  assert(_enable_relocation_packing || true)  # Mark as used.
-
-  assert(
-      !_load_library_from_apk || _use_chromium_linker,
-      "Loading library from the apk requires use" + " of the Chromium linker.")
+  if (_enable_relocation_packing) {
+    assert(_use_chromium_linker,
+           "enable_relocation_packing requires use_chromium_linker")
+  }
+  if (_load_library_from_apk) {
+    assert(_use_chromium_linker,
+           "load_library_from_apk requires use_chromium_linker")
+  }
 
   # The dependency that makes the chromium linker, if any is needed.
   _native_libs_deps = []
