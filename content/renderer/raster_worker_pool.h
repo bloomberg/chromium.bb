@@ -48,8 +48,7 @@ class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
 
   // Runs a task from one of the provided categories. Categories listed first
   // have higher priority.
-  void Run(const std::vector<cc::TaskCategory>& categories,
-           base::ConditionVariable* has_ready_to_run_tasks_cv);
+  void Run(const std::vector<cc::TaskCategory>& categories);
 
   void FlushForTesting();
 
@@ -76,6 +75,14 @@ class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
   class RasterWorkerPoolSequencedTaskRunner;
   friend class RasterWorkerPoolSequencedTaskRunner;
 
+  // Runs a task from one of the provided categories. Categories listed first
+  // have higher priority. Returns false if there were no tasks to run.
+  bool RunTaskWithLockAcquired(const std::vector<cc::TaskCategory>& categories);
+
+  // Run next task for the given category. Caller must acquire |lock_| prior to
+  // calling this function and make sure at least one task is ready to run.
+  void RunTaskInCategoryWithLockAcquired(cc::TaskCategory category);
+
   // Simple Task for the TaskGraphRunner that wraps a closure.
   // This class is used to schedule TaskRunner tasks on the
   // |task_graph_runner_|.
@@ -100,22 +107,6 @@ class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
   void CollectCompletedTasksWithLockAcquired(cc::NamespaceToken token,
                                              cc::Task::Vector* completed_tasks);
 
-  // Runs a task from one of the provided categories. Categories listed first
-  // have higher priority. Returns false if there were no tasks to run.
-  bool RunTaskWithLockAcquired(const std::vector<cc::TaskCategory>& categories);
-
-  // Run next task for the given category. Caller must acquire |lock_| prior to
-  // calling this function and make sure at least one task is ready to run.
-  void RunTaskInCategoryWithLockAcquired(cc::TaskCategory category);
-
-  // Helper function which signals worker threads if tasks are ready to run.
-  void SignalHasReadyToRunTasksWithLockAcquired();
-
-  // Determines if we should run a new task for the given category. This factors
-  // in whether a task is available and whether the count of running tasks is
-  // low enough to start a new one.
-  bool ShouldRunTaskForCategoryWithLockAcquired(cc::TaskCategory category);
-
   // The actual threads where work is done.
   std::vector<scoped_ptr<base::SimpleThread>> threads_;
 
@@ -133,9 +124,9 @@ class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
   // Cached vector to avoid allocation when getting the list of complete
   // tasks.
   cc::Task::Vector completed_tasks_;
-  // Condition variables for foreground and background tasks.
-  base::ConditionVariable has_ready_to_run_foreground_tasks_cv_;
-  base::ConditionVariable has_ready_to_run_background_tasks_cv_;
+  // Condition variable that is waited on by Run() until new tasks are ready to
+  // run or shutdown starts.
+  base::ConditionVariable has_ready_to_run_tasks_cv_;
   // Condition variable that is waited on by origin threads until a namespace
   // has finished running all associated tasks.
   base::ConditionVariable has_namespaces_with_finished_running_tasks_cv_;

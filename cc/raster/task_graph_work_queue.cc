@@ -97,12 +97,9 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
       continue;
 
     // Skip if already running.
-    const auto& running_tasks_for_category =
-        task_namespace.running_tasks.find(node.category);
-    if (running_tasks_for_category != task_namespace.running_tasks.cend() &&
-        std::find(running_tasks_for_category->second.cbegin(),
-                  running_tasks_for_category->second.cend(),
-                  node.task) != running_tasks_for_category->second.cend())
+    if (std::find(task_namespace.running_tasks.begin(),
+                  task_namespace.running_tasks.end(),
+                  node.task) != task_namespace.running_tasks.end())
       continue;
 
     task_namespace.ready_to_run_tasks[node.category].push_back(PrioritizedTask(
@@ -130,12 +127,9 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
       continue;
 
     // Skip if already running.
-    const auto& running_tasks_for_category =
-        task_namespace.running_tasks.find(node.category);
-    if (running_tasks_for_category != task_namespace.running_tasks.cend() &&
-        std::find(running_tasks_for_category->second.cbegin(),
-                  running_tasks_for_category->second.cend(),
-                  node.task) != running_tasks_for_category->second.cend())
+    if (std::find(task_namespace.running_tasks.begin(),
+                  task_namespace.running_tasks.end(),
+                  node.task) != task_namespace.running_tasks.end())
       continue;
 
     DCHECK(std::find(task_namespace.completed_tasks.begin(),
@@ -201,7 +195,7 @@ TaskGraphWorkQueue::PrioritizedTask TaskGraphWorkQueue::GetNextTaskToRun(
   }
 
   // Add task to |running_tasks|.
-  task_namespace->running_tasks[category].push_back(task.task);
+  task_namespace->running_tasks.push_back(task.task);
 
   return task;
 }
@@ -209,15 +203,13 @@ TaskGraphWorkQueue::PrioritizedTask TaskGraphWorkQueue::GetNextTaskToRun(
 void TaskGraphWorkQueue::CompleteTask(const PrioritizedTask& completed_task) {
   TaskNamespace* task_namespace = completed_task.task_namespace;
   scoped_refptr<Task> task(completed_task.task);
-  uint16_t category = completed_task.category;
 
   // Remove task from |running_tasks|.
-  auto& running_tasks_for_category = task_namespace->running_tasks[category];
-  auto it = std::find(running_tasks_for_category.begin(),
-                      running_tasks_for_category.end(), task);
-  DCHECK(it != running_tasks_for_category.end());
-  std::swap(*it, running_tasks_for_category.back());
-  running_tasks_for_category.pop_back();
+  auto it = std::find(task_namespace->running_tasks.begin(),
+                      task_namespace->running_tasks.end(), task);
+  DCHECK(it != task_namespace->running_tasks.end());
+  std::swap(*it, task_namespace->running_tasks.back());
+  task_namespace->running_tasks.pop_back();
 
   // Now iterate over all dependents to decrement dependencies and check if they
   // are ready to run.
@@ -285,7 +277,8 @@ void TaskGraphWorkQueue::CollectCompletedTasks(NamespaceToken token,
 
   // Remove namespace if finished running tasks.
   DCHECK_EQ(0u, task_namespace.completed_tasks.size());
-  DCHECK(HasFinishedRunningTasksInNamespace(&task_namespace));
+  DCHECK(!HasReadyToRunTasksInNamespace(&task_namespace));
+  DCHECK_EQ(0u, task_namespace.running_tasks.size());
   namespaces_.erase(it);
 }
 
