@@ -119,8 +119,9 @@ bool FillIfaddrs(ifaddrs* interfaces,
   return true;
 }
 #endif  // OS_MACOSX
+
 // Verify GetNetworkList().
-TEST(NetUtilTest, GetNetworkList) {
+TEST(NetworkInterfacesTest, GetNetworkList) {
   NetworkInterfaceList list;
   ASSERT_TRUE(GetNetworkList(&list, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES));
   for (NetworkInterfaceList::iterator it = list.begin();
@@ -232,7 +233,7 @@ char* GetInterfaceNameVM(int interface_index, char* ifname) {
   return CopyInterfaceName(ifname_vm, arraysize(ifname_vm), ifname);
 }
 
-TEST(NetUtilTest, GetNetworkListTrimming) {
+TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   IPAddressNumber ipv6_local_address(
       kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
   IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
@@ -333,7 +334,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
 
 #elif defined(OS_MACOSX)
 
-TEST(NetUtilTest, GetNetworkListTrimming) {
+TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   IPAddressNumber ipv6_local_address(
       kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
   IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
@@ -480,7 +481,7 @@ bool FillAdapterAddress(IP_ADAPTER_ADDRESSES* adapter_address,
   return true;
 }
 
-TEST(NetUtilTest, GetNetworkListTrimming) {
+TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   IPAddressNumber ipv6_local_address(
       kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
   IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
@@ -596,7 +597,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
 
 #endif  // !OS_MACOSX && !OS_WIN && !OS_NACL
 
-TEST(NetUtilTest, GetWifiSSID) {
+TEST(NetworkInterfacesTest, GetWifiSSID) {
   // We can't check the result of GetWifiSSID() directly, since the result
   // will differ across machines. Simply exercise the code path and hope that it
   // doesn't crash.
@@ -604,7 +605,7 @@ TEST(NetUtilTest, GetWifiSSID) {
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_CHROMEOS)
-TEST(NetUtilTest, GetWifiSSIDFromInterfaceList) {
+TEST(NetworkInterfacesTest, GetWifiSSIDFromInterfaceList) {
   NetworkInterfaceList list;
   EXPECT_EQ(std::string(), internal::GetWifiSSIDFromInterfaceListInternal(
                                list, TestGetInterfaceSSID));
@@ -743,12 +744,20 @@ void TryChangeWifiOptions(int options) {
 }
 
 // Test SetWifiOptions().
-TEST(NetUtilTest, SetWifiOptionsTest) {
+TEST(NetworkInterfacesTest, SetWifiOptionsTest) {
   TryChangeWifiOptions(0);
   TryChangeWifiOptions(WIFI_OPTIONS_DISABLE_SCAN);
   TryChangeWifiOptions(WIFI_OPTIONS_MEDIA_STREAMING_MODE);
   TryChangeWifiOptions(WIFI_OPTIONS_DISABLE_SCAN |
                        WIFI_OPTIONS_MEDIA_STREAMING_MODE);
+}
+
+TEST(NetworkInterfacesTest, GetHostName) {
+  // We can't check the result of GetHostName() directly, since the result
+  // will differ across machines. Our goal here is to simply exercise the
+  // code path, and check that things "look about right".
+  std::string hostname = GetHostName();
+  EXPECT_FALSE(hostname.empty());
 }
 
 }  // namespace

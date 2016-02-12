@@ -20,7 +20,7 @@
 #include "base/values.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/base/file_stream.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/native_messaging/log_message_handler.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"

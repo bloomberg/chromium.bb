@@ -18,7 +18,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "net/base/zap.h"
 #include "net/http/des.h"
 #include "net/http/md4.h"

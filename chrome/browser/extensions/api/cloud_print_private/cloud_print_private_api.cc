@@ -11,7 +11,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "google_apis/google_api_keys.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 namespace extensions {
 

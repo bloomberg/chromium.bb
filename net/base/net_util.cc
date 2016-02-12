@@ -4,20 +4,10 @@
 
 #include "net/base/net_util.h"
 
-#include "build/build_config.h"
-
-#if defined(OS_POSIX)
-#include <unistd.h>
-#endif
-
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address_number.h"
-
-#if defined(OS_WIN)
-#include "net/base/winsock_init.h"
-#endif
 
 namespace net {
 
@@ -46,26 +36,6 @@ bool IsLocal6Hostname(const std::string& host) {
 }
 
 }  // namespace
-
-std::string GetHostName() {
-#if defined(OS_NACL)
-  NOTIMPLEMENTED();
-  return std::string();
-#else  // defined(OS_NACL)
-#if defined(OS_WIN)
-  EnsureWinsockInit();
-#endif
-
-  // Host names are limited to 255 bytes.
-  char buffer[256];
-  int result = gethostname(buffer, sizeof(buffer));
-  if (result != 0) {
-    DVLOG(1) << "gethostname() failed with " << result;
-    buffer[0] = '\0';
-  }
-  return std::string(buffer);
-#endif  // !defined(OS_NACL)
-}
 
 bool ResolveLocalHostname(base::StringPiece host,
                           uint16_t port,

@@ -57,14 +57,6 @@ void TestIPv6LoopbackOnly(const std::string& host) {
 
 }  // anonymous namespace
 
-TEST(NetUtilTest, GetHostName) {
-  // We can't check the result of GetHostName() directly, since the result
-  // will differ across machines. Our goal here is to simply exercise the
-  // code path, and check that things "look about right".
-  std::string hostname = GetHostName();
-  EXPECT_FALSE(hostname.empty());
-}
-
 TEST(NetUtilTest, IsLocalhost) {
   EXPECT_TRUE(IsLocalhost("localhost"));
   EXPECT_TRUE(IsLocalhost("localHosT"));

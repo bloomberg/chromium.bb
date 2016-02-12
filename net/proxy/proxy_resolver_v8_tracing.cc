@@ -20,7 +20,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "net/dns/host_resolver.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_error_observer.h"

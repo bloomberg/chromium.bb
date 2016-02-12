@@ -22,7 +22,7 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/google_api_keys.h"
 #include "ipc/ipc_channel.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pin_hash.h"

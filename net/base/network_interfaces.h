@@ -122,6 +122,9 @@ class NET_EXPORT ScopedWifiOptions {
 // is freed. Currently only available on Windows.
 NET_EXPORT scoped_ptr<ScopedWifiOptions> SetWifiOptions(int options);
 
+// Returns the hostname of the current system. Returns empty string on failure.
+NET_EXPORT std::string GetHostName();
+
 }  // namespace net
 
 #endif  // NET_BASE_NETWORK_INTERFACES_H_

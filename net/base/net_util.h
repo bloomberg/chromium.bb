@@ -7,17 +7,12 @@
 
 #include <stdint.h>
 
-#include <string>
-
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
 namespace net {
 
 class AddressList;
-
-// Returns the hostname of the current system. Returns empty string on failure.
-NET_EXPORT std::string GetHostName();
 
 // Resolves a local hostname (such as "localhost" or "localhost6") into
 // IP endpoints with the given port. Returns true if |host| is a local

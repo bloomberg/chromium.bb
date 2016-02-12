@@ -32,7 +32,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

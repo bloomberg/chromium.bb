@@ -20,7 +20,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

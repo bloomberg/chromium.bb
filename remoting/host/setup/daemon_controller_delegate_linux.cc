@@ -25,7 +25,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/usage_stats_consent.h"
 
