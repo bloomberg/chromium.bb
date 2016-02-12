@@ -61,6 +61,7 @@ public:
     // Calculate the minimum |actualLength >= minLength| such that code units
     // with offset range [position, position + actualLength) are whole code
     // points. Prepend these code points to |output| and return |actualLength|.
+    // TODO(xiaochengh): Use (start, end) instead of (start, length).
     int copyTextTo(BackwardsTextBuffer* output, int position, int minLength) const;
     // TODO(xiaochengh): Avoid default parameters.
     int copyTextTo(BackwardsTextBuffer* output, int position = 0) const;

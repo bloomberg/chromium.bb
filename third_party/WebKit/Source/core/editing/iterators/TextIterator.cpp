@@ -1115,7 +1115,10 @@ bool TextIteratorAlgorithm<Strategy>::isBetweenSurrogatePair(int position) const
 template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::copyTextTo(ForwardsTextBuffer* output, int position, int minLength) const
 {
-    int copiedLength = isBetweenSurrogatePair(position + minLength) ? minLength + 1 : minLength;
+    int end = std::min(length(), position + minLength);
+    if (isBetweenSurrogatePair(end))
+        ++end;
+    int copiedLength = end - position;
     copyCodeUnitsTo(output, position, copiedLength);
     return copiedLength;
 }
