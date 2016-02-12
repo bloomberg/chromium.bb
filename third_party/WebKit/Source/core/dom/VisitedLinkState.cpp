@@ -68,6 +68,7 @@ void VisitedLinkState::invalidateStyleForAllLinks(bool invalidateVisitedLinkHash
                 toHTMLAnchorElement(node).invalidateCachedVisitedLinkHash();
             toElement(node).pseudoStateChanged(CSSSelector::PseudoLink);
             toElement(node).pseudoStateChanged(CSSSelector::PseudoVisited);
+            toElement(node).pseudoStateChanged(CSSSelector::PseudoAnyLink);
         }
     }
 }
@@ -80,6 +81,7 @@ void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
         if (node.isLink() && linkHashForElement(toElement(node)) == linkHash) {
             toElement(node).pseudoStateChanged(CSSSelector::PseudoLink);
             toElement(node).pseudoStateChanged(CSSSelector::PseudoVisited);
+            toElement(node).pseudoStateChanged(CSSSelector::PseudoAnyLink);
         }
     }
 }
