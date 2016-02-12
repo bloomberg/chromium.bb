@@ -1015,6 +1015,8 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
       .WillOnce(SaveArg<0>(&saved_result));
   EXPECT_CALL(*mock_store(), UpdateLoginWithPrimaryKey(_, _)).Times(0);
   EXPECT_CALL(*mock_store(), AddLogin(_)).Times(0);
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, false, _, _, true));
 
   form_manager()->Save();
   // Should be only one password stored, and should not have
@@ -1594,6 +1596,8 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
       .WillOnce(SaveArg<0>(&saved_result));
   EXPECT_CALL(*mock_store(), UpdateLoginWithPrimaryKey(_, _)).Times(0);
   EXPECT_CALL(*mock_store(), AddLogin(_)).Times(0);
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, false, _, _, true));
 
   form_manager()->Save();
 
@@ -2232,6 +2236,8 @@ TEST_F(PasswordFormManagerTest, NotRemoveOnUpdate) {
   EXPECT_CALL(*mock_store(),
               UpdateLogin(CheckUsername(saved_match()->username_value)));
   EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, false, _, _, true));
 
   form_manager()->ProvisionallySave(
       submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -2440,6 +2446,8 @@ TEST_F(PasswordFormManagerTest, TestUpdatePSLMatchedCredentials) {
   EXPECT_CALL(*mock_store(), UpdateLogin(_))
       .WillOnce(testing::SaveArg<0>(&new_credentials[0]))
       .WillOnce(testing::SaveArg<0>(&new_credentials[1]));
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, false, _, _, true));
 
   form_manager.Save();
   Mock::VerifyAndClearExpectations(mock_store());
@@ -2487,6 +2495,8 @@ TEST_F(PasswordFormManagerTest,
   PasswordForm new_credentials;
   EXPECT_CALL(*mock_store(), UpdateLogin(_))
       .WillOnce(testing::SaveArg<0>(&new_credentials));
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, false, _, _, true));
 
   form_manager.Save();
   Mock::VerifyAndClearExpectations(mock_store());
@@ -2523,6 +2533,8 @@ TEST_F(PasswordFormManagerTest,
   PasswordForm new_credentials;
   EXPECT_CALL(*mock_store(), UpdateLogin(_))
       .WillOnce(testing::SaveArg<0>(&new_credentials));
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, false, _, _, true));
 
   form_manager.Save();
   Mock::VerifyAndClearExpectations(mock_store());
