@@ -72,9 +72,6 @@ class ChangePictureHandler : public ::settings::SettingsPageUIHandler,
   // Opens a file selection dialog to choose user image from file.
   void HandleChooseFile(const base::ListValue* args);
 
-  // Handles 'take-photo' button click.
-  void HandleTakePhoto(const base::ListValue* args);
-
   // Handles photo taken with WebRTC UI.
   void HandlePhotoTaken(const base::ListValue* args);
 

@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://md-settings/people_page/camera.html">
 <link rel="import" href="chrome://md-settings/people_page/change_picture_private_api.html">
 
 <dom-module id="settings-change-picture">
@@ -9,11 +10,12 @@
   <link rel="import" type="css" href="change_picture.css">
   <template>
     <div class="settings-box">
-      <div id="available-icons" class="start">
+      <div id="availableIcons" class="start">
         <iron-selector id="selector" on-iron-activate="onImageActivate_"
             selected-item="{{selectedItem_}}">
           <img id="cameraImage" data-type="camera"
-              src="[[cameraImageUrl_]]" alt="[[cameraImageTitle_]]">
+              src="[[cameraImageUrl_]]" alt="[[cameraTitle_]]"
+              hidden="[[!cameraPresent_]]">
           <img id="profileImage" data-type="profile"
               src="[[profileImageUrl_]]"
               alt="[[i18n('profilePhotoLoading')]]">
@@ -24,9 +26,13 @@
           </template>
         </iron-selector>
       </div>
-      <div id="preview-pane">
-        <img id="previewImage" src="[[selectedItem_.src]]"
-            hidden="[[isPreviewImageHidden_(selectedItem_)]]">
+      <div id="previewPane">
+        <img i18n-values="alt:previewAltText" src="[[selectedItem_.src]]"
+            hidden="[[isCameraActive_(cameraPresent_, selectedItem_)]]">
+        <settings-camera
+            camera-active="[[isCameraActive_(cameraPresent_, selectedItem_)]]"
+            preview-image="{{cameraImageUrl_}}"
+            camera-title="{{cameraTitle_}}" on-phototaken="onPhotoTaken_">
       </div>
     </div>
   </template>

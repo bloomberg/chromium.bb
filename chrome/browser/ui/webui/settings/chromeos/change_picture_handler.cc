@@ -105,9 +105,6 @@ void ChangePictureHandler::RegisterMessages() {
       "chooseFile", base::Bind(&ChangePictureHandler::HandleChooseFile,
                                base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "takePhoto", base::Bind(&ChangePictureHandler::HandleTakePhoto,
-                              base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "photoTaken", base::Bind(&ChangePictureHandler::HandlePhotoTaken,
                                base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
@@ -163,11 +160,6 @@ void ChangePictureHandler::HandleChooseFile(const base::ListValue* args) {
       &file_type_info, 0, FILE_PATH_LITERAL(""), GetBrowserWindow(), NULL);
 }
 
-void ChangePictureHandler::HandleTakePhoto(const base::ListValue* args) {
-  DCHECK(args->empty());
-  ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
-}
-
 void ChangePictureHandler::HandleDiscardPhoto(const base::ListValue* args) {
   DCHECK(args->empty());
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
@@ -175,6 +167,8 @@ void ChangePictureHandler::HandleDiscardPhoto(const base::ListValue* args) {
 
 void ChangePictureHandler::HandlePhotoTaken(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
+
   std::string image_url;
   if (!args || args->GetSize() != 1 || !args->GetString(0, &image_url))
     NOTREACHED();

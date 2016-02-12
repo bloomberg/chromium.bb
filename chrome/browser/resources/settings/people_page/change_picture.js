@@ -30,6 +30,15 @@ Polymer({
 
   properties: {
     /**
+     * True if the user has a plugged-in webcam.
+     * @private {boolean}
+     */
+    cameraPresent_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The currently selected item. This property is bound to the iron-selector
      * and never directly assigned.
      * @private {Element}
@@ -37,26 +46,6 @@ Polymer({
     selectedItem_: {
       type: Element,
       notify: settings_test.changePictureOptions.notifyPropertyChangesForTest,
-    },
-
-    /**
-     * This differs from its default value only if the user has just captured
-     * a new photo from the camera.
-     * @private {string}
-     */
-    cameraImageUrl_: {
-      type: String,
-      value: settings.ChangePicturePrivateApi.ButtonImages.TAKE_PHOTO,
-    },
-
-    /**
-     * This differs from its default value only if the user has just captured
-     * a new photo from the camera.
-     * @private {string}
-     */
-    cameraImageTitle_: {
-      type: String,
-      value: function() { return loadTimeData.getString('takePhoto'); },
     },
 
     /**
@@ -119,12 +108,18 @@ Polymer({
        * Called from C++ to provide the URL of the 'old' image. The 'old'
        * image is any selected non-profile and non-default image. It can be
        * from the camera, a file, or a deprecated default image. When this
-       * method is called, it's implied that the old image is selected.
+       * method is called for the first time, it is implied to be the selected
+       * image (unless the user just took an image from the camera).
        * @param {string} imageUrl
        */
       receiveOldImage: function(imageUrl) {
+        var oldImageAlreadyExists = this.oldImageUrl_.length > 0;
         this.oldImageUrl_ = imageUrl;
-        this.$.selector.select(this.$.selector.indexOf(this.$.oldImage));
+
+        var cameraSelected =
+            this.selectedItem_ && this.selectedItem_.dataset.type == 'camera';
+        if (!oldImageAlreadyExists && !cameraSelected)
+          this.$.selector.select(this.$.selector.indexOf(this.$.oldImage));
       }.bind(this),
 
       /**
@@ -143,7 +138,7 @@ Polymer({
        * @param {boolean} cameraPresent
        */
       receiveCameraPresence: function(cameraPresent) {
-        // TODO(tommycli): Implement camera functionality.
+        this.cameraPresent_ = cameraPresent;
       }.bind(this),
     };
 
@@ -166,7 +161,7 @@ Polymer({
     var selectedImage = event.detail.item;
     switch (selectedImage.dataset.type) {
       case 'camera':
-        // TODO(tommycli): Implement camera functionality.
+        // Nothing needs to be done.
         break;
       case 'profile':
         settings.ChangePicturePrivateApi.selectProfileImage();
@@ -183,6 +178,17 @@ Polymer({
   },
 
   /**
+   * Handle photo captured event, which contains the data URL of the image.
+   * @param {!{detail: !{photoDataUrl: string}}} event
+   * containing a data URL.
+   */
+  onPhotoTaken_: function(event) {
+    settings.ChangePicturePrivateApi.photoTaken(event.detail.photoDataUrl);
+
+    // TODO(tommycli): Add announce of accessible message for photo capture.
+  },
+
+  /**
    * True if there is no old image and the selection icon should be hidden.
    * @param {string} oldImageUrl
    * @return {boolean}
@@ -193,14 +199,14 @@ Polymer({
   },
 
   /**
-   * True if the preview image is hidden and the camera controls are shown.
+   * Return true if the selected icon in the image grid is the camera.
    * @param {!Element} selectedItem
    * @return {boolean}
    * @private
    */
-  isPreviewImageHidden_: function(selectedItem) {
-    // The selected item can be undefined on initial load and between selection
-    // changes. In those cases, show the preview image.
-    return selectedItem != undefined && selectedItem.dataset.type == 'camera';
+  isCameraActive_: function(cameraPresent, selectedItem) {
+    return cameraPresent &&
+           selectedItem != undefined &&
+           selectedItem.dataset.type == 'camera';
   },
 });

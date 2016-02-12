@@ -53,6 +53,8 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
   assertTrue(!!peoplePage);
   var changePicture = peoplePage.$$('settings-change-picture');
   assertTrue(!!changePicture);
+  var settingsCamera = changePicture.$$('settings-camera');
+  assertTrue(!!settingsCamera);
 
   /**
    * Returns a promise that resolves once the selected item is updated.
@@ -77,17 +79,28 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
     });
 
     test('select camera image', function() {
-      var cameraImage = changePicture.$$('img[data-type="camera"]');
-      assertTrue(!!cameraImage);
+      var cameraIcon = changePicture.$$('img[data-type="camera"]');
+      assertTrue(!!cameraIcon);
 
-      expectFalse(changePicture.$.previewImage.hidden);
-
-      MockInteractions.tap(cameraImage);
-
+      // Force the camera to be absent, even if it's actually present.
+      settings.ChangePicturePage.receiveCameraPresence(false);
       Polymer.dom.flush();
 
+      expectTrue(cameraIcon.hidden);
+      expectFalse(settingsCamera.cameraActive);
+
+      settings.ChangePicturePage.receiveCameraPresence(true);
+      Polymer.dom.flush();
+
+      expectFalse(cameraIcon.hidden);
+      expectFalse(settingsCamera.cameraActive);
+
+      MockInteractions.tap(cameraIcon);
+
+      Polymer.dom.flush();
+      expectFalse(cameraIcon.hidden);
+      expectTrue(settingsCamera.cameraActive);
       expectEquals('camera', changePicture.selectedItem_.dataset.type);
-      expectTrue(changePicture.$.previewImage.hidden);
     });
 
     test('select profile image', function() {
@@ -99,7 +112,7 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
       }).then(function() {
         Polymer.dom.flush();
         expectEquals('profile', changePicture.selectedItem_.dataset.type);
-        expectFalse(changePicture.$.previewImage.hidden);
+        expectFalse(settingsCamera.cameraActive);
       });
     });
 
@@ -118,7 +131,7 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
         // the native interface.
         expectEquals('old', changePicture.selectedItem_.dataset.type);
         expectFalse(oldImage.hidden);
-        expectFalse(changePicture.$.previewImage.hidden);
+        expectFalse(settingsCamera.cameraActive);
       });
     });
 
@@ -132,7 +145,7 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
         Polymer.dom.flush();
         expectEquals('default', changePicture.selectedItem_.dataset.type);
         expectEquals(firstDefaultImage, changePicture.selectedItem_);
-        expectFalse(changePicture.$.previewImage.hidden);
+        expectFalse(settingsCamera.cameraActive);
       });
     });
   });

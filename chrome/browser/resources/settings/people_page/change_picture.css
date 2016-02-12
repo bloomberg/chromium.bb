@@ -2,12 +2,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#available-icons {
+#availableIcons {
   -webkit-margin-start: 16px;
   margin-top: 16px;
 }
 
-#available-icons img {
+#availableIcons img {
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
   height: 64px;
@@ -15,18 +15,18 @@
   width: 64px;
 }
 
-#available-icons img.iron-selected {
+#availableIcons img.iron-selected {
   border: 2px solid rgb(0, 102, 204);
   padding: 2px;
 }
 
-#preview-pane {
+#previewPane {
   flex-shrink: 0;
   margin: 18px 10px 0 0;
   width: 228px;
 }
 
-#preview-pane img {
+#previewPane img {
   border: solid 1px #cacaca;
   border-radius: 4px;
   max-height: 220px;
