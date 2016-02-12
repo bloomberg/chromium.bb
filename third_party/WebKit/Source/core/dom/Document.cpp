@@ -2002,6 +2002,7 @@ void Document::clearFocusedElementTimerFired(Timer<Document>*)
 void Document::updateLayoutTreeIgnorePendingStylesheets()
 {
     StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
+    DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
 
     if (styleEngine().hasPendingSheets()) {
         // FIXME: We are willing to attempt to suppress painting with outdated style info only once.
