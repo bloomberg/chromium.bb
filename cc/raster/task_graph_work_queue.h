@@ -60,11 +60,11 @@ class CC_EXPORT TaskGraphWorkQueue {
     // category.
     std::map<uint16_t, PrioritizedTask::Vector> ready_to_run_tasks;
 
+    // This set contains all currently running tasks.
+    std::map<uint16_t, Task::Vector> running_tasks;
+
     // Completed tasks not yet collected by origin thread.
     Task::Vector completed_tasks;
-
-    // This set contains all currently running tasks.
-    Task::Vector running_tasks;
   };
 
   TaskGraphWorkQueue();
@@ -112,7 +112,12 @@ class CC_EXPORT TaskGraphWorkQueue {
 
   static bool HasFinishedRunningTasksInNamespace(
       const TaskNamespace* task_namespace) {
-    return task_namespace->running_tasks.empty() &&
+    return std::all_of(
+               task_namespace->running_tasks.cbegin(),
+               task_namespace->running_tasks.cend(),
+               [](const std::pair<uint16_t, Task::Vector>& tasks_entry) {
+                 return tasks_entry.second.empty();
+               }) &&
            !HasReadyToRunTasksInNamespace(task_namespace);
   }
 
@@ -143,6 +148,18 @@ class CC_EXPORT TaskGraphWorkQueue {
   const std::map<uint16_t, TaskNamespace::Vector>& ready_to_run_namespaces()
       const {
     return ready_to_run_namespaces_;
+  }
+
+  size_t NumRunningTasksForCategory(uint16_t category) const {
+    size_t count = 0;
+    for (const auto& task_namespace_entry : namespaces_) {
+      const auto& running_tasks = task_namespace_entry.second.running_tasks;
+      const auto& running_tasks_for_category = running_tasks.find(category);
+      if (running_tasks_for_category != running_tasks.cend()) {
+        count += running_tasks_for_category->second.size();
+      }
+    }
+    return count;
   }
 
   // Helper function which ensures that graph dependencies were correctly
