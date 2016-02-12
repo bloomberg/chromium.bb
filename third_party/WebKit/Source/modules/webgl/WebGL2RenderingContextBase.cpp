@@ -2423,6 +2423,11 @@ GLuint WebGL2RenderingContextBase::getUniformBlockIndex(WebGLProgram* program, c
 
 bool WebGL2RenderingContextBase::validateUniformBlockIndex(const char* functionName, WebGLProgram* program, GLuint blockIndex)
 {
+    ASSERT(program);
+    if (!program->linkStatus()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "program not linked");
+        return false;
+    }
     GLint activeUniformBlocks = 0;
     webContext()->getProgramiv(objectOrZero(program), GL_ACTIVE_UNIFORM_BLOCKS, &activeUniformBlocks);
     if (blockIndex >= static_cast<GLuint>(activeUniformBlocks)) {
@@ -3135,9 +3140,9 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(Script
         if (missingImage) {
             switch (pname) {
             case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
-                return WebGLAny(scriptState, GL_FRAMEBUFFER_DEFAULT);
+                return WebGLAny(scriptState, GL_NONE);
             default:
-                synthesizeGLError(GL_INVALID_ENUM, kFunctionName, "invalid parameter name");
+                synthesizeGLError(GL_INVALID_OPERATION, kFunctionName, "invalid parameter name");
                 return ScriptValue::createNull(scriptState);
             }
         }
