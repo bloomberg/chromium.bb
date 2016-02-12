@@ -122,7 +122,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
-      "{\"QUIC\":{\"migrate_sessions_on_network_change\":true}}",
+      "{\"QUIC\":{\"migrate_sessions_on_network_change\":true,"
+      "\"migrate_sessions_early\":true}}",
       // Data reduction proxy key.
       "",
       // Data reduction proxy.
@@ -146,6 +147,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
 
   EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
   EXPECT_TRUE(params->quic_migrate_sessions_on_network_change);
+  EXPECT_TRUE(params->quic_migrate_sessions_early);
 }
 
 }  // namespace cronet

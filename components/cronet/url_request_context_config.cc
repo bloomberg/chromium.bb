@@ -43,6 +43,7 @@ const char kQuicMigrateSessionsOnNetworkChange[] =
     "migrate_sessions_on_network_change";
 const char kQuicPreferAes[] = "prefer_aes";
 const char kQuicUserAgentId[] = "user_agent_id";
+const char kQuicMigrateSessionsEarly[] = "migrate_sessions_early";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -159,6 +160,13 @@ void ParseAndSetExperimentalOptions(
     std::string quic_user_agent_id;
     if (quic_args->GetString(kQuicUserAgentId, &quic_user_agent_id)) {
       context_builder->set_quic_user_agent_id(quic_user_agent_id);
+    }
+
+    bool quic_migrate_sessions_early = false;
+    if (quic_args->GetBoolean(kQuicMigrateSessionsEarly,
+                              &quic_migrate_sessions_early)) {
+      context_builder->set_quic_migrate_sessions_early(
+          quic_migrate_sessions_early);
     }
   }
 

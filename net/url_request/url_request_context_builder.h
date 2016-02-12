@@ -100,6 +100,7 @@ class NET_EXPORT URLRequestContextBuilder {
     QuicTagVector quic_connection_options;
     bool quic_close_sessions_on_ip_change;
     bool quic_migrate_sessions_on_network_change;
+    bool quic_migrate_sessions_early;
   };
 
   URLRequestContextBuilder();
@@ -252,6 +253,11 @@ class NET_EXPORT URLRequestContextBuilder {
 
   void set_quic_prefer_aes(bool quic_prefer_aes) {
     http_network_session_params_.quic_prefer_aes = quic_prefer_aes;
+  }
+
+  void set_quic_migrate_sessions_early(bool quic_migrate_sessions_early) {
+    http_network_session_params_.quic_migrate_sessions_early =
+        quic_migrate_sessions_early;
   }
 
   void set_throttling_enabled(bool throttling_enabled) {

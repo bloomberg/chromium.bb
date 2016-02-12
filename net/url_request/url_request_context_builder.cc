@@ -190,7 +190,8 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       quic_packet_loss_threshold(1.0f),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_close_sessions_on_ip_change(false),
-      quic_migrate_sessions_on_network_change(false) {}
+      quic_migrate_sessions_on_network_change(false),
+      quic_migrate_sessions_early(false) {}
 
 URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
@@ -421,6 +422,8 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_user_agent_id;
   network_session_params.quic_prefer_aes =
       http_network_session_params_.quic_prefer_aes;
+  network_session_params.quic_migrate_sessions_early =
+      http_network_session_params_.quic_migrate_sessions_early;
 
   storage->set_http_network_session(
       make_scoped_ptr(new HttpNetworkSession(network_session_params)));
