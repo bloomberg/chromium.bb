@@ -12,10 +12,24 @@ import subprocess
 import sys
 import time
 
-extra_trybots = [
+extra_cq_trybots = [
   {
     "mastername": "tryserver.chromium.win",
-    "buildernames": ["win_clang_dbg", "win_optional_gpu_tests_rel"]
+    "buildernames": ["win_optional_gpu_tests_rel"]
+  },
+  {
+    "mastername": "tryserver.chromium.mac",
+    "buildernames": ["mac_optional_gpu_tests_rel"]
+  }
+  {
+    "mastername": "tryserver.chromium.linux",
+    "buildernames": ["linux_optional_gpu_tests_rel"]
+  }
+]
+extra_fyi_trybots = [
+  {
+    "mastername": "tryserver.chromium.win",
+    "buildernames": ["win_clang_dbg"]
   }
 ]
 
@@ -78,7 +92,7 @@ def _ParseDepsDict(deps_content):
   return local_scope
 
 
-def _GenerateCLDescriptionCommand(angle_current, angle_new, bugs):
+def _GenerateCLDescriptionCommand(angle_current, angle_new, bugs, tbr):
   def GetChangeString(current_hash, new_hash):
     return '%s..%s' % (current_hash[0:7], new_hash[0:7]);
 
@@ -97,23 +111,29 @@ def _GenerateCLDescriptionCommand(angle_current, angle_new, bugs):
     changelog_url = GetChangeLogURL(angle_current.git_repo_url,
                                     change_str)
 
-  def GetExtraTrybotString():
+  def GetExtraCQTrybotString():
     s = ''
-    for t in extra_trybots:
+    for t in extra_cq_trybots:
       if s:
         s += ';'
       s += t['mastername'] + ':' + ','.join(t['buildernames'])
     return s
 
+  def GetTBRString(tbr):
+    if not tbr:
+      return ''
+    return 'TBR=' + tbr
+
   extra_trybot_args = []
-  if extra_trybots:
-    extra_trybot_string = GetExtraTrybotString()
+  if extra_cq_trybots:
+    extra_trybot_string = GetExtraCQTrybotString()
     extra_trybot_args = ['-m', 'CQ_INCLUDE_TRYBOTS=' + extra_trybot_string]
 
   return [
     '-m', 'Roll ANGLE ' + change_str,
     '-m', '%s' % changelog_url,
     '-m', GetBugString(bugs),
+    '-m', GetTBRString(tbr),
     '-m', 'TEST=bots',
   ] + extra_trybot_args
 
@@ -223,7 +243,15 @@ class AutoRoller(object):
     readme.write(m)
     readme.truncate()
 
-  def PrepareRoll(self, ignore_checks):
+  def _TriggerExtraTrybots(self, trybots):
+    for trybot in trybots:
+      for builder in trybot['buildernames']:
+        self._RunCommand([
+            'git', 'cl', 'try',
+            '-m', trybot['mastername'],
+            '-b', builder])
+
+  def PrepareRoll(self, ignore_checks, tbr, should_commit):
     # TODO(kjellander): use os.path.normcase, os.path.join etc for all paths for
     # cross platform compatibility.
 
@@ -266,7 +294,7 @@ class AutoRoller(object):
     else:
       bugs = self._GetBugList(ANGLE_PATH, angle_current, angle_latest)
       description = _GenerateCLDescriptionCommand(
-          angle_current, angle_latest, bugs)
+          angle_current, angle_latest, bugs, tbr)
       logging.debug('Committing changes locally.')
       self._RunCommand(['git', 'add', '--update', '.'])
       self._RunCommand(['git', 'commit'] + description)
@@ -278,16 +306,19 @@ class AutoRoller(object):
       base_try_cmd = ['git', 'cl', 'try']
       self._RunCommand(base_try_cmd)
 
-      if extra_trybots:
+      if extra_cq_trybots:
         # Run additional tryjobs.
         # TODO(kbr): this should not be necessary -- the
         # CQ_INCLUDE_TRYBOTS directive above should handle it.
         # http://crbug.com/585237
-        for trybot in extra_trybots:
-          for builder in trybot['buildernames']:
-            self._RunCommand(base_try_cmd + [
-                '-m', trybot['mastername'],
-                '-b', builder])
+        self._TriggerExtraTrybots(extra_cq_trybots)
+
+      if extra_fyi_trybots:
+        self._TriggerExtraTrybots(extra_fyi_trybots)
+
+      # Mark the CL to be committed if requested
+      if should_commit:
+        self._RunCommand(['git', 'cl', 'set-commit'])
 
       cl_info = self._GetCLInfo()
       print 'Issue: %d URL: %s' % (cl_info.issue, cl_info.url)
@@ -359,6 +390,9 @@ def main():
       help=('Skips checks for being on the master branch, dirty workspaces and '
             'the updating of the checkout. Will still delete and create local '
             'Git branches.'))
+  parser.add_argument('--tbr', help='Add a TBR to the commit message.')
+  parser.add_argument('--commit', action='store_true', default=False,
+      help='Submit the roll to the CQ after uploading.')
   parser.add_argument('-v', '--verbose', action='store_true', default=False,
       help='Be extra verbose in printing of log messages.')
   args = parser.parse_args()
@@ -372,7 +406,7 @@ def main():
   if args.abort:
     return autoroller.Abort()
   else:
-    return autoroller.PrepareRoll(args.ignore_checks)
+    return autoroller.PrepareRoll(args.ignore_checks, args.tbr, args.commit)
 
 if __name__ == '__main__':
   sys.exit(main())
