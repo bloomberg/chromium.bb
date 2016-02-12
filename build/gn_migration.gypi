@@ -560,6 +560,8 @@
             '../content/content_shell_and_tests.gyp:content_unittests_run',
             '../courgette/courgette.gyp:courgette_unittests_run',
             '../crypto/crypto.gyp:crypto_unittests_run',
+            '../extensions/extensions_tests.gyp:extensions_browsertests_run',
+            '../extensions/extensions_tests.gyp:extensions_unittests_run',
             '../google_apis/gcm/gcm.gyp:gcm_unit_tests_run',
             '../google_apis/google_apis.gyp:google_apis_unittests_run',
             '../gpu/gpu.gyp:gpu_unittests_run',
