@@ -249,6 +249,7 @@ function checkNoCrop(imageBitmap, option) {
         shouldBeClear(21, 21);
     }
 
+    /*commenting out these cases because of crbug.com/578889
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0, 10, 10);
     if (option == "flipY" || option == "bottomLeft") {
@@ -309,7 +310,7 @@ function checkNoCrop(imageBitmap, option) {
         shouldBeClear(1, 21);
         shouldBeClear(21, 1);
         shouldBeClear(21, 21);
-    }
+    }*/
 }
 
 function checkCrop(imageBitmap, option) {
@@ -335,6 +336,7 @@ function checkCrop(imageBitmap, option) {
         shouldBeClear(12, 1);
     }
 
+    /*commenting out these cases because of crbug.com/578889
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0, 20, 20);
     if (option == "flipY" || option == "bottomLeft") {
@@ -349,7 +351,7 @@ function checkCrop(imageBitmap, option) {
         shouldBeClear(22, 22);
         shouldBeClear(1, 22);
         shouldBeClear(22, 1);
-    }
+    }*/
 }
 
 function checkCropCenter(imageBitmap, option) {
@@ -381,6 +383,7 @@ function checkCropCenter(imageBitmap, option) {
         shouldBeClear(11, 1);
     }
 
+    /*commenting out these cases because of crbug.com/578889
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0, 20, 20);
     if (option == "flipY" || option == "bottomLeft") {
@@ -401,7 +404,7 @@ function checkCropCenter(imageBitmap, option) {
         shouldBeClear(22, 22);
         shouldBeClear(1, 21);
         shouldBeClear(21, 1);
-    }
+    }*/
 }
 
 function checkCropRight(imageBitmap, option) {

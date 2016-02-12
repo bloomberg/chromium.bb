@@ -190,7 +190,10 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, con
     bool imageOrientationFlipYFlag;
     bool premultiplyAlphaEnabledFlag;
     parseOptions(options, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag);
-    m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag);
+    // canvas is always premultiplied, so set the last parameter to true and convert to un-premul later
+    m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect, imageOrientationFlipYFlag, true);
+    if (!premultiplyAlphaEnabledFlag)
+        m_image = StaticBitmapImage::create(premulSkImageToUnPremul(m_image->imageForCurrentFrame().get()));
     m_image->setOriginClean(canvas->originClean());
 }
 
