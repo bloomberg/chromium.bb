@@ -196,7 +196,7 @@ Position ApplyStyleCommand::endPosition()
     return m_end;
 }
 
-void ApplyStyleCommand::doApply(EditingState*)
+void ApplyStyleCommand::doApply(EditingState* editingState)
 {
     switch (m_propertyLevel) {
     case PropertyDefault: {
@@ -207,7 +207,9 @@ void ApplyStyleCommand::doApply(EditingState*)
         // Apply any remaining styles to the inline elements.
         if (!m_style->isEmpty() || m_styledInlineElement || m_isInlineElementToRemoveFunction) {
             applyRelativeFontStyleChange(m_style.get());
-            applyInlineStyle(m_style.get());
+            applyInlineStyle(m_style.get(), editingState);
+            if (editingState->isAborted())
+                return;
         }
         break;
     }
@@ -395,7 +397,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
             // Last styled node was not parent node of this text node, but we wish to style this
             // text node. To make this possible, add a style span to surround this text node.
             RefPtrWillBeRawPtr<HTMLSpanElement> span = HTMLSpanElement::create(document());
-            surroundNodeRangeWithElement(node, node, span.get());
+            surroundNodeRangeWithElement(node, node, span.get(), ASSERT_NO_EDITING_ABORT);
             element = span.release();
         }  else {
             // Only handle HTML elements and text nodes.
@@ -548,7 +550,7 @@ static HTMLElement* highestEmbeddingAncestor(Node* startNode, Node* enclosingNod
     return 0;
 }
 
-void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
+void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<ContainerNode> startDummySpanAncestor = nullptr;
     RefPtrWillBeRawPtr<ContainerNode> endDummySpanAncestor = nullptr;
@@ -671,13 +673,17 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
                 styleWithoutEmbedding = style->copy();
                 embeddingStyle = styleWithoutEmbedding->extractAndRemoveTextDirection();
             }
-            fixRangeAndApplyInlineStyle(embeddingStyle.get(), embeddingApplyStart, embeddingApplyEnd);
+            fixRangeAndApplyInlineStyle(embeddingStyle.get(), embeddingApplyStart, embeddingApplyEnd, editingState);
+            if (editingState->isAborted())
+                return;
 
             styleToApply = styleWithoutEmbedding;
         }
     }
 
-    fixRangeAndApplyInlineStyle(styleToApply.get(), start, end);
+    fixRangeAndApplyInlineStyle(styleToApply.get(), start, end, editingState);
+    if (editingState->isAborted())
+        return;
 
     // Remove dummy style spans created by splitting text elements.
     cleanupUnstyledAppleStyleSpans(startDummySpanAncestor.get());
@@ -685,7 +691,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
         cleanupUnstyledAppleStyleSpans(endDummySpanAncestor.get());
 }
 
-void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const Position& start, const Position& end)
+void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const Position& start, const Position& end, EditingState* editingState)
 {
     Node* startNode = start.anchorNode();
     ASSERT(startNode);
@@ -715,7 +721,7 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const P
             startNode = startNode->parentNode();
     }
 
-    applyInlineStyleToNodeRange(style, startNode, pastEndNode);
+    applyInlineStyleToNodeRange(style, startNode, pastEndNode, editingState);
 }
 
 static bool containsNonEditableRegion(Node& node)
@@ -771,7 +777,7 @@ WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::InlineRunToApplyStyle);
 
 namespace blink {
 
-void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> pastEndNode)
+void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> pastEndNode, EditingState* editingState)
 {
     if (m_removeOnly)
         return;
@@ -848,10 +854,16 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
     }
 
     for (auto& run : runs) {
-        if (run.dummyElement)
-            removeNode(run.dummyElement);
-        if (run.startAndEndAreStillInDocument())
-            applyInlineStyleChange(run.start.release(), run.end.release(), run.change, AddStyledElement);
+        if (run.dummyElement) {
+            removeNode(run.dummyElement, editingState);
+            if (editingState->isAborted())
+                return;
+        }
+        if (run.startAndEndAreStillInDocument()) {
+            applyInlineStyleChange(run.start.release(), run.end.release(), run.change, AddStyledElement, editingState);
+            if (editingState->isAborted())
+                return;
+        }
     }
 }
 
@@ -1085,7 +1097,7 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
                     element->removeAttribute(HTMLNames::idAttr);
                     if (isHTMLAnchorElement(element))
                         element->removeAttribute(HTMLNames::nameAttr);
-                    surroundNodeRangeWithElement(child, child, wrapper);
+                    surroundNodeRangeWithElement(child, child, wrapper, ASSERT_NO_EDITING_ABORT);
                 }
             }
 
@@ -1358,7 +1370,7 @@ bool ApplyStyleCommand::mergeEndWithNextIfIdentical(const Position& start, const
     return false;
 }
 
-void ApplyStyleCommand::surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node> passedStartNode, PassRefPtrWillBeRawPtr<Node> endNode, PassRefPtrWillBeRawPtr<Element> elementToInsert)
+void ApplyStyleCommand::surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node> passedStartNode, PassRefPtrWillBeRawPtr<Node> endNode, PassRefPtrWillBeRawPtr<Element> elementToInsert, EditingState* editingState)
 {
     ASSERT(passedStartNode);
     ASSERT(endNode);
@@ -1371,8 +1383,12 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node
     while (node) {
         RefPtrWillBeRawPtr<Node> next = node->nextSibling();
         if (node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable)) {
-            removeNode(node);
-            appendNode(node, element);
+            removeNode(node, editingState);
+            if (editingState->isAborted())
+                return;
+            appendNode(node, element, editingState);
+            if (editingState->isAborted())
+                return;
         }
         if (node == endNode)
             break;
@@ -1427,7 +1443,7 @@ void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWi
     if (dummyElement)
         removeNode(dummyElement);
 
-    applyInlineStyleChange(start, passedEnd, styleChange, addStyledElement);
+    applyInlineStyleChange(start, passedEnd, styleChange, addStyledElement, ASSERT_NO_EDITING_ABORT);
 }
 
 Position ApplyStyleCommand::positionToComputeInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, RefPtrWillBeMember<HTMLSpanElement>& dummyElement)
@@ -1442,7 +1458,7 @@ Position ApplyStyleCommand::positionToComputeInlineStyleChange(PassRefPtrWillBeR
     return firstPositionInOrBeforeNode(startNode.get());
 }
 
-void ApplyStyleCommand::applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> passedStart, PassRefPtrWillBeRawPtr<Node> passedEnd, StyleChange& styleChange, EAddStyledElement addStyledElement)
+void ApplyStyleCommand::applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> passedStart, PassRefPtrWillBeRawPtr<Node> passedEnd, StyleChange& styleChange, EAddStyledElement addStyledElement, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<Node> startNode = passedStart;
     RefPtrWillBeRawPtr<Node> endNode = passedEnd;
@@ -1484,7 +1500,9 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> pass
                 fontElement->setAttribute(faceAttr, AtomicString(styleChange.fontFace()));
             if (styleChange.applyFontSize())
                 fontElement->setAttribute(sizeAttr, AtomicString(styleChange.fontSize()));
-            surroundNodeRangeWithElement(startNode, endNode, fontElement.get());
+            surroundNodeRangeWithElement(startNode, endNode, fontElement.get(), editingState);
+            if (editingState->isAborted())
+                return;
         }
     }
 
@@ -1504,29 +1522,48 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> pass
         } else {
             RefPtrWillBeRawPtr<HTMLSpanElement> styleElement = HTMLSpanElement::create(document());
             styleElement->setAttribute(styleAttr, AtomicString(styleChange.cssStyle()));
-            surroundNodeRangeWithElement(startNode, endNode, styleElement.release());
+            surroundNodeRangeWithElement(startNode, endNode, styleElement.release(), editingState);
+            if (editingState->isAborted())
+                return;
         }
     }
 
-    if (styleChange.applyBold())
-        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(bTag, document()));
+    if (styleChange.applyBold()) {
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(bTag, document()), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
-    if (styleChange.applyItalic())
-        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(iTag, document()));
+    if (styleChange.applyItalic()) {
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(iTag, document()), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
-    if (styleChange.applyUnderline())
-        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(uTag, document()));
+    if (styleChange.applyUnderline()) {
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(uTag, document()), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
-    if (styleChange.applyLineThrough())
-        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(strikeTag, document()));
+    if (styleChange.applyLineThrough()) {
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(strikeTag, document()), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
-    if (styleChange.applySubscript())
-        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(subTag, document()));
-    else if (styleChange.applySuperscript())
-        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(supTag, document()));
+    if (styleChange.applySubscript()) {
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(subTag, document()), editingState);
+        if (editingState->isAborted())
+            return;
+    } else if (styleChange.applySuperscript()) {
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(supTag, document()), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
     if (m_styledInlineElement && addStyledElement == AddStyledElement)
-        surroundNodeRangeWithElement(startNode, endNode, m_styledInlineElement->cloneElementWithoutChildren());
+        surroundNodeRangeWithElement(startNode, endNode, m_styledInlineElement->cloneElementWithoutChildren(), editingState);
 }
 
 float ApplyStyleCommand::computedFontSize(Node* node)

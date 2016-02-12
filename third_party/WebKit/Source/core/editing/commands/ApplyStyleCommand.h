@@ -94,13 +94,13 @@ private:
     // style-application helpers
     void applyBlockStyle(EditingStyle*);
     void applyRelativeFontStyleChange(EditingStyle*);
-    void applyInlineStyle(EditingStyle*);
-    void fixRangeAndApplyInlineStyle(EditingStyle*, const Position& start, const Position& end);
-    void applyInlineStyleToNodeRange(EditingStyle*, PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> pastEndNode);
+    void applyInlineStyle(EditingStyle*, EditingState*);
+    void fixRangeAndApplyInlineStyle(EditingStyle*, const Position& start, const Position& end, EditingState*);
+    void applyInlineStyleToNodeRange(EditingStyle*, PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> pastEndNode, EditingState*);
     void addBlockStyle(const StyleChange&, HTMLElement*);
     void addInlineStyleIfNeeded(EditingStyle*, PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, EAddStyledElement = AddStyledElement);
     Position positionToComputeInlineStyleChange(PassRefPtrWillBeRawPtr<Node>, RefPtrWillBeMember<HTMLSpanElement>& dummyElement);
-    void applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> endNode, StyleChange&, EAddStyledElement);
+    void applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> endNode, StyleChange&, EAddStyledElement, EditingState*);
     void splitTextAtStart(const Position& start, const Position& end);
     void splitTextAtEnd(const Position& start, const Position& end);
     void splitTextElementAtStart(const Position& start, const Position& end);
@@ -111,7 +111,7 @@ private:
     bool mergeEndWithNextIfIdentical(const Position& start, const Position& end);
     void cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor);
 
-    void surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, PassRefPtrWillBeRawPtr<Element>);
+    void surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, PassRefPtrWillBeRawPtr<Element>, EditingState*);
     float computedFontSize(Node*);
     void joinChildTextNodes(ContainerNode*, const Position& start, const Position& end);
 
