@@ -394,6 +394,8 @@ if (enable_webrtc) {
       "../webrtc/media/base/turnutils.h",
       "../webrtc/media/base/videoadapter.cc",
       "../webrtc/media/base/videoadapter.h",
+      "../webrtc/media/base/videobroadcaster.cc",
+      "../webrtc/media/base/videobroadcaster.h",
       "../webrtc/media/base/videocapturer.cc",
       "../webrtc/media/base/videocapturer.h",
       "../webrtc/media/base/videocommon.cc",
