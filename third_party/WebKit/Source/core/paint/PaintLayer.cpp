@@ -1423,7 +1423,8 @@ void PaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
 {
     ASSERT(!oldStyle || !layoutObject()->style()->reflectionDataEquivalent(oldStyle));
     if (layoutObject()->hasReflection()) {
-        ensureRareData().reflectionInfo = adoptPtr(new PaintLayerReflectionInfo(*layoutBox()));
+        if (!ensureRareData().reflectionInfo)
+            m_rareData->reflectionInfo = adoptPtr(new PaintLayerReflectionInfo(*layoutBox()));
         m_rareData->reflectionInfo->updateAfterStyleChange(oldStyle);
     } else if (m_rareData && m_rareData->reflectionInfo) {
         m_rareData->reflectionInfo->destroy();
