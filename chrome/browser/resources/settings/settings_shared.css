@@ -61,6 +61,13 @@ paper-button.tertiary-button {
   };
 }
 
+paper-radio-button {
+  --paper-radio-button-label-spacing: 18px;
+  --paper-radio-button-checked-color: var(--google-blue-500);
+  --paper-radio-button-unchecked-color: #969696;
+  -webkit-margin-start: 2px;
+}
+
 .text-elide {
   overflow: hidden;
   text-overflow: ellipsis;

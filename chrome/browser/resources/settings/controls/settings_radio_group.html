@@ -6,6 +6,14 @@
 <dom-module id="settings-radio-group">
   <link rel="import" type="css" href="settings_radio_group.css">
   <template>
+    <style is="custom-style">
+      :host ::content paper-radio-button {
+        @apply(--layout-center);
+        display: flex;
+        min-height: 40px;
+        padding: 0;
+      }
+    </style>
     <div>[[label]]</div>
     <paper-radio-group selected="{{selected}}">
       <content></content>
