@@ -8,10 +8,9 @@ mek@chromium.org
 rockot@chromium.org
 asargent@chromium.org
 
-per-file searchbox_api.js=kmadhusu@chromium.org
+per-file searchbox_api.js=file://chrome/browser/search/OWNERS
 per-file searchbox_api.js=dcblack@chromium.org
-per-file searchbox_api.js=jered@chromium.org
-per-file searchbox_api.js=samarth@chromium.org
+
 per-file media_galleries*.js=thestig@chromium.org
 per-file media_galleries*.js=tommycli@chromium.org
 per-file enterprise_platform_keys*=emaxx@chromium.org

@@ -35,12 +35,8 @@ per-file spellcheck_result.h=groby@chromium.org
 per-file spellcheck_result.h=rouslan@chromium.org
 
 # Instant/Search files.
-per-file instant_types*=kmadhusu@chromium.org
-per-file instant_types*=jered@chromium.org
-per-file instant_types*=samarth@chromium.org
-per-file search_types.*=kmadhusu@chromium.org
-per-file search_types.*=jered@chromium.org
-per-file search_types.*=samarth@chromium.org
+per-file instant_types*=file://chrome/browser/search/OWNERS
+per-file search_types.*=file://chrome/browser/search/OWNERS
 
 #Content settings
 per-file content_settings*=markusheintz@chromium.org

@@ -1,4 +1,2 @@
 # Instant/Search files.
-per-file instant_restricted_id_cache*=kmadhusu@chromium.org
-per-file instant_restricted_id_cache*=jered@chromium.org
-per-file instant_restricted_id_cache*=samarth@chromium.org
+per-file instant_restricted_id_cache*=file://chrome/browser/search/OWNERS

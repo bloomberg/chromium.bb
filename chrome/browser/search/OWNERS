@@ -1,12 +1,7 @@
-treib@chromium.org
+file://components/search/OWNERS
 
 per-file hotword*=mgiuca@chromium.org
 per-file hotword*=kcarattini@chromium.org
 per-file *source*=mathp@chromium.org
 per-file *source*=fserb@chromium.org
 per-file *source*=huangs@chromium.org
-
-# Original implementors of most of the code, but not active in Chromium anymore
-kmadhusu@chromium.org
-jered@chromium.org
-samarth@chromium.org

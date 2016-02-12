@@ -280,9 +280,7 @@ per-file safe_browsing_db.gypi=nparker@chromium.org
 per-file safe_json.gypi=bauerb@chromium.org
 per-file safe_json.gypi=rsesek@chromium.org
 
-per-file search.gypi=kmadhusu@chromium.org
-per-file search.gypi=jered@chromium.org
-per-file search.gypi=samarth@chromium.org
+per-file search.gypi=file://components/search/OWNERS
 
 per-file search_engines.gypi=pkasting@chromium.org
 per-file search_engines.gypi=stevet@chromium.org
