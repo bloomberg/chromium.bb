@@ -45,7 +45,6 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       "\"packet_loss_threshold\":0.5,"
       "\"idle_connection_timeout_seconds\":300,"
       "\"close_sessions_on_ip_change\":true,"
-      "\"migrate_sessions_on_network_change\":true,"
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
       "\"AsyncDNS\":{\"enable\":true}}",
       // Data reduction proxy key.
@@ -95,10 +94,58 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
   EXPECT_EQ(300, params->quic_idle_connection_timeout_seconds);
 
   EXPECT_TRUE(params->quic_close_sessions_on_ip_change);
-  EXPECT_TRUE(params->quic_migrate_sessions_on_network_change);
+  EXPECT_FALSE(params->quic_migrate_sessions_on_network_change);
 
   // Check AsyncDNS resolver is enabled.
   EXPECT_TRUE(context->host_resolver()->GetDnsConfigAsValue());
+}
+
+TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
+  URLRequestContextConfig config(
+      // Enable QUIC.
+      true,
+      // QUIC User Agent ID.
+      "Default QUIC User Agent ID",
+      // Enable SPDY.
+      true,
+      // Enable SDCH.
+      false,
+      // Type of http cache.
+      URLRequestContextConfig::HttpCacheType::DISK,
+      // Max size of http cache in bytes.
+      1024000,
+      // Disable caching for HTTP responses. Other information may be stored in
+      // the cache.
+      false,
+      // Storage path for http cache and cookie storage.
+      "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // User-Agent request header field.
+      "fake agent",
+      // JSON encoded experimental options.
+      "{\"QUIC\":{\"migrate_sessions_on_network_change\":true}}",
+      // Data reduction proxy key.
+      "",
+      // Data reduction proxy.
+      "",
+      // Fallback data reduction proxy.
+      "",
+      // Data reduction proxy secure proxy check URL.
+      "",
+      // MockCertVerifier to use for testing purposes.
+      scoped_ptr<net::CertVerifier>());
+
+  net::URLRequestContextBuilder builder;
+  net::NetLog net_log;
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  // Set a ProxyConfigService to avoid DCHECK failure when building.
+  builder.set_proxy_config_service(make_scoped_ptr(
+      new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
+  scoped_ptr<net::URLRequestContext> context(builder.Build());
+  const net::HttpNetworkSession::Params* params =
+      context->GetNetworkSessionParams();
+
+  EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
+  EXPECT_TRUE(params->quic_migrate_sessions_on_network_change);
 }
 
 }  // namespace cronet
