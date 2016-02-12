@@ -54,7 +54,16 @@ static PassOwnPtr<uint8_t[]> copySkImageData(SkImage* input, SkImageInfo info)
     return dstPixels.release();
 }
 
-static SkImage* flipSkImageVertically(SkImage* input)
+static PassRefPtr<SkImage> newSkImageFromRaster(SkImageInfo info, PassOwnPtr<uint8_t[]> imagePixels, int imageRowBytes)
+{
+    return adoptRef(SkImage::NewFromRaster(info, imagePixels.leakPtr(), imageRowBytes,
+        [](const void* pixels, void*)
+        {
+            delete[] static_cast<const uint8_t*>(pixels);
+        }, nullptr));
+}
+
+static PassRefPtr<SkImage> flipSkImageVertically(SkImage* input)
 {
     int width = input->width();
     int height = input->height();
@@ -67,14 +76,14 @@ static SkImage* flipSkImageVertically(SkImage* input)
         int bottomFirstElement = (height - 1 - i) * imageRowBytes;
         std::swap_ranges(imagePixels.get() + topFirstElement, imagePixels.get() + topLastElement, imagePixels.get() + bottomFirstElement);
     }
-    return SkImage::NewRasterCopy(info, imagePixels.get(), imageRowBytes);
+    return newSkImageFromRaster(info, imagePixels.release(), imageRowBytes);
 }
 
-static SkImage* premulSkImageToUnPremul(SkImage* input)
+static PassRefPtr<SkImage> premulSkImageToUnPremul(SkImage* input)
 {
     SkImageInfo info = SkImageInfo::Make(input->width(), input->height(), kN32_SkColorType, kUnpremul_SkAlphaType);
     OwnPtr<uint8_t[]> dstPixels = copySkImageData(input, info);
-    return SkImage::NewRasterCopy(info, dstPixels.get(), input->width() * info.bytesPerPixel());
+    return newSkImageFromRaster(info, dstPixels.release(), input->width() * info.bytesPerPixel());
 }
 
 static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipYEnabled, bool premultiplyAlphaEnabled)
@@ -107,7 +116,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
 
     if (cropRect == srcRect) {
         if (flipYEnabled)
-            return StaticBitmapImage::create(adoptRef(flipSkImageVertically(skiaImage->newSubset(srcRect))));
+            return StaticBitmapImage::create(flipSkImageVertically(skiaImage->newSubset(srcRect)));
         return StaticBitmapImage::create(adoptRef(skiaImage->newSubset(srcRect)));
     }
 
@@ -125,12 +134,12 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
         dstTop = -cropRect.y();
     surface->getCanvas()->drawImage(skiaImage.get(), dstLeft, dstTop);
     if (flipYEnabled)
-        skiaImage = adoptRef(flipSkImageVertically(surface->newImageSnapshot()));
+        skiaImage = flipSkImageVertically(surface->newImageSnapshot());
     else
         skiaImage = adoptRef(surface->newImageSnapshot());
     if (premultiplyAlphaEnabled)
-        return StaticBitmapImage::create(skiaImage);
-    return StaticBitmapImage::create(adoptRef(premulSkImageToUnPremul(skiaImage.get())));
+        return StaticBitmapImage::create(skiaImage.release());
+    return StaticBitmapImage::create(premulSkImageToUnPremul(skiaImage.get()));
 }
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
@@ -163,12 +172,12 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
     parseOptions(options, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag);
 
     if (imageOrientationFlipYFlag || !premultiplyAlphaEnabledFlag) {
-        SkImage* skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get();
+        RefPtr<SkImage> skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
         if (imageOrientationFlipYFlag)
-            skiaImage = flipSkImageVertically(skiaImage);
+            skiaImage = flipSkImageVertically(skiaImage.get());
         if (!premultiplyAlphaEnabledFlag)
-            skiaImage = premulSkImageToUnPremul(skiaImage);
-        m_image = StaticBitmapImage::create(adoptRef(skiaImage));
+            skiaImage = premulSkImageToUnPremul(skiaImage.get());
+        m_image = StaticBitmapImage::create(skiaImage.release());
     } else {
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
     }
@@ -205,7 +214,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
         dstPoint.setY(-cropRect.y());
     buffer->putByteArray(Unmultiplied, data->data()->data(), data->size(), srcRect, dstPoint);
     if (options.imageOrientation() == imageOrientationFlipY)
-        m_image = StaticBitmapImage::create(adoptRef(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get())));
+        m_image = StaticBitmapImage::create(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get()));
     else
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
 }
