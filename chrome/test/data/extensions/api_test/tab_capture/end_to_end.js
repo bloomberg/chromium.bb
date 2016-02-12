@@ -198,10 +198,8 @@ chrome.test.runTests([
                 receiver.setLocalDescription(receiver_description);
                 sender.setRemoteDescription(receiver_description);
               }, function (error) {
-                chrome.test.fail("createAnswer failed: " + error);
               });
             }, function (error) {
-              chrome.test.fail("createOffer failed: " + error)
             });
           } else {
             chrome.test.fail("Unknown transport method: " + transportMethod);
