@@ -4032,6 +4032,7 @@
             'layout/LayoutTestHelper.cpp',
             'layout/LayoutTestHelper.h',
             'layout/LayoutThemeTest.cpp',
+            'layout/MapLocalToAncestorTest.cpp',
             'layout/MultiColumnFragmentainerGroupTest.cpp',
             'layout/OverflowModelTest.cpp',
             'layout/PaginationTest.cpp',
