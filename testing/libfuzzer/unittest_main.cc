@@ -10,18 +10,12 @@
 #include <iterator>
 #include <vector>
 
-#if defined(_MSC_VER)
-# define SANITIZER_WEAK_ATTRIBUTE
-#else
-# define SANITIZER_WEAK_ATTRIBUTE  __attribute__((weak))
-#endif
-
 // Libfuzzer API.
 extern "C" {
   // User function.
   int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size);
   // Initialization function.
-  SANITIZER_WEAK_ATTRIBUTE int LLVMFuzzerInitialize(int *argc, char ***argv);
+  __attribute__((weak)) int LLVMFuzzerInitialize(int *argc, char ***argv);
 }
 
 std::vector<char> readFile(std::string path) {
