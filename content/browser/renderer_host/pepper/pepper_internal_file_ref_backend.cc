@@ -98,6 +98,7 @@ int32_t PepperInternalFileRefBackend::MakeDirectory(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
+  PpapiPluginMsg_FileRef_MakeDirectoryReply reply;
   GetFileSystemContext()->operation_runner()->CreateDirectory(
       GetFileSystemURL(),
       !!(make_directory_flags & PP_MAKEDIRECTORYFLAG_EXCLUSIVE),
@@ -105,7 +106,7 @@ int32_t PepperInternalFileRefBackend::MakeDirectory(
       base::Bind(&PepperInternalFileRefBackend::DidFinish,
                  weak_factory_.GetWeakPtr(),
                  reply_context,
-                 PpapiPluginMsg_FileRef_MakeDirectoryReply()));
+                 reply));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -116,6 +117,7 @@ int32_t PepperInternalFileRefBackend::Touch(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
+  PpapiPluginMsg_FileRef_TouchReply reply;
   GetFileSystemContext()->operation_runner()->TouchFile(
       GetFileSystemURL(),
       ppapi::PPTimeToTime(last_access_time),
@@ -123,7 +125,7 @@ int32_t PepperInternalFileRefBackend::Touch(
       base::Bind(&PepperInternalFileRefBackend::DidFinish,
                  weak_factory_.GetWeakPtr(),
                  reply_context,
-                 PpapiPluginMsg_FileRef_TouchReply()));
+                 reply));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -132,13 +134,14 @@ int32_t PepperInternalFileRefBackend::Delete(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
+  PpapiPluginMsg_FileRef_DeleteReply reply;
   GetFileSystemContext()->operation_runner()->Remove(
       GetFileSystemURL(),
       false,
       base::Bind(&PepperInternalFileRefBackend::DidFinish,
                  weak_factory_.GetWeakPtr(),
                  reply_context,
-                 PpapiPluginMsg_FileRef_DeleteReply()));
+                 reply));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -154,6 +157,7 @@ int32_t PepperInternalFileRefBackend::Rename(
   if (!new_url.IsInSameFileSystem(GetFileSystemURL()))
     return PP_ERROR_FAILED;
 
+  PpapiPluginMsg_FileRef_RenameReply reply;
   GetFileSystemContext()->operation_runner()->Move(
       GetFileSystemURL(),
       new_url,
@@ -161,7 +165,7 @@ int32_t PepperInternalFileRefBackend::Rename(
       base::Bind(&PepperInternalFileRefBackend::DidFinish,
                  weak_factory_.GetWeakPtr(),
                  reply_context,
-                 PpapiPluginMsg_FileRef_RenameReply()));
+                 reply));
   return PP_OK_COMPLETIONPENDING;
 }
 
