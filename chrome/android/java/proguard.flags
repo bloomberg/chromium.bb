@@ -31,7 +31,7 @@
 -keepattributes RuntimeVisibleAnnotations
 
 # Remove methods annotated with this if their return value is unused
--assumenosideeffects class * {
+-assumenosideeffects class ** {
   @org.chromium.base.annotations.RemovableInRelease <methods>;
 }
 
@@ -85,6 +85,13 @@
 # Don't warn about those in case this app is linking against an older
 # platform version.  We know about them, and they are safe.
 -dontwarn android.support.**
+
+# Proguard mistakenly optimizes away some null checks on final fields
+# in the support library.
+# See https://sourceforge.net/p/proguard/bugs/531/#fdc9/41e2
+-keepclassmembers,allowshrinking,allowobfuscation class android.support.v7.widget.AppCompatButton {
+  !static final <fields>;
+}
 
 # Everything below this is kept because they are referenced by the test APK.
 -dontwarn javax.annotation.Nullable
