@@ -274,6 +274,14 @@ def GetClangOptionsFromCommandLine(clang_commandline, out_dir,
       if flag_index + 1 < len(clang_tokens):
         clang_flags.append(flag)
         clang_flags.append(clang_tokens[flag_index + 1])
+    elif flag.startswith('--sysroot='):
+      # On Linux we use a sysroot image.
+      sysroot_path = flag.lstrip('--sysroot=')
+      if sysroot_path.startswith('/'):
+        clang_flags.append(flag)
+      else:
+        abs_path = os.path.normpath(os.path.join(out_dir, sysroot_path))
+        clang_flags.append('--sysroot=' + abs_path)
   return clang_flags
 
 

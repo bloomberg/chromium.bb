@@ -12,6 +12,12 @@ default_file = ../../base/logging.cc
 rule cxx
   command = $cxx -Ia -isysroot /mac.sdk -Itag-$tag $in -o $out
 
+rule cxx_sysroot_abs
+  command = $cxx -Ia --sysroot=/usr/lib/sysroot-image $in -o $out
+
+rule cxx_sysroot_rel
+  command = $cxx -Ia --sysroot=../../build/sysroot-image $in -o $out
+
 rule link
   command = $link $in $out
 
@@ -39,3 +45,6 @@ build obj/base.logging.o: cxx $default_file
 
 build obj/five.o: link ../../five.cc
 
+build obj/six.o: cxx_sysroot_abs ../../six.cc
+
+build obj/seven.o: cxx_sysroot_rel ../../seven.cc
