@@ -237,6 +237,15 @@
 static const unsigned char kTableLeafPage = 0x0D;
 static const unsigned char kTableInteriorPage = 0x05;
 
+/* From section 1.2. */
+static const unsigned kiHeaderPageSizeOffset = 16;
+static const unsigned kiHeaderReservedSizeOffset = 20;
+static const unsigned kiHeaderEncodingOffset = 56;
+/* TODO(shess) |static const unsigned| fails creating the header in GetPager()
+** because |knHeaderSize| isn't |constexpr|.  But this isn't C++, either.
+*/
+enum { knHeaderSize = 100};
+
 /* From section 1.5. */
 static const unsigned kiPageTypeOffset = 0;
 static const unsigned kiPageFreeBlockOffset = 1;
@@ -478,8 +487,7 @@ static const unsigned char *PageData(RecoverPage *pPage, unsigned iOffset){
  */
 static const unsigned char *PageHeader(RecoverPage *pPage){
   if( pPage->pgno==1 ){
-    const unsigned nDatabaseHeader = 100;
-    return PageData(pPage, nDatabaseHeader);
+    return PageData(pPage, knHeaderSize);
   }else{
     return PageData(pPage, 0);
   }
@@ -487,21 +495,13 @@ static const unsigned char *PageHeader(RecoverPage *pPage){
 
 /* Helper to fetch the pager and page size for the named database. */
 static int GetPager(sqlite3 *db, const char *zName,
-                    RecoverPager **ppPager, unsigned *pnPageSize){
-  int i, rc;
+                    RecoverPager **ppPager, unsigned *pnPageSize,
+                    int *piEncoding){
+  int rc, iEncoding;
   unsigned nPageSize, nReservedSize;
+  unsigned char header[knHeaderSize];
   sqlite3_file *pFile = NULL;
-  Btree *pBt = NULL;
   RecoverPager *pPager;
-  for( i=0; i<db->nDb; ++i ){
-    if( ascii_strcasecmp(db->aDb[i].zName, zName)==0 ){
-      pBt = db->aDb[i].pBt;
-      break;
-    }
-  }
-  if( !pBt ){
-    return SQLITE_ERROR;
-  }
 
   rc = sqlite3_file_control(db, zName, SQLITE_FCNTL_FILE_POINTER, &pFile);
   if( rc!=SQLITE_OK ) {
@@ -519,8 +519,41 @@ static int GetPager(sqlite3 *db, const char *zName,
     return rc;
   }
 
-  nPageSize = sqlite3BtreeGetPageSize(pBt);
-  nReservedSize = sqlite3BtreeGetOptimalReserve(pBt);
+  /* Read the Initial header information.  In case of SQLITE_IOERR_SHORT_READ,
+  ** the header is incomplete, which means no data could be recovered anyhow.
+  */
+  rc = pFile->pMethods->xRead(pFile, header, sizeof(header), 0);
+  if( rc != SQLITE_OK ){
+    pFile->pMethods->xUnlock(pFile, SQLITE_LOCK_NONE);
+    if( rc==SQLITE_IOERR_SHORT_READ ){
+      return SQLITE_CORRUPT;
+    }
+    return rc;
+  }
+
+  /* Page size must be a power of two between 512 and 32768 inclusive. */
+  nPageSize = decodeUnsigned16(header + kiHeaderPageSizeOffset);
+  if( (nPageSize&(nPageSize-1)) || nPageSize>32768 || nPageSize<512 ){
+    pFile->pMethods->xUnlock(pFile, SQLITE_LOCK_NONE);
+    return rc;
+  }
+
+  /* Space reserved a the end of the page for extensions.  Usually 0. */
+  nReservedSize = header[kiHeaderReservedSizeOffset];
+
+  /* 1 for UTF-8, 2 for UTF-16le, 3 for UTF-16be. */
+  iEncoding = decodeUnsigned32(header + kiHeaderEncodingOffset);
+  if( iEncoding==3 ){
+    *piEncoding = SQLITE_UTF16BE;
+  } else if( iEncoding==2 ){
+    *piEncoding = SQLITE_UTF16LE;
+  } else if( iEncoding==1 ){
+    *piEncoding = SQLITE_UTF8;
+  } else {
+    /* This case should not be possible. */
+    *piEncoding = SQLITE_UTF8;
+  }
+
   rc = pagerCreate(pFile, nPageSize, &pPager);
   if( rc!=SQLITE_OK ){
     pFile->pMethods->xUnlock(pFile, SQLITE_LOCK_NONE);
@@ -529,6 +562,7 @@ static int GetPager(sqlite3 *db, const char *zName,
 
   *ppPager = pPager;
   *pnPageSize = nPageSize - nReservedSize;
+  *piEncoding = iEncoding;
   return SQLITE_OK;
 }
 
@@ -648,57 +682,6 @@ static int getRootPage(sqlite3 *db, const char *zDb, const char *zTable,
     if( rc==SQLITE_DONE ){
       rc = SQLITE_OK;
     }else if( rc==SQLITE_ROW ){
-      rc = SQLITE_CORRUPT;
-    }
-  }
-  sqlite3_finalize(pStmt);
-  return rc;
-}
-
-static int getEncoding(sqlite3 *db, const char *zDb, int* piEncoding){
-  sqlite3_stmt *pStmt;
-  int rc;
-  char *zSql = sqlite3_mprintf("PRAGMA %s.encoding", zDb);
-  if( !zSql ){
-    return SQLITE_NOMEM;
-  }
-
-  rc = sqlite3_prepare_v2(db, zSql, -1, &pStmt, 0);
-  sqlite3_free(zSql);
-  if( rc!=SQLITE_OK ){
-    return rc;
-  }
-
-  /* Require a result. */
-  rc = sqlite3_step(pStmt);
-  if( rc==SQLITE_DONE ){
-    /* This case should not be possible. */
-    rc = SQLITE_CORRUPT;
-  }else if( rc==SQLITE_ROW ){
-    if( sqlite3_column_type(pStmt, 0)==SQLITE_TEXT ){
-      const char* z = (const char *)sqlite3_column_text(pStmt, 0);
-      /* These strings match the literals in pragma.c. */
-      if( !strcmp(z, "UTF-16le") ){
-        *piEncoding = SQLITE_UTF16LE;
-      }else if( !strcmp(z, "UTF-16be") ){
-        *piEncoding = SQLITE_UTF16BE;
-      }else if( !strcmp(z, "UTF-8") ){
-        *piEncoding = SQLITE_UTF8;
-      }else{
-        /* This case should not be possible. */
-        *piEncoding = SQLITE_UTF8;
-      }
-    }else{
-      /* This case should not be possible. */
-      *piEncoding = SQLITE_UTF8;
-    }
-
-    /* Require only one result. */
-    rc = sqlite3_step(pStmt);
-    if( rc==SQLITE_DONE ){
-      rc = SQLITE_OK;
-    }else if( rc==SQLITE_ROW ){
-      /* This case should not be possible. */
       rc = SQLITE_CORRUPT;
     }
   }
@@ -1761,13 +1744,7 @@ static int recoverOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
     return rc;
   }
 
-  iEncoding = 0;
-  rc = getEncoding(pRecover->db, pRecover->zDb, &iEncoding);
-  if( rc!=SQLITE_OK ){
-    return rc;
-  }
-
-  rc = GetPager(pRecover->db, pRecover->zDb, &pPager, &nPageSize);
+  rc = GetPager(pRecover->db, pRecover->zDb, &pPager, &nPageSize, &iEncoding);
   if( rc!=SQLITE_OK ){
     return rc;
   }
