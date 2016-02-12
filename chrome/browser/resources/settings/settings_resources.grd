@@ -500,6 +500,16 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
+      <structure name="IDR_SETTINGS_SEARCH_ENGINES_BROWSER_PROXY_JS"
+                 file="search_engines_page/search_engines_browser_proxy.js"
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
+      <structure name="IDR_SETTINGS_SEARCH_ENGINES_BROWSER_PROXY_HTML"
+                 file="search_engines_page/search_engines_browser_proxy.html"
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_SEARCH_PAGE_JS"
                  file="search_page/search_page.js"
                  type="chrome_html" />
