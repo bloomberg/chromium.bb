@@ -17,11 +17,14 @@
 #include "components/exo/surface_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_property.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/events/event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/transform_util.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(exo::Surface*);
@@ -49,12 +52,10 @@ bool ListContainsEntry(T& list, U key) {
   return FindListEntry(list, key) != list.end();
 }
 
-// A window delegate which does nothing. Used to create a window that
-// is an event target, but do nothing.
-class EmptyWindowDelegate : public aura::WindowDelegate {
+class CustomWindowDelegate : public aura::WindowDelegate {
  public:
-  EmptyWindowDelegate() {}
-  ~EmptyWindowDelegate() override {}
+  explicit CustomWindowDelegate(Surface* surface) : surface_(surface) {}
+  ~CustomWindowDelegate() override {}
 
   // Overridden from aura::WindowDelegate:
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
@@ -79,11 +80,38 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
-  bool HasHitTestMask() const override { return false; }
-  void GetHitTestMask(gfx::Path* mask) const override {}
+  bool HasHitTestMask() const override { return surface_->HasHitTestMask(); }
+  void GetHitTestMask(gfx::Path* mask) const override {
+    surface_->GetHitTestMask(mask);
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);
+  Surface* const surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomWindowDelegate);
+};
+
+class CustomWindowTargeter : public aura::WindowTargeter {
+ public:
+  CustomWindowTargeter() {}
+  ~CustomWindowTargeter() override {}
+
+  // Overridden from aura::WindowTargeter:
+  bool EventLocationInsideBounds(aura::Window* window,
+                                 const ui::LocatedEvent& event) const override {
+    Surface* surface = Surface::AsSurface(window);
+    if (!surface)
+      return false;
+
+    gfx::Point local_point = event.location();
+    if (window->parent())
+      aura::Window::ConvertPointToTarget(window->parent(), window,
+                                         &local_point);
+    return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
 }  // namespace
@@ -92,9 +120,11 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
 // Surface, public:
 
 Surface::Surface()
-    : aura::Window(new EmptyWindowDelegate),
+    : aura::Window(new CustomWindowDelegate(this)),
       has_pending_contents_(false),
+      pending_input_region_(SkIRect::MakeLargest()),
       pending_buffer_scale_(1.0f),
+      input_region_(SkIRect::MakeLargest()),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
       compositor_(nullptr),
@@ -103,7 +133,9 @@ Surface::Surface()
   SetName("ExoSurface");
   Init(ui::LAYER_SOLID_COLOR);
   SetProperty(kSurfaceKey, this);
+  SetEventTargeter(make_scoped_ptr(new CustomWindowTargeter));
   set_owned_by_parent(false);
+  AddObserver(this);
 }
 
 Surface::~Surface() {
@@ -111,6 +143,7 @@ Surface::~Surface() {
 
   layer()->SetShowSolidColorContent();
 
+  RemoveObserver(this);
   if (compositor_)
     compositor_->RemoveObserver(this);
 
@@ -152,6 +185,13 @@ void Surface::SetOpaqueRegion(const SkRegion& region) {
                gfx::SkIRectToRect(region.getBounds()).ToString());
 
   pending_opaque_region_ = region;
+}
+
+void Surface::SetInputRegion(const SkRegion& region) {
+  TRACE_EVENT1("exo", "Surface::SetInputRegion", "region",
+               gfx::SkIRectToRect(region.getBounds()).ToString());
+
+  pending_input_region_ = region;
 }
 
 void Surface::SetBufferScale(float scale) {
@@ -303,17 +343,11 @@ void Surface::CommitSurfaceHierarchy() {
     pending_damage_.setEmpty();
   }
 
-  ui::Compositor* compositor = layer()->GetCompositor();
-  if (compositor && !pending_frame_callbacks_.empty()) {
-    // Start observing the compositor for frame callbacks.
-    if (!compositor_) {
-      compositor->AddObserver(this);
-      compositor_ = compositor;
-    }
+  // Update current input region.
+  input_region_ = pending_input_region_;
 
-    // Move pending frame callbacks to the end of |frame_callbacks_|.
-    frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
-  }
+  // Move pending frame callbacks to the end of |frame_callbacks_|.
+  frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
 
   // Synchronize window hierarchy. This will position and update the stacking
   // order of all sub-surfaces after committing all pending state of sub-surface
@@ -346,14 +380,34 @@ void Surface::CommitSurfaceHierarchy() {
   }
 }
 
-gfx::Size Surface::GetPreferredSize() const {
-  return pending_buffer_ ? gfx::ScaleToFlooredSize(pending_buffer_->GetSize(),
-                                                   1.0f / pending_buffer_scale_)
-                         : layer()->size();
+gfx::Rect Surface::GetVisibleBounds() const {
+  // Simple clients expect the visible bounds "geometry" of a surface to match
+  // the input region bounds. To accommodate that we return the intersection
+  // of the layer bounds and the input region bounds.
+  SkIRect visible_bounds = input_region_.getBounds();
+  if (!visible_bounds.intersect(gfx::RectToSkIRect(gfx::Rect(layer()->size()))))
+    return gfx::Rect();
+  return gfx::SkIRectToRect(visible_bounds);
 }
 
 bool Surface::IsSynchronized() const {
   return delegate_ ? delegate_->IsSurfaceSynchronized() : false;
+}
+
+bool Surface::HitTestRect(const gfx::Rect& rect) const {
+  if (HasHitTestMask())
+    return input_region_.intersects(gfx::RectToSkIRect(rect));
+
+  return rect.Intersects(gfx::Rect(layer()->size()));
+}
+
+bool Surface::HasHitTestMask() const {
+  return !input_region_.contains(
+      gfx::RectToSkIRect(gfx::Rect(layer()->size())));
+}
+
+void Surface::GetHitTestMask(gfx::Path* mask) const {
+  input_region_.getBoundaryPath(mask);
 }
 
 void Surface::SetSurfaceDelegate(SurfaceDelegate* delegate) {
@@ -382,6 +436,22 @@ scoped_refptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
       new base::trace_event::TracedValue;
   value->SetString("name", layer()->name());
   return value;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// aura::WindowObserver overrides:
+
+void Surface::OnWindowAddedToRootWindow(aura::Window* window) {
+  DCHECK(!compositor_);
+  compositor_ = layer()->GetCompositor();
+  compositor_->AddObserver(this);
+}
+
+void Surface::OnWindowRemovingFromRootWindow(aura::Window* window,
+                                             aura::Window* new_root) {
+  DCHECK(compositor_);
+  compositor_->RemoveObserver(this);
+  compositor_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

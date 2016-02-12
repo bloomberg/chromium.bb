@@ -40,9 +40,12 @@ TEST_F(ShellSurfaceTest, Restore) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   surface->Attach(buffer.get());
+  surface->Commit();
+  // Note: Remove contents to avoid issues with maximize animations in tests.
+  surface->Attach(nullptr);
+  surface->Commit();
   shell_surface->Maximize();
   shell_surface->Restore();
-  surface->Commit();
   EXPECT_EQ(
       buffer_size.ToString(),
       shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());

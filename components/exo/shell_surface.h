@@ -115,6 +115,8 @@ class ShellSurface : public SurfaceDelegate,
   views::View* GetContentsView() override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
+  bool WidgetHasHitTestMask() const override;
+  void GetWidgetHitTestMask(gfx::Path* mask) const override;
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;

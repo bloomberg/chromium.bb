@@ -15,7 +15,9 @@
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/hit_test.h"
+#include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -48,6 +50,30 @@ class CustomFrameView : public views::NonClientFrameView {
   views::Widget* const widget_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
+};
+
+class CustomWindowTargeter : public aura::WindowTargeter {
+ public:
+  CustomWindowTargeter() {}
+  ~CustomWindowTargeter() override {}
+
+  // Overridden from aura::WindowTargeter:
+  bool EventLocationInsideBounds(aura::Window* window,
+                                 const ui::LocatedEvent& event) const override {
+    Surface* surface = ShellSurface::GetMainSurface(window);
+    if (!surface)
+      return false;
+
+    gfx::Point local_point = event.location();
+    if (window->parent())
+      aura::Window::ConvertPointToTarget(window->parent(), window,
+                                         &local_point);
+    aura::Window::ConvertPointToTarget(window, surface, &local_point);
+    return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
 class ShellSurfaceWidget : public views::Widget {
@@ -216,18 +242,21 @@ scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 // SurfaceDelegate overrides:
 
 void ShellSurface::OnSurfaceCommit() {
+  surface_->CommitSurfaceHierarchy();
+
   if (enabled() && !widget_)
     CreateShellSurfaceWidget();
-
-  surface_->CommitSurfaceHierarchy();
 
   if (widget_) {
     // Update surface bounds and widget size.
     gfx::Point origin;
     views::View::ConvertPointToWidget(this, &origin);
-    surface_->SetBounds(gfx::Rect(origin - geometry_.OffsetFromOrigin(),
+    // Use |geometry_| if set, otherwise use the visual bounds of the surface.
+    gfx::Rect geometry =
+        geometry_.IsEmpty() ? surface_->GetVisibleBounds() : geometry_;
+    surface_->SetBounds(gfx::Rect(origin - geometry.OffsetFromOrigin(),
                                   surface_->layer()->size()));
-    widget_->SetSize(widget_->non_client_view()->GetPreferredSize());
+    widget_->SetSize(geometry.size());
 
     // Show widget if not already visible.
     if (!widget_->IsClosed() && !widget_->IsVisible())
@@ -285,6 +314,17 @@ views::NonClientFrameView* ShellSurface::CreateNonClientFrameView(
   return new CustomFrameView(widget);
 }
 
+bool ShellSurface::WidgetHasHitTestMask() const {
+  return surface_ ? surface_->HasHitTestMask() : false;
+}
+
+void ShellSurface::GetWidgetHitTestMask(gfx::Path* mask) const {
+  DCHECK(WidgetHasHitTestMask());
+  surface_->GetHitTestMask(mask);
+  gfx::Point origin = surface_->bounds().origin();
+  mask->offset(SkIntToScalar(origin.x()), SkIntToScalar(origin.y()));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::Views overrides:
 
@@ -292,7 +332,7 @@ gfx::Size ShellSurface::GetPreferredSize() const {
   if (!geometry_.IsEmpty())
     return geometry_.size();
 
-  return surface_ ? surface_->GetPreferredSize() : gfx::Size();
+  return surface_ ? surface_->GetVisibleBounds().size() : gfx::Size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -347,6 +387,8 @@ void ShellSurface::CreateShellSurfaceWidget() {
   widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
   widget_->GetNativeWindow()->AddChild(surface_);
+  widget_->GetNativeWindow()->SetEventTargeter(
+      make_scoped_ptr(new CustomWindowTargeter));
   SetApplicationId(widget_->GetNativeWindow(), &application_id_);
   SetMainSurface(widget_->GetNativeWindow(), surface_);
 

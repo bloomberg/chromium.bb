@@ -91,24 +91,31 @@ TEST_F(SurfaceTest, SetOpaqueRegion) {
   surface->SetOpaqueRegion(SkRegion(SkIRect::MakeEmpty()));
 }
 
+TEST_F(SurfaceTest, SetInputRegion) {
+  scoped_ptr<Surface> surface(new Surface);
+
+  // Setting a non-empty input region should succeed.
+  surface->SetInputRegion(SkRegion(SkIRect::MakeWH(256, 256)));
+
+  // Setting an empty input region should succeed.
+  surface->SetInputRegion(SkRegion(SkIRect::MakeEmpty()));
+}
+
 TEST_F(SurfaceTest, SetBufferScale) {
   gfx::Size buffer_size(512, 512);
   scoped_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   scoped_ptr<Surface> surface(new Surface);
 
-  // Attach the buffer to the surface. This will update the pending bounds of
-  // the surface to the buffer size.
-  surface->Attach(buffer.get());
-  EXPECT_EQ(buffer_size.ToString(), surface->GetPreferredSize().ToString());
-
-  // This will update the pending bounds of the surface and take the buffer
-  // scale into account.
+  // This will update the bounds of the surface and take the buffer scale into
+  // account.
   const float kBufferScale = 2.0f;
+  surface->Attach(buffer.get());
   surface->SetBufferScale(kBufferScale);
+  surface->Commit();
   EXPECT_EQ(
       gfx::ScaleToFlooredSize(buffer_size, 1.0f / kBufferScale).ToString(),
-      surface->GetPreferredSize().ToString());
+      surface->bounds().size().ToString());
 }
 
 TEST_F(SurfaceTest, Commit) {
