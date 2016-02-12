@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ReadableStreamOperations.h"
+#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -21,7 +22,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/RefCounted.h"
-#include "wtf/WeakPtr.h"
 #include <algorithm>
 #include <string.h>
 #include <v8.h>
@@ -37,14 +37,14 @@ class ReadableStreamDataConsumerHandle::ReadingContext final : public RefCounted
 public:
     class OnFulfilled final : public ScriptFunction {
     public:
-        static v8::Local<v8::Function> createFunction(ScriptState* scriptState, WeakPtr<ReadingContext> context)
+        static v8::Local<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
         {
             return (new OnFulfilled(scriptState, context))->bindToV8Function();
         }
 
         ScriptValue call(ScriptValue v) override
         {
-            RefPtr<ReadingContext> readingContext(m_readingContext.get());
+            RefPtr<ReadingContext> readingContext(m_readingContext);
             if (!readingContext)
                 return v;
             bool done;
@@ -64,22 +64,22 @@ public:
         }
 
     private:
-        OnFulfilled(ScriptState* scriptState, WeakPtr<ReadingContext> context)
+        OnFulfilled(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
             : ScriptFunction(scriptState), m_readingContext(context) {}
 
-        WeakPtr<ReadingContext> m_readingContext;
+        RefPtr<ReadingContext> m_readingContext;
     };
 
     class OnRejected final : public ScriptFunction {
     public:
-        static v8::Local<v8::Function> createFunction(ScriptState* scriptState, WeakPtr<ReadingContext> context)
+        static v8::Local<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
         {
             return (new OnRejected(scriptState, context))->bindToV8Function();
         }
 
         ScriptValue call(ScriptValue v) override
         {
-            RefPtr<ReadingContext> readingContext(m_readingContext.get());
+            RefPtr<ReadingContext> readingContext(m_readingContext);
             if (!readingContext)
                 return v;
             readingContext->onRejected();
@@ -87,10 +87,10 @@ public:
         }
 
     private:
-        OnRejected(ScriptState* scriptState, WeakPtr<ReadingContext> context)
+        OnRejected(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
             : ScriptFunction(scriptState), m_readingContext(context) {}
 
-        WeakPtr<ReadingContext> m_readingContext;
+        RefPtr<ReadingContext> m_readingContext;
     };
 
     class ReaderImpl final : public FetchDataConsumerHandle::Reader {
@@ -119,9 +119,9 @@ public:
         RefPtr<ReadingContext> m_readingContext;
     };
 
-    static PassRefPtr<ReadingContext> create(ScriptState* scriptState, ScriptValue stream)
+    static PassRefPtr<ReadingContext> create(ScriptState* scriptState, ScriptValue streamReader)
     {
-        return adoptRef(new ReadingContext(scriptState, stream));
+        return adoptRef(new ReadingContext(scriptState, streamReader));
     }
 
     void attachReader(WebDataConsumerHandle::Client* client)
@@ -150,18 +150,20 @@ public:
             *available = m_pendingBuffer->length() - m_pendingOffset;
             return WebDataConsumerHandle::Ok;
         }
-        ASSERT(!m_reader.isEmpty());
-        m_isInRecursion = true;
         if (!m_isReading) {
             m_isReading = true;
-            ScriptState::Scope scope(m_reader.scriptState());
-            V8RecursionScope recursionScope(m_reader.isolate());
-            ReadableStreamOperations::read(m_reader.scriptState(), m_reader).then(
-                OnFulfilled::createFunction(m_reader.scriptState(), m_weakPtrFactory.createWeakPtr()),
-                OnRejected::createFunction(m_reader.scriptState(), m_weakPtrFactory.createWeakPtr()));
-            // Note: Microtasks may run here.
+            ScriptState::Scope scope(m_scriptState.get());
+            ScriptValue reader(m_scriptState.get(), m_reader.newLocal(m_scriptState->isolate()));
+            if (reader.isEmpty()) {
+                // The reader was collected.
+                m_hasError = true;
+                m_isReading = false;
+                return WebDataConsumerHandle::UnexpectedError;
+            }
+            ReadableStreamOperations::read(m_scriptState.get(), reader).then(
+                OnFulfilled::createFunction(m_scriptState.get(), this),
+                OnRejected::createFunction(m_scriptState.get(), this));
         }
-        m_isInRecursion = false;
         return WebDataConsumerHandle::ShouldWait;
     }
 
@@ -212,10 +214,6 @@ public:
     {
         if (!m_client)
             return;
-        if (m_isInRecursion) {
-            notifyLater();
-            return;
-        }
         m_client->didGetReadable();
     }
 
@@ -226,42 +224,49 @@ public:
     }
 
 private:
-    ReadingContext(ScriptState* scriptState, ScriptValue stream)
-        : m_client(nullptr)
-        , m_weakPtrFactory(this)
+    ReadingContext(ScriptState* scriptState, ScriptValue streamReader)
+        : m_reader(scriptState->isolate(), streamReader.v8Value())
+        , m_scriptState(scriptState)
+        , m_client(nullptr)
         , m_pendingOffset(0)
         , m_isReading(false)
         , m_isDone(false)
         , m_hasError(false)
-        , m_isInRecursion(false)
     {
-        if (!ReadableStreamOperations::isLocked(scriptState, stream)) {
-            // Here the stream implementation must not throw an exception.
-            NonThrowableExceptionState es;
-            m_reader = ReadableStreamOperations::getReader(scriptState, stream, es);
-        }
-        m_hasError = m_reader.isEmpty();
+        m_reader.setWeak(this, &ReadingContext::onCollected);
     }
 
-    // This ScriptValue is leaky because it stores a strong reference to a
-    // JavaScript object.
-    // TODO(yhirano): Fix it.
-    //
-    // Holding a ScriptValue here is safe in terms of cross-world wrapper
+    void onCollected()
+    {
+        m_reader.clear();
+        if (m_isDone || m_hasError)
+            return;
+        m_hasError = true;
+        if (m_client)
+            notifyLater();
+    }
+
+    static void onCollected(const v8::WeakCallbackInfo<ReadableStreamDataConsumerHandle::ReadingContext>& data)
+    {
+        data.GetParameter()->onCollected();
+    }
+
+    // |m_reader| is a weak persistent. It should be kept alive by someone
+    // outside of ReadableStreamDataConsumerHandle.
+    // Holding a ScopedPersistent here is safe in terms of cross-world wrapper
     // leakage because we read only Uint8Array chunks from the reader.
-    ScriptValue m_reader;
+    ScopedPersistent<v8::Value> m_reader;
+    RefPtr<ScriptState> m_scriptState;
     WebDataConsumerHandle::Client* m_client;
     RefPtr<DOMUint8Array> m_pendingBuffer;
-    WeakPtrFactory<ReadingContext> m_weakPtrFactory;
     size_t m_pendingOffset;
     bool m_isReading;
     bool m_isDone;
     bool m_hasError;
-    bool m_isInRecursion;
 };
 
-ReadableStreamDataConsumerHandle::ReadableStreamDataConsumerHandle(ScriptState* scriptState, ScriptValue stream)
-    : m_readingContext(ReadingContext::create(scriptState, stream))
+ReadableStreamDataConsumerHandle::ReadableStreamDataConsumerHandle(ScriptState* scriptState, ScriptValue streamReader)
+    : m_readingContext(ReadingContext::create(scriptState, streamReader))
 {
 }
 ReadableStreamDataConsumerHandle::~ReadableStreamDataConsumerHandle() = default;

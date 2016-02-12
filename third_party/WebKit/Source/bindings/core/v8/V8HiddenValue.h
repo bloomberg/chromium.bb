@@ -39,6 +39,7 @@ class ScriptWrappable;
     V(idbCursorRequest) \
     V(port1) \
     V(port2) \
+    V(readableStreamReaderInResponse) \
     V(state) \
     V(stringData) \
     V(testInterfaces) \

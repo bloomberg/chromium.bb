@@ -20,23 +20,24 @@ class ScriptState;
 // implemented with V8 Extras.
 // The stream will be immediately locked by the handle and will never be
 // released.
+//
+// The ReadableStreamReader handle held in a ReadableStreamDataConsumerHandle
+// is weak. A user must guarantee that the ReadableStreamReader object is kept
+// alive appropriately.
 // TODO(yhirano): CURRENTLY THIS HANDLE SUPPORTS READING ONLY FROM THE THREAD ON
 // WHICH IT IS CREATED. FIX THIS.
-// TODO(yhirano): This implementation may cause leaks because the handle and
-// the reader own a strong reference to the associated ReadableStreamReader.
-// Fix it.
 class MODULES_EXPORT ReadableStreamDataConsumerHandle final : public FetchDataConsumerHandle {
     WTF_MAKE_NONCOPYABLE(ReadableStreamDataConsumerHandle);
 public:
-    static PassOwnPtr<ReadableStreamDataConsumerHandle> create(ScriptState* scriptState, ScriptValue stream)
+    static PassOwnPtr<ReadableStreamDataConsumerHandle> create(ScriptState* scriptState, ScriptValue streamReader)
     {
-        return adoptPtr(new ReadableStreamDataConsumerHandle(scriptState, stream));
+        return adoptPtr(new ReadableStreamDataConsumerHandle(scriptState, streamReader));
     }
     ~ReadableStreamDataConsumerHandle() override;
 
 private:
     class ReadingContext;
-    ReadableStreamDataConsumerHandle(ScriptState*, ScriptValue stream);
+    ReadableStreamDataConsumerHandle(ScriptState*, ScriptValue streamReader);
     Reader* obtainReaderInternal(Client*) override;
     const char* debugName() const override { return "ReadableStreamDataConsumerHandle"; }
 

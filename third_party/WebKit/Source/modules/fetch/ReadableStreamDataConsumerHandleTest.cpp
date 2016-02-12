@@ -4,8 +4,10 @@
 
 #include "modules/fetch/ReadableStreamDataConsumerHandle.h"
 
+#include "bindings/core/v8/ReadableStreamOperations.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingMacros.h"
+#include "bindings/core/v8/V8GCController.h"
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
@@ -78,6 +80,17 @@ public:
         return r;
     }
 
+    PassOwnPtr<ReadableStreamDataConsumerHandle> createHandle(ScriptValue stream)
+    {
+        NonThrowableExceptionState es;
+        ScriptValue reader = ReadableStreamOperations::getReader(scriptState(), stream, es);
+        ASSERT(!reader.isEmpty());
+        ASSERT(reader.v8Value()->IsObject());
+        return ReadableStreamDataConsumerHandle::create(scriptState(), reader);
+    }
+
+    void gc() { V8GCController::collectAllGarbageForTesting(isolate()); }
+
 private:
     OwnPtr<DummyPageHolder> m_page;
 };
@@ -87,7 +100,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Create)
     ScriptState::Scope scope(scriptState());
     ScriptValue stream(scriptState(), evalWithPrintingError("new ReadableStream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -110,7 +123,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EmptyStream)
     ScriptValue stream(scriptState(), evalWithPrintingError(
         "new ReadableStream({start: c => c.close()})"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -141,7 +154,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, ErroredStream)
     ScriptValue stream(scriptState(), evalWithPrintingError(
         "new ReadableStream({start: c => c.error()})"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -177,7 +190,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -239,7 +252,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -301,34 +314,6 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
     EXPECT_EQ(kDone, reader->beginRead(&buffer, kNone, &available));
 }
 
-TEST_F(ReadableStreamDataConsumerHandleTest, LockedStream)
-{
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError(
-        "var stream = new ReadableStream;"
-        "stream.getReader();"
-        "stream"));
-    ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
-    ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
-    Checkpoint checkpoint;
-
-    InSequence s;
-    EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*client, didGetReadable());
-    EXPECT_CALL(checkpoint, Call(2));
-
-    char c;
-    size_t readBytes;
-    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
-    ASSERT_TRUE(reader);
-    checkpoint.Call(1);
-    testing::runPendingTasks();
-    checkpoint.Call(2);
-    EXPECT_EQ(kUnexpectedError, reader->read(&c, 1, kNone, &readBytes));
-}
-
 TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
 {
     ScriptState::Scope scope(scriptState());
@@ -339,7 +324,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -374,7 +359,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueNull)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -409,7 +394,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -431,6 +416,93 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
     EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));
     testing::runPendingTasks();
     checkpoint.Call(3);
+    EXPECT_EQ(kUnexpectedError, reader->beginRead(&buffer, kNone, &available));
+}
+
+TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeak)
+{
+    OwnPtr<FetchDataConsumerHandle::Reader> reader;
+    Checkpoint checkpoint;
+    Persistent<MockClient> client = MockClient::create();
+    ScriptValue stream;
+
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*client, didGetReadable());
+    EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(checkpoint, Call(3));
+    EXPECT_CALL(*client, didGetReadable());
+    EXPECT_CALL(checkpoint, Call(4));
+
+    {
+        // We need this scope to collect local handles.
+        ScriptState::Scope scope(scriptState());
+        stream = ScriptValue(scriptState(), evalWithPrintingError("new ReadableStream()"));
+        ASSERT_FALSE(stream.isEmpty());
+        OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+        ASSERT_TRUE(handle);
+
+        reader = handle->obtainReader(client);
+        ASSERT_TRUE(reader);
+    }
+
+    checkpoint.Call(1);
+    testing::runPendingTasks();
+    checkpoint.Call(2);
+    stream.clear();
+    gc();
+    checkpoint.Call(3);
+    testing::runPendingTasks();
+
+    checkpoint.Call(4);
+    const void* buffer;
+    size_t available;
+    EXPECT_EQ(kUnexpectedError, reader->beginRead(&buffer, kNone, &available));
+}
+
+TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeakWhenReading)
+{
+    OwnPtr<FetchDataConsumerHandle::Reader> reader;
+    Checkpoint checkpoint;
+    Persistent<MockClient> client = MockClient::create();
+    ScriptValue stream;
+
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*client, didGetReadable());
+    EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(checkpoint, Call(3));
+    EXPECT_CALL(checkpoint, Call(4));
+    EXPECT_CALL(*client, didGetReadable());
+    EXPECT_CALL(checkpoint, Call(5));
+
+    {
+        // We need this scope to collect local handles.
+        ScriptState::Scope scope(scriptState());
+        stream = ScriptValue(scriptState(), evalWithPrintingError("new ReadableStream()"));
+        ASSERT_FALSE(stream.isEmpty());
+        OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
+        ASSERT_TRUE(handle);
+
+        reader = handle->obtainReader(client);
+        ASSERT_TRUE(reader);
+    }
+
+    const void* buffer;
+    size_t available;
+    checkpoint.Call(1);
+    testing::runPendingTasks();
+    checkpoint.Call(2);
+    EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));
+
+    testing::runPendingTasks();
+    checkpoint.Call(3);
+    stream.clear();
+    gc();
+    checkpoint.Call(4);
+    testing::runPendingTasks();
+
+    checkpoint.Call(5);
     EXPECT_EQ(kUnexpectedError, reader->beginRead(&buffer, kNone, &available));
 }
 

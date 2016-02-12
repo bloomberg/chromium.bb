@@ -13,11 +13,13 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
+#include "bindings/core/v8/V8HiddenValue.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/ReadableStreamDataConsumerHandle.h"
@@ -111,6 +113,7 @@ Response* Response::create(ScriptState* scriptState, ExceptionState& exceptionSt
 Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, const Dictionary& init, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> body = bodyValue.v8Value();
+    ScriptValue reader;
     v8::Isolate* isolate = scriptState->isolate();
     ExecutionContext* executionContext = scriptState->executionContext();
 
@@ -135,6 +138,14 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         bodyHandle = FetchFormDataConsumerHandle::create(executionContext, formData.release());
     } else if (RuntimeEnabledFeatures::responseConstructedWithReadableStreamEnabled() && ReadableStreamOperations::isReadableStream(scriptState, bodyValue)) {
         bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, bodyValue);
+        reader = ReadableStreamOperations::getReader(scriptState, bodyValue, exceptionState);
+        if (exceptionState.hadException()) {
+            reader = ScriptValue();
+            bodyHandle = createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle());
+            exceptionState.clearException();
+        } else {
+            bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, reader);
+        }
     } else {
         String string = toUSVString(isolate, body, exceptionState);
         if (exceptionState.hadException())
@@ -143,7 +154,20 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         contentType = "text/plain;charset=UTF-8";
     }
     // TODO(yhirano): Add the URLSearchParams case.
-    return create(executionContext, bodyHandle.release(), contentType, ResponseInit(init, exceptionState), exceptionState);
+    Response* response = create(executionContext, bodyHandle.release(), contentType, ResponseInit(init, exceptionState), exceptionState);
+    if (!exceptionState.hadException() && !reader.isEmpty()) {
+        // Add a hidden reference so that the weak persistent in the
+        // ReadableStreamDataConsumerHandle will be valid as long as the
+        // Response is valid.
+        v8::Local<v8::Value> wrapper = toV8(response, scriptState);
+        if (wrapper.IsEmpty()) {
+            exceptionState.throwTypeError("Cannot create a Response wrapper");
+            return nullptr;
+        }
+        ASSERT(wrapper->IsObject());
+        V8HiddenValue::setHiddenValue(scriptState, wrapper.As<v8::Object>(), V8HiddenValue::readableStreamReaderInResponse(scriptState->isolate()), reader.v8Value());
+    }
+    return response;
 }
 
 Response* Response::create(ExecutionContext* context, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit& init, ExceptionState& exceptionState)
