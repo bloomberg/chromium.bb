@@ -179,7 +179,7 @@ class CC_EXPORT ResourceProvider
   // mailboxes and serializing meta-data into TransferableResources.
   // Resources are not removed from the ResourceProvider, but are marked as
   // "in use".
-  void PrepareSendToParent(const ResourceIdArray& resources,
+  void PrepareSendToParent(const ResourceIdArray& resource_ids,
                            TransferableResourceArray* transferable_resources);
 
   // Receives resources from a child, moving them from mailboxes. Resource IDs
@@ -260,7 +260,7 @@ class CC_EXPORT ResourceProvider
     unsigned texture_id() const { return texture_id_; }
 
     void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) const {
-      resource_->mailbox.set_sync_token(sync_token);
+      resource_->UpdateSyncToken(sync_token);
     }
 
    private:
@@ -343,7 +343,7 @@ class CC_EXPORT ResourceProvider
     gfx::Size GetResourceSize() const { return resource_->size; }
 
     void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) const {
-      resource_->mailbox.set_sync_token(sync_token);
+      resource_->UpdateSyncToken(sync_token);
     }
 
    private:
@@ -461,6 +461,34 @@ class CC_EXPORT ResourceProvider
  private:
   struct Resource {
     enum Origin { INTERNAL, EXTERNAL, DELEGATED };
+    enum SynchronizationState {
+      // The LOCALLY_USED state is the state each resource defaults to when
+      // constructed or modified or read. This state indicates that the
+      // resource has not been properly synchronized and it would be an error
+      // to send this resource to a parent, child, or client.
+      LOCALLY_USED,
+
+      // The NEEDS_WAIT state is the state that indicates a resource has been
+      // modified but it also has an associated sync token assigned to it.
+      // The sync token has not been waited on with the local context. When
+      // a sync token arrives from an external resource (such as a child or
+      // parent), it is automatically initialized as NEEDS_WAIT as well
+      // since we still need to wait on it before the resource is synchronized
+      // on the current context.
+      NEEDS_WAIT,
+
+      // The SYNCHRONIZED state indicates that the resource has been properly
+      // synchronized locally. This can either synchronized externally (such
+      // as the case of software rasterized bitmaps), or synchronized
+      // internally using a sync token that has been waited upon. In the
+      // former case which was synchronized externally, a corresponding sync
+      // token will not exist. In the latter case which was synchronized from
+      // the NEEDS_WAIT state, a corresponding sync token will exist which
+      // is assocaited with the resource. This sync token is still valid and
+      // still associated with the resource and can be passed as an external
+      // resource for others to wait on.
+      SYNCHRONIZED,
+    };
 
     ~Resource();
     Resource(unsigned texture_id,
@@ -481,6 +509,21 @@ class CC_EXPORT ResourceProvider
              Origin origin,
              GLenum filter);
 
+    bool needs_sync_token() const { return needs_sync_token_; }
+
+    SynchronizationState synchronization_state() const {
+      return synchronization_state_;
+    }
+
+    const TextureMailbox& mailbox() const { return mailbox_; }
+    void set_mailbox(const TextureMailbox& mailbox);
+
+    void SetLocallyUsed();
+    void SetSynchronized();
+    void UpdateSyncToken(const gpu::SyncToken& sync_token);
+    int8_t* GetSyncTokenData();
+    void WaitSyncToken(gpu::gles2::GLES2Interface* gl);
+
     int child_id;
     unsigned gl_id;
     // Pixel buffer used for set pixels without unnecessary copying.
@@ -489,7 +532,6 @@ class CC_EXPORT ResourceProvider
     unsigned gl_upload_query_id;
     // Query used to determine when read lock fence has passed.
     unsigned gl_read_lock_query_id;
-    TextureMailbox mailbox;
     ReleaseCallbackImpl release_callback_impl;
     uint8_t* pixels;
     int lock_for_read_count;
@@ -518,6 +560,11 @@ class CC_EXPORT ResourceProvider
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
     gfx::GpuMemoryBuffer* gpu_memory_buffer;
+
+   private:
+    SynchronizationState synchronization_state_ = SYNCHRONIZED;
+    bool needs_sync_token_ = false;
+    TextureMailbox mailbox_;
   };
   using ResourceMap = std::unordered_map<ResourceId, Resource>;
 
@@ -553,13 +600,10 @@ class CC_EXPORT ResourceProvider
   static void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                            const Resource* resource);
 
-  // This creates the resource mailbox and also binds the texture if dirty. This
-  // is meant to be called lazily internally and returns true if a mailbox
-  // was created or if the resource was bound.
-  bool CreateMailboxAndBindResource(gpu::gles2::GLES2Interface* gl,
+  void CreateMailboxAndBindResource(gpu::gles2::GLES2Interface* gl,
                                     Resource* resource);
 
-  void TransferResource(gpu::gles2::GLES2Interface* gl,
+  void TransferResource(Resource* source,
                         ResourceId id,
                         TransferableResource* resource);
   enum DeleteStyle {
