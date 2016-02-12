@@ -65,6 +65,7 @@ class AXTreeSourceAuraTest : public ash::test::AshTestBase {
     textfield_ = new Textfield();
     textfield_->SetText(base::ASCIIToUTF16("Value"));
     content_->AddChildView(textfield_);
+    widget_->Show();
   }
 
  protected:
@@ -165,6 +166,13 @@ TEST_F(AXTreeSourceAuraTest, Serialize) {
   // We should have far more updates this time around.
   ASSERT_GE(node_count, 10U);
 
-  ASSERT_EQ(textfield_wrapper->GetID(), out_update2.nodes[node_count - 1].id);
-  ASSERT_EQ(ui::AX_ROLE_TEXT_FIELD, out_update2.nodes[node_count - 1].role);
+  int text_field_update_index = -1;
+  for (size_t i = 0; i < node_count; ++i) {
+    if (textfield_wrapper->GetID() == out_update2.nodes[i].id)
+      text_field_update_index = i;
+  }
+
+  ASSERT_NE(-1, text_field_update_index);
+  ASSERT_EQ(ui::AX_ROLE_TEXT_FIELD,
+            out_update2.nodes[text_field_update_index].role);
 }

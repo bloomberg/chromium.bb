@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_NavigateAppLauncher) {
   }
 
   // Click on the launcher, it brings up the app list UI.
-  SendKeyPress(ui::VKEY_RETURN);
+  SendKeyPress(ui::VKEY_SPACE);
   EXPECT_EQ("Search or type URL", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
 
@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_NavigateAppLauncher) {
     if (base::MatchPattern(utterance, "Button"))
       break;
   }
-  SendKeyPress(ui::VKEY_RETURN);
+  SendKeyPress(ui::VKEY_SPACE);
 
   // Now type a space into the text field and wait until we hear "space".
   // This makes the test more robust as it allows us to skip over other

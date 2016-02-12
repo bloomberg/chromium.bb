@@ -409,8 +409,10 @@ void View::SetVisible(bool visible) {
     AdvanceFocusIfNecessary();
 
     // Notify the parent.
-    if (parent_)
+    if (parent_) {
       parent_->ChildVisibilityChanged(this);
+      parent_->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
+    }
 
     // This notifies all sub-views recursively.
     PropagateVisibilityNotifications(this, visible_);

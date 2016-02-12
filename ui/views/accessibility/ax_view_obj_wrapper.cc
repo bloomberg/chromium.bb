@@ -36,6 +36,9 @@ void AXViewObjWrapper::GetChildren(
     std::vector<AXAuraObjWrapper*>* out_children) {
   // TODO(dtseng): Need to handle |Widget| child of |View|.
   for (int i = 0; i < view_->child_count(); ++i) {
+    if (!view_->child_at(i)->visible())
+      continue;
+
     AXAuraObjWrapper* child =
         AXAuraObjCache::GetInstance()->GetOrCreate(view_->child_at(i));
     out_children->push_back(child);
