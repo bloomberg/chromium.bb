@@ -55,20 +55,6 @@ namespace {
 const int kTestSVGWindowWidthDip = 480;
 const int kTestSVGWindowHeightDip = 360;
 
-void AppendLayoutDumpForFrame(
-    const std::map<int, std::string>& frame_to_layout_dump_map,
-    std::string* stitched_layout_dump,
-    RenderFrameHost* target) {
-  auto it = frame_to_layout_dump_map.find(target->GetFrameTreeNodeId());
-
-  // No match will happen if frames have been added since OnInitiateLayoutDump.
-  if (it == frame_to_layout_dump_map.end())
-    return;
-
-  const std::string& dump = it->second;
-  stitched_layout_dump->append(dump);
-}
-
 }  // namespace
 
 // BlinkTestResultPrinter ----------------------------------------------------
@@ -679,12 +665,15 @@ void BlinkTestController::OnLayoutDumpResponse(RenderFrameHost* sender,
     return;
 
   // Stitch the frame-specific results in the right order.
-  // TODO(lukasza): Replace with a for loop similar to crrev.com/1612503003.
   std::string stitched_layout_dump;
-  main_window_->web_contents()->ForEachFrame(base::Bind(
-      &AppendLayoutDumpForFrame,
-      base::ConstRef(frame_to_layout_dump_map_),
-      &stitched_layout_dump));
+  for (const auto& render_frame_host : web_contents()->GetAllFrames()) {
+    auto it =
+        frame_to_layout_dump_map_.find(render_frame_host->GetFrameTreeNodeId());
+    if (it != frame_to_layout_dump_map_.end()) {
+      const std::string& dump = it->second;
+      stitched_layout_dump.append(dump);
+    }
+  }
 
   // Continue finishing the test.
   RenderViewHost* render_view_host =
