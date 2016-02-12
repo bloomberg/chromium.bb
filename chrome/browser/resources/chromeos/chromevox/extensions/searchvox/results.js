@@ -22,7 +22,7 @@ cvox.SearchResults = function() {
 
 /**
  * Speaks a result based on given selectors.
- * @param {Element} result Search result to be spoken.
+ * @param {Node} result Search result to be spoken.
  * @param {Array} selectTexts Array of selectors or text to speak.
  */
 cvox.SearchResults.speakResultBySelectTexts = function(result, selectTexts) {
@@ -60,8 +60,6 @@ goog.inherits(cvox.NormalResult, cvox.AbstractResult);
 
 /**
  * Checks the result if it is a normal result.
- * @param {Element} result Result to be checked.
- * @return {boolean} Whether or not the element is a normal result.
  * @override
  */
 cvox.NormalResult.prototype.isType = function(result) {
@@ -71,8 +69,6 @@ cvox.NormalResult.prototype.isType = function(result) {
 
 /**
  * Speak a normal search result.
- * @param {Element} result Normal result to be spoken.
- * @return {boolean} Whether or not the result was spoken.
  * @override
  */
 cvox.NormalResult.prototype.speak = function(result) {
@@ -117,8 +113,6 @@ goog.inherits(cvox.WeatherResult, cvox.AbstractResult);
 
 /**
  * Checks the result if it is a weather result.
- * @param {Element} result Result to be checked.
- * @return {boolean} Whether or not the element is a weather result.
  * @override
  */
 cvox.WeatherResult.prototype.isType = function(result) {
@@ -150,8 +144,6 @@ cvox.WeatherResult.speakForecast = function(forecast) {
 
 /**
  * Speak a weather search result.
- * @param {Element} result Weather result to be spoken.
- * @return {boolean} Whether or not the result was spoken.
  * @override
  */
 cvox.WeatherResult.prototype.speak = function(result) {
@@ -210,8 +202,6 @@ goog.inherits(cvox.KnowResult, cvox.AbstractResult);
 
 /**
  * Checks the result if it is a know result.
- * @param {Element} result Result to be checked.
- * @return {boolean} Whether or not the element is a know result.
  * @override
  */
 cvox.KnowResult.prototype.isType = function(result) {
@@ -221,8 +211,6 @@ cvox.KnowResult.prototype.isType = function(result) {
 
 /**
  * Speak a knowledge panel search result.
- * @param {Element} result Knowledge panel result to be spoken.
- * @return {boolean} Whether or not the result was spoken.
  * @override
  */
 cvox.KnowResult.prototype.speak = function(result) {
@@ -232,8 +220,6 @@ cvox.KnowResult.prototype.speak = function(result) {
 
 /**
  * Extracts the wikipedia URL from knowledge panel.
- * @param {Element} result Result to extract from.
- * @return {?string} URL.
  * @override
  */
 cvox.KnowResult.prototype.getURL = function(result) {
@@ -242,9 +228,6 @@ cvox.KnowResult.prototype.getURL = function(result) {
 };
 
 /**
- * Extracts the node to sync to in the knowledge panel.
- * @param {Element} result Result.
- * @return {?Node} Node to sync to.
  * @override
  */
 cvox.KnowResult.prototype.getSyncNode = function(result) {
@@ -263,8 +246,6 @@ goog.inherits(cvox.CalcResult, cvox.AbstractResult);
 
 /**
  * Checks the result if it is a calculator result.
- * @param {Element} result Result to be checked.
- * @return {boolean} Whether or not the element is a calculator result.
  * @override
  */
 cvox.CalcResult.prototype.isType = function(result) {
@@ -274,8 +255,6 @@ cvox.CalcResult.prototype.isType = function(result) {
 
 /**
  * Speak a calculator search result.
- * @param {Element} result Calculator result to be spoken.
- * @return {boolean} Whether or not the result was spoken.
  * @override
  */
 cvox.CalcResult.prototype.speak = function(result) {
@@ -303,8 +282,6 @@ goog.inherits(cvox.GameResult, cvox.AbstractResult);
 
 /**
  * Checks the result if it is a game result.
- * @param {Element} result Result to be checked.
- * @return {boolean} Whether or not the element is a game result.
  * @override
  */
 cvox.GameResult.prototype.isType = function(result) {
@@ -323,8 +300,6 @@ goog.inherits(cvox.ImageResult, cvox.AbstractResult);
 
 /**
  * Checks the result if it is a image result.
- * @param {Element} result Result to be checked.
- * @return {boolean} Whether or not the element is a image result.
  * @override
  */
 cvox.ImageResult.prototype.isType = function(result) {
@@ -334,8 +309,6 @@ cvox.ImageResult.prototype.isType = function(result) {
 
 /**
  * Speak an image result.
- * @param {Element} result Image result to be spoken.
- * @return {boolean} Whether or not the result was spoken.
  * @override
  */
 cvox.ImageResult.prototype.speak = function(result) {
@@ -394,8 +367,6 @@ cvox.CategoryResult.prototype.isType = function(result) {
 
 /**
  * Speak a category result.
- * @param {Element} result Category result to be spoken.
- * @return {boolean} Whether or not the result was spoken.
  * @override
  */
 cvox.CategoryResult.prototype.speak = function(result) {
@@ -419,8 +390,6 @@ goog.inherits(cvox.AdResult, cvox.AbstractResult);
 
 /**
  * Checks the result if it is an ad result.
- * @param {Element} result Result to be checked.
- * @return {boolean} Whether or not the element is an ad result.
  * @override
  */
 cvox.AdResult.prototype.isType = function(result) {
@@ -430,8 +399,6 @@ cvox.AdResult.prototype.isType = function(result) {
 
 /**
  * Speak an ad result.
- * @param {Element} result Ad result to be spoken.
- * @return {boolean} Whether or not the result was spoken.
  * @override
  */
 cvox.AdResult.prototype.speak = function(result) {

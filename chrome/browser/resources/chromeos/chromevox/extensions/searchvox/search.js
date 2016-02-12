@@ -56,7 +56,7 @@ cvox.Search.index;
 
 /**
  * Array of the search results.
- * @type {Array<Element>}
+ * @type {Array<Node>}
  */
 cvox.Search.results = [];
 
@@ -126,7 +126,7 @@ cvox.Search.syncPaneToIndex = function() {
 
 /**
  * Get the type of the result such as Knowledge Panel, Weather, etc.
- * @param {Element} result Result to be classified.
+ * @param {Node} result Result to be classified.
  * @return {cvox.AbstractResult} Type of the result.
  */
 cvox.Search.getResultType = function(result) {

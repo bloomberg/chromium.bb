@@ -100,6 +100,7 @@ cvox.CompositeTts.prototype.propertyToPercentage = function(property) {
     if (value !== undefined)
       return value;
   }
+  return null;
 };
 
 

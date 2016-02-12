@@ -101,7 +101,7 @@ EarconEngine = function() {
    * The source audio nodes for queued tick / tocks for progress.
    * Kept around so they can be canceled.
    *
-   * @type {Array<AudioNode>}
+   * @type {Array<Array<AudioNode>>}
    * @private
    */
   this.progressSources_ = [];

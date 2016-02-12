@@ -189,7 +189,7 @@ cvox.ChromeVoxEventWatcher.init = function(doc) {
   /**
    * A list of callbacks to be called when the EventWatcher has
    * completed processing all events in its queue.
-   * @type {Array<function()>}
+   * @type {Array<function()?>}
    * @private
    */
   cvox.ChromeVoxEventWatcher.readyCallbacks_ = new Array();

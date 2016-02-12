@@ -27,7 +27,7 @@ cvox.AbstractResult.prototype.isType = function(result) {
 
 /**
  * Speak a generic search result.
- * @param {Element} result Generic result to be spoken.
+ * @param {Node} result Generic result to be spoken.
  * @return {boolean} Whether or not the result was spoken.
  */
 cvox.AbstractResult.prototype.speak = function(result) {
@@ -36,14 +36,14 @@ cvox.AbstractResult.prototype.speak = function(result) {
 
 /**
  * Extracts the wikipedia URL from knowledge panel.
- * @param {Element} result Result to extract from.
+ * @param {Node} result Result to extract from.
  * @return {?string} URL.
  */
 cvox.AbstractResult.prototype.getURL = cvox.SearchUtil.extractURL;
 
 /**
  * Returns the node to sync to.
- * @param {Element} result Result.
+ * @param {Node} result Result.
  * @return {?Node} Node to sync to.
  */
 cvox.AbstractResult.prototype.getSyncNode = function(result) {
