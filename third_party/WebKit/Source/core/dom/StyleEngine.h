@@ -267,6 +267,8 @@ private:
 
     OwnPtr<StyleResolverStats> m_styleResolverStats;
     unsigned m_styleForElementCount = 0;
+
+    friend class StyleEngineTest;
 };
 
 } // namespace blink

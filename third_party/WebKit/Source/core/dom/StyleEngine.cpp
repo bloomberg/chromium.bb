@@ -156,8 +156,8 @@ void StyleEngine::resetCSSFeatureFlags(const RuleFeatureSet& features)
 void StyleEngine::injectAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet)
 {
     m_injectedAuthorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
-    document().addedStyleSheet(m_injectedAuthorStyleSheets.last().get());
     markDocumentDirty();
+    document().addedStyleSheet(m_injectedAuthorStyleSheets.last().get());
 }
 
 void StyleEngine::addPendingSheet()

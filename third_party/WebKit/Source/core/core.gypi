@@ -3941,6 +3941,7 @@
             'dom/ScriptRunnerTest.cpp',
             'dom/SelectorQueryTest.cpp',
             'dom/StyleElementTest.cpp',
+            'dom/StyleEngineTest.cpp',
             'dom/TreeScopeStyleSheetCollectionTest.cpp',
             'dom/TreeScopeTest.cpp',
             'dom/URLSearchParamsTest.cpp',
