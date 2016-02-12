@@ -24,21 +24,15 @@ def Transform(file_data):
 
   result = ''
 
-  # Get the file's description (all the text before the first PEM block)
-  file_description = GetTextUntilNextPemBlock(file_data)
-
-  result += file_description + '\n'
-
   for block in GetPemBlocks(file_data):
-    result += '\n\n\n'
-
-    result += MakePemBlockString(block.name, block.data)
+    if len(result) != 0:
+      result += '\n'
 
     # If there was a user comment (non-script-generated comment) associated
-    # with the block, output it immediately after the block.
+    # with the block, output it immediately before the block.
     user_comment = GetUserComment(block.comment)
     if user_comment:
-      result += '\n' + user_comment + '\n'
+      result += user_comment
 
     # For every block except for DATA, try to pretty print the parsed ASN.1.
     # DATA blocks likely would be DER in practice, but for the purposes of
@@ -46,7 +40,10 @@ def Transform(file_data):
     # anything and is just a distraction.
     if block.name != 'DATA':
       generated_comment = GenerateCommentForBlock(block.name, block.data)
-      result += '\n' + generated_comment + '\n'
+      result += generated_comment + '\n'
+
+
+    result += MakePemBlockString(block.name, block.data)
 
   return result
 
@@ -63,15 +60,12 @@ def GenerateCommentForBlock(block_name, block_data):
   return generated_comment.strip('\n')
 
 
-def GetTextUntilNextPemBlock(text):
-  return text.split('-----BEGIN ', 1)[0].strip('\n')
-
 
 def GetUserComment(comment):
   """Removes any script-generated lines (everything after the $ openssl line)"""
 
   # Consider everything after "$ openssl" to be a generated comment.
-  comment = comment.split('$ openssl asn1parse -i', 1)[0].strip('\n')
+  comment = comment.split('$ openssl asn1parse -i', 1)[0]
   if IsEntirelyWhiteSpace(comment):
     comment = ''
   return comment
@@ -133,6 +127,8 @@ def DecodePemBlockData(text):
 def GetPemBlocks(data):
   """Returns an iterable of PemBlock"""
 
+  comment_start = 0
+
   regex = re.compile(r'-----BEGIN ([\w ]+)-----(.*?)-----END \1-----',
                      re.DOTALL)
 
@@ -142,8 +138,9 @@ def GetPemBlocks(data):
     block.name = match.group(1)
     block.data = DecodePemBlockData(match.group(2))
 
-    # Keep track of any non-PEM text between blocks
-    block.comment = GetTextUntilNextPemBlock(data[match.end():])
+    # Keep track of any non-PEM text above blocks
+    block.comment = data[comment_start : match.start()].strip()
+    comment_start = match.end()
 
     yield block
 
