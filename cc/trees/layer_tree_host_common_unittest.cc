@@ -3783,6 +3783,39 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(100, 100), render_surface2->visible_layer_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, ClipChildWithSingularTransform) {
+  LayerImpl* root = root_layer();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* intervening = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* clip_child = AddChild<LayerImpl>(intervening);
+
+  clip_child->SetDrawsContent(true);
+  clip_child->SetClipParent(clip_parent);
+  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  clip_children->insert(clip_child);
+  clip_parent->SetClipChildren(clip_children.release());
+
+  gfx::Transform identity_matrix;
+  gfx::Transform singular_matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  ASSERT_FALSE(singular_matrix.IsInvertible());
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               false);
+  SetLayerPropertiesForTesting(intervening, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               false);
+  SetLayerPropertiesForTesting(clip_child, singular_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(60, 60), true, false,
+                               false);
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(intervening->num_unclipped_descendants(), 1u);
+}
+
 TEST_F(LayerTreeHostCommonTest,
        VisibleRectsWhenClipChildIsBetweenTwoRenderSurfaces) {
   LayerImpl* root = root_layer();

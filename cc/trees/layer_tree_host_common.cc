@@ -1102,14 +1102,14 @@ static void PreCalculateMetaInformationInternal(
   layer->set_layer_or_descendant_is_drawn(false);
   layer->set_visited(false);
 
+  if (layer->clip_parent())
+    recursive_data->num_unclipped_descendants++;
+
   if (!HasInvertibleOrAnimatedTransform(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
     // can be skipped.
     return;
   }
-
-  if (layer->clip_parent())
-    recursive_data->num_unclipped_descendants++;
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     Layer* child_layer = layer->child_at(i);
@@ -1146,14 +1146,14 @@ static void PreCalculateMetaInformationInternal(
   layer->set_layer_or_descendant_is_drawn(false);
   layer->set_visited(false);
 
+  if (layer->clip_parent())
+    recursive_data->num_unclipped_descendants++;
+
   if (!HasInvertibleOrAnimatedTransform(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
     // can be skipped.
     return;
   }
-
-  if (layer->clip_parent())
-    recursive_data->num_unclipped_descendants++;
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     LayerImpl* child_layer = layer->child_at(i);
