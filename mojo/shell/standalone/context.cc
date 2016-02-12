@@ -155,11 +155,11 @@ void Context::Init(const base::FilePath& shell_file_root) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  bool trace_startup = command_line.HasSwitch(switches::kTraceStartup);
+  bool trace_startup = command_line.HasSwitch(::switches::kTraceStartup);
   if (trace_startup) {
     tracer_.Start(
-        command_line.GetSwitchValueASCII(switches::kTraceStartup),
-        command_line.GetSwitchValueASCII(switches::kTraceStartupDuration),
+        command_line.GetSwitchValueASCII(::switches::kTraceStartup),
+        command_line.GetSwitchValueASCII(::switches::kTraceStartupDuration),
         "mojo_runner.trace");
   }
 

@@ -4,6 +4,7 @@
 
 #include "mojo/shell/fetcher/switches.h"
 
+namespace mojo {
 namespace switches {
 
 // Force dynamically loaded apps or services to be loaded irrespective of cache
@@ -11,3 +12,4 @@ namespace switches {
 const char kDisableCache[] = "disable-cache";
 
 }  // namespace switches
+}  // namespace mojo

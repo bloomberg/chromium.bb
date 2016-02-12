@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_STANDALONE_SWITCHES_H_
 #define MOJO_SHELL_STANDALONE_SWITCHES_H_
 
+namespace mojo {
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
@@ -19,5 +20,6 @@ extern const char kUseTemporaryUserDataDir[];
 extern const char kUserDataDir[];
 
 }  // namespace switches
+}  // namespace mojo
 
 #endif  // MOJO_SHELL_STANDALONE_SWITCHES_H_

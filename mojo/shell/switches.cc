@@ -4,7 +4,7 @@
 
 #include "mojo/shell/switches.h"
 
-
+namespace mojo {
 namespace switches {
 
 // If set apps downloaded are not deleted.
@@ -34,3 +34,4 @@ const char kPredictableAppFilenames[] = "predictable-app-filenames";
 const char kUseUpdater[] = "use-updater";
 
 }  // namespace switches
+}  // namespace mojo

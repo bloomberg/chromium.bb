@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_FETCHER_SWITCHES_H_
 #define MOJO_SHELL_FETCHER_SWITCHES_H_
 
+namespace mojo {
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
@@ -12,5 +13,6 @@ namespace switches {
 extern const char kDisableCache[];
 
 }  // namespace switches
+}  // namespace mojo
 
 #endif  // MOJO_SHELL_FETCHER_SWITCHES_H_

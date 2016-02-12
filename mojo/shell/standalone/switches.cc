@@ -4,6 +4,7 @@
 
 #include "mojo/shell/standalone/switches.h"
 
+namespace mojo {
 namespace switches {
 
 // Comma separated list like:
@@ -37,3 +38,4 @@ const char kUseTemporaryUserDataDir[] = "use-temporary-user-data-dir";
 const char kUserDataDir[] = "user-data-dir";
 
 }  // namespace switches
+}  // namespace mojo

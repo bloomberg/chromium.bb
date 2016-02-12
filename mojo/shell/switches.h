@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+namespace mojo {
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
@@ -20,5 +21,6 @@ extern const char kPredictableAppFilenames[];
 extern const char kUseUpdater[];
 
 }  // namespace switches
+}  // namespace mojo
 
 #endif  // MOJO_SHELL_SWITCHES_H_
