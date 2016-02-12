@@ -52,6 +52,18 @@ private:
     EditingState m_editingState;
 };
 
+// All assertion in "core/editing/commands" should use
+// |ASSERT_IN_EDITING_COMMAND()| instead of |ASSERT()|.
+// TODO(tkent): Rename this because this works without ENABLE(ASSERT).
+#define ASSERT_IN_EDITING_COMMAND(expr) \
+    do { \
+        if (!(expr)) { \
+            editingState->abort(); \
+            return; \
+        } \
+        break; \
+    } while (true)
+
 #if ENABLE(ASSERT)
 // TODO(yosin): Once all commands aware |EditingState|, we get rid of
 // |NoEditingAbortChecker| class
@@ -71,23 +83,11 @@ private:
     int const m_line;
 };
 
-// All assertion in "core/editing/commands" should use
-// |ASSERT_IN_EDITING_COMMAND()| instead of |ASSERT()|.
-#define ASSERT_IN_EDITING_COMMAND(expr) \
-    do { \
-        if (!(expr)) { \
-            editingState->abort(); \
-            return; \
-        } \
-        break; \
-    } while (true)
-
 // A macro for default parameter of |EditingState*| parameter.
 // TODO(yosin): Once all commands aware |EditingState|, we get rid of
 // |ASSERT_NO_EDITING_ABORT| macro.
 #define ASSERT_NO_EDITING_ABORT (NoEditingAbortChecker(__FILE__, __LINE__).editingState())
 #else
-#define ASSERT_IN_EDITING_COMMAND(expr)
 #define ASSERT_NO_EDITING_ABORT (IgnorableEditingAbortState().editingState())
 #endif
 
