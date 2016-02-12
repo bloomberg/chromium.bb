@@ -554,6 +554,7 @@
             '../chrome/chrome.gyp:interactive_ui_tests_run',
             '../chrome/chrome.gyp:sync_integration_tests_run',
             '../chrome/chrome.gyp:unit_tests_run',
+            '../device/device_tests.gyp:device_unittests_run',
             '../components/components_tests.gyp:components_browsertests_run',
             '../components/components_tests.gyp:components_unittests_run',
             '../content/content_shell_and_tests.gyp:content_browsertests_run',
