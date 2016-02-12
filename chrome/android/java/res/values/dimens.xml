@@ -313,4 +313,10 @@
 
     <!-- Offline pages dimensions -->
     <dimen name="offline_page_item_vertical_spacing">16dp</dimen>
+
+    <!-- Account chooser dialog dimensions -->
+    <dimen name="account_chooser_dialog_margin">24dp</dimen>
+    <dimen name="account_chooser_dialog_item_margin">20dp</dimen>
+    <dimen name="account_chooser_dialog_title_main_text_size">18sp</dimen>
+    <dimen name="account_chooser_dialog_title_descriptive_text_size">16sp</dimen>
 </resources>

@@ -116,14 +116,24 @@ public class AccountChooserDialog
                     avatarView.setImageResource(R.drawable.account_management_no_picture);
                 }
 
-                TextView usernameView = (TextView) convertView.findViewById(R.id.username);
-                usernameView.setText(credential.getUsername());
-
-                TextView smallTextView = (TextView) convertView.findViewById(R.id.display_name);
-                String smallText = credential.getFederation().isEmpty()
-                        ? credential.getDisplayName()
-                        : credential.getFederation();
-                smallTextView.setText(smallText);
+                TextView mainNameView = (TextView) convertView.findViewById(R.id.main_name);
+                TextView secondaryNameView =
+                        (TextView) convertView.findViewById(R.id.secondary_name);
+                if (credential.getFederation().isEmpty()) {
+                    // Not federated credentials case
+                    if (credential.getDisplayName().isEmpty()) {
+                        mainNameView.setText(credential.getUsername());
+                        secondaryNameView.setVisibility(View.GONE);
+                    } else {
+                        mainNameView.setText(credential.getDisplayName());
+                        secondaryNameView.setText(credential.getUsername());
+                        secondaryNameView.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    mainNameView.setText(credential.getUsername());
+                    secondaryNameView.setText(credential.getFederation());
+                    secondaryNameView.setVisibility(View.VISIBLE);
+                }
 
                 return convertView;
             }
@@ -151,14 +161,15 @@ public class AccountChooserDialog
             titleMessageText.setText(mTitle);
         }
         mAdapter = generateAccountsArrayAdapter(mContext, mCredentials);
-        final AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
-                .setCustomTitle(titleView)
-                .setNegativeButton(R.string.no_thanks, this)
-                .setAdapter(mAdapter, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int item) {
-                        mCredential = mCredentials[item];
-                    }
-                });
+        final AlertDialog.Builder builder =
+                new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+                        .setCustomTitle(titleView)
+                        .setNegativeButton(R.string.cancel, this)
+                        .setAdapter(mAdapter, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int item) {
+                                mCredential = mCredentials[item];
+                            }
+                        });
         mDialog = builder.create();
         return mDialog;
     }
