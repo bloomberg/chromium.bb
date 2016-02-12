@@ -1,0 +1,101 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function populateConsoleWithMessages(count)
+{
+    for (var i = 0; i < count - 1; ++i)
+        console.log("Message #" + i);
+    console.log("hello %cworld", "color: blue");
+}
+
+//# sourceURL=console-viewport-selection.html
+</script>
+
+<script>
+
+function test()
+{
+    InspectorTest.fixConsoleViewportDimensions(600, 200);
+    var consoleView = WebInspector.ConsolePanel._view();
+    var viewport = consoleView._viewport;
+    const minimumViewportMessagesCount = 10;
+    const messagesCount = 150;
+    const middleMessage = messagesCount / 2;
+    var viewportMessagesCount;
+
+    logMessagesToConsole(messagesCount, () => InspectorTest.runTestSuite(testSuite));
+
+    var testSuite = [
+        function verifyViewportIsTallEnough(next)
+        {
+            viewport.invalidate();
+            viewport.forceScrollItemToBeFirst(0);
+            viewportMessagesCount = viewport.lastVisibleIndex() - viewport.firstVisibleIndex() + 1;
+            if (viewportMessagesCount < minimumViewportMessagesCount) {
+                InspectorTest.addResult(String.sprintf("Test cannot be run as viewport is not tall enough. It is required to contain at least %d messages, but %d only fit", minimumViewportMessagesCount, viewportMessagesCount));
+                InspectorTest.completeTest();
+                return;
+            }
+            InspectorTest.addResult(String.sprintf("Viewport contains %d messages", viewportMessagesCount));
+            next();
+        },
+
+        function testScrollViewportToBottom(next)
+        {
+            consoleView._immediatelyScrollToBottom();
+            viewport.refresh();
+            InspectorTest.addResult("Last visible message: " + viewport.lastVisibleIndex());
+            next();
+        },
+
+        function testConsoleSticksToBottom(next)
+        {
+            logMessagesToConsole(messagesCount, onMessagesDumped);
+
+            function onMessagesDumped()
+            {
+                viewport.invalidate();
+                // Force refresh which has been scheduled via invalidate() method.
+                viewport.refresh();
+                InspectorTest.addResult("Last visible message: " + viewport.lastVisibleIndex());
+                next();
+            }
+        },
+
+        function testManualScrollDoesNotStickToBottom(next)
+        {
+            var initialScrollTop = viewport.element.scrollTop;
+            viewport.element.scrollTop = initialScrollTop - 1;
+            viewport.refresh();
+            var newScrollTop = viewport.element.scrollTop;
+            var isScrollPreserved = initialScrollTop - newScrollTop === 1;
+            InspectorTest.addResult("Scroll preserved: " + isScrollPreserved);
+            next();
+        },
+    ];
+
+    function logMessagesToConsole(count, callback)
+    {
+        var awaitingMessagesCount = count;
+        function messageAdded()
+        {
+            if (!--awaitingMessagesCount)
+                callback();
+            else
+                InspectorTest.addConsoleSniffer(messageAdded, false);
+        }
+
+        InspectorTest.addConsoleSniffer(messageAdded, false);
+        InspectorTest.evaluateInPage(String.sprintf("populateConsoleWithMessages(%d)", count));
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+    Verifies viewport stick-to-bottom behavior.
+</p>
+</body>
+</html>

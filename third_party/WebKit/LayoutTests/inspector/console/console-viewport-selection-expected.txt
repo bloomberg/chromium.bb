@@ -158,13 +158,13 @@ Running: testSelectionSingleLineText
 Selected text:<<<EOL
 nsole
 EOL
-first visible message index: 75   viewport is covered: YES
+first visible message index: 75
 
 Running: testReversedSelectionSingleLineText
 Selected text:<<<EOL
 nsole
 EOL
-first visible message index: 75   viewport is covered: YES
+first visible message index: 75
 
 Running: testSelectionMultiLineText
 Selected text:<<<EOL
@@ -172,51 +172,51 @@ ole-viewport-selection.html:5 Message #74
 console-viewport-selection.html:5 Message #75
 console
 EOL
-first visible message index: 74   viewport is covered: YES
+first visible message index: 74
 
 Running: testSimpleVisibleSelection
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-first visible message index: 72   viewport is covered: YES
+first visible message index: 72
 
 Running: testHalfScrollSelectionUp
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-first visible message index: 75   viewport is covered: YES
+first visible message index: 75
 
 Running: testHalfScrollSelectionDown
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-first visible message index: 63   viewport is covered: YES
+first visible message index: 63
 
 Running: testScrollSelectionAwayUp
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-first visible message index: 0   viewport is covered: YES
+first visible message index: 0
 
 Running: testScrollSelectionAwayDown
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-first visible message index: 137   viewport is covered: YES
+first visible message index: 140
 
 Running: testShiftClickSelectionOver
 anchor = {item: 72, offset: 6}, head = {item: 10, offset: 0}
-first visible message index: 5   viewport is covered: YES
+first visible message index: 5
 
 Running: testShiftClickSelectionBelow
 anchor = {item: 72, offset: 6}, head = {item: 140, offset: 0}
-first visible message index: 135   viewport is covered: YES
+first visible message index: 135
 
 Running: testRemoveSelection
 anchor = null, head = null
-first visible message index: 135   viewport is covered: YES
+first visible message index: 135
 
 Running: testReversedVisibleSelection
 anchor = {item: 76, offset: 6}, head = {item: 71, offset: 6}
-first visible message index: 71   viewport is covered: YES
+first visible message index: 71
 
 Running: testShiftClickReversedSelectionOver
 anchor = {item: 76, offset: 6}, head = {item: 10, offset: 0}
-first visible message index: 5   viewport is covered: YES
+first visible message index: 5
 
 Running: testShiftClickReversedSelectionBelow
 anchor = {item: 76, offset: 6}, head = {item: 140, offset: 0}
-first visible message index: 135   viewport is covered: YES
+first visible message index: 135
 
 Running: testZeroOffsetSelection
 Selected text: world

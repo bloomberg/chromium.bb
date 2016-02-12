@@ -221,8 +221,7 @@ function test()
         viewport.refresh();
         var firstVisibleIndex = viewport.firstVisibleIndex();
         var lastVisibleIndex = viewport.lastVisibleIndex();
-        var renderedEnoughElements = viewportMessagesCount <= lastVisibleIndex - firstVisibleIndex + 1;
-        InspectorTest.addResult("first visible message index: " + firstVisibleIndex + "   viewport is covered: " + (renderedEnoughElements ? "YES" : "NO"));
+        InspectorTest.addResult("first visible message index: " + firstVisibleIndex);
     }
 
     function emulateShiftClickOnMessage(messageIndex)
