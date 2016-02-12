@@ -151,8 +151,9 @@
     ],
     "SafeBrowsingUnverifiedDownloads": [
         {
-            "group_name": "DisableByParameterMostSbTypes",
+            "group_name": "DisableByParameterMostSbTypes2",
             "params": {
+                "blacklist": ".exe-,.zip-",
                 "block_sb_types": "true",
                 "whitelist": ".rar,.svg,.url,.xml,.zip"
             }
