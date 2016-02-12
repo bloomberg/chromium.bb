@@ -190,8 +190,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     int total_vertical_padding =
         (delegate_->IsMaximized() || !delegate_->ShouldShowCaptionButtons()) ?
             (kCaptionButtonHeight - delegate_->GetIconSize()) :
-            (OBFVL::kFrameBorderThickness +
-                 OBFVL::kTitlebarTopAndBottomEdgeThickness);
+            (OBFVL::kFrameBorderThickness + OBFVL::kTitlebarTopEdgeThickness);
     return (total_vertical_padding + 1) / 2;
   }
 

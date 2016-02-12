@@ -688,13 +688,8 @@ void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
 }
 
 int ToolbarView::PopupTopSpacing() const {
-  if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return 0;
-
-  const int kAdditionalPopupTopSpacingNonGlass = 2;
-  return views::NonClientFrameView::kClientEdgeThickness +
-      (GetWidget()->ShouldWindowContentsBeTransparent() ?
-          0 : kAdditionalPopupTopSpacingNonGlass);
+  return (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) ?
+       0 : views::NonClientFrameView::kClientEdgeThickness;
 }
 
 gfx::Size ToolbarView::GetSizeInternal(

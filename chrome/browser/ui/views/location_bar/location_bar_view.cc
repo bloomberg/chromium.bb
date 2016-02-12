@@ -101,6 +101,9 @@ using views::View;
 
 namespace {
 
+// The border color for MD windows, as well as non-MD popup windows.
+const SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
+
 int GetEditLeadingInternalSpace() {
   // The textfield has 1 px of whitespace before the text in the RTL case only.
   return base::i18n::IsRTL() ? 1 : 0;
@@ -112,7 +115,6 @@ int GetEditLeadingInternalSpace() {
 // LocationBarView -----------------------------------------------------------
 
 // static
-
 const char LocationBarView::kViewClassName[] = "LocationBarView";
 
 LocationBarView::LocationBarView(Browser* browser,
@@ -783,8 +785,8 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     RefreshLocationIcon();
     if (!is_popup_mode_) {
-      set_background(new BackgroundWith1PxBorder(
-          GetColor(BACKGROUND), SkColorSetARGB(0x4D, 0x00, 0x00, 0x00)));
+      set_background(new BackgroundWith1PxBorder(GetColor(BACKGROUND),
+                                                 kBorderColor));
     }
   }
 }
@@ -1271,19 +1273,18 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds(GetContentsBounds());
   const int edge_thickness = GetEdgeThickness();
   bounds.Inset(edge_thickness, edge_thickness);
-  SkColor color(GetColor(BACKGROUND));
+  SkColor background_color(GetColor(BACKGROUND));
   if (is_popup_mode_) {
-    canvas->FillRect(bounds, color);
+    canvas->FillRect(bounds, background_color);
   } else {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(color);
+    paint.setColor(background_color);
     const int kBorderCornerRadius = 2;
     canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
+    // The border itself will be drawn in PaintChildren() since it includes an
+    // inner shadow which should be drawn over the contents.
   }
-
-  // The border itself will be drawn in PaintChildren() since it includes an
-  // inner shadow which should be drawn over the contents.
 }
 
 void LocationBarView::PaintChildren(const ui::PaintContext& context) {

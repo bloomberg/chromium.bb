@@ -61,12 +61,12 @@ using content::WebContents;
 
 namespace {
 
+const int kContentEdgeShadowThickness =
+    OpaqueBrowserFrameViewLayout::kContentEdgeShadowThickness;
+
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-
-// The content edge images have a shadow built into them.
-const int kContentEdgeShadowThickness = 2;
 
 #if !defined(OS_WIN)
 // The icon never shrinks below 16 px on a side.
@@ -729,26 +729,25 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   int y = client_bounds.y();
   const int w = client_bounds.width();
   const int right = client_bounds.right();
-  const bool normal_mode = browser_view()->IsTabStripVisible();
+  const bool tabstrip_visible = browser_view()->IsTabStripVisible();
   const bool md = ui::MaterialDesignController::IsModeMaterial();
   const ui::ThemeProvider* tp = GetThemeProvider();
   const SkColor toolbar_color =
-      normal_mode
+      tabstrip_visible
           ? tp->GetColor(ThemeProperties::COLOR_TOOLBAR)
           : ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_TOOLBAR,
                                              browser_view()->IsOffTheRecord());
 
   const gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   int img_y_offset = 0;
-  if (normal_mode) {
+  if (tabstrip_visible) {
     // Pre-Material Design, the client edge images start below the toolbar.  In
     // MD the client edge images start at the top of the toolbar.
     y += md ? toolbar_bounds.y() : toolbar_bounds.bottom();
   } else {
     // The toolbar isn't going to draw a top edge for us, so draw one ourselves.
     if (IsToolbarVisible()) {
-      y += toolbar_bounds.y() + kContentEdgeShadowThickness +
-          kClientEdgeThickness;
+      y += toolbar_bounds.y() + kClientEdgeThickness;
     }
     client_bounds.set_y(y);
     client_bounds.Inset(-kClientEdgeThickness, -kClientEdgeThickness,
@@ -789,17 +788,18 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
 
   const int img_y = y + img_y_offset;
   const int bottom = std::max(y, height() - NonClientBorderThickness());
-  int height = bottom - img_y;
+  const int height = bottom - y;
+  const int img_h = bottom - img_y;
 
   // Draw the client edge images.  For non-MD, we fill the toolbar color
   // underneath these images so they will lighten/darken it appropriately to
   // create a "3D shaded" effect.  For MD, where we want a flatter appearance,
   // we do the filling afterwards so the user sees the unmodified toolbar color.
   if (!md)
-    FillClientEdgeRects(x, y, right, bottom, toolbar_color, canvas);
+    FillClientEdgeRects(x, y, w, height, toolbar_color, canvas);
   gfx::ImageSkia* right_image = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   const int img_w = right_image->width();
-  canvas->TileImageInt(*right_image, right, img_y, img_w, height);
+  canvas->TileImageInt(*right_image, right, img_y, img_w, img_h);
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
                        right, bottom);
   gfx::ImageSkia* bottom_image =
@@ -808,22 +808,23 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
                        x - img_w, bottom);
   canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE), x - img_w,
-                       img_y, img_w, height);
+                       img_y, img_w, img_h);
   if (md)
-    FillClientEdgeRects(x, y, right, bottom, toolbar_color, canvas);
+    FillClientEdgeRects(x, y, w, height, toolbar_color, canvas);
 }
 
 void OpaqueBrowserFrameView::FillClientEdgeRects(int x,
                                                  int y,
-                                                 int right,
-                                                 int bottom,
+                                                 int w,
+                                                 int h,
                                                  SkColor color,
                                                  gfx::Canvas* canvas) const {
-  gfx::Rect side(x - kClientEdgeThickness, y, kClientEdgeThickness,
-                 bottom + kClientEdgeThickness - y);
+  x -= kClientEdgeThickness;
+  gfx::Rect side(x, y, kClientEdgeThickness, h);
   canvas->FillRect(side, color);
-  canvas->FillRect(gfx::Rect(x, bottom, right - x, kClientEdgeThickness),
+  canvas->FillRect(gfx::Rect(x, y + h, w + (2 * kClientEdgeThickness),
+                             kClientEdgeThickness),
                    color);
-  side.set_x(right);
+  side.Offset(w + kClientEdgeThickness, 0);
   canvas->FillRect(side, color);
 }

@@ -146,8 +146,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void PaintClientEdge(gfx::Canvas* canvas) const;
   void FillClientEdgeRects(int x,
                            int y,
-                           int right,
-                           int bottom,
+                           int w,
+                           int h,
                            SkColor color,
                            gfx::Canvas* canvas) const;
 

@@ -450,11 +450,9 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   if (!normal_mode) {
     // The toolbar isn't going to draw a top edge for us, so draw one ourselves.
-    if (IsToolbarVisible())
-      y += toolbar_bounds.y() + kClientEdgeThickness;
-    client_bounds.set_y(y);
-    client_bounds.Inset(-kClientEdgeThickness, -kClientEdgeThickness,
-                        -kClientEdgeThickness, client_bounds.height());
+    client_bounds.Offset(0, toolbar_bounds.y());
+    client_bounds.Inset(-kClientEdgeThickness, 0, -kClientEdgeThickness,
+                        client_bounds.height() - kClientEdgeThickness);
     canvas->FillRect(client_bounds, toolbar_color);
 
     // Popup and app windows don't custom-draw any other edges, so we're done.

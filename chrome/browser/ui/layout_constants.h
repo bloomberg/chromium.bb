@@ -37,7 +37,7 @@ enum LayoutConstant {
   // edges.
   LOCATION_BAR_HORIZONTAL_PADDING,
 
-  // The vertical padding of items in the location bar.
+  // Space between the location bar edge and contents.
   LOCATION_BAR_VERTICAL_PADDING,
 
   // The number of pixels in the omnibox dropdown border image interior to

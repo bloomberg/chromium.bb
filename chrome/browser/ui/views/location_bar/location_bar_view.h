@@ -77,9 +77,6 @@ class LocationBarView : public LocationBar,
                         public TemplateURLServiceObserver,
                         public ui_zoom::ZoomEventManagerObserver {
  public:
-  // The location bar view's class name.
-  static const char kViewClassName[];
-
   class Delegate {
    public:
     // Should return the current web contents.
@@ -119,6 +116,9 @@ class LocationBarView : public LocationBar,
     DEEMPHASIZED_TEXT,
     EV_BUBBLE_TEXT_AND_BORDER,
   };
+
+  // The location bar view's class name.
+  static const char kViewClassName[];
 
   LocationBarView(Browser* browser,
                   Profile* profile,

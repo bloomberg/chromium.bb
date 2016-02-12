@@ -25,10 +25,13 @@ class Label;
 // dependencies with Browser and classes that depend on Browser.
 class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
  public:
+  // Constants used by OpaqueBrowserFrameView as well.
+  static const int kContentEdgeShadowThickness;
+
   // Constants public for testing only.
   static const int kNonClientRestoredExtraThickness;
   static const int kFrameBorderThickness;
-  static const int kTitlebarTopAndBottomEdgeThickness;
+  static const int kTitlebarTopEdgeThickness;
   static const int kIconLeftSpacing;
   static const int kIconTitleSpacing;
   static const int kCaptionSpacing;

@@ -42,6 +42,9 @@ const int kCaptionButtonSpacing = 0;
 
 // statics
 
+// The content edge images have a shadow built into them.
+const int OpaqueBrowserFrameViewLayout::kContentEdgeShadowThickness = 2;
+
 // Besides the frame border, there's empty space atop the window in restored
 // mode, to use to drag the window around.
 const int OpaqueBrowserFrameViewLayout::kNonClientRestoredExtraThickness = 11;
@@ -50,8 +53,8 @@ const int OpaqueBrowserFrameViewLayout::kNonClientRestoredExtraThickness = 11;
 // each side regardless of the system window border size.
 const int OpaqueBrowserFrameViewLayout::kFrameBorderThickness = 4;
 
-// The titlebar has a 2 px 3D edge along the top and bottom.
-const int OpaqueBrowserFrameViewLayout::kTitlebarTopAndBottomEdgeThickness = 2;
+// The titlebar has a 2 px 3D edge along the top.
+const int OpaqueBrowserFrameViewLayout::kTitlebarTopEdgeThickness = 2;
 
 // The icon is inset 2 px from the left frame border.
 const int OpaqueBrowserFrameViewLayout::kIconLeftSpacing = 2;
@@ -183,14 +186,11 @@ int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
 }
 
 int OpaqueBrowserFrameViewLayout::TitlebarBottomThickness(bool restored) const {
-  int thickness = kTitleBarAdditionalPadding;
-  // If there's a non-empty toolbar, it will render the bottom portion of the
-  // titlebar.
-  if (delegate_->IsToolbarVisible())
-    return thickness;
-  thickness += kTitlebarTopAndBottomEdgeThickness;
-  return (!restored && IsTitleBarCondensed()) ?
-      thickness : (thickness + views::NonClientFrameView::kClientEdgeThickness);
+  const int thickness =
+      kTitleBarAdditionalPadding + kContentEdgeShadowThickness;
+  return (delegate_->IsToolbarVisible() || !IsTitleBarCondensed() || restored)
+      ? (thickness + views::NonClientFrameView::kClientEdgeThickness)
+      : thickness;
 }
 
 int OpaqueBrowserFrameViewLayout::CaptionButtonY(bool restored) const {
@@ -291,7 +291,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
     // restored, instead of calculating the remaining space from below the
     // frame border, we calculate from below the 3D edge.
     int unavailable_px_at_top = IsTitleBarCondensed() ?
-        frame_thickness : kTitlebarTopAndBottomEdgeThickness;
+        frame_thickness : kTitlebarTopEdgeThickness;
     // When the icon is shorter than the minimum space we reserve for the
     // caption button, we vertically center it.  We want to bias rounding to
     // put extra space above the icon, since the 3D edge (+ client edge, for
