@@ -13,7 +13,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
@@ -64,11 +64,7 @@ void SortData(std::vector<DirectoryLister::DirectoryListerData>* data,
 
 DirectoryLister::DirectoryLister(const base::FilePath& dir,
                                  DirectoryListerDelegate* delegate)
-    : delegate_(delegate) {
-  core_ = new Core(dir, ALPHA_DIRS_FIRST, this);
-  DCHECK(delegate_);
-  DCHECK(!dir.value().empty());
-}
+    : DirectoryLister(dir, ALPHA_DIRS_FIRST, delegate) {}
 
 DirectoryLister::DirectoryLister(const base::FilePath& dir,
                                  ListingType type,
@@ -83,11 +79,8 @@ DirectoryLister::~DirectoryLister() {
   Cancel();
 }
 
-bool DirectoryLister::Start() {
-  return base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&Core::Start, core_),
-      true);
+bool DirectoryLister::Start(base::TaskRunner* dir_task_runner) {
+  return dir_task_runner->PostTask(FROM_HERE, base::Bind(&Core::Start, core_));
 }
 
 void DirectoryLister::Cancel() {
@@ -99,7 +92,7 @@ DirectoryLister::Core::Core(const base::FilePath& dir,
                             DirectoryLister* lister)
     : dir_(dir),
       type_(type),
-      origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      origin_task_runner_(base::ThreadTaskRunnerHandle::Get().get()),
       lister_(lister),
       cancelled_(0) {
   DCHECK(lister_);
@@ -108,7 +101,7 @@ DirectoryLister::Core::Core(const base::FilePath& dir,
 DirectoryLister::Core::~Core() {}
 
 void DirectoryLister::Core::CancelOnOriginThread() {
-  DCHECK(origin_task_runner_->BelongsToCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
 
   base::subtle::NoBarrier_Store(&cancelled_, 1);
   // Core must not call into |lister_| after cancellation, as the |lister_| may
@@ -179,7 +172,7 @@ bool DirectoryLister::Core::IsCancelled() const {
 
 void DirectoryLister::Core::DoneOnOriginThread(
     scoped_ptr<DirectoryList> directory_list, int error) const {
-  DCHECK(origin_task_runner_->BelongsToCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
 
   // Need to check if the operation was before first callback.
   if (IsCancelled())

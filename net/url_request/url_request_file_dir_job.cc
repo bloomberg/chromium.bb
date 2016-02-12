@@ -26,19 +26,29 @@ namespace net {
 URLRequestFileDirJob::URLRequestFileDirJob(URLRequest* request,
                                            NetworkDelegate* network_delegate,
                                            const base::FilePath& dir_path)
+    : URLRequestFileDirJob(request,
+                           network_delegate,
+                           dir_path,
+                           base::WorkerPool::GetTaskRunner(true)) {}
+
+URLRequestFileDirJob::URLRequestFileDirJob(
+    URLRequest* request,
+    NetworkDelegate* network_delegate,
+    const base::FilePath& dir_path,
+    const scoped_refptr<base::TaskRunner>& dir_task_runner)
     : URLRequestJob(request, network_delegate),
       lister_(dir_path, this),
       dir_path_(dir_path),
+      dir_task_runner_(dir_task_runner),
       canceled_(false),
       list_complete_(false),
       wrote_header_(false),
       read_pending_(false),
       read_buffer_length_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 void URLRequestFileDirJob::StartAsync() {
-  lister_.Start();
+  lister_.Start(dir_task_runner_.get());
 
   NotifyHeadersComplete();
 }
@@ -66,12 +76,12 @@ void URLRequestFileDirJob::Kill() {
 }
 
 int URLRequestFileDirJob::ReadRawData(IOBuffer* buf, int buf_size) {
-  if (is_done())
-    return 0;
-
   int bytes_read = 0;
-  if (FillReadBuffer(buf->data(), buf_size, &bytes_read))
+  if (FillReadBuffer(buf->data(), buf_size, &bytes_read)) {
+    if (bytes_read == 0 && list_complete_)
+      return list_complete_result_;
     return bytes_read;
+  }
 
   // We are waiting for more data
   read_pending_ = true;
@@ -132,23 +142,24 @@ void URLRequestFileDirJob::OnListFile(
 void URLRequestFileDirJob::OnListDone(int error) {
   DCHECK(!canceled_);
   DCHECK_LE(error, OK);
-  if (error == OK)
-    list_complete_ = true;
-  CompleteRead(static_cast<Error>(error));
+
+  list_complete_ = true;
+  list_complete_result_ = static_cast<Error>(error);
+  CompleteRead(list_complete_result_);
 }
 
 URLRequestFileDirJob::~URLRequestFileDirJob() {}
 
-void URLRequestFileDirJob::CompleteRead(Error status) {
-  DCHECK_LE(status, OK);
-  DCHECK_NE(status, ERR_IO_PENDING);
+void URLRequestFileDirJob::CompleteRead(Error error) {
+  DCHECK_LE(error, OK);
+  DCHECK_NE(error, ERR_IO_PENDING);
 
   // Do nothing if there is no read pending.
   if (!read_pending_)
     return;
 
-  int result = status;
-  if (status == OK) {
+  int result = error;
+  if (error == OK) {
     int filled_bytes = 0;
     if (FillReadBuffer(read_buffer_->data(), read_buffer_length_,
                        &filled_bytes)) {

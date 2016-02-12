@@ -13,6 +13,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,7 +97,7 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
 
   void Run(DirectoryLister* lister) {
     lister_ = lister;
-    lister_->Start();
+    lister_->Start(base::ThreadTaskRunnerHandle::Get().get());
     run_loop.Run();
   }
 
@@ -235,7 +236,7 @@ TEST_F(DirectoryListerTest, BasicCancelTest) {
   ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   scoped_ptr<DirectoryLister> lister(new DirectoryLister(
       root_path(), &delegate));
-  lister->Start();
+  lister->Start(base::ThreadTaskRunnerHandle::Get().get());
   lister->Cancel();
   base::RunLoop().RunUntilIdle();
 

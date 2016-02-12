@@ -16,7 +16,7 @@
 #include "net/base/net_export.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class TaskRunner;
 }
 
 namespace net {
@@ -69,7 +69,7 @@ class NET_EXPORT DirectoryLister  {
   ~DirectoryLister();
 
   // Call this method to start the directory enumeration thread.
-  bool Start();
+  bool Start(base::TaskRunner* dir_task_runner);
 
   // Call this method to asynchronously stop directory enumeration.  The
   // delegate will not be called back.
@@ -110,7 +110,7 @@ class NET_EXPORT DirectoryLister  {
 
     const base::FilePath dir_;
     const ListingType type_;
-    const scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
+    const scoped_refptr<base::TaskRunner> origin_task_runner_;
 
     // Only used on the origin thread.
     DirectoryLister* lister_;

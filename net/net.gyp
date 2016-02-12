@@ -276,6 +276,7 @@
           'sources!': [
             'base/directory_lister_unittest.cc',
             'base/directory_listing_unittest.cc',
+	    'url_request/url_request_file_dir_job_unittest.cc',
             'url_request/url_request_file_job_unittest.cc',
           ],
         }],

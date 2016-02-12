@@ -1783,6 +1783,7 @@
       'url_request/url_request_backoff_manager_unittest.cc',
       'url_request/url_request_context_builder_unittest.cc',
       'url_request/url_request_data_job_unittest.cc',
+      'url_request/url_request_file_dir_job_unittest.cc',
       'url_request/url_request_file_job_unittest.cc',
       'url_request/url_request_filter_unittest.cc',
       'url_request/url_request_ftp_job_unittest.cc',

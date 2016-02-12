@@ -7,27 +7,32 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/worker_pool.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_export.h"
 #include "net/url_request/url_request_job.h"
 
 namespace net {
 
-class URLRequestFileDirJob
-  : public URLRequestJob,
-    public DirectoryLister::DirectoryListerDelegate {
+class NET_EXPORT_PRIVATE URLRequestFileDirJob
+    : public URLRequestJob,
+      public NON_EXPORTED_BASE(DirectoryLister::DirectoryListerDelegate) {
  public:
   URLRequestFileDirJob(URLRequest* request,
                        NetworkDelegate* network_delegate,
                        const base::FilePath& dir_path);
 
-  bool list_complete() const { return list_complete_; }
+  URLRequestFileDirJob(URLRequest* request,
+                       NetworkDelegate* network_delegate,
+                       const base::FilePath& dir_path,
+                       const scoped_refptr<base::TaskRunner>& dir_task_runner);
 
-  virtual void StartAsync();
-
+  void StartAsync();
   // Overridden from URLRequestJob:
   void Start() override;
   void Kill() override;
@@ -39,9 +44,10 @@ class URLRequestFileDirJob
   void OnListFile(const DirectoryLister::DirectoryListerData& data) override;
   void OnListDone(int error) override;
 
- private:
+ protected:
   ~URLRequestFileDirJob() override;
 
+ private:
   void CloseLister();
 
   // When we have data and a read has been pending, this function
@@ -54,11 +60,17 @@ class URLRequestFileDirJob
 
   DirectoryLister lister_;
   base::FilePath dir_path_;
+
+  const scoped_refptr<base::TaskRunner> dir_task_runner_;
+
   std::string data_;
   bool canceled_;
 
   // Indicates whether we have the complete list of the dir
   bool list_complete_;
+
+  // Indicates the status of the list
+  Error list_complete_result_;
 
   // Indicates whether we have written the HTML header
   bool wrote_header_;
