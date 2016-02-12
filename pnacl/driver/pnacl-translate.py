@@ -290,7 +290,7 @@ def SetUpArch():
   env.append('SZ_FLAGS_ARCH', '--sandbox=' + is_sandbox)
   env.append('SZ_FLAGS_ARCH', '--nonsfi=' + is_nonsfi)
   env.append('SZ_FLAGS_ARCH', '--target=' + base_arch.lower())
-  if base_arch != 'X8632':
+  if base_arch not in ('X8632', 'X8664'):
     env.set('SZ_UNSUPPORTED', '1')
     # Hard-fail on an unsupported architecture.
     if env.getbool('USE_SZ'):
