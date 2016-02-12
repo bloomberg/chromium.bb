@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -59,6 +60,11 @@ source_set("lib") {
   }
 }
 
+mojo_application_manifest("manifest") {
+  application_name = "ash_sysui"
+  source = "manifest.json"
+}
+
 mojo_native_application("mus") {
   output_name = "ash_sysui"
   sources = [
@@ -66,6 +72,7 @@ mojo_native_application("mus") {
   ]
   deps = [
     ":lib",
+    ":manifest",
     "//mojo/shell/public/cpp",
   ]
 
