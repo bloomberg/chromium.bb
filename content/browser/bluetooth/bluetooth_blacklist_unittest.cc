@@ -224,25 +224,29 @@ TEST_F(BluetoothBlacklistTest, VerifyDefaultBlacklistSize) {
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeList) {
   BluetoothBlacklist& blacklist = BluetoothBlacklist::Get();
-  EXPECT_TRUE(blacklist.IsExcluded(BluetoothUUID("1800")));
-  EXPECT_TRUE(blacklist.IsExcluded(BluetoothUUID("1801")));
+  EXPECT_FALSE(blacklist.IsExcluded(BluetoothUUID("1800")));
+  EXPECT_FALSE(blacklist.IsExcluded(BluetoothUUID("1801")));
   EXPECT_TRUE(blacklist.IsExcluded(BluetoothUUID("1812")));
+  EXPECT_TRUE(blacklist.IsExcluded(BluetoothUUID("2a03")));
   EXPECT_TRUE(blacklist.IsExcluded(BluetoothUUID("2a25")));
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeReadList) {
   BluetoothBlacklist& blacklist = BluetoothBlacklist::Get();
-  EXPECT_TRUE(blacklist.IsExcludedFromReads(BluetoothUUID("1800")));
-  EXPECT_TRUE(blacklist.IsExcludedFromReads(BluetoothUUID("1801")));
+  EXPECT_FALSE(blacklist.IsExcludedFromReads(BluetoothUUID("1800")));
+  EXPECT_FALSE(blacklist.IsExcludedFromReads(BluetoothUUID("1801")));
   EXPECT_TRUE(blacklist.IsExcludedFromReads(BluetoothUUID("1812")));
+  EXPECT_TRUE(blacklist.IsExcludedFromReads(BluetoothUUID("2a03")));
   EXPECT_TRUE(blacklist.IsExcludedFromReads(BluetoothUUID("2a25")));
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeWriteList) {
   BluetoothBlacklist& blacklist = BluetoothBlacklist::Get();
-  EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("1800")));
-  EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("1801")));
+  EXPECT_FALSE(blacklist.IsExcludedFromWrites(BluetoothUUID("1800")));
+  EXPECT_FALSE(blacklist.IsExcludedFromWrites(BluetoothUUID("1801")));
   EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("1812")));
+  EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("2a02")));
+  EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("2a03")));
   EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("2a25")));
   EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("2902")));
   EXPECT_TRUE(blacklist.IsExcludedFromWrites(BluetoothUUID("2903")));
