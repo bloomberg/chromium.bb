@@ -53,14 +53,14 @@ const TestVector kEncryptionTestVectors[] = {
     "AhA6n2oFYPWIh-cXwyv1m2C0JvmjHB4ZkXj8QylESXU",
     "tsJYqAGvFDk6lDEv7daecw",
     4096,
-    "x9jT8FN0cy3GX906plTF_K52znY5ZMo0lqMEN90c"
+    "FgWrrnZq79oI_N4ORkVLHx1jfVmjeiIk-xFX8PzVuA"
    },
    // Empty message.
    { "",
     "lMyvTong4VR053jfCpWmMDGW5dEDAqiTZUIU-inhTjU",
     "wH3uvZqcN6oey9whiGpn1A",
     4096,
-    "KNXWPR0Sx1jc3NW4JDPQKlw"
+    "MTI9zZ8CJTUzbZ4qNDoQZs0k"
    },
    // Message with an invalid salt size.
    { "Hello, world!",
@@ -73,21 +73,21 @@ const TestVector kEncryptionTestVectors[] = {
 
 const TestVector kDecryptionTestVectors[] = {
   // Simple message.
-  { "lqMcX_o8HrRu3v9F9w4Cwk_fCiYmmTRCcatQdpQk",
+  { "ceiEu_YpmqLoakD4smdzvy2XKRQrJ9vBzB2aqYEfzw",
     "47ZytAw9qHlm-Q8g-7rH81rUPzaCgGcoFvlS1qxQtQk",
     "EuR7EVetcaWpndXd_dKeyA",
     4096,
     "Hello, world!"
    },
    // Simple message with 16 bytes of padding.
-   { "2sdvDvwlda33AMQEjtTdPqfb0RINM710Pabe_zQ3H8DO4ca5P7iy6Xh_9ZOqXQ",
+   { "WSf6fz1O0aIJyaPTCnvk83OqIQxsRKeFOvblPLsPpFB_1AV9ROk09TE1cGrB6zQ",
      "MYSsNybwrTzRIzQYUq_yFPc6ugcTrJdEZJDM4NswvUg",
      "8sEAMQYnufo2UkKl80cUGQ",
      4096,
      "Hello, world!"
    },
    // Empty message.
-   { "Px1lQsFDdDrTomks7GYRvts",
+   { "Ur3vHedGDO5IPYDvbhHYjbjG",
      "S3-Ki_-XtzR66gUp_zR75CC5JXO62pyr5fWfneTYwFE",
      "4RM6s19jJHdmqiVEJDp9jg",
      4096,
@@ -207,7 +207,7 @@ TEST_F(GCMMessageCryptographerTest, InvalidRecordSize) {
   size_t record_size = 0;
 
   std::string ciphertext, plaintext;
-  EXPECT_TRUE(cryptographer()->Encrypt(kExamplePlaintext, key(), salt,
+  ASSERT_TRUE(cryptographer()->Encrypt(kExamplePlaintext, key(), salt,
                                        &record_size, &ciphertext));
 
   EXPECT_GT(record_size, ciphertext.size() - 16);
@@ -222,7 +222,7 @@ TEST_F(GCMMessageCryptographerTest, InvalidRecordSize) {
 }
 
 TEST_F(GCMMessageCryptographerTest, InvalidRecordPadding) {
-  std::string message = std::string(1, '\0') + kExamplePlaintext;
+  std::string message = std::string(sizeof(uint16_t), '\0') + kExamplePlaintext;
 
   const std::string salt = GenerateRandomSalt();
 
@@ -248,6 +248,18 @@ TEST_F(GCMMessageCryptographerTest, InvalidRecordPadding) {
   // Now run the same steps again, but say that there are four padding octets.
   // This should be rejected because the padding will not be all zeros.
   message[0] = 4;
+
+  ASSERT_TRUE(cryptographer()->EncryptDecryptRecordInternal(
+      GCMMessageCryptographer::ENCRYPT, message, content_encryption_key, nonce,
+      &ciphertext));
+
+  ASSERT_FALSE(cryptographer()->Decrypt(ciphertext, key(), salt, record_size,
+                                        &plaintext));
+
+  // Do the same but changing the second octet indicating padding size, leaving
+  // the first octet at zero.
+  message[0] = 0;
+  message[1] = 4;
 
   ASSERT_TRUE(cryptographer()->EncryptDecryptRecordInternal(
       GCMMessageCryptographer::ENCRYPT, message, content_encryption_key, nonce,
@@ -392,7 +404,7 @@ TEST_F(GCMMessageCryptographerTest, ReferenceTest) {
 
   // base64url-encoded representation of the ciphertext, and the plaintext as
   // a normal character array.
-  const char kCiphertext[] = "G6j_sfKg0qebO62yXpTCayN2KV24QitNiTvLgcFiEj0";
+  const char kCiphertext[] = "yqD2bapcx14XxUbtwjiGx69eHE3Yd6AqXcwBpT2Kd1uy";
   const char kPlaintext[] = "I am the walrus";
 
   // Private keys of the sender and receiver represented as ASN.1-encoded PKCS
@@ -483,7 +495,9 @@ TEST_F(GCMMessageCryptographerTest, ReferenceTest) {
                                     &record_size, &ciphertext));
 
   EXPECT_GT(record_size, 1u);
-  EXPECT_EQ(16u + 1u + strlen(kPlaintext), ciphertext.size());
+  EXPECT_EQ(
+    sizeof(uint16_t) + strlen(kPlaintext) + 16u /* authentication tag */,
+    ciphertext.size());
 
   // Verify that the created ciphertext matches the reference ciphertext.
   EXPECT_EQ(reference_ciphertext, ciphertext);

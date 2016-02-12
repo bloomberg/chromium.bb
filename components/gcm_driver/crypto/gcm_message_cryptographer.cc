@@ -27,7 +27,7 @@ const size_t kContentEncryptionKeySize = 16;
 // Creates the info parameter for an HKDF value for the given |content_encoding|
 // in accordance with draft-thomson-http-encryption.
 //
-// cek_info = "Content-Encoding: aesgcm128" || 0x00 || context
+// cek_info = "Content-Encoding: aesgcm" || 0x00 || context
 // nonce_info = "Content-Encoding: nonce" || 0x00 || context
 //
 // context = label || 0x00 ||
@@ -76,7 +76,7 @@ GCMMessageCryptographer::GCMMessageCryptographer(
     const base::StringPiece& sender_public_key,
     const std::string& auth_secret)
     : content_encryption_key_info_(
-          InfoForContentEncoding("aesgcm128", label, recipient_public_key,
+          InfoForContentEncoding("aesgcm", label, recipient_public_key,
                                  sender_public_key)),
       nonce_info_(
           InfoForContentEncoding("nonce", label, recipient_public_key,
@@ -102,13 +102,14 @@ bool GCMMessageCryptographer::Encrypt(const base::StringPiece& plaintext,
   std::string content_encryption_key = DeriveContentEncryptionKey(prk, salt);
   std::string nonce = DeriveNonce(prk, salt);
 
-  // draft-thomson-http-encryption allows between 0 and 255 octets of padding to
-  // be inserted before the enciphered content, with the length of the padding
-  // stored in the first octet of the payload. Since there is no necessity for
-  // payloads to contain padding, don't add any.
+  // Prior to the plaintext, draft-thomson-http-encryption has a two-byte
+  // padding length followed by zero to 65535 bytes of padding. There is no need
+  // for payloads created by Chrome to be padded so the padding length is set to
+  // zero.
   std::string record;
-  record.reserve(plaintext.size() + 1);
-  record.append(1, '\0');
+  record.reserve(sizeof(uint16_t) + plaintext.size());
+  record.append(sizeof(uint16_t), '\0');
+
   plaintext.AppendToString(&record);
 
   std::string encrypted_record;
@@ -135,12 +136,13 @@ bool GCMMessageCryptographer::Decrypt(const base::StringPiece& ciphertext,
   if (salt.size() != kSaltSize || record_size <= 1)
     return false;
 
-  // The |ciphertext| must be at least kAuthenticationTagBytes + 1 bytes, which
-  // would be used for an empty message. Per
+  // The |ciphertext| must be at least of size kAuthenticationTagBytes plus
+  // len(uint16) to hold the message's padding length, which is the case when an
+  // empty message with a zero padding length has been received. Per
   // https://tools.ietf.org/html/draft-thomson-http-encryption-02#section-3, the
   // |record_size| parameter must be large enough to use only one record.
-  if (ciphertext.size() < kAuthenticationTagBytes + 1 ||
-      ciphertext.size() >= record_size + kAuthenticationTagBytes + 1) {
+  if (ciphertext.size() < sizeof(uint16_t) + kAuthenticationTagBytes ||
+      ciphertext.size() > record_size + kAuthenticationTagBytes) {
     return false;
   }
 
@@ -149,32 +151,39 @@ bool GCMMessageCryptographer::Decrypt(const base::StringPiece& ciphertext,
   std::string content_encryption_key = DeriveContentEncryptionKey(prk, salt);
   std::string nonce = DeriveNonce(prk, salt);
 
-  std::string decrypted_record;
+  std::string decrypted_record_string;
   if (!EncryptDecryptRecordInternal(DECRYPT, ciphertext, content_encryption_key,
-                                    nonce, &decrypted_record)) {
+                                    nonce, &decrypted_record_string)) {
     return false;
   }
 
-  DCHECK(!decrypted_record.empty());
+  DCHECK(!decrypted_record_string.empty());
 
-  // Records can contain between 0 and 255 octets of padding, indicated by the
-  // first octet of the decrypted message. Padding bytes that are not set to
-  // zero are considered a fatal decryption failure as well. Since AES-GCM
-  // includes an authentication check, neither verification nor removing the
-  // padding have to be done in constant time.
-  size_t padding_length = static_cast<size_t>(decrypted_record[0]);
-  if (padding_length >= decrypted_record.size())
+  base::StringPiece decrypted_record(decrypted_record_string);
+
+  // Records must be at least two octets in size (to hold the padding). Records
+  // that are smaller, i.e. a single octet, are invalid.
+  if (decrypted_record.size() < sizeof(uint16_t))
     return false;
 
-  for (size_t i = 1; i <= padding_length; ++i) {
+  // Records contain a two-byte, big-endian padding length followed by zero to
+  // 65535 bytes of padding. Padding bytes must be zero but, since AES-GCM
+  // authenticates the plaintext, checking and removing padding need not be done
+  // in constant-time.
+  uint16_t padding_length = (decrypted_record[0] << 8) | decrypted_record[1];
+  decrypted_record.remove_prefix(sizeof(uint16_t));
+
+  if (padding_length > decrypted_record.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < padding_length; ++i) {
     if (decrypted_record[i] != 0)
       return false;
   }
 
-  base::StringPiece decoded_record_string_piece(decrypted_record);
-  decoded_record_string_piece.remove_prefix(1 + padding_length);
-  decoded_record_string_piece.CopyToString(plaintext);
-
+  decrypted_record.remove_prefix(padding_length);
+  decrypted_record.CopyToString(plaintext);
   return true;
 }
 
