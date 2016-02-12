@@ -19,4 +19,9 @@
   <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
     <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
   </message>
+  <if expr="is_ios">
+    <message name="IDS_OMNIBOX_EMPTY_HINT" desc="The text displayed in the omnibox when it is empty.">
+      Search or type URL
+    </message>
+  </if>
 </grit-part>

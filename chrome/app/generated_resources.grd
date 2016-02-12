@@ -7036,11 +7036,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SEARCH_BOX_EMPTY_HINT" desc="The text displayed in the fakebox when it is empty, which includes the name of the default search provider.">
         Search <ph name="ENGINE">$1<ex>Google</ex></ph> or type URL
       </message>
-      <if expr="is_ios">
-        <message name="IDS_OMNIBOX_EMPTY_HINT" desc="The text displayed in the omnibox when it is empty.">
-          Search or type URL
-        </message>
-      </if>
       <message name="IDS_OMNIBOX_ACCESSIBLE_ANSWER" desc="Readable text represening a query typed by the user in the omnibox, followed by an indication that an answer to that query will follow, followed by the answer. The commas are significant as they will introduce a pause in the spoken text.">
         <ph name="QUERY">$1<ex>weather in los angeles</ex></ph>, answer, <ph name="ANSWER">$2<ex>sunny and 84 degrees</ex></ph>
       </message>
