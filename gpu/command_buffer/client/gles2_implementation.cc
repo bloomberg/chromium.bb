@@ -2105,9 +2105,6 @@ void GLES2Implementation::CompressedTexImage2D(
     SetGLError(GL_INVALID_VALUE, "glCompressedTexImage2D", "border != 0");
     return;
   }
-  if (height == 0 || width == 0) {
-    return;
-  }
   // If there's a pixel unpack buffer bound use it when issuing
   // CompressedTexImage2D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
@@ -2191,9 +2188,6 @@ void GLES2Implementation::CompressedTexImage3D(
   }
   if (border != 0) {
     SetGLError(GL_INVALID_VALUE, "glCompressedTexImage3D", "border != 0");
-    return;
-  }
-  if (height == 0 || width == 0 || depth == 0) {
     return;
   }
   // If there's a pixel unpack buffer bound use it when issuing

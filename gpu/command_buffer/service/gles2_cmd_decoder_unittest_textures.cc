@@ -1038,7 +1038,7 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
     CompressedTexImage2DBucket cmd;
     // test small width.
     DoCompressedTexImage2D(
-        GL_TEXTURE_2D, 0, test.format, 2, 4, 0, test.block_size, kBucketId);
+        GL_TEXTURE_2D, 1, test.format, 2, 4, 0, test.block_size, kBucketId);
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test bad width.
@@ -1049,7 +1049,7 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
 
     // test small height.
     DoCompressedTexImage2D(
-        GL_TEXTURE_2D, 0, test.format, 4, 2, 0, test.block_size, kBucketId);
+        GL_TEXTURE_2D, 1, test.format, 4, 2, 0, test.block_size, kBucketId);
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test too bad height.
@@ -1060,12 +1060,12 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
 
     // test small for level 0.
     DoCompressedTexImage2D(
-        GL_TEXTURE_2D, 0, test.format, 1, 1, 0, test.block_size, kBucketId);
+        GL_TEXTURE_2D, 1, test.format, 1, 1, 0, test.block_size, kBucketId);
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test small for level 0.
     DoCompressedTexImage2D(
-        GL_TEXTURE_2D, 0, test.format, 2, 2, 0, test.block_size, kBucketId);
+        GL_TEXTURE_2D, 1, test.format, 2, 2, 0, test.block_size, kBucketId);
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test size too large.

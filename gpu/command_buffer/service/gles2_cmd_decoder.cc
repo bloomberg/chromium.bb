@@ -10212,8 +10212,13 @@ const ASTCBlockArray kASTCBlockArray[] = {
     {12, 12}};
 
 bool IsValidDXTSize(GLint level, GLsizei size) {
-  return (size == 1) ||
-         (size == 2) || !(size % kS3TCBlockWidth);
+  // TODO(zmo): Linux NVIDIA driver does allow size of 1 and 2 on level 0.
+  // However, the WebGL conformance test and blink side code forbid it.
+  // For now, let's be on the cautious side. If all drivers behaves the same
+  // as Linux NVIDIA, then we can remove this limitation.
+  return (level && size == 1) ||
+         (level && size == 2) ||
+         !(size % kS3TCBlockWidth);
 }
 
 bool IsValidPVRTCSize(GLint level, GLsizei size) {

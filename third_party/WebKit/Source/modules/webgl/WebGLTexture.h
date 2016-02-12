@@ -27,23 +27,8 @@
 #define WebGLTexture_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "wtf/Vector.h"
 
 namespace blink {
-
-struct WebGLSamplerState {
-    WebGLSamplerState();
-
-    GLenum compreFunc;
-    GLenum compreMode;
-    GLenum magFilter;
-    GLenum minFilter;
-    GLenum wrapR;
-    GLenum wrapS;
-    GLenum wrapT;
-    GLfloat maxLod;
-    GLfloat minLod;
-};
 
 class WebGLTexture final : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
@@ -52,25 +37,15 @@ public:
 
     static WebGLTexture* create(WebGLRenderingContextBase*);
 
-    void setTarget(GLenum target, GLint maxLevel);
-    void setParameteri(GLenum pname, GLint param);
-    void setParameterf(GLenum pname, GLfloat param);
+    void setTarget(GLenum);
 
     GLenum getTarget() const { return m_target; }
 
-    int getMinFilter() const { return m_samplerState.minFilter; }
-
     static GLenum getValidFormatForInternalFormat(GLenum);
-
-    // Whether width/height is NotPowerOfTwo.
-    static bool isNPOT(GLsizei, GLsizei);
 
     bool hasEverBeenBound() const { return object() && m_target; }
 
     static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
-    static GLenum getValidTypeForInternalFormat(GLenum);
-
-    const WebGLSamplerState* getSamplerState() const { return &m_samplerState; }
 
 private:
     explicit WebGLTexture(WebGLRenderingContextBase*);
@@ -82,12 +57,6 @@ private:
     int mapTargetToIndex(GLenum) const;
 
     GLenum m_target;
-
-    WebGLSamplerState m_samplerState;
-
-    bool m_isWebGL2OrHigher;
-    size_t m_baseLevel;
-    size_t m_maxLevel;
 };
 
 } // namespace blink

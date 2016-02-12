@@ -109,21 +109,6 @@ class WebGLVertexArrayObjectBase;
 class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
 
-struct FormatType {
-    GLenum internalformat;
-    GLenum format;
-    GLenum type;
-};
-
-struct FormatTypeCompare {
-    bool operator() (const FormatType& lhs, const FormatType& rhs) const
-    {
-        return (lhs.internalformat < rhs.internalformat
-            || ((lhs.internalformat == rhs.internalformat) && (lhs.format < rhs.format))
-            || ((lhs.internalformat == rhs.internalformat) && (lhs.format == rhs.format) && (lhs.type < rhs.type)));
-    }
-};
-
 // ScopedDrawingBufferBinder is used for ReadPixels/CopyTexImage2D/CopySubImage2D to read from
 // a multisampled DrawingBuffer. In this situation, we need to blit to a single sampled buffer
 // for reading, during which the bindings could be changed and need to be recovered.
@@ -476,8 +461,6 @@ protected:
 
     void notifyCanvasContextChanged();
 
-    // Query if the context is NPOT strict.
-    bool isNPOTStrict() { return !isWebGL2OrHigher(); }
     // Query if depth_stencil buffer is supported.
     bool isDepthStencilSupported() { return m_isDepthStencilSupported; }
 
@@ -502,8 +485,6 @@ protected:
     PassRefPtr<Image> drawImageIntoBuffer(PassRefPtr<Image>, int width, int height, const char* functionName);
 
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*);
-
-    virtual const WebGLSamplerState* getTextureUnitSamplerState(GLenum target, GLuint unit) const;
 
     // Structure for rendering to a DrawingBuffer, instead of directly
     // to the back-buffer of m_context.
@@ -776,7 +757,6 @@ protected:
     std::set<GLenum> m_supportedInternalFormatsCopyTexImage;
     std::set<GLenum> m_supportedFormats;
     std::set<GLenum> m_supportedTypes;
-    std::set<FormatType, FormatTypeCompare> m_supportedFormatTypeCombinations;
 
     // Helpers for getParameter and others
     ScriptValue getBooleanParameter(ScriptState*, GLenum);
@@ -849,10 +829,15 @@ protected:
     // ASCII subset as defined in GLSL ES 1.0 spec section 3.1.
     bool validateString(const char* functionName, const String&);
 
-    // Helper function to check target and texture bound to the target.
+    // Helper function to check texture binding target and texture bound to the target.
     // Generate GL errors and return 0 if target is invalid or texture bound is
     // null.  Otherwise, return the texture bound to the target.
-    virtual WebGLTexture* validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap);
+    WebGLTexture* validateTextureBinding(const char* functionName, GLenum target);
+
+    // Helper function to check texture 2D target and texture bound to the target.
+    // Generate GL errors and return 0 if target is invalid or texture bound is
+    // null.  Otherwise, return the texture bound to the target.
+    WebGLTexture* validateTexture2DBinding(const char* functionName, GLenum target);
 
     // Helper function to check input internalformat/format/type for functions {copy}Tex{Sub}Image.
     // Generates GL error and returns false if parameters are invalid.
@@ -916,9 +901,6 @@ protected:
     // Generates GL error and returns false if parameters are invalid.
     bool validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition);
 
-    // Helper function to validate that a copyTexSubImage call is valid.
-    bool validateCopyTexSubImage(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
-
     // Helper function to validate a given texture format is settable as in
     // you can supply data to texImage2D, or call texImage2D, copyTexImage2D and
     // copyTexSubImage2D.
@@ -928,20 +910,8 @@ protected:
     // Helper function to validate format for CopyTexImage.
     bool validateCopyTexFormat(const char* functionName, GLenum format);
 
-    // Helper function to validate compressed texture data is correct size
-    // for the given format and dimensions.
-    bool validateCompressedTexFuncData(const char* functionName, GLsizei width, GLsizei height, GLsizei depth, GLenum format, DOMArrayBufferView* pixels);
-
     // Helper function for validating compressed texture formats.
     bool validateCompressedTexFormat(const char* functionName, GLenum format);
-
-    // Helper function to validate compressed texture dimensions are valid for
-    // the given format.
-    bool validateCompressedTexDimensions(const char* functionName, TexImageFunctionType, GLenum target, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format);
-
-    // Helper function to validate compressed texture dimensions are valid for
-    // the given format.
-    bool validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, WebGLTexture*);
 
     // Helper function to validate if front/back stencilMask and stencilFunc settings are the same.
     bool validateStencilSettings(const char* functionName);

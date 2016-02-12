@@ -223,7 +223,6 @@ protected:
     bool validateCapability(const char* functionName, GLenum) override;
     bool validateBufferTarget(const char* functionName, GLenum target) override;
     bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum, WebGLBuffer*) override;
-    WebGLTexture* validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap) override;
     bool validateFramebufferTarget(GLenum target) override;
     bool validateReadPixelsFormatAndType(GLenum format, GLenum type) override;
 
@@ -232,10 +231,11 @@ protected:
     WebGLFramebuffer* getReadFramebufferBinding() override;
     GLint getMaxTextureLevelForTarget(GLenum target) override;
     void renderbufferStorageImpl(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName) override;
-    const WebGLSamplerState* getTextureUnitSamplerState(GLenum target, GLuint unit) const override;
 
-    // Helper function to validate the target for compressedTex{Sub}Image3D.
-    bool validateTexFunc3DTarget(const char* functionName, GLenum target);
+    // Helper function to check texture 3D target and texture bound to the target.
+    // Generate GL errors and return 0 if target is invalid or texture bound is
+    // null.  Otherwise, return the texture bound to the target.
+    WebGLTexture* validateTexture3DBinding(const char* functionName, GLenum target);
 
     WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target) override;
     bool validateBufferDataUsage(const char* functionName, GLenum usage) override;
