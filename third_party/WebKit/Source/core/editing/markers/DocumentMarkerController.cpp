@@ -64,7 +64,7 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(DocumentMarker::MarkerTy
     case DocumentMarker::Spelling:
         return DocumentMarker::SpellingMarkerIndex;
     case DocumentMarker::Grammar:
-        return DocumentMarker::GramarMarkerIndex;
+        return DocumentMarker::GrammarMarkerIndex;
     case DocumentMarker::TextMatch:
         return DocumentMarker::TextMatchMarkerIndex;
     case DocumentMarker::InvisibleSpellcheck:

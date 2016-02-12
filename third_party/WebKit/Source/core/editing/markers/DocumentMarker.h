@@ -41,7 +41,7 @@ class CORE_EXPORT DocumentMarker : public NoBaseWillBeGarbageCollected<DocumentM
 public:
     enum MarkerTypeIndex {
         SpellingMarkerIndex = 0,
-        GramarMarkerIndex,
+        GrammarMarkerIndex,
         TextMatchMarkerIndex,
         InvisibleSpellcheckMarkerIndex,
         CompositionMarkerIndex,
@@ -50,7 +50,7 @@ public:
 
     enum MarkerType {
         Spelling = 1 << SpellingMarkerIndex,
-        Grammar = 1 << GramarMarkerIndex,
+        Grammar = 1 << GrammarMarkerIndex,
         TextMatch = 1 << TextMatchMarkerIndex,
         InvisibleSpellcheck = 1 << InvisibleSpellcheckMarkerIndex,
         Composition = 1 << CompositionMarkerIndex,
