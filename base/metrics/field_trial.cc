@@ -105,6 +105,16 @@ bool ParseFieldTrialsString(const std::string& trials_string,
   return true;
 }
 
+void CheckTrialGroup(const std::string& trial_name,
+                     const std::string& trial_group,
+                     std::map<std::string, std::string>* seen_states) {
+  if (ContainsKey(*seen_states, trial_name)) {
+    CHECK_EQ((*seen_states)[trial_name], trial_group) << trial_name;
+  } else {
+    (*seen_states)[trial_name] = trial_group;
+  }
+}
+
 }  // namespace
 
 // statics
@@ -475,6 +485,9 @@ void FieldTrialList::AllStatesToString(std::string* output) {
     output->append(1, kPersistentStringSeparator);
     trial.group_name.AppendToString(output);
     output->append(1, kPersistentStringSeparator);
+
+    CheckTrialGroup(trial.trial_name.as_string(), trial.group_name.as_string(),
+                    &global_->seen_states_);
   }
 }
 
@@ -600,6 +613,8 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
   if (!field_trial->enable_field_trial_)
     return;
 
+  CheckTrialGroup(field_trial->trial_name(), field_trial->group_name_internal(),
+                  &global_->seen_states_);
   global_->observer_list_->Notify(
       FROM_HERE, &FieldTrialList::Observer::OnFieldTrialGroupFinalized,
       field_trial->trial_name(), field_trial->group_name_internal());
