@@ -10,7 +10,6 @@ assert(enable_mojo_media == "browser")
 source_set("mojo") {
   sources = [
     "cast_mojo_media_client.cc",
-    "cast_mojo_media_client.h",
   ]
 
   public_deps = [

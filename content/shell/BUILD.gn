@@ -245,8 +245,8 @@ static_library("content_shell_lib") {
       "//ppapi:blink_test_plugin",
     ]
   }
-  if (enable_mojo_media == "browser") {
-    deps += [ "//media/mojo/services:application" ]
+  if (enable_mojo_media != "none") {
+    deps += [ "//media/mojo/services:default_application" ]
   }
 
   if (is_win) {
