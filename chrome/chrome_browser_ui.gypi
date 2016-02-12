@@ -2008,6 +2008,8 @@
       'browser/ui/webui/settings/people_handler.h',
       'browser/ui/webui/settings/reset_settings_handler.cc',
       'browser/ui/webui/settings/reset_settings_handler.h',
+      'browser/ui/webui/settings/search_engines_handler.cc',
+      'browser/ui/webui/settings/search_engines_handler.h',
       'browser/ui/webui/settings/settings_clear_browsing_data_handler.cc',
       'browser/ui/webui/settings/settings_clear_browsing_data_handler.h',
       'browser/ui/webui/settings/settings_default_browser_handler.cc',

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
+#include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
@@ -57,6 +58,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(new FontHandler(web_ui));
   AddSettingsPageUIHandler(new LanguagesHandler(web_ui));
   AddSettingsPageUIHandler(new PeopleHandler(profile));
+  AddSettingsPageUIHandler(new SearchEnginesHandler(profile));
   AddSettingsPageUIHandler(new SiteSettingsHandler(profile));
   AddSettingsPageUIHandler(new StartupPagesHandler(web_ui));
 
