@@ -370,7 +370,6 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
           last_access_threshold_milliseconds)),
       delegate_(delegate),
       last_statistic_record_time_(base::Time::Now()),
-      keep_expired_cookies_(false),
       persist_session_cookies_(false) {
   InitializeHistograms();
   cookieable_schemes_.insert(
@@ -1048,10 +1047,6 @@ void CookieMonster::SetCookieableSchemes(
   cookieable_schemes_ = schemes;
 }
 
-void CookieMonster::SetKeepExpiredCookies() {
-  keep_expired_cookies_ = true;
-}
-
 // This function must be called before the CookieMonster is used.
 void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
   DCHECK(!initialized_);
@@ -1654,7 +1649,7 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
     ++its.first;
 
     // If the cookie is expired, delete it.
-    if (cc->IsExpired(current) && !keep_expired_cookies_) {
+    if (cc->IsExpired(current)) {
       InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
       continue;
     }
@@ -1841,7 +1836,7 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie> cc,
 
   // Realize that we might be setting an expired cookie, and the only point
   // was to delete the cookie which we've already done.
-  if (!already_expired || keep_expired_cookies_) {
+  if (!already_expired) {
     // See InitializeHistograms() for details.
     if (cc->IsPersistent()) {
       histogram_expiration_duration_minutes_->Add(
@@ -2066,9 +2061,6 @@ size_t CookieMonster::GarbageCollect(const Time& current,
 size_t CookieMonster::GarbageCollectExpired(const Time& current,
                                             const CookieMapItPair& itpair,
                                             CookieItVector* cookie_its) {
-  if (keep_expired_cookies_)
-    return 0;
-
   lock_.AssertAcquired();
 
   int num_deleted = 0;

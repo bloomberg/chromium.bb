@@ -1989,35 +1989,6 @@ TEST_F(CookieMonsterTest, MAYBE_GarbageCollectionTriggers) {
   }
 }
 
-// This test checks that keep expired cookies flag is working.
-TEST_F(CookieMonsterTest, KeepExpiredCookies) {
-  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
-  cm->SetKeepExpiredCookies();
-  CookieOptions options;
-
-  // Set a persistent cookie.
-  ASSERT_TRUE(SetCookieWithOptions(
-      cm.get(), http_www_google_.url(),
-      std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-22 22:50:13 GMT",
-      options));
-
-  // Get the canonical cookie.
-  CookieList cookie_list = GetAllCookies(cm.get());
-  ASSERT_EQ(1U, cookie_list.size());
-
-  // Use a past expiry date to delete the cookie.
-  ASSERT_TRUE(SetCookieWithOptions(
-      cm.get(), http_www_google_.url(),
-      std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-1977 22:50:13 GMT",
-      options));
-
-  // Check that the cookie with the past expiry date is still there.
-  // GetAllCookies() also triggers garbage collection.
-  cookie_list = GetAllCookies(cm.get());
-  ASSERT_EQ(1U, cookie_list.size());
-  ASSERT_TRUE(cookie_list[0].IsExpired(Time::Now()));
-}
-
 namespace {
 
 // Mock PersistentCookieStore that keeps track of the number of Flush() calls.

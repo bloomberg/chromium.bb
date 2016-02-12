@@ -209,11 +209,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // instance initialization process).
   void SetCookieableSchemes(const std::vector<std::string>& schemes);
 
-  // Instructs the cookie monster to not delete expired cookies. This is used
-  // in cases where the cookie monster is used as a data structure to keep
-  // arbitrary cookies.
-  void SetKeepExpiredCookies();
-
   // Enables writing session cookies into the cookie database. If this this
   // method is called, it must be called before first use of the instance
   // (i.e. as part of the instance initialization process).
@@ -709,13 +704,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   base::Time last_statistic_record_time_;
 
-  bool keep_expired_cookies_;
   bool persist_session_cookies_;
-
-  // Static setting for whether or not file scheme cookies are allows when
-  // a new CookieMonster is created, or the accepted schemes on a CookieMonster
-  // instance are reset back to defaults.
-  static bool default_enable_file_scheme_;
 
   typedef std::map<std::pair<GURL, std::string>,
                    linked_ptr<CookieChangedCallbackList>> CookieChangedHookMap;
