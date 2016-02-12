@@ -2203,22 +2203,46 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tran
     if (ancestor == this)
         return;
 
-    LayoutObject* o = parent();
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
+        LayoutSize offset = paintInvalidationState->paintOffset();
+        if (const PaintLayer* layer = style()->hasInFlowPosition() && hasLayer() ? toLayoutBoxModelObject(this)->layer() : nullptr)
+            offset += layer->offsetForInFlowPosition();
+        transformState.move(offset);
+        return;
+    }
+
+    bool containerSkipped;
+    const LayoutObject* o = container(ancestor, &containerSkipped);
     if (!o)
         return;
 
-    // FIXME: this should call offsetFromContainer to share code, but I'm not sure it's ever called.
-    LayoutPoint centerPoint = roundedLayoutPoint(transformState.mappedPoint());
     if (mode & ApplyContainerFlip && o->isBox()) {
-        if (o->style()->isFlippedBlocksWritingMode())
-            transformState.move(toLayoutBox(o)->flipForWritingMode(roundedLayoutPoint(transformState.mappedPoint())) - centerPoint);
+        if (o->style()->isFlippedBlocksWritingMode()) {
+            IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
+            transformState.move(toLayoutBox(o)->flipForWritingMode(LayoutPoint(centerPoint)) - centerPoint);
+        }
         mode &= ~ApplyContainerFlip;
     }
 
-    transformState.move(o->columnOffset(roundedLayoutPoint(transformState.mappedPoint())));
+    LayoutSize containerOffset = offsetFromContainer(o, roundedLayoutPoint(transformState.mappedPoint()));
 
-    if (o->hasOverflowClip())
-        transformState.move(-toLayoutBox(o)->scrolledContentOffset());
+    // Text objects just copy their parent's computed style, so we need to ignore them.
+    bool preserve3D = mode & UseTransforms && ((o->style()->preserves3D() && !o->isText()) || (style()->preserves3D() && !isText()));
+    if (mode & UseTransforms && shouldUseTransformFromContainer(o)) {
+        TransformationMatrix t;
+        getTransformFromContainer(o, containerOffset, t);
+        transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    } else {
+        transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    }
+
+    if (containerSkipped) {
+        // There can't be a transform between |ancestor| and |o|, because transforms create
+        // containers, so it should be safe to just subtract the delta between the ancestor and |o|.
+        LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(o);
+        transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+        return;
+    }
 
     o->mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
 }
