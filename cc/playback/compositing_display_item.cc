@@ -21,6 +21,7 @@
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
+class ImageSerializationProcessor;
 
 CompositingDisplayItem::CompositingDisplayItem(
     uint8_t alpha,
@@ -77,7 +78,9 @@ void CompositingDisplayItem::SetNew(uint8_t alpha,
   lcd_text_requires_opaque_layer_ = lcd_text_requires_opaque_layer;
 }
 
-void CompositingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+void CompositingDisplayItem::ToProtobuf(
+    proto::DisplayItem* proto,
+    ImageSerializationProcessor* image_serialization_processor) const {
   proto->set_type(proto::DisplayItem::Type_Compositing);
 
   proto::CompositingDisplayItem* details = proto->mutable_compositing_item();
@@ -139,7 +142,9 @@ EndCompositingDisplayItem::EndCompositingDisplayItem(
 EndCompositingDisplayItem::~EndCompositingDisplayItem() {
 }
 
-void EndCompositingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+void EndCompositingDisplayItem::ToProtobuf(
+    proto::DisplayItem* proto,
+    ImageSerializationProcessor* image_serialization_processor) const {
   proto->set_type(proto::DisplayItem::Type_EndCompositing);
 }
 

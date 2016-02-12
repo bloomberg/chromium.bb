@@ -4,7 +4,9 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/proxy_common.h"
@@ -19,12 +21,16 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
                                       public RemoteProtoChannel,
                                       public LayerTreeHostClient {
  public:
-  LayerTreeHostTestRemoteServer() : calls_received_(0) {
+  LayerTreeHostTestRemoteServer()
+      : calls_received_(0),
+        image_serialization_processor_(
+            make_scoped_ptr(new FakeImageSerializationProcessor)) {
     LayerTreeHost::InitParams params;
     params.client = this;
     params.task_graph_runner = &task_graph_runner_;
     params.settings = &settings_;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+    params.image_serialization_processor = image_serialization_processor_.get();
     layer_tree_host_ = LayerTreeHost::CreateRemoteServer(this, &params);
   }
 
@@ -66,6 +72,7 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   LayerTreeSettings settings_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
   RemoteProtoChannel::ProtoReceiver* receiver_;
+  scoped_ptr<FakeImageSerializationProcessor> image_serialization_processor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostTestRemoteServer);

@@ -56,6 +56,10 @@ struct WebPluginParams;
 struct WebURLError;
 }
 
+namespace cc {
+class ImageSerializationProcessor;
+}
+
 namespace media {
 class GpuVideoAcceleratorFactories;
 class MediaLog;
@@ -255,6 +259,9 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows an embedder to provide a MediaStreamRendererFactory.
   virtual scoped_ptr<MediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
+
+  // Allows an embedder to provde a cc::ImageSerializationProcessor.
+  virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor();
 
   // Gives the embedder a chance to register the key system(s) it supports by
   // populating |key_systems|.

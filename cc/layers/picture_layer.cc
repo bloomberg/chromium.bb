@@ -195,7 +195,9 @@ void PictureLayer::LayerSpecificPropertiesToProto(
   DropRecordingSourceContentIfInvalid();
 
   proto::PictureLayerProperties* picture = proto->mutable_picture();
-  recording_source_->ToProtobuf(picture->mutable_recording_source());
+  recording_source_->ToProtobuf(
+      picture->mutable_recording_source(),
+      layer_tree_host()->image_serialization_processor());
   RegionToProto(*invalidation_.region(), picture->mutable_invalidation());
   RectToProto(last_updated_visible_layer_rect_,
               picture->mutable_last_updated_visible_layer_rect());
@@ -211,7 +213,9 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
     const proto::LayerProperties& proto) {
   Layer::FromLayerSpecificPropertiesProto(proto);
   const proto::PictureLayerProperties& picture = proto.picture();
-  recording_source_->FromProtobuf(picture.recording_source());
+  recording_source_->FromProtobuf(
+      picture.recording_source(),
+      layer_tree_host()->image_serialization_processor());
 
   Region new_invalidation = RegionFromProto(picture.invalidation());
   invalidation_.Swap(&new_invalidation);

@@ -18,6 +18,7 @@
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
+class ImageSerializationProcessor;
 
 ClipDisplayItem::ClipDisplayItem(
     const gfx::Rect& clip_rect,
@@ -46,7 +47,9 @@ void ClipDisplayItem::SetNew(const gfx::Rect& clip_rect,
 
 ClipDisplayItem::~ClipDisplayItem() {}
 
-void ClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+void ClipDisplayItem::ToProtobuf(
+    proto::DisplayItem* proto,
+    ImageSerializationProcessor* image_serialization_processor) const {
   proto->set_type(proto::DisplayItem::Type_Clip);
 
   proto::ClipDisplayItem* details = proto->mutable_clip_item();
@@ -117,7 +120,9 @@ EndClipDisplayItem::EndClipDisplayItem(const proto::DisplayItem& proto) {
 EndClipDisplayItem::~EndClipDisplayItem() {
 }
 
-void EndClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+void EndClipDisplayItem::ToProtobuf(
+    proto::DisplayItem* proto,
+    ImageSerializationProcessor* image_serialization_processor) const {
   proto->set_type(proto::DisplayItem::Type_EndClip);
 }
 

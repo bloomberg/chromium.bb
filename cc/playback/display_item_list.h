@@ -28,6 +28,7 @@ class SkPictureRecorder;
 namespace cc {
 class DisplayItem;
 class DrawingDisplayItem;
+class ImageSerializationProcessor;
 
 namespace proto {
 class DisplayItemList;
@@ -49,12 +50,14 @@ class CC_EXPORT DisplayItemList
   // TODO(dtrainor): Pass in a list of possible DisplayItems to reuse
   // (crbug.com/548434).
   static scoped_refptr<DisplayItemList> CreateFromProto(
-      const proto::DisplayItemList& proto);
+      const proto::DisplayItemList& proto,
+      ImageSerializationProcessor* image_serialization_processor);
 
   // Creates a Protobuf representing the state of this DisplayItemList.
   // TODO(dtrainor): Don't resend DisplayItems that were already serialized
   // (crbug.com/548434).
-  void ToProtobuf(proto::DisplayItemList* proto);
+  void ToProtobuf(proto::DisplayItemList* proto,
+                  ImageSerializationProcessor* image_serialization_processor);
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback,

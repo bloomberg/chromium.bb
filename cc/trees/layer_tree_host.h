@@ -58,6 +58,7 @@ class AnimationRegistrar;
 class AnimationHost;
 class BeginFrameSource;
 class HeadsUpDisplayLayer;
+class ImageSerializationProcessor;
 class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
@@ -92,6 +93,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
     scoped_ptr<BeginFrameSource> external_begin_frame_source;
+    ImageSerializationProcessor* image_serialization_processor = nullptr;
 
     InitParams();
     ~InitParams();
@@ -418,6 +420,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool IsRemoteClient() const;
   void BuildPropertyTreesForTesting();
 
+  ImageSerializationProcessor* image_serialization_processor() const {
+    return image_serialization_processor_;
+  }
+
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);
   void InitializeThreaded(
@@ -571,6 +577,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   TaskGraphRunner* task_graph_runner_;
+
+  ImageSerializationProcessor* image_serialization_processor_;
 
   std::vector<scoped_ptr<SwapPromise>> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;

@@ -17,6 +17,7 @@
 #include "blimp/client/feature/compositor/blimp_layer_tree_settings.h"
 #include "blimp/client/feature/compositor/blimp_output_surface.h"
 #include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/common/compositor/blimp_image_serialization_processor.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_settings.h"
@@ -44,7 +45,10 @@ BlimpCompositor::BlimpCompositor(float dp_to_px,
       host_should_be_visible_(false),
       output_surface_request_pending_(false),
       remote_proto_channel_receiver_(nullptr),
-      render_widget_feature_(render_widget_feature) {
+      render_widget_feature_(render_widget_feature),
+      image_serialization_processor_(
+          make_scoped_ptr(new BlimpImageSerializationProcessor(
+              BlimpImageSerializationProcessor::Mode::DESERIALIZATION))) {
   DCHECK(render_widget_feature_);
   render_widget_feature_->SetDelegate(kDummyTabId, this);
 }
@@ -244,6 +248,7 @@ void BlimpCompositor::CreateLayerTreeHost(
   params.gpu_memory_buffer_manager = &gpu_memory_buffer_manager_;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.settings = settings_.get();
+  params.image_serialization_processor = image_serialization_processor_.get();
 
   // TODO(khushalsagar): Add the GpuMemoryBufferManager to params
 

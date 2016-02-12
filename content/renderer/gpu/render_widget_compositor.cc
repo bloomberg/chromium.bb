@@ -504,7 +504,8 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   params.external_begin_frame_source = std::move(external_begin_frame_source);
   if (use_remote_compositing) {
     DCHECK(!compositor_thread_task_runner.get());
-
+    params.image_serialization_processor =
+        compositor_deps_->GetImageSerializationProcessor();
     layer_tree_host_ = cc::LayerTreeHost::CreateRemoteServer(this, &params);
   } else if (compositor_thread_task_runner.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(

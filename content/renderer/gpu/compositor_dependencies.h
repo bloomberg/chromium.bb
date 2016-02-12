@@ -17,6 +17,7 @@ class SingleThreadTaskRunner;
 namespace cc {
 class BeginFrameSource;
 class ContextProvider;
+class ImageSerializationProcessor;
 class SharedBitmapManager;
 class TaskGraphRunner;
 }
@@ -55,6 +56,7 @@ class CompositorDependencies {
   virtual cc::ContextProvider* GetSharedMainThreadContextProvider() = 0;
   virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) = 0;
+  virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor() = 0;
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual bool AreImageDecodeTasksEnabled() = 0;
   virtual bool IsThreadedAnimationEnabled() = 0;

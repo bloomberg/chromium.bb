@@ -96,6 +96,11 @@ FakeCompositorDependencies::CreateExternalBeginFrameSource(int routing_id) {
   return make_scoped_ptr(new cc::FakeExternalBeginFrameSource(refresh_rate));
 }
 
+cc::ImageSerializationProcessor*
+FakeCompositorDependencies::GetImageSerializationProcessor() {
+  return nullptr;
+}
+
 cc::TaskGraphRunner* FakeCompositorDependencies::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }

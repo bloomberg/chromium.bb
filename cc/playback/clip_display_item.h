@@ -18,6 +18,7 @@
 class SkCanvas;
 
 namespace cc {
+class ImageSerializationProcessor;
 
 class CC_EXPORT ClipDisplayItem : public DisplayItem {
  public:
@@ -26,7 +27,9 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
   explicit ClipDisplayItem(const proto::DisplayItem& proto);
   ~ClipDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
+  void ToProtobuf(proto::DisplayItem* proto,
+                  ImageSerializationProcessor* image_serialization_processor)
+      const override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
@@ -51,7 +54,9 @@ class CC_EXPORT EndClipDisplayItem : public DisplayItem {
   explicit EndClipDisplayItem(const proto::DisplayItem& proto);
   ~EndClipDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
+  void ToProtobuf(proto::DisplayItem* proto,
+                  ImageSerializationProcessor* image_serialization_processor)
+      const override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;

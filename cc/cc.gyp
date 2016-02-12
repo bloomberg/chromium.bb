@@ -381,6 +381,7 @@
         'proto/gfx_conversions.h',
         'proto/gpu_conversions.cc',
         'proto/gpu_conversions.h',
+        'proto/image_serialization_processor.h',
         'proto/skia_conversions.cc',
         'proto/skia_conversions.h',
         'quads/content_draw_quad_base.cc',

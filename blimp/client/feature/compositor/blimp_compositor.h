@@ -36,6 +36,7 @@ class LayerTreeHost;
 
 namespace blimp {
 
+class BlimpImageSerializationProcessor;
 class BlimpMessage;
 
 namespace client {
@@ -186,6 +187,9 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // the manager to be handled by the client compositor for the current render
   // widget.
   scoped_ptr<BlimpInputManager> input_manager_;
+
+  // Provides the functionality to deserialize images in SkPicture.
+  scoped_ptr<BlimpImageSerializationProcessor> image_serialization_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositor);
 };

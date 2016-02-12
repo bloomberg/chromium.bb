@@ -1703,6 +1703,11 @@ RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
       compositor_message_filter_.get(), sync_message_filter(), routing_id));
 }
 
+cc::ImageSerializationProcessor*
+RenderThreadImpl::GetImageSerializationProcessor() {
+  return GetContentClient()->renderer()->GetImageSerializationProcessor();
+}
+
 cc::TaskGraphRunner* RenderThreadImpl::GetTaskGraphRunner() {
   return raster_worker_pool_->GetTaskGraphRunner();
 }

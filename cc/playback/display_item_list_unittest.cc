@@ -19,6 +19,7 @@
 #include "cc/playback/float_clip_display_item.h"
 #include "cc/playback/transform_display_item.h"
 #include "cc/proto/display_item.pb.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/skia_common.h"
 #include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,11 +80,15 @@ void ValidateDisplayItemListSerialization(const gfx::Size& layer_size,
                                           scoped_refptr<DisplayItemList> list) {
   list->Finalize();
 
+  scoped_ptr<FakeImageSerializationProcessor>
+      fake_image_serialization_processor =
+          make_scoped_ptr(new FakeImageSerializationProcessor);
+
   // Serialize and deserialize the DisplayItemList.
   proto::DisplayItemList proto;
-  list->ToProtobuf(&proto);
-  scoped_refptr<DisplayItemList> new_list =
-      DisplayItemList::CreateFromProto(proto);
+  list->ToProtobuf(&proto, fake_image_serialization_processor.get());
+  scoped_refptr<DisplayItemList> new_list = DisplayItemList::CreateFromProto(
+      proto, fake_image_serialization_processor.get());
 
   EXPECT_TRUE(
       AreDisplayListDrawingResultsSame(gfx::Rect(layer_size), list, new_list));

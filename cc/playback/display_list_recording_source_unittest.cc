@@ -9,6 +9,7 @@
 #include "cc/proto/display_list_recording_source.pb.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_display_list_recording_source.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,11 +34,15 @@ scoped_refptr<DisplayListRasterSource> CreateRasterSource(
 
 void ValidateRecordingSourceSerialization(
     FakeDisplayListRecordingSource* source) {
+  scoped_ptr<FakeImageSerializationProcessor>
+      fake_image_serialization_processor =
+          make_scoped_ptr(new FakeImageSerializationProcessor);
+
   proto::DisplayListRecordingSource proto;
-  source->ToProtobuf(&proto);
+  source->ToProtobuf(&proto, fake_image_serialization_processor.get());
 
   FakeDisplayListRecordingSource new_source;
-  new_source.FromProtobuf(proto);
+  new_source.FromProtobuf(proto, fake_image_serialization_processor.get());
 
   EXPECT_TRUE(source->EqualsTo(new_source));
 }

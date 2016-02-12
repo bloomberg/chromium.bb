@@ -14,19 +14,26 @@ class WebCacheRenderProcessObserver;
 }
 
 namespace blimp {
+class BlimpImageSerializationProcessor;
+
 namespace engine {
 
 class BlimpContentRendererClient : public content::ContentRendererClient {
  public:
-  BlimpContentRendererClient();
+  BlimpContentRendererClient(scoped_ptr<BlimpImageSerializationProcessor>
+                                 image_serialization_processor);
   ~BlimpContentRendererClient() override;
 
   // content::ContentRendererClient implementation.
   void RenderThreadStarted() override;
+  cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
 
  private:
   // This observer manages the process-global web cache.
   scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
+
+  // Provides the functionality to serialize images in SkPicture.
+  scoped_ptr<BlimpImageSerializationProcessor> image_serialization_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentRendererClient);
 };

@@ -34,6 +34,7 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
 }  // namespace
 
 namespace cc {
+class ImageSerializationProcessor;
 
 DisplayListRecordingSource::DisplayListRecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
@@ -49,7 +50,8 @@ DisplayListRecordingSource::~DisplayListRecordingSource() {
 }
 
 void DisplayListRecordingSource::ToProtobuf(
-    proto::DisplayListRecordingSource* proto) const {
+    proto::DisplayListRecordingSource* proto,
+    ImageSerializationProcessor* image_serialization_processor) const {
   RectToProto(recorded_viewport_, proto->mutable_recorded_viewport());
   SizeToProto(size_, proto->mutable_size());
   proto->set_slow_down_raster_scale_factor_for_debug(
@@ -61,12 +63,15 @@ void DisplayListRecordingSource::ToProtobuf(
   proto->set_clear_canvas_with_debug_color(clear_canvas_with_debug_color_);
   proto->set_solid_color(static_cast<uint64_t>(solid_color_));
   proto->set_background_color(static_cast<uint64_t>(background_color_));
-  if (display_list_)
-    display_list_->ToProtobuf(proto->mutable_display_list());
+  if (display_list_) {
+    display_list_->ToProtobuf(proto->mutable_display_list(),
+                              image_serialization_processor);
+  }
 }
 
 void DisplayListRecordingSource::FromProtobuf(
-    const proto::DisplayListRecordingSource& proto) {
+    const proto::DisplayListRecordingSource& proto,
+    ImageSerializationProcessor* image_serialization_processor) {
   recorded_viewport_ = ProtoToRect(proto.recorded_viewport());
   size_ = ProtoToSize(proto.size());
   slow_down_raster_scale_factor_for_debug_ =
@@ -83,7 +88,8 @@ void DisplayListRecordingSource::FromProtobuf(
   // DisplayListRecordingSource was null, wich can happen if |Clear()| is
   // called.
   if (proto.has_display_list()) {
-    display_list_ = DisplayItemList::CreateFromProto(proto.display_list());
+    display_list_ = DisplayItemList::CreateFromProto(
+        proto.display_list(), image_serialization_processor);
     FinishDisplayItemListUpdate();
   } else {
     display_list_ = nullptr;

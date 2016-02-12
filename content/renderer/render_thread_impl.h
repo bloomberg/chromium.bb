@@ -57,6 +57,7 @@ class Thread;
 
 namespace cc {
 class ContextProvider;
+class ImageSerializationProcessor;
 class TaskGraphRunner;
 }
 
@@ -215,6 +216,7 @@ class CONTENT_EXPORT RenderThreadImpl
   cc::ContextProvider* GetSharedMainThreadContextProvider() override;
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
+  cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;

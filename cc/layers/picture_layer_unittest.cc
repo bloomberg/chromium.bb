@@ -15,6 +15,7 @@
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/test/fake_display_list_recording_source.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
@@ -69,8 +70,14 @@ class TestSerializationPictureLayer : public PictureLayer {
 
     FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
     TestTaskGraphRunner task_graph_runner;
+    LayerTreeSettings settings;
+    scoped_ptr<FakeImageSerializationProcessor>
+        fake_image_serialization_processor =
+            make_scoped_ptr(new FakeImageSerializationProcessor);
     scoped_ptr<FakeLayerTreeHost> host =
-        FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+        FakeLayerTreeHost::Create(&host_client, &task_graph_runner, settings,
+                                  CompositorMode::SINGLE_THREADED,
+                                  fake_image_serialization_processor.get());
     scoped_refptr<TestSerializationPictureLayer> layer =
         TestSerializationPictureLayer::Create(recording_source_viewport_);
     host->SetRootLayer(layer);
@@ -104,8 +111,14 @@ namespace {
 TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
+  LayerTreeSettings settings;
+  scoped_ptr<FakeImageSerializationProcessor>
+      fake_image_serialization_processor =
+          make_scoped_ptr(new FakeImageSerializationProcessor);
   scoped_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+      FakeLayerTreeHost::Create(&host_client, &task_graph_runner, settings,
+                                CompositorMode::SINGLE_THREADED,
+                                fake_image_serialization_processor.get());
 
   gfx::Size recording_source_viewport(256, 256);
   scoped_refptr<TestSerializationPictureLayer> layer =
@@ -131,9 +144,16 @@ TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
 TEST(PictureLayerTest, TestSerializationDeserialization) {
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
+  LayerTreeSettings settings;
+  settings.verify_property_trees = true;
+  settings.use_compositor_animation_timelines = true;
+  scoped_ptr<FakeImageSerializationProcessor>
+      fake_image_serialization_processor =
+          make_scoped_ptr(new FakeImageSerializationProcessor);
   scoped_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
-
+      FakeLayerTreeHost::Create(&host_client, &task_graph_runner, settings,
+                                CompositorMode::SINGLE_THREADED,
+                                fake_image_serialization_processor.get());
   gfx::Size recording_source_viewport(256, 256);
   scoped_refptr<TestSerializationPictureLayer> layer =
       TestSerializationPictureLayer::Create(recording_source_viewport);

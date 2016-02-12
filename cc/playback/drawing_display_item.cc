@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "cc/debug/picture_debug_util.h"
 #include "cc/proto/display_item.pb.h"
+#include "cc/proto/image_serialization_processor.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -29,7 +30,9 @@ DrawingDisplayItem::DrawingDisplayItem(skia::RefPtr<const SkPicture> picture) {
   SetNew(std::move(picture));
 }
 
-DrawingDisplayItem::DrawingDisplayItem(const proto::DisplayItem& proto) {
+DrawingDisplayItem::DrawingDisplayItem(
+    const proto::DisplayItem& proto,
+    ImageSerializationProcessor* image_serialization_processor) {
   DCHECK_EQ(proto::DisplayItem::Type_Drawing, proto.type());
 
   skia::RefPtr<SkPicture> picture;
@@ -37,8 +40,8 @@ DrawingDisplayItem::DrawingDisplayItem(const proto::DisplayItem& proto) {
   if (details.has_picture()) {
     SkMemoryStream stream(details.picture().data(), details.picture().size());
 
-    // TODO(dtrainor, nyquist): Add an image decoder.
-    picture = skia::AdoptRef(SkPicture::CreateFromStream(&stream, nullptr));
+    picture = skia::AdoptRef(SkPicture::CreateFromStream(
+        &stream, image_serialization_processor->GetPixelDeserializer()));
   }
 
   SetNew(std::move(picture));
@@ -55,7 +58,9 @@ void DrawingDisplayItem::SetNew(skia::RefPtr<const SkPicture> picture) {
   picture_ = std::move(picture);
 }
 
-void DrawingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+void DrawingDisplayItem::ToProtobuf(
+    proto::DisplayItem* proto,
+    ImageSerializationProcessor* image_serialization_processor) const {
   proto->set_type(proto::DisplayItem::Type_Drawing);
 
   proto::DrawingDisplayItem* details = proto->mutable_drawing_item();
@@ -63,10 +68,8 @@ void DrawingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   // Just use skia's serialize() method for now.
   if (picture_) {
     SkDynamicMemoryWStream stream;
-
-    // TODO(dtrainor, nyquist): Add an SkPixelSerializer to not serialize images
-    // more than once (crbug.com/548434).
-    picture_->serialize(&stream, nullptr);
+    picture_->serialize(&stream,
+                        image_serialization_processor->GetPixelSerializer());
     if (stream.bytesWritten() > 0) {
       SkAutoDataUnref data(stream.copyToData());
       details->set_picture(data->data(), data->size());

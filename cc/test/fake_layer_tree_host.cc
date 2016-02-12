@@ -5,6 +5,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 
 #include "cc/layers/layer.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/test_task_graph_runner.h"
 
 namespace cc {
@@ -53,6 +54,20 @@ scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
+  return make_scoped_ptr(new FakeLayerTreeHost(client, &params, mode));
+}
+
+scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
+    FakeLayerTreeHostClient* client,
+    TestTaskGraphRunner* task_graph_runner,
+    const LayerTreeSettings& settings,
+    CompositorMode mode,
+    ImageSerializationProcessor* image_serialization_processor) {
+  LayerTreeHost::InitParams params;
+  params.client = client;
+  params.settings = &settings;
+  params.task_graph_runner = task_graph_runner;
+  params.image_serialization_processor = image_serialization_processor;
   return make_scoped_ptr(new FakeLayerTreeHost(client, &params, mode));
 }
 

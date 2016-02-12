@@ -19,11 +19,12 @@ namespace cc {
 
 namespace proto {
 class DisplayListRecordingSource;
-}
+}  // namespace proto
 
 class ContentLayerClient;
 class DisplayItemList;
 class DisplayListRasterSource;
+class ImageSerializationProcessor;
 class Region;
 
 class CC_EXPORT DisplayListRecordingSource {
@@ -43,8 +44,11 @@ class CC_EXPORT DisplayListRecordingSource {
   DisplayListRecordingSource();
   virtual ~DisplayListRecordingSource();
 
-  void ToProtobuf(proto::DisplayListRecordingSource* proto) const;
-  void FromProtobuf(const proto::DisplayListRecordingSource& proto);
+  void ToProtobuf(
+      proto::DisplayListRecordingSource* proto,
+      ImageSerializationProcessor* image_serialization_processor) const;
+  void FromProtobuf(const proto::DisplayListRecordingSource& proto,
+                    ImageSerializationProcessor* image_serialization_processor);
 
   bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
                                    Region* invalidation,

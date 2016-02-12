@@ -187,6 +187,8 @@
       'test/fake_display_list_recording_source.h',
       'test/fake_external_begin_frame_source.cc',
       'test/fake_external_begin_frame_source.h',
+      'test/fake_image_serialization_processor.cc',
+      'test/fake_image_serialization_processor.h',
       'test/fake_impl_task_runner_provider.h',
       'test/fake_layer_tree_host.cc',
       'test/fake_layer_tree_host.h',

@@ -128,6 +128,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteServer(
   // remote mode.
   DCHECK(!params->settings->use_external_begin_frame_source);
   DCHECK(!params->external_begin_frame_source);
+  DCHECK(params->image_serialization_processor);
 
   scoped_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(params, CompositorMode::REMOTE));
@@ -149,6 +150,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteClient(
   // source on the client LayerTreeHost. crbug/576962
   DCHECK(!params->settings->use_external_begin_frame_source);
   DCHECK(!params->external_begin_frame_source);
+  DCHECK(params->image_serialization_processor);
 
   scoped_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(params, CompositorMode::REMOTE));
@@ -193,6 +195,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       shared_bitmap_manager_(params->shared_bitmap_manager),
       gpu_memory_buffer_manager_(params->gpu_memory_buffer_manager),
       task_graph_runner_(params->task_graph_runner),
+      image_serialization_processor_(params->image_serialization_processor),
       surface_id_namespace_(0u),
       next_surface_sequence_(1u) {
   DCHECK(task_graph_runner_);

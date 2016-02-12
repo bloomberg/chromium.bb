@@ -11,6 +11,7 @@
 #include "cc/playback/display_item_list.h"
 
 namespace cc {
+class ImageSerializationProcessor;
 
 namespace proto {
 class DisplayItem;
@@ -18,9 +19,11 @@ class DisplayItem;
 
 class DisplayItemProtoFactory {
  public:
-  static void AllocateAndConstruct(const gfx::Rect& visual_rect,
-                                   DisplayItemList* list,
-                                   const proto::DisplayItem& proto);
+  static void AllocateAndConstruct(
+      const gfx::Rect& visual_rect,
+      DisplayItemList* list,
+      const proto::DisplayItem& proto,
+      ImageSerializationProcessor* image_serialization_processor);
 
  private:
   DisplayItemProtoFactory() {}

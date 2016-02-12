@@ -17,16 +17,21 @@ class SkCanvas;
 class SkPicture;
 
 namespace cc {
+class ImageSerializationProcessor;
 
 class CC_EXPORT DrawingDisplayItem : public DisplayItem {
  public:
   DrawingDisplayItem();
   explicit DrawingDisplayItem(skia::RefPtr<const SkPicture> picture);
-  explicit DrawingDisplayItem(const proto::DisplayItem& proto);
+  explicit DrawingDisplayItem(
+      const proto::DisplayItem& proto,
+      ImageSerializationProcessor* image_serialization_processor);
   explicit DrawingDisplayItem(const DrawingDisplayItem& item);
   ~DrawingDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
+  void ToProtobuf(proto::DisplayItem* proto,
+                  ImageSerializationProcessor* image_serialization_processor)
+      const override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_playback_rect,
               SkPicture::AbortCallback* callback) const override;

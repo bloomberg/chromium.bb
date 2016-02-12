@@ -7,6 +7,8 @@ import("//testing/test.gni")
 component("blimp_common") {
   sources = [
     "blimp_common_export.h",
+    "compositor/blimp_image_serialization_processor.cc",
+    "compositor/blimp_image_serialization_processor.h",
     "compositor/blimp_task_graph_runner.cc",
     "compositor/blimp_task_graph_runner.h",
     "create_blimp_message.cc",
