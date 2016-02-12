@@ -426,14 +426,16 @@ TEST(MotionEventAuraTest, Cancel) {
 
 TEST(MotionEventAuraTest, ToolType) {
   MotionEventAura event;
-
-  EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, 7)));
+  TouchEvent touch_event = TouchWithType(ET_TOUCH_PRESSED, 7);
+  EXPECT_TRUE(event.OnTouch(touch_event));
   ASSERT_EQ(1U, event.GetPointerCount());
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
 
-  // TODO(robert.bradford): crbug.com/575162: Test TOOL_TYPE_PEN when
-  // TouchEvents can have their PointerDetails::pointer_type something other
-  // than POINTER_TYPE_TOUCH
+  PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN, 5.0f, 5.0f,
+                                 1.0f, 0.0f, 0.0f);
+  touch_event.set_pointer_details(pointer_details);
+  EXPECT_TRUE(event.OnTouch(touch_event));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_STYLUS, event.GetToolType(0));
 }
 
 TEST(MotionEventAuraTest, Flags) {

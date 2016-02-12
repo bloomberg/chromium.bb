@@ -709,6 +709,44 @@ TEST(EventTest, PointerEventDetailsStylus) {
   EXPECT_EQ(0.0f, stylus_event_copy.pointer_details().radius_y);
 }
 
+TEST(EventTest, PointerEventDetailsCustomTouch) {
+  ui::TouchEvent touch_event(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0,
+                             ui::EventTimeForNow());
+
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
+            touch_event.pointer_details().pointer_type);
+  EXPECT_EQ(0.0f, touch_event.pointer_details().radius_x);
+  EXPECT_EQ(0.0f, touch_event.pointer_details().radius_y);
+  EXPECT_TRUE(std::isnan(touch_event.pointer_details().force));
+  EXPECT_EQ(0.0f, touch_event.pointer_details().tilt_x);
+  EXPECT_EQ(0.0f, touch_event.pointer_details().tilt_y);
+
+  ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+                                     /* radius_x */ 5.0f,
+                                     /* radius_y */ 6.0f,
+                                     /* force */ 21.0f,
+                                     /* tilt_x */ 45.0f,
+                                     /* tilt_y */ -45.0f);
+  touch_event.set_pointer_details(pointer_details);
+
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+            touch_event.pointer_details().pointer_type);
+  EXPECT_EQ(21.0f, touch_event.pointer_details().force);
+  EXPECT_EQ(45.0f, touch_event.pointer_details().tilt_x);
+  EXPECT_EQ(-45.0f, touch_event.pointer_details().tilt_y);
+  EXPECT_EQ(5.0f, touch_event.pointer_details().radius_x);
+  EXPECT_EQ(6.0f, touch_event.pointer_details().radius_y);
+
+  ui::TouchEvent touch_event_copy(touch_event);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+            touch_event.pointer_details().pointer_type);
+  EXPECT_EQ(21.0f, touch_event.pointer_details().force);
+  EXPECT_EQ(45.0f, touch_event.pointer_details().tilt_x);
+  EXPECT_EQ(-45.0f, touch_event.pointer_details().tilt_y);
+  EXPECT_EQ(5.0f, touch_event.pointer_details().radius_x);
+  EXPECT_EQ(6.0f, touch_event.pointer_details().radius_y);
+}
+
 TEST(EventTest, PointerEventType) {
   const ui::EventType kMouseTypeMap[][2] = {
       {ui::ET_MOUSE_PRESSED, ui::ET_POINTER_DOWN},
