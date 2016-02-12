@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkSearchView
+<org.chromium.chrome.browser.bookmarks.BookmarkSearchView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/eb_search_view"
     android:layout_width="match_parent"
@@ -13,4 +13,4 @@
 
     <include layout="@layout/eb_search_core" />
 
-</org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkSearchView>
+</org.chromium.chrome.browser.bookmarks.BookmarkSearchView>

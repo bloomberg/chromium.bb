@@ -12,7 +12,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
+import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -317,7 +317,7 @@ public class OfflinePageUtils {
                         break;
                     case EDIT_BUTTON:
                         RecordUserAction.record("OfflinePages.ViewingOffline.EditButtonClicked");
-                        EnhancedBookmarkUtils.startEditActivity(
+                        BookmarkUtils.startEditActivity(
                                 activity, new BookmarkId(bookmarkId, BookmarkType.NORMAL), null);
                         break;
                     default:

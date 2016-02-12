@@ -29,7 +29,7 @@
         android:layout_height="1dp"
         android:background="#E1E1E1" />
 
-    <view class="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkSearchView$HistoryResultSwitcher"
+    <view class="org.chromium.chrome.browser.bookmarks.BookmarkSearchView$HistoryResultSwitcher"
         android:id="@+id/history_result_switcher"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -63,7 +63,7 @@
             chrome:tint="@color/dark_mode_tint" />
     </LinearLayout>
 
-    <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItemHighlightView
+    <org.chromium.chrome.browser.bookmarks.BookmarkItemHighlightView
         android:id="@+id/highlight"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

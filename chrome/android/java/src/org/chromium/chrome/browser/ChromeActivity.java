@@ -61,6 +61,8 @@ import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
+import org.chromium.chrome.browser.bookmarks.BookmarkModel;
+import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -75,8 +77,6 @@ import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAServiceClient;
@@ -1016,13 +1016,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // TODO(bauerb): This does not take partner bookmarks into account.
         final long bookmarkId = tabToBookmark.getUserBookmarkId();
 
-        final EnhancedBookmarksModel bookmarkModel = new EnhancedBookmarksModel();
+        final BookmarkModel bookmarkModel = new BookmarkModel();
         bookmarkModel.runAfterBookmarkModelLoaded(new Runnable() {
             @Override
             public void run() {
                 // Gives up the bookmarking if the tab is being destroyed.
                 if (!tabToBookmark.isClosing() && tabToBookmark.isInitialized()) {
-                    EnhancedBookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
+                    BookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
                             tabToBookmark, getSnackbarManager(), ChromeActivity.this);
                 }
             }
@@ -1038,8 +1038,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             return;
         }
 
-        EnhancedBookmarkUtils.saveBookmarkOffline(tab.getUserBookmarkId(),
-                new EnhancedBookmarksModel(), tab, getSnackbarManager(), ChromeActivity.this);
+        BookmarkUtils.saveBookmarkOffline(tab.getUserBookmarkId(),
+                new BookmarkModel(), tab, getSnackbarManager(), ChromeActivity.this);
     }
 
     /**

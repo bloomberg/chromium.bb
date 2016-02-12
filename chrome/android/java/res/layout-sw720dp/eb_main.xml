@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
-    <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDrawerListView
+    <org.chromium.chrome.browser.bookmarks.BookmarkDrawerListView
         android:id="@+id/eb_drawer_list"
         android:layout_width="256dp"
         android:layout_height="match_parent"

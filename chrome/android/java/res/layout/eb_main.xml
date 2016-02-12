@@ -17,7 +17,7 @@
 
         <include layout="@layout/eb_main_content" />
 
-        <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDrawerListView
+        <org.chromium.chrome.browser.bookmarks.BookmarkDrawerListView
             android:id="@+id/eb_drawer_list"
             android:layout_width="240dp"
             android:layout_height="match_parent"

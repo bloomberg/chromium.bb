@@ -33,6 +33,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
+import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -50,7 +51,6 @@ import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUma;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -939,8 +939,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     @Override
                     public void run() {
                         StartupMetrics.getInstance().recordOpenedBookmarks();
-                        EnhancedBookmarkUtils.showBookmarkManager(
-                                ChromeTabbedActivity.this);
+                        BookmarkUtils.showBookmarkManager(ChromeTabbedActivity.this);
                     }
                 });
                 RecordUserAction.record("MobileMenuAllBookmarks");

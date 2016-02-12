@@ -31,12 +31,12 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocumentTabSwitcher;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
@@ -815,7 +815,7 @@ public class DocumentActivity extends ChromeActivity {
             }, MENU_EXIT_ANIMATION_WAIT_MS);
         } else if (id == R.id.all_bookmarks_menu_id) {
             StartupMetrics.getInstance().recordOpenedBookmarks();
-            EnhancedBookmarkUtils.showBookmarkManager(this);
+            BookmarkUtils.showBookmarkManager(this);
             RecordUserAction.record("MobileMenuAllBookmarks");
         } else if (id == R.id.recent_tabs_menu_id) {
             NewTabPage.launchRecentTabsDialog(this, mTab);
