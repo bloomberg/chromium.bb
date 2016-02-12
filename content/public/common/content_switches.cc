@@ -626,6 +626,9 @@ const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
 // Renderer.Memory histogram. Used in memory tests.
 const char kMemoryMetrics[]                 = "memory-metrics";
 
+// Use a Mojo-based LocalStorage implementation.
+const char kMojoLocalStorage[]              = "mojo-local-storage";
+
 // Mutes audio sent to the audio device so it is not audible during
 // automated testing.
 const char kMuteAudio[]                     = "mute-audio";

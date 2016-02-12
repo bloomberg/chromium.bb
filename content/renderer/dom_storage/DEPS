@@ -1,0 +1,7 @@
+specific_include_rules = {
+  'local_storage\.*': [
+    "-content/renderer",
+    "+content/renderer/dom_storage/local_storage_area.h",
+    "+content/renderer/dom_storage/local_storage_namespace.h",
+  ],
+}
