@@ -287,7 +287,9 @@ public interface UrlRequest {
          * @param request Request being redirected.
          * @param info Response information.
          * @param newLocationUrl Location where request is redirected.
-         * @throws Exception if an error occurs while processing a redirect.
+         * @throws Exception if an error occurs while processing a redirect. {@link #onFailed}
+         *         will be called with the thrown exception set as the cause of the
+         *         {@link UrlRequestException}.
          */
         public abstract void onRedirectReceived(
                 UrlRequest request, UrlResponseInfo info, String newLocationUrl) throws Exception;
@@ -305,7 +307,9 @@ public interface UrlRequest {
          *
          * @param request Request that started to get response.
          * @param info Response information.
-         * @throws Exception if an error occurs while processing response start.
+         * @throws Exception if an error occurs while processing response start. {@link #onFailed}
+         *         will be called with the thrown exception set as the cause of the
+         *         {@link UrlRequestException}.
          */
         public abstract void onResponseStarted(UrlRequest request, UrlResponseInfo info)
                 throws Exception;
@@ -329,6 +333,8 @@ public interface UrlRequest {
          *         received data. The buffer's position is updated to the end of
          *         the received data. The buffer's limit is not changed.
          * @throws Exception if an error occurs while processing a read completion.
+         *         {@link #onFailed} will be called with the thrown exception set as the cause of
+         *         the {@link UrlRequestException}.
          */
         public abstract void onReadCompleted(
                 UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception;

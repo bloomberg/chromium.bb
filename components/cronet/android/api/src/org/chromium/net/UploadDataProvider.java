@@ -41,6 +41,9 @@ public abstract class UploadDataProvider {
      *            successfully or otherwise.
      * @param byteBuffer The buffer to copy the read bytes into.
      * @throws IOException if any IOException occurred during the process.
+     *         {@link UrlRequest.Callback#onFailed} will be called with the
+     *         thrown exception set as the cause of the
+     *         {@link UrlRequestException}.
      */
     public abstract void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
             throws IOException;
@@ -64,6 +67,9 @@ public abstract class UploadDataProvider {
      * @param uploadDataSink The object to notify when the rewind operation has
      *         completed, successfully or otherwise.
      * @throws IOException if any IOException occurred during the process.
+     *         {@link UrlRequest.Callback#onFailed} will be called with the
+     *         thrown exception set as the cause of the
+     *         {@link UrlRequestException}.
      */
     public abstract void rewind(UploadDataSink uploadDataSink) throws IOException;
 }
