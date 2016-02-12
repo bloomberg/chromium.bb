@@ -84,8 +84,6 @@ PROGNAME=${ADB_GDB_PROGNAME:-$(basename "$0")}
 ACTIVITY=$DEFAULT_ACTIVITY
 ADB=
 ANNOTATE=
-# Note: Ignore BUILDTYPE variable, because the Ninja build doesn't use it.
-BUILDTYPE=
 FORCE=
 GDBEXEPOSTFIX=gdb
 GDBINIT=
@@ -191,9 +189,6 @@ for opt; do
     --output-directory=*)
       CHROMIUM_OUTPUT_DIR=$optarg
       ;;
-    --out-dir=*)
-      CHROMIUM_OUT_DIR=$optarg
-      ;;
     --target-arch=*)
       TARGET_ARCH=$optarg
       ;;
@@ -205,12 +200,6 @@ for opt; do
       ;;
     --verbose)
       VERBOSE=$(( $VERBOSE + 1 ))
-      ;;
-    --debug)
-      BUILDTYPE=Debug
-      ;;
-    --release)
-      BUILDTYPE=Release
       ;;
     -*)
       panic "Unknown option $opt, see --help." >&2
@@ -269,11 +258,9 @@ shared libraries under one of the following directories:
   \$CHROMIUM_SRC/<out>/lib/                (used by GYP builds)
   \$CHROMIUM_SRC/<out>/lib.unstripped/     (used by GN builds)
 
-Where <out> is 'out' is determined by CHROMIUM_OUT_DIR, CHROMIUM_OUTPUT_DIR, or
-the --out-dir, --output-directory flags.
+Where <out> is determined by CHROMIUM_OUTPUT_DIR, or --output-directory.
 
-You can restrict this search by using --release or --debug to specify the
-build type, or simply use --symbol-dir=<path> to specify the file manually.
+You can set the path manually via --symbol-dir.
 
 The script tries to extract the target architecture from your target device,
 but if this fails, will default to 'arm'. Use --target-arch=<name> to force
@@ -314,7 +301,6 @@ Valid options:
   --sandboxed           Debug first sandboxed process we find.
   --sandboxed=<num>     Debug specific sandboxed process.
   --symbol-dir=<path>   Specify directory with symbol shared libraries.
-  --out-dir=<path>      Specify the out directory (e.g. "out").
   --output-directory=<path> Specify the output directory (e.g. "out/Debug").
   --package-name=<name> Specify package name (alternative to 1st argument).
   --privileged          Debug first privileged process we find.
@@ -346,9 +332,6 @@ Valid options:
   --no-pull-libs        Do not extract any system library.
   --libs-dir=<path>     Specify system libraries extraction directory.
 
-  --debug               Use libraries under out/Debug.
-  --release             Use libraries under out/Release.
-
 EOF
   exit 0
 fi
@@ -357,15 +340,13 @@ if [ -z "$PACKAGE_NAME" ]; then
   panic "Please specify a package name on the command line. See --help."
 fi
 
-if [[ -z "$CHROMIUM_OUTPUT_DIR" && -z "$CHROMIUM_OUT_DIR" ]]; then
+if [[ -z "$CHROMIUM_OUTPUT_DIR" ]]; then
   if [[ -e "build.ninja" ]]; then
     CHROMIUM_OUTPUT_DIR=$PWD
   else
     panic "Please specify an output directory by using one of:
        --output-directory=out/Debug
-       --out-dir=out/
        CHROMIUM_OUTPUT_DIR=out/Debug
-       CHROMIUM_OUT_DIR=out
        Setting working directory to an output directory.
        See --help."
    fi
@@ -716,58 +697,25 @@ get_file_timestamp () {
 
 # Detect the build type and symbol directory. This is done by finding
 # the most recent sub-directory containing debug shared libraries under
-# (in order of priority):
-# 1. $CHROMIUM_OUTPUT_DIR
-# 2. $CHROMIUM_SRC/$CHROMIUM_OUT_DIR/$BUILDTYPE (if $BUILDTYPE is set)
-# 3. $CHROMIUM_SRC/$CHROMIUM_OUT_DIR/{Debug,Release}
+# $CHROMIUM_OUTPUT_DIR.
 #
 # Out: nothing, but this sets SYMBOL_DIR
 #
 detect_symbol_dir () {
-  local PARENT_DIR SUBDIRS SUBDIR LIST DIR DIR_LIBS TSTAMP
-  # GYP places unstripped libraries under out/$BUILDTYPE/lib
-  # GN places them under out/$BUILDTYPE/lib.unstripped
-  if [[ -n "$CHROMIUM_OUTPUT_DIR" ]]; then
-    PARENT_DIR="$CHROMIUM_OUTPUT_DIR"
-    SUBDIRS="lib.unstripped lib"
-  else
-    PARENT_DIR="$CHROMIUM_OUT_DIR"
-    if [[ -n "$BUILDTYPE" ]]; then
-      PARENT_DIR="$PARENT_DIR/$BUILDTYPE"
-      SUBDIRS="lib.unstripped lib"
-    else
-      SUBDIRS="Release/lib.unstripped Debug/lib.unstripped "
-      SUBDIRS+="Release/lib Debug/lib"
-    fi
-  fi
+  # GYP places unstripped libraries under out/lib
+  # GN places them under out/lib.unstripped
+  local PARENT_DIR="$CHROMIUM_OUTPUT_DIR"
   if [[ ! -e "$PARENT_DIR" ]]; then
     PARENT_DIR="$CHROMIUM_SRC/$PARENT_DIR"
   fi
-  LIST=$TMPDIR/scan-subdirs-$$.txt
-  printf "" > "$LIST"
-  for SUBDIR in $SUBDIRS; do
-    DIR="$PARENT_DIR/$SUBDIR"
-    if [ -d "$DIR" ]; then
-      # Ignore build directories that don't contain symbol versions
-      # of the shared libraries.
-      DIR_LIBS=$(ls "$DIR"/lib*.so 2>/dev/null)
-      if [ -z "$DIR_LIBS" ]; then
-        echo "No shared libs: $DIR"
-        continue
-      fi
-      TSTAMP=$(get_file_timestamp "$DIR")
-      printf "%s %s\n" "$TSTAMP" "$SUBDIR" >> "$LIST"
+  SYMBOL_DIR="$PARENT_DIR/lib.unstripped"
+  if [[ -z "$(ls "$SYMBOL_DIR"/lib*.so 2>/dev/null)" ]]; then
+    SYMBOL_DIR="$PARENT_DIR/lib"
+    if [[ -z "$(ls "$SYMBOL_DIR"/lib*.so 2>/dev/null)" ]]; then
+      panic "Could not find any symbols under \
+$PARENT_DIR/lib{.unstripped}. Please build the program first!"
     fi
-  done
-  SUBDIR=$(cat $LIST | sort -r | head -1 | cut -d" " -f2)
-  rm -f "$LIST"
-
-  if [[ -z "$SUBDIR" ]]; then
-    panic "Could not find any build directory under \
-$PARENT_DIR/{${SUBDIRS// /,}}. Please build the program first!"
   fi
-
-  SYMBOL_DIR=$PARENT_DIR/$SUBDIR
   log "Auto-config: --symbol-dir=$SYMBOL_DIR"
 }
 
