@@ -115,7 +115,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                           self.old_version)
     self.assertTrue(subpaths)
     self.assertEquals(len(subpaths), 2)
-    self.assertEquals(subpaths['ARM'], 'linux-minnie_cheets-userdebug25')
+    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug25')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug25')
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(self.bucket_url,
@@ -123,7 +123,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                           self.new_version)
     self.assertTrue(subpaths)
     self.assertEquals(len(subpaths), 2)
-    self.assertEquals(subpaths['ARM'], 'linux-minnie_cheets-userdebug100')
+    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug100')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug100')
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(
@@ -153,7 +153,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(version, self.new_version)
     self.assertTrue(subpaths)
     self.assertEquals(len(subpaths), 2)
-    self.assertEquals(subpaths['ARM'], 'linux-minnie_cheets-userdebug100')
+    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug100')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug100')
 
   def testGetAndroidRevisionListLink(self):
@@ -175,7 +175,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     android_version = self.new_version
     package_dir = self.mock_android_dir
     subpaths_dict = {
-        'ARM': 'linux-minnie_cheets-userdebug100',
+        'ARM': 'linux-cheets_arm-userdebug100',
         'X86': 'linux-cheets_x86-userdebug100',
     }
     version_atom = cros_mark_android_as_stable.MarkAndroidEBuildAsStable(
