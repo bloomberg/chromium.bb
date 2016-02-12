@@ -8,19 +8,24 @@
 {% endif %}
 
 #include "{{namespace}}{{suffix}}Headers.h"
+#include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<{{namespace}}> {{namespace}}{{suffix}}Factory::create(ExecutionContext*, const String& type)
+PassRefPtrWillBeRawPtr<{{namespace}}> {{namespace}}{{suffix}}Factory::create(ExecutionContext* executionContext, const String& type)
 {
     {% for event in events %}
     {% if event|script_name|case_insensitive_matching %}
-    if (equalIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %})
+    if (equalIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
     {% else %}
-    if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %})
+    if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
     {% endif %}
+        {% if not event|script_name|candidate_whitelist %}
+        UseCounter::count(executionContext, UseCounter::{{event|script_name|measure_name}});
+        {% endif %}
         return {{event|cpp_name}}::create();
+    }
     {% endfor %}
     return nullptr;
 }

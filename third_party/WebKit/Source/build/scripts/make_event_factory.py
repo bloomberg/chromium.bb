@@ -47,6 +47,11 @@ HEADER_TEMPLATE = """%(license)s
 """
 
 
+# The list is a close match to:
+#
+# https://dom.spec.whatwg.org/#dom-document-createevent
+#
+# with the exepction for |keyevents| not present in Blink.
 def case_insensitive_matching(name):
     return (name == ('HTMLEvents')
             or name == 'Event'
@@ -58,6 +63,21 @@ def case_insensitive_matching(name):
             or name.startswith('MouseEvent')
             or name == 'TouchEvent')
 
+
+# All events not on the following whitelist are being measured in
+# createEvent. The plan is to limit createEvent to just a few selected
+# events necessary for legacy content in accordance with the
+# specification:
+#
+# https://dom.spec.whatwg.org/#dom-document-createevent
+def candidate_whitelist(name):
+    return (case_insensitive_matching(name)
+            or name == 'SVGZoomEvent'  # Will be deprecated instead.
+            or name == 'SVGZoomEvents')  # Will be deprecated instead.
+
+
+def measure_name(name):
+    return 'DocumentCreateEvent' + name
 
 class EventFactoryWriter(in_generator.Writer):
     defaults = {
@@ -74,6 +94,8 @@ class EventFactoryWriter(in_generator.Writer):
         'lower_first': name_utilities.lower_first,
         'case_insensitive_matching': case_insensitive_matching,
         'script_name': name_utilities.script_name,
+        'candidate_whitelist': candidate_whitelist,
+        'measure_name': measure_name,
     }
 
     def __init__(self, in_file_path):
