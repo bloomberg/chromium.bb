@@ -383,8 +383,6 @@ cr.define('extensions', function() {
     /**
      * Sets the active error for the overlay.
      * @param {?(ManifestError|RuntimeError)} error The error to make active.
-     * TODO(dbeam): add URL externs and re-enable typechecking in this method.
-     * @suppress {missingProperties}
      * @private
      */
     setActiveError_: function(error) {

@@ -148,7 +148,6 @@ cr.define('extensions', function() {
 
     /**
      * @param {chrome.developerPrivate.ExtensionView} view
-     * @suppress {checkTypes} Needed for URL externs. :(
      * @private
      */
     computeInspectLabel_: function(view) {
