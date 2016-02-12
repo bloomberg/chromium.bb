@@ -27,8 +27,8 @@
 #define EventHandler_h
 
 #include "core/CoreExport.h"
-#include "core/events/PointerEventManager.h"
 #include "core/events/TextEventInputType.h"
+#include "core/input/PointerEventManager.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/page/DragActions.h"
 #include "core/page/EventWithHitTestResults.h"
@@ -178,6 +178,9 @@ public:
 
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }
 
+    static WebInputEventResult mergeEventResult(WebInputEventResult resultA, WebInputEventResult resultB);
+    static WebInputEventResult eventToEventResult(PassRefPtrWillBeRawPtr<Event>, bool);
+
     static PlatformEvent::Modifiers accessKeyModifiers();
     bool handleAccessKey(const PlatformKeyboardEvent&);
     WebInputEventResult keyEvent(const PlatformKeyboardEvent&);
@@ -284,16 +287,6 @@ private:
 
     void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
 
-    WebInputEventResult dispatchPointerEvent(EventTarget*, PassRefPtrWillBeRawPtr<PointerEvent>);
-    EventTarget* getEffectiveTargetForPointerEvent(EventTarget*, PassRefPtrWillBeRawPtr<PointerEvent>);
-
-    // Dispatches (pointer|mouse)(over|out|enter|leave) events to the specified node.
-    void sendPointerAndMouseTransitionEvents(Node* target, const AtomicString& mouseEventType,
-        const PlatformMouseEvent&, Node* relatedTarget, bool checkForListener);
-
-    // Locates the target nodes in DOM based on the transition and dispatches (pointer|mouse)(over|out|enter|leave) events to them.
-    void sendNodeTransitionEvents(Node*, Node*, const PlatformMouseEvent&);
-
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 
     WebInputEventResult dispatchMouseEvent(const AtomicString& eventType, Node* target, int clickCount, const PlatformMouseEvent&);
@@ -347,8 +340,6 @@ private:
     bool panScrollInProgress() const;
     void setLastKnownMousePosition(const PlatformMouseEvent&);
 
-    void conditionallyEnableMouseEventForPointerTypeMouse(const PlatformMouseEvent&);
-
     bool shouldTopControlsConsumeScroll(FloatSize) const;
 
     // If the given element is a shadow host and its root has delegatesFocus=false flag,
@@ -395,7 +386,9 @@ private:
     RefPtrWillBeMember<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;
 
+    // Note the difference of this and m_nodeUnderPointer in PointerEventManager
     RefPtrWillBeMember<Node> m_nodeUnderMouse;
+
     RefPtrWillBeMember<LocalFrame> m_lastMouseMoveEventSubframe;
     RefPtrWillBeMember<Scrollbar> m_lastScrollbarUnderMouse;
 
@@ -433,11 +426,6 @@ private:
     bool m_touchPressed;
 
     PointerEventManager m_pointerEventManager;
-
-    // Prevents firing mousedown, mousemove & mouseup in-between a canceled pointerdown and next pointerup/pointercancel.
-    // See "PREVENT MOUSE EVENT flag" in the spec:
-    //   https://w3c.github.io/pointerevents/#compatibility-mapping-with-mouse-events
-    bool m_preventMouseEventForPointerTypeMouse;
 
     // This is set upon sending a pointercancel for touch, prevents PE dispatches for touches until
     // all touch-points become inactive.

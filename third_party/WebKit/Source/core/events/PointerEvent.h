@@ -25,7 +25,7 @@ public:
         return adoptRefWillBeNoop(new PointerEvent(type, initializer));
     }
 
-    long pointerId() const { return m_pointerId; }
+    int pointerId() const { return m_pointerId; }
     double width() const { return m_width; }
     double height() const { return m_height; }
     float pressure() const { return m_pressure; }
@@ -46,7 +46,7 @@ private:
     PointerEvent();
     PointerEvent(const AtomicString&, const PointerEventInit&);
 
-    long m_pointerId;
+    int m_pointerId;
     double m_width;
     double m_height;
     float m_pressure;

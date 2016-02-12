@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<script src="../../../resources/js-test.js"></script>
+<script src="../../../../../resources/js-test.js"></script>
 <style>
 div.box {
   margin: 10px;
@@ -43,7 +43,7 @@ function init() {
       });
     });
 
-    ["pointerdown", "pointerup", "pointermove", "pointercancel"].forEach(function(eventName) {
+    ["pointerdown", "pointerup", "pointermove", "pointercancel", "pointerover", "pointerenter", "pointerout", "pointerleave"].forEach(function(eventName) {
       targetDiv.addEventListener(eventName, function(event) {
         if (event.eventPhase == Event.AT_TARGET)
           receivedPEsAtTarget.push(event);
@@ -73,27 +73,34 @@ function testPEParamsSingleTouch(x, y) {
 
   eventSender.addTouchPoint(x, y);
   eventSender.touchStart();
-  shouldBeTrue("receivedPEsAtTarget[0].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget[0].button", 0);
-  shouldBeEqualToNumber("receivedPEsAtTarget[0].buttons", 1);
-  shouldBeEqualToNumber("receivedPEsAtTarget[0].clientX", x);
-  shouldBeEqualToNumber("receivedPEsAtTarget[0].clientY", y);
+  var i=0;
+  for(var j=0; j<5; j++,i++) {
+    shouldBeTrue("receivedPEsAtTarget["+i+"].isPrimary");
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].button", 0);
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].buttons", 1);
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientX", x);
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientY", y);
+  }
+  shouldBeEqualToNumber("receivedPEsAtTarget.length", i);
 
   eventSender.updateTouchPoint(0, x+20, y+20);
   eventSender.touchMove();
-  shouldBeTrue("receivedPEsAtTarget[1].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget[1].button", 0);
-  shouldBeEqualToNumber("receivedPEsAtTarget[1].buttons", 1);
-  shouldBeEqualToNumber("receivedPEsAtTarget[1].clientX", x+20);
-  shouldBeEqualToNumber("receivedPEsAtTarget[1].clientY", y+20);
+  shouldBeTrue("receivedPEsAtTarget["+i+"].isPrimary");
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].button", 0);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].buttons", 1);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientX", x+20);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientY", y+20);
+  shouldBeEqualToNumber("receivedPEsAtTarget.length", ++i);
 
   eventSender.releaseTouchPoint(0);
   eventSender.touchEnd();
-  shouldBeTrue("receivedPEsAtTarget[2].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget[2].button", 0);
-  shouldBeEqualToNumber("receivedPEsAtTarget[2].buttons", 0);
+  for(var j=0; j<5; j++,i++) {
+    shouldBeTrue("receivedPEsAtTarget["+i+"].isPrimary");
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].button", 0);
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].buttons", 0);
+  }
 
-  shouldBeEqualToNumber("receivedPEsAtTarget.length", 3);
+  shouldBeEqualToNumber("receivedPEsAtTarget.length", i);
 }
 
 function testPEParamsMultiTouch(x, y) {
@@ -101,52 +108,72 @@ function testPEParamsMultiTouch(x, y) {
 
   eventSender.addTouchPoint(x, y);
   eventSender.touchStart();
-  shouldBeTrue("receivedPEsAtTarget[0].isPrimary");
-  var idFirst = receivedPEsAtTarget[0].pointerId;
-  debug("receivedPEsAtTarget[0].pointerId=" + idFirst)
+  var i=0;
+  var idFirst = -1;
+  for(; i<5; i++) {
+    shouldBeTrue("receivedPEsAtTarget["+i+"].isPrimary");
+    idFirst = receivedPEsAtTarget[i].pointerId;
+    debug("receivedPEsAtTarget["+i+"].pointerId=" + idFirst)
+  }
 
   eventSender.addTouchPoint(x+10, y+10);
   eventSender.touchStart();
-  shouldBeFalse("receivedPEsAtTarget[1].isPrimary");
-  var idSecond = receivedPEsAtTarget[1].pointerId;
-  debug("receivedPEsAtTarget[1].pointerId=" + idSecond)
+  var idSecond = -1;
+  for(var j=0; j<5; j++,i++) {
+    shouldBeFalse("receivedPEsAtTarget["+i+"].isPrimary");
+    idSecond = receivedPEsAtTarget[i].pointerId;
+    debug("receivedPEsAtTarget["+i+"].pointerId=" + idSecond)
+  }
 
   eventSender.updateTouchPoint(1, x+20, y+20);
   eventSender.touchMove();
-  shouldBeFalse("receivedPEsAtTarget[2].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget[2].pointerId", idSecond);
+  shouldBeFalse("receivedPEsAtTarget["+i+"].isPrimary");
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].pointerId", idSecond);
+  i++;
 
   eventSender.releaseTouchPoint(0);
   eventSender.touchEnd();
-  shouldBeTrue("receivedPEsAtTarget[3].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget[3].pointerId", idFirst);
+  for(var j=0; j<5; j++,i++) {
+    shouldBeTrue("receivedPEsAtTarget["+i+"].isPrimary");
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].pointerId", idFirst);
+  }
 
   eventSender.updateTouchPoint(0, x+10, y+10);
   eventSender.touchMove();
-  shouldBeFalse("receivedPEsAtTarget[4].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget[4].pointerId", idSecond);
+  shouldBeFalse("receivedPEsAtTarget["+i+"].isPrimary");
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].pointerId", idSecond);
+  i++;
 
   eventSender.addTouchPoint(x, y);
   eventSender.touchStart();
-  shouldBeFalse("receivedPEsAtTarget[5].isPrimary");
-  var idThird = receivedPEsAtTarget[5].pointerId;
-  debug("receivedPEsAtTarget[5].pointerId=" + idThird)
+  var idThird = -1;
+  for(var j=0; j<5; j++,i++) {
+    shouldBeFalse("receivedPEsAtTarget["+i+"].isPrimary");
+    idThird = receivedPEsAtTarget[i].pointerId;
+    debug("receivedPEsAtTarget["+i+"].pointerId=" + idThird)
+  }
 
   eventSender.releaseTouchPoint(0);
   eventSender.touchEnd();
-  shouldBeFalse("receivedPEsAtTarget[6].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget[6].pointerId", idSecond);
+  for(var j=0; j<5; j++,i++) {
+    shouldBeFalse("receivedPEsAtTarget["+i+"].isPrimary");
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].pointerId", idSecond);
+  }
 
   eventSender.releaseTouchPoint(0);
   eventSender.touchEnd();
-  shouldBeFalse("receivedPEsAtTarget[7].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget[7].pointerId", idThird);
+  for(var j=0; j<5; j++,i++) {
+    shouldBeFalse("receivedPEsAtTarget["+i+"].isPrimary");
+    shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].pointerId", idThird);
+  }
 
   eventSender.addTouchPoint(x, y);
   eventSender.touchStart();
-  shouldBeTrue("receivedPEsAtTarget[8].isPrimary");
+  for(var j=0; j<5; j++,i++) {
+    shouldBeTrue("receivedPEsAtTarget["+i+"].isPrimary");
+  }
 
-  shouldBeEqualToNumber("receivedPEsAtTarget.length", 9);
+  shouldBeEqualToNumber("receivedPEsAtTarget.length", i);
 }
 
 function runTests() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/events/PointerEventManager.h"
+#include "core/events/PointerEventFactory.h"
 
 namespace blink {
 
@@ -28,16 +28,10 @@ const char* pointerTypeNameForWebPointPointerType(WebPointerProperties::PointerT
 
 } // namespace
 
-const PointerEventManager::MappedId PointerEventManager::s_invalidId = 0;
+const int PointerEventFactory::s_invalidId = 0;
 
 // Mouse id is 1 to behave the same as MS Edge for compatibility reasons.
-const PointerEventManager::MappedId PointerEventManager::s_mouseId = 1;
-
-EventTarget* PointerEventManager::getCapturingNode(PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent)
-{
-    // TODO(nzolghadr): Add APIs to set the capturing nodes and return the correct node here
-    return nullptr;
-}
+const int PointerEventFactory::s_mouseId = 1;
 
 float getPointerEventPressure(float force, int buttons)
 {
@@ -46,17 +40,17 @@ float getPointerEventPressure(float force, int buttons)
     return force;
 }
 
-void PointerEventManager::setIdAndType(PointerEventInit &pointerEventInit,
+void PointerEventFactory::setIdAndType(PointerEventInit &pointerEventInit,
     const WebPointerProperties &pointerProperties)
 {
     const WebPointerProperties::PointerType pointerType = pointerProperties.pointerType;
-    MappedId pointerId = add(PointerEventManager::IncomingId(toInt(pointerType), pointerProperties.id));
+    int pointerId = add(PointerEventFactory::IncomingId(toInt(pointerType), pointerProperties.id));
     pointerEventInit.setPointerId(pointerId);
     pointerEventInit.setPointerType(pointerTypeNameForWebPointPointerType(pointerType));
     pointerEventInit.setIsPrimary(isPrimary(pointerId));
 }
 
-PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::create(const AtomicString& type,
+PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(const AtomicString& type,
     const PlatformMouseEvent& mouseEvent,
     PassRefPtrWillBeRawPtr<Node> relatedTarget,
     PassRefPtrWillBeRawPtr<AbstractView> view)
@@ -89,7 +83,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::create(const AtomicStr
     return PointerEvent::create(type, pointerEventInit);
 }
 
-PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::create(const AtomicString& type,
+PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(const AtomicString& type,
     const PlatformTouchPoint& touchPoint, PlatformEvent::Modifiers modifiers,
     const double width, const double height,
     const double clientX, const double clientY)
@@ -127,7 +121,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::create(const AtomicStr
 }
 
 
-PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::createPointerCancel(const PlatformTouchPoint& touchPoint)
+PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::createPointerCancel(const PlatformTouchPoint& touchPoint)
 {
     PointerEventInit pointerEventInit;
 
@@ -139,20 +133,53 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::createPointerCancel(co
     return PointerEvent::create(EventTypeNames::pointercancel, pointerEventInit);
 }
 
-PointerEventManager::PointerEventManager()
+PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(
+    PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent,
+    const AtomicString& type,
+    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget)
+{
+    PointerEventInit pointerEventInit;
+
+    pointerEventInit.setPointerId(pointerEvent->pointerId());
+    pointerEventInit.setPointerType(pointerEvent->pointerType());
+    pointerEventInit.setIsPrimary(pointerEvent->isPrimary());
+    pointerEventInit.setWidth(pointerEvent->width());
+    pointerEventInit.setHeight(pointerEvent->height());
+    pointerEventInit.setTiltX(pointerEvent->tiltX());
+    pointerEventInit.setTiltY(pointerEvent->tiltY());
+    pointerEventInit.setScreenX(pointerEvent->screenX());
+    pointerEventInit.setScreenY(pointerEvent->screenY());
+    pointerEventInit.setClientX(pointerEvent->clientX());
+    pointerEventInit.setClientY(pointerEvent->clientY());
+    pointerEventInit.setButton(pointerEvent->button());
+    pointerEventInit.setButtons(pointerEvent->buttons());
+    pointerEventInit.setPressure(pointerEvent->pressure());
+
+    pointerEventInit.setBubbles(type != EventTypeNames::pointerenter
+        && type != EventTypeNames::pointerleave);
+    pointerEventInit.setCancelable(type != EventTypeNames::pointerenter
+        && type != EventTypeNames::pointerleave
+        && type != EventTypeNames::pointercancel);
+    if (relatedTarget)
+        pointerEventInit.setRelatedTarget(relatedTarget);
+
+    return PointerEvent::create(type, pointerEventInit);
+}
+
+PointerEventFactory::PointerEventFactory()
 {
     clear();
 }
 
-PointerEventManager::~PointerEventManager()
+PointerEventFactory::~PointerEventFactory()
 {
     clear();
 }
 
-void PointerEventManager::clear()
+void PointerEventFactory::clear()
 {
     for (int type = 0; type <= toInt(WebPointerProperties::PointerType::LastEntry); type++) {
-        m_primaryId[type] = PointerEventManager::s_invalidId;
+        m_primaryId[type] = PointerEventFactory::s_invalidId;
         m_idCount[type] = 0;
     }
     m_idMapping.clear();
@@ -163,10 +190,10 @@ void PointerEventManager::clear()
     m_primaryId[toInt(WebPointerProperties::PointerType::Mouse)] = s_mouseId;
     m_idReverseMapping.add(s_mouseId, IncomingId(toInt(WebPointerProperties::PointerType::Mouse), 0));
 
-    m_currentId = PointerEventManager::s_mouseId+1;
+    m_currentId = PointerEventFactory::s_mouseId+1;
 }
 
-PointerEventManager::MappedId PointerEventManager::add(const IncomingId p)
+int PointerEventFactory::add(const IncomingId p)
 {
     // Do not add extra mouse pointer as it was added in initialization
     if (p.first == toInt(WebPointerProperties::PointerType::Mouse))
@@ -176,18 +203,19 @@ PointerEventManager::MappedId PointerEventManager::add(const IncomingId p)
     if (m_idMapping.contains(p))
         return m_idMapping.get(p);
     // We do not handle the overflow of m_currentId as it should be very rare
-    MappedId mappedId = m_currentId++;
+    int mappedId = m_currentId++;
     if (!m_idCount[type])
         m_primaryId[type] = mappedId;
     m_idCount[type]++;
     m_idMapping.add(p, mappedId);
     m_idReverseMapping.add(mappedId, p);
-    return static_cast<PointerEventManager::MappedId>(mappedId);
+    return static_cast<int>(mappedId);
 }
 
-void PointerEventManager::remove(const PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent)
+void PointerEventFactory::remove(
+    const PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent)
 {
-    MappedId mappedId = pointerEvent->pointerId();
+    int mappedId = pointerEvent->pointerId();
     // Do not remove mouse pointer id as it should always be there
     if (mappedId == s_mouseId || !m_idReverseMapping.contains(mappedId))
         return;
@@ -197,11 +225,11 @@ void PointerEventManager::remove(const PassRefPtrWillBeRawPtr<PointerEvent> poin
     m_idReverseMapping.remove(mappedId);
     m_idMapping.remove(p);
     if (m_primaryId[type] == mappedId)
-        m_primaryId[type] = PointerEventManager::s_invalidId;
+        m_primaryId[type] = PointerEventFactory::s_invalidId;
     m_idCount[type]--;
 }
 
-bool PointerEventManager::isPrimary(PointerEventManager::MappedId mappedId) const
+bool PointerEventFactory::isPrimary(int mappedId) const
 {
     if (!m_idReverseMapping.contains(mappedId))
         return false;
