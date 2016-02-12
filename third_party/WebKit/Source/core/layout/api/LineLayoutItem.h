@@ -97,7 +97,7 @@ public:
 
     bool isDescendantOf(const LineLayoutItem item) const
     {
-        return m_layoutObject->isDescendantOf(item);
+        return m_layoutObject->isDescendantOf(item.m_layoutObject);
     }
 
     void updateHitTestResult(HitTestResult& result, const LayoutPoint& point)
