@@ -96,7 +96,7 @@ class ModelTypeEntityTest : public ::testing::Test {
 
     UpdateResponseData response_data;
     response_data.response_version = version;
-    response_data.entity = data.Pass();
+    response_data.entity = data.PassToPtr();
 
     entity->ApplyUpdateFromServer(response_data);
   }

@@ -84,7 +84,7 @@ CommitRequestData MockModelTypeProcessor::CommitRequest(
   data.non_unique_name = "Name: " + tag_hash;
 
   CommitRequestData request_data;
-  request_data.entity = data.Pass();
+  request_data.entity = data.PassToPtr();
   request_data.sequence_number = GetNextSequenceNumber(tag_hash);
   request_data.base_version = base_version;
 
@@ -112,7 +112,7 @@ CommitRequestData MockModelTypeProcessor::DeleteRequest(
       data.creation_time + base::TimeDelta::FromSeconds(base_version);
 
   CommitRequestData request_data;
-  request_data.entity = data.Pass();
+  request_data.entity = data.PassToPtr();
   request_data.sequence_number = GetNextSequenceNumber(tag_hash);
   request_data.base_version = base_version;
 

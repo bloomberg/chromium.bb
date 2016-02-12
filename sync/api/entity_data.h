@@ -71,7 +71,7 @@ struct SYNC_EXPORT EntityData {
 
   // Transfers this struct's data to EntityDataPtr.
   // The return value must be assigned into another EntityDataPtr.
-  EntityDataPtr Pass() WARN_UNUSED_RESULT;
+  EntityDataPtr PassToPtr() WARN_UNUSED_RESULT;
 
  private:
   friend struct EntityDataTraits;

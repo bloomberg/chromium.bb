@@ -46,7 +46,7 @@ TEST_F(EntityDataTest, Swap) {
       &data.specifics.bookmark();
   const std::string* unique_position_value = &data.unique_position.value();
 
-  EntityDataPtr ptr(data.Pass());
+  EntityDataPtr ptr(data.PassToPtr());
 
   // Compare addresses of the data wrapped by EntityDataPtr to make sure that
   // the underlying objects are exactly the same.

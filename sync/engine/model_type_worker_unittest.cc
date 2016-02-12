@@ -1025,7 +1025,7 @@ TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
   EncryptUpdate(GetNthKeyParams(1), &(entity.specifics));
 
   UpdateResponseData update;
-  update.entity = entity.Pass();
+  update.entity = entity.PassToPtr();
   update.response_version = 100;
 
   // Inject the update during CommitQueue initialization.
@@ -1067,7 +1067,7 @@ TEST_F(ModelTypeWorkerTest, RestoreApplicableEntries) {
   EncryptUpdate(GetNthKeyParams(1), &(entity.specifics));
 
   UpdateResponseData update;
-  update.entity = entity.Pass();
+  update.entity = entity.PassToPtr();
   update.response_version = 100;
 
   // Inject the update during CommitQueue initialization.

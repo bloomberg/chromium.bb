@@ -51,7 +51,7 @@ ModelTypeEntity::ModelTypeEntity(const std::string& client_tag,
 ModelTypeEntity::~ModelTypeEntity() {}
 
 void ModelTypeEntity::CacheCommitData(EntityData* data) {
-  commit_data_ = data->Pass();
+  commit_data_ = data->PassToPtr();
 }
 
 bool ModelTypeEntity::HasCommitData() const {

@@ -52,7 +52,7 @@ class EntityTrackerTest : public ::testing::Test {
     data.non_unique_name = kClientTag;
 
     CommitRequestData request_data;
-    request_data.entity = data.Pass();
+    request_data.entity = data.PassToPtr();
     request_data.sequence_number = sequence_number;
     request_data.base_version = base_version;
     return request_data;
@@ -64,7 +64,7 @@ class EntityTrackerTest : public ::testing::Test {
     data.client_tag_hash = kClientTagHash;
 
     UpdateResponseData response_data;
-    response_data.entity = data.Pass();
+    response_data.entity = data.PassToPtr();
     response_data.response_version = response_version;
     return response_data;
   }

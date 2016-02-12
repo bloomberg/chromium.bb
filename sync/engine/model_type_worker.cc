@@ -163,14 +163,14 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       // No encryption.
       entity_tracker->ReceiveUpdate(update_entity->version());
       data.specifics = specifics;
-      response_data.entity = data.Pass();
+      response_data.entity = data.PassToPtr();
       response_datas.push_back(response_data);
     } else if (specifics.has_encrypted() && cryptographer_ &&
                cryptographer_->CanDecrypt(specifics.encrypted())) {
       // Encrypted, but we know the key.
       if (DecryptSpecifics(cryptographer_.get(), specifics, &data.specifics)) {
         entity_tracker->ReceiveUpdate(update_entity->version());
-        response_data.entity = data.Pass();
+        response_data.entity = data.PassToPtr();
         response_data.encryption_key_name = specifics.encrypted().key_name();
         response_datas.push_back(response_data);
       }
@@ -179,7 +179,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
                 !cryptographer_->CanDecrypt(specifics.encrypted()))) {
       // Can't decrypt right now.  Ask the entity tracker to handle it.
       data.specifics = specifics;
-      response_data.entity = data.Pass();
+      response_data.entity = data.PassToPtr();
       if (entity_tracker->ReceivePendingUpdate(response_data)) {
         // Send to the model thread for safe-keeping across restarts if the
         // tracker decides the update is worth keeping.
@@ -426,7 +426,7 @@ void ModelTypeWorker::OnCryptographerUpdated() {
           decrypted_data.modification_time = data.modification_time;
 
           UpdateResponseData decrypted_response;
-          decrypted_response.entity = decrypted_data.Pass();
+          decrypted_response.entity = decrypted_data.PassToPtr();
           decrypted_response.response_version = saved_pending.response_version;
           decrypted_response.encryption_key_name =
               data.specifics.encrypted().key_name();

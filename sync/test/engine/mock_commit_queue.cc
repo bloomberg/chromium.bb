@@ -92,7 +92,7 @@ UpdateResponseData MockCommitQueue::UpdateFromServer(
   data.non_unique_name = specifics.preference().name();
 
   UpdateResponseData response_data;
-  response_data.entity = data.Pass();
+  response_data.entity = data.PassToPtr();
   response_data.response_version = version;
   response_data.encryption_key_name = server_encryption_key_name_;
 
@@ -119,7 +119,7 @@ UpdateResponseData MockCommitQueue::TombstoneFromServer(
   data.non_unique_name = "Name Non Unique";
 
   UpdateResponseData response_data;
-  response_data.entity = data.Pass();
+  response_data.entity = data.PassToPtr();
   response_data.response_version = version;
   response_data.encryption_key_name = server_encryption_key_name_;
 

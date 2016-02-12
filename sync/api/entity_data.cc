@@ -27,7 +27,7 @@ void EntityData::Swap(EntityData* other) {
   unique_position.Swap(&other->unique_position);
 }
 
-EntityDataPtr EntityData::Pass() {
+EntityDataPtr EntityData::PassToPtr() {
   EntityDataPtr target;
   target.swap_value(this);
   return target;
