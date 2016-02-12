@@ -99,7 +99,7 @@ void CyclicFrameGenerator::SetTickClock(base::TickClock* tick_clock) {
 }
 
 scoped_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
-    webrtc::DesktopCapturer::Callback* callback) {
+    webrtc::SharedMemoryFactory* shared_memory_factory) {
   base::TimeTicks now = clock_->NowTicks();
   int reference_frame =
       ((now - started_time_) / frame_cycle_period_) % reference_frames_.size();

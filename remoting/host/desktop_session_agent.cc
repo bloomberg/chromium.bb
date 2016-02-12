@@ -40,11 +40,11 @@ namespace remoting {
 namespace {
 
 // Routes local clipboard events though the IPC channel to the network process.
-class DesktopSesssionClipboardStub : public protocol::ClipboardStub {
+class DesktopSessionClipboardStub : public protocol::ClipboardStub {
  public:
-  explicit DesktopSesssionClipboardStub(
+  explicit DesktopSessionClipboardStub(
       scoped_refptr<DesktopSessionAgent> desktop_session_agent);
-  ~DesktopSesssionClipboardStub() override;
+  ~DesktopSessionClipboardStub() override;
 
   // protocol::ClipboardStub implementation.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
@@ -52,47 +52,41 @@ class DesktopSesssionClipboardStub : public protocol::ClipboardStub {
  private:
   scoped_refptr<DesktopSessionAgent> desktop_session_agent_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopSesssionClipboardStub);
+  DISALLOW_COPY_AND_ASSIGN(DesktopSessionClipboardStub);
 };
 
-DesktopSesssionClipboardStub::DesktopSesssionClipboardStub(
+DesktopSessionClipboardStub::DesktopSessionClipboardStub(
     scoped_refptr<DesktopSessionAgent> desktop_session_agent)
-    : desktop_session_agent_(desktop_session_agent) {
-}
+    : desktop_session_agent_(desktop_session_agent) {}
 
-DesktopSesssionClipboardStub::~DesktopSesssionClipboardStub() {
-}
+DesktopSessionClipboardStub::~DesktopSessionClipboardStub() {}
 
-void DesktopSesssionClipboardStub::InjectClipboardEvent(
+void DesktopSessionClipboardStub::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   desktop_session_agent_->InjectClipboardEvent(event);
 }
 
-}  // namespace
-
-// webrtc::SharedMemory implementation that notifies creating
-// DesktopSessionAgent when it's deleted.
-class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
+// webrtc::SharedMemory implementation that creates base::SharedMemory.
+class SharedMemoryImpl : public webrtc::SharedMemory {
  public:
-  static scoped_ptr<SharedBuffer> Create(DesktopSessionAgent* agent,
-                                         size_t size,
-                                         int id) {
+  static scoped_ptr<SharedMemoryImpl>
+  Create(size_t size, int id, const base::Closure& on_deleted_callback) {
     scoped_ptr<base::SharedMemory> memory(new base::SharedMemory());
     if (!memory->CreateAndMapAnonymous(size))
       return nullptr;
     return make_scoped_ptr(
-        new SharedBuffer(agent, std::move(memory), size, id));
+        new SharedMemoryImpl(std::move(memory), size, id, on_deleted_callback));
   }
 
-  ~SharedBuffer() override { agent_->OnSharedBufferDeleted(id()); }
+  ~SharedMemoryImpl() override { on_deleted_callback_.Run(); }
 
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
 
  private:
-  SharedBuffer(DesktopSessionAgent* agent,
-               scoped_ptr<base::SharedMemory> memory,
-               size_t size,
-               int id)
+  SharedMemoryImpl(scoped_ptr<base::SharedMemory> memory,
+                   size_t size,
+                   int id,
+                   const base::Closure& on_deleted_callback)
       : SharedMemory(memory->memory(),
                      size,
 // webrtc::ScreenCapturer uses webrtc::SharedMemory::handle() only on Windows.
@@ -102,18 +96,59 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
                      0,
 #endif
                      id),
-        agent_(agent),
+        on_deleted_callback_(on_deleted_callback),
         shared_memory_(std::move(memory)) {
   }
 
-  DesktopSessionAgent* agent_;
+  base::Closure on_deleted_callback_;
   scoped_ptr<base::SharedMemory> shared_memory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedBuffer);
+  DISALLOW_COPY_AND_ASSIGN(SharedMemoryImpl);
 };
 
-DesktopSessionAgent::Delegate::~Delegate() {
-}
+class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
+ public:
+  typedef base::Callback<void(IPC::Message* message)> SendMessageCallback;
+
+  SharedMemoryFactoryImpl(const SendMessageCallback& send_message_callback)
+      : send_message_callback_(send_message_callback) {}
+
+  rtc::scoped_ptr<webrtc::SharedMemory> CreateSharedMemory(
+      size_t size) override {
+    scoped_ptr<SharedMemoryImpl> buffer = SharedMemoryImpl::Create(
+        size, next_shared_buffer_id_,
+        base::Bind(send_message_callback_,
+                   new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(
+                       next_shared_buffer_id_)));
+    if (buffer) {
+      // |next_shared_buffer_id_| starts from 1 and incrementing it by 2 makes
+      // sure it is always odd and therefore zero is never used as a valid
+      // buffer ID.
+      //
+      // It is very unlikely (though theoretically possible) to allocate the
+      // same ID for two different buffers due to integer overflow. It should
+      // take about a year of allocating 100 new buffers every second.
+      // Practically speaking it never happens.
+      next_shared_buffer_id_ += 2;
+
+      send_message_callback_.Run(
+          new ChromotingDesktopNetworkMsg_CreateSharedBuffer(
+              buffer->id(), buffer->shared_memory()->handle(), buffer->size()));
+    }
+
+    return rtc_make_scoped_ptr(buffer.release());
+  }
+
+ private:
+  int next_shared_buffer_id_ = 1;
+  SendMessageCallback send_message_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedMemoryFactoryImpl);
+};
+
+}  // namespace
+
+DesktopSessionAgent::Delegate::~Delegate() {}
 
 DesktopSessionAgent::DesktopSessionAgent(
     scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
@@ -126,9 +161,6 @@ DesktopSessionAgent::DesktopSessionAgent(
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
-      next_shared_buffer_id_(1),
-      shared_buffers_(0),
-      started_(false),
       weak_factory_(this) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
@@ -185,31 +217,6 @@ void DesktopSessionAgent::OnChannelError() {
   // Notify the caller that the channel has been disconnected.
   if (delegate_.get())
     delegate_->OnNetworkProcessDisconnected();
-}
-
-webrtc::SharedMemory* DesktopSessionAgent::CreateSharedMemory(size_t size) {
-  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
-
-  scoped_ptr<SharedBuffer> buffer =
-      SharedBuffer::Create(this, size, next_shared_buffer_id_);
-  if (buffer) {
-    shared_buffers_++;
-
-    // |next_shared_buffer_id_| starts from 1 and incrementing it by 2 makes
-    // sure it is always odd and therefore zero is never used as a valid buffer
-    // ID.
-    //
-    // It is very unlikely (though theoretically possible) to allocate the same
-    // ID for two different buffers due to integer overflow. It should take
-    // about a year of allocating 100 new buffers every second. Practically
-    // speaking it never happens.
-    next_shared_buffer_id_ += 2;
-
-    SendToNetwork(new ChromotingDesktopNetworkMsg_CreateSharedBuffer(
-        buffer->id(), buffer->shared_memory()->handle(), buffer->size()));
-  }
-
-  return buffer.release();
 }
 
 DesktopSessionAgent::~DesktopSessionAgent() {
@@ -291,7 +298,7 @@ void DesktopSessionAgent::OnStartSessionAgent(
 
   // Start the input injector.
   scoped_ptr<protocol::ClipboardStub> clipboard_stub(
-      new DesktopSesssionClipboardStub(this));
+      new DesktopSessionClipboardStub(this));
   input_injector_->Start(std::move(clipboard_stub));
 
   // Start the audio capturer.
@@ -577,6 +584,9 @@ void DesktopSessionAgent::StartVideoCapturerAndMouseMonitor() {
 
   if (video_capturer_) {
     video_capturer_->Start(this);
+    video_capturer_->SetSharedMemoryFactory(
+        rtc_make_scoped_ptr(new SharedMemoryFactoryImpl(
+            base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
   }
 
   if (mouse_cursor_monitor_) {
@@ -590,18 +600,6 @@ void DesktopSessionAgent::StopVideoCapturerAndMouseMonitor() {
   video_capturer_.reset();
   last_frame_.reset();
   mouse_cursor_monitor_.reset();
-
-  // Video capturer must delete all buffers.
-  DCHECK_EQ(shared_buffers_, 0);
-}
-
-void DesktopSessionAgent::OnSharedBufferDeleted(int id) {
-  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
-  DCHECK(id != 0);
-
-  shared_buffers_--;
-  DCHECK_GE(shared_buffers_, 0);
-  SendToNetwork(new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(id));
 }
 
 }  // namespace remoting

@@ -566,7 +566,7 @@ class IntermittentChangeFrameGenerator
       : frame_index_(0) {}
 
   scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
-      webrtc::DesktopCapturer::Callback* callback) {
+      webrtc::SharedMemoryFactory* shared_memory_factory) {
     const int kWidth = 1000;
     const int kHeight = kIntermittentFrameSize / kWidth / 4;
 

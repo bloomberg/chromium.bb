@@ -27,7 +27,8 @@ class FakeDesktopCapturer : public webrtc::DesktopCapturer {
   static const int kHeight = 600;
 
   typedef base::Callback<scoped_ptr<webrtc::DesktopFrame>(
-      webrtc::DesktopCapturer::Callback* callback)> FrameGenerator;
+      webrtc::SharedMemoryFactory* shared_memory_factory)>
+      FrameGenerator;
 
   FakeDesktopCapturer();
   ~FakeDesktopCapturer() override;
@@ -36,12 +37,16 @@ class FakeDesktopCapturer : public webrtc::DesktopCapturer {
 
   // webrtc::DesktopCapturer interface.
   void Start(Callback* callback) override;
+  void SetSharedMemoryFactory(rtc::scoped_ptr<webrtc::SharedMemoryFactory>
+                                  shared_memory_factory) override;
   void Capture(const webrtc::DesktopRegion& rect) override;
 
  private:
   FrameGenerator frame_generator_;
 
   Callback* callback_;
+
+  scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopCapturer);
 };

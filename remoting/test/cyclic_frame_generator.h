@@ -65,7 +65,7 @@ class CyclicFrameGenerator
   void set_draw_barcode(bool draw_barcode) { draw_barcode_ = draw_barcode; }
 
   scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
-      webrtc::DesktopCapturer::Callback* callback);
+      webrtc::SharedMemoryFactory* shared_memory_factory);
 
   FrameType last_frame_type() { return last_frame_type_; }
 

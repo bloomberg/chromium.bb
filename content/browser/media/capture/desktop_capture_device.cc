@@ -77,7 +77,6 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
  private:
 
   // webrtc::DesktopCapturer::Callback interface
-  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   // Method that is scheduled on |task_runner_| to be called on regular interval
@@ -186,11 +185,6 @@ void DesktopCaptureDevice::Core::SetNotificationWindowId(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(window_id);
   desktop_capturer_->SetExcludedWindow(window_id);
-}
-
-webrtc::SharedMemory*
-DesktopCaptureDevice::Core::CreateSharedMemory(size_t size) {
-  return NULL;
 }
 
 void DesktopCaptureDevice::Core::OnCaptureCompleted(

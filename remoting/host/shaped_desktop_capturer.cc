@@ -30,8 +30,9 @@ void ShapedDesktopCapturer::Capture(const webrtc::DesktopRegion& region) {
   desktop_capturer_->Capture(region);
 }
 
-webrtc::SharedMemory* ShapedDesktopCapturer::CreateSharedMemory(size_t size) {
-  return callback_->CreateSharedMemory(size);
+void ShapedDesktopCapturer::SetSharedMemoryFactory(
+    rtc::scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
+  desktop_capturer_->SetSharedMemoryFactory(std::move(shared_memory_factory));
 }
 
 void ShapedDesktopCapturer::OnCaptureCompleted(webrtc::DesktopFrame* frame) {

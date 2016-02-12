@@ -35,22 +35,20 @@ class DefaultFrameGenerator
     : public base::RefCountedThreadSafe<DefaultFrameGenerator> {
  public:
   DefaultFrameGenerator()
-      : bytes_per_row_(0),
-        box_pos_x_(0),
+      : box_pos_x_(0),
         box_pos_y_(0),
         box_speed_x_(kSpeed),
         box_speed_y_(kSpeed),
         first_frame_(true) {}
 
   scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
-      webrtc::DesktopCapturer::Callback* callback);
+      webrtc::SharedMemoryFactory* shared_memory_factory);
 
  private:
   friend class base::RefCountedThreadSafe<DefaultFrameGenerator>;
   ~DefaultFrameGenerator() {}
 
   webrtc::DesktopSize size_;
-  int bytes_per_row_;
   int box_pos_x_;
   int box_pos_y_;
   int box_speed_x_;
@@ -61,15 +59,14 @@ class DefaultFrameGenerator
 };
 
 scoped_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
-    webrtc::DesktopCapturer::Callback* callback) {
+    webrtc::SharedMemoryFactory* shared_memory_factory) {
   const int kBytesPerPixel = webrtc::DesktopFrame::kBytesPerPixel;
-  int buffer_size = kWidth * kHeight * kBytesPerPixel;
-  webrtc::SharedMemory* shared_memory =
-      callback->CreateSharedMemory(buffer_size);
   scoped_ptr<webrtc::DesktopFrame> frame;
-  if (shared_memory) {
+  if (shared_memory_factory) {
+    int buffer_size = kWidth * kHeight * kBytesPerPixel;
     frame.reset(new webrtc::SharedMemoryDesktopFrame(
-        webrtc::DesktopSize(kWidth, kHeight), bytes_per_row_, shared_memory));
+        webrtc::DesktopSize(kWidth, kHeight), kWidth * kBytesPerPixel,
+        shared_memory_factory->CreateSharedMemory(buffer_size).release()));
   } else {
     frame.reset(
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight)));
@@ -143,9 +140,15 @@ void FakeDesktopCapturer::Start(Callback* callback) {
   callback_ = callback;
 }
 
+void FakeDesktopCapturer::SetSharedMemoryFactory(
+    rtc::scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
+  shared_memory_factory_.reset(shared_memory_factory.release());
+}
+
 void FakeDesktopCapturer::Capture(const webrtc::DesktopRegion& region) {
   base::Time capture_start_time = base::Time::Now();
-  scoped_ptr<webrtc::DesktopFrame> frame = frame_generator_.Run(callback_);
+  scoped_ptr<webrtc::DesktopFrame> frame =
+      frame_generator_.Run(shared_memory_factory_.get());
   if (frame) {
     frame->set_capture_time_ms(
         (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());

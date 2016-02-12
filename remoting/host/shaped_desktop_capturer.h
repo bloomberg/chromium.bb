@@ -25,11 +25,12 @@ class ShapedDesktopCapturer : public webrtc::DesktopCapturer,
 
   // webrtc::DesktopCapturer interface.
   void Start(webrtc::DesktopCapturer::Callback* callback) override;
+  void SetSharedMemoryFactory(rtc::scoped_ptr<webrtc::SharedMemoryFactory>
+                                  shared_memory_factory) override;
   void Capture(const webrtc::DesktopRegion& region) override;
 
  private:
   // webrtc::DesktopCapturer::Callback interface.
-  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;

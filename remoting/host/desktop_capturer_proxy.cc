@@ -27,11 +27,12 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
   ~Core() override;
 
   void Start();
+  void SetSharedMemoryFactory(
+      scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory);
   void Capture(const webrtc::DesktopRegion& rect);
 
  private:
   // webrtc::DesktopCapturer::Callback implementation.
-  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   base::ThreadChecker thread_checker_;
@@ -62,19 +63,16 @@ void DesktopCapturerProxy::Core::Start() {
   capturer_->Start(this);
 }
 
-void DesktopCapturerProxy::Core::Capture(const webrtc::DesktopRegion& rect) {
+void DesktopCapturerProxy::Core::SetSharedMemoryFactory(
+    scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  capturer_->Capture(rect);
+  capturer_->SetSharedMemoryFactory(
+      rtc_make_scoped_ptr(shared_memory_factory.release()));
 }
 
-webrtc::SharedMemory* DesktopCapturerProxy::Core::CreateSharedMemory(
-    size_t size) {
+void DesktopCapturerProxy::Core::Capture(const webrtc::DesktopRegion& rect) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // CreateSharedMemory() call is synchronous and cannot be proxied to another
-  // thread.
-  return nullptr;
+  capturer_->Capture(rect);
 }
 
 void DesktopCapturerProxy::Core::OnCaptureCompleted(
@@ -94,6 +92,10 @@ DesktopCapturerProxy::DesktopCapturerProxy(
                        std::move(capturer)));
 }
 
+DesktopCapturerProxy::~DesktopCapturerProxy() {
+  capture_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+}
+
 void DesktopCapturerProxy::Start(Callback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -103,10 +105,15 @@ void DesktopCapturerProxy::Start(Callback* callback) {
       FROM_HERE, base::Bind(&Core::Start, base::Unretained(core_.get())));
 }
 
-DesktopCapturerProxy::~DesktopCapturerProxy() {
+void DesktopCapturerProxy::SetSharedMemoryFactory(
+    rtc::scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  capture_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+  capture_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &Core::SetSharedMemoryFactory, base::Unretained(core_.get()),
+          base::Passed(make_scoped_ptr(shared_memory_factory.release()))));
 }
 
 void DesktopCapturerProxy::Capture(const webrtc::DesktopRegion& rect) {

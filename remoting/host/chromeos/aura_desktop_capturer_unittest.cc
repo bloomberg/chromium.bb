@@ -46,7 +46,6 @@ class AuraDesktopCapturerTest : public testing::Test,
 
   void SetUp() override;
 
-  MOCK_METHOD1(CreateSharedMemory, webrtc::SharedMemory*(size_t size));
   MOCK_METHOD1(OnCaptureCompleted, void(webrtc::DesktopFrame* frame));
 
  protected:

@@ -41,12 +41,12 @@ ACTION(FinishSend) {
 }
 
 scoped_ptr<webrtc::DesktopFrame> CreateNullFrame(
-    webrtc::DesktopCapturer::Callback*) {
+    webrtc::SharedMemoryFactory* shared_memory_factory) {
   return nullptr;
 }
 
 scoped_ptr<webrtc::DesktopFrame> CreateUnchangedFrame(
-    webrtc::DesktopCapturer::Callback*) {
+    webrtc::SharedMemoryFactory* shared_memory_factory) {
   const webrtc::DesktopSize kSize(800, 640);
   // updated_region() is already empty by default in new BasicDesktopFrames.
   return make_scoped_ptr(new webrtc::BasicDesktopFrame(kSize));

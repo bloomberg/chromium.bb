@@ -33,6 +33,8 @@ class DesktopCapturerProxy : public webrtc::DesktopCapturer {
 
   // webrtc::DesktopCapturer interface.
   void Start(Callback* callback) override;
+  void SetSharedMemoryFactory(rtc::scoped_ptr<webrtc::SharedMemoryFactory>
+                                  shared_memory_factory) override;
   void Capture(const webrtc::DesktopRegion& rect) override;
 
  private:
