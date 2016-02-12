@@ -59,6 +59,7 @@ public:
         ContextExperimentalWebgl = 2,
         ContextWebgl = 3,
         ContextWebgl2 = 4,
+        ContextImageBitmap = 5,
         ContextTypeCount,
     };
 
@@ -115,6 +116,9 @@ public:
     virtual void markLayerComposited() { ASSERT_NOT_REACHED(); }
     virtual ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) { ASSERT_NOT_REACHED(); return nullptr; }
     virtual int externallyAllocatedBytesPerPixel() { ASSERT_NOT_REACHED(); return 0; }
+
+    // ImageBitmap-specific interface
+    virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
 
     bool wouldTaintOrigin(CanvasImageSource*);
     void didMoveToNewDocument(Document*);

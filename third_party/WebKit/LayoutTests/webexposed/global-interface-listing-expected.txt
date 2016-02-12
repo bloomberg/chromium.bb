@@ -3139,6 +3139,10 @@ interface ImageBitmap
     getter width
     method close
     method constructor
+interface ImageBitmapRenderingContext
+    getter canvas
+    method constructor
+    method transferImageBitmap
 interface ImageData
     getter height
     getter width

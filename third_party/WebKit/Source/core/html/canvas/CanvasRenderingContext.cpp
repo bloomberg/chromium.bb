@@ -26,6 +26,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 
 #include "core/html/canvas/CanvasImageSource.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
@@ -45,7 +46,9 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::contextTypeFromId(co
         return ContextWebgl;
     if (id == "webgl2")
         return ContextWebgl2;
-
+    if (id == "imagebitmap" && RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled()) {
+        return ContextImageBitmap;
+    }
     return ContextTypeCount;
 }
 

@@ -15,6 +15,7 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
+#include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
@@ -45,6 +46,7 @@ void ModulesInitializer::init()
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new CanvasRenderingContext2D::Factory()));
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new WebGLRenderingContext::Factory()));
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new WebGL2RenderingContext::Factory()));
+    HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new ImageBitmapRenderingContext::Factory()));
 
     ASSERT(isInitialized());
 }

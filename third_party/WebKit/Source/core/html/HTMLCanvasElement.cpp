@@ -312,7 +312,7 @@ void HTMLCanvasElement::restoreCanvasMatrixClipStack(SkCanvas* canvas) const
 void HTMLCanvasElement::doDeferredPaintInvalidation()
 {
     ASSERT(!m_dirtyRect.isEmpty());
-    if (is3D()) {
+    if (!m_context->is2d()) {
         didFinalizeFrame();
     } else {
         ASSERT(hasImageBuffer());
@@ -446,6 +446,12 @@ void HTMLCanvasElement::paint(GraphicsContext& context, const LayoutRect& r)
     }
 
     if (!paintsIntoCanvasBuffer() && !document().printing())
+        return;
+
+    // TODO(junov): Paint is currently only implemented by ImageBitmap contexts.
+    // We could improve the abstraction by making all context types paint
+    // themselves (implement paint()).
+    if (m_context->paint(context, pixelSnappedIntRect(r)))
         return;
 
     m_context->paintRenderingResultsToCanvas(FrontBuffer);
