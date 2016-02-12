@@ -401,8 +401,11 @@ check_PROGRAMS += \
 if !DISABLE_TOOLS
 check_PROGRAMS += \
 	src/common/dumper_unittest \
-	src/common/mac/macho_reader_unittest \
 	src/tools/linux/md2core/minidump_2_core_unittest
+if X86_HOST
+check_PROGRAMS += \
+	src/common/mac/macho_reader_unittest
+endif
 endif
 endif LINUX_HOST
 

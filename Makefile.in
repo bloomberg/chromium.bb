@@ -146,7 +146,7 @@ host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4) \
 	$(am__EXEEXT_5)
 check_PROGRAMS = $(am__EXEEXT_6) $(am__EXEEXT_7) $(am__EXEEXT_8) \
-	$(am__EXEEXT_9)
+	$(am__EXEEXT_9) $(am__EXEEXT_10)
 EXTRA_PROGRAMS = $(am__EXEEXT_1)
 @DISABLE_PROCESSOR_FALSE@am__append_5 = src/libbreakpad.a
 @DISABLE_PROCESSOR_FALSE@am__append_6 = breakpad.pc
@@ -215,22 +215,24 @@ EXTRA_PROGRAMS = $(am__EXEEXT_1)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_19 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dumper_unittest \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/macho_reader_unittest \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest
 
-@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_20 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@am__append_20 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@	src/common/mac/macho_reader_unittest
+
+@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_21 = \
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_21 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_22 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext.S
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_22 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_23 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext_unittest.cc
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_23 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_24 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog -lm
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_24 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_25 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@        -llog
 
 noinst_PROGRAMS =
@@ -586,9 +588,9 @@ src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest$(EXEEXT)
 @LINUX_HOST_TRUE@am__EXEEXT_7 = src/client/linux/linux_client_unittest$(EXEEXT)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__EXEEXT_8 = src/common/dumper_unittest$(EXEEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/macho_reader_unittest$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)
-@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__EXEEXT_9 = src/processor/stackwalker_selftest$(EXEEXT)
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@am__EXEEXT_9 = src/common/mac/macho_reader_unittest$(EXEEXT)
+@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__EXEEXT_10 = src/processor/stackwalker_selftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am_src_client_linux_linux_client_unittest_OBJECTS =
 src_client_linux_linux_client_unittest_OBJECTS =  \
@@ -2237,15 +2239,15 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/processor/minidump.cc \
 @LINUX_HOST_TRUE@	src/processor/pathname_stripper.cc \
 @LINUX_HOST_TRUE@	src/processor/proc_maps_linux.cc \
-@LINUX_HOST_TRUE@	$(am__append_21) \
+@LINUX_HOST_TRUE@	$(am__append_22) \
 @LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
-@LINUX_HOST_TRUE@	$(am__append_22)
+@LINUX_HOST_TRUE@	$(am__append_23)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_CPPFLAGS = \
 @LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDFLAGS =  \
 @LINUX_HOST_TRUE@	-shared -Wl,-h,linux_client_unittest_shlib \
-@LINUX_HOST_TRUE@	$(am__append_23)
+@LINUX_HOST_TRUE@	$(am__append_24)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.o \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/thread_info.o \
@@ -2277,7 +2279,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_SOURCES = 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS =  \
-@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_24)
+@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_25)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib \
 @LINUX_HOST_TRUE@	$(TEST_LIBS)
@@ -7449,16 +7451,16 @@ src/common/dumper_unittest.log: src/common/dumper_unittest$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-src/common/mac/macho_reader_unittest.log: src/common/mac/macho_reader_unittest$(EXEEXT)
-	@p='src/common/mac/macho_reader_unittest$(EXEEXT)'; \
-	b='src/common/mac/macho_reader_unittest'; \
+src/tools/linux/md2core/minidump_2_core_unittest.log: src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)
+	@p='src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)'; \
+	b='src/tools/linux/md2core/minidump_2_core_unittest'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-src/tools/linux/md2core/minidump_2_core_unittest.log: src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)
-	@p='src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)'; \
-	b='src/tools/linux/md2core/minidump_2_core_unittest'; \
+src/common/mac/macho_reader_unittest.log: src/common/mac/macho_reader_unittest$(EXEEXT)
+	@p='src/common/mac/macho_reader_unittest$(EXEEXT)'; \
+	b='src/common/mac/macho_reader_unittest'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
