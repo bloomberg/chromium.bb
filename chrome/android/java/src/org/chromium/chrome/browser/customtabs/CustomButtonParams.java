@@ -160,7 +160,7 @@ class CustomButtonParams {
         Bundle singleBundle = IntentUtils.safeGetBundleExtra(intent,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         ArrayList<Bundle> bundleList = IntentUtils.getParcelableArrayListExtra(intent,
-                CustomTabsIntent.EXTRA_ACTION_BAR_ITEMS);
+                CustomTabsIntent.EXTRA_TOOLBAR_ITEMS);
         boolean tinted = IntentUtils.safeGetBooleanExtra(intent,
                 CustomTabsIntent.EXTRA_TINT_ACTION_BUTTON, false);
         if (singleBundle != null) {

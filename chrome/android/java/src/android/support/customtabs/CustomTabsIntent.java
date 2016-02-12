@@ -58,12 +58,12 @@ public class CustomTabsIntent {
             "android.support.customtabs.extra.ACTION_BUTTON_BUNDLE";
 
     /**
-     * List<Bundle> used for adding items to the top and bottom action bars. The client should
+     * List<Bundle> used for adding items to the top and bottom toolbars. The client should
      * provide an ID, a description, an icon {@link Bitmap} for each item. They may also provide a
      * {@link PendingIntent} if the item is a button.
      */
-    public static final String EXTRA_ACTION_BAR_ITEMS =
-            "android.support.customtabs.extra.ACTION_BAR_ITEMS";
+    public static final String EXTRA_TOOLBAR_ITEMS =
+            "android.support.customtabs.extra.TOOLBAR_ITEMS";
 
     /**
      * Key that specifies the {@link Bitmap} to be used as the image source for the action button.
@@ -155,11 +155,11 @@ public class CustomTabsIntent {
     public static final int TOOLBAR_ACTION_BUTTON_ID = 0;
 
     /**
-     * Extra that changes the background color for the secondary action bar. The value should be an
+     * Extra that changes the background color for the secondary toolbar. The value should be an
      * int that specifies a {@link Color}, not a resource id.
      */
-    public static final String EXTRA_SECONDARY_ACTION_BAR_COLOR =
-            "android.support.customtabs.extra.SECONDARY_ACTION_BAR_COLOR";
+    public static final String EXTRA_SECONDARY_TOOLBAR_COLOR =
+            "android.support.customtabs.extra.SECONDARY_TOOLBAR_COLOR";
 
     /**
      * Convenience method to create a VIEW intent without a session for the given package.

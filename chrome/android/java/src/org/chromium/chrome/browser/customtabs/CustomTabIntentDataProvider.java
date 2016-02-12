@@ -163,7 +163,7 @@ public class CustomTabIntentDataProvider {
     private void retrieveBottomBarColor(Intent intent) {
         int defaultColor = mToolbarColor;
         int color = IntentUtils.safeGetIntExtra(intent,
-                CustomTabsIntent.EXTRA_SECONDARY_ACTION_BAR_COLOR, defaultColor);
+                CustomTabsIntent.EXTRA_SECONDARY_TOOLBAR_COLOR, defaultColor);
         mBottomBarColor = removeTransparencyFromColor(color, defaultColor);
     }
 

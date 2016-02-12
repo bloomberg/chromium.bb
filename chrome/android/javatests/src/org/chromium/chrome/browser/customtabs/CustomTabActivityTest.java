@@ -500,8 +500,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             Bundle bundle = makeBottomBarBundle(i, expectedIcon, Integer.toString(i));
             bundles.add(bundle);
         }
-        intent.putExtra(CustomTabsIntent.EXTRA_ACTION_BAR_ITEMS, bundles);
-        intent.putExtra(CustomTabsIntent.EXTRA_SECONDARY_ACTION_BAR_COLOR, barColor);
+        intent.putExtra(CustomTabsIntent.EXTRA_TOOLBAR_ITEMS, bundles);
+        intent.putExtra(CustomTabsIntent.EXTRA_SECONDARY_TOOLBAR_COLOR, barColor);
         startCustomTabActivityWithIntent(intent);
 
         ViewGroup bottomBar = (ViewGroup) getActivity().findViewById(R.id.bottombar);
