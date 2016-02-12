@@ -63,6 +63,7 @@ WHITELISTED_LICENSES = [
     'GPL (v2 or later) with Bison parser exception',
     'GPL (v2 or later) with libtool exception',
     'GPL (v2) LGPL (v2.1 or later)',
+    'GPL (v3 or later) LGPL (v2.1 or later) with Bison parser exception',
     'GPL (v3 or later) with Bison parser exception',
     'GPL with Bison parser exception',
     'ISC',

@@ -415,6 +415,7 @@ vs-chromium-project.txt
 /third_party/v4l2capture
 /third_party/wayland/src
 /third_party/wayland-protocols/src
+/third_party/wds/src
 /third_party/webdriver/pylib
 /third_party/webdriver/python/selenium
 /third_party/webgl

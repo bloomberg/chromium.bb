@@ -430,6 +430,10 @@ deps_os = {
     # Wayland protocols that add functionality not available in the core protocol.
     'src/third_party/wayland-protocols/src':
      Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland-protocols.git' + '@' + '3543bb755c8858b0a70dfd20fd1beb74d865751d',
+
+    # Wireless Display Software. Used on Chrome OS.
+    'src/third_party/wds/src':
+     Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'f187dda5fccaad08e168dc6657109325f42c648e',
   },
   'android': {
     'src/third_party/android_protobuf/src':
