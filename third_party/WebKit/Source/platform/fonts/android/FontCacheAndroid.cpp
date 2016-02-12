@@ -57,6 +57,11 @@ static CString toSkFontMgrLocale(const String& locale)
     }
 }
 
+void FontCache::acceptLanguagesChanged(const String&)
+{
+    // TODO(kojii): Take acceptLanguages into account for ambiguos scripts.
+}
+
 static AtomicString getFamilyNameForCharacter(UChar32 c, const FontDescription& fontDescription)
 {
     RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());

@@ -133,6 +133,8 @@ public:
     typedef uint32_t FontFileKey;
     PassRefPtr<OpenTypeVerticalData> getVerticalData(const FontFileKey&, const FontPlatformData&);
 
+    static void acceptLanguagesChanged(const String&);
+
 #if OS(ANDROID)
     static AtomicString getGenericFamilyNameForScript(const AtomicString& familyName, const FontDescription&);
 #else

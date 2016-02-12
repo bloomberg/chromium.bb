@@ -32,6 +32,8 @@
 
 namespace blink {
 
+void FontCache::acceptLanguagesChanged(const String&) {}
+
 void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, FontCache::PlatformFallbackFont* fallbackFont)
 {
     WebFallbackFont webFallbackFont;

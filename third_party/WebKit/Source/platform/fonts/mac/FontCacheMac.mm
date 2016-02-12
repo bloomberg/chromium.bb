@@ -96,6 +96,8 @@ static inline bool isAppKitFontWeightBold(NSInteger appKitFontWeight)
     return appKitFontWeight >= 7;
 }
 
+void FontCache::acceptLanguagesChanged(const String&) {}
+
 PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData* fontDataToSubstitute)
 {
     // FIXME: We should fix getFallbackFamily to take a UChar32

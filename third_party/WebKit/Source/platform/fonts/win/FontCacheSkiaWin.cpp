@@ -112,6 +112,10 @@ FontCache::FontCache()
     m_fontManager = adoptPtr(fontManager);
 }
 
+void FontCache::acceptLanguagesChanged(const String&)
+{
+    // TODO(kojii): Take acceptLanguages into account for ambiguos scripts.
+}
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
