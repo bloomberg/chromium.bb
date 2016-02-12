@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
 
 #include <string>
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebTrialTokenValidator.h"
 
 namespace content {
@@ -14,7 +15,8 @@ namespace content {
 // to validate tokens to enable experimental features.
 //
 // This class is thread-safe.
-class TrialTokenValidator : public blink::WebTrialTokenValidator {
+class CONTENT_EXPORT TrialTokenValidator
+    : public NON_EXPORTED_BASE(blink::WebTrialTokenValidator) {
  public:
   TrialTokenValidator();
   ~TrialTokenValidator() override;

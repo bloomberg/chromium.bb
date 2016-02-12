@@ -24,15 +24,6 @@ namespace {
 // Version 1 is the only token version currently supported
 const uint8_t kVersion1 = 1;
 
-// This is the default public key used for validating signatures.
-// TODO(iclelland): Move this to the embedder, and provide a mechanism to allow
-// for multiple signing keys. https://crbug.com/543220
-static const uint8_t kPublicKey[] = {
-    0x7c, 0xc4, 0xb8, 0x9a, 0x93, 0xba, 0x6e, 0xe2, 0xd0, 0xfd, 0x03,
-    0x1d, 0xfb, 0x32, 0x66, 0xc7, 0x3b, 0x72, 0xfd, 0x54, 0x3a, 0x07,
-    0x51, 0x14, 0x66, 0xaa, 0x02, 0x53, 0x4e, 0x33, 0xa1, 0x15,
-};
-
 const char* kFieldSeparator = "|";
 
 }  // namespace
@@ -116,12 +107,11 @@ bool TrialToken::IsAppropriate(const std::string& origin,
   return ValidateOrigin(origin) && ValidateFeatureName(feature_name);
 }
 
-bool TrialToken::IsValid(const base::Time& now) const {
+bool TrialToken::IsValid(const base::Time& now,
+                         const base::StringPiece& public_key) const {
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
-  return ValidateDate(now) &&
-         ValidateSignature(base::StringPiece(
-             reinterpret_cast<const char*>(kPublicKey), arraysize(kPublicKey)));
+  return ValidateDate(now) && ValidateSignature(public_key);
 }
 
 bool TrialToken::ValidateOrigin(const std::string& origin) const {

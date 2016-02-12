@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -28,6 +29,21 @@ const uint8_t kTestPublicKey[] = {
     0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
     0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
     0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
+};
+
+// This is a valid, but incorrect, public key for testing signatures against.
+// The corresponding private key is:
+//
+//  0x21, 0xee, 0xfa, 0x81, 0x6a, 0xff, 0xdf, 0xb8, 0xc1, 0xdd, 0x75,
+//  0x05, 0x04, 0x29, 0x68, 0x67, 0x60, 0x85, 0x91, 0xd0, 0x50, 0x16,
+//  0x0a, 0xcf, 0xa2, 0x37, 0xa3, 0x2e, 0x11, 0x7a, 0x17, 0x96, 0x50,
+//  0x07, 0x4d, 0x76, 0x55, 0x56, 0x42, 0x17, 0x2d, 0x8a, 0x9c, 0x47,
+//  0x96, 0x25, 0xda, 0x70, 0xaa, 0xb9, 0xfd, 0x53, 0x5d, 0x51, 0x3e,
+//  0x16, 0xab, 0xb4, 0x86, 0xea, 0xf3, 0x35, 0xc6, 0xca
+const uint8_t kTestPublicKey2[] = {
+    0x50, 0x07, 0x4d, 0x76, 0x55, 0x56, 0x42, 0x17, 0x2d, 0x8a, 0x9c,
+    0x47, 0x96, 0x25, 0xda, 0x70, 0xaa, 0xb9, 0xfd, 0x53, 0x5d, 0x51,
+    0x3e, 0x16, 0xab, 0xb4, 0x86, 0xea, 0xf3, 0x35, 0xc6, 0xca,
 };
 
 // This is a good trial token, signed with the above test private key.
@@ -97,9 +113,12 @@ const size_t kNumInvalidTokens = arraysize(kInvalidTokens);
 class TrialTokenTest : public testing::Test {
  public:
   TrialTokenTest()
-      : public_key_(
+      : correct_public_key_(
             base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
-                              arraysize(kTestPublicKey))) {}
+                              arraysize(kTestPublicKey))),
+        incorrect_public_key_(
+            base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey2),
+                              arraysize(kTestPublicKey2))) {}
 
  protected:
   bool ValidateOrigin(TrialToken* token, const char* origin) {
@@ -119,10 +138,14 @@ class TrialTokenTest : public testing::Test {
     return token->ValidateSignature(public_key);
   }
 
-  const base::StringPiece& public_key() { return public_key_; };
+  const base::StringPiece& correct_public_key() { return correct_public_key_; }
+  const base::StringPiece& incorrect_public_key() {
+    return incorrect_public_key_;
+  }
 
  private:
-  base::StringPiece public_key_;
+  base::StringPiece correct_public_key_;
+  base::StringPiece incorrect_public_key_;
 };
 
 TEST_F(TrialTokenTest, ParseEmptyString) {
@@ -183,20 +206,27 @@ TEST_F(TrialTokenTest, TokenIsAppropriateForOriginAndFeature) {
 TEST_F(TrialTokenTest, ValidateValidSignature) {
   scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
-  EXPECT_TRUE(ValidateSignature(token.get(), public_key()));
+  EXPECT_TRUE(ValidateSignature(token.get(), correct_public_key()));
 }
 
 TEST_F(TrialTokenTest, ValidateInvalidSignature) {
   scoped_ptr<TrialToken> token = TrialToken::Parse(kInvalidSignatureToken);
   ASSERT_TRUE(token);
-  EXPECT_FALSE(ValidateSignature(token.get(), public_key()));
+  EXPECT_FALSE(ValidateSignature(token.get(), correct_public_key()));
 }
 
-TEST_F(TrialTokenTest, ValidateSignatureOnWrongKey) {
+TEST_F(TrialTokenTest, ValidateTokenWithCorrectKey) {
   scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
-  // Signature will be invalid if tested against the real public key
-  EXPECT_FALSE(token->IsValid(base::Time::FromDoubleT(kValidTimestamp)));
+  EXPECT_TRUE(token->IsValid(base::Time::FromDoubleT(kValidTimestamp),
+                             correct_public_key()));
+}
+
+TEST_F(TrialTokenTest, ValidateSignatureWithIncorrectKey) {
+  scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  ASSERT_TRUE(token);
+  EXPECT_FALSE(token->IsValid(base::Time::FromDoubleT(kValidTimestamp),
+                              incorrect_public_key()));
 }
 
 TEST_F(TrialTokenTest, ValidateWhenNotExpired) {

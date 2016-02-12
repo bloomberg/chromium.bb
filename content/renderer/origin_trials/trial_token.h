@@ -44,7 +44,8 @@ class CONTENT_EXPORT TrialToken {
                      const std::string& featureName) const;
 
   // Returns true if this token has a valid signature, and has not expired.
-  bool IsValid(const base::Time& now) const;
+  bool IsValid(const base::Time& now,
+               const base::StringPiece& public_key) const;
 
   uint8_t version() { return version_; }
   std::string signature() { return signature_; }

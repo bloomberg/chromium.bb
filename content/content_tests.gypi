@@ -718,6 +718,7 @@
       'renderer/media/video_capture_message_filter_unittest.cc',
       'renderer/media/webmediaplayer_ms_unittest.cc',
       'renderer/origin_trials/trial_token_unittest.cc',
+      'renderer/origin_trials/trial_token_validator_unittest.cc',
       'renderer/peripheral_content_heuristic_unittest.cc',
       'renderer/raster_worker_pool_unittest.cc',
       'renderer/render_thread_impl_unittest.cc',

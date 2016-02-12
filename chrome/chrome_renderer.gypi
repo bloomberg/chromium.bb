@@ -33,6 +33,8 @@
       'renderer/net/net_error_page_controller.h',
       'renderer/net_benchmarking_extension.cc',
       'renderer/net_benchmarking_extension.h',
+      'renderer/origin_trials/origin_trial_key_manager.cc',
+      'renderer/origin_trials/origin_trial_key_manager.h',
       'renderer/page_load_histograms.cc',
       'renderer/page_load_histograms.h',
       'renderer/plugins/non_loadable_plugin_placeholder.cc',

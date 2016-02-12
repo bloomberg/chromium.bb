@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/renderer/origin_trials/origin_trial_key_manager.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "v8/include/v8.h"
@@ -156,6 +157,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       v8::Local<v8::Context> context,
       const GURL& url) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
+  base::StringPiece GetOriginTrialPublicKey() override;
 
 #if defined(ENABLE_SPELLCHECK)
   // Sets a new |spellcheck|. Used for testing only.
@@ -205,6 +207,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       prescient_networking_dispatcher_;
   scoped_ptr<password_manager::CredentialManagerClient>
       credential_manager_client_;
+
+  OriginTrialKeyManager origin_trial_key_manager_;
 
 #if defined(ENABLE_SPELLCHECK)
   scoped_ptr<SpellCheck> spellcheck_;
