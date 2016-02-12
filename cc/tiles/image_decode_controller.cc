@@ -371,12 +371,12 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
   TRACE_EVENT1("disabled-by-default-cc.debug",
                "ImageDecodeController::GetDecodedImageAndRef", "key",
                key.ToString());
+  if (!CanHandleImage(key, draw_image))
+    return DecodedDrawImage(draw_image.image(), draw_image.filter_quality());
+
   // If the target size is empty, we can skip this image draw.
   if (key.target_size().IsEmpty())
     return DecodedDrawImage(nullptr, kNone_SkFilterQuality);
-
-  if (!CanHandleImage(key, draw_image))
-    return DecodedDrawImage(draw_image.image(), draw_image.filter_quality());
 
   base::AutoLock lock(lock_);
   auto decoded_images_it = FindImage(&decoded_images_, key);
@@ -639,17 +639,9 @@ void ImageDecodeController::SanityCheckState(int line, bool lock_acquired) {
 ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
     const DrawImage& image) {
   const SkSize& scale = image.scale();
-  // If the src_rect falls outside of the image, we need to clip it since
-  // otherwise we might end up with uninitialized memory in the decode process.
-  // Note that the scale is still unchanged and the target size is now a
-  // function of the new src_rect.
-  gfx::Rect src_rect = gfx::IntersectRects(
-      gfx::SkIRectToRect(image.src_rect()),
-      gfx::Rect(image.image()->width(), image.image()->height()));
-
   gfx::Size target_size(
-      SkScalarRoundToInt(std::abs(src_rect.width() * scale.width())),
-      SkScalarRoundToInt(std::abs(src_rect.height() * scale.height())));
+      SkScalarRoundToInt(std::abs(image.src_rect().width() * scale.width())),
+      SkScalarRoundToInt(std::abs(image.src_rect().height() * scale.height())));
 
   // Start with the quality that was requested.
   SkFilterQuality quality = image.filter_quality();
@@ -657,8 +649,8 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
   // If we're not going to do a scale, we can use low filter quality. Note that
   // checking if the sizes are the same is better than checking if scale is 1.f,
   // because even non-1 scale can result in the same (rounded) width/height.
-  if (target_size.width() == src_rect.width() &&
-      target_size.height() == src_rect.height()) {
+  if (target_size.width() == image.src_rect().width() &&
+      target_size.height() == image.src_rect().height()) {
     quality = std::min(quality, kLow_SkFilterQuality);
   }
 
@@ -687,7 +679,8 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
     }
   }
 
-  return ImageDecodeControllerKey(image.image()->uniqueID(), src_rect,
+  return ImageDecodeControllerKey(image.image()->uniqueID(),
+                                  gfx::SkIRectToRect(image.src_rect()),
                                   target_size, quality);
 }
 
