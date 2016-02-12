@@ -88,6 +88,13 @@ LayoutUnit LayoutMultiColumnSet::pageRemainingLogicalHeightForOffset(LayoutUnit 
         // question (i.e. no remaining space), rather than being part of the latter (i.e. one whole
         // column length of remaining space).
         remainingLogicalHeight = intMod(remainingLogicalHeight, pageLogicalHeight);
+    } else if (!remainingLogicalHeight) {
+        // When pageBoundaryRule is AssociateWithLatterPage, we should never return 0, because if
+        // there's no space left, it means that we should be at a column boundary, in which case we
+        // should return the amount of space remaining in the *next* column. But this is not true if
+        // the offset is "infinite" (saturated), so allow this to happen in that case.
+        ASSERT(offsetInFlowThread.mightBeSaturated());
+        remainingLogicalHeight = pageLogicalHeight;
     }
     return remainingLogicalHeight;
 }
