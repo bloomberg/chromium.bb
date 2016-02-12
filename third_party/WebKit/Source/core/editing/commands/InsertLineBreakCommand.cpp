@@ -78,7 +78,7 @@ void InsertLineBreakCommand::doApply(EditingState*)
 
     Position pos(caret.deepEquivalent());
 
-    pos = positionAvoidingSpecialElementBoundary(pos);
+    pos = positionAvoidingSpecialElementBoundary(pos, ASSERT_NO_EDITING_ABORT);
 
     pos = positionOutsideTabSpan(pos);
 

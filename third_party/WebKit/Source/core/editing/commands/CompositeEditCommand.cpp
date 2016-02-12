@@ -317,10 +317,11 @@ bool CompositeEditCommand::isRemovableBlock(const Node* node)
     return false;
 }
 
-void CompositeEditCommand::insertNodeBefore(PassRefPtrWillBeRawPtr<Node> insertChild, PassRefPtrWillBeRawPtr<Node> refChild, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+void CompositeEditCommand::insertNodeBefore(PassRefPtrWillBeRawPtr<Node> insertChild, PassRefPtrWillBeRawPtr<Node> refChild, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
     ASSERT(document().body() != refChild);
-    applyCommandToComposite(InsertNodeBeforeCommand::create(insertChild, refChild, shouldAssumeContentIsAlwaysEditable));
+    ASSERT_IN_EDITING_COMMAND(refChild->parentNode()->hasEditableStyle() || !refChild->parentNode()->inActiveDocument());
+    applyCommandToComposite(InsertNodeBeforeCommand::create(insertChild, refChild, shouldAssumeContentIsAlwaysEditable), editingState);
 }
 
 void CompositeEditCommand::insertNodeAfter(PassRefPtrWillBeRawPtr<Node> insertChild, PassRefPtrWillBeRawPtr<Node> refChild)
@@ -410,7 +411,7 @@ void CompositeEditCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Editing
 void CompositeEditCommand::removeNodePreservingChildren(PassRefPtrWillBeRawPtr<Node> node, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
     ASSERT_IN_EDITING_COMMAND(node->document().frame());
-    applyCommandToComposite(RemoveNodePreservingChildrenCommand::create(node, shouldAssumeContentIsAlwaysEditable));
+    applyCommandToComposite(RemoveNodePreservingChildrenCommand::create(node, shouldAssumeContentIsAlwaysEditable), editingState);
 }
 
 void CompositeEditCommand::removeNodeAndPruneAncestors(PassRefPtrWillBeRawPtr<Node> node, Node* excludeNode)
@@ -933,7 +934,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::insertNewDefaultParagr
 
 // If the paragraph is not entirely within it's own block, create one and move the paragraph into
 // it, and return that block.  Otherwise return 0.
-PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos)
+PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos, EditingState* editingState)
 {
     ASSERT(isEditablePosition(pos, ContentIsEditable, DoNotUpdateStyle));
 
@@ -990,15 +991,20 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
     visiblePos = createVisiblePosition(pos, VP_DEFAULT_AFFINITY);
     visibleParagraphStart = startOfParagraph(visiblePos);
     visibleParagraphEnd = endOfParagraph(visiblePos);
-    moveParagraphs(visibleParagraphStart, visibleParagraphEnd, createVisiblePosition(firstPositionInNode(newBlock.get())), ASSERT_NO_EDITING_ABORT);
+    moveParagraphs(visibleParagraphStart, visibleParagraphEnd, createVisiblePosition(firstPositionInNode(newBlock.get())), editingState);
+    if (editingState->isAborted())
+        return nullptr;
 
-    if (newBlock->lastChild() && isHTMLBRElement(*newBlock->lastChild()) && !endWasBr)
-        removeNode(newBlock->lastChild());
+    if (newBlock->lastChild() && isHTMLBRElement(*newBlock->lastChild()) && !endWasBr) {
+        removeNode(newBlock->lastChild(), editingState);
+        if (editingState->isAborted())
+            return nullptr;
+    }
 
     return newBlock.release();
 }
 
-void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode)
+void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode, EditingState* editingState)
 {
     if (!anchorNode)
         return;
@@ -1009,7 +1015,7 @@ void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode)
     applyStyledElement(anchorNode);
     // Clones of anchorNode have been pushed down, now remove it.
     if (anchorNode->inDocument())
-        removeNodePreservingChildren(anchorNode);
+        removeNodePreservingChildren(anchorNode, editingState);
 }
 
 // Clone the paragraph between start and end under blockElement,
@@ -1289,7 +1295,9 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MovingParagraph;
     if (!preserveStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
-    applyCommandToComposite(ReplaceSelectionCommand::create(document(), fragment, options));
+    applyCommandToComposite(ReplaceSelectionCommand::create(document(), fragment, options), editingState);
+    if (editingState->isAborted())
+        return;
 
     document().frame()->spellChecker().markMisspellingsAndBadGrammar(endingSelection());
 
@@ -1442,7 +1450,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
 // that anchor, as in NSTextView.
 // FIXME: This is only an approximation of NSTextViews insertion behavior, which varies depending on how
 // the caret was made.
-Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Position& original)
+Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Position& original, EditingState* editingState)
 {
     if (original.isNull())
         return original;
@@ -1464,7 +1472,9 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
             // Make sure anchors are pushed down before avoiding them so that we don't
             // also avoid structural elements like lists and blocks (5142012).
             if (original.anchorNode() != enclosingAnchor && original.anchorNode()->parentNode() != enclosingAnchor) {
-                pushAnchorElementDown(enclosingAnchor);
+                pushAnchorElementDown(enclosingAnchor, editingState);
+                if (editingState->isAborted())
+                    return original;
                 enclosingAnchor = enclosingAnchorElement(original);
                 if (!enclosingAnchor)
                     return original;
@@ -1483,7 +1493,9 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
             // Make sure anchors are pushed down before avoiding them so that we don't
             // also avoid structural elements like lists and blocks (5142012).
             if (original.anchorNode() != enclosingAnchor && original.anchorNode()->parentNode() != enclosingAnchor) {
-                pushAnchorElementDown(enclosingAnchor);
+                pushAnchorElementDown(enclosingAnchor, editingState);
+                if (editingState->isAborted())
+                    return original;
                 enclosingAnchor = enclosingAnchorElement(original);
             }
             if (!enclosingAnchor)

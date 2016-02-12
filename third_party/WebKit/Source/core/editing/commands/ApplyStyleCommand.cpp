@@ -202,8 +202,11 @@ void ApplyStyleCommand::doApply(EditingState* editingState)
     case PropertyDefault: {
         // Apply the block-centric properties of the style.
         RefPtrWillBeRawPtr<EditingStyle> blockStyle = m_style->extractAndRemoveBlockProperties();
-        if (!blockStyle->isEmpty())
-            applyBlockStyle(blockStyle.get());
+        if (!blockStyle->isEmpty()) {
+            applyBlockStyle(blockStyle.get(), editingState);
+            if (editingState->isAborted())
+                return;
+        }
         // Apply any remaining styles to the inline elements.
         if (!m_style->isEmpty() || m_styledInlineElement || m_isInlineElementToRemoveFunction) {
             applyRelativeFontStyleChange(m_style.get());
@@ -215,7 +218,7 @@ void ApplyStyleCommand::doApply(EditingState* editingState)
     }
     case ForceBlockProperties:
         // Force all properties to be applied as block styles.
-        applyBlockStyle(m_style.get());
+        applyBlockStyle(m_style.get(), editingState);
         break;
     }
 }
@@ -225,7 +228,7 @@ EditAction ApplyStyleCommand::editingAction() const
     return m_editingAction;
 }
 
-void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
+void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editingState)
 {
     // update document layout once before removing styles
     // so that we avoid the expense of updating before each and every call
@@ -265,7 +268,9 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
             RefPtrWillBeRawPtr<Element> block = enclosingBlock(paragraphStart.deepEquivalent().anchorNode());
             const Position& paragraphStartToMove = paragraphStart.deepEquivalent();
             if (!m_removeOnly && isEditablePosition(paragraphStartToMove)) {
-                RefPtrWillBeRawPtr<HTMLElement> newBlock = moveParagraphContentsToNewBlockIfNecessary(paragraphStartToMove);
+                RefPtrWillBeRawPtr<HTMLElement> newBlock = moveParagraphContentsToNewBlockIfNecessary(paragraphStartToMove, editingState);
+                if (editingState->isAborted())
+                    return;
                 if (newBlock)
                     block = newBlock;
             }

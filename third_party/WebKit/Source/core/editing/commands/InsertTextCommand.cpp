@@ -179,7 +179,7 @@ void InsertTextCommand::doApply(EditingState*)
     if (!isVisuallyEquivalentCandidate(startPosition))
         startPosition = mostForwardCaretPosition(startPosition);
 
-    startPosition = positionAvoidingSpecialElementBoundary(startPosition);
+    startPosition = positionAvoidingSpecialElementBoundary(startPosition, ASSERT_NO_EDITING_ABORT);
 
     Position endPosition;
 

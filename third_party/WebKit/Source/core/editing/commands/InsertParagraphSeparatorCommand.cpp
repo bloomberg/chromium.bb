@@ -187,7 +187,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState*)
         insertionPosition = mostForwardCaretPosition(insertionPosition);
 
     // Adjust the insertion position after the delete
-    insertionPosition = positionAvoidingSpecialElementBoundary(insertionPosition);
+    insertionPosition = positionAvoidingSpecialElementBoundary(insertionPosition, ASSERT_NO_EDITING_ABORT);
     VisiblePosition visiblePos = createVisiblePosition(insertionPosition, affinity);
     calculateStyleBeforeInsertion(insertionPosition);
 
@@ -297,7 +297,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState*)
         // Recreate the same structure in the new paragraph.
 
         WillBeHeapVector<RefPtrWillBeMember<Element>> ancestors;
-        getAncestorsInsideBlock(positionAvoidingSpecialElementBoundary(positionOutsideTabSpan(insertionPosition)).anchorNode(), startBlock.get(), ancestors);
+        getAncestorsInsideBlock(positionAvoidingSpecialElementBoundary(positionOutsideTabSpan(insertionPosition), ASSERT_NO_EDITING_ABORT).anchorNode(), startBlock.get(), ancestors);
 
         appendBlockPlaceholder(cloneHierarchyUnderNewBlock(ancestors, blockToInsert));
 

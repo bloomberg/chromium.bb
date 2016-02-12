@@ -95,9 +95,9 @@ protected:
     //
     // sugary-sweet convenience functions to help create and apply edit commands in composite commands
     //
-    // TODO(yosin): EditingState argument should not be optional.
+    // TODO(yosin): EditingState arguments for the following functions should
+    // not be optional.
     void appendNode(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> parent, EditingState* = ASSERT_NO_EDITING_ABORT);
-    // TODO(tkent): EditingState argument should not be optional.
     void applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand>, EditingState* = ASSERT_NO_EDITING_ABORT);
     void applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand>, const VisibleSelection&, EditingState* = ASSERT_NO_EDITING_ABORT);
     void applyStyle(const EditingStyle*, EditAction = EditActionChangeAttributes);
@@ -109,10 +109,9 @@ protected:
     virtual void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);
     bool isRemovableBlock(const Node*);
     void insertNodeAfter(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild);
-    // TODO(yosin): EditingState argument should not be optional.
     void insertNodeAt(PassRefPtrWillBeRawPtr<Node>, const Position&, EditingState* = ASSERT_NO_EDITING_ABORT);
     void insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<Node>, const Position&);
-    void insertNodeBefore(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
+    void insertNodeBefore(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild, EditingState* = ASSERT_NO_EDITING_ABORT, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     void insertParagraphSeparator(bool useDefaultParagraphElement = false, bool pasteBlockqutoeIntoUnquotedArea = false);
     void insertTextIntoNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, const String& text);
     void mergeIdenticalElements(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element>);
@@ -154,9 +153,9 @@ protected:
 
     PassRefPtrWillBeRawPtr<HTMLElement> insertNewDefaultParagraphElementAt(const Position&);
 
-    PassRefPtrWillBeRawPtr<HTMLElement> moveParagraphContentsToNewBlockIfNecessary(const Position&);
+    PassRefPtrWillBeRawPtr<HTMLElement> moveParagraphContentsToNewBlockIfNecessary(const Position&, EditingState*);
 
-    void pushAnchorElementDown(Element*);
+    void pushAnchorElementDown(Element*, EditingState*);
 
     // FIXME: preserveSelection and preserveStyle should be enums
     void moveParagraph(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, EditingState* = ASSERT_NO_EDITING_ABORT, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = nullptr);
@@ -168,7 +167,7 @@ protected:
     bool breakOutOfEmptyListItem();
     bool breakOutOfEmptyMailBlockquotedParagraph();
 
-    Position positionAvoidingSpecialElementBoundary(const Position&);
+    Position positionAvoidingSpecialElementBoundary(const Position&, EditingState*);
 
     PassRefPtrWillBeRawPtr<Node> splitTreeToNode(Node*, Node*, bool splitAncestor = false);
 

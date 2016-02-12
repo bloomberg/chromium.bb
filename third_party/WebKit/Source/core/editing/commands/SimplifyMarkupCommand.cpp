@@ -114,7 +114,7 @@ int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<Ref
         return 0;
 
     removeNode(nodesToRemove[startNodeIndex], ASSERT_NO_EDITING_ABORT, AssumeContentIsAlwaysEditable);
-    insertNodeBefore(nodesToRemove[startNodeIndex], highestAncestorToRemove, AssumeContentIsAlwaysEditable);
+    insertNodeBefore(nodesToRemove[startNodeIndex], highestAncestorToRemove, ASSERT_NO_EDITING_ABORT, AssumeContentIsAlwaysEditable);
     removeNode(highestAncestorToRemove, ASSERT_NO_EDITING_ABORT, AssumeContentIsAlwaysEditable);
 
     return pastLastNodeToRemove - startNodeIndex - 1;

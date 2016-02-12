@@ -1047,7 +1047,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     }
 
     // Paste at start or end of link goes outside of link.
-    insertionPos = positionAvoidingSpecialElementBoundary(insertionPos);
+    insertionPos = positionAvoidingSpecialElementBoundary(insertionPos, editingState);
+    if (editingState->isAborted())
+        return;
 
     // FIXME: Can this wait until after the operation has been performed?  There doesn't seem to be
     // any work performed after this that queries or uses the typing style.

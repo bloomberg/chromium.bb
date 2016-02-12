@@ -38,19 +38,25 @@ RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(PassRef
     ASSERT(m_node);
 }
 
-void RemoveNodePreservingChildrenCommand::doApply(EditingState*)
+void RemoveNodePreservingChildrenCommand::doApply(EditingState* editingState)
 {
+    ASSERT_IN_EDITING_COMMAND(m_node->parentNode());
+    ASSERT_IN_EDITING_COMMAND(m_node->parentNode()->hasEditableStyle());
     if (m_node->isContainerNode()) {
         NodeVector children;
         getChildNodes(toContainerNode(*m_node), children);
 
         for (auto& currentChild : children) {
             RefPtrWillBeRawPtr<Node> child = currentChild.release();
-            removeNode(child, ASSERT_NO_EDITING_ABORT, m_shouldAssumeContentIsAlwaysEditable);
-            insertNodeBefore(child.release(), m_node, m_shouldAssumeContentIsAlwaysEditable);
+            removeNode(child, editingState, m_shouldAssumeContentIsAlwaysEditable);
+            if (editingState->isAborted())
+                return;
+            insertNodeBefore(child.release(), m_node, editingState, m_shouldAssumeContentIsAlwaysEditable);
+            if (editingState->isAborted())
+                return;
         }
     }
-    removeNode(m_node, ASSERT_NO_EDITING_ABORT, m_shouldAssumeContentIsAlwaysEditable);
+    removeNode(m_node, editingState, m_shouldAssumeContentIsAlwaysEditable);
 }
 
 DEFINE_TRACE(RemoveNodePreservingChildrenCommand)

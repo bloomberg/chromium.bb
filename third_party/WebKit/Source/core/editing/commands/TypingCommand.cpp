@@ -120,7 +120,8 @@ void TypingCommand::deleteKeyPressed(Document& document, Options options, TextGr
             if (lastTypingCommand->commandTypeOfOpenCommand() == DeleteKey) {
                 updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
                 lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
-                lastTypingCommand->deleteKeyPressed(granularity, options & KillRing, ASSERT_NO_EDITING_ABORT);
+                EditingState editingState;
+                lastTypingCommand->deleteKeyPressed(granularity, options & KillRing, &editingState);
                 return;
             }
         }

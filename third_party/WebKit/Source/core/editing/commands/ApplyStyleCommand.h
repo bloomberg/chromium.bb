@@ -92,7 +92,7 @@ private:
     bool elementFullySelected(HTMLElement&, const Position& start, const Position& end) const;
 
     // style-application helpers
-    void applyBlockStyle(EditingStyle*);
+    void applyBlockStyle(EditingStyle*, EditingState*);
     void applyRelativeFontStyleChange(EditingStyle*);
     void applyInlineStyle(EditingStyle*, EditingState*);
     void fixRangeAndApplyInlineStyle(EditingStyle*, const Position& start, const Position& end, EditingState*);
