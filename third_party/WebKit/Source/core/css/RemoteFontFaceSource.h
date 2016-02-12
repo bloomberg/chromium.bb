@@ -31,7 +31,6 @@ public:
     ~RemoteFontFaceSource() override;
     void dispose();
 
-    FontResource* resource() override { return m_font.get(); }
     bool isLoading() const override;
     bool isLoaded() const override;
     bool isValid() const override;
