@@ -9,8 +9,6 @@ from profile_chrome import controllers_unittest
 from profile_chrome import perf_controller
 from profile_chrome import ui
 
-from pylib import constants
-
 
 class PerfProfilerControllerTest(controllers_unittest.BaseControllerTest):
   def testGetCategories(self):

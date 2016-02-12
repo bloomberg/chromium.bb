@@ -5,13 +5,10 @@
 import threading
 import zlib
 
+from devil.utils import cmd_helper
+
 from profile_chrome import controllers
 from profile_chrome import util
-
-from pylib.constants import host_paths
-
-with host_paths.SysPath(host_paths.DEVIL_PATH):
-  from devil.utils import cmd_helper
 
 
 _SYSTRACE_OPTIONS = [

@@ -12,12 +12,8 @@ import zipfile
 
 from profile_chrome import util
 
-from pylib import constants
-
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
-                             'third_party',
-                             'catapult',
-                             'tracing'))
+_SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'tracing'))
 # pylint: disable=F0401
 from tracing_build import trace2html
 

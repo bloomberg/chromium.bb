@@ -4,10 +4,10 @@
 
 import os
 
+from devil.android.constants import chrome
+
 from profile_chrome import trace_packager
 from profile_chrome import ui
-
-from pylib import constants
 
 
 def _StartTracing(controllers, interval):
@@ -40,15 +40,16 @@ def GetSupportedBrowsers():
   """Returns the package names of all supported browsers."""
   # Add aliases for backwards compatibility.
   supported_browsers = {
-    'stable': constants.PACKAGE_INFO['chrome_stable'],
-    'beta': constants.PACKAGE_INFO['chrome_beta'],
-    'dev': constants.PACKAGE_INFO['chrome_dev'],
-    'build': constants.PACKAGE_INFO['chrome'],
+    'stable': chrome.PACKAGE_INFO['chrome_stable'],
+    'beta': chrome.PACKAGE_INFO['chrome_beta'],
+    'dev': chrome.PACKAGE_INFO['chrome_dev'],
+    'build': chrome.PACKAGE_INFO['chrome'],
   }
-  supported_browsers.update(constants.PACKAGE_INFO)
+  supported_browsers.update(chrome.PACKAGE_INFO)
   unsupported_browsers = ['content_browsertests', 'gtest', 'legacy_browser']
   for browser in unsupported_browsers:
-    del supported_browsers[browser]
+    if browser in supported_browsers:
+      del supported_browsers[browser]
   return supported_browsers
 
 
