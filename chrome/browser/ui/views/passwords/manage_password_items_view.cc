@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,10 +68,7 @@ void BuildColumnSetIfNeeded(views::GridLayout* layout, int column_set_id) {
 
 scoped_ptr<views::Label> GenerateUsernameLabel(
     const autofill::PasswordForm& form) {
-  scoped_ptr<views::Label> label(new views::Label(
-      form.username_value.empty()
-          ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
-          : form.username_value));
+  scoped_ptr<views::Label> label(new views::Label(GetDisplayUsername(form)));
   label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::SmallFont));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
