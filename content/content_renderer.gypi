@@ -170,8 +170,6 @@
       'renderer/devtools/devtools_cpu_throttler.cc',
       'renderer/devtools/devtools_cpu_throttler.h',
       'renderer/devtools/lock_free_circular_queue.h',
-      'renderer/devtools/render_widget_screen_metrics_emulator.cc',
-      'renderer/devtools/render_widget_screen_metrics_emulator.h',
       'renderer/devtools/v8_sampling_profiler.cc',
       'renderer/devtools/v8_sampling_profiler.h',
       'renderer/disambiguation_popup_helper.cc',
