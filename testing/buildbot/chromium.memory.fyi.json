@@ -253,7 +253,6 @@
       "chrome_app_unittests",
       "chrome_elf_unittests",
       "chromedriver_unittests",
-      "cloud_print_unittests",
       "components_unittests",
       "compositor_unittests",
       "content_unittests",
@@ -337,7 +336,6 @@
       "keyboard_unittests",
       "unit_tests",
       "chrome_app_unittests",
-      "cloud_print_unittests",
       "libaddressinput_unittests",
       "libphonenumber_unittests",
       "content_browsertests",
@@ -2124,9 +2122,6 @@
         "test": "cacheinvalidation_unittests"
       },
       {
-        "test": "cloud_print_unittests"
-      },
-      {
         "test": "content_unittests"
       },
       {
@@ -2298,9 +2293,6 @@
       },
       {
         "test": "chromedriver_unittests"
-      },
-      {
-        "test": "cloud_print_unittests"
       },
       {
         "test": "components_unittests"

@@ -182,11 +182,6 @@
     "label": "//chromeos:chromeos_unittests",
     "type": "unknown",
   },
-  # See http://crbug.com/585151
-  #"cloud_print_unittests": {
-    #"label": "//cloud_print:cloud_print_unittests",
-    #"type": "unknown",
-  #},
   "components_browsertests": {
     "label": "//components:components_browsertests",
     "type": "windowed_test_launcher",
