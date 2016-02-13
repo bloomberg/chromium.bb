@@ -201,6 +201,21 @@ paper-radio-button {
   flex: auto;
 }
 
+/* The secondary-action wraps a clickable sub-area of a .settings-box.
+ * An example is the |sign out| button on the People settings.
+ * Here is an example with and without a secondary action box:
+ *
+ *  +-------------------------------------------------------+
+ *  | Main action area .settings-box    | .secondary-action |
+ *  +-------------------------------------------------------+
+ *  | Another setting-box without a secondary-action        |
+ *  +-------------------------------------------------------+
+ */
+.settings-box .secondary-action {
+  -webkit-border-start: 1px solid var(--paper-grey-300);
+  -webkit-padding-start: 20px;
+}
+
 .settings-box paper-item iron-icon {
   /* Same padding as paper-icon-button. */
   padding: 8px;

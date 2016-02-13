@@ -24,10 +24,10 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="people">
       <neon-animatable id="main">
-        <div class="settings-box first">
-          <span class="start">
-            <img id="account-picture" src="[[profileIconUrl_]]"
-                on-tap="onPictureTap_">
+        <div class="settings-box first two-line">
+          <img id="account-picture" src="[[profileIconUrl_]]"
+              on-tap="onPictureTap_">
+          <div class="middle">
 <if expr="chromeos">
             <span id="profile-name" on-tap="onProfileNameTap_">
               [[profileName_]]
@@ -38,22 +38,27 @@
               [[profileName_]]
             </span>
 </if>
-          </span>
-          <span>
-            <template is="dom-if" if="[[!syncStatus.signedIn]]">
-              <paper-button on-tap="onSigninTap_" raised
-                  disabled="[[syncStatus.setupInProgress]]">
-                  [[i18n('syncSignin')]]
-              </paper-button>
-            </template>
-            <template is="dom-if" if="[[syncStatus.signedIn]]">
+          </div>
+<if expr="not chromeos">
+          <template is="dom-if" if="[[!syncStatus.signedIn]]">
+            <paper-button class="primary-button" on-tap="onSigninTap_" raised
+                disabled="[[syncStatus.setupInProgress]]">
+                [[i18n('syncSignin')]]
+            </paper-button>
+          </template>
+          <template is="dom-if" if="[[syncStatus.signedIn]]">
+            <span class="secondary-action">
               <paper-button on-tap="onDisconnectTap_"
                   disabled="[[syncStatus.setupInProgress]]">
                   [[i18n('syncDisconnect')]]
               </paper-button>
-            </template>
-          </span>
-          <div hidden="[[syncStatus.signedIn]]">[[i18n('syncOverview')]]</div>
+            </span>
+          </template>
+</if>
+        </div>
+        <div class="settings-box first two-line"
+            hidden="[[syncStatus.signedIn]]">
+          [[i18n('syncOverview')]]
         </div>
 
         <div class="settings-box"
@@ -74,7 +79,7 @@
         </template>
 
         <div class="settings-box">
-          <paper-button i18n-content="manageOtherPeople"
+          <paper-button class="link-button" i18n-content="manageOtherPeople"
               on-tap="onManageOtherPeople_">
           </paper-button>
         </div>
