@@ -75,6 +75,9 @@ public:
     void addInspectedHeapObject(ErrorString*, const String& inspectedHeapObjectId) override;
     void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId) override;
 
+    void startSampling(ErrorString*) override;
+    void stopSampling(ErrorString*, RefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfile>&) override;
+
 private:
     class HeapStatsUpdateTask;
 

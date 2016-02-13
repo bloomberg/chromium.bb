@@ -7,6 +7,7 @@
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InjectedScriptManager.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
+#include "platform/v8_inspector/V8StringUtil.h"
 #include <v8-profiler.h>
 
 namespace blink {
@@ -15,6 +16,7 @@ namespace HeapProfilerAgentState {
 static const char heapProfilerEnabled[] = "heapProfilerEnabled";
 static const char heapObjectsTrackingEnabled[] = "heapObjectsTrackingEnabled";
 static const char allocationTrackingEnabled[] = "allocationTrackingEnabled";
+static const char samplingHeapProfilerEnabled[] = "samplingHeapProfilerEnabled";
 }
 
 namespace {
@@ -162,6 +164,10 @@ void V8HeapProfilerAgentImpl::restore()
         m_frontend->resetProfiles();
     if (m_state->booleanProperty(HeapProfilerAgentState::heapObjectsTrackingEnabled, false))
         startTrackingHeapObjectsInternal(m_state->booleanProperty(HeapProfilerAgentState::allocationTrackingEnabled, false));
+    if (m_state->booleanProperty(HeapProfilerAgentState::samplingHeapProfilerEnabled, false)) {
+        ErrorString error;
+        startSampling(&error);
+    }
 }
 
 void V8HeapProfilerAgentImpl::collectGarbage(ErrorString*)
@@ -192,6 +198,11 @@ void V8HeapProfilerAgentImpl::enable(ErrorString*)
 void V8HeapProfilerAgentImpl::disable(ErrorString* error)
 {
     stopTrackingHeapObjectsInternal();
+    if (m_state->booleanProperty(HeapProfilerAgentState::samplingHeapProfilerEnabled, false)) {
+        v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
+        if (profiler)
+            profiler->StopSamplingHeapProfiler();
+    }
     m_isolate->GetHeapProfiler()->ClearObjectIds();
     m_state->setBoolean(HeapProfilerAgentState::heapProfilerEnabled, false);
 }
@@ -281,6 +292,58 @@ void V8HeapProfilerAgentImpl::stopTrackingHeapObjectsInternal()
     m_isolate->GetHeapProfiler()->StopTrackingHeapObjects();
     m_state->setBoolean(HeapProfilerAgentState::heapObjectsTrackingEnabled, false);
     m_state->setBoolean(HeapProfilerAgentState::allocationTrackingEnabled, false);
+}
+
+void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString)
+{
+    v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
+    if (!profiler) {
+        *errorString = "Cannot access v8 heap profiler";
+        return;
+    }
+    m_state->setBoolean(HeapProfilerAgentState::samplingHeapProfilerEnabled, true);
+    profiler->StartSamplingHeapProfiler();
+}
+
+namespace {
+PassRefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProfileNode(const v8::AllocationProfile::Node* node)
+{
+    auto children = protocol::TypeBuilder::Array<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfileNode>::create();
+    for (const auto* child : node->children)
+        children->addItem(buildSampingHeapProfileNode(child));
+    size_t totalSize = 0;
+    for (const auto& allocation : node->allocations)
+        totalSize += allocation.size * allocation.count;
+    RefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfileNode> result = protocol::TypeBuilder::HeapProfiler::SamplingHeapProfileNode::create()
+        .setFunctionName(toWTFString(node->name))
+        .setScriptId(String::number(node->script_id))
+        .setUrl(toWTFString(node->script_name))
+        .setLineNumber(node->line_number)
+        .setColumnNumber(node->column_number)
+        .setTotalSize(totalSize)
+        .setChildren(children);
+    return result.release();
+}
+} // namespace
+
+void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, RefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfile>& profile)
+{
+    v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
+    if (!profiler) {
+        *errorString = "Cannot access v8 heap profiler";
+        return;
+    }
+    v8::HandleScope scope(m_isolate); // Allocation profile contains Local handles.
+    OwnPtr<v8::AllocationProfile> v8Profile = adoptPtr(profiler->GetAllocationProfile());
+    profiler->StopSamplingHeapProfiler();
+    m_state->setBoolean(HeapProfilerAgentState::samplingHeapProfilerEnabled, false);
+    if (!v8Profile) {
+        *errorString = "Cannot access v8 sampled heap profile.";
+        return;
+    }
+    v8::AllocationProfile::Node* root = v8Profile->GetRootNode();
+    profile = protocol::TypeBuilder::HeapProfiler::SamplingHeapProfile::create()
+        .setHead(buildSampingHeapProfileNode(root));
 }
 
 } // namespace blink

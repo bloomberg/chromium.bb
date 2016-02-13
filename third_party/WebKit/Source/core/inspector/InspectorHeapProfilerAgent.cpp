@@ -221,4 +221,14 @@ bool InspectorHeapProfilerAgent::isInspectableHeapObject(unsigned id)
     return true;
 }
 
+void InspectorHeapProfilerAgent::startSampling(ErrorString* errorString)
+{
+    m_v8HeapProfilerAgent->startSampling(errorString);
+}
+
+void InspectorHeapProfilerAgent::stopSampling(ErrorString* errorString, RefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfile>& profile)
+{
+    m_v8HeapProfilerAgent->stopSampling(errorString, profile);
+}
+
 } // namespace blink
