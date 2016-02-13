@@ -11,7 +11,7 @@ paper-radio-button {
 }
 
 #sync-item-list {
-  margin-left: 32px;
+  -webkit-margin-start: 32px;
 }
 
 #sync-item-list paper-checkbox {
