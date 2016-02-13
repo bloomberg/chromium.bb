@@ -22,7 +22,7 @@ layer at (0,0) size 800x538
             text run at (0,0) width 690: "Above there must be a GIF- and a SVG-image visible. Both are referenced by an object element (width:100%,"
             text run at (0,16) width 520: "no defined height) and each nested into a div element (width:176px, height:62px)."
         LayoutBlockFlow {div} at (0,246.77) size 176x62 [bgcolor=#FF0000]
-          LayoutImage {object} at (0,0) size 175.98x62
+          LayoutImage {object} at (0,0) size 176x62
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow (anonymous) at (0,308.77) size 752x18
           LayoutBR {br} at (0,0) size 0x17

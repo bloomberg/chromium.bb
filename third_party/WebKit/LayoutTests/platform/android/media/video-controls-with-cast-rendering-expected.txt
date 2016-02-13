@@ -14,7 +14,7 @@ layer at (0,0) size 785x550
 layer at (8,52) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,297) size 320x240
-  LayoutVideo {VIDEO} at (0,0) size 320x240
+  LayoutVideo {VIDEO} at (0,0) size 320x239.98
 layer at (8,52) size 320x240
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
     LayoutBlockFlow {DIV} at (0,205) size 320x35
@@ -39,10 +39,10 @@ layer at (13,257) size 310x30
     LayoutButton {INPUT} at (237,0) size 30x30
     LayoutButton {INPUT} at (271,0) size 30x30
 layer at (8,297) size 320x240
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
-    LayoutBlockFlow {DIV} at (0,205) size 320x35
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x239.98
+    LayoutBlockFlow {DIV} at (0,204.98) size 320x35
 layer at (8,297) size 320x205
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x205
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x204.98
 layer at (13,502) size 310x30
   LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
@@ -62,12 +62,12 @@ layer at (13,502) size 310x30
     LayoutButton {INPUT} at (237,0) size 30x30
     LayoutButton {INPUT} at (271,0) size 30x30
 layer at (8,542) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutVideo (positioned) {VIDEO} at (8,542) size 320x240
+  LayoutVideo (positioned) {VIDEO} at (8,542) size 320x239.98
 layer at (8,542) size 320x240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
-    LayoutBlockFlow {DIV} at (0,205) size 320x35
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x239.98
+    LayoutBlockFlow {DIV} at (0,204.98) size 320x35
 layer at (8,542) size 320x205 backgroundClip at (8,542) size 320x58 clip at (8,542) size 320x58
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x205
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x204.98
 layer at (13,747) size 310x30 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30

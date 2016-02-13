@@ -12,16 +12,16 @@ layer at (0,0) size 800x242
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,50) size 320x180
-  LayoutVideo {VIDEO} at (0,0) size 320x179.98
+  LayoutVideo {VIDEO} at (0,0) size 320x180
 layer at (332,50) size 320x180
-  LayoutVideo {VIDEO} at (324,0) size 320x179.98
+  LayoutVideo {VIDEO} at (324,0) size 320x180
 layer at (8,50) size 320x180
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x179.98
-    LayoutBlockFlow {DIV} at (0,144.98) size 320x35
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x180
+    LayoutBlockFlow {DIV} at (0,145) size 320x35
 layer at (8,50) size 320x145
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x144.98
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x145
 layer at (332,50) size 320x180
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x179.98
-    LayoutBlockFlow {DIV} at (0,144.98) size 320x35
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x180
+    LayoutBlockFlow {DIV} at (0,145) size 320x35
 layer at (332,50) size 320x145
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x144.98
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x145

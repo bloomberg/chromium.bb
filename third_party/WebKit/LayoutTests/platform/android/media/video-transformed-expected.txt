@@ -17,23 +17,23 @@ layer at (0,0) size 800x600
           text run at (0,463) width 4: " "
         LayoutBR {BR} at (210,478) size 0x0
 layer at (12,44) size 206x156
-  LayoutVideo {VIDEO} at (4,0) size 206x156 [border: (3px solid #FF0000)]
+  LayoutVideo {VIDEO} at (4,0) size 206x155.98 [border: (3px solid #FF0000)]
 layer at (15,47) size 200x150
-  LayoutFlexibleBox (relative positioned) {DIV} at (3,3) size 200x150
-    LayoutBlockFlow {DIV} at (0,115) size 200x35
+  LayoutFlexibleBox (relative positioned) {DIV} at (3,3) size 200x149.98
+    LayoutBlockFlow {DIV} at (0,114.98) size 200x35
 layer at (15,47) size 200x115
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 200x115
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 200x114.98
 layer at (12,205) size 206x156
-  LayoutVideo {VIDEO} at (4,161) size 206x156 [border: (3px solid #FF0000)]
+  LayoutVideo {VIDEO} at (4,161) size 206x155.98 [border: (3px solid #FF0000)]
 layer at (15,208) size 200x150
-  LayoutFlexibleBox (relative positioned) {DIV} at (3,3) size 200x150
-    LayoutBlockFlow {DIV} at (0,115) size 200x35
+  LayoutFlexibleBox (relative positioned) {DIV} at (3,3) size 200x149.98
+    LayoutBlockFlow {DIV} at (0,114.98) size 200x35
 layer at (15,208) size 200x115
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 200x115
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 200x114.98
 layer at (12,366) size 206x156
-  LayoutVideo {VIDEO} at (4,322) size 206x156 [border: (3px solid #FF0000)]
+  LayoutVideo {VIDEO} at (4,322) size 206x155.98 [border: (3px solid #FF0000)]
 layer at (15,369) size 200x150
-  LayoutFlexibleBox (relative positioned) {DIV} at (3,3) size 200x150
-    LayoutBlockFlow {DIV} at (0,115) size 200x35
+  LayoutFlexibleBox (relative positioned) {DIV} at (3,3) size 200x149.98
+    LayoutBlockFlow {DIV} at (0,114.98) size 200x35
 layer at (15,369) size 200x115
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 200x115
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 200x114.98

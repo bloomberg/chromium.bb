@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 800x20
           LayoutTableRow {TR} at (0,0) size 800x20
             LayoutTableCell {TD} at (0,0) size 4x20 [r=0 c=0 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 4x20
+              LayoutImage {IMG} at (0,0) size 4x19.98
             LayoutTableCell {TD} at (4,6) size 672x14 [r=0 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 672x14
             LayoutTableCell {TD} at (676,3) size 105x14 [r=0 c=2 rs=1 cs=1]
