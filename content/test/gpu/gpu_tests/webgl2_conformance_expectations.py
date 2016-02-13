@@ -11,9 +11,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
   def SetExpectations(self):
     # All platforms.
-    self.Skip('deqp/data/gles3/shaders/constant_expressions.html', bug=483282)
-    self.Skip('deqp/data/gles3/shaders/constants.html', bug=483282)
-    self.Skip('deqp/data/gles3/shaders/conversions.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/functions.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
@@ -22,10 +19,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=483282)
 
     self.Skip('deqp/functional/gles3/attriblocation.html', bug=483282)
-    self.Skip('deqp/functional/gles3/booleanstatequery.html', bug=483282)
-    self.Skip('deqp/functional/gles3/buffercopy.html', bug=483282)
     self.Skip('deqp/functional/gles3/builtinprecision*.html', bug=483282)
-    self.Skip('deqp/functional/gles3/clipping.html', bug=483282)
     self.Skip('deqp/functional/gles3/draw.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbocolorbuffer.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbocompleteness.html', bug=483282)
@@ -33,11 +27,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/fboinvalidate.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
     self.Skip('deqp/functional/gles3/fborender.html', bug=483282)
-    self.Skip('deqp/functional/gles3/fbostatequery.html', bug=483282)
-    self.Skip('deqp/functional/gles3/fragdepth.html', bug=483282)
     self.Skip('deqp/functional/gles3/fragmentoutput.html', bug=483282)
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
-    self.Skip('deqp/functional/gles3/indexedstatequery.html', bug=483282)
     self.Skip('deqp/functional/gles3/instancedrendering.html', bug=483282)
     self.Skip('deqp/functional/gles3/integerstatequery.html', bug=483282)
     self.Skip('deqp/functional/gles3/internalformatquery.html', bug=483282)
@@ -45,15 +36,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/multisample.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativebufferapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativefragmentapi.html', bug=483282)
-    self.Skip('deqp/functional/gles3/negativeshaderapi.html', bug=483282)
-    self.Skip('deqp/functional/gles3/negativestateapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativetextureapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativevertexarrayapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/occlusionquery.html', bug=483282)
     self.Skip('deqp/functional/gles3/pixelbufferobject.html', bug=483282)
     self.Skip('deqp/functional/gles3/primitiverestart.html', bug=483282)
     self.Skip('deqp/functional/gles3/rasterizerdiscard.html', bug=483282)
-    self.Skip('deqp/functional/gles3/samplerobject.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderbuiltinvar.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadercommonfunction.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderderivate.html', bug=483282)
@@ -64,7 +52,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shaderpackingfunction.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderprecision.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderstatequery.html', bug=483282)
-    self.Skip('deqp/functional/gles3/shaderstruct.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadertexturefunction*.html', bug=483282)
     self.Skip('deqp/functional/gles3/sync.html', bug=483282)
     self.Skip('deqp/functional/gles3/texturefiltering*.html', bug=483282)
@@ -79,17 +66,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
-    self.Fail('conformance2/state/gl-object-get-calls.html', bug=483282)
     # Note that this test fails on ['win', 'intel'] with bug=483282
     self.Fail('conformance2/buffers/uniform-buffers.html', bug=577368)
 
     # Command buffer side handling of TexSubImage3D is incorrect.
     self.Fail('conformance2/textures/misc/tex-storage-and-subimage-3d.html',
         bug=570453)
-
-    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1473.
-    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
-        ['mac', 'linux'], bug=570453)
 
     # Windows only.
     self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
@@ -151,6 +133,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
         ['win'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderstruct.html',
+        ['win'], bug=483282)
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
@@ -171,6 +155,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=1266) # angle bug ID
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win'], bug=577144) # crash on debug
+    self.Fail('conformance2/state/gl-object-get-calls.html',
+        ['win'], bug=483282)
 
     # Windows 8 only.
     self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
@@ -270,6 +256,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mavericks'], bug=483282)
     self.Fail('deqp/functional/gles3/rbostatequery.html',
         ['mac'], bug=569808)
+    self.Fail('deqp/functional/gles3/fbostatequery.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/negativeshaderapi.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-overflow-test.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html',
@@ -297,6 +287,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # The following failure is 10.10 only, but we don't have a keyword yet.
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['mac'], bug=584994)
+    self.Fail('conformance2/state/gl-object-get-calls.html',
+        ['mac'], bug=483282)
 
     # Mac Retina NVIDIA
     self.Fail('conformance2/rendering/draw-buffers.html',
@@ -304,6 +296,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Linux only.
