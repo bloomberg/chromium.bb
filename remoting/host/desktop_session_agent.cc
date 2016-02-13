@@ -108,18 +108,21 @@ class SharedMemoryImpl : public webrtc::SharedMemory {
 
 class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
  public:
-  typedef base::Callback<void(IPC::Message* message)> SendMessageCallback;
+  typedef base::Callback<void(scoped_ptr<IPC::Message> message)>
+      SendMessageCallback;
 
   SharedMemoryFactoryImpl(const SendMessageCallback& send_message_callback)
       : send_message_callback_(send_message_callback) {}
 
   rtc::scoped_ptr<webrtc::SharedMemory> CreateSharedMemory(
       size_t size) override {
+    base::Closure release_buffer_callback = base::Bind(
+        send_message_callback_,
+        base::Passed(
+            make_scoped_ptr(new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(
+                next_shared_buffer_id_))));
     scoped_ptr<SharedMemoryImpl> buffer = SharedMemoryImpl::Create(
-        size, next_shared_buffer_id_,
-        base::Bind(send_message_callback_,
-                   new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(
-                       next_shared_buffer_id_)));
+        size, next_shared_buffer_id_, release_buffer_callback);
     if (buffer) {
       // |next_shared_buffer_id_| starts from 1 and incrementing it by 2 makes
       // sure it is always odd and therefore zero is never used as a valid
@@ -132,8 +135,9 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
       next_shared_buffer_id_ += 2;
 
       send_message_callback_.Run(
-          new ChromotingDesktopNetworkMsg_CreateSharedBuffer(
-              buffer->id(), buffer->shared_memory()->handle(), buffer->size()));
+          make_scoped_ptr(new ChromotingDesktopNetworkMsg_CreateSharedBuffer(
+              buffer->id(), buffer->shared_memory()->handle(),
+              buffer->size())));
     }
 
     return rtc_make_scoped_ptr(buffer.release());
@@ -232,7 +236,8 @@ const std::string& DesktopSessionAgent::client_jid() const {
 }
 
 void DesktopSessionAgent::DisconnectSession(protocol::ErrorCode error) {
-  SendToNetwork(new ChromotingDesktopNetworkMsg_DisconnectSession(error));
+  SendToNetwork(make_scoped_ptr(
+      new ChromotingDesktopNetworkMsg_DisconnectSession(error)));
 }
 
 void DesktopSessionAgent::OnLocalMouseMoved(
@@ -335,8 +340,8 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
     serialized_frame.dirty_region.push_back(i.rect());
   }
 
-  SendToNetwork(
-      new ChromotingDesktopNetworkMsg_CaptureCompleted(serialized_frame));
+  SendToNetwork(make_scoped_ptr(
+      new ChromotingDesktopNetworkMsg_CaptureCompleted(serialized_frame)));
 }
 
 void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
@@ -344,8 +349,8 @@ void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
 
   scoped_ptr<webrtc::MouseCursor> owned_cursor(cursor);
 
-  SendToNetwork(
-      new ChromotingDesktopNetworkMsg_MouseCursor(*owned_cursor));
+  SendToNetwork(make_scoped_ptr(
+      new ChromotingDesktopNetworkMsg_MouseCursor(*owned_cursor)));
 }
 
 void DesktopSessionAgent::OnMouseCursorPosition(
@@ -365,8 +370,8 @@ void DesktopSessionAgent::InjectClipboardEvent(
     return;
   }
 
-  SendToNetwork(
-      new ChromotingDesktopNetworkMsg_InjectClipboardEvent(serialized_event));
+  SendToNetwork(make_scoped_ptr(
+      new ChromotingDesktopNetworkMsg_InjectClipboardEvent(serialized_event)));
 }
 
 void DesktopSessionAgent::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
@@ -378,7 +383,8 @@ void DesktopSessionAgent::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
     return;
   }
 
-  SendToNetwork(new ChromotingDesktopNetworkMsg_AudioPacket(serialized_packet));
+  SendToNetwork(make_scoped_ptr(
+      new ChromotingDesktopNetworkMsg_AudioPacket(serialized_packet)));
 }
 
 bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
@@ -549,18 +555,16 @@ void DesktopSessionAgent::SetScreenResolution(
     screen_controls_->SetScreenResolution(resolution);
 }
 
-void DesktopSessionAgent::SendToNetwork(IPC::Message* message) {
+void DesktopSessionAgent::SendToNetwork(scoped_ptr<IPC::Message> message) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DesktopSessionAgent::SendToNetwork, this, message));
+        FROM_HERE, base::Bind(&DesktopSessionAgent::SendToNetwork, this,
+                              base::Passed(&message)));
     return;
   }
 
   if (network_channel_) {
-    network_channel_->Send(message);
-  } else {
-    delete message;
+    network_channel_->Send(message.release());
   }
 }
 

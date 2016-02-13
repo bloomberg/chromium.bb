@@ -134,7 +134,7 @@ class DesktopSessionAgent
   void SetScreenResolution(const ScreenResolution& resolution);
 
   // Sends a message to the network process.
-  void SendToNetwork(IPC::Message* message);
+  void SendToNetwork(scoped_ptr<IPC::Message> message);
 
   // Posted to |audio_capture_task_runner_| to start the audio capturer.
   void StartAudioCapturer();
