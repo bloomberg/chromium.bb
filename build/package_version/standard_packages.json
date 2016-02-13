@@ -141,8 +141,10 @@
   "modes": {
     "nacl_core_sdk": [
       "arm_trusted",
+      "nacl_arm_newlib",
       "nacl_arm_glibc",
       "nacl_x86_glibc",
+      "nacl_x86_newlib",
       "pnacl_newlib",
       "pnacl_translator"
     ]
