@@ -251,6 +251,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Runs on the UI thread. Confirms the installation to the ExtensionService.
   void ConfirmInstall();
 
+  // Runs on the UI thread. Updates the creation flags for the extension and
+  // calls CompleteInstall().
+  void UpdateCreationFlagsAndCompleteInstall();
+
   // Runs on File thread. Install the unpacked extension into the profile and
   // notify the frontend.
   void CompleteInstall();

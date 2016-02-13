@@ -631,10 +631,7 @@ void CrxInstaller::ConfirmInstall() {
     client_->ShowDialog(base::Bind(&CrxInstaller::OnInstallPromptDone, this),
                         extension(), nullptr, show_dialog_callback_);
   } else {
-    if (!installer_task_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&CrxInstaller::CompleteInstall, this)))
-      NOTREACHED();
+    UpdateCreationFlagsAndCompleteInstall();
   }
   return;
 }
@@ -653,10 +650,8 @@ void CrxInstaller::OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
 
     if (update_from_settings_page_) {
       service->GrantPermissionsAndEnableExtension(extension());
-    } else if (!installer_task_runner_->PostTask(
-                   FROM_HERE,
-                   base::Bind(&CrxInstaller::CompleteInstall, this))) {
-      NOTREACHED();
+    } else {
+      UpdateCreationFlagsAndCompleteInstall();
     }
   } else if (!update_from_settings_page_) {
     const char* histogram_name =
@@ -670,6 +665,19 @@ void CrxInstaller::OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
   }
 
   Release();  // balanced in ConfirmInstall() or ConfirmReEnable().
+}
+
+void CrxInstaller::UpdateCreationFlagsAndCompleteInstall() {
+  creation_flags_ = extension()->creation_flags() | Extension::REQUIRE_KEY;
+  // If the extension was already installed and had file access, also grant file
+  // access to the updated extension.
+  if (ExtensionPrefs::Get(profile())->AllowFileAccess(extension()->id()))
+    creation_flags_ |= Extension::ALLOW_FILE_ACCESS;
+
+  if (!installer_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&CrxInstaller::CompleteInstall, this))) {
+    NOTREACHED();
+  }
 }
 
 void CrxInstaller::CompleteInstall() {
@@ -725,7 +733,8 @@ void CrxInstaller::ReloadExtensionAfterInstall(
       file_util::LoadExtension(
           version_dir,
           install_source_,
-          extension()->creation_flags() | Extension::REQUIRE_KEY,
+          // Note: modified by UpdateCreationFlagsAndCompleteInstall.
+          creation_flags_,
           &error).get());
 
   if (extension()) {

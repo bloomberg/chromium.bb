@@ -674,4 +674,64 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   InstallWebAppAndVerifyNoErrors();
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, UpdateWithFileAccess) {
+  base::FilePath ext_source =
+      test_data_dir_.AppendASCII("permissions").AppendASCII("files");
+  base::FilePath crx_with_file_permission = PackExtension(ext_source);
+  ASSERT_FALSE(crx_with_file_permission.empty());
+
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
+
+  const std::string extension_id("bdkapipdccfifhdghmblnenbbncfcpid");
+  {
+    // Install extension.
+    scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service));
+    installer->InstallCrx(crx_with_file_permission);
+    EXPECT_TRUE(WaitForCrxInstallerDone());
+    const Extension* extension = installer->extension();
+    ASSERT_TRUE(extension);
+    // IDs must match, otherwise the test doesn't make any sense.
+    ASSERT_EQ(extension_id, extension->id());
+    // Sanity check: File access should be disabled by default.
+    EXPECT_FALSE(ExtensionPrefs::Get(profile())->AllowFileAccess(extension_id));
+    EXPECT_FALSE(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS);
+  }
+
+  {
+    // Uninstall and re-install the extension. Any previously granted file
+    // permissions should be gone.
+    ExtensionPrefs::Get(profile())->SetAllowFileAccess(extension_id, true);
+    EXPECT_TRUE(ExtensionPrefs::Get(profile())->AllowFileAccess(extension_id));
+    UninstallExtension(extension_id);
+    EXPECT_FALSE(ExtensionPrefs::Get(profile())->AllowFileAccess(extension_id));
+
+    scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service));
+    installer->InstallCrx(crx_with_file_permission);
+    EXPECT_TRUE(WaitForCrxInstallerDone());
+    const Extension* extension = installer->extension();
+    ASSERT_TRUE(extension);
+    ASSERT_EQ(extension_id, extension->id());
+    EXPECT_FALSE(ExtensionPrefs::Get(profile())->AllowFileAccess(extension_id));
+    EXPECT_FALSE(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS);
+  }
+
+  {
+    // Grant file access and update the extension. File access should be kept.
+    ExtensionPrefs::Get(profile())->SetAllowFileAccess(extension_id, true);
+    EXPECT_TRUE(ExtensionPrefs::Get(profile())->AllowFileAccess(extension_id));
+    base::FilePath crx_update_with_file_permission = PackExtension(ext_source);
+
+    scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service));
+    installer->InstallCrx(crx_update_with_file_permission);
+    EXPECT_TRUE(WaitForCrxInstallerDone());
+    const Extension* extension = installer->extension();
+    ASSERT_TRUE(extension);
+    ASSERT_EQ(extension_id, extension->id());
+    EXPECT_TRUE(ExtensionPrefs::Get(profile())->AllowFileAccess(extension_id));
+    EXPECT_TRUE(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS);
+  }
+}
+
 }  // namespace extensions
