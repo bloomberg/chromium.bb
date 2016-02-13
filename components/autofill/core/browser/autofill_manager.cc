@@ -278,8 +278,6 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
   if (submitted_form->IsAutofillable())
     ImportFormData(*submitted_form);
 
-  recently_unmasked_cards_.clear();
-
   return true;
 }
 
@@ -835,7 +833,6 @@ void AutofillManager::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
   if (!real_pan.empty()) {
     DCHECK_EQ(AutofillClient::SUCCESS, result);
     credit_card_form_event_logger_->OnDidFillSuggestion(unmask_request_.card);
-    recently_unmasked_cards_.push_back(unmask_request_.card);
     unmask_request_.card.set_record_type(CreditCard::FULL_SERVER_CARD);
     unmask_request_.card.SetNumber(base::UTF8ToUTF16(real_pan));
     if (!unmask_request_.user_response.exp_month.empty()) {
@@ -989,13 +986,6 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // No card available to offer save or upload.
   if (!imported_credit_card)
     return;
-
-  // Don't offer to save any cards that were recently unmasked.
-  for (const CreditCard& unmasked_card : recently_unmasked_cards_) {
-    if (unmasked_card.TypeAndLastFourDigits() ==
-        imported_credit_card->TypeAndLastFourDigits())
-      return;
-  }
 
   if (!IsCreditCardUploadEnabled()) {
     // This block will only be reached if we have observed a new card. In this

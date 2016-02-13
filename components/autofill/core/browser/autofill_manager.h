@@ -493,10 +493,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   payments::PaymentsClient::UploadRequestDetails upload_request_;
   bool user_did_accept_upload_prompt_;
 
-  // Masked copies of recently unmasked cards, to help avoid double-asking to
-  // save the card (in the unmask prompt and in the save prompt after submit).
-  std::vector<CreditCard> recently_unmasked_cards_;
-
 #ifdef ENABLE_FORM_DEBUG_DUMP
   // The last few autofilled forms (key/value pairs) submitted, for debugging.
   // TODO(brettw) this should be removed. See DumpAutofillData.

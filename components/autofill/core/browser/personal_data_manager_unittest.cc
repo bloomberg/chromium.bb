@@ -3581,8 +3581,10 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
 
-  // A valid credit card form. A user re-types one of their masked cards.
-  // We should offer to save.
+  // A valid credit card form. A user re-enters one of their masked cards.
+  // We shouldn't offer to save. It's possible this is actually a different card
+  // but it's very unlikely. And these circumstances will also arise if the user
+  // has the same card available locally and synced from payments.
   FormData form1;
   FormFieldData field;
   test::CreateTestFormField("Name on card:", "name_on_card", "John Dillinger",
@@ -3599,12 +3601,13 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
   scoped_ptr<CreditCard> imported_credit_card;
-  EXPECT_TRUE(personal_data_->ImportFormData(form_structure1, false,
+  EXPECT_FALSE(personal_data_->ImportFormData(form_structure1, false,
                                              &imported_credit_card));
-  EXPECT_TRUE(imported_credit_card);
+  EXPECT_FALSE(imported_credit_card);
 
   // A user re-types (or fills with) an unmasked card. Don't offer to save
-  // again.
+  // here, either. Since it's unmasked, we know for certain that it's the same
+  // card.
   FormData form2;
   test::CreateTestFormField("Name on card:", "name_on_card", "Clyde Barrow",
                             "text", &field);

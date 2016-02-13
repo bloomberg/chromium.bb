@@ -1394,13 +1394,9 @@ bool PersonalDataManager::ImportCreditCard(
     }
   }
 
-  // Also don't offer to save if we already have this stored as a full wallet
-  // card. Note that we will offer to save masked server cards, as long as the
-  // user re-typed the info by hand. See AutofillManager's
-  // |recently_unmasked_cards_|.
+  // Also don't offer to save if we already have this stored as a server card.
   for (const CreditCard* card : server_credit_cards_) {
-    if (card->record_type() == CreditCard::FULL_SERVER_CARD &&
-        candidate_credit_card.IsLocalDuplicateOfServerCard(*card))
+    if (candidate_credit_card.IsLocalDuplicateOfServerCard(*card))
       return false;
   }
 

@@ -901,7 +901,6 @@ class AutofillManagerTest : public testing::Test {
                             "2017");
     card->SetTypeForMaskedCard(kVisaCard);
 
-    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
     EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _))
         .Times(AtLeast(1));
     autofill_manager_->FillOrPreviewCreditCardForm(
@@ -3832,25 +3831,6 @@ TEST_F(AutofillManagerTest, DontOfferToSavePaymentsCard) {
   autofill_manager_->OnUnmaskResponse(response);
   autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
                                      "4012888888881881");
-  autofill_manager_->OnFormSubmitted(form);
-
-  // The rest of this test is a regression test for http://crbug.com/483602.
-  // The goal is not to crash.
-  EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _));
-  for (size_t i = 0; i < form.fields.size(); ++i) {
-    form.fields[i].value.clear();
-  }
-  autofill_manager_->FillOrPreviewCreditCardForm(
-      AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, form,
-      form.fields[1], card);
-  autofill_manager_->OnUnmaskResponse(response);
-  autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                     "4012888888881881");
-
-  form = FormData();
-  test::CreateTestAddressFormData(&form);
-  FormsSeen(std::vector<FormData>(1, form));
-  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &form);
   autofill_manager_->OnFormSubmitted(form);
 }
 
