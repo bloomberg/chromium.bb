@@ -336,9 +336,6 @@ class ChromeTests:
   def TestChromeOS(self):
     return self.SimpleTest("chromeos", "chromeos_unittests")
 
-  def TestCloudPrint(self):
-    return self.SimpleTest("cloud_print", "cloud_print_unittests")
-
   def TestComponents(self):
     return self.SimpleTest("components", "components_unittests")
 
@@ -673,8 +670,6 @@ class ChromeTests:
     "chrome_elf": TestChromeElf,
     "chromedriver": TestChromeDriver,
     "chromeos": TestChromeOS,    "chromeos_unittests": TestChromeOS,
-    "cloud_print": TestCloudPrint,
-    "cloud_print_unittests": TestCloudPrint,
     "components": TestComponents,"components_unittests": TestComponents,
     "compositor": TestCompositor,"compositor_unittests": TestCompositor,
     "content": TestContent,      "content_unittests": TestContent,
