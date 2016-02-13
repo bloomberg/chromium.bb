@@ -358,7 +358,12 @@ int8_t* ResourceProvider::Resource::GetSyncTokenData() {
 }
 
 void ResourceProvider::Resource::WaitSyncToken(gpu::gles2::GLES2Interface* gl) {
+  // Make sure we are only called when state actually needs to wait.
   DCHECK_EQ(NEEDS_WAIT, synchronization_state_);
+
+  // Make sure sync token is not stale.
+  DCHECK(!needs_sync_token_);
+
   // In the case of context lost, this sync token may be empty (see comment in
   // the UpdateSyncToken() function). The WaitSyncTokenCHROMIUM() function
   // handles empty sync tokens properly so just wait anyways and update the
@@ -918,7 +923,9 @@ ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
     ResourceProvider* resource_provider,
     ResourceId resource_id)
     : resource_provider_(resource_provider),
-      resource_(resource_provider->LockForWrite(resource_id)) {
+      resource_(resource_provider->LockForWrite(resource_id)),
+      texture_id_(0),
+      set_sync_token_(false) {
   resource_provider_->LazyAllocate(resource_);
   texture_id_ = resource_->gl_id;
   DCHECK(texture_id_);
@@ -927,6 +934,8 @@ ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
 }
 
 ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
+  if (set_sync_token_)
+    resource_->UpdateSyncToken(sync_token_);
   resource_provider_->UnlockForWrite(resource_);
 }
 
@@ -1011,7 +1020,8 @@ ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
     ResourceProvider* resource_provider,
     ResourceId resource_id)
     : resource_provider_(resource_provider),
-      resource_(resource_provider->LockForWrite(resource_id)) {
+      resource_(resource_provider->LockForWrite(resource_id)),
+      set_sync_token_(false) {
   DCHECK(thread_checker_.CalledOnValidThread());
   resource_provider_->LazyAllocate(resource_);
 }
@@ -1019,6 +1029,9 @@ ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
 ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(resource_->locked_for_write);
+  if (set_sync_token_)
+    resource_->UpdateSyncToken(sync_token_);
+
   resource_provider_->UnlockForWrite(resource_);
 }
 

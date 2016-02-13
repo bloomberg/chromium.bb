@@ -314,7 +314,7 @@ void OneCopyTileTaskWorkerPool::ReleaseBufferForRaster(
 
 void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
     const Resource* resource,
-    const ResourceProvider::ScopedWriteLockGL* resource_lock,
+    ResourceProvider::ScopedWriteLockGL* resource_lock,
     const DisplayListRasterSource* raster_source,
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,

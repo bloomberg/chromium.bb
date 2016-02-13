@@ -260,14 +260,17 @@ class CC_EXPORT ResourceProvider
 
     unsigned texture_id() const { return texture_id_; }
 
-    void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) const {
-      resource_->UpdateSyncToken(sync_token);
+    void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) {
+      set_sync_token_ = true;
+      sync_token_ = sync_token;
     }
 
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
     unsigned texture_id_;
+    bool set_sync_token_;
+    gpu::SyncToken sync_token_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
   };
@@ -343,8 +346,9 @@ class CC_EXPORT ResourceProvider
 
     gfx::Size GetResourceSize() const { return resource_->size; }
 
-    void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) const {
-      resource_->UpdateSyncToken(sync_token);
+    void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) {
+      set_sync_token_ = true;
+      sync_token_ = sync_token;
     }
 
    private:
@@ -353,6 +357,8 @@ class CC_EXPORT ResourceProvider
     base::ThreadChecker thread_checker_;
     skia::RefPtr<SkSurface> sk_surface_;
     skia::RefPtr<GrSurface> gr_surface_;
+    bool set_sync_token_;
+    gpu::SyncToken sync_token_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGr);
   };
