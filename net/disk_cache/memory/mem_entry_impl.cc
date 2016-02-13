@@ -4,7 +4,6 @@
 
 #include "net/disk_cache/memory/mem_entry_impl.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,8 +17,6 @@
 
 using base::Time;
 
-namespace disk_cache {
-
 namespace {
 
 const int kSparseData = 1;
@@ -31,12 +28,12 @@ const int kMaxSparseEntryBits = 12;
 const int kMaxSparseEntrySize = 1 << kMaxSparseEntryBits;
 
 // Convert global offset to child index.
-int ToChildIndex(int64_t offset) {
+inline int ToChildIndex(int64_t offset) {
   return static_cast<int>(offset >> kMaxSparseEntryBits);
 }
 
 // Convert global offset to offset in child entry.
-int ToChildOffset(int64_t offset) {
+inline int ToChildOffset(int64_t offset) {
   return static_cast<int>(offset & (kMaxSparseEntrySize - 1));
 }
 
@@ -48,110 +45,129 @@ std::string GenerateChildName(const std::string& base_name, int child_id) {
   return base::StringPrintf("Range_%s:%i", base_name.c_str(), child_id);
 }
 
-// Returns NetLog parameters for the creation of a MemEntryImpl. A separate
-// function is needed because child entries don't store their key().
-scoped_ptr<base::Value> NetLogEntryCreationCallback(
-    const MemEntryImpl* entry,
+// Returns NetLog parameters for the creation of a child MemEntryImpl.  Separate
+// function needed because child entries don't suppport GetKey().
+scoped_ptr<base::Value> NetLogChildEntryCreationCallback(
+    const disk_cache::MemEntryImpl* parent,
+    int child_id,
     net::NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  std::string key;
-  switch (entry->type()) {
-    case MemEntryImpl::PARENT_ENTRY:
-      key = entry->key();
-      break;
-    case MemEntryImpl::CHILD_ENTRY:
-      key = GenerateChildName(entry->parent()->key(), entry->child_id());
-      break;
-  }
-  dict->SetString("key", key);
+  dict->SetString("key", GenerateChildName(parent->GetKey(), child_id));
   dict->SetBoolean("created", true);
   return std::move(dict);
 }
 
 }  // namespace
 
-MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
-                           const std::string& key,
-                           net::NetLog* net_log)
-    : MemEntryImpl(backend,
-                   key,
-                   0,        // child_id
-                   nullptr,  // parent
-                   net_log) {
-  Open();
-  backend_->ModifyStorageSize(GetStorageSize());
+namespace disk_cache {
+
+MemEntryImpl::MemEntryImpl(MemBackendImpl* backend) {
+  doomed_ = false;
+  backend_ = backend;
+  ref_count_ = 0;
+  parent_ = NULL;
+  child_id_ = 0;
+  child_first_pos_ = 0;
+  next_ = NULL;
+  prev_ = NULL;
+  for (int i = 0; i < NUM_STREAMS; i++)
+    data_size_[i] = 0;
 }
 
-MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
-                           int child_id,
-                           MemEntryImpl* parent,
-                           net::NetLog* net_log)
-    : MemEntryImpl(backend,
-                   std::string(),  // key
-                   child_id,
-                   parent,
-                   net_log) {
-  (*parent_->children_)[child_id] = this;
+// ------------------------------------------------------------------------
+
+bool MemEntryImpl::CreateEntry(const std::string& key, net::NetLog* net_log) {
+  key_ = key;
+  Time current = Time::Now();
+  last_modified_ = current;
+  last_used_ = current;
+
+  net_log_ = net::BoundNetLog::Make(net_log,
+                                    net::NetLog::SOURCE_MEMORY_CACHE_ENTRY);
+  // Must be called after |key_| is set, so GetKey() works.
+  net_log_.BeginEvent(
+      net::NetLog::TYPE_DISK_CACHE_MEM_ENTRY_IMPL,
+      CreateNetLogEntryCreationCallback(this, true));
+
+  Open();
+  backend_->ModifyStorageSize(0, static_cast<int32_t>(key.size()));
+  return true;
+}
+
+void MemEntryImpl::InternalDoom() {
+  net_log_.AddEvent(net::NetLog::TYPE_ENTRY_DOOM);
+  doomed_ = true;
+  if (!ref_count_) {
+    if (type() == kParentEntry) {
+      // If this is a parent entry, we need to doom all the child entries.
+      if (children_.get()) {
+        EntryMap children;
+        children.swap(*children_);
+        for (EntryMap::iterator i = children.begin();
+             i != children.end(); ++i) {
+          // Since a pointer to this object is also saved in the map, avoid
+          // dooming it.
+          if (i->second != this)
+            i->second->Doom();
+        }
+        DCHECK(children_->empty());
+      }
+    } else {
+      // If this is a child entry, detach it from the parent.
+      parent_->DetachChild(child_id_);
+    }
+    delete this;
+  }
 }
 
 void MemEntryImpl::Open() {
   // Only a parent entry can be opened.
-  DCHECK_EQ(PARENT_ENTRY, type());
-  ++ref_count_;
-  DCHECK_GE(ref_count_, 1);
+  // TODO(hclam): make sure it's correct to not apply the concept of ref
+  // counting to child entry.
+  DCHECK(type() == kParentEntry);
+  ref_count_++;
+  DCHECK_GE(ref_count_, 0);
   DCHECK(!doomed_);
 }
 
-bool MemEntryImpl::InUse() const {
-  if (type() == PARENT_ENTRY) {
+bool MemEntryImpl::InUse() {
+  if (type() == kParentEntry) {
     return ref_count_ > 0;
   } else {
-    // TODO(gavinp): Can't this just be a DCHECK? How would ref_count_ not be
-    // zero?
-
-    // A child entry is never in use. Thus one can always be evicted, even while
-    // its parent entry is open and in use.
+    // A child entry is always not in use. The consequence is that a child entry
+    // can always be evicted while the associated parent entry is currently in
+    // used (i.e. opened).
     return false;
   }
 }
 
-int MemEntryImpl::GetStorageSize() const {
-  int storage_size = static_cast<int32_t>(key_.size());
-  for (const auto& i : data_)
-    storage_size += i.size();
-  return storage_size;
-}
-
-void MemEntryImpl::UpdateStateOnUse(EntryModified modified_enum) {
-  if (!doomed_)
-    backend_->OnEntryUpdated(this);
-
-  last_used_ = Time::Now();
-  if (modified_enum == ENTRY_WAS_MODIFIED)
-    last_modified_ = last_used_;
-}
+// ------------------------------------------------------------------------
 
 void MemEntryImpl::Doom() {
-  if (!doomed_) {
-    doomed_ = true;
-    backend_->OnEntryDoomed(this);
-    net_log_.AddEvent(net::NetLog::TYPE_ENTRY_DOOM);
+  if (doomed_)
+    return;
+  if (type() == kParentEntry) {
+    // Perform internal doom from the backend if this is a parent entry.
+    backend_->InternalDoomEntry(this);
+  } else {
+    // Manually detach from the backend and perform internal doom.
+    backend_->RemoveFromRankingList(this);
+    InternalDoom();
   }
-  if (!ref_count_)
-    delete this;
 }
 
 void MemEntryImpl::Close() {
-  DCHECK_EQ(PARENT_ENTRY, type());
-  --ref_count_;
+  // Only a parent entry can be closed.
+  DCHECK(type() == kParentEntry);
+  ref_count_--;
   DCHECK_GE(ref_count_, 0);
   if (!ref_count_ && doomed_)
-    delete this;
+    InternalDoom();
 }
 
 std::string MemEntryImpl::GetKey() const {
   // A child entry doesn't have key so this method should not be called.
-  DCHECK_EQ(PARENT_ENTRY, type());
+  DCHECK(type() == kParentEntry);
   return key_;
 }
 
@@ -164,9 +180,9 @@ Time MemEntryImpl::GetLastModified() const {
 }
 
 int32_t MemEntryImpl::GetDataSize(int index) const {
-  if (index < 0 || index >= kNumStreams)
+  if (index < 0 || index >= NUM_STREAMS)
     return 0;
-  return data_[index].size();
+  return data_size_[index];
 }
 
 int MemEntryImpl::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
@@ -244,7 +260,7 @@ int MemEntryImpl::GetAvailableRange(int64_t offset,
         net::NetLog::TYPE_SPARSE_GET_RANGE,
         CreateNetLogSparseOperationCallback(offset, len));
   }
-  int result = InternalGetAvailableRange(offset, len, start);
+  int result = GetAvailableRange(offset, len, start);
   if (net_log_.IsCapturing()) {
     net_log_.EndEvent(
         net::NetLog::TYPE_SPARSE_GET_RANGE,
@@ -254,8 +270,8 @@ int MemEntryImpl::GetAvailableRange(int64_t offset,
 }
 
 bool MemEntryImpl::CouldBeSparse() const {
-  DCHECK_EQ(PARENT_ENTRY, type());
-  return (children_.get() != nullptr);
+  DCHECK_EQ(kParentEntry, type());
+  return (children_.get() != NULL);
 }
 
 int MemEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
@@ -264,73 +280,41 @@ int MemEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
 
 // ------------------------------------------------------------------------
 
-MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
-                           const ::std::string& key,
-                           int child_id,
-                           MemEntryImpl* parent,
-                           net::NetLog* net_log)
-    : key_(key),
-      ref_count_(0),
-      child_id_(child_id),
-      child_first_pos_(0),
-      parent_(parent),
-      last_modified_(Time::Now()),
-      last_used_(last_modified_),
-      backend_(backend),
-      doomed_(false) {
-  backend_->OnEntryInserted(this);
-  net_log_ =
-      net::BoundNetLog::Make(net_log, net::NetLog::SOURCE_MEMORY_CACHE_ENTRY);
-  net_log_.BeginEvent(net::NetLog::TYPE_DISK_CACHE_MEM_ENTRY_IMPL,
-                      base::Bind(&NetLogEntryCreationCallback, this));
-}
-
 MemEntryImpl::~MemEntryImpl() {
-  backend_->ModifyStorageSize(-GetStorageSize());
-
-  if (type() == PARENT_ENTRY) {
-    if (children_) {
-      EntryMap children;
-      children_->swap(children);
-
-      for (auto& it : children) {
-        // Since |this| is stored in the map, it should be guarded against
-        // double dooming, which will result in double destruction.
-        if (it.second != this)
-          it.second->Doom();
-      }
-    }
-  } else {
-    parent_->children_->erase(child_id_);
-  }
+  for (int i = 0; i < NUM_STREAMS; i++)
+    backend_->ModifyStorageSize(data_size_[i], 0);
+  backend_->ModifyStorageSize(static_cast<int32_t>(key_.size()), 0);
   net_log_.EndEvent(net::NetLog::TYPE_DISK_CACHE_MEM_ENTRY_IMPL);
 }
 
 int MemEntryImpl::InternalReadData(int index, int offset, IOBuffer* buf,
                                    int buf_len) {
-  DCHECK(type() == PARENT_ENTRY || index == kSparseData);
+  DCHECK(type() == kParentEntry || index == kSparseData);
 
-  if (index < 0 || index >= kNumStreams || buf_len < 0)
+  if (index < 0 || index >= NUM_STREAMS)
     return net::ERR_INVALID_ARGUMENT;
 
-  int entry_size = data_[index].size();
+  int entry_size = GetDataSize(index);
   if (offset >= entry_size || offset < 0 || !buf_len)
     return 0;
+
+  if (buf_len < 0)
+    return net::ERR_INVALID_ARGUMENT;
 
   if (offset + buf_len > entry_size)
     buf_len = entry_size - offset;
 
-  UpdateStateOnUse(ENTRY_WAS_NOT_MODIFIED);
-  std::copy(data_[index].begin() + offset,
-            data_[index].begin() + offset + buf_len, buf->data());
+  UpdateRank(false);
+
+  memcpy(buf->data(), &(data_[index])[offset], buf_len);
   return buf_len;
 }
 
 int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
                                     int buf_len, bool truncate) {
-  DCHECK(type() == PARENT_ENTRY || index == kSparseData);
+  DCHECK(type() == kParentEntry || index == kSparseData);
 
-  if (index < 0 || index >= kNumStreams)
+  if (index < 0 || index >= NUM_STREAMS)
     return net::ERR_INVALID_ARGUMENT;
 
   if (offset < 0 || buf_len < 0)
@@ -344,32 +328,34 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
     return net::ERR_FAILED;
   }
 
-  int old_data_size = data_[index].size();
-  if (truncate || old_data_size < offset + buf_len) {
-    data_[index].resize(offset + buf_len);
+  // Read the size at this point.
+  int entry_size = GetDataSize(index);
 
-    // Zero fill any hole.
-    if (old_data_size < offset) {
-      std::fill(data_[index].begin() + old_data_size,
-                data_[index].begin() + offset, 0);
+  PrepareTarget(index, offset, buf_len);
+
+  if (entry_size < offset + buf_len) {
+    backend_->ModifyStorageSize(entry_size, offset + buf_len);
+    data_size_[index] = offset + buf_len;
+  } else if (truncate) {
+    if (entry_size > offset + buf_len) {
+      backend_->ModifyStorageSize(entry_size, offset + buf_len);
+      data_size_[index] = offset + buf_len;
     }
-
-    backend_->ModifyStorageSize(data_[index].size() - old_data_size);
   }
 
-  UpdateStateOnUse(ENTRY_WAS_MODIFIED);
+  UpdateRank(true);
 
   if (!buf_len)
     return 0;
 
-  std::copy(buf->data(), buf->data() + buf_len, data_[index].begin() + offset);
+  memcpy(&(data_[index])[offset], buf->data(), buf_len);
   return buf_len;
 }
 
 int MemEntryImpl::InternalReadSparseData(int64_t offset,
                                          IOBuffer* buf,
                                          int buf_len) {
-  DCHECK_EQ(PARENT_ENTRY, type());
+  DCHECK(type() == kParentEntry);
 
   if (!InitSparseInfo())
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
@@ -383,7 +369,7 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
 
   // Iterate until we have read enough.
   while (io_buf->BytesRemaining()) {
-    MemEntryImpl* child = GetChild(offset + io_buf->BytesConsumed(), false);
+    MemEntryImpl* child = OpenChild(offset + io_buf->BytesConsumed(), false);
 
     // No child present for that offset.
     if (!child)
@@ -399,7 +385,7 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
     if (net_log_.IsCapturing()) {
       net_log_.BeginEvent(
           net::NetLog::TYPE_SPARSE_READ_CHILD_DATA,
-          CreateNetLogSparseReadWriteCallback(child->net_log_.source(),
+          CreateNetLogSparseReadWriteCallback(child->net_log().source(),
                                               io_buf->BytesRemaining()));
     }
     int ret = child->ReadData(kSparseData, child_offset, io_buf.get(),
@@ -419,14 +405,15 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
     io_buf->DidConsume(ret);
   }
 
-  UpdateStateOnUse(ENTRY_WAS_NOT_MODIFIED);
+  UpdateRank(false);
+
   return io_buf->BytesConsumed();
 }
 
 int MemEntryImpl::InternalWriteSparseData(int64_t offset,
                                           IOBuffer* buf,
                                           int buf_len) {
-  DCHECK_EQ(PARENT_ENTRY, type());
+  DCHECK(type() == kParentEntry);
 
   if (!InitSparseInfo())
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
@@ -442,7 +429,7 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
   // child entry until all |buf_len| bytes are written. The write operation can
   // start in the middle of an entry.
   while (io_buf->BytesRemaining()) {
-    MemEntryImpl* child = GetChild(offset + io_buf->BytesConsumed(), true);
+    MemEntryImpl* child = OpenChild(offset + io_buf->BytesConsumed(), true);
     int child_offset = ToChildOffset(offset + io_buf->BytesConsumed());
 
     // Find the right amount to write, this evaluates the remaining bytes to
@@ -454,9 +441,10 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
     int data_size = child->GetDataSize(kSparseData);
 
     if (net_log_.IsCapturing()) {
-      net_log_.BeginEvent(net::NetLog::TYPE_SPARSE_WRITE_CHILD_DATA,
-                          CreateNetLogSparseReadWriteCallback(
-                              child->net_log_.source(), write_len));
+      net_log_.BeginEvent(
+          net::NetLog::TYPE_SPARSE_WRITE_CHILD_DATA,
+          CreateNetLogSparseReadWriteCallback(child->net_log().source(),
+                                              write_len));
     }
 
     // Always writes to the child entry. This operation may overwrite data
@@ -484,14 +472,13 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
     io_buf->DidConsume(ret);
   }
 
-  UpdateStateOnUse(ENTRY_WAS_MODIFIED);
+  UpdateRank(true);
+
   return io_buf->BytesConsumed();
 }
 
-int MemEntryImpl::InternalGetAvailableRange(int64_t offset,
-                                            int len,
-                                            int64_t* start) {
-  DCHECK_EQ(PARENT_ENTRY, type());
+int MemEntryImpl::GetAvailableRange(int64_t offset, int len, int64_t* start) {
+  DCHECK(type() == kParentEntry);
   DCHECK(start);
 
   if (!InitSparseInfo())
@@ -500,7 +487,7 @@ int MemEntryImpl::InternalGetAvailableRange(int64_t offset,
   if (offset < 0 || len < 0 || !start)
     return net::ERR_INVALID_ARGUMENT;
 
-  MemEntryImpl* current_child = nullptr;
+  MemEntryImpl* current_child = NULL;
 
   // Find the first child and record the number of empty bytes.
   int empty = FindNextChild(offset, len, &current_child);
@@ -534,10 +521,38 @@ int MemEntryImpl::InternalGetAvailableRange(int64_t offset,
   return 0;
 }
 
-bool MemEntryImpl::InitSparseInfo() {
-  DCHECK_EQ(PARENT_ENTRY, type());
+void MemEntryImpl::PrepareTarget(int index, int offset, int buf_len) {
+  int entry_size = GetDataSize(index);
 
-  if (!children_) {
+  if (entry_size >= offset + buf_len)
+    return;  // Not growing the stored data.
+
+  if (static_cast<int>(data_[index].size()) < offset + buf_len)
+    data_[index].resize(offset + buf_len);
+
+  if (offset <= entry_size)
+    return;  // There is no "hole" on the stored data.
+
+  // Cleanup the hole not written by the user. The point is to avoid returning
+  // random stuff later on.
+  memset(&(data_[index])[entry_size], 0, offset - entry_size);
+}
+
+void MemEntryImpl::UpdateRank(bool modified) {
+  Time current = Time::Now();
+  last_used_ = current;
+
+  if (modified)
+    last_modified_ = current;
+
+  if (!doomed_)
+    backend_->UpdateRank(this);
+}
+
+bool MemEntryImpl::InitSparseInfo() {
+  DCHECK(type() == kParentEntry);
+
+  if (!children_.get()) {
     // If we already have some data in sparse stream but we are being
     // initialized as a sparse entry, we should fail.
     if (GetDataSize(kSparseData))
@@ -551,27 +566,52 @@ bool MemEntryImpl::InitSparseInfo() {
   return true;
 }
 
-MemEntryImpl* MemEntryImpl::GetChild(int64_t offset, bool create) {
-  DCHECK_EQ(PARENT_ENTRY, type());
+bool MemEntryImpl::InitChildEntry(MemEntryImpl* parent, int child_id,
+                                  net::NetLog* net_log) {
+  DCHECK(!parent_);
+  DCHECK(!child_id_);
+
+  net_log_ = net::BoundNetLog::Make(net_log,
+                                    net::NetLog::SOURCE_MEMORY_CACHE_ENTRY);
+  net_log_.BeginEvent(
+      net::NetLog::TYPE_DISK_CACHE_MEM_ENTRY_IMPL,
+      base::Bind(&NetLogChildEntryCreationCallback, parent, child_id_));
+
+  parent_ = parent;
+  child_id_ = child_id;
+  Time current = Time::Now();
+  last_modified_ = current;
+  last_used_ = current;
+  // Insert this to the backend's ranking list.
+  backend_->InsertIntoRankingList(this);
+  return true;
+}
+
+MemEntryImpl* MemEntryImpl::OpenChild(int64_t offset, bool create) {
+  DCHECK(type() == kParentEntry);
   int index = ToChildIndex(offset);
   EntryMap::iterator i = children_->find(index);
-  if (i != children_->end())
+  if (i != children_->end()) {
     return i->second;
-  if (create)
-    return new MemEntryImpl(backend_, index, this, net_log_.net_log());
-  return nullptr;
+  } else if (create) {
+    MemEntryImpl* child = new MemEntryImpl(backend_);
+    child->InitChildEntry(this, index, net_log_.net_log());
+    (*children_)[index] = child;
+    return child;
+  }
+  return NULL;
 }
 
 int MemEntryImpl::FindNextChild(int64_t offset, int len, MemEntryImpl** child) {
   DCHECK(child);
-  *child = nullptr;
+  *child = NULL;
   int scanned_len = 0;
 
   // This loop tries to find the first existing child.
   while (scanned_len < len) {
     // This points to the current offset in the child.
     int current_child_offset = ToChildOffset(offset + scanned_len);
-    MemEntryImpl* current_child = GetChild(offset + scanned_len, false);
+    MemEntryImpl* current_child = OpenChild(offset + scanned_len, false);
     if (current_child) {
       int child_first_pos = current_child->child_first_pos_;
 
@@ -592,6 +632,10 @@ int MemEntryImpl::FindNextChild(int64_t offset, int len, MemEntryImpl** child) {
     scanned_len += kMaxSparseEntrySize - current_child_offset;
   }
   return scanned_len;
+}
+
+void MemEntryImpl::DetachChild(int child_id) {
+  children_->erase(child_id);
 }
 
 }  // namespace disk_cache
