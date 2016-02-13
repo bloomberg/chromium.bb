@@ -495,7 +495,7 @@ void Window::SetSharedPropertyInternal(const std::string& name,
     return;
 
   if (connection_) {
-    mojo::Array<uint8_t> transport_value;
+    mojo::Array<uint8_t> transport_value(nullptr);
     if (value) {
       transport_value.resize(value->size());
       if (value->size())

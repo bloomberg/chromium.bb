@@ -128,6 +128,7 @@ TEST_F(ArrayTest, Clone) {
   {
     // Test array of array.
     Array<Array<int8_t>> array(2);
+    array[0] = nullptr;
     array[1] = Array<int8_t>(2);
     array[1][0] = 0;
     array[1][1] = 1;
@@ -169,7 +170,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
 }
 
 TEST_F(ArrayTest, Serialization_EmptyArrayOfPOD) {
-  Array<int32_t> array(0);
+  Array<int32_t> array;
   size_t size = GetSerializedSize_(array);
   EXPECT_EQ(8U, size);
 
@@ -308,7 +309,7 @@ TEST_F(ArrayTest, Resize_Copyable) {
     EXPECT_TRUE(array[i].copied());
     EXPECT_EQ(value_ptrs[i], array[i].ptr());
   }
-  array.reset();
+  array = nullptr;
   EXPECT_EQ(0u, CopyableType::num_instances());
   EXPECT_FALSE(array);
   array.resize(0);
@@ -360,7 +361,7 @@ TEST_F(ArrayTest, Resize_MoveOnly) {
   for (size_t i = capacity; i < array.size(); i++)
     EXPECT_FALSE(array[i].moved());
 
-  array.reset();
+  array = nullptr;
   EXPECT_EQ(0u, MoveOnlyType::num_instances());
   EXPECT_FALSE(array);
   array.resize(0);
@@ -371,7 +372,7 @@ TEST_F(ArrayTest, Resize_MoveOnly) {
 TEST_F(ArrayTest, PushBack_Copyable) {
   ASSERT_EQ(0u, CopyableType::num_instances());
   mojo::Array<CopyableType> array(2);
-  array.reset();
+  array = nullptr;
   std::vector<CopyableType*> value_ptrs;
   size_t capacity = array.storage().capacity();
   for (size_t i = 0; i < capacity; i++) {
@@ -399,14 +400,14 @@ TEST_F(ArrayTest, PushBack_Copyable) {
     EXPECT_TRUE(array[i].copied());
     EXPECT_EQ(value_ptrs[i], array[i].ptr());
   }
-  array.reset();
+  array = nullptr;
   EXPECT_EQ(0u, CopyableType::num_instances());
 }
 
 TEST_F(ArrayTest, PushBack_MoveOnly) {
   ASSERT_EQ(0u, MoveOnlyType::num_instances());
   mojo::Array<MoveOnlyType> array(2);
-  array.reset();
+  array = nullptr;
   std::vector<MoveOnlyType*> value_ptrs;
   size_t capacity = array.storage().capacity();
   for (size_t i = 0; i < capacity; i++) {
@@ -434,7 +435,7 @@ TEST_F(ArrayTest, PushBack_MoveOnly) {
     EXPECT_TRUE(array[i].moved());
     EXPECT_EQ(value_ptrs[i], array[i].ptr());
   }
-  array.reset();
+  array = nullptr;
   EXPECT_EQ(0u, MoveOnlyType::num_instances());
 }
 

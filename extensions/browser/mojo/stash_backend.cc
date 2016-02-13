@@ -54,7 +54,7 @@ void StashServiceImpl::AddToStash(
 void StashServiceImpl::RetrieveStash(
     const mojo::Callback<void(mojo::Array<StashedObjectPtr>)>& callback) {
   if (!backend_) {
-    callback.Run(mojo::Array<StashedObjectPtr>(0));
+    callback.Run(mojo::Array<StashedObjectPtr>());
     return;
   }
   callback.Run(backend_->RetrieveStash());
@@ -114,7 +114,7 @@ void StashBackend::AddToStash(mojo::Array<StashedObjectPtr> stashed_objects) {
 
 mojo::Array<StashedObjectPtr> StashBackend::RetrieveStash() {
   has_notified_ = false;
-  mojo::Array<StashedObjectPtr> result(0);
+  mojo::Array<StashedObjectPtr> result;
   for (auto& entry : stashed_objects_) {
     result.push_back(entry->Release());
   }

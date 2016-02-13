@@ -101,7 +101,7 @@ int Clamp(int value, int min, int max) {
 // enumerating serial devices (IOKit).  This new method gives more information
 // about the devices than the old method.
 mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
-  mojo::Array<serial::DeviceInfoPtr> devices(0);
+  mojo::Array<serial::DeviceInfoPtr> devices;
 
   // Make a service query to find all serial devices.
   CFMutableDictionaryRef matchingDict =
@@ -180,7 +180,7 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesOld() {
   valid_patterns.insert("/dev/tty.*");
   valid_patterns.insert("/dev/cu.*");
 
-  mojo::Array<serial::DeviceInfoPtr> devices(0);
+  mojo::Array<serial::DeviceInfoPtr> devices;
   base::FileEnumerator enumerator(kDevRoot, false, kFilesAndSymLinks);
   do {
     const base::FilePath next_device_path(enumerator.Next());

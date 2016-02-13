@@ -8,9 +8,9 @@
 namespace mojo {
 namespace test {
 
-TEST(StringTest, DefaultIsNull) {
+TEST(StringTest, DefaultIsNotNull) {
   String s;
-  EXPECT_TRUE(s.is_null());
+  EXPECT_FALSE(s.is_null());
 }
 
 TEST(StringTest, ConstructedWithNULL) {

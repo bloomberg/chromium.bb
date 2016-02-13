@@ -90,7 +90,7 @@ base::string16 GetPluginDescription(const WebPluginInfo& plugin) {
 }
 
 mojo::Array<MimeTypePtr> GeneratePluginMimeTypes(const WebPluginInfo& plugin) {
-  mojo::Array<MimeTypePtr> mime_types(0u);
+  mojo::Array<MimeTypePtr> mime_types;
   for (const auto& plugin_mime_type : plugin.mime_types) {
     MimeTypePtr mime_type(MimeType::New());
     mime_type->description = mojo::String::From(plugin_mime_type.description);
@@ -227,7 +227,7 @@ mojo::Array<PluginDataPtr> PluginsHandler::GeneratePluginsData(
     groups[plugin->identifier()].push_back(&plugins[i]);
   }
 
-  mojo::Array<PluginDataPtr> plugins_data(0u);
+  mojo::Array<PluginDataPtr> plugins_data;
 
   for (PluginGroups::const_iterator it = groups.begin(); it != groups.end();
        ++it) {
@@ -242,7 +242,7 @@ mojo::Array<PluginDataPtr> PluginsHandler::GeneratePluginsData(
     const WebPluginInfo* active_plugin = nullptr;
     bool group_enabled = false;
 
-    mojo::Array<PluginFilePtr> plugin_files(0u);
+    mojo::Array<PluginFilePtr> plugin_files;
     for (const auto& group_plugin : group_plugins) {
       bool plugin_enabled = plugin_prefs->IsPluginEnabled(*group_plugin);
 

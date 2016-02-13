@@ -22,7 +22,8 @@ class String {
  public:
   typedef internal::String_Data Data_;
 
-  String() : is_null_(true) {}
+  // Constructs an empty string.
+  String() : is_null_(false) {}
   String(const std::string& str) : value_(str), is_null_(false) {}
   String(const char* chars) : is_null_(!chars) {
     if (chars)
@@ -65,11 +66,6 @@ class String {
       value_.clear();
     }
     return *this;
-  }
-
-  void reset() {
-    value_.clear();
-    is_null_ = true;
   }
 
   bool is_null() const { return is_null_; }

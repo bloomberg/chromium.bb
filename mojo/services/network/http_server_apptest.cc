@@ -289,7 +289,7 @@ class WebSocketClientImpl : public WebSocketClient {
     send_stream_ = std::move(data_pipe.producer_handle);
     write_send_stream_.reset(new WebSocketWriteQueue(send_stream_.get()));
 
-    web_socket_->Connect(url, Array<String>(0), "http://example.com",
+    web_socket_->Connect(url, Array<String>(), "http://example.com",
                          std::move(data_pipe.consumer_handle),
                          std::move(client_ptr_));
   }

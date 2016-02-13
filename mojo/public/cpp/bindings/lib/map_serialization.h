@@ -183,7 +183,7 @@ inline bool Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
 
     *output = Map<MapKey, MapValue>(std::move(keys), std::move(values));
   } else {
-    output->reset();
+    *output = nullptr;
   }
   return success;
 }

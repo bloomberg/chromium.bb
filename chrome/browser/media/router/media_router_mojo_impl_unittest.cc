@@ -923,7 +923,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesError) {
           expected_route_id, router()));
   run_loop.Run();
 
-  mojo_callback.Run(mojo::Array<interfaces::RouteMessagePtr>(0), true);
+  mojo_callback.Run(mojo::Array<interfaces::RouteMessagePtr>(), true);
   ProcessEventLoop();
 }
 

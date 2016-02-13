@@ -112,14 +112,14 @@ TEST_F(StashServiceTest, AddTwiceAndRetrieve) {
   StashedObjectPtr stashed_object(StashedObject::New());
   stashed_object->id = "test type";
   stashed_object->data.push_back(1);
-  stashed_object->stashed_handles = mojo::Array<mojo::ScopedHandle>(0);
+  stashed_object->stashed_handles = mojo::Array<mojo::ScopedHandle>();
   stashed_objects.push_back(std::move(stashed_object));
   stash_service_->AddToStash(std::move(stashed_objects));
   stashed_object = StashedObject::New();
   stashed_object->id = "test type2";
   stashed_object->data.push_back(2);
   stashed_object->data.push_back(3);
-  stashed_object->stashed_handles = mojo::Array<mojo::ScopedHandle>(0);
+  stashed_object->stashed_handles = mojo::Array<mojo::ScopedHandle>();
   stashed_objects.push_back(std::move(stashed_object));
   stash_service_->AddToStash(std::move(stashed_objects));
   stashed_objects = RetrieveStash();

@@ -36,7 +36,7 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
   // SiteEngagementUIHandler overrides:
   void GetSiteEngagementInfo(
       const GetSiteEngagementInfoCallback& callback) override {
-    mojo::Array<SiteEngagementInfoPtr> engagement_info(0);
+    mojo::Array<SiteEngagementInfoPtr> engagement_info;
 
     SiteEngagementService* service = SiteEngagementService::Get(profile_);
 

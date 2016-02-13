@@ -173,7 +173,7 @@ TEST_F(SerializationWarningTest, StringInStruct) {
 
 TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
   Array<Array<ScopedHandle>> test_array = CreateTestNestedHandleArray();
-  test_array[0] = Array<ScopedHandle>();
+  test_array[0] = nullptr;
   test_array[1][0] = ScopedHandle();
 
   ArrayValidateParams validate_params_0(
@@ -182,7 +182,7 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
                    &validate_params_0);
 
   test_array = CreateTestNestedHandleArray();
-  test_array[0] = Array<ScopedHandle>();
+  test_array[0] = nullptr;
   ArrayValidateParams validate_params_1(
       0, false, new ArrayValidateParams(0, true, nullptr));
   TestArrayWarning(std::move(test_array),
@@ -209,6 +209,8 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
                    &validate_params_0);
 
   test_array = Array<String>(3);
+  for (size_t i = 0; i < test_array.size(); ++i)
+    test_array[i] = nullptr;
   ArrayValidateParams validate_params_1(
       0, false, new ArrayValidateParams(0, false, nullptr));
   TestArrayWarning(std::move(test_array),

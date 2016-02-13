@@ -91,7 +91,7 @@ ShellConnection::ConnectParams::ConnectParams(const std::string& url)
 ShellConnection::ConnectParams::ConnectParams(URLRequestPtr request)
     : request_(std::move(request)),
       filter_(shell::mojom::CapabilityFilter::New()) {
-  filter_->filter.mark_non_null();
+  filter_->filter.SetToEmpty();
 }
 ShellConnection::ConnectParams::~ConnectParams() {}
 

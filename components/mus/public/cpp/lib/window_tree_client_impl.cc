@@ -299,7 +299,7 @@ void WindowTreeClientImpl::SetProperty(Window* window,
                                        mojo::Array<uint8_t> data) {
   DCHECK(tree_);
 
-  mojo::Array<uint8_t> old_value;
+  mojo::Array<uint8_t> old_value(nullptr);
   if (window->HasSharedProperty(name))
     old_value = mojo::Array<uint8_t>::From(window->properties_[name]);
 
@@ -435,8 +435,6 @@ Window* WindowTreeClientImpl::NewWindowImpl(
   if (properties) {
     transport_properties =
         mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(*properties);
-  } else {
-    transport_properties.mark_non_null();
   }
   if (type == NewWindowType::CHILD) {
     tree_->NewWindow(change_id, window->id(), std::move(transport_properties));

@@ -36,7 +36,7 @@ bool Deserialize_(internal::String_Data* input,
     String result(input->storage(), input->size());
     result.Swap(output);
   } else {
-    output->reset();
+    *output = nullptr;
   }
   return true;
 }

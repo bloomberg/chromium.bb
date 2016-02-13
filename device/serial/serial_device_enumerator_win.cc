@@ -87,7 +87,7 @@ int Clamp(int value, int min, int max) {
 // enumerating serial devices (SetupDi).  This new method gives more information
 // about the devices than the old method.
 mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
-  mojo::Array<serial::DeviceInfoPtr> devices(0);
+  mojo::Array<serial::DeviceInfoPtr> devices;
 
   // Make a device interface query to find all serial devices.
   HDEVINFO dev_info =
@@ -141,7 +141,7 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
 mojo::Array<serial::DeviceInfoPtr> GetDevicesOld() {
   base::win::RegistryValueIterator iter_key(
       HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
-  mojo::Array<serial::DeviceInfoPtr> devices(0);
+  mojo::Array<serial::DeviceInfoPtr> devices;
   for (; iter_key.Valid(); ++iter_key) {
     serial::DeviceInfoPtr info(serial::DeviceInfo::New());
     info->path = base::UTF16ToASCII(iter_key.Value());

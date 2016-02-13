@@ -84,7 +84,7 @@ void WebUSBPermissionProvider::HasDevicePermission(
   UsbChooserContext* chooser_context =
       UsbChooserContextFactory::GetForProfile(profile);
 
-  mojo::Array<mojo::String> allowed_guids(0);
+  mojo::Array<mojo::String> allowed_guids;
   for (size_t i = 0; i < requested_devices.size(); ++i) {
     const device::usb::DeviceInfoPtr& device = requested_devices[i];
     if (FindOriginInDescriptorSet(device->webusb_allowed_origins.get(),

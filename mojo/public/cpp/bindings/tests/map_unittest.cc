@@ -173,7 +173,7 @@ TEST_F(MapTest, Insert_Copyable) {
   // std::map doesn't have a capacity() method like std::vector so this test is
   // a lot more boring.
 
-  map.reset();
+  map = nullptr;
   EXPECT_EQ(0u, CopyableType::num_instances());
 }
 
@@ -199,7 +199,7 @@ TEST_F(MapTest, Insert_MoveOnly) {
   // std::map doesn't have a capacity() method like std::vector so this test is
   // a lot more boring.
 
-  map.reset();
+  map = nullptr;
   EXPECT_EQ(0u, MoveOnlyType::num_instances());
 }
 
@@ -225,7 +225,7 @@ TEST_F(MapTest, IndexOperator_MoveOnly) {
   // std::map doesn't have a capacity() method like std::vector so this test is
   // a lot more boring.
 
-  map.reset();
+  map = nullptr;
   EXPECT_EQ(0u, MoveOnlyType::num_instances());
 }
 

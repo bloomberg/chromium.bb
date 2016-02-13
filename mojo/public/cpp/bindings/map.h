@@ -38,7 +38,10 @@ class Map {
       internal::Map_Data<typename internal::WrapperTraits<Key>::DataType,
                          typename internal::WrapperTraits<Value>::DataType>;
 
-  Map() : is_null_(true) {}
+  // Constructs an empty map.
+  Map() : is_null_(false) {}
+  // Constructs a null map.
+  Map(std::nullptr_t null_pointer) : is_null_(true) {}
 
   // Constructs a non-null Map containing the specified |keys| mapped to the
   // corresponding |values|.
@@ -53,8 +56,19 @@ class Map {
   Map(std::map<Key, Value>&& other) : map_(std::move(other)), is_null_(false) {}
   Map(Map&& other) : is_null_(true) { Take(&other); }
 
+  Map& operator=(std::map<Key, Value>&& other) {
+    is_null_ = false;
+    map_ = std::move(other);
+    return *this;
+  }
   Map& operator=(Map&& other) {
     Take(&other);
+    return *this;
+  }
+
+  Map& operator=(std::nullptr_t null_pointer) {
+    is_null_ = true;
+    map_.clear();
     return *this;
   }
 
@@ -72,18 +86,10 @@ class Map {
     return TypeConverter<U, Map>::Convert(*this);
   }
 
-  // Destroys the contents of the Map and leaves it in the null state.
-  void reset() {
-    map_.clear();
-    is_null_ = true;
-  }
-
   bool is_null() const { return is_null_; }
 
   // Indicates the number of keys in the map.
   size_t size() const { return map_.size(); }
-
-  void mark_non_null() { is_null_ = false; }
 
   // Inserts a key-value pair into the map. Like std::map, this does not insert
   // |value| if |key| is already a member of the map.
@@ -109,6 +115,12 @@ class Map {
   Value& operator[](const Key& key) {
     is_null_ = false;
     return map_[key];
+  }
+
+  // Sets the map to empty (even if previously it was null).
+  void SetToEmpty() {
+    is_null_ = false;
+    map_.clear();
   }
 
   // Returns a const reference to the std::map managed by this class. If this
@@ -230,7 +242,7 @@ class Map {
   bool operator!=(const Map<T, U>& other) const = delete;
 
   void Take(Map* other) {
-    reset();
+    operator=(nullptr);
     Swap(other);
   }
 
@@ -248,7 +260,6 @@ struct TypeConverter<Map<MojoKey, MojoValue>, std::map<STLKey, STLValue>> {
   static Map<MojoKey, MojoValue> Convert(
       const std::map<STLKey, STLValue>& input) {
     Map<MojoKey, MojoValue> result;
-    result.mark_non_null();
     for (auto& pair : input) {
       result.insert(TypeConverter<MojoKey, STLKey>::Convert(pair.first),
                     TypeConverter<MojoValue, STLValue>::Convert(pair.second));

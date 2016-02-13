@@ -30,7 +30,7 @@ DirectoryImpl::~DirectoryImpl() {
 }
 
 void DirectoryImpl::Read(const ReadCallback& callback) {
-  mojo::Array<DirectoryEntryPtr> entries(0);
+  mojo::Array<DirectoryEntryPtr> entries;
   base::FileEnumerator directory_enumerator(
       directory_path_, false,
       base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
@@ -221,18 +221,18 @@ void DirectoryImpl::ReadEntireFile(const mojo::String& raw_path,
   base::FilePath path;
   FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != FileError::OK) {
-    callback.Run(error, mojo::Array<uint8_t>(0));
+    callback.Run(error, mojo::Array<uint8_t>());
     return;
   }
 
   if (base::DirectoryExists(path)) {
-    callback.Run(FileError::NOT_A_FILE, mojo::Array<uint8_t>(0));
+    callback.Run(FileError::NOT_A_FILE, mojo::Array<uint8_t>());
     return;
   }
 
   base::File base_file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file), mojo::Array<uint8_t>(0));
+    callback.Run(GetError(base_file), mojo::Array<uint8_t>());
     return;
   }
 

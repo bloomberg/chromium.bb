@@ -34,8 +34,10 @@ class Array {
   using Data_ =
       internal::Array_Data<typename internal::WrapperTraits<T>::DataType>;
 
-  // Constructs a new array that is null.
-  Array() : is_null_(true) {}
+  // Constructs an empty array.
+  Array() : is_null_(false) {}
+  // Constructs a null array.
+  Array(std::nullptr_t null_pointer) : is_null_(true) {}
 
   // Constructs a new non-null array of the specified size. The elements will
   // be value-initialized (meaning that they will be initialized by their
@@ -47,15 +49,26 @@ class Array {
   Array(std::vector<T>&& other) : vec_(std::move(other)), is_null_(false) {}
   Array(Array&& other) : is_null_(true) { Take(&other); }
 
+  Array& operator=(std::vector<T>&& other) {
+    vec_ = std::move(other);
+    is_null_ = false;
+    return *this;
+  }
   Array& operator=(Array&& other) {
     Take(&other);
+    return *this;
+  }
+
+  Array& operator=(std::nullptr_t null_pointer) {
+    is_null_ = true;
+    vec_.clear();
     return *this;
   }
 
   // Creates a non-null array of the specified size. The elements will be
   // value-initialized (meaning that they will be initialized by their default
   // constructor, if any, or else zero-initialized).
-  static Array New(size_t size) { return std::move(Array(size)); }
+  static Array New(size_t size) { return Array(size); }
 
   // Creates a new array with a copy of the contents of |other|.
   template <typename U>
@@ -67,12 +80,6 @@ class Array {
   template <typename U>
   U To() const {
     return TypeConverter<U, Array>::Convert(*this);
-  }
-
-  // Resets the contents of this array back to null.
-  void reset() {
-    vec_.clear();
-    is_null_ = true;
   }
 
   // Indicates whether the array is null (which is distinct from empty).
@@ -110,6 +117,9 @@ class Array {
     is_null_ = false;
     vec_.resize(size);
   }
+
+  // Sets the array to empty (even if previously it was null.)
+  void SetToEmpty() { resize(0); }
 
   // Returns a const reference to the |std::vector| managed by this class. If
   // the array is null, this will be an empty vector.
@@ -185,7 +195,7 @@ class Array {
   bool operator!=(const Array<U>& other) const = delete;
 
   void Take(Array* other) {
-    reset();
+    operator=(nullptr);
     Swap(other);
   }
 
@@ -228,7 +238,7 @@ struct TypeConverter<std::vector<E>, Array<T>> {
 template <typename T, typename E>
 struct TypeConverter<Array<T>, std::set<E>> {
   static Array<T> Convert(const std::set<E>& input) {
-    Array<T> result(0u);
+    Array<T> result;
     for (auto i : input)
       result.push_back(TypeConverter<T, E>::Convert(i));
     return std::move(result);

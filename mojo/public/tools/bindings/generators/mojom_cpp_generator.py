@@ -56,6 +56,9 @@ def DefaultValue(field):
       assert field.default == "default"
       return "%s::New()" % GetNameForKind(field.kind)
     return ExpressionToText(field.default, kind=field.kind)
+  if (mojom.IsStringKind(field.kind) or mojom.IsArrayKind(field.kind) or
+      mojom.IsMapKind(field.kind)):
+    return "nullptr";
   return ""
 
 def NamespaceToArray(namespace):

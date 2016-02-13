@@ -101,7 +101,7 @@ TEST(TypeConversionTest, String) {
 }
 
 TEST(TypeConversionTest, String_Null) {
-  String a;
+  String a(nullptr);
   EXPECT_TRUE(a.is_null());
   EXPECT_EQ(std::string(), a.To<std::string>());
 

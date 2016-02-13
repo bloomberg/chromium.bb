@@ -135,7 +135,7 @@ void DeviceManagerImpl::OnGetDevices(EnumerationOptionsPtr options,
     filters = options->filters.To<std::vector<UsbDeviceFilter>>();
 
   std::map<std::string, scoped_refptr<UsbDevice>> device_map;
-  mojo::Array<DeviceInfoPtr> requested_devices(0);
+  mojo::Array<DeviceInfoPtr> requested_devices;
   for (const auto& device : devices) {
     if (filters.empty() || UsbDeviceFilter::MatchesAny(device, filters)) {
       device_map[device->guid()] = device;

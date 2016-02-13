@@ -234,7 +234,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   bool SetWindowProperty(Id window_id,
                          const std::string& name,
                          const std::vector<uint8_t>* data) {
-    Array<uint8_t> mojo_data;
+    Array<uint8_t> mojo_data(nullptr);
     if (data)
       mojo_data = Array<uint8_t>::From(*data);
     const uint32_t change_id = GetAndAdvanceChangeId();

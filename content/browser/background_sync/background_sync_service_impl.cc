@@ -213,7 +213,7 @@ void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(result_registrations);
 
-  mojo::Array<content::SyncRegistrationPtr> mojo_registrations(0);
+  mojo::Array<content::SyncRegistrationPtr> mojo_registrations;
   for (BackgroundSyncRegistrationHandle* registration : *result_registrations) {
     active_handles_.AddWithID(registration, registration->handle_id());
     mojo_registrations.push_back(ToMojoRegistration(*registration));

@@ -462,7 +462,7 @@ inline bool Deserialize_(internal::Array_Data<F>* input,
       E, internal::ShouldUseNativeSerializer<E>::value>;
   if (input)
     return Strategy::template Deserialize<F>(input, output, context);
-  output->reset();
+  *output = nullptr;
   return true;
 }
 

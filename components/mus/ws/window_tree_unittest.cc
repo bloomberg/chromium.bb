@@ -849,7 +849,6 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
 
   // Create a new top level window.
   mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
-  properties.mark_non_null();
   const uint32_t initial_change_id = 17;
   // Explicitly use an id that does not contain the connection id.
   const ClientWindowId embed_window_id2_in_child(45 << 16 | 27);

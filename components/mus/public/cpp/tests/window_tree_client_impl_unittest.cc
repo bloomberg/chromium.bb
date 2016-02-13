@@ -62,7 +62,7 @@ class WindowTreeClientImplPrivate {
     root_data->parent_id = 0;
     root_data->window_id = 1;
     root_data->bounds = mojo::Rect::From(gfx::Rect());
-    root_data->properties.mark_non_null();
+    root_data->properties.SetToEmpty();
     root_data->visible = true;
     root_data->drawn = true;
     root_data->viewport_metrics = mojom::ViewportMetrics::New();

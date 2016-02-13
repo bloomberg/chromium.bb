@@ -66,7 +66,7 @@ TEST_F(EqualsTest, Array) {
   NamedRegionPtr n2(n1.Clone());
   EXPECT_TRUE(n1.Equals(n2));
 
-  n2->rects.reset();
+  n2->rects = nullptr;
   EXPECT_FALSE(n1.Equals(n2));
   n2->rects.resize(0);
   EXPECT_FALSE(n1.Equals(n2));

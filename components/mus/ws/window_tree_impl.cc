@@ -397,7 +397,7 @@ void WindowTreeImpl::ProcessWindowPropertyChanged(
   if (!IsWindowKnown(window, &client_window_id))
     return;
 
-  Array<uint8_t> data;
+  Array<uint8_t> data(nullptr);
   if (new_data)
     data = Array<uint8_t>::From(*new_data);
 
