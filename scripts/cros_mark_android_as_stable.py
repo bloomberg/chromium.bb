@@ -227,12 +227,12 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
     if not stable_ebuild:
       return False
 
-    if stable_candidate.version == new_ebuild.version:
+    if stable_candidate.version_no_rev == new_ebuild.version_no_rev:
       return filecmp.cmp(
           new_ebuild.ebuild_path, stable_ebuild.ebuild_path, shallow=False)
 
   # Case where we have the last stable candidate with same version just rev.
-  if stable_candidate and stable_candidate.version == android_version:
+  if stable_candidate and stable_candidate.version_no_rev == android_version:
     new_ebuild_path = '%s-r%d.ebuild' % (
         stable_candidate.ebuild_path_no_revision,
         stable_candidate.current_revision + 1)
@@ -323,7 +323,7 @@ def main(argv):
   stable_candidate = portage_util.BestEBuild(stable_ebuilds)
 
   if stable_candidate:
-    logging.info('Stable candidate found %s' % stable_candidate)
+    logging.info('Stable candidate found %s' % stable_candidate.version)
   else:
     logging.info('No stable candidate found.')
 
