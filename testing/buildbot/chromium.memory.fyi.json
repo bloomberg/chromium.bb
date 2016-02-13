@@ -1333,13 +1333,6 @@
     ]
   },
   "Linux Tests (valgrind)(3)": {
-    "gtest_tests": [
-      {
-        "shard_index": 0,
-        "test": "unit_tests",
-        "total_shards": 3
-      }
-    ],
     "scripts": [
       {
         "args": [
@@ -1373,17 +1366,26 @@
           "remoting_unittests"
         ],
         "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "--test",
+          "unit_tests",
+          "--test-launcher-bot-mode",
+          "--test-launcher-shard-index",
+          "0",
+          "--test-launcher-total-shards",
+          "3"
+        ],
+        "name": "memory_test: unit_tests_1_of_3",
+        "override_compile_targets": [
+          "unit_tests"
+        ],
+        "script": "run_under_valgrind.py"
       }
     ]
   },
   "Linux Tests (valgrind)(4)": {
-    "gtest_tests": [
-      {
-        "shard_index": 1,
-        "test": "unit_tests",
-        "total_shards": 3
-      }
-    ],
     "scripts": [
       {
         "args": [
@@ -1406,17 +1408,26 @@
           "content_unittests"
         ],
         "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "--test",
+          "unit_tests",
+          "--test-launcher-bot-mode",
+          "--test-launcher-shard-index",
+          "1",
+          "--test-launcher-total-shards",
+          "3"
+        ],
+        "name": "memory_test: unit_tests_2_of_3",
+        "override_compile_targets": [
+          "unit_tests"
+        ],
+        "script": "run_under_valgrind.py"
       }
     ]
   },
   "Linux Tests (valgrind)(5)": {
-    "gtest_tests": [
-      {
-        "shard_index": 2,
-        "test": "unit_tests",
-        "total_shards": 3
-      }
-    ],
     "scripts": [
       {
         "args": [
@@ -1437,6 +1448,22 @@
         "name": "memory_test: gpu_unittests",
         "override_compile_targets": [
           "gpu_unittests"
+        ],
+        "script": "run_under_valgrind.py"
+      },
+      {
+        "args": [
+          "--test",
+          "unit_tests",
+          "--test-launcher-bot-mode",
+          "--test-launcher-shard-index",
+          "2",
+          "--test-launcher-total-shards",
+          "3"
+        ],
+        "name": "memory_test: unit_tests_3_of_3",
+        "override_compile_targets": [
+          "unit_tests"
         ],
         "script": "run_under_valgrind.py"
       }
