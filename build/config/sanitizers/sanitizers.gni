@@ -52,6 +52,10 @@ declare_args() {
   # Compile for fuzzing with Dr. Fuzz
   # See http://www.chromium.org/developers/testing/dr-fuzz
   use_drfuzz = false
+
+  # Helper variable for testing builds with disabled libfuzzer.
+  # Not for client use.
+  disable_libfuzzer = false
 }
 
 # Args that are in turn dependent on other args must be in a separate

@@ -4,6 +4,8 @@
 
 # Defines fuzzer_test.
 #
+import("//build/config/features.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/test.gni")
 
 # visible for testing only.
@@ -38,63 +40,86 @@ template("fuzzer_test_launcher") {
 # - additional_configs - additional configs to be used for compilation
 # - dict - a dictionary file for the fuzzer.
 #
+# If use_libfuzzer gn flag is defined, then proper fuzzer would be build.
+# Without use_libfuzzer a unit-test style binary would be built on linux
+# and the whole target is a no-op otherwise.
+#
 # The template wraps test() target with appropriate dependencies.
 # If any test run-time options are present (dict), then a launcher
 # file would be generated with <fuzzer_name>.sh name in root output
 # dir (next to test).
 template("fuzzer_test") {
-  assert(defined(invoker.sources), "Need sources in $target_name.")
+  if (!disable_libfuzzer && (use_libfuzzer || use_drfuzz || is_linux)) {
+    assert(defined(invoker.sources), "Need sources in $target_name.")
 
-  test_deps = [ "//testing/libfuzzer:libfuzzer_main" ]
+    test_deps = [ "//testing/libfuzzer:libfuzzer_main" ]
 
-  if (defined(invoker.deps)) {
-    test_deps += invoker.deps
-  }
+    if (defined(invoker.deps)) {
+      test_deps += invoker.deps
+    }
 
-  test_data = []
-  if (defined(invoker.data)) {
-    test_data += invoker.data
-  }
+    test_data = []
+    if (defined(invoker.data)) {
+      test_data += invoker.data
+    }
 
-  if (defined(invoker.dict)) {
-    fuzzer_name = target_name
-    launcher_name = target_name + ".sh"
+    if (defined(invoker.dict)) {
+      fuzzer_name = target_name
+      launcher_name = target_name + ".sh"
 
-    # Copy dictionary to output
-    copy(target_name + "_dict_copy") {
-      sources = [
+      # Copy dictionary to output
+      copy(target_name + "_dict_copy") {
+        sources = [
+          invoker.dict,
+        ]
+        outputs = [
+          "$root_build_dir/" + invoker.dict,
+        ]
+      }
+
+      fuzzer_test_launcher(launcher_name) {
+        dict = invoker.dict
+      }
+
+      test_deps += [
+        ":$launcher_name",
+        ":" + fuzzer_name + "_dict_copy",
+      ]
+      test_data += [
         invoker.dict,
-      ]
-      outputs = [
-        "$root_build_dir/" + invoker.dict,
+        ":$launcher_name",
       ]
     }
 
-    fuzzer_test_launcher(launcher_name) {
-      dict = invoker.dict
+    test(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "sources",
+                               "include_dirs",
+                             ])
+      deps = test_deps
+      data = test_data
+
+      if (defined(invoker.additional_configs)) {
+        configs += invoker.additional_configs
+      }
     }
-
-    test_deps += [
-      ":$launcher_name",
-      ":" + fuzzer_name + "_dict_copy",
-    ]
-    test_data += [
-      invoker.dict,
-      ":$launcher_name",
-    ]
-  }
-
-  test(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "sources",
-                             "include_dirs",
-                           ])
-    deps = test_deps
-    data = test_data
-
+  } else {
+    # noop on unsupported platforms.
+    # mark attributes as used.
+    assert(invoker.sources == [] || invoker.sources != [])
     if (defined(invoker.additional_configs)) {
-      configs += invoker.additional_configs
+      assert(
+          invoker.additional_configs == [] || invoker.additional_configs != [])
+    }
+    if (defined(invoker.deps)) {
+      assert(invoker.deps == [] || invoker.deps != [])
+    }
+    if (defined(invoker.dict)) {
+      assert(invoker.dict == [] || invoker.dict != [])
+    }
+
+    group(target_name) {
     }
   }
 }
