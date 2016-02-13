@@ -342,6 +342,11 @@ if (is_win) {
       "//testing/gtest",
     ]
 
+    data = [
+      "//chrome/test/data/extensions/",
+      "//chrome/test/data/installer/",
+    ]
+
     # TODO(GYP) manifest: $(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest
   }
 }  # is_win
