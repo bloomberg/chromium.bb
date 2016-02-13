@@ -1104,7 +1104,7 @@ class XcodeSettings(object):
       if not sdk_root:
         sdk_root = self._DefaultSdkRoot()
       sdk_version = self._GetSdkVersionInfoItem(sdk_root, '--show-sdk-version')
-      cache['DTSDKName'] = sdk_root + sdk_version
+      cache['DTSDKName'] = sdk_root + (sdk_version or '')
       if xcode >= '0720':
         cache['DTSDKBuild'] = self._GetSdkVersionInfoItem(
             sdk_root, '--show-sdk-build-version')
