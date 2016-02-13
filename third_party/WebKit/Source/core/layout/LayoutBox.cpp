@@ -4723,7 +4723,7 @@ void LayoutBox::clearPercentHeightDescendants()
 void LayoutBox::IntrinsicSizingInfo::transpose()
 {
     size = size.transposedSize();
-    aspectRatio = aspectRatio ? 1 / aspectRatio : 0;
+    aspectRatio = aspectRatio.transposedSize();
     std::swap(hasWidth, hasHeight);
 }
 

@@ -84,12 +84,12 @@ void LayoutSVGRoot::computeIntrinsicSizingInfo(IntrinsicSizingInfo& intrinsicSiz
     intrinsicSizingInfo.hasHeight = svg->hasIntrinsicHeight();
 
     if (!intrinsicSizingInfo.size.isEmpty()) {
-        intrinsicSizingInfo.aspectRatio = intrinsicSizingInfo.size.width() / static_cast<double>(intrinsicSizingInfo.size.height());
+        intrinsicSizingInfo.aspectRatio = intrinsicSizingInfo.size;
     } else {
         FloatSize viewBoxSize = svg->viewBox()->currentValue()->value().size();
         if (!viewBoxSize.isEmpty()) {
             // The viewBox can only yield an intrinsic ratio, not an intrinsic size.
-            intrinsicSizingInfo.aspectRatio = viewBoxSize.width() / static_cast<double>(viewBoxSize.height());
+            intrinsicSizingInfo.aspectRatio = viewBoxSize;
         }
     }
 

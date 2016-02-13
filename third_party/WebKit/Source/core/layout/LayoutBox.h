@@ -826,10 +826,10 @@ public:
 
     struct IntrinsicSizingInfo {
         STACK_ALLOCATED();
-        IntrinsicSizingInfo() : aspectRatio(0), hasWidth(true), hasHeight(true) {}
+        IntrinsicSizingInfo() : hasWidth(true), hasHeight(true) {}
 
         FloatSize size;
-        double aspectRatio;
+        FloatSize aspectRatio;
         bool hasWidth;
         bool hasHeight;
 

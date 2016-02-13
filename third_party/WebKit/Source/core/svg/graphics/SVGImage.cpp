@@ -156,11 +156,14 @@ IntSize SVGImage::containerSize() const
     LayoutBox::IntrinsicSizingInfo intrinsicSizingInfo;
     layoutObject->computeIntrinsicSizingInfo(intrinsicSizingInfo);
 
-    if (intrinsicSizingInfo.size.isEmpty() && intrinsicSizingInfo.aspectRatio) {
-        if (!intrinsicSizingInfo.size.width() && intrinsicSizingInfo.size.height())
-            intrinsicSizingInfo.size.setWidth(intrinsicSizingInfo.size.height() * intrinsicSizingInfo.aspectRatio);
-        else if (intrinsicSizingInfo.size.width() && !intrinsicSizingInfo.size.height())
-            intrinsicSizingInfo.size.setHeight(intrinsicSizingInfo.size.width() / intrinsicSizingInfo.aspectRatio);
+    if (intrinsicSizingInfo.size.isEmpty() && !intrinsicSizingInfo.aspectRatio.isEmpty()) {
+        if (!intrinsicSizingInfo.size.width() && intrinsicSizingInfo.size.height()) {
+            intrinsicSizingInfo.size.setWidth(
+                intrinsicSizingInfo.size.height() * intrinsicSizingInfo.aspectRatio.width() / intrinsicSizingInfo.aspectRatio.height());
+        } else if (intrinsicSizingInfo.size.width() && !intrinsicSizingInfo.size.height()) {
+            intrinsicSizingInfo.size.setHeight(
+                intrinsicSizingInfo.size.width() * intrinsicSizingInfo.aspectRatio.height() / intrinsicSizingInfo.aspectRatio.width());
+        }
     }
 
     // TODO(davve): In order to maintain aspect ratio the intrinsic
