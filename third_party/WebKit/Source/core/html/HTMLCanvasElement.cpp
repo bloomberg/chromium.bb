@@ -31,12 +31,18 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/File.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
@@ -1018,6 +1024,64 @@ ScriptPromise HTMLCanvasElement::createImageBitmap(ScriptState* scriptState, Eve
 bool HTMLCanvasElement::isOpaque() const
 {
     return m_context && !m_context->hasAlpha();
+}
+
+bool HTMLCanvasElement::isSupportedInteractiveCanvasFallback(const Element& element)
+{
+    if (!element.isDescendantOf(this))
+        return false;
+
+    // An element is a supported interactive canvas fallback element if it is one of the following:
+    // https://html.spec.whatwg.org/multipage/scripting.html#supported-interactive-canvas-fallback-element
+
+    // An a element that represents a hyperlink and that does not have any img descendants.
+    if (isHTMLAnchorElement(element))
+        return !Traversal<HTMLImageElement>::firstWithin(element);
+
+    // A button element
+    if (isHTMLButtonElement(element))
+        return true;
+
+    // An input element whose type attribute is in one of the Checkbox or Radio Button states.
+    // An input element that is a button but its type attribute is not in the Image Button state.
+    if (isHTMLInputElement(element)) {
+        const HTMLInputElement& inputElement = toHTMLInputElement(element);
+        if (inputElement.type() == InputTypeNames::checkbox
+            || inputElement.type() == InputTypeNames::radio
+            || inputElement.isTextButton())
+            return true;
+    }
+
+    // A select element with a multiple attribute or a display size greater than 1.
+    if (isHTMLSelectElement(element)) {
+        const HTMLSelectElement& selectElement = toHTMLSelectElement(element);
+        if (selectElement.multiple() || selectElement.size() > 1)
+            return true;
+    }
+
+    // An option element that is in a list of options of a select element with a multiple attribute or a display size greater than 1.
+    if (isHTMLOptionElement(element) && element.parentNode() && isHTMLSelectElement(*element.parentNode())) {
+        const HTMLSelectElement& selectElement = toHTMLSelectElement(*element.parentNode());
+        if (selectElement.multiple() || selectElement.size() > 1)
+            return true;
+    }
+
+    // An element that would not be interactive content except for having the tabindex attribute specified.
+    if (element.fastHasAttribute(HTMLNames::tabindexAttr))
+        return true;
+
+    // A non-interactive table, caption, thead, tbody, tfoot, tr, td, or th element.
+    if (isHTMLTableElement(element)
+        || element.hasTagName(HTMLNames::captionTag)
+        || element.hasTagName(HTMLNames::theadTag)
+        || element.hasTagName(HTMLNames::tbodyTag)
+        || element.hasTagName(HTMLNames::tfootTag)
+        || element.hasTagName(HTMLNames::trTag)
+        || element.hasTagName(HTMLNames::tdTag)
+        || element.hasTagName(HTMLNames::thTag))
+        return true;
+
+    return false;
 }
 
 } // namespace blink

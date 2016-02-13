@@ -181,6 +181,8 @@ public:
 
     void notifyListenersCanvasChanged();
 
+    bool isSupportedInteractiveCanvasFallback(const Element&);
+
 protected:
     void didMoveToNewDocument(Document& oldDocument) override;
 

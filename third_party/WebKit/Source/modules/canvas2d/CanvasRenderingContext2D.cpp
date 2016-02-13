@@ -2234,6 +2234,11 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
         return;
     }
 
+    if (options.control() && !canvas()->isSupportedInteractiveCanvasFallback(*options.control())) {
+        exceptionState.throwDOMException(NotSupportedError, "The control is neither null nor a supported interactive canvas fallback element.");
+        return;
+    }
+
     Path hitRegionPath = options.hasPath() ? options.path()->path() : m_path;
 
     SkCanvas* c = drawingCanvas();
