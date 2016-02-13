@@ -437,7 +437,6 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // should probably cancel the request in that case.
   DCHECK(pending_render_frame_host == pending_render_frame_host_.get() ||
          pending_render_frame_host == render_frame_host_.get());
-  DCHECK(frame_tree_node_->IsLoading());
 
   // Store the transferring request so that we can release it if the transfer
   // navigation matches.
@@ -448,11 +447,6 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   transfer_navigation_handle_ =
       pending_render_frame_host->PassNavigationHandleOwnership();
   DCHECK(transfer_navigation_handle_);
-
-  // Set the transferring RenderFrameHost as not loading, so that it does not
-  // emit a DidStopLoading notification if it is destroyed when creating the
-  // new navigating RenderFrameHost.
-  pending_render_frame_host->set_is_loading(false);
 
   // Sanity check that the params are for the correct frame and process.
   // These should match the RenderFrameHost that made the request.
@@ -486,11 +480,6 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // If the navigation continued, the NavigationHandle should have been
   // transfered to a RenderFrameHost. In the other cases, it should be cleared.
   transfer_navigation_handle_.reset();
-
-  // If the navigation in the new renderer did not start, inform the
-  // FrameTreeNode that it stopped loading.
-  if (!frame_tree_node_->IsLoading())
-    frame_tree_node_->DidStopLoading();
 }
 
 void RenderFrameHostManager::DidNavigateFrame(
@@ -923,12 +912,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 void RenderFrameHostManager::CleanUpNavigation() {
   CHECK(IsBrowserSideNavigationEnabled());
   render_frame_host_->ClearPendingWebUI();
-  if (speculative_render_frame_host_) {
-    bool was_loading = speculative_render_frame_host_->is_loading();
+  if (speculative_render_frame_host_)
     DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
-    if (was_loading)
-      frame_tree_node_->DidStopLoading();
-  }
 }
 
 // PlzNavigate
@@ -2017,7 +2002,6 @@ void RenderFrameHostManager::CommitPending() {
     // now to make sure the sad tab shows up, etc.
     DCHECK(!render_frame_host_->IsRenderFrameLive());
     DCHECK(!render_frame_host_->render_view_host()->IsRenderViewLive());
-    render_frame_host_->ResetLoadingState();
     delegate_->RenderProcessGoneFromRenderManager(
         render_frame_host_->render_view_host());
   }
@@ -2269,11 +2253,7 @@ void RenderFrameHostManager::CancelPending() {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CancelPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   render_frame_host_->ClearPendingWebUI();
-
-  bool pending_was_loading = pending_render_frame_host_->is_loading();
   DiscardUnusedFrame(UnsetPendingRenderFrameHost());
-  if (pending_was_loading)
-    frame_tree_node_->DidStopLoading();
 }
 
 scoped_ptr<RenderFrameHostImpl>
