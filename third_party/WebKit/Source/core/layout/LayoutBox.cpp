@@ -4466,7 +4466,7 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChil
                 collapseLoneAnonymousBlockChild(child);
             child = boxToSplit->slowFirstChild();
             ASSERT(child);
-            if (child && !child->previousSibling())
+            if (child && !child->nextSibling())
                 collapseLoneAnonymousBlockChild(child);
 
             markBoxForRelayoutAfterSplit(boxToSplit);
