@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="languages.html">
@@ -15,33 +14,36 @@
   <link rel="import" type="css" href="manage_languages_page.css">
   <template>
     <settings-languages languages="{{languages}}"></settings-languages>
-    <div class="settings-box content">
+    <div class="settings-box block content">
       <h2 i18n-content="enabledLanguages"></h2>
-      <div>
+      <div class="list-frame vertical-list">
         <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-          <paper-item>
-            <div class="language-name"
-                title="[[item.language.nativeDisplayName]]"
-                >[[item.language.displayName]]</div>
+          <div class="list-item">
+            <div class="language-name start"
+                title="[[item.language.nativeDisplayName]]">
+              [[item.language.displayName]]
+            </div>
             <paper-icon-button icon="clear" on-tap="onRemoveLanguageTap_"
                 hidden$="[[!canRemoveLanguage_(item.language.code, prefs.intl.app_locale.value)]]">
             </paper-icon-button>
-          </paper-item>
+          </div>
         </template>
       </div>
       <h2 i18n-content="allLanguages"></h2>
-      <iron-list items="{{availableLanguages_}}" as="item">
-        <template>
-          <paper-item on-tap="onAddLanguageTap_">
-            <div class="language-name">
-              <span>[[item.displayName]]</span> -
-              <span>[[item.nativeDisplayName]]</span>
+      <div class="list-frame vertical-list">
+        <iron-list items="{{availableLanguages_}}" as="item">
+          <template>
+            <div class="list-item" on-tap="onAddLanguageTap_">
+              <div class="language-name">
+                <span>[[item.displayName]]</span> -
+                <span>[[item.nativeDisplayName]]</span>
+              </div>
+              <iron-icon icon="done" hidden$="[[!item.enabled]]">
+              </iron-icon>
             </div>
-            <iron-icon icon="done" hidden$="[[!item.enabled]]">
-            </iron-icon>
-          </paper-item>
-        </template>
-      </iron-list>
+          </template>
+        </iron-list>
+      </div>
     </div>
   </template>
   <script src="manage_languages_page.js"></script>
