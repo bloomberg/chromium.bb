@@ -53,7 +53,7 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
                         const GURL& url,
                         ui::PageTransition transition_type);
 
-// TestRenderViewHostView ------------------------------------------------------
+// TestRenderWidgetHostView ----------------------------------------------------
 
 // Subclass the RenderViewHost's view so that we can call Show(), etc.,
 // without having side-effects.

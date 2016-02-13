@@ -279,7 +279,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   // interstitial is hidden.
   base::string16 original_web_contents_title_;
 
-  // Our RenderViewHostViewDelegate, necessary for accelerators to work.
+  // Our RenderViewHostDelegateView, necessary for accelerators to work.
   scoped_ptr<InterstitialPageRVHDelegateView> rvh_delegate_view_;
 
   // Settings passed to the renderer.
