@@ -86,7 +86,10 @@ paper-radio-button {
 .list-frame {
   @apply(--layout-center);
   display: block;
-  padding: 0 20px 0 48px;
+  -webkit-padding-end: 20px;
+  -webkit-padding-start: 48px;
+  padding-bottom: 0;
+  padding-top: 0;
 }
 
 .list-frame select {
@@ -147,10 +150,7 @@ paper-radio-button {
 
 .link-button {
   color: rgb(61, 130, 243);
-  padding-bottom: 6px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 6px;
+  padding: 6px 0;
   text-transform: none;
 }
 
