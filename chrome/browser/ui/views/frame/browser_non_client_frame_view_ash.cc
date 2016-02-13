@@ -328,12 +328,8 @@ void BrowserNonClientFrameViewAsh::Layout() {
 
   header_painter_->SetHeaderHeightForPainting(painted_height);
 
-  if (avatar_button()) {
+  if (avatar_button())
     LayoutAvatar();
-    header_painter_->UpdateLeftViewXInset(avatar_button()->bounds().right());
-  }
-  header_painter_->UpdateLeftViewXInset(
-      ash::HeaderPainterUtil::GetDefaultLeftViewXInset());
   BrowserNonClientFrameView::Layout();
 }
 

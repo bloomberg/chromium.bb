@@ -17,7 +17,7 @@ namespace {
 const int kTopCornerRadiusWhenRestored = 2;
 
 // Distance between left edge of the window and the leftmost view.
-const int kDefaultLeftViewXInset = 9;
+const int kLeftViewXInset = 9;
 
 // Space between the title text and the caption buttons.
 const int kTitleCaptionButtonSpacing = 5;
@@ -47,8 +47,8 @@ int HeaderPainterUtil::GetTopCornerRadiusWhenRestored() {
 }
 
 // static
-int HeaderPainterUtil::GetDefaultLeftViewXInset() {
-  return kDefaultLeftViewXInset;
+int HeaderPainterUtil::GetLeftViewXInset() {
+  return kLeftViewXInset;
 }
 
 // static

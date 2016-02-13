@@ -28,7 +28,7 @@ class HeaderPainterUtil {
 
   // Returns the default distance between the left edge of the window and the
   // leftmost view in the header.
-  static int GetDefaultLeftViewXInset();
+  static int GetLeftViewXInset();
 
   // Returns the amount that the frame background is inset from the left edge of
   // the window.

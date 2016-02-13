@@ -122,7 +122,6 @@ BrowserHeaderPainterAsh::BrowserHeaderPainterAsh()
       is_incognito_(false),
       view_(nullptr),
       window_icon_(nullptr),
-      window_icon_x_inset_(ash::HeaderPainterUtil::GetDefaultLeftViewXInset()),
       caption_button_container_(nullptr),
       painted_height_(0),
       initial_paint_(true),
@@ -260,7 +259,7 @@ void BrowserHeaderPainterAsh::LayoutHeader() {
     gfx::Size icon_size(window_icon_->GetPreferredSize());
     int icon_offset_y = (caption_button_container_->height() -
                          icon_size.height()) / 2;
-    window_icon_->SetBounds(window_icon_x_inset_,
+    window_icon_->SetBounds(ash::HeaderPainterUtil::GetLeftViewXInset(),
                             icon_offset_y,
                             icon_size.width(),
                             icon_size.height());
@@ -281,10 +280,6 @@ void BrowserHeaderPainterAsh::SetHeaderHeightForPainting(int height) {
 
 void BrowserHeaderPainterAsh::SchedulePaintForTitle() {
   view_->SchedulePaintInRect(GetTitleBounds());
-}
-
-void BrowserHeaderPainterAsh::UpdateLeftViewXInset(int left_view_x_inset) {
-  window_icon_x_inset_ = left_view_x_inset;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -41,9 +41,6 @@ class HeaderPainter {
 
   // Schedule a re-paint of the entire title.
   virtual void SchedulePaintForTitle() = 0;
-
-  // Updates the x inset of the leftmost view in the header.
-  virtual void UpdateLeftViewXInset(int left_view_x_inset) = 0;
 };
 
 }  // namespace wm
