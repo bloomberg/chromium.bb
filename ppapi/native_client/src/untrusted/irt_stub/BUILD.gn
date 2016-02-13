@@ -6,6 +6,8 @@ assert(is_nacl,
        "These targets must only be built using the untrusted NaCl toolchains.")
 
 static_library("ppapi_stub_lib") {
+  output_name = "ppapi_stub"
+
   # This library is distributed as a part of the SDK and as such has to
   # be a static library rather than a source set.
   sources = [
@@ -14,6 +16,7 @@ static_library("ppapi_stub_lib") {
     "ppapi_plugin_start.c",
     "thread_creator.c",
   ]
+  configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
   cflags = [ "-fPIC" ]
   deps = [
     "//build/config/nacl:nacl_base",

@@ -722,9 +722,6 @@ group("gn_only") {
         "//third_party/libjpeg_turbo:simd_asm",
       ]
     }
-    if (enable_nacl) {
-      deps += [ "//native_client/src/trusted/service_runtime:sel_ldr" ]
-    }
     if (use_ozone) {
       deps += [ "//ui/ozone/demo" ]
     }
@@ -732,6 +729,10 @@ group("gn_only") {
     if (is_linux && current_toolchain == host_toolchain) {
       deps += [ "//v8:d8" ]
     }
+  }
+
+  if (enable_nacl) {
+    deps += [ "//native_client_sdk/src:nacl_core_sdk" ]
   }
 
   if (is_android) {
