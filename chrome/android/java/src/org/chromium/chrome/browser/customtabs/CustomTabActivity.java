@@ -51,8 +51,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.widget.FadingShadow;
-import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -490,11 +488,8 @@ public class CustomTabActivity extends ChromeActivity {
         bottomBarStub.setLayoutResource(R.layout.custom_tabs_bottombar);
         bottomBarStub.inflate();
 
-        // Unlike others, this shadow docks itself at bottom and casts graphics upwards.
-        FadingShadowView shadow = (FadingShadowView) findViewById(R.id.bottombar_shadow);
+        View shadow = findViewById(R.id.bottombar_shadow);
         shadow.setVisibility(View.VISIBLE);
-        shadow.init(ApiCompatibilityUtils.getColor(getResources(),
-                R.color.bottom_bar_shadow_color), FadingShadow.POSITION_BOTTOM);
 
         ViewGroup bottomBar = (ViewGroup) findViewById(R.id.bottombar);
         bottomBar.setBackgroundColor(mIntentDataProvider.getBottomBarColor());
