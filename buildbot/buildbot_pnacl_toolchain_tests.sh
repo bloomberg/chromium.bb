@@ -39,6 +39,8 @@ export PNACL_BUILDBOT=true
 # by long periods without console output.
 export PNACL_VERBOSE=true
 
+EXIT_STATUS=0
+
 clobber() {
   echo @@@BUILD_STEP clobber@@@
   rm -rf scons-out
@@ -51,6 +53,7 @@ clobber() {
 
 handle-error() {
   echo "@@@STEP_FAILURE@@@"
+  EXIT_STATUS=1
 }
 
 ignore-error() {
@@ -253,6 +256,7 @@ tc-test-bot() {
     fi
 
   done
+  exit $EXIT_STATUS
 }
 
 
