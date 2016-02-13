@@ -664,4 +664,19 @@
     # Adding a new PPAPI example? Don't forget to update the GN build.
     # See //ppapi/examples/BUILD.gn
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'ppapi_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'ppapi_unittests',
+          ],
+          'includes': [ '../build/isolate.gypi' ],
+          'sources': [ 'ppapi_unittests.isolate' ],
+        },
+      ],
+    }],
+  ],
 }
