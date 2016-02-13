@@ -30,9 +30,6 @@ int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback) {
   base::debug::EnableInProcessStackDumping();
 #endif
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kMojoSingleProcess) &&
-      !command_line->HasSwitch("gtest_list_tests"))
-    command_line->AppendSwitch(switches::kEnableMultiprocess);
   // http://crbug.com/546644
   command_line->AppendSwitch(switches::kMojoNoSandbox);
 
