@@ -591,7 +591,8 @@ class MetaBuildWrapper(object):
     command, extra_files = self.GetIsolateCommand(target, vals, gn_isolate_map)
 
     label = gn_isolate_map[target_name]['label']
-    ret, out, _ = self.Call(['gn', 'desc', build_dir, label, 'runtime_deps'])
+    cmd = self.GNCmd('desc', build_dir, extra_args=[label, 'runtime_deps'])
+    ret, out, _ = self.Call(cmd)
     if ret:
       return ret
 
@@ -639,12 +640,12 @@ class MetaBuildWrapper(object):
 
   def GNCmd(self, subcommand, path, gn_args='', extra_args=None):
     if self.platform == 'linux2':
-      subdir = 'linux64'
+      subdir, exe = 'linux64', 'gn'
     elif self.platform == 'darwin':
-      subdir = 'mac'
+      subdir, exe = 'mac', 'gn'
     else:
-      subdir = 'win'
-    gn_path = self.PathJoin(self.chromium_src_dir, 'buildtools', subdir, 'gn')
+      subdir, exe = 'win', 'gn.exe'
+    gn_path = self.PathJoin(self.chromium_src_dir, 'buildtools', subdir, exe)
 
     cmd = [gn_path, subcommand, path]
     gn_args = gn_args.replace("$(goma_dir)", self.args.goma_dir)

@@ -271,7 +271,7 @@ class UnitTest(unittest.TestCase):
     mbw = self.fake_mbw(win32=True)
     self.check(['gen', '-c', 'gn_debug', '-g', 'c:\\goma', '//out/Debug'],
                mbw=mbw, ret=0,
-               out=('c:\\fake_src\\buildtools\\win\\gn gen //out/Debug '
+               out=('c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
                     '"--args=is_debug=true use_goma=true goma_dir=\\"'
                     'c:\\goma\\"" --check\n'))
 
