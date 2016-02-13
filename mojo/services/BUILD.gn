@@ -13,6 +13,7 @@ group("services") {
 
   deps += [
     "//mojo/services/network",
+    "//mojo/services/package_manager",
     "//mojo/services/test_service",
     "//mojo/services/tracing",
   ]

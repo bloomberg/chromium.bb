@@ -1,0 +1,7 @@
+include_rules = [
+  "+base",
+  "+mojo/common",
+  "+mojo/shell/public",
+  "+mojo/util",
+  "+net",
+]

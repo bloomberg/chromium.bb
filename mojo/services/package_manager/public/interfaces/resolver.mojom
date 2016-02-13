@@ -1,0 +1,29 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module package_manager.mojom;
+
+import "network/public/interfaces/url_loader.mojom";
+
+// Resolves various things to Mojo URLs that can be passed to mojo::Shell's
+// ConnectToApplication().
+interface Resolver {
+  // Returns the mojo:// URL of the service that can consume the content
+  // contained in |response|. The implementation takes the response and may read
+  // a small portion of it to make this determination, before passing it back
+  // via the supplied response callback.
+  ResolveResponse(mojo.URLResponse response) =>
+      (string resolved_mojo_url, mojo.URLResponse response);
+
+  // Returns the mojo:// URL of the service that exports to the caller every
+  // interface in |interfaces|.
+  ResolveInterfaces(array<string> interfaces) => (string resolved_mojo_url);
+
+  // Returns the mojo:// URL of the service that will handle content of type
+  // |mime_type|.
+  ResolveMIMEType(string mime_type) => (string resolved_mojo_url);
+
+  // Called to return 
+  ResolveProtocolScheme(string protocol_scheme) => (string resolved_mojo_url);
+};
