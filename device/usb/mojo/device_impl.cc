@@ -179,13 +179,17 @@ void OnIsochronousTransferOut(
 DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
                        PermissionProviderPtr permission_provider,
                        mojo::InterfaceRequest<Device> request)
-    : binding_(this, std::move(request)),
-      device_(device),
+    : device_(device),
+      observer_(this),
       permission_provider_(std::move(permission_provider)),
+      binding_(this, std::move(request)),
       weak_factory_(this) {
-  // This object owns itself and will be destroyed if either the message pipe
-  // it is bound to is closed or the PermissionProvider it depends on is
-  // unavailable.
+  DCHECK(device_);
+  // This object owns itself and will be destroyed if,
+  //  * the device is disconnected,
+  //  * the message pipe it is bound to is closed, or
+  //  * the PermissionProvider it depends on is unavailable.
+  observer_.Add(device_.get());
   binding_.set_connection_error_handler([this]() { delete this; });
   permission_provider_.set_connection_error_handler([this]() { delete this; });
 }
@@ -461,6 +465,11 @@ void DeviceImpl::IsochronousTransferOut(
   device_handle_->IsochronousTransferOut(
       endpoint_address, buffer, packet_lengths.storage(), timeout,
       base::Bind(&OnIsochronousTransferOut, base::Passed(&callback_ptr)));
+}
+
+void DeviceImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
+  DCHECK_EQ(device_, device);
+  delete this;
 }
 
 }  // namespace usb

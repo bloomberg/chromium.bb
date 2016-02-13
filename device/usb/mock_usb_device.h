@@ -43,6 +43,9 @@ class MockUsbDevice : public UsbDevice {
   MOCK_METHOD1(Open, void(const OpenCallback&));
   MOCK_METHOD0(GetActiveConfiguration, const device::UsbConfigDescriptor*());
 
+  // Public wrapper around UsbDevice::NotifyDeviceRemoved().
+  void NotifyDeviceRemoved();
+
  private:
   ~MockUsbDevice() override;
 };

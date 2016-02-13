@@ -11,8 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/public/interfaces/permission_provider.mojom.h"
+#include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -28,7 +30,7 @@ namespace usb {
 // Implementation of the public Device interface. Instances of this class are
 // constructed by DeviceManagerImpl and are strongly bound to their MessagePipe
 // lifetime.
-class DeviceImpl : public Device {
+class DeviceImpl : public Device, public device::UsbDevice::Observer {
  public:
   DeviceImpl(scoped_refptr<UsbDevice> device,
              PermissionProviderPtr permission_provider,
@@ -94,14 +96,18 @@ class DeviceImpl : public Device {
       uint32_t timeout,
       const IsochronousTransferOutCallback& callback) override;
 
-  mojo::Binding<Device> binding_;
+  // device::UsbDevice::Observer implementation:
+  void OnDeviceRemoved(scoped_refptr<device::UsbDevice>) override;
 
   scoped_refptr<UsbDevice> device_;
+  ScopedObserver<device::UsbDevice, device::UsbDevice::Observer> observer_;
+
   // The device handle. Will be null before the device is opened and after it
   // has been closed.
   scoped_refptr<UsbDeviceHandle> device_handle_;
   PermissionProviderPtr permission_provider_;
 
+  mojo::Binding<Device> binding_;
   base::WeakPtrFactory<DeviceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceImpl);

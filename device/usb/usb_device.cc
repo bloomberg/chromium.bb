@@ -9,6 +9,10 @@
 
 namespace device {
 
+UsbDevice::Observer::~Observer() {}
+
+void UsbDevice::Observer::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {}
+
 UsbDevice::UsbDevice(uint16_t vendor_id,
                      uint16_t product_id,
                      const base::string16& manufacturer_string,
@@ -28,6 +32,18 @@ void UsbDevice::CheckUsbAccess(const ResultCallback& callback) {
   // By default assume that access to the device is allowed. This is implemented
   // on Chrome OS by checking with permission_broker.
   callback.Run(true);
+}
+
+void UsbDevice::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void UsbDevice::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void UsbDevice::NotifyDeviceRemoved() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(this));
 }
 
 }  // namespace device

@@ -447,6 +447,15 @@ class USBDeviceImplTest : public testing::Test {
 
 }  // namespace
 
+TEST_F(USBDeviceImplTest, Disconnect) {
+  DevicePtr device = GetMockDeviceProxy();
+
+  base::RunLoop loop;
+  device.set_connection_error_handler(loop.QuitClosure());
+  mock_device().NotifyDeviceRemoved();
+  loop.Run();
+}
+
 TEST_F(USBDeviceImplTest, Open) {
   DevicePtr device = GetMockDeviceProxy();
 

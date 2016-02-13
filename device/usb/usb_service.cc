@@ -68,6 +68,7 @@ void UsbService::NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
   DCHECK(CalledOnValidThread());
 
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device));
+  device->NotifyDeviceRemoved();
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemovedCleanup(device));
 }
 

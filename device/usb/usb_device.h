@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "device/usb/usb_descriptors.h"
 #include "url/gurl.h"
@@ -31,6 +32,18 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  public:
   using OpenCallback = base::Callback<void(scoped_refptr<UsbDeviceHandle>)>;
   using ResultCallback = base::Callback<void(bool success)>;
+
+  // This observer interface should be used by objects that need only be
+  // notified about the removal of a particular device as it is more efficient
+  // than registering a large number of observers with UsbService::AddObserver.
+  class Observer {
+   public:
+    virtual ~Observer();
+
+    // This method is called when the UsbService that created this object
+    // detects that the device has been disconnected from the host.
+    virtual void OnDeviceRemoved(scoped_refptr<UsbDevice> device);
+  };
 
   // A unique identifier which remains stable for the lifetime of this device
   // object (i.e., until the device is unplugged or the USB service dies.)
@@ -64,13 +77,20 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // if the device is unconfigured.
   virtual const UsbConfigDescriptor* GetActiveConfiguration() = 0;
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  protected:
+  friend class UsbService;
+
   UsbDevice(uint16_t vendor_id,
             uint16_t product_id,
             const base::string16& manufacturer_string,
             const base::string16& product_string,
             const base::string16& serial_number);
   virtual ~UsbDevice();
+
+  void NotifyDeviceRemoved();
 
   // These members must be mutable by subclasses as necessary during device
   // enumeration. To preserve the thread safety of this object they must remain
@@ -90,6 +110,8 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   const std::string guid_;
   const uint16_t vendor_id_;
   const uint16_t product_id_;
+
+  base::ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDevice);
 };

@@ -61,4 +61,8 @@ MockUsbDevice::MockUsbDevice(
 MockUsbDevice::~MockUsbDevice() {
 }
 
+void MockUsbDevice::NotifyDeviceRemoved() {
+  UsbDevice::NotifyDeviceRemoved();
+}
+
 }  // namespace device
