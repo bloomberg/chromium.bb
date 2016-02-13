@@ -11,7 +11,7 @@ namespace printing {
 
 namespace {
 
-const char* kMetafileKey = "CrMetafile";
+const char kMetafileKey[] = "CrMetafile";
 
 }  // namespace
 

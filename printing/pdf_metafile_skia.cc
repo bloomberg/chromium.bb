@@ -65,6 +65,21 @@ bool WriteAssetToBuffer(const SkStreamAsset* asset,
   return (length == assetCopy->read(buffer, length));
 }
 
+SkTime::DateTime TimeToSkTime(base::Time time) {
+    base::Time::Exploded exploded;
+    time.UTCExplode(&exploded);
+    SkTime::DateTime skdate;
+    skdate.fTimeZoneMinutes = 0;
+    skdate.fYear = exploded.year;
+    skdate.fMonth = exploded.month;
+    skdate.fDayOfWeek = exploded.day_of_week;
+    skdate.fDay = exploded.day_of_month;
+    skdate.fHour = exploded.hour;
+    skdate.fMinute = exploded.minute;
+    skdate.fSecond = exploded.second;
+    return skdate;
+}
+
 }  // namespace
 
 namespace printing {
@@ -99,7 +114,7 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
                                 const gfx::Rect& content_area,
                                 const float& scale_factor) {
   if (data_->recorder_.getRecordingCanvas())
-    this->FinishPage();
+    FinishPage();
   DCHECK(!data_->recorder_.getRecordingCanvas());
   SkSize sk_page_size = gfx::SizeFToSkSize(gfx::SizeF(page_size));
   data_->pages_.push_back(
@@ -133,28 +148,13 @@ bool PdfMetafileSkia::FinishPage() {
   return true;
 }
 
-static SkTime::DateTime TimeToSkTime(base::Time time) {
-    base::Time::Exploded exploded;
-    time.UTCExplode(&exploded);
-    SkTime::DateTime skdate;
-    skdate.fTimeZoneMinutes = 0;
-    skdate.fYear = exploded.year;
-    skdate.fMonth = exploded.month;
-    skdate.fDayOfWeek = exploded.day_of_week;
-    skdate.fDay = exploded.day_of_month;
-    skdate.fHour = exploded.hour;
-    skdate.fMinute = exploded.minute;
-    skdate.fSecond = exploded.second;
-    return skdate;
-}
-
 bool PdfMetafileSkia::FinishDocument() {
   // If we've already set the data in InitFromData, leave it be.
   if (data_->pdf_data_)
     return false;
 
   if (data_->recorder_.getRecordingCanvas())
-    this->FinishPage();
+    FinishPage();
 
   SkDynamicMemoryWStream pdf_stream;
   skia::RefPtr<SkDocument> pdf_doc =
