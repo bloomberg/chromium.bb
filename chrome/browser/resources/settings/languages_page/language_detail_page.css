@@ -8,7 +8,7 @@ label {
 }
 
 label > *:not(:first-child) {
-  margin-left: 5px;
+  -webkit-margin-start: 5px;
 }
 
 label > span {
