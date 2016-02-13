@@ -174,7 +174,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const ProofVerifyDetails& verify_details) override;
 
   // QuicConnectionVisitorInterface methods:
-  void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
+  void OnConnectionClosed(QuicErrorCode error,
+                          ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
   void OnPathDegrading() override;
 

@@ -132,7 +132,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeaders) {
   EXPECT_EQ("", stream_->data());
   EXPECT_EQ(headers, stream_->decompressed_headers());
   stream_->OnStreamHeadersComplete(false, headers.size());
-  EXPECT_EQ(kV3HighestPriority, stream_->Priority());
+  EXPECT_EQ(kV3HighestPriority, stream_->priority());
   EXPECT_EQ("", stream_->data());
   EXPECT_EQ(headers, stream_->decompressed_headers());
   EXPECT_FALSE(stream_->IsDoneReading());
@@ -147,7 +147,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersWithFin) {
   EXPECT_EQ("", stream_->data());
   EXPECT_EQ(headers, stream_->decompressed_headers());
   stream_->OnStreamHeadersComplete(true, headers.size());
-  EXPECT_EQ(kV3HighestPriority, stream_->Priority());
+  EXPECT_EQ(kV3HighestPriority, stream_->priority());
   EXPECT_EQ("", stream_->data());
   EXPECT_EQ(headers, stream_->decompressed_headers());
   EXPECT_FALSE(stream_->IsDoneReading());

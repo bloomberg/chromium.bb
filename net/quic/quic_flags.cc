@@ -50,9 +50,6 @@ bool FLAGS_quic_auto_tune_receive_window = true;
 // If true, multipath is enabled for the connection.
 bool FLAGS_quic_enable_multipath = false;
 
-// Limits QUIC's max CWND to 200 packets.
-bool FLAGS_quic_limit_max_cwnd = true;
-
 // If true, require handshake confirmation for QUIC connections, functionally
 // disabling 0-rtt handshakes.
 // TODO(rtenneti): Enable this flag after CryptoServerTest's are fixed.
@@ -118,9 +115,6 @@ bool FLAGS_quic_distinguish_incoming_outgoing_streams = true;
 // is present in the client hello.
 bool FLAGS_quic_validate_stk_without_scid = true;
 
-// If true, use the new write blocked list for QUIC.
-bool FLAGS_quic_new_blocked_list = true;
-
 // If true, QUIC will support RFC 7539 variants of ChaCha20 Poly1305.
 bool FLAGS_quic_use_rfc7539 = true;
 
@@ -174,3 +168,14 @@ bool FLAGS_quic_crypto_server_config_default_has_chacha20 = true;
 // If true, checking for peer address change is postponed after the packet gets
 // decrypted.
 bool FLAGS_check_peer_address_change_after_decryption = true;
+
+// If true, always log the cached network parameters, regardless of whether
+// bandwidth-resumption has been enabled.
+bool FLAGS_quic_log_received_parameters = true;
+
+// If true, QUIC will use newly refactored TCP sender code.
+bool FLAGS_quic_use_new_tcp_sender = true;
+
+// Saves the initial subkey secret in QUIC crypto when deriving keys from the
+// initial premaster secret.
+bool FLAGS_quic_save_initial_subkey_secret = true;

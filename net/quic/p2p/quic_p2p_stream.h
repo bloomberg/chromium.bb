@@ -41,7 +41,6 @@ class NET_EXPORT QuicP2PStream : public ReliableQuicStream {
   void OnDataAvailable() override;
   void OnClose() override;
   void OnCanWrite() override;
-  SpdyPriority Priority() const override;
 
   void WriteHeader(base::StringPiece data);
 
@@ -52,8 +51,6 @@ class NET_EXPORT QuicP2PStream : public ReliableQuicStream {
 
  private:
   Delegate* delegate_ = nullptr;
-
-  SpdyPriority priority_ = 0;
 
   CompletionCallback write_callback_;
   int last_write_size_ = 0;

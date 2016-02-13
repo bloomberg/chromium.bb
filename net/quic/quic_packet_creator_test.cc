@@ -83,7 +83,8 @@ class MockDelegate : public QuicPacketCreator::DelegateInterface {
 
   MOCK_METHOD1(OnSerializedPacket, void(SerializedPacket* packet));
   MOCK_METHOD0(OnResetFecGroup, void());
-  MOCK_METHOD2(CloseConnection, void(QuicErrorCode, bool));
+  MOCK_METHOD2(OnUnrecoverableError,
+               void(QuicErrorCode, ConnectionCloseSource source));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -1643,7 +1644,7 @@ TEST_P(QuicPacketCreatorTest, SerializePacketOnDifferentPath) {
 
 TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
   FLAGS_quic_never_write_unencrypted_data = true;
-  EXPECT_CALL(delegate_, CloseConnection(_, _));
+  EXPECT_CALL(delegate_, OnUnrecoverableError(_, _));
   QuicStreamFrame stream_frame(kHeadersStreamId, /*fin=*/false, 0u,
                                StringPiece());
   EXPECT_DFATAL(creator_.AddSavedFrame(QuicFrame(&stream_frame)),
@@ -1693,7 +1694,7 @@ TEST_P(QuicPacketCreatorTest, SerializeUnencryptedFecClosesConnection) {
 
   // Try to send an FEC packet unencrypted.
   creator_.set_encryption_level(ENCRYPTION_NONE);
-  EXPECT_CALL(delegate_, CloseConnection(QUIC_UNENCRYPTED_FEC_DATA, _));
+  EXPECT_CALL(delegate_, OnUnrecoverableError(QUIC_UNENCRYPTED_FEC_DATA, _));
   char seralized_fec_buffer[kMaxPacketSize];
   EXPECT_DFATAL(QuicPacketCreatorPeer::SerializeFec(
                     &creator_, seralized_fec_buffer, kMaxPacketSize),

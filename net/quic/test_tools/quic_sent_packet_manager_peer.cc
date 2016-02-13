@@ -165,6 +165,20 @@ QuicSentPacketManagerPeer::GetNetworkChangeVisitor(
 }
 
 // static
+void QuicSentPacketManagerPeer::SetConsecutiveRtoCount(
+    QuicSentPacketManager* sent_packet_manager,
+    size_t count) {
+  sent_packet_manager->consecutive_rto_count_ = count;
+}
+
+// static
+void QuicSentPacketManagerPeer::SetConsecutiveTlpCount(
+    QuicSentPacketManager* sent_packet_manager,
+    size_t count) {
+  sent_packet_manager->consecutive_tlp_count_ = count;
+}
+
+// static
 QuicSustainedBandwidthRecorder& QuicSentPacketManagerPeer::GetBandwidthRecorder(
     QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->sustained_bandwidth_recorder_;

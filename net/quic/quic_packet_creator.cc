@@ -477,7 +477,8 @@ void QuicPacketCreator::OnSerializedPacket() {
   if (packet_.encrypted_buffer == nullptr) {
     QUIC_BUG << "Failed to SerializePacket. fec_policy:" << fec_send_policy()
              << " should_fec_protect_:" << should_fec_protect_next_packet_;
-    delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
+    delegate_->OnUnrecoverableError(QUIC_FAILED_TO_SERIALIZE_PACKET,
+                                    ConnectionCloseSource::FROM_SELF);
     return;
   }
 
@@ -562,7 +563,7 @@ bool QuicPacketCreator::AddPaddedSavedFrame(const QuicFrame& frame) {
 void QuicPacketCreator::AddAckListener(QuicAckListenerInterface* listener,
                                        QuicPacketLength length) {
   DCHECK(!queued_frames_.empty());
-  packet_.listeners.push_back(AckListenerWrapper(listener, length));
+  packet_.listeners.emplace_back(listener, length);
 }
 
 void QuicPacketCreator::SerializePacket(char* encrypted_buffer,
@@ -636,7 +637,8 @@ void QuicPacketCreator::SerializeFec(char* buffer, size_t buffer_len) {
   if (FLAGS_quic_no_unencrypted_fec &&
       packet_.encryption_level == ENCRYPTION_NONE) {
     QUIC_BUG << "SerializeFEC must be called with encryption.";
-    delegate_->CloseConnection(QUIC_UNENCRYPTED_FEC_DATA, false);
+    delegate_->OnUnrecoverableError(QUIC_UNENCRYPTED_FEC_DATA,
+                                    ConnectionCloseSource::FROM_SELF);
     return;
   }
   DCHECK_EQ(0u, queued_frames_.size());
@@ -716,7 +718,8 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
       frame.stream_frame->stream_id != kCryptoStreamId &&
       packet_.encryption_level == ENCRYPTION_NONE) {
     QUIC_BUG << "Cannot send stream data without encryption.";
-    delegate_->CloseConnection(QUIC_UNENCRYPTED_STREAM_DATA, false);
+    delegate_->OnUnrecoverableError(QUIC_UNENCRYPTED_STREAM_DATA,
+                                    ConnectionCloseSource::FROM_SELF);
     return false;
   }
   InFecGroup is_in_fec_group = MaybeUpdateLengthsAndStartFec();

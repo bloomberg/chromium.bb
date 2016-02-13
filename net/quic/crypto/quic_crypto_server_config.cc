@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/hkdf.h"
@@ -615,10 +616,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   bool x509_ecdsa_supported = false;
   ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
   DCHECK(proof_source_.get());
-  if (!crypto_proof->certs &&
+  if (!crypto_proof->chain &&
       !proof_source_->GetProof(server_ip, info.sni.as_string(),
                                primary_config->serialized, x509_ecdsa_supported,
-                               &crypto_proof->certs, &crypto_proof->signature,
+                               &crypto_proof->chain, &crypto_proof->signature,
                                &crypto_proof->cert_sct)) {
     return QUIC_HANDSHAKE_FAILED;
   }
@@ -714,11 +715,11 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_suffix.append(requested_config->serialized);
   DCHECK(proof_source_.get());
   if (version > QUIC_VERSION_25) {
-    if (crypto_proof->certs->empty()) {
+    if (crypto_proof->chain->certs.empty()) {
       *error_details = "Failed to get certs";
       return QUIC_CRYPTO_INTERNAL_ERROR;
     }
-    hkdf_suffix.append(crypto_proof->certs->at(0));
+    hkdf_suffix.append(crypto_proof->chain->certs.at(0));
   }
 
   StringPiece cetv_ciphertext;
@@ -783,10 +784,14 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(hkdf_suffix);
 
-  if (!CryptoUtils::DeriveKeys(
-          params->initial_premaster_secret, params->aead, info.client_nonce,
-          info.server_nonce, hkdf_input, Perspective::IS_SERVER,
-          &params->initial_crypters, nullptr /* subkey secret */)) {
+  string* subkey_secret = nullptr;
+  if (FLAGS_quic_save_initial_subkey_secret) {
+    subkey_secret = &params->initial_subkey_secret;
+  }
+  if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
+                               info.client_nonce, info.server_nonce, hkdf_input,
+                               Perspective::IS_SERVER,
+                               &params->initial_crypters, subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -1068,7 +1073,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     string serialized_config = primary_config->serialized;
     if (!proof_source_->GetProof(server_ip, info->sni.as_string(),
                                  serialized_config, x509_ecdsa_supported,
-                                 &crypto_proof->certs, &crypto_proof->signature,
+                                 &crypto_proof->chain, &crypto_proof->signature,
                                  &crypto_proof->cert_sct)) {
       found_error = true;
       info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
@@ -1194,19 +1199,19 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
                             previous_source_address_tokens, client_ip, rand,
                             clock->WallNow(), cached_network_params));
 
-  const vector<string>* certs;
+  scoped_refptr<ProofSource::Chain> chain;
   string signature;
   string cert_sct;
   if (!proof_source_->GetProof(
           server_ip, params.sni, primary_config_->serialized,
-          params.x509_ecdsa_supported, &certs, &signature, &cert_sct)) {
+          params.x509_ecdsa_supported, &chain, &signature, &cert_sct)) {
     DVLOG(1) << "Server: failed to get proof.";
     return false;
   }
 
   const string compressed = CertCompressor::CompressChain(
-      *certs, params.client_common_set_hashes, params.client_cached_cert_hashes,
-      primary_config_->common_cert_sets);
+      chain->certs, params.client_common_set_hashes,
+      params.client_cached_cert_hashes, primary_config_->common_cert_sets);
 
   out->SetStringPiece(kCertificateTag, compressed);
   out->SetStringPiece(kPROF, signature);
@@ -1274,7 +1279,7 @@ void QuicCryptoServerConfig::BuildRejection(
   }
 
   const string compressed = CertCompressor::CompressChain(
-      *crypto_proof.certs, params->client_common_set_hashes,
+      crypto_proof.chain->certs, params->client_common_set_hashes,
       params->client_cached_cert_hashes, config.common_cert_sets);
 
   // kREJOverheadBytes is a very rough estimate of how much of a REJ
@@ -1766,7 +1771,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateServerNonce(
 bool QuicCryptoServerConfig::ValidateExpectedLeafCertificate(
     const CryptoHandshakeMessage& client_hello,
     const QuicCryptoProof& crypto_proof) const {
-  if (crypto_proof.certs->empty()) {
+  if (crypto_proof.chain->certs.empty()) {
     return false;
   }
 
@@ -1774,7 +1779,7 @@ bool QuicCryptoServerConfig::ValidateExpectedLeafCertificate(
   if (client_hello.GetUint64(kXLCT, &hash_from_client) != QUIC_NO_ERROR) {
     return false;
   }
-  return CryptoUtils::ComputeLeafCertHash(crypto_proof.certs->at(0)) ==
+  return CryptoUtils::ComputeLeafCertHash(crypto_proof.chain->certs.at(0)) ==
          hash_from_client;
 }
 
@@ -1815,6 +1820,6 @@ QuicCryptoServerConfig::Config::~Config() {
   STLDeleteElements(&key_exchanges);
 }
 
-QuicCryptoProof::QuicCryptoProof() : certs(nullptr) {}
+QuicCryptoProof::QuicCryptoProof() {}
 QuicCryptoProof::~QuicCryptoProof() {}
 }  // namespace net

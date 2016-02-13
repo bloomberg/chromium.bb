@@ -23,6 +23,7 @@
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/spdy/spdy_session.h"
@@ -249,7 +250,8 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   if (connection()->connected()) {
     // Ensure that the connection is closed by the time the session is
     // destroyed.
-    connection()->CloseConnection(QUIC_INTERNAL_ERROR, false);
+    connection()->CloseConnection(QUIC_INTERNAL_ERROR,
+                                  ConnectionCloseSource::FROM_SELF);
   }
 
   if (IsEncryptionEstablished())
@@ -691,11 +693,12 @@ void QuicChromiumClientSession::OnRstStream(const QuicRstStreamFrame& frame) {
   OnClosedStream();
 }
 
-void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
-                                                   bool from_peer) {
+void QuicChromiumClientSession::OnConnectionClosed(
+    QuicErrorCode error,
+    ConnectionCloseSource source) {
   DCHECK(!connection()->connected());
-  logger_->OnConnectionClosed(error, from_peer);
-  if (from_peer) {
+  logger_->OnConnectionClosed(error, source);
+  if (source == ConnectionCloseSource::FROM_PEER) {
     if (IsCryptoHandshakeConfirmed()) {
       UMA_HISTOGRAM_SPARSE_SLOWLY(
           "Net.QuicSession.ConnectionCloseErrorCodeServer.HandshakeConfirmed",
@@ -773,7 +776,7 @@ void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",
                               connection()->version());
   NotifyFactoryOfSessionGoingAway();
-  QuicSession::OnConnectionClosed(error, from_peer);
+  QuicSession::OnConnectionClosed(error, source);
 
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
@@ -867,7 +870,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorInner(
                     NetLog::IntCallback("net_error", net_error));
 
   if (connection()->connected())
-    connection()->CloseConnection(quic_error, false);
+    connection()->CloseConnection(quic_error, ConnectionCloseSource::FROM_SELF);
   DCHECK(!connection()->connected());
 }
 

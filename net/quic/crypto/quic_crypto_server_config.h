@@ -24,6 +24,7 @@
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_secret_boxer.h"
+#include "net/quic/crypto/proof_source.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/proto/source_address_token.pb.h"
 #include "net/quic/quic_time.h"
@@ -628,8 +629,7 @@ struct NET_EXPORT_PRIVATE QuicCryptoProof {
   ~QuicCryptoProof();
 
   std::string signature;
-  // QuicCryptoProof does not take ownership of |certs|.
-  const std::vector<std::string>* certs;
+  scoped_refptr<ProofSource::Chain> chain;
   std::string cert_sct;
   // The server config that is used for this proof (and the rest of the
   // request).

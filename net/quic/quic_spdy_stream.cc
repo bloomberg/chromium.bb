@@ -156,10 +156,6 @@ void QuicSpdyStream::SetPriority(SpdyPriority priority) {
   priority_ = priority;
 }
 
-SpdyPriority QuicSpdyStream::Priority() const {
-  return priority();
-}
-
 void QuicSpdyStream::OnStreamHeaders(StringPiece headers_data) {
   if (!FLAGS_quic_supports_trailers || !headers_decompressed_) {
     headers_data.AppendToString(&decompressed_headers_);
@@ -201,8 +197,8 @@ void QuicSpdyStream::OnPromiseHeadersComplete(
     size_t /* frame_len */) {
   // To be overridden in QuicSpdyClientStream.  Not supported on
   // server side.
-  session()->CloseConnectionWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                        "Promise headers received by server");
+  session()->connection()->SendConnectionCloseWithDetails(
+      QUIC_INVALID_HEADERS_STREAM_DATA, "Promise headers received by server");
   return;
 }
 
@@ -210,14 +206,14 @@ void QuicSpdyStream::OnTrailingHeadersComplete(bool fin, size_t /*frame_len*/) {
   DCHECK(!trailers_decompressed_);
   if (fin_received()) {
     DLOG(ERROR) << "Received Trailers after FIN, on stream: " << id();
-    session()->CloseConnectionWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                          "Trailers after fin");
+    session()->connection()->SendConnectionCloseWithDetails(
+        QUIC_INVALID_HEADERS_STREAM_DATA, "Trailers after fin");
     return;
   }
   if (!fin) {
     DLOG(ERROR) << "Trailers must have FIN set, on stream: " << id();
-    session()->CloseConnectionWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                          "Fin missing from trailers");
+    session()->connection()->SendConnectionCloseWithDetails(
+        QUIC_INVALID_HEADERS_STREAM_DATA, "Fin missing from trailers");
     return;
   }
   trailers_decompressed_ = true;
@@ -262,4 +258,7 @@ bool QuicSpdyStream::FinishedReadingTrailers() const {
   return no_more_trailers && decompressed_trailers_.empty();
 }
 
+SpdyPriority QuicSpdyStream::priority() const {
+  return priority_;
+}
 }  // namespace net

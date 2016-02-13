@@ -25,11 +25,11 @@ TEST(QuicWriteBlockedListTest, PriorityOrder) {
   write_blocked_list.RegisterStream(kHeadersStreamId, kV3HighestPriority);
   write_blocked_list.RegisterStream(kCryptoStreamId, kV3HighestPriority);
 
-  write_blocked_list.AddStream(40, kV3LowestPriority);
-  write_blocked_list.AddStream(23, kV3HighestPriority);
-  write_blocked_list.AddStream(17, kV3HighestPriority);
-  write_blocked_list.AddStream(kHeadersStreamId, kV3HighestPriority);
-  write_blocked_list.AddStream(kCryptoStreamId, kV3HighestPriority);
+  write_blocked_list.AddStream(40);
+  write_blocked_list.AddStream(23);
+  write_blocked_list.AddStream(17);
+  write_blocked_list.AddStream(kHeadersStreamId);
+  write_blocked_list.AddStream(kCryptoStreamId);
 
   EXPECT_EQ(5u, write_blocked_list.NumBlockedStreams());
   EXPECT_TRUE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
@@ -52,7 +52,7 @@ TEST(QuicWriteBlockedListTest, PriorityOrder) {
 TEST(QuicWriteBlockedListTest, CryptoStream) {
   QuicWriteBlockedList write_blocked_list;
   write_blocked_list.RegisterStream(kCryptoStreamId, kV3HighestPriority);
-  write_blocked_list.AddStream(kCryptoStreamId, kV3HighestPriority);
+  write_blocked_list.AddStream(kCryptoStreamId);
 
   EXPECT_EQ(1u, write_blocked_list.NumBlockedStreams());
   EXPECT_TRUE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
@@ -64,7 +64,7 @@ TEST(QuicWriteBlockedListTest, CryptoStream) {
 TEST(QuicWriteBlockedListTest, HeadersStream) {
   QuicWriteBlockedList write_blocked_list;
   write_blocked_list.RegisterStream(kHeadersStreamId, kV3HighestPriority);
-  write_blocked_list.AddStream(kHeadersStreamId, kV3HighestPriority);
+  write_blocked_list.AddStream(kHeadersStreamId);
 
   EXPECT_EQ(1u, write_blocked_list.NumBlockedStreams());
   EXPECT_TRUE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
@@ -77,8 +77,8 @@ TEST(QuicWriteBlockedListTest, VerifyHeadersStream) {
   QuicWriteBlockedList write_blocked_list;
   write_blocked_list.RegisterStream(5, kV3HighestPriority);
   write_blocked_list.RegisterStream(kHeadersStreamId, kV3HighestPriority);
-  write_blocked_list.AddStream(5, kV3HighestPriority);
-  write_blocked_list.AddStream(kHeadersStreamId, kV3HighestPriority);
+  write_blocked_list.AddStream(5);
+  write_blocked_list.AddStream(kHeadersStreamId);
 
   EXPECT_EQ(2u, write_blocked_list.NumBlockedStreams());
   EXPECT_TRUE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
@@ -100,9 +100,9 @@ TEST(QuicWriteBlockedListTest, NoDuplicateEntries) {
   // priority.
   const QuicStreamId kBlockedId = kClientDataStreamId1;
   write_blocked_list.RegisterStream(kBlockedId, kV3HighestPriority);
-  write_blocked_list.AddStream(kBlockedId, kV3HighestPriority);
-  write_blocked_list.AddStream(kBlockedId, kV3HighestPriority);
-  write_blocked_list.AddStream(kBlockedId, kV3HighestPriority);
+  write_blocked_list.AddStream(kBlockedId);
+  write_blocked_list.AddStream(kBlockedId);
+  write_blocked_list.AddStream(kBlockedId);
 
   // This should only result in one blocked stream being added.
   EXPECT_EQ(1u, write_blocked_list.NumBlockedStreams());
@@ -125,45 +125,45 @@ TEST(QuicWriteBlockedListTest, BatchingWrites) {
   write_blocked_list.RegisterStream(id2, kV3LowestPriority);
   write_blocked_list.RegisterStream(id3, kV3HighestPriority);
 
-  write_blocked_list.AddStream(id1, kV3LowestPriority);
-  write_blocked_list.AddStream(id2, kV3LowestPriority);
+  write_blocked_list.AddStream(id1);
+  write_blocked_list.AddStream(id2);
   EXPECT_EQ(2u, write_blocked_list.NumBlockedStreams());
 
   // The first stream we push back should stay at the front until 16k is
   // written.
   EXPECT_EQ(id1, write_blocked_list.PopFront());
   write_blocked_list.UpdateBytesForStream(id1, 15999);
-  write_blocked_list.AddStream(id1, kV3LowestPriority);
+  write_blocked_list.AddStream(id1);
   EXPECT_EQ(2u, write_blocked_list.NumBlockedStreams());
   EXPECT_EQ(id1, write_blocked_list.PopFront());
 
   // Once 16k is written the first stream will yield to the next.
   write_blocked_list.UpdateBytesForStream(id1, 1);
-  write_blocked_list.AddStream(id1, kV3LowestPriority);
+  write_blocked_list.AddStream(id1);
   EXPECT_EQ(2u, write_blocked_list.NumBlockedStreams());
   EXPECT_EQ(id2, write_blocked_list.PopFront());
 
   // Set the new stream to have written all but one byte.
   write_blocked_list.UpdateBytesForStream(id2, 15999);
-  write_blocked_list.AddStream(id2, kV3LowestPriority);
+  write_blocked_list.AddStream(id2);
   EXPECT_EQ(2u, write_blocked_list.NumBlockedStreams());
 
   // Ensure higher priority streams are popped first.
-  write_blocked_list.AddStream(id3, kV3HighestPriority);
+  write_blocked_list.AddStream(id3);
   EXPECT_EQ(id3, write_blocked_list.PopFront());
 
   // Higher priority streams will always be popped first, even if using their
   // byte quota
   write_blocked_list.UpdateBytesForStream(id3, 20000);
-  write_blocked_list.AddStream(id3, kV3HighestPriority);
+  write_blocked_list.AddStream(id3);
   EXPECT_EQ(id3, write_blocked_list.PopFront());
 
   // Once the higher priority stream is out of the way, id2 will resume its 16k
   // write, with only 1 byte remaining of its guaranteed write allocation.
   EXPECT_EQ(id2, write_blocked_list.PopFront());
-  write_blocked_list.AddStream(id2, net::kV3HighestPriority);
+  write_blocked_list.AddStream(id2);
   write_blocked_list.UpdateBytesForStream(id2, 1);
-  write_blocked_list.AddStream(id2, kV3LowestPriority);
+  write_blocked_list.AddStream(id2);
   EXPECT_EQ(2u, write_blocked_list.NumBlockedStreams());
   EXPECT_EQ(id1, write_blocked_list.PopFront());
 }
@@ -182,7 +182,7 @@ TEST(QuicWriteBlockedListTest, Ceding) {
   // When nothing is on the list, nothing yields.
   EXPECT_FALSE(write_blocked_list.ShouldYield(5));
 
-  write_blocked_list.AddStream(5, 5);
+  write_blocked_list.AddStream(5);
   // 5 should not yield to itself.
   EXPECT_FALSE(write_blocked_list.ShouldYield(5));
   // 4 and 7 are equal or lower priority and should yield to 5.
@@ -194,21 +194,21 @@ TEST(QuicWriteBlockedListTest, Ceding) {
   EXPECT_FALSE(write_blocked_list.ShouldYield(kCryptoStreamId));
 
   // Block a high priority stream.
-  write_blocked_list.AddStream(15, kV3HighestPriority);
+  write_blocked_list.AddStream(15);
   // 16 should yield (same priority) but headers and crypto will still not.
   EXPECT_TRUE(write_blocked_list.ShouldYield(16));
   EXPECT_FALSE(write_blocked_list.ShouldYield(kHeadersStreamId));
   EXPECT_FALSE(write_blocked_list.ShouldYield(kCryptoStreamId));
 
   // Block the headers stream.  All streams but crypto and headers should yield.
-  write_blocked_list.AddStream(kHeadersStreamId, kV3HighestPriority);
+  write_blocked_list.AddStream(kHeadersStreamId);
   EXPECT_TRUE(write_blocked_list.ShouldYield(16));
   EXPECT_TRUE(write_blocked_list.ShouldYield(15));
   EXPECT_FALSE(write_blocked_list.ShouldYield(kHeadersStreamId));
   EXPECT_FALSE(write_blocked_list.ShouldYield(kCryptoStreamId));
 
   // Block the crypto stream.  All streams but crypto should yield.
-  write_blocked_list.AddStream(kCryptoStreamId, kV3HighestPriority);
+  write_blocked_list.AddStream(kCryptoStreamId);
   EXPECT_TRUE(write_blocked_list.ShouldYield(16));
   EXPECT_TRUE(write_blocked_list.ShouldYield(15));
   EXPECT_TRUE(write_blocked_list.ShouldYield(kHeadersStreamId));

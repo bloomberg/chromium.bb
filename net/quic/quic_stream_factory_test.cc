@@ -1156,7 +1156,8 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   // this test anyway.
   QuicChromiumClientSession* session =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
-  session->connection()->CloseConnection(QUIC_PUBLIC_RESET, true);
+  session->connection()->CloseConnection(QUIC_PUBLIC_RESET,
+                                         ConnectionCloseSource::FROM_PEER);
 
   STLDeleteElements(&streams);
 }
@@ -2584,7 +2585,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfTwo) {
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
 
   DVLOG(1) << "Created 1st session. Now trigger public reset post handshake";
-  session->connection()->CloseConnection(QUIC_PUBLIC_RESET, true);
+  session->connection()->CloseConnection(QUIC_PUBLIC_RESET,
+                                         ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -2605,7 +2607,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfTwo) {
   QuicChromiumClientSession* session2 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server2);
 
-  session2->connection()->CloseConnection(QUIC_PUBLIC_RESET, true);
+  session2->connection()->CloseConnection(QUIC_PUBLIC_RESET,
+                                          ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop2;
@@ -2674,7 +2677,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
 
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout";
-  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT,
+                                         ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -2700,7 +2704,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
   EXPECT_EQ(OK, stream2->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                           net_log_, CompletionCallback()));
 
-  session2->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
+  session2->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT,
+                                          ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop2;
@@ -2763,7 +2768,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
 
   DVLOG(1) << "Created 1st session. Now trigger public reset post handshake";
-  session->connection()->CloseConnection(QUIC_PUBLIC_RESET, true);
+  session->connection()->CloseConnection(QUIC_PUBLIC_RESET,
+                                         ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -2783,7 +2789,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
   QuicChromiumClientSession* session2 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server2);
 
-  session2->connection()->CloseConnection(QUIC_NO_ERROR, false);
+  session2->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop2;
@@ -2803,7 +2810,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
   QuicChromiumClientSession* session3 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server3);
 
-  session3->connection()->CloseConnection(QUIC_PUBLIC_RESET, true);
+  session3->connection()->CloseConnection(QUIC_PUBLIC_RESET,
+                                          ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop3;
@@ -2885,7 +2893,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
 
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout";
-  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT,
+                                         ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -2906,7 +2915,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
   QuicChromiumClientSession* session2 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server2);
 
-  session2->connection()->CloseConnection(QUIC_NO_ERROR, true);
+  session2->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop2;
@@ -2931,7 +2941,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
   EXPECT_TRUE(stream3.get());
   EXPECT_EQ(OK, stream3->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                           net_log_, CompletionCallback()));
-  session3->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
+  session3->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT,
+                                          ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop3;
@@ -2994,7 +3005,8 @@ TEST_P(QuicStreamFactoryTest, DisableQuicWhenTimeoutsWithOpenStreams) {
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout."
       << "Will disable QUIC.";
-  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT,
+                                         ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -3064,7 +3076,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
 
   DVLOG(1) << "Created 1st session. Now trigger public reset post handshake";
-  session->connection()->CloseConnection(QUIC_PUBLIC_RESET, true);
+  session->connection()->CloseConnection(QUIC_PUBLIC_RESET,
+                                         ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -3084,7 +3097,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
   QuicChromiumClientSession* session2 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server2);
 
-  session2->connection()->CloseConnection(QUIC_NO_ERROR, false);
+  session2->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop2;
@@ -3102,7 +3116,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
   QuicChromiumClientSession* session3 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server3);
 
-  session3->connection()->CloseConnection(QUIC_NO_ERROR, false);
+  session3->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop3;
@@ -3122,7 +3137,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
   QuicChromiumClientSession* session4 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server4);
 
-  session4->connection()->CloseConnection(QUIC_PUBLIC_RESET, true);
+  session4->connection()->CloseConnection(QUIC_PUBLIC_RESET,
+                                          ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop4;
@@ -3211,7 +3227,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
 
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout";
-  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT,
+                                         ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -3231,7 +3248,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   QuicChromiumClientSession* session2 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server2);
 
-  session2->connection()->CloseConnection(QUIC_NO_ERROR, true);
+  session2->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop2;
@@ -3249,7 +3267,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   QuicChromiumClientSession* session3 =
       QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server3);
 
-  session3->connection()->CloseConnection(QUIC_NO_ERROR, true);
+  session3->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_PEER);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop3;
@@ -3274,7 +3293,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   EXPECT_TRUE(stream4.get());
   EXPECT_EQ(OK, stream4->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                           net_log_, CompletionCallback()));
-  session4->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
+  session4->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT,
+                                          ConnectionCloseSource::FROM_SELF);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop4;

@@ -152,8 +152,9 @@ void TcpCubicBytesSender::OnPacketAcked(QuicPacketNumber acked_packet_number,
     return;
   }
   MaybeIncreaseCwnd(acked_packet_number, acked_bytes, bytes_in_flight);
-  // TODO(ianswett): Should this even be called when not in slow start?
-  hybrid_slow_start_.OnPacketAcked(acked_packet_number, InSlowStart());
+  if (InSlowStart()) {
+    hybrid_slow_start_.OnPacketAcked(acked_packet_number);
+  }
 }
 
 void TcpCubicBytesSender::OnPacketLost(QuicPacketNumber packet_number,

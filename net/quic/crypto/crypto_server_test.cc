@@ -371,21 +371,22 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   }
 
   string XlctHexString() {
-    const vector<string>* certs;
+    scoped_refptr<ProofSource::Chain> chain;
     IPAddressNumber server_ip;
     string sig;
     string cert_sct;
     scoped_ptr<ProofSource> proof_source(
         CryptoTestUtils::ProofSourceForTesting());
-    if (!proof_source->GetProof(server_ip, "", "", false, &certs, &sig,
+    if (!proof_source->GetProof(server_ip, "", "", false, &chain, &sig,
                                 &cert_sct) ||
-        certs->empty()) {
+        chain->certs.empty()) {
       return "#0100000000000000";
     }
 
     std::ostringstream xlct_stream;
-    uint64_t xlct =
-        QuicUtils::FNV1a_64_Hash(certs->at(0).c_str(), certs->at(0).length());
+    uint64_t xlct = QuicUtils::FNV1a_64_Hash(chain->certs.at(0).c_str(),
+                                             chain->certs.at(0).length());
+
     return "#" + base::HexEncode(reinterpret_cast<char*>(&xlct), sizeof(xlct));
   }
 

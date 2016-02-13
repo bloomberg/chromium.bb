@@ -483,7 +483,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendRequest) {
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
                                           callback_.callback()));
 
-  session_->connection()->CloseConnection(QUIC_NO_ERROR, true);
+  session_->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_PEER);
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -508,7 +509,8 @@ TEST_P(QuicHttpStreamTest, GetSSLInfoAfterSessionClosed) {
   stream_->GetSSLInfo(&ssl_info);
   EXPECT_TRUE(ssl_info.is_valid());
 
-  session_->connection()->CloseConnection(QUIC_NO_ERROR, true);
+  session_->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_PEER);
 
   SSLInfo ssl_info2;
   stream_->GetSSLInfo(&ssl_info2);
@@ -597,7 +599,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeReadResponseHeaders) {
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
-  session_->connection()->CloseConnection(QUIC_NO_ERROR, true);
+  session_->connection()->CloseConnection(QUIC_NO_ERROR,
+                                          ConnectionCloseSource::FROM_PEER);
 
   EXPECT_NE(OK, stream_->ReadResponseHeaders(callback_.callback()));
 
@@ -921,14 +924,14 @@ TEST_P(QuicHttpStreamTest, Priority) {
   QuicChromiumClientStream* reliable_stream =
       QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
   DCHECK(reliable_stream);
-  DCHECK_EQ(kV3HighestPriority, reliable_stream->Priority());
+  DCHECK_EQ(kV3HighestPriority, reliable_stream->priority());
 
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Check that priority has now dropped back to MEDIUM.
   DCHECK_EQ(MEDIUM,
-            ConvertQuicPriorityToRequestPriority(reliable_stream->Priority()));
+            ConvertQuicPriorityToRequestPriority(reliable_stream->priority()));
 
   // Ack the request.
   ProcessPacket(ConstructAckPacket(1, 0, 0));
@@ -972,12 +975,12 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   DCHECK(reliable_stream);
   QuicChromiumClientStream::Delegate* delegate = reliable_stream->GetDelegate();
   DCHECK(delegate);
-  DCHECK_EQ(kV3HighestPriority, reliable_stream->Priority());
+  DCHECK_EQ(kV3HighestPriority, reliable_stream->priority());
 
   // Set Delegate to nullptr and make sure Priority returns highest
   // priority.
   reliable_stream->SetDelegate(nullptr);
-  DCHECK_EQ(kV3HighestPriority, reliable_stream->Priority());
+  DCHECK_EQ(kV3HighestPriority, reliable_stream->priority());
   reliable_stream->SetDelegate(delegate);
 
   EXPECT_EQ(0, stream_->GetTotalSentBytes());

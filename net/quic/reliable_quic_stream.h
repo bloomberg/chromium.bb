@@ -75,7 +75,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   // Called by the session when the endpoint receives or sends a connection
   // close, and should immediately close the stream.
-  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer);
+  virtual void OnConnectionClosed(QuicErrorCode error,
+                                  ConnectionCloseSource source);
 
   // Called by the stream subclass after it has consumed the final incoming
   // data.
@@ -94,9 +95,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // this end.
   virtual void CloseConnectionWithDetails(QuicErrorCode error,
                                           const std::string& details);
-
-  // Returns the priority for the stream.
-  virtual SpdyPriority Priority() const = 0;
 
   QuicStreamId id() const { return id_; }
 

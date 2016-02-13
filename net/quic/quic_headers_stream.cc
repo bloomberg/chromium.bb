@@ -277,10 +277,6 @@ void QuicHeadersStream::OnDataAvailable() {
   }
 }
 
-SpdyPriority QuicHeadersStream::Priority() const {
-  return net::kV3HighestPriority;
-}
-
 void QuicHeadersStream::OnHeaders(SpdyStreamId stream_id,
                                   bool has_priority,
                                   SpdyPriority priority,

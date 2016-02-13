@@ -253,10 +253,6 @@ TEST_P(QuicHeadersStreamTest, StreamId) {
   EXPECT_EQ(3u, headers_stream_->id());
 }
 
-TEST_P(QuicHeadersStreamTest, Priority) {
-  EXPECT_EQ(0u, headers_stream_->Priority());
-}
-
 TEST_P(QuicHeadersStreamTest, WriteHeaders) {
   for (QuicStreamId stream_id = kClientDataStreamId1;
        stream_id < kClientDataStreamId3; stream_id += 2) {

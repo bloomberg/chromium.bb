@@ -61,7 +61,8 @@ class QuicServerSessionBase : public QuicSpdySession {
                         const QuicCryptoServerConfig* crypto_config);
 
   // Override the base class to notify the owner of the connection close.
-  void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
+  void OnConnectionClosed(QuicErrorCode error,
+                          ConnectionCloseSource source) override;
   void OnWriteBlocked() override;
 
   // Sends a server config update to the client, containing new bandwidth

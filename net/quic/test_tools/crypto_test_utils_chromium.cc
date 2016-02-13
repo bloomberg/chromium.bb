@@ -102,14 +102,16 @@ class FakeProofSource : public ProofSource {
       return false;
     }
 
+    vector<string> certs;
     for (const scoped_refptr<X509Certificate>& cert : certs_in_file) {
       std::string der_encoded_cert;
       if (!X509Certificate::GetDEREncoded(cert->os_cert_handle(),
                                           &der_encoded_cert)) {
         return false;
       }
-      certificates_.push_back(der_encoded_cert);
+      certs.push_back(der_encoded_cert);
     }
+    chain_ = new ProofSource::Chain(certs);
     return true;
   }
 
@@ -117,17 +119,17 @@ class FakeProofSource : public ProofSource {
                 const std::string& hostname,
                 const std::string& server_config,
                 bool ecdsa_ok,
-                const std::vector<std::string>** out_certs,
+                scoped_refptr<ProofSource::Chain>* out_chain,
                 std::string* out_signature,
                 std::string* out_leaf_cert_sct) override {
     out_signature->assign(kSignature);
-    *out_certs = &certificates_;
+    *out_chain = chain_;
     *out_leaf_cert_sct = kSCT;
     return true;
   }
 
  private:
-  std::vector<std::string> certificates_;
+  scoped_refptr<ProofSource::Chain> chain_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeProofSource);
 };

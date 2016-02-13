@@ -33,21 +33,6 @@ LossDetectionType GeneralLossAlgorithm::GetLossDetectionType() const {
   return loss_type_;
 }
 
-PacketNumberSet GeneralLossAlgorithm::DetectLostPackets(
-    const QuicUnackedPacketMap& unacked_packets,
-    const QuicTime& time,
-    QuicPacketNumber largest_observed,
-    const RttStats& rtt_stats) {
-  SendAlgorithmInterface::CongestionVector packets_lost;
-  DetectLosses(unacked_packets, time, rtt_stats, &packets_lost);
-  PacketNumberSet lost_packets;
-  for (const std::pair<QuicPacketNumber, QuicPacketLength>& pair :
-       packets_lost) {
-    lost_packets.insert(pair.first);
-  }
-  return lost_packets;
-}
-
 // Uses nack counts to decide when packets are lost.
 void GeneralLossAlgorithm::DetectLosses(
     const QuicUnackedPacketMap& unacked_packets,

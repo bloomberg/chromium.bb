@@ -45,7 +45,8 @@ void MockCryptoClientStream::CryptoConnect() {
              ->VerifyNameMatch(server_id_.host(), &unused)) {
       handshake_confirmed_ = false;
       encryption_established_ = false;
-      session()->connection()->CloseConnection(QUIC_PROOF_INVALID, false);
+      session()->connection()->CloseConnection(
+          QUIC_PROOF_INVALID, ConnectionCloseSource::FROM_SELF);
       return;
     }
   }

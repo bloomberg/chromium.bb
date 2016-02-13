@@ -19,6 +19,7 @@
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_bug_tracker.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
@@ -683,11 +684,15 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(out_params->hkdf_input_suffix);
 
-  if (!CryptoUtils::DeriveKeys(
-          out_params->initial_premaster_secret, out_params->aead,
-          out_params->client_nonce, out_params->server_nonce, hkdf_input,
-          Perspective::IS_CLIENT, &out_params->initial_crypters,
-          nullptr /* subkey secret */)) {
+  string* subkey_secret = nullptr;
+  if (FLAGS_quic_save_initial_subkey_secret) {
+    subkey_secret = &out_params->initial_subkey_secret;
+  }
+  if (!CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
+                               out_params->aead, out_params->client_nonce,
+                               out_params->server_nonce, hkdf_input,
+                               Perspective::IS_CLIENT,
+                               &out_params->initial_crypters, subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }

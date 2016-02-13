@@ -99,7 +99,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
 
   ~MockQuicSimpleServerSession() override {}
 
-  MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD2(OnConnectionClosed,
+               void(QuicErrorCode error, ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD6(WritevData,
                QuicConsumedData(QuicStreamId id,
@@ -438,7 +439,7 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   // and send it back.
   EXPECT_CALL(session_,
               WriteHeaders(kServerInitiatedStreamId, _, false,
-                           server_initiated_stream->Priority(), nullptr));
+                           server_initiated_stream->priority(), nullptr));
   EXPECT_CALL(session_, WritevData(kServerInitiatedStreamId, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(kBody.size(), true)));

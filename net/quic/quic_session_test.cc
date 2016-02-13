@@ -103,11 +103,7 @@ class StreamBlocker {
       : session_(session), stream_id_(stream_id) {}
 
   void MarkConnectionLevelWriteBlocked() {
-    session_->MarkConnectionLevelWriteBlocked(stream_id_, kDefaultPriority);
-  }
-
-  void MarkHighPriorityWriteBlocked() {
-    session_->MarkConnectionLevelWriteBlocked(stream_id_, kHighestPriority);
+    session_->MarkConnectionLevelWriteBlocked(stream_id_);
   }
 
  private:
@@ -373,20 +369,9 @@ TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
   // Close the stream.
   EXPECT_CALL(*connection_, SendRstStream(closed_stream_id, _, _));
   stream2->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-  EXPECT_DEBUG_DFATAL(session_.MarkConnectionLevelWriteBlocked(
-                          closed_stream_id, kDefaultPriority),
-                      "Marking unknown stream 2 blocked.");
-}
-
-TEST_P(QuicSessionTestServer,
-       DebugDFatalIfMarkWriteBlockedCalledWithWrongPriority) {
-  const SpdyPriority kDifferentPriority = 0;
-
-  TestStream* stream2 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
-  EXPECT_NE(kDifferentPriority, stream2->Priority());
-  EXPECT_DEBUG_DFATAL(session_.MarkConnectionLevelWriteBlocked(
-                          stream2->id(), kDifferentPriority),
-                      "Priorities do not match.  Got: 0 Expected: 3");
+  EXPECT_DEBUG_DFATAL(
+      session_.MarkConnectionLevelWriteBlocked(closed_stream_id),
+      "Marking unknown stream 2 blocked.");
 }
 
 TEST_P(QuicSessionTestServer, OnCanWrite) {
@@ -394,9 +379,9 @@ TEST_P(QuicSessionTestServer, OnCanWrite) {
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream6 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
 
-  session_.MarkConnectionLevelWriteBlocked(stream2->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream6->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream4->id(), kDefaultPriority);
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream6->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
   InSequence s;
   StreamBlocker stream2_blocker(&session_, stream2->id());
@@ -429,8 +414,8 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
   TestStream* stream6 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
 
   session_.set_writev_consumes_all_data(true);
-  session_.MarkConnectionLevelWriteBlocked(stream2->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream4->id(), kDefaultPriority);
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
   StreamBlocker stream2_blocker(&session_, stream2->id());
   StreamBlocker stream4_blocker(&session_, stream4->id());
@@ -480,12 +465,11 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
   EXPECT_CALL(*stream4, OnCanWrite())
       .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
                           &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_),
-                          stream4->id(), 6000))),
+                          base::Unretained(&session_), stream4->id(), 6000))),
                       Invoke(&stream4_blocker,
                              &StreamBlocker::MarkConnectionLevelWriteBlocked),
                       Invoke(&stream6_blocker,
-                             &StreamBlocker::MarkHighPriorityWriteBlocked)));
+                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
   EXPECT_CALL(*stream6, OnCanWrite())
       .WillOnce(testing::IgnoreResult(Invoke(CreateFunctor(
           &TestSession::SendLargeFakeData,
@@ -524,9 +508,9 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream6 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
 
-  session_.MarkConnectionLevelWriteBlocked(stream2->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream6->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream4->id(), kDefaultPriority);
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream6->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _))
       .WillRepeatedly(Return(QuicTime::Delta::Zero()));
@@ -569,9 +553,9 @@ TEST_P(QuicSessionTestServer, OnCanWriteCongestionControlBlocks) {
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream6 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
 
-  session_.MarkConnectionLevelWriteBlocked(stream2->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream6->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream4->id(), kDefaultPriority);
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream6->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
   StreamBlocker stream2_blocker(&session_, stream2->id());
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _))
@@ -617,7 +601,7 @@ TEST_P(QuicSessionTestServer, BufferedHandshake) {
   EXPECT_FALSE(session_.HasPendingHandshake());
 
   // Blocking (due to buffering of) the Crypto stream is detected.
-  session_.MarkConnectionLevelWriteBlocked(kCryptoStreamId, kHighestPriority);
+  session_.MarkConnectionLevelWriteBlocked(kCryptoStreamId);
   EXPECT_TRUE(session_.HasPendingHandshake());
 
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
@@ -651,9 +635,9 @@ TEST_P(QuicSessionTestServer, OnCanWriteWithClosedStream) {
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream6 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
 
-  session_.MarkConnectionLevelWriteBlocked(stream2->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream6->id(), kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream4->id(), kDefaultPriority);
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream6->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
   CloseStream(stream6->id());
 
   InSequence s;
@@ -672,13 +656,13 @@ TEST_P(QuicSessionTestServer, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
 
   // Mark the crypto and headers streams as write blocked, we expect them to be
   // allowed to write later.
-  session_.MarkConnectionLevelWriteBlocked(kCryptoStreamId, kHighestPriority);
-  session_.MarkConnectionLevelWriteBlocked(kHeadersStreamId, kHighestPriority);
+  session_.MarkConnectionLevelWriteBlocked(kCryptoStreamId);
+  session_.MarkConnectionLevelWriteBlocked(kHeadersStreamId);
 
   // Create a data stream, and although it is write blocked we never expect it
   // to be allowed to write as we are connection level flow control blocked.
   TestStream* stream = session_.CreateOutgoingDynamicStream(kDefaultPriority);
-  session_.MarkConnectionLevelWriteBlocked(stream->id(), kDefaultPriority);
+  session_.MarkConnectionLevelWriteBlocked(stream->id());
   EXPECT_CALL(*stream, OnCanWrite()).Times(0);
 
   // The crypto and headers streams should be called even though we are
@@ -732,32 +716,6 @@ TEST_P(QuicSessionTestServer, RstStreamBeforeHeadersDecompressed) {
   EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
   // Connection should remain alive.
   EXPECT_TRUE(connection_->connected());
-}
-
-TEST_P(QuicSessionTestServer, MultipleRstStreamsCauseSingleConnectionClose) {
-  // If multiple invalid reset stream frames arrive in a single packet, this
-  // should trigger a connection close. However there is no need to send
-  // multiple connection close frames.
-
-  // Create valid stream.
-  QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
-  session_.OnStreamFrame(data1);
-  EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());
-
-  // Process first invalid stream reset, resulting in the connection being
-  // closed.
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_TOO_MANY_AVAILABLE_STREAMS, _));
-
-  const QuicStreamId kLargeInvalidStreamId = 99999999;
-  QuicRstStreamFrame rst1(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);
-  session_.OnRstStream(rst1);
-  QuicConnectionPeer::CloseConnection(connection_);
-
-  // Processing of second invalid stream reset should not result in the
-  // connection being closed for a second time.
-  QuicRstStreamFrame rst2(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);
-  session_.OnRstStream(rst2);
 }
 
 TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {

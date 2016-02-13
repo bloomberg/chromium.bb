@@ -42,14 +42,16 @@ bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
     return false;
   }
 
+  vector<string> certs;
   for (const scoped_refptr<X509Certificate>& cert : certs_in_file) {
     std::string der_encoded_cert;
     if (!X509Certificate::GetDEREncoded(cert->os_cert_handle(),
                                         &der_encoded_cert)) {
       return false;
     }
-    certificates_.push_back(der_encoded_cert);
+    certs.push_back(der_encoded_cert);
   }
+  chain_ = new ProofSource::Chain(certs);
 
   std::string key_data;
   if (!base::ReadFileToString(key_path, &key_data)) {
@@ -81,7 +83,7 @@ bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,
                                    const string& hostname,
                                    const string& server_config,
                                    bool ecdsa_ok,
-                                   const vector<string>** out_certs,
+                                   scoped_refptr<ProofSource::Chain>* out_chain,
                                    string* out_signature,
                                    string* out_leaf_cert_sct) {
   DCHECK(private_key_.get()) << " this: " << this;
@@ -117,7 +119,7 @@ bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,
   signature.resize(len);
   out_signature->assign(reinterpret_cast<const char*>(signature.data()),
                         signature.size());
-  *out_certs = &certificates_;
+  *out_chain = chain_;
   VLOG(1) << "signature: "
           << base::HexEncode(out_signature->data(), out_signature->size());
   *out_leaf_cert_sct = signed_certificate_timestamp_;

@@ -329,7 +329,8 @@ TEST_F(QuicP2PSessionTest, DestroySocketWhenClosed) {
 
   // The socket must be destroyed when connection is closed.
   EXPECT_TRUE(socket1_);
-  session1_->connection()->CloseConnection(net::QUIC_NO_ERROR, false);
+  session1_->connection()->CloseConnection(net::QUIC_NO_ERROR,
+                                           ConnectionCloseSource::FROM_SELF);
   EXPECT_FALSE(socket1_);
 }
 

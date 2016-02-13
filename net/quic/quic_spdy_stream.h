@@ -69,10 +69,6 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // ReliableQuicStream implementation
   void OnClose() override;
 
-  // This is the same as priority() and is being deprecated
-  // TODO(alyssar) remove after Priority refactor.
-  SpdyPriority Priority() const override;
-
   // Called by the session when decompressed headers data is received
   // for this stream.
   // May be called multiple times, with each call providing additional headers
@@ -145,7 +141,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
     return decompressed_trailers_;
   }
 
-  SpdyPriority priority() const { return priority_; }
+  virtual SpdyPriority priority() const;
 
   // Sets priority_ to priority.  This should only be called before bytes are
   // written to the server.

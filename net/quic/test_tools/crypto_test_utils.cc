@@ -438,12 +438,18 @@ void CryptoTestUtils::CompareClientAndServerKeys(
   const size_t kSampleOutputLength = 32;
   string client_key_extraction;
   string server_key_extraction;
+  string client_tb_ekm;
+  string server_tb_ekm;
   EXPECT_TRUE(client->ExportKeyingMaterial(kSampleLabel, kSampleContext,
                                            kSampleOutputLength,
                                            &client_key_extraction));
   EXPECT_TRUE(server->ExportKeyingMaterial(kSampleLabel, kSampleContext,
                                            kSampleOutputLength,
                                            &server_key_extraction));
+  if (FLAGS_quic_save_initial_subkey_secret) {
+    EXPECT_TRUE(client->ExportTokenBindingKeyingMaterial(&client_tb_ekm));
+    EXPECT_TRUE(server->ExportTokenBindingKeyingMaterial(&server_tb_ekm));
+  }
 
   CompareCharArraysWithHexError("client write key", client_encrypter_key.data(),
                                 client_encrypter_key.length(),
@@ -489,6 +495,12 @@ void CryptoTestUtils::CompareClientAndServerKeys(
       "sample key extraction", client_key_extraction.data(),
       client_key_extraction.length(), server_key_extraction.data(),
       server_key_extraction.length());
+
+  if (FLAGS_quic_save_initial_subkey_secret) {
+    CompareCharArraysWithHexError("token binding key extraction",
+                                  client_tb_ekm.data(), client_tb_ekm.length(),
+                                  server_tb_ekm.data(), server_tb_ekm.length());
+  }
 }
 
 // static

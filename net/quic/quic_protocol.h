@@ -207,7 +207,7 @@ const QuicPathId kDefaultPathId = 0;
 // Invalid path ID.
 const QuicPathId kInvalidPathId = 0xff;
 
-enum TransmissionType {
+enum TransmissionType : int8_t {
   NOT_RETRANSMISSION,
   FIRST_TRANSMISSION_TYPE = NOT_RETRANSMISSION,
   HANDSHAKE_RETRANSMISSION,    // Retransmits due to handshake timeouts.
@@ -219,14 +219,17 @@ enum TransmissionType {
   LAST_TRANSMISSION_TYPE = TLP_RETRANSMISSION,
 };
 
-enum HasRetransmittableData {
+enum HasRetransmittableData : int8_t {
   NO_RETRANSMITTABLE_DATA,
   HAS_RETRANSMITTABLE_DATA,
 };
 
-enum IsHandshake { NOT_HANDSHAKE, IS_HANDSHAKE };
+enum IsHandshake : int8_t { NOT_HANDSHAKE, IS_HANDSHAKE };
 
 enum class Perspective { IS_SERVER, IS_CLIENT };
+
+// Describes whether a ConnectionClose was originated by the peer.
+enum class ConnectionCloseSource { FROM_PEER, FROM_SELF };
 
 NET_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                             const Perspective& s);
@@ -285,7 +288,7 @@ enum InFecGroup {
   IN_FEC_GROUP,
 };
 
-enum QuicPacketNumberLength {
+enum QuicPacketNumberLength : int8_t {
   PACKET_1BYTE_PACKET_NUMBER = 1,
   PACKET_2BYTE_PACKET_NUMBER = 2,
   PACKET_4BYTE_PACKET_NUMBER = 4,
@@ -588,7 +591,7 @@ enum QuicErrorCode {
   QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS = 68,
   // The connection has too many outstanding received packets.
   QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS = 69,
-  // The quic connection job to load server config is cancelled.
+  // The quic connection has been cancelled.
   QUIC_CONNECTION_CANCELLED = 70,
   // Disabled QUIC because of high packet loss rate.
   QUIC_BAD_PACKET_LOSS_RATE = 71,
@@ -707,11 +710,11 @@ struct NET_EXPORT_PRIVATE QuicPacketHeader {
                                                      const QuicPacketHeader& s);
 
   QuicPacketPublicHeader public_header;
-  QuicPathId path_id;
   QuicPacketNumber packet_number;
-  bool fec_flag;
+  QuicPathId path_id;
   bool entropy_flag;
   QuicPacketEntropyHash entropy_hash;
+  bool fec_flag;
   InFecGroup is_in_fec_group;
   QuicFecGroupNumber fec_group;
 };
@@ -1118,7 +1121,7 @@ struct NET_EXPORT_PRIVATE QuicPathCloseFrame {
 // progresses through. When retransmitting a packet, the encryption level needs
 // to be specified so that it is retransmitted at a level which the peer can
 // understand.
-enum EncryptionLevel {
+enum EncryptionLevel : int8_t {
   ENCRYPTION_NONE = 0,
   ENCRYPTION_INITIAL = 1,
   ENCRYPTION_FORWARD_SECURE = 2,
@@ -1362,8 +1365,8 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   // Non-empty if there is a listener for this packet.
   std::list<AckListenerWrapper> ack_listeners;
 };
-static_assert(sizeof(QuicFrame) <= 64,
-              "Keep the TransmissionInfo size to a cacheline.");
+static_assert(sizeof(TransmissionInfo) <= 128,
+              "TODO(ianswett): Keep the TransmissionInfo size to a cacheline.");
 
 // Struct to store the pending retransmission information.
 struct PendingRetransmission {
@@ -1375,19 +1378,19 @@ struct PendingRetransmission {
                         bool needs_padding,
                         EncryptionLevel encryption_level,
                         QuicPacketNumberLength packet_number_length)
-      : path_id(path_id),
-        packet_number(packet_number),
-        transmission_type(transmission_type),
+      : packet_number(packet_number),
         retransmittable_frames(retransmittable_frames),
+        transmission_type(transmission_type),
+        path_id(path_id),
         has_crypto_handshake(has_crypto_handshake),
         needs_padding(needs_padding),
         encryption_level(encryption_level),
         packet_number_length(packet_number_length) {}
 
-  QuicPathId path_id;
   QuicPacketNumber packet_number;
-  TransmissionType transmission_type;
   const QuicFrames& retransmittable_frames;
+  TransmissionType transmission_type;
+  QuicPathId path_id;
   bool has_crypto_handshake;
   bool needs_padding;
   EncryptionLevel encryption_level;

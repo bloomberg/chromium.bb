@@ -114,42 +114,66 @@ TEST(ProofTest, DISABLED_Verify) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
-  const vector<string>* certs;
-  const vector<string>* first_certs;
+  scoped_refptr<ProofSource::Chain> chain;
+  scoped_refptr<ProofSource::Chain> first_chain;
   string error_details, signature, first_signature, first_cert_sct, cert_sct;
   IPAddressNumber server_ip;
 
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
-                               false /* no ECDSA */, &first_certs,
+                               false /* no ECDSA */, &first_chain,
                                &first_signature, &first_cert_sct));
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
-                               false /* no ECDSA */, &certs, &signature,
+                               false /* no ECDSA */, &chain, &signature,
                                &cert_sct));
 
   // Check that the proof source is caching correctly:
-  ASSERT_EQ(first_certs, certs);
+  ASSERT_EQ(first_chain->certs, chain->certs);
   ASSERT_EQ(signature, first_signature);
   ASSERT_EQ(first_cert_sct, cert_sct);
 
-  RunVerification(verifier.get(), hostname, server_config, *certs, signature,
-                  true);
+  RunVerification(verifier.get(), hostname, server_config, chain->certs,
+                  signature, true);
 
-  RunVerification(verifier.get(), "foo.com", server_config, *certs, signature,
-                  false);
+  RunVerification(verifier.get(), "foo.com", server_config, chain->certs,
+                  signature, false);
 
   RunVerification(verifier.get(), server_config.substr(1, string::npos),
-                  server_config, *certs, signature, false);
+                  server_config, chain->certs, signature, false);
 
   const string corrupt_signature = "1" + signature;
-  RunVerification(verifier.get(), hostname, server_config, *certs,
+  RunVerification(verifier.get(), hostname, server_config, chain->certs,
                   corrupt_signature, false);
 
   vector<string> wrong_certs;
-  for (size_t i = 1; i < certs->size(); i++) {
-    wrong_certs.push_back((*certs)[i]);
+  for (size_t i = 1; i < chain->certs.size(); i++) {
+    wrong_certs.push_back(chain->certs[i]);
   }
   RunVerification(verifier.get(), "foo.com", server_config, wrong_certs,
                   corrupt_signature, false);
+}
+
+TEST(ProofTest, UseAfterFree) {
+  ProofSource* source = CryptoTestUtils::ProofSourceForTesting();
+
+  const string server_config = "server config bytes";
+  const string hostname = "test.example.com";
+  scoped_refptr<ProofSource::Chain> chain;
+  string error_details, signature, cert_sct;
+  IPAddressNumber server_ip;
+
+  ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
+                               false /* no ECDSA */, &chain, &signature,
+                               &cert_sct));
+
+  // Make sure we can safely access results after deleting where they came from.
+  EXPECT_FALSE(chain->HasOneRef());
+  delete source;
+  EXPECT_TRUE(chain->HasOneRef());
+
+  EXPECT_FALSE(chain->certs.empty());
+  for (const string& cert : chain->certs) {
+    EXPECT_FALSE(cert.empty());
+  }
 }
 
 // A known answer test that allows us to test ProofVerifier without a working

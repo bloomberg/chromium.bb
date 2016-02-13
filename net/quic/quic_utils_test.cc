@@ -100,6 +100,65 @@ TEST(QuicUtilsTest, ParseQuicConnectionOptions) {
   EXPECT_EQ(expected_options, parsed_options);
 }
 
+TEST(QuicUtilsTest, DetermineAddressChangeType) {
+  const string kIPv4String1 = "1.2.3.4";
+  const string kIPv4String2 = "1.2.3.5";
+  const string kIPv4String3 = "1.1.3.5";
+  const string kIPv6String1 = "2001:700:300:1800::f";
+  const string kIPv6String2 = "2001:700:300:1800:1:1:1:f";
+  IPEndPoint old_address;
+  IPEndPoint new_address;
+  IPAddress address;
+
+  EXPECT_EQ(NO_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv4String1));
+  old_address = IPEndPoint(address, 1234);
+  EXPECT_EQ(NO_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+  new_address = IPEndPoint(address, 1234);
+  EXPECT_EQ(NO_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+
+  new_address = IPEndPoint(address, 5678);
+  EXPECT_EQ(PORT_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv6String1));
+  old_address = IPEndPoint(address, 1234);
+  new_address = IPEndPoint(address, 5678);
+  EXPECT_EQ(PORT_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv4String1));
+  old_address = IPEndPoint(address, 1234);
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv6String1));
+  new_address = IPEndPoint(address, 1234);
+  EXPECT_EQ(IPV4_TO_IPV6_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+
+  old_address = IPEndPoint(address, 1234);
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv4String1));
+  new_address = IPEndPoint(address, 1234);
+  EXPECT_EQ(IPV6_TO_IPV4_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv6String2));
+  new_address = IPEndPoint(address, 1234);
+  EXPECT_EQ(IPV6_TO_IPV6_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv4String1));
+  old_address = IPEndPoint(address, 1234);
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv4String2));
+  new_address = IPEndPoint(address, 1234);
+  EXPECT_EQ(IPV4_SUBNET_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+  ASSERT_TRUE(address.AssignFromIPLiteral(kIPv4String3));
+  new_address = IPEndPoint(address, 1234);
+  EXPECT_EQ(UNSPECIFIED_CHANGE,
+            QuicUtils::DetermineAddressChangeType(old_address, new_address));
+}
+
 uint128 IncrementalHashReference(const void* data, size_t len) {
   // The two constants are defined as part of the hash algorithm.
   // see http://www.isthe.com/chongo/tech/comp/fnv/

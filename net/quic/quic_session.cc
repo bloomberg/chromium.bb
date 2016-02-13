@@ -111,7 +111,8 @@ void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
   DCHECK(frame.last_good_stream_id < next_outgoing_stream_id_);
 }
 
-void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
+void QuicSession::OnConnectionClosed(QuicErrorCode error,
+                                     ConnectionCloseSource source) {
   DCHECK(!connection_->connected());
   if (error_ == QUIC_NO_ERROR) {
     error_ = error;
@@ -120,7 +121,7 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
   while (!dynamic_stream_map_.empty()) {
     StreamMap::iterator it = dynamic_stream_map_.begin();
     QuicStreamId id = it->first;
-    it->second->OnConnectionClosed(error, from_peer);
+    it->second->OnConnectionClosed(error, source);
     // The stream should call CloseStream as part of OnConnectionClosed.
     if (dynamic_stream_map_.find(id) != dynamic_stream_map_.end()) {
       QUIC_BUG << ENDPOINT << "Stream failed to close under OnConnectionClosed";
@@ -190,7 +191,8 @@ void QuicSession::OnCanWrite() {
           write_blocked_streams_.HasWriteBlockedDataStreams())) {
       // Writing one stream removed another!? Something's broken.
       QUIC_BUG << "WriteBlockedStream is missing";
-      connection_->CloseConnection(QUIC_INTERNAL_ERROR, false);
+      connection_->CloseConnection(QUIC_INTERNAL_ERROR,
+                                   ConnectionCloseSource::FROM_SELF);
       return;
     }
     if (!connection_->CanWriteStreamData()) {
@@ -469,8 +471,8 @@ void QuicSession::HandleFrameOnNonexistentOutgoingStream(
   DCHECK(!IsClosedStream(stream_id));
   // Received a frame for a locally-created stream that is not currently
   // active. This is an error.
-  CloseConnectionWithDetails(QUIC_INVALID_STREAM_ID,
-                             "Data for nonexistent stream");
+  connection()->SendConnectionCloseWithDetails(QUIC_INVALID_STREAM_ID,
+                                               "Data for nonexistent stream");
 }
 
 void QuicSession::HandleRstOnValidNonexistentStream(
@@ -603,13 +605,6 @@ void QuicSession::StreamDraining(QuicStreamId stream_id) {
   }
 }
 
-void QuicSession::CloseConnectionWithDetails(QuicErrorCode error,
-                                             const char* details) {
-  if (connection()->connected()) {
-    connection()->SendConnectionCloseWithDetails(error, details);
-  }
-}
-
 bool QuicSession::MaybeIncreaseLargestPeerStreamId(
     const QuicStreamId stream_id) {
   if (stream_id <= largest_peer_created_stream_id_) {
@@ -631,8 +626,8 @@ bool QuicSession::MaybeIncreaseLargestPeerStreamId(
              << MaxAvailableStreams() << ".";
     string details = IntToString(new_num_available_streams) + " above " +
                      IntToString(MaxAvailableStreams());
-    CloseConnectionWithDetails(QUIC_TOO_MANY_AVAILABLE_STREAMS,
-                               details.c_str());
+    connection()->SendConnectionCloseWithDetails(
+        QUIC_TOO_MANY_AVAILABLE_STREAMS, details.c_str());
     return false;
   }
   for (QuicStreamId id = largest_peer_created_stream_id_ + 2; id < stream_id;
@@ -687,8 +682,8 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
                 locally_closed_streams_highest_offset_.size();
   if (num_open_incoming_streams >= max_open_incoming_streams()) {
     if (connection()->version() <= QUIC_VERSION_27) {
-      CloseConnectionWithDetails(QUIC_TOO_MANY_OPEN_STREAMS,
-                                 "Old style stream rejection");
+      connection()->SendConnectionCloseWithDetails(
+          QUIC_TOO_MANY_OPEN_STREAMS, "Old style stream rejection");
     } else {
       // Refuse to open the stream.
       SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0);
@@ -771,21 +766,11 @@ size_t QuicSession::GetNumAvailableStreams() const {
   return available_streams_.size();
 }
 
-void QuicSession::MarkConnectionLevelWriteBlocked(QuicStreamId id,
-                                                  SpdyPriority priority) {
-#ifndef NDEBUG
-  ReliableQuicStream* stream = GetStream(id);
-  if (stream != nullptr) {
-    QUIC_BUG_IF(priority != stream->Priority())
-        << ENDPOINT << "Stream " << id
-        << "Priorities do not match.  Got: " << static_cast<int>(priority)
-        << " Expected: " << static_cast<int>(stream->Priority());
-  } else {
-    QUIC_BUG << "Marking unknown stream " << id << " blocked.";
-  }
-#endif
+void QuicSession::MarkConnectionLevelWriteBlocked(QuicStreamId id) {
+  QUIC_BUG_IF(GetStream(id) == nullptr) << "Marking unknown stream " << id
+                                        << " blocked.";
 
-  write_blocked_streams_.AddStream(id, priority);
+  write_blocked_streams_.AddStream(id);
 }
 
 bool QuicSession::HasDataToWrite() const {

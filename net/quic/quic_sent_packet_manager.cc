@@ -174,10 +174,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
             static_cast<QuicByteCount>(config.ReceivedSocketReceiveBuffer()));
     QuicByteCount max_cwnd_bytes = static_cast<QuicByteCount>(
         receive_buffer_bytes_ * kConservativeReceiveBufferFraction);
-    if (FLAGS_quic_limit_max_cwnd) {
-      max_cwnd_bytes =
-          min(max_cwnd_bytes, kMaxCongestionWindow * kDefaultTCPMSS);
-    }
+    max_cwnd_bytes = min(max_cwnd_bytes, kMaxCongestionWindow * kDefaultTCPMSS);
     send_algorithm_->SetMaxCongestionWindow(max_cwnd_bytes);
   }
   send_algorithm_->SetFromConfig(config, perspective_);
@@ -966,7 +963,8 @@ void QuicSentPacketManager::OnConnectionMigration(PeerAddressChangeType type) {
     // considered to be caused by NATs.
     return;
   }
-
+  consecutive_rto_count_ = 0;
+  consecutive_tlp_count_ = 0;
   rtt_stats_.OnConnectionMigration();
   send_algorithm_->OnConnectionMigration();
 }

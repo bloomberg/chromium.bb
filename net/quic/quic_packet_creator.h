@@ -46,7 +46,11 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
     // and |packet.retransmittable_frames|.  If it does so, they must be set
     // to nullptr.
     virtual void OnSerializedPacket(SerializedPacket* serialized_packet) = 0;
-    virtual void CloseConnection(QuicErrorCode error, bool from_peer) = 0;
+
+    // Called when an unrecoverable error is encountered.
+    virtual void OnUnrecoverableError(QuicErrorCode error,
+                                      ConnectionCloseSource source) = 0;
+
     // Called when current FEC group is reset (closed).
     virtual void OnResetFecGroup() = 0;
   };

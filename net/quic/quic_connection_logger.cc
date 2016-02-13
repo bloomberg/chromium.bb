@@ -221,11 +221,12 @@ scoped_ptr<base::Value> NetLogQuicCryptoHandshakeMessageCallback(
 
 scoped_ptr<base::Value> NetLogQuicOnConnectionClosedCallback(
     QuicErrorCode error,
-    bool from_peer,
+    ConnectionCloseSource source,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("quic_error", error);
-  dict->SetBoolean("from_peer", from_peer);
+  dict->SetBoolean("from_peer",
+                   source == ConnectionCloseSource::FROM_PEER ? true : false);
   return std::move(dict);
 }
 
@@ -674,10 +675,10 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageSent(
 }
 
 void QuicConnectionLogger::OnConnectionClosed(QuicErrorCode error,
-                                              bool from_peer) {
+                                              ConnectionCloseSource source) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CLOSED,
-      base::Bind(&NetLogQuicOnConnectionClosedCallback, error, from_peer));
+      base::Bind(&NetLogQuicOnConnectionClosedCallback, error, source));
 }
 
 void QuicConnectionLogger::OnSuccessfulVersionNegotiation(

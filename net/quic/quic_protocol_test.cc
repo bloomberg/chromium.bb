@@ -92,7 +92,8 @@ TEST(QuicProtocolTest, QuicVersionToQuicTagUnsupported) {
   // and QuicConnectionTest::SendVersionNegotiationPacket can be changed to use
   // mis-matched versions rather than relying on QUIC_VERSION_UNSUPPORTED.
   ScopedMockLog log(kDoNotCaptureLogsYet);
-  EXPECT_CALL(log, Log(ERROR, _, "Unsupported QuicVersion: 0")).Times(1);
+  EXPECT_CALL(log, Log(base_logging::ERROR, _, "Unsupported QuicVersion: 0"))
+      .Times(1);
   log.StartCapturingLogs();
 #endif
 
@@ -134,7 +135,9 @@ TEST(QuicProtocolTest, QuicTagToQuicVersionUnsupported) {
 #if 0
   ScopedMockLog log(kDoNotCaptureLogsYet);
 #ifndef NDEBUG
-  EXPECT_CALL(log, Log(INFO, _, "Unsupported QuicTag version: FAKE")).Times(1);
+  EXPECT_CALL(log,
+              Log(base_logging::INFO, _, "Unsupported QuicTag version: FAKE"))
+      .Times(1);
 #endif
   log.StartCapturingLogs();
 #endif

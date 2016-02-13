@@ -20,7 +20,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_stateless_reject_support;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_always_log_bugs_for_tests;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_multipath;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_max_cwnd;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_handshake_confirmation;
 NET_EXPORT_PRIVATE extern bool FLAGS_shift_quic_cubic_epoch_when_app_limited;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_measure_headers_hol_blocking_time;
@@ -38,7 +37,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_supports_trailers;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_supports_push_promise;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_distinguish_incoming_outgoing_streams;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_validate_stk_without_scid;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_new_blocked_list;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_rfc7539;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_drop_non_awaited_packets;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_utils_use_fast_incremental_hash;
@@ -55,5 +53,8 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_different_max_num_open_streams;
 NET_EXPORT_PRIVATE extern bool
     FLAGS_quic_crypto_server_config_default_has_chacha20;
 NET_EXPORT_PRIVATE extern bool FLAGS_check_peer_address_change_after_decryption;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_log_received_parameters;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_new_tcp_sender;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_save_initial_subkey_secret;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

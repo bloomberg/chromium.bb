@@ -52,7 +52,8 @@ class NET_EXPORT QuicP2PSession : public QuicSession {
       net::SpdyPriority priority) override;
 
   // QuicConnectionVisitorInterface overrides.
-  void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
+  void OnConnectionClosed(QuicErrorCode error,
+                          ConnectionCloseSource source) override;
 
   void SetDelegate(Delegate* delegate);
 

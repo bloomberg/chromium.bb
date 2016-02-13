@@ -46,11 +46,12 @@ class GeneralLossAlgorithmTest : public ::testing::Test {
                     QuicPacketNumber* losses_expected,
                     size_t num_losses) {
     unacked_packets_.IncreaseLargestObserved(largest_observed);
-    PacketNumberSet lost_packets = loss_algorithm_.DetectLostPackets(
-        unacked_packets_, clock_.Now(), largest_observed, rtt_stats_);
+    SendAlgorithmInterface::CongestionVector lost_packets;
+    loss_algorithm_.DetectLosses(unacked_packets_, clock_.Now(), rtt_stats_,
+                                 &lost_packets);
     EXPECT_EQ(num_losses, lost_packets.size());
     for (size_t i = 0; i < num_losses; ++i) {
-      EXPECT_TRUE(ContainsKey(lost_packets, losses_expected[i]));
+      EXPECT_EQ(lost_packets[i].first, losses_expected[i]);
     }
   }
 

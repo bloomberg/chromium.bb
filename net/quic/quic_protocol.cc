@@ -78,21 +78,21 @@ QuicPacketPublicHeader::QuicPacketPublicHeader(
 QuicPacketPublicHeader::~QuicPacketPublicHeader() {}
 
 QuicPacketHeader::QuicPacketHeader()
-    : path_id(kDefaultPathId),
-      packet_number(0),
-      fec_flag(false),
+    : packet_number(0),
+      path_id(kDefaultPathId),
       entropy_flag(false),
       entropy_hash(0),
+      fec_flag(false),
       is_in_fec_group(NOT_IN_FEC_GROUP),
       fec_group(0) {}
 
 QuicPacketHeader::QuicPacketHeader(const QuicPacketPublicHeader& header)
     : public_header(header),
-      path_id(kDefaultPathId),
       packet_number(0),
-      fec_flag(false),
+      path_id(kDefaultPathId),
       entropy_flag(false),
       entropy_hash(0),
+      fec_flag(false),
       is_in_fec_group(NOT_IN_FEC_GROUP),
       fec_group(0) {}
 

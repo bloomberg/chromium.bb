@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_bug_tracker.h"
@@ -185,7 +186,8 @@ void QuicReceivedPacketManager::RecordPacketReceived(
 
 void QuicReceivedPacketManager::RecordPacketRevived(
     QuicPacketNumber packet_number) {
-  QUIC_BUG_IF(!IsAwaitingPacket(packet_number));
+  QUIC_BUG_IF(!IsAwaitingPacket(packet_number)) << base::StringPrintf(
+      "Not waiting for %llu", static_cast<unsigned long long>(packet_number));
   ack_frame_updated_ = true;
   ack_frame_.latest_revived_packet = packet_number;
 }

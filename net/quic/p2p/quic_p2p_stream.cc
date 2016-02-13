@@ -49,10 +49,6 @@ void QuicP2PStream::OnCanWrite() {
   }
 }
 
-SpdyPriority QuicP2PStream::Priority() const {
-  return priority_;
-}
-
 void QuicP2PStream::WriteHeader(base::StringPiece data) {
   WriteOrBufferData(data, false, nullptr);
 }

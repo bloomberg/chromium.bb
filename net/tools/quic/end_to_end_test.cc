@@ -14,7 +14,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/quic_client_session_base.h"

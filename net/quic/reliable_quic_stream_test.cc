@@ -58,8 +58,6 @@ class TestStream : public ReliableQuicStream {
     return should_process_data_ ? data_len : 0;
   }
 
-  SpdyPriority Priority() const override { return net::kV3HighestPriority; }
-
   using ReliableQuicStream::WriteOrBufferData;
   using ReliableQuicStream::CloseWriteSide;
   using ReliableQuicStream::OnClose;
@@ -345,7 +343,8 @@ TEST_F(ReliableQuicStreamTest, ConnectionCloseAfterStreamClose) {
   stream_->CloseWriteSide();
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
   EXPECT_EQ(QUIC_NO_ERROR, stream_->connection_error());
-  stream_->OnConnectionClosed(QUIC_INTERNAL_ERROR, false);
+  stream_->OnConnectionClosed(QUIC_INTERNAL_ERROR,
+                              ConnectionCloseSource::FROM_SELF);
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
   EXPECT_EQ(QUIC_NO_ERROR, stream_->connection_error());
 }

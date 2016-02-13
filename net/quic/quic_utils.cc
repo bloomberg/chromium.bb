@@ -76,6 +76,11 @@ uint128 IncrementalHash(uint128 hash, const char* data, size_t len) {
 #endif
 }
 
+bool IsInitializedIPEndPoint(const IPEndPoint& address) {
+  return net::GetAddressFamily(address.address().bytes()) !=
+         net::ADDRESS_FAMILY_UNSPECIFIED;
+}
+
 }  // namespace
 
 // static
@@ -478,10 +483,48 @@ uint64_t QuicUtils::PackPathIdAndPacketNumber(QuicPathId path_id,
   return path_id_packet_number;
 }
 
+// static
 char* QuicUtils::CopyBuffer(const SerializedPacket& packet) {
   char* dst_buffer = new char[packet.encrypted_length];
   memcpy(dst_buffer, packet.encrypted_buffer, packet.encrypted_length);
   return dst_buffer;
+}
+
+// static
+PeerAddressChangeType QuicUtils::DetermineAddressChangeType(
+    const IPEndPoint& old_address,
+    const IPEndPoint& new_address) {
+  if (!IsInitializedIPEndPoint(old_address) ||
+      !IsInitializedIPEndPoint(new_address) || old_address == new_address) {
+    return NO_CHANGE;
+  }
+
+  if (old_address.address() == new_address.address()) {
+    return PORT_CHANGE;
+  }
+
+  bool old_ip_is_ipv4 = old_address.address().IsIPv4();
+  bool migrating_ip_is_ipv4 = new_address.address().IsIPv4();
+  if (old_ip_is_ipv4 && !migrating_ip_is_ipv4) {
+    return IPV4_TO_IPV6_CHANGE;
+  }
+
+  if (!old_ip_is_ipv4) {
+    return migrating_ip_is_ipv4 ? IPV6_TO_IPV4_CHANGE : IPV6_TO_IPV6_CHANGE;
+  }
+
+  // TODO(rtenneti): Implement better way to test SubnetMask length of 24 bits.
+  IPAddressNumber old_address_bytes = old_address.address().bytes();
+  IPAddressNumber new_address_bytes = new_address.address().bytes();
+  if (old_address_bytes[0] == new_address_bytes[0] &&
+      old_address_bytes[1] == new_address_bytes[1] &&
+      old_address_bytes[2] == new_address_bytes[2]) {
+    // Subnet part does not change (here, we use /24), which is considered to be
+    // caused by NATs.
+    return IPV4_SUBNET_CHANGE;
+  }
+
+  return UNSPECIFIED_CHANGE;
 }
 
 }  // namespace net

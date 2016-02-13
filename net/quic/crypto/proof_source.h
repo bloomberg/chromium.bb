@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
 
@@ -17,6 +18,21 @@ namespace net {
 // chains and signatures that prove its identity.
 class NET_EXPORT_PRIVATE ProofSource {
  public:
+  // Chain is a reference-counted wrapper for a std::vector of std::stringified
+  // certificates.
+  struct Chain : public base::RefCounted<Chain> {
+    explicit Chain(const std::vector<std::string>& certs);
+
+    const std::vector<std::string> certs;
+
+   private:
+    friend class base::RefCounted<Chain>;
+
+    virtual ~Chain();
+
+    DISALLOW_COPY_AND_ASSIGN(Chain);
+  };
+
   virtual ~ProofSource() {}
 
   // GetProof finds a certificate chain for |hostname|, sets |out_certs| to
@@ -31,7 +47,8 @@ class NET_EXPORT_PRIVATE ProofSource {
   // If |ecdsa_ok| is true, the signature may use an ECDSA key. Otherwise, the
   // signature must use an RSA key.
   //
-  // |out_certs| is a pointer to a pointer, not a pointer to an array.
+  // |out_chain| is reference counted to avoid the (assumed) expense of copying
+  // out the certificates.
   //
   // The number of certificate chains is expected to be small and fixed thus
   // the ProofSource retains ownership of the contents of |out_certs|. The
@@ -52,7 +69,7 @@ class NET_EXPORT_PRIVATE ProofSource {
                         const std::string& hostname,
                         const std::string& server_config,
                         bool ecdsa_ok,
-                        const std::vector<std::string>** out_certs,
+                        scoped_refptr<Chain>* out_chain,
                         std::string* out_signature,
                         std::string* out_leaf_cert_sct) = 0;
 };

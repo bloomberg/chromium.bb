@@ -71,7 +71,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
       const QuicVersionNegotiationPacket& packet) override;
   void OnRevivedPacket(const QuicPacketHeader& revived_header,
                        base::StringPiece payload) override;
-  void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
+  void OnConnectionClosed(QuicErrorCode error,
+                          ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
   void OnRttChanged(QuicTime::Delta rtt) const override;
 

@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   void OnDataAvailable() override;
   void OnClose() override;
   void OnCanWrite() override;
-  SpdyPriority Priority() const override;
+  SpdyPriority priority() const override;
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.

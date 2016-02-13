@@ -518,8 +518,8 @@ TEST_P(QuicCryptoServerStreamTest, CancelRPCBeforeVerificationCompletes) {
 
   // While waiting for the asynchronous verification to complete, the client
   // decides to close the connection.
-  server_session_->connection()->CloseConnection(QUIC_NO_ERROR,
-                                                 /*from_peer=*/true);
+  server_session_->connection()->CloseConnection(
+      QUIC_NO_ERROR, ConnectionCloseSource::FROM_PEER);
 
   // The outstanding nonce verification RPC now completes.
   strike_register_client_->RunPendingVerifications();

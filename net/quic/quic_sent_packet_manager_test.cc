@@ -1719,6 +1719,61 @@ TEST_F(QuicSentPacketManagerTest, ResumeConnectionState) {
             static_cast<uint64_t>(manager_.GetRttStats()->initial_rtt_us()));
 }
 
+TEST_F(QuicSentPacketManagerTest, ConnectionMigrationUnspecifiedChange) {
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(&manager_);
+  int64_t default_init_rtt = rtt_stats->initial_rtt_us();
+  rtt_stats->set_initial_rtt_us(default_init_rtt * 2);
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+
+  QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
+  EXPECT_EQ(1u, manager_.consecutive_rto_count());
+  QuicSentPacketManagerPeer::SetConsecutiveTlpCount(&manager_, 2);
+  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+
+  EXPECT_CALL(*send_algorithm_, OnConnectionMigration());
+  manager_.OnConnectionMigration(UNSPECIFIED_CHANGE);
+
+  EXPECT_EQ(default_init_rtt, rtt_stats->initial_rtt_us());
+  EXPECT_EQ(0u, manager_.consecutive_rto_count());
+  EXPECT_EQ(0u, manager_.consecutive_tlp_count());
+}
+
+TEST_F(QuicSentPacketManagerTest, ConnectionMigrationIPSubnetChange) {
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(&manager_);
+  int64_t default_init_rtt = rtt_stats->initial_rtt_us();
+  rtt_stats->set_initial_rtt_us(default_init_rtt * 2);
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+
+  QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
+  EXPECT_EQ(1u, manager_.consecutive_rto_count());
+  QuicSentPacketManagerPeer::SetConsecutiveTlpCount(&manager_, 2);
+  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+
+  manager_.OnConnectionMigration(IPV4_SUBNET_CHANGE);
+
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+  EXPECT_EQ(1u, manager_.consecutive_rto_count());
+  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+}
+
+TEST_F(QuicSentPacketManagerTest, ConnectionMigrationPortChange) {
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(&manager_);
+  int64_t default_init_rtt = rtt_stats->initial_rtt_us();
+  rtt_stats->set_initial_rtt_us(default_init_rtt * 2);
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+
+  QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
+  EXPECT_EQ(1u, manager_.consecutive_rto_count());
+  QuicSentPacketManagerPeer::SetConsecutiveTlpCount(&manager_, 2);
+  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+
+  manager_.OnConnectionMigration(PORT_CHANGE);
+
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+  EXPECT_EQ(1u, manager_.consecutive_rto_count());
+  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

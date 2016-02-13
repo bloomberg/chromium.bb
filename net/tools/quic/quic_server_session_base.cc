@@ -41,27 +41,34 @@ void QuicServerSessionBase::OnConfigNegotiated() {
     return;
   }
 
-  // If the client has provided a bandwidth estimate from the same serving
-  // region, then pass it to the sent packet manager in preparation for possible
-  // bandwidth resumption.
-  const CachedNetworkParameters* cached_network_params =
-      crypto_stream_->PreviousCachedNetworkParams();
+  // Enable bandwidth resumption if peer sent correct connection options.
   const bool last_bandwidth_resumption =
       ContainsQuicTag(config()->ReceivedConnectionOptions(), kBWRE);
   const bool max_bandwidth_resumption =
       ContainsQuicTag(config()->ReceivedConnectionOptions(), kBWMX);
   bandwidth_resumption_enabled_ =
       last_bandwidth_resumption || max_bandwidth_resumption;
-  if (cached_network_params != nullptr && bandwidth_resumption_enabled_ &&
+
+  // If the client has provided a bandwidth estimate from the same serving
+  // region as this server, then decide whether to use the data for bandwidth
+  // resumption.
+  const CachedNetworkParameters* cached_network_params =
+      crypto_stream_->PreviousCachedNetworkParams();
+  if (cached_network_params != nullptr &&
       cached_network_params->serving_region() == serving_region_) {
-    int64_t seconds_since_estimate =
-        connection()->clock()->WallNow().ToUNIXSeconds() -
-        cached_network_params->timestamp();
-    bool estimate_within_last_hour =
-        seconds_since_estimate <= kNumSecondsPerHour;
-    if (estimate_within_last_hour) {
-      connection()->ResumeConnectionState(*cached_network_params,
-                                          max_bandwidth_resumption);
+    if (FLAGS_quic_log_received_parameters) {
+      connection()->OnReceiveConnectionState(*cached_network_params);
+    }
+
+    if (bandwidth_resumption_enabled_) {
+      // Only do bandwidth resumption if estimate is recent enough.
+      const int64_t seconds_since_estimate =
+          connection()->clock()->WallNow().ToUNIXSeconds() -
+          cached_network_params->timestamp();
+      if (seconds_since_estimate <= kNumSecondsPerHour) {
+        connection()->ResumeConnectionState(*cached_network_params,
+                                            max_bandwidth_resumption);
+      }
     }
   }
 
@@ -74,8 +81,8 @@ void QuicServerSessionBase::OnConfigNegotiated() {
 }
 
 void QuicServerSessionBase::OnConnectionClosed(QuicErrorCode error,
-                                               bool from_peer) {
-  QuicSession::OnConnectionClosed(error, from_peer);
+                                               ConnectionCloseSource source) {
+  QuicSession::OnConnectionClosed(error, source);
   // In the unlikely event we get a connection close while doing an asynchronous
   // crypto event, make sure we cancel the callback.
   if (crypto_stream_.get() != nullptr) {

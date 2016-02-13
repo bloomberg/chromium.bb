@@ -90,9 +90,9 @@ void QuicChromiumClientStream::OnCanWrite() {
   }
 }
 
-SpdyPriority QuicChromiumClientStream::Priority() const {
+SpdyPriority QuicChromiumClientStream::priority() const {
   if (delegate_ && delegate_->HasSendHeadersComplete()) {
-    return QuicSpdyStream::Priority();
+    return QuicSpdyStream::priority();
   }
   return net::kV3HighestPriority;
 }
@@ -146,7 +146,7 @@ int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
 bool QuicChromiumClientStream::CanWrite(const CompletionCallback& callback) {
   bool can_write = session()->connection()->CanWrite(HAS_RETRANSMITTABLE_DATA);
   if (!can_write) {
-    session()->MarkConnectionLevelWriteBlocked(id(), Priority());
+    session()->MarkConnectionLevelWriteBlocked(id());
     DCHECK(callback_.is_null());
     callback_ = callback;
   }

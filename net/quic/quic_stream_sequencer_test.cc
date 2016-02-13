@@ -49,7 +49,6 @@ class MockStream : public ReliableQuicStream {
                void(QuicErrorCode error, const string& details));
   MOCK_METHOD1(Reset, void(QuicRstStreamErrorCode error));
   MOCK_METHOD0(OnCanWrite, void());
-  SpdyPriority Priority() const override { return kV3HighestPriority; }
   virtual bool IsFlowControlEnabled() const { return true; }
 };
 

@@ -46,7 +46,6 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
 
   // ReliableQuicStream implementation
   void OnDataAvailable() override;
-  SpdyPriority Priority() const override;
 
   bool supports_push_promise() { return supports_push_promise_; }
 

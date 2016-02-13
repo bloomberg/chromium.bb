@@ -55,7 +55,8 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
         crypto_stream_(QuicServerSessionBase::GetCryptoStream()) {}
   ~TestQuicSpdyServerSession() override{};
 
-  MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD2(OnConnectionClosed,
+               void(QuicErrorCode error, ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicSpdyStream*(SpdyPriority priority));
@@ -290,7 +291,8 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   packet.nonce_proof = 132232;
   scoped_ptr<QuicEncryptedPacket> encrypted(
       QuicFramer::BuildPublicResetPacket(packet));
-  EXPECT_CALL(*session1_, OnConnectionClosed(QUIC_PUBLIC_RESET, true))
+  EXPECT_CALL(*session1_, OnConnectionClosed(QUIC_PUBLIC_RESET,
+                                             ConnectionCloseSource::FROM_PEER))
       .Times(1)
       .WillOnce(WithoutArgs(Invoke(
           reinterpret_cast<MockServerConnection*>(session1_->connection()),
@@ -514,7 +516,8 @@ TEST_P(QuicDispatcherStatelessRejectTest, ParameterizedBasicTest) {
             reinterpret_cast<MockServerConnection*>(session1_->connection()),
             &MockServerConnection::UnregisterOnConnectionClosed)));
     session1_->connection()->CloseConnection(
-        QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, /* from_peer */ false);
+        QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT,
+        ConnectionCloseSource::FROM_SELF);
   }
 
   // Send a second packet and check the results.  If this is a stateless reject,

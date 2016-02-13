@@ -39,6 +39,13 @@ TEST(CryptoHandshakeMessageTest, DebugStringWithTagVector) {
   EXPECT_EQ("CHLO<\n  COPT: 'TBBR','PAD ','BYTE'\n>", message.DebugString());
 }
 
+TEST(CryptoHandshakeMessageTest, ServerDesignatedConnectionId) {
+  CryptoHandshakeMessage message;
+  message.set_tag(kSREJ);
+  message.SetValue(kRCID, UINT64_C(18364758544493064720));
+  EXPECT_EQ("SREJ<\n  RCID: 18364758544493064720\n>", message.DebugString());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

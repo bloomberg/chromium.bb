@@ -115,7 +115,8 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
-  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) = 0;
+  virtual void OnConnectionClosed(QuicErrorCode error,
+                                  ConnectionCloseSource source) = 0;
 
   // Called when the connection failed to write because the socket was blocked.
   virtual void OnWriteBlocked() = 0;
@@ -240,7 +241,8 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
                                base::StringPiece payload) {}
 
   // Called when the connection is closed.
-  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) {}
+  virtual void OnConnectionClosed(QuicErrorCode error,
+                                  ConnectionCloseSource source) {}
 
   // Called when the version negotiation is successful.
   virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) {}
@@ -249,8 +251,8 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual void OnSendConnectionState(
       const CachedNetworkParameters& cached_network_params) {}
 
-  // Called when resuming previous connection state.
-  virtual void OnResumeConnectionState(
+  // Called when a CachedNetworkParameters are recieved from the client.
+  virtual void OnReceiveConnectionState(
       const CachedNetworkParameters& cached_network_params) {}
 
   // Called when the connection parameters are set from the supplied
@@ -325,6 +327,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void OnSendConnectionState(
       const CachedNetworkParameters& cached_network_params);
 
+  // Called by the session when receiving connection state from the client.
+  virtual void OnReceiveConnectionState(
+      const CachedNetworkParameters& cached_network_params);
+
   // Called by the Session when the client has provided CachedNetworkParameters.
   virtual void ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params,
@@ -376,7 +382,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void SendConnectionCloseWithDetails(QuicErrorCode error,
                                               const std::string& details);
   // Notifies the visitor of the close and marks the connection as disconnected.
-  void CloseConnection(QuicErrorCode error, bool from_peer) override;
+  void CloseConnection(QuicErrorCode error, ConnectionCloseSource source);
 
   // Sends a GOAWAY frame. Does nothing if a GOAWAY frame has already been sent.
   virtual void SendGoAway(QuicErrorCode error,
@@ -463,6 +469,8 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // QuicPacketCreator::DelegateInterface
   void OnSerializedPacket(SerializedPacket* packet) override;
+  void OnUnrecoverableError(QuicErrorCode error,
+                            ConnectionCloseSource source) override;
   void OnResetFecGroup() override;
 
   // QuicSentPacketManager::NetworkChangeVisitor
@@ -671,9 +679,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // cannot be written immediately.
   virtual void SendOrQueuePacket(SerializedPacket* packet);
 
-  // On peer address changes, determine and return peer address change type.
-  PeerAddressChangeType DeterminePeerAddressChangeType();
-
   // Migrate the connection if peer address changes. This function should only
   // be called after the packet is validated.
   virtual void MaybeMigrateConnectionToNewPeerAddress();
@@ -689,6 +694,12 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   const IPAddressNumber& migrating_peer_ip() const {
     return migrating_peer_ip_;
+  }
+
+  uint16_t migrating_peer_port() const { return migrating_peer_port_; }
+
+  const IPEndPoint& last_packet_source_address() const {
+    return last_packet_source_address_;
   }
 
   // Returns the current per-packet options for the connection.
