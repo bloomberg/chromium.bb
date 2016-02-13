@@ -4,6 +4,7 @@
 {
   'includes': ['src/cpp/libaddressinput.gypi'],
   'variables': {
+    'libaddressinput_test_data_dir%': 'src/third_party/libaddressinput/src/testdata',
     'libaddressinput_util_files': [
       'src/cpp/src/address_data.cc',
       'src/cpp/src/address_field.cc',
@@ -121,43 +122,34 @@
       ],
     },
     {
-      'target_name': 'libaddressinput_unittests_local',
-      'defines': [
-        'TEST_DATA_DIR="src/third_party/libaddressinput/src/testdata/"',
-      ],
-      'includes': [
-        'libaddressinput_unittests.gypi',
-      ],
-    },
-    {
-      # Only used for swarming (do not run locally).
       'target_name': 'libaddressinput_unittests',
-      'defines': [
-        'TEST_DATA_DIR="src/testdata/"',
+      'type': '<(gtest_target_type)',
+      'sources': [
+        '<@(libaddressinput_test_files)',
+        'chromium/addressinput_util_unittest.cc',
+        'chromium/chrome_address_validator_unittest.cc',
+        'chromium/chrome_metadata_source_unittest.cc',
+        'chromium/chrome_storage_impl_unittest.cc',
+        'chromium/fallback_data_store_unittest.cc',
+        'chromium/storage_test_runner.cc',
+        'chromium/string_compare_unittest.cc',
+        'chromium/trie_unittest.cc',
       ],
-      'includes': [
-        'libaddressinput_unittests.gypi',
+      'defines': [
+        'TEST_DATA_DIR="<(libaddressinput_test_data_dir)"',
+      ],
+      'include_dirs': [
+        '../../',
+        'src/cpp/src/',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:run_all_unittests',
+        '../../components/prefs/prefs.gyp:prefs',
+        '../../net/net.gyp:net_test_support',
+        '../../testing/gtest.gyp:gtest',
+        'libaddressinput',
+        'libaddressinput_util',
       ],
     },
-  ],
-  'conditions': [
-    ['test_isolation_mode != "noop"', {
-      'targets': [
-        {
-          'target_name': 'libaddressinput_unittests_run',
-          'type': 'none',
-          'dependencies': [
-            'libaddressinput_unittests',
-          ],
-          'includes': [
-            '../../build/isolate.gypi',
-          ],
-          'sources': [
-            'libaddressinput_unittests.isolate',
-          ],
-        },
-      ],
-    }, {
-    }],
   ],
 }

@@ -585,7 +585,6 @@
             '../third_party/WebKit/Source/web/web_tests.gyp:webkit_unit_tests_run',
             '../third_party/WebKit/Source/wtf/wtf_tests.gyp:wtf_unittests_run',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests_run',
-            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests_run',
             '../tools/battor_agent/battor_agent.gyp:battor_agent_unittests_run',
             '../tools/gn/gn.gyp:gn_unittests_run',
             '../ui/accessibility/accessibility.gyp:accessibility_unittests_run',
