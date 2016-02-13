@@ -96,8 +96,7 @@ void ApplicationManager::ConnectToApplication(
 
   ApplicationLoader* loader = GetLoaderForURL(params->target().url());
   if (loader) {
-    const GURL url = params->target().url();
-    package_manager_->BuiltinAppLoaded(url);
+    GURL url = params->target().url();
     loader->Load(url, CreateAndConnectToInstance(std::move(params), nullptr));
     return;
   }
