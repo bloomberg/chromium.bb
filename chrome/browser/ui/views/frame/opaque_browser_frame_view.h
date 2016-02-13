@@ -148,6 +148,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                            int y,
                            int w,
                            int h,
+                           bool draw_bottom,
                            SkColor color,
                            gfx::Canvas* canvas) const;
 

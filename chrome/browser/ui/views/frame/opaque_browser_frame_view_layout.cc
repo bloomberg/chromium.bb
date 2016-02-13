@@ -18,10 +18,7 @@
 
 namespace {
 
-// The titlebar never shrinks too short to show the caption button plus some
-// padding below it.
 const int kCaptionButtonHeight = 18;
-const int kTitleBarAdditionalPadding = 3;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Default extra space between the top of the frame and the top of the window
@@ -56,8 +53,8 @@ const int OpaqueBrowserFrameViewLayout::kFrameBorderThickness = 4;
 // The titlebar has a 2 px 3D edge along the top.
 const int OpaqueBrowserFrameViewLayout::kTitlebarTopEdgeThickness = 2;
 
-// The icon is inset 2 px from the left frame border.
-const int OpaqueBrowserFrameViewLayout::kIconLeftSpacing = 2;
+// The icon is inset 1 px from the left frame border.
+const int OpaqueBrowserFrameViewLayout::kIconLeftSpacing = 1;
 
 // There is a 4 px gap between the icon and the title text.
 const int OpaqueBrowserFrameViewLayout::kIconTitleSpacing = 4;
@@ -65,6 +62,10 @@ const int OpaqueBrowserFrameViewLayout::kIconTitleSpacing = 4;
 // The horizontal spacing to use in most cases when laying out things near the
 // caption button area.
 const int OpaqueBrowserFrameViewLayout::kCaptionSpacing = 5;
+
+// The minimum vertical padding between the bottom of the caption buttons and
+// the top of the content shadow.
+const int OpaqueBrowserFrameViewLayout::kCaptionButtonBottomPadding = 3;
 
 // When the title bar is condensed to one row (as when maximized), the New Tab
 // button and the caption buttons are at similar vertical coordinates, so we
@@ -160,9 +161,13 @@ int OpaqueBrowserFrameViewLayout::NonClientBorderThickness() const {
 int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
     bool restored) const {
   if (delegate_->ShouldShowWindowTitle()) {
-    return std::max(FrameBorderThickness(restored) + delegate_->GetIconSize(),
-                    CaptionButtonY(restored) + kCaptionButtonHeight) +
-        TitlebarBottomThickness(restored);
+    // The + 2 here puts at least 1 px of space on top and bottom of the icon.
+    const int icon_height =
+        TitlebarTopThickness(restored) + delegate_->GetIconSize() + 2;
+    const int caption_button_height = CaptionButtonY(restored) +
+        kCaptionButtonHeight + kCaptionButtonBottomPadding;
+    return std::max(icon_height, caption_button_height) +
+        kContentEdgeShadowThickness;
   }
 
   int thickness = FrameBorderThickness(restored);
@@ -185,12 +190,9 @@ int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
       top : (top + kNonClientRestoredExtraThickness - exclusion);
 }
 
-int OpaqueBrowserFrameViewLayout::TitlebarBottomThickness(bool restored) const {
-  const int thickness =
-      kTitleBarAdditionalPadding + kContentEdgeShadowThickness;
-  return (delegate_->IsToolbarVisible() || !IsTitleBarCondensed() || restored)
-      ? (thickness + views::NonClientFrameView::kClientEdgeThickness)
-      : thickness;
+int OpaqueBrowserFrameViewLayout::TitlebarTopThickness(bool restored) const {
+  return (restored || !IsTitleBarCondensed()) ?
+      kTitlebarTopEdgeThickness : FrameBorderThickness(false);
 }
 
 int OpaqueBrowserFrameViewLayout::CaptionButtonY(bool restored) const {
@@ -290,17 +292,15 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
     // slightly uncentered with restored windows, so when the window is
     // restored, instead of calculating the remaining space from below the
     // frame border, we calculate from below the 3D edge.
-    int unavailable_px_at_top = IsTitleBarCondensed() ?
-        frame_thickness : kTitlebarTopEdgeThickness;
+    const int unavailable_px_at_top = TitlebarTopThickness(false);
     // When the icon is shorter than the minimum space we reserve for the
     // caption button, we vertically center it.  We want to bias rounding to
-    // put extra space above the icon, since the 3D edge (+ client edge, for
-    // restored windows) below looks (to the eye) more like additional space
-    // than does the 3D edge (or nothing at all, for maximized windows)
-    // above; hence the +1.
-    int y = unavailable_px_at_top + (NonClientTopBorderHeight(false) -
-                                     unavailable_px_at_top - size -
-                                     TitlebarBottomThickness(false) + 1) / 2;
+    // put extra space below the icon, since we'll use the same Y coordinate for
+    // the title, and the majority of the font weight is below the centerline.
+    const int icon_height =
+        unavailable_px_at_top + size + kContentEdgeShadowThickness;
+    const int y = unavailable_px_at_top +
+        (NonClientTopBorderHeight(false) - icon_height) / 2;
 
     window_icon_bounds_ = gfx::Rect(leading_button_start_ + kIconLeftSpacing, y,
                                     size, size);

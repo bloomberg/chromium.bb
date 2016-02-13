@@ -121,10 +121,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   void PaintToolbarBackground(gfx::Canvas* canvas);
 
-  // Draws the line under the header for windows without a toolbar and not using
-  // the packaged app header style.
-  void PaintContentEdge(gfx::Canvas* canvas);
-
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_;
 

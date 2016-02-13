@@ -17,7 +17,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarBubbleVerticalPadding[] = {1, 4, 4};
   const int kLocationBarHeight[] = {27, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
-  const int kLocationBarVerticalPadding[] = {2, 2, 2};
+  const int kLocationBarVerticalPadding[] = {0, 1, 1};
   const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
   const int kOmniboxFontPixelSize[] = {16, 14, 14};
   const int kTabCloseButtonTrailingPaddingOverlap[] = {2, 0, 0};

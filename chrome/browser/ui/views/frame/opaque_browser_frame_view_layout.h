@@ -35,6 +35,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   static const int kIconLeftSpacing;
   static const int kIconTitleSpacing;
   static const int kCaptionSpacing;
+  static const int kCaptionButtonBottomPadding;
   static const int kNewTabCaptionCondensedSpacing;
 
   explicit OpaqueBrowserFrameViewLayout(
@@ -83,10 +84,10 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // acts as if the window is restored regardless of the real mode.
   int CaptionButtonY(bool restored) const;
 
-  // Returns the thickness of the 3D edge along the bottom of the titlebar.  If
+  // Returns the thickness of the 3D edge along the top of the titlebar.  If
   // |restored| is true, acts as if the window is restored regardless of the
   // real mode.
-  int TitlebarBottomThickness(bool restored) const;
+  int TitlebarTopThickness(bool restored) const;
 
   // Returns the bounds of the titlebar icon (or where the icon would be if
   // there was one).

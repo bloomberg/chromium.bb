@@ -488,7 +488,7 @@ void ToolbarView::Layout() {
     return;
 
   if (!is_display_mode_normal()) {
-    location_bar_->SetBounds(0, PopupTopSpacing(), width(),
+    location_bar_->SetBounds(0, 0, width(),
                              location_bar_->GetPreferredSize().height());
     return;
   }
@@ -687,11 +687,6 @@ void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
   }
 }
 
-int ToolbarView::PopupTopSpacing() const {
-  return (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) ?
-       0 : views::NonClientFrameView::kClientEdgeThickness;
-}
-
 gfx::Size ToolbarView::GetSizeInternal(
     gfx::Size (View::*get_size)() const) const {
   gfx::Size size((location_bar_->*get_size)());
@@ -733,9 +728,6 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
       size.SetToMax(
           gfx::Size(0, normal_background->height() - content_shadow_height()));
     }
-  } else if (size.height() > 0) {
-    size.Enlarge(
-        0, PopupTopSpacing() + views::NonClientFrameView::kClientEdgeThickness);
   }
   return size;
 }

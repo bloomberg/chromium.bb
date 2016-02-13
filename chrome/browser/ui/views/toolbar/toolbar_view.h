@@ -169,9 +169,6 @@ class ToolbarView : public views::AccessiblePaneView,
                            AppMenuIconPainter::Severity severity,
                            bool animate) override;
 
-  // Returns the number of pixels above the location bar in non-normal display.
-  int PopupTopSpacing() const;
-
   // Used to avoid duplicating the near-identical logic of
   // ToolbarView::GetPreferredSize() and ToolbarView::GetMinimumSize(). These
   // two functions call through to GetSizeInternal(), passing themselves as the

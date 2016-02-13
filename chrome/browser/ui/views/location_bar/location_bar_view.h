@@ -128,6 +128,10 @@ class LocationBarView : public LocationBar,
 
   ~LocationBarView() override;
 
+  // Returns the color for the location bar border in MD windows and non-MD
+  // popup windows, given the window's |incognito| state.
+  static SkColor GetBorderColor(bool incognito);
+
   // Initializes the LocationBarView.
   void Init();
 
@@ -216,12 +220,6 @@ class LocationBarView : public LocationBar,
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
   const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
 
-  // Returns the height of the control without the top and bottom
-  // edges(i.e.  the height of the edit control inside).  If
-  // |use_preferred_size| is true this will be the preferred height,
-  // otherwise it will be the current height.
-  int GetInternalHeight(bool use_preferred_size);
-
   // Returns the position and width that the popup should be, and also the left
   // edge that the results should align themselves to (which will leave some
   // border on the left of the popup). |top_edge_overlap| specifies the number
@@ -275,10 +273,14 @@ class LocationBarView : public LocationBar,
   int IncrementalMinimumWidth(views::View* view) const;
 
   // Returns the thickness of any visible edge, in pixels.
-  int GetEdgeThickness() const;
+  int GetHorizontalEdgeThickness() const;
+  int GetVerticalEdgeThickness() const;
 
-  // The vertical padding to be applied to all contained views.
-  int VerticalPadding() const;
+  // Returns the total amount of space reserved above or below the content,
+  // which is the vertical edge thickness plus the padding next to it.  If
+  // |for_bubble| is true, this computes the relevant value for bubbles as
+  // opposed to normal content (e.g. the omnibox).
+  int GetVerticalEdgeThicknessWithPadding(bool for_bubble) const;
 
   // Updates |location_icon_view_| based on the current state and theme.
   void RefreshLocationIcon();
