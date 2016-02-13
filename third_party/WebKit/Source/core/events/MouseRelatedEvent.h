@@ -61,7 +61,7 @@ public:
     bool hasPosition() const { return m_positionType == PositionType::Position; }
 
     // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative coords,
-    // usable with LayoutObject::absoluteToLocal).
+    // usable with LayoutObject::absoluteToLocal) relative to view(), i.e. the local frame.
     const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
     void setAbsoluteLocation(const LayoutPoint& p) { m_absoluteLocation = p; }
 

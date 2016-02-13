@@ -599,7 +599,7 @@ void EventHandler::stopAutoscroll()
         controller->stopAutoscroll();
 }
 
-ScrollResultOneDimensional EventHandler::scroll(ScrollDirection direction, ScrollGranularity granularity, Node* startNode, Node** stopNode, float delta, IntPoint absolutePoint)
+ScrollResultOneDimensional EventHandler::scroll(ScrollDirection direction, ScrollGranularity granularity, Node* startNode, Node** stopNode, float delta)
 {
     if (!delta)
         return ScrollResultOneDimensional(false);
@@ -1844,18 +1844,17 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
     Node* stopNode = m_previousWheelScrolledNode.get();
     ScrollGranularity granularity = wheelGranularityToScrollGranularity(wheelEvent);
-    IntPoint absolutePosition = roundedIntPoint(wheelEvent->absoluteLocation());
 
     // Break up into two scrolls if we need to.  Diagonal movement on
     // a MacBook pro is an example of a 2-dimensional mouse wheel event (where both deltaX and deltaY can be set).
 
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (wheelEvent->railsMode() != Event::RailsModeVertical
-        && scroll(ScrollRightIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaX(), absolutePosition).didScroll)
+        && scroll(ScrollRightIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaX()).didScroll)
         wheelEvent->setDefaultHandled();
 
     if (wheelEvent->railsMode() != Event::RailsModeHorizontal
-        && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaY(), absolutePosition).didScroll)
+        && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaY()).didScroll)
         wheelEvent->setDefaultHandled();
 
     m_previousWheelScrolledNode = stopNode;

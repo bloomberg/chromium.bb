@@ -273,8 +273,7 @@ private:
     // stopNode - On input, if provided and non-null, the node at which we should stop bubbling on input.
     //            On output, if provided and a node was scrolled stopNode will point to that node.
     // delta - The delta to scroll by, in the units of the granularity parameter. (e.g. pixels, lines, pages, etc.)
-    // absolutePoint - For wheel scrolls - the location, in absolute coordinates, where the event occured.
-    ScrollResultOneDimensional scroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr, Node** stopNode = nullptr, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
+    ScrollResultOneDimensional scroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr, Node** stopNode = nullptr, float delta = 1.0f);
 
     void resetOverscroll(bool didScrollX, bool didScrollY);
     void handleOverscroll(const ScrollResult&, const FloatPoint& position = FloatPoint(), const FloatSize& velocity = FloatSize());
