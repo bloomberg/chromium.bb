@@ -191,7 +191,7 @@ function setServerRemoteDescription() {
 }
 
 function afterSetServerRemoteDescription() {
-  pcServer.createAnswer(onServerAnswer, onServerAnswerFailed);
+  pcServer.createAnswer(onServerAnswer);
 }
 
 function onServerAnswer(desc) {
@@ -200,10 +200,6 @@ function onServerAnswer(desc) {
   trace('Setting both Answers to:\n' + desc.sdp);
   pcServer.setLocalDescription(desc);
   pcClient.setRemoteDescription(desc);
-}
-
-function onServerAnswerFailed(err) {
-  returnToTest('Unexpectedly failed to create answer: ' + err);
 }
 
 function onServerGotStream(e) {

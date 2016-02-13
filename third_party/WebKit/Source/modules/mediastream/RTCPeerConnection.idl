@@ -98,11 +98,13 @@ enum RTCIceConnectionState {
     // attribute EventHandler onicegatheringstatechange;
 
     // https://w3c.github.io/webrtc-pc/#legacy-interface-extensions
-    [CallWith=ExecutionContext, RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
-    // TODO(guidou): There should be no mediaConstraints argument.
-    [CallWith=ExecutionContext, RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
+    // TODO(guidou): The failureCallback argument should be non-optional.
+    [CallWith=ExecutionContext, RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
     // TODO(guidou): None of the arguments should be optional.
     [CallWith=ExecutionContext, RaisesException] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
+    // TODO(guidou): The failureCallback argument should be non-optional, and
+    // there should be no mediaConstraints argument.
+    [CallWith=ExecutionContext, RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
     // TODO(guidou): The successCallback and failureCallback arguments should be
     // non-optional.
     [CallWith=ExecutionContext, RaisesException] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);

@@ -812,11 +812,9 @@
     connectOnIceCandidate(caller, callee);
 
     caller.createOffer(
-      function (offer) {
-        onOfferCreated(offer, caller, callee);
-      }, 
-      function(error) { failTest(error); }
-    );
+        function (offer) {
+          onOfferCreated(offer, caller, callee);
+        });
   }
 
   function iceCandidateIsLoopback(candidate) {
@@ -904,9 +902,7 @@
                                   callee.createAnswer(
                                     function (answer) {
                                       onAnswerCreated(answer, caller, callee);
-                                    },
-                                    function(error) { failTest(error); }
-                                  );
+                                    });
                                 },
                                 onRemoteDescriptionError);
   }
