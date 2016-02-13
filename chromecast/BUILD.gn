@@ -123,11 +123,6 @@ cast_test_group("cast_tests") {
 
   if (!disable_display) {
     tests += [ "//gpu:gpu_unittests" ]
-  } else {
-    filters += [
-      # These are not supported by the backend right now. b/21737919
-      "cast_media_unittests --gtest_filter=-AudioVideoPipelineDeviceTest.VorbisPlayback:AudioVideoPipelineDeviceTest.WebmPlayback",
-    ]
   }
 }
 
