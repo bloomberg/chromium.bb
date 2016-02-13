@@ -155,12 +155,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // Destroys this view without calling |Destroy| on |platform_view_|.
   void DestroyGuestView();
 
-  // Builds and forwards a WebKitGestureEvent to the renderer.
-  bool ForwardGestureEventToRenderer(ui::GestureEvent* gesture);
-
-  // Process all of the given gestures (passes them on to renderer)
-  void ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
-
   RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
 
   void OnHandleInputEvent(RenderWidgetHostImpl* embedder,

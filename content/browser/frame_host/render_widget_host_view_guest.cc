@@ -40,20 +40,6 @@
 
 namespace content {
 
-namespace {
-
-#if defined(USE_AURA)
-blink::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
-  blink::WebGestureEvent gesture_event;
-  gesture_event.timeStampSeconds = time_stamp;
-  gesture_event.type = blink::WebGestureEvent::GestureFlingCancel;
-  gesture_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
-  return gesture_event;
-}
-#endif  // defined(USE_AURA)
-
-}  // namespace
-
 RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHost* widget_host,
     BrowserPluginGuest* guest,
@@ -559,52 +545,6 @@ void RenderWidgetHostViewGuest::DestroyGuestView() {
   host_->SetView(NULL);
   host_ = NULL;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-}
-
-bool RenderWidgetHostViewGuest::ForwardGestureEventToRenderer(
-    ui::GestureEvent* gesture) {
-#if defined(USE_AURA)
-  if (!host_)
-    return false;
-
-  if ((gesture->type() == ui::ET_GESTURE_PINCH_BEGIN ||
-      gesture->type() == ui::ET_GESTURE_PINCH_UPDATE ||
-      gesture->type() == ui::ET_GESTURE_PINCH_END) && !pinch_zoom_enabled_) {
-    return true;
-  }
-
-  blink::WebGestureEvent web_gesture =
-      MakeWebGestureEventFromUIEvent(*gesture);
-  const gfx::Point& client_point = gesture->location();
-  const gfx::Point& screen_point = gesture->location();
-
-  web_gesture.x = client_point.x();
-  web_gesture.y = client_point.y();
-  web_gesture.globalX = screen_point.x();
-  web_gesture.globalY = screen_point.y();
-
-  if (web_gesture.type == blink::WebGestureEvent::Undefined)
-    return false;
-  if (web_gesture.type == blink::WebGestureEvent::GestureTapDown) {
-    host_->ForwardGestureEvent(
-        CreateFlingCancelEvent(gesture->time_stamp().InSecondsF()));
-  }
-  host_->ForwardGestureEvent(web_gesture);
-  return true;
-#else
-  return false;
-#endif
-}
-
-void RenderWidgetHostViewGuest::ProcessGestures(
-    ui::GestureRecognizer::Gestures* gestures) {
-  if ((gestures == NULL) || gestures->empty())
-    return;
-  for (ui::GestureRecognizer::Gestures::iterator g_it = gestures->begin();
-      g_it != gestures->end();
-      ++g_it) {
-    ForwardGestureEventToRenderer(*g_it);
-  }
 }
 
 RenderWidgetHostViewBase*
