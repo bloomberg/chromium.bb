@@ -41,7 +41,7 @@ const char kValidCookieLine[] = "A=B; path=/";
 
 // The CookieStoreTestTraits must have the following members:
 // struct CookieStoreTestTraits {
-//   // Factory function.
+//   // Factory function. Will be called at most once per test.
 //   static scoped_refptr<CookieStore> Create();
 //
 //   // The cookie store is a CookieMonster. Only used to test
@@ -275,8 +275,11 @@ class CookieStoreTest : public testing::Test {
     return callback.result();
   }
 
+  // Returns the CookieStore for the test - each test only uses one CookieStore.
   scoped_refptr<CookieStore> GetCookieStore() {
-    return CookieStoreTestTraits::Create();
+    if (!cookie_store_)
+      cookie_store_ = CookieStoreTestTraits::Create();
+    return cookie_store_;
   }
 
   // Compares two cookie lines.
@@ -326,6 +329,8 @@ class CookieStoreTest : public testing::Test {
       EXPECT_TRUE(tokens.insert(tokenizer.token()).second);
     return tokens;
   }
+
+  scoped_refptr<CookieStore> cookie_store_;
 };
 
 TYPED_TEST_CASE_P(CookieStoreTest);
@@ -511,7 +516,6 @@ TYPED_TEST_P(CookieStoreTest, DomainWithTrailingDotTest) {
 }
 
 // Test that cookies can bet set on higher level domains.
-// http://b/issue?id=896491
 TYPED_TEST_P(CookieStoreTest, ValidSubdomainTest) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
   GURL url_abcd("http://a.b.c.d.com");
@@ -541,97 +545,88 @@ TYPED_TEST_P(CookieStoreTest, ValidSubdomainTest) {
 // Test that setting a cookie which specifies an invalid domain has
 // no side-effect. An invalid domain in this context is one which does
 // not match the originating domain.
-// http://b/issue?id=896472
 TYPED_TEST_P(CookieStoreTest, InvalidDomainTest) {
-  {
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url_foobar("http://foo.bar.com");
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url_foobar("http://foo.bar.com");
 
-    // More specific sub-domain than allowed.
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foobar, "a=1; domain=.yo.foo.bar.com"));
+  // More specific sub-domain than allowed.
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "a=1; domain=.yo.foo.bar.com"));
 
-    EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "b=2; domain=.foo.com"));
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foobar, "c=3; domain=.bar.foo.com"));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "b=2; domain=.foo.com"));
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "c=3; domain=.bar.foo.com"));
 
-    // Different TLD, but the rest is a substring.
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foobar, "d=4; domain=.foo.bar.com.net"));
+  // Different TLD, but the rest is a substring.
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "d=4; domain=.foo.bar.com.net"));
 
-    // A substring that isn't really a parent domain.
-    EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "e=5; domain=ar.com"));
+  // A substring that isn't really a parent domain.
+  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "e=5; domain=ar.com"));
 
-    // Completely invalid domains:
-    EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "f=6; domain=."));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "g=7; domain=/"));
-    EXPECT_FALSE(this->SetCookie(
-        cs.get(), url_foobar, "h=8; domain=http://foo.bar.com"));
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foobar, "i=9; domain=..foo.bar.com"));
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foobar, "j=10; domain=..bar.com"));
+  // Completely invalid domains:
+  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "f=6; domain=."));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "g=7; domain=/"));
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "h=8; domain=http://foo.bar.com"));
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "i=9; domain=..foo.bar.com"));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "j=10; domain=..bar.com"));
 
-    // Make sure there isn't something quirky in the domain canonicalization
-    // that supports full URL semantics.
-    EXPECT_FALSE(this->SetCookie(
-        cs.get(), url_foobar, "k=11; domain=.foo.bar.com?blah"));
-    EXPECT_FALSE(this->SetCookie(
-        cs.get(), url_foobar, "l=12; domain=.foo.bar.com/blah"));
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foobar, "m=13; domain=.foo.bar.com:80"));
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foobar, "n=14; domain=.foo.bar.com:"));
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foobar, "o=15; domain=.foo.bar.com#sup"));
+  // Make sure there isn't something quirky in the domain canonicalization
+  // that supports full URL semantics.
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "k=11; domain=.foo.bar.com?blah"));
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "l=12; domain=.foo.bar.com/blah"));
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "m=13; domain=.foo.bar.com:80"));
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "n=14; domain=.foo.bar.com:"));
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foobar, "o=15; domain=.foo.bar.com#sup"));
 
-    this->MatchCookieLines(std::string(),
-                           this->GetCookies(cs.get(), url_foobar));
-  }
-
-  {
-    // Make sure the cookie code hasn't gotten its subdomain string handling
-    // reversed, missed a suffix check, etc.  It's important here that the two
-    // hosts below have the same domain + registry.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url_foocom("http://foo.com.com");
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_foocom, "a=1; domain=.foo.com.com.com"));
-    this->MatchCookieLines(std::string(),
-                           this->GetCookies(cs.get(), url_foocom));
-  }
+  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_foobar));
 }
 
-// Test the behavior of omitting dot prefix from domain, should
-// function the same as FireFox.
-// http://b/issue?id=889898
-TYPED_TEST_P(CookieStoreTest, DomainWithoutLeadingDotTest) {
-  {  // The omission of dot results in setting a domain cookie.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url_hosted("http://manage.hosted.filefront.com");
-    GURL url_filefront("http://www.filefront.com");
-    EXPECT_TRUE(
-        this->SetCookie(cs.get(), url_hosted, "sawAd=1; domain=filefront.com"));
-    this->MatchCookieLines("sawAd=1", this->GetCookies(cs.get(), url_hosted));
-    this->MatchCookieLines("sawAd=1",
-                           this->GetCookies(cs.get(), url_filefront));
-  }
+// Make sure the cookie code hasn't gotten its subdomain string handling
+// reversed, missed a suffix check, etc.  It's important here that the two
+// hosts below have the same domain + registry.
+TYPED_TEST_P(CookieStoreTest, InvalidDomainSameDomainAndRegistry) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url_foocom("http://foo.com.com");
+  EXPECT_FALSE(
+      this->SetCookie(cs.get(), url_foocom, "a=1; domain=.foo.com.com.com"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_foocom));
+}
 
-  {  // Even when the domains match exactly, don't consider it host cookie.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://www.google.com");
-    EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=www.google.com"));
-    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
-    this->MatchCookieLines(
-        "a=1", this->GetCookies(cs.get(), GURL("http://sub.www.google.com")));
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(), GURL("http://something-else.com")));
-  }
+// Setting the domain without a dot on a parent domain should add a domain
+// cookie.
+TYPED_TEST_P(CookieStoreTest, DomainWithoutLeadingDotParentDomain) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url_hosted("http://manage.hosted.filefront.com");
+  GURL url_filefront("http://www.filefront.com");
+  EXPECT_TRUE(
+      this->SetCookie(cs.get(), url_hosted, "sawAd=1; domain=filefront.com"));
+  this->MatchCookieLines("sawAd=1", this->GetCookies(cs.get(), url_hosted));
+  this->MatchCookieLines("sawAd=1", this->GetCookies(cs.get(), url_filefront));
+}
+
+// Even when the specified domain matches the domain of the URL exactly, treat
+// it as setting a domain cookie.
+TYPED_TEST_P(CookieStoreTest, DomainWithoutLeadingDotSameDomain) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url("http://www.google.com");
+  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=www.google.com"));
+  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+  this->MatchCookieLines(
+      "a=1", this->GetCookies(cs.get(), GURL("http://sub.www.google.com")));
+  this->MatchCookieLines(
+      std::string(),
+      this->GetCookies(cs.get(), GURL("http://something-else.com")));
 }
 
 // Test that the domain specified in cookie string is treated case-insensitive
-// http://b/issue?id=896475.
 TYPED_TEST_P(CookieStoreTest, CaseInsensitiveDomainTest) {
     scoped_refptr<CookieStore> cs(this->GetCookieStore());
   GURL url("http://www.google.com");
@@ -642,128 +637,121 @@ TYPED_TEST_P(CookieStoreTest, CaseInsensitiveDomainTest) {
 
 TYPED_TEST_P(CookieStoreTest, TestIpAddress) {
   GURL url_ip("http://1.2.3.4/weee");
-  {
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    EXPECT_TRUE(this->SetCookie(cs.get(), url_ip, kValidCookieLine));
-    this->MatchCookieLines("A=B", this->GetCookies(cs.get(), url_ip));
-  }
-
-  {  // IP addresses should not be able to set domain cookies.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "b=2; domain=.1.2.3.4"));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "c=3; domain=.3.4"));
-    this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_ip));
-    // It should be allowed to set a cookie if domain= matches the IP address
-    // exactly.  This matches IE/Firefox, even though it seems a bit wrong.
-    EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "b=2; domain=1.2.3.3"));
-    this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_ip));
-    EXPECT_TRUE(this->SetCookie(cs.get(), url_ip, "b=2; domain=1.2.3.4"));
-    this->MatchCookieLines("b=2", this->GetCookies(cs.get(), url_ip));
-  }
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  EXPECT_TRUE(this->SetCookie(cs.get(), url_ip, kValidCookieLine));
+  this->MatchCookieLines("A=B", this->GetCookies(cs.get(), url_ip));
 }
 
-// Test host cookies, and setting of cookies on TLD.
-TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
-  if (TypeParam::supports_non_dotted_domains) {
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://com/");
-    // Allow setting on "com", (but only as a host cookie).
-    EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.com"));
+// IP addresses should not be able to set domain cookies.
+TYPED_TEST_P(CookieStoreTest, TestIpAddressNoDomainCookies) {
+  GURL url_ip("http://1.2.3.4/weee");
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "b=2; domain=.1.2.3.4"));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "c=3; domain=.3.4"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_ip));
+  // It should be allowed to set a cookie if domain= matches the IP address
+  // exactly.  This matches IE/Firefox, even though it seems a bit wrong.
+  EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "b=2; domain=1.2.3.3"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_ip));
+  EXPECT_TRUE(this->SetCookie(cs.get(), url_ip, "b=2; domain=1.2.3.4"));
+  this->MatchCookieLines("b=2", this->GetCookies(cs.get(), url_ip));
+}
 
-    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
-    // Make sure it doesn't show up for a normal .com, it should be a host
-    // not a domain cookie.
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com/")));
-    this->MatchCookieLines(std::string(),
-                           this->GetCookies(cs.get(), GURL("http://.com/")));
-  }
+// Test a TLD setting cookies on itself.
+TYPED_TEST_P(CookieStoreTest, TestTLD) {
+  if (!TypeParam::supports_non_dotted_domains)
+    return;
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url("http://com/");
 
-  if (TypeParam::supports_non_dotted_domains) {
-    // Exact matches between the domain attribute and the host are treated as
-    // host cookies, not domain cookies.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://com/");
-    EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=com"));
+  // Allow setting on "com", (but only as a host cookie).
+  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
+  // Domain cookies can't be set.
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.com"));
+  // Exact matches between the domain attribute and the host are treated as
+  // host cookies, not domain cookies.
+  EXPECT_TRUE(this->SetCookie(cs.get(), url, "c=3; domain=com"));
 
-    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
-    // Make sure it doesn't show up for a normal .com, it should be a host
-    // not a domain cookie.
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com/")));
-    this->MatchCookieLines(std::string(),
-                           this->GetCookies(cs.get(), GURL("http://.com/")));
-  }
+  this->MatchCookieLines("a=1; c=3", this->GetCookies(cs.get(), url));
 
-  {
-    // http://com. should be treated the same as http://com.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://com./index.html");
-    EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
-    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(),
-                         GURL("http://hopefully-no-cookies.com./")));
-  }
+  // Make sure they don't show up for a normal .com, they should be host,
+  // domain, cookies.
+  this->MatchCookieLines(
+      std::string(),
+      this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com/")));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs.get(), GURL("http://.com/")));
+}
 
-  {  // Should not be able to set host cookie from a subdomain.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://a.b");
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.b"));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=b"));
-    this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
-  }
+// http://com. should be treated the same as http://com.
+TYPED_TEST_P(CookieStoreTest, TestTLDWithTerminalDot) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url("http://com./index.html");
+  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.com."));
+  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+  this->MatchCookieLines(
+      std::string(),
+      this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com./")));
+}
 
-  {  // Same test as above, but explicitly on a known TLD (com).
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://google.com");
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.com"));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=com"));
-    this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
-  }
+TYPED_TEST_P(CookieStoreTest, TestSubdomainSettingCookiesOnUnknownTLD) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url("http://a.b");
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.b"));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=b"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
+}
 
-  {  // Make sure can't set cookie on TLD which is dotted.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://google.co.uk");
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.co.uk"));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.uk"));
-    this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(), GURL("http://something-else.co.uk")));
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(), GURL("http://something-else.uk")));
-  }
+TYPED_TEST_P(CookieStoreTest, TestSubdomainSettingCookiesOnKnownTLD) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url("http://google.com");
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.com"));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=com"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
+}
 
-  {  // Intranet URLs should only be able to set host cookies.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://b");
-    EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.b"));
-    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
-  }
+TYPED_TEST_P(CookieStoreTest, TestSubdomainSettingCookiesOnKnownDottedTLD) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url("http://google.co.uk");
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.co.uk"));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.uk"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
+  this->MatchCookieLines(
+      std::string(),
+      this->GetCookies(cs.get(), GURL("http://something-else.co.uk")));
+  this->MatchCookieLines(
+      std::string(),
+      this->GetCookies(cs.get(), GURL("http://something-else.uk")));
+}
 
-  if (TypeParam::supports_non_dotted_domains) {
-    // Exact matches between the domain attribute and an intranet host are
-    // treated as host cookies, not domain cookies.
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
-    GURL url("http://b/");
-    EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=b"));
+// Intranet URLs should only be able to set host cookies.
+TYPED_TEST_P(CookieStoreTest, TestSettingCookiesOnUnknownTLD) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url("http://b");
+  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
+  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.b"));
+  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+}
 
-    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
-    // Make sure it doesn't show up for an intranet subdomain, it should be a
-    // host not a domain cookie.
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.b/")));
-    this->MatchCookieLines(std::string(),
-                           this->GetCookies(cs.get(), GURL("http://.b/")));
-  }
+// Exact matches between the domain attribute and an intranet host are
+// treated as host cookies, not domain cookies.
+TYPED_TEST_P(CookieStoreTest, TestSettingCookiesWithHostDomainOnUnknownTLD) {
+  if (!TypeParam::supports_non_dotted_domains)
+    return;
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  GURL url("http://b");
+  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=b"));
+
+  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+
+  // Make sure it doesn't show up for an intranet subdomain, it should be
+  // a host, not domain, cookie.
+  this->MatchCookieLines(
+      std::string(),
+      this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.b/")));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs.get(), GURL("http://.b/")));
 }
 
 // Test reading/writing cookies when the domain ends with a period,
@@ -1336,10 +1324,19 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            DomainWithTrailingDotTest,
                            ValidSubdomainTest,
                            InvalidDomainTest,
-                           DomainWithoutLeadingDotTest,
+                           InvalidDomainSameDomainAndRegistry,
+                           DomainWithoutLeadingDotParentDomain,
+                           DomainWithoutLeadingDotSameDomain,
                            CaseInsensitiveDomainTest,
                            TestIpAddress,
-                           TestNonDottedAndTLD,
+                           TestIpAddressNoDomainCookies,
+                           TestTLD,
+                           TestTLDWithTerminalDot,
+                           TestSubdomainSettingCookiesOnUnknownTLD,
+                           TestSubdomainSettingCookiesOnKnownTLD,
+                           TestSubdomainSettingCookiesOnKnownDottedTLD,
+                           TestSettingCookiesOnUnknownTLD,
+                           TestSettingCookiesWithHostDomainOnUnknownTLD,
                            TestHostEndsWithDot,
                            InvalidScheme,
                            InvalidScheme_Read,
