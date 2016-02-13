@@ -1791,15 +1791,16 @@ void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {
   encrypted_client_->didResumePlaybackBlockedForKey();
 }
 
-void WebMediaPlayerAndroid::OnHidden() {
+void WebMediaPlayerAndroid::OnHidden(bool must_suspend) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableMediaSuspend)) {
     return;
   }
 
   // If we're idle or playing video, pause and release resources; audio only
-  // players are allowed to continue playing in the background.
-  if (hasVideo() || paused())
+  // players are allowed to continue playing in the background unless indicated
+  // otherwise by the call.
+  if (must_suspend || hasVideo() || paused())
     SuspendAndReleaseResources();
 }
 

@@ -10,13 +10,16 @@ class WebMediaPlayer;
 }
 namespace media {
 
-// An interface to allow a WebMediaPlayerImpl to communicate changes of state
-// to objects that need to know.
+// An interface to allow a WebMediaPlayer to communicate changes of state to
+// objects that need to know.
 class WebMediaPlayerDelegate {
  public:
   class Observer {
    public:
-    virtual void OnHidden() = 0;
+    // Called when the WebMediaPlayer is no longer in the foreground.  Audio may
+    // continue in the background unless |must_suspend| is true.
+    virtual void OnHidden(bool must_suspend) = 0;
+
     virtual void OnShown() = 0;
     virtual void OnPlay() = 0;
     virtual void OnPause() = 0;

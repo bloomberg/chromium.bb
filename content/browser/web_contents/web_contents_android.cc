@@ -182,15 +182,6 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
       env, j_root.obj(), callback.obj());
 }
 
-void ReleaseAllMediaPlayers(WebContents* web_contents,
-                            RenderFrameHost* render_frame_host) {
-  BrowserMediaPlayerManager* manager =
-      MediaWebContentsObserverAndroid::FromWebContents(web_contents)
-          ->GetMediaPlayerManager(render_frame_host);
-  if (manager)
-    manager->ReleaseAllMediaPlayers();
-}
-
 }  // namespace
 
 // static
@@ -401,10 +392,8 @@ void WebContentsAndroid::OnShow(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void WebContentsAndroid::ReleaseMediaPlayers(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj) {
-#if defined(ENABLE_BROWSER_CDMS)
-  web_contents_->ForEachFrame(
-      base::Bind(&ReleaseAllMediaPlayers, base::Unretained(web_contents_)));
-#endif // defined(ENABLE_BROWSER_CDMS)
+  MediaWebContentsObserverAndroid::FromWebContents(web_contents_)
+      ->SuspendAllMediaPlayers();
 }
 
 void WebContentsAndroid::ShowInterstitialPage(JNIEnv* env,

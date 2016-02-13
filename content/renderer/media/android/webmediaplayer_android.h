@@ -270,7 +270,7 @@ class WebMediaPlayerAndroid
   void OnWaitingForDecryptionKey() override;
 
   // WebMediaPlayerDelegate::Observer implementation.
-  void OnHidden() override;
+  void OnHidden(bool must_suspend) override;
   void OnShown() override;
   void OnPlay() override;
   void OnPause() override;

@@ -192,7 +192,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
                       const AddTextTrackDoneCB& done_cb);
 
   // WebMediaPlayerDelegate::Observer implementation.
-  void OnHidden() override;
+  void OnHidden(bool must_suspend) override;
   void OnShown() override;
   void OnPlay() override;
   void OnPause() override;

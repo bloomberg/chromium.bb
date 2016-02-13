@@ -21,6 +21,12 @@
 
 namespace content {
 
+static void SuspendAllMediaPlayersInRenderFrame(
+    RenderFrameHost* render_frame_host) {
+  render_frame_host->Send(new MediaPlayerDelegateMsg_SuspendAllMediaPlayers(
+      render_frame_host->GetRoutingID()));
+}
+
 MediaWebContentsObserverAndroid::MediaWebContentsObserverAndroid(
     WebContents* web_contents)
     : MediaWebContentsObserver(web_contents) {}
@@ -59,6 +65,11 @@ MediaWebContentsObserverAndroid::GetMediaSessionManager(
       new BrowserMediaSessionManager(render_frame_host);
   media_session_managers_.set(render_frame_host, make_scoped_ptr(manager));
   return manager;
+}
+
+void MediaWebContentsObserverAndroid::SuspendAllMediaPlayers() {
+  web_contents()->ForEachFrame(
+      base::Bind(&SuspendAllMediaPlayersInRenderFrame));
 }
 
 bool MediaWebContentsObserverAndroid::RequestPlay(

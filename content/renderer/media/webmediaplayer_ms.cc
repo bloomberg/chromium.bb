@@ -65,7 +65,8 @@ WebMediaPlayerMS::WebMediaPlayerMS(
                                    ? url::Origin()
                                    : url::Origin(security_origin)),
       volume_(1.0),
-      volume_multiplier_(1.0) {
+      volume_multiplier_(1.0),
+      paused_on_hidden_(false) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(client);
   if (delegate_)
@@ -364,7 +365,7 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
   return 0;
 }
 
-void WebMediaPlayerMS::OnHidden() {
+void WebMediaPlayerMS::OnHidden(bool must_suspend) {
 #if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!render_frame_suspended_);
@@ -375,6 +376,16 @@ void WebMediaPlayerMS::OnHidden() {
   render_frame_suspended_ = true;
   if (!paused_)
     compositor_->ReplaceCurrentFrameWithACopy();
+
+  if (must_suspend) {
+    if (!paused_) {
+      pause();
+      paused_on_hidden_ = true;
+    }
+
+    if (delegate_)
+      delegate_->PlayerGone(delegate_id_);
+  }
 #endif  // defined(OS_ANDROID)
 }
 
@@ -383,6 +394,10 @@ void WebMediaPlayerMS::OnShown() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   render_frame_suspended_ = false;
+
+  if (paused_on_hidden_)
+    play();
+  paused_on_hidden_ = false;
 #endif  // defined(OS_ANDROID)
 }
 

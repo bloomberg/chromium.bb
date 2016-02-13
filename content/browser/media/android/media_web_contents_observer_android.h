@@ -39,6 +39,12 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   BrowserMediaSessionManager* GetMediaSessionManager(
       RenderFrameHost* render_frame_host);
 
+  // Called by the WebContents when a tab has been closed but may still be
+  // available for "undo" -- indicates that all media players (even audio only
+  // players typically allowed background audio) bound to this WebContents must
+  // be suspended.
+  void SuspendAllMediaPlayers();
+
   // Initiates a synchronous MediaSession request for browser side players.
   //
   // TODO(dalecurtis): Delete this method once we're no longer using WMPA and

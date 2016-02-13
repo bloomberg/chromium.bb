@@ -50,6 +50,7 @@ class RendererWebMediaPlayerDelegate
  private:
   void OnMediaDelegatePause(int delegate_id);
   void OnMediaDelegatePlay(int delegate_id);
+  void OnMediaDelegateSuspendAllMediaPlayers();
   void OnMediaDelegateVolumeMultiplierUpdate(int delegate_id,
                                              double multiplier);
 

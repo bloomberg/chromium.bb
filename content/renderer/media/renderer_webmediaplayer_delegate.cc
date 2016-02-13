@@ -57,7 +57,7 @@ bool RendererWebMediaPlayerDelegate::IsHidden() {
 
 void RendererWebMediaPlayerDelegate::WasHidden() {
   for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
-    it.GetCurrentValue()->OnHidden();
+    it.GetCurrentValue()->OnHidden(false);
 }
 
 void RendererWebMediaPlayerDelegate::WasShown() {
@@ -69,11 +69,13 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
     const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RendererWebMediaPlayerDelegate, msg)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Pause, OnMediaDelegatePause)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Play, OnMediaDelegatePlay)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_UpdateVolumeMultiplier,
-                        OnMediaDelegateVolumeMultiplierUpdate)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Pause, OnMediaDelegatePause)
+  IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Play, OnMediaDelegatePlay)
+  IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_SuspendAllMediaPlayers,
+                      OnMediaDelegateSuspendAllMediaPlayers)
+  IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_UpdateVolumeMultiplier,
+                      OnMediaDelegateVolumeMultiplierUpdate)
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
@@ -88,6 +90,11 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int delegate_id) {
   Observer* observer = id_map_.Lookup(delegate_id);
   if (observer)
     observer->OnPlay();
+}
+
+void RendererWebMediaPlayerDelegate::OnMediaDelegateSuspendAllMediaPlayers() {
+  for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+    it.GetCurrentValue()->OnHidden(true);
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegateVolumeMultiplierUpdate(

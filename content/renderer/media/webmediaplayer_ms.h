@@ -135,7 +135,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   unsigned videoDecodedByteCount() const override;
 
   // WebMediaPlayerDelegate::Observer implementation.
-  void OnHidden() override;
+  void OnHidden(bool must_suspend) override;
   void OnShown() override;
   void OnPlay() override;
   void OnPause() override;
@@ -222,6 +222,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // for a transient sound.  Playout volume is derived by volume * multiplier.
   double volume_;
   double volume_multiplier_;
+
+  // True if the delegate forced a pause during the last OnHidden() call.
+  bool paused_on_hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

@@ -332,15 +332,6 @@ void BrowserMediaPlayerManager::OnSeekRequest(
   Send(new MediaPlayerMsg_SeekRequest(RoutingID(), player_id, time_to_seek));
 }
 
-void BrowserMediaPlayerManager::ReleaseAllMediaPlayers() {
-  for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
-      it != players_.end(); ++it) {
-    if ((*it)->player_id() == fullscreen_player_id_)
-      fullscreen_player_is_released_ = true;
-    (*it)->Release();
-  }
-}
-
 void BrowserMediaPlayerManager::OnSeekComplete(
     int player_id,
     const base::TimeDelta& current_time) {
