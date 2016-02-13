@@ -15,7 +15,7 @@ def main_run(args):
   rc = common.run_runtest(args, [
       os.path.join(common.SRC_DIR, 'tools', 'valgrind', 'chrome_tests.sh'),
       '--tool', 'memcheck',
-      '--build-dir', 'src/out',
+      '--build-dir', os.path.join(common.SRC_DIR, 'out', args.build_config_fs),
     ] + args.args)
 
   json.dump({
