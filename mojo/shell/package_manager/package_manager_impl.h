@@ -90,6 +90,7 @@ class PackageManagerImpl : public PackageManager {
 
   // Overridden from PackageManager:
   void SetApplicationManager(ApplicationManager* manager) override;
+  void BuiltinAppLoaded(const GURL& url) override;
   void FetchRequest(
       URLRequestPtr request,
       const Fetcher::FetchCallback& loader_callback) override;

@@ -31,6 +31,9 @@ class PackageManager {
   // associated ApplicationManager.
   virtual void SetApplicationManager(ApplicationManager* manager) = 0;
 
+  // Called when an app is loaded via an ApplicationLoader.
+  virtual void BuiltinAppLoaded(const GURL& url) = 0;
+
   // Asks the delegate to fetch the specified url.
   // TODO(beng): figure out how not to expose Fetcher at all at this layer.
   virtual void FetchRequest(

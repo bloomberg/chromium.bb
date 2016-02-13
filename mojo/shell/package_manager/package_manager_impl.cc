@@ -131,6 +131,12 @@ void PackageManagerImpl::SetApplicationManager(ApplicationManager* manager) {
   application_manager_ = manager;
 }
 
+void PackageManagerImpl::BuiltinAppLoaded(const GURL& url) {
+  // TODO(beng): Determine if this is in the right place, and block
+  //             establishing the connection on receiving a complete manifest.
+  EnsureURLInCatalog(url);
+}
+
 void PackageManagerImpl::FetchRequest(
     URLRequestPtr request,
     const Fetcher::FetchCallback& loader_callback) {
@@ -348,7 +354,11 @@ void PackageManagerImpl::SerializeCatalog() {
 const ApplicationInfo& PackageManagerImpl::DeserializeApplication(
     const base::DictionaryValue* dictionary) {
   ApplicationInfo info = BuildApplicationInfoFromDictionary(*dictionary);
-  CHECK(catalog_.find(info.url) == catalog_.end());
+  // If another app refers to this app, then we already added an entry for
+  // |info| as a result of reading the first apps manifest.
+  if (catalog_.count(info.url))
+    return catalog_[info.url];
+
   catalog_[info.url] = info;
 
   if (dictionary->HasKey("applications")) {

@@ -23,6 +23,9 @@
 #   packaged_applications (optional)
 #       An array of application_names of the dependent applications.
 #
+#   type (default is mojo)
+#       Possible values are 'mojo' and 'exe'. Default is 'mojo'.
+#
 # Outputs:
 #
 #   An instantiation of this template produces in
@@ -45,12 +48,25 @@ template("mojo_application_manifest") {
            "\"deps\" building the dependent packaged applications must be " +
                "provided.")
   }
+  if (defined(invoker.type)) {
+    assert(invoker.type == "mojo" || invoker.type == "exe",
+           "\"type\" must be one of \"mojo\" or \"exe\".")
+  }
 
   action(target_name) {
     script = "//mojo/public/tools/manifest/manifest_collator.py"
 
+    type = "mojo"
+    if (defined(invoker.type)) {
+      type = invoker.type
+    }
+
     application_name = invoker.application_name
-    output = "$root_out_dir/$application_name/manifest.json"
+    if (type == "mojo") {
+      output = "$root_out_dir/$application_name/manifest.json"
+    } else {
+      output = "$root_out_dir/${application_name}_manifest.json"
+    }
     outputs = [
       output,
     ]
