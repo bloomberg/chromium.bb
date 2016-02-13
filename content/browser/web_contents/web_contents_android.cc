@@ -389,11 +389,17 @@ void WebContentsAndroid::OnShow(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->WasShown();
 }
 
-void WebContentsAndroid::ReleaseMediaPlayers(
+void WebContentsAndroid::SuspendAllMediaPlayers(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj) {
   MediaWebContentsObserverAndroid::FromWebContents(web_contents_)
       ->SuspendAllMediaPlayers();
+}
+
+void WebContentsAndroid::SetAudioMuted(JNIEnv* env,
+                                       const JavaParamRef<jobject>& jobj,
+                                       jboolean mute) {
+  web_contents_->SetAudioMuted(mute);
 }
 
 void WebContentsAndroid::ShowInterstitialPage(JNIEnv* env,

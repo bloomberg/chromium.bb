@@ -460,7 +460,8 @@ public class DocumentActivity extends ChromeActivity {
         // will get called.
         super.onPause();
         if (isFinishing() && mTab != null && mTab.getWebContents() != null) {
-            mTab.getWebContents().releaseMediaPlayers();
+            mTab.getWebContents().suspendAllMediaPlayers();
+            mTab.getWebContents().setAudioMuted(true);
         }
     }
 

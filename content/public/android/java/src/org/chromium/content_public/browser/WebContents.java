@@ -124,9 +124,18 @@ public interface WebContents extends Parcelable {
     void onShow();
 
     /**
-     * Stops all media players for this WebContents.
+     * Suspends all media players for this WebContents.  Note: There may still
+     * be activities generating audio, so setAudioMuted() should also be called
+     * to ensure all audible activity is silenced.
      */
-    void releaseMediaPlayers();
+    void suspendAllMediaPlayers();
+
+    /**
+     * Sets whether all audio output from this WebContents is muted.
+     *
+     * @param mute Set to true to mute the WebContents, false to unmute.
+     */
+    void setAudioMuted(boolean mute);
 
     /**
      * Get the Background color from underlying RenderWidgetHost for this WebContent.
