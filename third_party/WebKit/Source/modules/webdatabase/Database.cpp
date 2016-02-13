@@ -53,6 +53,7 @@
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
+#include "wtf/Atomics.h"
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================
@@ -208,7 +209,7 @@ Database::Database(DatabaseContext* databaseContext, const String& name, const S
     , m_displayName(displayName.isolatedCopy())
     , m_estimatedSize(estimatedSize)
     , m_guid(0)
-    , m_opened(false)
+    , m_opened(0)
     , m_new(false)
     , m_transactionInProgress(false)
     , m_isTransactionQueueEnabled(true)
@@ -369,8 +370,8 @@ void Database::closeDatabase()
     if (!m_opened)
         return;
 
+    releaseStore(&m_opened, 0);
     m_sqliteDatabase.close();
-    m_opened = false;
     // See comment at the top this file regarding calling removeOpenDatabase().
     DatabaseTracker::tracker().removeOpenDatabase(this);
     {
@@ -530,7 +531,7 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase, Database
 
     // See comment at the top this file regarding calling addOpenDatabase().
     DatabaseTracker::tracker().addOpenDatabase(this);
-    m_opened = true;
+    m_opened = 1;
 
     // Declare success:
     error = DatabaseError::None; // Clear the presumed error from above.
@@ -899,6 +900,11 @@ SecurityOrigin* Database::securityOrigin() const
     if (databaseContext()->databaseThread()->isDatabaseThread())
         return m_databaseThreadSecurityOrigin.get();
     return 0;
+}
+
+bool Database::opened()
+{
+    return static_cast<bool>(acquireLoad(&m_opened));
 }
 
 } // namespace blink

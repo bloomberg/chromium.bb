@@ -81,7 +81,7 @@ public:
         SQLTransactionErrorCallback*,
         VoidCallback* successCallback);
 
-    bool opened() const { return m_opened; }
+    bool opened();
     bool isNew() const { return m_new; }
 
     SecurityOrigin* securityOrigin() const;
@@ -161,7 +161,7 @@ private:
     String m_filename;
 
     DatabaseGuid m_guid;
-    bool m_opened;
+    int m_opened;
     bool m_new;
 
     SQLiteDatabase m_sqliteDatabase;
