@@ -111,8 +111,7 @@ Output.SPACE = ' ';
  */
 Output.ROLE_INFO_ = {
   alert: {
-    msgId: 'role_alert',
-    earconId: 'ALERT_NONMODAL',
+    msgId: 'role_alert'
   },
   alertDialog: {
     msgId: 'role_alertdialog'
@@ -405,7 +404,7 @@ Output.RULES = {
       leave: '@exited_container($role)'
     },
     alert: {
-      speak: '!doNotInterrupt $role $descendants'
+      speak: '!doNotInterrupt $role $earcon(ALERT_NONMODAL) $descendants'
     },
     alertDialog: {
       enter: '$name $role $description $descendants'
