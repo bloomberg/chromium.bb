@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
-#include "media/base/media_export.h"
 
 namespace media {
 
