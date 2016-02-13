@@ -642,6 +642,12 @@ def SubzeroRuntimeCommands(arch, out_dir):
     LlcArchArgs = [ '-mcpu=pentium4m', '-relocation-model=pic',
                     '-force-tls-non-pic', '-malign-double']
     AsmSourceBase = 'szrt_asm_x8632'
+  elif arch == 'x86-64-linux':
+    Triple = 'x86_64-none-linux-gnux32'
+    LlcArchArgs = [ '-mcpu=x86-64']
+  elif arch == 'x86-64':
+    Triple = 'x86_64-none-nacl'
+    LlcArchArgs = [ '-mcpu=x86-64']
   elif arch == 'arm-linux':
     Triple = 'arm-linux-gnu'
     LlcArchArgs = [ '-mcpu=cortex-a9']
