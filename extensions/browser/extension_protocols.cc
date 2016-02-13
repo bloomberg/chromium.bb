@@ -483,6 +483,12 @@ ExtensionProtocolHandler::MaybeCreateJob(
   base::FilePath relative_path =
       extensions::file_util::ExtensionURLToRelativeFilePath(request->url());
 
+  // Do not allow requests for resources in the _metadata folder, since any
+  // files there are internal implementation details that should not be
+  // considered part of the extension.
+  if (base::FilePath(kMetadataFolder).IsParent(relative_path))
+    return nullptr;
+
   // Handle shared resources (extension A loading resources out of extension B).
   if (SharedModuleInfo::IsImportedPath(path)) {
     std::string new_extension_id;
