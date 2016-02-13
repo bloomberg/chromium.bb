@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser;
 
+import android.os.Environment;
 import android.test.FlakyTest;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
 
@@ -19,8 +20,24 @@ import java.util.concurrent.TimeoutException;
  */
 public class AudioTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
+    private EmbeddedTestServer mTestServer;
+
     public AudioTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -29,11 +46,12 @@ public class AudioTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * @Feature({"Media", "Media-Audio", "Main"})
      * @MediumTest
      */
+    // TODO(jbudorick): Attempt to reenable this after the server switch has stabilized.
     @FlakyTest
     public void testPlayMp3() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         TabTitleObserver titleObserver = new TabTitleObserver(tab, "ready_to_play");
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/media/mp3-play.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/media/mp3-play.html"));
         titleObserver.waitForTitleUpdate(5);
         assertEquals("ready_to_play", tab.getTitle());
 

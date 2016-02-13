@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.LargeTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -32,7 +31,7 @@ public class CastSwitchVideoTest extends CastTestBase {
             @Override
             public void run() {
                 try {
-                    loadUrlInNewTab(TestHttpServerClient.getUrl(TEST_VIDEO_PAGE_2));
+                    loadUrlInNewTab(getTestServer().getURL(TEST_VIDEO_PAGE_2));
                     playVideoFromCurrentTab(VIDEO_ELEMENT);
                 } catch (Exception e) {
                     fail("Failed to start second video; " + e.getMessage());
@@ -48,7 +47,7 @@ public class CastSwitchVideoTest extends CastTestBase {
             @Override
             public void run() {
                 try {
-                    loadUrl(TestHttpServerClient.getUrl(TEST_VIDEO_PAGE_2));
+                    loadUrl(getTestServer().getURL(TEST_VIDEO_PAGE_2));
                     playVideoFromCurrentTab(VIDEO_ELEMENT);
                 } catch (Exception e) {
                     fail("Failed to start second video; " + e.getMessage());
@@ -81,7 +80,7 @@ public class CastSwitchVideoTest extends CastTestBase {
             @Override
             public void run() {
                 try {
-                    loadUrlInNewTab(TestHttpServerClient.getUrl(TEST_VIDEO_PAGE_2));
+                    loadUrlInNewTab(getTestServer().getURL(TEST_VIDEO_PAGE_2));
                     castVideoFromCurrentTab(VIDEO_ELEMENT);
                 } catch (Exception e) {
                     fail("Failed to start second video; " + e.getMessage());
@@ -97,7 +96,7 @@ public class CastSwitchVideoTest extends CastTestBase {
             @Override
             public void run() {
                 try {
-                    loadUrl(TestHttpServerClient.getUrl(TEST_VIDEO_PAGE_2));
+                    loadUrl(getTestServer().getURL(TEST_VIDEO_PAGE_2));
                     castVideoFromCurrentTab(VIDEO_ELEMENT);
                 } catch (Exception e) {
                     fail("Failed to start second video; " + e.getMessage());
@@ -131,7 +130,7 @@ public class CastSwitchVideoTest extends CastTestBase {
         startSecondVideo.run();
 
         // Check that we are still casting the default video
-        assertEquals("The first video is not casting", TestHttpServerClient.getUrl(DEFAULT_VIDEO),
+        assertEquals("The first video is not casting", getTestServer().getURL(DEFAULT_VIDEO),
                 getUriPlaying());
 
         // Check that the second video is still there and paused

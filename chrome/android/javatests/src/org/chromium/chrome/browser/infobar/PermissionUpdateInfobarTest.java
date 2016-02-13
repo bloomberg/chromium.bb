@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.Manifest;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -13,11 +14,11 @@ import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
@@ -35,11 +36,16 @@ import java.util.concurrent.TimeoutException;
 public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
 
     private static final String GEOLOCATION_PAGE =
-            "chrome/test/data/geolocation/geolocation_on_load.html";
+            "/chrome/test/data/geolocation/geolocation_on_load.html";
     private static final String GEOLOCATION_IFRAME_PAGE =
-            "chrome/test/data/geolocation/geolocation_iframe_on_load.html";
+            "/chrome/test/data/geolocation/geolocation_iframe_on_load.html";
 
     private InfoBarTestAnimationListener mListener;
+    private EmbeddedTestServer mTestServer;
+
+    public PermissionUpdateInfobarTest() {
+        mSkipCheckHttpServer = true;
+    }
 
     @Override
     public void startMainActivity() throws InterruptedException {
@@ -49,6 +55,14 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     // Ensure destroying the permission update infobar does not crash when handling geolocation
@@ -71,7 +85,7 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);
 
-        final String locationUrl = TestHttpServerClient.getUrl(GEOLOCATION_PAGE);
+        final String locationUrl = mTestServer.getURL(GEOLOCATION_PAGE);
         final GeolocationInfo geolocationSettings = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<GeolocationInfo>() {
                     @Override
@@ -95,7 +109,7 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
                 }
             });
 
-            loadUrl(TestHttpServerClient.getUrl(GEOLOCATION_PAGE));
+            loadUrl(mTestServer.getURL(GEOLOCATION_PAGE));
             assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
             assertEquals(1, getInfoBars().size());
 
@@ -150,7 +164,7 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);
 
-        final String locationUrl = TestHttpServerClient.getUrl(GEOLOCATION_IFRAME_PAGE);
+        final String locationUrl = mTestServer.getURL(GEOLOCATION_IFRAME_PAGE);
         final GeolocationInfo geolocationSettings = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<GeolocationInfo>() {
                     @Override
@@ -174,7 +188,7 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
                 }
             });
 
-            loadUrl(TestHttpServerClient.getUrl(GEOLOCATION_IFRAME_PAGE));
+            loadUrl(mTestServer.getURL(GEOLOCATION_IFRAME_PAGE));
             assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
             assertEquals(1, getInfoBars().size());
 

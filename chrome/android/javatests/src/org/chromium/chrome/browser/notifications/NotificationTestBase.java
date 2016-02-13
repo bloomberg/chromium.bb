@@ -7,16 +7,17 @@ package org.chromium.chrome.browser.notifications;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.app.Notification;
+import android.os.Environment;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -34,12 +35,29 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
     private static final long POLLING_INTERVAL_MS = 50;
 
     private MockNotificationManagerProxy mMockNotificationManager;
+    private EmbeddedTestServer mTestServer;
+
+    public NotificationTestBase() {
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    /** Returns the test server. */
+    protected EmbeddedTestServer getTestServer() {
+        return mTestServer;
+    }
 
     /**
      * Returns the origin of the HTTP server the test is being ran on.
      */
-    protected static String getOrigin() {
-        return TestHttpServerClient.getUrl("");
+    protected String getOrigin() {
+        return mTestServer.getURL("/");
     }
 
     /**
@@ -126,7 +144,7 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
     @Override
     protected void tearDown() throws Exception {
         NotificationUIManager.overrideNotificationManagerForTesting(null);
-
+        mTestServer.stopAndDestroyServer();
         super.tearDown();
     }
 }

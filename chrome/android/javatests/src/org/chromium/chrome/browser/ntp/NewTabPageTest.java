@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.os.Environment;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -24,13 +25,13 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.PageTransition;
 
@@ -44,17 +45,31 @@ import java.util.concurrent.TimeUnit;
  */
 public class NewTabPageTest extends ChromeTabbedActivityTestBase {
 
-    private static final String TEST_PAGE =
-            TestHttpServerClient.getUrl("chrome/test/data/android/navigate/simple.html");
+    private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
 
     private static final String[] FAKE_MOST_VISITED_TITLES = new String[] { "Simple" };
-    private static final String[] FAKE_MOST_VISITED_URLS = new String[] { TEST_PAGE };
 
     private Tab mTab;
     private NewTabPage mNtp;
     private View mFakebox;
     private ViewGroup mMostVisitedLayout;
+    private String[] mFakeMostVisitedUrls;
     private FakeMostVisitedSites mFakeMostVisitedSites;
+    private EmbeddedTestServer mTestServer;
+
+    @Override
+    protected void setUp() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mFakeMostVisitedUrls = new String[] { mTestServer.getURL(TEST_PAGE) };
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     @Override
     public void startMainActivity() throws InterruptedException {
@@ -68,7 +83,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                     // Create FakeMostVisitedSites after starting the activity, since it depends on
                     // native code.
                     mFakeMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile(),
-                            FAKE_MOST_VISITED_TITLES, FAKE_MOST_VISITED_URLS);
+                            FAKE_MOST_VISITED_TITLES, mFakeMostVisitedUrls);
                 }
             });
         } catch (Throwable t) {
@@ -83,7 +98,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         mNtp = (NewTabPage) mTab.getNativePage();
         mFakebox = mNtp.getView().findViewById(R.id.search_box);
         mMostVisitedLayout = (ViewGroup) mNtp.getView().findViewById(R.id.most_visited_layout);
-        assertEquals(FAKE_MOST_VISITED_URLS.length, mMostVisitedLayout.getChildCount());
+        assertEquals(mFakeMostVisitedUrls.length, mMostVisitedLayout.getChildCount());
     }
 
     /**
@@ -145,7 +160,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                 singleClickView(mostVisitedItem);
             }
         });
-        assertEquals(FAKE_MOST_VISITED_URLS[0], mTab.getUrl());
+        assertEquals(mFakeMostVisitedUrls[0], mTab.getUrl());
     }
 
     /**
@@ -156,7 +171,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInNewTab() throws InterruptedException {
         invokeContextMenuAndOpenInANewTab(mMostVisitedLayout.getChildAt(0),
-                NewTabPage.ID_OPEN_IN_NEW_TAB, false, FAKE_MOST_VISITED_URLS[0]);
+                NewTabPage.ID_OPEN_IN_NEW_TAB, false, mFakeMostVisitedUrls[0]);
     }
 
     /**
@@ -166,7 +181,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInIncognitoTab() throws InterruptedException {
         invokeContextMenuAndOpenInANewTab(mMostVisitedLayout.getChildAt(0),
-                NewTabPage.ID_OPEN_IN_INCOGNITO_TAB, true, FAKE_MOST_VISITED_URLS[0]);
+                NewTabPage.ID_OPEN_IN_INCOGNITO_TAB, true, mFakeMostVisitedUrls[0]);
     }
 
     /**
@@ -185,7 +200,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         assertTrue(getInstrumentation().invokeContextMenuAction(getActivity(),
                 NewTabPage.ID_REMOVE, 0));
 
-        assertTrue(mFakeMostVisitedSites.isUrlBlacklisted(FAKE_MOST_VISITED_URLS[0]));
+        assertTrue(mFakeMostVisitedSites.isUrlBlacklisted(mFakeMostVisitedUrls[0]));
     }
 
     @MediumTest
@@ -200,7 +215,8 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                     public void run() {
                         int pageTransition =
                                 PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR;
-                        mTab.loadUrl(new LoadUrlParams(TEST_PAGE, pageTransition));
+                        mTab.loadUrl(new LoadUrlParams(mTestServer.getURL(TEST_PAGE),
+                                pageTransition));
                         // It should be disabled as soon as a load URL is triggered.
                         assertTrue(getUrlFocusAnimatonsDisabled());
                     }
@@ -214,6 +230,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @LargeTest
     @Feature({"NewTagPage"})
     public void testUrlFocusAnimationsEnabledOnFailedLoad() throws Exception {
+        // TODO(jbudorick): switch this to EmbeddedTestServer.
         TestWebServer webServer = TestWebServer.start();
         try {
             final Semaphore delaySemaphore = new Semaphore(0);

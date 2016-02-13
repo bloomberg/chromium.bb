@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
@@ -14,7 +15,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Instrumentation test for external navigation handling of a Custom Tab.
@@ -43,16 +44,33 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
         }
     }
 
-    private static final String TEST_URL = TestHttpServerClient.getUrl(
-            "chrome/test/data/android/google.html");
-    private ExternalNavigationHandler mUrlHandler;
+    private static final String TEST_PATH = "/chrome/test/data/android/google.html";
     private CustomTabNavigationDelegate mNavigationDelegate;
+    private EmbeddedTestServer mTestServer;
+    private ExternalNavigationHandler mUrlHandler;
+
+    public CustomTabExternalNavigationTest() {
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        super.setUp();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     @Override
     public void startMainActivity() throws InterruptedException {
         super.startMainActivity();
         startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                getInstrumentation().getTargetContext(), TEST_URL, null));
+                getInstrumentation().getTargetContext(), mTestServer.getURL(TEST_PATH), null));
         Tab tab = getActivity().getActivityTab();
         TabDelegateFactory delegateFactory = tab.getDelegateFactory();
         assert delegateFactory instanceof CustomTabDelegateFactory;

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.infobar;
 
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -20,10 +21,10 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -56,9 +57,11 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     private InfoBarTestAnimationListener mListener;
+    private EmbeddedTestServer mTestServer;
 
     public InfoBarContainerTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override
@@ -70,6 +73,15 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
                 getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);
+
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     // Adds an infobar to the currrent tab. Blocks until the infobar has been added.
@@ -127,7 +139,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
         TestListener infobarListener = addInfoBarToCurrentTab(true);
 
         // Now navigate, it should expire.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/google.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/google.html"));
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
         assertTrue(getInfoBars().isEmpty());
         assertEquals(0, infobarListener.dismissedCallback.getCallCount());
@@ -138,7 +150,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
         TestListener persistentListener = addInfoBarToCurrentTab(false);
 
         // Navigate, it should still be there.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/about.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/about.html"));
         List<InfoBar> infoBars = getInfoBars();
         assertEquals(1, infoBars.size());
         TextView message =
@@ -209,8 +221,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
     @MediumTest
     @Feature({"Browser"})
     public void testCloseTabOnAdd() throws Exception {
-        loadUrl(TestHttpServerClient.getUrl(
-                "chrome/test/data/android/google.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/google.html"));
 
         final TestListener infobarListener = addInfoBarToCurrentTab(false);
         assertEquals(1, getInfoBars().size());
@@ -237,8 +248,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
     @MediumTest
     @Feature({"Browser"})
     public void testCloseButton() throws Exception {
-        loadUrl(TestHttpServerClient.getUrl(
-                "chrome/test/data/android/click_listener.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/click_listener.html"));
         TestListener infobarListener = addInfoBarToCurrentTab(false);
 
         // Now press the close button.

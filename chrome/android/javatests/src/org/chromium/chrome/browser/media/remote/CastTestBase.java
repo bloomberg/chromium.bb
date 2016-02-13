@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.remote;
 import android.app.Dialog;
 import android.app.Instrumentation;
 import android.graphics.Rect;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
@@ -23,13 +24,13 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -89,14 +90,15 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     private Set<PlayerState> mAwaitedStates;
     private CountDownLatch mLatch;
+    private EmbeddedTestServer mTestServer;
 
     // The name of the route provided by the dummy cast device.
     protected static final String CAST_TEST_ROUTE = "Cast Test Route";
 
     // URLs of the default test page and video.
     protected static final String DEFAULT_VIDEO_PAGE =
-            "chrome/test/data/android/media/simple_video.html";
-    protected static final String DEFAULT_VIDEO = "chrome/test/data/android/media/test.mp4";
+            "/chrome/test/data/android/media/simple_video.html";
+    protected static final String DEFAULT_VIDEO = "/chrome/test/data/android/media/test.mp4";
 
     // Constants used to find the default video and maximise button on the page
     protected static final String VIDEO_ELEMENT = "video";
@@ -113,11 +115,12 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
     protected static final int VIEW_RETRY_MS = 100;
 
     protected static final String TEST_VIDEO_PAGE_2 =
-            "chrome/test/data/android/media/simple_video2.html";
+            "/chrome/test/data/android/media/simple_video2.html";
 
-    protected static final String TEST_VIDEO_2 = "chrome/test/data/android/media/test2.mp4";
+    protected static final String TEST_VIDEO_2 = "/chrome/test/data/android/media/test2.mp4";
 
-    protected static final String TWO_VIDEO_PAGE = "chrome/test/data/android/media/two_videos.html";
+    protected static final String TWO_VIDEO_PAGE =
+            "/chrome/test/data/android/media/two_videos.html";
 
     private static final String TAG = "CastTestBase";
 
@@ -127,6 +130,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     public CastTestBase() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override
@@ -140,10 +144,13 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
                 StrictMode.allowThreadDiskWrites();
             }
         });
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
     }
 
     @Override
     protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
         // Temporary until support library is updated, see http://crbug.com/576393.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -193,6 +200,10 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         Set<PlayerState> states = new HashSet<PlayerState>();
         states.add(state);
         return waitForStates(states, waitTimeMs);
+    }
+
+    protected EmbeddedTestServer getTestServer() {
+        return mTestServer;
     }
 
     protected void castAndPauseDefaultVideoFromPage(String pagePath) throws InterruptedException,
@@ -253,7 +264,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
     protected Rect prepareDefaultVideofromPage(String pagePath, Tab currentTab)
             throws InterruptedException, TimeoutException {
 
-        loadUrl(TestHttpServerClient.getUrl(pagePath));
+        loadUrl(mTestServer.getURL(pagePath));
 
         WebContents webContents = currentTab.getWebContents();
 
@@ -289,8 +300,8 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
                 RemoteMediaPlayerController playerController =
                         RemoteMediaPlayerController.instance();
                 mMediaRouteController = playerController.getMediaRouteController(
-                        TestHttpServerClient.getUrl(DEFAULT_VIDEO),
-                        TestHttpServerClient.getUrl(DEFAULT_VIDEO_PAGE));
+                        mTestServer.getURL(DEFAULT_VIDEO),
+                        mTestServer.getURL(DEFAULT_VIDEO_PAGE));
                 assertNotNull("Could not get MediaRouteController", mMediaRouteController);
                 mMediaRouteController.addUiListener(new TestListener());
             }
@@ -391,7 +402,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         // Check that we are playing the right video
         waitUntilVideoCurrent(testVideo);
         assertEquals(
-                "Wrong video playing", TestHttpServerClient.getUrl(testVideo), getUriPlaying());
+                "Wrong video playing", mTestServer.getURL(testVideo), getUriPlaying());
 
         // Check that the RemoteMediaPlayerController and the (YouTube)MediaRouteController have
         // been set up correctly
@@ -499,7 +510,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     private boolean waitUntilVideoCurrent(String testVideo) {
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            if (TestHttpServerClient.getUrl(testVideo).equals(getUriPlaying())) {
+            if (mTestServer.getURL(testVideo).equals(getUriPlaying())) {
                 return true;
             }
             sleepNoThrow(VIEW_RETRY_MS);

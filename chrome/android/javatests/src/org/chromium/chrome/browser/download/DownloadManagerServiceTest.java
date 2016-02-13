@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.preference.PreferenceManager;
@@ -20,11 +21,11 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.DownloadInfo;
 import org.chromium.content.browser.DownloadInfo.Builder;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -467,38 +468,45 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"Download"})
     public void testEnqueueOMADownloads() throws InterruptedException {
-        DownloadInfo info = new DownloadInfo.Builder()
-                .setDownloadId(0)
-                .setMimeType(OMADownloadHandler.OMA_DRM_MESSAGE_MIME)
-                .setFileName("test.gzip")
-                .setUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.gzip"))
-                .build();
-        MockDownloadNotifier notifier = new MockDownloadNotifier();
-        Context context = getTestContext();
-        DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
-                context, notifier, UPDATE_DELAY_FOR_TEST);
-        final MockOMADownloadHandler handler = new MockOMADownloadHandler(context);
-        dService.setOMADownloadHandler(handler);
-        handler.setDownloadId(0);
-        dService.enqueueDownloadManagerRequest(info, true);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return handler.mDownloadId != 0;
-            }
-        });
-        handler.mDownloadId = handler.mDownloadInfo.getDownloadId();
-        Set<String> downloads = dService.getStoredDownloadInfo(
-                PreferenceManager.getDefaultSharedPreferences(context),
-                DownloadManagerService.PENDING_OMA_DOWNLOADS);
-        assertEquals(1, downloads.size());
-        DownloadManagerService.OMAEntry entry = DownloadManagerService.OMAEntry.parseOMAEntry(
-                (String) (downloads.toArray()[0]));
-        assertEquals(entry.mDownloadId, handler.mDownloadId);
-        assertEquals(entry.mInstallNotifyURI, INSTALL_NOTIFY_URI);
-        DownloadManager manager =
-                (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
-        manager.remove(handler.mDownloadId);
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+
+        try {
+            DownloadInfo info = new DownloadInfo.Builder()
+                    .setDownloadId(0)
+                    .setMimeType(OMADownloadHandler.OMA_DRM_MESSAGE_MIME)
+                    .setFileName("test.gzip")
+                    .setUrl(testServer.getURL("/chrome/test/data/android/download/test.gzip"))
+                    .build();
+            MockDownloadNotifier notifier = new MockDownloadNotifier();
+            Context context = getTestContext();
+            DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
+                    context, notifier, UPDATE_DELAY_FOR_TEST);
+            final MockOMADownloadHandler handler = new MockOMADownloadHandler(context);
+            dService.setOMADownloadHandler(handler);
+            handler.setDownloadId(0);
+            dService.enqueueDownloadManagerRequest(info, true);
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return handler.mDownloadId != 0;
+                }
+            });
+            handler.mDownloadId = handler.mDownloadInfo.getDownloadId();
+            Set<String> downloads = dService.getStoredDownloadInfo(
+                    PreferenceManager.getDefaultSharedPreferences(context),
+                    DownloadManagerService.PENDING_OMA_DOWNLOADS);
+            assertEquals(1, downloads.size());
+            DownloadManagerService.OMAEntry entry = DownloadManagerService.OMAEntry.parseOMAEntry(
+                    (String) (downloads.toArray()[0]));
+            assertEquals(entry.mDownloadId, handler.mDownloadId);
+            assertEquals(entry.mInstallNotifyURI, INSTALL_NOTIFY_URI);
+            DownloadManager manager =
+                    (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
+            manager.remove(handler.mDownloadId);
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
     }
 
     /**

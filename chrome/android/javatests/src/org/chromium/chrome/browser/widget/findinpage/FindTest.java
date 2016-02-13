@@ -13,6 +13,7 @@ package org.chromium.chrome.browser.widget.findinpage;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Spannable;
@@ -28,17 +29,36 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.MenuUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Find in page tests.
  */
 public class FindTest extends ChromeTabbedActivityTestBase {
-    private static final String FILEPATH = "chrome/test/data/android/find/test.html";
+    private static final String FILEPATH = "/chrome/test/data/android/find/test.html";
+
+    private EmbeddedTestServer mTestServer;
+
+    public FindTest() {
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     /**
      * Returns the FindResults text.
@@ -107,10 +127,10 @@ public class FindTest extends ChromeTabbedActivityTestBase {
 
     private void loadTestAndVerifyFindInPage(String query, String expectedResult)
             throws InterruptedException {
-        loadUrl(TestHttpServerClient.getUrl(FILEPATH));
+        loadUrl(mTestServer.getURL(FILEPATH));
         String findResults = findStringInPage(query, expectedResult);
         assertTrue("Expected: " + expectedResult + " Got: " + findResults + " for: "
-                + TestHttpServerClient.getUrl(FILEPATH),
+                + mTestServer.getURL(FILEPATH),
                 findResults.contains(expectedResult));
     }
 
@@ -202,7 +222,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"FindInPage"})
     public void testResultsBarInitiallyVisible() throws InterruptedException {
-        loadUrl(TestHttpServerClient.getUrl(FILEPATH));
+        loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
         final FindToolbar findToolbar = getFindToolbar();
         final View resultBar = findToolbar.getFindResultBar();
@@ -213,7 +233,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"FindInPage"})
     public void testResultsBarVisibleAfterTypingText() throws InterruptedException {
-        loadUrl(TestHttpServerClient.getUrl(FILEPATH));
+        loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
         final FindToolbar findToolbar = getFindToolbar();
         final View resultBar = findToolbar.getFindResultBar();
@@ -233,7 +253,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"FindInPage"})
     public void testFindDismissOnEmptyString() throws InterruptedException {
-        loadUrl(TestHttpServerClient.getUrl(FILEPATH));
+        loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
 
         final FindToolbar findToolbar = getFindToolbar();
@@ -293,7 +313,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"FindInPage"})
     public void testPastedTextStylingRemoved() throws InterruptedException {
-        loadUrl(TestHttpServerClient.getUrl(FILEPATH));
+        loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
 
         final FindToolbar findToolbar = getFindToolbar();

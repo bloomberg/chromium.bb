@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox;
 
 import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
+import android.os.Environment;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -30,8 +31,8 @@ import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResult;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResultBuilder;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestAutocompleteController;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestSuggestionResultsBuilder;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.KeyUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
 import java.util.Locale;
@@ -47,13 +48,28 @@ public class QueryInOmniboxTest extends ChromeActivityTestCaseBase<ChromeActivit
     private static final String QUERY_EXTRACTION_PARAM = "espv=1";
     private static final String SEARCH_TERM = "Puppies";
 
-    private UrlBar mUrlBar;
-    private LocationBarLayout mLocationBar;
-    private TestToolbarDataProvider mTestToolbarDataProvider;
     private ImageButton mDeleteButton;
+    private LocationBarLayout mLocationBar;
+    private EmbeddedTestServer mTestServer;
+    private TestToolbarDataProvider mTestToolbarDataProvider;
+    private UrlBar mUrlBar;
 
     public QueryInOmniboxTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -62,7 +78,7 @@ public class QueryInOmniboxTest extends ChromeActivityTestCaseBase<ChromeActivit
      */
     private void loadUrlFromQueryText()
             throws InterruptedException {
-        String url = TestHttpServerClient.getUrl("chrome/test/data/android/google.html?q="
+        String url = mTestServer.getURL("/chrome/test/data/android/google.html?q="
                 + SEARCH_TERM + "&hl=en&client=chrome-mobile&"
                 + QUERY_EXTRACTION_PARAM + "&tbm=isch");
         loadUrl(url);

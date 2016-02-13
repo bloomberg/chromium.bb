@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.Browser;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
@@ -28,12 +29,12 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -115,10 +116,29 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         }
     }
 
+    private EmbeddedTestServer mTestServer;
+
+    public TabsOpenedFromExternalAppTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     public void startMainActivity() {
         // We'll start the activity explicitly in the tests, as we need to start it with an intent
         // in a specific test.
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -164,8 +184,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     public void testNoNewTabForSameApp() throws InterruptedException {
         startMainActivityFromLauncher();
 
-        String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
-        String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+        String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
+        String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
         int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
 
@@ -210,8 +230,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     public void testNewTabForUnknownApp() throws InterruptedException {
         startMainActivityFromLauncher();
 
-        String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
-        String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+        String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
+        String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
 
         // Launch a first URL with an app.
@@ -260,8 +280,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     public void testNewTabWithNewTabExtra() throws InterruptedException {
         startMainActivityFromLauncher();
 
-        String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
-        String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+        String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
+        String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
         int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
 
@@ -302,8 +322,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     @LargeTest
     @Feature({"Navigation", "Main"})
     public void testNoNewTabForSameAppOnStart() throws InterruptedException {
-        String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
-        String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+        String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
+        String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
         // Launch Clank from the external app.
         startMainActivityFromExternalApp(url1, EXTERNAL_APP_1_ID);
@@ -340,9 +360,9 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     public void testNewTabForDifferentApps() throws InterruptedException {
         startMainActivityFromLauncher();
 
-        String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
-        String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
-        String url3 = TestHttpServerClient.getUrl("chrome/test/data/android/test.html");
+        String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
+        String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
+        String url3 = mTestServer.getURL("/chrome/test/data/android/test.html");
 
         // Launch a first URL from an app1.
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
@@ -377,9 +397,9 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     public void testNewTabAfterNavigation() throws InterruptedException {
         startMainActivityFromLauncher();
 
-        String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
-        String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
-        String url3 = TestHttpServerClient.getUrl("chrome/test/data/android/test.html");
+        String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
+        String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
+        String url3 = mTestServer.getURL("/chrome/test/data/android/test.html");
 
         // Launch a first URL from an app.
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
@@ -410,8 +430,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     public void testNewTabWhenPageEdited() throws InterruptedException, TimeoutException {
         startMainActivityFromLauncher();
 
-        String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
-        String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+        String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
+        String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
         // Launch a first URL from an app.
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);

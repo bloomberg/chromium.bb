@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.content.Context;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.Log;
@@ -17,7 +18,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallba
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.offlinepages.SavePageResult;
@@ -25,6 +25,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,15 +36,16 @@ import java.util.concurrent.TimeUnit;
 @CommandLineFlags.Add({ChromeSwitches.ENABLE_OFFLINE_PAGES})
 public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TAG = "OfflinePageUtilsTest";
-    private static final String TEST_PAGE =
-            TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+    private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
     private static final BookmarkId BOOKMARK_ID = new BookmarkId(1234, BookmarkType.NORMAL);
 
     private OfflinePageBridge mOfflinePageBridge;
+    private EmbeddedTestServer mTestServer;
 
     public OfflinePageUtilsTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override
@@ -77,6 +79,15 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -145,8 +156,9 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         Log.d(TAG, "mockSnackbarController " + mockSnackbarController);
 
         // Save an offline page.
-        loadUrl(TEST_PAGE);
-        savePage(SavePageResult.SUCCESS, TEST_PAGE);
+        String testUrl = mTestServer.getURL(TEST_PAGE);
+        loadUrl(testUrl);
+        savePage(SavePageResult.SUCCESS, testUrl);
 
         // Load an offline page into the current tab.  Note that this will create a
         // SnackbarController when the page loads, but we use our own for the test. The one created

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.os.Environment;
 import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -19,12 +20,12 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -38,8 +39,24 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String HISTORY_URL = "chrome://history-frame/";
 
+    private EmbeddedTestServer mTestServer;
+
     public HistoryUITest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     @Override
@@ -135,8 +152,8 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Feature({"History"})
     public void testSearchHistory() throws InterruptedException, TimeoutException {
         // Introduce some entries in the history page.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/about.html"));
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/get_title_test.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/about.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/get_title_test.html"));
         loadUrl(HISTORY_URL);
         waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
 
@@ -169,8 +186,8 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
         // Urls will be visited in reverse order to preserve the array ordering
         // in the history results.
         String[] testUrls = new String[] {
-                TestHttpServerClient.getUrl("chrome/test/data/android/google.html"),
-                TestHttpServerClient.getUrl("chrome/test/data/android/about.html"),
+                mTestServer.getURL("/chrome/test/data/android/google.html"),
+                mTestServer.getURL("/chrome/test/data/android/about.html"),
         };
 
         String[] testTitles = new String[testUrls.length];
@@ -204,8 +221,8 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Feature({"History"})
     public void testClearBrowsingData() throws InterruptedException, TimeoutException {
         // Introduce some entries in the history page.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/google.html"));
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/about.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/google.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/about.html"));
         loadUrl(HISTORY_URL);
         waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
 

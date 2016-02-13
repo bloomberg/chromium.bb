@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -16,10 +17,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
 
@@ -59,8 +60,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
             + "<title>" + META_APP_NAME_PAGE_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
 
-    private static final String MANIFEST_URL =
-            TestHttpServerClient.getUrl("chrome/test/data/webapps/manifest_test_page.html");
+    private static final String MANIFEST_PATH = "/chrome/test/data/webapps/manifest_test_page.html";
     private static final String MANIFEST_TITLE = "Web app banner test page";
 
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
@@ -108,6 +108,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
     public AddToHomescreenDialogHelperTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override
@@ -193,25 +194,31 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
     @SmallTest
     @Feature("{Webapp}")
     public void testAddWebappShortcutSplashScreenIcon() throws Exception {
-        // Sets the overriden factory to observer splash screen update.
-        final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
-        WebappDataStorage.setFactoryForTests(dataStorageFactory);
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        try {
+            // Sets the overriden factory to observer splash screen update.
+            final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
+            WebappDataStorage.setFactoryForTests(dataStorageFactory);
 
-        addShortcutToURL(MANIFEST_URL, MANIFEST_TITLE, "");
+            addShortcutToURL(testServer.getURL(MANIFEST_PATH), MANIFEST_TITLE, "");
 
-        // Make sure that the splash screen image was downloaded.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return dataStorageFactory.mSplashImage != null;
-            }
-        });
+            // Make sure that the splash screen image was downloaded.
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return dataStorageFactory.mSplashImage != null;
+                }
+            });
 
-        // Test that bitmap sizes match expectations.
-        int idealSize = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.webapp_splash_image_size_ideal);
-        assertEquals(idealSize, dataStorageFactory.mSplashImage.getWidth());
-        assertEquals(idealSize, dataStorageFactory.mSplashImage.getHeight());
+            // Test that bitmap sizes match expectations.
+            int idealSize = mActivity.getResources().getDimensionPixelSize(
+                    R.dimen.webapp_splash_image_size_ideal);
+            assertEquals(idealSize, dataStorageFactory.mSplashImage.getWidth());
+            assertEquals(idealSize, dataStorageFactory.mSplashImage.getHeight());
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
     }
 
     private void addShortcutToURL(String url, final String expectedPageTitle, final String title)

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.translate;
 
+import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.DisabledTest;
@@ -16,8 +17,8 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.TranslateUtil;
+import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Tests for the translate infobar, assumes it runs on a system with language
@@ -28,16 +29,18 @@ import org.chromium.chrome.test.util.TranslateUtil;
  */
 public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
-    private static final String TRANSLATE_PAGE = "chrome/test/data/translate/fr_test.html";
+    private static final String TRANSLATE_PAGE = "/chrome/test/data/translate/fr_test.html";
     private static final String NEVER_TRANSLATE_MESSAGE =
             "Would you like Google Chrome to offer to translate French pages from this"
                     + " site next time?";
 
     private InfoBarContainer mInfoBarContainer;
     private InfoBarTestAnimationListener mListener;
+    private EmbeddedTestServer mTestServer;
 
     public TranslateInfoBarTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override
@@ -51,6 +54,14 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
         mInfoBarContainer = getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
         mInfoBarContainer.setAnimationListener(mListener);
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -60,7 +71,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
     @Feature({"Browser", "Main"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testTranslateLanguagePanel() throws InterruptedException {
-        loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
+        loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         assertTrue("InfoBar not opened.", mListener.addInfoBarAnimationFinished());
         InfoBar infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
         assertTrue(InfoBarUtil.hasPrimaryButton(infoBar));
@@ -75,7 +86,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
     @Feature({"Browser", "Main"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testTranslateNeverPanel() throws InterruptedException {
-        loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
+        loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         assertTrue("InfoBar not opened.", mListener.addInfoBarAnimationFinished());
         InfoBar infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
 
@@ -83,7 +94,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
         assertTrue(mListener.removeInfoBarAnimationFinished());
 
         // Reload the page so the infobar shows again
-        loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
+        loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         assertTrue("InfoBar not opened", mListener.addInfoBarAnimationFinished());
         infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
         assertTrue(InfoBarUtil.clickCloseButton(infoBar));
@@ -101,7 +112,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
      */
     @DisabledTest
     public void testTranslateTransitions() throws InterruptedException {
-        loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
+        loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         assertTrue("InfoBar not Added", mListener.addInfoBarAnimationFinished());
         InfoBar infoBar = getInfoBars().get(0);
         assertTrue(InfoBarUtil.hasPrimaryButton(infoBar));

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.website;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -27,8 +28,8 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
 
@@ -37,8 +38,24 @@ import java.util.concurrent.Callable;
  */
 public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
+    private EmbeddedTestServer mTestServer;
+
     public SiteSettingsPreferencesTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     @Override
@@ -92,8 +109,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
 
         // Launch a page that uses geolocation and make sure an infobar shows up.
-        loadUrl(TestHttpServerClient.getUrl(
-                "chrome/test/data/geolocation/geolocation_on_load.html"));
+        loadUrl(mTestServer.getURL(
+                "/chrome/test/data/geolocation/geolocation_on_load.html"));
         assertTrue("InfoBar not added.", listener.addInfoBarAnimationFinished());
 
         assertEquals("Wrong infobar count", 1, getInfoBars().size());
@@ -108,8 +125,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setAllowLocation(false);
 
         // Launch a page that uses geolocation.
-        loadUrl(TestHttpServerClient.getUrl(
-                "chrome/test/data/geolocation/geolocation_on_load.html"));
+        loadUrl(mTestServer.getURL(
+                "/chrome/test/data/geolocation/geolocation_on_load.html"));
 
         // No infobars are expected.
         assertTrue(getInfoBars().isEmpty());
@@ -312,7 +329,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setCookiesEnabled(preferenceActivity, true);
         preferenceActivity.finish();
 
-        final String url = TestHttpServerClient.getUrl("chrome/test/data/android/cookie.html");
+        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
         loadUrl(url + "#clear");
@@ -336,7 +353,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setCookiesEnabled(preferenceActivity, false);
         preferenceActivity.finish();
 
-        final String url = TestHttpServerClient.getUrl("chrome/test/data/android/cookie.html");
+        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
         loadUrl(url + "#clear");
@@ -359,7 +376,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setEnablePopups(false);
 
         // Test that the popup doesn't open.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/popup.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
 
         getInstrumentation().waitForIdleSync();
         assertEquals(1, getTabCount());
@@ -375,7 +392,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setEnablePopups(true);
 
         // Test that a popup opens.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/popup.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
         getInstrumentation().waitForIdleSync();
 
         assertEquals(2, getTabCount());
@@ -432,7 +449,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setEnableCamera(false);
 
         // Test that the camera permission doesn't get requested.
-        loadUrl(TestHttpServerClient.getUrl("content/test/data/media/getusermedia.html"));
+        loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
         runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: true, audio: false});");
 
         // No infobars are expected.
@@ -450,7 +467,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setEnableMic(false);
 
         // Test that the microphone permission doesn't get requested.
-        loadUrl(TestHttpServerClient.getUrl("content/test/data/media/getusermedia.html"));
+        loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
         runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: false, audio: true});");
 
         // No infobars are expected.
@@ -470,7 +487,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
 
         // Launch a page that uses camera and make sure an infobar shows up.
-        loadUrl(TestHttpServerClient.getUrl("content/test/data/media/getusermedia.html"));
+        loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
         runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: true, audio: false});");
 
         assertTrue("InfoBar not added.", listener.addInfoBarAnimationFinished());
@@ -490,7 +507,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
 
         // Launch a page that uses the microphone and make sure an infobar shows up.
-        loadUrl(TestHttpServerClient.getUrl("content/test/data/media/getusermedia.html"));
+        loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
         runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: false, audio: true});");
 
         assertTrue("InfoBar not added.", listener.addInfoBarAnimationFinished());
@@ -504,8 +521,9 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     public void testToggleAutoDetectEncoding() throws Exception {
-        String testUrl = TestHttpServerClient.getUrl(
-                "chrome/test/data/encoding_tests/auto_detect/Big5_with_no_encoding_specified.html");
+        String testUrl = mTestServer.getURL(
+                "/chrome/test/data/encoding_tests/auto_detect/"
+                + "Big5_with_no_encoding_specified.html");
 
         setAutoDetectEncoding(false);
         loadUrl(testUrl);

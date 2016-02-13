@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
+import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -16,8 +17,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -26,8 +27,26 @@ import java.util.concurrent.ExecutionException;
  * Tests for ChromeTabCreator.
  */
 public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
-    private static final String TEST_URL =
-            TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+    private static final String TEST_PATH = "/chrome/test/data/android/about.html";
+
+    private EmbeddedTestServer mTestServer;
+
+    public ChromeTabCreatorTest() {
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     /**
      * Verify that tabs opened in background on low-end are loaded lazily.
@@ -42,8 +61,8 @@ public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
             @Override
             public Tab call() {
                 return getActivity().getCurrentTabCreator().createNewTab(
-                        new LoadUrlParams(TEST_URL), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                        fgTab);
+                        new LoadUrlParams(mTestServer.getURL(TEST_PATH)),
+                        TabLaunchType.FROM_LONGPRESS_BACKGROUND, fgTab);
             }
         });
 
@@ -78,14 +97,14 @@ public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
             @Override
             public Tab call() {
                 return getActivity().getCurrentTabCreator().createNewTab(
-                        new LoadUrlParams(TEST_URL), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                        fgTab);
+                        new LoadUrlParams(mTestServer.getURL(TEST_PATH)),
+                        TabLaunchType.FROM_LONGPRESS_BACKGROUND, fgTab);
             }
         });
 
         // Verify that the background tab is loaded.
         assertNotNull(bgTab.getView());
-        ChromeTabUtils.waitForTabPageLoaded(bgTab, TEST_URL);
+        ChromeTabUtils.waitForTabPageLoaded(bgTab, mTestServer.getURL(TEST_PATH));
     }
 
     /**

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
@@ -14,11 +15,11 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content.browser.LocationProviderFactory;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.MockLocationProvider;
+import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Test suite for Geo-Location functionality.
@@ -32,9 +33,10 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
     private static final double LATITUDE = 51.01;
     private static final double LONGITUDE = 0.23;
     private static final float ACCURACY = 10;
-    private static final String TEST_FILE = "content/test/data/android/geolocation.html";
+    private static final String TEST_FILE = "/content/test/data/android/geolocation.html";
 
     private InfoBarTestAnimationListener mListener;
+    private EmbeddedTestServer mTestServer;
 
     /**
      * Waits till the geolocation JavaScript callback is called the specified number of times.
@@ -63,6 +65,7 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
 
     public GeolocationTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override
@@ -77,6 +80,15 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
         container.setAnimationListener(mListener);
 
         LocationProviderFactory.setLocationProviderImpl(new MockLocationProvider());
+
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -87,8 +99,7 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
     @MediumTest
     @Feature({"Location", "Main"})
     public void testGeolocationPlumbing() throws Exception {
-        final String url = TestHttpServerClient.getUrl(
-                "content/test/data/android/geolocation.html");
+        final String url = mTestServer.getURL(TEST_FILE);
 
         Tab tab = getActivity().getActivityTab();
         GeolocationUpdateWaiter updateWaiter = new GeolocationUpdateWaiter();
@@ -110,8 +121,7 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
     @MediumTest
     @Feature({"Location"})
     public void testGeolocationWatch() throws Exception {
-        final String url = TestHttpServerClient.getUrl(
-                "content/test/data/android/geolocation.html");
+        final String url = mTestServer.getURL(TEST_FILE);
 
         Tab tab = getActivity().getActivityTab();
         GeolocationUpdateWaiter updateWaiter = new GeolocationUpdateWaiter();

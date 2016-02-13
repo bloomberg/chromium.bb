@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -12,11 +13,11 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -30,8 +31,11 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
     // Callback helper that manages waiting for pageloads to finish.
     private TestCallbackHelperContainer mCallbackHelper;
 
+    private EmbeddedTestServer mTestServer;
+
     public RepostFormWarningTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override
@@ -45,6 +49,14 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
         mTab = getActivity().getActivityTab();
         mCallbackHelper = new TestCallbackHelperContainer(mTab.getContentViewCore());
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /** Verifies that the form resubmission warning is not displayed upon first POST navigation. */
@@ -131,14 +143,14 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
     /** Performs a POST navigation in mTab. */
     private void postNavigation() throws Throwable {
-        final String url = "chrome/test/data/empty.html";
+        final String url = "/chrome/test/data/empty.html";
         final byte[] postData = new byte[] { 42 };
 
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mTab.loadUrl(LoadUrlParams.createLoadHttpPostParams(
-                        TestHttpServerClient.getUrl(url), postData));
+                        mTestServer.getURL(url), postData));
             }
         });
     }

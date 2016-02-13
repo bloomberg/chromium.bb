@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox;
 
 import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
+import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.view.ViewCompat;
 import android.test.FlakyTest;
@@ -35,11 +36,11 @@ import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResult;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResultBuilder;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestAutocompleteController;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestSuggestionResultsBuilder;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.HashMap;
@@ -57,6 +58,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public OmniboxTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     private void clearUrlBar() {
@@ -541,32 +543,37 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @FlakyTest
     public void testSecurityIcon() throws InterruptedException {
-        final String testUrl = TestHttpServerClient.getUrl(
-                "chrome/test/data/android/omnibox/one.html");
-        final String securedExternalUrl = "https://www.google.com";
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        try {
+            final String testUrl = testServer.getURL("/chrome/test/data/android/omnibox/one.html");
+            final String securedExternalUrl = "https://www.google.com";
 
-        ImageView navigationButton = (ImageView)
-                getActivity().findViewById(R.id.navigation_button);
-        ImageButton securityButton = (ImageButton)
-                getActivity().findViewById(R.id.security_button);
+            ImageView navigationButton = (ImageView)
+                    getActivity().findViewById(R.id.navigation_button);
+            ImageButton securityButton = (ImageButton)
+                    getActivity().findViewById(R.id.security_button);
 
-        loadUrl(testUrl);
-        final LocationBarLayout locationBar =
-                (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
-        boolean securityIcon = locationBar.isSecurityButtonShown();
-        assertFalse("Omnibox should not have a Security icon", securityIcon);
-        assertEquals("navigation_button with wrong resource-id",
-                R.id.navigation_button, navigationButton.getId());
-        assertTrue(navigationButton.isShown());
-        assertFalse(securityButton.isShown());
+            loadUrl(testUrl);
+            final LocationBarLayout locationBar =
+                    (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
+            boolean securityIcon = locationBar.isSecurityButtonShown();
+            assertFalse("Omnibox should not have a Security icon", securityIcon);
+            assertEquals("navigation_button with wrong resource-id",
+                    R.id.navigation_button, navigationButton.getId());
+            assertTrue(navigationButton.isShown());
+            assertFalse(securityButton.isShown());
 
-        loadUrl(securedExternalUrl);
-        securityIcon = locationBar.isSecurityButtonShown();
-        assertTrue("Omnibox should have a Security icon", securityIcon);
-        assertEquals("security_button with wrong resource-id",
-                R.id.security_button, securityButton.getId());
-        assertTrue(securityButton.isShown());
-        assertFalse(navigationButton.isShown());
+            loadUrl(securedExternalUrl);
+            securityIcon = locationBar.isSecurityButtonShown();
+            assertTrue("Omnibox should have a Security icon", securityIcon);
+            assertEquals("security_button with wrong resource-id",
+                    R.id.security_button, securityButton.getId());
+            assertTrue(securityButton.isShown());
+            assertFalse(navigationButton.isShown());
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
     }
 
     @SmallTest

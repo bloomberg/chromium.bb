@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.partnercustomizations;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.SwitchCompat;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -28,12 +29,12 @@ import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
 
@@ -41,8 +42,11 @@ import java.util.concurrent.TimeoutException;
  * Integration test suite for partner homepage.
  */
 public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizationIntegrationTest {
-    private static final String TEST_URL =
-            TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+    private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
+
+    public PartnerHomepageIntegrationTest() {
+        mSkipCheckHttpServer = true;
+    }
 
     @Override
     public void startMainActivity() throws InterruptedException {
@@ -76,24 +80,30 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
     @MediumTest
     @Feature({"Homepage"})
     public void testHomepageButtonClick() throws InterruptedException {
-        // Load non-homepage URL.
-        loadUrl(TEST_URL);
-        UiUtils.settleDownUI(getInstrumentation());
-        assertNotSame(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
-                Uri.parse(getActivity().getActivityTab().getUrl()));
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        try {
+            // Load non-homepage URL.
+            loadUrl(testServer.getURL(TEST_PAGE));
+            UiUtils.settleDownUI(getInstrumentation());
+            assertNotSame(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
+                    Uri.parse(getActivity().getActivityTab().getUrl()));
 
-        // Click homepage button.
-        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), new Runnable() {
-            @Override
-            public void run() {
-                View homeButton = getActivity().findViewById(R.id.home_button);
-                assertEquals("Homepage button is not shown",
-                        View.VISIBLE, homeButton.getVisibility());
-                singleClickView(homeButton);
-            }
-        });
-        assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
-                Uri.parse(getActivity().getActivityTab().getUrl()));
+            // Click homepage button.
+            ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), new Runnable() {
+                @Override
+                public void run() {
+                    View homeButton = getActivity().findViewById(R.id.home_button);
+                    assertEquals("Homepage button is not shown",
+                            View.VISIBLE, homeButton.getVisibility());
+                    singleClickView(homeButton);
+                }
+            });
+            assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
+                    Uri.parse(getActivity().getActivityTab().getUrl()));
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
     }
 
     /**

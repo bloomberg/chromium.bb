@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Point;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.test.FlakyTest;
@@ -50,7 +51,6 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -58,6 +58,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
@@ -77,7 +78,7 @@ import java.util.concurrent.TimeoutException;
 public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEST_PAGE =
-            TestHttpServerClient.getUrl("chrome/test/data/android/contextualsearch/tap_test.html");
+            "/chrome/test/data/android/contextualsearch/tap_test.html";
     private static final int TEST_TIMEOUT = 15000;
     private static final int TEST_EXPECTED_FAILURE_TIMEOUT = 1000;
 
@@ -87,22 +88,28 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private static final String LOW_PRIORITY_SEARCH_ENDPOINT = "/s?";
     private static final String CONTEXTUAL_SEARCH_PREFETCH_PARAM = "&pf=c";
 
-    private ContextualSearchManager mManager;
-    private ContextualSearchFakeServer mFakeServer;
-    private ContextualSearchPanel mPanel;
-    private ContextualSearchSelectionController mSelectionController;
-    private ContextualSearchPolicy mPolicy;
     private ActivityMonitor mActivityMonitor;
+    private ContextualSearchFakeServer mFakeServer;
+    private ContextualSearchManager mManager;
+    private ContextualSearchPanel mPanel;
+    private ContextualSearchPolicy mPolicy;
+    private ContextualSearchSelectionController mSelectionController;
+    private EmbeddedTestServer mTestServer;
 
     // State for an individual test.
     FakeSlowResolveSearch mLatestSlowResolveSearch;
 
     public ContextualSearchManagerTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override
     protected void setUp() throws Exception {
+        // We have to set up the test server before starting the activity.
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+
         super.setUp();
 
         mManager = getActivity().getContextualSearchManager();
@@ -134,6 +141,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         filter.addDataScheme("market");
         mActivityMonitor = getInstrumentation().addMonitor(
                 filter, new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     //============================================================================================
@@ -210,7 +223,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     @Override
     public void startMainActivity() throws InterruptedException {
-        startMainActivityWithURL(TEST_PAGE);
+        startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
     }
 
     //============================================================================================

@@ -4,18 +4,23 @@
 
 package org.chromium.chrome.browser;
 
+import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Tests starting the activity with URLs.
  */
 public class MainActivityWithURLTest extends ChromeTabbedActivityTestBase {
+
+    public MainActivityWithURLTest() {
+        mSkipCheckHttpServer = true;
+    }
 
     @Override
     public void startMainActivity() {
@@ -28,13 +33,19 @@ public class MainActivityWithURLTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"Navigation"})
     public void testLaunchActivityWithURL() throws Exception {
-        // Launch chrome
-        startMainActivityWithURL(TestHttpServerClient.getUrl(
-                "chrome/test/data/android/simple.html"));
-        String expectedTitle = "Activity test page";
-        TabModel model = getActivity().getCurrentTabModel();
-        String title = model.getTabAt(model.index()).getTitle();
-        assertEquals(expectedTitle, title);
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        try {
+            // Launch chrome
+            startMainActivityWithURL(testServer.getURL(
+                    "/chrome/test/data/android/simple.html"));
+            String expectedTitle = "Activity test page";
+            TabModel model = getActivity().getCurrentTabModel();
+            String title = model.getTabAt(model.index()).getTitle();
+            assertEquals(expectedTitle, title);
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
     }
 
     /**

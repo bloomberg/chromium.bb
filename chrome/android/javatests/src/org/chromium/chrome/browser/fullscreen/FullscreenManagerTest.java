@@ -9,6 +9,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.os.Build;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -30,7 +31,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
@@ -38,6 +38,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -80,6 +81,10 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
             + "<body style='height:10000px;' onclick='toggleFullScreen();'>"
             + "</body>"
             + "</html>");
+
+    public FullscreenManagerTest() {
+        mSkipCheckHttpServer = true;
+    }
 
     @MediumTest
     @Feature({"Fullscreen"})
@@ -295,25 +300,31 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         if (DeviceClassManager.isAutoHidingToolbarDisabled(getActivity())) return;
         disableBrowserOverrides();
 
-        final Tab tab = getActivity().getActivityTab();
-        final String testUrl = TestHttpServerClient.getUrl(
-                "chrome/test/data/android/very_long_google.html");
-        PrerenderTestHelper.prerenderUrlAndFocusOmnibox(testUrl, this);
-        assertTrue("loadUrl did not use pre-rendered page.",
-                PrerenderTestHelper.isLoadUrlResultPrerendered(loadUrl(testUrl)));
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        try {
+            final Tab tab = getActivity().getActivityTab();
+            final String testUrl = testServer.getURL(
+                    "/chrome/test/data/android/very_long_google.html");
+            PrerenderTestHelper.prerenderUrlAndFocusOmnibox(testUrl, this);
+            assertTrue("loadUrl did not use pre-rendered page.",
+                    PrerenderTestHelper.isLoadUrlResultPrerendered(loadUrl(testUrl)));
 
-        UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
-        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, false);
+            UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
+            OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
+            OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, false);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.processEnableFullscreenRunnableForTest();
-            }
-        });
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    tab.processEnableFullscreenRunnableForTest();
+                }
+            });
 
-        waitForTopControlsToBeMoveable(tab);
+            waitForTopControlsToBeMoveable(tab);
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
     }
 
     @LargeTest

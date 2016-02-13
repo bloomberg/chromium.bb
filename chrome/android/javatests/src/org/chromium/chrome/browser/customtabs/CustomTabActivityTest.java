@@ -23,6 +23,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
@@ -52,7 +53,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.util.ChromeRestriction;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.BrowserStartupController.StartupCallback;
@@ -61,6 +61,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -76,18 +77,17 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * An empty {@link BroadcastReceiver} that exists only to make the PendingIntent to carry an
      * explicit intent. Otherwise the framework will not send it after {@link PendingIntent#send()}.
      */
-    public static class DummyBroadcastReceiver extends BroadcastReceiver {
+    public class DummyBroadcastReceiver extends BroadcastReceiver {
         // The url has to be copied from the instrumentation class, because a BroadcastReceiver is
         // deployed as a different package, and it cannot get access to data from the
         // instrumentation package.
-        private static final String TEST_PAGE_COPY = TestHttpServerClient.getUrl(
-                "chrome/test/data/android/google.html");
+        private static final String TEST_PAGE_COPY = "/chrome/test/data/android/google.html";
 
         @Override
         public void onReceive(Context context, Intent intent) {
             // Note: even if this assertion fails, the test might still pass, because
             // BroadcastReceiver is not treated as part of the instrumentation test.
-            assertEquals(TEST_PAGE_COPY, intent.getDataString());
+            assertEquals(mTestServer.getURL(TEST_PAGE_COPY), intent.getDataString());
         }
     }
 
@@ -95,15 +95,35 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     private static final int NUM_CHROME_MENU_ITEMS = 3;
     private static final String
             TEST_ACTION = "org.chromium.chrome.browser.customtabs.TEST_PENDING_INTENT_SENT";
-    private static final String TEST_PAGE = TestHttpServerClient.getUrl(
-            "chrome/test/data/android/google.html");
-    private static final String TEST_PAGE_2 = TestHttpServerClient.getUrl(
-            "chrome/test/data/android/test.html");
+    private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
+    private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
 
     private static int sIdToIncrement = 1;
 
     private CustomTabActivity mActivity;
+    private String mTestPage;
+    private String mTestPage2;
+    private EmbeddedTestServer mTestServer;
+
+    public CustomTabActivityTest() {
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestPage = mTestServer.getURL(TEST_PAGE);
+        mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     @Override
     protected void startActivityCompletely(Intent intent) {
@@ -116,7 +136,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     private Intent createMinimalCustomTabIntent() {
         return CustomTabsTestUtils.createMinimalCustomTabIntent(
-                getInstrumentation().getTargetContext(), TEST_PAGE, null);
+                getInstrumentation().getTargetContext(), mTestPage, null);
     }
 
     /**
@@ -379,7 +399,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testOpenInBrowser() throws InterruptedException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
-        filter.addDataScheme(Uri.parse(TestHttpServerClient.getUrl("")).getScheme());
+        filter.addDataScheme(Uri.parse(mTestServer.getURL("/")).getScheme());
         final ActivityMonitor monitor = getInstrumentation().addMonitor(filter, null, false);
         openAppMenuAndAssertMenuShown();
         final String menuItemTitle = mActivity.getString(R.string.menu_open_in_product_default);
@@ -536,14 +556,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                     public Boolean call() throws Exception {
                         return CustomTabActivity.handleInActiveContentIfNeeded(
                                 CustomTabsTestUtils.createMinimalCustomTabIntent(context,
-                                        TEST_PAGE_2,
+                                        mTestPage2,
                                         (new CustomTabsTestUtils.DummyCallback()).asBinder()));
                     }
                 }));
         CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivity.getActivityTab().getUrl().equals(TEST_PAGE);
+                return mActivity.getActivityTab().getUrl().equals(mTestPage);
             }
         });
         assertTrue("CustomTabContentHandler can't handle intent with same session",
@@ -552,7 +572,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                     public Boolean call() throws Exception {
                         return CustomTabActivity.handleInActiveContentIfNeeded(
                             CustomTabsTestUtils.createMinimalCustomTabIntent(context,
-                                    TEST_PAGE_2, session));
+                                    mTestPage2, session));
                     }
                 }));
         final Tab tab = mActivity.getActivityTab();
@@ -571,15 +591,15 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivity.getActivityTab().getUrl().equals(TEST_PAGE_2);
+                return mActivity.getActivityTab().getUrl().equals(mTestPage2);
             }
         });
     }
 
     @SmallTest
     public void testCreateNewTab() throws InterruptedException, TimeoutException {
-        final String testUrl = TestHttpServerClient.getUrl(
-                "chrome/test/data/android/customtabs/test_window_open.html");
+        final String testUrl = mTestServer.getURL(
+                "/chrome/test/data/android/customtabs/test_window_open.html");
         startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 getInstrumentation().getTargetContext(), testUrl, null));
         final TabModelSelector tabSelector = getActivity().getTabModelSelector();
@@ -633,7 +653,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                     public Boolean call() throws Exception {
                         return CustomTabActivity.handleInActiveContentIfNeeded(
                             CustomTabsTestUtils.createMinimalCustomTabIntent(context,
-                                    TEST_PAGE_2, session));
+                                    mTestPage2, session));
                     }
                 }));
         try {
@@ -678,16 +698,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertTrue(connection.newSession(cb));
         Bundle extras = new Bundle();
         extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
-        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(TEST_PAGE), extras, null));
+        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(mTestPage), extras, null));
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                    context, TEST_PAGE, cb.asBinder()));
+                    context, mTestPage, cb.asBinder()));
         } catch (InterruptedException e) {
             fail();
         }
         Tab tab = getActivity().getActivityTab();
-        assertEquals(TEST_PAGE, tab.getUrl());
+        assertEquals(mTestPage, tab.getUrl());
         assertFalse(tab.canGoBack());
     }
 
@@ -760,14 +780,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         final CustomTabsConnection connection = warmUpAndWait();
         ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
         connection.newSession(cb);
-        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(TEST_PAGE), null, null));
+        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(mTestPage), null, null));
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                    context, TEST_PAGE, cb.asBinder()));
+                    context, mTestPage, cb.asBinder()));
         } catch (InterruptedException e) {
             fail();
         }
-        assertEquals(Uri.parse(TEST_PAGE).getHost() + ":" + Uri.parse(TEST_PAGE).getPort(),
+        assertEquals(Uri.parse(mTestPage).getHost() + ":" + Uri.parse(mTestPage).getPort(),
                 ((EditText) mActivity.findViewById(R.id.url_bar)).getText()
                         .toString());
     }
@@ -783,15 +803,15 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             extras = new Bundle();
             extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
         }
-        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(TEST_PAGE), extras, null));
+        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(mTestPage), extras, null));
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                    context, TEST_PAGE, cb.asBinder()));
+                    context, mTestPage, cb.asBinder()));
         } catch (InterruptedException e) {
             fail();
         }
         Tab tab = getActivity().getActivityTab();
-        assertEquals(TEST_PAGE, tab.getUrl());
+        assertEquals(mTestPage, tab.getUrl());
     }
 
     private CustomTabsConnection warmUpAndWait() {
@@ -832,7 +852,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         connection.newSession(cb);
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                context, TEST_PAGE, cb.asBinder()));
+                context, mTestPage, cb.asBinder()));
         return cb.asBinder();
     }
 
@@ -844,7 +864,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     /**
      * A helper class to monitor sending status of a {@link PendingIntent}.
      */
-    private static class OnFinishedForTest implements PendingIntent.OnFinished {
+    private class OnFinishedForTest implements PendingIntent.OnFinished {
 
         private final PendingIntent mPi;
         private final AtomicBoolean mIsSent = new AtomicBoolean();
@@ -862,7 +882,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
          *         intent carries the correct Uri as data.
          */
         public boolean isSent() {
-            return mIsSent.get() && TEST_PAGE.equals(mUri);
+            return mIsSent.get() && mTestPage.equals(mUri);
         }
 
         @Override

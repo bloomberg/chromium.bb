@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
@@ -26,11 +27,11 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.ArrayList;
@@ -44,14 +45,30 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public BookmarkTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
-    private static final String TEST_PAGE = TestHttpServerClient.getUrl(
-            "chrome/test/data/android/google.html");
+    private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_TITLE = "The Google";
 
     private BookmarkModel mBookmarkModel;
     protected BookmarkRecyclerView mItemsContainer;
+    private String mTestPage;
+    private EmbeddedTestServer mTestServer;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mTestPage = mTestServer.getURL(TEST_PAGE);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     @Override
     public void startMainActivity() throws InterruptedException {
@@ -150,7 +167,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @SmallTest
     public void testAddBookmark() throws InterruptedException {
-        loadUrl(TEST_PAGE);
+        loadUrl(mTestPage);
         // Click star button to bookmark the curent tab.
         MenuUtils.invokeCustomMenuActionSync(getInstrumentation(), getActivity(),
                 R.id.bookmark_this_page_id);
@@ -164,7 +181,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                         mBookmarkModel.doesBookmarkExist(id));
                 BookmarkItem item = mBookmarkModel.getBookmarkById(id);
                 assertEquals(mBookmarkModel.getDefaultFolder(), item.getParentId());
-                assertEquals(TEST_PAGE, item.getUrl());
+                assertEquals(mTestPage, item.getUrl());
                 assertEquals(TEST_PAGE_TITLE, item.getTitle());
             }
         });
@@ -176,7 +193,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             @Override
             public void run() {
                 mBookmarkModel.addBookmark(mBookmarkModel.getDefaultFolder(), 0, TEST_PAGE_TITLE,
-                        TEST_PAGE);
+                        mTestPage);
             }
         });
         openBookmarkManager();

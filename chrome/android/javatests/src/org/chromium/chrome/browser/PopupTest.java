@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 
@@ -16,10 +17,10 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 
@@ -28,11 +29,14 @@ import java.util.ArrayList;
  * In document mode, this will end up spawning multiple Activities.
  */
 public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-    private static final String POPUP_HTML_FILENAME =
-            TestHttpServerClient.getUrl("chrome/test/data/android/popup_test.html");
+    private static final String POPUP_HTML_PATH = "/chrome/test/data/android/popup_test.html";
+
+    private String mPopupHtmlUrl;
+    private EmbeddedTestServer mTestServer;
 
     public PopupTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     private int getNumInfobarsShowing() {
@@ -40,7 +44,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     @Override
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
 
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -49,6 +53,16 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 assertTrue(getNumInfobarsShowing() == 0);
             }
         });
+
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        mPopupHtmlUrl = mTestServer.getURL(POPUP_HTML_PATH);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     @Override
@@ -59,7 +73,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @MediumTest
     @Feature({"Popup"})
     public void testPopupInfobarAppears() throws Exception {
-        loadUrl(POPUP_HTML_FILENAME);
+        loadUrl(mPopupHtmlUrl);
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -77,7 +91,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 ? ChromeApplication.getDocumentTabModelSelector()
                 : getActivity().getTabModelSelector();
 
-        loadUrl(POPUP_HTML_FILENAME);
+        loadUrl(mPopupHtmlUrl);
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -113,7 +127,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         int currentTabId = selector.getCurrentTab().getId();
 
         // Test that revisiting the original page makes popup windows immediately.
-        loadUrl(POPUP_HTML_FILENAME);
+        loadUrl(mPopupHtmlUrl);
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
