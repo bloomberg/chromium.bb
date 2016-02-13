@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/jingle_info_request.h"
+#include "remoting/protocol/jingle_info_request.h"
 
 #include <utility>
 
@@ -12,22 +12,27 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "net/base/net_util.h"
+#include "remoting/protocol/ice_config.h"
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/webrtc/base/socketaddress.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/libjingle/xmpp/constants.h"
 
 namespace remoting {
+namespace protocol {
 
 const int kRequestTimeoutSeconds = 5;
+
+// Get fresh STUN/Relay configuration every hour.
+static const int kJingleInfoUpdatePeriodSeconds = 3600;
 
 JingleInfoRequest::JingleInfoRequest(SignalStrategy* signal_strategy)
     : iq_sender_(signal_strategy) {}
 
 JingleInfoRequest::~JingleInfoRequest() {}
 
-void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
-  on_jingle_info_cb_ = callback;
+void JingleInfoRequest::Send(const OnIceConfigCallback& callback) {
+  on_ice_config_callback_ = callback;
   scoped_ptr<buzz::XmlElement> iq_body(
       new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true));
   request_ = iq_sender_.SendIq(
@@ -36,10 +41,8 @@ void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
   if (!request_) {
     // If we failed to send IqRequest it means that SignalStrategy is
     // disconnected. Notify the caller.
-    std::vector<rtc::SocketAddress> stun_hosts;
-    std::vector<std::string> relay_hosts;
-    std::string relay_token;
-    on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
+    IceConfig config;
+    on_ice_config_callback_.Run(config);
     return;
   }
   request_->SetTimeout(base::TimeDelta::FromSeconds(kRequestTimeoutSeconds));
@@ -47,13 +50,11 @@ void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
 
 void JingleInfoRequest::OnResponse(IqRequest* request,
                                    const buzz::XmlElement* stanza) {
-  std::vector<rtc::SocketAddress> stun_hosts;
-  std::vector<std::string> relay_hosts;
-  std::string relay_token;
+  IceConfig result;
 
   if (!stanza) {
     LOG(WARNING) << "Jingle info request has timed out.";
-    on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
+    on_ice_config_callback_.Run(result);
     return;
   }
 
@@ -62,7 +63,7 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
   if (query == nullptr) {
     LOG(WARNING) << "No Jingle info found in Jingle Info query response."
                  << stanza->Str();
-    on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
+    on_ice_config_callback_.Run(result);
     return;
   }
 
@@ -81,25 +82,30 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
           continue;
         }
 
-        stun_hosts.push_back(rtc::SocketAddress(host, port));
+        result.stun_servers.push_back(rtc::SocketAddress(host, port));
       }
     }
   }
 
   const buzz::XmlElement* relay = query->FirstNamed(buzz::QN_JINGLE_INFO_RELAY);
   if (relay) {
-    relay_token = relay->TextNamed(buzz::QN_JINGLE_INFO_TOKEN);
+    result.relay_token = relay->TextNamed(buzz::QN_JINGLE_INFO_TOKEN);
     for (const buzz::XmlElement* server =
          relay->FirstNamed(buzz::QN_JINGLE_INFO_SERVER);
          server != nullptr;
          server = server->NextNamed(buzz::QN_JINGLE_INFO_SERVER)) {
       std::string host = server->Attr(buzz::QN_JINGLE_INFO_HOST);
       if (host != buzz::STR_EMPTY)
-        relay_hosts.push_back(host);
+        result.relay_servers.push_back(host);
     }
   }
 
-  on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
+  result.expiration_time =
+      base::Time::Now() +
+      base::TimeDelta::FromSeconds(kJingleInfoUpdatePeriodSeconds);
+
+  on_ice_config_callback_.Run(result);
 }
 
+}  // namespace protocol
 }  // namespace remoting

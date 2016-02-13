@@ -96,30 +96,25 @@ PortAllocatorSession::PortAllocatorSession(PortAllocator* allocator,
 PortAllocatorSession::~PortAllocatorSession() {}
 
 void PortAllocatorSession::GetPortConfigurations() {
-  transport_context_->GetJingleInfo(base::Bind(
-      &PortAllocatorSession::OnJingleInfo, weak_factory_.GetWeakPtr()));
+  transport_context_->GetIceConfig(base::Bind(
+      &PortAllocatorSession::OnIceConfig, weak_factory_.GetWeakPtr()));
 }
 
-void PortAllocatorSession::OnJingleInfo(
-    std::vector<rtc::SocketAddress> stun_hosts,
-    std::vector<std::string> relay_hosts,
-    std::string relay_token) {
-  stun_hosts_ = stun_hosts;
-  relay_hosts_ = relay_hosts;
-  relay_token_ = relay_token;
+void PortAllocatorSession::OnIceConfig(const IceConfig& ice_config) {
+  ice_config_ = ice_config;
 
   // Creating relay sessions can take time and is done asynchronously.
   // Creating stun sessions could also take time and could be done aysnc also,
   // but for now is done here and added to the initial config.  Note any later
   // configs will have unresolved stun ips and will be discarded by the
   // AllocationSequence.
-  cricket::ServerAddresses hosts;
-  for (const auto& host : stun_hosts_) {
-    hosts.insert(host);
+  cricket::ServerAddresses stun_servers;
+  for (const auto& host : ice_config_.stun_servers) {
+    stun_servers.insert(host);
   }
 
   cricket::PortConfiguration* config =
-      new cricket::PortConfiguration(hosts, username(), password());
+      new cricket::PortConfiguration(stun_servers, username(), password());
   ConfigReady(config);
   TryCreateRelaySession();
 }
@@ -130,22 +125,23 @@ void PortAllocatorSession::TryCreateRelaySession() {
 
   if (attempts_ == kNumRetries) {
     LOG(ERROR) << "PortAllocator: maximum number of requests reached; "
-                  << "giving up on relay.";
+               << "giving up on relay.";
     return;
   }
 
-  if (relay_hosts_.empty()) {
-    LOG(ERROR) << "PortAllocator: no relay hosts configured.";
+  if (ice_config_.relay_servers.empty()) {
+    LOG(ERROR) << "PortAllocator: no relay servers configured.";
     return;
   }
 
-  if (relay_token_.empty()){
+  if (ice_config_.relay_token.empty()){
     LOG(WARNING) << "No relay auth token found.";
     return;
   }
 
   // Choose the next host to try.
-  std::string host = relay_hosts_[attempts_ % relay_hosts_.size()];
+  std::string host =
+      ice_config_.relay_servers[attempts_ % ice_config_.relay_servers.size()];
   attempts_++;
 
   DCHECK(!username().empty());
@@ -156,8 +152,9 @@ void PortAllocatorSession::TryCreateRelaySession() {
                     net::EscapeUrlEncodedData(password(), false) + "&sn=1";
   scoped_ptr<UrlRequest> url_request =
       transport_context_->url_request_factory()->CreateUrlRequest(url);
-  url_request->AddHeader("X-Talk-Google-Relay-Auth: " + relay_token());
-  url_request->AddHeader("X-Google-Relay-Auth: " + relay_token());
+  url_request->AddHeader("X-Talk-Google-Relay-Auth: " +
+                         ice_config_.relay_token);
+  url_request->AddHeader("X-Google-Relay-Auth: " + ice_config_.relay_token);
   url_request->AddHeader("X-Stream-Type: chromoting");
   url_request->Start(base::Bind(&PortAllocatorSession::OnSessionRequestResult,
                                 base::Unretained(this)));
@@ -182,13 +179,13 @@ void PortAllocatorSession::OnSessionRequestResult(
     LOG(WARNING) << "Received unexpected password value from relay server.";
   }
 
-  cricket::ServerAddresses hosts;
-  for (const auto& host : stun_hosts_) {
-    hosts.insert(host);
+  cricket::ServerAddresses stun_servers;
+  for (const auto& host : ice_config_.stun_servers) {
+    stun_servers.insert(host);
   }
 
-  cricket::PortConfiguration* config =
-      new cricket::PortConfiguration(hosts, map["username"], map["password"]);
+  cricket::PortConfiguration* config = new cricket::PortConfiguration(
+      stun_servers, map["username"], map["password"]);
 
   std::string relay_ip = map["relay.ip"];
   std::string relay_port = map["relay.udp_port"];

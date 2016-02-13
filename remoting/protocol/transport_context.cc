@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/base/url_request.h"
+#include "remoting/protocol/jingle_info_request.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "third_party/webrtc/base/socketaddress.h"
 
@@ -22,9 +23,6 @@
 
 namespace remoting {
 namespace protocol {
-
-// Get fresh STUN/Relay configuration every hour.
-static const int kJingleInfoUpdatePeriodSeconds = 3600;
 
 #if !defined(OS_NACL)
 // static
@@ -56,21 +54,21 @@ void TransportContext::Prepare() {
   EnsureFreshJingleInfo();
 }
 
-void TransportContext::GetJingleInfo(const GetJingleInfoCallback& callback) {
+void TransportContext::GetIceConfig(const GetIceConfigCallback& callback) {
   EnsureFreshJingleInfo();
 
-  // If there is a pending |jingle_info_request_| delay the callback until the
+  // If there is a pending |ice_config_request_| delay the callback until the
   // request is finished.
-  if (jingle_info_request_) {
-    pending_jingle_info_callbacks_.push_back(callback);
+  if (ice_config_request_) {
+    pending_ice_config_callbacks_.push_back(callback);
   } else {
-    callback.Run(stun_hosts_, relay_hosts_, relay_token_);
+    callback.Run(ice_config_);
   }
 }
 
 void TransportContext::EnsureFreshJingleInfo() {
   // Check if request is already pending.
-  if (jingle_info_request_)
+  if (ice_config_request_)
     return;
 
   // Don't need to make jingleinfo request if both STUN and Relay are disabled.
@@ -79,31 +77,21 @@ void TransportContext::EnsureFreshJingleInfo() {
     return;
   }
 
-  if (last_jingle_info_update_time_.is_null() ||
-      base::TimeTicks::Now() - last_jingle_info_update_time_ >
-          base::TimeDelta::FromSeconds(kJingleInfoUpdatePeriodSeconds)) {
-    jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
-    jingle_info_request_->Send(base::Bind(
-        &TransportContext::OnJingleInfo, base::Unretained(this)));
+  if (ice_config_.is_null() ||
+      base::Time::Now() > ice_config_.expiration_time) {
+    ice_config_request_.reset(new JingleInfoRequest(signal_strategy_));
+    ice_config_request_->Send(base::Bind(
+        &TransportContext::OnIceConfig, base::Unretained(this)));
   }
 }
 
-void TransportContext::OnJingleInfo(
-    const std::string& relay_token,
-    const std::vector<std::string>& relay_hosts,
-    const std::vector<rtc::SocketAddress>& stun_hosts) {
-  relay_token_ = relay_token;
-  relay_hosts_ = relay_hosts;
-  stun_hosts_ = stun_hosts;
+void TransportContext::OnIceConfig(const IceConfig& ice_config) {
+  ice_config_ = ice_config;
+  ice_config_request_.reset();
 
-  jingle_info_request_.reset();
-  if ((!relay_token.empty() && !relay_hosts.empty()) || !stun_hosts.empty())
-    last_jingle_info_update_time_ = base::TimeTicks::Now();
-
-  while (!pending_jingle_info_callbacks_.empty()) {
-    pending_jingle_info_callbacks_.begin()->Run(stun_hosts_, relay_hosts_,
-                                                relay_token_);
-    pending_jingle_info_callbacks_.pop_front();
+  while (!pending_ice_config_callbacks_.empty()) {
+    pending_ice_config_callbacks_.begin()->Run(ice_config_);
+    pending_ice_config_callbacks_.pop_front();
   }
 }
 

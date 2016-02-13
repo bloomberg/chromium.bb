@@ -12,10 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/ice_config.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport.h"
-#include "remoting/signaling/jingle_info_request.h"
-
 
 namespace remoting {
 
@@ -25,15 +24,15 @@ class UrlRequestFactory;
 namespace protocol {
 
 class PortAllocatorFactory;
+class IceConfigRequest;
 
 // TransportContext is responsible for storing all parameters required for
-// P2P transport initialization. It's also responsible for making JingleInfo
-// request.
+// P2P transport initialization. It's also responsible for fetching STUN and
+// TURN configuration.
 class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
  public:
-  typedef base::Callback<void(std::vector<rtc::SocketAddress> stun_hosts,
-                              std::vector<std::string> relay_hosts,
-                              std::string relay_token)> GetJingleInfoCallback;
+  typedef base::Callback<void(const IceConfig& ice_config)>
+      GetIceConfigCallback;
 
   static scoped_refptr<TransportContext> ForTests(TransportRole role);
 
@@ -44,12 +43,12 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
                    TransportRole role);
 
   // Prepares fresh JingleInfo. It may be called while connection is being
-  // negotiated to minimize the chance that the following GetJingleInfo() will
+  // negotiated to minimize the chance that the following GetIceConfig() will
   // be blocking.
   void Prepare();
 
   // Requests fresh STUN and TURN information.
-  void GetJingleInfo(const GetJingleInfoCallback& callback);
+  void GetIceConfig(const GetIceConfigCallback& callback);
 
   PortAllocatorFactory* port_allocator_factory() {
     return port_allocator_factory_.get();
@@ -66,9 +65,7 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   ~TransportContext();
 
   void EnsureFreshJingleInfo();
-  void OnJingleInfo(const std::string& relay_token,
-                    const std::vector<std::string>& relay_hosts,
-                    const std::vector<rtc::SocketAddress>& stun_hosts);
+  void OnIceConfig(const IceConfig& ice_config);
 
   SignalStrategy* signal_strategy_;
   scoped_ptr<PortAllocatorFactory> port_allocator_factory_;
@@ -76,16 +73,13 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   NetworkSettings network_settings_;
   TransportRole role_;
 
-  base::TimeTicks last_jingle_info_update_time_;
-  scoped_ptr<JingleInfoRequest> jingle_info_request_;
+  scoped_ptr<IceConfigRequest> ice_config_request_;
 
-  std::vector<rtc::SocketAddress> stun_hosts_;
-  std::vector<std::string> relay_hosts_;
-  std::string relay_token_;
+  IceConfig ice_config_;
 
   // When there is an active |jingle_info_request_| stores list of callbacks to
   // be called once the request is finished.
-  std::list<GetJingleInfoCallback> pending_jingle_info_callbacks_;
+  std::list<GetIceConfigCallback> pending_ice_config_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportContext);
 };

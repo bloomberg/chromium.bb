@@ -10,12 +10,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/url_request.h"
+#include "remoting/protocol/ice_config.h"
+#include "remoting/protocol/transport_context.h"
 #include "third_party/webrtc/p2p/client/basicportallocator.h"
 
 namespace remoting {
 namespace protocol {
-
-class TransportContext;
 
 class PortAllocator : public cricket::BasicPortAllocator {
  public:
@@ -51,19 +51,13 @@ class PortAllocatorSession : public cricket::BasicPortAllocatorSession {
 
 private:
   void GetPortConfigurations() override;
-  void OnJingleInfo(std::vector<rtc::SocketAddress> stun_hosts,
-                    std::vector<std::string> relay_hosts,
-                    std::string relay_token);
+  void OnIceConfig(const IceConfig& ice_config);
   void TryCreateRelaySession();
   void OnSessionRequestResult(const UrlRequest::Result& result);
 
-  const std::string& relay_token() const { return relay_token_; }
-
   scoped_refptr<TransportContext> transport_context_;
 
-  std::vector<rtc::SocketAddress> stun_hosts_;
-  std::vector<std::string> relay_hosts_;
-  std::string relay_token_;
+  IceConfig ice_config_;
 
   int attempts_ = 0;
 
