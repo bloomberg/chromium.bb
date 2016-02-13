@@ -15,7 +15,6 @@ group("trusted_targets") {
     "//native_client/src/trusted/service_runtime:env_cleanser",
     "//native_client/src/trusted/service_runtime:nacl_error_code",
     "//native_client/src/trusted/threading:thread_interface",
-    "//native_client/src/shared/srpc/:nonnacl_srpc",
     "//native_client/src/trusted/desc:nrd_xfer",
     "//native_client/src/trusted/perf_counter:nacl_perf_counter",
     "//native_client/src/trusted/nacl_base:nacl_base",
@@ -39,7 +38,6 @@ if (is_nacl) {
       "//native_client/tests/hello_world:hello_world",
       "//native_client/src/shared/gio:gio",
       "//native_client/src/shared/platform:platform",
-      "//native_client/src/shared/srpc:srpc",
       "//native_client/src/untrusted/nacl:imc_syscalls",
       "//native_client/src/untrusted/elf_loader:elf_loader",
     ]

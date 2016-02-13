@@ -666,7 +666,6 @@ nacl_glibc_skiplist = set([
     # sanity check failure in free().
     # TODO(robertm): This needs further investigation.
     'run_ppapi_event_test',
-    'run_srpc_ro_file_test',
     'run_ppapi_geturl_valid_test',
     'run_ppapi_geturl_invalid_test',
     # http://code.google.com/p/chromium/issues/detail?id=108131
@@ -2174,7 +2173,6 @@ def MakeBaseTrustedEnv(platform=None):
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',
       'src/shared/platform/build.scons',
-      'src/shared/srpc/build.scons',
       'src/third_party/gtest/build.scons',
       'src/trusted/cpu_features/build.scons',
       'src/trusted/debug_stub/build.scons',
@@ -2197,9 +2195,7 @@ def MakeBaseTrustedEnv(platform=None):
       'tests/performance/build.scons',
       'tests/python_version/build.scons',
       'tests/sel_ldr_seccomp/build.scons',
-      'tests/srpc_message/build.scons',
       'tests/tools/build.scons',
-      'tests/unittests/shared/srpc/build.scons',
       'tests/unittests/shared/imc/build.scons',
       'tests/unittests/shared/platform/build.scons',
       'tests/unittests/trusted/asan/build.scons',
@@ -3220,7 +3216,6 @@ nacl_env.Append(
     'src/shared/gio/nacl.scons',
     'src/shared/imc/nacl.scons',
     'src/shared/platform/nacl.scons',
-    'src/shared/srpc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator/nacl.scons',
     'src/untrusted/irt/nacl_headers.scons',
@@ -3317,7 +3312,6 @@ irt_variant_tests = [
     'tests/signal_handler/nacl.scons',
     'tests/simd/nacl.scons',
     'tests/sleep/nacl.scons',
-    'tests/srpc_message/nacl.scons',
     'tests/stack_alignment/nacl.scons',
     'tests/stubout_mode/nacl.scons',
     'tests/sysbasic/nacl.scons',
@@ -3370,7 +3364,6 @@ nonvariant_tests = [
     'tests/trusted_crash/osx_crash_filter/nacl.scons',
     'tests/trusted_crash/osx_crash_forwarding/nacl.scons',
     'tests/unittests/shared/imc/nacl.scons',
-    'tests/unittests/shared/srpc/nacl.scons',
     #### ALPHABETICALLY SORTED ####
 ]
 
@@ -3600,7 +3593,6 @@ nacl_irt_env.Append(
     BUILD_SCONSCRIPTS = [
         'src/shared/gio/nacl.scons',
         'src/shared/platform/nacl.scons',
-        'src/shared/srpc/nacl.scons',
         'src/tools/tls_edit/build.scons',
         'src/untrusted/elf_loader/nacl.scons',
         'src/untrusted/irt/nacl.scons',

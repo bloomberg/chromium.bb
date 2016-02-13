@@ -39,7 +39,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'nacl_error_code',
         'env_cleanser',
         'thread_interface',
-        'nonnacl_srpc',
         'nrd_xfer',
         'nacl_perf_counter',
         'nacl_base',
@@ -71,7 +70,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'platform',
         ],
     'irt_support_private': [
-        'srpc',
         'platform',
         ],
     }
@@ -81,10 +79,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
 UNTRUSTED_LIBRARY_DEPENDENCIES = {
     'ppapi_cpp': [
         'ppapi',
-        ],
-    'srpc': [
-        'platform',
-        'imc_syscalls',
         ],
     }
 
