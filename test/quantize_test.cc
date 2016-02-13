@@ -28,6 +28,7 @@
 using libvpx_test::ACMRandom;
 
 namespace {
+#if !CONFIG_AOM_QM
 #if CONFIG_VPX_HIGHBITDEPTH
 const int number_of_iterations = 100;
 
@@ -341,4 +342,5 @@ INSTANTIATE_TEST_CASE_P(
                                  &vpx_highbd_quantize_b_32x32_c, VPX_BITS_12)));
 #endif  // HAVE_SSE2
 #endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_QM
 }  // namespace
