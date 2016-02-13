@@ -358,7 +358,9 @@ void PointerEventManager::conditionallyEnableMouseEventForPointerTypeMouse(
 
 DEFINE_TRACE(PointerEventManager)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_nodeUnderPointer);
+#endif
 }
 
 
