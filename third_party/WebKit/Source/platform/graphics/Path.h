@@ -70,6 +70,7 @@ public:
     ~Path();
 
     Path(const Path&);
+    Path(const SkPath&);
     Path& operator=(const Path&);
     Path& operator=(const SkPath&);
     bool operator==(const Path&) const;
@@ -150,6 +151,7 @@ public:
 
     // Updates the path to the union (inclusive-or) of itself with the given argument.
     bool unionPath(const Path& other);
+    bool intersectPath(const Path& other);
 
 private:
     void addEllipse(const FloatPoint&, float radiusX, float radiusY, float startAngle, float endAngle, bool anticlockwise);

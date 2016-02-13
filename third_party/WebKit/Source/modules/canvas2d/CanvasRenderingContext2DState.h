@@ -75,7 +75,7 @@ public:
     bool hasClip() const { return m_hasClip; }
     bool hasComplexClip() const { return m_hasComplexClip; }
     void playbackClips(SkCanvas* canvas) const { m_clipList.playback(canvas); }
-    SkPath intersectPathWithClip(const SkPath& path) const { return m_clipList.intersectPathWithClip(path); }
+    const SkPath& getCurrentClipPath() const { return m_clipList.getCurrentClipPath(); }
 
     void setFont(const Font&, CSSFontSelector*);
     const Font& font() const;

@@ -50,6 +50,11 @@ Path::Path(const Path& other)
     m_path = SkPath(other.m_path);
 }
 
+Path::Path(const SkPath& other)
+{
+    m_path = other;
+}
+
 Path::~Path()
 {
 }
@@ -506,6 +511,11 @@ bool Path::subtractPath(const Path& other)
 bool Path::unionPath(const Path& other)
 {
     return Op(m_path, other.m_path, kUnion_SkPathOp, &m_path);
+}
+
+bool Path::intersectPath(const Path& other)
+{
+    return Op(m_path, other.m_path, kIntersect_SkPathOp, &m_path);
 }
 
 #if ENABLE(ASSERT)

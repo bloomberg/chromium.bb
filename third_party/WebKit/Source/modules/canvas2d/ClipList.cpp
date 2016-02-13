@@ -18,6 +18,10 @@ void ClipList::clipPath(const SkPath& path, AntiAliasingMode antiAliasingMode, c
     newClip.m_antiAliasingMode = antiAliasingMode;
     newClip.m_path = path;
     newClip.m_path.transform(ctm);
+    if (m_clipList.isEmpty())
+        m_currentClipPath = path;
+    else
+        Op(m_currentClipPath, path, SkPathOp::kIntersect_SkPathOp, &m_currentClipPath);
     m_clipList.append(newClip);
 }
 
@@ -28,13 +32,9 @@ void ClipList::playback(SkCanvas* canvas) const
     }
 }
 
-SkPath ClipList::intersectPathWithClip(const SkPath& path) const
+const SkPath& ClipList::getCurrentClipPath() const
 {
-    SkPath total = path;
-    for (const ClipOp* it = m_clipList.begin(); it < m_clipList.end(); it++) {
-        Op(total, it->m_path, SkPathOp::kIntersect_SkPathOp, &total);
-    }
-    return total;
+    return m_currentClipPath;
 }
 
 ClipList::ClipOp::ClipOp()

@@ -2247,7 +2247,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
     hitRegionPath.transform(state().transform());
 
     if (state().hasClip()) {
-        hitRegionPath = state().intersectPathWithClip(hitRegionPath.skPath());
+        hitRegionPath.intersectPath(state().getCurrentClipPath());
         if (hitRegionPath.isEmpty())
             exceptionState.throwDOMException(NotSupportedError, "The specified path has no pixels.");
     }
