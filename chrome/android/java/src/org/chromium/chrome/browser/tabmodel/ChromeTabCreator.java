@@ -17,8 +17,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
-import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParamsManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
@@ -110,8 +108,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             // Check if the tab is being created asynchronously.
             int assignedTabId = intent == null ? Tab.INVALID_TAB_ID : IntentUtils.safeGetIntExtra(
                     intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
-            AsyncTabCreationParams asyncParams =
-                    AsyncTabCreationParamsManager.remove(assignedTabId);
+            AsyncTabParams asyncParams =
+                    AsyncTabParamsManager.remove(assignedTabId);
             WebContents webContents = asyncParams == null ? null : asyncParams.getWebContents();
 
             boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito)

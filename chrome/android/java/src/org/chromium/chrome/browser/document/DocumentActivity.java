@@ -50,11 +50,12 @@ import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
-import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParamsManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.InitializationObserver;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
@@ -484,7 +485,7 @@ public class DocumentActivity extends ChromeActivity {
         super.onResumeWithNative();
 
         if (mTab != null) {
-            AsyncTabCreationParams asyncParams = AsyncTabCreationParamsManager.remove(
+            AsyncTabParams asyncParams = AsyncTabParamsManager.remove(
                     ActivityDelegate.getTabIdFromIntent(getIntent()));
             if (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null) {
                 loadLastKnownUrl(asyncParams);
@@ -498,7 +499,7 @@ public class DocumentActivity extends ChromeActivity {
         return (SingleTabModelSelector) super.getTabModelSelector();
     }
 
-    private void loadLastKnownUrl(AsyncTabCreationParams asyncParams) {
+    private void loadLastKnownUrl(AsyncTabParams asyncParams) {
         Intent intent = getIntent();
         if (asyncParams != null && asyncParams.getOriginalIntent() != null) {
             intent = asyncParams.getOriginalIntent();
@@ -566,8 +567,10 @@ public class DocumentActivity extends ChromeActivity {
         mDefaultThemeColor = isIncognito()
                 ? ApiCompatibilityUtils.getColor(getResources(), R.color.incognito_primary_color)
                 : ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
-        AsyncTabCreationParams asyncParams = AsyncTabCreationParamsManager.remove(
+        AsyncTabParams params = AsyncTabParamsManager.remove(
                 ActivityDelegate.getTabIdFromIntent(getIntent()));
+        AsyncTabCreationParams asyncParams = params instanceof AsyncTabCreationParams
+                ? (AsyncTabCreationParams) params : null;
         boolean isAffiliated = asyncParams != null ? asyncParams.isAffiliated() : false;
         boolean isCreatedWithWebContents = asyncParams != null
                 && asyncParams.getWebContents() != null;
@@ -600,7 +603,7 @@ public class DocumentActivity extends ChromeActivity {
                         loadUrlParams.setUrl(determineLastKnownUrl());
                     }
 
-                    AsyncTabCreationParamsManager.add(
+                    AsyncTabParamsManager.add(
                             ActivityDelegate.getTabIdFromIntent(getIntent()), asyncParams);
 
                     // Use the URL as the document title until tab is loaded.

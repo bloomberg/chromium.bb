@@ -57,9 +57,9 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
-import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParamsManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -519,10 +519,10 @@ public class ChromeLauncherActivity extends Activity
         params.setHasUserGesture(hasUserGesture);
         AsyncTabCreationParams data =
                 new AsyncTabCreationParams(params, new Intent(getIntent()));
-        AsyncTabCreationParamsManager.add(tabId, data);
+        AsyncTabParamsManager.add(tabId, data);
         if (!relaunchTask(tabId)) {
             // Were not able to clobber, will fall through to handle in a new document.
-            AsyncTabCreationParamsManager.remove(tabId);
+            AsyncTabParamsManager.remove(tabId);
             return false;
         }
 
@@ -651,7 +651,7 @@ public class ChromeLauncherActivity extends Activity
         // re-delivered when a Chrome Activity is restarted.
         boolean isWebContentsPending = false;
         int tabId = ActivityDelegate.getTabIdFromIntent(intent);
-        AsyncTabCreationParamsManager.add(tabId, asyncParams);
+        AsyncTabParamsManager.add(tabId, asyncParams);
         isWebContentsPending = asyncParams.getWebContents() != null;
 
         Bundle options = null;
@@ -673,7 +673,7 @@ public class ChromeLauncherActivity extends Activity
         } catch (java.lang.RuntimeException exception) {
             if (exception.getCause() instanceof TransactionTooLargeException) {
                 Log.e(TAG, "Failed to launch DocumentActivity because Intent was too large");
-                AsyncTabCreationParamsManager.remove(tabId);
+                AsyncTabParamsManager.remove(tabId);
                 if (isWebContentsPending) asyncParams.getWebContents().destroy();
                 return false;
             }
