@@ -24,25 +24,21 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="appearance">
       <neon-animatable id="main">
-        <div class="settings-box first">
-          <div class="start">
-            <iron-icon icon="image:brightness-1"></iron-icon>
-            <paper-button class="primary-button">
-              <div>[[i18n('setWallpaper')]]</div>
-              <div class="secondary">[[i18n('openWallpaperApp')]]</div>
-            </paper-button>
-          </div>
+        <div class="settings-box first two-line">
+          <iron-icon icon="image:brightness-1"></iron-icon>
+          <paper-button class="primary-button middle">
+            <div>[[i18n('setWallpaper')]]</div>
+            <div class="secondary">[[i18n('openWallpaperApp')]]</div>
+          </paper-button>
           <iron-icon icon="exit-to-app" disabled></iron-icon>
         </div>
-        <div class="settings-box">
-          <div class="start">
-            <iron-icon icon="image:brightness-1"></iron-icon>
-            <paper-button class="primary-button" id="get-themes"
-                on-tap="openThemesGallery_">
-              <div>[[i18n('getThemes')]]</div>
-              <div class="secondary">[[i18n('chooseFromWebStore')]]</div>
-            </paper-button>
-          </div>
+        <div class="settings-box two-line">
+          <iron-icon icon="image:brightness-1"></iron-icon>
+          <paper-button class="primary-button middle" id="get-themes"
+              on-tap="openThemesGallery_">
+            <div>[[i18n('getThemes')]]</div>
+            <div class="secondary">[[i18n('chooseFromWebStore')]]</div>
+          </paper-button>
           <template is="dom-if" if="[[!allowResetTheme_]]">
             <iron-icon icon="exit-to-app"></iron-icon>
           </template>

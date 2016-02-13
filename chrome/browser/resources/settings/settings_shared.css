@@ -26,6 +26,7 @@ iron-icon[icon=done] {
 paper-button {
   margin: 0;
   min-width: auto;
+  padding: 0;
 }
 
 paper-button[toggles][active] {
@@ -189,9 +190,14 @@ paper-radio-button {
   font-weight: 400;
 }
 
+.settings-box .middle {
+  -webkit-margin-start: 16px;
+  align-items: center;
+  flex: auto;
+}
+
 .settings-box .start {
   align-items: center;
-  display: flex;
   flex: auto;
 }
 
