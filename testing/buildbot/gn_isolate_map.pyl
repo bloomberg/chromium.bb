@@ -288,7 +288,7 @@
   },
   "installer_util_unittests": {
     "label": "//chrome/installer/util:installer_util_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "interactive_ui_tests": {
     "label": "//chrome/test:interactive_ui_tests",
@@ -432,15 +432,15 @@
   },
   "sbox_integration_tests": {
     "label": "//sandbox/win:sbox_integration_tests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "sbox_unittests": {
     "label": "//sandbox/win:sbox_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "sbox_validation_tests": {
     "label": "//sandbox/win:sbox_validation_tests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "setup_unittests": {
     "label": "//chrome/installer/setup:setup_unittests",
