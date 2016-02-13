@@ -31,8 +31,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public ash::ShellObserver,
                                      public TabIconViewModel {
  public:
-  static const char kViewClassName[];
-
   BrowserNonClientFrameViewAsh(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameViewAsh() override;
 
@@ -120,12 +118,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // Returns true if there is anything to paint. Some fullscreen windows do not
   // need their frames painted.
   bool ShouldPaint() const;
-
-  bool IsToolbarVisible() const;
-
-  // Paints the header background when the frame is in immersive fullscreen and
-  // tab light bar is visible.
-  void PaintImmersiveLightbarStyleHeader(gfx::Canvas* canvas);
 
   void PaintToolbarBackground(gfx::Canvas* canvas);
 

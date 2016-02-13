@@ -89,10 +89,6 @@ bool ConvertedHitTest(views::View* src,
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, public:
 
-// static
-const char BrowserNonClientFrameViewAsh::kViewClassName[] =
-    "BrowserNonClientFrameViewAsh";
-
 BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserFrame* frame,
     BrowserView* browser_view)
@@ -124,27 +120,22 @@ void BrowserNonClientFrameViewAsh::Init() {
 
   UpdateAvatar();
 
-  // HeaderPainter handles layout.
-  if (UsePackagedAppHeaderStyle()) {
+  if (UsePackagedAppHeaderStyle() || UseWebAppHeaderStyle()) {
     ash::DefaultHeaderPainter* header_painter = new ash::DefaultHeaderPainter;
     header_painter_.reset(header_painter);
     header_painter->Init(frame(), this, caption_button_container_);
-    if (window_icon_) {
+    if (UseWebAppHeaderStyle()) {
+      web_app_left_header_view_ = new WebAppLeftHeaderView(browser_view());
+      AddChildView(web_app_left_header_view_);
+      header_painter->UpdateLeftHeaderView(web_app_left_header_view_);
+    } else if (window_icon_) {
       header_painter->UpdateLeftHeaderView(window_icon_);
     }
-  } else if (UseWebAppHeaderStyle()) {
-    web_app_left_header_view_ = new WebAppLeftHeaderView(browser_view());
-    AddChildView(web_app_left_header_view_);
-
-    ash::DefaultHeaderPainter* header_painter = new ash::DefaultHeaderPainter;
-    header_painter_.reset(header_painter);
-    header_painter->Init(frame(), this, caption_button_container_);
-    header_painter->UpdateLeftHeaderView(web_app_left_header_view_);
   } else {
     BrowserHeaderPainterAsh* header_painter = new BrowserHeaderPainterAsh;
     header_painter_.reset(header_painter);
     header_painter->Init(frame(), browser_view(), this, window_icon_,
-        caption_button_container_);
+                         caption_button_container_);
   }
 }
 
@@ -161,11 +152,9 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
   // bounds are still used to compute the tab strip bounds so that the tabs have
   // the same horizontal position when the tab strip is painted in the immersive
   // light bar style as when the top-of-window views are revealed.
-  int left_inset = GetTabStripLeftInset();
-  int right_inset = GetTabStripRightInset();
-  return gfx::Rect(left_inset,
-                   GetTopInset(false),
-                   std::max(0, width() - left_inset - right_inset),
+  const int left_inset = GetTabStripLeftInset();
+  return gfx::Rect(left_inset, GetTopInset(false),
+                   std::max(0, width() - left_inset - GetTabStripRightInset()),
                    tabstrip->GetPreferredSize().height());
 }
 
@@ -173,29 +162,22 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
   if (!ShouldPaint() || UseImmersiveLightbarHeaderStyle())
     return 0;
 
-  if (browser_view()->IsTabStripVisible()) {
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      const int header_height = restored
-          ? GetAshLayoutSize(
-                AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON).height()
-          : header_painter_->GetHeaderHeight();
-      return header_height - browser_view()->GetTabStripHeight();
-    }
+  if (!browser_view()->IsTabStripVisible()) {
+    return (UsePackagedAppHeaderStyle() || UseWebAppHeaderStyle())
+        ? header_painter_->GetHeaderHeight()
+        : caption_button_container_->bounds().bottom();
+  }
 
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     return ((frame()->IsMaximized() || frame()->IsFullscreen()) && !restored) ?
         kTabstripTopSpacingShort : kTabstripTopSpacingTall;
   }
 
-  if (UsePackagedAppHeaderStyle() || UseWebAppHeaderStyle())
-    return header_painter_->GetHeaderHeight();
-
-  int caption_buttons_bottom = caption_button_container_->bounds().bottom();
-
-  // The toolbar partially overlaps the caption buttons.
-  if (IsToolbarVisible())
-    return caption_buttons_bottom;
-
-  return caption_buttons_bottom + kClientEdgeThickness;
+  const int header_height = restored
+      ? GetAshLayoutSize(
+            AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON).height()
+      : header_painter_->GetHeaderHeight();
+  return header_height - browser_view()->GetTabStripHeight();
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
@@ -213,10 +195,8 @@ void BrowserNonClientFrameViewAsh::UpdateToolbar() {
 }
 
 views::View* BrowserNonClientFrameViewAsh::GetLocationIconView() const {
-  if (web_app_left_header_view_)
-    return web_app_left_header_view_->GetLocationIconView();
-
-  return nullptr;
+  return web_app_left_header_view_ ?
+      web_app_left_header_view_->GetLocationIconView() : nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -238,8 +218,8 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  int hit_test = ash::FrameBorderHitTestController::NonClientHitTest(this,
-      caption_button_container_, point);
+  const int hit_test = ash::FrameBorderHitTestController::NonClientHitTest(
+      this, caption_button_container_, point);
 
   // See if the point is actually within the web app back button.
   if (hit_test == HTCAPTION && web_app_left_header_view_ &&
@@ -249,16 +229,15 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
 
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
-  if (hit_test == HTCLIENT &&
-      !(frame()->IsMaximized() || frame()->IsFullscreen())) {
-    // Convert point to client coordinates.
+  if (hit_test == HTCLIENT && !frame()->IsMaximized() &&
+      !frame()->IsFullscreen()) {
     gfx::Point client_point(point);
     View::ConvertPointToTarget(this, frame()->client_view(), &client_point);
-    // Report hits in shadow at top of tabstrip as caption.
     gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
     if (client_point.y() < tabstrip_bounds.y() + kTabShadowHeight)
-      hit_test = HTCAPTION;
+      return HTCAPTION;
   }
+
   return hit_test;
 }
 
@@ -271,9 +250,7 @@ void BrowserNonClientFrameViewAsh::ResetWindowControls() {
   // Hide the caption buttons in immersive fullscreen when the tab light bar
   // is visible because it's confusing when the user hovers or clicks in the
   // top-right of the screen and hits one.
-  bool button_visibility = !UseImmersiveLightbarHeaderStyle();
-  caption_button_container_->SetVisible(button_visibility);
-
+  caption_button_container_->SetVisible(!UseImmersiveLightbarHeaderStyle());
   caption_button_container_->ResetWindowControls();
 }
 
@@ -298,20 +275,26 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
     return;
 
   if (UseImmersiveLightbarHeaderStyle()) {
-    PaintImmersiveLightbarStyleHeader(canvas);
+    // The light bar header is not themed because theming it does not look good.
+    canvas->FillRect(
+        gfx::Rect(width(), header_painter_->GetHeaderHeightForPainting()),
+        SK_ColorBLACK);
     return;
   }
 
-  caption_button_container_->SetPaintAsActive(ShouldPaintAsActive());
+  const bool should_paint_as_active = ShouldPaintAsActive();
+  caption_button_container_->SetPaintAsActive(should_paint_as_active);
   if (web_app_left_header_view_)
-    web_app_left_header_view_->SetPaintAsActive(ShouldPaintAsActive());
+    web_app_left_header_view_->SetPaintAsActive(should_paint_as_active);
 
-  ash::HeaderPainter::Mode header_mode = ShouldPaintAsActive() ?
+  const ash::HeaderPainter::Mode header_mode = should_paint_as_active ?
       ash::HeaderPainter::MODE_ACTIVE : ash::HeaderPainter::MODE_INACTIVE;
   header_painter_->PaintHeader(canvas, header_mode);
 
-  if (IsToolbarVisible())
+  if (browser_view()->IsToolbarVisible() &&
+      !browser_view()->toolbar()->GetPreferredSize().IsEmpty()) {
     PaintToolbarBackground(canvas);
+  }
   if (!browser_view()->IsTabStripVisible())
     PaintContentEdge(canvas);
 }
@@ -334,11 +317,10 @@ void BrowserNonClientFrameViewAsh::Layout() {
 }
 
 const char* BrowserNonClientFrameViewAsh::GetClassName() const {
-  return kViewClassName;
+  return "BrowserNonClientFrameViewAsh";
 }
 
-void BrowserNonClientFrameViewAsh::GetAccessibleState(
-    ui::AXViewState* state) {
+void BrowserNonClientFrameViewAsh::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_TITLE_BAR;
 }
 
@@ -349,23 +331,22 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
   if (browser_view()->IsTabStripVisible()) {
     // Ensure that the minimum width is enough to hold a minimum width tab strip
     // at its usual insets.
-    int min_tabstrip_width =
+    const int min_tabstrip_width =
         browser_view()->tabstrip()->GetMinimumSize().width();
-    min_width = std::max(min_width,
+    min_width = std::max(
+        min_width,
         min_tabstrip_width + GetTabStripLeftInset() + GetTabStripRightInset());
   }
   return gfx::Size(min_width, min_client_view_size.height());
 }
 
-void BrowserNonClientFrameViewAsh::
-  ChildPreferredSizeChanged(views::View* child) {
+void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
+    views::View* child) {
   // FrameCaptionButtonContainerView animates the visibility changes in
   // UpdateSizeButtonVisibility(false). Due to this a new size is not available
   // until the completion of the animation. Layout in response to the preferred
   // size changes.
-  if (!browser_view()->initialized())
-    return;
-  if (child == caption_button_container_) {
+  if (browser_view()->initialized() && (child == caption_button_container_)) {
     InvalidateLayout();
     frame()->GetRootView()->Layout();
   }
@@ -382,10 +363,7 @@ void BrowserNonClientFrameViewAsh::OnMaximizeModeStarted() {
 }
 
 void BrowserNonClientFrameViewAsh::OnMaximizeModeEnded() {
-  caption_button_container_->UpdateSizeButtonVisibility();
-  InvalidateLayout();
-  frame()->client_view()->InvalidateLayout();
-  frame()->GetRootView()->Layout();
+  OnMaximizeModeStarted();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -396,14 +374,12 @@ bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   // TabIconView we host is initialized, so we need to null check the selected
   // WebContents because in this condition there is not yet a selected tab.
   content::WebContents* current_tab = browser_view()->GetActiveWebContents();
-  return current_tab ? current_tab->IsLoading() : false;
+  return current_tab && current_tab->IsLoading();
 }
 
 gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
-  if (!delegate)
-    return gfx::ImageSkia();
-  return delegate->GetWindowIcon();
+  return delegate ? delegate->GetWindowIcon() : gfx::ImageSkia();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -421,30 +397,27 @@ void BrowserNonClientFrameViewAsh::UpdateNewAvatarButtonImpl() {
 bool BrowserNonClientFrameViewAsh::DoesIntersectRect(
     const views::View* target,
     const gfx::Rect& rect) const {
-  CHECK_EQ(target, this);
+  CHECK_EQ(this, target);
   if (!views::ViewTargeterDelegate::DoesIntersectRect(this, rect)) {
     // |rect| is outside BrowserNonClientFrameViewAsh's bounds.
     return false;
   }
 
   TabStrip* tabstrip = browser_view()->tabstrip();
-  if (tabstrip && browser_view()->IsTabStripVisible()) {
-    // Claim |rect| only if it is above the bottom of the tabstrip in a non-tab
-    // portion.
-    gfx::RectF rect_in_tabstrip_coords_f(rect);
-    View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
-    gfx::Rect rect_in_tabstrip_coords = gfx::ToEnclosingRect(
-        rect_in_tabstrip_coords_f);
-
-     if (rect_in_tabstrip_coords.y() > tabstrip->height())
-       return false;
-
-    return !tabstrip->HitTestRect(rect_in_tabstrip_coords) ||
-        tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
+  if (!tabstrip || !browser_view()->IsTabStripVisible()) {
+    // Claim |rect| if it is above the top of the topmost client area view.
+    return rect.y() < GetTopInset(false);
   }
 
-  // Claim |rect| if it is above the top of the topmost view in the client area.
-  return rect.y() < GetTopInset(false);
+  // Claim |rect| if it is above the bottom of the tabstrip in a non-tab
+  // portion.
+  gfx::RectF rect_in_tabstrip_coords_f(rect);
+  View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
+  const gfx::Rect rect_in_tabstrip_coords(
+      gfx::ToEnclosingRect(rect_in_tabstrip_coords_f));
+  return (rect_in_tabstrip_coords.y() <= tabstrip->height()) &&
+          (!tabstrip->HitTestRect(rect_in_tabstrip_coords) ||
+          tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords));
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
@@ -455,29 +428,24 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
-  int tabstrip_width = kTabstripRightSpacing +
+  return kTabstripRightSpacing +
       caption_button_container_->GetPreferredSize().width();
-
-  return tabstrip_width;
 }
 
 bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
-  ImmersiveModeController* immersive_controller =
+  const ImmersiveModeController* const immersive_controller =
       browser_view()->immersive_mode_controller();
   return immersive_controller->IsEnabled() &&
-      !immersive_controller->IsRevealed() &&
-      browser_view()->IsTabStripVisible();
+         !immersive_controller->IsRevealed() &&
+         browser_view()->IsTabStripVisible();
 }
 
 bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
-  Browser* browser = browser_view()->browser();
-  // For non tabbed trusted source windows, e.g. Settings, use the packaged
-  // app style frame.
-  if (!browser->is_type_tabbed() && browser->is_trusted_source())
-    return true;
-  // Use the packaged app style for apps that aren't using the newer WebApp
-  // style.
-  return browser->is_app() && !UseWebAppHeaderStyle();
+  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps
+  // that aren't using the newer WebApp style.
+  const Browser* const browser = browser_view()->browser();
+  return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
+         (browser->is_app() && !UseWebAppHeaderStyle());
 }
 
 bool BrowserNonClientFrameViewAsh::UseWebAppHeaderStyle() const {
@@ -491,10 +459,11 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   // ChromeOS shows avatar on V1 app.
   DCHECK(browser_view()->IsTabStripVisible());
 #endif
-  gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
-  gfx::Insets avatar_insets = GetLayoutInsets(AVATAR_ICON);
-  int avatar_bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                      avatar_insets.bottom();
+
+  const gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
+  const gfx::Insets avatar_insets = GetLayoutInsets(AVATAR_ICON);
+  const int avatar_bottom = GetTopInset(false) +
+      browser_view()->GetTabStripHeight() - avatar_insets.bottom();
   int avatar_y = avatar_bottom - incognito_icon.height();
   if (!ui::MaterialDesignController::IsModeMaterial() &&
       browser_view()->IsTabStripVisible() &&
@@ -505,12 +474,10 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   // Hide the incognito icon in immersive fullscreen when the tab light bar is
   // visible because the header is too short for the icognito icon to be
   // recognizable.
-  bool avatar_visible = !UseImmersiveLightbarHeaderStyle();
-  int avatar_height = avatar_visible ? avatar_bottom - avatar_y : 0;
-
-  gfx::Rect avatar_bounds(avatar_insets.left(), avatar_y,
-                          incognito_icon.width(), avatar_height);
-  avatar_button()->SetBoundsRect(avatar_bounds);
+  const bool avatar_visible = !UseImmersiveLightbarHeaderStyle();
+  const int avatar_height = avatar_visible ? (avatar_bottom - avatar_y) : 0;
+  avatar_button()->SetBounds(avatar_insets.left(), avatar_y,
+                             incognito_icon.width(), avatar_height);
   avatar_button()->SetVisible(avatar_visible);
 }
 
@@ -526,19 +493,6 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   return immersive_mode_controller->IsEnabled() &&
       (immersive_mode_controller->IsRevealed() ||
        UseImmersiveLightbarHeaderStyle());
-}
-
-void BrowserNonClientFrameViewAsh::PaintImmersiveLightbarStyleHeader(
-    gfx::Canvas* canvas) {
-  // The light bar header is not themed because theming it does not look good.
-  canvas->FillRect(
-      gfx::Rect(width(), header_painter_->GetHeaderHeightForPainting()),
-      SK_ColorBLACK);
-}
-
-bool BrowserNonClientFrameViewAsh::IsToolbarVisible() const {
-  return browser_view()->IsToolbarVisible() &&
-      !browser_view()->toolbar()->GetPreferredSize().IsEmpty();
 }
 
 void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
