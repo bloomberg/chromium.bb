@@ -6,7 +6,7 @@
 
 /* This is an example library, for testing the ConvertToPSO pass. */
 
-/* Test imports */
+/* Test imports referenced by variables */
 
 extern int imported_var;
 extern int imported_var_addend;
@@ -27,6 +27,23 @@ int *reloc_var_offset[] = { 0, &imported_var2 + 100, &imported_var3 + 200, 0 };
  */
 static int local_var = 1234;
 int *local_reloc_var = &local_var;
+
+/* Test imports referenced by functions */
+
+int *get_imported_var(void) {
+  return &imported_var;
+}
+
+int *get_imported_var_addend(void) {
+  return &imported_var_addend + 1;
+}
+
+void imported_func(void);
+typedef void (*func_type_t)(void);
+
+func_type_t get_imported_func(void) {
+  return imported_func;
+}
 
 /* Test exports */
 

@@ -87,6 +87,20 @@ void TestImportReloc(const PSLRoot *psl_root,
   ASSERT(found);
 }
 
+// Resolves any imports that refer to |symbol_name| with the given value.
+void ResolveReferenceToSym(const PSLRoot *psl_root,
+                           const char *symbol_name,
+                           uintptr_t value) {
+  bool found = false;
+  for (size_t index = 0; index < psl_root->import_count; index++) {
+    if (strcmp(GetImportedSymbolName(psl_root, index), symbol_name) == 0) {
+      found = true;
+      *(uintptr_t *) psl_root->imported_ptrs[index] += value;
+    }
+  }
+  ASSERT(found);
+}
+
 }  // namespace
 
 int main(int argc, char **argv) {
@@ -104,8 +118,6 @@ int main(int argc, char **argv) {
 
   // Test exports.
 
-  ASSERT_EQ(psl_root->export_count, 7);
-
   DumpExportedSymbols(psl_root);
 
   ASSERT_EQ(GetExportedSym(psl_root, "does_not_exist"), NULL);
@@ -122,11 +134,13 @@ int main(int argc, char **argv) {
   void *example_func = GetExportedSym(psl_root, "example_func");
   ASSERT_NE(example_func, NULL);
 
-  // Test imports.
+  // For "var", "get_var" and "example_func".
+  int expected_exports = 3;
+
+  // Test imports referenced by variables.  We can test these directly, by
+  // checking that the relocations refer to the correct addresses.
 
   DumpImportedSymbols(psl_root);
-
-  ASSERT_EQ(psl_root->import_count, 4);
 
   TestImportReloc(psl_root, "imported_var", 0, "reloc_var", 0);
   TestImportReloc(psl_root, "imported_var_addend", sizeof(int),
@@ -135,11 +149,49 @@ int main(int argc, char **argv) {
                   "reloc_var_offset", sizeof(int));
   TestImportReloc(psl_root, "imported_var3", sizeof(int) * 200,
                   "reloc_var_offset", sizeof(int) * 2);
+  // For the 4 calls to TestImportReloc().
+  int expected_imports = 4;
+  // For "reloc_var", "reloc_var_addend" and "reloc_var_offset".
+  expected_exports += 3;
 
   // Test that local (non-imported) relocations still work and that they
   // don't get mixed up with relocations for imports.
   int **local_reloc_var = (int **) GetExportedSym(psl_root, "local_reloc_var");
   ASSERT_EQ(**local_reloc_var, 1234);
+  // For "local_reloc_var".
+  expected_exports += 1;
+
+  // Test imports referenced by functions.  We can only test these
+  // indirectly, by checking that the functions' return values change when
+  // we apply relocations.
+
+  uintptr_t (*get_imported_var)() =
+    (uintptr_t (*)()) (uintptr_t) GetExportedSym(psl_root, "get_imported_var");
+  uintptr_t (*get_imported_var_addend)() =
+    (uintptr_t (*)()) (uintptr_t) GetExportedSym(psl_root,
+                                                 "get_imported_var_addend");
+  uintptr_t (*get_imported_func)() =
+    (uintptr_t (*)()) (uintptr_t) GetExportedSym(psl_root,
+                                                 "get_imported_func");
+  ASSERT_EQ(get_imported_var(), 0);
+  ASSERT_EQ(get_imported_var_addend(), sizeof(int));
+  ASSERT_EQ(get_imported_func(), 0);
+  uintptr_t example_ptr1 = 0x100000;
+  uintptr_t example_ptr2 = 0x200000;
+  uintptr_t example_ptr3 = 0x300000;
+  ResolveReferenceToSym(psl_root, "imported_var", example_ptr1);
+  ResolveReferenceToSym(psl_root, "imported_var_addend", example_ptr2);
+  ResolveReferenceToSym(psl_root, "imported_func", example_ptr3);
+  ASSERT_EQ(get_imported_var(), example_ptr1);
+  ASSERT_EQ(get_imported_var_addend(), example_ptr2 + sizeof(int));
+  ASSERT_EQ(get_imported_func(), example_ptr3);
+  // For "get_imported_var", "get_imported_var_addend" and "get_imported_func".
+  expected_exports += 3;
+  // For "imported_var", "imported_var_addend" and "imported_func".
+  expected_imports += 3;
+
+  ASSERT_EQ(psl_root->export_count, expected_exports);
+  ASSERT_EQ(psl_root->import_count, expected_imports);
 
   return 0;
 }
