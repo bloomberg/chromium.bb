@@ -423,8 +423,7 @@ void ManageProfileHandler::SwitchAppListProfile(const base::ListValue* args) {
       !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
     return;
 
-  AppListService* app_list_service =
-      AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  AppListService* app_list_service = AppListService::Get();
   app_list_service->SetProfilePath(profile_file_path);
   app_list_service->Show();
 

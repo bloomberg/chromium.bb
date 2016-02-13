@@ -508,7 +508,7 @@ void AppListServiceMac::WindowAnimationDidEnd() {
 }
 
 // static
-AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
+AppListService* AppListService::Get() {
   return GetActiveInstance();
 }
 

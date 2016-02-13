@@ -185,10 +185,8 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 #endif
 
     if (IsAppLauncherEnabled()) {
-      // TODO(tapted): ExtensionInstallUI should retain the desktop type from
-      // the browser used to initiate the flow. http://crbug.com/308360.
-      AppListService::Get(chrome::GetActiveDesktop())
-          ->ShowForAppInstall(current_profile, extension->id(), false);
+      AppListService::Get()->ShowForAppInstall(current_profile, extension->id(),
+                                               false);
       return;
     }
 

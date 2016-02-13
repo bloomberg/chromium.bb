@@ -192,8 +192,7 @@ void UrlHashHelper::OnBrowserRemoved(Browser* browser) {
 
 void UrlHashHelper::ExecuteUrlHash() {
   if (hash_ == profiles::kUserManagerSelectProfileAppLauncher) {
-    AppListService* app_list_service =
-        AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
+    AppListService* app_list_service = AppListService::Get();
     app_list_service->ShowForProfile(profile_);
     return;
   }

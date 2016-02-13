@@ -91,8 +91,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceMacInteractiveTest, ShowAppListUsingShim) {
   // Check that AppListService has registered as a shim handler for "app_list".
   EXPECT_TRUE(AppShimHandler::GetForAppMode(app_mode::kAppListModeId));
 
-  AppListService* service =
-      AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  AppListService* service = AppListService::Get();
   EXPECT_FALSE(service->IsAppListVisible());
 
   // Creation should be lazy.

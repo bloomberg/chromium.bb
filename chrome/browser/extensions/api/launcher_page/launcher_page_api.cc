@@ -54,13 +54,8 @@ LauncherPageShowFunction::LauncherPageShowFunction() {
 }
 
 ExtensionFunction::ResponseAction LauncherPageShowFunction::Run() {
-  chrome::HostDesktopType host_desktop =
-      chrome::GetHostDesktopTypeForNativeWindow(
-          GetAssociatedWebContents()->GetTopLevelNativeWindow());
-
-  AppListService::Get(host_desktop)
-      ->ShowForCustomLauncherPage(
-          Profile::FromBrowserContext(browser_context()));
+  AppListService::Get()->ShowForCustomLauncherPage(
+      Profile::FromBrowserContext(browser_context()));
 
   return RespondNow(NoArguments());
 }
@@ -69,11 +64,7 @@ LauncherPageHideFunction::LauncherPageHideFunction() {
 }
 
 ExtensionFunction::ResponseAction LauncherPageHideFunction::Run() {
-  chrome::HostDesktopType host_desktop =
-      chrome::GetHostDesktopTypeForNativeWindow(
-          GetAssociatedWebContents()->GetTopLevelNativeWindow());
-
-  AppListService::Get(host_desktop)->HideCustomLauncherPage();
+  AppListService::Get()->HideCustomLauncherPage();
 
   return RespondNow(NoArguments());
 }

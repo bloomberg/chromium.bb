@@ -55,7 +55,7 @@
 #endif  // GOOGLE_CHROME_BUILD
 
 // static
-AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
+AppListService* AppListService::Get() {
   return AppListServiceWin::GetInstance();
 }
 

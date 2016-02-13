@@ -265,13 +265,8 @@ void AppListSyncableService::BuildModel() {
   // TODO(calamity): make this a DCHECK after a dev channel release.
   CHECK(extension_system_->extension_service() &&
         extension_system_->extension_service()->is_ready());
-  // For now, use the AppListControllerDelegate associated with the native
-  // desktop. TODO(stevenjb): Remove ExtensionAppModelBuilder controller
-  // dependency and move the dependent methods from AppListControllerDelegate
-  // to an extension service delegate associated with this class.
   AppListControllerDelegate* controller = NULL;
-  AppListService* service =
-      AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  AppListService* service = AppListService::Get();
   if (service)
     controller = service->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));

@@ -26,9 +26,7 @@ namespace {
 void TerminateIfNoAppWindows() {
   bool app_windows_left =
       AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0);
-  if (!app_windows_left &&
-      !AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)
-           ->IsAppListVisible()) {
+  if (!app_windows_left && !AppListService::Get()->IsAppListVisible()) {
     chrome::AttemptExit();
   }
 }

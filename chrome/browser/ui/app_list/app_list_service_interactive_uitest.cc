@@ -72,7 +72,7 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 
 // Show the app list, then dismiss it.
 IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest, MAYBE_ShowAndDismiss) {
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   ASSERT_FALSE(service->IsAppListVisible());
   service->ShowForProfile(browser()->profile());
   ASSERT_TRUE(service->IsAppListVisible());
@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
                        DISABLED_SwitchAppListProfiles) {
   InitSecondProfile();
 
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   ASSERT_TRUE(service);
 
   AppListControllerDelegate* controller(service->GetControllerDelegate());
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
                        MAYBE_SwitchAppListLockedProfile) {
   InitSecondProfile();
 
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   ASSERT_TRUE(service);
 
   AppListControllerDelegate* controller(service->GetControllerDelegate());
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
                        DISABLED_SwitchAppListProfilesDuringSearch) {
   InitSecondProfile();
 
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   ASSERT_TRUE(service);
 
   AppListControllerDelegate* controller(service->GetControllerDelegate());
@@ -226,7 +226,7 @@ class ShowAppListInteractiveTest : public InProcessBrowserTest {
 #define MAYBE_ShowAppListFlag ShowAppListFlag
 #endif
 IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, MAYBE_ShowAppListFlag) {
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   // The app list should already be shown because we passed
   // switches::kShowAppList.
   EXPECT_TRUE(service->IsAppListVisible());
@@ -295,7 +295,7 @@ class ShowAppListNonDefaultInteractiveTest : public ShowAppListInteractiveTest {
 // profile.
 IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
                        ShowAppListNonDefaultProfile) {
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   EXPECT_TRUE(service->IsAppListVisible());
   EXPECT_EQ(second_profile_name_.value(),
             service->GetCurrentAppListProfile()->GetPath().BaseName().value());
@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
 // app list is visible.
 IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
                        DeleteShowingAppList) {
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   EXPECT_TRUE(service->IsAppListVisible());
   EXPECT_EQ(second_profile_name_.value(),
             service->GetCurrentAppListProfile()->GetPath().BaseName().value());

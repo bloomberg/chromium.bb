@@ -66,8 +66,7 @@ class CustomLauncherPageBrowserTest
   // Open the launcher. Ignores the Extension argument (this will simply
   // activate any loaded launcher pages).
   void LaunchPlatformApp(const extensions::Extension* /*unused*/) override {
-    AppListService* service =
-        AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
+    AppListService* service = AppListService::Get();
     DCHECK(service);
     service->ShowForProfile(browser()->profile());
   }
@@ -79,8 +78,8 @@ class CustomLauncherPageBrowserTest
     app_list_view = shell->GetAppListView();
     EXPECT_TRUE(shell->GetAppListTargetVisibility());
 #else
-    AppListServiceViews* service = static_cast<AppListServiceViews*>(
-        AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE));
+    AppListServiceViews* service =
+        static_cast<AppListServiceViews*>(AppListService::Get());
     // The app list should have loaded instantly since the profile is already
     // loaded.
     EXPECT_TRUE(service->IsAppListVisible());

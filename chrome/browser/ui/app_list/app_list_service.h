@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 
 class AppListControllerDelegate;
@@ -49,9 +48,8 @@ class AppListService {
     ENABLE_NUM_ENABLE_SOURCES
   };
 
-  // Get the AppListService for the current platform and specified
-  // |desktop_type|.
-  static AppListService* Get(chrome::HostDesktopType desktop_type);
+  // Get the AppListService.
+  static AppListService* Get();
 
   // Call Init for all AppListService instances on this platform.
   static void InitAll(Profile* initial_profile,

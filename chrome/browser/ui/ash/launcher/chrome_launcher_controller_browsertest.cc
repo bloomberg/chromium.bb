@@ -1659,7 +1659,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
                                      gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::ShelfTestAPI(shelf_).shelf_view());
-  AppListService* service = AppListService::Get(chrome::GetActiveDesktop());
+  AppListService* service = AppListService::Get();
 
   // There should be two items in our launcher by this time.
   EXPECT_EQ(2, model_->item_count());
@@ -1805,7 +1805,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   ui::test::EventGenerator generator(secondary_root_window, gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::ShelfTestAPI(secondary_shelf).shelf_view());
-  AppListService* service = AppListService::Get(chrome::GetActiveDesktop());
+  AppListService* service = AppListService::Get();
 
   // There should be two items in our shelf by this time.
   EXPECT_EQ(2, model_->item_count());
@@ -1994,7 +1994,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
                                      gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::ShelfTestAPI(shelf_).shelf_view());
-  AppListService* service = AppListService::Get(chrome::GetActiveDesktop());
+  AppListService* service = AppListService::Get();
   // There should be two items in our shelf by this time.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(service->IsAppListVisible());

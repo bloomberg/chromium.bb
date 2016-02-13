@@ -55,7 +55,7 @@ void ChromeAppListItem::UpdateFromSync(
 }
 
 AppListControllerDelegate* ChromeAppListItem::GetController() {
-  return g_controller_for_test != nullptr ?
-      g_controller_for_test :
-      AppListService::Get(chrome::GetActiveDesktop())->GetControllerDelegate();
+  return g_controller_for_test != nullptr
+             ? g_controller_for_test
+             : AppListService::Get()->GetControllerDelegate();
 }

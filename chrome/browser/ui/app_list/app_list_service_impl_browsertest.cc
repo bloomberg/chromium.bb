@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableNewBookmarkApps);
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   EXPECT_TRUE(service);
 
   // Show the app list to ensure it has loaded a profile.

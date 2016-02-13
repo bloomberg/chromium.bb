@@ -60,7 +60,7 @@ class AppListServiceDisabled : public AppListService {
 }  // namespace
 
 // static
-AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
+AppListService* AppListService::Get() {
   return AppListServiceDisabled::GetInstance();
 }
 

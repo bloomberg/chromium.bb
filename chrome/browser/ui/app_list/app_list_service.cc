@@ -167,8 +167,7 @@ bool AppListService::HandleLaunchCommandLine(
   if (!command_line.HasSwitch(switches::kShowAppList))
     return false;
 
-  // The --show-app-list switch is used for shortcuts on the native desktop.
-  AppListService* service = Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  AppListService* service = Get();
   DCHECK(service);
   RecordStartupInfo(service, command_line, launch_profile);
   service->ShowForProfile(launch_profile);

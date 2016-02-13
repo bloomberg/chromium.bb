@@ -260,11 +260,7 @@ bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
     } else if (hotword_service->client()) {
       hotword_service->client()->OnHotwordRecognized(preamble);
     } else if (hotword_service->IsAlwaysOnEnabled()) {
-      Browser* browser = GetCurrentBrowser();
-      // If a Browser does not exist, fall back to the universally available,
-      // but not recommended, way.
-      AppListService* app_list_service = AppListService::Get(
-          browser ? browser->host_desktop_type() : chrome::GetActiveDesktop());
+      AppListService* app_list_service = AppListService::Get();
       CHECK(app_list_service);
       app_list_service->ShowForVoiceSearch(GetProfile(), preamble);
     }

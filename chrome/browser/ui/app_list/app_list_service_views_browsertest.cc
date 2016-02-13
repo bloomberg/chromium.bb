@@ -68,7 +68,7 @@ typedef InProcessBrowserTest AppListServiceViewsBrowserTest;
 
 // Test closing the native app list window as if via a request from the OS.
 IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, NativeClose) {
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   EXPECT_FALSE(service->GetAppListWindow());
 
   // Since the profile is loaded, this will create a view immediately. This is
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, NativeClose) {
 #define MAYBE_AcceleratorClose AcceleratorClose
 #endif
 IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, MAYBE_AcceleratorClose) {
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   service->ShowForProfile(browser()->profile());
   EXPECT_TRUE(service->GetAppListWindow());
 
@@ -150,7 +150,7 @@ class AppListControllerAppInfoDialogBrowserTest : public ExtensionBrowserTest {
     EXPECT_TRUE(extension_);
 
     // Open the app list.
-    service_ = test::GetAppListService();
+    service_ = AppListService::Get();
     EXPECT_FALSE(service_->GetAppListWindow());
     service_->ShowForProfile(browser()->profile());
     app_list_view_ = GetAppListView(service_);
@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceViewsExtensionBrowserTest,
   ASSERT_TRUE(extension);
 
   // Open the app list window for the app.
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   EXPECT_FALSE(service->GetAppListWindow());
 
   service->ShowForAppInstall(browser()->profile(), extension->id(), false);

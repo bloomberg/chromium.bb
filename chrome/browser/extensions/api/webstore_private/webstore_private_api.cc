@@ -27,6 +27,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
@@ -94,12 +95,6 @@ scoped_ptr<WebstoreInstaller::Approval> PendingApprovals::PopApproval(
     }
   }
   return scoped_ptr<WebstoreInstaller::Approval>();
-}
-
-chrome::HostDesktopType GetHostDesktopTypeForWebContents(
-    content::WebContents* contents) {
-  return chrome::GetHostDesktopTypeForNativeWindow(
-      contents->GetTopLevelNativeWindow());
 }
 
 api::webstore_private::Result WebstoreInstallHelperResultToApiResult(
@@ -413,8 +408,7 @@ WebstorePrivateCompleteInstallFunction::Run() {
   scoped_active_install_.reset(new ScopedActiveInstall(
       InstallTracker::Get(browser_context()), params->expected_id));
 
-  AppListService* app_list_service = AppListService::Get(
-      GetHostDesktopTypeForWebContents(GetAssociatedWebContents()));
+  AppListService* app_list_service = AppListService::Get();
 
   if (approval_->enable_launcher) {
     app_list_service->EnableAppList(chrome_details_.GetProfile(),
@@ -587,9 +581,7 @@ WebstorePrivateEnableAppLauncherFunction::
 
 ExtensionFunction::ResponseAction
 WebstorePrivateEnableAppLauncherFunction::Run() {
-  AppListService* app_list_service = AppListService::Get(
-      GetHostDesktopTypeForWebContents(
-          chrome_details_.GetAssociatedWebContents()));
+  AppListService* app_list_service = AppListService::Get();
   app_list_service->EnableAppList(chrome_details_.GetProfile(),
                                   AppListService::ENABLE_VIA_WEBSTORE_LINK);
   return RespondNow(NoArguments());

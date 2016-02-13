@@ -40,7 +40,7 @@ typedef InProcessBrowserTest AppListControllerBrowserTest;
 
 // Test the CreateNewWindow function of the controller delegate.
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   AppListControllerDelegate* controller(service->GetControllerDelegate());
   ASSERT_TRUE(controller);
 
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
                        1 /* expected_change: new install */);
   ASSERT_TRUE(extension);
 
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   ASSERT_TRUE(service);
   service->ShowForProfile(browser()->profile());
 
@@ -198,7 +198,7 @@ void AppListControllerGuestModeBrowserTest::SetUpCommandLine(
 
 // Test creating the initial app list in guest mode.
 IN_PROC_BROWSER_TEST_F(AppListControllerGuestModeBrowserTest, Incognito) {
-  AppListService* service = test::GetAppListService();
+  AppListService* service = AppListService::Get();
   EXPECT_TRUE(service->GetCurrentAppListProfile());
 
   service->ShowForProfile(browser()->profile());

@@ -145,7 +145,7 @@ void AppListServiceAsh::DestroyAppList() {
 #if defined(OS_CHROMEOS)
 
 // static
-AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
+AppListService* AppListService::Get() {
   return AppListServiceAsh::GetInstance();
 }
 
