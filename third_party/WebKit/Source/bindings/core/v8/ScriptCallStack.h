@@ -32,8 +32,8 @@
 #define ScriptCallStack_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/v8/public/V8StackTrace.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/v8_inspector/public/V8StackTrace.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 

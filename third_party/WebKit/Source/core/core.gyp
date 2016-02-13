@@ -101,7 +101,6 @@
         'webcore_prerequisites',
         'core_generated.gyp:make_core_generated',
         'inspector_instrumentation_sources',
-        'inspector/v8/v8_inspector.gyp:injected_script_sources',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
         '../bindings/modules/generated.gyp:modules_event_generated',
@@ -161,7 +160,6 @@
       'type': 'none',
       'dependencies': [
         'inspector_instrumentation_sources',
-        'inspector/v8/v8_inspector.gyp:injected_script_sources',
         'core_generated.gyp:make_core_generated',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
@@ -548,7 +546,6 @@
         # webcore_generated dependency
         'core_generated.gyp:make_core_generated',
         'inspector_instrumentation_sources',
-        'inspector/v8/v8_inspector.gyp:injected_script_sources',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
         '../bindings/modules/generated.gyp:modules_event_generated',

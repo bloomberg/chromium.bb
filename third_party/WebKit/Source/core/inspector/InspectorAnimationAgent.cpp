@@ -24,9 +24,9 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
-#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
+#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/text/Base64.h"
 
 namespace AnimationAgentState {

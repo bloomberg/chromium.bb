@@ -105,10 +105,6 @@
       '<(blink_core_output_dir)/InstrumentingAgentsInl.h',
       '<(blink_core_output_dir)/InspectorInstrumentationImpl.cpp',
 
-      # Additional files from injected_script_sources list.
-      '<(blink_core_output_dir)/inspector/v8/DebuggerScript.h',
-      '<(blink_core_output_dir)/inspector/v8/InjectedScriptSource.h',
-
       # Additional .cpp files for SVG.
       '<(blink_core_output_dir)/SVGElementFactory.cpp',
 

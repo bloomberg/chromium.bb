@@ -5,8 +5,8 @@
 #ifndef AsyncOperationMap_h
 #define AsyncOperationMap_h
 
-#include "core/inspector/v8/public/V8DebuggerAgent.h"
 #include "platform/heap/Handle.h"
+#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

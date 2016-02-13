@@ -189,6 +189,10 @@
       '<(blink_platform_output_dir)/inspector_protocol/Frontend.cpp',
       '<(blink_platform_output_dir)/inspector_protocol/Dispatcher.cpp',
       '<(blink_platform_output_dir)/inspector_protocol/TypeBuilder.cpp',
+
+      # Additional .cpp files from the v8_inspector.
+      '<(blink_platform_output_dir)/v8_inspector/DebuggerScript.h',
+      '<(blink_platform_output_dir)/v8_inspector/InjectedScriptSource.h',
     ],
     'sources/': [
       # Exclude all platform specific things, reinclude them below on a per-platform basis

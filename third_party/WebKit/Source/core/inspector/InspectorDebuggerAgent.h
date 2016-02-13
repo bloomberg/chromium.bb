@@ -32,7 +32,7 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/v8/public/V8DebuggerAgent.h"
+#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 
 namespace blink {
 

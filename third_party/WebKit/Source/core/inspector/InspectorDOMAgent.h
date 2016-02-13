@@ -34,10 +34,10 @@
 #include "core/events/EventListenerMap.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorHighlight.h"
-#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/JSONValues.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

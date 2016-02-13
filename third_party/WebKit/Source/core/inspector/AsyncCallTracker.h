@@ -33,8 +33,8 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/v8/public/V8DebuggerAgent.h"
 #include "platform/heap/Handle.h"
+#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

@@ -32,8 +32,8 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/MuteConsoleScope.h"
-#include "core/inspector/v8/public/V8Debugger.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {
 

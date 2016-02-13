@@ -41,7 +41,6 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/MainThreadDebugger.h"
-#include "core/inspector/v8/InjectedScript.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 

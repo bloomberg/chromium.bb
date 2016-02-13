@@ -56,11 +56,11 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/v8/V8InjectedScriptHost.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 
@@ -301,7 +301,7 @@ static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const Atomic
     if (!InspectorInstrumentation::hasFrontends())
         return false;
 
-    if (!V8InjectedScriptHost::isCommandLineAPIMethod(nameString))
+    if (!V8Debugger::isCommandLineAPIMethod(nameString))
         return false;
 
     v8::Isolate* isolate = info.GetIsolate();
@@ -310,7 +310,7 @@ static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const Atomic
     v8::Local<v8::Object> global = context->Global();
     v8::Local<v8::Value> commandLineAPI;
 
-    if (v8Call(global->Get(context, V8InjectedScriptHost::commandLineAPISymbol(isolate)), commandLineAPI)) {
+    if (v8Call(global->Get(context, V8Debugger::commandLineAPISymbol(isolate)), commandLineAPI)) {
         v8::Local<v8::Value> value;
         if (commandLineAPI->IsObject() && v8Call(commandLineAPI->ToObject(isolate)->Get(context, name), value)) {
             v8SetReturnValue(info, value);

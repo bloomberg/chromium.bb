@@ -38,8 +38,8 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "core/page/Page.h"
+#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 using blink::protocol::TypeBuilder::Runtime::ExceptionDetails;

@@ -35,7 +35,7 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/v8/public/V8EventListenerInfo.h"
+#include "platform/v8_inspector/public/V8EventListenerInfo.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

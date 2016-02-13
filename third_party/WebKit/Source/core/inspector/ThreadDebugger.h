@@ -6,8 +6,8 @@
 #define ThreadDebugger_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/v8/public/V8Debugger.h"
-#include "core/inspector/v8/public/V8DebuggerClient.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "wtf/Forward.h"
 
 #include <v8.h>

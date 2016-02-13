@@ -31,8 +31,8 @@
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "core/inspector/v8/public/V8HeapProfilerAgent.h"
 #include "platform/Timer.h"
+#include "platform/v8_inspector/public/V8HeapProfilerAgent.h"
 #include <v8-profiler.h>
 
 namespace blink {

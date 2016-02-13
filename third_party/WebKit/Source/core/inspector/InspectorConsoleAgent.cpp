@@ -32,9 +32,9 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/inspector/v8/public/V8Debugger.h"
-#include "core/inspector/v8/public/V8DebuggerAgent.h"
-#include "core/inspector/v8/public/V8RuntimeAgent.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8DebuggerAgent.h"
+#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

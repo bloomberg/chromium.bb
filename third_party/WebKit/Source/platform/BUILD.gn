@@ -224,6 +224,39 @@ action("inspector_protocol_version") {
   ]
 }
 
+action("inspector_injected_script") {
+  script = "v8_inspector/build/xxd.py"
+  inputs = [
+    "v8_inspector/InjectedScriptSource.js",
+  ]
+  outputs = [
+    "$blink_platform_output_dir/v8_inspector/InjectedScriptSource.h",
+  ]
+  args = [
+    "InjectedScriptSource_js",
+    rebase_path("v8_inspector/InjectedScriptSource.js", root_build_dir),
+    rebase_path(
+        "$blink_platform_output_dir/v8_inspector/InjectedScriptSource.h",
+        root_build_dir),
+  ]
+}
+
+action("inspector_debugger_script") {
+  script = "v8_inspector/build/xxd.py"
+  inputs = [
+    "v8_inspector/DebuggerScript.js",
+  ]
+  outputs = [
+    "$blink_platform_output_dir/v8_inspector/DebuggerScript.h",
+  ]
+  args = [
+    "DebuggerScript_js",
+    rebase_path("v8_inspector/DebuggerScript.js", root_build_dir),
+    rebase_path("$blink_platform_output_dir/v8_inspector/DebuggerScript.h",
+                root_build_dir),
+  ]
+}
+
 # This isn't strictly necessary since we can just add the deps to "platform",
 # but it helps to have the targets match the GYP build.
 group("make_platform_generated") {
@@ -235,6 +268,8 @@ group("make_platform_generated") {
     ":color_data",
     ":font_family_names",
     ":http_names",
+    ":inspector_debugger_script",
+    ":inspector_injected_script",
     ":inspector_protocol_sources",
     ":runtime_enabled_features",
   ]
@@ -256,6 +291,8 @@ component("platform") {
              get_target_outputs(":color_data") +
              get_target_outputs(":font_family_names") +
              get_target_outputs(":http_names") +
+             get_target_outputs(":inspector_debugger_script") +
+             get_target_outputs(":inspector_injected_script") +
              get_target_outputs(":inspector_protocol_sources") +
              get_target_outputs(":runtime_enabled_features")
 

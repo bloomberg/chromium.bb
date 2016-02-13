@@ -33,7 +33,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/v8/public/V8ProfilerAgent.h"
+#include "platform/v8_inspector/public/V8ProfilerAgent.h"
 
 namespace blink {
 

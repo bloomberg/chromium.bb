@@ -33,9 +33,9 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MuteConsoleScope.h"
-#include "core/inspector/v8/public/V8Debugger.h"
-#include "core/inspector/v8/public/V8RuntimeAgent.h"
 #include "platform/JSONValues.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 
 using blink::protocol::TypeBuilder::Runtime::ExecutionContextDescription;
 

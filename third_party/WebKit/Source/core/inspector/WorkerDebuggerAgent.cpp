@@ -31,8 +31,8 @@
 #include "core/inspector/WorkerDebuggerAgent.h"
 
 #include "core/inspector/WorkerThreadDebugger.h"
-#include "core/inspector/v8/public/V8Debugger.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {
 
