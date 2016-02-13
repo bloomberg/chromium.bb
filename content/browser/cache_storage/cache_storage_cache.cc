@@ -180,12 +180,6 @@ void ReadMetadataDidReadMetadata(
   callback.Run(std::move(metadata));
 }
 
-void SizeDidGetCacheSize(const CacheStorageCache::SizeCallback& callback,
-                         int size) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, size));
-}
-
 }  // namespace
 
 // The state needed to iterate all entries in the cache.
@@ -254,30 +248,20 @@ struct CacheStorageCache::KeysContext {
 
 // The state needed to pass between CacheStorageCache::Put callbacks.
 struct CacheStorageCache::PutContext {
-  PutContext(
-      const GURL& origin,
-      scoped_ptr<ServiceWorkerFetchRequest> request,
-      scoped_ptr<ServiceWorkerResponse> response,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-      const CacheStorageCache::ErrorCallback& callback,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy)
-      : origin(origin),
-        request(std::move(request)),
+  PutContext(scoped_ptr<ServiceWorkerFetchRequest> request,
+             scoped_ptr<ServiceWorkerResponse> response,
+             scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+             const CacheStorageCache::ErrorCallback& callback)
+      : request(std::move(request)),
         response(std::move(response)),
         blob_data_handle(std::move(blob_data_handle)),
-        callback(callback),
-        request_context_getter(request_context_getter),
-        quota_manager_proxy(quota_manager_proxy) {}
+        callback(callback) {}
 
   // Input parameters to the Put function.
-  GURL origin;
   scoped_ptr<ServiceWorkerFetchRequest> request;
   scoped_ptr<ServiceWorkerResponse> response;
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
   CacheStorageCache::ErrorCallback callback;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
-  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy;
   disk_cache::ScopedEntryPtr cache_entry;
   int64_t available_bytes = 0;
 
@@ -467,9 +451,7 @@ CacheStorageCache::CacheStorageCache(
       request_context_getter_(request_context_getter),
       quota_manager_proxy_(quota_manager_proxy),
       blob_storage_context_(blob_context),
-      backend_state_(BACKEND_UNINITIALIZED),
       scheduler_(new CacheStorageScheduler()),
-      initializing_(false),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
 }
@@ -763,9 +745,8 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
                  weak_ptr_factory_.GetWeakPtr(), callback);
 
   scoped_ptr<PutContext> put_context(
-      new PutContext(origin_, std::move(request), std::move(response),
-                     std::move(blob_data_handle), pending_callback,
-                     request_context_getter_, quota_manager_proxy_));
+      new PutContext(std::move(request), std::move(response),
+                     std::move(blob_data_handle), pending_callback));
 
   scheduler_->ScheduleOperation(
       base::Bind(&CacheStorageCache::PutImpl, weak_ptr_factory_.GetWeakPtr(),
@@ -920,13 +901,7 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
   // from the blob into the cache entry.
 
   if (put_context->response->blob_uuid.empty()) {
-    if (put_context->quota_manager_proxy.get()) {
-      put_context->quota_manager_proxy->NotifyStorageModified(
-          storage::QuotaClient::kServiceWorkerCache, put_context->origin,
-          storage::kStorageTypeTemporary,
-          put_context->cache_entry->GetDataSize(INDEX_HEADERS));
-    }
-
+    UpdateCacheSize();
     put_context->callback.Run(CACHE_STORAGE_OK);
     return;
   }
@@ -941,14 +916,11 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
   BlobToDiskCacheIDMap::KeyType blob_to_cache_key =
       active_blob_to_disk_cache_writers_.Add(blob_to_cache);
 
-  // Grab some pointers before passing put_context in Bind.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      put_context->request_context_getter;
   scoped_ptr<storage::BlobDataHandle> blob_data_handle =
       std::move(put_context->blob_data_handle);
 
   blob_to_cache->StreamBlobToCache(
-      std::move(entry), INDEX_RESPONSE_BODY, request_context_getter,
+      std::move(entry), INDEX_RESPONSE_BODY, request_context_getter_,
       std::move(blob_data_handle),
       base::Bind(&CacheStorageCache::PutDidWriteBlobToCache,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -971,15 +943,30 @@ void CacheStorageCache::PutDidWriteBlobToCache(
     return;
   }
 
-  if (put_context->quota_manager_proxy.get()) {
-    put_context->quota_manager_proxy->NotifyStorageModified(
-        storage::QuotaClient::kServiceWorkerCache, put_context->origin,
-        storage::kStorageTypeTemporary,
-        put_context->cache_entry->GetDataSize(INDEX_HEADERS) +
-            put_context->cache_entry->GetDataSize(INDEX_RESPONSE_BODY));
-  }
-
+  UpdateCacheSize();
   put_context->callback.Run(CACHE_STORAGE_OK);
+}
+
+void CacheStorageCache::UpdateCacheSize() {
+  if (backend_state_ != BACKEND_OPEN)
+    return;
+
+  // Note that the callback holds a refptr to |this| since UpdateCacheSize is
+  // often called after an operation completes and the cache might be freed.
+  int rv = backend_->CalculateSizeOfAllEntries(
+      base::Bind(&CacheStorageCache::UpdateCacheSizeGotSize, this));
+
+  if (rv != net::ERR_IO_PENDING)
+    UpdateCacheSizeGotSize(rv);
+}
+
+void CacheStorageCache::UpdateCacheSizeGotSize(int current_cache_size) {
+  int64_t old_cache_size = cache_size_;
+  cache_size_ = current_cache_size;
+
+  quota_manager_proxy_->NotifyStorageModified(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::kStorageTypeTemporary, current_cache_size - old_cache_size);
 }
 
 void CacheStorageCache::Delete(const CacheStorageBatchOperation& operation,
@@ -1018,7 +1005,7 @@ void CacheStorageCache::DeleteImpl(
   net::CompletionCallback open_entry_callback = base::Bind(
       &CacheStorageCache::DeleteDidOpenEntry, weak_ptr_factory_.GetWeakPtr(),
       origin_, base::Passed(std::move(request)), callback,
-      base::Passed(std::move(entry)), quota_manager_proxy_);
+      base::Passed(std::move(entry)));
 
   int rv = backend_->OpenEntry(request_ptr->url.spec(), entry_ptr,
                                open_entry_callback);
@@ -1031,7 +1018,6 @@ void CacheStorageCache::DeleteDidOpenEntry(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCache::ErrorCallback& callback,
     scoped_ptr<disk_cache::Entry*> entry_ptr,
-    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
     int rv) {
   if (rv != net::OK) {
     callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND);
@@ -1041,15 +1027,10 @@ void CacheStorageCache::DeleteDidOpenEntry(
   DCHECK(entry_ptr);
   disk_cache::ScopedEntryPtr entry(*entry_ptr);
 
-  if (quota_manager_proxy.get()) {
-    quota_manager_proxy->NotifyStorageModified(
-        storage::QuotaClient::kServiceWorkerCache, origin,
-        storage::kStorageTypeTemporary,
-        -1 * (entry->GetDataSize(INDEX_HEADERS) +
-              entry->GetDataSize(INDEX_RESPONSE_BODY)));
-  }
-
   entry->Doom();
+  entry.reset();
+
+  UpdateCacheSize();
   callback.Run(CACHE_STORAGE_OK);
 }
 
@@ -1142,17 +1123,9 @@ void CacheStorageCache::CloseImpl(const base::Closure& callback) {
 void CacheStorageCache::SizeImpl(const SizeCallback& callback) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
 
-  if (backend_state_ != BACKEND_OPEN) {
-    // Backend is closed for deletion, don't count its size.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, 0));
-    return;
-  }
-
-  int rv = backend_->CalculateSizeOfAllEntries(
-      base::Bind(&SizeDidGetCacheSize, callback));
-  if (rv != net::ERR_IO_PENDING)
-    SizeDidGetCacheSize(callback, rv);
+  int64_t size = backend_state_ == BACKEND_OPEN ? cache_size_ : 0;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, size));
 }
 
 void CacheStorageCache::CreateBackend(const ErrorCallback& callback) {
@@ -1206,19 +1179,36 @@ void CacheStorageCache::InitBackend() {
 
   scheduler_->ScheduleOperation(base::Bind(
       &CacheStorageCache::CreateBackend, weak_ptr_factory_.GetWeakPtr(),
-      base::Bind(&CacheStorageCache::InitDone,
+      base::Bind(&CacheStorageCache::InitDidCreateBackend,
                  weak_ptr_factory_.GetWeakPtr())));
 }
 
-void CacheStorageCache::InitDone(CacheStorageError error) {
+void CacheStorageCache::InitDidCreateBackend(
+    CacheStorageError cache_create_error) {
+  if (cache_create_error != CACHE_STORAGE_OK) {
+    InitGotCacheSize(cache_create_error, 0);
+    return;
+  }
+
+  int rv = backend_->CalculateSizeOfAllEntries(
+      base::Bind(&CacheStorageCache::InitGotCacheSize,
+                 weak_ptr_factory_.GetWeakPtr(), cache_create_error));
+
+  if (rv != net::ERR_IO_PENDING)
+    InitGotCacheSize(cache_create_error, rv);
+}
+
+void CacheStorageCache::InitGotCacheSize(CacheStorageError cache_create_error,
+                                         int cache_size) {
+  cache_size_ = cache_size;
   initializing_ = false;
-  backend_state_ = (error == CACHE_STORAGE_OK && backend_ &&
+  backend_state_ = (cache_create_error == CACHE_STORAGE_OK && backend_ &&
                     backend_state_ == BACKEND_UNINITIALIZED)
                        ? BACKEND_OPEN
                        : BACKEND_CLOSED;
 
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.InitBackendResult", error,
-                            CACHE_STORAGE_ERROR_LAST + 1);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.InitBackendResult",
+                            cache_create_error, CACHE_STORAGE_ERROR_LAST + 1);
 
   scheduler_->CompleteOperationAndRunNext();
 }

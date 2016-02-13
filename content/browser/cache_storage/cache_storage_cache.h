@@ -207,18 +207,22 @@ class CONTENT_EXPORT CacheStorageCache
                               disk_cache::ScopedEntryPtr entry,
                               bool success);
 
+  // Asynchronously calculates the current cache size, notifies the quota
+  // manager of any change from the last report, and sets cache_size_ to the new
+  // size. Runs |callback| once complete.
+  void UpdateCacheSize();
+  void UpdateCacheSizeGotSize(int current_cache_size);
+
   // Returns ERROR_NOT_FOUND if not found. Otherwise deletes and returns OK.
   void Delete(const CacheStorageBatchOperation& operation,
               const ErrorCallback& callback);
   void DeleteImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                   const ErrorCallback& callback);
-  void DeleteDidOpenEntry(
-      const GURL& origin,
-      scoped_ptr<ServiceWorkerFetchRequest> request,
-      const CacheStorageCache::ErrorCallback& callback,
-      scoped_ptr<disk_cache::Entry*> entryptr,
-      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
-      int rv);
+  void DeleteDidOpenEntry(const GURL& origin,
+                          scoped_ptr<ServiceWorkerFetchRequest> request,
+                          const CacheStorageCache::ErrorCallback& callback,
+                          scoped_ptr<disk_cache::Entry*> entryptr,
+                          int rv);
 
   // Keys callbacks.
   void KeysImpl(const RequestsCallback& callback);
@@ -243,7 +247,8 @@ class CONTENT_EXPORT CacheStorageCache
                               int rv);
 
   void InitBackend();
-  void InitDone(CacheStorageError error);
+  void InitDidCreateBackend(CacheStorageError cache_create_error);
+  void InitGotCacheSize(CacheStorageError cache_create_error, int cache_size);
 
   void PendingClosure(const base::Closure& callback);
   void PendingErrorCallback(const ErrorCallback& callback,
@@ -276,9 +281,10 @@ class CONTENT_EXPORT CacheStorageCache
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
-  BackendState backend_state_;
+  BackendState backend_state_ = BACKEND_UNINITIALIZED;
   scoped_ptr<CacheStorageScheduler> scheduler_;
-  bool initializing_;
+  bool initializing_ = false;
+  int64_t cache_size_ = 0;
 
   // Owns the elements of the list
   BlobToDiskCacheIDMap active_blob_to_disk_cache_writers_;

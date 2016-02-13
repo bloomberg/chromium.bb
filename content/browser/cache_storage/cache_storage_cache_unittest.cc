@@ -421,6 +421,10 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   int64_t Size() {
+    // Storage notification happens after an operation completes. Let the any
+    // notifications complete before calling Size.
+    base::RunLoop().RunUntilIdle();
+
     base::RunLoop run_loop;
     cache_->Size(base::Bind(&CacheStorageCacheTest::SizeCallback,
                             base::Unretained(this), &run_loop));
@@ -934,20 +938,26 @@ TEST_P(CacheStorageCacheTestP, QuotaManagerModified) {
   EXPECT_EQ(0, quota_manager_proxy_->notify_storage_modified_count());
 
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  // Storage notification happens after the operation returns, so continue the
+  // event loop.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, quota_manager_proxy_->notify_storage_modified_count());
   EXPECT_LT(0, quota_manager_proxy_->last_notified_delta());
   int64_t sum_delta = quota_manager_proxy_->last_notified_delta();
 
   EXPECT_TRUE(Put(body_request_, body_response_));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, quota_manager_proxy_->notify_storage_modified_count());
   EXPECT_LT(sum_delta, quota_manager_proxy_->last_notified_delta());
   sum_delta += quota_manager_proxy_->last_notified_delta();
 
   EXPECT_TRUE(Delete(body_request_));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, quota_manager_proxy_->notify_storage_modified_count());
   sum_delta += quota_manager_proxy_->last_notified_delta();
 
   EXPECT_TRUE(Delete(no_body_request_));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(4, quota_manager_proxy_->notify_storage_modified_count());
   sum_delta += quota_manager_proxy_->last_notified_delta();
 
