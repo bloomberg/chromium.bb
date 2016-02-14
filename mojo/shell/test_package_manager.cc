@@ -14,6 +14,7 @@ TestPackageManager::TestPackageManager() {}
 TestPackageManager::~TestPackageManager() {}
 
 void TestPackageManager::SetApplicationManager(ApplicationManager* manager) {}
+void TestPackageManager::BuiltinAppLoaded(const GURL& url) {}
 void TestPackageManager::FetchRequest(
     URLRequestPtr request,
     const Fetcher::FetchCallback& loader_callback) {}
