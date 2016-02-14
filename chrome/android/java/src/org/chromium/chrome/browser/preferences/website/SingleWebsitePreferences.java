@@ -633,6 +633,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private void resetSite() {
+        if (getActivity() == null) return;
         // Clear the screen.
         // TODO(mvanouwerkerk): Refactor this class so that it does not depend on the screen state
         // for its logic. This class should maintain its own data model, and only update the screen
