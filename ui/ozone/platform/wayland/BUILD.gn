@@ -22,6 +22,31 @@ source_set("wayland") {
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:xdg_shell_protocol",
+    "//ui/events/platform",
     "//ui/ozone:ozone_base",
+  ]
+
+  defines = [ "OZONE_IMPLEMENTATION" ]
+}
+
+source_set("wayland_unittests") {
+  testonly = true
+
+  sources = [
+    "fake_server.cc",
+    "fake_server.h",
+    "mock_platform_window_delegate.cc",
+    "wayland_display_unittest.cc",
+    "wayland_surface_factory_unittest.cc",
+    "wayland_window_unittest.cc",
+  ]
+
+  deps = [
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/wayland:wayland_server",
+    "//third_party/wayland-protocols:xdg_shell_protocol",
+    "//ui/gfx:test_support",
+    "//ui/ozone",
   ]
 }

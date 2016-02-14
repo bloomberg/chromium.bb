@@ -7,6 +7,7 @@
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/platform_window/platform_window.h"
 
@@ -14,7 +15,7 @@ namespace ui {
 
 class WaylandDisplay;
 
-class WaylandWindow : public PlatformWindow {
+class OZONE_EXPORT WaylandWindow : public PlatformWindow {
  public:
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandDisplay* display,

@@ -10,14 +10,15 @@
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
 namespace ui {
 
 class WaylandWindow;
 
-class WaylandDisplay : public PlatformEventSource,
-                       public base::MessagePumpLibevent::Watcher {
+class OZONE_EXPORT WaylandDisplay : public PlatformEventSource,
+                                    public base::MessagePumpLibevent::Watcher {
  public:
   WaylandDisplay();
   ~WaylandDisplay() override;
@@ -27,6 +28,7 @@ class WaylandDisplay : public PlatformEventSource,
   // Flushes the Wayland connection.
   void Flush();
 
+  wl_display* display() { return display_.get(); }
   wl_compositor* compositor() { return compositor_.get(); }
   wl_shm* shm() { return shm_.get(); }
   xdg_shell* shell() { return shell_.get(); }
