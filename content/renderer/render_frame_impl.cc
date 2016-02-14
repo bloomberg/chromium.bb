@@ -2560,7 +2560,7 @@ blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
   if (!frame || !frame->view())
     return NULL;
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   return new RendererWebApplicationCacheHostImpl(
       RenderViewImpl::FromWebView(frame->view()), client,
       RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy());
@@ -2571,7 +2571,7 @@ RenderFrameImpl::createWorkerContentSettingsClientProxy(
     blink::WebLocalFrame* frame) {
   if (!frame || !frame->view())
     return NULL;
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   return GetContentClient()->renderer()->CreateWorkerContentSettingsClientProxy(
       this, frame);
 }
@@ -2602,13 +2602,13 @@ WebExternalPopupMenu* RenderFrameImpl::createExternalPopupMenu(
 }
 
 blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   return &cookie_jar_;
 }
 
 blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
     blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // At this point we should have non-null data source.
   DCHECK(frame->dataSource());
   if (!ChildThreadImpl::current())
@@ -2627,7 +2627,7 @@ blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
 }
 
 void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // If the request hasn't yet committed, notify the browser process that it is
   // no longer safe to show the pending URL of the main frame, since a URL spoof
   // is now possible. (If the request has committed, the browser already knows.)
@@ -2706,7 +2706,7 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   // the parent frame.  This is different from createChildFrame() which is
   // called on the parent frame.
   CHECK(!is_detaching_);
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameDetached());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
@@ -2760,7 +2760,7 @@ void RenderFrameImpl::frameFocused() {
 }
 
 void RenderFrameImpl::willClose(blink::WebFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameWillClose());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
@@ -2769,7 +2769,7 @@ void RenderFrameImpl::willClose(blink::WebFrame* frame) {
 
 void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
                                     const blink::WebString& name) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   // TODO(alexmos): According to https://crbug.com/169110, sending window.name
   // updates may have performance implications for benchmarks like SunSpider.
@@ -2808,7 +2808,7 @@ void RenderFrameImpl::didMatchCSS(
     blink::WebLocalFrame* frame,
     const blink::WebVector<blink::WebString>& newly_matching_selectors,
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     DidMatchCSS(newly_matching_selectors,
@@ -2884,14 +2884,14 @@ blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame() {
 
 void RenderFrameImpl::willSendSubmitEvent(blink::WebLocalFrame* frame,
                                           const blink::WebFormElement& form) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WillSendSubmitEvent(form));
 }
 
 void RenderFrameImpl::willSubmitForm(blink::WebLocalFrame* frame,
                                      const blink::WebFormElement& form) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->provisionalDataSource());
   NavigationStateImpl* navigation_state =
@@ -3031,7 +3031,7 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
                                               double triggering_event_time) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->provisionalDataSource();
 
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
@@ -3085,7 +3085,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
     blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   // We don't use HistoryController in OOPIF enabled modes.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries())
@@ -3100,7 +3100,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
     blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT1("navigation,benchmark",
                "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->provisionalDataSource();
   DCHECK(ds);
 
@@ -3156,7 +3156,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   TRACE_EVENT2("navigation", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
   NavigationStateImpl* navigation_state =
@@ -3328,7 +3328,7 @@ void RenderFrameImpl::didCreateNewDocument(blink::WebLocalFrame* frame) {
 }
 
 void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   int enabled_bindings = render_view_->GetEnabledBindings();
 
@@ -3383,7 +3383,7 @@ void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {
 void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
                                       const blink::WebString& title,
                                       blink::WebTextDirection direction) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // Ignore all but top level navigations.
   if (!frame->parent()) {
     base::string16 title16 = title;
@@ -3401,7 +3401,7 @@ void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::didChangeIcon(blink::WebLocalFrame* frame,
                                     blink::WebIconURL::Type icon_type) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // TODO(nasko): Investigate wheather implementation should move here.
   render_view_->didChangeIcon(frame, icon_type);
 }
@@ -3410,7 +3410,7 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame,
                                             bool document_is_empty) {
   TRACE_EVENT1("navigation,benchmark", "RenderFrameImpl::didFinishDocumentLoad",
                "id", routing_id_);
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->dataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   document_state->set_finish_document_load_time(Time::Now());
@@ -3456,7 +3456,7 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   if (!frame->parent()) {
     FrameMsg_UILoadMetricsReportType::Value report_type =
         static_cast<FrameMsg_UILoadMetricsReportType::Value>(
@@ -3475,7 +3475,7 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
                                   blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::didFailLoad",
                "id", routing_id_);
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // TODO(nasko): Move implementation here. No state needed.
   WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
@@ -3501,7 +3501,7 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
 void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
   TRACE_EVENT1("navigation,benchmark", "RenderFrameImpl::didFinishLoad", "id",
                routing_id_);
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->dataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   if (document_state->finish_load_time().is_null()) {
@@ -3529,7 +3529,7 @@ void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
     blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::didNavigateWithinPage",
                "id", routing_id_);
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // If this was a reference fragment navigation that we initiated, then we
   // could end up having a non-null pending navigation params.  We just need to
   // update the ExtraData on the datasource so that others who read the
@@ -3547,7 +3547,7 @@ void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   render_view_->StartNavStateSyncTimerIfNecessary(this);
 }
 
@@ -3705,7 +3705,7 @@ void RenderFrameImpl::willSendRequest(
     unsigned identifier,
     blink::WebURLRequest& request,
     const blink::WebURLResponse& redirect_response) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // The request my be empty during tests.
   if (request.url().isEmpty())
     return;
@@ -3922,7 +3922,7 @@ void RenderFrameImpl::didReceiveResponse(
     blink::WebLocalFrame* frame,
     unsigned identifier,
     const blink::WebURLResponse& response) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // Only do this for responses that correspond to a provisional data source
   // of the top-most frame.  If we have a provisional data source, then we
   // can't have any sub-resources yet, so we know that this response must
@@ -3966,7 +3966,7 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
     blink::WebLocalFrame* frame,
     const blink::WebURLRequest& request,
     const blink::WebURLResponse& response) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   // The recipients of this message have no use for data: URLs: they don't
   // affect the page's insecure content list and are not in the disk cache. To
   // prevent large (1M+) data: URLs from crashing in the IPC system, we simply
@@ -4032,7 +4032,7 @@ void RenderFrameImpl::didCreateScriptContext(blink::WebLocalFrame* frame,
                                              v8::Local<v8::Context> context,
                                              int extension_group,
                                              int world_id) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     DidCreateScriptContext(context, extension_group, world_id));
@@ -4041,7 +4041,7 @@ void RenderFrameImpl::didCreateScriptContext(blink::WebLocalFrame* frame,
 void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,
                                                v8::Local<v8::Context> context,
                                                int world_id) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver,
                     observers_,
@@ -4049,7 +4049,7 @@ void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didChangeScrollOffset(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   render_view_->StartNavStateSyncTimerIfNecessary(this);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeScrollOffset());
@@ -4087,7 +4087,7 @@ void RenderFrameImpl::requestStorageQuota(
     blink::WebStorageQuotaType type,
     unsigned long long requested_size,
     blink::WebStorageQuotaCallbacks callbacks) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   WebSecurityOrigin origin = frame->document().securityOrigin();
   if (origin.isUnique()) {
     // Unique origins cannot store persistent state.
@@ -4134,7 +4134,7 @@ blink::WebPushClient* RenderFrameImpl::pushClient() {
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(
     blink::WebLocalFrame* frame,
     blink::WebRTCPeerConnectionHandler* handler) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 #if defined(ENABLE_WEBRTC)
   static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame);
 #endif
@@ -4205,7 +4205,7 @@ bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
 
 blink::WebString RenderFrameImpl::userAgentOverride(
     blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   if (!render_view_->webview() || !render_view_->webview()->mainFrame() ||
       render_view_->renderer_preferences_.user_agent_override.empty()) {
     return blink::WebString();
@@ -4235,7 +4235,7 @@ blink::WebString RenderFrameImpl::userAgentOverride(
 }
 
 blink::WebString RenderFrameImpl::doNotTrackValue(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   if (render_view_->renderer_preferences_.enable_do_not_track)
     return WebString::fromUTF8("1");
   return WebString();
@@ -4243,7 +4243,7 @@ blink::WebString RenderFrameImpl::doNotTrackValue(blink::WebLocalFrame* frame) {
 
 bool RenderFrameImpl::allowWebGL(blink::WebLocalFrame* frame,
                                  bool default_value) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   if (!default_value)
     return false;
 
@@ -4258,7 +4258,7 @@ bool RenderFrameImpl::allowWebGL(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::didLoseWebGLContext(blink::WebLocalFrame* frame,
                                           int arb_robustness_status_code) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   Send(new FrameHostMsg_DidLose3DContext(
       blink::WebStringToGURL(frame->top()->securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
@@ -4308,7 +4308,7 @@ void RenderFrameImpl::handleAccessibilityFindInPageResult(
 }
 
 void RenderFrameImpl::didChangeManifest(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeManifest());
 }
@@ -4457,7 +4457,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     blink::WebFrame* frame,
     blink::WebHistoryCommitType commit_type,
     const blink::WebHistoryItem& item) {
-  DCHECK(!frame_ || frame_ == frame);
+  DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
 
