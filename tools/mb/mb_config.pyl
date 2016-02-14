@@ -726,6 +726,7 @@
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
       'linux_full_bisect_builder': 'swarming_gyp_release_bot',
       'linux_site_isolation': 'gn_release_trybot',
+      'linux_valgrind': 'gyp_valgrind_release_bot',
       'linux_chromium_compile_rel_ng': 'swarming_gn_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_cfi_rel_ng': 'gn_cfi_release_trybot',
