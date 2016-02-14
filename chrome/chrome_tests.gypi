@@ -3231,6 +3231,36 @@
           ],
         },
         {
+          'target_name': 'gpu_tests_base',
+          'type': 'none',
+          'dependencies': [
+            # depend on icu to fix races. http://crbug.com/417583
+            '../third_party/icu/icu.gyp:icudata',
+          ],
+          # Set this so we aren't included as a target in files that
+          # include this file via a wildcard (such as chrome_tests.gypi).
+          # If we didn't do this the All target ends up with a rule that
+          # makes it unnecessarily compile in certain situations.
+          'suppress_wildcard': 1,
+          'direct_dependent_settings': {
+            'includes': [
+              '../build/isolate.gypi',
+            ],
+          },
+        },
+        {
+          # GN: //gpu:angle_unittests_run
+          'target_name': 'angle_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            '../gpu/gpu.gyp:angle_unittests',
+            'gpu_tests_base',
+          ],
+          'sources': [
+            'angle_unittests.isolate',
+          ],
+        },
+        {
           'target_name': 'browser_tests_run',
           'type': 'none',
           'dependencies': [
@@ -3357,36 +3387,6 @@
       'conditions': [
         ['archive_gpu_tests==1', {
           'targets': [
-            {
-              'target_name': 'gpu_tests_base',
-              'type': 'none',
-              'dependencies': [
-                # depend on icu to fix races. http://crbug.com/417583
-                '../third_party/icu/icu.gyp:icudata',
-              ],
-              # Set this so we aren't included as a target in files that
-              # include this file via a wildcard (such as chrome_tests.gypi).
-              # If we didn't do this the All target ends up with a rule that
-              # makes it unnecessarily compile in certain situations.
-              'suppress_wildcard': 1,
-              'direct_dependent_settings': {
-                'includes': [
-                  '../build/isolate.gypi',
-                ],
-              },
-            },
-            {
-              # GN: //gpu:angle_unittests_run
-              'target_name': 'angle_unittests_run',
-              'type': 'none',
-              'dependencies': [
-                '../gpu/gpu.gyp:angle_unittests',
-                'gpu_tests_base',
-              ],
-              'sources': [
-                'angle_unittests.isolate',
-              ],
-            },
             {
               # GN: //gpu:gl_tests_run
               'target_name': 'gl_tests_run',
