@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "content/browser/bluetooth/bluetooth_blacklist.h"
 #include "content/common/bluetooth/bluetooth_scan_filter.h"
 #include "crypto/random.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -140,6 +141,9 @@ bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessService(
     const url::Origin& origin,
     const std::string& device_id,
     const std::string& service_uuid) const {
+  if (BluetoothBlacklist::Get().IsExcluded(BluetoothUUID(service_uuid)))
+    return false;
+
   auto id_map_iter = origin_to_device_id_to_services_map_.find(origin);
   if (id_map_iter == origin_to_device_id_to_services_map_.end()) {
     return false;

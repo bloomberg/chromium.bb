@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown(
+      {filters: [{services: ['human_interface_device']}]}),
+    new DOMException(
+      'requestDevice() called with a filter containing a blacklisted UUID. ' +
+        'https://goo.gl/4NeimX',
+      'SecurityError'),
+    'Requesting blacklisted service rejects.');
+}, 'Reject with SecurityError if requesting a blacklisted service.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAndHIDAdapter');
+  return requestDeviceWithKeyDown(
+    {
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['human_interface_device']
+    })
+    .then(device => device.gatt.connect())
+    .then(gattServer => {
+      return assert_promise_rejects_with_message(
+        gattServer.getPrimaryService('human_interface_device'),
+        new DOMException(
+          'Origin is not allowed to access the service. Remember to add the ' +
+          'service to a filter or to optionalServices in requestDevice().',
+          'SecurityError'),
+        'Blacklisted service not accessible.');
+    });
+}, 'Blacklisted UUID in optionalServices is removed and access not granted.');
+</script>

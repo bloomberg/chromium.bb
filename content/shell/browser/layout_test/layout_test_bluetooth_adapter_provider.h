@@ -205,6 +205,23 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetHeartRateAdapter();
 
+  // |HeartRateAndHIDAdapter|
+  // Inherits from |EmptyAdapter|
+  // Internal Structure:
+  //   - |ConnectableDevice|(adapter, "Heart Rate And HID Device", uuids)
+  //      - Advertised UUIDs:
+  //         - Heart Rate UUID (0x180d)
+  //         - Human Interface Device UUID (0x1812) (a blacklisted service)
+  //      - Services:
+  //         - Generic Access Service - Characteristics as described in
+  //           GetGenericAccessService.
+  //         - Heart Rate Service - Characteristics as described in
+  //           GetHeartRateService.
+  //         - Human Interface Device Service - No characteristics needed
+  //           because the service is blacklisted.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetHeartRateAndHIDAdapter();
+
   // |DelayedServicesDiscoveryAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:

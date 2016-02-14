@@ -64,6 +64,7 @@ const char kBatteryServiceUUID[] = "180f";
 const char kGenericAccessServiceUUID[] = "1800";
 const char kGlucoseServiceUUID[] = "1808";
 const char kHeartRateServiceUUID[] = "180d";
+const char kHumanInterfaceDeviceServiceUUID[] = "1812";
 const char kTxPowerServiceUUID[] = "1804";
 const char kHeartRateMeasurementUUID[] = "2a37";
 const char kBodySensorLocation[] = "2a38";
@@ -151,6 +152,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetMissingCharacteristicHeartRateAdapter();
   if (fake_adapter_name == "HeartRateAdapter")
     return GetHeartRateAdapter();
+  if (fake_adapter_name == "HeartRateAndHIDAdapter")
+    return GetHeartRateAndHIDAdapter();
   if (fake_adapter_name == "FailingConnectionsAdapter")
     return GetFailingConnectionsAdapter();
   if (fake_adapter_name == "FailingGATTOperationsAdapter")
@@ -479,6 +482,27 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateAdapter() {
 
   device->AddMockService(GetGenericAccessService(adapter.get(), device.get()));
   device->AddMockService(GetHeartRateService(adapter.get(), device.get()));
+  adapter->AddMockDevice(std::move(device));
+
+  return adapter;
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetHeartRateAndHIDAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+
+  BluetoothDevice::UUIDList uuids;
+  uuids.push_back(BluetoothUUID(kHeartRateServiceUUID));
+  uuids.push_back(BluetoothUUID(kHumanInterfaceDeviceServiceUUID));
+
+  scoped_ptr<NiceMockBluetoothDevice> device(
+      GetConnectableDevice(adapter.get(), "Heart Rate And HID Device", uuids));
+
+  device->AddMockService(GetGenericAccessService(adapter.get(), device.get()));
+  device->AddMockService(GetHeartRateService(adapter.get(), device.get()));
+  device->AddMockService(
+      GetBaseGATTService(device.get(), kHumanInterfaceDeviceServiceUUID));
   adapter->AddMockDevice(std::move(device));
 
   return adapter;
