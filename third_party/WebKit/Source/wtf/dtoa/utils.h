@@ -163,9 +163,9 @@ namespace double_conversion {
         // Returns the pointer to the start of the data in the vector.
         T* start() const { return start_; }
 
-        // Access individual vector elements.
+        // Access individual vector elements - checks bounds in debug mode.
         T& operator[](int index) const {
-            RELEASE_ASSERT(0 <= index && index < length_);
+            ASSERT(0 <= index && index < length_);
             return start_[index];
         }
 
