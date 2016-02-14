@@ -293,11 +293,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "65c58f6ad3d1415d02328993c56d7bbdd6ea2cab",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/libs_support_translator_x86_64_9add878e6cfa59380a74a105bf5930e44bedca17.log",
+          "hash": "a3196f4f6d66c9ecda27423100f5016532324355",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/libs_support_translator_x86_64_57c6fb79c3a0641b0000b1b10b7d8cc17be5d85b.log",
           "name": "libs_support_translator_x86_64.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/libs_support_translator_x86_64_9add878e6cfa59380a74a105bf5930e44bedca17.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/libs_support_translator_x86_64_57c6fb79c3a0641b0000b1b10b7d8cc17be5d85b.tgz"
         },
         {
           "extract_dir": "",
@@ -413,11 +413,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "c61ddf81e744fd27a8d3ac1dc6335d5c143e3636",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/unsandboxed_runtime_x86_64_linux_3be5efe136a43df45b0305b4b0ac864a16293b58.log",
+          "hash": "f8c16b96e8186d5a60f3ee0c6b82a08bc397aeaf",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/unsandboxed_runtime_x86_64_linux_c046030cd7751519a168430ed14334e87f2db911.log",
           "name": "unsandboxed_runtime_x86_64_linux.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/unsandboxed_runtime_x86_64_linux_3be5efe136a43df45b0305b4b0ac864a16293b58.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/unsandboxed_runtime_x86_64_linux_c046030cd7751519a168430ed14334e87f2db911.tgz"
         }
       ],
       "version": 1
@@ -714,11 +714,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "65c58f6ad3d1415d02328993c56d7bbdd6ea2cab",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/libs_support_translator_x86_64_9add878e6cfa59380a74a105bf5930e44bedca17.log",
+          "hash": "a3196f4f6d66c9ecda27423100f5016532324355",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/libs_support_translator_x86_64_57c6fb79c3a0641b0000b1b10b7d8cc17be5d85b.log",
           "name": "libs_support_translator_x86_64.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/libs_support_translator_x86_64_9add878e6cfa59380a74a105bf5930e44bedca17.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/libs_support_translator_x86_64_57c6fb79c3a0641b0000b1b10b7d8cc17be5d85b.tgz"
         },
         {
           "extract_dir": "",
@@ -1111,11 +1111,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "65c58f6ad3d1415d02328993c56d7bbdd6ea2cab",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/libs_support_translator_x86_64_9add878e6cfa59380a74a105bf5930e44bedca17.log",
+          "hash": "a3196f4f6d66c9ecda27423100f5016532324355",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/libs_support_translator_x86_64_57c6fb79c3a0641b0000b1b10b7d8cc17be5d85b.log",
           "name": "libs_support_translator_x86_64.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/libs_support_translator_x86_64_9add878e6cfa59380a74a105bf5930e44bedca17.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/libs_support_translator_x86_64_57c6fb79c3a0641b0000b1b10b7d8cc17be5d85b.tgz"
         },
         {
           "extract_dir": "",
@@ -1217,6 +1217,6 @@
       "version": 1
     }
   },
-  "revision": "e0de6e40f9f148e09b7b513ac5381c855a64ca6c",
-  "revision_hash": "b7d3fa03d7d3bccfdda286b385e4ead8047d9e8b"
+  "revision": "024572118f913987d7a5ba2914a465b23d8a34e4",
+  "revision_hash": "bfe8713b114cc19c7b7c49ab0f2acc7aec1ebcdf"
 }
