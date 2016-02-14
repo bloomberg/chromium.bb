@@ -135,8 +135,6 @@ void ConvertConfigDescriptor(const libusb_config_descriptor* platform_config,
   configuration->extra_data.assign(
       platform_config->extra,
       platform_config->extra + platform_config->extra_length);
-
-  configuration->AssignFirstInterfaceNumbers();
 }
 
 }  // namespace

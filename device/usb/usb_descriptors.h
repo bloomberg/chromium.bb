@@ -85,8 +85,6 @@ struct UsbInterfaceDescriptor {
   uint8_t interface_protocol;
   std::vector<UsbEndpointDescriptor> endpoints;
   std::vector<uint8_t> extra_data;
-  // First interface of the function to which this interface belongs.
-  uint8_t first_interface;
 };
 
 struct UsbConfigDescriptor {
@@ -96,10 +94,6 @@ struct UsbConfigDescriptor {
                       uint16_t maximum_power);
   UsbConfigDescriptor() = delete;
   ~UsbConfigDescriptor();
-
-  // Scans through |extra_data| for interface association descriptors and
-  // populates |first_interface| for each interface in this configuration.
-  void AssignFirstInterfaceNumbers();
 
   uint8_t configuration_value;
   bool self_powered;

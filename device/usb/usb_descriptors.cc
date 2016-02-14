@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -26,42 +25,6 @@ const uint8_t kGetDescriptorRequest = 0x06;
 const uint8_t kStringDescriptorType = 0x03;
 
 const int kControlTransferTimeout = 60000;  // 1 minute
-
-struct UsbInterfaceAssociationDescriptor {
-  UsbInterfaceAssociationDescriptor(uint8_t first_interface,
-                                    uint8_t interface_count)
-      : first_interface(first_interface), interface_count(interface_count) {}
-
-  bool operator<(const UsbInterfaceAssociationDescriptor& other) const {
-    return first_interface < other.first_interface;
-  }
-
-  uint8_t first_interface;
-  uint8_t interface_count;
-};
-
-void ParseInterfaceAssociationDescriptors(
-    const std::vector<uint8_t>& buffer,
-    std::vector<UsbInterfaceAssociationDescriptor>* functions) {
-  const uint8_t kInterfaceAssociationDescriptorType = 11;
-  const uint8_t kInterfaceAssociationDescriptorLength = 8;
-  std::vector<uint8_t>::const_iterator it = buffer.begin();
-
-  while (it != buffer.end()) {
-    // All descriptors must be at least 2 byte which means the length and type
-    // are safe to read.
-    if (std::distance(it, buffer.end()) < 2)
-      return;
-    uint8_t length = it[0];
-    if (length > std::distance(it, buffer.end()))
-      return;
-    if (it[1] == kInterfaceAssociationDescriptorType &&
-        length == kInterfaceAssociationDescriptorLength) {
-      functions->push_back(UsbInterfaceAssociationDescriptor(it[2], it[3]));
-    }
-    std::advance(it, length);
-  }
-}
 
 void StoreStringDescriptor(IndexMap::iterator it,
                            const base::Closure& callback,
@@ -150,8 +113,7 @@ UsbInterfaceDescriptor::UsbInterfaceDescriptor(uint8_t interface_number,
       alternate_setting(alternate_setting),
       interface_class(interface_class),
       interface_subclass(interface_subclass),
-      interface_protocol(interface_protocol),
-      first_interface(interface_number) {}
+      interface_protocol(interface_protocol) {}
 
 UsbInterfaceDescriptor::~UsbInterfaceDescriptor() = default;
 
@@ -165,47 +127,6 @@ UsbConfigDescriptor::UsbConfigDescriptor(uint8_t configuration_value,
       maximum_power(maximum_power) {}
 
 UsbConfigDescriptor::~UsbConfigDescriptor() = default;
-
-void UsbConfigDescriptor::AssignFirstInterfaceNumbers() {
-  std::vector<UsbInterfaceAssociationDescriptor> functions;
-  ParseInterfaceAssociationDescriptors(extra_data, &functions);
-  for (const auto& interface : interfaces) {
-    ParseInterfaceAssociationDescriptors(interface.extra_data, &functions);
-    for (const auto& endpoint : interface.endpoints)
-      ParseInterfaceAssociationDescriptors(endpoint.extra_data, &functions);
-  }
-
-  // libusb has collected interface association descriptors in the |extra_data|
-  // fields of other descriptor types. This may have disturbed their order
-  // but sorting by the bFirstInterface should fix it.
-  std::sort(functions.begin(), functions.end());
-
-  uint8_t remaining_interfaces = 0;
-  auto function_it = functions.cbegin();
-  for (auto interface_it = interfaces.begin(); interface_it != interfaces.end();
-       ++interface_it) {
-    if (remaining_interfaces > 0) {
-      // Continuation of a previous function. Tag all alternate interfaces
-      // (which are guaranteed to be contiguous).
-      for (uint8_t interface_number = interface_it->interface_number;
-           interface_it != interfaces.end() &&
-           interface_it->interface_number == interface_number;
-           ++interface_it) {
-        interface_it->first_interface = function_it->first_interface;
-      }
-      if (--remaining_interfaces == 0)
-        ++function_it;
-    } else if (function_it != functions.end() &&
-               interface_it->interface_number == function_it->first_interface) {
-      // Start of a new function.
-      interface_it->first_interface = function_it->first_interface;
-      remaining_interfaces = function_it->interface_count - 1;
-    } else {
-      // Unassociated interfaces already have |first_interface| set to
-      // |interface_number|.
-    }
-  }
-}
 
 bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
                               base::string16* output) {
