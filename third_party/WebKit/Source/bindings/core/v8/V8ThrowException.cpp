@@ -96,16 +96,6 @@ v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, 
     return exception;
 }
 
-v8::Local<v8::Value> V8ThrowException::throwDOMException(int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
-{
-    ASSERT(ec == SecurityError || unsanitizedMessage.isEmpty());
-    v8::Local<v8::Value> exception = createDOMException(isolate, ec, sanitizedMessage, unsanitizedMessage, creationContext);
-    if (exception.IsEmpty())
-        return v8Undefined();
-
-    return V8ThrowException::throwException(exception, isolate);
-}
-
 v8::Local<v8::Value> V8ThrowException::createGeneralError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::Error(v8String(isolate, message.isNull() ? "Error" : message));

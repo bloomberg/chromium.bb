@@ -42,12 +42,6 @@ public:
     }
     static v8::Local<v8::Value> createDOMException(v8::Isolate*, int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext);
 
-    static v8::Local<v8::Value> throwDOMException(int ec, const String& message, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
-    {
-        return throwDOMException(ec, message, String(), creationContext, isolate);
-    }
-    static v8::Local<v8::Value> throwDOMException(int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext, v8::Isolate*);
-
     static v8::Local<v8::Value> throwException(v8::Local<v8::Value>, v8::Isolate*);
 
     static v8::Local<v8::Value> createGeneralError(v8::Isolate*, const String&);
