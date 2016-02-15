@@ -25,6 +25,7 @@
 #ifndef HTMLParserIdioms_h
 #define HTMLParserIdioms_h
 
+#include "core/CoreExport.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/Decimal.h"
 #include "wtf/Forward.h"
@@ -61,7 +62,7 @@ bool parseHTMLInteger(const String&, int&);
 bool parseHTMLNonNegativeInteger(const String&, unsigned&);
 
 // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-a-list-of-floating-point-numbers
-Vector<double> parseHTMLListOfFloatingPointNumbers(const String&);
+CORE_EXPORT Vector<double> parseHTMLListOfFloatingPointNumbers(const String&);
 
 typedef Vector<std::pair<String, String>> HTMLAttributeList;
 // The returned encoding might not be valid.

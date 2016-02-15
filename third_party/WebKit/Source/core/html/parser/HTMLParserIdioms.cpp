@@ -309,9 +309,10 @@ static Vector<double> parseHTMLListOfFloatingPointNumbersInternal(
 // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-a-list-of-floating-point-numbers
 Vector<double> parseHTMLListOfFloatingPointNumbers(const String& input)
 {
-    if (input.is8Bit())
-        return parseHTMLListOfFloatingPointNumbersInternal(input.characters8(), input.characters8() + input.length());
-    return parseHTMLListOfFloatingPointNumbersInternal(input.characters16(), input.characters16() + input.length());
+    unsigned length = input.length();
+    if (!length || input.is8Bit())
+        return parseHTMLListOfFloatingPointNumbersInternal(input.characters8(), input.characters8() + length);
+    return parseHTMLListOfFloatingPointNumbersInternal(input.characters16(), input.characters16() + length);
 }
 
 static const char charsetString[] = "charset";
