@@ -275,20 +275,39 @@ CommandUtil.getOnlyOneSelectedDirectory = function(selection) {
 };
 
 /**
- * If entry is fake or root entry, we don't show menu item for it.
+ * Returns true if the given entry is the root entry of the volume.
+ * @param {VolumeManagerWrapper} volumeManager
+ * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean} True if the entry is a root entry.
+ */
+CommandUtil.isRootEntry = function(volumeManager, entry) {
+  if (!volumeManager || !entry)
+    return false;
+
+  var volumeInfo = volumeManager.getVolumeInfo(entry);
+  return !!volumeInfo && volumeInfo.displayRoot === entry;
+};
+
+/**
+ * If entry is fake/invalid/root, we don't show menu item for it.
  * @param {VolumeManagerWrapper} volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if we should show menu item for the entry.
  */
 CommandUtil.shouldShowMenuItemForEntry = function(volumeManager, entry) {
-  if (!volumeManager || util.isFakeEntry(entry))
+  // If the entry is fake entry, hide context menu entries.
+  if (util.isFakeEntry(entry))
     return false;
 
-  var volumeInfo = volumeManager.getVolumeInfo(entry);
-  if (!volumeInfo)
+  // If the entry is not a valid entry, hide context menu entries.
+  if (!volumeManager || !volumeManager.getVolumeInfo(entry))
     return false;
 
-  return volumeInfo.displayRoot !== entry;
+  // If the entry is root entry of its volume, hide context menu entries.
+  if (CommandUtil.isRootEntry(volumeManager, entry))
+    return false;
+
+  return true;
 };
 
 /**
@@ -600,8 +619,7 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
     if (event.target instanceof DirectoryItem ||
         event.target instanceof DirectoryTree) {
       var entry = CommandUtil.getCommandEntry(event.target);
-      if (!entry || !CommandUtil.shouldShowMenuItemForEntry(
-          fileManager.volumeManager, entry)) {
+      if (!entry || util.isFakeEntry(entry)) {
         event.canExecute = false;
         event.command.setHidden(true);
         return;
@@ -609,7 +627,8 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
 
       var locationInfo = fileManager.volumeManager.getLocationInfo(entry);
       event.canExecute = locationInfo && !locationInfo.isReadOnly;
-      event.command.setHidden(false);
+      event.command.setHidden(
+          CommandUtil.isRootEntry(fileManager.volumeManager, entry));
     } else {
       var directoryModel = fileManager.directoryModel;
       event.canExecute = !fileManager.isOnReadonlyDirectory() &&

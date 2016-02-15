@@ -111,6 +111,8 @@ function DialogActionController(
       'click', this.processOKAction_.bind(this));
   dialogFooter.cancelButton.addEventListener(
       'click', this.onCancelBound_);
+  dialogFooter.newFolderButton.addEventListener(
+      'click', this.processNewFolderAction_.bind(this));
   dialogFooter.fileTypeSelector.addEventListener(
       'change', this.onFileTypeFilterChanged_.bind(this));
   dialogFooter.filenameInput.addEventListener(
@@ -122,6 +124,10 @@ function DialogActionController(
   dialogFooter.initFileTypeFilter(
       this.fileTypes_, launchParam.includeAllFiles);
   this.onFileTypeFilterChanged_();
+
+  this.newFolderCommand_ = document.getElementById('new-folder');
+  this.newFolderCommand_.addEventListener(
+      'disabledChange', this.updateNewFolderButton_.bind(this));
 }
 
 /**
@@ -243,6 +249,23 @@ DialogActionController.prototype.processOKAction_ = function() {
 DialogActionController.prototype.processCancelAction_ = function() {
   chrome.fileManagerPrivate.cancelDialog();
   window.close();
+};
+
+/**
+ * Creates a new folder using new-folder command.
+ * @private
+ */
+DialogActionController.prototype.processNewFolderAction_ = function() {
+  this.newFolderCommand_.canExecuteChange(this.dialogFooter_.newFolderButton);
+  this.newFolderCommand_.execute(this.dialogFooter_.newFolderButton);
+};
+
+/**
+ * Handles disabledChange event to update the new-folder button's avaliability.
+ * @private
+ */
+DialogActionController.prototype.updateNewFolderButton_ = function() {
+  this.dialogFooter_.newFolderButton.disabled = this.newFolderCommand_.disabled;
 };
 
 /**

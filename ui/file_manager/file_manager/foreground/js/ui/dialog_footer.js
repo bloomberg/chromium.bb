@@ -50,6 +50,14 @@ function DialogFooter(dialogType, container, filenameInput) {
       (container.querySelector('.cancel'));
 
   /**
+   * New folder button in the footer.
+   * @const
+   * @type {!HTMLButtonElement}
+   */
+  this.newFolderButton = /** @type {!HTMLButtonElement} */
+      (container.querySelector('#new-folder-button'));
+
+  /**
    * File type selector in the footer.
    * @const
    * @type {!HTMLSelectElement}
