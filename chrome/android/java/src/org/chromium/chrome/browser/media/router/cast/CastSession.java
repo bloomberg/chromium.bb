@@ -436,9 +436,7 @@ public class CastSession implements MediaNotificationListener {
 
     public boolean handleSessionMessage(
             JSONObject message, String messageType) throws JSONException {
-        if ("leave_session".equals(messageType)) {
-            return handleLeaveSessionMessage(message);
-        } else if ("v2_message".equals(messageType)) {
+        if ("v2_message".equals(messageType)) {
             return handleCastV2Message(message);
         } else if ("app_message".equals(messageType)) {
             return handleAppMessage(message);
@@ -446,33 +444,6 @@ public class CastSession implements MediaNotificationListener {
             Log.e(TAG, "Unsupported message: %s", message);
             return false;
         }
-    }
-
-    // An example of the leave_session message.
-    //    {
-    //        "type": "leave_message",
-    //        "message": "<cast session id>",
-    //        "sequenceNumber": 0,  // optional
-    //        "timeoutMillis": 0,
-    //        "clientId": "<client id>"
-    //    }
-    private boolean handleLeaveSessionMessage(JSONObject jsonMessage) throws JSONException {
-        String clientId = jsonMessage.getString("clientId");
-
-        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
-
-        String sessionId = jsonMessage.getString("message");
-        if (!mSessionId.equals(sessionId)) return false;
-
-        int sequenceNumber = jsonMessage.optInt("sequenceNumber", INVALID_SEQUENCE_NUMBER);
-
-        sendClientMessageTo(clientId, "leave_session", null, sequenceNumber);
-
-        // All clients could've only joined if they're in the same scope. Need to send them
-        // all a "disconnect_session" message.
-        broadcastClientMessage("disconnect_session", sessionId);
-
-        return true;
     }
 
     // An example of the Cast V2 message:

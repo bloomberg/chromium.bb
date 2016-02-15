@@ -344,7 +344,9 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
                 success = handleClientConnectMessage(jsonMessage);
             } else if ("client_disconnect".equals(messageType)) {
                 success = handleClientDisconnectMessage(jsonMessage);
-            } else if (mSession != null) {
+            } else if ("leave_session".equals(messageType)) {
+                success = handleLeaveSessionMessage(jsonMessage);
+            } else  if (mSession != null) {
                 success = mSession.handleSessionMessage(jsonMessage, messageType);
             }
         } catch (JSONException e) {
@@ -397,6 +399,46 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         mManager.onRouteClosed(client.routeId);
 
         return true;
+    }
+
+    private boolean handleLeaveSessionMessage(JSONObject jsonMessage) throws JSONException {
+        String clientId = jsonMessage.getString("clientId");
+        if (clientId == null || mSession == null) return false;
+
+        String sessionId = jsonMessage.getString("message");
+        if (!mSession.getSessionId().equals(sessionId)) return false;
+
+        ClientRecord leavingClient = mClientRecords.get(clientId);
+        if (leavingClient == null) return false;
+
+        int sequenceNumber = jsonMessage.optInt("sequenceNumber", -1);
+        onMessage(clientId, buildInternalMessage("leave_session", sequenceNumber, clientId, null));
+
+        // Send a "disconnect_session" message to all the clients that match with the leaving
+        // client's auto join policy.
+        for (ClientRecord client : mClientRecords.values()) {
+            if ((MediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
+                            && client.origin.equals(leavingClient.origin)
+                            && client.tabId == leavingClient.tabId)
+                    || (MediaSource.AUTOJOIN_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
+                            && client.origin.equals(leavingClient.origin))) {
+                onMessage(client.clientId,
+                        buildInternalMessage("disconnect_session", -1, client.clientId, sessionId));
+            }
+        }
+
+        return true;
+    }
+
+    private String buildInternalMessage(
+            String type, int sequenceNumber, String clientId, String message) throws JSONException {
+        JSONObject jsonMessage = new JSONObject();
+        jsonMessage.put("type", type);
+        jsonMessage.put("sequenceNumber", sequenceNumber);
+        jsonMessage.put("timeoutMillis", 0);
+        jsonMessage.put("clientId", clientId);
+        jsonMessage.put("message", message);
+        return jsonMessage.toString();
     }
 
     private CastMediaRouteProvider(
