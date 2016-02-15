@@ -49,20 +49,22 @@ bool canAppendNewLineFeedToSelection(const VisibleSelection&);
 // LineOperation should define member function "opeartor (size_t lineOffset, size_t lineLength, bool isLastLine)".
 // lienLength doesn't include the newline character. So the value of lineLength could be 0.
 template <class LineOperation>
-void forEachLineInString(const String& string, const LineOperation& operation)
+void forEachLineInString(const String& string, const LineOperation& operation, EditingState* editingState)
 {
     unsigned offset = 0;
     size_t newline;
     while ((newline = string.find('\n', offset)) != kNotFound) {
-        operation(offset, newline - offset, false);
+        operation(offset, newline - offset, false, editingState);
+        if (editingState->isAborted())
+            return;
         offset = newline + 1;
     }
     if (!offset) {
-        operation(0, string.length(), true);
+        operation(0, string.length(), true, editingState);
     } else {
         unsigned length = string.length();
         if (length != offset)
-            operation(offset, length - offset, true);
+            operation(offset, length - offset, true, editingState);
     }
 }
 

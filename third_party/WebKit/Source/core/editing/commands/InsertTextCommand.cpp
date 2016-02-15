@@ -120,7 +120,7 @@ bool InsertTextCommand::performOverwrite(const String& text, bool selectInserted
     return true;
 }
 
-void InsertTextCommand::doApply(EditingState*)
+void InsertTextCommand::doApply(EditingState* editingState)
 {
     ASSERT(m_text.find('\n') == kNotFound);
 
@@ -133,7 +133,9 @@ void InsertTextCommand::doApply(EditingState*)
         if (performTrivialReplace(m_text, m_selectInsertedText))
             return;
         bool endOfSelectionWasAtStartOfBlock = isStartOfBlock(endingSelection().visibleEnd());
-        deleteSelection(ASSERT_NO_EDITING_ABORT, false, true, false, false);
+        deleteSelection(editingState, false, true, false, false);
+        if (editingState->isAborted())
+            return;
         // deleteSelection eventually makes a new endingSelection out of a Position. If that Position doesn't have
         // a layoutObject (e.g. it is on a <frameset> in the DOM), the VisibleSelection cannot be canonicalized to
         // anything other than NoSelection. The rest of this function requires a real endingSelection, so bail out.
@@ -179,7 +181,9 @@ void InsertTextCommand::doApply(EditingState*)
     if (!isVisuallyEquivalentCandidate(startPosition))
         startPosition = mostForwardCaretPosition(startPosition);
 
-    startPosition = positionAvoidingSpecialElementBoundary(startPosition, ASSERT_NO_EDITING_ABORT);
+    startPosition = positionAvoidingSpecialElementBoundary(startPosition, editingState);
+    if (editingState->isAborted())
+        return;
 
     Position endPosition;
 

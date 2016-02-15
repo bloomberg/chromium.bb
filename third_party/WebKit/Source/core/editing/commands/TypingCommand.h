@@ -67,8 +67,8 @@ public:
     static void insertParagraphSeparatorInQuotedContent(Document&);
     static void closeTyping(LocalFrame*);
 
-    void insertText(const String &text, bool selectInsertedText);
-    void insertTextRunWithoutNewlines(const String &text, bool selectInsertedText);
+    void insertText(const String &text, bool selectInsertedText, EditingState*);
+    void insertTextRunWithoutNewlines(const String &text, bool selectInsertedText, EditingState*);
     void insertLineBreak();
     void insertParagraphSeparatorInQuotedContent();
     void insertParagraphSeparator();

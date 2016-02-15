@@ -56,14 +56,20 @@ public:
     , m_text(text)
     { }
 
-    void operator()(size_t lineOffset, size_t lineLength, bool isLastLine) const
+    void operator()(size_t lineOffset, size_t lineLength, bool isLastLine, EditingState* editingState) const
     {
         if (isLastLine) {
-            if (!lineOffset || lineLength > 0)
-                m_typingCommand->insertTextRunWithoutNewlines(m_text.substring(lineOffset, lineLength), m_selectInsertedText);
+            if (!lineOffset || lineLength > 0) {
+                m_typingCommand->insertTextRunWithoutNewlines(m_text.substring(lineOffset, lineLength), m_selectInsertedText, editingState);
+                if (editingState->isAborted())
+                    return;
+            }
         } else {
-            if (lineLength > 0)
-                m_typingCommand->insertTextRunWithoutNewlines(m_text.substring(lineOffset, lineLength), false);
+            if (lineLength > 0) {
+                m_typingCommand->insertTextRunWithoutNewlines(m_text.substring(lineOffset, lineLength), false, editingState);
+                if (editingState->isAborted())
+                    return;
+            }
             m_typingCommand->insertParagraphSeparator();
         }
     }
@@ -190,7 +196,9 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
         lastTypingCommand->setCompositionType(compositionType);
         lastTypingCommand->setShouldRetainAutocorrectionIndicator(options & RetainAutocorrectionIndicator);
         lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
-        lastTypingCommand->insertText(newText, options & SelectInsertedText);
+        EditingState editingState;
+        lastTypingCommand->insertText(newText, options & SelectInsertedText, &editingState);
+        // Nothing to do even if the command was aborted.
         return;
     }
 
@@ -277,7 +285,7 @@ void TypingCommand::doApply(EditingState* editingState)
         insertParagraphSeparatorInQuotedContent();
         return;
     case InsertText:
-        insertText(m_textToInsert, m_selectInsertedText);
+        insertText(m_textToInsert, m_selectInsertedText, editingState);
         return;
     }
 
@@ -334,7 +342,7 @@ void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedT
     frame->editor().appliedEditing(this);
 }
 
-void TypingCommand::insertText(const String &text, bool selectInsertedText)
+void TypingCommand::insertText(const String &text, bool selectInsertedText, EditingState* editingState)
 {
     // FIXME: Need to implement selectInsertedText for cases where more than one insert is involved.
     // This requires support from insertTextRunWithoutNewlines and insertParagraphSeparator for extending
@@ -342,16 +350,17 @@ void TypingCommand::insertText(const String &text, bool selectInsertedText)
     // select what's inserted, but there's no way to "extend selection" to include both an old selection
     // that ends just before where we want to insert text and the newly inserted text.
     TypingCommandLineOperation operation(this, selectInsertedText, text);
-    forEachLineInString(text, operation);
+    forEachLineInString(text, operation, editingState);
 }
 
-void TypingCommand::insertTextRunWithoutNewlines(const String &text, bool selectInsertedText)
+void TypingCommand::insertTextRunWithoutNewlines(const String &text, bool selectInsertedText, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<InsertTextCommand> command = InsertTextCommand::create(document(), text, selectInsertedText,
         m_compositionType == TextCompositionNone ? InsertTextCommand::RebalanceLeadingAndTrailingWhitespaces : InsertTextCommand::RebalanceAllWhitespaces);
 
-    applyCommandToComposite(command, endingSelection());
-
+    applyCommandToComposite(command, endingSelection(), editingState);
+    if (editingState->isAborted())
+        return;
     typingAddedToOpenCommand(InsertText);
 }
 
