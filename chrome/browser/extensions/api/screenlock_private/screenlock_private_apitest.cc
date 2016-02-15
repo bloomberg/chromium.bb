@@ -11,7 +11,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -56,12 +57,12 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   void SetUpOnMainThread() override {
     SigninManagerFactory::GetForProfile(profile())
         ->SetAuthenticatedAccountInfo(kTestGaiaId, kTestUser);
-    ProfileInfoCache& info_cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t index = info_cache.GetIndexOfProfileWithPath(profile()->GetPath());
-    ASSERT_NE(std::string::npos, index);
-    info_cache.SetAuthInfoOfProfileAtIndex(
-        index, kTestGaiaId, base::UTF8ToUTF16(test_account_id_.GetUserEmail()));
+    ProfileAttributesEntry* entry;
+    ASSERT_TRUE(g_browser_process->profile_manager()->
+        GetProfileAttributesStorage().
+        GetProfileAttributesWithPath(profile()->GetPath(), &entry));
+    entry->SetAuthInfo(
+        kTestGaiaId, base::UTF8ToUTF16(test_account_id_.GetUserEmail()));
     ExtensionApiTest::SetUpOnMainThread();
   }
 

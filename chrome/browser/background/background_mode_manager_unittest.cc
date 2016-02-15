@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -20,7 +22,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -92,8 +95,8 @@ void FakeBackgroundTrigger::OnMenuClick() {
 class TestBackgroundModeManager : public StrictMock<BackgroundModeManager> {
  public:
   TestBackgroundModeManager(const base::CommandLine& command_line,
-                            ProfileInfoCache* cache)
-      : StrictMock<BackgroundModeManager>(command_line, cache),
+                            ProfileAttributesStorage* storage)
+      : StrictMock<BackgroundModeManager>(command_line, storage),
         have_status_tray_(false),
         has_shown_balloon_(false) {
     ResumeBackgroundMode();
@@ -153,9 +156,9 @@ void AssertBackgroundModeInactive(const TestBackgroundModeManager& manager) {
 class AdvancedTestBackgroundModeManager : public TestBackgroundModeManager {
  public:
   AdvancedTestBackgroundModeManager(const base::CommandLine& command_line,
-                                    ProfileInfoCache* cache,
+                                    ProfileAttributesStorage* storage,
                                     bool enabled)
-      : TestBackgroundModeManager(command_line, cache), enabled_(enabled) {}
+      : TestBackgroundModeManager(command_line, storage), enabled_(enabled) {}
 
   int GetBackgroundClientCount() const override {
     int app_count = 0;
@@ -248,7 +251,7 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
 
     // Create our test BackgroundModeManager.
     manager_.reset(new TestBackgroundModeManager(
-        *command_line_, profile_manager_->profile_info_cache()));
+        *command_line_, profile_manager_->profile_attributes_storage()));
     manager_->RegisterProfile(profile_);
   }
 
@@ -339,7 +342,7 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
 
 TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
@@ -379,7 +382,7 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
 // after it is enabled - crbug.com/527023.
 TEST_F(BackgroundModeManagerTest, DISABLED_BackgroundAppInstallWhileDisabled) {
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
 
   // Turn off background mode (shouldn't explicitly disable launch-on-startup as
@@ -404,7 +407,7 @@ TEST_F(BackgroundModeManagerTest, DISABLED_BackgroundAppInstallWhileDisabled) {
 // nothing.
 TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
 
   // Turn off background mode (shouldn't explicitly disable launch-on-startup as
@@ -433,7 +436,7 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
 // again when it is enabled.
 TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
 
   // Install app, should show status tray icon.
@@ -471,7 +474,7 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
 TEST_F(BackgroundModeManagerTest, MultiProfile) {
   TestingProfile* profile2 = profile_manager_->CreateTestingProfile("p2");
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(chrome::WillKeepAlive());
@@ -518,19 +521,25 @@ TEST_F(BackgroundModeManagerTest, MultiProfile) {
   AssertBackgroundModeInactive(manager);
 }
 
-TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
+TEST_F(BackgroundModeManagerTest, ProfileAttributesStorage) {
   TestingProfile* profile2 = profile_manager_->CreateTestingProfile("p2");
-  AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+  ProfileAttributesStorage* storage =
+      profile_manager_->profile_attributes_storage();
+  AdvancedTestBackgroundModeManager manager(*command_line_, storage, true);
   manager.RegisterProfile(profile_);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(chrome::WillKeepAlive());
+  EXPECT_EQ(2u, storage->GetNumberOfProfiles());
 
-  ProfileInfoCache* cache = profile_manager_->profile_info_cache();
-  EXPECT_EQ(2u, cache->GetNumberOfProfiles());
+  ProfileAttributesEntry* entry1;
+  ProfileAttributesEntry* entry2;
+  ASSERT_TRUE(storage->GetProfileAttributesWithPath(profile_->GetPath(),
+                                                    &entry1));
+  ASSERT_TRUE(storage->GetProfileAttributesWithPath(profile2->GetPath(),
+                                                    &entry2));
 
-  EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(0));
-  EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(1));
+  EXPECT_FALSE(entry1->GetBackgroundStatus());
+  EXPECT_FALSE(entry2->GetBackgroundStatus());
 
   // Install app, should show status tray icon.
   EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
@@ -544,31 +553,29 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
   manager.SetBackgroundClientCountForProfile(profile2, 1);
   manager.OnApplicationListChanged(profile2);
 
-  EXPECT_TRUE(cache->GetBackgroundStatusOfProfileAtIndex(0));
-  EXPECT_TRUE(cache->GetBackgroundStatusOfProfileAtIndex(1));
+  EXPECT_TRUE(entry1->GetBackgroundStatus());
+  EXPECT_TRUE(entry2->GetBackgroundStatus());
 
   manager.SetBackgroundClientCountForProfile(profile_, 0);
   manager.OnApplicationListChanged(profile_);
 
-  size_t p1_index = cache->GetIndexOfProfileWithPath(profile_->GetPath());
-  EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(p1_index));
+  EXPECT_FALSE(entry1->GetBackgroundStatus());
 
   EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
   manager.SetBackgroundClientCountForProfile(profile2, 0);
   manager.OnApplicationListChanged(profile2);
   Mock::VerifyAndClearExpectations(&manager);
 
-  size_t p2_index = cache->GetIndexOfProfileWithPath(profile_->GetPath());
-  EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(p2_index));
+  EXPECT_FALSE(entry2->GetBackgroundStatus());
 
   // Even though neither has background status on, there should still be two
-  // profiles in the cache.
-  EXPECT_EQ(2u, cache->GetNumberOfProfiles());
+  // profiles in the ProfileAttributesStorage.
+  EXPECT_EQ(2u, storage->GetNumberOfProfiles());
 }
 
-TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
+TEST_F(BackgroundModeManagerTest, ProfileAttributesStorageObserver) {
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
@@ -611,7 +618,7 @@ TEST_F(BackgroundModeManagerTest, DeleteBackgroundProfile) {
   // Tests whether deleting the only profile when it is a BG profile works
   // or not (http://crbug.com/346214).
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
@@ -637,7 +644,7 @@ TEST_F(BackgroundModeManagerTest, DeleteBackgroundProfile) {
 TEST_F(BackgroundModeManagerTest, DisableBackgroundModeUnderTestFlag) {
   command_line_->AppendSwitch(switches::kKeepAliveForTest);
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
   EXPECT_TRUE(manager.ShouldBeInBackgroundMode());
 
@@ -652,7 +659,7 @@ TEST_F(BackgroundModeManagerTest,
        BackgroundModeDisabledPreventsKeepAliveOnStartup) {
   command_line_->AppendSwitch(switches::kKeepAliveForTest);
   AdvancedTestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_info_cache(), false);
+      *command_line_, profile_manager_->profile_attributes_storage(), false);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(manager.ShouldBeInBackgroundMode());
 }
@@ -977,8 +984,8 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
 
 TEST_F(BackgroundModeManagerTest, TriggerRegisterUnregister) {
   FakeBackgroundTrigger trigger;
-  TestBackgroundModeManager manager(*command_line_,
-                                    profile_manager_->profile_info_cache());
+  TestBackgroundModeManager manager(
+      *command_line_, profile_manager_->profile_attributes_storage());
   manager.RegisterProfile(profile_);
   AssertBackgroundModeInactive(manager);
 
@@ -1005,8 +1012,8 @@ TEST_F(BackgroundModeManagerTest, TriggerRegisterWhileDisabled) {
   g_browser_process->local_state()->SetBoolean(prefs::kBackgroundModeEnabled,
                                                false);
   FakeBackgroundTrigger trigger;
-  TestBackgroundModeManager manager(*command_line_,
-                                    profile_manager_->profile_info_cache());
+  TestBackgroundModeManager manager(
+      *command_line_, profile_manager_->profile_attributes_storage());
   manager.RegisterProfile(profile_);
   AssertBackgroundModeInactive(manager);
   ASSERT_FALSE(manager.IsBackgroundModePrefEnabled());

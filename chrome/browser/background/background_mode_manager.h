@@ -15,7 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/background/background_application_list_model.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -29,7 +29,6 @@ class BackgroundTrigger;
 class Browser;
 class PrefRegistrySimple;
 class Profile;
-class ProfileInfoCache;
 class StatusIcon;
 class StatusTray;
 
@@ -57,11 +56,11 @@ class BackgroundModeManager
     : public content::NotificationObserver,
       public chrome::BrowserListObserver,
       public BackgroundApplicationListModel::Observer,
-      public ProfileInfoCacheObserver,
+      public ProfileAttributesStorage::Observer,
       public StatusIconMenuModel::Delegate {
  public:
   BackgroundModeManager(const base::CommandLine& command_line,
-                        ProfileInfoCache* profile_cache);
+                        ProfileAttributesStorage* profile_storage);
   ~BackgroundModeManager() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -121,9 +120,9 @@ class BackgroundModeManager
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            MultiProfile);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
-                           ProfileInfoCacheStorage);
+                           ProfileAttributesStorage);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
-                           ProfileInfoCacheObserver);
+                           ProfileAttributesStorageObserver);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            DeleteBackgroundProfile);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
@@ -178,7 +177,7 @@ class BackgroundModeManager
     void SetName(const base::string16& new_profile_name);
 
     // The name associated with this background mode data. This should match
-    // the name in the ProfileInfoCache for this profile.
+    // the name in the ProfileAttributesStorage for this profile.
     base::string16 name();
 
     // Used for sorting BackgroundModeData*s.
@@ -268,7 +267,7 @@ class BackgroundModeManager
                                 Profile* profile) override;
   void OnApplicationListChanged(Profile* profile) override;
 
-  // Overrides from ProfileInfoCacheObserver
+  // Overrides from ProfileAttributesStorage::Observer
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
   void OnProfileNameChanged(const base::FilePath& profile_path,
@@ -282,8 +281,8 @@ class BackgroundModeManager
 
   // Enables or disables background mode as needed, taking into account the
   // number of background clients. Updates the background status of |profile| in
-  // the ProfileInfoCache if needed. If |new_client_names| is not empty the
-  // user will be notified about the added client(s).
+  // the ProfileAttributesStorage if needed. If |new_client_names| is not empty
+  // the user will be notified about the added client(s).
   void OnClientsChanged(Profile* profile,
                         const std::vector<base::string16>& new_client_names);
 
@@ -381,9 +380,9 @@ class BackgroundModeManager
   // if the profile isn't locked. Returns NULL otherwise.
   BackgroundModeData* GetBackgroundModeDataForLastProfile() const;
 
-  // Reference to the profile info cache. It is used to update the background
-  // app status of profiles when they open/close background apps.
-  ProfileInfoCache* profile_cache_;
+  // Reference to the ProfileAttributesStorage. It is used to update the
+  // background app status of profiles when they open/close background apps.
+  ProfileAttributesStorage* profile_storage_;
 
   // Registrars for managing our change observers.
   content::NotificationRegistrar registrar_;

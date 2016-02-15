@@ -30,7 +30,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
@@ -272,8 +272,8 @@ bool BackgroundModeManager::BackgroundModeData::HasTrigger(
 //  BackgroundModeManager, public
 BackgroundModeManager::BackgroundModeManager(
     const base::CommandLine& command_line,
-    ProfileInfoCache* profile_cache)
-    : profile_cache_(profile_cache),
+    ProfileAttributesStorage* profile_storage)
+    : profile_storage_(profile_storage),
       status_tray_(NULL),
       status_icon_(NULL),
       context_menu_(NULL),
@@ -288,9 +288,9 @@ BackgroundModeManager::BackgroundModeManager(
   CHECK(g_browser_process != NULL);
   CHECK(!browser_shutdown::IsTryingToQuit());
 
-  // Add self as an observer for the profile info cache so we know when profiles
-  // are deleted and their names change.
-  profile_cache_->AddObserver(this);
+  // Add self as an observer for the ProfileAttributesStorage so we know when
+  // profiles are deleted and their names change.
+  profile_storage_->AddObserver(this);
 
   UMA_HISTOGRAM_BOOLEAN("BackgroundMode.OnStartup.AutoLaunchState",
                         command_line.HasSwitch(switches::kNoStartupWindow));
@@ -367,10 +367,12 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   background_mode_data_[profile] = bmd;
 
   // Initially set the name for this background mode data.
-  size_t index = profile_cache_->GetIndexOfProfileWithPath(profile->GetPath());
   base::string16 name = l10n_util::GetStringUTF16(IDS_PROFILES_DEFAULT_NAME);
-  if (index != std::string::npos)
-    name = profile_cache_->GetNameOfProfileAtIndex(index);
+  ProfileAttributesEntry* entry;
+  if (profile_storage_->GetProfileAttributesWithPath(
+      profile->GetPath(), &entry)) {
+    name = entry->GetName();
+  }
   bmd->SetName(name);
 
   // Check for the presence of background apps after all extensions have been
@@ -529,15 +531,17 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  BackgroundModeManager, ProfileInfoCacheObserver overrides
+//  BackgroundModeManager, ProfileAttributesStorage::Observer overrides
 void BackgroundModeManager::OnProfileAdded(const base::FilePath& profile_path) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  base::string16 profile_name = cache.GetNameOfProfileAtIndex(
-      cache.GetIndexOfProfileWithPath(profile_path));
+  ProfileAttributesEntry* entry;
+  bool success =
+      profile_storage_->GetProfileAttributesWithPath(profile_path, &entry);
+  DCHECK(success);
+  base::string16 profile_name = entry->GetName();
   // At this point, the profile should be registered with the background mode
-  // manager, but when it's actually added to the cache is when its name is
-  // set so we need up to update that with the background_mode_data.
+  // manager, but when it's actually added to the ProfileAttributesStorage is
+  // when its name is set so we need up to update that with the
+  // background_mode_data.
   for (const auto& it : background_mode_data_) {
     if (it.first->GetPath() == profile_path) {
       it.second->SetName(profile_name);
@@ -549,10 +553,11 @@ void BackgroundModeManager::OnProfileAdded(const base::FilePath& profile_path) {
 
 void BackgroundModeManager::OnProfileWillBeRemoved(
     const base::FilePath& profile_path) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  base::string16 profile_name = cache.GetNameOfProfileAtIndex(
-      cache.GetIndexOfProfileWithPath(profile_path));
+  ProfileAttributesEntry* entry;
+  bool success =
+      profile_storage_->GetProfileAttributesWithPath(profile_path, &entry);
+  DCHECK(success);
+  base::string16 profile_name = entry->GetName();
   // Remove the profile from our map of profiles.
   BackgroundModeInfoMap::iterator it =
       GetBackgroundModeIterator(profile_name);
@@ -573,10 +578,11 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
 void BackgroundModeManager::OnProfileNameChanged(
     const base::FilePath& profile_path,
     const base::string16& old_profile_name) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  base::string16 new_profile_name = cache.GetNameOfProfileAtIndex(
-      cache.GetIndexOfProfileWithPath(profile_path));
+  ProfileAttributesEntry* entry;
+  bool success =
+      profile_storage_->GetProfileAttributesWithPath(profile_path, &entry);
+  DCHECK(success);
+  base::string16 new_profile_name = entry->GetName();
   BackgroundModeInfoMap::const_iterator it =
       GetBackgroundModeIterator(old_profile_name);
   // We check that the returned iterator is valid due to unittests, but really
@@ -599,10 +605,11 @@ BackgroundModeManager::GetBackgroundModeDataForLastProfile() const {
     return NULL;
 
   // Do not permit a locked profile to be used to open a browser.
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  if (cache.ProfileIsSigninRequiredAtIndex(cache.GetIndexOfProfileWithPath(
-      profile_background_data->first->GetPath())))
+  ProfileAttributesEntry* entry;
+  bool success = profile_storage_->GetProfileAttributesWithPath(
+      profile_background_data->first->GetPath(), &entry);
+  DCHECK(success);
+  if (entry->IsSigninRequired())
     return NULL;
 
   return profile_background_data->second.get();
@@ -778,13 +785,13 @@ void BackgroundModeManager::OnClientsChanged(
     const std::vector<base::string16>& new_client_names) {
   DCHECK(IsBackgroundModePrefEnabled());
 
-  // Update the profile cache with the fact whether background clients are
-  // running for this profile.
-  size_t profile_index =
-      profile_cache_->GetIndexOfProfileWithPath(profile->GetPath());
-  if (profile_index != std::string::npos) {
-    profile_cache_->SetBackgroundStatusOfProfileAtIndex(
-        profile_index, GetBackgroundClientCountForProfile(profile) != 0);
+  // Update the ProfileAttributesStorage with the fact whether background
+  // clients are running for this profile.
+  ProfileAttributesEntry* entry;
+  if (profile_storage_->
+      GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+    entry->SetBackgroundStatus(
+        GetBackgroundClientCountForProfile(profile) != 0);
   }
 
   if (!ShouldBeInBackgroundMode()) {
@@ -936,7 +943,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
   menu->AddSeparator(ui::NORMAL_SEPARATOR);
 
   // If there are multiple profiles they each get a submenu.
-  if (profile_cache_->GetNumberOfProfiles() > 1) {
+  if (profile_storage_->GetNumberOfProfiles() > 1) {
     std::vector<BackgroundModeData*> bmd_vector;
     for (const auto& it : background_mode_data_)
       bmd_vector.push_back(it.second.get());
@@ -960,10 +967,10 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     // there may not be any profiles and that is okay.
     DCHECK(profiles_using_background_mode > 0 || keep_alive_for_test_);
   } else {
-    // We should only have one profile in the cache if we are not
-    // using multi-profiles. If |keep_alive_for_test_| is set, then we may not
-    // have any profiles in the cache.
-    DCHECK(profile_cache_->GetNumberOfProfiles() == size_t(1) ||
+    // We should only have one profile in the ProfileAttributesStorage if we are
+    // not using multi-profiles. If |keep_alive_for_test_| is set, then we may
+    // not have any profiles in the ProfileAttributesStorage.
+    DCHECK(profile_storage_->GetNumberOfProfiles() == size_t(1) ||
            keep_alive_for_test_);
     background_mode_data_.begin()->second->BuildProfileMenu(menu.get(), NULL);
   }
