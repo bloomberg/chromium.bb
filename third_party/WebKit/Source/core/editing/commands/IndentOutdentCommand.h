@@ -46,8 +46,8 @@ private:
 
     EditAction editingAction() const override { return m_typeOfAction == Indent ? EditActionIndent : EditActionOutdent; }
 
-    void outdentRegion(const VisiblePosition&, const VisiblePosition&);
-    void outdentParagraph();
+    void outdentRegion(const VisiblePosition&, const VisiblePosition&, EditingState*);
+    void outdentParagraph(EditingState*);
     bool tryIndentingAsListItem(const Position&, const Position&, EditingState*);
     void indentIntoBlockquote(const Position&, const Position&, RefPtrWillBeRawPtr<HTMLElement>&, EditingState*);
 

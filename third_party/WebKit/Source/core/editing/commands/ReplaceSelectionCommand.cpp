@@ -482,7 +482,7 @@ bool ReplaceSelectionCommand::shouldMerge(const VisiblePosition& source, const V
 
 // Style rules that match just inserted elements could change their appearance, like
 // a div inserted into a document with div { display:inline; }.
-void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes& insertedNodes)
+void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes& insertedNodes, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<Node> pastEndNode = insertedNodes.pastLastLeaf();
     RefPtrWillBeRawPtr<Node> next = nullptr;
@@ -532,7 +532,9 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
         if (!inlineStyle || newInlineStyle->isEmpty()) {
             if (isStyleSpanOrSpanWithOnlyStyleAttribute(element) || isEmptyFontTag(element, AllowNonEmptyStyleAttribute)) {
                 insertedNodes.willRemoveNodePreservingChildren(*element);
-                removeNodePreservingChildren(element);
+                removeNodePreservingChildren(element, editingState);
+                if (editingState->isAborted())
+                    return;
                 continue;
             }
             removeElementAttribute(element, styleAttr);
@@ -545,7 +547,9 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
             && createVisiblePosition(firstPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(firstPositionInNode(element)).deepEquivalent()
             && createVisiblePosition(lastPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(lastPositionInNode(element)).deepEquivalent()) {
             insertedNodes.willRemoveNodePreservingChildren(*element);
-            removeNodePreservingChildren(element);
+            removeNodePreservingChildren(element, editingState);
+            if (editingState->isAborted())
+                return;
             continue;
         }
 
@@ -557,7 +561,9 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
         if (isLegacyAppleHTMLSpanElement(element)) {
             if (!element->hasChildren()) {
                 insertedNodes.willRemoveNodePreservingChildren(*element);
-                removeNodePreservingChildren(element);
+                removeNodePreservingChildren(element, editingState);
+                if (editingState->isAborted())
+                    return;
                 continue;
             }
             // There are other styles that style rules can give to style spans,
@@ -793,7 +799,7 @@ static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const
 // We should remove the Apple-style-span class when we're done, see <rdar://problem/5685600>.
 // We should remove styles from spans that are overridden by all of their children, either here
 // or at copy time.
-void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
+void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes, EditingState* editingState)
 {
     HTMLSpanElement* wrappingStyleSpan = nullptr;
     // The style span that contains the source document's default style should be at
@@ -835,7 +841,7 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
 
     if (style->isEmpty() || !wrappingStyleSpan->hasChildren()) {
         insertedNodes.willRemoveNodePreservingChildren(*wrappingStyleSpan);
-        removeNodePreservingChildren(wrappingStyleSpan);
+        removeNodePreservingChildren(wrappingStyleSpan, editingState);
     } else {
         setNodeAttribute(wrappingStyleSpan, styleAttr, AtomicString(style->style()->asText()));
     }
@@ -1169,8 +1175,11 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 
     removeUnrenderedTextNodesAtEnds(insertedNodes);
 
-    if (!handledStyleSpans)
-        handleStyleSpans(insertedNodes);
+    if (!handledStyleSpans) {
+        handleStyleSpans(insertedNodes, editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
     // Mutation events (bug 20161) may have already removed the inserted content
     if (!insertedNodes.firstNodeInserted() || !insertedNodes.firstNodeInserted()->inDocument())
@@ -1206,7 +1215,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     if (editingState->isAborted())
         return;
 
-    removeRedundantStylesAndKeepStyleSpanInline(insertedNodes);
+    removeRedundantStylesAndKeepStyleSpanInline(insertedNodes, editingState);
+    if (editingState->isAborted())
+        return;
 
     if (m_sanitizeFragment)
         applyCommandToComposite(SimplifyMarkupCommand::create(document(), insertedNodes.firstNodeInserted(), insertedNodes.pastLastLeaf()));

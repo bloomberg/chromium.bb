@@ -93,10 +93,10 @@ private:
 
     void removeUnrenderedTextNodesAtEnds(InsertedNodes&);
 
-    void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&);
+    void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&, EditingState*);
     void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes&, EditingState*);
     void moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element> ancestor, EditingState*);
-    void handleStyleSpans(InsertedNodes&);
+    void handleStyleSpans(InsertedNodes&, EditingState*);
 
     VisiblePosition positionAtStartOfInsertedContent() const;
     VisiblePosition positionAtEndOfInsertedContent() const;

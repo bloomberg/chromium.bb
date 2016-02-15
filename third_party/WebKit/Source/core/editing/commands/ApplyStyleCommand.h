@@ -79,12 +79,12 @@ private:
     // style-removal helpers
     bool isStyledInlineElementToRemove(Element*) const;
     bool shouldApplyInlineStyleToRun(EditingStyle*, Node* runStart, Node* pastEndNode);
-    void removeConflictingInlineStyleFromRun(EditingStyle*, RefPtrWillBeMember<Node>& runStart, RefPtrWillBeMember<Node>& runEnd, PassRefPtrWillBeRawPtr<Node> pastEndNode);
-    bool removeInlineStyleFromElement(EditingStyle*, PassRefPtrWillBeRawPtr<HTMLElement>, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = nullptr);
-    inline bool shouldRemoveInlineStyleFromElement(EditingStyle* style, HTMLElement* element) {return removeInlineStyleFromElement(style, element, RemoveNone);}
-    void replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*);
-    bool removeImplicitlyStyledElement(EditingStyle*, HTMLElement*, InlineStyleRemovalMode, EditingStyle* extractedStyle);
-    bool removeCSSStyle(EditingStyle*, HTMLElement*, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = nullptr);
+    void removeConflictingInlineStyleFromRun(EditingStyle*, RefPtrWillBeMember<Node>& runStart, RefPtrWillBeMember<Node>& runEnd, PassRefPtrWillBeRawPtr<Node> pastEndNode, EditingState*);
+    bool removeInlineStyleFromElement(EditingStyle*, PassRefPtrWillBeRawPtr<HTMLElement>, EditingState*, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = nullptr);
+    inline bool shouldRemoveInlineStyleFromElement(EditingStyle* style, HTMLElement* element) { return removeInlineStyleFromElement(style, element, ASSERT_NO_EDITING_ABORT, RemoveNone); }
+    void replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*, EditingState*);
+    bool removeImplicitlyStyledElement(EditingStyle*, HTMLElement*, InlineStyleRemovalMode, EditingStyle* extractedStyle, EditingState*);
+    bool removeCSSStyle(EditingStyle*, HTMLElement*, EditingState*, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = nullptr);
     HTMLElement* highestAncestorWithConflictingInlineStyle(EditingStyle*, Node*);
     void applyInlineStyleToPushDown(Node*, EditingStyle*, EditingState*);
     void pushDownInlineStyleAroundNode(EditingStyle*, Node*, EditingState*);
@@ -93,7 +93,7 @@ private:
 
     // style-application helpers
     void applyBlockStyle(EditingStyle*, EditingState*);
-    void applyRelativeFontStyleChange(EditingStyle*);
+    void applyRelativeFontStyleChange(EditingStyle*, EditingState*);
     void applyInlineStyle(EditingStyle*, EditingState*);
     void fixRangeAndApplyInlineStyle(EditingStyle*, const Position& start, const Position& end, EditingState*);
     void applyInlineStyleToNodeRange(EditingStyle*, PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> pastEndNode, EditingState*);
@@ -111,14 +111,14 @@ private:
     bool isValidCaretPositionInTextNode(const Position&);
     bool mergeStartWithPreviousIfIdentical(const Position& start, const Position& end, EditingState*);
     bool mergeEndWithNextIfIdentical(const Position& start, const Position& end, EditingState*);
-    void cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor);
+    void cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor, EditingState*);
 
     void surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, PassRefPtrWillBeRawPtr<Element>, EditingState*);
     float computedFontSize(Node*);
     void joinChildTextNodes(ContainerNode*, const Position& start, const Position& end);
 
     HTMLElement* splitAncestorsWithUnicodeBidi(Node*, bool before, WritingDirection allowedDirection);
-    void removeEmbeddingUpToEnclosingBlock(Node*, HTMLElement* unsplitAncestor);
+    void removeEmbeddingUpToEnclosingBlock(Node*, HTMLElement* unsplitAncestor, EditingState*);
 
     void updateStartEnd(const Position& newStart, const Position& newEnd);
     Position startPosition();

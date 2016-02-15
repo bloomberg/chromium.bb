@@ -1369,7 +1369,9 @@ bool CompositeEditCommand::breakOutOfEmptyListItem(EditingState* editingState)
                 // If listNode does NOT appear at the end, then we should consider it as a regular paragraph.
                 // e.g. <ul><li> <ul><li><br></li></ul> hello</li></ul> should become <ul><li> <div><br></div> hello</li></ul> at the end
                 splitElement(toElement(blockEnclosingList), listNode);
-                removeNodePreservingChildren(listNode->parentNode());
+                removeNodePreservingChildren(listNode->parentNode(), editingState);
+                if (editingState->isAborted())
+                    return false;
                 newBlock = HTMLLIElement::create(document());
             }
             // If listNode does NOT appear at the end of the outer list item, then behave as if in a regular paragraph.

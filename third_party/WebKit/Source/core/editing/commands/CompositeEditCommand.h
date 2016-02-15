@@ -127,7 +127,7 @@ protected:
     void removeChildrenInRange(PassRefPtrWillBeRawPtr<Node>, unsigned from, unsigned to, EditingState*);
     virtual void removeNode(PassRefPtrWillBeRawPtr<Node>, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     HTMLSpanElement* replaceElementWithSpanPreservingChildrenAndAttributes(PassRefPtrWillBeRawPtr<HTMLElement>);
-    void removeNodePreservingChildren(PassRefPtrWillBeRawPtr<Node>, EditingState* = ASSERT_NO_EDITING_ABORT, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
+    void removeNodePreservingChildren(PassRefPtrWillBeRawPtr<Node>, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     void removeNodeAndPruneAncestors(PassRefPtrWillBeRawPtr<Node>, EditingState*, Node* excludeNode = nullptr);
     void moveRemainingSiblingsToNewParent(Node*, Node* pastLastNodeToMove, PassRefPtrWillBeRawPtr<Element> prpNewParent, EditingState*);
     void updatePositionForNodeRemovalPreservingChildren(Position&, Node&);
