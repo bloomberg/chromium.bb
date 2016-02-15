@@ -12,36 +12,12 @@
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
-#if defined(OS_ANDROID)
-#include "media/mojo/services/android_mojo_media_client.h"
-#else
-#include "media/mojo/services/default_mojo_media_client.h"
-#endif
-
 namespace media {
-
-#if defined(OS_ANDROID)
-using DefaultClient = AndroidMojoMediaClient;
-#else
-using DefaultClient = DefaultMojoMediaClient;
-#endif
 
 // static
 scoped_ptr<mojo::ShellClient> MojoMediaApplication::CreateApp() {
   return scoped_ptr<mojo::ShellClient>(
-      new MojoMediaApplication(make_scoped_ptr(new DefaultClient())));
-}
-
-// static
-scoped_ptr<mojo::ShellClient> MojoMediaApplication::CreateAppWithClient(
-    const CreateMojoMediaClientCB& create_mojo_media_client_cb) {
-  scoped_ptr<MojoMediaClient> mojo_media_client =
-      create_mojo_media_client_cb.Run();
-  if (!mojo_media_client)
-    return nullptr;
-
-  return scoped_ptr<mojo::ShellClient>(
-      new MojoMediaApplication(std::move(mojo_media_client)));
+      new MojoMediaApplication(MojoMediaClient::Create()));
 }
 
 // TODO(xhwang): Hook up MediaLog when possible.
@@ -49,15 +25,13 @@ MojoMediaApplication::MojoMediaApplication(
     scoped_ptr<MojoMediaClient> mojo_media_client)
     : mojo_media_client_(std::move(mojo_media_client)),
       shell_(nullptr),
-      media_log_(new MediaLog()) {
-  DCHECK(mojo_media_client_);
-}
+      media_log_(new MediaLog()) {}
 
 MojoMediaApplication::~MojoMediaApplication() {}
 
 void MojoMediaApplication::Initialize(mojo::Shell* shell,
-                                      const std::string& /* url */,
-                                      uint32_t /* id */) {
+                                      const std::string& url,
+                                      uint32_t id) {
   shell_ = shell;
   mojo_media_client_->Initialize();
 }
