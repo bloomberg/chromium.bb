@@ -15,6 +15,7 @@
       <part file="flags_ui_resources.grdp" />
       <part file="gcm_driver_resources.grdp" />
       <part file="net_log_resources.grdp" />
+      <part file="neterror_resources.grdp" />
       <part file="printing_resources.grdp" />
       <part file="proximity_auth_resources.grdp" />
       <part file="security_interstitials_resources.grdp" />

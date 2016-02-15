@@ -1602,6 +1602,7 @@ def _CheckNoDeprecatedCSS(input_api, output_api):
                  r"^chrome/docs",
                  r"^components/dom_distiller/core/css/distilledpage_ios.css",
                  r"^components/flags_ui/resources/apple_flags.css",
+                 r"^components/neterror/resources/neterror.css",
                  r"^native_client_sdk"))
   file_filter = lambda f: input_api.FilterSourceFile(
       f, white_list=file_inclusion_pattern, black_list=black_list)
