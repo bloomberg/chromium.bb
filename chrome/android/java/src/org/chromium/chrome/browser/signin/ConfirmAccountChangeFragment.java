@@ -21,7 +21,6 @@ import android.widget.TextView;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.sync.ui.ClearSyncDataPreferences;
 import org.chromium.ui.text.SpanApplier;
@@ -93,10 +92,9 @@ class ConfirmAccountChangeFragment
     }
 
     private void showClearSyncDataPreferences() {
-        Preferences prefActivity = (Preferences) getActivity();
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(prefActivity,
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(getActivity(),
                 ClearSyncDataPreferences.class.getName());
-        prefActivity.startActivity(intent);
+        startActivity(intent);
 
         // Cancel out of current sign in.
         SigninManager.get(getActivity()).abortSignIn();
