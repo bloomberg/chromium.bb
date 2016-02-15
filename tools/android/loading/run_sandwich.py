@@ -12,10 +12,14 @@ TODO(pasko): implement cache preparation and WPR.
 """
 
 import argparse
+import json
 import logging
 import os
+import shutil
 import sys
+import tempfile
 import time
+import zipfile
 
 _SRC_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..'))
@@ -100,22 +104,16 @@ def _UpdateTimestampFromAdbStat(filename, stat):
   os.utime(filename, (stat.st_time, stat.st_time))
 
 
-def _SaveBrowserCache(device, output_directory):
+def _PullBrowserCache(device):
   """Pulls the browser cache from the device and saves it locally.
 
   Cache is saved with the same file structure as on the device. Timestamps are
   important to preserve because indexing and eviction depends on them.
 
-  Args:
-    output_directory: name of the directory for saving cache.
+  Returns:
+    Temporary directory containing all the browser cache.
   """
-  save_target = os.path.join(output_directory, _CACHE_DIRECTORY_NAME)
-  try:
-    os.makedirs(save_target)
-  except IOError:
-    logging.warning('Could not create directory: %s' % save_target)
-    raise
-
+  save_target = tempfile.mkdtemp(suffix='.cache')
   cache_directory = '/data/data/' + _CHROME_PACKAGE + '/cache/Cache'
   for filename, stat in device.adb.Ls(cache_directory):
     if filename == '..':
@@ -144,6 +142,72 @@ def _SaveBrowserCache(device, output_directory):
   # after all files in it have been written. The timestamp is compared with
   # the contents of the index file when freshness is determined.
   _UpdateTimestampFromAdbStat(save_target, cache_directory_stat)
+  return save_target
+
+
+def _ZipDirectoryContent(root_directory_path, archive_dest_path):
+  """Zip a directory's content recursively with all the directories'
+  timestamps preserved.
+
+  Args:
+    root_directory_path: The directory's path to archive.
+    archive_dest_path: Archive destination's path.
+  """
+  with zipfile.ZipFile(archive_dest_path, 'w') as zip_output:
+    timestamps = {}
+    for directory_path, dirnames, filenames in os.walk(root_directory_path):
+      for dirname in dirnames:
+        subdirectory_path = os.path.join(directory_path, dirname)
+        subdirectory_relative_path = os.path.relpath(subdirectory_path,
+                                                     root_directory_path)
+        subdirectory_stats = os.stat(subdirectory_path)
+        timestamps[subdirectory_relative_path] = {
+            'atime': subdirectory_stats.st_atime,
+            'mtime': subdirectory_stats.st_mtime}
+      for filename in filenames:
+        file_path = os.path.join(directory_path, filename)
+        file_archive_name = os.path.join('content',
+            os.path.relpath(file_path, root_directory_path))
+        file_stats = os.stat(file_path)
+        timestamps[file_archive_name[8:]] = {
+            'atime': file_stats.st_atime,
+            'mtime': file_stats.st_mtime}
+        zip_output.write(file_path, arcname=file_archive_name)
+    zip_output.writestr('timestamps.json',
+                        json.dumps(timestamps, indent=2))
+
+
+def _UnzipDirectoryContent(archive_path, directory_dest_path):
+  """Unzip a directory's content recursively with all the directories'
+  timestamps preserved.
+
+  Args:
+    archive_path: Archive's path to unzip.
+    directory_dest_path: Directory destination path.
+  """
+  if not os.path.exists(directory_dest_path):
+    os.makedirs(directory_dest_path)
+
+  with zipfile.ZipFile(archive_path) as zip_input:
+    timestamps = None
+    for file_archive_name in zip_input.namelist():
+      if file_archive_name == 'timestamps.json':
+        timestamps = json.loads(zip_input.read(file_archive_name))
+      elif file_archive_name.startswith('content/'):
+        file_relative_path = file_archive_name[8:]
+        file_output_path = os.path.join(directory_dest_path, file_relative_path)
+        file_parent_directory_path = os.path.dirname(file_output_path)
+        if not os.path.exists(file_parent_directory_path):
+          os.makedirs(file_parent_directory_path)
+        with open(file_output_path, 'w') as f:
+          f.write(zip_input.read(file_archive_name))
+
+    assert timestamps
+    for relative_path, stats in timestamps.iteritems():
+      output_path = os.path.join(directory_dest_path, relative_path)
+      if not os.path.exists(output_path):
+        os.makedirs(output_path)
+      os.utime(output_path, (stats['atime'], stats['mtime']))
 
 
 def main():
@@ -203,7 +267,11 @@ def main():
     time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
     device.KillAll(_CHROME_PACKAGE, quiet=True)
     time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
-    _SaveBrowserCache(device, args.output)
+
+    cache_directory_path = _PullBrowserCache(device)
+    _ZipDirectoryContent(cache_directory_path,
+                         os.path.join(args.output, 'cache.zip'))
+    shutil.rmtree(cache_directory_path)
 
 
 if __name__ == '__main__':
