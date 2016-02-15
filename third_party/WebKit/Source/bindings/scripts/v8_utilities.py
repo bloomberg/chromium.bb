@@ -223,7 +223,7 @@ def deprecate_as(member):
     extended_attributes = member.extended_attributes
     if 'DeprecateAs' not in extended_attributes:
         return None
-    includes.add('core/frame/UseCounter.h')
+    includes.add('core/frame/Deprecation.h')
     return extended_attributes['DeprecateAs']
 
 

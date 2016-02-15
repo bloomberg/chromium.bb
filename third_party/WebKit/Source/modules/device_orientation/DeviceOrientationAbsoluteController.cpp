@@ -47,7 +47,7 @@ void DeviceOrientationAbsoluteController::didAddEventListener(LocalDOMWindow* wi
         if (document().isSecureContext(errorMessage)) {
             UseCounter::count(document().frame(), UseCounter::DeviceOrientationAbsoluteSecureOrigin);
         } else {
-            UseCounter::countDeprecation(document().frame(), UseCounter::DeviceOrientationAbsoluteInsecureOrigin);
+            Deprecation::countDeprecation(document().frame(), UseCounter::DeviceOrientationAbsoluteInsecureOrigin);
             // TODO: add rappor logging of insecure origins as in DeviceOrientationController.
             if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
                 return;

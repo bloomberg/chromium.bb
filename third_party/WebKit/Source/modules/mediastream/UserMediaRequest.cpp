@@ -37,7 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/SpaceSplitString.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/Deprecation.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
@@ -132,7 +132,7 @@ bool UserMediaRequest::isSecureContextUse(String& errorMessage)
 
     // While getUserMedia is blocked on insecure origins, we still want to
     // count attempts to use it.
-    UseCounter::countDeprecation(document->frame(), UseCounter::GetUserMediaInsecureOrigin);
+    Deprecation::countDeprecation(document->frame(), UseCounter::GetUserMediaInsecureOrigin);
     UseCounter::countCrossOriginIframe(*document, UseCounter::GetUserMediaInsecureOriginIframe);
     OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GetUserMediaInsecureOrigin);
     return false;

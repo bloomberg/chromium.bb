@@ -29,9 +29,9 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationController.h"
@@ -159,7 +159,7 @@ void Geolocation::recordOriginTypeAccess() const
         UseCounter::count(document, UseCounter::GeolocationSecureOrigin);
         UseCounter::countCrossOriginIframe(*document, UseCounter::GeolocationSecureOriginIframe);
     } else {
-        UseCounter::countDeprecation(document, UseCounter::GeolocationInsecureOrigin);
+        Deprecation::countDeprecation(document, UseCounter::GeolocationInsecureOrigin);
         UseCounter::countCrossOriginIframe(*document, UseCounter::GeolocationInsecureOriginIframe);
         OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GeolocationInsecureOrigin);
     }

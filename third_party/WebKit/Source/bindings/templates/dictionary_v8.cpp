@@ -66,7 +66,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
         {% endif %}
         } else {
             {% if member.deprecate_as %}
-            UseCounter::countDeprecationIfNotPrivateScript(isolate, currentExecutionContext(isolate), UseCounter::{{member.deprecate_as}});
+            Deprecation::countDeprecationIfNotPrivateScript(isolate, currentExecutionContext(isolate), UseCounter::{{member.deprecate_as}});
             {% endif %}
             {{v8_value_to_local_cpp_value(member) | indent(12)}}
             {% if member.is_interface_type %}

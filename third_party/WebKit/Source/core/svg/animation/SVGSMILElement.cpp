@@ -32,7 +32,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventSender.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/Deprecation.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -326,7 +326,7 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* r
     if (!rootParent->inDocument())
         return InsertionDone;
 
-    UseCounter::countDeprecation(document(), UseCounter::SVGSMILElementInDocument);
+    Deprecation::countDeprecation(document(), UseCounter::SVGSMILElementInDocument);
 
     setAttributeName(constructQualifiedName(this, fastGetAttribute(SVGNames::attributeNameAttr)));
     SVGSVGElement* owner = ownerSVGElement();

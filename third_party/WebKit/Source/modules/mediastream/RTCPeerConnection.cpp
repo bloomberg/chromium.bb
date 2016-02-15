@@ -39,8 +39,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/VoidCallback.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -395,7 +395,7 @@ void RTCPeerConnection::createOffer(ExecutionContext* context, RTCSessionDescrip
     if (errorCallback)
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyFailureCallback);
     else
-        UseCounter::countDeprecation(context, UseCounter::RTCPeerConnectionCreateOfferLegacyNoFailureCallback);
+        Deprecation::countDeprecation(context, UseCounter::RTCPeerConnectionCreateOfferLegacyNoFailureCallback);
 
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
@@ -437,7 +437,7 @@ void RTCPeerConnection::createAnswer(ExecutionContext* context, RTCSessionDescri
     if (errorCallback)
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyFailureCallback);
     else
-        UseCounter::countDeprecation(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyNoFailureCallback);
+        Deprecation::countDeprecation(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyNoFailureCallback);
 
     if (mediaConstraints.isObject())
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyConstraints);

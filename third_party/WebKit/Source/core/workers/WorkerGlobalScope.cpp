@@ -46,12 +46,13 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMTimerCoordinator.h"
+#include "core/frame/Deprecation.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/WorkerThreadableLoader.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/workers/WorkerNavigator.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerConsole.h"
@@ -354,9 +355,9 @@ void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
     // per worker lifecycle.
     if (!m_deprecationWarningBits.hasRecordedMeasurement(feature)) {
         m_deprecationWarningBits.recordMeasurement(feature);
-        ASSERT(!UseCounter::deprecationMessage(feature).isEmpty());
+        ASSERT(!Deprecation::deprecationMessage(feature).isEmpty());
         ASSERT(executionContext());
-        executionContext()->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, UseCounter::deprecationMessage(feature)));
+        executionContext()->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, Deprecation::deprecationMessage(feature)));
     }
 }
 

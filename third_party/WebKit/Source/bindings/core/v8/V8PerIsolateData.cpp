@@ -32,7 +32,7 @@
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/Deprecation.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "public/platform/Platform.h"
 #include "wtf/LeakAnnotations.h"
@@ -114,7 +114,7 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
         return;
     }
     if (deprecated)
-        UseCounter::countDeprecation(currentExecutionContext(isolate), blinkFeature);
+        Deprecation::countDeprecation(currentExecutionContext(isolate), blinkFeature);
     else
         UseCounter::count(currentExecutionContext(isolate), blinkFeature);
 }

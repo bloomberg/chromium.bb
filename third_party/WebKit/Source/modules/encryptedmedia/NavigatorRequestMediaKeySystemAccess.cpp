@@ -9,8 +9,8 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/OriginsUsingFeatures.h"
-#include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
@@ -235,7 +235,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     if (executionContext->isSecureContext(errorMessage)) {
         UseCounter::count(executionContext, UseCounter::EncryptedMediaSecureOrigin);
     } else {
-        UseCounter::countDeprecation(executionContext, UseCounter::EncryptedMediaInsecureOrigin);
+        Deprecation::countDeprecation(executionContext, UseCounter::EncryptedMediaInsecureOrigin);
         // TODO(ddorwin): Implement the following:
         // Reject promise with a new DOMException whose name is NotSupportedError.
     }

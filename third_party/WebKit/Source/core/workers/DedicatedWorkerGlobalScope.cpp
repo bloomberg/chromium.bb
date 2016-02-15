@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
@@ -93,7 +94,7 @@ private:
     {
         ASSERT(context->isDocument());
         if (m_isDeprecation)
-            UseCounter::countDeprecation(context, m_feature);
+            Deprecation::countDeprecation(context, m_feature);
         else
             UseCounter::count(context, m_feature);
     }

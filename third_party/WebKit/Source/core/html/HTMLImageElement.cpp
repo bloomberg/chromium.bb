@@ -33,8 +33,8 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/ImageBitmap.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -331,7 +331,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
 
         HTMLSourceElement* source = toHTMLSourceElement(child);
         if (!source->fastGetAttribute(srcAttr).isNull())
-            UseCounter::countDeprecation(document(), UseCounter::PictureSourceSrc);
+            Deprecation::countDeprecation(document(), UseCounter::PictureSourceSrc);
         String srcset = source->fastGetAttribute(srcsetAttr);
         if (srcset.isEmpty())
             continue;

@@ -1104,30 +1104,9 @@ public:
     void count(CSSParserMode, CSSPropertyID);
     void count(Feature);
 
-    // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation
-    // warning to the console. Repeated calls are ignored.
-    //
-    // Be considerate to developers' consoles: features should only send
-    // deprecation warnings when we're actively interested in removing them from
-    // the platform.
-    //
-    // For shared workers and service workers, the ExecutionContext* overload
-    // doesn't count the usage but only sends a console warning.
-    static void countDeprecation(const LocalFrame*, Feature);
-    static void countDeprecation(ExecutionContext*, Feature);
-    static void countDeprecation(const Document&, Feature);
-    // Use countDeprecationIfNotPrivateScript() instead of countDeprecation()
-    // if you don't want to count metrics in private scripts. You should use
-    // countDeprecationIfNotPrivateScript() in a binding layer.
-    static void countDeprecationIfNotPrivateScript(v8::Isolate*, ExecutionContext*, Feature);
-    static String deprecationMessage(Feature);
-
     // Count only features if they're being used in an iframe which does not
     // have script access into the top level document.
     static void countCrossOriginIframe(const Document&, Feature);
-
-    // TODO (nainar): Migrate all console message functions to Deprecation
-    static String willBeRemoved(const char* feature, int milestone, const char* details);
 
     // Return whether the Feature was previously counted for this document.
     // NOTE: only for use in testing.
@@ -1143,6 +1122,11 @@ public:
 
     static void muteForInspector();
     static void unmuteForInspector();
+
+    void recordMeasurement(Feature feature) { m_countBits.recordMeasurement(feature); }
+    void updateMeasurements();
+
+    bool hasRecordedMeasurement(Feature feature) const { return m_countBits.hasRecordedMeasurement(feature); }
 
     class CountBits {
         DISALLOW_NEW();
@@ -1178,11 +1162,6 @@ public:
 protected:
     friend class UseCounterTest;
     static int m_muteCount;
-
-    void recordMeasurement(Feature feature) { m_countBits.recordMeasurement(feature); }
-    void updateMeasurements();
-
-    bool hasRecordedMeasurement(Feature feature) const { return m_countBits.hasRecordedMeasurement(feature); }
 
     CountBits m_countBits;
     BitVector m_CSSFeatureBits;

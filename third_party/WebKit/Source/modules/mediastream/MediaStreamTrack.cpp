@@ -30,7 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/Deprecation.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
@@ -145,7 +145,7 @@ void MediaStreamTrack::getSources(ExecutionContext* context, MediaStreamTrackSou
         exceptionState.throwDOMException(NotSupportedError, "No sources controller available; is this a detached window?");
         return;
     }
-    UseCounter::countDeprecation(context, UseCounter::MediaStreamTrackGetSources);
+    Deprecation::countDeprecation(context, UseCounter::MediaStreamTrackGetSources);
     MediaStreamTrackSourcesRequest* request = MediaStreamTrackSourcesRequestImpl::create(*context, callback);
     userMedia->requestSources(request);
 }

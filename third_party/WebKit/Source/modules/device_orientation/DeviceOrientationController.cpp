@@ -5,9 +5,9 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
 #include "modules/EventModules.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
@@ -61,7 +61,7 @@ void DeviceOrientationController::didAddEventListener(LocalDOMWindow* window, co
         if (document().isSecureContext(errorMessage)) {
             UseCounter::count(document().frame(), UseCounter::DeviceOrientationSecureOrigin);
         } else {
-            UseCounter::countDeprecation(document().frame(), UseCounter::DeviceOrientationInsecureOrigin);
+            Deprecation::countDeprecation(document().frame(), UseCounter::DeviceOrientationInsecureOrigin);
             OriginsUsingFeatures::countAnyWorld(document(), OriginsUsingFeatures::Feature::DeviceOrientationInsecureOrigin);
             if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
                 return;
