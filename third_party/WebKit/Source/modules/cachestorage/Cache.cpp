@@ -197,6 +197,23 @@ void RecordResponseTypeForAdd(const Member<Response>& response)
     responseTypeHistogram.count(static_cast<int>(type));
 };
 
+bool varyHeaderContainsAsterisk(const Response* response)
+{
+    const FetchHeaderList* headers = response->headers()->headerList();
+    for (size_t i = 0; i < headers->size(); ++i) {
+        const FetchHeaderList::Header& header = headers->entry(i);
+        if (header.first == "vary") {
+            Vector<String> fields;
+            header.second.split(',', fields);
+            for (size_t j = 0; j < fields.size(); ++j) {
+                if (fields[j].stripWhiteSpace() == "*")
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
 } // namespace
 
 // TODO(nhiroki): Unfortunately, we have to go through V8 to wait for the fetch
@@ -217,6 +234,10 @@ public:
         for (const auto& response : responses) {
             if (!response->ok()) {
                 ScriptPromise rejection = ScriptPromise::reject(scriptState(), V8ThrowException::createTypeError(scriptState()->isolate(), "Request failed"));
+                return ScriptValue(scriptState(), rejection.v8Value());
+            }
+            if (varyHeaderContainsAsterisk(response)) {
+                ScriptPromise rejection = ScriptPromise::reject(scriptState(), V8ThrowException::createTypeError(scriptState()->isolate(), "Vary header contains *"));
                 return ScriptValue(scriptState(), rejection.v8Value());
             }
         }
@@ -546,6 +567,11 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
             return promise;
         }
         ASSERT(!requests[i]->hasBody());
+
+        if (varyHeaderContainsAsterisk(responses[i])) {
+            barrierCallback->onError("Vary header contains *");
+            return promise;
+        }
 
         if (responses[i]->isBodyLocked() || responses[i]->bodyUsed()) {
             barrierCallback->onError("Response body is already used");
