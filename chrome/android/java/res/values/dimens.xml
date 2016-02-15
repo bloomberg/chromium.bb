@@ -163,7 +163,7 @@
     <dimen name="badge_border_size">1.3dp</dimen>
 
     <!-- First Run Experience and Welcome Page dimensions -->
-    <dimen name="fre_button_padding">16dp</dimen>
+    <dimen name="fre_button_padding">12dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
     <dimen name="fre_title_text_size">24sp</dimen>
     <dimen name="fre_button_text_size">14sp</dimen>

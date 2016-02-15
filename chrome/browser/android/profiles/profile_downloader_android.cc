@@ -193,6 +193,15 @@ void StartFetchingAccountInfoFor(JNIEnv* env,
   AccountTrackerService* account_tracker_service =
       AccountTrackerServiceFactory::GetForProfile(profile);
 
+  AccountInfo account_info =
+      account_tracker_service->FindAccountInfoByEmail(email);
+
+  if (account_info.account_id.empty()) {
+      LOG(ERROR) << "Attempted to get AccountInfo for account not in the "
+          << "AccountTrackerService";
+      return;
+  }
+
   AccountInfoRetriever* retriever = new AccountInfoRetriever(
       profile,
       account_tracker_service->FindAccountInfoByEmail(email).account_id, email,

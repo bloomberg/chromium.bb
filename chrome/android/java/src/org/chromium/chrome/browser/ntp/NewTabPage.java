@@ -616,7 +616,7 @@ public class NewTabPage
         Context context = mNewTabPageView.getContext();
         Snackbar snackbar = Snackbar.make(context.getString(R.string.most_visited_item_removed),
                 mMostVisitedItemRemovedController, Snackbar.TYPE_ACTION)
-                .setAction(context.getString(R.string.undo_bar_button_text), url);
+                .setAction(context.getString(R.string.undo), url);
         mTab.getSnackbarManager().showSnackbar(snackbar);
     }
 

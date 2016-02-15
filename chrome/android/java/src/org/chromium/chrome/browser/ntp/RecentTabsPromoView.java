@@ -93,6 +93,11 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
          * Called when user attempts to create a new account.
          */
         void onNewAccount();
+
+        /**
+         * Called when a user cancels the account sign in process.
+         */
+        void onAccountSelectionCancelled();
     }
 
     private static final int PROMO_TYPE_SIGN_IN = 0;
@@ -249,18 +254,14 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
         signInPromoView.init(mModel.getProfileDataCache());
         signInPromoView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
         ((FrameLayout.LayoutParams) signInPromoView.getLayoutParams()).gravity = Gravity.CENTER;
-        signInPromoView.configureForRecentTabsPage();
-        signInPromoView.setCanCancel(false);
+        signInPromoView.configureForRecentTabsOrBookmarksPage();
         signInPromoView.setListener(new AccountFirstRunView.Listener() {
-            @Override
-            public void onAccountSelectionConfirmed(String accountName) {
-                if (mUserActionListener != null) mUserActionListener.onAccountSelectionConfirmed();
-                SigninManager.get(mActivity).signIn(accountName, mActivity, null);
-            }
+            private String mAccountName;
 
             @Override
             public void onAccountSelectionCanceled() {
-                assert false : "Button should be hidden";
+                assert mUserActionListener != null;
+                mUserActionListener.onAccountSelectionCancelled();
             }
 
             @Override
@@ -271,12 +272,18 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
             }
 
             @Override
-            public void onSigningInCompleted(String accountName) {
-                assert false : "Button should be hidden";
+            public void onAccountSelected(String accountName) {
+                mAccountName = accountName;
             }
 
             @Override
-            public void onSettingsButtonClicked(String accountName) {
+            public void onDoneClicked() {
+                if (mUserActionListener != null) mUserActionListener.onAccountSelectionConfirmed();
+                SigninManager.get(mActivity).signIn(mAccountName, mActivity, null);
+            }
+
+            @Override
+            public void onSettingsClicked() {
                 assert false : "Button should be hidden";
             }
 

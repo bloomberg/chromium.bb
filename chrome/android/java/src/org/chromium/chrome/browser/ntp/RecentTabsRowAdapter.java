@@ -603,6 +603,11 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                             public void onNewAccount() {
                                 RecordUserAction.record("Signin_AddAccountToDevice");
                             }
+                            @Override
+                            public void onAccountSelectionCancelled() {
+                                mRecentTabsManager.setSigninPromoDeclined();
+                                notifyDataSetChanged();
+                            }
                         });
             }
             if (!mRecentTabsManager.isSignedIn()) {

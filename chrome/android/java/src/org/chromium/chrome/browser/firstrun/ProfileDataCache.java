@@ -142,7 +142,7 @@ public class ProfileDataCache implements Observer {
             Bitmap bitmap) {
         bitmap = getCroppedBitmap(bitmap);
         mCacheEntries.put(accountId, new CacheEntry(bitmap, fullName, givenName));
-        if (mObserver != null) mObserver.onProfileDownloaded(accountId, givenName, fullName,
+        if (mObserver != null) mObserver.onProfileDownloaded(accountId, fullName, givenName,
                 bitmap);
     }
 

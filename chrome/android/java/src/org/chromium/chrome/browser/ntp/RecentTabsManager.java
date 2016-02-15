@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.preference.PreferenceManager;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
@@ -52,6 +54,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     private static final int RECENTLY_CLOSED_MAX_TAB_COUNT = 5;
+    private static final String PREF_SIGNIN_PROMO_DECLINED =
+            "recent_tabs_signin_promo_declined";
 
     private final Profile mProfile;
     private final Tab mTab;
@@ -386,7 +390,22 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
             return false;
         }
 
+        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(
+                PREF_SIGNIN_PROMO_DECLINED, false)) {
+            return false;
+        }
+
         return !AndroidSyncSettings.isSyncEnabled(mContext) || mForeignSessions.isEmpty();
+    }
+
+    /**
+     * Save that user tapped "No" button on the signin promo.
+     */
+    public void setSigninPromoDeclined() {
+        SharedPreferences.Editor sharedPreferencesEditor =
+                PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+        sharedPreferencesEditor.putBoolean(PREF_SIGNIN_PROMO_DECLINED, true);
+        sharedPreferencesEditor.apply();
     }
 
     /**

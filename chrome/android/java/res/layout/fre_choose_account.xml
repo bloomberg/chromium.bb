@@ -6,6 +6,7 @@
 -->
 <org.chromium.chrome.browser.firstrun.AccountFirstRunView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fre_account_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
@@ -13,7 +14,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="57dp"
+        android:layout_marginBottom="76dp"
         android:fillViewport="true"
         android:scrollbarStyle="outsideOverlay" >
 
@@ -59,6 +60,7 @@
                     android:paddingStart="24dp" >
 
                     <Spinner
+                        style="@style/Widget.AppCompat.Spinner.Underlined"
                         android:id="@+id/google_accounts_spinner"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -66,63 +68,86 @@
                         android:padding="0dp"
                         android:textColor="@color/fre_text_color" />
 
-                    <TextView
-                        android:id="@+id/description"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:lineSpacingMultiplier="1.4"
-                        android:text="@string/fre_account_choice_description"
-                        android:textColor="@color/fre_light_text_color"
-                        android:textSize="@dimen/fre_normal_text_size" />
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+                        
+                        <org.chromium.ui.widget.TextViewWithClickableSpans
+                            android:id="@+id/description"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:lineSpacingMultiplier="1.4"
+                            android:text="@string/fre_account_choice_description"
+                            android:textColor="@color/fre_light_text_color"
+                            android:textSize="@dimen/fre_normal_text_size"
+                            android:visibility="visible"/>
+                            
+                        <!-- We use an invisible TextView overlapping with the visible one to keep
+                        the layout constant between text changes. This TextView will have its
+                        contents programmatically set to the longest string the above TextView can
+                        contain. -->
+                        
+                        <org.chromium.ui.widget.TextViewWithClickableSpans
+                            android:id="@+id/longest_description"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:lineSpacingMultiplier="1.4"
+                            android:textColor="@color/fre_light_text_color"
+                            android:textSize="@dimen/fre_normal_text_size"
+                            android:visibility="invisible"/>
+
+                    </FrameLayout>
+
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
-    <View android:id="@+id/button_bar_separator" 
-        style="@style/ButtonBarTopDivider"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="56dp" />
-
     <LinearLayout
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="76dp"
         android:layout_gravity="bottom"
-        android:orientation="horizontal" >
+        android:orientation="horizontal" 
+        android:padding="@dimen/fre_button_padding" >
 
         <!--suppress ButtonStyle -->
         <Button
             android:id="@+id/negative_button"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/listChoiceBackgroundIndicator"
-            android:gravity="start|center_vertical"
-            android:textDirection="locale"
-            android:paddingStart="@dimen/fre_button_padding"
-            android:paddingEnd="@dimen/fre_button_padding"
+            style="@style/ButtonCompatBorderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/fre_skip_text"
             android:textAllCaps="true"
             android:textColor="@color/light_normal_color"
-            android:textSize="@dimen/fre_button_text_size" />
+            android:textSize="15sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="invisible"/>
 
         <!--suppress ButtonStyle -->
-        <Button
+        <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/positive_button"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/listChoiceBackgroundIndicator"
-            android:gravity="end|center_vertical"
-            android:textDirection="locale"
-            android:paddingStart="@dimen/fre_button_padding"
-            android:paddingEnd="@dimen/fre_button_padding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/choose_account_sign_in"
             android:textAllCaps="true"
-            android:textColor="@color/light_active_color"
-            android:textSize="@dimen/fre_button_text_size" />
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            chrome:buttonColor="@color/light_active_color" />
+
+        <View
+            android:id="@+id/positive_button_end_padding"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone"/>
     </LinearLayout>
 
 </org.chromium.chrome.browser.firstrun.AccountFirstRunView>

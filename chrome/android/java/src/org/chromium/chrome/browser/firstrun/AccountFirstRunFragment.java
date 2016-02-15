@@ -38,11 +38,6 @@ public class AccountFirstRunFragment extends FirstRunPage {
 
         mView.setListener(new AccountFirstRunView.Listener() {
             @Override
-            public void onAccountSelectionConfirmed(String accountName) {
-                mView.switchToSignedMode();
-            }
-
-            @Override
             public void onAccountSelectionCanceled() {
                 getPageDelegate().refuseSignIn();
                 advanceToNextPage();
@@ -54,14 +49,17 @@ public class AccountFirstRunFragment extends FirstRunPage {
             }
 
             @Override
-            public void onSigningInCompleted(String accountName) {
+            public void onAccountSelected(String accountName) {
                 getPageDelegate().acceptSignIn(accountName);
+            }
+
+            @Override
+            public void onDoneClicked() {
                 advanceToNextPage();
             }
 
             @Override
-            public void onSettingsButtonClicked(String accountName) {
-                getPageDelegate().acceptSignIn(accountName);
+            public void onSettingsClicked() {
                 getPageDelegate().askToOpenSyncSettings();
                 advanceToNextPage();
             }
@@ -72,6 +70,7 @@ public class AccountFirstRunFragment extends FirstRunPage {
                 // The user would have to go through the FRE again.
                 getPageDelegate().abortFirstRunExperience();
             }
+
         });
 
         mView.init(getPageDelegate().getProfileDataCache());
@@ -88,7 +87,6 @@ public class AccountFirstRunFragment extends FirstRunPage {
     @Override
     public void onStart() {
         super.onStart();
-        mView.setButtonsEnabled(true);
         mView.setProfileDataCache(getPageDelegate().getProfileDataCache());
         getPageDelegate().onSigninDialogShown();
     }

@@ -131,6 +131,11 @@ public class BookmarkSigninActivity extends BookmarkActivityBase implements
     }
 
     @Override
+    public void onAccountSelectionCancelled() {
+        finish();
+    };
+
+    @Override
     public ProfileDataCache getProfileDataCache() {
         if (mProfileDataCache == null) {
             mProfileDataCache = new ProfileDataCache(this, Profile.getLastUsedProfile());

@@ -35,6 +35,7 @@ public class SigninPromoScreen
         extends AlwaysDismissedDialog implements AccountFirstRunView.Listener {
     private AccountFirstRunView mAccountFirstRunView;
     private ProfileDataCache mProfileDataCache;
+    private String mAccountName;
 
     /**
      * Launches the signin promo if it needs to be displayed.
@@ -98,26 +99,6 @@ public class SigninPromoScreen
         mProfileDataCache.destroy();
         mProfileDataCache = null;
     }
-
-    @Override
-    public void onAccountSelectionConfirmed(String accountName) {
-        Activity activity = getOwnerActivity();
-        RecordUserAction.record("Signin_Signin_FromSigninPromo");
-        SigninManager.get(activity).signIn(accountName, activity, new SignInCallback() {
-            @Override
-            public void onSignInComplete() {
-                mAccountFirstRunView.switchToSignedMode();
-                SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED);
-            }
-
-            @Override
-            public void onSignInAborted() {
-                SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_DECLINED);
-                dismiss();
-            }
-        });
-    }
-
     @Override
     public void onAccountSelectionCanceled() {
         SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_DECLINED);
@@ -130,17 +111,36 @@ public class SigninPromoScreen
     }
 
     @Override
-    public void onSigningInCompleted(String accountName) {
-        dismiss();
+    public void onAccountSelected(String accountName) {
+        mAccountName = accountName;
     }
 
     @Override
-    public void onSettingsButtonClicked(String accountName) {
+    public void onDoneClicked() {
+        Activity activity = getOwnerActivity();
+        RecordUserAction.record("Signin_Signin_FromSigninPromo");
+        SigninManager.get(activity).signIn(mAccountName, activity, new SignInCallback() {
+            @Override
+            public void onSignInComplete() {
+                SigninManager.get(getOwnerActivity()).logInSignedInUser();
+                SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED);
+            }
+
+            @Override
+            public void onSignInAborted() {
+                SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_DECLINED);
+                dismiss();
+            }
+        });
+    }
+
+    @Override
+    public void onSettingsClicked() {
         if (ProfileSyncService.get() != null) {
             Intent intent = PreferencesLauncher.createIntentForSettingsPage(getContext(),
                     SyncCustomizationFragment.class.getName());
             Bundle args = new Bundle();
-            args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, accountName);
+            args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, mAccountName);
             intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
             getContext().startActivity(intent);
         }
