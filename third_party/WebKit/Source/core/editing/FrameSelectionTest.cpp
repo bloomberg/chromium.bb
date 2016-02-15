@@ -155,6 +155,23 @@ TEST_F(FrameSelectionTest, SelectWordAroundPosition)
     EXPECT_EQ_SELECTED_TEXT("Baz");
 }
 
+TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree)
+{
+    setBodyContent("<span id=host></span>one");
+    setShadowContent("two<content></content>", "host");
+    updateLayoutAndStyleForPainting();
+    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
+    Node* const two = FlatTreeTraversal::firstChild(*host);
+    // Select "two" for selection in DOM tree
+    // Select "twoone" for selection in Flat tree
+    selection().setSelection(VisibleSelectionInFlatTree(PositionInFlatTree(host.get(), 0), PositionInFlatTree(document().body(), 2)));
+    selection().modify(FrameSelection::AlterationExtend, DirectionForward, WordGranularity);
+    EXPECT_EQ(Position(two, 0), visibleSelectionInDOMTree().start());
+    EXPECT_EQ(Position(two, 3), visibleSelectionInDOMTree().end());
+    EXPECT_EQ(PositionInFlatTree(two, 0), visibleSelectionInFlatTree().start());
+    EXPECT_EQ(PositionInFlatTree(two, 3), visibleSelectionInFlatTree().end());
+}
+
 TEST_F(FrameSelectionTest, MoveRangeSelectionTest)
 {
     // "Foo Bar Baz,"

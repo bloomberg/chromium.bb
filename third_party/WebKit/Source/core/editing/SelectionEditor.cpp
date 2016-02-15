@@ -194,6 +194,7 @@ void SelectionEditor::willBeModified(EAlteration alter, SelectionDirection direc
         m_selection.setBase(end);
         m_selection.setExtent(start);
     }
+    SelectionAdjuster::adjustSelectionInFlatTree(&m_selectionInFlatTree, m_selection);
 }
 
 VisiblePosition SelectionEditor::positionForPlatform(bool isGetStart) const
