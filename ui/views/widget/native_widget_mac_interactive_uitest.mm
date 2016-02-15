@@ -100,7 +100,7 @@ TEST_P(NativeWidgetMacInteractiveUITest, ShowAttainsKeyStatus) {
 
 // Test that ShowInactive does not take keyWindow status.
 TEST_P(NativeWidgetMacInteractiveUITest, ShowInactiveIgnoresKeyStatus) {
-  ScopedWidget widget(MakeWidget());
+  Widget* widget = MakeWidget();
 
   base::scoped_nsobject<WindowedNSNotificationObserver> waiter(
       [[WindowedNSNotificationObserver alloc]
@@ -130,6 +130,8 @@ TEST_P(NativeWidgetMacInteractiveUITest, ShowInactiveIgnoresKeyStatus) {
   EXPECT_EQ(1, [waiter notificationCount]);
   EXPECT_TRUE(widget->IsActive());
   EXPECT_TRUE([widget->GetNativeWindow() isKeyWindow]);
+
+  widget->CloseNow();
 }
 
 namespace {
@@ -161,7 +163,7 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
   if (base::mac::IsOSSnowLeopard())
     return;
 
-  ScopedWidget parent_widget(CreateTopLevelPlatformWidget());
+  Widget* parent_widget = CreateTopLevelPlatformWidget();
   parent_widget->SetBounds(gfx::Rect(100, 100, 100, 100));
   ShowKeyWindow(parent_widget);
 
@@ -196,7 +198,7 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
   EXPECT_TRUE([active_button_image isEqualToData:button_image_with_child]);
 
   // Verify that activating some other random window does change the button.
-  ScopedWidget other_widget(CreateTopLevelPlatformWidget());
+  Widget* other_widget = CreateTopLevelPlatformWidget();
   other_widget->SetBounds(gfx::Rect(200, 200, 100, 100));
   ShowKeyWindow(other_widget);
   EXPECT_FALSE([parent isMainWindow]);
@@ -204,6 +206,9 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
   EXPECT_TRUE([button isEnabled]);
   NSData* inactive_button_image = ViewAsTIFF(button);
   EXPECT_FALSE([active_button_image isEqualToData:inactive_button_image]);
+
+  other_widget->CloseNow();
+  parent_widget->CloseNow();
 }
 
 INSTANTIATE_TEST_CASE_P(NativeWidgetMacInteractiveUITestInstance,

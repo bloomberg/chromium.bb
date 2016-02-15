@@ -27,11 +27,6 @@ Widget* CreateHelper(Widget::InitParams params) {
 
 }  // namespace
 
-void WidgetCloser::operator()(Widget* widget) const {
-  if (widget)
-    widget->CloseNow();
-}
-
 // A widget that assumes mouse capture always works. It won't in testing, so we
 // mock it.
 NativeWidgetCapture::NativeWidgetCapture(

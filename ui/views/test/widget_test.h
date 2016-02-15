@@ -50,14 +50,6 @@ class RootView;
 
 namespace test {
 
-// This class can be used as a deleter for scoped_ptr<Widget>
-// to call function Widget::CloseNow automatically.
-struct WidgetCloser {
-  void operator()(Widget* widget) const;
-};
-
-using ScopedWidget = scoped_ptr<Widget, WidgetCloser>;
-
 // A widget that assumes mouse capture always works. It won't on Aura in
 // testing, so we mock it.
 class NativeWidgetCapture : public PlatformNativeWidget {

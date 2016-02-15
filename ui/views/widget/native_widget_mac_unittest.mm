@@ -333,14 +333,14 @@ class PaintCountView : public View {
 // Test minimized states triggered externally, implied visibility and restored
 // bounds whilst minimized.
 TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
-  ScopedWidget widget(new Widget);
+  Widget* widget = new Widget;
   Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
   widget->Init(init_params);
 
   PaintCountView* view = new PaintCountView();
   widget->GetContentsView()->AddChildView(view);
   NSWindow* ns_window = widget->GetNativeWindow();
-  WidgetChangeObserver observer(widget.get());
+  WidgetChangeObserver observer(widget);
 
   widget->SetBounds(gfx::Rect(100, 100, 300, 300));
 
@@ -418,12 +418,12 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   EXPECT_EQ(2, observer.lost_visible_count());
   EXPECT_EQ(restored_bounds, widget->GetRestoredBounds());
   EXPECT_EQ(3, view->paint_count());
-}
 
-TEST_F(NativeWidgetMacTest, MiniaturizeFramelessWidgetExternally) {
+  widget->CloseNow();
+
   // Create a widget without a minimize button.
-  ScopedWidget widget(CreateTopLevelFramelessPlatformWidget());
-  NSWindow* ns_window = widget->GetNativeWindow();
+  widget = CreateTopLevelFramelessPlatformWidget();
+  ns_window = widget->GetNativeWindow();
   widget->SetBounds(gfx::Rect(100, 100, 300, 300));
   widget->Show();
   EXPECT_FALSE(widget->IsMinimized());
@@ -437,7 +437,7 @@ TEST_F(NativeWidgetMacTest, MiniaturizeFramelessWidgetExternally) {
   EXPECT_TRUE(widget->IsMinimized());
 
   // Test closing while minimized.
-  widget.reset();
+  widget->CloseNow();
 }
 
 // Simple view for the SetCursor test that overrides View::GetCursor().
@@ -467,7 +467,7 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
   NSCursor* hand = GetNativeHandCursor();
   NSCursor* ibeam = GetNativeIBeamCursor();
 
-  ScopedWidget widget(CreateTopLevelPlatformWidget());
+  Widget* widget = CreateTopLevelPlatformWidget();
   widget->SetBounds(gfx::Rect(0, 0, 300, 300));
   widget->GetContentsView()->AddChildView(new CursorView(0, hand));
   widget->GetContentsView()->AddChildView(new CursorView(100, ibeam));
@@ -513,12 +513,14 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
   event_generator.MoveMouseTo(gfx::Point(250, 50));
   [widget->GetNativeWindow() cursorUpdate:event_in_content];
   EXPECT_EQ(arrow, [NSCursor currentCursor]);
+
+  widget->CloseNow();
 }
 
 // Tests that an accessibility request from the system makes its way through to
 // a views::Label filling the window.
 TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
-  ScopedWidget widget(CreateTopLevelPlatformWidget());
+  Widget* widget = CreateTopLevelPlatformWidget();
   gfx::Rect screen_rect(50, 50, 100, 100);
   widget->SetBounds(screen_rect);
 
@@ -535,6 +537,8 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
   id hit = [widget->GetNativeWindow() accessibilityHitTest:midpoint];
   id title = [hit accessibilityAttributeValue:NSAccessibilityTitleAttribute];
   EXPECT_NSEQ(title, @"Green");
+
+  widget->CloseNow();
 }
 
 // Tests creating a views::Widget parented off a native NSWindow.
@@ -617,7 +621,7 @@ base::string16 TooltipTextForWidget(Widget* widget) {
 // when a tooltip is already visible, changing it causes an update. These were
 // tested manually by inserting a base::RunLoop.Run().
 TEST_F(NativeWidgetMacTest, Tooltips) {
-  ScopedWidget widget(CreateTopLevelPlatformWidget());
+  Widget* widget = CreateTopLevelPlatformWidget();
   gfx::Rect screen_rect(50, 50, 100, 100);
   widget->SetBounds(screen_rect);
 
@@ -636,7 +640,7 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
 
   // Initially, there should be no tooltip.
   event_generator.MoveMouseTo(gfx::Point(50, 50));
-  EXPECT_TRUE(TooltipTextForWidget(widget.get()).empty());
+  EXPECT_TRUE(TooltipTextForWidget(widget).empty());
 
   // Create a new button for the "front", and set the tooltip, but don't add it
   // to the view hierarchy yet.
@@ -646,27 +650,29 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
 
   // Changing the tooltip text shouldn't require an additional mousemove to take
   // effect.
-  EXPECT_TRUE(TooltipTextForWidget(widget.get()).empty());
+  EXPECT_TRUE(TooltipTextForWidget(widget).empty());
   back->SetTooltipText(tooltip_back);
-  EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget.get()));
+  EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget));
 
   // Adding a new view under the mouse should also take immediate effect.
   back->AddChildView(front);
-  EXPECT_EQ(tooltip_front, TooltipTextForWidget(widget.get()));
+  EXPECT_EQ(tooltip_front, TooltipTextForWidget(widget));
 
   // A long tooltip will be wrapped by Cocoa, but the full string should appear.
   // Note that render widget hosts clip at 1024 to prevent DOS, but in toolkit-
   // views the UI is more trusted.
   front->SetTooltipText(long_tooltip);
-  EXPECT_EQ(long_tooltip, TooltipTextForWidget(widget.get()));
+  EXPECT_EQ(long_tooltip, TooltipTextForWidget(widget));
 
   // Move the mouse to a different view - tooltip should change.
   event_generator.MoveMouseTo(gfx::Point(15, 15));
-  EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget.get()));
+  EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget));
 
   // Move the mouse off of any view, tooltip should clear.
   event_generator.MoveMouseTo(gfx::Point(5, 5));
-  EXPECT_TRUE(TooltipTextForWidget(widget.get()).empty());
+  EXPECT_TRUE(TooltipTextForWidget(widget).empty());
+
+  widget->CloseNow();
 }
 
 namespace {
@@ -915,7 +921,7 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
 
   [parent close];
 
-  ScopedWidget parent_widget(CreateNativeDesktopWidget());
+  Widget* parent_widget = CreateNativeDesktopWidget();
   parent = parent_widget->GetNativeWindow();
   dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
@@ -924,6 +930,8 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
   Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
   EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
+
+  parent_widget->CloseNow();
 }
 
 // Attaches a child window to |parent| that checks its parent's delegate is
@@ -1017,7 +1025,7 @@ TEST_F(NativeWidgetMacTest, NoParentDelegateDuringTeardown) {
 // Tests Cocoa properties that should be given to particular widget types.
 TEST_F(NativeWidgetMacTest, NativeProperties) {
   // Create a regular widget (TYPE_WINDOW).
-  ScopedWidget regular_widget(CreateNativeDesktopWidget());
+  Widget* regular_widget = CreateNativeDesktopWidget();
   EXPECT_TRUE([regular_widget->GetNativeWindow() canBecomeKeyWindow]);
   EXPECT_TRUE([regular_widget->GetNativeWindow() canBecomeMainWindow]);
 
@@ -1042,10 +1050,13 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
   EXPECT_FALSE([bubble_widget->GetNativeWindow() canBecomeMainWindow]);
 
   // But a bubble without a parent should still be able to become main.
-  ScopedWidget toplevel_bubble_widget(
-      BubbleDelegateView::CreateBubble(new BubbleDelegateView()));
+  Widget* toplevel_bubble_widget =
+      BubbleDelegateView::CreateBubble(new BubbleDelegateView());
   EXPECT_TRUE([toplevel_bubble_widget->GetNativeWindow() canBecomeKeyWindow]);
   EXPECT_TRUE([toplevel_bubble_widget->GetNativeWindow() canBecomeMainWindow]);
+
+  toplevel_bubble_widget->CloseNow();
+  regular_widget->CloseNow();
 }
 
 NSData* WindowContentsAsTIFF(NSWindow* window) {
@@ -1097,9 +1108,9 @@ class CustomTitleWidgetDelegate : public WidgetDelegate {
 TEST_F(NativeWidgetMacTest, DoesHideTitle) {
   // Same as CreateTopLevelPlatformWidget but with a custom delegate.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  ScopedWidget widget(new Widget);
-  params.native_widget = new NativeWidgetCapture(widget.get());
-  CustomTitleWidgetDelegate delegate(widget.get());
+  Widget* widget = new Widget;
+  params.native_widget = new NativeWidgetCapture(widget);
+  CustomTitleWidgetDelegate delegate(widget);
   params.delegate = &delegate;
   params.bounds = gfx::Rect(0, 0, 800, 600);
   widget->Init(params);
@@ -1130,6 +1141,8 @@ TEST_F(NativeWidgetMacTest, DoesHideTitle) {
   // same as the window with an empty title.
   EXPECT_TRUE([ns_window _isTitleHidden]);
   EXPECT_TRUE([empty_title_data isEqualToData:hidden_title_data]);
+
+  widget->CloseNow();
 }
 
 // Test calls to invalidate the shadow when composited frames arrive.
@@ -1139,19 +1152,17 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.bounds = rect;
+  Widget* widget = CreateWidgetWithTestWindow(init_params, &window);
 
-  {
-    ScopedWidget widget(CreateWidgetWithTestWindow(init_params, &window));
+  // Simulate the initial paint.
+  BridgedNativeWidgetTestApi(window).SimulateFrameSwap(rect.size());
 
-    // Simulate the initial paint.
-    BridgedNativeWidgetTestApi(window).SimulateFrameSwap(rect.size());
-
-    // Default is an opaque window, so shadow doesn't need to be invalidated.
-    EXPECT_EQ(0, [window invalidateShadowCount]);
-  }
+  // Default is an opaque window, so shadow doesn't need to be invalidated.
+  EXPECT_EQ(0, [window invalidateShadowCount]);
+  widget->CloseNow();
 
   init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
-  ScopedWidget widget(CreateWidgetWithTestWindow(init_params, &window));
+  widget = CreateWidgetWithTestWindow(init_params, &window);
   BridgedNativeWidgetTestApi test_api(window);
 
   // First paint on a translucent window needs to invalidate the shadow. Once.
@@ -1171,6 +1182,8 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   EXPECT_EQ(2, [window invalidateShadowCount]);
   test_api.SimulateFrameSwap(gfx::Size(123, 456));
   EXPECT_EQ(2, [window invalidateShadowCount]);
+
+  widget->CloseNow();
 }
 
 // Test the expected result of GetWorkAreaBoundsInScreen().
@@ -1196,20 +1209,22 @@ TEST_F(NativeWidgetMacTest, GetWorkAreaBoundsInScreen) {
 
 // Test that Widget opacity can be changed.
 TEST_F(NativeWidgetMacTest, ChangeOpacity) {
-  ScopedWidget widget(CreateTopLevelPlatformWidget());
+  Widget* widget = CreateTopLevelPlatformWidget();
   NSWindow* ns_window = widget->GetNativeWindow();
 
   CGFloat old_opacity = [ns_window alphaValue];
   widget->SetOpacity(0xAA);
   EXPECT_NE(old_opacity, [ns_window alphaValue]);
   EXPECT_DOUBLE_EQ(0xAA / 255.0, [ns_window alphaValue]);
+
+  widget->CloseNow();
 }
 
 // Test that NativeWidgetMac::SchedulePaintInRect correctly passes the dirtyRect
 // parameter to BridgedContentView::drawRect, for a titled window (window with a
 // toolbar).
 TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Titled) {
-  ScopedWidget widget(CreateTopLevelPlatformWidget());
+  Widget* widget = CreateTopLevelPlatformWidget();
 
   gfx::Rect screen_rect(50, 50, 100, 100);
   widget->SetBounds(screen_rect);
@@ -1245,12 +1260,13 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Titled) {
   gfx::Rect expected_appkit_bounds(25, client_area_height - 45, 10, 15);
   EXPECT_NSEQ(expected_appkit_bounds.ToCGRect(),
               [mock_bridged_view lastDirtyRect]);
+  widget->CloseNow();
 }
 
 // Test that NativeWidgetMac::SchedulePaintInRect correctly passes the dirtyRect
 // parameter to BridgedContentView::drawRect, for a borderless window.
 TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
-  ScopedWidget widget(CreateTopLevelFramelessPlatformWidget());
+  Widget* widget = CreateTopLevelFramelessPlatformWidget();
 
   gfx::Rect screen_rect(50, 50, 100, 100);
   widget->SetBounds(screen_rect);
@@ -1285,6 +1301,7 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
   gfx::Rect expected_appkit_bounds(25, 55, 10, 15);
   EXPECT_NSEQ(expected_appkit_bounds.ToCGRect(),
               [mock_bridged_view lastDirtyRect]);
+  widget->CloseNow();
 }
 
 }  // namespace test
