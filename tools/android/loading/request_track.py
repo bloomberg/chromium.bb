@@ -94,6 +94,7 @@ class Request(object):
     self.url = None
     self.protocol = None
     self.method = None
+    self.mime_type = None
     self.request_headers = None
     self.response_headers = None
     self.initial_priority = None
@@ -146,7 +147,17 @@ class Request(object):
 
   def GetContentType(self):
     """Returns the content type, or None."""
-    content_type = self.response_headers.get('Content-Type', None)
+    if self.mime_type:
+      return self.mime_type
+
+    # Case-insensitive search because servers sometimes use a wrong
+    # capitalization.
+    content_type = None
+    for header, value in self.response_headers.iteritems():
+      if header.lower() == 'content-type':
+        content_type = value
+        break
+
     if not content_type or ';' not in content_type:
       return content_type
     else:
@@ -161,7 +172,15 @@ class Request(object):
     cache_control = {}
     if not self.response_headers:
       return -1
-    cache_control_str = self.response_headers.get('Cache-Control', None)
+
+    # Case-insensitive search because servers sometimes use a wrong
+    # capitalization.
+    cache_control_str = None
+    for header, value in self.response_headers.iteritems():
+      if header.lower() == 'cache-control':
+        cache_control_str = value
+        break
+
     if cache_control_str is not None:
       directives = [s.strip() for s in cache_control_str.split(',')]
       for directive in directives:

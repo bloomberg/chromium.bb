@@ -16,8 +16,16 @@ class RequestTestCase(unittest.TestCase):
     self.assertEquals(None, r.GetContentType())
     r.response_headers = {'Content-Type': 'application/javascript'}
     self.assertEquals('application/javascript', r.GetContentType())
+    # Case-insensitive match.
+    r.response_headers = {'content-type': 'application/javascript'}
+    self.assertEquals('application/javascript', r.GetContentType())
+    # Parameters are filtered out.
     r.response_headers = {'Content-Type': 'application/javascript;bla'}
     self.assertEquals('application/javascript', r.GetContentType())
+    # MIME type takes precedence over headers.
+    r.mime_type = 'image/webp'
+    self.assertEquals('image/webp', r.GetContentType())
+    r.mime_type = None
 
 
 class RequestTrackTestCase(unittest.TestCase):
@@ -340,6 +348,10 @@ class RequestTrackTestCase(unittest.TestCase):
     rq.response_headers[
         'Cache-Control'] = 'private,s-maxage=0'
     self.assertEqual(-1, rq.MaxAge())
+    # Case-insensitive match.
+    rq.response_headers['cache-control'] = 'max-age=600'
+    self.assertEqual(600, rq.MaxAge())
+
 
   @classmethod
   def _ValidSequence(cls, request_track):
