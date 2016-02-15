@@ -63,12 +63,14 @@ def GetParser():
                            help='Limit scope to the past week up to now.')
   start_group.add_argument('--day', action='store_true', default=False,
                            help='Limit scope to the past day up to now.')
+  start_group.add_argument('--trending', action='store_true', default=False,
+                           help='Show stats for all builds by month.')
 
   parser.add_argument('--end-date', action='store', type='date', default=None,
                       help='Limit scope to an end date in the past.')
 
-  parser.add_argument('--trending', action='store_true', default=False,
-                      help='Show stats for all day/weeks/months we have.')
+  parser.add_argument('--csv', action='store_true', default=False,
+                      help='Output in CSV format.')
 
   parser.add_argument('--stages', action='store_true', default=True,
                       help='Do not show stats for all stages run.')
@@ -87,6 +89,8 @@ def OptionsToStartEndDates(options):
     start_date = end_date - datetime.timedelta(days=1)
   elif options.start_date:
     start_date = options.start_date
+  elif options.trending:
+    start_date, end_date = None, None
   else:
     # Default of past_week.
     start_date = end_date - datetime.timedelta(days=7)
@@ -103,18 +107,9 @@ def main(argv):
   # Timeframe for discovering builds, if options.build_id not used.
   start_date, end_date = OptionsToStartEndDates(options)
 
-  if options.trending:
-    # Trending is sufficiently different to be handled on it's own.
-    assert options.build_config, 'A build config is required for trending.'
-
-    # Gather data for all builds with the given config.
-    statuses = build_time_stats.BuildConfigToStatuses(
-        db, options.build_config, None, None)
-    timings = [build_time_stats.GetBuildTimings(status) for status in statuses]
-    timings.sort(key=lambda b: b.id)
-
-    print(build_time_stats.ReportTrendingStats(timings, options.stages))
-    return
+  # Trending is sufficiently different to be handled on it's own.
+  if not options.trending:
+    assert not options.csv, '--csv can only be used with --trending.'
 
   # Data about a single build (optional).
   focus_build = None
@@ -124,20 +119,33 @@ def main(argv):
     focus_status = build_time_stats.BuildIdToBuildStatus(db, options.build_id)
     focus_build = build_time_stats.GetBuildTimings(focus_status)
 
+    build_config = focus_status['build_config']
     builds_statuses = build_time_stats.BuildConfigToStatuses(
-        db, focus_status['build_config'], start_date, end_date)
+        db, build_config, start_date, end_date)
+    description = 'Focus %d - %s' % (options.build_id, build_config)
 
   elif options.build_config:
     builds_statuses = build_time_stats.BuildConfigToStatuses(
         db, options.build_config, start_date, end_date)
+    description = 'Config %s' % options.build_config
 
   elif options.build_type:
     builds_statuses = build_time_stats.MasterConfigToStatuses(
         db, BUILD_TYPE_MAP[options.build_type], start_date, end_date)
+    description = 'Type %s' % options.build_type
 
   # Compute per-build timing.
   builds_timings = [build_time_stats.GetBuildTimings(status)
                     for status in builds_statuses]
 
-  # Report average data.
-  print(build_time_stats.Report(focus_build, builds_timings, options.stages))
+  if not builds_timings:
+    logging.critical('No Builds Found For: %s', description)
+    return 1
+
+  # Report results.
+  print(build_time_stats.Report(description,
+                                focus_build,
+                                builds_timings,
+                                options.stages,
+                                options.trending,
+                                options.csv))

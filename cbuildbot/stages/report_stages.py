@@ -665,13 +665,17 @@ class ReportStage(generic_stages.BuilderStage,
     end_date = datetime.datetime.now().date()
     start_date = end_date - datetime.timedelta(days=self._STATS_HISTORY_DAYS)
 
+    build_config = current_status['build_config']
     historical_statuses = build_time_stats.BuildConfigToStatuses(
-        db, current_status['build_config'], start_date, end_date)
+        db, build_config, start_date, end_date)
 
     historical_timing = [build_time_stats.GetBuildTimings(status)
                          for status in historical_statuses]
 
-    return build_time_stats.Report(current_build, historical_timing)
+    description = 'This build versus last week of %s' % build_config
+
+    build_time_stats.Report(description, current_build,
+                            historical_timing)
 
   def PerformStage(self):
     """Perform the actual work for this stage.

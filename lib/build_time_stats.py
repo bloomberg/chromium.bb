@@ -261,6 +261,9 @@ def CalculateStageStats(builds_timings):
 def FindAndSortStageStats(focus_build, builds_timings):
   """Return a list of stage names, sorted by median start time.
 
+  The stage names returned will exist in the focus_build, or stage stages, but
+  might not be in both.
+
   Args:
     focus_build: BuildTiming object for a single build, or None.
     builds_timings: List of BuildTiming objects.
@@ -290,76 +293,15 @@ def FindAndSortStageStats(focus_build, builds_timings):
   return stage_names, focus_stages, stats_stages
 
 
-def Report(focus_build, builds_timings, stages=True):
-  """Generate a report describing our stats.
+def BreakBuildsByMonths(timings):
+  """Break a list into distinct months.
 
   Args:
-    focus_build: A BuildTiming object for a build to compare against stats.
-    builds_timings: List of BuildTiming objects to display stats for.
-    stages: Include a per-stage break down in the report.
+    timings: A list of BuildTiming objects sorted by start time.
 
   Returns:
-    The generated report as a multi-line string.
+    A list of lists of BuildTiming objects. Each sublist represents one month.
   """
-  result = ""
-
-  build_stats = CalculateBuildStats(builds_timings)
-
-  if focus_build:
-    result += 'Focus build: %s\n' % focus_build.id
-
-  if builds_timings:
-    builds_timings.sort(key=lambda b: b.id)
-    result += ('Averages for %s Builds: %s - %s\n' %
-               (len(builds_timings),
-                builds_timings[0].id,
-                builds_timings[-1].id))
-
-  result += '  Build Time:\n'
-  if focus_build:
-    result += '    %s\n' % focus_build.duration
-
-  if build_stats:
-    result += '    %s\n' % (build_stats,)
-
-  result += '\n'
-
-  if stages:
-    stage_names, focus_stages, stats_stages = FindAndSortStageStats(
-        focus_build, builds_timings)
-
-    # Display info about each stage.
-    for name in stage_names:
-      result += '  %s:\n' % name
-      f, s = focus_stages.get(name), stats_stages.get(name)
-      result += '    start:    %s %s\n' % (f.start if f else '',
-                                           s.start if s else '')
-      result += '    duration: %s %s\n' % (f.duration if f else '',
-                                           s.duration if s else '')
-      result += '    finish:   %s %s\n' % (f.finish if f else '',
-                                           s.finish if s else '')
-
-  return result
-
-
-def ReportTrendingStats(timings, stages=True):
-  """Generate a report describing our stats over time.
-
-  Describes build time stats for all timings, and for timings broken down by
-  month. Does not describe stages.
-
-  Args:
-    timings: List of BuildTiming objects to display stats for.
-    stages: Include stage information in the report (MUCH more verbose).
-
-  Returns:
-    The generated report as a multi-line string.
-  """
-  if not timings:
-    return 'No builds found.'
-
-  result = ''
-
   # Break builds into months.
   all_months = []
   month = 0
@@ -372,39 +314,179 @@ def ReportTrendingStats(timings, stages=True):
       month_timings = [timing]
       all_months.append(month_timings)
 
-  # Report stats for all builds found.
-  over_all_stats = CalculateBuildStats(timings)
+  return all_months
 
-  result = '%s(%s) - %s(%s)\n' % (timings[0].start.date(), timings[0].id,
-                                  timings[-1].start.date(), timings[-1].id)
-  result += 'ALL:     %s\n' % (over_all_stats,)
+
+def Report(description, focus_build, builds_timings,
+           stages=True, trending=False, csv=False):
+  """Generate a report describing our stats.
+
+  Args:
+    description: A user friendly string description what the report covers.
+    focus_build: A BuildTiming object for a build to compare against stats.
+    builds_timings: List of BuildTiming objects to display stats for.
+    stages: Include a per-stage break down in the report.
+    trending: Display the listed builds as broken down by month.
+    csv: Output data in CSV format for spreadsheet import.
+
+  Returns:
+    The generated report as a multi-line string.
+  """
+  # We need the timings to be ordered.
+  builds_timings.sort(key=lambda b: b.id)
+
+  if csv:
+    return ReportCsv(description, focus_build, builds_timings, stages=stages)
+
+  result = '%s\n' % description
+
+  build_stats = CalculateBuildStats(builds_timings)
+
+  if builds_timings:
+    result += ('Averages for %s Builds: %s - %s\n' %
+               (len(builds_timings),
+                builds_timings[0].id,
+                builds_timings[-1].id))
+
+  if build_stats:
+    result += 'Build Time: %s %s\n' % (
+        focus_build.duration if focus_build else '',
+        build_stats,
+    )
 
   if stages:
-    stage_names, _, stats_stages = FindAndSortStageStats(None, timings)
+    result += '\n'
+    stage_names, focus_stages, stats_stages = FindAndSortStageStats(
+        focus_build, builds_timings)
 
+    # Display info about each stage.
     for name in stage_names:
-      result += '  %s:\n' % name
-      s = stats_stages.get(name)
-      result += '    start:    %s\n' % (s.start,)
-      result += '    duration: %s\n' % (s.duration,)
-      result += '    finish:   %s\n' % (s.finish,)
+      result += '%s:\n' % name
+      f, s = focus_stages.get(name), stats_stages.get(name)
+      result += '  start:    %s %s\n' % (f.start if f else '',
+                                         s.start if s else '')
+      result += '  duration: %s %s\n' % (f.duration if f else '',
+                                         s.duration if s else '')
+      result += '  finish:   %s %s\n' % (f.finish if f else '',
+                                         s.finish if s else '')
+
+  if trending:
+    all_months = BreakBuildsByMonths(builds_timings)
+    result += '\n'
+
+    # Report stats per month.
+    for month_timings in all_months:
+      month_stats = CalculateBuildStats(month_timings)
+      prefix = '%s-%s:' % (month_timings[0].start.year,
+                           month_timings[0].start.month)
+      result += '%s%s\n' % (prefix.ljust(9), month_stats)
+
+      if stages:
+        _, _, month_stage_stags = FindAndSortStageStats(None, month_timings)
+
+        for name in stage_names:
+          result += '  %s:\n' % name
+          s = month_stage_stags.get(name)
+          result += '    start:    %s\n' % (s.start,)
+          result += '    duration: %s\n' % (s.duration,)
+          result += '    finish:   %s\n' % (s.finish,)
+
+  return result
 
 
-  # Report stats per month.
-  for month_timings in all_months:
-    month_stats = CalculateBuildStats(month_timings)
-    prefix = '%s-%s:' % (month_timings[0].start.year,
-                         month_timings[0].start.month)
-    result += '%s%s\n' % (prefix.ljust(9), month_stats)
+def ColumnsToCsvText(columns):
+  return ', '.join(['"%s"' % c for c in columns]) + '\n'
+
+
+def ReportCsv(description, focus_build, builds_timings, stages=True):
+  """Generate a report describing our stats.
+
+  Args:
+    description: A user friendly string description what the report covers.
+    focus_build: A BuildTiming object for a build to compare against stats.
+    builds_timings: List of BuildTiming objects to display stats for.
+    stages: Include a per-stage break down in the report.
+
+  Returns:
+    The generated report as a multi-line string.
+  """
+  stats_header = ['median', 'mean', 'min', 'max']
+
+  desc_row = [
+      description,
+      'Averages for %s Builds: %s - %s' % (
+          len(builds_timings),
+          builds_timings[0].id,
+          builds_timings[-1].id,
+      )
+  ]
+  headers = ['']
+  subheaders = ['']
+  rows = []
+
+  def AddStatsHeaders(name):
+    headers.extend([name, '', '', ''])
+    subheaders.extend(stats_header)
+
+  AddStatsHeaders('Build')
+
+  # Discover full list of stage names.
+  stage_names, focus_stats_stages, stats_stages = FindAndSortStageStats(
+      focus_build, builds_timings)
+
+  # Focus build row.
+  if focus_build:
+    row = ['Focus', focus_build.duration, '', '', '']
+    rows.append(row)
 
     if stages:
-      stage_names, _, stats_stages = FindAndSortStageStats(None, month_timings)
+      for stage_name in stage_names:
+        s = focus_stats_stages.get(stage_name)
+        row.extend([s.duration, '', '', ''])
 
-      for name in stage_names:
-        result += '  %s:\n' % name
-        s = stats_stages.get(name)
-        result += '    start:    %s\n' % (s.start,)
-        result += '    duration: %s\n' % (s.duration,)
-        result += '    finish:   %s\n' % (s.finish,)
+  # All builds row.
+  build_stats = CalculateBuildStats(builds_timings)
+  row = ['ALL', build_stats.median, build_stats.mean, build_stats.min,
+         build_stats.max]
+
+  if stages:
+    for stage_name in stage_names:
+      AddStatsHeaders(stage_name)
+      s = stats_stages.get(stage_name)
+      row.extend(s.duration)
+
+  rows.append(row)
+
+  # Report stats per month.
+  for month_timings in BreakBuildsByMonths(builds_timings):
+    month_stats = CalculateBuildStats(month_timings)
+    prefix = '%s-%s' % (month_timings[0].start.year,
+                        month_timings[0].start.month)
+    row = [prefix, month_stats.median, month_stats.mean, month_stats.min,
+           month_stats.max]
+
+    if stages:
+      _, _, month_stage_stags = FindAndSortStageStats(None, month_timings)
+
+      for stage_name in stage_names:
+        s = month_stage_stags.get(stage_name)
+        if s:
+          row.extend(s.duration)
+        else:
+          row.extend(('', '', '', ''))
+
+    rows.append(row)
+
+  # Sanity check.
+  assert len(headers) == len(subheaders)
+  for row in rows:
+    assert len(row) == len(headers)
+
+  # Produce final results.
+  result = ColumnsToCsvText(desc_row)
+  result += ColumnsToCsvText(headers)
+  result += ColumnsToCsvText(subheaders)
+  for row in rows:
+    result += ColumnsToCsvText(row)
 
   return result
