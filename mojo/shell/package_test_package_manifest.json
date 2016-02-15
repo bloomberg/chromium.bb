@@ -1,0 +1,5 @@
+{
+  "url": "mojo://package_test_package/",
+  "name": "Package Test Package",
+  "capabilities": { }
+}

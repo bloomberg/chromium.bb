@@ -72,7 +72,12 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
 }
 
 MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle) {
-  return Run(shell_client_request_handle, true);
+  bool init_base = true;
+  if (base::CommandLine::InitializedForCurrentProcess()) {
+    init_base =
+        !base::CommandLine::ForCurrentProcess()->HasSwitch("single-process");
+  }
+  return Run(shell_client_request_handle, init_base);
 }
 
 }  // namespace mojo
