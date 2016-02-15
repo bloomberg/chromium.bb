@@ -62,7 +62,7 @@ void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
   DCHECK(client_);
   // We support only one Wi-Fi Display session at a time.
   if (delegate_->connection()) {
-    client_->OnError(ERROR_TYPE_EXCEEDED_SESSION_LIMIT_ERROR,
+    client_->OnError(ERROR_TYPE_SESSION_LIMIT_ERROR,
                      kErrorCannotHaveMultipleSessions);
     return;
   }
@@ -72,8 +72,7 @@ void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
       sinks.begin(), sinks.end(),
       [sink_id](DisplaySourceSinkInfoPtr ptr) { return ptr->id == sink_id; });
   if (found == sinks.end() || (*found)->state != SINK_STATE_DISCONNECTED) {
-    client_->OnError(ERROR_TYPE_ESTABLISH_CONNECTION_ERROR,
-                     kErrorSinkNotAvailable);
+    client_->OnError(ERROR_TYPE_CONNECTION_ERROR, kErrorSinkNotAvailable);
     return;
   }
   AuthenticationInfo auth_info;
@@ -182,7 +181,7 @@ void WiFiDisplaySessionServiceImpl::OnConnectFailed(
   if (sink_id != sink_id_)
     return;
   DCHECK(client_);
-  client_->OnError(ERROR_TYPE_ESTABLISH_CONNECTION_ERROR, message);
+  client_->OnError(ERROR_TYPE_CONNECTION_ERROR, message);
 }
 
 void WiFiDisplaySessionServiceImpl::OnDisconnectFailed(

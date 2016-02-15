@@ -6,31 +6,22 @@
 // session using WebMediaStreamTrack as sources.
 namespace displaySource {
   enum ErrorType {
-    // Cannot create media pipeline from the given media stream which could be
-    // appropriate for a Display session (e.g., necessary codecs are missing
-    // on the platform).
-    create_media_pipeline_error,
-
     // A new Display session cannot be started before the existing one is
     // terminated.
-    exceeded_session_limit_error,
+    session_limit_error,
 
-    // Could not establish connection to the sink.
-    establish_connection_error,
+    // The connection with sink cannot be established or has dropped
+    // unexpectedly.
+    connection_error,
 
     // The capabilities of this Display Source and the connected  
     // sink do not fit (e.g. the sink cannot play the media content of
     // the formats given by the source).
     capabilities_negotiation_error,
 
-    // There was an error while packetizing and sending the media content.
-    media_send_error,
-
-    // The TCP connection with sink has dropped unexpectedly.
-    connection_error,
-
-    // An unexpected message has arrived from the sink.
-    unexpected_message_error,
+    // There was an error in media pipeline: while encoding, packetizing or
+    // sending the media content.
+    media_pipeline_error,
 
     // The sink became unresponsive.
     timeout_error,

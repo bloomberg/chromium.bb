@@ -10,6 +10,8 @@ interface WiFiDisplaySessionService {
   SetClient(WiFiDisplaySessionServiceClient client);
 
   // Requires connection to a sink using the given authentication information.
+  // Note: 'auth_method' values must correspond to 'enum AuthenticationMethod'
+  // from display_source.idl
   Connect(int32 sink_id, int32 auth_method, string auth_data);
 
   // Drops the established connection to the connected sink.
@@ -27,6 +29,8 @@ interface WiFiDisplaySessionServiceClient {
   OnTerminated();
 
   // Notification of an error occurred during the session.
+  // Note: 'type' values must correspond to 'enum ErrorType'
+  // from display_source.idl
   OnError(int32 type, string description);
 
   // Invoked to transmit a controlling message from
