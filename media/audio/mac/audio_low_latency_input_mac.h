@@ -215,6 +215,9 @@ class MEDIA_EXPORT AUAudioInputStream
   // called.
   bool buffer_size_was_changed_;
 
+  // Set to true once when AudioUnitRender() succeeds for the first time.
+  bool audio_unit_render_has_worked_;
+
   DISALLOW_COPY_AND_ASSIGN(AUAudioInputStream);
 };
 

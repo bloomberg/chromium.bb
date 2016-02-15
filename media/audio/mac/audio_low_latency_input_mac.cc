@@ -30,6 +30,12 @@ const int kMaxErrorTimeoutInSeconds = 1;
 // if input callbacks have started, and false otherwise.
 const int kInputCallbackStartTimeoutInSeconds = 5;
 
+// Returns true if the format flags in |format_flags| has the "non-interleaved"
+// flag (kAudioFormatFlagIsNonInterleaved) cleared (set to 0).
+static bool FormatIsInterleaved(UInt32 format_flags) {
+  return !(format_flags & kAudioFormatFlagIsNonInterleaved);
+}
+
 static std::ostream& operator<<(std::ostream& os,
                                 const AudioStreamBasicDescription& format) {
   // The 32-bit integer format.mFormatID is actually a non-terminated 4 byte
@@ -46,8 +52,24 @@ static std::ostream& operator<<(std::ostream& os,
      << "bytes per frame   : " << format.mBytesPerFrame << std::endl
      << "channels per frame: " << format.mChannelsPerFrame << std::endl
      << "bits per channel  : " << format.mBitsPerChannel << std::endl
-     << "reserved          : " << format.mReserved;
+     << "reserved          : " << format.mReserved << std::endl
+     << "interleaved       : "
+     << (FormatIsInterleaved(format.mFormatFlags) ? "yes" : "no");
   return os;
+}
+
+static OSStatus GetInputDeviceStreamFormat(
+    AudioUnit audio_unit,
+    AudioStreamBasicDescription* format) {
+  DCHECK(audio_unit);
+  UInt32 property_size = sizeof(*format);
+  // Get the audio stream data format on the input scope of the input element
+  // since it is connected to the current input device.
+  OSStatus result =
+      AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat,
+                           kAudioUnitScope_Input, 1, format, &property_size);
+  DVLOG(1) << "Input device stream format: " << *format;
+  return result;
 }
 
 // See "Technical Note TN2091 - Device input using the HAL Output Audio Unit"
@@ -70,7 +92,8 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
             kNumberOfBlocksBufferInFifo),
       input_callback_is_active_(false),
       start_was_deferred_(false),
-      buffer_size_was_changed_(false) {
+      buffer_size_was_changed_(false),
+      audio_unit_render_has_worked_(false) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -78,6 +101,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   format_.mFormatID = kAudioFormatLinearPCM;
   format_.mFormatFlags = kLinearPCMFormatFlagIsPacked |
                          kLinearPCMFormatFlagIsSignedInteger;
+  DCHECK(FormatIsInterleaved(format_.mFormatFlags));
   format_.mBitsPerChannel = input_params.bits_per_sample();
   format_.mChannelsPerFrame = input_params.channels();
   format_.mFramesPerPacket = 1;  // uncompressed audio
@@ -91,10 +115,6 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   DVLOG(1) << "buffer size : " << number_of_frames_;
   DVLOG(1) << "channels : " << input_params.channels();
   DVLOG(1) << "desired output format: " << format_;
-  // Ensure that the output format is interleaved.
-  const bool interleaved =
-      !(format_.mFormatFlags & kAudioFormatFlagIsNonInterleaved);
-  DCHECK(interleaved);
 
   // Derive size (in bytes) of the buffers that we will render to.
   UInt32 data_byte_size = number_of_frames_ * format_.mBytesPerFrame;
@@ -248,11 +268,7 @@ bool AUAudioInputStream::Open() {
   // in the AUHAL, only *simple* conversions, e.g., 32-bit float to 16-bit
   // signed integer format.
   AudioStreamBasicDescription input_device_format = {0};
-  UInt32 property_size = sizeof(input_device_format);
-  result = AudioUnitGetProperty(audio_unit_, kAudioUnitProperty_StreamFormat,
-                                kAudioUnitScope_Input, 1, &input_device_format,
-                                &property_size);
-  DVLOG(1) << "Input device format: " << input_device_format;
+  GetInputDeviceStreamFormat(audio_unit_, &input_device_format);
   if (input_device_format.mSampleRate != format_.mSampleRate) {
     LOG(ERROR)
         << "Input device's sample rate does not match the client's sample rate";
@@ -285,7 +301,7 @@ bool AUAudioInputStream::Open() {
   // perfect match. Any such mismatch will be compensated for in
   // OnDataIsAvailable().
   UInt32 buffer_frame_size = 0;
-  property_size = sizeof(buffer_frame_size);
+  UInt32 property_size = sizeof(buffer_frame_size);
   result = AudioUnitGetProperty(
       audio_unit_, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
       0, &buffer_frame_size, &property_size);
@@ -354,6 +370,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
 
   sink_ = callback;
   last_success_time_ = base::TimeTicks::Now();
+  audio_unit_render_has_worked_ = false;
   StartAgc();
   OSStatus result = AudioOutputUnitStart(audio_unit_);
   if (result == noErr) {
@@ -605,7 +622,9 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
   // See crbug/428706 for details.
   UInt32 new_size = number_of_frames * format_.mBytesPerFrame;
   AudioBuffer* audio_buffer = audio_buffer_list_.mBuffers;
+  bool new_buffer_size_detected = false;
   if (new_size != audio_buffer->mDataByteSize) {
+    new_buffer_size_detected = true;
     DVLOG(1) << "New size of number_of_frames detected: " << number_of_frames;
     io_buffer_frame_size_ = static_cast<size_t>(number_of_frames);
     if (new_size > audio_buffer->mDataByteSize) {
@@ -628,6 +647,9 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
   // renders into.
   OSStatus result = AudioUnitRender(audio_unit_, flags, time_stamp, bus_number,
                                     number_of_frames, &audio_buffer_list_);
+  if (result == noErr) {
+    audio_unit_render_has_worked_ = true;
+  }
   if (result) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
     OSSTATUS_LOG(ERROR, result) << "AudioUnitRender() failed ";
@@ -653,6 +675,15 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
                               : "kAudioUnitErr_CannotDoInCurrentContext";
         LOG(ERROR) << "Too long sequence of " << err << " errors!";
         HandleError(result);
+      }
+
+      // Add some extra UMA stat to track down if we see this particular error
+      // in combination with a previous change of buffer size "on the fly".
+      if (result == kAudioUnitErr_CannotDoInCurrentContext) {
+        UMA_HISTOGRAM_BOOLEAN("Media.Audio.RenderFailsWhenBufferSizeChangesMac",
+                              new_buffer_size_detected);
+        UMA_HISTOGRAM_BOOLEAN("Media.Audio.AudioUnitRenderHasWorkedMac",
+                              audio_unit_render_has_worked_);
       }
     } else {
       // We have also seen kAudioUnitErr_NoConnection in some cases. Bailing

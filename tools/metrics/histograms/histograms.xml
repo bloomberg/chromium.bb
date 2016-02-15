@@ -18738,6 +18738,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.AudioUnitRenderHasWorkedMac"
+    enum="BooleanEverWorked">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Stored in combination with Media.Audio.RenderFailsWhenBufferSizeChangesMac.
+    It is set to true if calls to AudioUnitRender has ever worked, i.e., we did
+    not start to see kAudioUnitErr_CannotDoInCurrentContext error messages
+    directly from start but there has been at least on successful call to
+    AudioUnitRender.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.AutomaticGainControlMac" enum="BooleanEnabled">
   <owner>henrika@chromium.org</owner>
   <summary>
@@ -18834,6 +18846,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     know in particular for audio processing such as echo cancellation. This
     value is logged when an audio output stream that has suffered glitches is
     stopped.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.RenderFailsWhenBufferSizeChangesMac"
+    enum="BooleanChanged">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    True if a call to AudioUnitRender failed with an error code of
+    kAudioUnitErr_CannotDoInCurrentContext (-10863) and the call was preceded
+    with a change in the native I/O buffer size. This value is logged while
+    input audio is active but it should be a very rare event.
   </summary>
 </histogram>
 
@@ -58647,6 +58670,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Can check"/>
 </enum>
 
+<enum name="BooleanChanged" type="int">
+  <int value="0" label="Not changed"/>
+  <int value="1" label="Changed"/>
+</enum>
+
 <enum name="BooleanCloseTimeout" type="int">
   <int value="0" label="Closed normally"/>
   <int value="1" label="Timed out"/>
@@ -58745,6 +58773,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanError" type="int">
   <int value="0" label="No Error"/>
   <int value="1" label="Error"/>
+</enum>
+
+<enum name="BooleanEverWorked" type="int">
+  <int value="0" label="Has never worked"/>
+  <int value="1" label="Has worked at least once"/>
 </enum>
 
 <enum name="BooleanExpired" type="int">
