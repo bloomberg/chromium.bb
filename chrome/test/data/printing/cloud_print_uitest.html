@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>Cloud Print Dialog unittest</title>
-<script language="javascript">
+<script language="javascript"> 
   window.onload = onLoad;
 
   function onLoad() {
@@ -10,6 +10,8 @@
 
   function testPageSetup() {
     var result = JSON.stringify({'dpi': 300,
+                                 'min_shrink': 1.25,
+                                 'max_shrink': 2.0,
                                  'selection_only': false});
     chrome.send('SetPageParameters', [result]);
   }

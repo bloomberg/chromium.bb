@@ -41,6 +41,8 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
     margin_top(0),
     margin_left(0),
     dpi(0),
+    min_shrink(0),
+    max_shrink(0),
     desired_dpi(0),
     document_cookie(0),
     selection_only(false),
@@ -65,6 +67,8 @@ void PrintMsg_Print_Params::Reset() {
   margin_top = 0;
   margin_left = 0;
   dpi = 0;
+  min_shrink = 0;
+  max_shrink = 0;
   desired_dpi = 0;
   document_cookie = 0;
   selection_only = false;

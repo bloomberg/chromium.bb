@@ -143,6 +143,10 @@ class PRINTING_EXPORT PrintSettings {
 
   int desired_dpi() const { return desired_dpi_; }
 
+  double max_shrink() const { return max_shrink_; }
+
+  double min_shrink() const { return min_shrink_; }
+
   // Cookie generator. It is used to initialize PrintedDocument with its
   // associated PrintSettings, to be sure that each generated PrintedPage is
   // correctly associated with its corresponding PrintedDocument.
@@ -152,6 +156,19 @@ class PRINTING_EXPORT PrintSettings {
   // Multi-page printing. Each PageRange describes a from-to page combination.
   // This permits printing selected pages only.
   PageRanges ranges_;
+
+  // By imaging to a width a little wider than the available pixels, thin pages
+  // will be scaled down a little, matching the way they print in IE and Camino.
+  // This lets them use fewer sheets than they would otherwise, which is
+  // presumably why other browsers do this. Wide pages will be scaled down more
+  // than this.
+  double min_shrink_;
+
+  // This number determines how small we are willing to reduce the page content
+  // in order to accommodate the widest line. If the page would have to be
+  // reduced smaller to make the widest line fit, we just clip instead (this
+  // behavior matches MacIE and Mozilla, at least)
+  double max_shrink_;
 
   // Desired visible dots per inch rendering for output. Printing should be
   // scaled to ScreenDpi/dpix*desired_dpi.
