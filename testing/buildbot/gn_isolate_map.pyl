@@ -536,7 +536,7 @@
   },
   "views_unittests": {
     "label": "//ui/views:views_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "webkit_unit_tests": {
     "label": "//third_party/WebKit/Source/web:webkit_unit_tests",

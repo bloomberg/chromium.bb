@@ -646,6 +646,11 @@
                 '../components/nacl.gyp:nacl_loader_unittests_run',
               ]
             }],
+            ['toolkit_views==1', {
+              'dependencies': [
+                '../ui/views/views.gyp:views_unittests_run',
+              ],
+            }],
           ],
         }],
         ['use_openssl==1', {

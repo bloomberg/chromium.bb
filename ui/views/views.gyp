@@ -931,6 +931,32 @@
     },  # target_name: views_unittests
   ],  # targets
   'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'views_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'views_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'views_unittests.isolate',
+          ],
+          'conditions': [
+            ['use_x11==1',
+              {
+                'dependencies': [
+                  '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+                ],
+              }
+            ],
+          ],
+        },
+      ],
+    }],
     ['OS=="mac"', {
       'targets': [
         {
