@@ -154,8 +154,9 @@ class RunnableAdapter<R(*)(Args...)> {
       : function_(function) {
   }
 
-  R Run(typename CallbackParamTraits<Args>::ForwardType... args) {
-    return function_(CallbackForward(args)...);
+  template <typename... RunArgs>
+  R Run(RunArgs&&... args) {
+    return function_(std::forward<RunArgs>(args)...);
   }
 
  private:
@@ -175,8 +176,9 @@ class RunnableAdapter<R(T::*)(Args...)> {
       : method_(method) {
   }
 
-  R Run(T* object, typename CallbackParamTraits<Args>::ForwardType... args) {
-    return (object->*method_)(CallbackForward(args)...);
+  template <typename... RunArgs>
+  R Run(T* object, RunArgs&&... args) {
+    return (object->*method_)(std::forward<RunArgs>(args)...);
   }
 
  private:
@@ -194,9 +196,9 @@ class RunnableAdapter<R(T::*)(Args...) const> {
       : method_(method) {
   }
 
-  R Run(const T* object,
-        typename CallbackParamTraits<Args>::ForwardType... args) {
-    return (object->*method_)(CallbackForward(args)...);
+  template <typename... RunArgs>
+  R Run(const T* object, RunArgs&&... args) {
+    return (object->*method_)(std::forward<RunArgs>(args)...);
   }
 
  private:
@@ -281,38 +283,42 @@ MakeRunnable(const Callback<T>& t) {
 //
 // WeakCalls similarly need special syntax that is applied to the first
 // argument to check if they should no-op themselves.
-template <bool IsWeakCall, typename ReturnType, typename Runnable,
-          typename ArgsType>
+template <bool IsWeakCall, typename ReturnType, typename Runnable>
 struct InvokeHelper;
 
-template <typename ReturnType, typename Runnable, typename... Args>
-struct InvokeHelper<false, ReturnType, Runnable, TypeList<Args...>> {
-  static ReturnType MakeItSo(Runnable runnable, Args... args) {
-    return runnable.Run(CallbackForward(args)...);
+template <typename ReturnType, typename Runnable>
+struct InvokeHelper<false, ReturnType, Runnable> {
+  template <typename... RunArgs>
+  static ReturnType MakeItSo(Runnable runnable, RunArgs&&... args) {
+    return runnable.Run(std::forward<RunArgs>(args)...);
   }
 };
 
-template <typename Runnable, typename... Args>
-struct InvokeHelper<false, void, Runnable, TypeList<Args...>> {
-  static void MakeItSo(Runnable runnable, Args... args) {
-    runnable.Run(CallbackForward(args)...);
+template <typename Runnable>
+struct InvokeHelper<false, void, Runnable> {
+  template <typename... RunArgs>
+  static void MakeItSo(Runnable runnable, RunArgs&&... args) {
+    runnable.Run(std::forward<RunArgs>(args)...);
   }
 };
 
-template <typename Runnable, typename BoundWeakPtr, typename... Args>
-struct InvokeHelper<true, void, Runnable, TypeList<BoundWeakPtr, Args...>> {
-  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr, Args... args) {
+template <typename Runnable>
+struct InvokeHelper<true, void, Runnable> {
+  template <typename BoundWeakPtr, typename... RunArgs>
+  static void MakeItSo(Runnable runnable,
+                       BoundWeakPtr weak_ptr,
+                       RunArgs&&... args) {
     if (!weak_ptr.get()) {
       return;
     }
-    runnable.Run(weak_ptr.get(), CallbackForward(args)...);
+    runnable.Run(weak_ptr.get(), std::forward<RunArgs>(args)...);
   }
 };
 
 #if !defined(_MSC_VER)
 
-template <typename ReturnType, typename Runnable, typename ArgsType>
-struct InvokeHelper<true, ReturnType, Runnable, ArgsType> {
+template <typename ReturnType, typename Runnable>
+struct InvokeHelper<true, ReturnType, Runnable> {
   // WeakCalls are only supported for functions with a void return type.
   // Otherwise, the function result would be undefined if the the WeakPtr<>
   // is invalidated.
@@ -388,12 +394,7 @@ struct BindState<Runnable, R(Args...), BoundArgs...> final
       sizeof...(BoundArgs),
       TypeList<typename CallbackParamTraits<Args>::ForwardType...>>;
   using UnboundForwardRunType = MakeFunctionType<R, UnboundForwardArgs>;
-
-  using InvokeHelperArgs = ConcatTypeLists<
-      TypeList<typename UnwrapTraits<BoundArgs>::ForwardType...>,
-      UnboundForwardArgs>;
-  using InvokeHelperType =
-      InvokeHelper<IsWeakCall::value, R, Runnable, InvokeHelperArgs>;
+  using InvokeHelperType = InvokeHelper<IsWeakCall::value, R, Runnable>;
 
   using UnboundArgs = DropTypeListItem<sizeof...(BoundArgs), TypeList<Args...>>;
 
