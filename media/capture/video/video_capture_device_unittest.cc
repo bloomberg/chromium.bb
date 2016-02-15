@@ -447,7 +447,9 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
     return;
   }
 #if defined(OS_WIN)
-  if (base::win::GetVersion() == base::win::VERSION_WIN10) {
+  base::win::Version version = base::win::GetVersion();
+  VLOG(1) << "Windows version: " << (int)version;
+  if (version >= base::win::VERSION_WIN10) {
     VLOG(1) << "Skipped on Win10: http://crbug.com/570604.";
     return;
   }
