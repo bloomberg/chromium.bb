@@ -5,6 +5,7 @@
 import unittest
 
 from activity_lens import ActivityLens
+import test_utils
 import tracing
 
 
@@ -169,6 +170,63 @@ class ActivityLensTestCast(unittest.TestCase):
     self.assertEquals(400, ActivityLens._Parsing(events, 0, 1000)[css_url])
     self.assertTrue(html_url in ActivityLens._Parsing(events, 0, 1000))
     self.assertEquals(42, ActivityLens._Parsing(events, 0, 1000)[html_url])
+
+  def testBreakdownEdgeActivityByInitiator(self):
+    requests = [test_utils.MakeRequest(0, 1, 10, 20, 30),
+                test_utils.MakeRequest(0, 1, 50, 60, 70)]
+    raw_events = [
+        {u'args': {u'beginData': {u'url': requests[0].url}},
+         u'cat': u'devtools.timeline',
+         u'dur': 12 * 1000,
+         u'name': u'ParseHTML',
+         u'ph': u'X',
+         u'pid': 1,
+         u'tid': 1,
+         u'ts': 25 * 1000},
+        {u'args': {u'data': {'scriptName': requests[0].url}},
+         u'cat': u'devtools.timeline,v8',
+         u'dur': 0,
+         u'name': u'EvaluateScript',
+         u'ph': u'X',
+         u'pid': 1,
+         u'tid': 1,
+         u'ts': 0}]
+    activity = self._ActivityLens(requests, raw_events)
+    dep = (requests[0], requests[1], 'parser')
+    self.assertEquals(
+        {'script': 0, 'parsing': 12, 'other_url': 0, 'unknown_url': 0},
+        activity.BreakdownEdgeActivityByInitiator(dep))
+    dep = (requests[0], requests[1], 'other')
+    # Truncating the event from the parent xrequest end.
+    self.assertEquals(
+        {'script': 0, 'parsing': 7, 'other_url': 0, 'unknown_url': 0},
+        activity.BreakdownEdgeActivityByInitiator(dep))
+    # Unknown URL
+    raw_events[0]['args']['beginData']['url'] = None
+    activity = self._ActivityLens(requests, raw_events)
+    dep = (requests[0], requests[1], 'parser')
+    self.assertEquals(
+        {'script': 0, 'parsing': 0, 'other_url': 0, 'unknown_url': 12},
+        activity.BreakdownEdgeActivityByInitiator(dep))
+    # Script
+    raw_events[1]['ts'] = 40 * 1000
+    raw_events[1]['dur'] = 6 * 1000
+    activity = self._ActivityLens(requests, raw_events)
+    dep = (requests[0], requests[1], 'script')
+    self.assertEquals(
+        {'script': 6, 'parsing': 0, 'other_url': 0, 'unknown_url': 7},
+        activity.BreakdownEdgeActivityByInitiator(dep))
+    # Other URL
+    raw_events[1]['args']['data']['scriptName'] = 'http://other.com/url'
+    activity = self._ActivityLens(requests, raw_events)
+    self.assertEquals(
+        {'script': 0., 'parsing': 0., 'other_url': 6., 'unknown_url': 7.},
+        activity.BreakdownEdgeActivityByInitiator(dep))
+
+  def _ActivityLens(self, requests, raw_events):
+    loading_trace = test_utils.LoadingTraceFromEvents(
+        requests, None, raw_events)
+    return ActivityLens(loading_trace)
 
 
 if __name__ == '__main__':

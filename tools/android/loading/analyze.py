@@ -24,6 +24,7 @@ sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 import devil_chromium
 from pylib import constants
 
+import activity_lens
 import content_classification_lens
 import device_setup
 import frame_load_lens
@@ -158,7 +159,9 @@ def _ProcessRequests(filename):
         content_classification_lens.ContentClassificationLens.WithRulesFiles(
             trace, OPTIONS.ad_rules, OPTIONS.tracking_rules))
     frame_lens = frame_load_lens.FrameLoadLens(trace)
-    graph = loading_model.ResourceGraph(trace, content_lens, frame_lens)
+    activity = activity_lens.ActivityLens(trace)
+    graph = loading_model.ResourceGraph(
+        trace, content_lens, frame_lens, activity)
     if OPTIONS.noads:
       graph.Set(node_filter=graph.FilterAds)
     return graph

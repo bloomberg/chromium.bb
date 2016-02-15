@@ -29,6 +29,40 @@ _TIMING_NAMES_MAPPING = {
 Timing = collections.namedtuple('Timing', _TIMING_NAMES_MAPPING.values())
 
 
+def IntervalBetween(first, second, reason):
+  """Returns the start and end of the inteval between two requests, in ms.
+
+  This is defined as:
+  - [first.headers, second.start] if reason is 'parser'. This is to account
+    for incremental parsing.
+  - [first.end, second.start] if reason is 'script', 'redirect' or 'other'.
+
+  Args:
+    first: (Request) First request.
+    second: (Request) Second request.
+    reason: (str) Link between the two requests, in Request.INITIATORS.
+
+  Returns:
+    (start_msec (float), end_msec (float)),
+  """
+  assert reason in Request.INITIATORS
+  second_ms = second.timing.request_time * 1000
+  if reason == 'parser':
+    first_offset_ms = first.timing.receive_headers_end
+  else:
+    first_offset_ms = max(
+        [0] + [t for f, t in first.timing._asdict().iteritems()
+               if f != 'request_time'])
+  return (first.timing.request_time * 1000 + first_offset_ms, second_ms)
+
+
+def TimeBetween(first, second, reason):
+  """(end_msec - start_msec), with the values as returned by IntervalBetween().
+  """
+  (first_ms, second_ms) = IntervalBetween(first, second, reason)
+  return second_ms - first_ms
+
+
 def TimingAsList(timing):
   """Transform Timing to a list, eg as is used in JSON output.
 

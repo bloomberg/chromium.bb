@@ -27,3 +27,7 @@ class ModelGraphTestCase(unittest.TestCase):
       graph = loading_model.ResourceGraph(trace=trace, frame_lens=frame_lens)
       visualization = model_graph.GraphVisualization(graph)
       visualization.OutputDot(tmp)
+
+
+if __name__ == '__main__':
+  unittest.main()

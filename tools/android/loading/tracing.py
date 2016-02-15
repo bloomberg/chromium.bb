@@ -6,6 +6,7 @@
 
 import bisect
 import itertools
+import logging
 
 import devtools_monitor
 
@@ -95,6 +96,20 @@ class TracingTrack(devtools_monitor.Track):
   def ToJsonDict(self):
     return {'events': [e.ToJsonDict() for e in self._events]}
 
+  def TracingTrackForThread(self, tid):
+    """Returns a new TracingTrack with only the events from a given thread.
+
+    Args:
+      tid: (int) Thread ID.
+
+    Returns:
+      A new instance of TracingTrack.
+    """
+    events = [e for e in self._events if e.tracing_event['tid'] == tid]
+    tracing_track = TracingTrack(None)
+    tracing_track._events = events
+    return tracing_track
+
   @classmethod
   def FromJsonDict(cls, json_dict):
     assert 'events' in json_dict
@@ -182,7 +197,7 @@ class TracingTrack(devtools_monitor.Track):
         assert event.IsIndexable()
         if event.start_msec > current_msec:
           break
-        matched_event = spanning_events.Match(event)
+        matched_event = spanning_events.Match(event, strict)
         if matched_event is not None:
           event = matched_event
         if not event.synthetic and (
@@ -220,9 +235,9 @@ class TracingTrack(devtools_monitor.Track):
           None: self._Ignore,
           }
 
-    def Match(self, event):
+    def Match(self, event, strict=False):
       return self._MATCH_HANDLER.get(
-          event.type, self._Unsupported)(event)
+          event.type, self._Unsupported)(event, strict)
 
     def HasPending(self):
       return (self._duration_stack or
@@ -236,21 +251,21 @@ class TracingTrack(devtools_monitor.Track):
           itertools.chain.from_iterable((
               (e for e in s) for s in self._async_stacks.itervalues())))
 
-    def _AsyncKey(self, event):
+    def _AsyncKey(self, event, _):
       return (event.tracing_event['cat'], event.id)
 
-    def _Ignore(self, _event):
+    def _Ignore(self, _event, _):
       return None
 
-    def _Unsupported(self, event):
+    def _Unsupported(self, event, _):
       raise devtools_monitor.DevToolsConnectionException(
           'Unsupported spanning event type: %s' % event)
 
-    def _DurationBegin(self, event):
+    def _DurationBegin(self, event, _):
       self._duration_stack.append(event)
       return None
 
-    def _DurationEnd(self, event):
+    def _DurationEnd(self, event, _):
       if not self._duration_stack:
         raise devtools_monitor.DevToolsConnectionException(
             'Unmatched duration end: %s' % event)
@@ -258,16 +273,20 @@ class TracingTrack(devtools_monitor.Track):
       start.SetClose(event)
       return start
 
-    def _AsyncStart(self, event):
-      key = self._AsyncKey(event)
+    def _AsyncStart(self, event, strict):
+      key = self._AsyncKey(event, strict)
       self._async_stacks.setdefault(key, []).append(event)
       return None
 
-    def _AsyncEnd(self, event):
-      key = self._AsyncKey(event)
+    def _AsyncEnd(self, event, strict):
+      key = self._AsyncKey(event, strict)
       if key not in self._async_stacks:
-        raise devtools_monitor.DevToolsConnectionException(
-            'Unmatched async end %s: %s' % (key, event))
+        message = 'Unmatched async end %s: %s' % (key, event)
+        if strict:
+          raise devtools_monitor.DevToolsConnectionException(message)
+        else:
+          logging.warning(message)
+        return None
       stack = self._async_stacks[key]
       start = stack.pop()
       if not stack:
@@ -275,7 +294,7 @@ class TracingTrack(devtools_monitor.Track):
       start.SetClose(event)
       return start
 
-    def _ObjectCreated(self, event):
+    def _ObjectCreated(self, event, _):
       # The tracing event format has object deletion timestamps being exclusive,
       # that is the timestamp for a deletion my equal that of the next create at
       # the same address. This asserts that does not happen in practice as it is
@@ -287,7 +306,7 @@ class TracingTrack(devtools_monitor.Track):
       self._objects[event.id] = event
       return None
 
-    def _ObjectDestroyed(self, event):
+    def _ObjectDestroyed(self, event, _):
       if event.id not in self._objects:
         raise devtools_monitor.DevToolsConnectionException(
             'Missing object creation for %s' % event)

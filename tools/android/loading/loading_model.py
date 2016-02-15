@@ -20,17 +20,22 @@ import os
 import urlparse
 import sys
 
+import activity_lens
 import dag
 import loading_trace
 import request_dependencies_lens
+import request_track
 
 class ResourceGraph(object):
-  """A model of loading by a DAG (tree?) of resource dependancies.
+  """A model of loading by a DAG of resource dependencies.
 
-  Set parameters:
-    cache_all: if true, assume zero loading time for all resources.
+  See model parameters in Set().
   """
-  def __init__(self, trace, content_lens=None, frame_lens=None):
+  EDGE_KIND_KEY = 'edge_kind'
+  EDGE_KINDS = request_track.Request.INITIATORS + (
+      'script_inferred', 'after-load', 'before-load', 'timing')
+  def __init__(self, trace, content_lens=None, frame_lens=None,
+               activity=None):
     """Create from a LoadingTrace (or json of a trace).
 
     Args:
@@ -38,12 +43,15 @@ class ResourceGraph(object):
       content_lens: (ContentClassificationLens) Lens used to annotate the
                     nodes, or None.
       frame_lens: (FrameLoadLens) Lens used to augment graph with load nodes.
+      activity:   (ActivityLens) Lens used to augment the edges with the
+                   activity.
     """
     if type(trace) == dict:
       trace = loading_trace.LoadingTrace.FromJsonDict(trace)
     self._trace = trace
     self._content_lens = content_lens
     self._frame_lens = frame_lens
+    self._activity_lens = activity
     self._BuildDag(trace)
     # Sort before splitting children so that we can correctly dectect if a
     # reparented child is actually a dependency for a child of its new parent.
@@ -58,7 +66,7 @@ class ResourceGraph(object):
 
   @classmethod
   def CheckImageLoadConsistency(cls, g1, g2):
-    """Check that images have the same dependancies between ResourceGraphs.
+    """Check that images have the same dependencies between ResourceGraphs.
 
     Image resources are identified by their short names.
 
@@ -101,10 +109,10 @@ class ResourceGraph(object):
     """Set model parameters.
 
     TODO(mattcary): add parameters for caching certain types of resources (just
-    scripts, just cachable, etc).
+    scripts, just cacheable, etc).
 
     Args:
-      cache_all: boolean that if true ignores emperical resource load times for
+      cache_all: boolean that if true ignores empirical resource load times for
         all resources.
       node_filter: a Node->boolean used to restrict the graph for most
         operations.
@@ -166,7 +174,6 @@ class ResourceGraph(object):
     for n in self._node_info:
       if self._node_filter(n.Node()) and n.Url() in other_map:
         yield(n, other_map[n.Url()])
-
 
   def Cost(self, path_list=None):
     """Compute cost of current model.
@@ -279,9 +286,9 @@ class ResourceGraph(object):
     """Convenience function for redirecting to NodeInfo."""
     return self.NodeInfo(parent).EdgeCost(self.NodeInfo(child))
 
-  def EdgeAnnotation(self, parent, child):
+  def EdgeAnnotations(self, parent, child):
     """Convenience function for redirecting to NodeInfo."""
-    return self.NodeInfo(parent).EdgeAnnotation(self.NodeInfo(child))
+    return self.NodeInfo(parent).EdgeAnnotations(self.NodeInfo(child))
 
   ##
   ## Internal items
@@ -372,7 +379,7 @@ class ResourceGraph(object):
     def EndTime(self):
       return self.StartTime() + self._node_cost
 
-    def EdgeAnnotation(self, s):
+    def EdgeAnnotations(self, s):
       assert s.Node() in self.Node().Successors()
       return self._edge_annotations.get(s, [])
 
@@ -411,9 +418,9 @@ class ResourceGraph(object):
       assert child.Node() in self._node.Successors()
       self._edge_costs[child] = cost
 
-    def AddEdgeAnnotation(self, s, annotation):
+    def AddEdgeAnnotations(self, s, annotations):
       assert s.Node() in self._node.Successors()
-      self._edge_annotations.setdefault(s, []).append(annotation)
+      self._edge_annotations.setdefault(s, {}).update(annotations)
 
     def ReparentTo(self, old_parent, new_parent):
       """Move costs and annotatations from old_parent to new_parent.
@@ -429,13 +436,12 @@ class ResourceGraph(object):
       """
       assert old_parent.Node() in self.Node().Predecessors()
       assert new_parent.Node() not in self.Node().Predecessors()
-      edge_annotations = old_parent._edge_annotations.pop(self, [])
+      edge_annotations = old_parent._edge_annotations.pop(self, {})
       edge_cost =  old_parent._edge_costs.pop(self)
       old_parent.Node().RemoveSuccessor(self.Node())
       new_parent.Node().AddSuccessor(self.Node())
       new_parent.SetEdgeCost(self, edge_cost)
-      for a in edge_annotations:
-        new_parent.AddEdgeAnnotation(self, a)
+      new_parent.AddEdgeAnnotations(self, edge_annotations)
 
     def __eq__(self, o):
       """Note this works whether o is a Node or a NodeInfo."""
@@ -473,10 +479,11 @@ class ResourceGraph(object):
 
     dependencies = request_dependencies_lens.RequestDependencyLens(
         trace).GetRequestDependencies()
-    for parent_rq, child_rq, reason in dependencies:
+    for dep in dependencies:
+      (parent_rq, child_rq, reason) = dep
       parent = self._node_info[index_by_request[parent_rq]]
       child = self._node_info[index_by_request[child_rq]]
-      edge_cost = child.StartTime() - parent.EndTime()
+      edge_cost = request_track.TimeBetween(parent_rq, child_rq, reason)
       if edge_cost < 0:
         edge_cost = 0
         if child.StartTime() < parent.StartTime():
@@ -486,7 +493,10 @@ class ResourceGraph(object):
           # fair amount in practice.
       parent.Node().AddSuccessor(child.Node())
       parent.SetEdgeCost(child, edge_cost)
-      parent.AddEdgeAnnotation(child, reason)
+      parent.AddEdgeAnnotations(child, {self.EDGE_KIND_KEY: reason})
+      if self._activity_lens:
+        activity = self._activity_lens.BreakdownEdgeActivityByInitiator(dep)
+        parent.AddEdgeAnnotations(child, {'activity': activity})
 
     self._AugmentFrameLoads(index_by_request)
 
@@ -507,12 +517,12 @@ class ResourceGraph(object):
       parent = self._node_info[load_index_to_node[load_idx]]
       child = self._node_info[index_by_request[rq]]
       parent.Node().AddSuccessor(child.Node())
-      parent.AddEdgeAnnotation(child, 'after-load')
+      parent.AddEdgeAnnotations(child, {self.EDGE_KIND_KEY: 'after-load'})
     for rq, load_idx in frame_deps[1]:
       child = self._node_info[load_index_to_node[load_idx]]
       parent = self._node_info[index_by_request[rq]]
       parent.Node().AddSuccessor(child.Node())
-      parent.AddEdgeAnnotation(child, 'before-load')
+      parent.AddEdgeAnnotations(child, {self.EDGE_KIND_KEY: 'before-load'})
 
   def _SplitChildrenByTime(self, parent):
     """Split children of a node by request times.
@@ -535,7 +545,7 @@ class ResourceGraph(object):
     This is refined by only considering assets which we believe actually create
     a dependency. We only split if the original parent is a script, and the new
     parent a data file. We confirm these relationships heuristically by loading
-    pages multiple times and ensuring that dependacies do not change; see
+    pages multiple times and ensuring that dependencies do not change; see
     CheckImageLoadConsistency() for details.
 
     We incorporate this heuristic by skipping over any non-script/json resources
@@ -583,7 +593,8 @@ class ResourceGraph(object):
                   # eligible.
       if children_by_end_time[end_mark].EndTime() <= current.StartTime():
         current.ReparentTo(parent, children_by_end_time[end_mark])
-        children_by_end_time[end_mark].AddEdgeAnnotation(current, 'timing')
+        children_by_end_time[end_mark].AddEdgeAnnotations(
+            current, {self.EDGE_KIND_KEY: 'timing'})
 
   def _ExtractImages(self):
     """Return interesting image resources.

@@ -6,7 +6,32 @@ import copy
 import json
 import unittest
 
-from request_track import (Request, RequestTrack, TimingFromDict)
+from request_track import (TimeBetween, Request, RequestTrack, TimingFromDict)
+
+
+class TimeBetweenTestCase(unittest.TestCase):
+  _REQUEST = Request.FromJsonDict({'url': 'http://bla.com',
+                                   'request_id': '1234.1',
+                                   'frame_id': '123.1',
+                                   'initiator': {'type': 'other'},
+                                   'timestamp': 2,
+                                   'timing': TimingFromDict({})})
+  def setUp(self):
+    super(TimeBetweenTestCase, self).setUp()
+    self.first = copy.deepcopy(self._REQUEST)
+    self.first.timing = TimingFromDict({'requestTime': 123456,
+                                        'receiveHeadersEnd': 100,
+                                        'loadingFinished': 500})
+    self.second = copy.deepcopy(self._REQUEST)
+    self.second.timing = TimingFromDict({'requestTime': 123456 + 1,
+                                        'receiveHeadersEnd': 200,
+                                        'loadingFinished': 600})
+
+  def testTimeBetweenParser(self):
+    self.assertEquals(900, TimeBetween(self.first, self.second, 'parser'))
+
+  def testTimeBetweenScript(self):
+    self.assertEquals(500, TimeBetween(self.first, self.second, 'script'))
 
 
 class RequestTestCase(unittest.TestCase):

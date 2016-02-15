@@ -7,6 +7,8 @@
 import dag
 import itertools
 
+import loading_model
+
 
 class GraphVisualization(object):
   """Manipulate visual representations of a resource graph.
@@ -23,6 +25,7 @@ class GraphVisualization(object):
       'font':            'grey70',
       'image':           'orange',    # This probably catches gifs?
       'video':           'hotpink1',
+      'audio':           'hotpink2',
       }
 
   _CONTENT_TYPE_TO_COLOR = {
@@ -40,6 +43,19 @@ class GraphVisualization(object):
       'other':           'white',
       'synthetic':       'yellow',
       }
+
+  _EDGE_KIND_TO_COLOR = {
+    'redirect': 'black',
+    'parser': 'red',
+    'script': 'blue',
+    'script_inferred': 'purple',
+    'after-load': 'forestgreen',
+    'before-load': 'forestgreen',
+  }
+
+  _ACTIVITY_TYPE_LABEL = (
+      ('script', 'S'), ('parsing', 'P'), ('other_url', 'O'),
+      ('unknown_url', 'U'))
 
   def __init__(self, graph):
     """Initialize.
@@ -98,22 +114,27 @@ class GraphVisualization(object):
         if s not in visited_nodes:
           continue
         style = 'color = orange'
-        annotations = self._graph.EdgeAnnotation(n, s)
-        if 'redirect' in annotations:
-          style = 'color = black'
-        elif 'parser' in annotations:
-          style = 'color = red'
-        elif 'stack' in annotations:
-          style = 'color = blue'
-        elif 'script_inferred' in annotations:
-          style = 'color = purple'
-        if 'after-load' in annotations or 'before-load' in annotations:
-          style = 'color = forestgreen'
-        if 'timing' in annotations:
+        label = '%.02f' % self._graph.EdgeCost(n, s)
+        annotations = self._graph.EdgeAnnotations(n, s)
+        edge_kind = annotations.get(
+            loading_model.ResourceGraph.EDGE_KIND_KEY, None)
+        assert ((edge_kind is None)
+                or (edge_kind in loading_model.ResourceGraph.EDGE_KINDS))
+        style = 'color = %s' % self._EDGE_KIND_TO_COLOR[edge_kind]
+        if edge_kind == 'timing':
           style += '; style=dashed'
         if self._graph.EdgeCost(n, s) > self._LONG_EDGE_THRESHOLD_MS:
           style += '; penwidth=5; weight=2'
-        arrow = '[%s; label="%s"]' % (style, self._graph.EdgeCost(n, s))
+
+        label = '%.02f' % self._graph.EdgeCost(n, s)
+        if 'activity' in annotations:
+          activity = annotations['activity']
+          separator = ' - '
+          for activity_type, activity_label in self._ACTIVITY_TYPE_LABEL:
+            label += '%s%s:%.02f ' % (
+                separator, activity_label, activity[activity_type])
+            separator = ' '
+        arrow = '[%s; label="%s"]' % (style, label)
         output.write('%d -> %d %s;\n' % (n.Index(), s.Index(), arrow))
     output.write('}\n')
 

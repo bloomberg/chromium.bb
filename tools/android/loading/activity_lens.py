@@ -12,6 +12,8 @@ import collections
 import logging
 import operator
 
+import request_track
+
 
 class ActivityLens(object):
   """Reconstructs the activity of the main renderer thread between requests."""
@@ -24,6 +26,8 @@ class ActivityLens(object):
     self._trace = trace
     events = trace.tracing_track.GetEvents()
     self._renderer_main_tid = self._GetRendererMainThreadId(events)
+    self._tracing = self._trace.tracing_track.TracingTrackForThread(
+        self._renderer_main_tid)
 
   @classmethod
   def _GetRendererMainThreadId(cls, events):
@@ -60,9 +64,8 @@ class ActivityLens(object):
              tid_events_counts[0][1], tid_events_counts[1][1]))
     return tid_events_counts[0][0]
 
-  def _OverlappingEventsForTid(self, tid, start_msec, end_msec):
-    events = self._trace.tracing_track.OverlappingEvents(start_msec, end_msec)
-    return [e for e in events if e.tracing_event['tid'] == tid]
+  def _OverlappingMainRendererThreadEvents(self, start_msec, end_msec):
+    return self._tracing.OverlappingEvents(start_msec, end_msec)
 
   @classmethod
   def _ClampedDuration(cls, event, start_msec, end_msec):
@@ -136,7 +139,7 @@ class ActivityLens(object):
       url_to_duration[url] += clamped_duration
     return dict(url_to_duration)
 
-  def ExplainEdgeCost(self, dep):
+  def GenerateEdgeActivity(self, dep):
     """For a dependency between two requests, returns the renderer activity
     breakdown.
 
@@ -148,18 +151,47 @@ class ActivityLens(object):
       {'edge_cost': (float) ms, 'busy': (float) ms,
        'parsing': {'url' -> time_ms}, 'script' -> {'url' -> time_ms}}
     """
-    (first, second, _) = dep
-    # TODO(lizeb): Refactor the edge cost computations.
-    start_msec = first.start_msec
-    end_msec = second.start_msec
+    (first, second, reason) = dep
+    (start_msec, end_msec) = request_track.IntervalBetween(
+        first, second, reason)
     assert end_msec - start_msec >= 0.
-    tid = self._renderer_main_tid
-    events = self._OverlappingEventsForTid(tid, start_msec, end_msec)
+    events = self._OverlappingMainRendererThreadEvents(start_msec, end_msec)
     result = {'edge_cost': end_msec - start_msec,
               'busy': self._ThreadBusiness(events, start_msec, end_msec),
               'parsing': self._Parsing(events, start_msec, end_msec),
               'script': self._ScriptsExecuting(events, start_msec, end_msec)}
     return result
+
+  def BreakdownEdgeActivityByInitiator(self, dep):
+    """For a dependency between two requests, categorizes the renderer activity.
+
+    Args:
+      dep: (Request, Request, str) As returned from
+           RequestDependencyLens.GetRequestDependencies().
+
+    Returns:
+      {'script': float, 'parsing': float, 'other': float, 'unknown': float}
+      where the values are durations in ms:
+      - script: The initiating file was executing.
+      - parsing: The initiating file was being parsed.
+      - other: Other scripts and/or parsing activities.
+      - unknown: Activity which is not associated with a URL.
+    """
+    activity = self.GenerateEdgeActivity(dep)
+    related = {'script': 0, 'parsing': 0, 'other_url': 0, 'unknown_url': 0}
+    for kind in ('script', 'parsing'):
+      for (script_name, duration_ms) in activity[kind].items():
+        if not script_name:
+          related['unknown_url'] += duration_ms
+        elif script_name == dep[0].url:
+          related[kind] += duration_ms
+        else:
+          # A lot of "ParseHTML" tasks are mostly about executing
+          # scripts. Don't double-count.
+          # TODO(lizeb): Better handle TraceEvents nesting.
+          if kind == 'script':
+            related['other_url'] += duration_ms
+    return related
 
 
 if __name__ == '__main__':
@@ -176,4 +208,4 @@ if __name__ == '__main__':
       loading_trace)
   deps = dependencies_lens.GetRequestDependencies()
   for requests_dep in deps:
-    print activity_lens.ExplainEdgeCost(requests_dep)
+    print activity_lens.GenerateEdgeActivity(requests_dep)
