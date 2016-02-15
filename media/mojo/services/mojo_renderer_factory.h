@@ -6,7 +6,6 @@
 #define MEDIA_MOJO_SERVICES_MOJO_RENDERER_FACTORY_H_
 
 #include "base/macros.h"
-#include "media/base/media_export.h"
 #include "media/base/renderer_factory.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
