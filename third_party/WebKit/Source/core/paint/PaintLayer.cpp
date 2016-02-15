@@ -1323,7 +1323,7 @@ static inline const PaintLayer* accumulateOffsetTowardsAncestor(const PaintLayer
     if (position == FixedPosition && (!ancestorLayer || ancestorLayer == layoutObject->view()->layer())) {
         // If the fixed layer's container is the root, just add in the offset of the view. We can obtain this by calling
         // localToAbsolute() on the LayoutView.
-        FloatPoint absPos = layoutObject->localToAbsolute(FloatPoint(), IsFixed);
+        FloatPoint absPos = layoutObject->localToAbsolute();
         location += LayoutSize(absPos.x(), absPos.y());
         return ancestorLayer;
     }

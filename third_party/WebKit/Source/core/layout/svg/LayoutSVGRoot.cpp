@@ -353,7 +353,7 @@ void LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* 
 // to convert from SVG viewport coordinates to local CSS box coordinates.
 void LayoutSVGRoot::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG layout tree.
+    ASSERT(!(mode & IsFixed)); // We should have no fixed content in the SVG layout tree.
 
     LayoutReplaced::mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
