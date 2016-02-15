@@ -21,23 +21,9 @@ using std::string;
 
 namespace android_webview {
 
-TEST(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
-  base::Pickle pickle;
-  bool result = internal::WriteHeaderToPickle(&pickle);
-  EXPECT_TRUE(result);
+namespace {
 
-  base::PickleIterator iterator(pickle);
-  result = internal::RestoreHeaderFromPickle(&iterator);
-  EXPECT_TRUE(result);
-}
-
-TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
-  // This is required for NavigationEntry::Create.
-  content::ContentClient content_client;
-  content::SetContentClient(&content_client);
-  content::ContentBrowserClient browser_client;
-  content::SetBrowserClientForTesting(&browser_client);
-
+scoped_ptr<content::NavigationEntry> CreateNavigationEntry() {
   scoped_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
 
@@ -73,6 +59,51 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   entry->SetIsOverridingUserAgent(is_overriding_user_agent);
   entry->SetTimestamp(timestamp);
   entry->SetHttpStatusCode(http_status_code);
+  return entry;
+}
+
+}  // namespace
+
+TEST(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
+  base::Pickle pickle;
+  bool result = internal::WriteHeaderToPickle(&pickle);
+  EXPECT_TRUE(result);
+
+  base::PickleIterator iterator(pickle);
+  uint32_t version = internal::RestoreHeaderFromPickle(&iterator);
+  EXPECT_GT(version, 0U);
+}
+
+TEST(AndroidWebViewStateSerializerTest, TestLegacyVersionHeaderSerialization) {
+  base::Pickle pickle;
+  bool result = internal::WriteHeaderToPickle(
+      internal::AW_STATE_VERSION_INITIAL, &pickle);
+  EXPECT_TRUE(result);
+
+  base::PickleIterator iterator(pickle);
+  uint32_t version = internal::RestoreHeaderFromPickle(&iterator);
+  EXPECT_EQ(version, internal::AW_STATE_VERSION_INITIAL);
+}
+
+TEST(AndroidWebViewStateSerializerTest,
+     TestUnsupportedVersionHeaderSerialization) {
+  base::Pickle pickle;
+  bool result = internal::WriteHeaderToPickle(20000101, &pickle);
+  EXPECT_TRUE(result);
+
+  base::PickleIterator iterator(pickle);
+  uint32_t version = internal::RestoreHeaderFromPickle(&iterator);
+  EXPECT_EQ(version, 0U);
+}
+
+TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
+  // This is required for NavigationEntry::Create.
+  content::ContentClient content_client;
+  content::SetContentClient(&content_client);
+  content::ContentBrowserClient browser_client;
+  content::SetBrowserClientForTesting(&browser_client);
+
+  scoped_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
 
   base::Pickle pickle;
   bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
@@ -83,19 +114,59 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
   EXPECT_TRUE(result);
 
-  EXPECT_EQ(url, copy->GetURL());
-  EXPECT_EQ(virtual_url, copy->GetVirtualURL());
-  EXPECT_EQ(referrer.url, copy->GetReferrer().url);
-  EXPECT_EQ(referrer.policy, copy->GetReferrer().policy);
-  EXPECT_EQ(title, copy->GetTitle());
-  EXPECT_EQ(page_state, copy->GetPageState());
-  EXPECT_EQ(has_post_data, copy->GetHasPostData());
-  EXPECT_EQ(original_request_url, copy->GetOriginalRequestURL());
-  EXPECT_EQ(base_url_for_data_url, copy->GetBaseURLForDataURL());
-  EXPECT_EQ(data_url_as_string, copy->GetDataURLAsString()->data());
-  EXPECT_EQ(is_overriding_user_agent, copy->GetIsOverridingUserAgent());
-  EXPECT_EQ(timestamp, copy->GetTimestamp());
-  EXPECT_EQ(http_status_code, copy->GetHttpStatusCode());
+  EXPECT_EQ(entry->GetURL(), copy->GetURL());
+  EXPECT_EQ(entry->GetVirtualURL(), copy->GetVirtualURL());
+  EXPECT_EQ(entry->GetReferrer().url, copy->GetReferrer().url);
+  EXPECT_EQ(entry->GetReferrer().policy, copy->GetReferrer().policy);
+  EXPECT_EQ(entry->GetTitle(), copy->GetTitle());
+  EXPECT_EQ(entry->GetPageState(), copy->GetPageState());
+  EXPECT_EQ(entry->GetHasPostData(), copy->GetHasPostData());
+  EXPECT_EQ(entry->GetOriginalRequestURL(), copy->GetOriginalRequestURL());
+  EXPECT_EQ(entry->GetBaseURLForDataURL(), copy->GetBaseURLForDataURL());
+  EXPECT_EQ(entry->GetDataURLAsString()->data(),
+            copy->GetDataURLAsString()->data());
+  EXPECT_EQ(entry->GetIsOverridingUserAgent(),
+            copy->GetIsOverridingUserAgent());
+  EXPECT_EQ(entry->GetTimestamp(), copy->GetTimestamp());
+  EXPECT_EQ(entry->GetHttpStatusCode(), copy->GetHttpStatusCode());
+}
+
+TEST(AndroidWebViewStateSerializerTest,
+     TestLegacyNavigationEntrySerialization) {
+  // This is required for NavigationEntry::Create.
+  content::ContentClient content_client;
+  content::SetContentClient(&content_client);
+  content::ContentBrowserClient browser_client;
+  content::SetBrowserClientForTesting(&browser_client);
+
+  scoped_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
+
+  base::Pickle pickle;
+  bool result = internal::WriteNavigationEntryToPickle(
+      internal::AW_STATE_VERSION_INITIAL, *entry, &pickle);
+  EXPECT_TRUE(result);
+
+  scoped_ptr<content::NavigationEntry> copy(content::NavigationEntry::Create());
+  base::PickleIterator iterator(pickle);
+  result = internal::RestoreNavigationEntryFromPickle(
+      internal::AW_STATE_VERSION_INITIAL, &iterator, copy.get());
+  EXPECT_TRUE(result);
+
+  EXPECT_EQ(entry->GetURL(), copy->GetURL());
+  EXPECT_EQ(entry->GetVirtualURL(), copy->GetVirtualURL());
+  EXPECT_EQ(entry->GetReferrer().url, copy->GetReferrer().url);
+  EXPECT_EQ(entry->GetReferrer().policy, copy->GetReferrer().policy);
+  EXPECT_EQ(entry->GetTitle(), copy->GetTitle());
+  EXPECT_EQ(entry->GetPageState(), copy->GetPageState());
+  EXPECT_EQ(entry->GetHasPostData(), copy->GetHasPostData());
+  EXPECT_EQ(entry->GetOriginalRequestURL(), copy->GetOriginalRequestURL());
+  EXPECT_EQ(entry->GetBaseURLForDataURL(), copy->GetBaseURLForDataURL());
+  // DataURL not supported by 20130814 format
+  EXPECT_FALSE(copy->GetDataURLAsString());
+  EXPECT_EQ(entry->GetIsOverridingUserAgent(),
+            copy->GetIsOverridingUserAgent());
+  EXPECT_EQ(entry->GetTimestamp(), copy->GetTimestamp());
+  EXPECT_EQ(entry->GetHttpStatusCode(), copy->GetHttpStatusCode());
 }
 
 TEST(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {

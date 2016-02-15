@@ -31,10 +31,7 @@ namespace android_webview {
 
 namespace {
 
-// Sanity check value that we are restoring from a valid pickle.
-// This can potentially used as an actual serialization version number in the
-// future if we ever decide to support restoring from older versions.
-const uint32_t AW_STATE_VERSION = 20151204;
+const uint32_t AW_STATE_VERSION = internal::AW_STATE_VERSION_DATA_URL;
 
 }  // namespace
 
@@ -65,7 +62,10 @@ bool WriteToPickle(const content::WebContents& web_contents,
       return false;
   }
 
-  // Please update AW_STATE_VERSION if serialization format is changed.
+  // Please update AW_STATE_VERSION and IsSupportedVersion() if serialization
+  // format is changed.
+  // Make sure the serialization format is updated in a backwards compatible
+  // way.
 
   return true;
 }
@@ -75,7 +75,8 @@ bool RestoreFromPickle(base::PickleIterator* iterator,
   DCHECK(iterator);
   DCHECK(web_contents);
 
-  if (!internal::RestoreHeaderFromPickle(iterator))
+  uint32_t state_version = internal::RestoreHeaderFromPickle(iterator);
+  if (!state_version)
     return false;
 
   int entry_count = -1;
@@ -98,7 +99,8 @@ bool RestoreFromPickle(base::PickleIterator* iterator,
   entries.reserve(entry_count);
   for (int i = 0; i < entry_count; ++i) {
     entries.push_back(content::NavigationEntry::Create());
-    if (!internal::RestoreNavigationEntryFromPickle(iterator, entries[i].get()))
+    if (!internal::RestoreNavigationEntryFromPickle(state_version, iterator,
+                                                    entries[i].get()))
       return false;
 
     entries[i]->SetPageID(i);
@@ -136,22 +138,39 @@ bool RestoreFromPickle(base::PickleIterator* iterator,
 namespace internal {
 
 bool WriteHeaderToPickle(base::Pickle* pickle) {
-  return pickle->WriteUInt32(AW_STATE_VERSION);
+  return WriteHeaderToPickle(AW_STATE_VERSION, pickle);
 }
 
-bool RestoreHeaderFromPickle(base::PickleIterator* iterator) {
+bool WriteHeaderToPickle(uint32_t state_version, base::Pickle* pickle) {
+  return pickle->WriteUInt32(state_version);
+}
+
+uint32_t RestoreHeaderFromPickle(base::PickleIterator* iterator) {
   uint32_t state_version = -1;
   if (!iterator->ReadUInt32(&state_version))
-    return false;
+    return 0;
 
-  if (AW_STATE_VERSION != state_version)
-    return false;
+  if (IsSupportedVersion(state_version)) {
+    return state_version;
+  }
 
-  return true;
+  return 0;
+}
+
+bool IsSupportedVersion(uint32_t state_version) {
+  return state_version == internal::AW_STATE_VERSION_INITIAL ||
+         state_version == internal::AW_STATE_VERSION_DATA_URL;
 }
 
 bool WriteNavigationEntryToPickle(const content::NavigationEntry& entry,
                                   base::Pickle* pickle) {
+  return WriteNavigationEntryToPickle(AW_STATE_VERSION, entry, pickle);
+}
+
+bool WriteNavigationEntryToPickle(uint32_t state_version,
+                                  const content::NavigationEntry& entry,
+                                  base::Pickle* pickle) {
+  DCHECK(IsSupportedVersion(state_version));
   if (!pickle->WriteString(entry.GetURL().spec()))
     return false;
 
@@ -179,7 +198,7 @@ bool WriteNavigationEntryToPickle(const content::NavigationEntry& entry,
   if (!pickle->WriteString(entry.GetBaseURLForDataURL().spec()))
     return false;
 
-  {
+  if (state_version >= internal::AW_STATE_VERSION_DATA_URL) {
     const char* data = nullptr;
     size_t size = 0;
     scoped_refptr<const base::RefCountedString> s = entry.GetDataURLAsString();
@@ -202,13 +221,23 @@ bool WriteNavigationEntryToPickle(const content::NavigationEntry& entry,
   if (!pickle->WriteInt(entry.GetHttpStatusCode()))
     return false;
 
-  // Please update AW_STATE_VERSION if serialization format is changed.
+  // Please update AW_STATE_VERSION and IsSupportedVersion() if serialization
+  // format is changed.
+  // Make sure the serialization format is updated in a backwards compatible
+  // way.
 
   return true;
 }
 
 bool RestoreNavigationEntryFromPickle(base::PickleIterator* iterator,
                                       content::NavigationEntry* entry) {
+  return RestoreNavigationEntryFromPickle(AW_STATE_VERSION, iterator, entry);
+}
+
+bool RestoreNavigationEntryFromPickle(uint32_t state_version,
+                                      base::PickleIterator* iterator,
+                                      content::NavigationEntry* entry) {
+  DCHECK(IsSupportedVersion(state_version));
   {
     string url;
     if (!iterator->ReadString(&url))
@@ -274,7 +303,7 @@ bool RestoreNavigationEntryFromPickle(base::PickleIterator* iterator,
     entry->SetBaseURLForDataURL(GURL(base_url_for_data_url));
   }
 
-  {
+  if (state_version >= internal::AW_STATE_VERSION_DATA_URL) {
     const char* data;
     int size;
     if (!iterator->ReadData(&data, &size))
