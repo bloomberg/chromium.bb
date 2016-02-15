@@ -4,6 +4,7 @@
 
 #include "mojo/edk/system/channel.h"
 
+#include <stdint.h>
 #include <windows.h>
 
 #include <algorithm>
@@ -77,6 +78,8 @@ class ChannelWin : public Channel,
         self_(this),
         handle_(std::move(handle)),
         io_task_runner_(io_task_runner) {
+    sentinel_ = ~reinterpret_cast<uintptr_t>(this);
+    CHECK(handle_.is_valid());
     memset(&read_context_, 0, sizeof(read_context_));
     read_context_.handler = this;
 
@@ -134,7 +137,13 @@ class ChannelWin : public Channel,
 
  private:
   // May run on any thread.
-  ~ChannelWin() override {}
+  ~ChannelWin() override {
+    // This is intentionally not 0. If another object is constructed on top of
+    // this memory, it is likely to initialise values to 0. Using a non-zero
+    // value lets us detect the difference between just destroying, and
+    // re-allocating the memory.
+    sentinel_ = UINTPTR_MAX;
+  }
 
   void StartOnIOThread() {
     base::MessageLoop::current()->AddDestructionObserver(this);
@@ -158,6 +167,9 @@ class ChannelWin : public Channel,
   void ShutDownOnIOThread() {
     base::MessageLoop::current()->RemoveDestructionObserver(this);
 
+    // BUG(crbug.com/583525): This function is expected to be called once, and
+    // |handle_| should be valid at this point.
+    CHECK(handle_.is_valid());
     CancelIo(handle_.get().handle);
     handle_.reset();
 
@@ -167,6 +179,7 @@ class ChannelWin : public Channel,
 
   // base::MessageLoop::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
+    CheckValid();
     DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
     if (self_)
       ShutDownOnIOThread();
@@ -176,6 +189,7 @@ class ChannelWin : public Channel,
   void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                      DWORD bytes_transfered,
                      DWORD error) override {
+    CheckValid();
     if (error != ERROR_SUCCESS) {
       OnError();
     } else if (context == &read_context_) {
@@ -270,6 +284,10 @@ class ChannelWin : public Channel,
     return WriteNoLock(outgoing_messages_.front());
   }
 
+  void CheckValid() const {
+    CHECK_EQ(reinterpret_cast<uintptr_t>(this), ~sentinel_);
+  }
+
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
@@ -286,6 +304,12 @@ class ChannelWin : public Channel,
 
   bool reject_writes_ = false;
   std::deque<MessageView> outgoing_messages_;
+
+  // A value that is unlikely to be valid if this object is destroyed and the
+  // memory overwritten by something else. When this is valid, its value will be
+  // ~|this|.
+  // TODO(amistry): Remove before M50 branch point.
+  uintptr_t sentinel_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelWin);
 };
