@@ -587,15 +587,15 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, Ru
                 metadata.maxDirectAdjacentSelectors = maxDirectAdjacentSelectors;
             maxDirectAdjacentSelectors = 0;
         }
-        if (current->isSiblingSelector())
+        if (!metadata.foundInsertionPointCrossing && current->isSiblingSelector())
             metadata.foundSiblingSelector = true;
 
-        const CSSSelectorList* selectorList = current->selectorList();
-        if (!selectorList)
-            continue;
-
-        for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
-            collectFeaturesFromSelector(*subSelector, metadata);
+        if (const CSSSelectorList* selectorList = current->selectorList()) {
+            for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
+                collectFeaturesFromSelector(*subSelector, metadata);
+        }
+        if (current->relationIsAffectedByPseudoContent())
+            metadata.foundInsertionPointCrossing = true;
     }
 
     ASSERT(!maxDirectAdjacentSelectors);
@@ -613,6 +613,7 @@ void RuleFeatureSet::FeatureMetadata::clear()
     usesFirstLineRules = false;
     usesWindowInactiveSelector = false;
     foundSiblingSelector = false;
+    foundInsertionPointCrossing = false;
     maxDirectAdjacentSelectors = 0;
 }
 

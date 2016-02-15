@@ -44,6 +44,15 @@ public:
         m_ruleFeatureSet.updateInvalidationSets(ruleData);
     }
 
+    void collectFeatures(const String& selectorText)
+    {
+        CSSSelectorList selectorList = CSSParser::parseSelector(strictCSSParserContext(), nullptr, selectorText);
+
+        RefPtrWillBeRawPtr<StyleRule> styleRule = StyleRule::create(std::move(selectorList), MutableStylePropertySet::create(HTMLStandardMode));
+        RuleData ruleData(styleRule.get(), 0, 0, RuleHasNoSpecialState);
+        m_ruleFeatureSet.collectFeaturesFromRuleData(ruleData);
+    }
+
     void collectInvalidationSetsForClass(InvalidationLists& invalidationLists, const AtomicString& className) const
     {
         Element* element = Traversal<HTMLElement>::firstChild(*Traversal<HTMLElement>::firstChild(*m_document->body()));
@@ -168,6 +177,11 @@ public:
         HashSet<AtomicString> attributes = attributeSet(*invalidationSets[0]);
         EXPECT_EQ(1u, attributes.size());
         EXPECT_TRUE(attributes.contains(attribute));
+    }
+
+    void expectSiblingRuleCount(unsigned count)
+    {
+        EXPECT_EQ(count, m_ruleFeatureSet.siblingRules.size());
     }
 
     DEFINE_INLINE_TRACE()
@@ -335,6 +349,60 @@ TEST_F(RuleFeatureSetTest, contentPseudo)
     invalidationLists.descendants.clear();
     collectInvalidationSetsForClass(invalidationLists, "a");
     expectClassesInvalidation("b", "c", invalidationLists.descendants);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesBeforeContentPseudo)
+{
+    collectFeatures("a + b ::content .c");
+    expectSiblingRuleCount(0);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesAfterContentPseudo)
+{
+    collectFeatures(".a ::content .b + .c");
+    expectSiblingRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesNthBeforeContentPseudo)
+{
+    collectFeatures(":nth-child(2) ::content .a");
+    expectSiblingRuleCount(0);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesNthAfterContentPseudo)
+{
+    collectFeatures(".a ::content :nth-child(2)");
+    expectSiblingRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesBeforeDeep)
+{
+    collectFeatures("a + b /deep/ .c");
+    expectSiblingRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesAfterDeep)
+{
+    collectFeatures(".a /deep/ .b + .c");
+    expectSiblingRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesBeforeShadow)
+{
+    collectFeatures(".a + .b::shadow .c");
+    expectSiblingRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesAfterShadow)
+{
+    collectFeatures(".a ::shadow .b + .c");
+    expectSiblingRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesBeforeSlotted)
+{
+    collectFeatures(".a + ::slotted(.b)");
+    expectSiblingRuleCount(1);
 }
 
 } // namespace blink

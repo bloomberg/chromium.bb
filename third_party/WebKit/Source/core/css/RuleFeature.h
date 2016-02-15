@@ -108,19 +108,14 @@ private:
 
     struct FeatureMetadata {
         DISALLOW_NEW();
-        FeatureMetadata()
-            : usesFirstLineRules(false)
-            , usesWindowInactiveSelector(false)
-            , foundSiblingSelector(false)
-            , maxDirectAdjacentSelectors(0)
-        { }
         void add(const FeatureMetadata& other);
         void clear();
 
-        bool usesFirstLineRules;
-        bool usesWindowInactiveSelector;
-        bool foundSiblingSelector;
-        unsigned maxDirectAdjacentSelectors;
+        bool usesFirstLineRules = false;
+        bool usesWindowInactiveSelector = false;
+        bool foundSiblingSelector = false;
+        bool foundInsertionPointCrossing = false;
+        unsigned maxDirectAdjacentSelectors = 0;
     };
 
     void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&);
