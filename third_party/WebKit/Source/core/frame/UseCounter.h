@@ -1080,6 +1080,9 @@ public:
         DocumentCreateEventMIDIMessageEvent = 1226,
         DocumentCreateEventCloseEvent = 1227,
         DocumentCreateEventKeyboardEvents = 1228,
+        HTMLMediaElement = 1229,
+        HTMLMediaElementInDocument = 1230,
+        HTMLMediaElementControlsAttribute = 1231,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

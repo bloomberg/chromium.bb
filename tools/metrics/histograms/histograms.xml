@@ -66567,6 +66567,80 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1157" label="PresentationConnectionConnectEventListener"/>
   <int value="1158" label="PresentationConnectionCloseEventListener"/>
   <int value="1159" label="PresentationConnectionTerminateEventListener"/>
+  <int value="1160" label="DocumentCreateEventFontFaceSetLoadEvent"/>
+  <int value="1161" label="DocumentCreateEventMediaQueryListEvent"/>
+  <int value="1162" label="DocumentCreateEventAnimationEvent"/>
+  <int value="1163" label="DocumentCreateEventAnimationPlayerEvent"/>
+  <int value="1164" label="DocumentCreateEventApplicationCacheErrorEvent"/>
+  <int value="1165" label="DocumentCreateEventAutocompleteErrorEvent"/>
+  <int value="1166" label="DocumentCreateEventBeforeUnloadEvent"/>
+  <int value="1167" label="DocumentCreateEventClipboardEvent"/>
+  <int value="1168" label="DocumentCreateEventCompositionEvent"/>
+  <int value="1169" label="DocumentCreateEventDragEvent"/>
+  <int value="1170" label="DocumentCreateEventErrorEvent"/>
+  <int value="1171" label="DocumentCreateEventFocusEvent"/>
+  <int value="1172" label="DocumentCreateEventHashChangeEvent"/>
+  <int value="1173" label="DocumentCreateEventMutationEvent"/>
+  <int value="1174" label="DocumentCreateEventPageTransitionEvent"/>
+  <int value="1175" label="DocumentCreateEventPointerEvent"/>
+  <int value="1176" label="DocumentCreateEventPopStateEvent"/>
+  <int value="1177" label="DocumentCreateEventProgressEvent"/>
+  <int value="1178" label="DocumentCreateEventPromiseRejectionEvent"/>
+  <int value="1179" label="DocumentCreateEventRelatedEvent"/>
+  <int value="1180" label="DocumentCreateEventResourceProgressEvent"/>
+  <int value="1181" label="DocumentCreateEventSecurityPolicyViolationEvent"/>
+  <int value="1182" label="DocumentCreateEventTextEvent"/>
+  <int value="1183" label="DocumentCreateEventTransitionEvent"/>
+  <int value="1184" label="DocumentCreateEventWheelEvent"/>
+  <int value="1185" label="DocumentCreateEventMediaKeyEvent"/>
+  <int value="1186" label="DocumentCreateEventTrackEvent"/>
+  <int value="1187" label="DocumentCreateEventWebKitAnimationEvent"/>
+  <int value="1188" label="DocumentCreateEventMutationEvents"/>
+  <int value="1189" label="DocumentCreateEventOrientationEvent"/>
+  <int value="1190" label="DocumentCreateEventSVGEvents"/>
+  <int value="1191" label="DocumentCreateEventWebKitTransitionEvent"/>
+  <int value="1192" label="DocumentCreateEventBeforeInstallPromptEvent"/>
+  <int value="1193" label="DocumentCreateEventSyncEvent"/>
+  <int value="1194" label="DocumentCreateEventDeviceLightEvent"/>
+  <int value="1195" label="DocumentCreateEventDeviceMotionEvent"/>
+  <int value="1196" label="DocumentCreateEventDeviceOrientationEvent"/>
+  <int value="1197" label="DocumentCreateEventMediaEncryptedEvent"/>
+  <int value="1198" label="DocumentCreateEventMediaKeyMessageEvent"/>
+  <int value="1199" label="DocumentCreateEventGamepadEvent"/>
+  <int value="1200" label="DocumentCreateEventGeofencingEvent"/>
+  <int value="1201" label="DocumentCreateEventIDBVersionChangeEvent"/>
+  <int value="1202" label="DocumentCreateEventBlobEvent"/>
+  <int value="1203" label="DocumentCreateEventMediaStreamEvent"/>
+  <int value="1204" label="DocumentCreateEventMediaStreamTrackEvent"/>
+  <int value="1205" label="DocumentCreateEventRTCDTMFToneChangeEvent"/>
+  <int value="1206" label="DocumentCreateEventRTCDataChannelEvent"/>
+  <int value="1207" label="DocumentCreateEventRTCIceCandidateEvent"/>
+  <int value="1208" label="DocumentCreateEventServicePortConnectEvent"/>
+  <int value="1209" label="DocumentCreateEventNotificationEvent"/>
+  <int value="1210"
+      label="DocumentCreateEventPresentationConnectionAvailableEvent"/>
+  <int value="1211"
+      label="DocumentCreateEventPresentationConnectionCloseEvent"/>
+  <int value="1212" label="DocumentCreateEventPushEvent"/>
+  <int value="1213" label="DocumentCreateEventExtendableEvent"/>
+  <int value="1214" label="DocumentCreateEventExtendableMessageEvent"/>
+  <int value="1215" label="DocumentCreateEventFetchEvent"/>
+  <int value="1216" label="DocumentCreateEventInstallEvent"/>
+  <int value="1217" label="DocumentCreateEventServiceWorkerMessageEvent"/>
+  <int value="1218" label="DocumentCreateEventSpeechRecognitionError"/>
+  <int value="1219" label="DocumentCreateEventSpeechRecognitionEvent"/>
+  <int value="1220" label="DocumentCreateEventSpeechSynthesisEvent"/>
+  <int value="1221" label="DocumentCreateEventStorageEvent"/>
+  <int value="1222" label="DocumentCreateEventAudioProcessingEvent"/>
+  <int value="1223" label="DocumentCreateEventOfflineAudioCompletionEvent"/>
+  <int value="1224" label="DocumentCreateEventWebGLContextEvent"/>
+  <int value="1225" label="DocumentCreateEventMIDIConnectionEvent"/>
+  <int value="1226" label="DocumentCreateEventMIDIMessageEvent"/>
+  <int value="1227" label="DocumentCreateEventCloseEvent"/>
+  <int value="1228" label="DocumentCreateEventKeyboardEvents"/>
+  <int value="1229" label="HTMLMediaElement"/>
+  <int value="1230" label="HTMLMediaElementInDocument"/>
+  <int value="1231" label="HTMLMediaElementControlsAttribute"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

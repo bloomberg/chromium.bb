@@ -350,6 +350,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 
     setHasCustomStyleCallbacks();
     addElementToDocumentMap(this, &document);
+
+    UseCounter::count(document, UseCounter::HTMLMediaElement);
 }
 
 HTMLMediaElement::~HTMLMediaElement()
@@ -493,6 +495,7 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
             scheduleDelayedAction(LoadMediaResource);
         }
     } else if (name == controlsAttr) {
+        UseCounter::count(document(), UseCounter::HTMLMediaElementControlsAttribute);
         configureMediaControls();
     } else if (name == preloadAttr) {
         setPlayerPreload();
@@ -527,6 +530,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode*
 
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->inDocument()) {
+        UseCounter::count(document(), UseCounter::HTMLMediaElementInDocument);
         if (!getAttribute(srcAttr).isEmpty() && m_networkState == NETWORK_EMPTY)
             scheduleDelayedAction(LoadMediaResource);
     }
