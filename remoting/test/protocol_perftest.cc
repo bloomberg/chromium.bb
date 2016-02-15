@@ -331,9 +331,7 @@ class ProtocolPerfTest
     host_.reset(new ChromotingHost(
         &desktop_environment_factory_, std::move(session_manager),
         transport_context, host_thread_.task_runner(),
-        host_thread_.task_runner(), capture_thread_.task_runner(),
-        encode_thread_.task_runner(), host_thread_.task_runner(),
-        host_thread_.task_runner()));
+        encode_thread_.task_runner()));
 
     base::FilePath certs_dir(net::GetTestCertsDirectory());
 

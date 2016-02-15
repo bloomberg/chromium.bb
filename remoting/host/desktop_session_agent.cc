@@ -158,13 +158,11 @@ DesktopSessionAgent::DesktopSessionAgent(
     scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner)
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner)
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
-      video_capture_task_runner_(video_capture_task_runner),
       weak_factory_(this) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
@@ -315,14 +313,16 @@ void DesktopSessionAgent::OnStartSessionAgent(
 
   // Start the video capturer and mouse cursor monitor.
   video_capturer_ = desktop_environment_->CreateVideoCapturer();
+  video_capturer_->Start(this);
+  video_capturer_->SetSharedMemoryFactory(
+      rtc_make_scoped_ptr(new SharedMemoryFactoryImpl(
+          base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
-  video_capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(
-          &DesktopSessionAgent::StartVideoCapturerAndMouseMonitor, this));
+  mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
 }
 
 void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
-  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   last_frame_.reset(frame);
 
@@ -345,7 +345,7 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 }
 
 void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
-  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   scoped_ptr<webrtc::MouseCursor> owned_cursor(cursor);
 
@@ -440,19 +440,14 @@ void DesktopSessionAgent::Stop() {
         FROM_HERE, base::Bind(&DesktopSessionAgent::StopAudioCapturer, this));
 
     // Stop the video capturer.
-    video_capture_task_runner_->PostTask(
-        FROM_HERE, base::Bind(
-            &DesktopSessionAgent::StopVideoCapturerAndMouseMonitor, this));
+    video_capturer_.reset();
+    last_frame_.reset();
+    mouse_cursor_monitor_.reset();
   }
 }
 
 void DesktopSessionAgent::OnCaptureFrame() {
-  if (!video_capture_task_runner_->BelongsToCurrentThread()) {
-    video_capture_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DesktopSessionAgent::OnCaptureFrame, this));
-    return;
-  }
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   mouse_cursor_monitor_->Capture();
 
@@ -581,29 +576,6 @@ void DesktopSessionAgent::StopAudioCapturer() {
   DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
 
   audio_capturer_.reset();
-}
-
-void DesktopSessionAgent::StartVideoCapturerAndMouseMonitor() {
-  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
-
-  if (video_capturer_) {
-    video_capturer_->Start(this);
-    video_capturer_->SetSharedMemoryFactory(
-        rtc_make_scoped_ptr(new SharedMemoryFactoryImpl(
-            base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
-  }
-
-  if (mouse_cursor_monitor_) {
-    mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
-  }
-}
-
-void DesktopSessionAgent::StopVideoCapturerAndMouseMonitor() {
-  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
-
-  video_capturer_.reset();
-  last_frame_.reset();
-  mouse_cursor_monitor_.reset();
 }
 
 }  // namespace remoting

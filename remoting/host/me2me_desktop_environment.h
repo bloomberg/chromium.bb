@@ -30,6 +30,7 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
   friend class Me2MeDesktopEnvironmentFactory;
   Me2MeDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       bool supports_touch_events);
@@ -54,7 +55,7 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
   scoped_ptr<LocalInputMonitor> local_input_monitor_;
 
   // True if gnubby auth is enabled.
-  bool gnubby_auth_enabled_;
+  bool gnubby_auth_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Me2MeDesktopEnvironment);
 };
@@ -64,6 +65,7 @@ class Me2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
  public:
   Me2MeDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~Me2MeDesktopEnvironmentFactory() override;
@@ -79,10 +81,10 @@ class Me2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
 
  private:
   // True if curtain mode is enabled.
-  bool curtain_enabled_;
+  bool curtain_enabled_ = false;
 
   // True if gnubby auth is enabled.
-  bool gnubby_auth_enabled_;
+  bool gnubby_auth_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Me2MeDesktopEnvironmentFactory);
 };

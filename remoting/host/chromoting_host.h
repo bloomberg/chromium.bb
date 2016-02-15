@@ -72,11 +72,7 @@ class ChromotingHost : public base::NonThreadSafe,
       scoped_ptr<protocol::SessionManager> session_manager,
       scoped_refptr<protocol::TransportContext> transport_context,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner);
   ~ChromotingHost() override;
 
   // Asynchronously starts the host.
@@ -160,11 +156,7 @@ class ChromotingHost : public base::NonThreadSafe,
   scoped_ptr<protocol::SessionManager> session_manager_;
   scoped_refptr<protocol::TransportContext> transport_context_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Must be used on the network thread only.
   base::ObserverList<HostStatusObserver> status_observers_;

@@ -188,11 +188,6 @@ void ClientSessionTest::CreateClientSession() {
   client_session_.reset(new ClientSession(
       &session_event_handler_,
       task_runner_,  // Audio thread.
-      task_runner_,  // Input thread.
-      task_runner_,  // Capture thread.
-      task_runner_,  // Encode thread.
-      task_runner_,  // Network thread.
-      task_runner_,  // UI thread.
       std::move(connection), desktop_environment_factory_.get(),
       base::TimeDelta(), nullptr, extensions_));
 }

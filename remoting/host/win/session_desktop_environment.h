@@ -26,6 +26,7 @@ class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
   friend class SessionDesktopEnvironmentFactory;
   SessionDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const base::Closure& inject_sas,
@@ -42,6 +43,7 @@ class SessionDesktopEnvironmentFactory : public Me2MeDesktopEnvironmentFactory {
  public:
   SessionDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const base::Closure& inject_sas);

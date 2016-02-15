@@ -67,11 +67,7 @@ class ChromotingHostTest : public testing::Test {
         desktop_environment_factory_.get(), make_scoped_ptr(session_manager_),
         protocol::TransportContext::ForTests(protocol::TransportRole::SERVER),
         task_runner_,    // Audio
-        task_runner_,    // Input
-        task_runner_,    // Video capture
-        task_runner_,    // Video encode
-        task_runner_,    // Network
-        task_runner_));  // UI
+        task_runner_));  // Video encode
     host_->AddStatusObserver(&host_status_observer_);
 
     xmpp_login_ = "host@domain";
@@ -129,13 +125,7 @@ class ChromotingHostTest : public testing::Test {
         (connection_index == 0) ? owned_connection1_ : owned_connection2_);
     protocol::ConnectionToClient* connection_ptr = connection.get();
     scoped_ptr<ClientSession> client(new ClientSession(
-        host_.get(),
-        task_runner_,  // Audio
-        task_runner_,  // Input
-        task_runner_,  // Video capture
-        task_runner_,  // Video encode
-        task_runner_,  // Network
-        task_runner_,  // UI
+        host_.get(), task_runner_ /* audio_task_runner */,
         std::move(connection), desktop_environment_factory_.get(),
         base::TimeDelta(), nullptr, std::vector<HostExtension*>()));
     ClientSession* client_ptr = client.get();

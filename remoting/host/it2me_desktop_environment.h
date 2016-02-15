@@ -25,6 +25,7 @@ class It2MeDesktopEnvironment : public BasicDesktopEnvironment {
   friend class It2MeDesktopEnvironmentFactory;
   It2MeDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
@@ -48,6 +49,7 @@ class It2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
  public:
   It2MeDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~It2MeDesktopEnvironmentFactory() override;

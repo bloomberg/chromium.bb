@@ -77,8 +77,8 @@ void It2MeHost::Connect() {
 
   desktop_environment_factory_.reset(new It2MeDesktopEnvironmentFactory(
       host_context_->network_task_runner(),
-      host_context_->input_task_runner(),
-      host_context_->ui_task_runner()));
+      host_context_->video_capture_task_runner(),
+      host_context_->input_task_runner(), host_context_->ui_task_runner()));
 
   // Start monitoring configured policies.
   policy_watcher_->StartWatching(
@@ -255,13 +255,10 @@ void It2MeHost::FinishConnect() {
   session_manager->set_protocol_config(std::move(protocol_config));
 
   // Create the host.
-  host_.reset(new ChromotingHost(
-      desktop_environment_factory_.get(), std::move(session_manager),
-      transport_context, host_context_->audio_task_runner(),
-      host_context_->input_task_runner(),
-      host_context_->video_capture_task_runner(),
-      host_context_->video_encode_task_runner(),
-      host_context_->network_task_runner(), host_context_->ui_task_runner()));
+  host_.reset(new ChromotingHost(desktop_environment_factory_.get(),
+                                 std::move(session_manager), transport_context,
+                                 host_context_->audio_task_runner(),
+                                 host_context_->video_encode_task_runner()));
   host_->AddStatusObserver(this);
   host_status_logger_.reset(
       new HostStatusLogger(host_->AsWeakPtr(), ServerLogEntry::IT2ME,

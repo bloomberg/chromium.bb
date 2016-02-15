@@ -29,6 +29,7 @@ class SingleWindowDesktopEnvironment : public BasicDesktopEnvironment {
   friend class SingleWindowDesktopEnvironmentFactory;
   SingleWindowDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       webrtc::WindowId window_id,
@@ -70,27 +71,29 @@ SingleWindowDesktopEnvironment::CreateInputInjector() {
 
 SingleWindowDesktopEnvironment::SingleWindowDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     webrtc::WindowId window_id,
     bool supports_touch_events)
     : BasicDesktopEnvironment(caller_task_runner,
+                              video_capture_task_runner,
                               input_task_runner,
                               ui_task_runner,
                               supports_touch_events),
-      window_id_(window_id) {
-}
+      window_id_(window_id) {}
 
 SingleWindowDesktopEnvironmentFactory::SingleWindowDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     webrtc::WindowId window_id)
     : BasicDesktopEnvironmentFactory(caller_task_runner,
+                                     video_capture_task_runner,
                                      input_task_runner,
                                      ui_task_runner),
-      window_id_(window_id) {
-}
+      window_id_(window_id) {}
 
 SingleWindowDesktopEnvironmentFactory::
     ~SingleWindowDesktopEnvironmentFactory() {
@@ -100,13 +103,9 @@ scoped_ptr<DesktopEnvironment> SingleWindowDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<SingleWindowDesktopEnvironment> desktop_environment(
-      new SingleWindowDesktopEnvironment(caller_task_runner(),
-                                         input_task_runner(),
-                                         ui_task_runner(),
-                                         window_id_,
-                                         supports_touch_events()));
-  return std::move(desktop_environment);
+  return make_scoped_ptr(new SingleWindowDesktopEnvironment(
+      caller_task_runner(), video_capture_task_runner(), input_task_runner(),
+      ui_task_runner(), window_id_, supports_touch_events()));
 }
 
 }  // namespace remoting

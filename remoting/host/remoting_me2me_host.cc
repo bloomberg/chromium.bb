@@ -897,27 +897,19 @@ void HostProcess::StartOnUiThread() {
 #if defined(REMOTING_MULTI_PROCESS)
   IpcDesktopEnvironmentFactory* desktop_environment_factory =
       new IpcDesktopEnvironmentFactory(
-          context_->audio_task_runner(),
-          context_->network_task_runner(),
-          context_->video_capture_task_runner(),
-          context_->network_task_runner(),
-          daemon_channel_.get());
+          context_->audio_task_runner(), context_->network_task_runner(),
+          context_->network_task_runner(), daemon_channel_.get());
   desktop_session_connector_ = desktop_environment_factory;
 #else  // !defined(REMOTING_MULTI_PROCESS)
   BasicDesktopEnvironmentFactory* desktop_environment_factory;
   if (enable_window_capture_) {
-    desktop_environment_factory =
-      new SingleWindowDesktopEnvironmentFactory(
-          context_->network_task_runner(),
-          context_->input_task_runner(),
-          context_->ui_task_runner(),
-          window_id_);
+    desktop_environment_factory = new SingleWindowDesktopEnvironmentFactory(
+        context_->network_task_runner(), context_->video_capture_task_runner(),
+        context_->input_task_runner(), context_->ui_task_runner(), window_id_);
   } else {
-    desktop_environment_factory =
-      new Me2MeDesktopEnvironmentFactory(
-          context_->network_task_runner(),
-          context_->input_task_runner(),
-          context_->ui_task_runner());
+    desktop_environment_factory = new Me2MeDesktopEnvironmentFactory(
+        context_->network_task_runner(), context_->video_capture_task_runner(),
+        context_->input_task_runner(), context_->ui_task_runner());
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
   desktop_environment_factory->set_supports_touch_events(
@@ -1543,12 +1535,10 @@ void HostProcess::StartHost() {
   }
   session_manager->set_protocol_config(std::move(protocol_config));
 
-  host_.reset(new ChromotingHost(
-      desktop_environment_factory_.get(), std::move(session_manager),
-      transport_context, context_->audio_task_runner(),
-      context_->input_task_runner(), context_->video_capture_task_runner(),
-      context_->video_encode_task_runner(), context_->network_task_runner(),
-      context_->ui_task_runner()));
+  host_.reset(new ChromotingHost(desktop_environment_factory_.get(),
+                                 std::move(session_manager), transport_context,
+                                 context_->audio_task_runner(),
+                                 context_->video_encode_task_runner()));
 
   if (frame_recorder_buffer_size_ > 0) {
     scoped_ptr<VideoFrameRecorderHostExtension> frame_recorder_extension(

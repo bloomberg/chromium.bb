@@ -28,7 +28,6 @@ namespace remoting {
 IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
@@ -36,18 +35,13 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     bool supports_touch_events) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
-  desktop_session_proxy_ = new DesktopSessionProxy(audio_task_runner,
-                                                   caller_task_runner,
-                                                   io_task_runner,
-                                                   capture_task_runner,
-                                                   client_session_control,
-                                                   desktop_session_connector,
-                                                   virtual_terminal,
-                                                   supports_touch_events);
+  desktop_session_proxy_ = new DesktopSessionProxy(
+      audio_task_runner, caller_task_runner, io_task_runner,
+      client_session_control, desktop_session_connector, virtual_terminal,
+      supports_touch_events);
 }
 
-IpcDesktopEnvironment::~IpcDesktopEnvironment() {
-}
+IpcDesktopEnvironment::~IpcDesktopEnvironment() {}
 
 scoped_ptr<AudioCapturer> IpcDesktopEnvironment::CreateAudioCapturer() {
   return desktop_session_proxy_->CreateAudioCapturer();
@@ -87,36 +81,24 @@ scoped_ptr<GnubbyAuthHandler> IpcDesktopEnvironment::CreateGnubbyAuthHandler(
 IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     IPC::Sender* daemon_channel)
     : audio_task_runner_(audio_task_runner),
       caller_task_runner_(caller_task_runner),
-      capture_task_runner_(capture_task_runner),
       io_task_runner_(io_task_runner),
-      curtain_enabled_(false),
       daemon_channel_(daemon_channel),
-      next_id_(0),
-      connector_factory_(this),
-      supports_touch_events_(false) {
-}
+      connector_factory_(this) {}
 
-IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {
-}
+IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {}
 
 scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return make_scoped_ptr(
-      new IpcDesktopEnvironment(audio_task_runner_,
-                                caller_task_runner_,
-                                capture_task_runner_,
-                                io_task_runner_,
-                                client_session_control,
-                                connector_factory_.GetWeakPtr(),
-                                curtain_enabled_,
-                                supports_touch_events_));
+  return make_scoped_ptr(new IpcDesktopEnvironment(
+      audio_task_runner_, caller_task_runner_, io_task_runner_,
+      client_session_control, connector_factory_.GetWeakPtr(), curtain_enabled_,
+      supports_touch_events_));
 }
 
 void IpcDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {

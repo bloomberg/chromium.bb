@@ -294,11 +294,7 @@ void IpcDesktopEnvironmentTest::SetUp() {
 
   // Create a desktop environment instance.
   desktop_environment_factory_.reset(new IpcDesktopEnvironmentFactory(
-      task_runner_,
-      task_runner_,
-      task_runner_,
-      io_task_runner_,
-      &daemon_channel_));
+      task_runner_, task_runner_, io_task_runner_, &daemon_channel_));
   desktop_environment_ = desktop_environment_factory_->Create(
       client_session_control_factory_.GetWeakPtr());
 

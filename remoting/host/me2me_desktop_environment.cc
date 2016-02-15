@@ -52,15 +52,20 @@ std::string Me2MeDesktopEnvironment::GetCapabilities() const {
 
 Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     bool supports_touch_events)
     : BasicDesktopEnvironment(caller_task_runner,
+                              video_capture_task_runner,
                               input_task_runner,
                               ui_task_runner,
-                              supports_touch_events),
-      gnubby_auth_enabled_(false) {
+                              supports_touch_events) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
+
+  // X DAMAGE is not enabled by default, since it is broken on many systems -
+  // see http://crbug.com/73423. It's safe to enable it here because it works
+  // properly under Xvfb.
   desktop_capture_options()->set_use_update_notifications(true);
 }
 
@@ -132,13 +137,13 @@ void Me2MeDesktopEnvironment::SetEnableGnubbyAuth(bool gnubby_auth_enabled) {
 
 Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : BasicDesktopEnvironmentFactory(caller_task_runner,
+                                     video_capture_task_runner,
                                      input_task_runner,
-                                     ui_task_runner),
-      curtain_enabled_(false) {
-}
+                                     ui_task_runner) {}
 
 Me2MeDesktopEnvironmentFactory::~Me2MeDesktopEnvironmentFactory() {
 }
@@ -148,10 +153,9 @@ scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   scoped_ptr<Me2MeDesktopEnvironment> desktop_environment(
-      new Me2MeDesktopEnvironment(caller_task_runner(),
-                                  input_task_runner(),
-                                  ui_task_runner(),
-                                  supports_touch_events()));
+      new Me2MeDesktopEnvironment(
+          caller_task_runner(), video_capture_task_runner(),
+          input_task_runner(), ui_task_runner(), supports_touch_events()));
   if (!desktop_environment->InitializeSecurity(client_session_control,
                                                curtain_enabled_)) {
     return nullptr;

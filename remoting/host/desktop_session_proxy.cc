@@ -90,7 +90,6 @@ DesktopSessionProxy::DesktopSessionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
     bool virtual_terminal,
@@ -98,7 +97,6 @@ DesktopSessionProxy::DesktopSessionProxy(
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
-      video_capture_task_runner_(video_capture_task_runner),
       client_session_control_(client_session_control),
       desktop_session_connector_(desktop_session_connector),
       pending_capture_frame_requests_(0),
@@ -276,7 +274,7 @@ void DesktopSessionProxy::DetachFromDesktop() {
   // Generate fake responses to keep the video capturer in sync.
   while (pending_capture_frame_requests_) {
     --pending_capture_frame_requests_;
-    PostCaptureCompleted(nullptr);
+    video_capturer_->OnCaptureCompleted(nullptr);
   }
 }
 
@@ -288,30 +286,26 @@ void DesktopSessionProxy::SetAudioCapturer(
 }
 
 void DesktopSessionProxy::CaptureFrame() {
-  if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DesktopSessionProxy::CaptureFrame, this));
-    return;
-  }
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   if (desktop_channel_) {
     ++pending_capture_frame_requests_;
     SendToDesktop(new ChromotingNetworkDesktopMsg_CaptureFrame());
   } else {
-    PostCaptureCompleted(nullptr);
+    video_capturer_->OnCaptureCompleted(nullptr);
   }
 }
 
 void DesktopSessionProxy::SetVideoCapturer(
     const base::WeakPtr<IpcVideoFrameCapturer> video_capturer) {
-  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   video_capturer_ = video_capturer;
 }
 
 void DesktopSessionProxy::SetMouseCursorMonitor(
     const base::WeakPtr<IpcMouseCursorMonitor>& mouse_cursor_monitor) {
-  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   mouse_cursor_monitor_ = mouse_cursor_monitor;
 }
@@ -507,13 +501,17 @@ void DesktopSessionProxy::OnCaptureCompleted(
   }
 
   --pending_capture_frame_requests_;
-  PostCaptureCompleted(std::move(frame));
+  video_capturer_->OnCaptureCompleted(std::move(frame));
 }
 
 void DesktopSessionProxy::OnMouseCursor(
     const webrtc::MouseCursor& mouse_cursor) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  PostMouseCursor(make_scoped_ptr(webrtc::MouseCursor::CopyOf(mouse_cursor)));
+
+  if (mouse_cursor_monitor_) {
+    mouse_cursor_monitor_->OnMouseCursor(
+        make_scoped_ptr(webrtc::MouseCursor::CopyOf(mouse_cursor)));
+  }
 }
 
 void DesktopSessionProxy::OnInjectClipboardEvent(
@@ -529,26 +527,6 @@ void DesktopSessionProxy::OnInjectClipboardEvent(
 
     client_clipboard_->InjectClipboardEvent(event);
   }
-}
-
-void DesktopSessionProxy::PostCaptureCompleted(
-    scoped_ptr<webrtc::DesktopFrame> frame) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  video_capture_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IpcVideoFrameCapturer::OnCaptureCompleted, video_capturer_,
-                 base::Passed(&frame)));
-}
-
-void DesktopSessionProxy::PostMouseCursor(
-    scoped_ptr<webrtc::MouseCursor> mouse_cursor) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  video_capture_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IpcMouseCursorMonitor::OnMouseCursor, mouse_cursor_monitor_,
-                 base::Passed(&mouse_cursor)));
 }
 
 void DesktopSessionProxy::SendToDesktop(IPC::Message* message) {

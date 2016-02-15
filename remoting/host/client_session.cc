@@ -18,11 +18,9 @@
 #include "remoting/codec/audio_encoder_verbatim.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/audio_pump.h"
-#include "remoting/host/desktop_capturer_proxy.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/input_injector.h"
-#include "remoting/host/mouse_cursor_monitor_proxy.h"
 #include "remoting/host/mouse_shape_pump.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
@@ -65,11 +63,6 @@ scoped_ptr<AudioEncoder> CreateAudioEncoder(
 ClientSession::ClientSession(
     EventHandler* event_handler,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_ptr<protocol::ConnectionToClient> connection,
     DesktopEnvironmentFactory* desktop_environment_factory,
     const base::TimeDelta& max_duration,
@@ -87,11 +80,6 @@ ClientSession::ClientSession(
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
       audio_task_runner_(audio_task_runner),
-      input_task_runner_(input_task_runner),
-      video_capture_task_runner_(video_capture_task_runner),
-      video_encode_task_runner_(video_encode_task_runner),
-      network_task_runner_(network_task_runner),
-      ui_task_runner_(ui_task_runner),
       pairing_registry_(pairing_registry),
       is_authenticated_(false),
       pause_video_(false),
@@ -455,21 +443,13 @@ void ClientSession::ResetVideoPipeline() {
     return;
 
   // Create MouseShapePump to send mouse cursor shape.
-  // TODO(sergeyu): Move MouseCursorMonitorProxy creation to DesktopEnvironment.
-  // When using IpcDesktopCapturer the capture thread is not useful.
   mouse_shape_pump_.reset(
-      new MouseShapePump(make_scoped_ptr(new MouseCursorMonitorProxy(
-                             video_capture_task_runner_,
-                             desktop_environment_->CreateMouseCursorMonitor())),
+      new MouseShapePump(desktop_environment_->CreateMouseCursorMonitor(),
                          connection_->client_stub()));
 
   // Create a VideoStream to pump frames from the capturer to the client.
-  // TODO(sergeyu): Move DesktopCapturerProxy creation to DesktopEnvironment.
-  // When using IpcDesktopCapturer the capture thread is not useful.
-  scoped_ptr<webrtc::DesktopCapturer> capturer_proxy(new DesktopCapturerProxy(
-      video_capture_task_runner_, std::move(video_capturer)));
+  video_stream_ = connection_->StartVideoStream(std::move(video_capturer));
 
-  video_stream_ = connection_->StartVideoStream(std::move(capturer_proxy));
   video_stream_->SetSizeCallback(
       base::Bind(&ClientSession::OnScreenSizeChanged, base::Unretained(this)));
 

@@ -70,8 +70,7 @@ class DesktopSessionAgent
       scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
+      scoped_refptr<AutoThreadTaskRunner> io_task_runner);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -142,14 +141,6 @@ class DesktopSessionAgent
   // Posted to |audio_capture_task_runner_| to stop the audio capturer.
   void StopAudioCapturer();
 
-  // Posted to |video_capture_task_runner_| to start the video capturer and the
-  // mouse cursor monitor.
-  void StartVideoCapturerAndMouseMonitor();
-
-  // Posted to |video_capture_task_runner_| to stop the video capturer and the
-  // mouse cursor monitor.
-  void StopVideoCapturerAndMouseMonitor();
-
  private:
   // Task runner dedicated to running methods of |audio_capturer_|.
   scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner_;
@@ -162,9 +153,6 @@ class DesktopSessionAgent
 
   // Task runner used by the IPC channel.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
-
-  // Task runner dedicated to running methods of |video_capturer_|.
-  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner_;
 
   // Captures audio output.
   scoped_ptr<AudioCapturer> audio_capturer_;

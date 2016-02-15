@@ -68,26 +68,16 @@ ChromotingHost::ChromotingHost(
     scoped_ptr<protocol::SessionManager> session_manager,
     scoped_refptr<protocol::TransportContext> transport_context,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
     : desktop_environment_factory_(desktop_environment_factory),
       session_manager_(std::move(session_manager)),
       transport_context_(transport_context),
       audio_task_runner_(audio_task_runner),
-      input_task_runner_(input_task_runner),
-      video_capture_task_runner_(video_capture_task_runner),
       video_encode_task_runner_(video_encode_task_runner),
-      network_task_runner_(network_task_runner),
-      ui_task_runner_(ui_task_runner),
       started_(false),
       login_backoff_(&kDefaultBackoffPolicy),
       enable_curtaining_(false),
       weak_factory_(this) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 }
 
@@ -142,7 +132,7 @@ void ChromotingHost::SetAuthenticatorFactory(
 }
 
 void ChromotingHost::SetEnableCurtaining(bool enable) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   if (enable_curtaining_ == enable)
     return;
@@ -285,11 +275,10 @@ void ChromotingHost::OnIncomingSession(
   }
 
   // Create a ClientSession object.
-  ClientSession* client = new ClientSession(
-      this, audio_task_runner_, input_task_runner_, video_capture_task_runner_,
-      video_encode_task_runner_, network_task_runner_, ui_task_runner_,
-      std::move(connection), desktop_environment_factory_,
-      max_session_duration_, pairing_registry_, extensions_.get());
+  ClientSession* client =
+      new ClientSession(this, audio_task_runner_, std::move(connection),
+                        desktop_environment_factory_, max_session_duration_,
+                        pairing_registry_, extensions_.get());
 
   clients_.push_back(client);
 }

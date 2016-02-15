@@ -25,6 +25,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_process.h"
+#include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/screen_resolution.h"
@@ -123,6 +124,10 @@ class DesktopProcessTest : public testing::Test {
   // DesktopEnvironment::CreateVideoCapturer().
   webrtc::DesktopCapturer* CreateVideoCapturer();
 
+  // Creates a fake webrtc::MouseCursorMonitor, to mock
+  // DesktopEnvironment::CreateMouseCursorMonitor().
+  webrtc::MouseCursorMonitor* CreateMouseCursorMonitor();
+
   // Disconnects the daemon-to-desktop channel causing the desktop process to
   // exit.
   void DisconnectChannels();
@@ -207,6 +212,9 @@ DesktopEnvironment* DesktopProcessTest::CreateDesktopEnvironment() {
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
       .Times(AtMost(1))
       .WillOnce(Invoke(this, &DesktopProcessTest::CreateVideoCapturer));
+  EXPECT_CALL(*desktop_environment, CreateMouseCursorMonitorPtr())
+      .Times(AtMost(1))
+      .WillOnce(Invoke(this, &DesktopProcessTest::CreateMouseCursorMonitor));
   EXPECT_CALL(*desktop_environment, GetCapabilities())
       .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, SetCapabilities(_))
@@ -225,6 +233,10 @@ InputInjector* DesktopProcessTest::CreateInputInjector() {
 
 webrtc::DesktopCapturer* DesktopProcessTest::CreateVideoCapturer() {
   return new protocol::FakeDesktopCapturer();
+}
+
+webrtc::MouseCursorMonitor* DesktopProcessTest::CreateMouseCursorMonitor() {
+  return new FakeMouseCursorMonitor();
 }
 
 void DesktopProcessTest::DisconnectChannels() {
