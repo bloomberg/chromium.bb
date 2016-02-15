@@ -2250,7 +2250,6 @@ resolveEmphasisPassages(
 static void
 resolveEmphasisSymbols(
 	int *buffer,
-	const EmphRuleNumber emphRule,
 	const unsigned int bit_begin,
 	const unsigned int bit_end,
 	const unsigned int bit_symbol)
@@ -2620,7 +2619,7 @@ markEmphases()
 		resolveEmphasisWords(emphasisBuffer,
 		                     UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
 	else if(table->emphRules[emph2Rule][singleLetterOffset])
-		resolveEmphasisSymbols(emphasisBuffer, emph2Rule,
+		resolveEmphasisSymbols(emphasisBuffer,
 		                       UNDER_BEGIN, UNDER_END, UNDER_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, emph2Rule,
 	                        UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
@@ -2633,7 +2632,7 @@ markEmphases()
 		resolveEmphasisWords(emphasisBuffer,
 		                     BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
 	else if(table->emphRules[emph3Rule][singleLetterOffset])
-		resolveEmphasisSymbols(emphasisBuffer, emph3Rule,
+		resolveEmphasisSymbols(emphasisBuffer,
 		                       BOLD_BEGIN, BOLD_END, BOLD_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, emph3Rule,
 	                        BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
@@ -2646,7 +2645,7 @@ markEmphases()
 		resolveEmphasisWords(emphasisBuffer,
 		                     ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
 	else if(table->emphRules[emph1Rule][singleLetterOffset])
-		resolveEmphasisSymbols(emphasisBuffer, emph1Rule,
+		resolveEmphasisSymbols(emphasisBuffer,
 		                       ITALIC_BEGIN, ITALIC_END, ITALIC_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, emph1Rule,
 	                        ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
@@ -2659,7 +2658,7 @@ markEmphases()
 		resolveEmphasisWords(emphasisBuffer,
 		                     SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
 	else if(table->emphRules[emph4Rule][singleLetterOffset])
-		resolveEmphasisSymbols(emphasisBuffer, emph4Rule,
+		resolveEmphasisSymbols(emphasisBuffer,
 		                       SCRIPT_BEGIN, SCRIPT_END, SCRIPT_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, emph4Rule,
 	                        SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
