@@ -107,20 +107,19 @@ MojoResult WaitSetDispatcher::AddWaitingDispatcher(
 MojoResult WaitSetDispatcher::RemoveWaitingDispatcher(
     const scoped_refptr<Dispatcher>& dispatcher) {
   uintptr_t dispatcher_handle = reinterpret_cast<uintptr_t>(dispatcher.get());
-  {
-    base::AutoLock lock(lock_);
-    if (is_closed_)
-      return MOJO_RESULT_INVALID_ARGUMENT;
 
-    auto it = waiting_dispatchers_.find(dispatcher_handle);
-    if (it == waiting_dispatchers_.end())
-      return MOJO_RESULT_NOT_FOUND;
+  base::AutoLock lock(lock_);
+  if (is_closed_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
-    dispatcher->RemoveAwakable(waiter_.get(), nullptr);
-    // At this point, it should not be possible for |waiter_| to be woken with
-    // |dispatcher|.
-    waiting_dispatchers_.erase(it);
-  }
+  auto it = waiting_dispatchers_.find(dispatcher_handle);
+  if (it == waiting_dispatchers_.end())
+    return MOJO_RESULT_NOT_FOUND;
+
+  dispatcher->RemoveAwakable(waiter_.get(), nullptr);
+  // At this point, it should not be possible for |waiter_| to be woken with
+  // |dispatcher|.
+  waiting_dispatchers_.erase(it);
 
   base::AutoLock locker(awoken_lock_);
   int num_erased = 0;
