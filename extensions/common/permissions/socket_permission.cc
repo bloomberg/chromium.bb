@@ -38,6 +38,21 @@ SocketPermission::SocketPermission(const APIPermissionInfo* info)
 
 SocketPermission::~SocketPermission() {}
 
+bool SocketPermission::FromValue(
+    const base::Value* value,
+    std::string* error,
+    std::vector<std::string>* unhandled_permissions) {
+  bool parsed_ok = SetDisjunctionPermission<
+      SocketPermissionData, SocketPermission>::FromValue(value, error,
+                                                         unhandled_permissions);
+  if (parsed_ok && data_set_.empty()) {
+    if (error)
+      *error = "NULL or empty permission list";
+    return false;
+  }
+  return parsed_ok;
+}
+
 PermissionIDSet SocketPermission::GetPermissions() const {
   PermissionIDSet ids;
   SocketPermissionEntrySet entries = ExtractSocketEntries(data_set_);

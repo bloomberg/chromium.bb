@@ -25,6 +25,21 @@ UsbDevicePermission::UsbDevicePermission(const APIPermissionInfo* info)
 
 UsbDevicePermission::~UsbDevicePermission() {}
 
+bool UsbDevicePermission::FromValue(
+    const base::Value* value,
+    std::string* error,
+    std::vector<std::string>* unhandled_permissions) {
+  bool parsed_ok =
+      SetDisjunctionPermission<UsbDevicePermissionData, UsbDevicePermission>::
+          FromValue(value, error, unhandled_permissions);
+  if (parsed_ok && data_set_.empty()) {
+    if (error)
+      *error = "NULL or empty permission list";
+    return false;
+  }
+  return parsed_ok;
+}
+
 PermissionIDSet UsbDevicePermission::GetPermissions() const {
   PermissionIDSet ids;
 

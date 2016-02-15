@@ -21,6 +21,10 @@ namespace extensions {
 //                'delete' <tertiary-access>
 //   <tertiary-access>
 //             := 'copyTo' | 'copyTo' <tertiary-access>
+// An example of a line for mediaGalleries permissions in a manifest file:
+//   {"mediaGalleries": "read delete"},
+// We also allow a permission without any sub-permissions:
+//   "mediaGalleries",
 class MediaGalleriesPermission
   : public SetDisjunctionPermission<MediaGalleriesPermissionData,
                                     MediaGalleriesPermission> {

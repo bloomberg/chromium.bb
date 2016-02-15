@@ -105,9 +105,14 @@ class SetDisjunctionPermission : public APIPermission {
     data_set_.clear();
     const base::ListValue* list = NULL;
 
-    if (!value || !value->GetAsList(&list) || list->GetSize() == 0) {
+    if (!value) {
+      // treat null as an empty list.
+      return true;
+    }
+
+    if (!value->GetAsList(&list)) {
       if (error)
-        *error = "NULL or empty permission list";
+        *error = "Cannot parse the permission list. It's not a list.";
       return false;
     }
 

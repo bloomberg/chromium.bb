@@ -24,12 +24,7 @@
       "fileSystem": ["requestFileSystem", "write"]
     },
     "fullscreen",
-    {
-      // TODO(ryoh): we do not need any permissions to use getMetadata,
-      // but mediaGalleriesAPI requires nonempty list,
-      // or treated as invalid permission requests.
-      "mediaGalleries": ["we don't need any permissions"]
-    },
+    "mediaGalleries",
     "mediaPlayerPrivate",
     "power",
     "storage",

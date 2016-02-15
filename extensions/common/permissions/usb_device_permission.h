@@ -30,6 +30,11 @@ class UsbDevicePermission
   explicit UsbDevicePermission(const APIPermissionInfo* info);
   ~UsbDevicePermission() override;
 
+  // SetDisjunctionPermission overrides.
+  bool FromValue(const base::Value* value,
+                 std::string* error,
+                 std::vector<std::string>* unhandled_permissions) override;
+
   // APIPermission overrides
   PermissionIDSet GetPermissions() const override;
 };

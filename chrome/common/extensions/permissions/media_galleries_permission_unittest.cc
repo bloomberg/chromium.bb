@@ -90,12 +90,8 @@ TEST(MediaGalleriesPermissionTest, BadValues) {
 
   scoped_ptr<APIPermission> permission(permission_info->CreateAPIPermission());
 
-  // Empty
-  scoped_ptr<base::ListValue> value(new base::ListValue());
-  CheckFromValue(permission.get(), value.get(), false);
-
   // copyTo and delete without read
-  value.reset(new base::ListValue());
+  scoped_ptr<base::ListValue> value(new base::ListValue());
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
   CheckFromValue(permission.get(), value.get(), false);
 
@@ -276,6 +272,15 @@ TEST(MediaGalleriesPermissionTest, ToFromValue) {
   value->AppendString(MediaGalleriesPermission::kReadPermission);
   value->AppendString(MediaGalleriesPermission::kDeletePermission);
   ASSERT_TRUE(permission1->FromValue(value.get(), NULL, NULL));
+
+  vtmp = permission1->ToValue();
+  ASSERT_TRUE(vtmp);
+  ASSERT_TRUE(permission2->FromValue(vtmp.get(), NULL, NULL));
+  EXPECT_TRUE(permission1->Equal(permission2.get()));
+
+  value.reset(new base::ListValue());
+  // without sub-permission
+  ASSERT_TRUE(permission1->FromValue(NULL, NULL, NULL));
 
   vtmp = permission1->ToValue();
   ASSERT_TRUE(vtmp);
