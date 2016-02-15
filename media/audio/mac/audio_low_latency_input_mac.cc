@@ -950,16 +950,16 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
   // (by the client) number of audio frames per I/O buffer connected to the
   // selected input device. Ideally, this size will be the same as the native
   // I/O buffer size given by |io_buffer_frame_size_|.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.RequestedInputBufferFrameSizeMac",
-                       number_of_frames_);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.RequestedInputBufferFrameSizeMac",
+                              number_of_frames_);
   DVLOG(1) << "number_of_frames_: " << number_of_frames_;
   // This value indicates the number of frames in the IO buffers connected to
   // the selected input device. It has been set by the audio manger in Open()
   // and can be the same as |number_of_frames_|, which is the desired buffer
   // size. These two values might differ if other streams are using the same
   // device and any of these streams have asked for a smaller buffer size.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.ActualInputBufferFrameSizeMac",
-                       io_buffer_frame_size_);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.ActualInputBufferFrameSizeMac",
+                              io_buffer_frame_size_);
   DVLOG(1) << "io_buffer_frame_size_: " << io_buffer_frame_size_;
   // TODO(henrika): this value will currently always report true. It should be
   // fixed when we understand the problem better.
