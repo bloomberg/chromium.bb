@@ -148,7 +148,7 @@ PassRefPtrWillBeRawPtr<Element> InsertParagraphSeparatorCommand::cloneHierarchyU
     return parent.release();
 }
 
-void InsertParagraphSeparatorCommand::doApply(EditingState*)
+void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
 {
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;
@@ -193,7 +193,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState*)
 
     //---------------------------------------------------------------------
     // Handle special case of typing return on an empty list item
-    if (breakOutOfEmptyListItem())
+    if (breakOutOfEmptyListItem(editingState) || editingState->isAborted())
         return;
 
     //---------------------------------------------------------------------
@@ -410,7 +410,9 @@ void InsertParagraphSeparatorCommand::doApply(EditingState*)
             }
         }
 
-        moveRemainingSiblingsToNewParent(n, blockToInsert.get(), blockToInsert);
+        moveRemainingSiblingsToNewParent(n, blockToInsert.get(), blockToInsert, editingState);
+        if (editingState->isAborted())
+            return;
     }
 
     // Handle whitespace that occurs after the split

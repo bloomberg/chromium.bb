@@ -109,7 +109,7 @@ private:
     void updatePreservesTypingStyle(ETypingCommand);
     void markMisspellingsAfterTyping(ETypingCommand);
     void typingAddedToOpenCommand(ETypingCommand);
-    bool makeEditableRootEmpty();
+    bool makeEditableRootEmpty(EditingState*);
 
     void updateCommandTypeOfOpenCommand(ETypingCommand typingCommand) { m_commandType = typingCommand; }
     ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }

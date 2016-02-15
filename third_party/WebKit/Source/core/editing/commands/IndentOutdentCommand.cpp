@@ -66,7 +66,7 @@ IndentOutdentCommand::IndentOutdentCommand(Document& document, EIndentType typeO
 {
 }
 
-bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const Position& end)
+bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const Position& end, EditingState* editingState)
 {
     // If our selection is not inside a list, bail out.
     RefPtrWillBeRawPtr<Node> lastNodeInSelectedParagraph = start.anchorNode();
@@ -89,22 +89,34 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     // list element will change visibility of list item, e.g. :first-child
     // CSS selector.
     RefPtrWillBeRawPtr<HTMLElement> newList = toHTMLElement(document().createElement(listElement->tagQName(), false).get());
-    insertNodeBefore(newList, selectedListItem.get());
+    insertNodeBefore(newList, selectedListItem.get(), editingState);
+    if (editingState->isAborted())
+        return false;
 
     // We should clone all the children of the list item for indenting purposes. However, in case the current
     // selection does not encompass all its children, we need to explicitally handle the same. The original
     // list item too would require proper deletion in that case.
     if (end.anchorNode() == selectedListItem.get() || end.anchorNode()->isDescendantOf(selectedListItem->lastChild())) {
-        moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), newList.get(), selectedListItem.get());
+        moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), newList.get(), selectedListItem.get(), editingState);
     } else {
-        moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(positionAfterNode(selectedListItem->lastChild())), newList.get(), selectedListItem.get());
-        removeNode(selectedListItem.get());
+        moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(positionAfterNode(selectedListItem->lastChild())), newList.get(), selectedListItem.get(), editingState);
+        if (editingState->isAborted())
+            return false;
+        removeNode(selectedListItem.get(), editingState);
     }
+    if (editingState->isAborted())
+        return false;
 
-    if (canMergeLists(previousList.get(), newList.get()))
-        mergeIdenticalElements(previousList.get(), newList.get());
-    if (canMergeLists(newList.get(), nextList.get()))
-        mergeIdenticalElements(newList.get(), nextList.get());
+    if (canMergeLists(previousList.get(), newList.get())) {
+        mergeIdenticalElements(previousList.get(), newList.get(), editingState);
+        if (editingState->isAborted())
+            return false;
+    }
+    if (canMergeLists(newList.get(), nextList.get())) {
+        mergeIdenticalElements(newList.get(), nextList.get(), editingState);
+        if (editingState->isAborted())
+            return false;
+    }
 
     return true;
 }
@@ -261,7 +273,10 @@ void IndentOutdentCommand::formatSelection(const VisiblePosition& startOfSelecti
 
 void IndentOutdentCommand::formatRange(const Position& start, const Position& end, const Position&, RefPtrWillBeRawPtr<HTMLElement>& blockquoteForNextIndent, EditingState* editingState)
 {
-    if (tryIndentingAsListItem(start, end))
+    bool indentingAsListItemResult = tryIndentingAsListItem(start, end, editingState);
+    if (editingState->isAborted())
+        return;
+    if (indentingAsListItemResult)
         blockquoteForNextIndent = nullptr;
     else
         indentIntoBlockquote(start, end, blockquoteForNextIndent, editingState);

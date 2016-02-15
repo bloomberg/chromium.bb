@@ -72,14 +72,17 @@ BreakBlockquoteCommand::BreakBlockquoteCommand(Document& document)
 {
 }
 
-void BreakBlockquoteCommand::doApply(EditingState*)
+void BreakBlockquoteCommand::doApply(EditingState* editingState)
 {
     if (endingSelection().isNone())
         return;
 
     // Delete the current selection.
-    if (endingSelection().isRange())
-        deleteSelection(ASSERT_NO_EDITING_ABORT, false, false);
+    if (endingSelection().isRange()) {
+        deleteSelection(editingState, false, false);
+        if (editingState->isAborted())
+            return;
+    }
 
     // This is a scenario that should never happen, but we want to
     // make sure we don't dereference a null pointer below.
@@ -191,11 +194,15 @@ void BreakBlockquoteCommand::doApply(EditingState*)
                 setNodeAttribute(clonedChild, startAttr, AtomicString::number(toLayoutListItem(listChildNode->layoutObject())->value()));
         }
 
-        appendNode(clonedChild.get(), clonedAncestor.get());
+        appendNode(clonedChild.get(), clonedAncestor.get(), editingState);
+        if (editingState->isAborted())
+            return;
         clonedAncestor = clonedChild;
     }
 
-    moveRemainingSiblingsToNewParent(startNode, 0, clonedAncestor);
+    moveRemainingSiblingsToNewParent(startNode, 0, clonedAncestor, editingState);
+    if (editingState->isAborted())
+        return;
 
     if (!ancestors.isEmpty()) {
         // Split the tree up the ancestor chain until the topBlockquote
@@ -206,13 +213,19 @@ void BreakBlockquoteCommand::doApply(EditingState*)
         RefPtrWillBeRawPtr<Element> clonedParent = nullptr;
         for (ancestor = ancestors.first(), clonedParent = clonedAncestor->parentElement();
             ancestor && ancestor != topBlockquote;
-            ancestor = ancestor->parentElement(), clonedParent = clonedParent->parentElement())
-            moveRemainingSiblingsToNewParent(ancestor->nextSibling(), 0, clonedParent);
+            ancestor = ancestor->parentElement(), clonedParent = clonedParent->parentElement()) {
+            moveRemainingSiblingsToNewParent(ancestor->nextSibling(), 0, clonedParent, editingState);
+            if (editingState->isAborted())
+                return;
+        }
 
         // If the startNode's original parent is now empty, remove it
         Element* originalParent = ancestors.first().get();
-        if (!originalParent->hasChildren())
-            removeNode(originalParent);
+        if (!originalParent->hasChildren()) {
+            removeNode(originalParent, editingState);
+            if (editingState->isAborted())
+                return;
+        }
     }
 
     // Make sure the cloned block quote renders.

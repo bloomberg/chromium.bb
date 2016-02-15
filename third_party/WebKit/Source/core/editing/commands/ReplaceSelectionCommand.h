@@ -94,8 +94,8 @@ private:
     void removeUnrenderedTextNodesAtEnds(InsertedNodes&);
 
     void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&);
-    void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes&);
-    void moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element> ancestor);
+    void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes&, EditingState*);
+    void moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element> ancestor, EditingState*);
     void handleStyleSpans(InsertedNodes&);
 
     VisiblePosition positionAtStartOfInsertedContent() const;
@@ -103,10 +103,10 @@ private:
 
     bool shouldPerformSmartReplace() const;
     void addSpacesForSmartReplace();
-    void completeHTMLReplacement(const Position& lastPositionToSelect);
-    void mergeTextNodesAroundPosition(Position&, Position& positionOnlyToBeUpdated);
+    void completeHTMLReplacement(const Position& lastPositionToSelect, EditingState*);
+    void mergeTextNodesAroundPosition(Position&, Position& positionOnlyToBeUpdated, EditingState*);
 
-    bool performTrivialReplace(const ReplacementFragment&);
+    bool performTrivialReplace(const ReplacementFragment&, EditingState*);
 
     Position m_startOfInsertedContent;
     Position m_endOfInsertedContent;

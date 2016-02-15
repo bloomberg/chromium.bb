@@ -36,7 +36,7 @@ MoveSelectionCommand::MoveSelectionCommand(PassRefPtrWillBeRawPtr<DocumentFragme
     ASSERT(m_fragment);
 }
 
-void MoveSelectionCommand::doApply(EditingState*)
+void MoveSelectionCommand::doApply(EditingState* editingState)
 {
     ASSERT(endingSelection().isNonOrphanedRange());
 
@@ -55,7 +55,9 @@ void MoveSelectionCommand::doApply(EditingState*)
             pos = Position(pos.computeContainerNode(), pos.offsetInContainerNode() + selectionStart.offsetInContainerNode());
     }
 
-    deleteSelection(ASSERT_NO_EDITING_ABORT, m_smartDelete);
+    deleteSelection(editingState, m_smartDelete);
+    if (editingState->isAborted())
+        return;
 
     // If the node for the destination has been removed as a result of the deletion,
     // set the destination to the ending point after the deletion.
@@ -64,7 +66,9 @@ void MoveSelectionCommand::doApply(EditingState*)
     if (!pos.inDocument())
         pos = endingSelection().start();
 
-    cleanupAfterDeletion(createVisiblePosition(pos));
+    cleanupAfterDeletion(editingState, createVisiblePosition(pos));
+    if (editingState->isAborted())
+        return;
 
     setEndingSelection(VisibleSelection(pos, endingSelection().affinity(), endingSelection().isDirectional()));
     if (!pos.inDocument()) {
@@ -74,7 +78,7 @@ void MoveSelectionCommand::doApply(EditingState*)
     ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::PreventNesting;
     if (m_smartInsert)
         options |= ReplaceSelectionCommand::SmartReplace;
-    applyCommandToComposite(ReplaceSelectionCommand::create(document(), m_fragment, options));
+    applyCommandToComposite(ReplaceSelectionCommand::create(document(), m_fragment, options), editingState);
 }
 
 EditAction MoveSelectionCommand::editingAction() const

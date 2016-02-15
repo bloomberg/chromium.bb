@@ -636,24 +636,36 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
             styleWithoutEmbedding = style->copy();
             embeddingStyle = styleWithoutEmbedding->extractAndRemoveTextDirection();
 
-            if (comparePositions(embeddingRemoveStart, embeddingRemoveEnd) <= 0)
-                removeInlineStyle(embeddingStyle.get(), embeddingRemoveStart, embeddingRemoveEnd);
+            if (comparePositions(embeddingRemoveStart, embeddingRemoveEnd) <= 0) {
+                removeInlineStyle(embeddingStyle.get(), embeddingRemoveStart, embeddingRemoveEnd, editingState);
+                if (editingState->isAborted())
+                    return;
+            }
         }
     }
 
-    removeInlineStyle(styleWithoutEmbedding ? styleWithoutEmbedding.get() : style, removeStart, end);
+    removeInlineStyle(styleWithoutEmbedding ? styleWithoutEmbedding.get() : style, removeStart, end, editingState);
+    if (editingState->isAborted())
+        return;
     start = startPosition();
     end = endPosition();
     if (start.isNull() || start.isOrphan() || end.isNull() || end.isOrphan())
         return;
 
-    if (splitStart && mergeStartWithPreviousIfIdentical(start, end)) {
-        start = startPosition();
-        end = endPosition();
+    if (splitStart) {
+        bool mergeResult = mergeStartWithPreviousIfIdentical(start, end, editingState);
+        if (editingState->isAborted())
+            return;
+        if (splitStart && mergeResult) {
+            start = startPosition();
+            end = endPosition();
+        }
     }
 
     if (splitEnd) {
-        mergeEndWithNextIfIdentical(start, end);
+        mergeEndWithNextIfIdentical(start, end, editingState);
+        if (editingState->isAborted())
+            return;
         start = startPosition();
         end = endPosition();
     }
@@ -1033,7 +1045,7 @@ HTMLElement* ApplyStyleCommand::highestAncestorWithConflictingInlineStyle(Editin
     return result;
 }
 
-void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* style)
+void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* style, EditingState* editingState)
 {
     ASSERT(node);
 
@@ -1061,10 +1073,10 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
     // We can't wrap node with the styled element here because new styled element will never be removed if we did.
     // If we modified the child pointer in pushDownInlineStyleAroundNode to point to new style element
     // then we fall into an infinite loop where we keep removing and adding styled element wrapping node.
-    addInlineStyleIfNeeded(newInlineStyle.get(), node, node, DoNotAddStyledElement);
+    addInlineStyleIfNeeded(newInlineStyle.get(), node, node, editingState, DoNotAddStyledElement);
 }
 
-void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node* targetNode)
+void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node* targetNode, EditingState* editingState)
 {
     HTMLElement* highestAncestor = highestAncestorWithConflictingInlineStyle(style, targetNode);
     if (!highestAncestor)
@@ -1108,8 +1120,11 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
 
             // Apply style to all nodes containing targetNode and their siblings but NOT to targetNode
             // But if we've removed styledElement then go ahead and always apply the style.
-            if (child != targetNode || styledElement)
-                applyInlineStyleToPushDown(child, styleToPushDown.get());
+            if (child != targetNode || styledElement) {
+                applyInlineStyleToPushDown(child, styleToPushDown.get(), editingState);
+                if (editingState->isAborted())
+                    return;
+            }
 
             // We found the next node for the outer loop (contains targetNode)
             // When reached targetNode, stop the outer loop upon the completion of the current inner loop
@@ -1119,7 +1134,7 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
     }
 }
 
-void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &start, const Position &end)
+void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &start, const Position &end, EditingState* editingState)
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
@@ -1144,8 +1159,12 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
     if (pushDownEndContainer && pushDownEndContainer->isTextNode() && !pushDownEnd.computeOffsetInContainerNode())
         pushDownEnd = previousVisuallyDistinctCandidate(pushDownEnd);
 
-    pushDownInlineStyleAroundNode(style, pushDownStart.anchorNode());
-    pushDownInlineStyleAroundNode(style, pushDownEnd.anchorNode());
+    pushDownInlineStyleAroundNode(style, pushDownStart.anchorNode(), editingState);
+    if (editingState->isAborted())
+        return;
+    pushDownInlineStyleAroundNode(style, pushDownEnd.anchorNode(), editingState);
+    if (editingState->isAborted())
+        return;
 
     // The s and e variables store the positions used to set the ending selection after style removal
     // takes place. This will help callers to recognize when either the start node or the end node
@@ -1198,8 +1217,11 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
             }
 
             if (styleToPushDown) {
-                for (; childNode; childNode = childNode->nextSibling())
-                    applyInlineStyleToPushDown(childNode.get(), styleToPushDown.get());
+                for (; childNode; childNode = childNode->nextSibling()) {
+                    applyInlineStyleToPushDown(childNode.get(), styleToPushDown.get(), editingState);
+                    if (editingState->isAborted())
+                        return;
+                }
             }
         }
         if (node == end.anchorNode())
@@ -1301,7 +1323,7 @@ bool ApplyStyleCommand::isValidCaretPositionInTextNode(const Position& position)
     return offsetInText > caretMinOffset(node) && offsetInText < caretMaxOffset(node);
 }
 
-bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start, const Position& end)
+bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start, const Position& end, EditingState* editingState)
 {
     Node* startNode = start.computeContainerNode();
     int startOffset = start.computeOffsetInContainerNode();
@@ -1327,7 +1349,9 @@ bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start,
         Element* element = toElement(startNode);
         Node* startChild = element->firstChild();
         ASSERT(startChild);
-        mergeIdenticalElements(previousElement, element);
+        mergeIdenticalElements(previousElement, element, editingState);
+        if (editingState->isAborted())
+            return false;
 
         int startOffsetAdjustment = startChild->nodeIndex();
         int endOffsetAdjustment = startNode == end.anchorNode() ? startOffsetAdjustment : 0;
@@ -1339,7 +1363,7 @@ bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start,
     return false;
 }
 
-bool ApplyStyleCommand::mergeEndWithNextIfIdentical(const Position& start, const Position& end)
+bool ApplyStyleCommand::mergeEndWithNextIfIdentical(const Position& start, const Position& end, EditingState* editingState)
 {
     Node* endNode = end.computeContainerNode();
 
@@ -1363,7 +1387,9 @@ bool ApplyStyleCommand::mergeEndWithNextIfIdentical(const Position& start, const
         Element* element = toElement(endNode);
         Node* nextChild = nextElement->firstChild();
 
-        mergeIdenticalElements(element, nextElement);
+        mergeIdenticalElements(element, nextElement, editingState);
+        if (editingState->isAborted())
+            return false;
 
         bool shouldUpdateStart = start.computeContainerNode() == endNode;
         int endOffset = nextChild ? nextChild->nodeIndex() : nextElement->childNodes()->length();
@@ -1403,14 +1429,20 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node
     RefPtrWillBeRawPtr<Node> nextSibling = element->nextSibling();
     RefPtrWillBeRawPtr<Node> previousSibling = element->previousSibling();
     if (nextSibling && nextSibling->isElementNode() && nextSibling->hasEditableStyle()
-        && areIdenticalElements(*element, toElement(*nextSibling)))
-        mergeIdenticalElements(element.get(), toElement(nextSibling));
+        && areIdenticalElements(*element, toElement(*nextSibling))) {
+        mergeIdenticalElements(element.get(), toElement(nextSibling), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
     if (previousSibling && previousSibling->isElementNode() && previousSibling->hasEditableStyle()) {
         Node* mergedElement = previousSibling->nextSibling();
         if (mergedElement->isElementNode() && mergedElement->hasEditableStyle()
-            && areIdenticalElements(toElement(*previousSibling), toElement(*mergedElement)))
-            mergeIdenticalElements(toElement(previousSibling), toElement(mergedElement));
+            && areIdenticalElements(toElement(*previousSibling), toElement(*mergedElement))) {
+            mergeIdenticalElements(toElement(previousSibling), toElement(mergedElement), editingState);
+            if (editingState->isAborted())
+                return;
+        }
     }
 
     // FIXME: We should probably call updateStartEnd if the start or end was in the node
@@ -1436,7 +1468,7 @@ void ApplyStyleCommand::addBlockStyle(const StyleChange& styleChange, HTMLElemen
     setNodeAttribute(block, styleAttr, cssText.toAtomicString());
 }
 
-void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWillBeRawPtr<Node> passedStart, PassRefPtrWillBeRawPtr<Node> passedEnd, EAddStyledElement addStyledElement)
+void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWillBeRawPtr<Node> passedStart, PassRefPtrWillBeRawPtr<Node> passedEnd, EditingState* editingState, EAddStyledElement addStyledElement)
 {
     if (!passedStart || !passedEnd || !passedStart->inDocument() || !passedEnd->inDocument())
         return;
@@ -1445,10 +1477,13 @@ void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWi
     RefPtrWillBeMember<HTMLSpanElement> dummyElement = nullptr;
     StyleChange styleChange(style, positionToComputeInlineStyleChange(start, dummyElement));
 
-    if (dummyElement)
-        removeNode(dummyElement);
+    if (dummyElement) {
+        removeNode(dummyElement, editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
-    applyInlineStyleChange(start, passedEnd, styleChange, addStyledElement, ASSERT_NO_EDITING_ABORT);
+    applyInlineStyleChange(start, passedEnd, styleChange, addStyledElement, editingState);
 }
 
 Position ApplyStyleCommand::positionToComputeInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, RefPtrWillBeMember<HTMLSpanElement>& dummyElement)
@@ -1617,7 +1652,8 @@ void ApplyStyleCommand::joinChildTextNodes(ContainerNode* node, const Position& 
             newEnd = Position(childText, childText->length() + end.offsetInContainerNode());
         String textToMove = nextText->data();
         insertTextIntoNode(childText, childText->length(), textToMove);
-        removeNode(next);
+        // Removing a Text node doesn't dispatch synchronous events.
+        removeNode(next, ASSERT_NO_EDITING_ABORT);
         // don't move child node pointer. it may want to merge with more text nodes.
     }
 

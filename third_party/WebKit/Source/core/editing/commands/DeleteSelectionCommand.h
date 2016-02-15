@@ -59,15 +59,15 @@ private:
     void setStartingSelectionOnSmartDelete(const Position&, const Position&);
     void initializePositionData();
     void saveTypingStyleState();
-    bool handleSpecialCaseBRDelete();
+    bool handleSpecialCaseBRDelete(EditingState*);
     void handleGeneralDelete(EditingState*);
     void fixupWhitespace();
-    void mergeParagraphs();
-    void removePreviouslySelectedEmptyTableRows();
+    void mergeParagraphs(EditingState*);
+    void removePreviouslySelectedEmptyTableRows(EditingState*);
     void calculateTypingStyleAfterDelete();
     void clearTransientState();
-    void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
-    void removeNode(PassRefPtrWillBeRawPtr<Node>, EditingState* = ASSERT_NO_EDITING_ABORT, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) override;
+    void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(EditingState*);
+    void removeNode(PassRefPtrWillBeRawPtr<Node>, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) override;
     void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned, unsigned) override;
     void removeRedundantBlocks(EditingState*);
 

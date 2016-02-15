@@ -386,7 +386,7 @@ void TypingCommand::insertParagraphSeparatorInQuotedContent()
     typingAddedToOpenCommand(InsertParagraphSeparatorInQuotedContent);
 }
 
-bool TypingCommand::makeEditableRootEmpty()
+bool TypingCommand::makeEditableRootEmpty(EditingState* editingState)
 {
     Element* root = endingSelection().rootEditableElement();
     if (!root || !root->hasChildren())
@@ -400,8 +400,11 @@ bool TypingCommand::makeEditableRootEmpty()
         }
     }
 
-    while (Node* child = root->firstChild())
-        removeNode(child);
+    while (Node* child = root->firstChild()) {
+        removeNode(child, editingState);
+        if (editingState->isAborted())
+            return false;
+    }
 
     addBlockPlaceholderIfNeeded(root);
     setEndingSelection(VisibleSelection(firstPositionInNode(root), TextAffinity::Downstream, endingSelection().isDirectional()));
@@ -428,7 +431,10 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
     case CaretSelection: {
         // After breaking out of an empty mail blockquote, we still want continue with the deletion
         // so actual content will get deleted, and not just the quote style.
-        if (breakOutOfEmptyMailBlockquotedParagraph())
+        bool breakOutResult = breakOutOfEmptyMailBlockquotedParagraph(editingState);
+        if (editingState->isAborted())
+            return;
+        if (breakOutResult)
             typingAddedToOpenCommand(DeleteKey);
 
         m_smartDelete = false;
@@ -442,15 +448,20 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
         VisiblePosition visibleStart(endingSelection().visibleStart());
         if (previousPositionOf(visibleStart, CannotCrossEditingBoundary).isNull()) {
             // When the caret is at the start of the editable area in an empty list item, break out of the list item.
-            if (breakOutOfEmptyListItem()) {
+            bool breakOutOfEmptyListItemResult = breakOutOfEmptyListItem(editingState);
+            if (editingState->isAborted())
+                return;
+            if (breakOutOfEmptyListItemResult) {
                 typingAddedToOpenCommand(DeleteKey);
                 return;
             }
             // When there are no visible positions in the editing root, delete its entire contents.
-            if (nextPositionOf(visibleStart, CannotCrossEditingBoundary).isNull() && makeEditableRootEmpty()) {
+            if (nextPositionOf(visibleStart, CannotCrossEditingBoundary).isNull() && makeEditableRootEmpty(editingState)) {
                 typingAddedToOpenCommand(DeleteKey);
                 return;
             }
+            if (editingState->isAborted())
+                return;
         }
 
         // If we have a caret selection at the beginning of a cell, we have nothing to do.

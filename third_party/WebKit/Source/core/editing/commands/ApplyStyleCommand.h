@@ -86,9 +86,9 @@ private:
     bool removeImplicitlyStyledElement(EditingStyle*, HTMLElement*, InlineStyleRemovalMode, EditingStyle* extractedStyle);
     bool removeCSSStyle(EditingStyle*, HTMLElement*, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = nullptr);
     HTMLElement* highestAncestorWithConflictingInlineStyle(EditingStyle*, Node*);
-    void applyInlineStyleToPushDown(Node*, EditingStyle*);
-    void pushDownInlineStyleAroundNode(EditingStyle*, Node*);
-    void removeInlineStyle(EditingStyle* , const Position& start, const Position& end);
+    void applyInlineStyleToPushDown(Node*, EditingStyle*, EditingState*);
+    void pushDownInlineStyleAroundNode(EditingStyle*, Node*, EditingState*);
+    void removeInlineStyle(EditingStyle* , const Position& start, const Position& end, EditingState*);
     bool elementFullySelected(HTMLElement&, const Position& start, const Position& end) const;
 
     // style-application helpers
@@ -98,7 +98,9 @@ private:
     void fixRangeAndApplyInlineStyle(EditingStyle*, const Position& start, const Position& end, EditingState*);
     void applyInlineStyleToNodeRange(EditingStyle*, PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> pastEndNode, EditingState*);
     void addBlockStyle(const StyleChange&, HTMLElement*);
-    void addInlineStyleIfNeeded(EditingStyle*, PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, EAddStyledElement = AddStyledElement);
+    // TODO(tkent): Remove the EAddStyledElement argument. It's always
+    // DoNotAddStyledElement.
+    void addInlineStyleIfNeeded(EditingStyle*, PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, EditingState*, EAddStyledElement = AddStyledElement);
     Position positionToComputeInlineStyleChange(PassRefPtrWillBeRawPtr<Node>, RefPtrWillBeMember<HTMLSpanElement>& dummyElement);
     void applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> endNode, StyleChange&, EAddStyledElement, EditingState*);
     void splitTextAtStart(const Position& start, const Position& end);
@@ -107,8 +109,8 @@ private:
     void splitTextElementAtEnd(const Position& start, const Position& end);
     bool shouldSplitTextElement(Element*, EditingStyle*);
     bool isValidCaretPositionInTextNode(const Position&);
-    bool mergeStartWithPreviousIfIdentical(const Position& start, const Position& end);
-    bool mergeEndWithNextIfIdentical(const Position& start, const Position& end);
+    bool mergeStartWithPreviousIfIdentical(const Position& start, const Position& end, EditingState*);
+    bool mergeEndWithNextIfIdentical(const Position& start, const Position& end, EditingState*);
     void cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor);
 
     void surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, PassRefPtrWillBeRawPtr<Element>, EditingState*);

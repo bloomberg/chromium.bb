@@ -48,7 +48,7 @@ private:
 
     void outdentRegion(const VisiblePosition&, const VisiblePosition&);
     void outdentParagraph();
-    bool tryIndentingAsListItem(const Position&, const Position&);
+    bool tryIndentingAsListItem(const Position&, const Position&, EditingState*);
     void indentIntoBlockquote(const Position&, const Position&, RefPtrWillBeRawPtr<HTMLElement>&, EditingState*);
 
     void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState*) override;

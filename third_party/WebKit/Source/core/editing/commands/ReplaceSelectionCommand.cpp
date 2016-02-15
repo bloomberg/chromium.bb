@@ -633,7 +633,7 @@ static bool isProhibitedParagraphChild(const AtomicString& name)
     return elements.contains(name);
 }
 
-void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes& insertedNodes)
+void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes& insertedNodes, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<Node> pastEndNode = insertedNodes.pastLastLeaf();
     RefPtrWillBeRawPtr<Node> next = nullptr;
@@ -649,18 +649,24 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
 
         HTMLElement& element = toHTMLElement(*node);
         if (isProhibitedParagraphChild(element.localName())) {
-            if (HTMLElement* paragraphElement = toHTMLElement(enclosingElementWithTag(positionInParentBeforeNode(element), pTag)))
-                moveElementOutOfAncestor(&element, paragraphElement);
+            if (HTMLElement* paragraphElement = toHTMLElement(enclosingElementWithTag(positionInParentBeforeNode(element), pTag))) {
+                moveElementOutOfAncestor(&element, paragraphElement, editingState);
+                if (editingState->isAborted())
+                    return;
+            }
         }
 
         if (isHTMLHeaderElement(&element)) {
-            if (HTMLElement* headerElement = toHTMLElement(highestEnclosingNodeOfType(positionInParentBeforeNode(element), isHTMLHeaderElement)))
-                moveElementOutOfAncestor(&element, headerElement);
+            if (HTMLElement* headerElement = toHTMLElement(highestEnclosingNodeOfType(positionInParentBeforeNode(element), isHTMLHeaderElement))) {
+                moveElementOutOfAncestor(&element, headerElement, editingState);
+                if (editingState->isAborted())
+                    return;
+            }
         }
     }
 }
 
-void ReplaceSelectionCommand::moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element> prpElement, PassRefPtrWillBeRawPtr<Element> prpAncestor)
+void ReplaceSelectionCommand::moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element> prpElement, PassRefPtrWillBeRawPtr<Element> prpAncestor, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<Element> element = prpElement;
     RefPtrWillBeRawPtr<Element> ancestor = prpAncestor;
@@ -671,18 +677,26 @@ void ReplaceSelectionCommand::moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<El
     VisiblePosition positionAtEndOfNode = createVisiblePosition(lastPositionInOrAfterNode(element.get()));
     VisiblePosition lastPositionInParagraph = createVisiblePosition(lastPositionInNode(ancestor.get()));
     if (positionAtEndOfNode.deepEquivalent() == lastPositionInParagraph.deepEquivalent()) {
-        removeNode(element);
+        removeNode(element, editingState);
+        if (editingState->isAborted())
+            return;
         if (ancestor->nextSibling())
-            insertNodeBefore(element, ancestor->nextSibling());
+            insertNodeBefore(element, ancestor->nextSibling(), editingState);
         else
-            appendNode(element, ancestor->parentNode());
+            appendNode(element, ancestor->parentNode(), editingState);
+        if (editingState->isAborted())
+            return;
     } else {
         RefPtrWillBeRawPtr<Node> nodeToSplitTo = splitTreeToNode(element.get(), ancestor.get(), true);
-        removeNode(element);
-        insertNodeBefore(element, nodeToSplitTo);
+        removeNode(element, editingState);
+        if (editingState->isAborted())
+            return;
+        insertNodeBefore(element, nodeToSplitTo, editingState);
+        if (editingState->isAborted())
+            return;
     }
     if (!ancestor->hasChildren())
-        removeNode(ancestor.release());
+        removeNode(ancestor.release(), editingState);
 }
 
 static inline bool nodeHasVisibleLayoutText(Text& text)
@@ -699,7 +713,8 @@ void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& ins
         && !enclosingElementWithTag(firstPositionInOrBeforeNode(lastLeafInserted), selectTag)
         && !enclosingElementWithTag(firstPositionInOrBeforeNode(lastLeafInserted), scriptTag)) {
         insertedNodes.willRemoveNode(*lastLeafInserted);
-        removeNode(lastLeafInserted);
+        // Removing a Text node won't dispatch synchronous events.
+        removeNode(lastLeafInserted, ASSERT_NO_EDITING_ABORT);
     }
 
     // We don't have to make sure that firstNodeInserted isn't inside a select or script element, because
@@ -707,7 +722,8 @@ void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& ins
     Node* firstNodeInserted = insertedNodes.firstNodeInserted();
     if (firstNodeInserted && firstNodeInserted->isTextNode() && !nodeHasVisibleLayoutText(toText(*firstNodeInserted))) {
         insertedNodes.willRemoveNode(*firstNodeInserted);
-        removeNode(firstNodeInserted);
+        // Removing a Text node won't dispatch synchronous events.
+        removeNode(firstNodeInserted, ASSERT_NO_EDITING_ABORT);
     }
 }
 
@@ -932,7 +948,10 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         return;
 
     ReplacementFragment fragment(&document(), m_documentFragment.get(), selection);
-    if (performTrivialReplace(fragment))
+    bool trivialReplaceResult = performTrivialReplace(fragment, editingState);
+    if (editingState->isAborted())
+        return;
+    if (trivialReplaceResult)
         return;
 
     // We can skip matching the style if the selection is plain text.
@@ -1015,7 +1034,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         ASSERT(isHTMLBRElement(br));
         // Insert content between the two blockquotes, but remove the br (since it was just a placeholder).
         insertionPos = positionInParentBeforeNode(*br);
-        removeNode(br);
+        removeNode(br, editingState);
+        if (editingState->isAborted())
+            return;
     }
 
     // Inserting content could cause whitespace to collapse, e.g. inserting <div>foo</div> into hello^ world.
@@ -1170,14 +1191,20 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     if (endBR && (plainTextFragment || (shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR) && !(fragment.hasInterchangeNewlineAtEnd() && selectionIsPlainText)))) {
         RefPtrWillBeRawPtr<ContainerNode> parent = endBR->parentNode();
         insertedNodes.willRemoveNode(*endBR);
-        removeNode(endBR);
+        removeNode(endBR, editingState);
+        if (editingState->isAborted())
+            return;
         if (Node* nodeToRemove = highestNodeToRemoveInPruning(parent.get())) {
             insertedNodes.willRemoveNode(*nodeToRemove);
-            removeNode(nodeToRemove);
+            removeNode(nodeToRemove, editingState);
+            if (editingState->isAborted())
+                return;
         }
     }
 
-    makeInsertedContentRoundTrippableWithHTMLTreeBuilder(insertedNodes);
+    makeInsertedContentRoundTrippableWithHTMLTreeBuilder(insertedNodes, editingState);
+    if (editingState->isAborted())
+        return;
 
     removeRedundantStylesAndKeepStyleSpanInline(insertedNodes);
 
@@ -1268,7 +1295,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     if (plainTextFragment)
         m_matchStyle = false;
 
-    completeHTMLReplacement(lastPositionToSelect);
+    completeHTMLReplacement(lastPositionToSelect, editingState);
 }
 
 bool ReplaceSelectionCommand::shouldRemoveEndBR(HTMLBRElement* endBR, const VisiblePosition& originalVisPosBeforeEndBR)
@@ -1362,7 +1389,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
     }
 }
 
-void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositionToSelect)
+void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositionToSelect, EditingState* editingState)
 {
     Position start = positionAtStartOfInsertedContent().deepEquivalent();
     Position end = positionAtEndOfInsertedContent().deepEquivalent();
@@ -1381,7 +1408,9 @@ void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositi
         if (lastPositionToSelect.isNotNull())
             end = lastPositionToSelect;
 
-        mergeTextNodesAroundPosition(start, end);
+        mergeTextNodesAroundPosition(start, end, editingState);
+        if (editingState->isAborted())
+            return;
     } else if (lastPositionToSelect.isNotNull()) {
         start = end = lastPositionToSelect;
     } else {
@@ -1397,7 +1426,7 @@ void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositi
         setEndingSelection(VisibleSelection(end, SelDefaultAffinity, endingSelection().isDirectional()));
 }
 
-void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, Position& positionOnlyToBeUpdated)
+void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, Position& positionOnlyToBeUpdated, EditingState* editingState)
 {
     bool positionIsOffsetInAnchor = position.isOffsetInAnchor();
     bool positionOnlyToBeUpdatedIsOffsetInAnchor = positionOnlyToBeUpdated.isOffsetInAnchor();
@@ -1435,7 +1464,9 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
             updatePositionForNodeRemoval(positionOnlyToBeUpdated, *previous);
         }
 
-        removeNode(previous);
+        removeNode(previous, editingState);
+        if (editingState->isAborted())
+            return;
     }
     if (text->nextSibling() && text->nextSibling()->isTextNode()) {
         RefPtrWillBeRawPtr<Text> next = toText(text->nextSibling());
@@ -1450,7 +1481,9 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
         else
             updatePositionForNodeRemoval(positionOnlyToBeUpdated, *next);
 
-        removeNode(next);
+        removeNode(next, editingState);
+        if (editingState->isAborted())
+            return;
     }
 }
 
@@ -1517,7 +1550,7 @@ void ReplaceSelectionCommand::updateNodesInserted(Node *node)
 // directly into the text node that holds the selection.  This is much faster than the generalized code in
 // ReplaceSelectionCommand, and works around <https://bugs.webkit.org/show_bug.cgi?id=6148> since we don't
 // split text nodes.
-bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& fragment)
+bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& fragment, EditingState* editingState)
 {
     if (!fragment.firstChild() || fragment.firstChild() != fragment.lastChild() || !fragment.firstChild()->isTextNode())
         return false;
@@ -1540,8 +1573,11 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
         return false;
 
     if (nodeAfterInsertionPos && nodeAfterInsertionPos->parentNode() && isHTMLBRElement(*nodeAfterInsertionPos)
-        && shouldRemoveEndBR(toHTMLBRElement(nodeAfterInsertionPos.get()), createVisiblePosition(positionBeforeNode(nodeAfterInsertionPos.get()))))
-        removeNodeAndPruneAncestors(nodeAfterInsertionPos.get());
+        && shouldRemoveEndBR(toHTMLBRElement(nodeAfterInsertionPos.get()), createVisiblePosition(positionBeforeNode(nodeAfterInsertionPos.get())))) {
+        removeNodeAndPruneAncestors(nodeAfterInsertionPos.get(), editingState);
+        if (editingState->isAborted())
+            return false;
+    }
 
     m_startOfInsertedRange = start;
     m_endOfInsertedRange = end;

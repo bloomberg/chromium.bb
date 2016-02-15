@@ -300,7 +300,7 @@ void DeleteSelectionCommand::saveTypingStyleState()
         m_deleteIntoBlockquoteStyle = nullptr;
 }
 
-bool DeleteSelectionCommand::handleSpecialCaseBRDelete()
+bool DeleteSelectionCommand::handleSpecialCaseBRDelete(EditingState* editingState)
 {
     Node* nodeAfterUpstreamStart = m_upstreamStart.computeNodeAfterPosition();
     Node* nodeAfterDownstreamStart = m_downstreamStart.computeNodeAfterPosition();
@@ -315,7 +315,7 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete()
     bool downstreamStartIsBR = isHTMLBRElement(*nodeAfterDownstreamStart);
     bool isBROnLineByItself = upstreamStartIsBR && downstreamStartIsBR && nodeAfterDownstreamStart == nodeAfterUpstreamEnd;
     if (isBROnLineByItself) {
-        removeNode(nodeAfterDownstreamStart);
+        removeNode(nodeAfterDownstreamStart, editingState);
         return true;
     }
 
@@ -431,7 +431,7 @@ void DeleteSelectionCommand::deleteTextFromNode(PassRefPtrWillBeRawPtr<Text> nod
     CompositeEditCommand::deleteTextFromNode(node, offset, count);
 }
 
-void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss()
+void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(EditingState* editingState)
 {
     RefPtrWillBeRawPtr<Range> range = createRange(m_selectionToDelete.toNormalizedEphemeralRange());
     RefPtrWillBeRawPtr<Node> node = range->firstNode();
@@ -441,8 +441,12 @@ void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPr
             nextNode = NodeTraversal::nextSkippingChildren(*node);
             RefPtrWillBeRawPtr<Element> rootEditableElement = node->rootEditableElement();
             if (rootEditableElement.get()) {
-                removeNode(node);
-                appendNode(node, rootEditableElement);
+                removeNode(node, editingState);
+                if (editingState->isAborted())
+                    return;
+                appendNode(node, rootEditableElement, editingState);
+                if (editingState->isAborted())
+                    return;
             }
         }
         node = nextNode;
@@ -458,7 +462,9 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
     Node* startNode = m_upstreamStart.anchorNode();
     ASSERT(startNode);
 
-    makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
+    makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(editingState);
+    if (editingState->isAborted())
+        return;
 
     // Never remove the start block unless it's a table, in which case we won't merge content in.
     if (startNode->isSameNode(m_startBlock.get()) && !startOffset && canHaveChildrenForEditing(startNode) && !isHTMLTableElement(*startNode)) {
@@ -490,7 +496,9 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
                 Text* text = toText(startNode);
                 deleteTextFromNode(text, startOffset, m_downstreamEnd.computeOffsetInContainerNode() - startOffset);
             } else {
-                removeChildrenInRange(startNode, startOffset, m_downstreamEnd.computeEditingOffset());
+                removeChildrenInRange(startNode, startOffset, m_downstreamEnd.computeEditingOffset(), editingState);
+                if (editingState->isAborted())
+                    return;
                 m_endingPosition = m_upstreamStart;
             }
         }
@@ -573,7 +581,9 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
                         if (n)
                             offset = n->nodeIndex() + 1;
                     }
-                    removeChildrenInRange(m_downstreamEnd.anchorNode(), offset, m_downstreamEnd.computeEditingOffset());
+                    removeChildrenInRange(m_downstreamEnd.anchorNode(), offset, m_downstreamEnd.computeEditingOffset(), editingState);
+                    if (editingState->isAborted())
+                        return;
                     m_downstreamEnd = Position::editingPositionOf(m_downstreamEnd.anchorNode(), offset);
                 }
             }
@@ -601,12 +611,14 @@ void DeleteSelectionCommand::fixupWhitespace()
 
 // If a selection starts in one block and ends in another, we have to merge to bring content before the
 // start together with content after the end.
-void DeleteSelectionCommand::mergeParagraphs()
+void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
 {
     if (!m_mergeBlocksAfterDelete) {
         if (m_pruneStartBlockIfNecessary) {
             // We aren't going to merge into the start block, so remove it if it's empty.
-            prune(m_startBlock);
+            prune(m_startBlock, editingState);
+            if (editingState->isAborted())
+                return;
             // Removing the start block during a deletion is usually an indication that we need
             // a placeholder, but not in this case.
             m_needPlaceholder = false;
@@ -636,13 +648,15 @@ void DeleteSelectionCommand::mergeParagraphs()
     // move, so just remove it.
     Element* endBlock = enclosingBlock(m_downstreamEnd.anchorNode());
     if (!endBlock || !endBlock->contains(startOfParagraphToMove.deepEquivalent().anchorNode()) || !startOfParagraphToMove.deepEquivalent().anchorNode()) {
-        removeNode(enclosingBlock(m_downstreamEnd.anchorNode()));
+        removeNode(enclosingBlock(m_downstreamEnd.anchorNode()), editingState);
         return;
     }
 
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
     if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.computeContainerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.computeContainerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination.deepEquivalent() != startOfParagraphToMove.deepEquivalent())) {
-        insertNodeAt(HTMLBRElement::create(document()).get(), m_upstreamStart);
+        insertNodeAt(HTMLBRElement::create(document()).get(), m_upstreamStart, editingState);
+        if (editingState->isAborted())
+            return;
         mergeDestination = createVisiblePosition(m_upstreamStart);
     }
 
@@ -660,7 +674,9 @@ void DeleteSelectionCommand::mergeParagraphs()
     if (listItemInFirstParagraph && listItemInSecondParagraph
         && listItemInFirstParagraph->parentElement() != listItemInSecondParagraph->parentElement()
         && canMergeLists(listItemInFirstParagraph->parentElement(), listItemInSecondParagraph->parentElement())) {
-        mergeIdenticalElements(listItemInFirstParagraph->parentElement(), listItemInSecondParagraph->parentElement());
+        mergeIdenticalElements(listItemInFirstParagraph->parentElement(), listItemInSecondParagraph->parentElement(), editingState);
+        if (editingState->isAborted())
+            return;
         m_endingPosition = mergeDestination.deepEquivalent();
         return;
     }
@@ -669,7 +685,9 @@ void DeleteSelectionCommand::mergeParagraphs()
     // FIXME: Consider RTL.
     if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && absoluteCaretBoundsOf(startOfParagraphToMove).x() > absoluteCaretBoundsOf(mergeDestination).x()) {
         if (isHTMLBRElement(*mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode())) {
-            removeNodeAndPruneAncestors(mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode());
+            removeNodeAndPruneAncestors(mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode(), editingState);
+            if (editingState->isAborted())
+                return;
             m_endingPosition = startOfParagraphToMove.deepEquivalent();
             return;
         }
@@ -687,13 +705,15 @@ void DeleteSelectionCommand::mergeParagraphs()
     // removals that it does cause the insertion of *another* placeholder.
     bool needPlaceholder = m_needPlaceholder;
     bool paragraphToMergeIsEmpty = startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent();
-    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, mergeDestination, ASSERT_NO_EDITING_ABORT, false, !paragraphToMergeIsEmpty);
+    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, mergeDestination, editingState, false, !paragraphToMergeIsEmpty);
+    if (editingState->isAborted())
+        return;
     m_needPlaceholder = needPlaceholder;
     // The endingPosition was likely clobbered by the move, so recompute it (moveParagraph selects the moved paragraph).
     m_endingPosition = endingSelection().start();
 }
 
-void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows()
+void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows(EditingState* editingState)
 {
     if (m_endTableRow && m_endTableRow->inDocument() && m_endTableRow != m_startTableRow) {
         Node* row = m_endTableRow->previousSibling();
@@ -703,7 +723,9 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows()
                 // Use a raw removeNode, instead of DeleteSelectionCommand's,
                 // because that won't remove rows, it only empties them in
                 // preparation for this function.
-                CompositeEditCommand::removeNode(row);
+                CompositeEditCommand::removeNode(row, editingState);
+                if (editingState->isAborted())
+                    return;
             }
             row = previousRow.get();
         }
@@ -714,8 +736,11 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows()
         Node* row = m_startTableRow->nextSibling();
         while (row && row != m_endTableRow) {
             RefPtrWillBeRawPtr<Node> nextRow = row->nextSibling();
-            if (isTableRowEmpty(row))
-                CompositeEditCommand::removeNode(row);
+            if (isTableRowEmpty(row)) {
+                CompositeEditCommand::removeNode(row, editingState);
+                if (editingState->isAborted())
+                    return;
+            }
             row = nextRow.get();
         }
     }
@@ -729,7 +754,9 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows()
                 // fully selected, even if it is empty. We'll need to start
                 // adjusting the selection endpoints during deletion to know
                 // whether or not m_endTableRow was fully selected here.
-                CompositeEditCommand::removeNode(m_endTableRow.get());
+                CompositeEditCommand::removeNode(m_endTableRow.get(), editingState);
+                if (editingState->isAborted())
+                    return;
             }
         }
     }
@@ -842,7 +869,10 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
 
     // deleting just a BR is handled specially, at least because we do not
     // want to replace it with a placeholder BR!
-    if (handleSpecialCaseBRDelete()) {
+    bool brResult = handleSpecialCaseBRDelete(editingState);
+    if (editingState->isAborted())
+        return;
+    if (brResult) {
         calculateTypingStyleAfterDelete();
         setEndingSelection(VisibleSelection(m_endingPosition, affinity, endingSelection().isDirectional()));
         clearTransientState();
@@ -856,9 +886,13 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
 
     fixupWhitespace();
 
-    mergeParagraphs();
+    mergeParagraphs(editingState);
+    if (editingState->isAborted())
+        return;
 
-    removePreviouslySelectedEmptyTableRows();
+    removePreviouslySelectedEmptyTableRows(editingState);
+    if (editingState->isAborted())
+        return;
 
     if (!m_needPlaceholder && rootWillStayOpenWithoutPlaceholder) {
         VisiblePosition visualEnding = createVisiblePosition(m_endingPosition);
