@@ -27,6 +27,11 @@ Polymer({
     menuIdentifier: {
       type: Number,
       value: 0
+    },
+
+    resultLoadingDisabled_: {
+      type: Boolean,
+      value: false
     }
   },
 
@@ -66,6 +71,13 @@ Polymer({
 
       menu.focus();
     }
+  },
+
+  /**
+   * Disables history result loading when there are no more history results.
+   */
+  disableResultLoading: function() {
+    this.resultLoadingDisabled_ = true;
   },
 
   /**
@@ -211,6 +223,9 @@ Polymer({
   scrollHandler_: function() {
     // Close overflow menu on scroll.
     this.closeMenu();
+
+    if (this.resultLoadingDisabled_)
+      return;
 
     // Requests the next list of results when the scrollbar is near the bottom
     // of the window.

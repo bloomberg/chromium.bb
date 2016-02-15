@@ -76,6 +76,8 @@ window.addEventListener('resize', function() {
  */
 function historyResult(info, results) {
   $('history-list').addNewResults(results);
+  if (info.finished)
+    $('history-list').disableResultLoading();
 }
 
 /**
