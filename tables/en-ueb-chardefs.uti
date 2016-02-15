@@ -295,8 +295,12 @@ punctuation \x00bf 236 ¿
 uppercase \x00c6 1-6-45-235-15 Æ
 lowercase \x00e6 1-45-235-15 æ
 
+uppercase \x014a 6-45-1345 Ŋ
+lowercase \x014b 45-1345 ŋ
+uppercase \x018f 6-456-26 Ə
 lowercase \x0259 456-26 ə
-sign \x02d8 4-346 ˘ breve
+
+sign \x02d8 4-346 ˘ uncombining breve
 
 space \x2000 0
 space \x2001 0
