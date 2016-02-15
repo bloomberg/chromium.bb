@@ -38,6 +38,7 @@ source_set("tests") {
     "router_unittest.cc",
     "sample_service_unittest.cc",
     "serialization_warning_unittest.cc",
+    "stl_converters_unittest.cc",
     "string_unittest.cc",
     "struct_traits_unittest.cc",
     "struct_unittest.cc",

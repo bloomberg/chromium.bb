@@ -90,6 +90,7 @@
         'public/cpp/bindings/tests/router_unittest.cc',
         'public/cpp/bindings/tests/sample_service_unittest.cc',
         'public/cpp/bindings/tests/serialization_warning_unittest.cc',
+        'public/cpp/bindings/tests/stl_converters_unittest.cc',
         'public/cpp/bindings/tests/string_unittest.cc',
         'public/cpp/bindings/tests/struct_traits_unittest.cc',
         'public/cpp/bindings/tests/struct_unittest.cc',

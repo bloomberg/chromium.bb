@@ -171,6 +171,7 @@
         'public/cpp/bindings/message.h',
         'public/cpp/bindings/message_filter.h',
         'public/cpp/bindings/no_interface.h',
+        'public/cpp/bindings/stl_converters.h',
         'public/cpp/bindings/string.h',
         'public/cpp/bindings/strong_binding.h',
         'public/cpp/bindings/type_converter.h',
