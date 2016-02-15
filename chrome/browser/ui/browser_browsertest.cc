@@ -3219,7 +3219,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
   {
     // Minimum height a popup window should have added to the supplied content
     // bounds when drawn. This accommodates the browser toolbar.
-    const int minimum_popup_padding = 27;
+    const int minimum_popup_padding = 26;
 
     // Creates an untrusted popup window and asserts that the eventual height is
     // padded with the toolbar and title bar height (initial height is content
