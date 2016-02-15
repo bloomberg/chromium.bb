@@ -36,8 +36,6 @@ class AppWindowCreateFunction : public AsyncExtensionFunction {
       const extensions::api::app_window::CreateWindowOptions& options,
       AppWindow::CreateParams* create_params);
   void UpdateFrameOptionsForChannel(AppWindow::CreateParams* create_params);
-
-  bool inject_html_titlebar_;
 };
 
 }  // namespace extensions

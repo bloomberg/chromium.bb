@@ -4,19 +4,14 @@
 
 #include "extensions/renderer/app_window_custom_bindings.h"
 
-#include <string>
-
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/script_context_set.h"
 #include "grit/extensions_renderer_resources.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -25,39 +20,8 @@
 
 namespace extensions {
 
-class DidCreateDocumentElementObserver : public content::RenderFrameObserver {
- public:
-  DidCreateDocumentElementObserver(content::RenderFrame* frame,
-                                   const ScriptContextSet* script_context_set)
-      : content::RenderFrameObserver(frame),
-        script_context_set_(script_context_set) {
-    DCHECK(script_context_set_);
-  }
-
-  void DidCreateDocumentElement() override {
-    blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
-    // Don't attempt to inject the titlebar into iframes.
-    if (web_frame->parent())
-      return;
-    ScriptContext* script_context = script_context_set_->GetByV8Context(
-        web_frame->mainWorldScriptContext());
-    if (!script_context)
-      return;
-    script_context->module_system()->CallModuleMethod(
-        "injectAppTitlebar", "didCreateDocumentElement");
-  }
-
- private:
-  const ScriptContextSet* script_context_set_;
-
-  DISALLOW_COPY_AND_ASSIGN(DidCreateDocumentElementObserver);
-};
-
-AppWindowCustomBindings::AppWindowCustomBindings(
-    const ScriptContextSet* script_context_set,
-    ScriptContext* context)
-    : ObjectBackedNativeHandler(context),
-      script_context_set_(script_context_set) {
+AppWindowCustomBindings::AppWindowCustomBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("GetFrame", base::Bind(&AppWindowCustomBindings::GetFrame,
                                        base::Unretained(this)));
 
@@ -70,18 +34,13 @@ void AppWindowCustomBindings::GetFrame(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // TODO(jeremya): convert this to IDL nocompile to get validation, and turn
   // these argument checks into CHECK().
-  if (args.Length() != 2)
+  if (args.Length() != 1)
     return;
 
   if (!args[0]->IsInt32())
     return;
 
-  if (!args[1]->IsBoolean())
-    return;
-
   int frame_id = args[0]->Int32Value();
-
-  bool inject_titlebar = args[1]->BooleanValue();
 
   if (frame_id == MSG_ROUTING_NONE)
     return;
@@ -98,9 +57,6 @@ void AppWindowCustomBindings::GetFrame(
   content::RenderFrame* context_render_frame = context()->GetRenderFrame();
   if (!context_render_frame)
     return;
-
-  if (inject_titlebar)
-    new DidCreateDocumentElementObserver(app_frame, script_context_set_);
 
   blink::WebFrame* opener = context_render_frame->GetWebFrame();
   blink::WebLocalFrame* app_web_frame = app_frame->GetWebFrame();

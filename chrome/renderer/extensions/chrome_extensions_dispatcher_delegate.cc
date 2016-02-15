@@ -226,7 +226,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("chromeWebViewInternal",
                              IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("chromeWebView", IDR_CHROME_WEB_VIEW_JS);
-  source_map->RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(

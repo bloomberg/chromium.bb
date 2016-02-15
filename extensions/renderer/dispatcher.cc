@@ -807,13 +807,9 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new FileSystemNatives(context)));
 
   // Custom bindings.
-  // |dispatcher| is null in unit tests.
-  const ScriptContextSet* script_context_set = dispatcher ?
-      &dispatcher->script_context_set() : nullptr;
   module_system->RegisterNativeHandler(
       "app_window_natives",
-      scoped_ptr<NativeHandler>(new AppWindowCustomBindings(
-          script_context_set, context)));
+      scoped_ptr<NativeHandler>(new AppWindowCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "blob_natives",
       scoped_ptr<NativeHandler>(new BlobNativeHandler(context)));
