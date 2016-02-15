@@ -10,6 +10,8 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#include <mach/mach.h>
 #endif
 
 namespace mojo {
@@ -17,14 +19,36 @@ namespace edk {
 
 #if defined(OS_POSIX)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
-  PlatformHandle() : handle(-1) {}
+  PlatformHandle() {}
   explicit PlatformHandle(int handle) : handle(handle) {}
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  explicit PlatformHandle(mach_port_t port)
+      : type(Type::MACH), port(port) {}
+#endif
 
   void CloseIfNecessary();
 
-  bool is_valid() const { return handle != -1; }
+  bool is_valid() const {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    if (type == Type::MACH)
+      return port != MACH_PORT_NULL;
+#endif
+    return handle != -1;
+  }
 
-  int handle;
+  enum class Type {
+    POSIX,
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    MACH,
+#endif
+  };
+  Type type = Type::POSIX;
+
+  int handle = -1;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  mach_port_t port = MACH_PORT_NULL;
+#endif
 };
 #elif defined(OS_WIN)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {

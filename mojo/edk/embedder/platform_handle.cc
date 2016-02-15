@@ -23,9 +23,18 @@ void PlatformHandle::CloseIfNecessary() {
     return;
 
 #if defined(OS_POSIX)
-  bool success = (close(handle) == 0);
-  DPCHECK(success);
-  handle = -1;
+  if (type == Type::POSIX) {
+    bool success = (close(handle) == 0);
+    DPCHECK(success);
+    handle = -1;
+  }
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  else {
+     kern_return_t rv = mach_port_deallocate(mach_task_self(), port);
+     DPCHECK(rv == KERN_SUCCESS);
+     port = MACH_PORT_NULL;
+  }
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 #elif defined(OS_WIN)
   bool success = !!CloseHandle(handle);
   DPCHECK(success);
