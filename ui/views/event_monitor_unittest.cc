@@ -64,15 +64,12 @@ TEST_F(EventMonitorTest, ShouldReceiveWindowEventsWhileInstalled) {
 }
 
 TEST_F(EventMonitorTest, ShouldNotReceiveEventsFromOtherWindow) {
-  Widget* widget2 = CreateTopLevelNativeWidget();
+  ScopedWidget widget2(CreateTopLevelNativeWidget());
   scoped_ptr<EventMonitor> monitor(
       EventMonitor::CreateWindowMonitor(&handler_, widget2->GetNativeWindow()));
 
   generator_->ClickLeftButton();
   EXPECT_EQ(0, handler_.num_mouse_events());
-
-  monitor.reset();
-  widget2->CloseNow();
 }
 
 }  // namespace test

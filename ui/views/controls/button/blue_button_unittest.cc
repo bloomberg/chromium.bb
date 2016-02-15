@@ -19,7 +19,7 @@ using BlueButtonTest = test::WidgetTest;
 TEST_F(BlueButtonTest, Border) {
   // The buttons must be added to a Widget so that borders are correctly
   // applied once the NativeTheme is determined.
-  Widget* widget = CreateTopLevelPlatformWidget();
+  test::ScopedWidget widget(CreateTopLevelPlatformWidget());
 
   // Compared to a normal LabelButton...
   LabelButton* button = new LabelButton(nullptr, base::ASCIIToUTF16("foo"));
@@ -58,8 +58,6 @@ TEST_F(BlueButtonTest, Border) {
   EXPECT_EQ(button->size(), blue_button->size());
   EXPECT_FALSE(gfx::BitmapsAreEqual(button_canvas.ExtractImageRep().sk_bitmap(),
                                     canvas.ExtractImageRep().sk_bitmap()));
-
-  widget->CloseNow();
 }
 
 }  // namespace views

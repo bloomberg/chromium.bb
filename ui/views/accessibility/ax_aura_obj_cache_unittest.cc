@@ -8,17 +8,6 @@
 namespace views {
 namespace test {
 
-namespace {
-
-// This class can be used as a deleter for scoped_ptr<Widget>
-// to call function Widget::CloseNow automatically.
-struct WidgetCloser {
-  inline void operator()(Widget* widget) const { widget->CloseNow(); }
-};
-
-using WidgetAutoclosePtr = scoped_ptr<Widget, WidgetCloser>;
-}
-
 class AXAuraObjCacheTest : public WidgetTest {
  public:
   AXAuraObjCacheTest() {}
@@ -26,7 +15,7 @@ class AXAuraObjCacheTest : public WidgetTest {
 };
 
 TEST_F(AXAuraObjCacheTest, TestViewRemoval) {
-  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  ScopedWidget widget(CreateTopLevelPlatformWidget());
   View* parent = new View();
   widget->GetRootView()->AddChildView(parent);
   View* child = new View();

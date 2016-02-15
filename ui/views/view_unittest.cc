@@ -38,6 +38,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
@@ -45,6 +46,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 using base::ASCIIToUTF16;
+using views::test::ScopedWidget;
 
 namespace {
 
@@ -1360,7 +1362,7 @@ void RotateClockwise(gfx::Transform* transform) {
 // View::GetEventHandlerForRect(). See http://goo.gl/3Jp2BD for a description
 // of rect-based targeting.
 TEST_F(ViewTest, GetEventHandlerForRect) {
-  Widget* widget = new Widget;
+  ScopedWidget widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   widget->Init(params);
   View* root_view = widget->GetRootView();
@@ -1664,15 +1666,13 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v51, result_view);
   result_view = NULL;
-
-  widget->CloseNow();
 }
 
 // Tests that GetEventHandlerForRect() and GetTooltipHandlerForPoint() behave
 // as expected when different views in the view hierarchy return false
 // when CanProcessEventsWithinSubtree() is called.
 TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
-  Widget* widget = new Widget;
+  ScopedWidget widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   widget->Init(params);
   View* root_view = widget->GetRootView();
@@ -1823,12 +1823,10 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
   result_view = NULL;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
   EXPECT_EQ(root_view, result_view);
-
-  widget->CloseNow();
 }
 
 TEST_F(ViewTest, NotifyEnterExitOnChild) {
-  Widget* widget = new Widget;
+  ScopedWidget widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   widget->Init(params);
   View* root_view = widget->GetRootView();
@@ -1956,8 +1954,6 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
   root_view->OnMouseMoved(mouse7);
   EXPECT_TRUE(v11->received_mouse_exit_);
   EXPECT_FALSE(v1->received_mouse_enter_);
-
-  widget->CloseNow();
 }
 
 TEST_F(ViewTest, Textfield) {
@@ -1965,7 +1961,7 @@ TEST_F(ViewTest, Textfield) {
       "Reality is that which, when you stop believing it, doesn't go away.");
   const base::string16 kExtraText = ASCIIToUTF16("Pretty deep, Philip!");
 
-  Widget* widget = new Widget;
+  ScopedWidget widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
@@ -1989,8 +1985,6 @@ TEST_F(ViewTest, Textfield) {
   EXPECT_EQ(kText, textfield->text());
   textfield->ClearSelection();
   EXPECT_TRUE(textfield->GetSelectedText().empty());
-
-  widget->CloseNow();
 }
 
 // Tests that the Textfield view respond appropiately to cut/copy/paste.
@@ -2002,7 +1996,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
 
-  Widget* widget = new Widget;
+  ScopedWidget widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
@@ -2090,7 +2084,6 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   normal->SelectAll(false);
   normal->ExecuteCommand(IDS_APP_PASTE);
   EXPECT_EQ(kReadOnlyText, normal->text());
-  widget->CloseNow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2494,7 +2487,7 @@ TEST_F(ViewTest, TransformPaint) {
   TestView* v2 = new TestView();
   v2->SetBoundsRect(gfx::Rect(100, 100, 200, 100));
 
-  Widget* widget = new Widget;
+  ScopedWidget widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -2522,8 +2515,6 @@ TEST_F(ViewTest, TransformPaint) {
   v2->SchedulePaint();
 
   EXPECT_EQ(gfx::Rect(100, 200, 100, 200), v1->scheduled_paint_rect());
-
-  widget->CloseNow();
 }
 
 TEST_F(ViewTest, TransformEvent) {
@@ -2533,7 +2524,7 @@ TEST_F(ViewTest, TransformEvent) {
   TestView* v2 = new TestView();
   v2->SetBoundsRect(gfx::Rect(100, 100, 200, 100));
 
-  Widget* widget = new Widget;
+  ScopedWidget widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -2664,8 +2655,6 @@ TEST_F(ViewTest, TransformEvent) {
   EXPECT_EQ(25, v3->location_.y());
 
   root->OnMouseReleased(released);
-
-  widget->CloseNow();
 }
 
 TEST_F(ViewTest, TransformVisibleBound) {
