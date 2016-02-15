@@ -33,6 +33,7 @@
 
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/fonts/AcceptLanguagesResolver.h"
 #include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCacheClient.h"
 #include "platform/fonts/FontCacheKey.h"
@@ -159,6 +160,11 @@ PassRefPtr<OpenTypeVerticalData> FontCache::getVerticalData(const FontFileKey& k
         verticalData.clear();
     fontVerticalDataCache.set(key, verticalData);
     return verticalData;
+}
+
+void FontCache::acceptLanguagesChanged(const String& acceptLanguages)
+{
+    AcceptLanguagesResolver::acceptLanguagesChanged(acceptLanguages);
 }
 
 static FontDataCache* gFontDataCache = 0;

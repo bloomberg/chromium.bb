@@ -31,6 +31,7 @@
 #include "platform/fonts/FontCache.h"
 
 #include "platform/Language.h"
+#include "platform/fonts/AcceptLanguagesResolver.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
@@ -57,16 +58,13 @@ static CString toSkFontMgrLocale(const String& locale)
     }
 }
 
-void FontCache::acceptLanguagesChanged(const String&)
-{
-    // TODO(kojii): Take acceptLanguages into account for ambiguos scripts.
-}
-
 static AtomicString getFamilyNameForCharacter(UChar32 c, const FontDescription& fontDescription)
 {
     RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
-    const char* bcp47Locales[2];
+    const char* bcp47Locales[3];
     int localeCount = 0;
+    if (const char* hanLocale = AcceptLanguagesResolver::preferredHanSkFontMgrLocale())
+        bcp47Locales[localeCount++] = hanLocale;
     CString defaultLocale = toSkFontMgrLocale(defaultLanguage());
     bcp47Locales[localeCount++] = defaultLocale.data();
     CString fontLocale;

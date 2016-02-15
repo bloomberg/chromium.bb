@@ -30,6 +30,7 @@
 
 #include "platform/fonts/win/FontFallbackWin.h"
 
+#include "platform/fonts/AcceptLanguagesResolver.h"
 #include "platform/fonts/FontCache.h"
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
@@ -230,6 +231,19 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         scriptFontMap[USCRIPT_HAN] = localeFamily;
 }
 
+static UScriptCode scriptForHan(UScriptCode contentScript,
+    const AtomicString& contentLocale)
+{
+    UScriptCode script = scriptCodeForHanFromLocale(contentScript, contentLocale);
+    if (script != USCRIPT_COMMON)
+        return script;
+    script = AcceptLanguagesResolver::preferredHanScript();
+    if (script != USCRIPT_COMMON)
+        return script;
+    // Use UI locale. See initializeScriptFontMap().
+    return USCRIPT_HAN;
+}
+
 // There are a lot of characters in USCRIPT_COMMON that can be covered
 // by fonts for scripts closely related to them. See
 // http://unicode.org/cldr/utility/list-unicodeset.jsp?a=[:Script=Common:]
@@ -408,13 +422,10 @@ const UChar* getFallbackFamily(UChar32 character,
     if (script == USCRIPT_COMMON)
         script = getScriptBasedOnUnicodeBlock(character);
 
-    // For unified-Han scripts, try the lang attribute.
-    if (script == USCRIPT_HAN) {
-        script = scriptCodeForHanFromLocale(contentScript, contentLocale);
-        // Use the UI locale if it is still ambiguous.
-        if (script == USCRIPT_COMMON)
-            script = USCRIPT_SIMPLIFIED_HAN;
-    }
+    // For unified-Han scripts, try the lang attribute, system, or
+    // accept-languages.
+    if (script == USCRIPT_HAN)
+        script = scriptForHan(contentScript, contentLocale);
 
     family = getFontFamilyForScript(script, generic, fontManager);
     // Another lame work-around to cover non-BMP characters.
