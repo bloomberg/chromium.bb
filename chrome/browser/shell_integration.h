@@ -194,9 +194,6 @@ class DefaultWebClientObserver {
   virtual ~DefaultWebClientObserver() {}
   // Updates the UI state to reflect the current default browser state.
   virtual void SetDefaultWebClientUIState(DefaultWebClientUIState state) = 0;
-  // Called to notify the UI of the immediate result of invoking
-  // SetAsDefault.
-  virtual void OnSetAsDefaultConcluded(bool succeeded) {}
 };
 
 //  Helper objects that handle checking if Chrome is the default browser

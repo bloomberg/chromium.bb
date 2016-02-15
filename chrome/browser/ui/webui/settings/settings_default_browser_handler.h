@@ -37,7 +37,6 @@ class DefaultBrowserHandler
   // shell_integration::DefaultWebClientObserver implementation.
   void SetDefaultWebClientUIState(
       shell_integration::DefaultWebClientUIState state) override;
-  void OnSetAsDefaultConcluded(bool succeeded) override;
 
  private:
   // Called from WebUI to request the current state.

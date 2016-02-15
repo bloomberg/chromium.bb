@@ -61,11 +61,6 @@ void DefaultBrowserHandler::SetDefaultWebClientUIState(
                                    is_default, can_be_default);
 }
 
-void DefaultBrowserHandler::OnSetAsDefaultConcluded(bool succeeded) {
-  base::FundamentalValue success(succeeded);
-  web_ui()->CallJavascriptFunction("Settings.setAsDefaultConcluded", success);
-}
-
 void DefaultBrowserHandler::RequestDefaultBrowserState(
     const base::ListValue* /*args*/) {
   default_browser_worker_->StartCheckIsDefault();

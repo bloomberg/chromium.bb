@@ -246,11 +246,6 @@ void DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
       FinalizeSetAsDefault();
       set_as_default_initialized_ = false;
     }
-    if (observer_) {
-      bool succeeded = result == AttemptResult::SUCCESS ||
-                       result == AttemptResult::ALREADY_DEFAULT;
-      observer_->OnSetAsDefaultConcluded(succeeded);
-    }
 
     // Report failures here. Successes are reported in
     // OnCheckIsDefaultComplete() after checking that the change is verified.
@@ -259,10 +254,7 @@ void DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
       ReportAttemptResult(result);
 
     // Start the default browser check which will notify the observer as to
-    // whether Chrome is really the default browser. This is needed because
-    // detecting that the process was successful is not 100% sure.
-    // For example, on Windows 10+, the user might have unchecked the "Always
-    // use this app" checkbox which can't be detected.
+    // whether Chrome was sucessfully set as the default web client.
     StartCheckIsDefault();
   }
 }
