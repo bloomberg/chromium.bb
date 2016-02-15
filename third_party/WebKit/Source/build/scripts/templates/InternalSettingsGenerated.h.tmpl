@@ -25,10 +25,7 @@ public:
     void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}});
     {% endfor %}
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_page);
-    }
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     RawPtrWillBeMember<Page> m_page;

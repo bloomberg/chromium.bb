@@ -118,6 +118,9 @@ def method_context(interface, method, is_visible=True):
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
 
+    if 'RuntimeEnabled' in extended_attributes:
+        includes.add('platform/RuntimeEnabledFeatures.h')
+
     if 'OriginTrialEnabled' in extended_attributes:
         includes.add('core/inspector/ConsoleMessage.h')
         includes.add('core/origin_trials/OriginTrials.h')

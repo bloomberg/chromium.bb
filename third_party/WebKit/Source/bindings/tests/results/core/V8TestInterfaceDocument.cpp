@@ -12,13 +12,10 @@
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/animation/DocumentAnimation.h"
 #include "core/css/DocumentFontFaceSet.h"
-#include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFullscreen.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/xml/DocumentXPathEvaluator.h"
-#include "platform/RuntimeEnabledFeatures.h"
-#include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
 

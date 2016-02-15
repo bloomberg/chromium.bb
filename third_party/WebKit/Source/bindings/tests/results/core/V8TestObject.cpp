@@ -53,7 +53,6 @@
 #include "bindings/core/v8/V8XPathNSResolver.h"
 #include "core/HTMLNames.h"
 #include "core/dom/ClassCollection.h"
-#include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/FlexibleArrayBufferView.h"
@@ -72,7 +71,6 @@
 #include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
 

@@ -22,10 +22,7 @@
 #include "bindings/core/v8/V8Uint32Array.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/core/v8/V8Uint8ClampedArray.h"
-#include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "platform/RuntimeEnabledFeatures.h"
-#include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
 

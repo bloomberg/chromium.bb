@@ -94,6 +94,9 @@ def attribute_context(interface, attribute):
     if cached_attribute_validation_method or keep_alive_for_gc:
         includes.add('bindings/core/v8/V8HiddenValue.h')
 
+    if 'RuntimeEnabled' in extended_attributes:
+        includes.add('platform/RuntimeEnabledFeatures.h')
+
     if 'OriginTrialEnabled' in extended_attributes:
         includes.add('core/inspector/ConsoleMessage.h')
         includes.add('core/origin_trials/OriginTrials.h')

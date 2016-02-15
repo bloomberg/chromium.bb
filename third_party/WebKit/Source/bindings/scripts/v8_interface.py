@@ -63,10 +63,7 @@ INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ExceptionState.h',
     'bindings/core/v8/V8DOMConfiguration.h',
     'bindings/core/v8/V8ObjectConstructor.h',
-    'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
-    'platform/RuntimeEnabledFeatures.h',
-    'platform/TraceEvent.h',
     'wtf/GetPtr.h',
     'wtf/RefPtr.h',
 ])
@@ -161,6 +158,9 @@ def interface_context(interface):
     cpp_class_name = cpp_name(interface)
     cpp_class_name_or_partial = cpp_name_or_partial(interface)
     v8_class_name_or_partial = v8_utilities.v8_class_name_or_partial(interface)
+
+    if 'RuntimeEnabled' in extended_attributes:
+        includes.add('platform/RuntimeEnabledFeatures.h')
 
     if 'OriginTrialEnabled' in extended_attributes:
         includes.add('core/inspector/ConsoleMessage.h')
