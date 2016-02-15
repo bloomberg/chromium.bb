@@ -90,12 +90,14 @@ class RequestDependencyLens(object):
     return (initiating_request, request, 'parser')
 
   def _GetInitiatingRequestScript(self, request):
-    if not 'stackTrace' in request.initiator:
+    STACK_KEY = 'stack'
+    if not STACK_KEY in request.initiator:
       logging.warning('Script initiator but no stack trace.')
       return None
     initiating_request = None
     timestamp = request.timing.request_time
-    for frame in request.initiator['stackTrace']:
+    call_frames = request.initiator[STACK_KEY]['callFrames']
+    for frame in call_frames:
       url = frame['url']
       candidates = self._FindMatchingRequests(url, timestamp)
       if candidates:
@@ -104,7 +106,7 @@ class RequestDependencyLens(object):
         if initiating_request:
           break
     else:
-      for frame in request.initiator['stackTrace']:
+      for frame in call_frames:
         if not frame.get('url', None) and frame.get(
             'functionName', None) == 'window.onload':
           logging.warning('Unmatched request for onload handler.')

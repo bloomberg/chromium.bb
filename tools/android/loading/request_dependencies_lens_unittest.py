@@ -55,8 +55,9 @@ class RequestDependencyLensTestCase(unittest.TestCase):
       {'url': 'http://bla.com/cat.js', 'request_id': '1234.13',
        'frame_id': '123.1',
        'initiator': {'type': 'script',
-                     'stackTrace': [{'url': 'unknown'},
-                                    {'url': 'http://bla.com/nyancat.js'}]},
+                     'stack': {'callFrames': [
+                         {'url': 'unknown'},
+                         {'url': 'http://bla.com/nyancat.js'}]}},
        'timestamp': 10, 'timing': TimingFromDict({})})
   _PAGE_EVENTS = [{'method': 'Page.frameAttached',
                    'frame_id': '123.13', 'parent_frame_id': '123.1'}]
