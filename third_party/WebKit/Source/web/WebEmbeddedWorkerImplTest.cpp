@@ -138,7 +138,13 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound)
     ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
 }
 
-TEST_F(WebEmbeddedWorkerImplTest, Success)
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_Success DISABLED_Success
+#else
+#define MAYBE_Success Success
+#endif
+
+TEST_F(WebEmbeddedWorkerImplTest, MAYBE_Success)
 {
     EXPECT_CALL(*m_mockClient, workerReadyForInspection())
         .Times(1);
