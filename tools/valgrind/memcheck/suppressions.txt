@@ -3014,25 +3014,6 @@
    fun:_ZN7storage18ObfuscatedFileUtil20GetDirectoryDatabaseERKNS_13FileSystemURLEb
 }
 {
-   bug_449175_a
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN4mojo6system17UserPointerReaderIKjE4InitEPS2_mb
-   fun:_ZN4mojo6system17UserPointerReaderIKjEC2ENS0_11UserPointerIS2_EEm
-   fun:_ZN4mojo6system4Core8WaitManyENS0_11UserPointerIKjEES4_jmNS2_IjEENS2_I22MojoHandleSignalsStateEE
-   fun:MojoWaitMany
-   fun:_ZN4mojo8WaitManyI*
-   fun:_ZN4mojo6common15MessagePumpMojo14DoInternalWorkERKNS1_8RunStateEb
-   fun:_ZN4mojo6common15MessagePumpMojo9DoRunLoopEPNS1_8RunStateEPN4base11MessagePump8DelegateE
-   fun:_ZN4mojo6common15MessagePumpMojo3RunEPN4base11MessagePump8DelegateE
-   fun:_ZN4base11MessageLoop10RunHandlerEv
-   fun:_ZN4base7RunLoop3RunEv
-   fun:_ZN4base11MessageLoop3RunEv
-   fun:_ZN4base6Thread3RunEPNS_11MessageLoopE
-   fun:_ZN4base6Thread10ThreadMainEv
-   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
-}
-{
    bug_449175_b
    Memcheck:Leak
    fun:calloc
@@ -3230,19 +3211,6 @@
    fun:_ZN7content23StoragePartitionImplMap3GetERKSsS2_b
    fun:_ZN7content12_GLOBAL__N_129GetStoragePartitionFromConfigEPNS_14BrowserContextERKSsS4_b
    fun:_ZN7content14BrowserContext26GetStoragePartitionForSiteEPS0_RK4GURL
-}
-{
-   bug_561081
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN4mojo6system17UserPointerWriterI22MojoHandleSignalsStateEC2ENS0_11UserPointerIS2_EEm
-   fun:_ZN4mojo6system4Core8WaitManyENS0_11UserPointerIKjEES4_jmNS2_IjEENS2_I22MojoHandleSignalsStateEE
-   fun:MojoWaitMany
-   fun:_ZN4mojo8WaitManyISt6vectorINS_6HandleESaIS2_EES1_IjSaIjEES1_I22MojoHandleSignalsStateSaIS7_EEEENS_14WaitManyResult*
-   fun:_ZN4mojo6common15MessagePumpMojo14DoInternalWorkERKNS1_8RunStateEb
-   fun:_ZN4mojo6common15MessagePumpMojo9DoRunLoopEPNS1_8RunStateEPN4base11MessagePump8DelegateE
-   fun:_ZN4mojo6common15MessagePumpMojo3RunEPN4base11MessagePump8DelegateE
-   fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
    bug_562703
