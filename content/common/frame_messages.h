@@ -287,6 +287,9 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // True if the document for the load is enforcing strict mixed content
   // checking.
   IPC_STRUCT_MEMBER(bool, should_enforce_strict_mixed_content_checking)
+
+  // True if the navigation originated as an srcdoc attribute.
+  IPC_STRUCT_MEMBER(bool, is_srcdoc)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)

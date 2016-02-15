@@ -1017,7 +1017,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     navigation_handle_ =
         NavigationHandleImpl::Create(validated_params.url, frame_tree_node_,
                                      true,   // is_synchronous
-                                     false,  // is_srcdoc
+                                     validated_params.is_srcdoc,
                                      base::TimeTicks::Now());
   }
 

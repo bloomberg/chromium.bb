@@ -4550,6 +4550,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.item_sequence_number = item.itemSequenceNumber();
   params.document_sequence_number = item.documentSequenceNumber();
 
+  params.is_srcdoc = params.url == GURL(content::kAboutSrcDocURL);
+
   if (!frame->parent()) {
     // Top-level navigation.
 

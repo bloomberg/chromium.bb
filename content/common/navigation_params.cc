@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/url_constants.h"
 
 namespace content {
 
@@ -14,12 +15,13 @@ namespace content {
 bool ShouldMakeNetworkRequestForURL(const GURL& url) {
   CHECK(IsBrowserSideNavigationEnabled());
 
-  // Data URLs, Javascript URLs and about:blank should not send a request to the
-  // network stack.
+  // Data URLs, Javascript URLs, about:blank, srcdoc should not send a request
+  // to the network stack.
   // TODO(clamy): same document navigations should not send requests to the
   // network stack. Neither should pushState/popState.
   return !url.SchemeIs(url::kDataScheme) && url != GURL(url::kAboutBlankURL) &&
-         !url.SchemeIs(url::kJavaScriptScheme) && !url.is_empty();
+         !url.SchemeIs(url::kJavaScriptScheme) && !url.is_empty() &&
+         url != GURL(content::kAboutSrcDocURL);
 }
 
 CommonNavigationParams::CommonNavigationParams()
