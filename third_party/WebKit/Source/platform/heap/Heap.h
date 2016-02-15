@@ -45,6 +45,45 @@
 
 namespace blink {
 
+class PLATFORM_EXPORT HeapAllocHooks {
+public:
+    // TODO(hajimehoshi): Pass a type name of the allocated object.
+    typedef void AllocationHook(Address, size_t);
+    typedef void FreeHook(Address);
+
+    static void setAllocationHook(AllocationHook* hook) { m_allocationHook = hook; }
+    static void setFreeHook(FreeHook* hook) { m_freeHook = hook; }
+
+    static void allocationHookIfEnabled(Address address, size_t size)
+    {
+        AllocationHook* allocationHook = m_allocationHook;
+        if (UNLIKELY(!!allocationHook))
+            allocationHook(address, size);
+    }
+
+    static void freeHookIfEnabled(Address address)
+    {
+        FreeHook* freeHook = m_freeHook;
+        if (UNLIKELY(!!freeHook))
+            freeHook(address);
+    }
+
+    static void reallocHookIfEnabled(Address oldAddress, Address newAddress, size_t size)
+    {
+        // Report a reallocation as a free followed by an allocation.
+        AllocationHook* allocationHook = m_allocationHook;
+        FreeHook* freeHook = m_freeHook;
+        if (UNLIKELY(allocationHook && freeHook)) {
+            freeHook(oldAddress);
+            allocationHook(newAddress, size);
+        }
+    }
+
+private:
+    static AllocationHook* m_allocationHook;
+    static FreeHook* m_freeHook;
+};
+
 class CrossThreadPersistentRegion;
 template<typename T> class Member;
 template<typename T> class WeakMember;
@@ -456,7 +495,9 @@ template<typename T>
 Address Heap::allocate(size_t size, bool eagerlySweep)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    return Heap::allocateOnHeapIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepHeapIndex : Heap::heapIndexForObjectSize(size), GCInfoTrait<T>::index());
+    Address address = Heap::allocateOnHeapIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepHeapIndex : Heap::heapIndexForObjectSize(size), GCInfoTrait<T>::index());
+    HeapAllocHooks::allocationHookIfEnabled(address, size);
+    return address;
 }
 
 template<typename T>
@@ -489,6 +530,7 @@ Address Heap::reallocate(void* previous, size_t size)
     if (copySize > size)
         copySize = size;
     memcpy(address, previous, copySize);
+    HeapAllocHooks::reallocHookIfEnabled(static_cast<Address>(previous), address, size);
     return address;
 }
 

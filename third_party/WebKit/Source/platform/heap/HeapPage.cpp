@@ -98,6 +98,7 @@ void HeapObjectHeader::zapMagic()
 
 void HeapObjectHeader::finalize(Address object, size_t objectSize)
 {
+    HeapAllocHooks::freeHookIfEnabled(object);
     const GCInfo* gcInfo = Heap::gcInfo(gcInfoIndex());
     if (gcInfo->hasFinalizer())
         gcInfo->m_finalize(object);

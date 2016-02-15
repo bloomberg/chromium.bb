@@ -52,6 +52,9 @@
 
 namespace blink {
 
+HeapAllocHooks::AllocationHook* HeapAllocHooks::m_allocationHook = nullptr;
+HeapAllocHooks::FreeHook* HeapAllocHooks::m_freeHook = nullptr;
+
 class GCForbiddenScope final {
     DISALLOW_NEW();
 public:
