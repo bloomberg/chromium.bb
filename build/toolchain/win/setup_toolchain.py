@@ -86,6 +86,19 @@ def _SetupScript(target_cpu, sdk_dir):
             'amd64_x86' if target_cpu == 'x86' else 'amd64']
 
 
+def _LoadToolchainEnv(cpu, win_sdk_path):
+  """Returns a dictionary with environment variables that must be set while
+  running binaries from the toolchain (e.g. INCLUDE and PATH for cl.exe)."""
+  args = _SetupScript(cpu, win_sdk_path)
+  args.extend(('&&', 'set'))
+  popen = subprocess.Popen(
+      args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  variables, _ = popen.communicate()
+  if popen.returncode != 0:
+    raise Exception('"%s" failed with error %d' % (args, popen.returncode))
+  return _ExtractImportantEnvironment(variables)
+
+
 def _FormatAsEnvironmentBlock(envvar_dict):
   """Format as an 'environment block' directly suitable for CreateProcess.
   Briefly this is a list of key=value\0, terminated by an additional \0. See
@@ -134,15 +147,8 @@ def main():
 
   for cpu in cpus:
     # Extract environment variables for subprocesses.
-    args = _SetupScript(cpu, win_sdk_path)
-    args.extend(('&&', 'set'))
-    popen = subprocess.Popen(
-        args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    variables, _ = popen.communicate()
-    if popen.returncode != 0:
-      raise Exception('"%s" failed with error %d' % (args, popen.returncode))
-    env = _ExtractImportantEnvironment(variables)
-    env['PATH'] = runtime_dirs + ';' + env['PATH']
+    env = _LoadToolchainEnv(cpu, win_sdk_path)
+    env['PATH'] = runtime_dirs + os.path.pathsep + env['PATH']
 
     if cpu == target_cpu:
       for path in env['PATH'].split(os.pathsep):
@@ -157,11 +163,11 @@ def main():
     # version is used.
 
     if win_sdk_path:
-      additional_includes = ('{sdk_dir}\\Include\\10.0.10586.0\\shared;' +
-                             '{sdk_dir}\\Include\\10.0.10586.0\\um;' +
-                             '{sdk_dir}\\Include\\10.0.10586.0\\winrt;').format(
-                                  sdk_dir=win_sdk_path)
-      env['INCLUDE'] = additional_includes + env['INCLUDE']
+      additional_includes = [
+        os.path.join(win_sdk_path, 'Include', '10.0.10586.0', p)
+        for p in ['shared', 'um', 'winrt']]
+      additional_includes = os.path.pathsep.join(additional_includes)
+      env['INCLUDE'] = additional_includes + os.path.pathsep + env['INCLUDE']
     env_block = _FormatAsEnvironmentBlock(env)
     with open('environment.' + cpu, 'wb') as f:
       f.write(env_block)

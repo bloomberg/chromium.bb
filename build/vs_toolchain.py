@@ -67,8 +67,8 @@ def SetEnvironmentAndGetRuntimeDllDirs():
     os.environ['WINDOWSSDKDIR'] = win_sdk
     os.environ['WDK_DIR'] = wdk
     # Include the VS runtime in the PATH in case it's not machine-installed.
-    runtime_path = ';'.join(vs_runtime_dll_dirs)
-    os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
+    runtime_path = os.path.pathsep.join(vs_runtime_dll_dirs)
+    os.environ['PATH'] = runtime_path + os.path.pathsep + os.environ['PATH']
   elif sys.platform == 'win32' and not depot_tools_win_toolchain:
     if not 'GYP_MSVS_OVERRIDE_PATH' in os.environ:
       os.environ['GYP_MSVS_OVERRIDE_PATH'] = DetectVisualStudioPath()
@@ -350,7 +350,7 @@ runtime_dirs = "%s"
       os.environ['WINDOWSSDKDIR'],
       GetVisualStudioVersion(),
       os.environ.get('WDK_DIR', ''),
-      ';'.join(runtime_dll_dirs or ['None']))
+      os.path.pathsep.join(runtime_dll_dirs or ['None']))
 
 
 def main():
