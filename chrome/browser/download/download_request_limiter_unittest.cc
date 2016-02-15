@@ -8,12 +8,15 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -154,7 +157,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override {
     content_settings_->ShutdownOnUIThread();
-    content_settings_ = NULL;
+    content_settings_ = nullptr;
     testing_delegate_.TearDown();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -178,7 +181,8 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
   void OnUserGestureFor(WebContents* web_contents) {
     DownloadRequestLimiter::TabDownloadState* state =
-        download_request_limiter_->GetDownloadState(web_contents, NULL, false);
+        download_request_limiter_->GetDownloadState(web_contents, nullptr,
+                                                    false);
     if (state)
       state->DidGetUserGesture();
   }
@@ -193,6 +197,20 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(expect_asks, AskAllowCount()) << "line " << line;
     continue_count_ = cancel_count_ = 0;
     testing_delegate_.ResetCounts();
+  }
+
+  void UpdateContentSettings(WebContents* web_contents,
+                             ContentSetting setting) {
+    // Ensure a download state exists.
+    download_request_limiter_->GetDownloadState(web_contents, nullptr, true);
+    SetHostContentSetting(web_contents, setting);
+
+    // Manually send the update notification. In the browser, this is sent from
+    // ContentSettingRPHBubbleModel.
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+        content::Source<WebContents>(web_contents),
+        content::NotificationService::NoDetails());
   }
 
  protected:
@@ -482,6 +500,62 @@ TEST_F(DownloadRequestLimiterTest,
 
   CanDownload();
   ExpectAndResetCounts(0, 1, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+}
+
+TEST_F(DownloadRequestLimiterTest,
+       DownloadRequestLimiter_ContentSettingChanged) {
+  NavigateAndCommit(GURL("http://foo.com/bar"));
+  LoadCompleted();
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Simulate an accidental deny.
+  UpdateExpectations(CANCEL);
+  CanDownload();
+  ExpectAndResetCounts(0, 1, 1, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Set the content setting to allow and send the notification. Ensure that the
+  // limiter states update to match.
+  UpdateContentSettings(web_contents(), CONTENT_SETTING_ALLOW);
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Ask to download, and assert that it succeeded and we are still in allow.
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Set the content setting to block and send the notification. Ensure that the
+  // limiter states updates to match.
+  UpdateContentSettings(web_contents(), CONTENT_SETTING_BLOCK);
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Ensure downloads are blocked.
+  CanDownload();
+  ExpectAndResetCounts(0, 1, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Reset to ask. Verify that the download counts have not changed on the
+  // content settings change (ensuring there is no "free" download after
+  // changing the content setting).
+  UpdateContentSettings(web_contents(), CONTENT_SETTING_ASK);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  UpdateExpectations(WAIT);
+  CanDownload();
+  ExpectAndResetCounts(0, 0, 1, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }

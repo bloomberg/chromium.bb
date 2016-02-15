@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -48,10 +49,11 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
       factory_(this) {
-  content::Source<NavigationController> notification_source(
-      &contents->GetController());
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                 notification_source);
+  registrar_.Add(
+      this, content::NOTIFICATION_NAV_ENTRY_PENDING,
+      content::Source<NavigationController>(&contents->GetController()));
+  registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+                 content::Source<content::WebContents>(contents));
   NavigationEntry* last_entry = originating_web_contents ?
       originating_web_contents->GetController().GetLastCommittedEntry() :
       contents->GetController().GetLastCommittedEntry();
@@ -83,9 +85,10 @@ void DownloadRequestLimiter::TabDownloadState::DidNavigateMainFrame(
     case DOWNLOADS_NOT_ALLOWED:
     case ALLOW_ALL_DOWNLOADS:
       // Don't drop this information. The user has explicitly said that they
-      // do/don't want downloads from this host.  If they accidentally Accepted
-      // or Canceled, tough luck, they don't get another chance. They can copy
-      // the URL into a new tab, which will make a new DownloadRequestLimiter.
+      // do/don't want downloads from this host. If they accidentally Accepted
+      // or Canceled, they can adjust the limiter state by adjusting the
+      // automatic downloads content settings. Alternatively, they can copy the
+      // URL into a new tab, which will make a new DownloadRequestLimiter.
       // See also the initial_page_host_ logic in Observe() for
       // NOTIFICATION_NAV_ENTRY_PENDING.
       break;
@@ -197,7 +200,53 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_PENDING, type);
+  DCHECK(type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED ||
+         type == content::NOTIFICATION_NAV_ENTRY_PENDING);
+
+  // Content settings have been updated for our web contents, e.g. via the OIB
+  // or the settings page. Check to see if the automatic downloads setting is
+  // different to our internal state, and update the internal state to match if
+  // necessary. If there is no content setting persisted, then retain the
+  // current state and do nothing.
+  //
+  // NotifyCallbacks is not called as this notification should be triggered when
+  // a download is not pending.
+  if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
+    content::WebContents* contents =
+        content::Source<content::WebContents>(source).ptr();
+    DCHECK_EQ(contents, web_contents());
+
+    // Fetch the content settings map for this web contents, and extract the
+    // automatic downloads permission value.
+    HostContentSettingsMap* content_settings = GetContentSettings(contents);
+    if (content_settings) {
+      ContentSetting setting = content_settings->GetContentSetting(
+          contents->GetURL(), contents->GetURL(),
+          CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string());
+
+      // Update the internal state to match if necessary.
+      switch (setting) {
+        case CONTENT_SETTING_ALLOW:
+          set_download_status(ALLOW_ALL_DOWNLOADS);
+          break;
+        case CONTENT_SETTING_BLOCK:
+          set_download_status(DOWNLOADS_NOT_ALLOWED);
+          break;
+        case CONTENT_SETTING_ASK:
+        case CONTENT_SETTING_DEFAULT:
+        case CONTENT_SETTING_SESSION_ONLY:
+          set_download_status(PROMPT_BEFORE_DOWNLOAD);
+          break;
+        case CONTENT_SETTING_NUM_SETTINGS:
+        case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+          NOTREACHED();
+          return;
+      }
+    }
+    return;
+  }
+
+  // Otherwise, there is a pending navigation entry.
   content::NavigationController* controller = &web_contents()->GetController();
   DCHECK_EQ(controller, content::Source<NavigationController>(source).ptr());
 
