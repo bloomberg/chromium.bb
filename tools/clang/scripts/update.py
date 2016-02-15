@@ -70,7 +70,8 @@ ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_tools', 'ndk')
 
 # URL for pre-built binaries.
-CDS_URL = 'https://commondatastorage.googleapis.com/chromium-browser-clang'
+CDS_URL = os.environ.get('CDS_CLANG_BUCKET_OVERRIDE',
+    'https://commondatastorage.googleapis.com/chromium-browser-clang')
 
 LLVM_REPO_URL='https://llvm.org/svn/llvm-project'
 if 'LLVM_REPO_URL' in os.environ:
