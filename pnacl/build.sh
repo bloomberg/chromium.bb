@@ -416,10 +416,9 @@ llvm-sb-install() {
     local arches=${arch}
     if [[ "${arch}" == "universal" ]]; then
       arches="${SBTC_ARCHES_ALL}"
-    elif [[ "${arch}" == "i686" && "${toolname}" == "pnacl-llc" ]]; then
+    elif [[ "${arch}" == "i686" ]]; then
       # LLVM does not separate the i686 and x86_64 backends.
-      # Translate twice to get both nexes, but only for pnacl-llc.
-      # We do not yet have an x86-64 backend for pnacl-sz.
+      # Translate twice to get both nexes.
       arches="i686 x86_64"
     fi
     if [[ "${arch}" == "i686" ]]; then
