@@ -95,9 +95,12 @@ message Rietveld {
 // see it. This will come handy to enable and customize the CQ-related workflows
 // for your project.
 message Gerrit {
-  // If set, tells CQ to set score on a given label to mark result of CQ run.
-  // Typically, this is Commit-Queue-Verified label.
-  // If not set, CQ will just try to hit submit button.
+  // Optional. If set, tells CQ vote on a given label to mark result of CQ run.
+  // The vote is either -1 if failed or 1 on success, and will be given on
+  // non-dry runs only.
+  // This vote can then be used in Gerrit's rule for submitting issues, so as to
+  // require CQ run. CQ will attempt to submit issue only after setting this
+  // label.
   optional string cq_verified_label = 1;
 }
 
@@ -126,12 +129,9 @@ message Verifiers {
   optional SignCLAVerifier sign_cla = 4;
 
   message ReviewerLgtmVerifier {
-    // Required. Name of the chrome-infra-auth group, which contains the
-    // list of identities authorized to approve (lgtm) a CL. This list is also
-    // known as a committer list and often corresponds to the list of accounts
-    // that have direct commit/push access to the repository. Some older lists
-    // are still stored in the CQ source code, but are being moved to the new
-    // location (https://crbug.com/511311).
+    // Required. Name of the chrome-infra-auth group, which contains the list of
+    // identities authorized to approve (lgtm) a CL and trigger CQ run or dry
+    // run.
     optional string committer_list = 1;
 
     // Number of seconds to wait for LGTM on CQ. Default value is 0.
@@ -144,6 +144,11 @@ message Verifiers {
     // "http://www.chromium.org/getting-involved/become-a-committer\nNote that "
     // "this has nothing to do with OWNERS files."
     optional string no_lgtm_msg = 3;
+
+    // Optional, but recommended. Name of the chrome-infra-auth group,
+    // which contains the list of identities authorized to trigger CQ dry run.
+    // This is usually the same group as tryjob-access.
+    optional string dry_run_access_list = 4;
   }
 
   message TreeStatusLgtmVerifier {
