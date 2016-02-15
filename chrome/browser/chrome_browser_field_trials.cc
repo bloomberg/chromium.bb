@@ -29,15 +29,15 @@ namespace {
 // create an appropriate allocator for such if so.
 void InstantiatePersistentHistograms() {
   if (base::FeatureList::IsEnabled(base::kPersistentHistogramsFeature)) {
-    const std::string allocator_name("BrowserMetrics");
+    const char kAllocatorName[] = "BrowserMetrics";
     // Create persistent/shared memory and allow histograms to be stored in it.
     // TODO(bcwhite): Update this with correct allocator and memory size.
     base::SetPersistentHistogramMemoryAllocator(
-        new base::LocalPersistentMemoryAllocator(1 << 20,     // 1 MiB
-                                                 0x4D5B9953,  // SHA1(B..M..A..)
-                                                 allocator_name));
+        new base::LocalPersistentMemoryAllocator(2 << 20,     // 2 MiB
+                                                 0x935DDD43,  // SHA1(B...M...)
+                                                 kAllocatorName));
     base::GetPersistentHistogramMemoryAllocator()->CreateTrackingHistograms(
-        allocator_name);
+        kAllocatorName);
   }
 }
 
