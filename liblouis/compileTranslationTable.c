@@ -4088,29 +4088,29 @@ doOpcode:
     case CTO_FirstWordCaps:
       ok =
 	compileBrailleIndicator (nested, "first word capital sign",
-				 CTO_FirstWordCapsRule, &table->firstWordCaps);
+				 CTO_FirstWordCapsRule, &table->emphRules[capsRule][firstWordOffset]);
       break;
     case CTO_LastWordCaps:
 		switch (compileBeforeAfter(nested)) {
 			case 1: // before
-				if (table->lastWordCapsAfter) {
+				if (table->emphRules[capsRule][lastWordAfterOffset]) {
 					compileError (nested, "Capital sign after last word already defined.");
 					ok = 0;
 					break;
 				}
 				ok =
 					compileBrailleIndicator (nested, "capital sign before last word",
-						CTO_LastWordCapsBeforeRule, &table->lastWordCapsBefore);
+						CTO_LastWordCapsBeforeRule, &table->emphRules[capsRule][lastWordBeforeOffset]);
 				break;
 			case 2: // after
-				if (table->lastWordCapsBefore) {
+				if (table->emphRules[capsRule][lastWordBeforeOffset]) {
 					compileError (nested, "Capital sign before last word already defined.");
 					ok = 0;
 					break;
 				}
 				ok =
 					compileBrailleIndicator (nested, "capital sign after last word",
-						CTO_LastWordCapsAfterRule, &table->lastWordCapsAfter);
+						CTO_LastWordCapsAfterRule, &table->emphRules[capsRule][lastWordAfterOffset]);
 				break;
 			default: // error
 				compileError (nested, "Invalid lastword indicator location.");
@@ -4121,29 +4121,29 @@ doOpcode:
 	  case CTO_FirstLetterCaps:
       ok =
 	compileBrailleIndicator (nested, "first letter capital sign",
-				 CTO_FirstLetterCapsRule, &table->firstLetterCaps);
+				 CTO_FirstLetterCapsRule, &table->emphRules[capsRule][firstLetterOffset]);
 		break;
 	  case CTO_LastLetterCaps:
       ok =
 	compileBrailleIndicator (nested, "last letter capital sign",
-				 CTO_LastLetterCapsRule, &table->lastLetterCaps);
+				 CTO_LastLetterCapsRule, &table->emphRules[capsRule][lastLetterOffset]);
       break;
 	  case CTO_SingleLetterCaps:
       ok =
 	compileBrailleIndicator (nested, "single letter capital sign",
-				 CTO_SingleLetterCapsRule, &table->singleLetterCaps);
+				 CTO_SingleLetterCapsRule, &table->emphRules[capsRule][singleLetterOffset]);
       break;
     case CTO_CapsWord:
       ok =
 	compileBrailleIndicator (nested, "capital word", CTO_CapsWordRule,
-				 &table->capsWord);
+				 &table->emphRules[capsRule][wordOffset]);
       break;
 	case CTO_CapsWordStop:
 		ok = compileBrailleIndicator(nested, "capital word stop",
-				 CTO_CapsWordStopRule, &table->capsWordStop);
+				 CTO_CapsWordStopRule, &table->emphRules[capsRule][wordStopOffset]);
       break;
     case CTO_LenCapsPhrase:
-      ok = table->lenCapsPhrase = compileNumber (nested);
+      ok = table->emphRules[capsRule][lenPhraseOffset] = compileNumber (nested);
       break;
 
   /* these 9 general purpose emphasis opcodes are compiled further down to more specific internal opcodes:
@@ -4263,6 +4263,7 @@ doOpcode:
 		free(s);
 		break;
 	      }
+		i++; // in table->emphRules the first index is used for caps
 		if (opcode == CTO_SingleLetterEmph) {
 			ok = compileBrailleIndicator (nested, "single letter",
 				CTO_SingleLetterItalRule + singleLetterOffset + (8 * i),

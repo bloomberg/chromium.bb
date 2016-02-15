@@ -319,15 +319,15 @@ static int
 show_brailleIndicators (void)
 {
   // FIXME: update to include all UEB opcodes.
-  print_brailleIndicator (table->firstWordCaps, "firstwordcaps");
-  print_brailleIndicator (table->lastWordCapsBefore, "lastwordcapsbefore");
-  print_brailleIndicator (table->lastWordCapsAfter, "lastwordcapsafter");
-  print_brailleIndicator (table->firstLetterCaps, "begcaps");
-  print_brailleIndicator (table->lastLetterCaps, "endcaps");
-  print_brailleIndicator (table->singleLetterCaps, "capsletter");
-  print_brailleIndicator (table->capsWord, "capsword");
-  print_brailleIndicator (table->capsWordStop, "capswordstop");
-  print_phraseLength (table->lenCapsPhrase, "lencapsphrase");
+  print_brailleIndicator (table->emphRules[capsRule][firstWordOffset], "firstwordcaps");
+  print_brailleIndicator (table->emphRules[capsRule][lastWordBeforeOffset], "lastwordcapsbefore");
+  print_brailleIndicator (table->emphRules[capsRule][lastWordAfterOffset], "lastwordcapsafter");
+  print_brailleIndicator (table->emphRules[capsRule][firstLetterOffset], "begcaps");
+  print_brailleIndicator (table->emphRules[capsRule][lastLetterOffset], "endcaps");
+  print_brailleIndicator (table->emphRules[capsRule][singleLetterOffset], "capsletter");
+  print_brailleIndicator (table->emphRules[capsRule][wordOffset], "capsword");
+  print_brailleIndicator (table->emphRules[capsRule][wordStopOffset], "capswordstop");
+  print_phraseLength (table->emphRules[capsRule][lenPhraseOffset], "lencapsphrase");
   print_brailleIndicator (table->letterSign, "letsign");
   print_brailleIndicator (table->numberSign, "numsign");
   print_brailleIndicator (table->emphRules[emph1Rule][firstWordOffset], "firstwordital");

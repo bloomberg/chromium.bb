@@ -2609,7 +2609,7 @@ markEmphases()
 	
 	resolveEmphasisWords(emphasisBuffer,
 	                     CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
-	resolveEmphasisPassages(emphasisBuffer, &table->firstWordCaps,
+	resolveEmphasisPassages(emphasisBuffer, &table->emphRules[capsRule][firstWordOffset],
 	                        CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
 	resolveEmphasisResets(emphasisBuffer,
 	                      CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
@@ -2802,10 +2802,10 @@ insertEmphasesAt(const int at)
 		if(emphasisBuffer[at] & CAPS_EMPHASIS)
 		{
 			insertEmphasis(
-				emphasisBuffer, at, &table->firstWordCaps,
+				emphasisBuffer, at, &table->emphRules[capsRule][firstWordOffset],
 				CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
 			insertEmphasisEnd(
-				emphasisBuffer, at, &table->firstWordCaps, CAPS_END, CAPS_WORD);
+				emphasisBuffer, at, &table->emphRules[capsRule][firstWordOffset], CAPS_END, CAPS_WORD);
 		}
 		return;
 	}
@@ -2862,7 +2862,7 @@ insertEmphasesAt(const int at)
 		{	
 		case CAPS_COUNT:		
 			insertEmphasisEnd(
-				emphasisBuffer, at, &table->firstWordCaps, CAPS_END, CAPS_WORD);
+				emphasisBuffer, at, &table->emphRules[capsRule][firstWordOffset], CAPS_END, CAPS_WORD);
 			break;			
 		case ITALIC_COUNT:
 			insertEmphasisEnd(
@@ -2958,7 +2958,7 @@ insertEmphasesAt(const int at)
 	/*   insert capitalization last so it will be closest to word   */
 	if(emphasisBuffer[at] & CAPS_EMPHASIS)
 		insertEmphasis(
-			emphasisBuffer, at, &table->firstWordCaps,
+			emphasisBuffer, at, &table->emphRules[capsRule][firstWordOffset],
 			CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
 
 }
@@ -3042,7 +3042,7 @@ translateString ()
   srcIncremented = 1;
 	pre_src = 0;
   memset (passVariables, 0, sizeof(int) * NUMVAR);
-  if (typebuf && table->singleLetterCaps)
+  if (typebuf && table->emphRules[capsRule][singleLetterOffset])
     for (k = 0; k < srcmax; k++)
       if (checkAttr (currentInput[k], CTC_UpperCase, 0))
         typebuf[k] |= capsemph;
@@ -3179,7 +3179,7 @@ translateString ()
               (mode & (compbrlAtCursor | compbrlLeftCursor) && src >=
                compbrlStart
                && src <= compbrlEnd) && (transRule->dotslen == 1
-        				 && table->singleLetterCaps))
+        				 && table->emphRules[capsRule][singleLetterOffset]))
             {
               putCharacter (curCharDef->lowercase);
               src++;

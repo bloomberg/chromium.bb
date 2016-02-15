@@ -495,7 +495,7 @@ handleMultind ()
   switch (multindRule->charsdots[multindRule->charslen - doingMultind])
     {
     case CTO_SingleLetterCapsRule: // FIXME: make sure this works
-      found = findBrailleIndicatorRule (table->singleLetterCaps);
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][singleLetterOffset]);
       break;
     // NOTE:  following fixme is based on the names at the time of
     //        commit f22f91eb510cb4eef33dfb4950a297235dd2f9f1.
@@ -506,10 +506,10 @@ handleMultind ()
     //        These are actually compiled with firstlettercaps/lastlettercaps.
     //        Which to use here?
     case CTO_FirstLetterCapsRule:
-      found = findBrailleIndicatorRule (table->firstLetterCaps);
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][firstLetterOffset]);
       break;
     case CTO_LastLetterCapsRule:
-      found = findBrailleIndicatorRule (table->lastLetterCaps);
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][lastLetterOffset]);
       break;
     case CTO_LetterSign:
       found = findBrailleIndicatorRule (table->letterSign);

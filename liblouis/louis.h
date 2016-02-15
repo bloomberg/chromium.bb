@@ -321,6 +321,12 @@ extern "C"
     CTO_None,
     
     /* More internal opcodes */
+    CTO_LetterRule,
+    CTO_NumberRule,
+    CTO_NoContractRule,
+    
+    /* Start of (11 x 9) internal opcodes values that match {"singlelettercaps"..."lenemphphrase"}
+     Do not change the order of the following opcodes! */
     CTO_SingleLetterCapsRule,
     CTO_CapsWordRule,
     CTO_CapsWordStopRule,
@@ -329,12 +335,6 @@ extern "C"
     CTO_FirstWordCapsRule,
     CTO_LastWordCapsBeforeRule,
     CTO_LastWordCapsAfterRule,
-    CTO_LetterRule,
-    CTO_NumberRule,
-    CTO_NoContractRule,
-    
-    /* Start of (10 x 9) internal opcodes values that match {"singleletteremph"..."lenemphphrase"}
-     Do not change the order of the following opcodes! */
     CTO_SingleLetterItalRule,
     CTO_ItalWordRule,
     CTO_ItalWordStopRule,
@@ -486,19 +486,9 @@ extern "C"
     char* emphClasses[MAX_EMPH_CLASSES + 1];
     int seqPatternsCount;
 
-    /* Do not change the order of the following rule pointers! */
-    TranslationTableOffset firstWordCaps;
-    TranslationTableOffset lastWordCapsBefore;
-    TranslationTableOffset lastWordCapsAfter;
-    TranslationTableOffset firstLetterCaps;
-    TranslationTableOffset lastLetterCaps;
-    TranslationTableOffset singleLetterCaps;
-    TranslationTableOffset capsWord;
-    TranslationTableOffset capsWordStop;
-    TranslationTableOffset lenCapsPhrase;
-    /* End of ordered rule poiinters */
+	/* emphRules, including caps. */
+    TranslationTableOffset emphRules[MAX_EMPH_CLASSES + 1][9];
 
-    TranslationTableOffset emphRules[MAX_EMPH_CLASSES][9];
     TranslationTableOffset begComp;
     TranslationTableOffset compBegEmph1;
     TranslationTableOffset compEndEmph1;
@@ -560,16 +550,17 @@ typedef enum
 
 typedef enum
 {
-	emph1Rule = 0,
-	emph2Rule = 1,
-	emph3Rule = 2,
-	emph4Rule = 3,
-	emph5Rule = 4,
-	emph6Rule = 5,
-	emph7Rule = 6,
-	emph8Rule = 7,
-	emph9Rule = 8,
-	emph10Rule = 9
+	capsRule = 0,
+	emph1Rule = 1,
+	emph2Rule = 2,
+	emph3Rule = 3,
+	emph4Rule = 4,
+	emph5Rule = 5,
+	emph6Rule = 6,
+	emph7Rule = 7,
+	emph8Rule = 8,
+	emph9Rule = 9,
+	emph10Rule = 10
 } EmphRuleNumber;
 
 typedef enum
