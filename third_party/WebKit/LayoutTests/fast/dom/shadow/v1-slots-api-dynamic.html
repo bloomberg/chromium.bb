@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='resources/shadow-dom.js'></script>
+<div id='d1'>
+  <template data-mode='open' data-expose-as='d1_shadow'>
+    <div id='d1-d1'>
+      <template data-mode='open' data-expose-as='d1_d1_shadow'>
+        <slot name='d1-d1-s1'></slot>
+      </template>
+      <slot name='d1-s1' slot='d1-d1-s1'></slot>
+    </div>
+  </template>
+  <div id='d2' slot='d1-s1'></div>
+</div>
+<script>
+'use strict';
+convertTemplatesToShadowRootsWithin(d1);
+removeWhiteSpaceOnlyTextNodes(d1);
+
+test(() => {
+  const d1_s1 = d1_shadow.querySelector('slot');
+  const d1_d1_s1 = d1_d1_shadow.querySelector('slot');
+
+  assert_array_equals(d1_s1.getAssignedNodes(), [d2]);
+  assert_array_equals(d1_s1.getAssignedNodes({'flatten': true}), [d2]);
+
+  assert_array_equals(d1_d1_s1.getAssignedNodes(), [d1_s1]);
+  assert_array_equals(d1_d1_s1.getAssignedNodes({'flatten': true}), [d2]);
+
+  const d3 = document.createElement('div');
+  d3.setAttribute('id', 'd3');
+  d3.setAttribute('slot', 'd1-s1');
+  d1.appendChild(d3);
+
+  assert_array_equals(d1_s1.getAssignedNodes(), [d2, d3]);
+  assert_array_equals(d1_s1.getAssignedNodes({'flatten': true}), [d2, d3]);
+
+  assert_array_equals(d1_d1_s1.getAssignedNodes(), [d1_s1]);
+  assert_array_equals(d1_d1_s1.getAssignedNodes({'flatten': true}), [d2, d3]);
+}, "Distribution should be re-calcualted when assigned nodes of a slot in the parent tree is changed");
+</script>
