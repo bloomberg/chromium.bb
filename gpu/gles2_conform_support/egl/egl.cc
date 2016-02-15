@@ -143,9 +143,10 @@ EGLAPI EGLBoolean EGLAPIENTRY eglInitialize(EGLDisplay dpy,
 
     gfx::GLSurface::InitializeOneOff();
   }
-
-  *major = 1;
-  *minor = 4;
+  if (major)
+    *major = 1;
+  if (minor)
+    *minor = 4;
   return EglSuccess(EGL_TRUE);
 }
 
