@@ -26930,6 +26930,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ResourceLoader.InliningStatus"
+    enum="ResourceLoaderInliningStatus">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Counts whether the chunk inlining is applicable or not to a resource
+    loading. Counts the reason if inapplicable.
+  </summary>
+</histogram>
+
 <histogram name="Net.ResourceLoader.ReadDeferral" units="ms">
   <owner>clamy@chromium.org</owner>
   <summary>
@@ -77054,6 +77063,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Has client"/>
 </enum>
 
+<enum name="ResourceLoaderInliningStatus" type="int">
+  <int value="0" label="Applicable"/>
+  <int value="1" label="EarlyAllocation"/>
+  <int value="2" label="UnknownContentLength"/>
+  <int value="3" label="LargeContent"/>
+  <int value="4" label="HasTransferEncoding"/>
+  <int value="5" label="HasContentEncoding"/>
+</enum>
+
 <enum name="ResourcePrefetchPredictorMainFrameRequestStats" type="int">
   <int value="0" label="MAIN_FRAME_REQUEST_STATS_TOTAL_REQUESTS"/>
   <int value="1" label="MAIN_FRAME_REQUEST_STATS_PROCESSED_REQUESTS"/>
@@ -86880,6 +86898,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="LT_512kB"
       label="Sliced for resources smaller than 512kB and larger than 32kB."/>
   <suffix name="Over_512kB" label="Sliced for resources larger than 512kB."/>
+  <suffix name="InliningApplicable"
+      label="Resources that the chunk inlining is applicable."/>
   <affected-histogram name="Net.ResourceLoader.ResponseStartToEnd"/>
 </histogram_suffixes>
 

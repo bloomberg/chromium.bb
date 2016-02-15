@@ -23,6 +23,12 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// An experiment to optimize resource loading IPC for small resources.
+// http://crbug.com/580928
+const base::Feature kOptimizeIPCForSmallResource{
+    "OptimizeForSmallResource",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

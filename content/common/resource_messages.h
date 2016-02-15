@@ -376,6 +376,14 @@ IPC_MESSAGE_CONTROL4(ResourceMsg_DataReceivedDebug2,
                      int /* data_length */,
                      int /* encoded_data_length */)
 
+// Sent when a chunk of data from a resource request is ready, and the resource
+// is expected to be small enough to fit in the inlined buffer.
+// The data is sent as a part of IPC message.
+IPC_MESSAGE_CONTROL3(ResourceMsg_InlinedDataChunkReceived,
+                     int /* request_id */,
+                     std::vector<char> /* data */,
+                     int /* encoded_data_length */)
+
 // Sent when some data from a resource request is ready.  The data offset and
 // length specify a byte range into the shared memory buffer provided by the
 // SetDataBuffer message.

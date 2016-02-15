@@ -19,6 +19,7 @@ namespace features {
 CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
 CONTENT_EXPORT extern const base::Feature kDownloadResumption;
 CONTENT_EXPORT extern const base::Feature kExperimentalFramework;
+CONTENT_EXPORT extern const base::Feature kOptimizeIPCForSmallResource;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kTokenBinding;
 CONTENT_EXPORT extern const base::Feature kUpdateRendererPriorityOnStartup;
