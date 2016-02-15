@@ -60,7 +60,7 @@ def RunSconsTests(status, context):
           SCons(context, parallel=True, args=['run_hello_world_test'])
     with Step('build_all ' + arch, status):
       SCons(context, parallel=True, args=flags_build)
-    if arch == 'x86-32':
+    if arch in ('x86-32', 'x86-64'):
       with Step('build_all subzero ' + arch, status):
         SCons(context, parallel=True, args=flags_build + flags_subzero)
 
@@ -74,7 +74,7 @@ def RunSconsTests(status, context):
   # Run small_tests, medium_tests, and large_tests with Subzero.
   # TODO(stichnot): Move this to the sandboxed translator section
   # along with the translate_fast flag once pnacl-sz.nexe is ready.
-  if arch == 'x86-32':
+  if arch in ('x86-32', 'x86-64'):
     # Normal pexe-mode tests
     with Step('smoke_tests subzero ' + arch, status, halt_on_fail=False):
       SCons(context, parallel=True,

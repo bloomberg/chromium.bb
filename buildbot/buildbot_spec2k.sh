@@ -334,14 +334,22 @@ pnacl-trybot-x8664() {
   build-prerequisites "x86-64" "bitcode"
   build-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclX8664OptSz "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclX8664OptSz "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslator1ThreadX8664Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslator1ThreadX8664Opt "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslatorFastX8664Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorFastX8664Opt "${TRYBOT_TESTS}" 1 1
+# TODO(stichnot): Enable Subzero translator tests.
+#  build-tests SetupPnaclTranslatorFastX8664OptSz "${TRYBOT_TESTS}" 1 1
+#  run-tests SetupPnaclTranslatorFastX8664OptSz "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslatorFast1ThreadX8664Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorFast1ThreadX8664Opt "${TRYBOT_TESTS}" 1 1
+# TODO(stichnot): Enable Subzero translator tests.
+#  build-tests SetupPnaclTranslatorFast1ThreadX8664OptSz "${TRYBOT_TESTS}" 1 1
+#  run-tests SetupPnaclTranslatorFast1ThreadX8664OptSz "${TRYBOT_TESTS}" 1 1
   pnacl-x86-64-zero-based-sandbox
   build-validator x86-64
   download-validator-test-nexes x86-64
@@ -382,10 +390,13 @@ pnacl-x8664() {
   download-spec2k-harness
   build-prerequisites "x86-64" "bitcode"
   local setups="SetupPnaclX8664Opt \
-               SetupPnaclTranslatorX8664Opt \
-               SetupPnaclTranslator1ThreadX8664Opt \
-               SetupPnaclTranslatorFastX8664Opt \
-               SetupPnaclTranslatorFast1ThreadX8664Opt"
+                SetupPnaclX8664OptSz \
+                SetupPnaclTranslatorX8664Opt \
+                SetupPnaclTranslator1ThreadX8664Opt \
+                SetupPnaclTranslatorFastX8664Opt \
+                SetupPnaclTranslatorFast1ThreadX8664Opt"
+# TODO(stichnot): Add SetupPnaclTranslatorFastX8664OptSz,
+# SetupPnaclTranslatorFast1ThreadX8664OptSz
   build-tests "${setups}" all 1 3
   run-tests "${setups}" all 1 3
   pnacl-x86-64-zero-based-sandbox

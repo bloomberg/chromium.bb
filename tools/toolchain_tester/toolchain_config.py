@@ -408,6 +408,34 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0_O0'] = ToolchainConfig(
     attributes=['x86-64', 'O0f', 'O0b'],
     TRANSLATE_FLAGS = '-translate-fast')
 
+# Based on llvm_pnacl_x86-64_O0 with TRANSLATE_FLAGS+=--use-sz
+TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0_sz'] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0'],
+    desc='pnacl llvm with Subzero [x8664]',
+    attributes=['x86-64', 'O0f', 'O2b_sz'],
+    TRANSLATE_FLAGS = '--use-sz')
+
+# Based on llvm_pnacl_x86-64_O3 with TRANSLATE_FLAGS+=--use-sz
+TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3_sz'] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3'],
+    desc='pnacl llvm with Subzero [x8664]',
+    attributes=['x86-64', 'O3f', 'O2b_sz'],
+    TRANSLATE_FLAGS = '--use-sz')
+
+# Based on llvm_pnacl_x86-64_O3_O0 with TRANSLATE_FLAGS+=--use-sz
+TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3_O0_sz'] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3_O0'],
+    desc='pnacl llvm with Subzero -Om1 [x8664]',
+    attributes=['x86-64', 'O3f', 'O0b_sz'],
+    TRANSLATE_FLAGS = '-translate-fast --use-sz')
+
+# Based on llvm_pnacl_x86-64_O0_O0 with TRANSLATE_FLAGS+=--use-sz
+TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0_O0_sz'] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0_O0'],
+    desc='pnacl llvm with Subzero -Om1 [x8664]',
+    attributes=['x86-64', 'O0f', 'O0b_sz'],
+    TRANSLATE_FLAGS = '-translate-fast --use-sz')
+
 ######################################################################
 # CLANG + SEL_LDR
 ######################################################################

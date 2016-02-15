@@ -222,7 +222,7 @@ tc-test-bot() {
     # all 4 combinations would be run, plus more for Subzero.
     if [[ ${archset} =~ x86 ]]; then
       optset[2]="--opt O3f --opt O0b"
-      if [[ ${archset} == x86-32 ]]; then
+      if [[ ${archset} == x86-32 || ${archset} == x86-64 ]]; then
         # Run a Subzero -O2 test set on x86-32.
         optset[3]="--opt O3f --opt O2b_sz"
       fi
