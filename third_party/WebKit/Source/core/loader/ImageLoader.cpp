@@ -318,7 +318,6 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
         ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
         ResourceRequest resourceRequest(url);
-        resourceRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
         if (updateBehavior == UpdateForcedReload) {
             resourceRequest.setCachePolicy(ResourceRequestCachePolicy::ReloadBypassingCache);
             resourceRequest.setLoFiState(WebURLRequest::LoFiOff);

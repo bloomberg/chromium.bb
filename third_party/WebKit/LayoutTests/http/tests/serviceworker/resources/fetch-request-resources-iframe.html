@@ -48,5 +48,13 @@ function load_css_image_set(url, type) {
   div.style[type] = '-webkit-image-set(url(' + url + ') 1x)';
 }
 
+function load_audio(url, cross_origin) {
+  var audio = document.createElement('audio');
+  if (cross_origin != '') {
+    audio.crossOrigin = cross_origin;
+  }
+  audio.src = url;
+  document.body.appendChild(audio);
+}
 </script>
 </body>

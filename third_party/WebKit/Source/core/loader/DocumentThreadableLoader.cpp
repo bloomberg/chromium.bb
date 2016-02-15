@@ -181,27 +181,43 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
             page->chromeClient().didObserveNonGetFetchFromScript();
     }
 
-    // If the fetch request will be handled by the ServiceWorker, the
-    // FetchRequestMode of the request must be FetchRequestModeCORS or
-    // FetchRequestModeCORSWithForcedPreflight. Otherwise the ServiceWorker can
-    // return a opaque response which is from the other origin site and the
-    // script in the page can read the content.
-    //
     // We assume that ServiceWorker is skipped for sync requests and unsupported
     // protocol requests by content/ code.
     if (m_async && !request.skipServiceWorker() && SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(request.url().protocol()) && document.fetcher()->isControlledByServiceWorker()) {
         ResourceRequest newRequest(request);
-        // FetchRequestMode should be set by the caller. But the expected value
-        // of FetchRequestMode is not speced yet except for XHR. So we set here.
-        // FIXME: When we support fetch API in document, this value should not
-        // be overridden here.
-        if (options.preflightPolicy == ForcePreflight)
-            newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
-        else
-            newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
-
-        m_fallbackRequestForServiceWorker = ResourceRequest(request);
-        m_fallbackRequestForServiceWorker.setSkipServiceWorker(true);
+        const WebURLRequest::RequestContext requestContext(request.requestContext());
+        if (requestContext != WebURLRequest::RequestContextFetch) {
+            // When the request context is not "fetch",
+            // |crossOriginRequestPolicy| represents the fetch request mode,
+            // and |credentialsRequested| represents the fetch credentials mode.
+            // So we set those flags here so that we can see the correct request
+            // mode and credentials mode in the service worker's fetch event
+            // handler.
+            switch (m_options.crossOriginRequestPolicy) {
+            case DenyCrossOriginRequests:
+                newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeSameOrigin);
+                break;
+            case UseAccessControl:
+                if (options.preflightPolicy == ForcePreflight)
+                    newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
+                else
+                    newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
+                break;
+            case AllowCrossOriginRequests:
+                // No-CORS requests are allowed only for those contexts.
+                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(requestContext == WebURLRequest::RequestContextAudio || requestContext == WebURLRequest::RequestContextVideo || requestContext == WebURLRequest::RequestContextObject || requestContext == WebURLRequest::RequestContextFavicon || requestContext == WebURLRequest::RequestContextImage || requestContext == WebURLRequest::RequestContextScript);
+                newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
+                break;
+            }
+            if (m_resourceLoaderOptions.allowCredentials == AllowStoredCredentials)
+                newRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
+            else
+                newRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
+        }
+        if (newRequest.fetchRequestMode() == WebURLRequest::FetchRequestModeCORS || newRequest.fetchRequestMode() == WebURLRequest::FetchRequestModeCORSWithForcedPreflight) {
+            m_fallbackRequestForServiceWorker = ResourceRequest(request);
+            m_fallbackRequestForServiceWorker.setSkipServiceWorker(true);
+        }
 
         loadRequest(newRequest, m_resourceLoaderOptions);
         return;
@@ -593,10 +609,6 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     }
 
     if (response.wasFetchedViaServiceWorker()) {
-        // It's still possible to reach here with null m_fallbackRequestForServiceWorker
-        // if the request was for main resource loading (i.e. for SharedWorker), for which
-        // we create DocumentLoader before the controller ServiceWorker is set.
-        ASSERT(!m_fallbackRequestForServiceWorker.isNull() || m_requestContext == WebURLRequest::RequestContextSharedWorker);
         if (response.wasFallbackRequiredByServiceWorker()) {
             // At this point we must have m_fallbackRequestForServiceWorker.
             // (For SharedWorker the request won't be CORS or CORS-with-preflight,

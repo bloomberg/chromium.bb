@@ -12,7 +12,6 @@ function image_test(frame, url, cross_origin,
                     expected_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
-      cross_origin: cross_origin,
       mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
@@ -26,7 +25,6 @@ function script_test(frame, url, cross_origin,
                      expected_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
-      cross_origin: cross_origin,
       mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
@@ -40,7 +38,6 @@ function css_test(frame, url, cross_origin,
                   expected_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
-      cross_origin: cross_origin,
       mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
@@ -87,6 +84,33 @@ function css_image_set_test(frame, url, type,
       message: 'CSSImageSet load (url:' + actual_url + ' type:' + type + ')'
     };
   return frame.contentWindow.load_css_image_set(actual_url, type);
+}
+
+function fetch_test(frame, url, mode, credentials,
+                    expected_mode, expected_credentials) {
+  var actual_url = url + (++url_count);
+  expected_results[actual_url] = {
+      mode: expected_mode,
+      credentials: expected_credentials,
+      redirect: 'follow',
+      message: 'fetch (url:' + actual_url + ' mode:' + mode + ' credentials:' +
+               credentials + ')'
+    };
+  return frame.contentWindow.fetch(
+      new Request(actual_url, {mode: mode, credentials: credentials}));
+}
+
+function audio_test(frame, url, cross_origin,
+                    expected_mode, expected_credentials) {
+  var actual_url = url + (++url_count);
+  expected_results[actual_url] = {
+      mode: expected_mode,
+      credentials: expected_credentials,
+      redirect: 'follow',
+      message: 'Audio load (url:' + actual_url + ' cross_origin:' +
+               cross_origin + ')'
+    };
+  return frame.contentWindow.load_audio(actual_url, cross_origin);
 }
 
 async_test(function(t) {
@@ -143,45 +167,69 @@ async_test(function(t) {
       .then(function() { return with_iframe(SCOPE); })
       .then(function(f) {
         frame = f;
-        image_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
+        image_test(f, LOCAL_URL, '', 'no-cors', 'include');
         image_test(f, LOCAL_URL, 'anonymous', 'cors', 'same-origin');
         image_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
-        image_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
+        image_test(f, REMOTE_URL, '', 'no-cors', 'include');
         image_test(f, REMOTE_URL, 'anonymous', 'cors', 'same-origin');
         image_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
 
-        script_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
+        script_test(f, LOCAL_URL, '', 'no-cors', 'include');
         script_test(f, LOCAL_URL, 'anonymous', 'cors', 'same-origin');
         script_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
-        script_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
+        script_test(f, REMOTE_URL, '', 'no-cors', 'include');
         script_test(f, REMOTE_URL, 'anonymous', 'cors', 'same-origin');
         script_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
 
-        css_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
+        css_test(f, LOCAL_URL, '', 'no-cors', 'include');
         css_test(f, LOCAL_URL, 'anonymous', 'cors', 'same-origin');
         css_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
-        css_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
+        css_test(f, REMOTE_URL, '', 'no-cors', 'include');
         css_test(f, REMOTE_URL, 'anonymous', 'cors', 'same-origin');
         css_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
 
         font_face_test(f, LOCAL_URL, 'cors', 'same-origin');
         font_face_test(f, REMOTE_URL, 'cors', 'same-origin');
 
-        css_image_test(f, LOCAL_URL, 'backgroundImage',
-                       'no-cors', 'same-origin');
-        css_image_test(f, REMOTE_URL, 'backgroundImage',
-                       'no-cors', 'same-origin');
+        css_image_test(f, LOCAL_URL, 'backgroundImage', 'no-cors', 'include');
+        css_image_test(f, REMOTE_URL, 'backgroundImage', 'no-cors', 'include');
         css_image_test(f, LOCAL_URL, 'shapeOutside', 'cors', 'same-origin');
         css_image_test(f, REMOTE_URL, 'shapeOutside', 'cors', 'same-origin');
 
         css_image_set_test(f, LOCAL_URL, 'backgroundImage',
-                           'no-cors', 'same-origin');
+                           'no-cors', 'include');
         css_image_set_test(f, REMOTE_URL, 'backgroundImage',
-                           'no-cors', 'same-origin');
+                           'no-cors', 'include');
         css_image_set_test(f, LOCAL_URL, 'shapeOutside', 'cors', 'same-origin');
         css_image_set_test(f, REMOTE_URL, 'shapeOutside',
                            'cors', 'same-origin');
 
+        fetch_test(f, LOCAL_URL, 'same-origin', 'omit', 'same-origin', 'omit');
+        fetch_test(f, LOCAL_URL, 'same-origin', 'same-origin',
+                   'same-origin', 'same-origin');
+        fetch_test(f, LOCAL_URL, 'same-origin', 'include',
+                   'same-origin', 'include');
+        fetch_test(f, LOCAL_URL, 'no-cors', 'omit', 'no-cors', 'omit');
+        fetch_test(f, LOCAL_URL, 'no-cors', 'same-origin',
+                   'no-cors', 'same-origin');
+        fetch_test(f, LOCAL_URL, 'no-cors', 'include', 'no-cors', 'include');
+        fetch_test(f, LOCAL_URL, 'cors', 'omit', 'cors', 'omit');
+        fetch_test(f, LOCAL_URL, 'cors', 'same-origin', 'cors', 'same-origin');
+        fetch_test(f, LOCAL_URL, 'cors', 'include', 'cors', 'include');
+        fetch_test(f, REMOTE_URL, 'no-cors', 'omit', 'no-cors', 'omit');
+        fetch_test(f, REMOTE_URL, 'no-cors', 'same-origin',
+                   'no-cors', 'same-origin');
+        fetch_test(f, REMOTE_URL, 'no-cors', 'include', 'no-cors', 'include');
+        fetch_test(f, REMOTE_URL, 'cors', 'omit', 'cors', 'omit');
+        fetch_test(f, REMOTE_URL, 'cors', 'same-origin', 'cors', 'same-origin');
+        fetch_test(f, REMOTE_URL, 'cors', 'include', 'cors', 'include');
+
+        audio_test(f, LOCAL_URL, '', 'no-cors', 'include');
+        audio_test(f, LOCAL_URL, 'anonymous', 'cors', 'same-origin');
+        audio_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
+        audio_test(f, REMOTE_URL, '', 'no-cors', 'include');
+        audio_test(f, REMOTE_URL, 'anonymous', 'cors', 'same-origin');
+        audio_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
       })
       .catch(unreached_rejection(t));
   }, 'Verify FetchEvent for resources.');
