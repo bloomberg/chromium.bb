@@ -90,9 +90,6 @@ private:
 
     LocalFrame* frame() const;
 
-    void adjustVisibleSelectionInFlatTree();
-    void adjustVisibleSelectionInDOMTree();
-
     TextDirection directionOfEnclosingBlock();
     TextDirection directionOfSelection();
 
