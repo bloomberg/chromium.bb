@@ -52,6 +52,7 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/PaintTiming.h"
 #include "platform/Histogram.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -450,6 +451,9 @@ void HTMLCanvasElement::paint(GraphicsContext& context, const LayoutRect& r)
     } else if (hasImageBuffer()) {
         m_imageBuffer->setFilterQuality(filterQuality);
     }
+
+    if (hasImageBuffer() && !m_imageBufferIsClear)
+        PaintTiming::from(document()).markFirstContentfulPaint();
 
     if (!paintsIntoCanvasBuffer() && !document().printing())
         return;
