@@ -129,7 +129,7 @@ class NormalPageHeap;
 class OrphanedPagePool;
 class PageMemory;
 class PageMemoryRegion;
-class WebProcessMemoryDump;
+class WebMemoryAllocatorDump;
 
 // HeapObjectHeader is 4 byte (32 bit) that has the following layout:
 //
@@ -392,7 +392,14 @@ public:
     virtual void checkAndMarkPointer(Visitor*, Address) = 0;
     virtual void markOrphaned();
 
-    virtual void takeSnapshot(String dumpBaseName, size_t pageIndex, ThreadState::GCSnapshotInfo&, size_t* outFreeSize, size_t* outFreeCount) = 0;
+    class HeapSnapshotInfo {
+        STACK_ALLOCATED();
+    public:
+        size_t freeCount = 0;
+        size_t freeSize = 0;
+    };
+
+    virtual void takeSnapshot(WebMemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) = 0;
 #if ENABLE(ASSERT)
     virtual bool contains(Address) = 0;
 #endif
@@ -468,7 +475,7 @@ public:
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
 
-    void takeSnapshot(String dumpBaseName, size_t pageIndex, ThreadState::GCSnapshotInfo&, size_t* outFreeSize, size_t* outFreeCount) override;
+    void takeSnapshot(WebMemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) override;
 #if ENABLE(ASSERT)
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
@@ -525,7 +532,7 @@ public:
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
 
-    void takeSnapshot(String dumpBaseName, size_t pageIndex, ThreadState::GCSnapshotInfo&, size_t* outFreeSize, size_t* outFreeCount) override;
+    void takeSnapshot(WebMemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) override;
 #if ENABLE(ASSERT)
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to
