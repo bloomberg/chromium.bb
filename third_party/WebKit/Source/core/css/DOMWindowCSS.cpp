@@ -33,6 +33,7 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -41,8 +42,14 @@ namespace blink {
 bool DOMWindowCSS::supports(const String& property, const String& value)
 {
     CSSPropertyID unresolvedProperty = unresolvedCSSPropertyID(property);
-    if (unresolvedProperty == CSSPropertyInvalid)
+    if (unresolvedProperty == CSSPropertyInvalid) {
+        if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::isValidVariableName(property)) {
+            RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create(HTMLStandardMode);
+            return CSSParser::parseValueForCustomProperty(dummyStyle.get(), "--valid", value, false, 0);
+        }
         return false;
+    }
+
     ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
 
     // This will return false when !important is present
