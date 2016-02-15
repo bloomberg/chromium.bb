@@ -248,7 +248,7 @@ class KeyMobileSitesSmoothPageSet(story.StorySet):
       # Why: Top tech site
       'http://digg.com',
       # Why: Top Google property; a Google tab is often open
-      'https://www.google.com/#hl=en&q=barack+obama',
+      'https://www.google.co.uk/search?hl=en&q=barack+obama&cad=h',
       # Why: #1 news worldwide (Alexa global)
       'http://news.yahoo.com',
       # Why: #2 news worldwide

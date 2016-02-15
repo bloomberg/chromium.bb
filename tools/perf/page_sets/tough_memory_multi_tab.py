@@ -24,7 +24,7 @@ class ToughMemoryMultiTabPageSet(story.StorySet):
       archive_data_file='data/key_mobile_sites.json')
 
     urls_list = [
-      'https://www.google.com/#hl=en&q=barack+obama',
+      'https://www.google.co.uk/search?hl=en&q=barack+obama&cad=h',
       'http://theverge.com',
       'http://techcrunch.com'
     ]
