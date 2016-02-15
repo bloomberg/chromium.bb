@@ -476,7 +476,7 @@ inline Element* DateTimeEditElement::fieldsWrapperElement() const
 
 void DateTimeEditElement::addField(PassRefPtrWillBeRawPtr<DateTimeFieldElement> field)
 {
-    if (m_fields.size() == m_fields.capacity())
+    if (m_fields.size() >= maximumNumberOfFields)
         return;
     m_fields.append(field.get());
     fieldsWrapperElement()->appendChild(field);
