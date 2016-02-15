@@ -666,8 +666,11 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
     DCHECK_EQ(*result_index, static_cast<uint32_t>(-1));
   }
 
-  DispatcherVector dispatchers;
-  dispatchers.reserve(num_handles);
+  // The primary caller of |WaitManyInternal()| is |Wait()|, which only waits on
+  // a single handle. In the common case of a single handle, this avoid a heap
+  // allocation.
+  base::StackVector<scoped_refptr<Dispatcher>, 1> dispatchers;
+  dispatchers->reserve(num_handles);
   for (uint32_t i = 0; i < num_handles; i++) {
     scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handles[i]);
     if (!dispatcher) {
@@ -675,7 +678,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
         *result_index = i;
       return MOJO_RESULT_INVALID_ARGUMENT;
     }
-    dispatchers.push_back(dispatcher);
+    dispatchers->push_back(dispatcher);
   }
 
   // TODO(vtl): Should make the waiter live (permanently) in TLS.

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
-#include <map>
+#include <functional>
 #include <set>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -84,7 +85,13 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
     int id;
   };
 
-  typedef std::map<Handle, Handler> HandleToHandler;
+  struct HandleHasher {
+    size_t operator()(const Handle& handle) const {
+      return std::hash<uint32_t>()(static_cast<uint32_t>(handle.value()));
+    }
+  };
+
+  using HandleToHandler = std::unordered_map<Handle, Handler, HandleHasher>;
 
   // Implementation of Run().
   void DoRunLoop(RunState* run_state, Delegate* delegate);

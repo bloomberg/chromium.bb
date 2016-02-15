@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include <deque>
-#include <map>
+#include <unordered_map>
 #include <utility>
 
 #include "base/macros.h"
@@ -75,7 +75,7 @@ class MOJO_SYSTEM_IMPL_EXPORT WaitSetDispatcher : public Dispatcher {
 
   // Map of dispatchers being waited on. Key is a Dispatcher* casted to a
   // uintptr_t, and should be treated as an opaque value and not casted back.
-  std::map<uintptr_t, WaitState> waiting_dispatchers_;
+  std::unordered_map<uintptr_t, WaitState> waiting_dispatchers_;
 
   // Separate lock that can be locked without locking |lock_|.
   mutable base::Lock awoken_lock_;
