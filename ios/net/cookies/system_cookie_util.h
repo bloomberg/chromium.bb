@@ -9,11 +9,7 @@
 
 #include "net/cookies/canonical_cookie.h"
 
-#if defined(__OBJC__)
 @class NSHTTPCookie;
-#else
-class NSHTTPCookie;
-#endif
 
 namespace base {
 class Time;
