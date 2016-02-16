@@ -99,6 +99,54 @@ div {
   background-color: orange;
   background-color: var(--n, var(--o, green));
 }
+
+#twocycle_with_separate_fallback {
+  --a: var(--b) var(--c, red);
+  --b: var(--a) var(--c, red);
+  background-color: orange;
+  background-color: var(--a, green);
+}
+
+#linked_cycles_a {
+  --a: var(--b) var(--c, red);
+  --b: var(--a) var(--c, red);
+  --c: var(--a);
+  background-color: orange;
+  background-color: var(--a, green);
+}
+
+#linked_cycles_b {
+  --a: var(--b) var(--c, var(--d));
+  --b: var(--a) var(--c, red);
+  --d: var(--a);
+  background-color: orange;
+  background-color: var(--a, var(--d, green));
+}
+
+#fallback_self_reference_a {
+  --a: red;
+  --b: var(--a, var(--b));
+  --c: var(--b, green);
+  background-color: orange;
+  background-color: var(--c, red);
+}
+
+#fallback_self_reference_b {
+  --b: red;
+  --c: var(--b, var(--c));
+  --a: var(--c, green);
+  background-color: orange;
+  background-color: var(--a, red);
+}
+
+#fallback_self_reference_c {
+  --c: red;
+  --a: var(--c, var(--a));
+  --b: var(--a, green);
+  background-color: orange;
+  background-color: var(--b, red);
+}
+
 </style>
 
 <div id=twocycleinfallback_a></div>
@@ -113,6 +161,12 @@ div {
 <div id=secondarycycle_chain_r></div>
 <div id=secondarycycle_fallback></div>
 <div id=secondarycycle_fallback_r></div>
+<div id=twocycle_with_separate_fallback></div>
+<div id=linked_cycles_a></div>
+<div id=linked_cycles_b></div>
+<div id=fallback_self_reference_a></div>
+<div id=fallback_self_reference_b></div>
+<div id=fallback_self_reference_c></div>
 
 <script>
 test(function() {
@@ -144,4 +198,19 @@ test(function() {
   assert_equals(getComputedStyle(secondarycycle_fallback).backgroundColor, 'rgb(0, 128, 0)');
   assert_equals(getComputedStyle(secondarycycle_fallback_r).backgroundColor, 'rgb(0, 128, 0)');
 }, 'Secondary cycles need to be detected too (secondary cycle in fallback)');
+
+test(function() {
+  assert_equals(getComputedStyle(twocycle_with_separate_fallback).backgroundColor, 'rgb(0, 128, 0)');
+}, 'A cycle is not affected by other variable references with fallbacks');
+
+test(function() {
+  assert_equals(getComputedStyle(linked_cycles_a).backgroundColor, 'rgb(0, 128, 0)');
+  assert_equals(getComputedStyle(linked_cycles_b).backgroundColor, 'rgb(0, 128, 0)');
+}, 'Cycles which are linked are invalid');
+
+test(function() {
+  assert_equals(getComputedStyle(fallback_self_reference_a).backgroundColor, 'rgb(0, 128, 0)');
+  assert_equals(getComputedStyle(fallback_self_reference_b).backgroundColor, 'rgb(0, 128, 0)');
+  assert_equals(getComputedStyle(fallback_self_reference_c).backgroundColor, 'rgb(0, 128, 0)');
+}, 'A self-reference in a fallback is invalid');
 </script>

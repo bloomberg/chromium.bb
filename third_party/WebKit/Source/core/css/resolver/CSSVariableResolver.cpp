@@ -22,19 +22,17 @@
 
 namespace blink {
 
-void CSSVariableResolver::resolveFallback(CSSParserTokenRange range,
-    Vector<CSSParserToken>& result, CSSVariableResolver::ResolutionState& context)
+bool CSSVariableResolver::resolveFallback(CSSParserTokenRange range, Vector<CSSParserToken>& result)
 {
-    if (!range.atEnd()) {
-        range.consume();
-        resolveVariableReferencesFromTokens(range, result, context);
-    } else {
-        context.success = false;
-    }
+    if (range.atEnd())
+        return false;
+    ASSERT(range.peek().type() == CommaToken);
+    range.consume();
+    return resolveVariableReferencesFromTokens(range, result);
 }
 
-void CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange range,
-    Vector<CSSParserToken>& result, CSSVariableResolver::ResolutionState& context)
+bool CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange range,
+    Vector<CSSParserToken>& result)
 {
     Vector<CSSParserToken> trash;
     range.consumeWhitespace();
@@ -44,10 +42,9 @@ void CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange ran
 
     // Cycle detection.
     if (m_variablesSeen.contains(variableName)) {
-        context.success = false;
-        context.cycleStartPoints.add(variableName);
-        resolveFallback(range, trash, context);
-        return;
+        m_cycleStartPoints.add(variableName);
+        resolveFallback(range, trash);
+        return false;
     }
 
     CSSVariableData* variableData = m_styleVariableData ? m_styleVariableData->getVariable(variableName) : nullptr;
@@ -55,57 +52,54 @@ void CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange ran
         Vector<CSSParserToken> tokens;
         if (variableData->needsVariableResolution()) {
             m_variablesSeen.add(variableName);
-            resolveVariableReferencesFromTokens(variableData->tokens(), tokens, context);
+            bool referenceValid = resolveVariableReferencesFromTokens(variableData->tokens(), tokens);
             m_variablesSeen.remove(variableName);
 
             // The old variable data holds onto the backing string the new resolved CSSVariableData
             // relies on. Ensure it will live beyond us overwriting the RefPtr in StyleVariableData.
             ASSERT(variableData->refCount() > 1);
 
-            m_styleVariableData->setVariable(variableName, CSSVariableData::createResolved(tokens, variableData));
-            if (!context.cycleStartPoints.isEmpty()) {
-                if (context.cycleStartPoints.contains(variableName))
-                    context.cycleStartPoints.remove(variableName);
-
-                if (!context.cycleStartPoints.isEmpty()) {
-                    resolveFallback(range, trash, context);
-                    return;
+            if (!referenceValid || !m_cycleStartPoints.isEmpty()) {
+                m_styleVariableData->setVariable(variableName, nullptr);
+                m_cycleStartPoints.remove(variableName);
+                if (!m_cycleStartPoints.isEmpty()) {
+                    resolveFallback(range, trash);
+                    return false;
                 }
+                return resolveFallback(range, result);
             }
+
+            m_styleVariableData->setVariable(variableName, CSSVariableData::createResolved(tokens, variableData));
         } else {
             tokens = variableData->tokens();
         }
 
-        if (!tokens.isEmpty()) {
-            // Check that loops are not induced by the fallback.
-            resolveFallback(range, trash, context);
-            if (context.cycleStartPoints.isEmpty()) {
-                // It's OK if the fallback fails to resolve - we're not actually taking it.
-                context.success = true;
-                result.appendVector(tokens);
-            }
-            return;
+        ASSERT(!tokens.isEmpty());
+        // Check that loops are not induced by the fallback.
+        resolveFallback(range, trash);
+        if (m_cycleStartPoints.isEmpty()) {
+            // It's OK if the fallback fails to resolve - we're not actually taking it.
+            result.appendVector(tokens);
+            return true;
         }
+        return false;
     }
 
-    // We're legitimately falling back, so reset success flag.
-    context.success = true;
-    resolveFallback(range, result, context);
+    return resolveFallback(range, result);
 }
 
-void CSSVariableResolver::resolveVariableReferencesFromTokens(CSSParserTokenRange range,
-    Vector<CSSParserToken>& result, CSSVariableResolver::ResolutionState& context)
+bool CSSVariableResolver::resolveVariableReferencesFromTokens(CSSParserTokenRange range,
+    Vector<CSSParserToken>& result)
 {
+    bool success = true;
     while (!range.atEnd()) {
-        if (range.peek().functionId() != CSSValueVar) {
-            result.append(range.consume());
+        if (range.peek().functionId() == CSSValueVar) {
+            success &= resolveVariableTokensRecursive(range.consumeBlock(), result);
         } else {
-            resolveVariableTokensRecursive(range.consumeBlock(), result, context);
+            result.append(range.consume());
         }
     }
-    if (!context.success)
-        result.clear();
-    return;
+    return success;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(StyleVariableData* styleVariableData, CSSPropertyID id, const CSSVariableReferenceValue& value)
@@ -114,10 +108,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(
 
     CSSVariableResolver resolver(styleVariableData);
     Vector<CSSParserToken> tokens;
-    ResolutionState resolutionContext;
-    resolver.resolveVariableReferencesFromTokens(value.variableDataValue()->tokens(), tokens, resolutionContext);
-
-    if (!resolutionContext.success)
+    if (!resolver.resolveVariableReferencesFromTokens(value.variableDataValue()->tokens(), tokens))
         return cssValuePool().createUnsetValue();
 
     CSSParserContext context(HTMLStandardMode, nullptr);
@@ -136,10 +127,7 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
     CSSVariableResolver resolver(state.style()->variables());
 
     Vector<CSSParserToken> tokens;
-    ResolutionState resolutionContext;
-    resolver.resolveVariableReferencesFromTokens(value.variableDataValue()->tokens(), tokens, resolutionContext);
-
-    if (resolutionContext.success) {
+    if (resolver.resolveVariableReferencesFromTokens(value.variableDataValue()->tokens(), tokens)) {
         CSSParserContext context(HTMLStandardMode, 0);
 
         WillBeHeapVector<CSSProperty, 256> parsedProperties;
@@ -169,15 +157,15 @@ void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variable
         return;
 
     for (auto& variable : variables->m_data) {
-        if (!variable.value->needsVariableResolution())
+        if (!variable.value || !variable.value->needsVariableResolution())
             continue;
         Vector<CSSParserToken> resolvedTokens;
 
         CSSVariableResolver resolver(variables, variable.key);
-        ResolutionState context;
-        resolver.resolveVariableReferencesFromTokens(variable.value->tokens(), resolvedTokens, context);
-
-        variable.value = CSSVariableData::createResolved(resolvedTokens, variable.value);
+        if (resolver.resolveVariableReferencesFromTokens(variable.value->tokens(), resolvedTokens))
+            variable.value = CSSVariableData::createResolved(resolvedTokens, variable.value);
+        else
+            variable.value = nullptr;
     }
 }
 
