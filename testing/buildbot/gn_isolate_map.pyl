@@ -172,7 +172,7 @@
   },
   "chrome_elf_unittests": {
     "label": "//chrome_elf:chrome_elf_unittests",
-    "type": "unknown",
+    "type": "raw",
   },
   "chromedriver_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_unittests",

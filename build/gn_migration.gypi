@@ -612,6 +612,7 @@
               'dependencies': [
                 '../chrome/chrome.gyp:installer_util_unittests_run',
                 '../chrome/chrome.gyp:setup_unittests_run',
+                '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests_run',
                 '../sandbox/sandbox.gyp:sbox_integration_tests_run',
                 '../sandbox/sandbox.gyp:sbox_unittests_run',
                 '../sandbox/sandbox.gyp:sbox_validation_tests_run',
