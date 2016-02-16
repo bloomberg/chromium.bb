@@ -34,13 +34,13 @@ UnlinkCommand::UnlinkCommand(Document& document)
 {
 }
 
-void UnlinkCommand::doApply(EditingState*)
+void UnlinkCommand::doApply(EditingState* editingState)
 {
     // FIXME: If a caret is inside a link, we should remove it, but currently we don't.
     if (!endingSelection().isNonOrphanedRange())
         return;
 
-    removeStyledElement(HTMLAnchorElement::create(document()));
+    removeStyledElement(HTMLAnchorElement::create(document()), editingState);
 }
 
 } // namespace blink

@@ -36,7 +36,7 @@ CreateLinkCommand::CreateLinkCommand(Document& document, const String& url)
     m_url = url;
 }
 
-void CreateLinkCommand::doApply(EditingState*)
+void CreateLinkCommand::doApply(EditingState* editingState)
 {
     if (endingSelection().isNone())
         return;
@@ -45,7 +45,9 @@ void CreateLinkCommand::doApply(EditingState*)
     anchorElement->setHref(AtomicString(m_url));
 
     if (endingSelection().isRange()) {
-        applyStyledElement(anchorElement.get());
+        applyStyledElement(anchorElement.get(), editingState);
+        if (editingState->isAborted())
+            return;
     } else {
         insertNodeAt(anchorElement.get(), endingSelection().start());
         RefPtrWillBeRawPtr<Text> textNode = Text::create(document(), m_url);

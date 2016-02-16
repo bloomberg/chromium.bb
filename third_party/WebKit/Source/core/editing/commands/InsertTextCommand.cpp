@@ -228,8 +228,11 @@ void InsertTextCommand::doApply(EditingState* editingState)
     // Handle the case where there is a typing style.
     if (RefPtrWillBeRawPtr<EditingStyle> typingStyle = document().frame()->selection().typingStyle()) {
         typingStyle->prepareToApplyAt(endPosition, EditingStyle::PreserveWritingDirection);
-        if (!typingStyle->isEmpty())
-            applyStyle(typingStyle.get());
+        if (!typingStyle->isEmpty()) {
+            applyStyle(typingStyle.get(), editingState);
+            if (editingState->isAborted())
+                return;
+        }
     }
 
     if (!m_selectInsertedText)

@@ -86,7 +86,7 @@ void InsertParagraphSeparatorCommand::calculateStyleBeforeInsertion(const Positi
     m_style->mergeTypingStyle(pos.document());
 }
 
-void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Element* originalEnclosingBlock)
+void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Element* originalEnclosingBlock, EditingState* editingState)
 {
     // Not only do we break out of header tags, but we also do not preserve the typing style,
     // in order to match other browsers.
@@ -103,7 +103,7 @@ void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Element* original
 
     m_style->prepareToApplyAt(endingSelection().start());
     if (!m_style->isEmpty())
-        applyStyle(m_style.get());
+        applyStyle(m_style.get(), editingState);
 }
 
 bool InsertParagraphSeparatorCommand::shouldUseDefaultParagraphElement(Element* enclosingBlock) const
@@ -436,7 +436,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     }
 
     setEndingSelection(VisibleSelection(firstPositionInNode(blockToInsert.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
-    applyStyleAfterInsertion(startBlock.get());
+    applyStyleAfterInsertion(startBlock.get(), editingState);
 }
 
 DEFINE_TRACE(InsertParagraphSeparatorCommand)

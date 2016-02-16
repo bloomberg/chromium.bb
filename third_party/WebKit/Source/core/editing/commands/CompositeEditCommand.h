@@ -100,10 +100,10 @@ protected:
     void appendNode(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> parent, EditingState* = ASSERT_NO_EDITING_ABORT);
     void applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand>, EditingState* = ASSERT_NO_EDITING_ABORT);
     void applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand>, const VisibleSelection&, EditingState* = ASSERT_NO_EDITING_ABORT);
-    void applyStyle(const EditingStyle*, EditAction = EditActionChangeAttributes);
-    void applyStyle(const EditingStyle*, const Position& start, const Position& end, EditAction = EditActionChangeAttributes);
-    void applyStyledElement(PassRefPtrWillBeRawPtr<Element>);
-    void removeStyledElement(PassRefPtrWillBeRawPtr<Element>);
+    void applyStyle(const EditingStyle*, EditingState*, EditAction = EditActionChangeAttributes);
+    void applyStyle(const EditingStyle*, const Position& start, const Position& end, EditingState*, EditAction = EditActionChangeAttributes);
+    void applyStyledElement(PassRefPtrWillBeRawPtr<Element>, EditingState*);
+    void removeStyledElement(PassRefPtrWillBeRawPtr<Element>, EditingState*);
     void deleteSelection(EditingState*, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = true, bool sanitizeMarkup = true);
     void deleteSelection(const VisibleSelection&, EditingState*, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = true, bool sanitizeMarkup = true);
     virtual void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);

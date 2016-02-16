@@ -275,24 +275,24 @@ void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<Compos
         m_commands.append(command);
 }
 
-void CompositeEditCommand::applyStyle(const EditingStyle* style, EditAction editingAction)
+void CompositeEditCommand::applyStyle(const EditingStyle* style, EditingState* editingState, EditAction editingAction)
 {
-    applyCommandToComposite(ApplyStyleCommand::create(document(), style, editingAction));
+    applyCommandToComposite(ApplyStyleCommand::create(document(), style, editingAction), editingState);
 }
 
-void CompositeEditCommand::applyStyle(const EditingStyle* style, const Position& start, const Position& end, EditAction editingAction)
+void CompositeEditCommand::applyStyle(const EditingStyle* style, const Position& start, const Position& end, EditingState* editingState, EditAction editingAction)
 {
-    applyCommandToComposite(ApplyStyleCommand::create(document(), style, start, end, editingAction));
+    applyCommandToComposite(ApplyStyleCommand::create(document(), style, start, end, editingAction), editingState);
 }
 
-void CompositeEditCommand::applyStyledElement(PassRefPtrWillBeRawPtr<Element> element)
+void CompositeEditCommand::applyStyledElement(PassRefPtrWillBeRawPtr<Element> element, EditingState* editingState)
 {
-    applyCommandToComposite(ApplyStyleCommand::create(element, false));
+    applyCommandToComposite(ApplyStyleCommand::create(element, false), editingState);
 }
 
-void CompositeEditCommand::removeStyledElement(PassRefPtrWillBeRawPtr<Element> element)
+void CompositeEditCommand::removeStyledElement(PassRefPtrWillBeRawPtr<Element> element, EditingState* editingState)
 {
-    applyCommandToComposite(ApplyStyleCommand::create(element, true));
+    applyCommandToComposite(ApplyStyleCommand::create(element, true), editingState);
 }
 
 void CompositeEditCommand::insertParagraphSeparator(EditingState* editingState, bool useDefaultParagraphElement, bool pasteBlockqutoeIntoUnquotedArea)
@@ -1027,7 +1027,9 @@ void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode, EditingSta
     ASSERT(anchorNode->isLink());
 
     setEndingSelection(VisibleSelection::selectionFromContentsOfNode(anchorNode));
-    applyStyledElement(anchorNode);
+    applyStyledElement(anchorNode, editingState);
+    if (editingState->isAborted())
+        return;
     // Clones of anchorNode have been pushed down, now remove it.
     if (anchorNode->inDocument())
         removeNodePreservingChildren(anchorNode, editingState);
@@ -1324,8 +1326,11 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     // If the selection is in an empty paragraph, restore styles from the old empty paragraph to the new empty paragraph.
     bool selectionIsEmptyParagraph = endingSelection().isCaret() && isStartOfParagraph(endingSelection().visibleStart()) && isEndOfParagraph(endingSelection().visibleStart());
-    if (styleInEmptyParagraph && selectionIsEmptyParagraph)
-        applyStyle(styleInEmptyParagraph.get());
+    if (styleInEmptyParagraph && selectionIsEmptyParagraph) {
+        applyStyle(styleInEmptyParagraph.get(), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
     if (!preserveSelection || startIndex == -1)
         return;
@@ -1417,8 +1422,11 @@ bool CompositeEditCommand::breakOutOfEmptyListItem(EditingState* editingState)
     setEndingSelection(VisibleSelection(firstPositionInNode(newBlock.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
 
     style->prepareToApplyAt(endingSelection().start());
-    if (!style->isEmpty())
-        applyStyle(style.get());
+    if (!style->isEmpty()) {
+        applyStyle(style.get(), editingState);
+        if (editingState->isAborted())
+            return false;
+    }
 
     return true;
 }
