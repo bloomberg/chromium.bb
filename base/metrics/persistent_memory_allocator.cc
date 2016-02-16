@@ -644,9 +644,9 @@ void PersistentMemoryAllocator::UpdateTrackingHistograms() {
   if (used_histogram_) {
     MemoryInfo meminfo;
     GetMemoryInfo(&meminfo);
-    HistogramBase::Sample usedkb = static_cast<HistogramBase::Sample>(
-        (meminfo.total - meminfo.free) >> 10);
-    used_histogram_->Add(usedkb);
+    HistogramBase::Sample used_percent = static_cast<HistogramBase::Sample>(
+        ((meminfo.total - meminfo.free) * 100ULL / meminfo.total));
+    used_histogram_->Add(used_percent);
   }
 }
 
