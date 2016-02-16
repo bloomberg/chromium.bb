@@ -4,7 +4,7 @@
 
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
-#include <algorithm>
+#include <set>
 
 #include "base/logging.h"
 #include "base/strings/string_split.h"
@@ -129,34 +129,32 @@ base::WeakPtr<SpellcheckService> SpellcheckService::GetWeakPtr() {
 
 #if !defined(OS_MACOSX)
 // static
-size_t SpellcheckService::GetSpellCheckLanguages(
-    base::SupportsUserData* context,
-    std::vector<std::string>* languages) {
-  PrefService* prefs = user_prefs::UserPrefs::Get(context);
-  StringPrefMember accept_languages_pref;
-  accept_languages_pref.Init(prefs::kAcceptLanguages, prefs);
-
-  std::vector<std::string> accept_languages = base::SplitString(
-      accept_languages_pref.GetValue(), ",",
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  StringListPrefMember dictionaries_pref;
-  dictionaries_pref.Init(prefs::kSpellCheckDictionaries, prefs);
-  *languages = dictionaries_pref.GetValue();
-  size_t enabled_spellcheck_languages = languages->size();
-
-  for (std::vector<std::string>::const_iterator i = accept_languages.begin();
-       i != accept_languages.end(); ++i) {
-    std::string language =
-        chrome::spellcheck_common::GetCorrespondingSpellCheckLanguage(*i);
-    if (!language.empty() &&
-        std::find(languages->begin(), languages->end(), language) ==
-            languages->end()) {
-      languages->push_back(language);
-    }
+void SpellcheckService::GetDictionaries(base::SupportsUserData* browser_context,
+                                        std::vector<Dictionary>* dictionaries) {
+  PrefService* prefs = user_prefs::UserPrefs::Get(browser_context);
+  std::set<std::string> spellcheck_dictionaries;
+  for (const auto& value : *prefs->GetList(prefs::kSpellCheckDictionaries)) {
+    std::string dictionary;
+    if (value->GetAsString(&dictionary))
+      spellcheck_dictionaries.insert(dictionary);
   }
 
-  return enabled_spellcheck_languages;
+  dictionaries->clear();
+  std::vector<std::string> accept_languages =
+      base::SplitString(prefs->GetString(prefs::kAcceptLanguages), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (const auto& accept_language : accept_languages) {
+    Dictionary dictionary;
+    dictionary.language =
+        chrome::spellcheck_common::GetCorrespondingSpellCheckLanguage(
+            accept_language);
+    if (dictionary.language.empty())
+      continue;
+
+    dictionary.used_for_spellcheck =
+        spellcheck_dictionaries.count(dictionary.language) > 0;
+    dictionaries->push_back(dictionary);
+  }
 }
 #endif  // !OS_MACOSX
 

@@ -63,19 +63,29 @@ class SpellcheckService : public KeyedService,
     DICT_UNKNOWN,
   };
 
+  // A dictionary that can be used for spellcheck.
+  struct Dictionary {
+    // The shortest unambiguous identifier for a language from
+    // |g_supported_spellchecker_languages|. For example, "bg" for Bulgarian,
+    // because Chrome has only one Bulgarian language. However, "en-US" for
+    // English (United States), because Chrome has several versions of English.
+    std::string language;
+
+    // Whether |language| is currently used for spellcheck.
+    bool used_for_spellcheck;
+  };
+
   explicit SpellcheckService(content::BrowserContext* context);
   ~SpellcheckService() override;
 
   base::WeakPtr<SpellcheckService> GetWeakPtr();
 
 #if !defined(OS_MACOSX)
-  // Computes |languages| to display in the context menu over a text area for
-  // changing spellcheck languages. Returns the number of languages that are
-  // enabled, which are always at the beginning of |languages|.
-  // TODO(port): this should take a vector of base::string16, but the
-  // implementation has some dependencies in l10n util that need porting first.
-  static size_t GetSpellCheckLanguages(base::SupportsUserData* context,
-                                       std::vector<std::string>* languages);
+  // Returns all currently configured |dictionaries| to display in the context
+  // menu over a text area. The context menu is used for selecting the
+  // dictionaries used for spellcheck.
+  static void GetDictionaries(base::SupportsUserData* browser_context,
+                              std::vector<Dictionary>* dictionaries);
 #endif  // !OS_MACOSX
 
   // Signals the event attached by AttachTestEvent() to report the specified

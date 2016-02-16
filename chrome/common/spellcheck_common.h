@@ -42,6 +42,14 @@ static const size_t MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
 base::FilePath GetVersionedFileName(const std::string& input_language,
                                     const base::FilePath& dict_dir);
 
+// Returns the spellcheck language that should be used for |language|. For
+// example, converts "hu-HU" into "hu", because we have only one variant of
+// Hungarian. Converts "en-US" into "en-US", because we have several variants of
+// English dictionaries.
+//
+// Returns an empty string if no spellcheck language found. For example, there's
+// no single dictionary for English, so this function returns an empty string
+// for "en".
 std::string GetCorrespondingSpellCheckLanguage(const std::string& language);
 
 // Get SpellChecker supported languages.

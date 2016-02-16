@@ -4,12 +4,13 @@
 
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
-#include <stddef.h>
+#include <ostream>
 
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -19,31 +20,68 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-struct SpellcheckLanguageTestCase {
-  SpellcheckLanguageTestCase(const std::string& accept_languages,
-                             const std::string& unsplit_spellcheck_dictionaries,
-                             size_t num_expected_enabled_spellcheck_languages,
-                             const std::string& unsplit_expected_languages)
+struct TestCase {
+  TestCase(const std::string& accept_languages,
+           const std::string& unsplit_spellcheck_dictionaries,
+           const std::string& unsplit_expected_languages,
+           const std::string& unsplit_expected_languages_used_for_spellcheck)
       : accept_languages(accept_languages),
-        num_expected_enabled_spellcheck_languages(
-            num_expected_enabled_spellcheck_languages) {
-    spellcheck_dictionaries = base::SplitString(
-        unsplit_spellcheck_dictionaries, ",",
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    expected_spellcheck_languages = base::SplitString(
-        unsplit_expected_languages, ",",
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+        spellcheck_dictionaries(
+            base::SplitString(unsplit_spellcheck_dictionaries,
+                              ",",
+                              base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_ALL)) {
+    std::vector<std::string> languages =
+        base::SplitString(unsplit_expected_languages, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+    std::vector<std::string> used_for_spellcheck =
+        base::SplitString(unsplit_expected_languages_used_for_spellcheck, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+    SpellcheckService::Dictionary dictionary;
+    for (const auto& language : languages) {
+      dictionary.language = language;
+      dictionary.used_for_spellcheck =
+          std::find(used_for_spellcheck.begin(), used_for_spellcheck.end(),
+                    language) != used_for_spellcheck.end();
+      expected_dictionaries.push_back(dictionary);
+    }
   }
-  ~SpellcheckLanguageTestCase() {}
+
+  ~TestCase() {}
 
   std::string accept_languages;
   std::vector<std::string> spellcheck_dictionaries;
-  size_t num_expected_enabled_spellcheck_languages;
-  std::vector<std::string> expected_spellcheck_languages;
+  std::vector<SpellcheckService::Dictionary> expected_dictionaries;
 };
 
-class SpellcheckServiceUnitTest
-    : public testing::TestWithParam<SpellcheckLanguageTestCase> {
+bool operator==(const SpellcheckService::Dictionary& lhs,
+                const SpellcheckService::Dictionary& rhs) {
+  return lhs.language == rhs.language &&
+         lhs.used_for_spellcheck == rhs.used_for_spellcheck;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const SpellcheckService::Dictionary& dictionary) {
+  out << "{\"" << dictionary.language << "\", used_for_spellcheck="
+      << (dictionary.used_for_spellcheck ? "true " : "false") << "}";
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const TestCase& test_case) {
+  out << "prefs::kAcceptLanguages=[" << test_case.accept_languages
+      << "], prefs::kSpellCheckDictionaries=["
+      << base::JoinString(test_case.spellcheck_dictionaries, ",")
+      << "], expected=[";
+  for (const auto& dictionary : test_case.expected_dictionaries) {
+    out << dictionary << ",";
+  }
+  out << "]";
+  return out;
+}
+
+class SpellcheckServiceUnitTest : public testing::TestWithParam<TestCase> {
  public:
   SpellcheckServiceUnitTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
@@ -61,7 +99,8 @@ class SpellcheckServiceUnitTest
   TestingPrefServiceSimple* prefs() { return &prefs_; }
 
  private:
-  struct : public base::SupportsUserData {} context_;
+  struct : public base::SupportsUserData {
+  } context_;
   TestingPrefServiceSimple prefs_;
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -70,38 +109,27 @@ class SpellcheckServiceUnitTest
 };
 
 INSTANTIATE_TEST_CASE_P(
-    SpellcheckLanguageTestCases,
+    TestCases,
     SpellcheckServiceUnitTest,
     testing::Values(
-        SpellcheckLanguageTestCase("en,en-US", "en-US", 1UL, "en-US"),
-        SpellcheckLanguageTestCase("en-US,en", "en-US", 1UL, "en-US"),
-        SpellcheckLanguageTestCase("en,en-US,en-AU",
-                                   "en-US",
-                                   1UL,
-                                   "en-US,en-AU"),
-        SpellcheckLanguageTestCase("en,en-US,fr", "en-US", 1UL, "en-US,fr"),
-        SpellcheckLanguageTestCase("en,en-JP,fr,aa", "fr", 1UL, "fr"),
-        SpellcheckLanguageTestCase("en,en-US", "en-US", 1UL, "en-US"),
-        SpellcheckLanguageTestCase("en-US,en", "en-US", 1UL, "en-US"),
-        SpellcheckLanguageTestCase("en,fr,en-US,en-AU",
-                                   "en-US,fr",
-                                   2UL,
-                                   "en-US,fr,en-AU"),
-        SpellcheckLanguageTestCase("en,en-JP,fr,zz,en-US",
-                                   "fr",
-                                   1UL,
-                                   "fr,en-US")));
+        TestCase("en,en-JP,fr,aa", "fr", "fr", "fr"),
+        TestCase("en,en-JP,fr,zz,en-US", "fr", "fr,en-US", "fr"),
+        TestCase("en,en-US,en-AU", "en-AU", "en-US,en-AU", "en-AU"),
+        TestCase("en,en-US,en-AU", "en-US", "en-US,en-AU", "en-US"),
+        TestCase("en,en-US", "en-US", "en-US", "en-US"),
+        TestCase("en,en-US,fr", "en-US", "en-US,fr", "en-US"),
+        TestCase("en,fr,en-US,en-AU", "en-US,fr", "fr,en-US,en-AU", "fr,en-US"),
+        TestCase("en-US,en", "en-US", "en-US", "en-US"),
+        TestCase("hu-HU,hr-HR", "hr", "hu,hr", "hr")));
 
-TEST_P(SpellcheckServiceUnitTest, GetSpellcheckLanguages) {
+TEST_P(SpellcheckServiceUnitTest, GetDictionaries) {
   prefs()->SetString(prefs::kAcceptLanguages, GetParam().accept_languages);
-  base::ListValue dictionaries;
-  dictionaries.AppendStrings(GetParam().spellcheck_dictionaries);
-  prefs()->Set(prefs::kSpellCheckDictionaries, dictionaries);
+  base::ListValue spellcheck_dictionaries;
+  spellcheck_dictionaries.AppendStrings(GetParam().spellcheck_dictionaries);
+  prefs()->Set(prefs::kSpellCheckDictionaries, spellcheck_dictionaries);
 
-  std::vector<std::string> spellcheck_languages;
-  EXPECT_EQ(GetParam().num_expected_enabled_spellcheck_languages,
-            SpellcheckService::GetSpellCheckLanguages(context(),
-                                                      &spellcheck_languages));
+  std::vector<SpellcheckService::Dictionary> dictionaries;
+  SpellcheckService::GetDictionaries(context(), &dictionaries);
 
-  EXPECT_EQ(GetParam().expected_spellcheck_languages, spellcheck_languages);
+  EXPECT_EQ(GetParam().expected_dictionaries, dictionaries);
 }
