@@ -118,6 +118,8 @@
       'test/fake_renderer_scheduler.cc',
       'test/fake_renderer_scheduler.h',
       'test/gpu_memory_buffer_factory_test_template.h',
+      'test/mock_background_sync_controller.cc',
+      'test/mock_background_sync_controller.h',
       'test/mock_google_streaming_server.cc',
       'test/mock_google_streaming_server.h',
       'test/mock_keyboard.cc',

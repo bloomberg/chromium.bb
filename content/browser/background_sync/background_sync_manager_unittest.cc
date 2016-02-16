@@ -26,11 +26,11 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/mock_background_sync_controller.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,46 +91,6 @@ void DispatchSyncDelayedCallback(
   *count += 1;
   *out_callback = callback;
 }
-
-class TestBackgroundSyncController : public BackgroundSyncController {
- public:
-  TestBackgroundSyncController() = default;
-
-  // BackgroundSyncController Overrides
-  void NotifyBackgroundSyncRegistered(const GURL& origin) override {
-    registration_count_ += 1;
-    registration_origin_ = origin;
-  }
-  void RunInBackground(bool enabled, int64_t min_ms) override {
-    run_in_background_count_ += 1;
-    run_in_background_enabled_ = enabled;
-    run_in_background_min_ms_ = min_ms;
-  }
-  void GetParameterOverrides(
-      BackgroundSyncParameters* parameters) const override {
-    *parameters = background_sync_parameters_;
-  }
-
-  int registration_count() const { return registration_count_; }
-  GURL registration_origin() const { return registration_origin_; }
-  int run_in_background_count() const { return run_in_background_count_; }
-  bool run_in_background_enabled() const { return run_in_background_enabled_; }
-  int64_t run_in_background_min_ms() const { return run_in_background_min_ms_; }
-  BackgroundSyncParameters* background_sync_parameters() {
-    return &background_sync_parameters_;
-  }
-
- private:
-  int registration_count_ = 0;
-  GURL registration_origin_;
-
-  int run_in_background_count_ = 0;
-  bool run_in_background_enabled_ = true;
-  int64_t run_in_background_min_ms_ = 0;
-  BackgroundSyncParameters background_sync_parameters_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBackgroundSyncController);
-};
 
 }  // namespace
 
@@ -301,12 +261,6 @@ class BackgroundSyncManagerTest : public testing::Test {
         nullptr, nullptr, nullptr, nullptr));
     helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
-
-    scoped_ptr<TestBackgroundSyncController> background_sync_controller(
-        new TestBackgroundSyncController());
-    test_controller_ = background_sync_controller.get();
-    helper_->browser_context()->SetBackgroundSyncController(
-        std::move(background_sync_controller));
 
     SetMaxSyncAttemptsAndRestartManager(1);
 
@@ -537,6 +491,11 @@ class BackgroundSyncManagerTest : public testing::Test {
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
+  MockBackgroundSyncController* GetController() {
+    return static_cast<MockBackgroundSyncController*>(
+        helper_->browser_context()->GetBackgroundSyncController());
+  }
+
   void StorageRegistrationCallback(ServiceWorkerStatusCode result) {
     callback_sw_status_code_ = result;
   }
@@ -598,7 +557,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void SetMaxSyncAttemptsAndRestartManager(int max_sync_attempts) {
     BackgroundSyncParameters* parameters =
-        test_controller_->background_sync_parameters();
+        GetController()->background_sync_parameters();
     parameters->max_sync_attempts = max_sync_attempts;
 
     // Restart the BackgroundSyncManager so that it updates its parameters.
@@ -611,7 +570,6 @@ class BackgroundSyncManagerTest : public testing::Test {
   scoped_ptr<BackgroundSyncManager> background_sync_manager_;
   scoped_ptr<StoragePartitionImpl> storage_partition_impl_;
   TestBackgroundSyncManager* test_background_sync_manager_ = nullptr;
-  TestBackgroundSyncController* test_controller_;
   base::SimpleTestClock* test_clock_ = nullptr;
 
   int64_t sw_registration_id_1_;
@@ -1307,7 +1265,7 @@ TEST_F(BackgroundSyncManagerTest, UnregisterSucceedsWithoutMainFrame) {
 }
 
 TEST_F(BackgroundSyncManagerTest, DefaultParameters) {
-  *test_controller_->background_sync_parameters() = BackgroundSyncParameters();
+  *GetController()->background_sync_parameters() = BackgroundSyncParameters();
   // Restart the BackgroundSyncManager so that it updates its parameters.
   SetupBackgroundSyncManager();
 
@@ -1317,7 +1275,7 @@ TEST_F(BackgroundSyncManagerTest, DefaultParameters) {
 
 TEST_F(BackgroundSyncManagerTest, OverrideParameters) {
   BackgroundSyncParameters* parameters =
-      test_controller_->background_sync_parameters();
+      GetController()->background_sync_parameters();
   parameters->disable = true;
   parameters->max_sync_attempts = 100;
   parameters->initial_retry_delay = base::TimeDelta::FromMinutes(200);
@@ -1341,7 +1299,7 @@ TEST_F(BackgroundSyncManagerTest, DisablingFromControllerKeepsRegistrations) {
   EXPECT_TRUE(Register(sync_options_1_));
 
   BackgroundSyncParameters* parameters =
-      test_controller_->background_sync_parameters();
+      GetController()->background_sync_parameters();
   parameters->disable = true;
 
   // Restart the BackgroundSyncManager so that it updates its parameters.
@@ -1358,7 +1316,7 @@ TEST_F(BackgroundSyncManagerTest, DisablingFromControllerKeepsRegistrations) {
 
 TEST_F(BackgroundSyncManagerTest, DisabledPermanently) {
   BackgroundSyncParameters* parameters =
-      test_controller_->background_sync_parameters();
+      GetController()->background_sync_parameters();
   parameters->disable = true;
 
   // Restart the BackgroundSyncManager so that it updates its parameters.
@@ -1378,11 +1336,11 @@ TEST_F(BackgroundSyncManagerTest, DisabledPermanently) {
 
 TEST_F(BackgroundSyncManagerTest, NotifyBackgroundSyncRegistered) {
   // Verify that the BackgroundSyncController is informed of registrations.
-  EXPECT_EQ(0, test_controller_->registration_count());
+  EXPECT_EQ(0, GetController()->registration_count());
   EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_EQ(1, test_controller_->registration_count());
+  EXPECT_EQ(1, GetController()->registration_count());
   EXPECT_EQ(GURL(kPattern1).GetOrigin().spec(),
-            test_controller_->registration_origin().spec());
+            GetController()->registration_origin().spec());
 }
 
 TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
@@ -1390,30 +1348,30 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
 
   // The BackgroundSyncManager should declare in initialization
   // that it doesn't need to be woken up since it has no registrations.
-  EXPECT_LT(0, test_controller_->run_in_background_count());
-  EXPECT_FALSE(test_controller_->run_in_background_enabled());
+  EXPECT_LT(0, GetController()->run_in_background_count());
+  EXPECT_FALSE(GetController()->run_in_background_enabled());
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
-  EXPECT_FALSE(test_controller_->run_in_background_enabled());
+  EXPECT_FALSE(GetController()->run_in_background_enabled());
 
   // Register a one-shot but it can't fire due to lack of network, wake up is
   // required.
   Register(sync_options_1_);
-  EXPECT_TRUE(test_controller_->run_in_background_enabled());
+  EXPECT_TRUE(GetController()->run_in_background_enabled());
 
   // Start the event but it will pause mid-sync due to
   // InitDelayedSyncEventTest() above.
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_TRUE(test_controller_->run_in_background_enabled());
+  EXPECT_TRUE(GetController()->run_in_background_enabled());
   EXPECT_EQ(test_background_sync_manager_->background_sync_parameters()
                 ->min_sync_recovery_time,
             base::TimeDelta::FromMilliseconds(
-                test_controller_->run_in_background_min_ms()));
+                GetController()->run_in_background_min_ms()));
 
   // Finish the sync.
   sync_fired_callback_.Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(test_controller_->run_in_background_enabled());
+  EXPECT_FALSE(GetController()->run_in_background_enabled());
 }
 
 TEST_F(BackgroundSyncManagerTest, OneAttempt) {

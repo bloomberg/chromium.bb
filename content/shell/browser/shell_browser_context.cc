@@ -14,13 +14,13 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_permission_manager.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/test/mock_background_sync_controller.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -209,7 +209,7 @@ PermissionManager* ShellBrowserContext::GetPermissionManager() {
 
 BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
   if (!background_sync_controller_)
-    background_sync_controller_.reset(new BackgroundSyncController());
+    background_sync_controller_.reset(new MockBackgroundSyncController());
   return background_sync_controller_.get();
 }
 

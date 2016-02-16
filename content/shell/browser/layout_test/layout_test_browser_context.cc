@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/resource_context.h"
@@ -20,6 +19,7 @@
 #include "content/shell/browser/layout_test/layout_test_push_messaging_service.h"
 #include "content/shell/browser/layout_test/layout_test_url_request_context_getter.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
+#include "content/test/mock_background_sync_controller.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -79,7 +79,7 @@ PermissionManager* LayoutTestBrowserContext::GetPermissionManager() {
 BackgroundSyncController*
 LayoutTestBrowserContext::GetBackgroundSyncController() {
   if (!background_sync_controller_)
-    background_sync_controller_.reset(new BackgroundSyncController());
+    background_sync_controller_.reset(new MockBackgroundSyncController());
   return background_sync_controller_.get();
 }
 
