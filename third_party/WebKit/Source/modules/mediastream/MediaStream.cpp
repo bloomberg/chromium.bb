@@ -293,8 +293,12 @@ void MediaStream::streamEnded()
         m_descriptor->setActive(false);
         scheduleDispatchEvent(Event::create(EventTypeNames::inactive));
     }
-    m_descriptor->setEnded();
-    scheduleDispatchEvent(Event::create(EventTypeNames::ended));
+
+    // TODO(guidou): remove firing of this event. See crbug.com/586924
+    if (!m_descriptor->ended()) {
+        m_descriptor->setEnded();
+        scheduleDispatchEvent(Event::create(EventTypeNames::ended));
+    }
 }
 
 void MediaStream::contextDestroyed()
@@ -316,7 +320,7 @@ ExecutionContext* MediaStream::executionContext() const
 void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 {
     ASSERT(component);
-    if (m_stopped || m_descriptor->ended())
+    if (m_stopped)
         return;
 
     MediaStreamTrack* track = MediaStreamTrack::create(executionContext(), component);

@@ -23,32 +23,6 @@
 namespace test_runner {
 
 namespace {
-class NewTrackTask : public WebMethodTask<MockWebMediaStreamCenter> {
- public:
-  NewTrackTask(MockWebMediaStreamCenter* object,
-               const blink::WebMediaStream& stream)
-      : WebMethodTask<MockWebMediaStreamCenter>(object), stream_(stream) {
-    DCHECK(!stream_.isNull());
-  }
-
-  ~NewTrackTask() override {}
-
-  void RunIfValid() override {
-    blink::WebMediaStreamSource source;
-    blink::WebMediaStreamTrack track;
-    source.initialize("MagicVideoDevice#1",
-                      blink::WebMediaStreamSource::TypeVideo,
-                      "Magic video track",
-                      false /* remote */, true /* readonly */);
-    track.initialize(source);
-    stream_.addTrack(track);
-  }
-
- private:
-  blink::WebMediaStream stream_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewTrackTask);
-};
 
 class MockWebAudioDestinationConsumer
     : public blink::WebAudioDestinationConsumer {
@@ -128,7 +102,6 @@ void MockWebMediaStreamCenter::didCreateMediaStream(
       delete consumer;
     }
   }
-  interfaces_->GetDelegate()->PostTask(new NewTrackTask(this, stream));
 }
 
 blink::WebAudioSourceProvider*
