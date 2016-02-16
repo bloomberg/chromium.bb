@@ -18,8 +18,9 @@ class LinuxRunner(cr.Runner):
     return cr.LinuxPlatform.GetInstance().is_active
 
   def Kill(self, targets, arguments):
-    # TODO(iancottrell): Think about how to implement this, or even if we should
-    print '**WARNING** Kill not yet implemented on linux'
+    # Not needed on Linux because the target generally runs in the same shell
+    # and can be killed using Ctrl-C.
+    pass
 
   def Run(self, target, arguments):
     with target:
