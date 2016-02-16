@@ -35,7 +35,12 @@
     [RaisesException, CustomElementCallbacks] void remove(DOMString... tokens);
     [RaisesException, CustomElementCallbacks] boolean toggle(DOMString token, optional boolean force);
     [RaisesException, CustomElementCallbacks] boolean supports(DOMString token);
+    attribute DOMString value;
     // FIXME: stringifier should be enumerable.
     [NotEnumerable] stringifier;
     iterable<DOMString>;
+
+
+    // FIXME: This getter is not in the spec.
+    [ImplementedAs=item] getter DOMString? (unsigned long index);
 };

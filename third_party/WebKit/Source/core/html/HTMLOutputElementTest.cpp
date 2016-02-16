@@ -5,7 +5,7 @@
 #include "core/html/HTMLOutputElement.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/DOMSettableTokenList.h"
+#include "core/dom/DOMTokenList.h"
 #include "core/dom/Document.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +24,7 @@ TEST(HTMLOutputElementTest, setForAttribute_updatesHTMLForPropertyValue)
 {
     RefPtrWillBeRawPtr<Document> document = Document::create();
     RefPtrWillBeRawPtr<HTMLOutputElement> element = HTMLOutputElement::create(*document, nullptr);
-    RefPtrWillBeRawPtr<DOMSettableTokenList> forTokens = element->htmlFor();
+    RefPtrWillBeRawPtr<DOMTokenList> forTokens = element->htmlFor();
     EXPECT_EQ(nullAtom, forTokens->value());
     element->setAttribute(HTMLNames::forAttr, "orange grape");
     EXPECT_EQ("orange grape", forTokens->value());

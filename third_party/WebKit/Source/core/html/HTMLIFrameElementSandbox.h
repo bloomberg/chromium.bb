@@ -5,13 +5,13 @@
 #ifndef HTMLIFrameElementSandbox_h
 #define HTMLIFrameElementSandbox_h
 
-#include "core/dom/DOMSettableTokenList.h"
+#include "core/dom/DOMTokenList.h"
 
 namespace blink {
 
-class HTMLIFrameElementSandbox final : public DOMSettableTokenList {
+class HTMLIFrameElementSandbox final : public DOMTokenList {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLIFrameElementSandbox> create(DOMSettableTokenListObserver* observer = nullptr)
+    static PassRefPtrWillBeRawPtr<HTMLIFrameElementSandbox> create(DOMTokenListObserver* observer = nullptr)
     {
         return adoptRefWillBeNoop(new HTMLIFrameElementSandbox(observer));
     }
@@ -19,7 +19,7 @@ public:
     ~HTMLIFrameElementSandbox() override;
 
 private:
-    explicit HTMLIFrameElementSandbox(DOMSettableTokenListObserver*);
+    explicit HTMLIFrameElementSandbox(DOMTokenListObserver*);
     bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
 };
 

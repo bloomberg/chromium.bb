@@ -9,21 +9,15 @@
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/Element.h"
 #include "core/dom/SpaceSplitString.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class RelList final : public DOMTokenList {
 public:
-    static PassOwnPtrWillBeRawPtr<RelList> create(Element* element)
+    static PassRefPtrWillBeRawPtr<RelList> create(Element* element)
     {
-        return adoptPtrWillBeNoop(new RelList(element));
+        return adoptRefWillBeNoop(new RelList(element));
     }
-
-#if !ENABLE(OILPAN)
-    void ref() override;
-    void deref() override;
-#endif
 
     unsigned length() const override;
     const AtomicString item(unsigned index) const override;

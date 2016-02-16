@@ -287,9 +287,29 @@ AtomicString DOMTokenList::removeTokens(const AtomicString& input, const Vector<
     return output.toAtomicString();
 }
 
+void DOMTokenList::setValue(const AtomicString& value)
+{
+    m_value = value;
+    m_tokens.set(value, SpaceSplitString::ShouldNotFoldCase);
+    if (m_observer)
+        m_observer->valueWasSet();
+}
+
+bool DOMTokenList::containsInternal(const AtomicString& token) const
+{
+    return m_tokens.contains(token);
+}
+
 ValueIterable<String>::IterationSource* DOMTokenList::startIteration(ScriptState*, ExceptionState&)
 {
     return new DOMTokenListIterationSource(this);
+}
+
+const AtomicString DOMTokenList::item(unsigned index) const
+{
+    if (index >= length())
+        return AtomicString();
+    return m_tokens[index];
 }
 
 } // namespace blink

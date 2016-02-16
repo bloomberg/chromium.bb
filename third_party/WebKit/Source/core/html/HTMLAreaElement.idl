@@ -25,7 +25,7 @@ interface HTMLAreaElement : HTMLElement {
     [Reflect] attribute DOMString coords;
     [Reflect] attribute DOMString shape;
     [Reflect] attribute DOMString target;
-    // FIXME: ping should be a DOMSettableTokenList.
+    // FIXME: ping should be a DOMTokenList.
     [Reflect] attribute DOMString ping;
     // FIXME: download, rel, relList are missing
     [RuntimeEnabled=ReferrerPolicyAttribute, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;

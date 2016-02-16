@@ -49,7 +49,7 @@ DEFINE_TRACE(HTMLIFrameElement)
 {
     visitor->trace(m_sandbox);
     HTMLFrameElementBase::trace(visitor);
-    DOMSettableTokenListObserver::trace(visitor);
+    DOMTokenListObserver::trace(visitor);
 }
 
 HTMLIFrameElement::~HTMLIFrameElement()
@@ -59,7 +59,7 @@ HTMLIFrameElement::~HTMLIFrameElement()
 #endif
 }
 
-DOMSettableTokenList* HTMLIFrameElement::sandbox() const
+DOMTokenList* HTMLIFrameElement::sandbox() const
 {
     return m_sandbox.get();
 }

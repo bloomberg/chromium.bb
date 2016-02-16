@@ -29,14 +29,14 @@
 
 namespace blink {
 
-class HTMLIFrameElement final : public HTMLFrameElementBase, public DOMSettableTokenListObserver {
+class HTMLIFrameElement final : public HTMLFrameElementBase, public DOMTokenListObserver {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElement);
 public:
     DECLARE_NODE_FACTORY(HTMLIFrameElement);
     DECLARE_VIRTUAL_TRACE();
     ~HTMLIFrameElement() override;
-    DOMSettableTokenList* sandbox() const;
+    DOMTokenList* sandbox() const;
 
 private:
     explicit HTMLIFrameElement(Document&);

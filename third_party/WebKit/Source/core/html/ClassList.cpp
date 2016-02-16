@@ -30,19 +30,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-ClassList::ClassList(Element* element) : m_element(element) { }
-
-#if !ENABLE(OILPAN)
-void ClassList::ref()
-{
-    m_element->ref();
-}
-
-void ClassList::deref()
-{
-    m_element->deref();
-}
-#endif
+ClassList::ClassList(Element* element) : DOMTokenList(nullptr), m_element(element) { }
 
 unsigned ClassList::length() const
 {

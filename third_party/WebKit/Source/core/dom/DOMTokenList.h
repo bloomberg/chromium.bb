@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/SpaceSplitString.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
@@ -36,21 +37,30 @@ namespace blink {
 class Element;
 class ExceptionState;
 
-class CORE_EXPORT DOMTokenList : public NoBaseWillBeGarbageCollectedFinalized<DOMTokenList>, public ScriptWrappable, public ValueIterable<String> {
+class CORE_EXPORT DOMTokenListObserver : public WillBeGarbageCollectedMixin {
+public:
+    // Called when the value property is set, even if the tokens in
+    // the set have not changed.
+    virtual void valueWasSet() = 0;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+};
+
+class CORE_EXPORT DOMTokenList : public RefCountedWillBeGarbageCollectedFinalized<DOMTokenList>,
+    public ScriptWrappable, public ValueIterable<String> {
     DEFINE_WRAPPERTYPEINFO();
     USING_FAST_MALLOC_WILL_BE_REMOVED(DOMTokenList);
     WTF_MAKE_NONCOPYABLE(DOMTokenList);
 public:
-    DOMTokenList() { }
+    static PassRefPtrWillBeRawPtr<DOMTokenList> create(DOMTokenListObserver* observer = nullptr)
+    {
+        return adoptRefWillBeNoop(new DOMTokenList(observer));
+    }
+
     virtual ~DOMTokenList() { }
 
-#if !ENABLE(OILPAN)
-    virtual void ref() = 0;
-    virtual void deref() = 0;
-#endif
-
-    virtual unsigned length() const = 0;
-    virtual const AtomicString item(unsigned index) const = 0;
+    virtual unsigned length() const { return m_tokens.size(); }
+    virtual const AtomicString item(unsigned index) const;
 
     bool contains(const AtomicString&, ExceptionState&) const;
     virtual void add(const Vector<String>&, ExceptionState&);
@@ -61,19 +71,28 @@ public:
     bool toggle(const AtomicString&, bool force, ExceptionState&);
     bool supports(const AtomicString&, ExceptionState&);
 
+    virtual const AtomicString& value() const { return m_value; }
+    virtual void setValue(const AtomicString&);
+
+    const SpaceSplitString& tokens() const { return m_tokens; }
+    void setObserver(DOMTokenListObserver* observer) { m_observer = observer; }
+
     const AtomicString& toString() const { return value(); }
 
     virtual Element* element() { return 0; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DEFINE_INLINE_VIRTUAL_TRACE() {
+        visitor->trace(m_observer);
+    }
 
 protected:
-
-    virtual const AtomicString& value() const = 0;
-    virtual void setValue(const AtomicString&) = 0;
+    DOMTokenList(DOMTokenListObserver* observer)
+        : m_observer(observer)
+    {
+    }
 
     virtual void addInternal(const AtomicString&);
-    virtual bool containsInternal(const AtomicString&) const = 0;
+    virtual bool containsInternal(const AtomicString&) const;
     virtual void removeInternal(const AtomicString&);
 
     bool validateToken(const String&, ExceptionState&) const;
@@ -86,6 +105,9 @@ protected:
 
 private:
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+    SpaceSplitString m_tokens;
+    AtomicString m_value;
+    RawPtrWillBeWeakMember<DOMTokenListObserver> m_observer;
 };
 
 } // namespace blink

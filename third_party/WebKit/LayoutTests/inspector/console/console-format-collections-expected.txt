@@ -63,7 +63,7 @@ console-format-collections.html:35 [input, input, value: ""]
 console-format-collections.html:41 [1, Array[2]]
 console-format-collections.html:44 NonArrayWithLength {keys: Array[0]}
 console-format-collections.html:51 [1, "2"]
-console-format-collections.html:55 ["c1", "c2", "c3"]
+console-format-collections.html:55 ["c1", "c2", "c3", value: "c1 c2 c3"]
 console-format-collections.html:58 []
 console-format-collections.html:59 []
 console-format-collections.html:61 ArrayLike {length: -5}

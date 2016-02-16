@@ -14,7 +14,7 @@ function createElement(tokenList)
 
 debug('- Tests from http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/');
 
-// HTMLOutputElement::htmlFor setter is forwarding assignment to DOMSettableTokenList.value attribute.
+// HTMLOutputElement::htmlFor setter is forwarding assignment to DOMTokenList.value attribute.
 createElement('x');
 shouldBeEqualToString('element.htmlFor.value', 'x');
 shouldBeEqualToString('String(element.htmlFor)', 'x');
@@ -235,21 +235,21 @@ createElement('x\u000Dy');
 shouldEvaluateTo('element.htmlFor.length', 2);
 
 
-debug('- DOMSettableTokenList presence and type');
+debug('- DOMTokenList presence and type');
 
 
 // Safari returns object
 // Firefox returns object
 // IE8 returns object
 // Chrome returns function
-// assertEquals('object', typeof DOMSettableTokenList);
-shouldBeTrue('\'undefined\' != typeof DOMSettableTokenList');
+// assertEquals('object', typeof DOMTokenList);
+shouldBeTrue('\'undefined\' != typeof DOMTokenList');
 
-shouldBeEqualToString('typeof DOMSettableTokenList.prototype', 'object');
+shouldBeEqualToString('typeof DOMTokenList.prototype', 'object');
 
 createElement('x');
 shouldBeEqualToString('typeof element.htmlFor', 'object');
 
-shouldEvaluateTo('element.htmlFor.constructor', 'DOMSettableTokenList');
+shouldEvaluateTo('element.htmlFor.constructor', 'DOMTokenList');
 
 shouldBeTrue('element.htmlFor === element.htmlFor');

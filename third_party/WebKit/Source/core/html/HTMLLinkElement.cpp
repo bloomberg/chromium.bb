@@ -148,7 +148,7 @@ void HTMLLinkElement::parseSizesAttribute(const AtomicString& value, Vector<IntS
 inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser)
     : HTMLElement(linkTag, document)
     , m_linkLoader(LinkLoader::create(this))
-    , m_sizes(DOMSettableTokenList::create(this))
+    , m_sizes(DOMTokenList::create(this))
     , m_relList(RelList::create(this))
     , m_createdByParser(createdByParser)
     , m_isInShadowTree(false)
@@ -164,6 +164,7 @@ HTMLLinkElement::~HTMLLinkElement()
 {
 #if !ENABLE(OILPAN)
     m_sizes->setObserver(nullptr);
+    m_relList->setObserver(nullptr);
     m_link.clear();
     if (inDocument())
         document().styleEngine().removeStyleSheetCandidateNode(this);
@@ -453,7 +454,7 @@ const Vector<IntSize>& HTMLLinkElement::iconSizes() const
     return m_iconSizes;
 }
 
-DOMSettableTokenList* HTMLLinkElement::sizes() const
+DOMTokenList* HTMLLinkElement::sizes() const
 {
     return m_sizes.get();
 }
@@ -466,7 +467,7 @@ DEFINE_TRACE(HTMLLinkElement)
     visitor->trace(m_relList);
     HTMLElement::trace(visitor);
     LinkLoaderClient::trace(visitor);
-    DOMSettableTokenListObserver::trace(visitor);
+    DOMTokenListObserver::trace(visitor);
 }
 
 PassOwnPtrWillBeRawPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)

@@ -6,8 +6,8 @@
 
 namespace blink {
 
-HTMLIFrameElementSandbox::HTMLIFrameElementSandbox(DOMSettableTokenListObserver* observer)
-    : DOMSettableTokenList(observer)
+HTMLIFrameElementSandbox::HTMLIFrameElementSandbox(DOMTokenListObserver* observer)
+    : DOMTokenList(observer)
 {
 }
 

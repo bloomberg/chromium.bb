@@ -25,7 +25,7 @@
 // https://html.spec.whatwg.org/#the-output-element
 
 interface HTMLOutputElement : HTMLElement {
-    [PutForwards=value] readonly attribute DOMSettableTokenList htmlFor;
+    [PutForwards=value] readonly attribute DOMTokenList htmlFor;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     [Reflect] attribute DOMString name;
 

@@ -23,7 +23,7 @@
 interface HTMLAnchorElement : HTMLElement {
     [Reflect] attribute DOMString target;
     [Reflect] attribute DOMString download;
-    // FIXME: ping should be a DOMSettableTokenList.
+    // FIXME: ping should be a DOMTokenList.
     [Reflect] attribute DOMString ping;
     [Reflect] attribute DOMString rel;
     // FIXME: readonly attribute DOMTokenList relList;

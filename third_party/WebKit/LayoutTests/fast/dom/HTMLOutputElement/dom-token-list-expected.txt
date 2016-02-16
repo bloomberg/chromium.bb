@@ -66,11 +66,11 @@ PASS element.htmlFor.length is 2
 PASS element.htmlFor.length is 2
 PASS element.htmlFor.length is 2
 PASS element.htmlFor.length is 2
-- DOMSettableTokenList presence and type
-PASS 'undefined' != typeof DOMSettableTokenList is true
-PASS typeof DOMSettableTokenList.prototype is "object"
+- DOMTokenList presence and type
+PASS 'undefined' != typeof DOMTokenList is true
+PASS typeof DOMTokenList.prototype is "object"
 PASS typeof element.htmlFor is "object"
-PASS element.htmlFor.constructor is DOMSettableTokenList
+PASS element.htmlFor.constructor is DOMTokenList
 PASS element.htmlFor === element.htmlFor is true
 PASS successfullyParsed is true
 

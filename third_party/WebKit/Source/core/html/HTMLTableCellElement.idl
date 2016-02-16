@@ -24,7 +24,7 @@ interface HTMLTableCellElement : HTMLElement {
     attribute unsigned long colSpan;
     attribute unsigned long rowSpan;
     // TODO(philipj): headers should be a [PutForwards=value] readonly attribute
-    // DOMSettableTokenList.
+    // DOMTokenList.
     [Reflect, TreatNullAs=NullString] attribute DOMString headers;
     readonly attribute long cellIndex;
 

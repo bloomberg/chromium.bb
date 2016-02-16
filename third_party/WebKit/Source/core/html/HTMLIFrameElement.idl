@@ -24,7 +24,7 @@ interface HTMLIFrameElement : HTMLElement {
     [Reflect, URL] attribute DOMString src;
     [Reflect] attribute DOMString srcdoc;
     [Reflect] attribute DOMString name;
-    [PutForwards=value] readonly attribute DOMSettableTokenList sandbox;
+    [PutForwards=value] readonly attribute DOMTokenList sandbox;
     // Note: The seamless attribute was once supported, but was removed.
     [Reflect] attribute boolean allowFullscreen;
     [Reflect] attribute DOMString width;

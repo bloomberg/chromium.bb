@@ -33,7 +33,7 @@ interface HTMLLinkElement : HTMLElement {
     [Reflect] attribute DOMString hreflang;
     [Reflect] attribute DOMString type;
     [Reflect, RuntimeEnabled=LinkPreload] attribute DOMString as;
-    [PutForwards=value] readonly attribute DOMSettableTokenList sizes;
+    [PutForwards=value] readonly attribute DOMTokenList sizes;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLLinkElement-partial

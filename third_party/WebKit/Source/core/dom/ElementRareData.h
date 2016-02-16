@@ -88,7 +88,7 @@ public:
     void clearComputedStyle() { m_computedStyle = nullptr; }
 
     ClassList* classList() const { return m_classList.get(); }
-    void setClassList(PassOwnPtrWillBeRawPtr<ClassList> classList) { m_classList = classList; }
+    void setClassList(PassRefPtrWillBeRawPtr<ClassList> classList) { m_classList = classList; }
     void clearClassListValueForQuirksMode()
     {
         if (!m_classList)
@@ -145,8 +145,8 @@ private:
     IntSize m_savedLayerScrollOffset;
 
     OwnPtrWillBeMember<DatasetDOMStringMap> m_dataset;
-    OwnPtrWillBeMember<ClassList> m_classList;
     OwnPtrWillBeMember<ElementShadow> m_shadow;
+    RefPtrWillBeMember<ClassList> m_classList;
     OwnPtrWillBeMember<NamedNodeMap> m_attributeMap;
     OwnPtrWillBeMember<AttrNodeList> m_attrNodeList;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;

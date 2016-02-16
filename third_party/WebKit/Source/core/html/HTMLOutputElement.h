@@ -31,12 +31,12 @@
 #ifndef HTMLOutputElement_h
 #define HTMLOutputElement_h
 
-#include "core/dom/DOMSettableTokenList.h"
+#include "core/dom/DOMTokenList.h"
 #include "core/html/HTMLFormControlElement.h"
 
 namespace blink {
 
-class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement, private DOMSettableTokenListObserver {
+class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement, private DOMTokenListObserver {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLOutputElement);
 public:
@@ -50,7 +50,7 @@ public:
     String defaultValue() const;
     void setDefaultValue(const String&);
     void setFor(const AtomicString&);
-    DOMSettableTokenList* htmlFor() const;
+    DOMTokenList* htmlFor() const;
 
     bool canContainRangeEndPoint() const override { return false; }
 
@@ -71,7 +71,7 @@ private:
 
     bool m_isDefaultValueMode;
     String m_defaultValue;
-    RefPtrWillBeMember<DOMSettableTokenList> m_tokens;
+    RefPtrWillBeMember<DOMTokenList> m_tokens;
 };
 
 } // namespace blink
