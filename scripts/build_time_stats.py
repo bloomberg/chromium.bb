@@ -11,6 +11,7 @@ stage started relative to the start of the build.
 from __future__ import print_function
 
 import datetime
+import sys
 
 from chromite.cbuildbot import constants
 from chromite.lib import build_time_stats
@@ -143,9 +144,11 @@ def main(argv):
     return 1
 
   # Report results.
-  print(build_time_stats.Report(description,
-                                focus_build,
-                                builds_timings,
-                                options.stages,
-                                options.trending,
-                                options.csv))
+  build_time_stats.Report(
+      sys.stdout,
+      description,
+      focus_build,
+      builds_timings,
+      options.stages,
+      options.trending,
+      options.csv)

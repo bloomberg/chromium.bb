@@ -651,13 +651,14 @@ class ReportStage(generic_stages.BuilderStage,
 
     return archive_urls
 
-  def CollectComparativeBuildTimings(self, build_id, db):
+  def CollectComparativeBuildTimings(self, output, build_id, db):
     """Create a report comparing this build to recent history.
 
     Compare the timings for this build to the recent history of the
     same build config.
 
     Args:
+      output: File like object to write too, usually sys.stdout.
       build_id: CIDB id for the current build.
       db: CIDBConnection instance.
 
@@ -680,7 +681,7 @@ class ReportStage(generic_stages.BuilderStage,
 
     description = 'This build versus last week of %s' % build_config
 
-    build_time_stats.Report(description, current_build,
+    build_time_stats.Report(output, description, current_build,
                             historical_timing)
 
   def PerformStage(self):
@@ -754,7 +755,7 @@ class ReportStage(generic_stages.BuilderStage,
       #
       # Dump performance stats for this build versus recent builds.
       #
-      print(self.CollectComparativeBuildTimings(build_id, db))
+      self.CollectComparativeBuildTimings(sys.stdout, build_id, db)
 
 class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
   """Stage to detect irrelevant changes for slave per board base.
