@@ -1005,8 +1005,12 @@ void FeatureInfo::InitializeFeatures() {
 #if defined(OS_MACOSX)
   if (gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL) {
     AddExtensionString("GL_CHROMIUM_iosurface");
-    AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
-    feature_flags_.chromium_image_ycbcr_420v = true;
+    // TODO(dcastagna): Make this format work with GL Core Profile.
+    // crbug.com/587158
+    if (!gl_version_info_->is_desktop_core_profile) {
+      AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
+      feature_flags_.chromium_image_ycbcr_420v = true;
+    }
   }
 #endif
 
