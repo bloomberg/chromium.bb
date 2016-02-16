@@ -48,7 +48,9 @@ struct ServiceWorkerRegistrationInfo;
 
 // This class provides an interface to store and retrieve ServiceWorker
 // registration data. The lifetime is equal to ServiceWorkerContextCore that is
-// an owner of this class.
+// an owner of this class. When a storage operation fails, this is marked as
+// disabled and all subsequent requests are aborted until the context core is
+// restarted.
 class CONTENT_EXPORT ServiceWorkerStorage
     : NON_EXPORTED_BASE(public ServiceWorkerVersion::Listener) {
  public:
@@ -58,10 +60,14 @@ class CONTENT_EXPORT ServiceWorkerStorage
                               const scoped_refptr<ServiceWorkerRegistration>&
                                   registration)> FindRegistrationCallback;
   typedef base::Callback<void(
+      ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
-          registrations)> GetRegistrationsCallback;
-  typedef base::Callback<void(const std::vector<ServiceWorkerRegistrationInfo>&
-                                  registrations)> GetRegistrationsInfosCallback;
+          registrations)>
+      GetRegistrationsCallback;
+  typedef base::Callback<void(
+      ServiceWorkerStatusCode status,
+      const std::vector<ServiceWorkerRegistrationInfo>& registrations)>
+      GetRegistrationsInfosCallback;
   typedef base::Callback<
       void(const std::string& data, ServiceWorkerStatusCode status)>
           GetUserDataCallback;
@@ -142,6 +148,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
                           const GURL& origin,
                           const StatusCallback& callback);
 
+  // Creates a resource accessor. Never returns nullptr but an accessor may be
+  // associated with the disabled disk cache if the storage is disabled.
   scoped_ptr<ServiceWorkerResponseReader> CreateResponseReader(
       int64_t resource_id);
   scoped_ptr<ServiceWorkerResponseWriter> CreateResponseWriter(
@@ -211,7 +219,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
       ServiceWorkerRegistration* registration);
 
   void Disable();
-  bool IsDisabled() const;
 
   // |resources| must already be on the purgeable list.
   void PurgeResources(const ResourceList& resources);
@@ -481,6 +488,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
       ServiceWorkerDatabase* database,
       const std::set<GURL>& origins);
 
+  bool IsDisabled() const;
   void ScheduleDeleteAndStartOver();
   void DidDeleteDatabase(
       const StatusCallback& callback,

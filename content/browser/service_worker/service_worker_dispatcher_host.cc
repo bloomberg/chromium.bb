@@ -583,11 +583,6 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
     return;
   }
 
-  if (GetContext()->storage()->IsDisabled()) {
-    SendGetRegistrationError(thread_id, request_id, SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker",
       "ServiceWorkerDispatcherHost::GetRegistration",
@@ -653,12 +648,6 @@ void ServiceWorkerDispatcherHost::OnGetRegistrations(int thread_id,
         thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
         base::ASCIIToUTF16(kServiceWorkerGetRegistrationsErrorPrefix) +
             base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
-    return;
-  }
-
-  if (GetContext()->storage()->IsDisabled()) {
-    SendGetRegistrationsError(thread_id, request_id,
-                              SERVICE_WORKER_ERROR_ABORT);
     return;
   }
 
@@ -1214,6 +1203,7 @@ void ServiceWorkerDispatcherHost::GetRegistrationsComplete(
     int thread_id,
     int provider_id,
     int request_id,
+    ServiceWorkerStatusCode status,
     const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
         registrations) {
   TRACE_EVENT_ASYNC_END0("ServiceWorker",
@@ -1226,6 +1216,11 @@ void ServiceWorkerDispatcherHost::GetRegistrationsComplete(
       GetContext()->GetProviderHost(render_process_id_, provider_id);
   if (!provider_host)
     return;  // The provider has already been destroyed.
+
+  if (status != SERVICE_WORKER_OK) {
+    SendGetRegistrationsError(thread_id, request_id, status);
+    return;
+  }
 
   std::vector<ServiceWorkerRegistrationObjectInfo> object_infos;
   std::vector<ServiceWorkerVersionAttributes> version_attrs;

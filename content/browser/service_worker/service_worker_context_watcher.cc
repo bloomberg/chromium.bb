@@ -61,6 +61,7 @@ void ServiceWorkerContextWatcher::GetStoredRegistrationsOnIOThread() {
 }
 
 void ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread(
+    ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_->AddObserver(this);

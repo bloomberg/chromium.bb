@@ -317,6 +317,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void DidGetAllRegistrationsForUnregisterForOrigin(
       const UnregistrationCallback& result,
       const GURL& origin,
+      ServiceWorkerStatusCode status,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
   void DidFindRegistrationForCheckHasServiceWorker(
