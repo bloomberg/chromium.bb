@@ -188,7 +188,9 @@ void InsertTextCommand::doApply(EditingState* editingState)
     Position endPosition;
 
     if (m_text == "\t") {
-        endPosition = insertTab(startPosition);
+        endPosition = insertTab(startPosition, editingState);
+        if (editingState->isAborted())
+            return;
         // TODO(yosin) We should use |PositionMoveType::Character| for
         // |previousPositionOf()|.
         startPosition = previousPositionOf(endPosition, PositionMoveType::Character);
@@ -234,7 +236,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
         setEndingSelection(VisibleSelection(endingSelection().end(), endingSelection().affinity(), endingSelection().isDirectional()));
 }
 
-Position InsertTextCommand::insertTab(const Position& pos)
+Position InsertTextCommand::insertTab(const Position& pos, EditingState* editingState)
 {
     Position insertPos = createVisiblePosition(pos).deepEquivalent();
     if (insertPos.isNull())
@@ -255,11 +257,11 @@ Position InsertTextCommand::insertTab(const Position& pos)
 
     // place it
     if (!node->isTextNode()) {
-        insertNodeAt(spanElement.get(), insertPos);
+        insertNodeAt(spanElement.get(), insertPos, editingState);
     } else {
         RefPtrWillBeRawPtr<Text> textNode = toText(node);
         if (offset >= textNode->length()) {
-            insertNodeAfter(spanElement, textNode.release());
+            insertNodeAfter(spanElement, textNode.release(), editingState);
         } else {
             // split node to make room for the span
             // NOTE: splitTextNode uses textNode for the
@@ -267,9 +269,11 @@ Position InsertTextCommand::insertTab(const Position& pos)
             // insert the span before it.
             if (offset > 0)
                 splitTextNode(textNode, offset);
-            insertNodeBefore(spanElement, textNode.release());
+            insertNodeBefore(spanElement, textNode.release(), editingState);
         }
     }
+    if (editingState->isAborted())
+        return Position();
 
     // return the position following the new tab
     return lastPositionInNode(spanElement.get());

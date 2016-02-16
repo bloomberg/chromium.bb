@@ -108,7 +108,7 @@ protected:
     void deleteSelection(const VisibleSelection&, EditingState*, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = true, bool sanitizeMarkup = true);
     virtual void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);
     bool isRemovableBlock(const Node*);
-    void insertNodeAfter(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild);
+    void insertNodeAfter(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild, EditingState*);
     void insertNodeAt(PassRefPtrWillBeRawPtr<Node>, const Position&, EditingState* = ASSERT_NO_EDITING_ABORT);
     void insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<Node>, const Position&);
     void insertNodeBefore(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild, EditingState* = ASSERT_NO_EDITING_ABORT, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);

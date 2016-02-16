@@ -1153,9 +1153,13 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     Element* blockStart = enclosingBlock(insertionPos.anchorNode());
     if ((isHTMLListElement(refNode.get()) || (isLegacyAppleHTMLSpanElement(refNode.get()) && isHTMLListElement(refNode->firstChild())))
         && blockStart && blockStart->layoutObject()->isListItem() && blockStart->parentNode()->hasEditableStyle()) {
-        refNode = insertAsListItems(toHTMLElement(refNode), blockStart, insertionPos, insertedNodes);
+        refNode = insertAsListItems(toHTMLElement(refNode), blockStart, insertionPos, insertedNodes, editingState);
+        if (editingState->isAborted())
+            return;
     } else {
-        insertNodeAt(refNode, insertionPos);
+        insertNodeAt(refNode, insertionPos, editingState);
+        if (editingState->isAborted())
+            return;
         insertedNodes.respondToNodeInsertion(*refNode);
     }
 
@@ -1168,7 +1172,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     while (node) {
         RefPtrWillBeRawPtr<Node> next = node->nextSibling();
         fragment.removeNode(node.get());
-        insertNodeAfter(node, refNode);
+        insertNodeAfter(node, refNode, editingState);
+        if (editingState->isAborted())
+            return;
         insertedNodes.respondToNodeInsertion(*node);
 
         // Mutation events (bug 22634) may have already removed the inserted content
@@ -1284,7 +1290,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                 Element* enclosingBlockElement = enclosingBlock(endOfInsertedContent.deepEquivalent().anchorNode());
                 if (isListItem(enclosingBlockElement)) {
                     RefPtrWillBeRawPtr<HTMLLIElement> newListItem = HTMLLIElement::create(document());
-                    insertNodeAfter(newListItem, enclosingBlockElement);
+                    insertNodeAfter(newListItem, enclosingBlockElement, editingState);
+                    if (editingState->isAborted())
+                        return;
                     setEndingSelection(createVisiblePosition(firstPositionInNode(newListItem.get())));
                 } else {
                     // Use a default paragraph element (a plain div) for the empty paragraph, using the last paragraph
@@ -1312,8 +1320,11 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     if (HTMLQuoteElement* mailBlockquote = toHTMLQuoteElement(enclosingNodeOfType(positionAtStartOfInsertedContent().deepEquivalent(), isMailPasteAsQuotationHTMLBlockQuoteElement)))
         removeElementAttribute(mailBlockquote, classAttr);
 
-    if (shouldPerformSmartReplace())
-        addSpacesForSmartReplace();
+    if (shouldPerformSmartReplace()) {
+        addSpacesForSmartReplace(editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
     // If we are dealing with a fragment created from plain text
     // no style matching is necessary.
@@ -1360,7 +1371,7 @@ static bool isCharacterSmartReplaceExemptConsideringNonBreakingSpace(UChar32 cha
     return isCharacterSmartReplaceExempt(character == noBreakSpaceCharacter ? ' ' : character, previousCharacter);
 }
 
-void ReplaceSelectionCommand::addSpacesForSmartReplace()
+void ReplaceSelectionCommand::addSpacesForSmartReplace(EditingState* editingState)
 {
     VisiblePosition startOfInsertedContent = positionAtStartOfInsertedContent();
     VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
@@ -1382,7 +1393,9 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
                 m_endOfInsertedContent = Position(endNode, m_endOfInsertedContent.offsetInContainerNode() + 1);
         } else {
             RefPtrWillBeRawPtr<Text> node = document().createEditingTextNode(collapseWhiteSpace ? nonBreakingSpaceString() : " ");
-            insertNodeAfter(node, endNode);
+            insertNodeAfter(node, endNode, editingState);
+            if (editingState->isAborted())
+                return;
             updateNodesInserted(node.get());
         }
     }
@@ -1519,7 +1532,7 @@ EditAction ReplaceSelectionCommand::editingAction() const
 
 // If the user is inserting a list into an existing list, instead of nesting the list,
 // we put the list items into the existing list.
-Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> prpListElement, Element* insertionBlock, const Position& insertPos, InsertedNodes& insertedNodes)
+Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> prpListElement, Element* insertionBlock, const Position& insertPos, InsertedNodes& insertedNodes, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<HTMLElement> listElement = prpListElement;
 
@@ -1543,10 +1556,14 @@ Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElem
     while (RefPtrWillBeRawPtr<Node> listItem = listElement->firstChild()) {
         listElement->removeChild(listItem.get(), ASSERT_NO_EXCEPTION);
         if (isStart || isMiddle) {
-            insertNodeBefore(listItem, lastNode);
+            insertNodeBefore(listItem, lastNode, editingState);
+            if (editingState->isAborted())
+                return nullptr;
             insertedNodes.respondToNodeInsertion(*listItem);
         } else if (isEnd) {
-            insertNodeAfter(listItem, lastNode);
+            insertNodeAfter(listItem, lastNode, editingState);
+            if (editingState->isAborted())
+                return nullptr;
             insertedNodes.respondToNodeInsertion(*listItem);
             lastNode = listItem.get();
         } else {

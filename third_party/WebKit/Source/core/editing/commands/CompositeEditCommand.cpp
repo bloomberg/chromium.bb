@@ -324,7 +324,7 @@ void CompositeEditCommand::insertNodeBefore(PassRefPtrWillBeRawPtr<Node> insertC
     applyCommandToComposite(InsertNodeBeforeCommand::create(insertChild, refChild, shouldAssumeContentIsAlwaysEditable), editingState);
 }
 
-void CompositeEditCommand::insertNodeAfter(PassRefPtrWillBeRawPtr<Node> insertChild, PassRefPtrWillBeRawPtr<Node> refChild)
+void CompositeEditCommand::insertNodeAfter(PassRefPtrWillBeRawPtr<Node> insertChild, PassRefPtrWillBeRawPtr<Node> refChild, EditingState* editingState)
 {
     ASSERT(insertChild);
     ASSERT(refChild);
@@ -333,10 +333,10 @@ void CompositeEditCommand::insertNodeAfter(PassRefPtrWillBeRawPtr<Node> insertCh
     ASSERT(parent);
     ASSERT(!parent->isShadowRoot());
     if (parent->lastChild() == refChild) {
-        appendNode(insertChild, parent);
+        appendNode(insertChild, parent, editingState);
     } else {
         ASSERT(refChild->nextSibling());
-        insertNodeBefore(insertChild, refChild->nextSibling());
+        insertNodeBefore(insertChild, refChild->nextSibling(), editingState);
     }
 }
 
@@ -354,20 +354,20 @@ void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild
         for (int i = 0; child && i < offset; i++)
             child = child->nextSibling();
         if (child)
-            insertNodeBefore(insertChild, child);
+            insertNodeBefore(insertChild, child, editingState);
         else
-            appendNode(insertChild, toContainerNode(refChild));
+            appendNode(insertChild, toContainerNode(refChild), editingState);
     } else if (caretMinOffset(refChild) >= offset) {
-        insertNodeBefore(insertChild, refChild);
+        insertNodeBefore(insertChild, refChild, editingState);
     } else if (refChild->isTextNode() && caretMaxOffset(refChild) > offset) {
         splitTextNode(toText(refChild), offset);
 
         // Mutation events (bug 22634) from the text node insertion may have removed the refChild
         if (!refChild->inDocument())
             return;
-        insertNodeBefore(insertChild, refChild);
+        insertNodeBefore(insertChild, refChild, editingState);
     } else {
-        insertNodeAfter(insertChild, refChild);
+        insertNodeAfter(insertChild, refChild, editingState);
     }
 }
 
@@ -493,7 +493,9 @@ void CompositeEditCommand::mergeIdenticalElements(PassRefPtrWillBeRawPtr<Element
         removeNode(second, editingState);
         if (editingState->isAborted())
             return;
-        insertNodeAfter(second, first);
+        insertNodeAfter(second, first, editingState);
+        if (editingState->isAborted())
+            return;
     }
     applyCommandToComposite(MergeIdenticalElementsCommand::create(first, second), editingState);
 }
@@ -1105,7 +1107,9 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
                 return;
 
             RefPtrWillBeRawPtr<Node> clonedNode = node->cloneNode(true);
-            insertNodeAfter(clonedNode, lastNode);
+            insertNodeAfter(clonedNode, lastNode, editingState);
+            if (editingState->isAborted())
+                return;
             lastNode = clonedNode.release();
             if (node == end.anchorNode() || end.anchorNode()->isDescendantOf(node.get()))
                 break;
@@ -1401,7 +1405,9 @@ bool CompositeEditCommand::breakOutOfEmptyListItem(EditingState* editingState)
     } else {
         // When emptyListItem does not follow any list item or nested list, insert newBlock after the enclosing list node.
         // Remove the enclosing node if emptyListItem is the only child; otherwise just remove emptyListItem.
-        insertNodeAfter(newBlock, listNode);
+        insertNodeAfter(newBlock, listNode, editingState);
+        if (editingState->isAborted())
+            return false;
         removeNode(isListItem(previousListNode.get()) || isHTMLListElement(previousListNode.get()) ? emptyListItem.get() : listNode.get(), editingState);
         if (editingState->isAborted())
             return false;

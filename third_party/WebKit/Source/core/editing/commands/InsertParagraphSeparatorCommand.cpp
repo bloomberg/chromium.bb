@@ -240,15 +240,17 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
             if (listChild && listChild != startBlock) {
                 RefPtrWillBeRawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
                 appendNode(blockToInsert, listChildToInsert.get());
-                insertNodeAfter(listChildToInsert.get(), listChild);
+                insertNodeAfter(listChildToInsert.get(), listChild, editingState);
             } else {
                 // Most of the time we want to stay at the nesting level of the startBlock (e.g., when nesting within lists). However,
                 // for div nodes, this can result in nested div tags that are hard to break out of.
                 Element* siblingElement = startBlock.get();
                 if (isHTMLDivElement(*blockToInsert))
                     siblingElement = highestVisuallyEquivalentDivBelowRoot(startBlock.get());
-                insertNodeAfter(blockToInsert, siblingElement);
+                insertNodeAfter(blockToInsert, siblingElement, editingState);
             }
+            if (editingState->isAborted())
+                return;
         }
 
         // Recreate the same structure in the new paragraph.
@@ -376,14 +378,16 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
 
     // Put the added block in the tree.
     if (nestNewBlock) {
-        appendNode(blockToInsert.get(), startBlock);
+        appendNode(blockToInsert.get(), startBlock, editingState);
     } else if (listChild && listChild != startBlock) {
         RefPtrWillBeRawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
         appendNode(blockToInsert.get(), listChildToInsert.get());
-        insertNodeAfter(listChildToInsert.get(), listChild);
+        insertNodeAfter(listChildToInsert.get(), listChild, editingState);
     } else {
-        insertNodeAfter(blockToInsert.get(), startBlock);
+        insertNodeAfter(blockToInsert.get(), startBlock, editingState);
     }
+    if (editingState->isAborted())
+        return;
 
     document().updateLayoutIgnorePendingStylesheets();
 

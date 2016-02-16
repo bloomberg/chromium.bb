@@ -117,7 +117,9 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     }
 
     // Insert a break after the top blockquote.
-    insertNodeAfter(breakElement.get(), topBlockquote);
+    insertNodeAfter(breakElement.get(), topBlockquote, editingState);
+    if (editingState->isAborted())
+        return;
 
     // If we're inserting the break at the end of the quoted content, we don't need to break the quote.
     if (isLastVisPosInNode) {
@@ -174,7 +176,9 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
 
     // Insert a clone of the top blockquote after the break.
     RefPtrWillBeRawPtr<Element> clonedBlockquote = topBlockquote->cloneElementWithoutChildren();
-    insertNodeAfter(clonedBlockquote.get(), breakElement.get());
+    insertNodeAfter(clonedBlockquote.get(), breakElement.get(), editingState);
+    if (editingState->isAborted())
+        return;
 
     // Clone startNode's ancestors into the cloned blockquote.
     // On exiting this loop, clonedAncestor is the lowest ancestor

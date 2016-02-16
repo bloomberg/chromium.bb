@@ -368,8 +368,6 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // unrendered. But we ought to remove nextListChild too, if it is unrendered.
         splitElement(listElement, splitTreeToNode(nextListChild, listElement));
         insertNodeBefore(elementToInsert, listElement, editingState);
-        if (editingState->isAborted())
-            return;
     } else if (nextListChild || listChildNode->parentNode() != listElement) {
         // Just because listChildNode has no previousListChild doesn't mean there isn't any content
         // in listNode that comes before listChildNode, as listChildNode could have ancestors
@@ -378,11 +376,11 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         if (listChildNode->parentNode() != listElement)
             splitElement(listElement, splitTreeToNode(listChildNode, listElement).get());
         insertNodeBefore(elementToInsert, listElement, editingState);
-        if (editingState->isAborted())
-            return;
     } else {
-        insertNodeAfter(elementToInsert, listElement);
+        insertNodeAfter(elementToInsert, listElement, editingState);
     }
+    if (editingState->isAborted())
+        return;
 
     VisiblePosition insertionPoint = createVisiblePosition(positionBeforeNode(placeholder.get()));
     moveParagraphs(start, end, insertionPoint, editingState, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);

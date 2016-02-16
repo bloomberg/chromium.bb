@@ -80,7 +80,7 @@ private:
         RefPtrWillBeMember<Node> m_lastNodeInserted;
     };
 
-    Node* insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> listElement, Element* insertionBlock, const Position&, InsertedNodes&);
+    Node* insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> listElement, Element* insertionBlock, const Position&, InsertedNodes&, EditingState*);
 
     void updateNodesInserted(Node*);
     bool shouldRemoveEndBR(HTMLBRElement*, const VisiblePosition&);
@@ -102,7 +102,7 @@ private:
     VisiblePosition positionAtEndOfInsertedContent() const;
 
     bool shouldPerformSmartReplace() const;
-    void addSpacesForSmartReplace();
+    void addSpacesForSmartReplace(EditingState*);
     void completeHTMLReplacement(const Position& lastPositionToSelect, EditingState*);
     void mergeTextNodesAroundPosition(Position&, Position& positionOnlyToBeUpdated, EditingState*);
 

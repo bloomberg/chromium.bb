@@ -49,7 +49,7 @@ private:
     void doApply(EditingState*) override;
 
     Position positionInsideTextNode(const Position&);
-    Position insertTab(const Position&);
+    Position insertTab(const Position&, EditingState*);
 
     bool performTrivialReplace(const String&, bool selectInsertedText);
     bool performOverwrite(const String&, bool selectInsertedText);
