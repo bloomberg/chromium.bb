@@ -168,6 +168,11 @@
     <color name="physical_web_url_description_color">#646464</color>
     <color name="physical_web_logo_gray_tint">#ccc</color>
 
+    <!-- Physical Web diagnostics colors -->
+    <color name="physical_web_diags_success_color">#00933b</color>
+    <color name="physical_web_diags_failure_color">#f90101</color>
+
     <!-- Bottom bar colors -->
     <color name="bottom_bar_shadow_color">#1d000000</color>
+
 </resources>

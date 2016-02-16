@@ -281,7 +281,7 @@ class UrlManager {
         editor.apply();
     }
 
-    private Set<String> getCachedNearbyUrls() {
+    Set<String> getCachedNearbyUrls() {
         return getStringSetFromSharedPreferences(PREFS_NEARBY_URLS_KEY);
     }
 
@@ -289,7 +289,7 @@ class UrlManager {
         setStringSetInSharedPreferences(PREFS_NEARBY_URLS_KEY, urls);
     }
 
-    private Set<String> getCachedResolvedUrls() {
+    Set<String> getCachedResolvedUrls() {
         return getStringSetFromSharedPreferences(PREFS_RESOLVED_URLS_KEY);
     }
 

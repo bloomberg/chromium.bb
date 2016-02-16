@@ -240,7 +240,12 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         urlManager.addObserver(this);
 
         Collection<String> urls = urlManager.getUrls(true);
-        if (urls.isEmpty()) {
+
+        // Check the Physical Web preference to ensure we do not resolve URLs when Physical Web is
+        // off or onboarding. Normally the user will not reach this activity unless the preference
+        // is explicitly enabled, but there is a button on the diagnostics page that launches into
+        // the activity without checking the preference state.
+        if (urls.isEmpty() || !PhysicalWeb.isPhysicalWebPreferenceEnabled(this)) {
             finishRefresh();
         } else {
             // Show the swipe-to-refresh busy indicator for refreshes initiated by a swipe.

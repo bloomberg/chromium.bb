@@ -29,6 +29,11 @@ bool HandleAndroidNativePageURL(GURL* url,
       *url = GURL(chrome::kChromeUINativeNewTabURL);
       return true;
     }
+
+    if (url->host() == kChromeUIPhysicalWebHost) {
+      *url = GURL(kChromeUINativePhysicalWebURL);
+      return true;
+    }
   }
 
   if (url->SchemeIs(chrome::kChromeNativeScheme) &&
