@@ -294,7 +294,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=CastV2PerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -326,7 +326,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=CastV2PerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -349,7 +349,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=CastV2PerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -381,7 +381,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=CastV2PerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -404,7 +404,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=CastV2PerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -427,7 +427,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=CastV2PerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -450,7 +450,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=CastV2PerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
