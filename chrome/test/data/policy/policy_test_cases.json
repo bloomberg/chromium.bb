@@ -2656,6 +2656,9 @@
   "DeviceLoginScreenDomainAutoComplete": {
   },
 
+  "AllowKioskAppControlChromeVersion": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

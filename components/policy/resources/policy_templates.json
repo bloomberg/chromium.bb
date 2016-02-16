@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 318
+#   For your editing convenience: highest ID currently used: 319
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8220,7 +8220,28 @@
       solely to specify force-installation of the apps.
 
       If this policy is left not set, no apps are installed automatically.'''
-    }
+    },
+    {
+      'name': 'AllowKioskAppControlChromeVersion',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:51-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 319,
+      'caption': '''Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version''',
+      'tags': [],
+      'desc': '''Whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version.
+
+      This policy controls whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version by declaring a required_platform_version in its manifest and use it as the auto update target version prefix.
+
+      If the policy is set to true, the value of required_platform_version manifest key of the auto launched with zero delay kiosk app is used as auto update target version prefix.
+
+      If the policy is not configured or set to false, the required_platform_version manifest key is ignored and auto update proceeds as normal.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.

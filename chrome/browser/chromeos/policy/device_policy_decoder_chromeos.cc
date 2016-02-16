@@ -563,6 +563,20 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                     NULL);
     }
   }
+
+  if (policy.has_allow_kiosk_app_control_chrome_version()) {
+    const em::AllowKioskAppControlChromeVersionProto& container(
+        policy.allow_kiosk_app_control_chrome_version());
+    if (container.has_allow_kiosk_app_control_chrome_version()) {
+      policies->Set(key::kAllowKioskAppControlChromeVersion,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD,
+                    new base::FundamentalValue(
+                        container.allow_kiosk_app_control_chrome_version()),
+                    NULL);
+    }
+  }
 }
 
 void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,

@@ -62887,6 +62887,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Configure the required domain name for remote access clients"/>
   <int value="317" label="ARC Enabled"/>
   <int value="318" label="Configure ARC apps"/>
+  <int value="319"
+      label="Allow the auto launched with zero delay kiosk app to control
+             ChromeOS version"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
