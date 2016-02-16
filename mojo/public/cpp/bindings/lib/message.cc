@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-#include "mojo/public/cpp/environment/logging.h"
+#include "base/logging.h"
 
 namespace mojo {
 
@@ -27,7 +27,7 @@ void Message::Initialize(size_t capacity, bool zero_initialized) {
 }
 
 void Message::MoveTo(Message* destination) {
-  MOJO_DCHECK(this != destination);
+  DCHECK(this != destination);
 
   // No copy needed.
   std::swap(destination->buffer_, buffer_);

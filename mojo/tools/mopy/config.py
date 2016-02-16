@@ -126,7 +126,7 @@ class Config(object):
 
   @property
   def dcheck_always_on(self):
-    '''DCHECK and MOJO_DCHECK are fatal even in release builds'''
+    '''DCHECK is fatal even in release builds'''
     return self.values['dcheck_always_on']
 
   @property

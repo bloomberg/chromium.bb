@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_serialization.h"
@@ -58,9 +59,9 @@ struct ArraySerializer<E, F, false> {
                                 Buffer* buf,
                                 Array_Data<F>* output,
                                 const ArrayValidateParams* validate_params) {
-    MOJO_DCHECK(!validate_params->element_is_nullable)
+    DCHECK(!validate_params->element_is_nullable)
         << "Primitive type should be non-nullable";
-    MOJO_DCHECK(!validate_params->element_validate_params)
+    DCHECK(!validate_params->element_validate_params)
         << "Primitive type should not have array validate params";
 
     if (input.size())
@@ -88,9 +89,9 @@ struct ArraySerializer<bool, bool, false> {
                                 Buffer* buf,
                                 Array_Data<bool>* output,
                                 const ArrayValidateParams* validate_params) {
-    MOJO_DCHECK(!validate_params->element_is_nullable)
+    DCHECK(!validate_params->element_is_nullable)
         << "Primitive type should be non-nullable";
-    MOJO_DCHECK(!validate_params->element_validate_params)
+    DCHECK(!validate_params->element_validate_params)
         << "Primitive type should not have array validate params";
 
     // TODO(darin): Can this be a memcpy somehow instead of a bit-by-bit copy?
@@ -120,7 +121,7 @@ struct ArraySerializer<ScopedHandleBase<H>, H, false> {
                                 Buffer* buf,
                                 Array_Data<H>* output,
                                 const ArrayValidateParams* validate_params) {
-    MOJO_DCHECK(!validate_params->element_validate_params)
+    DCHECK(!validate_params->element_validate_params)
         << "Handle type should not have array validate params";
 
     for (size_t i = 0; i < input.size(); ++i) {
@@ -201,7 +202,7 @@ struct ArraySerializer<
                     Buffer* buf,
                     typename WrapperTraits<T>::DataType* output,
                     const ArrayValidateParams* validate_params) {
-      MOJO_DCHECK(!validate_params)
+      DCHECK(!validate_params)
           << "Struct type should not have array validate params";
 
       Serialize_(std::move(input), buf, output);
@@ -289,11 +290,10 @@ struct ArraySerializer<String, String_Data*> {
                                 Buffer* buf,
                                 Array_Data<String_Data*>* output,
                                 const ArrayValidateParams* validate_params) {
-    MOJO_DCHECK(
-        validate_params->element_validate_params &&
-        !validate_params->element_validate_params->element_validate_params &&
-        !validate_params->element_validate_params->element_is_nullable &&
-        validate_params->element_validate_params->expected_num_elements == 0)
+    DCHECK(validate_params->element_validate_params &&
+           !validate_params->element_validate_params->element_validate_params &&
+           !validate_params->element_validate_params->element_is_nullable &&
+           validate_params->element_validate_params->expected_num_elements == 0)
         << "String type has unexpected array validate params";
 
     for (size_t i = 0; i < input.size(); ++i) {

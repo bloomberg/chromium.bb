@@ -9,13 +9,13 @@
 
 #include <map>
 
+#include "base/logging.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/connector.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/shared_data.h"
 #include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -42,13 +42,13 @@ class Router : public MessageReceiverWithResponder {
   // Returns true if an error was encountered while reading from the pipe or
   // waiting to read from the pipe.
   bool encountered_error() const {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     return connector_.encountered_error();
   }
 
   // Is the router bound to a MessagePipe handle?
   bool is_valid() const {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     return connector_.is_valid();
   }
 
@@ -56,17 +56,17 @@ class Router : public MessageReceiverWithResponder {
   // explicit request of the user of bindings (e.g., the user sets an
   // InterfacePtr to null or closes a Binding).
   void CloseMessagePipe() {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     connector_.CloseMessagePipe();
   }
 
   ScopedMessagePipeHandle PassMessagePipe() {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     return connector_.PassMessagePipe();
   }
 
   void RaiseError() {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     connector_.RaiseError();
   }
 
@@ -78,17 +78,17 @@ class Router : public MessageReceiverWithResponder {
   // Blocks the current thread until the first incoming method call, i.e.,
   // either a call to a client method or a callback method, or |deadline|.
   bool WaitForIncomingMessage(MojoDeadline deadline) {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     return connector_.WaitForIncomingMessage(deadline);
   }
 
   // See Binding for details of pause/resume.
   void PauseIncomingMethodCallProcessing() {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     connector_.PauseIncomingMethodCallProcessing();
   }
   void ResumeIncomingMethodCallProcessing() {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     connector_.ResumeIncomingMethodCallProcessing();
   }
 
@@ -103,7 +103,7 @@ class Router : public MessageReceiverWithResponder {
 
   // Returns true if this Router has any pending callbacks.
   bool has_pending_responders() const {
-    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     return !responders_.empty();
   }
 

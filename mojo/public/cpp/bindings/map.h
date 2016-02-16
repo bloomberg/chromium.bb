@@ -9,6 +9,7 @@
 #include <map>
 #include <utility>
 
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/map_internal.h"
 #include "mojo/public/cpp/bindings/lib/value_traits.h"
 
@@ -46,7 +47,7 @@ class Map {
   // Constructs a non-null Map containing the specified |keys| mapped to the
   // corresponding |values|.
   Map(mojo::Array<Key> keys, mojo::Array<Value> values) : is_null_(false) {
-    MOJO_DCHECK(keys.size() == values.size());
+    DCHECK(keys.size() == values.size());
     for (size_t i = 0; i < keys.size(); ++i)
       map_.insert(std::make_pair(keys[i], std::move(values[i])));
   }

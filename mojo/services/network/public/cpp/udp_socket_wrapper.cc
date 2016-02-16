@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "mojo/public/cpp/environment/logging.h"
+#include "base/logging.h"
 #include "network/public/cpp/udp_socket_wrapper.h"
 
 namespace mojo {
@@ -154,7 +154,7 @@ void UDPSocketWrapper::SendTo(NetAddressPtr dest_addr,
     return;
   }
 
-  MOJO_DCHECK(send_requests_.empty());
+  DCHECK(send_requests_.empty());
   current_pending_sends_++;
   socket_->SendTo(std::move(dest_addr), std::move(data),
                   ErrorCallback(static_cast<ErrorCallback::Runnable*>(
@@ -166,7 +166,7 @@ void UDPSocketWrapper::OnReceived(NetworkErrorPtr result,
                                   Array<uint8_t> data) {
   if (!receive_requests_.empty()) {
     // The cache should be empty if there are user requests waiting for data.
-    MOJO_DCHECK(receive_queue_.empty());
+    DCHECK(receive_queue_.empty());
 
     socket_->ReceiveMore(1);
 
@@ -177,7 +177,7 @@ void UDPSocketWrapper::OnReceived(NetworkErrorPtr result,
     return;
   }
 
-  MOJO_DCHECK(receive_queue_.size() < max_receive_queue_size_);
+  DCHECK(receive_queue_.size() < max_receive_queue_size_);
   ReceivedData* received_data = new ReceivedData();
   received_data->result = std::move(result);
   received_data->src_addr = std::move(src_addr);
@@ -195,7 +195,7 @@ void UDPSocketWrapper::Initialize(uint32_t requested_max_pending_sends) {
 
 void UDPSocketWrapper::OnNegotiateMaxPendingSendRequestsCompleted(
     uint32_t actual_size) {
-  MOJO_DCHECK(max_pending_sends_ == 1);
+  DCHECK(max_pending_sends_ == 1);
 
   if (actual_size == 0) {
     assert(false);

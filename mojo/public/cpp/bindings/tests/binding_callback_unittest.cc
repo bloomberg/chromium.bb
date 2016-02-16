@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -96,24 +97,24 @@ class InterfaceImpl : public sample::Provider {
 
   void EchoString(const String& a,
                   const Callback<void(String)>& callback) override {
-    MOJO_CHECK(false) << "Not implemented.";
+    CHECK(false) << "Not implemented.";
   }
 
   void EchoStrings(const String& a,
                    const String& b,
                    const Callback<void(String, String)>& callback) override {
-    MOJO_CHECK(false) << "Not implemented.";
+    CHECK(false) << "Not implemented.";
   }
 
   void EchoMessagePipeHandle(
       ScopedMessagePipeHandle a,
       const Callback<void(ScopedMessagePipeHandle)>& callback) override {
-    MOJO_CHECK(false) << "Not implemented.";
+    CHECK(false) << "Not implemented.";
   }
 
   void EchoEnum(sample::Enum a,
                 const Callback<void(sample::Enum)>& callback) override {
-    MOJO_CHECK(false) << "Not implemented.";
+    CHECK(false) << "Not implemented.";
   }
 
   void resetLastServerValueSeen() { last_server_value_seen_ = 0; }

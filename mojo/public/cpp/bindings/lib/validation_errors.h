@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_
 
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -123,11 +124,11 @@ class SerializationWarningObserverForTesting {
 // of the serialzation result.
 //
 // In non-debug build, does nothing (not even compiling |condition|).
-#define MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(                        \
-    condition, error, description)                                       \
-  MOJO_DLOG_IF(FATAL, (condition) && !ReportSerializationWarning(error)) \
-      << "The outgoing message will trigger "                            \
-      << ValidationErrorToString(error) << " at the receiving side ("    \
+#define MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(condition, error,    \
+                                                 description)         \
+  DLOG_IF(FATAL, (condition) && !ReportSerializationWarning(error))   \
+      << "The outgoing message will trigger "                         \
+      << ValidationErrorToString(error) << " at the receiving side (" \
       << description << ").";
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_

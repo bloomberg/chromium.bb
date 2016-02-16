@@ -6,10 +6,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/environment/logging.h"
 #include "mojo/shell/public/cpp/lib/connection_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"

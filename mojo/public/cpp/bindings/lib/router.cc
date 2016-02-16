@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "mojo/public/cpp/environment/logging.h"
+#include "base/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -37,7 +37,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
   // MessageReceiver implementation:
   bool Accept(Message* message) override {
     accept_was_invoked_ = true;
-    MOJO_DCHECK(message->has_flag(kMessageIsResponse));
+    DCHECK(message->has_flag(kMessageIsResponse));
 
     bool result = false;
 
@@ -100,14 +100,14 @@ Router::~Router() {
 }
 
 bool Router::Accept(Message* message) {
-  MOJO_DCHECK(thread_checker_.CalledOnValidThread());
-  MOJO_DCHECK(!message->has_flag(kMessageExpectsResponse));
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!message->has_flag(kMessageExpectsResponse));
   return connector_.Accept(message);
 }
 
 bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
-  MOJO_DCHECK(thread_checker_.CalledOnValidThread());
-  MOJO_DCHECK(message->has_flag(kMessageExpectsResponse));
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(message->has_flag(kMessageExpectsResponse));
 
   // Reserve 0 in case we want it to convey special meaning in the future.
   uint64_t request_id = next_request_id_++;
@@ -124,13 +124,13 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
 }
 
 void Router::EnableTestingMode() {
-  MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   testing_mode_ = true;
   connector_.set_enforce_errors_from_incoming_receiver(false);
 }
 
 bool Router::HandleIncomingMessage(Message* message) {
-  MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (message->has_flag(kMessageExpectsResponse)) {
     if (!incoming_receiver_)
       return false;
@@ -145,7 +145,7 @@ bool Router::HandleIncomingMessage(Message* message) {
     uint64_t request_id = message->request_id();
     ResponderMap::iterator it = responders_.find(request_id);
     if (it == responders_.end()) {
-      MOJO_DCHECK(testing_mode_);
+      DCHECK(testing_mode_);
       return false;
     }
     MessageReceiver* responder = it->second;

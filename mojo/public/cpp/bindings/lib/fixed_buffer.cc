@@ -9,8 +9,8 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
-#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -18,7 +18,7 @@ namespace internal {
 FixedBuffer::FixedBuffer() : ptr_(nullptr), cursor_(0), size_(0) {}
 
 void FixedBuffer::Initialize(void* memory, size_t size) {
-  MOJO_DCHECK(size == internal::Align(size));
+  DCHECK(size == internal::Align(size));
 
   ptr_ = static_cast<char*>(memory);
   cursor_ = 0;
@@ -29,7 +29,7 @@ void* FixedBuffer::Allocate(size_t delta) {
   delta = internal::Align(delta);
 
   if (delta == 0 || delta > size_ - cursor_) {
-    MOJO_DCHECK(false) << "Not reached";
+    NOTREACHED();
     return nullptr;
   }
 

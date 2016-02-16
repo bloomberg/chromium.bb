@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "mojo/public/cpp/environment/logging.h"
+#include "base/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -34,14 +34,14 @@ FilterChain::~FilterChain() {
 }
 
 void FilterChain::SetSink(MessageReceiver* sink) {
-  MOJO_DCHECK(!sink_);
+  DCHECK(!sink_);
   sink_ = sink;
   if (!filters_.empty())
     filters_.back()->set_sink(sink);
 }
 
 MessageReceiver* FilterChain::GetHead() {
-  MOJO_DCHECK(sink_);
+  DCHECK(sink_);
   return filters_.empty() ? sink_ : filters_.front();
 }
 

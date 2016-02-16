@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/environment/environment.h"
@@ -37,7 +38,7 @@ class ShellGrabber : public shell::mojom::ShellClient {
 
   void WaitForInitialize() {
     // Initialize is always the first call made on ShellClient.
-    MOJO_CHECK(binding_.WaitForIncomingMethodCall());
+    CHECK(binding_.WaitForIncomingMethodCall());
   }
 
  private:
@@ -58,11 +59,11 @@ class ShellGrabber : public shell::mojom::ShellClient {
       shell::mojom::InterfaceProviderPtr remote_interfaces,
       Array<String> allowed_interfaces,
       const String& url) override {
-    MOJO_CHECK(false);
+    CHECK(false);
   }
 
   void OnQuitRequested(const Callback<void(bool)>& callback) override {
-    MOJO_CHECK(false);
+    CHECK(false);
   }
 
   Binding<ShellClient> binding_;
@@ -80,8 +81,8 @@ MojoResult RunAllTests(MojoHandle shell_client_request_handle) {
         MakeRequest<shell::mojom::ShellClient>(MakeScopedHandle(
             MessagePipeHandle(shell_client_request_handle))));
     grabber.WaitForInitialize();
-    MOJO_CHECK(g_shell);
-    MOJO_CHECK(g_shell_client_request.is_pending());
+    CHECK(g_shell);
+    CHECK(g_shell_client_request.is_pending());
 
     int argc = 0;
     base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -149,16 +150,16 @@ void ApplicationTestBase::SetUp() {
   if (ShouldCreateDefaultRunLoop())
     Environment::InstantiateDefaultRunLoop();
 
-  MOJO_CHECK(g_shell_client_request.is_pending());
-  MOJO_CHECK(g_shell);
+  CHECK(g_shell_client_request.is_pending());
+  CHECK(g_shell);
 
   // New applications are constructed for each test to avoid persisting state.
   test_helper_.reset(new TestHelper(GetShellClient()));
 }
 
 void ApplicationTestBase::TearDown() {
-  MOJO_CHECK(!g_shell_client_request.is_pending());
-  MOJO_CHECK(!g_shell);
+  CHECK(!g_shell_client_request.is_pending());
+  CHECK(!g_shell);
 
   test_helper_.reset();
 

@@ -7,8 +7,8 @@
 
 #include <new>
 
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -63,11 +63,11 @@ class StructPtr {
   bool is_null() const { return ptr_ == nullptr; }
 
   Struct& operator*() const {
-    MOJO_DCHECK(ptr_);
+    DCHECK(ptr_);
     return *ptr_;
   }
   Struct* operator->() const {
-    MOJO_DCHECK(ptr_);
+    DCHECK(ptr_);
     return ptr_;
   }
   Struct* get() const { return ptr_; }
@@ -102,7 +102,7 @@ class StructPtr {
   bool operator!=(const StructPtr<T>& other) const = delete;
 
   void Initialize() {
-    MOJO_DCHECK(!ptr_);
+    DCHECK(!ptr_);
     ptr_ = new Struct();
   }
 
@@ -151,11 +151,11 @@ class InlinedStructPtr {
   bool is_null() const { return is_null_; }
 
   Struct& operator*() const {
-    MOJO_DCHECK(!is_null_);
+    DCHECK(!is_null_);
     return value_;
   }
   Struct* operator->() const {
-    MOJO_DCHECK(!is_null_);
+    DCHECK(!is_null_);
     return &value_;
   }
   Struct* get() const { return &value_; }

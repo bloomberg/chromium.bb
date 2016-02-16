@@ -179,7 +179,7 @@ bool {{class_name}}::Validate(const void* data,
 
 void {{class_name}}::EncodePointersAndHandles(
     std::vector<mojo::Handle>* handles) {
-  MOJO_CHECK(header_.version == {{struct.versions[-1].version}});
+  CHECK(header_.version == {{struct.versions[-1].version}});
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   if pf.field.kind|is_union_kind %}
   this->{{pf.field.name}}.EncodePointersAndHandles(handles);

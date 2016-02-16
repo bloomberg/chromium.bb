@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
-#include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
 namespace mojo {
@@ -32,7 +32,7 @@ bool ControlMessageHandler::Accept(Message* message) {
   if (message->header()->name == kRunOrClosePipeMessageId)
     return RunOrClosePipe(message);
 
-  MOJO_NOTREACHED();
+  NOTREACHED();
   return false;
 }
 
@@ -42,7 +42,7 @@ bool ControlMessageHandler::AcceptWithResponder(
   if (message->header()->name == kRunMessageId)
     return Run(message, responder);
 
-  MOJO_NOTREACHED();
+  NOTREACHED();
   return false;
 }
 

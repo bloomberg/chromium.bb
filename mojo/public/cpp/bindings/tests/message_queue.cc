@@ -4,8 +4,8 @@
 
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace test {
@@ -28,13 +28,13 @@ void MessageQueue::Push(Message* message) {
 }
 
 void MessageQueue::Pop(Message* message) {
-  MOJO_DCHECK(!queue_.empty());
+  DCHECK(!queue_.empty());
   queue_.front()->MoveTo(message);
   Pop();
 }
 
 void MessageQueue::Pop() {
-  MOJO_DCHECK(!queue_.empty());
+  DCHECK(!queue_.empty());
   delete queue_.front();
   queue_.pop();
 }

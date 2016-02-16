@@ -131,7 +131,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
     // If the Callback was dropped then deleting the responder will close
     // the pipe so the calling application knows to stop waiting for a reply.
     delete responder_;
-    MOJO_DCHECK(!callback_was_dropped)  << "The callback passed to "
+    DCHECK(!callback_was_dropped)  << "The callback passed to "
         "{{class_name}}::{{method.name}}({%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback) "
         "was never run.";
   }
@@ -183,7 +183,6 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
-      mojo::internal::ScopedTaskTracking task_id("mojo.{{namespace_as_string}}.{{class_name}}.{{method.name}}", __FILE__, __LINE__);
 {%-     if method.response_parameters == None %}
       internal::{{class_name}}_{{method.name}}_Params_Data* params =
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
@@ -214,7 +213,6 @@ bool {{class_name}}Stub::AcceptWithResponder(
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
-      mojo::internal::ScopedTaskTracking task_id("mojo::{{namespace_as_string}}::{{class_name}}::{{method.name}}", __FILE__, __LINE__);
 {%-     if method.response_parameters != None %}
       internal::{{class_name}}_{{method.name}}_Params_Data* params =
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
