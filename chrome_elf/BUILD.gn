@@ -137,16 +137,24 @@ test("chrome_elf_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//chrome",
     "//chrome/common:version_header",
     "//sandbox",
     "//testing/gtest",
+  ]
+
+  # It's not easily possible to have //chrome in data_deps without changing
+  # the //chrome target to bundle up both initial/chrome.exe and chrome.exe.
+  # As a workaround, explicitly include a data dep on just chrome.exe, and
+  # add //chrome to deps above to make sure it's been built.
+  data = [
+    "$root_out_dir/chrome.exe",
   ]
   data_deps = [
     ":blacklist_test_dll_1",
     ":blacklist_test_dll_2",
     ":blacklist_test_dll_3",
     ":chrome_elf",
-    "//chrome",
   ]
 }
 
