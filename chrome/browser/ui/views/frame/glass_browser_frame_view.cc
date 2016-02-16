@@ -343,7 +343,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
   toolbar_bounds.set_origin(toolbar_origin);
 
   const ui::ThemeProvider* tp = GetThemeProvider();
-  gfx::ImageSkia* bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+  const gfx::ImageSkia* const bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   int x = toolbar_bounds.x();
   const int y = toolbar_bounds.y();
   const int bg_y = GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
@@ -394,7 +394,8 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
     // right to the system border, the toolbar has no corners or side strokes.
     if (base::win::GetVersion() < base::win::VERSION_WIN10) {
       // Mask out the corners.
-      gfx::ImageSkia* left = tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
+      const gfx::ImageSkia* const left =
+          tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
       const int img_w = left->width();
       x -= kContentEdgeShadowThickness;
       SkPaint paint;
@@ -451,12 +452,13 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
   if (!md)
     FillClientEdgeRects(x, y, right, bottom, toolbar_color, canvas);
-  gfx::ImageSkia* right_image = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
+  const gfx::ImageSkia* const right_image =
+      tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   const int img_w = right_image->width();
   canvas->TileImageInt(*right_image, right, y, img_w, height);
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
                        right, bottom);
-  gfx::ImageSkia* bottom_image =
+  const gfx::ImageSkia* const bottom_image =
       tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
   canvas->TileImageInt(*bottom_image, x, bottom, w, bottom_image->height());
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),

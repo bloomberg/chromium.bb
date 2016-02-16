@@ -568,7 +568,7 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 }
 
 int OpaqueBrowserFrameView::GetTopAreaHeight() const {
-  gfx::ImageSkia* frame_image = GetFrameImage();
+  const gfx::ImageSkia* const frame_image = GetFrameImage();
   int top_area_height = frame_image->height();
   if (browser_view()->IsTabStripVisible()) {
     top_area_height =
@@ -624,7 +624,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
   toolbar_bounds.set_origin(toolbar_origin);
 
   const ui::ThemeProvider* tp = GetThemeProvider();
-  gfx::ImageSkia* bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+  const gfx::ImageSkia* const bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   int x = toolbar_bounds.x();
   const int y = toolbar_bounds.y();
   const int bg_y =
@@ -683,7 +683,8 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
                          x, bg_dest_y, w, h - kContentEdgeShadowThickness);
 
     // Mask out the corners.
-    gfx::ImageSkia* left = tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
+    const gfx::ImageSkia* const left =
+        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
     const int img_w = left->width();
     x -= kContentEdgeShadowThickness;
     SkPaint paint;
@@ -755,7 +756,8 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
       img_y_offset = kClientEdgeThickness;
 
       // Shadow.
-      gfx::ImageSkia* top_left = tp->GetImageSkiaNamed(IDR_APP_TOP_LEFT);
+      const gfx::ImageSkia* const top_left =
+          tp->GetImageSkiaNamed(IDR_APP_TOP_LEFT);
       const int img_w = top_left->width();
       const int height = top_left->height();
       const int top_y = y + img_y_offset - height;
@@ -783,12 +785,13 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   // we do the filling afterwards so the user sees the unmodified toolbar color.
   if (!md)
     FillClientEdgeRects(x, y, w, height, true, toolbar_color, canvas);
-  gfx::ImageSkia* right_image = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
+  const gfx::ImageSkia* const right_image =
+      tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   const int img_w = right_image->width();
   canvas->TileImageInt(*right_image, right, img_y, img_w, img_h);
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
                        right, bottom);
-  gfx::ImageSkia* bottom_image =
+  const gfx::ImageSkia* const bottom_image =
       tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
   canvas->TileImageInt(*bottom_image, x, bottom, w, bottom_image->height());
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),

@@ -57,8 +57,6 @@ namespace {
 
 // Space between right edge of tabstrip and maximize button.
 const int kTabstripRightSpacing = 10;
-// The content edge images have a shadow built into them.
-const int kContentEdgeShadowThickness = 2;
 // Height of the shadow of the content area, at the top of the toolbar.
 const int kContentShadowHeight = 1;
 // Space between top of window and top of tabstrip for tall headers, such as
@@ -503,7 +501,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
   toolbar_bounds.set_origin(toolbar_origin);
 
   const ui::ThemeProvider* tp = GetThemeProvider();
-  gfx::ImageSkia* bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+  const gfx::ImageSkia* const bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   const int x = toolbar_bounds.x();
   const int y = toolbar_bounds.y();
   const int bg_y = GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
@@ -540,32 +538,33 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
     BrowserView::Paint1pxHorizontalLine(canvas, separator_color, toolbar_bounds,
                                         true);
   } else {
-    // Background.
-    const int split_point = kContentEdgeShadowThickness;
-    const int split_y = y + split_point;
-    canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(), split_y - bg_y, x,
-                         split_y, w, bg->height());
+    // Background.  The top stroke is drawn using the IDR_TOOLBAR_SHADE_TOP
+    // image, which overlays the toolbar.  The top 2 px of this image is the
+    // actual top stroke + shadow, and is partly transparent, so the toolbar
+    // background shouldn't be drawn over it.
+    const int kContentEdgeShadowThickness = 2;
+    const int bg_dest_y = y + kContentEdgeShadowThickness;
+    const int bottom = toolbar_bounds.bottom();
+    canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(), bg_dest_y - bg_y,
+                         x, bg_dest_y, w, bottom - bg_dest_y);
 
-    // The pre-material design content area line has a shadow that extends a
-    // couple of pixels above the toolbar bounds.
-    gfx::ImageSkia* toolbar_top = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
-    canvas->TileImageInt(*toolbar_top, 0, 0, x, y - kContentEdgeShadowThickness,
-                         w, toolbar_top->height());
+    const gfx::ImageSkia* const top =
+        tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
+    canvas->TileImageInt(*top, 0, 0, x, y, w, top->height());
 
     // Draw the "lightening" shade line around the edges of the toolbar.
-    gfx::ImageSkia* toolbar_left =
+    const gfx::ImageSkia* const left =
         tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
-    canvas->TileImageInt(
-        *toolbar_left, 0, 0, x + kClientEdgeThickness,
-        y + kClientEdgeThickness + kContentEdgeShadowThickness,
-        toolbar_left->width(), bg->height());
-    gfx::ImageSkia* toolbar_right =
+    const int img_y = y + top->height();
+    const int img_w = left->width();
+    const int img_h = bottom - img_y;
+    canvas->TileImageInt(*left, 0, 0, x + kClientEdgeThickness, img_y, img_w,
+                         img_h);
+    const gfx::ImageSkia* const right =
         tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
-    canvas->TileImageInt(
-        *toolbar_right, 0, 0,
-        w - toolbar_right->width() - 2 * kClientEdgeThickness,
-        y + kClientEdgeThickness + kContentEdgeShadowThickness,
-        toolbar_right->width(), bg->height());
+    // TODO(pkasting): The "2 *" part of this makes no sense to me.
+    canvas->TileImageInt(*right, 0, 0, w - (2 * kClientEdgeThickness) - img_w,
+                         img_y, img_w, img_h);
 
     // Toolbar/content separator.
     toolbar_bounds.Inset(kClientEdgeThickness, h - kClientEdgeThickness,
