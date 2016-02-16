@@ -352,6 +352,15 @@ load_webp(FILE *fp)
 					config.output.u.RGBA.stride);
 }
 
+#else
+
+static pixman_image_t *
+load_webp(FILE *fp)
+{
+	fprintf(stderr, "WebP support disabled at compile-time\n");
+	return NULL;
+}
+
 #endif
 
 
@@ -364,9 +373,7 @@ struct image_loader {
 static const struct image_loader loaders[] = {
 	{ { 0x89, 'P', 'N', 'G' }, 4, load_png },
 	{ { 0xff, 0xd8 }, 2, load_jpeg },
-#ifdef HAVE_WEBP
 	{ { 'R', 'I', 'F', 'F' }, 4, load_webp }
-#endif
 };
 
 pixman_image_t *

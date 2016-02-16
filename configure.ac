@@ -293,9 +293,17 @@ fi
 
 PKG_CHECK_MODULES(PIXMAN, [pixman-1])
 PKG_CHECK_MODULES(PNG, [libpng])
-PKG_CHECK_MODULES(WEBP, [libwebp], [have_webp=yes], [have_webp=no])
+
+AC_ARG_WITH([webp],
+            AS_HELP_STRING([--without-webp],
+                           [Use libwebp for WebP decoding support [default=auto]]))
+AS_IF([test "x$with_webp" != "xno"],
+      [PKG_CHECK_MODULES(WEBP, [libwebp], [have_webp=yes], [have_webp=no])],
+      [have_webp=no])
 AS_IF([test "x$have_webp" = "xyes"],
-      [AC_DEFINE([HAVE_WEBP], [1], [Have webp])])
+      [AC_DEFINE([HAVE_WEBP], [1], [Have webp])],
+      [AS_IF([test "x$with_webp" = "xyes"],
+             [AC_MSG_ERROR([WebP support explicitly requested, but libwebp couldn't be found])])])
 
 AC_ARG_ENABLE(vaapi-recorder, [  --enable-vaapi-recorder],,
 	      enable_vaapi_recorder=auto)
