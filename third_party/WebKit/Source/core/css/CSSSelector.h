@@ -253,7 +253,7 @@ public:
 
     bool isAdjacentSelector() const { return m_relation == DirectAdjacent || m_relation == IndirectAdjacent; }
     bool isShadowSelector() const { return m_relation == ShadowPseudo || m_relation == ShadowDeep; }
-    bool isSiblingSelector() const;
+    bool isSiblingPseudo() const;
     bool isAttributeSelector() const { return m_match >= FirstAttributeSelectorMatch; }
     bool isHostPseudoClass() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
     bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent || m_pseudoType == PseudoSlotted; }
@@ -365,12 +365,10 @@ inline CSSSelector::AttributeMatchType CSSSelector::attributeMatchType() const
     return m_data.m_rareData->m_bits.m_attributeMatchType;
 }
 
-inline bool CSSSelector::isSiblingSelector() const
+inline bool CSSSelector::isSiblingPseudo() const
 {
     PseudoType type = pseudoType();
-    return m_relation == DirectAdjacent
-        || m_relation == IndirectAdjacent
-        || type == PseudoEmpty
+    return type == PseudoEmpty
         || type == PseudoFirstChild
         || type == PseudoFirstOfType
         || type == PseudoLastChild

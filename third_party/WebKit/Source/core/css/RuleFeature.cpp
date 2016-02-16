@@ -587,15 +587,21 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, Ru
                 metadata.maxDirectAdjacentSelectors = maxDirectAdjacentSelectors;
             maxDirectAdjacentSelectors = 0;
         }
-        if (!metadata.foundInsertionPointCrossing && current->isSiblingSelector())
+        if (!metadata.foundInsertionPointCrossing && current->isSiblingPseudo())
             metadata.foundSiblingSelector = true;
 
         if (const CSSSelectorList* selectorList = current->selectorList()) {
             for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
                 collectFeaturesFromSelector(*subSelector, metadata);
         }
-        if (current->relationIsAffectedByPseudoContent())
+        if (current->relationIsAffectedByPseudoContent()
+            || current->pseudoType() == CSSSelector::PseudoHost
+            || current->pseudoType() == CSSSelector::PseudoHostContext
+            || current->pseudoType() == CSSSelector::PseudoSlotted) {
             metadata.foundInsertionPointCrossing = true;
+        }
+        if (!metadata.foundInsertionPointCrossing && current->isAdjacentSelector())
+            metadata.foundSiblingSelector = true;
     }
 
     ASSERT(!maxDirectAdjacentSelectors);

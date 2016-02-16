@@ -357,6 +357,12 @@ TEST_F(RuleFeatureSetTest, siblingRulesBeforeContentPseudo)
     expectSiblingRuleCount(0);
 }
 
+TEST_F(RuleFeatureSetTest, siblingRulesBeforeContentPseudo2)
+{
+    collectFeatures("a + ::content .b");
+    expectSiblingRuleCount(0);
+}
+
 TEST_F(RuleFeatureSetTest, siblingRulesAfterContentPseudo)
 {
     collectFeatures(".a ::content .b + .c");
@@ -402,7 +408,19 @@ TEST_F(RuleFeatureSetTest, siblingRulesAfterShadow)
 TEST_F(RuleFeatureSetTest, siblingRulesBeforeSlotted)
 {
     collectFeatures(".a + ::slotted(.b)");
-    expectSiblingRuleCount(1);
+    expectSiblingRuleCount(0);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesBeforeHost)
+{
+    collectFeatures(".a + :host(.b)");
+    expectSiblingRuleCount(0);
+}
+
+TEST_F(RuleFeatureSetTest, siblingRulesBeforeHostContext)
+{
+    collectFeatures(".a + :host-context(.b)");
+    expectSiblingRuleCount(0);
 }
 
 } // namespace blink
