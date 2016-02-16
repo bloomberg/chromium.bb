@@ -39,29 +39,32 @@ function makeFontFaceDeclaration(family, config, display) {
 var maxTime = Math.max.apply(null, configs.map((config) => config.time));
 var table = document.getElementById('container');
 
-for (var config, i = 0; config = configs[i]; i++) {
-    var tr = document.createElement('tr');
-    tr.classList.add('hidden');
-    var td1 = document.createElement('td');
-    td1.textContent = config.time / 1000;
-    tr.appendChild(td1);
-    var td2 = document.createElement('td');
-    td2.textContent = config.delay / 1000;
-    tr.appendChild(td2);
+window.onload = function() {
+    for (var config, i = 0; config = configs[i]; i++) {
+        var tr = document.createElement('tr');
+        tr.classList.add('hidden');
+        var td1 = document.createElement('td');
+        td1.textContent = config.time / 1000;
+        tr.appendChild(td1);
+        var td2 = document.createElement('td');
+        td2.textContent = config.delay / 1000;
+        tr.appendChild(td2);
 
-    for (var display, j = 0; display = fontDisplayValues[j]; j++) {
-        var family = [display, config.time, config.delay].join('-');
-        var rule = makeFontFaceDeclaration(family, config, display);
-        document.styleSheets[0].insertRule(rule, 0);
-        var td = document.createElement('td');
-        td.textContent = 'a';
-        td.style.fontFamily = family + ', Arial';
-        tr.appendChild(td);
+        for (var display, j = 0; display = fontDisplayValues[j]; j++) {
+            var family = [display, config.time, config.delay].join('-');
+            var rule = makeFontFaceDeclaration(family, config, display);
+            document.styleSheets[0].insertRule(rule, 0);
+            var td = document.createElement('td');
+            td.textContent = 'a';
+            td.style.fontFamily = family + ', Arial';
+            tr.appendChild(td);
+        }
+        table.appendChild(tr);
+        setTimeout((function(tr){tr.classList.remove('hidden')}).bind(null, tr), maxTime - config.time);
     }
-    table.appendChild(tr);
-    setTimeout((function(tr){tr.classList.remove('hidden')}).bind(null, tr), maxTime - config.time);
+
+    if (window.testRunner)
+        setTimeout(function() { testRunner.notifyDone(); }, maxTime);
 }
 
-if (window.testRunner)
-    setTimeout(function() { testRunner.notifyDone(); }, maxTime);
 </script>
