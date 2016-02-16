@@ -157,6 +157,10 @@ class OverlayOutputSurface : public OutputSurface {
   }
 
   // OutputSurface implementation
+  void BindFramebuffer() override {
+    OutputSurface::BindFramebuffer();
+    bind_framebuffer_count_ += 1;
+  }
   void SwapBuffers(CompositorFrame* frame) override {
     client_->DidSwapBuffers();
   }
@@ -177,10 +181,12 @@ class OverlayOutputSurface : public OutputSurface {
   void set_is_displayed_as_overlay_plane(bool value) {
     is_displayed_as_overlay_plane_ = value;
   }
+  unsigned bind_framebuffer_count() const { return bind_framebuffer_count_; }
 
  private:
   scoped_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
   bool is_displayed_as_overlay_plane_;
+  unsigned bind_framebuffer_count_ = 0;
 };
 
 scoped_ptr<RenderPass> CreateRenderPass() {
@@ -1514,6 +1520,7 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
   EXPECT_EQ(0U, pass_list.back()->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
+  EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
 
 TEST_F(CALayerOverlayTest, ThreeDTransform) {
@@ -1541,6 +1548,7 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
   expected_transform.RotateAboutXAxis(45.f);
   gfx::Transform actual_transform(ca_layer_list.back().transform);
   EXPECT_EQ(expected_transform.ToString(), actual_transform.ToString());
+  EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
 
 TEST_F(CALayerOverlayTest, AllowContainingClip) {
@@ -1564,6 +1572,7 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
   EXPECT_EQ(0U, pass_list.back()->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
+  EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
 
 TEST_F(CALayerOverlayTest, NontrivialClip) {
@@ -1590,6 +1599,7 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
   EXPECT_EQ(1U, ca_layer_list.size());
   EXPECT_TRUE(ca_layer_list.back().is_clipped);
   EXPECT_EQ(gfx::RectF(64, 64, 128, 128), ca_layer_list.back().clip_rect);
+  EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
 
 TEST_F(CALayerOverlayTest, SkipTransparent) {
@@ -1612,6 +1622,7 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
   EXPECT_EQ(0U, pass_list.back()->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(0U, ca_layer_list.size());
+  EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
 
 class OverlayInfoRendererGL : public GLRenderer {
@@ -1749,6 +1760,7 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
                                    BoundingRect(kUVTopLeft, kUVBottomRight)))
       .Times(1);
   renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
 
   SwapBuffers();
 
@@ -1788,6 +1800,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadInUnderlay) {
                        BoundingRect(kUVTopLeft, kUVBottomRight)))
       .Times(1);
   renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
 
   SwapBuffers();
 
@@ -1820,6 +1833,7 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(3);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
   renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
   Mock::VerifyAndClearExpectations(renderer_.get());
   Mock::VerifyAndClearExpectations(&scheduler_);
@@ -1851,6 +1865,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(0);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
   Mock::VerifyAndClearExpectations(renderer_.get());
   Mock::VerifyAndClearExpectations(&scheduler_);
@@ -1882,6 +1897,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenEmptySwapAllowed) {
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(0);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
   Mock::VerifyAndClearExpectations(renderer_.get());
   Mock::VerifyAndClearExpectations(&scheduler_);

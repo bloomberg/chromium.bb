@@ -267,7 +267,15 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // If all damage is being drawn with overlays or CALayers then skip drawing
   // the render passes.
   if (!should_draw) {
-    BindFramebufferToOutputSurface(&frame);
+    // If any of the overlays is the output surface, then ensure that the
+    // backbuffer be allocated (allocation of the backbuffer is a side-effect
+    // of BindFramebufferToOutputSurface).
+    for (auto& overlay : frame.overlay_list) {
+      if (overlay.use_output_surface_for_resource) {
+        BindFramebufferToOutputSurface(&frame);
+        break;
+      }
+    }
   } else {
     for (const auto& pass : *render_passes_in_draw_order) {
       DrawRenderPass(&frame, pass.get());
