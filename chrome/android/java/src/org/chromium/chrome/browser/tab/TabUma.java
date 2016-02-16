@@ -275,6 +275,12 @@ public class TabUma {
 
     void onDestroy() {
         updateTabState(TAB_STATE_CLOSED);
+
+        if (mTabCreationState == TabCreationState.LIVE_IN_BACKGROUND
+                || mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD) {
+            RecordHistogram.recordBooleanHistogram(
+                    "Tab.BackgroundTabShown", mLastShownTimestamp != -1);
+        }
     }
 
     /** Called when restore of the corresponding tab is triggered. */

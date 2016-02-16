@@ -50785,6 +50785,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.BackgroundTabShown" enum="BooleanShown">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    Whether a tab which was opened in the background (e.g. via &quot;Open link
+    in new tab&quot;) is foregrounded prior to being closed.
+  </summary>
+</histogram>
+
 <histogram name="Tab.Close" units="ms">
   <summary>
     Time in milliseconds from trying to close the tab to actually closing it.
@@ -59028,6 +59036,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanSelected" type="int">
   <int value="0" label="No selection"/>
   <int value="1" label="Selected"/>
+</enum>
+
+<enum name="BooleanShown" type="int">
+  <int value="0" label="Not Shown"/>
+  <int value="1" label="Shown"/>
 </enum>
 
 <enum name="BooleanSkipped" type="int">
