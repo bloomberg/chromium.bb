@@ -54,6 +54,7 @@ source_set("shell") {
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/services/network/public/interfaces",
+    "//mojo/services/package_manager/public/interfaces",
     "//mojo/services/updater",
     "//mojo/shell/public/interfaces",
     "//url",
@@ -63,10 +64,14 @@ source_set("shell") {
     "//crypto:crypto",
     "//mojo/edk/system",
     "//mojo/environment:chromium",
+    "//mojo/services/package_manager:lib",
     "//mojo/shell/public/cpp:sources",
     "//mojo/util:filename_util",
     "//url",
   ]
+
+  # For mojo/shell/application_loader.h
+  allow_circular_includes_from = [ "//mojo/services/package_manager:lib" ]
 }
 
 source_set("test_support") {

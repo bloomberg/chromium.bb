@@ -177,7 +177,7 @@ void Context::Init(const base::FilePath& shell_file_root) {
   RegisterLocalAliases(package_manager_);
 
   scoped_ptr<NativeRunnerFactory> runner_factory;
-  if (command_line.HasSwitch(switches::kMojoSingleProcess)) {
+  if (command_line.HasSwitch(switches::kSingleProcess)) {
 #if defined(COMPONENT_BUILD)
     LOG(ERROR) << "Running Mojo in single process component build, which isn't "
                << "supported because statics in apps interact. Use static build"

@@ -36,11 +36,14 @@ class ApplicationInstance : public mojom::Shell,
   // |requesting_content_handler_id| is the id of the content handler that
   // loaded this app. If the app was not loaded by a content handler the id
   // is kInvalidContentHandlerID.
-  ApplicationInstance(mojom::ShellClientPtr shell_client,
-                      ApplicationManager* manager,
-                      const Identity& identity,
-                      uint32_t requesting_content_handler_id,
-                      const base::Closure& on_application_end);
+  ApplicationInstance(
+      mojom::ShellClientPtr shell_client,
+      ApplicationManager* manager,
+      const Identity& identity,
+      uint32_t requesting_content_handler_id,
+      const mojom::Shell::ConnectToApplicationCallback& connect_callback,
+      const base::Closure& on_application_end,
+      const String& application_name);
 
   ~ApplicationInstance() override;
 
@@ -52,6 +55,8 @@ class ApplicationInstance : public mojom::Shell,
   void SetNativeRunner(NativeRunner* native_runner);
 
   void BindPIDReceiver(InterfaceRequest<mojom::PIDReceiver> pid_receiver);
+
+  void RunConnectCallback();
 
   mojom::ShellClient* shell_client() { return shell_client_.get(); }
   const Identity& identity() const { return identity_; }
@@ -65,6 +70,7 @@ class ApplicationInstance : public mojom::Shell,
   uint32_t requesting_content_handler_id() const {
     return requesting_content_handler_id_;
   }
+  const String& application_name() const { return application_name_; }
 
  private:
   // Shell implementation:
@@ -97,6 +103,7 @@ class ApplicationInstance : public mojom::Shell,
   const Identity identity_;
   const bool allow_any_application_;
   uint32_t requesting_content_handler_id_;
+  mojom::Shell::ConnectToApplicationCallback connect_callback_;
   base::Closure on_application_end_;
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::Shell> binding_;
@@ -104,6 +111,7 @@ class ApplicationInstance : public mojom::Shell,
   bool queue_requests_;
   std::vector<ConnectToApplicationParams*> queued_client_requests_;
   NativeRunner* native_runner_;
+  const String application_name_;
   base::ProcessId pid_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationInstance);

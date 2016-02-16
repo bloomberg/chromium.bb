@@ -16,13 +16,17 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "mojo/common/url_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/services/package_manager/loader.h"
 #include "mojo/shell/application_instance.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager.h"
+#include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/shell_application_loader.h"
 #include "mojo/shell/switches.h"
+#include "mojo/util/filename_util.h"
 
 namespace mojo {
 namespace shell {
@@ -63,13 +67,18 @@ ApplicationManager::ApplicationManager(
     scoped_ptr<PackageManager> package_manager,
     scoped_ptr<NativeRunnerFactory> native_runner_factory,
     base::TaskRunner* task_runner)
-    : package_manager_(std::move(package_manager)),
+    : use_remote_package_manager_(false),
+      package_manager_(std::move(package_manager)),
       task_runner_(task_runner),
       native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
   package_manager_->SetApplicationManager(this);
   SetLoaderForURL(make_scoped_ptr(new ShellApplicationLoader(this)),
                   GURL("mojo:shell"));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+         switches::kUseRemotePackageManager)) {
+    UseRemotePackageManager();
+  }
 }
 
 ApplicationManager::~ApplicationManager() {
@@ -96,17 +105,63 @@ void ApplicationManager::ConnectToApplication(
 
   ApplicationLoader* loader = GetLoaderForURL(params->target().url());
   if (loader) {
-    const GURL url = params->target().url();
+    GURL url = params->target().url();
     package_manager_->BuiltinAppLoaded(url);
-    loader->Load(url, CreateAndConnectToInstance(std::move(params), nullptr));
+    mojom::ShellClientRequest request;
+    std::string application_name =
+        package_manager_->GetApplicationName(params->target().url().spec());
+    ApplicationInstance* instance = CreateAndConnectToInstance(
+        std::move(params), nullptr, nullptr, application_name, &request);
+    loader->Load(url, std::move(request));
+    instance->RunConnectCallback();
     return;
   }
 
-  URLRequestPtr original_url_request = params->TakeTargetURLRequest();
-  auto callback =
+  if (use_remote_package_manager_) {
+    std::string url = params->target().url().spec();
+    shell_resolver_->ResolveMojoURL(
+        url,
+        base::Bind(&ApplicationManager::OnGotResolvedURL,
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&params)));
+  } else {
+    URLRequestPtr original_url_request = params->TakeTargetURLRequest();
+    auto callback =
       base::Bind(&ApplicationManager::HandleFetchCallback,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&params));
-  package_manager_->FetchRequest(std::move(original_url_request), callback);
+      weak_ptr_factory_.GetWeakPtr(), base::Passed(&params));
+    package_manager_->FetchRequest(std::move(original_url_request), callback);
+  }
+}
+
+void ApplicationManager::UseRemotePackageManager() {
+  use_remote_package_manager_ = true;
+
+  GURL package_manager_url("mojo://package_manager/");
+
+  SetLoaderForURL(make_scoped_ptr(new package_manager::Loader(task_runner_)),
+                  package_manager_url);
+
+  shell::mojom::InterfaceProviderPtr interfaces;
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->set_source(Identity(GURL("mojo:shell"), std::string(),
+                     GetPermissiveCapabilityFilter()));
+  params->set_remote_interfaces(GetProxy(&interfaces));
+
+  if (false) {
+    GURL file_url =
+        package_manager_->ResolveMojoURL(package_manager_url);
+    params->SetTarget(Identity(file_url, std::string(),
+                      GetPermissiveCapabilityFilter()));
+    // TODO(beng): Fish the name out of a manifest. There's a chicken-and-egg
+    // issue here as the package manager reads the manifests. The solution is
+    //probably to defer application name loading.
+    CreateAndRunLocalApplication(std::move(params), "Package Manager",
+                                 file_url);
+  } else {
+    params->SetTarget(Identity(package_manager_url, std::string(),
+                               GetPermissiveCapabilityFilter()));
+    ConnectToApplication(std::move(params));
+  }
+  GetInterface(interfaces.get(), &shell_resolver_);
 }
 
 bool ApplicationManager::ConnectToRunningApplication(
@@ -132,17 +187,16 @@ void ApplicationManager::CreateInstanceForHandle(
     const GURL& url,
     mojom::CapabilityFilterPtr filter,
     InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
-  // Instances created by others are considered unique, and thus have no
-  // identity. As such they cannot be connected to by anyone else, and so we
-  // never call ConnectToClient().
-  // TODO(beng): GetPermissiveCapabilityFilter() here obviously cannot make it
-  //             to production. See note in application_manager.mojom.
-  //             http://crbug.com/555392
+  // We don't call ConnectToClient() here since the instance was created
+  // manually by other code, not in response to a Connect() request. The newly
+  // created instance is identified by |url| and may be subsequently reached by
+  // client code using this identity.
   CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
   Identity target_id(url, std::string(), local_filter);
-  ApplicationInstance* instance = nullptr;
-  InterfaceRequest<mojom::ShellClient> request =
-      CreateInstance(target_id, base::Closure(), &instance);
+  mojom::ShellClientRequest request;
+  ApplicationInstance* instance = CreateInstance(
+      target_id, EmptyConnectCallback(), base::Closure(),
+      package_manager_->GetApplicationName(url.spec()), &request);
   instance->BindPIDReceiver(std::move(pid_receiver));
   scoped_ptr<NativeRunner> runner =
       native_runner_factory_->Create(base::FilePath());
@@ -176,28 +230,38 @@ void ApplicationManager::ApplicationPIDAvailable(
       });
 }
 
-InterfaceRequest<mojom::ShellClient>
-    ApplicationManager::CreateAndConnectToInstance(
-        scoped_ptr<ConnectToApplicationParams> params,
-        ApplicationInstance** resulting_instance) {
-  ApplicationInstance* instance = nullptr;
-  InterfaceRequest<mojom::ShellClient> request =
-      CreateInstance(params->target(), params->on_application_end(), &instance);
+ApplicationInstance* ApplicationManager::CreateAndConnectToInstance(
+    scoped_ptr<ConnectToApplicationParams> params,
+    Identity* source,
+    Identity* target,
+    const std::string& application_name,
+    mojom::ShellClientRequest* request) {
+  if (source)
+    *source = params->source();
+  if (target)
+    *target = params->target();
+  ApplicationInstance* instance = CreateInstance(
+      params->target(), params->connect_callback(),
+      params->on_application_end(),
+      application_name,
+      request);
+  params->set_connect_callback(EmptyConnectCallback());
   instance->ConnectToClient(std::move(params));
-  if (resulting_instance)
-    *resulting_instance = instance;
-  return request;
+  return instance;
 }
 
-InterfaceRequest<mojom::ShellClient> ApplicationManager::CreateInstance(
+ApplicationInstance* ApplicationManager::CreateInstance(
     const Identity& target_id,
+    const mojom::Shell::ConnectToApplicationCallback& connect_callback,
     const base::Closure& on_application_end,
-    ApplicationInstance** resulting_instance) {
+    const String& application_name,
+    mojom::ShellClientRequest* request) {
   mojom::ShellClientPtr shell_client;
-  InterfaceRequest<mojom::ShellClient> request = GetProxy(&shell_client);
+  *request = GetProxy(&shell_client);
   ApplicationInstance* instance = new ApplicationInstance(
       std::move(shell_client), this, target_id,
-      mojom::Shell::kInvalidApplicationID, on_application_end);
+      mojom::Shell::kInvalidApplicationID, connect_callback,on_application_end,
+      application_name);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
   identity_to_instance_[target_id] = instance;
@@ -208,9 +272,62 @@ InterfaceRequest<mojom::ShellClient> ApplicationManager::CreateInstance(
         listener->ApplicationInstanceCreated(application_info.Clone());
       });
   instance->InitializeApplication();
-  if (resulting_instance)
-    *resulting_instance = instance;
-  return request;
+  return instance;
+}
+
+void ApplicationManager::OnGotResolvedURL(
+    scoped_ptr<ConnectToApplicationParams> params,
+    const String& resolved_url,
+    const String& file_url,
+    const String& application_name,
+    mojom::CapabilityFilterPtr base_filter) {
+  // It's possible that when this manifest request was issued, another one was
+  // already in-progress and completed by the time this one did, and so the
+  // requested application may already be running.
+  if (ConnectToRunningApplication(&params))
+    return;
+
+  GURL resolved_gurl = resolved_url.To<GURL>();
+  if (params->target().url().spec() != resolved_url) {
+    CapabilityFilter capability_filter = GetPermissiveCapabilityFilter();
+    if (!base_filter.is_null())
+      capability_filter = base_filter->filter.To<CapabilityFilter>();
+
+    // TODO(beng): For now, we just use the legacy PackageManagerImpl to manage
+    //             the ContentHandler connection. Once we get rid of the
+    //             non-remote package manager path we will have to fold this in
+    //             here.
+    Identity source, target;
+    mojom::ShellClientRequest request;
+    ApplicationInstance* instance = CreateAndConnectToInstance(
+        std::move(params), &source, &target, application_name, &request);
+
+    uint32_t content_handler_id = package_manager_->StartContentHandler(
+        source, Identity(resolved_gurl, target.qualifier(), capability_filter),
+        target.url(), std::move(request));
+    CHECK(content_handler_id != mojom::Shell::kInvalidApplicationID);
+    instance->set_requesting_content_handler_id(content_handler_id);
+    instance->RunConnectCallback();
+    return;
+  }
+  CreateAndRunLocalApplication(std::move(params), application_name,
+                               file_url.To<GURL>());
+}
+
+void ApplicationManager::CreateAndRunLocalApplication(
+    scoped_ptr<ConnectToApplicationParams> params,
+    const String& application_name,
+    const GURL& file_url) {
+  Identity source, target;
+  mojom::ShellClientRequest request;
+  ApplicationInstance* instance = CreateAndConnectToInstance(
+      std::move(params), &source, &target, application_name, &request);
+
+  scoped_ptr<Fetcher> fetcher;
+  bool start_sandboxed = false;
+  RunNativeApplication(std::move(request), start_sandboxed, std::move(fetcher),
+                       instance, util::UrlToFilePath(file_url), true);
+  instance->RunConnectCallback();
 }
 
 void ApplicationManager::HandleFetchCallback(
@@ -244,41 +361,28 @@ void ApplicationManager::HandleFetchCallback(
   if (ConnectToRunningApplication(&params))
     return;
 
-  Identity source = params->source();
-  Identity target = params->target();
-  mojom::Shell::ConnectToApplicationCallback connect_callback =
-      params->connect_callback();
-  params->set_connect_callback(EmptyConnectCallback());
-  ApplicationInstance* app = nullptr;
-  InterfaceRequest<mojom::ShellClient> request(
-      CreateAndConnectToInstance(std::move(params), &app));
+  Identity source, target;
+  mojom::ShellClientRequest request;
+  std::string application_name =
+      package_manager_->GetApplicationName(params->target().url().spec());
+  ApplicationInstance* instance = CreateAndConnectToInstance(
+      std::move(params), &source, &target, application_name, &request);
 
   uint32_t content_handler_id = package_manager_->HandleWithContentHandler(
       fetcher.get(), source, target.url(), target.filter(), &request);
   if (content_handler_id != mojom::Shell::kInvalidApplicationID) {
-    app->set_requesting_content_handler_id(content_handler_id);
-    connect_callback.Run(app->id(), content_handler_id);
-    return;
+    instance->set_requesting_content_handler_id(content_handler_id);
+  } else {
+    bool start_sandboxed = false;
+    fetcher->AsPath(
+        task_runner_,
+        base::Bind(&ApplicationManager::RunNativeApplication,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(std::move(request)), start_sandboxed,
+                   base::Passed(std::move(fetcher)),
+                   base::Unretained(instance)));
   }
-
-  // TODO(erg): Have a better way of switching the sandbox on. For now, switch
-  // it on hard coded when we're using some of the sandboxable core services.
-  bool start_sandboxed = false;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMojoNoSandbox)) {
-    start_sandboxed = (target.url() == GURL("mojo://core_services/") &&
-                          target.qualifier() == "Core") ||
-                      target.url() == GURL("mojo://html_viewer/");
-  }
-
-  connect_callback.Run(app->id(), mojom::Shell::kInvalidApplicationID);
-
-  fetcher->AsPath(
-      task_runner_,
-      base::Bind(&ApplicationManager::RunNativeApplication,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(request)), start_sandboxed,
-                 base::Passed(std::move(fetcher)), base::Unretained(app)));
+  instance->RunConnectCallback();
 }
 
 void ApplicationManager::RunNativeApplication(
@@ -332,8 +436,10 @@ mojom::ApplicationInfoPtr ApplicationManager::CreateApplicationInfoForInstance(
   info->id = instance->id();
   info->url = instance->identity().url().spec();
   info->qualifier = instance->identity().qualifier();
-  info->name =
-      package_manager_->GetApplicationName(instance->identity().url().spec());
+  if (use_remote_package_manager_)
+    info->name = instance->application_name();
+  else
+    info->name = package_manager_->GetApplicationName(info->url);
   if (instance->identity().url().spec() == "mojo://shell/")
     info->pid = base::Process::Current().Pid();
   else

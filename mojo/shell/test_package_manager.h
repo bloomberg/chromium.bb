@@ -35,6 +35,11 @@ class TestPackageManager : public PackageManager {
           override;
   bool IsURLInCatalog(const std::string& url) const override;
   std::string GetApplicationName(const std::string& url) const override;
+  GURL ResolveMojoURL(const GURL& mojo_url) override;
+  uint32_t StartContentHandler(const Identity& source,
+                               const Identity& content_handler,
+                               const GURL& url,
+                               mojom::ShellClientRequest request) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestPackageManager);
 };

@@ -9,9 +9,19 @@ import "mojo/shell/public/interfaces/shell.mojom";
 // Implemented exclusively for the Mojo Shell's use in resolving mojo:// URLs
 // and reading static manifest information.
 interface ShellResolver {
-  // Returns the mojo:// URL of a service that provides the specified |mojo_url|
-  // via an implementation of mojo::ContentHandler.
+  // Resolves |mojo_url| to the following metadata:
+  // |resolved_mojo_url| - another mojo: url of an application implementing
+  // mojo::ContentHandler that can handle connections to |mojo_url|.
+  // |mojo_file_url| - a file URL to the application specified in
+  // |resolved_mojo_url| TODO(beng): what if |resolved_mojo_url| needs to be
+  // re-resolved??
+  // |application_name| - the display name of the application @ |mojo_url|,
+  // loaded from |resolved_mojo_url|'s manifest.
+  // |filter| - the base CapabilityFilter within which an instance of
+  // |resolved_mojo_url| must be run for |mojo_url|.
   // TODO(beng): return qualifier too!
   ResolveMojoURL(string mojo_url) => (string resolved_mojo_url,
+                                      string mojo_file_url,
+                                      string application_name,
                                       mojo.shell.mojom.CapabilityFilter filter);
 };

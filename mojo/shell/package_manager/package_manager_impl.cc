@@ -213,6 +213,23 @@ std::string PackageManagerImpl::GetApplicationName(
   return it != catalog_.end() ? it->second.name : url;
 }
 
+GURL PackageManagerImpl::ResolveMojoURL(const GURL& mojo_url) {
+  return ResolveURL(mojo_url);
+}
+
+uint32_t PackageManagerImpl::StartContentHandler(
+    const Identity& source,
+    const Identity& content_handler,
+    const GURL& url,
+    mojom::ShellClientRequest request) {
+  URLResponsePtr response(URLResponse::New());
+  response->url = url.spec();
+  ContentHandlerConnection* connection =
+      GetContentHandler(content_handler, source);
+  connection->StartApplication(std::move(request), std::move(response));
+  return connection->id();
+}
+
 GURL PackageManagerImpl::ResolveURL(const GURL& url) {
   return url_resolver_.get() ? url_resolver_->ResolveMojoURL(url) : url;
 }
@@ -235,7 +252,7 @@ bool PackageManagerImpl::ShouldHandleWithContentHandler(
   // your_thing.mojo!base::AtExitManager and
   // my_thing.mojo!base::AtExitManager are different symbols.
   bool use_real_qualifier = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kMojoSingleProcess);
+      switches::kSingleProcess);
 
   GURL content_handler_url;
   // The response begins with a #!mojo <content-handler-url>.

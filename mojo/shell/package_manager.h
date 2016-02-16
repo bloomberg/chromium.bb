@@ -63,6 +63,13 @@ class PackageManager {
 
   // Returns the name for the application at |url| from its manifest.
   virtual std::string GetApplicationName(const std::string& url) const = 0;
+
+  virtual GURL ResolveMojoURL(const GURL& mojo_url) = 0;
+
+  virtual uint32_t StartContentHandler(const Identity& source,
+                                       const Identity& content_handler,
+                                       const GURL& url,
+                                       mojom::ShellClientRequest request) = 0;
 };
 
 }  // namespace shell

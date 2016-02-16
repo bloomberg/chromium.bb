@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/weak_interface_ptr_set.h"
+#include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
@@ -101,8 +102,6 @@ class ApplicationManager {
       mojom::CapabilityFilterPtr filter,
       InterfaceRequest<mojom::PIDReceiver> pid_receiver);
   void AddListener(mojom::ApplicationManagerListenerPtr listener);
-  void GetRunningApplications(
-      const Callback<void(Array<mojom::ApplicationInfoPtr>)>& callback);
 
   void ApplicationPIDAvailable(uint32_t id, base::ProcessId pid);
 
@@ -110,17 +109,48 @@ class ApplicationManager {
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
 
+  void UseRemotePackageManager();
+
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
       scoped_ptr<ConnectToApplicationParams>* params);
 
-  InterfaceRequest<mojom::ShellClient> CreateAndConnectToInstance(
+  ApplicationInstance* CreateAndConnectToInstance(
       scoped_ptr<ConnectToApplicationParams> params,
-      ApplicationInstance** instance);
-  InterfaceRequest<mojom::ShellClient> CreateInstance(
+      Identity* source,
+      Identity* target,
+      const std::string& application_name,
+      mojom::ShellClientRequest* request);
+  ApplicationInstance* CreateInstance(
       const Identity& target_id,
+      const mojom::Shell::ConnectToApplicationCallback& connect_callback,
       const base::Closure& on_application_end,
-      ApplicationInstance** resulting_instance);
+      const String& application_name,
+      mojom::ShellClientRequest* request);
+
+  // Callback when remote PackageManager resolves mojo:foo to mojo:bar.
+  // |params| are the params passed to Connect().
+  // |resolved_url| is the mojo: url identifying the physical package
+  // application.
+  // |file_url| is the resolved file:// URL of the physical package.
+  // |application_name| is the requested application's pretty name, from its
+  // manifest.
+  // |base_filter| is the CapabilityFilter the requested application should be
+  // run with, from its manifest.
+  void OnGotResolvedURL(scoped_ptr<ConnectToApplicationParams> params,
+                        const String& resolved_url,
+                        const String& file_url,
+                        const String& application_name,
+                        mojom::CapabilityFilterPtr base_filter);
+
+  // In response to a request via Connect() with |params|, creates an
+  // ApplicationInstance and runs the application at |file_url|.
+  void CreateAndRunLocalApplication(
+      scoped_ptr<ConnectToApplicationParams> params,
+      const String& application_name,
+      const GURL& file_url);
+
+  void AddListenerManifestsReady(mojom::ApplicationManagerListenerPtr listener);
 
   // Called once |fetcher| has found app. |params->app_url()| is the url of
   // the requested application before any mappings/resolution have been applied.
@@ -143,6 +173,9 @@ class ApplicationManager {
 
   mojom::ApplicationInfoPtr CreateApplicationInfoForInstance(
       ApplicationInstance* instance) const;
+
+  bool use_remote_package_manager_;
+  package_manager::mojom::ShellResolverPtr shell_resolver_;
 
   scoped_ptr<PackageManager> const package_manager_;
   // Loader management.

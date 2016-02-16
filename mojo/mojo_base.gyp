@@ -204,6 +204,8 @@
       'type': 'none',
       'variables': {
         'mojom_files': [
+          'services/package_manager/public/interfaces/resolver.mojom',
+          'services/package_manager/public/interfaces/shell_resolver.mojom',
           'shell/public/interfaces/application_manager.mojom',
           'shell/public/interfaces/content_handler.mojom',
           'shell/public/interfaces/interface_provider.mojom',

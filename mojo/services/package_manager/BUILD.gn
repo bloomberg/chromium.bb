@@ -14,6 +14,7 @@ mojo_native_application("package_manager") {
     ":lib",
     ":manifest",
     "//base",
+    "//mojo/message_pump",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/shell/public/cpp",
@@ -27,6 +28,8 @@ mojo_application_manifest("manifest") {
 
 source_set("lib") {
   sources = [
+    "loader.cc",
+    "loader.h",
     "package_manager.cc",
     "package_manager.h",
   ]

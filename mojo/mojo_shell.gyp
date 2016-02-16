@@ -7,6 +7,10 @@
     'target_name': 'mojo_shell_lib',
     'type': 'static_library',
     'sources': [
+      'services/package_manager/loader.cc',
+      'services/package_manager/loader.h',
+      'services/package_manager/package_manager.cc',
+      'services/package_manager/package_manager.h',
       'shell/application_instance.cc',
       'shell/application_instance.h',
       'shell/application_loader.h',

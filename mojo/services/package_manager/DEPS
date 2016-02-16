@@ -1,6 +1,7 @@
 include_rules = [
   "+base",
   "+mojo/common",
+  "+mojo/message_pump",
   "+mojo/shell/public",
   "+mojo/util",
   "+net",

@@ -6,6 +6,8 @@
 
 #include "mojo/shell/test_package_manager.h"
 
+#include "url/gurl.h"
+
 namespace mojo {
 namespace shell {
 namespace test {
@@ -31,6 +33,16 @@ bool TestPackageManager::IsURLInCatalog(const std::string& url) const {
 }
 std::string TestPackageManager::GetApplicationName(
     const std::string& url) const { return url; }
+GURL TestPackageManager::ResolveMojoURL(const GURL& mojo_url) {
+  return mojo_url;
+}
+uint32_t TestPackageManager::StartContentHandler(
+    const Identity& source,
+    const Identity& content_handler,
+    const GURL& url,
+    mojom::ShellClientRequest request) {
+  return mojo::shell::mojom::Shell::kInvalidApplicationID;
+}
 
 }  // namespace test
 }  // namespace shell

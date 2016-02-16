@@ -10,6 +10,7 @@
 #include "mojo/common/url_type_converters.h"
 #include "mojo/util/filename_util.h"
 #include "net/base/filename_util.h"
+#include "url/url_util.h"
 
 namespace package_manager {
 namespace {
@@ -67,12 +68,17 @@ ApplicationInfo::~ApplicationInfo() {}
 ApplicationCatalogStore::~ApplicationCatalogStore() {}
 
 PackageManager::PackageManager(base::TaskRunner* blocking_pool)
-    : blocking_pool_(blocking_pool) {
+    : blocking_pool_(blocking_pool), catalog_store_(nullptr) {
+  url::AddStandardScheme("mojo", url::SCHEME_WITHOUT_AUTHORITY);
+  url::AddStandardScheme("exe", url::SCHEME_WITHOUT_AUTHORITY);
+
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
 
   system_package_dir_ =
       mojo::util::FilePathToFileURL(shell_dir).Resolve(std::string());
+  system_package_dir_ =
+      mojo::util::AddTrailingSlashIfNeeded(system_package_dir_);
 }
 PackageManager::~PackageManager() {}
 
@@ -136,6 +142,20 @@ void PackageManager::CompleteResolveMojoURL(
   auto info_iter = catalog_.find(resolved_url.spec());
   CHECK(info_iter != catalog_.end());
 
+  GURL file_url;
+  if (resolved_url.SchemeIs("mojo")) {
+    // It's still a mojo: URL, use the default mapping scheme.
+    const std::string host = resolved_url.host();
+    file_url = system_package_dir_.Resolve(host + "/" + host + ".mojo");
+  } else if (resolved_url.SchemeIs("exe")) {
+#if defined OS_WIN
+    std::string extension = ".exe";
+#else
+    std::string extension;
+#endif
+    file_url = system_package_dir_.Resolve(resolved_url.host() + extension);
+  }
+
   // TODO(beng): Use the actual capability filter from |info|!
   mojo::shell::mojom::CapabilityFilterPtr filter(
       mojo::shell::mojom::CapabilityFilter::New());
@@ -143,7 +163,8 @@ void PackageManager::CompleteResolveMojoURL(
   all_interfaces.push_back("*");
   filter->filter.insert("*", std::move(all_interfaces));
 
-  callback.Run(resolved_url.spec(), std::move(filter));
+  callback.Run(resolved_url.spec(), file_url.spec(), info_iter->second.name,
+               std::move(filter));
 }
 
 bool PackageManager::IsURLInCatalog(const GURL& url) const {
@@ -204,18 +225,19 @@ void PackageManager::SerializeCatalog() {
 const ApplicationInfo& PackageManager::DeserializeApplication(
     const base::DictionaryValue* dictionary) {
   ApplicationInfo info = BuildApplicationInfoFromDictionary(*dictionary);
-  CHECK(catalog_.find(info.url) == catalog_.end());
-  catalog_[info.url] = info;
+  if (catalog_.find(info.url) == catalog_.end()) {
+    catalog_[info.url] = info;
 
-  if (dictionary->HasKey("applications")) {
-    const base::ListValue* applications = nullptr;
-    dictionary->GetList("applications", &applications);
-    for (size_t i = 0; i < applications->GetSize(); ++i) {
-      const base::DictionaryValue* child = nullptr;
-      applications->GetDictionary(i, &child);
-      const ApplicationInfo& child_info = DeserializeApplication(child);
-      mojo_url_aliases_[child_info.url] =
-          std::make_pair(info.url, GURL(child_info.url).host());
+    if (dictionary->HasKey("applications")) {
+      const base::ListValue* applications = nullptr;
+      dictionary->GetList("applications", &applications);
+      for (size_t i = 0; i < applications->GetSize(); ++i) {
+        const base::DictionaryValue* child = nullptr;
+        applications->GetDictionary(i, &child);
+        const ApplicationInfo& child_info = DeserializeApplication(child);
+        mojo_url_aliases_[child_info.url] =
+            std::make_pair(info.url, GURL(child_info.url).host());
+      }
     }
   }
   return catalog_[info.url];
@@ -223,7 +245,6 @@ const ApplicationInfo& PackageManager::DeserializeApplication(
 
 GURL PackageManager::GetManifestURL(const GURL& url) {
   // TODO(beng): think more about how this should be done for exe targets.
-
   if (url.SchemeIs("mojo"))
     return system_package_dir_.Resolve(url.host() + "/manifest.json");
   else if (url.SchemeIs("exe"))

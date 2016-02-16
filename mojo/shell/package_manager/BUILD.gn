@@ -13,6 +13,7 @@ source_set("package_manager") {
   ]
 
   deps = [
+    "//mojo/services/package_manager/public/interfaces",
     "//mojo/shell",
     "//mojo/shell/fetcher",
     "//mojo/util:filename_util",

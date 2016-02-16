@@ -31,7 +31,7 @@ int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback) {
 #endif
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // http://crbug.com/546644
-  command_line->AppendSwitch(switches::kMojoNoSandbox);
+  command_line->AppendSwitch(switches::kNoSandbox);
 
   base::PlatformThread::SetName("mojo_runner");
 

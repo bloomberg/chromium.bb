@@ -7,15 +7,8 @@
 namespace mojo {
 namespace switches {
 
-// If set apps downloaded are not deleted.
-const char kDontDeleteOnDownload[] = "dont-delete-on-download";
-
-// Disables the sandbox for debugging. (Why the Mojo prefix on the constant?
-// Because otherwise we conflict with content.)
-const char kMojoNoSandbox[] = "no-sandbox";
-
-// Load apps in a single processes.
-const char kMojoSingleProcess[] = "single-process";
+// Disables the sandbox for debugging.
+const char kNoSandbox[] = "no-sandbox";
 
 // If set apps downloaded are saved in with a predictable filename, to help
 // remote debugging: when gdb is used through gdbserver, it needs to be able to
@@ -24,9 +17,11 @@ const char kMojoSingleProcess[] = "single-process";
 // their content.
 const char kPredictableAppFilenames[] = "predictable-app-filenames";
 
-// Pull apps via component updater, rather than using default local resolution
-// to find them.
-const char kUseUpdater[] = "use-updater";
+// Load apps in a single processes.
+const char kSingleProcess[] = "single-process";
+
+// Uses the mojo:package_manager application instead of the builtin one.
+const char kUseRemotePackageManager[] = "use-remote-package-manager";
 
 }  // namespace switches
 }  // namespace mojo
