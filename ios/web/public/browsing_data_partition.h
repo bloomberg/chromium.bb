@@ -7,11 +7,7 @@
 
 #include "base/macros.h"
 
-#if defined(__OBJC__)
 @class CRWBrowsingDataStore;
-#else   // __OBJC__
-class CRWBrowsingDataStore;
-#endif  // __OBJC__
 
 namespace web {
 
@@ -36,7 +32,7 @@ class BrowsingDataPartition {
   virtual CRWBrowsingDataStore* GetBrowsingDataStore() = 0;
 
  protected:
-  virtual ~BrowsingDataPartition(){};
+  virtual ~BrowsingDataPartition() {}
 };
 
 }  // namespace web
