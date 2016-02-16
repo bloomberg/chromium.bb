@@ -3163,7 +3163,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeShapeOutside(CSSParserTokenRange&
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeContentDistributionOverflowPosition(CSSParserTokenRange& range)
 {
-    if (identMatches<CSSValueAuto, CSSValueBaseline, CSSValueLastBaseline>(range.peek().id()))
+    if (identMatches<CSSValueNormal, CSSValueBaseline, CSSValueLastBaseline>(range.peek().id()))
         return CSSContentDistributionValue::create(CSSValueInvalid, range.consumeIncludingWhitespace().id(), CSSValueInvalid);
 
     CSSValueID distribution = CSSValueInvalid;

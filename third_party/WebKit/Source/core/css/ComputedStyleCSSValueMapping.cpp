@@ -445,42 +445,12 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const C
     return ret.release();
 }
 
-static StyleContentAlignmentData resolveJustifyContentAuto(const ComputedStyle& style)
-{
-    const StyleContentAlignmentData& data = style.justifyContent();
-    if (data.position() != ContentPositionAuto || data.distribution() != ContentDistributionDefault)
-        return data;
-
-    if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-        return {ContentPositionFlexStart, ContentDistributionDefault, OverflowAlignmentDefault};
-
-    if (style.isDisplayFlexibleBox())
-        return {ContentPositionFlexStart, ContentDistributionDefault, OverflowAlignmentDefault};
-
-    return {ContentPositionStart, ContentDistributionDefault, OverflowAlignmentDefault};
-}
-
-static StyleContentAlignmentData resolveAlignContentAuto(const ComputedStyle& style)
-{
-    const StyleContentAlignmentData& data = style.alignContent();
-    if (data.position() != ContentPositionAuto || data.distribution() != ContentDistributionDefault)
-        return data;
-
-    if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-        return {ContentPositionAuto, ContentDistributionStretch, OverflowAlignmentDefault};
-
-    if (style.isDisplayFlexibleBox())
-        return {ContentPositionAuto, ContentDistributionStretch, OverflowAlignmentDefault};
-
-    return {ContentPositionStart, ContentDistributionDefault, OverflowAlignmentDefault};
-}
-
 static PassRefPtrWillBeRawPtr<CSSValueList> valueForContentPositionAndDistributionWithOverflowAlignment(const StyleContentAlignmentData& data)
 {
     RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
     if (data.distribution() != ContentDistributionDefault)
         result->append(CSSPrimitiveValue::create(data.distribution()));
-    if (data.distribution() == ContentDistributionDefault || data.position() != ContentPositionAuto)
+    if (data.distribution() == ContentDistributionDefault || data.position() != ContentPositionNormal)
         result->append(CSSPrimitiveValue::create(data.position()));
     if ((data.position() >= ContentPositionCenter || data.distribution() != ContentDistributionDefault) && data.overflow() != OverflowAlignmentDefault)
         result->append(CSSPrimitiveValue::create(data.overflow()));
@@ -1603,7 +1573,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyEmptyCells:
         return cssValuePool().createValue(style.emptyCells());
     case CSSPropertyAlignContent:
-        return valueForContentPositionAndDistributionWithOverflowAlignment(resolveAlignContentAuto(style));
+        return valueForContentPositionAndDistributionWithOverflowAlignment(style.alignContent());
     case CSSPropertyAlignItems:
         return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignItemsPosition(), &style), style.alignItemsOverflowAlignment(), NonLegacyPosition);
     case CSSPropertyAlignSelf: {
@@ -1630,7 +1600,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyFlexWrap:
         return cssValuePool().createValue(style.flexWrap());
     case CSSPropertyJustifyContent:
-        return valueForContentPositionAndDistributionWithOverflowAlignment(resolveJustifyContentAuto(style));
+        return valueForContentPositionAndDistributionWithOverflowAlignment(style.justifyContent());
     case CSSPropertyOrder:
         return cssValuePool().createValue(style.order(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyFloat:

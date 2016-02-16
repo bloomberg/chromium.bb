@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <link href="resources/grid.css" rel="stylesheet">
+<link href="resources/grid-alignment.css" rel="stylesheet">
 <style>
 .grid {
     grid-template-columns: 50px 100px;
@@ -58,7 +59,7 @@ window.addEventListener("load", testAdditions, false);
 <p>This test checks that the tracks' auto positions are recomputed after adding a grid item.</p>
 
 <div class="unconstrainedContainer">
-    <div class="grid gridAutoFlowColumnDense" id="gridAutoFlowColumnDense">
+    <div class="grid gridAutoFlowColumnDense justifyContentStart" id="gridAutoFlowColumnDense">
         <div class="sizedToGridArea autoRowAutoColumn" id="autoFlowColumnElement" data-expected-width="50" data-expected-height="50">XXXXX XXXXX XXXXX</div>
     </div>
 </div>
@@ -70,7 +71,7 @@ window.addEventListener("load", testAdditions, false);
 </div>
 
 <div class="unconstrainedContainer">
-    <div class="grid gridAutoFlowColumnDense" id="gridAutoFlowColumnWithAuto">
+    <div class="grid gridAutoFlowColumnDense justifyContentStart" id="gridAutoFlowColumnWithAuto">
         <div class="sizedToGridArea autoRowAutoColumn" id="autoFlowColumnElementWithAuto" data-expected-width="50" data-expected-height="50">XXXXX XXXXX XXXXX</div>
     </div>
 </div>

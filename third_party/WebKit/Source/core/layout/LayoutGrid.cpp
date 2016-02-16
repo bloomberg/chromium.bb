@@ -1363,12 +1363,18 @@ void LayoutGrid::dirtyGrid()
     m_gridIsDirty = true;
 }
 
+static const StyleContentAlignmentData& normalValueBehavior()
+{
+    static const StyleContentAlignmentData normalBehavior = {ContentPositionNormal, ContentDistributionStretch};
+    return normalBehavior;
+}
+
 void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection direction, GridSizingData& sizingData)
 {
     LayoutUnit& availableSpace = sizingData.freeSpaceForDirection(direction);
     if (availableSpace <= 0
-        || (direction == ForColumns && styleRef().justifyContentDistribution() != ContentDistributionStretch)
-        || (direction == ForRows && styleRef().alignContentDistribution() != ContentDistributionStretch))
+        || (direction == ForColumns && styleRef().resolvedJustifyContentDistribution(normalValueBehavior()) != ContentDistributionStretch)
+        || (direction == ForRows && styleRef().resolvedAlignContentDistribution(normalValueBehavior()) != ContentDistributionStretch))
         return;
 
     // Spec defines auto-sized tracks as the ones with an 'auto' max-sizing function.
@@ -1906,7 +1912,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
             endOfRow -= guttersSize(ForRows, 2);
         LayoutUnit childBreadth = child.logicalHeight() + child.marginLogicalHeight();
         if (childEndLine - childStartLine > 1 && childEndLine < m_rowPositions.size() - 1)
-            endOfRow -= offsetBetweenTracks(styleRef().alignContentDistribution(), m_rowPositions, childBreadth);
+            endOfRow -= offsetBetweenTracks(styleRef().resolvedAlignContentDistribution(normalValueBehavior()), m_rowPositions, childBreadth);
         OverflowAlignment overflow = child.styleRef().resolvedAlignment(styleRef(), ItemPositionStretch).overflow();
         LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(overflow, endOfRow - startOfRow, childBreadth);
         return startPosition + (axisPosition == GridAxisEnd ? offsetFromStartPosition : offsetFromStartPosition / 2);
@@ -1939,7 +1945,7 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
             endOfColumn -= guttersSize(ForRows, 2);
         LayoutUnit childBreadth = child.logicalWidth() + child.marginLogicalWidth();
         if (childEndLine - childStartLine > 1 && childEndLine < m_columnPositions.size() - 1)
-            endOfColumn -= offsetBetweenTracks(styleRef().justifyContentDistribution(), m_columnPositions, childBreadth);
+            endOfColumn -= offsetBetweenTracks(styleRef().resolvedJustifyContentDistribution(normalValueBehavior()), m_columnPositions, childBreadth);
         LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(child.styleRef().justifySelfOverflowAlignment(), endOfColumn - startOfColumn, childBreadth);
         return startPosition + (axisPosition == GridAxisEnd ? offsetFromStartPosition : offsetFromStartPosition / 2);
     }
@@ -1961,27 +1967,16 @@ ContentPosition static resolveContentDistributionFallback(ContentDistributionTyp
     case ContentDistributionStretch:
         return ContentPositionStart;
     case ContentDistributionDefault:
-        return ContentPositionAuto;
+        return ContentPositionNormal;
     }
 
     ASSERT_NOT_REACHED();
-    return ContentPositionAuto;
+    return ContentPositionNormal;
 }
-
-static inline LayoutUnit offsetToStartEdge(bool isLeftToRight, LayoutUnit availableSpace)
-{
-    return isLeftToRight ? LayoutUnit() : availableSpace;
-}
-
-static inline LayoutUnit offsetToEndEdge(bool isLeftToRight, LayoutUnit availableSpace)
-{
-    return !isLeftToRight ? LayoutUnit() : availableSpace;
-}
-
 
 static ContentAlignmentData contentDistributionOffset(const LayoutUnit& availableFreeSpace, ContentPosition& fallbackPosition, ContentDistributionType distribution, unsigned numberOfGridTracks)
 {
-    if (distribution != ContentDistributionDefault && fallbackPosition == ContentPositionAuto)
+    if (distribution != ContentDistributionDefault && fallbackPosition == ContentPositionNormal)
         fallbackPosition = resolveContentDistributionFallback(distribution);
 
     if (availableFreeSpace <= 0)
@@ -2002,7 +1997,6 @@ static ContentAlignmentData contentDistributionOffset(const LayoutUnit& availabl
         distributionOffset = availableFreeSpace / (numberOfGridTracks + 1);
         return {distributionOffset, distributionOffset};
     case ContentDistributionStretch:
-        return {LayoutUnit(), LayoutUnit()};
     case ContentDistributionDefault:
         return {};
     }
@@ -2014,8 +2008,8 @@ static ContentAlignmentData contentDistributionOffset(const LayoutUnit& availabl
 ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(GridTrackSizingDirection direction, const LayoutUnit& availableFreeSpace, unsigned numberOfGridTracks) const
 {
     bool isRowAxis = direction == ForColumns;
-    ContentPosition position = isRowAxis ? styleRef().justifyContentPosition() : styleRef().alignContentPosition();
-    ContentDistributionType distribution = isRowAxis ? styleRef().justifyContentDistribution() : styleRef().alignContentDistribution();
+    ContentPosition position = isRowAxis ? styleRef().resolvedJustifyContentPosition(normalValueBehavior()) : styleRef().resolvedAlignContentPosition(normalValueBehavior());
+    ContentDistributionType distribution = isRowAxis ? styleRef().resolvedJustifyContentDistribution(normalValueBehavior()) : styleRef().resolvedAlignContentDistribution(normalValueBehavior());
     // If <content-distribution> value can't be applied, 'position' will become the associated
     // <content-position> fallback value.
     ContentAlignmentData contentAlignment = contentDistributionOffset(availableFreeSpace, position, distribution, numberOfGridTracks);
@@ -2040,21 +2034,21 @@ ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(Gri
     case ContentPositionFlexEnd: // Only used in flex layout, for other layout, it's equivalent to 'End'.
     case ContentPositionEnd:
         if (isRowAxis)
-            return {offsetToEndEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), LayoutUnit()};
+            return {styleRef().isLeftToRightDirection() ? availableFreeSpace : LayoutUnit(), LayoutUnit()};
         return {availableFreeSpace, LayoutUnit()};
     case ContentPositionFlexStart: // Only used in flex layout, for other layout, it's equivalent to 'Start'.
     case ContentPositionStart:
         if (isRowAxis)
-            return {offsetToStartEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), LayoutUnit()};
+            return {styleRef().isLeftToRightDirection() ? LayoutUnit() : availableFreeSpace, LayoutUnit()};
         return {LayoutUnit(), LayoutUnit()};
     case ContentPositionBaseline:
     case ContentPositionLastBaseline:
         // FIXME: These two require implementing Baseline Alignment. For now, we always 'start' align the child.
         // crbug.com/234191
         if (isRowAxis)
-            return {offsetToStartEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), LayoutUnit()};
+            return {styleRef().isLeftToRightDirection() ? LayoutUnit() : availableFreeSpace, LayoutUnit()};
         return {LayoutUnit(), LayoutUnit()};
-    case ContentPositionAuto:
+    case ContentPositionNormal:
         break;
     }
 

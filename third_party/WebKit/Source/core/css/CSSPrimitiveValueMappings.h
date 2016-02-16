@@ -4388,8 +4388,8 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ContentPosition contentPo
 {
     init(UnitType::ValueID);
     switch (contentPosition) {
-    case ContentPositionAuto:
-        m_value.valueID = CSSValueAuto;
+    case ContentPositionNormal:
+        m_value.valueID = CSSValueNormal;
         break;
     case ContentPositionBaseline:
         m_value.valueID = CSSValueBaseline;
@@ -4424,8 +4424,8 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ContentPosition contentPo
 template<> inline ContentPosition CSSPrimitiveValue::convertTo() const
 {
     switch (m_value.valueID) {
-    case CSSValueAuto:
-        return ContentPositionAuto;
+    case CSSValueNormal:
+        return ContentPositionNormal;
     case CSSValueBaseline:
         return ContentPositionBaseline;
     case CSSValueLastBaseline:
@@ -4448,7 +4448,7 @@ template<> inline ContentPosition CSSPrimitiveValue::convertTo() const
         break;
     }
     ASSERT_NOT_REACHED();
-    return ContentPositionAuto;
+    return ContentPositionNormal;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ContentDistributionType contentDistribution)

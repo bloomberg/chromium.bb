@@ -72,7 +72,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-user-modify: read-only
 -webkit-user-select: text
 -webkit-writing-mode: horizontal-tb
-align-content: start
+align-content: normal
 align-items: start
 align-self: start
 alignment-baseline: auto
@@ -179,7 +179,7 @@ height: auto
 image-orientation: 0deg
 image-rendering: auto
 isolation: auto
-justify-content: start
+justify-content: normal
 justify-items: start
 justify-self: start
 left: auto

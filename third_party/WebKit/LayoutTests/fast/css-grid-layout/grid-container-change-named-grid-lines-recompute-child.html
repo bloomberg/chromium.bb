@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <link href="resources/grid.css" rel="stylesheet">
+<link href="resources/grid-alignment.css" rel="stylesheet">
 <script src="../../resources/check-layout.js"></script>
 <style>
 .grid {
@@ -63,7 +64,7 @@ window.addEventListener("load", testChangingGridDefinitions, false);
 <div>This test checks that updating the named grid lines definitions in grid-template-{rows|columns} recomputes the positions of automatically placed grid items.</div>
 
 <div style="position: relative">
-    <div class="grid">
+    <div class="grid justifyContentStart">
         <div class="sizedToGridArea" id="firstGridItem"></div>
         <div class="sizedToGridArea" id="secondGridItem"></div>
         <div class="sizedToGridArea" id="thirdGridItem"></div>

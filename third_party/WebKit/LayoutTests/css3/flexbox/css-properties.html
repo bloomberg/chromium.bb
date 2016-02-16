@@ -53,8 +53,8 @@ shouldBeEqualToString('flexitem.style.order', '');
 
 
 shouldBeEqualToString('flexbox.style.justifyContent', '');
-// The initial value is 'flex-start'.
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).justifyContent', 'flex-start');
+// The initial value is 'normal'.
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).justifyContent', 'normal');
 
 flexbox.style.justifyContent = 'foo';
 shouldBeEqualToString('flexbox.style.justifyContent', '');
@@ -77,7 +77,7 @@ shouldBeEqualToString('window.getComputedStyle(flexbox, null).justifyContent', '
 
 flexbox.style.justifyContent = '';
 shouldBeEqualToString('flexbox.style.justifyContent', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).justifyContent', 'flex-start');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).justifyContent', 'normal');
 
 shouldBeEqualToString('flexbox.style.alignSelf', '');
 // The initial value is 'auto', which will be resolved depending on parent's style (except for the 'document' element).
@@ -276,9 +276,9 @@ for (var i = 0; i < computedStyle.length; ++i) {
 }
 shouldBeFalse('foundFlexFlow');
 
-// The initial value is 'auto', which will be resolved to 'stretch' in case of flexbox containers.
+// The initial value is 'normal'.
 shouldBeEqualToString('flexbox.style.alignContent', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignContent', 'stretch');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignContent', 'normal');
 
 flexbox.style.alignContent = 'flex-start';
 shouldBeEqualToString('flexbox.style.alignContent', 'flex-start');
@@ -306,11 +306,11 @@ shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignContent', 'st
 
 flexbox.style.alignContent = '';
 shouldBeEqualToString('flexbox.style.alignContent', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignContent', 'stretch');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignContent', 'normal');
 
 flexbox.style.alignContent = 'foo';
 shouldBeEqualToString('flexbox.style.alignContent', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignContent', 'stretch');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignContent', 'normal');
 </script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 <html>
 <head>
 <link href="resources/grid.css" rel="stylesheet">
+<link href="resources/grid-alignment.css" rel="stylesheet">
 <style type="text/css">
 
   .gridAreas {
@@ -88,7 +89,7 @@
 
 <!-- Check that without named gridAreas there are no implicit grid-line names defined -->
 <div style="position: relative">
-  <div class="grid gridUniqueNames">
+  <div class="grid gridUniqueNames justifyContentStart">
     <div class="sizedToGridArea" style="grid-column: c-start;" data-offset-x="350" data-offset-y="0" data-expected-width="0" data-expected-height="50"></div>
     <div class="sizedToGridArea" style="grid-row: f-start;" data-offset-x="0" data-offset-y="350" data-expected-width="50" data-expected-height="0"></div>
     <div class="sizedToGridArea" style="grid-column: c-start; grid-row: f-end" data-offset-x="350" data-offset-y="350" data-expected-width="0" data-expected-height="0"></div>
@@ -166,7 +167,7 @@
 </div>
 
 <div style="position: relative">
-  <div class="grid gridAreas gridWithNamedLineBeforeGridArea">
+  <div class="grid gridAreas gridWithNamedLineBeforeGridArea justifyContentStart">
     <div class="sizedToGridArea" style="grid-column: a;" data-offset-x="0" data-offset-y="0" data-expected-width="350" data-expected-height="50"></div>
     <div class="sizedToGridArea" style="grid-row: d;" data-offset-x="350" data-offset-y="50" data-expected-width="0" data-expected-height="300"></div>
     <div class="sizedToGridArea" style="grid-column: a; grid-row: d;" data-offset-x="0" data-offset-y="50" data-expected-width="350" data-expected-height="300"></div>
@@ -204,7 +205,7 @@
 
 <!-- Check behavior with areas named *-start or *-end -->
 <div style="position: relative">
-  <div class="grid gridAreasSpecial gridNoLineNames">
+  <div class="grid gridAreasSpecial gridNoLineNames justifyContentStart">
     <div class="sizedToGridArea" style="grid-column: a;" data-offset-x="350" data-offset-y="0" data-expected-width="0" data-expected-height="50"></div>
     <div class="sizedToGridArea" style="grid-row: a;" data-offset-x="0" data-offset-y="350" data-expected-width="50" data-expected-height="0"></div>
     <div class="sizedToGridArea" style="grid-column: a; grid-row: a;" data-offset-x="350" data-offset-y="350" data-expected-width="0" data-expected-height="0"></div>
