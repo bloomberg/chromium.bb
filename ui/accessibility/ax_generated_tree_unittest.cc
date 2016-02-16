@@ -158,7 +158,7 @@ TEST(AXGeneratedTreeTest, SerializeGeneratedTrees) {
         AXTreeSerializer<const AXNode*, AXNodeData, AXTreeData> serializer(
             tree0_source.get());
         AXTreeUpdate update0;
-        serializer.SerializeChanges(tree0.root(), &update0);
+        ASSERT_TRUE(serializer.SerializeChanges(tree0.root(), &update0));
 
         AXTree dst_tree;
         ASSERT_TRUE(dst_tree.Unserialize(update0));
@@ -175,7 +175,8 @@ TEST(AXGeneratedTreeTest, SerializeGeneratedTrees) {
         for (int k_index = 0; k_index < tree_size; ++k_index) {
           int id = 1 + (k + k_index) % tree_size;
           AXTreeUpdate update;
-          serializer.SerializeChanges(tree1.GetFromId(id), &update);
+          ASSERT_TRUE(
+              serializer.SerializeChanges(tree1.GetFromId(id), &update));
           ASSERT_TRUE(dst_tree.Unserialize(update));
         }
 
