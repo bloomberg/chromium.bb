@@ -1009,7 +1009,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
             if (isEndOfParagraph(startAfterDelete) && !isStartOfParagraph(startAfterDelete) && !isEndOfEditableOrNonEditableContent(startAfterDelete))
                 setEndingSelection(nextPositionOf(startAfterDelete));
             else
-                insertParagraphSeparator();
+                insertParagraphSeparator(editingState);
+            if (editingState->isAborted())
+                return;
         }
     } else {
         ASSERT(selection.isCaret());
@@ -1018,7 +1020,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
             if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart) && next.isNotNull())
                 setEndingSelection(next);
             else
-                insertParagraphSeparator();
+                insertParagraphSeparator(editingState);
+            if (editingState->isAborted())
+                return;
         }
         // We split the current paragraph in two to avoid nesting the blocks from the fragment inside the current block.
         // For example paste <div>foo</div><div>bar</div><div>baz</div> into <div>x^x</div>, where ^ is the caret.
@@ -1026,7 +1030,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         // not <div>xbar<div>bar</div><div>bazx</div></div>.
         // Don't do this if the selection started in a Mail blockquote.
         if (m_preventNesting && !startIsInsideMailBlockquote && !isEndOfParagraph(endingSelection().visibleStart()) && !isStartOfParagraph(endingSelection().visibleStart())) {
-            insertParagraphSeparator();
+            insertParagraphSeparator(editingState);
+            if (editingState->isAborted())
+                return;
             setEndingSelection(previousPositionOf(endingSelection().visibleStart()));
         }
     }
@@ -1283,8 +1289,10 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                 } else {
                     // Use a default paragraph element (a plain div) for the empty paragraph, using the last paragraph
                     // block's style seems to annoy users.
-                    insertParagraphSeparator(true, !startIsInsideMailBlockquote && highestEnclosingNodeOfType(endOfInsertedContent.deepEquivalent(),
+                    insertParagraphSeparator(editingState, true, !startIsInsideMailBlockquote && highestEnclosingNodeOfType(endOfInsertedContent.deepEquivalent(),
                         isMailHTMLBlockquoteElement, CannotCrossEditingBoundary, insertedNodes.firstNodeInserted()->parentNode()));
+                    if (editingState->isAborted())
+                        return;
                 }
 
                 // Select up to the paragraph separator that was added.

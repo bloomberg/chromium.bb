@@ -112,7 +112,7 @@ protected:
     void insertNodeAt(PassRefPtrWillBeRawPtr<Node>, const Position&, EditingState* = ASSERT_NO_EDITING_ABORT);
     void insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<Node>, const Position&);
     void insertNodeBefore(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild, EditingState* = ASSERT_NO_EDITING_ABORT, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
-    void insertParagraphSeparator(bool useDefaultParagraphElement = false, bool pasteBlockqutoeIntoUnquotedArea = false);
+    void insertParagraphSeparator(EditingState*, bool useDefaultParagraphElement = false, bool pasteBlockqutoeIntoUnquotedArea = false);
     void insertTextIntoNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, const String& text);
     void mergeIdenticalElements(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element>, EditingState*);
     void rebalanceWhitespace();

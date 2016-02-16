@@ -295,9 +295,9 @@ void CompositeEditCommand::removeStyledElement(PassRefPtrWillBeRawPtr<Element> e
     applyCommandToComposite(ApplyStyleCommand::create(element, true));
 }
 
-void CompositeEditCommand::insertParagraphSeparator(bool useDefaultParagraphElement, bool pasteBlockqutoeIntoUnquotedArea)
+void CompositeEditCommand::insertParagraphSeparator(EditingState* editingState, bool useDefaultParagraphElement, bool pasteBlockqutoeIntoUnquotedArea)
 {
-    applyCommandToComposite(InsertParagraphSeparatorCommand::create(document(), useDefaultParagraphElement, pasteBlockqutoeIntoUnquotedArea));
+    applyCommandToComposite(InsertParagraphSeparatorCommand::create(document(), useDefaultParagraphElement, pasteBlockqutoeIntoUnquotedArea), editingState);
 }
 
 bool CompositeEditCommand::isRemovableBlock(const Node* node)
