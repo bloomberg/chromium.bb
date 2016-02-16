@@ -145,6 +145,7 @@ input[type='radio']:checked::before {
   top: 3px;
 }
 
+<if expr="not is_ios">
 /* Hover **********************************************************************/
 
 :enabled:hover:-webkit-any(
@@ -167,6 +168,7 @@ input[type='radio']:checked::before {
   background-image: url(../images/select.png),
       -webkit-linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
 }
+</if>
 
 /* Active *********************************************************************/
 
