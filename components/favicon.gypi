@@ -98,8 +98,8 @@
           'sources': [
             'favicon/ios/favicon_url_util.cc',
             'favicon/ios/favicon_url_util.h',
-            'favicon/ios/web_favicon_driver.cc',
             'favicon/ios/web_favicon_driver.h',
+            'favicon/ios/web_favicon_driver.mm',
           ],
           'include_dirs': [
             '..',

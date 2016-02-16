@@ -6,8 +6,8 @@ source_set("browser") {
   sources = [
     "history_database_helper.cc",
     "history_database_helper.h",
-    "web_state_top_sites_observer.cc",
     "web_state_top_sites_observer.h",
+    "web_state_top_sites_observer.mm",
   ]
 
   deps = [

@@ -99,7 +99,6 @@ void IOSChromeSecurityStateModelClient::GetVisibleSecurityState(
   state->connection_status = ssl.connection_status;
   state->security_bits = ssl.security_bits;
   state->displayed_mixed_content =
-      (ssl.content_status & web::SSLStatus::DISPLAYED_INSECURE_CONTENT)
-          ? true
-          : false;
+      (ssl.content_status & web::SSLStatus::DISPLAYED_INSECURE_CONTENT) ? true
+                                                                        : false;
 }

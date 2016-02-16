@@ -259,8 +259,8 @@
           'sources': [
             'history/ios/browser/history_database_helper.cc',
             'history/ios/browser/history_database_helper.h',
-            'history/ios/browser/web_state_top_sites_observer.cc',
             'history/ios/browser/web_state_top_sites_observer.h',
+            'history/ios/browser/web_state_top_sites_observer.mm',
           ],
         },
       ],
