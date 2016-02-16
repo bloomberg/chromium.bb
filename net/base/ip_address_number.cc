@@ -103,7 +103,7 @@ std::string IPAddressToString(const uint8_t* address, size_t address_len) {
   } else if (address_len == kIPv6AddressSize) {
     url::AppendIPv6Address(address, &output);
   } else {
-    CHECK(false) << "Invalid IP address with length: " << address_len;
+    return std::string();
   }
 
   output.Complete();
@@ -114,6 +114,8 @@ std::string IPAddressToStringWithPort(const uint8_t* address,
                                       size_t address_len,
                                       uint16_t port) {
   std::string address_str = IPAddressToString(address, address_len);
+  if (address_str.empty())
+    return address_str;
 
   if (address_len == kIPv6AddressSize) {
     // Need to bracket IPv6 addresses since they contain colons.

@@ -57,11 +57,12 @@ class NET_EXPORT IPEndPoint {
   bool FromSockAddr(const struct sockaddr* address, socklen_t address_length)
       WARN_UNUSED_RESULT;
 
-  // Returns value as a string (e.g. "127.0.0.1:80"). The IP address must be
-  // valid.
+  // Returns value as a string (e.g. "127.0.0.1:80"). Returns the empty string
+  // when |address_| is invalid (the port will be ignored).
   std::string ToString() const;
 
-  // As above, but without port.
+  // As above, but without port. Returns the empty string when address_ is
+  // invalid.
   std::string ToStringWithoutPort() const;
 
   bool operator<(const IPEndPoint& that) const;

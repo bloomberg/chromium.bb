@@ -69,8 +69,8 @@ class NET_EXPORT IPAddress {
   bool empty() const { return ip_address_.empty(); }
 
   // Returns the canonical string representation of an IP address.
-  // For example: "192.168.0.1" or "::1". The IP address must be
-  // valid, calling this on an invalid address will result in a crash.
+  // For example: "192.168.0.1" or "::1". Returns the empty string when
+  // |ip_address_| is invalid.
   std::string ToString() const;
 
   // Parses an IP address literal (either IPv4 or IPv6) to its numeric value.
