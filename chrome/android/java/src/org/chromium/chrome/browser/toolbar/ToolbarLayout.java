@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -52,8 +55,6 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected TintedImageButton mMenuButton;
     protected ImageView mMenuBadge;
     protected View mMenuButtonWrapper;
-    protected boolean mShowMenuBadge;
-    protected Drawable mUnbadgedMenuButtonDrawable;
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
     protected final ColorStateList mDarkModeTint;
@@ -71,6 +72,10 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected final int mToolbarHeightWithoutShadow;
 
     private boolean mFindInPageToolbarShowing;
+
+    protected boolean mShowMenuBadge;
+    private AnimatorSet mMenuBadgeAnimatorSet;
+    private boolean mIsMenuBadgeAnimationRunning;
 
     /**
      * Basic constructor for {@link ToolbarLayout}.
@@ -627,23 +632,102 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     @Override
     public void showAppMenuUpdateBadge() {
         mShowMenuBadge = true;
-        mUnbadgedMenuButtonDrawable = ApiCompatibilityUtils.getDrawable(getResources(),
-                R.drawable.btn_menu);
     }
 
     @Override
-    public void removeAppMenuUpdateBadge() {
-        mMenuBadge.setVisibility(View.GONE);
+    public boolean isShowingAppMenuUpdateBadge() {
+        return mShowMenuBadge;
+    }
+
+    @Override
+    public void removeAppMenuUpdateBadge(boolean animate) {
+        boolean wasShowingMenuBadge = mShowMenuBadge;
+        mShowMenuBadge = false;
+        if (!animate || !wasShowingMenuBadge) {
+            mMenuBadge.setVisibility(View.GONE);
+            return;
+        }
+
+        if (mIsMenuBadgeAnimationRunning && mMenuBadgeAnimatorSet != null) {
+            mMenuBadgeAnimatorSet.cancel();
+        }
+
+        // Set initial states.
+        mMenuButton.setAlpha(0.f);
+
+        mMenuBadgeAnimatorSet = UpdateMenuItemHelper.createHideUpdateBadgeAnimation(
+                mMenuButton, mMenuBadge);
+
+        mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mIsMenuBadgeAnimationRunning = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mIsMenuBadgeAnimationRunning = false;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mIsMenuBadgeAnimationRunning = false;
+            }
+        });
+
+        mMenuBadgeAnimatorSet.start();
     }
 
     /**
      * Sets the update badge visibility to VISIBLE and sets the menu button image to the badged
      * bitmap.
      */
-    protected void setAppMenuUpdateBadgeToVisible() {
+    protected void setAppMenuUpdateBadgeToVisible(boolean animate) {
+        if (!animate || mIsMenuBadgeAnimationRunning) {
+            mMenuBadge.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        // Set initial states.
+        mMenuBadge.setAlpha(0.f);
         mMenuBadge.setVisibility(View.VISIBLE);
-        mMenuButton.setImageBitmap(
-                UpdateMenuItemHelper.getInstance().getBadgedMenuButtonBitmap(getContext()));
+
+        mMenuBadgeAnimatorSet = UpdateMenuItemHelper.createShowUpdateBadgeAnimation(
+                mMenuButton, mMenuBadge);
+
+        mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mIsMenuBadgeAnimationRunning = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mIsMenuBadgeAnimationRunning = false;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mIsMenuBadgeAnimationRunning = false;
+            }
+        });
+
+        mMenuBadgeAnimatorSet.start();
+    }
+
+    protected void cancelAppMenuUpdateBadgeAnimation() {
+        if (mIsMenuBadgeAnimationRunning && mMenuBadgeAnimatorSet != null) {
+            mMenuBadgeAnimatorSet.cancel();
+        }
+    }
+
+    /**
+     * Sets the update menu badge drawable to the light or dark asset.
+     * @param useLightDrawable Whether the light drawable should be used.
+     */
+    protected void setAppMenuUpdateBadgeDrawable(boolean useLightDrawable) {
+        mMenuBadge.setImageResource(useLightDrawable ? R.drawable.badge_update_light
+                : R.drawable.badge_update_dark);
     }
 
     @Override

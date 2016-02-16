@@ -4,22 +4,22 @@
 
 package org.chromium.chrome.browser.omaha;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.variations.VariationsAssociatedData;
-import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.io.File;
 
@@ -76,9 +76,6 @@ public class UpdateMenuItemHelper {
 
     // Whether the menu item was clicked. This is used to log the click-through rate.
     private boolean mMenuItemClicked;
-
-    // The bitmap to use for the menu button when the badge is showing.
-    private Bitmap mBadgedMenuButtonBitmap;
 
     /**
      * @return The {@link UpdateMenuItemHelper} instance.
@@ -223,48 +220,6 @@ public class UpdateMenuItemHelper {
     }
 
     /**
-     * Returns a {@link Bitmap} to use for the menu button with part of the original image removed
-     * to simulate a 1dp transparent border around the update badge.
-     *
-     * @param context The current {@link Context}.
-     * @return The {@link Bitmap} to use for the the menu button when showing the update badge.
-     */
-    public Bitmap getBadgedMenuButtonBitmap(Context context) {
-        if (mBadgedMenuButtonBitmap == null) {
-            // Punch a hole in the app menu button to create the illusion of a 1dp transparent
-            // border around the update badge.
-            // Load btn_menu bitmap and use it to initialize a canvas.
-            BitmapFactory.Options opts = new BitmapFactory.Options();
-            opts.inMutable = true;
-            mBadgedMenuButtonBitmap = BitmapFactory.decodeResource(context.getResources(),
-                    R.drawable.btn_menu, opts);
-            Canvas canvas = new Canvas();
-            canvas.setBitmap(mBadgedMenuButtonBitmap);
-
-            // Calculate the dimensions and offsets for the update badge.
-            float menuBadgeBackgroundSize = context.getResources().getDimension(
-                    R.dimen.menu_badge_background_size);
-            float radius = menuBadgeBackgroundSize / 2.f;
-            // The design specification calls for 4.5dp right offset and 9dp top offset.
-            float xPos = 4.5f * context.getResources().getDisplayMetrics().density + radius;
-            float yPos = 9f * context.getResources().getDisplayMetrics().density + radius;
-
-            if (LocalizationUtils.isLayoutRtl()) {
-                // In RTL layouts, the badge should be placed to the left of the menu button icon.
-                xPos = mBadgedMenuButtonBitmap.getWidth() - xPos;
-            }
-
-            // Draw a transparent circle on top of the bitmap, creating a hole.
-            Paint paint = new Paint();
-            paint.setFlags(Paint.ANTI_ALIAS_FLAG);
-            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            canvas.drawCircle(xPos, yPos, radius, paint);
-        }
-
-        return mBadgedMenuButtonBitmap;
-    }
-
-    /**
      * Should be called before the AppMenu is dismissed if the update menu item was clicked.
      */
     public void setMenuItemClicked() {
@@ -280,6 +235,92 @@ public class UpdateMenuItemHelper {
             recordItemClickedHistogram(ITEM_NOT_CLICKED);
         }
         mMenuItemClicked = false;
+    }
+
+    /**
+     * Creates an {@link AnimatorSet} for showing the update badge that is displayed on top
+     * of the app menu button.
+     *
+     * @param menuButton The {@link View} containing the app menu button.
+     * @param menuBadge The {@link View} containing the update badge.
+     * @return An {@link AnimatorSet} to run when showing the update badge.
+     */
+    public static AnimatorSet createShowUpdateBadgeAnimation(final View menuButton,
+            final View menuBadge) {
+        // Create badge ObjectAnimators.
+        ObjectAnimator badgeFadeAnimator = ObjectAnimator.ofFloat(menuBadge, View.ALPHA, 1.f);
+        badgeFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+
+        int pixelTranslation = menuBadge.getResources().getDimensionPixelSize(
+                R.dimen.menu_badge_translation_y_distance);
+        ObjectAnimator badgeTranslateYAnimator = ObjectAnimator.ofFloat(menuBadge,
+                View.TRANSLATION_Y, pixelTranslation, 0.f);
+        badgeTranslateYAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+
+        // Create menu button ObjectAnimator.
+        ObjectAnimator menuButtonFadeAnimator = ObjectAnimator.ofFloat(menuButton, View.ALPHA, 0.f);
+        menuButtonFadeAnimator.setInterpolator(new LinearInterpolator());
+
+        // Create AnimatorSet and listeners.
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(badgeFadeAnimator, badgeTranslateYAnimator, menuButtonFadeAnimator);
+        set.setDuration(350);
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // Make sure the menu button is visible again.
+                menuButton.setAlpha(1.f);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                // Jump to the end state if the animation is canceled.
+                menuBadge.setAlpha(1.f);
+                menuBadge.setTranslationY(0.f);
+                menuButton.setAlpha(1.f);
+            }
+        });
+
+        return set;
+    }
+
+    /**
+     * Creates an {@link AnimatorSet} for hiding the update badge that is displayed on top
+     * of the app menu button.
+     *
+     * @param menuButton The {@link View} containing the app menu button.
+     * @param menuBadge The {@link View} containing the update badge.
+     * @return An {@link AnimatorSet} to run when hiding the update badge.
+     */
+    public static AnimatorSet createHideUpdateBadgeAnimation(final View menuButton,
+            final View menuBadge) {
+        // Create badge ObjectAnimator.
+        ObjectAnimator badgeFadeAnimator = ObjectAnimator.ofFloat(menuBadge, View.ALPHA, 0.f);
+        badgeFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+
+        // Create menu button ObjectAnimator.
+        ObjectAnimator menuButtonFadeAnimator = ObjectAnimator.ofFloat(menuButton, View.ALPHA, 1.f);
+        menuButtonFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+
+        // Create AnimatorSet and listeners.
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(badgeFadeAnimator, menuButtonFadeAnimator);
+        set.setDuration(200);
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                menuBadge.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                // Jump to the end state if the animation is canceled.
+                menuButton.setAlpha(1.f);
+                menuBadge.setVisibility(View.GONE);
+            }
+        });
+
+        return set;
     }
 
     private boolean updateAvailable(ChromeActivity activity) {

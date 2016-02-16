@@ -365,6 +365,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mAppMenuHandler.addObserver(new AppMenuObserver() {
             @Override
             public void onMenuVisibilityChanged(boolean isVisible) {
+                if (isVisible && !isInOverviewMode()) {
+                    // The app menu badge should be removed the first time the menu is opened.
+                    if (mToolbarManager.getToolbar().isShowingAppMenuUpdateBadge()) {
+                        mToolbarManager.getToolbar().removeAppMenuUpdateBadge(true);
+
+                        // TODO(twellington): Try invalidating the toolbar instead of requesting
+                        // render. See crbug.com/585975.
+                        mCompositorViewHolder.requestRender();
+                    }
+                }
                 if (!isVisible) {
                     mAppMenuPropertiesDelegate.onMenuDismissed();
                     MenuItem updateMenuItem = mAppMenuHandler.getAppMenu().getMenu().findItem(
@@ -1319,7 +1329,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mToolbarManager.getToolbar().showAppMenuUpdateBadge();
             mCompositorViewHolder.requestRender();
         } else {
-            mToolbarManager.getToolbar().removeAppMenuUpdateBadge();
+            mToolbarManager.getToolbar().removeAppMenuUpdateBadge(false);
         }
     }
 

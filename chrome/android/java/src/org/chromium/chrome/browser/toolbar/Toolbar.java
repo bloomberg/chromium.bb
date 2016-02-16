@@ -52,12 +52,20 @@ public interface Toolbar {
     void showAppMenuUpdateBadge();
 
     /**
+     * Whether the update badge that is displayed on top of the app menu button is showing.
+     */
+    boolean isShowingAppMenuUpdateBadge();
+
+    /**
      * Remove the update badge on the app menu button. Initially the badge is invisible so that it
      * gets measured and the tab switcher animation looks correct when the badge is first shown. If
-     * the badge will never be shown, this method should be called to change the visibility to
-     * gone to avoid unnecessary layout work.
+     * the badge will never be shown or should no longer be shown, this method should be called to
+     * change the visibility to gone to avoid unnecessary layout work. The disappearance of the
+     * badge is optionally animated if it was previously visible.
+     *
+     * @param animate Whether the removal of the badge should be animated.
      */
-    void removeAppMenuUpdateBadge();
+    void removeAppMenuUpdateBadge(boolean animate);
 
     /**
      * Herb: Sets the listener that is told when the "return to previous app" button is clicked.

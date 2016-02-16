@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -54,6 +57,10 @@ public class LocationBarPhone extends LocationBarLayout {
     private float mUrlFocusChangePercent;
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
+
+    private boolean mShowMenuBadge;
+    private AnimatorSet mMenuBadgeAnimatorSet;
+    private boolean mIsMenuBadgeAnimationRunning;
 
     /**
      * Constructor used to inflate from XML.
@@ -350,17 +357,17 @@ public class LocationBarPhone extends LocationBarLayout {
         updateIncognitoBadgePadding();
 
         if (showMenuButtonInOmnibox()) {
-            boolean useLightDrawables = isIncognito;
-            if (getToolbarDataProvider().isUsingBrandColor()) {
-                int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
-                useLightDrawables |=
-                        ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
-            }
+            boolean useLightDrawables = shouldUseLightDrawables();
             ColorStateList dark = ApiCompatibilityUtils.getColorStateList(getResources(),
                     R.color.dark_mode_tint);
             ColorStateList white = ApiCompatibilityUtils.getColorStateList(getResources(),
                     R.color.light_mode_tint);
             mMenuButton.setTint(useLightDrawables ? white : dark);
+
+            if (mShowMenuBadge) {
+                mMenuBadge.setImageResource(useLightDrawables ? R.drawable.badge_update_light
+                        : R.drawable.badge_update_dark);
+            }
         }
     }
 
@@ -378,16 +385,103 @@ public class LocationBarPhone extends LocationBarLayout {
     /**
      * Displays the update app menu badge.
      */
-    public void showAppMenuUpdateBadge() {
+    public void showAppMenuUpdateBadge(boolean animate) {
+        if (!showMenuButtonInOmnibox()) return;
+
+        mShowMenuBadge = true;
+        mMenuBadge.setImageResource(shouldUseLightDrawables()
+                ? R.drawable.badge_update_light : R.drawable.badge_update_dark);
+
+        if (!animate || mIsMenuBadgeAnimationRunning) {
+            mMenuBadge.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        // Set initial states.
+        mMenuBadge.setAlpha(0.f);
         mMenuBadge.setVisibility(View.VISIBLE);
-        mMenuButton.setImageBitmap(
-                UpdateMenuItemHelper.getInstance().getBadgedMenuButtonBitmap(getContext()));
+
+        mMenuBadgeAnimatorSet = UpdateMenuItemHelper.createShowUpdateBadgeAnimation(
+                mMenuButton, mMenuBadge);
+
+        mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mIsMenuBadgeAnimationRunning = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mIsMenuBadgeAnimationRunning = false;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mIsMenuBadgeAnimationRunning = false;
+            }
+        });
+
+        mMenuBadgeAnimatorSet.start();
     }
 
     /**
      * Remove the update menu app menu badge.
      */
-    public void removeAppMenuUpdateBadge() {
-        mMenuBadge.setVisibility(View.GONE);
+    public void removeAppMenuUpdateBadge(boolean animate) {
+        boolean wasShowingMenuBadge = mShowMenuBadge;
+        mShowMenuBadge = false;
+        if (!animate || !wasShowingMenuBadge) {
+            if (showMenuButtonInOmnibox()) {
+                mMenuBadge.setVisibility(View.GONE);
+            }
+            return;
+        }
+
+        if (mIsMenuBadgeAnimationRunning && mMenuBadgeAnimatorSet != null) {
+            mMenuBadgeAnimatorSet.cancel();
+        }
+
+        // Set initial states.
+        mMenuButton.setAlpha(0.f);
+
+        mMenuBadgeAnimatorSet = UpdateMenuItemHelper.createHideUpdateBadgeAnimation(
+                mMenuButton, mMenuBadge);
+
+        mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mIsMenuBadgeAnimationRunning = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mIsMenuBadgeAnimationRunning = false;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mIsMenuBadgeAnimationRunning = false;
+            }
+        });
+
+        mMenuBadgeAnimatorSet.start();
+    }
+
+    public void cancelAppMenuUpdateBadgeAnimation() {
+        if (mIsMenuBadgeAnimationRunning && mMenuBadgeAnimatorSet != null) {
+            mMenuBadgeAnimatorSet.cancel();
+        }
+    }
+
+    private boolean shouldUseLightDrawables() {
+        Tab tab = getCurrentTab();
+        boolean isIncognito = tab != null && tab.isIncognito();
+        boolean useLightDrawables = isIncognito;
+        if (getToolbarDataProvider().isUsingBrandColor()) {
+            int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
+            useLightDrawables |=
+                    ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
+        }
+        return useLightDrawables;
     }
 }

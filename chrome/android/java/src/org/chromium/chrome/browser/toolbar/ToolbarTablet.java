@@ -269,6 +269,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             }
         } else if (mAccessibilitySwitcherButton == v) {
             if (mTabSwitcherListener != null) {
+                cancelAppMenuUpdateBadgeAnimation();
                 mTabSwitcherListener.onClick(mAccessibilitySwitcherButton);
             }
         }
@@ -305,6 +306,9 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             mAccessibilitySwitcherButton.setImageDrawable(
                     incognito ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
             mLocationBar.updateVisualsForState();
+            if (mShowMenuBadge) {
+                setAppMenuUpdateBadgeDrawable(incognito);
+            }
             mUseLightColorAssets = incognito;
         }
         mLocationBar.setUrlBarFocus(false);
@@ -364,15 +368,14 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             mForwardButton.setEnabled(false);
             mReloadButton.setEnabled(false);
             mLocationBar.getContainerView().setVisibility(View.INVISIBLE);
-            if (mShowMenuBadge && mUnbadgedMenuButtonDrawable != null) {
-                mMenuButton.setImageDrawable(mUnbadgedMenuButtonDrawable);
+            if (mShowMenuBadge) {
                 mMenuBadge.setVisibility(View.GONE);
             }
         } else {
             mIsInTabSwitcherMode = false;
             mLocationBar.getContainerView().setVisibility(View.VISIBLE);
             if (mShowMenuBadge) {
-                setAppMenuUpdateBadgeToVisible();
+                setAppMenuUpdateBadgeToVisible(false);
             }
         }
     }
@@ -417,7 +420,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     public void showAppMenuUpdateBadge() {
         super.showAppMenuUpdateBadge();
         if (!mIsInTabSwitcherMode) {
-            setAppMenuUpdateBadgeToVisible();
+            if (mUseLightColorAssets) {
+                setAppMenuUpdateBadgeDrawable(mUseLightColorAssets);
+            }
+            setAppMenuUpdateBadgeToVisible(true);
         }
     }
 }

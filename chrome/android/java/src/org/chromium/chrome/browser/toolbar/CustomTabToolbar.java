@@ -569,7 +569,16 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public void removeAppMenuUpdateBadge() {
+    public boolean isShowingAppMenuUpdateBadge() {
+        return false;
+    }
+
+    @Override
+    public void removeAppMenuUpdateBadge(boolean animate) {
+    }
+
+    @Override
+    protected void setAppMenuUpdateBadgeToVisible(boolean animate) {
     }
 
     @Override

@@ -65,20 +65,17 @@
 
             <org.chromium.chrome.browser.widget.TintedImageButton
                 android:id="@+id/menu_button"
-                style="@style/ToolbarButton"
-                android:layout_gravity="top"
-                android:layout_width="42dp"
-                android:paddingEnd="4dp"
+                style="@style/ToolbarMenuButtonPhone"
                 android:src="@drawable/btn_menu"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu" 
-                android:background="@null" />
+                android:contentDescription="@string/accessibility_toolbar_btn_menu" />
 
             <ImageView
                 android:id="@+id/menu_badge"
-                style="@style/UpdateMenuBadge"
-                android:src="@drawable/badge_update"
-                android:layout_marginEnd="8.5dp"
-                android:contentDescription="@null" />
+                style="@style/ToolbarMenuButtonPhone"
+                android:src="@drawable/badge_update_dark"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:visibility="invisible" />
         </FrameLayout>
     </LinearLayout>
 
