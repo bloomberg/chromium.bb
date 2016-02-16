@@ -748,7 +748,7 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimary) {
             display_manager->GetCurrentDisplayLayout().ToString());
 
   // Switch primary and secondary
-  window_tree_host_manager->SetPrimaryDisplay(secondary_display);
+  window_tree_host_manager->SetPrimaryDisplayId(secondary_display.id());
   const DisplayLayout& inverted_layout =
       display_manager->GetCurrentDisplayLayout();
   EXPECT_EQ("left, -50, default_unified", inverted_layout.ToString());

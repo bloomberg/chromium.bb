@@ -122,13 +122,9 @@ class ASH_EXPORT WindowTreeHostManager
   // if the WTH does not exist.
   AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64_t id);
 
-  // Sets the ID of the primary display.  If the display is not connected, it
-  // will switch the primary display when connected.
+  // Sets the primary display by display id. This re-assigns the current primary
+  // root window host to to new primary display.
   void SetPrimaryDisplayId(int64_t id);
-
-  // Sets primary display. This re-assigns the current root
-  // window to given |display|.
-  void SetPrimaryDisplay(const gfx::Display& display);
 
   // Closes all child windows in the all root windows.
   void CloseChildWindows();

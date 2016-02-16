@@ -93,13 +93,6 @@ void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdList& list,
   layouts_[list].default_unified = default_unified;
 }
 
-void DisplayLayoutStore::UpdatePrimaryDisplayId(const DisplayIdList& list,
-                                                int64_t display_id) {
-  if (layouts_.find(list) == layouts_.end())
-    CreateDefaultDisplayLayout(list);
-  layouts_[list].primary_id = display_id;
-}
-
 DisplayLayout DisplayLayoutStore::CreateDefaultDisplayLayout(
     const DisplayIdList& list) {
   DisplayLayout layout = default_display_layout_;

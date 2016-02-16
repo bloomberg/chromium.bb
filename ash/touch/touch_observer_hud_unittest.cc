@@ -66,15 +66,11 @@ class TouchHudTestBase : public test::AshTestBase {
   }
 
   void SetInternalAsPrimary() {
-    const gfx::Display& internal_display =
-        GetDisplayManager()->GetDisplayForId(internal_display_id_);
-    GetWindowTreeHostManager()->SetPrimaryDisplay(internal_display);
+    GetWindowTreeHostManager()->SetPrimaryDisplayId(internal_display_id_);
   }
 
   void SetExternalAsPrimary() {
-    const gfx::Display& external_display =
-        GetDisplayManager()->GetDisplayForId(external_display_id_);
-    GetWindowTreeHostManager()->SetPrimaryDisplay(external_display);
+    GetWindowTreeHostManager()->SetPrimaryDisplayId(external_display_id_);
   }
 
   void MirrorDisplays() {

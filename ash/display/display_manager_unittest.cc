@@ -407,8 +407,8 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
             updated_display_info2.GetOverscanInsetsInPixel().ToString());
 
   // Make sure switching primary display applies the overscan offset only once.
-  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplay(
-      ScreenUtil::GetSecondaryDisplay());
+  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+      ScreenUtil::GetSecondaryDisplay().id());
   EXPECT_EQ("-500,0 500x500",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("0,0 500x500",
@@ -737,8 +737,8 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("500,0 100x100", GetDisplayForId(10).bounds().ToString());
 
-  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplay(
-      GetDisplayForId(secondary_display_info.id()));
+  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+      secondary_display_info.id());
   EXPECT_EQ("-500,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("0,0 100x100", GetDisplayForId(10).bounds().ToString());

@@ -167,8 +167,8 @@ bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
 void SwapPrimaryDisplay() {
   if (gfx::Screen::GetScreen()->GetNumDisplays() <= 1)
     return;
-  Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplay(
-      ScreenUtil::GetSecondaryDisplay());
+  Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+      ScreenUtil::GetSecondaryDisplay().id());
 }
 
 DisplayLayout CreateDisplayLayout(DisplayPlacement::Position position,

@@ -40,12 +40,6 @@ class ASH_EXPORT DisplayLayoutStore {
                                bool mirrored,
                                bool default_unified);
 
-  // Update the |primary_id| in the display layout for
-  // |display_list|.  This creates new display layout if no layout is
-  // registered for |display_list|.
-  void UpdatePrimaryDisplayId(const DisplayIdList& display_list,
-                              int64_t display_id);
-
  private:
   // Creates new layout for display list from |default_display_layout_|.
   DisplayLayout CreateDefaultDisplayLayout(const DisplayIdList& display_list);
