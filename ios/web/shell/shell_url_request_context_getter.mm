@@ -49,11 +49,9 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
       network_task_runner_(network_task_runner),
       cache_task_runner_(cache_task_runner),
       proxy_config_service_(new net::ProxyConfigServiceIOS),
-      net_log_(new net::NetLog()) {
-}
+      net_log_(new net::NetLog()) {}
 
-ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
-}
+ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {}
 
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
