@@ -503,14 +503,15 @@ void ResourceDispatcher::Cancel(int request_id) {
   // |completion_time.is_null()| is a proxy for OnRequestComplete never being
   // called.
   // TODO(csharrison): Remove this code when crbug.com/557430 is resolved.
-  // ~250,000 ERR_ABORTED coming into canary with |request_time| < 100ms. Sample
-  // by .01% to get something reasonable.
+  // Sample this enough that this won't dump much more than a hundred times a
+  // day even without the static guard. The guard ensures this dumps much less
+  // frequently, because these aborts frequently come in quick succession.
   const PendingRequestInfo& info = *it->second;
   int64_t request_time =
       (base::TimeTicks::Now() - info.request_start).InMilliseconds();
   if (info.resource_type == ResourceType::RESOURCE_TYPE_MAIN_FRAME &&
       info.completion_time.is_null() && request_time < 100 &&
-      base::RandDouble() < .0001) {
+      base::RandDouble() < .000001) {
     static bool should_dump = true;
     if (should_dump) {
       char url_copy[256] = {0};
