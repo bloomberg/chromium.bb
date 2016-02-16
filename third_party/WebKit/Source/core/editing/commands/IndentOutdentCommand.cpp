@@ -143,9 +143,11 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
         // this by splitting all parents of the current paragraph up to that point.
         targetBlockquote = createBlockElement();
         if (outerBlock == start.computeContainerNode())
-            insertNodeAt(targetBlockquote, start);
+            insertNodeAt(targetBlockquote, start, editingState);
         else
-            insertNodeBefore(targetBlockquote, outerBlock);
+            insertNodeBefore(targetBlockquote, outerBlock, editingState);
+        if (editingState->isAborted())
+            return;
         startOfContents = createVisiblePosition(positionInParentAfterNode(*targetBlockquote));
     }
 

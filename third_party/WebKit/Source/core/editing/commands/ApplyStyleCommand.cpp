@@ -1448,7 +1448,9 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node
     RefPtrWillBeRawPtr<Node> node = passedStartNode;
     RefPtrWillBeRawPtr<Element> element = elementToInsert;
 
-    insertNodeBefore(element, node);
+    insertNodeBefore(element, node, editingState);
+    if (editingState->isAborted())
+        return;
 
     while (node) {
         RefPtrWillBeRawPtr<Node> next = node->nextSibling();

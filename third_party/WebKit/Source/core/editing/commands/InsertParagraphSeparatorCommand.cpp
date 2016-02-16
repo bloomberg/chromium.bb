@@ -277,7 +277,9 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
             if (listChild && listChild != startBlock) {
                 RefPtrWillBeRawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
                 appendNode(blockToInsert, listChildToInsert.get());
-                insertNodeBefore(listChildToInsert.get(), listChild);
+                insertNodeBefore(listChildToInsert.get(), listChild, editingState);
+                if (editingState->isAborted())
+                    return;
             } else {
                 refNode = startBlock.get();
             }
@@ -295,8 +297,11 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         // find ending selection position easily before inserting the paragraph
         insertionPosition = mostForwardCaretPosition(insertionPosition);
 
-        if (refNode)
-            insertNodeBefore(blockToInsert, refNode);
+        if (refNode) {
+            insertNodeBefore(blockToInsert, refNode, editingState);
+            if (editingState->isAborted())
+                return;
+        }
 
         // Recreate the same structure in the new paragraph.
 

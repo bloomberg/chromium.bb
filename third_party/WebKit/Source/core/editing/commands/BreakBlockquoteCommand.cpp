@@ -110,7 +110,9 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     // If the position is at the beginning of the top quoted content, we don't need to break the quote.
     // Instead, insert the break before the blockquote, unless the position is as the end of the the quoted content.
     if (isFirstVisiblePositionInNode(visiblePos, topBlockquote) && !isLastVisPosInNode) {
-        insertNodeBefore(breakElement.get(), topBlockquote);
+        insertNodeBefore(breakElement.get(), topBlockquote, editingState);
+        if (editingState->isAborted())
+            return;
         setEndingSelection(VisibleSelection(positionBeforeNode(breakElement.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
         rebalanceWhitespace();
         return;

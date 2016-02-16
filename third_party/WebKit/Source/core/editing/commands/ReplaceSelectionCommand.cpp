@@ -874,7 +874,9 @@ void ReplaceSelectionCommand::mergeEndIfNeeded(EditingState* editingState)
     // To avoid this, we add a placeholder node before the start of the paragraph.
     if (endOfParagraph(startOfParagraphToMove).deepEquivalent() == destination.deepEquivalent()) {
         RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
-        insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().anchorNode());
+        insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().anchorNode(), editingState);
+        if (editingState->isAborted())
+            return;
         destination = createVisiblePosition(positionBeforeNode(placeholder.get()));
     }
 
@@ -1251,8 +1253,11 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         // but our destination node is inside an inline that is the last in the block.
         // We insert a placeholder before the newly inserted content to avoid being merged into the inline.
         Node* destinationNode = destination.deepEquivalent().anchorNode();
-        if (m_shouldMergeEnd && destinationNode != enclosingInline(destinationNode) && enclosingInline(destinationNode)->nextSibling())
-            insertNodeBefore(HTMLBRElement::create(document()), refNode.get());
+        if (m_shouldMergeEnd && destinationNode != enclosingInline(destinationNode) && enclosingInline(destinationNode)->nextSibling()) {
+            insertNodeBefore(HTMLBRElement::create(document()), refNode.get(), editingState);
+            if (editingState->isAborted())
+                return;
+        }
 
         // Merging the the first paragraph of inserted content with the content that came
         // before the selection that was pasted into would also move content after
@@ -1263,7 +1268,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         // comes after and prevent that from happening.
         VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
         if (startOfParagraph(endOfInsertedContent).deepEquivalent() == startOfParagraphToMove.deepEquivalent()) {
-            insertNodeAt(HTMLBRElement::create(document()).get(), endOfInsertedContent.deepEquivalent());
+            insertNodeAt(HTMLBRElement::create(document()).get(), endOfInsertedContent.deepEquivalent(), editingState);
+            if (editingState->isAborted())
+                return;
             // Mutation events (bug 22634) triggered by inserting the <br> might have removed the content we're about to move
             if (!startOfParagraphToMove.deepEquivalent().inDocument())
                 return;
@@ -1421,7 +1428,9 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace(EditingState* editingStat
             RefPtrWillBeRawPtr<Text> node = document().createEditingTextNode(collapseWhiteSpace ? nonBreakingSpaceString() : " ");
             // Don't updateNodesInserted. Doing so would set m_endOfInsertedContent to be the node containing the leading space,
             // but m_endOfInsertedContent is supposed to mark the end of pasted content.
-            insertNodeBefore(node, startNode);
+            insertNodeBefore(node, startNode, editingState);
+            if (editingState->isAborted())
+                return;
             m_startOfInsertedContent = firstPositionInNode(node.get());
         }
     }
