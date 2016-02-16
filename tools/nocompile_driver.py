@@ -13,6 +13,7 @@ For more info, see:
   http://dev.chromium.org/developers/testing/no-compile-tests
 """
 
+import StringIO
 import ast
 import locale
 import os
@@ -119,7 +120,7 @@ def ParseExpectation(expectation_string):
   return expectation
 
 
-def ExtractTestConfigs(sourcefile_path):
+def ExtractTestConfigs(sourcefile_path, suite_name):
   """Parses the soruce file for test configurations.
 
   Each no-compile test in the file is separated by an ifdef macro.  We scan
@@ -129,6 +130,7 @@ def ExtractTestConfigs(sourcefile_path):
 
   Args:
     sourcefile_path: The path to the source file.
+    suite_name: The name of the test suite.
 
   Returns:
     A list of test configurations. Each test configuration is a dictionary of
@@ -151,18 +153,11 @@ def ExtractTestConfigs(sourcefile_path):
   """
   sourcefile = open(sourcefile_path, 'r')
 
-  # Convert filename from underscores to CamelCase.
-  words = os.path.splitext(os.path.basename(sourcefile_path))[0].split('_')
-  words = [w.capitalize() for w in words]
-  suite_name = 'NoCompile' + ''.join(words)
-
   # Start with at least the compiler sanity test.  You need to always have one
   # sanity test to show that compiler flags and configuration are not just
   # wrong.  Otherwise, having a misconfigured compiler, or an error in the
   # shared portions of the .nc file would cause all tests to erroneously pass.
-  test_configs = [{'name': 'NCTEST_SANITY',
-                   'suite_name': suite_name,
-                   'expectations': None}]
+  test_configs = []
 
   for line in sourcefile:
     match_result = NCTEST_CONFIG_RE.match(line)
@@ -199,7 +194,7 @@ def StartTest(sourcefile_path, cflags, config):
     A dictionary containing all the information about the started test. The
     fields in the dictionary are as follows:
       { 'proc': A subprocess object representing the compiler run.
-        'cmdline': The exectued command line.
+        'cmdline': The executed command line.
         'name': The name of the test.
         'suite_name': The suite name to use when generating the gunit test
                       result.
@@ -328,16 +323,7 @@ def ProcessTestResult(resultfile, test):
              (test['started_at'], test['aborted_at']))
     return
 
-  if test['expectations'] is None:
-    # This signals a compiler sanity check test. Fail iff compilation failed.
-    if proc.poll() == 0:
-      PassTest(resultfile, test)
-      return
-    else:
-      FailTest(resultfile, test, 'Sanity compile failed. Is compiler borked?',
-               stdout, stderr)
-      return
-  elif proc.poll() == 0:
+  if proc.poll() == 0:
     # Handle failure due to successful compile.
     FailTest(resultfile, test,
              'Unexpected successful compilation.',
@@ -430,10 +416,15 @@ def main():
 
   ValidateInput(parallelism, sourcefile_path, cflags, resultfile_path)
 
-  test_configs = ExtractTestConfigs(sourcefile_path)
+  # Convert filename from underscores to CamelCase.
+  words = os.path.splitext(os.path.basename(sourcefile_path))[0].split('_')
+  words = [w.capitalize() for w in words]
+  suite_name = 'NoCompile' + ''.join(words)
+
+  test_configs = ExtractTestConfigs(sourcefile_path, suite_name)
   timings['extract_done'] = time.time()
 
-  resultfile = open(resultfile_path, 'w')
+  resultfile = StringIO.StringIO()
   resultfile.write(RESULT_FILE_HEADER % sourcefile_path)
 
   # Run the no-compile tests, but ensure we do not run more than |parallelism|
@@ -441,6 +432,16 @@ def main():
   timings['header_written'] = time.time()
   executing_tests = {}
   finished_tests = []
+
+  test = StartTest(
+      sourcefile_path,
+      cflags + ' -MMD -MF %s.d -MT %s' % (resultfile_path, resultfile_path),
+      { 'name': 'NCTEST_SANITY',
+        'suite_name': suite_name,
+        'expectations': None,
+      })
+  executing_tests[test['name']] = test
+
   for config in test_configs:
     # CompleteAtLeastOneTest blocks until at least one test finishes. Thus, this
     # acts as a semaphore.  We cannot use threads + a real semaphore because
@@ -462,13 +463,23 @@ def main():
   timings['compile_done'] = time.time()
 
   for test in finished_tests:
+    if test['name'] == 'NCTEST_SANITY':
+      _, stderr = test['proc'].communicate()
+      return_code = test['proc'].poll()
+      if return_code != 0:
+        sys.stderr.write(stderr)
+      continue
     ProcessTestResult(resultfile, test)
   timings['results_processed'] = time.time()
 
-  # We always know at least a sanity test was run.
-  WriteStats(resultfile, finished_tests[0]['suite_name'], timings)
+  WriteStats(resultfile, suite_name, timings)
+
+  if return_code == 0:
+    with open(resultfile_path, 'w') as fd:
+      fd.write(resultfile.getvalue())
 
   resultfile.close()
+  sys.exit(return_code)
 
 
 if __name__ == '__main__':

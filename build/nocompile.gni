@@ -69,8 +69,11 @@ if (enable_nocompile_tests) {
     action_foreach(nocompile_target) {
       script = "//tools/nocompile_driver.py"
       sources = invoker.sources
+
+      result_path = "$target_gen_dir/{{source_name_part}}_nc.cc"
+      depfile = "${result_path}.d"
       outputs = [
-        "$target_gen_dir/{{source_name_part}}_nc.cc",
+        result_path,
       ]
       args = [
         "4",  # number of compilers to invoke in parallel.

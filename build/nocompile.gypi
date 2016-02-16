@@ -76,6 +76,7 @@
           'outputs': [
             '<(nc_result_path)'
           ],
+          'depfile': '<(nc_result_path).d',
           'action': [
             'python',
             '<(nocompile_driver)',
