@@ -11,6 +11,14 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/goma.gni")
 
+# One common error that happens is that GYP-generated headers within gen/ get
+# included rather than the GN-generated ones within gen/ subdirectories.
+# TODO(agrieve): Remove once GYP is gone (as well as exec_script exception).
+assert(
+    exec_script("//build/dir_exists.py", [ "obj.host" ], "string") == "False",
+    "GYP artifacts detected in $root_build_dir.$0x0A" +
+        "You must wipe this directory before building with GN.")
+
 declare_args() {
   # When set (the default) enables C++ iterator debugging in debug builds.
   # Iterator debugging is always off in release builds (technically, this flag
