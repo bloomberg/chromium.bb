@@ -33,7 +33,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -118,10 +117,11 @@ views::Link* InfoBarView::CreateLink(const base::string16& text,
 views::Button* InfoBarView::CreateTextButton(
     views::ButtonListener* listener,
     const base::string16& text) {
-  if (!ui::MaterialDesignController::IsModeMaterial())
-    return CreateLabelButton(listener, text);
+  views::LabelButton* button = CreateLabelButton(listener, text);
+  if (ui::MaterialDesignController::IsModeMaterial())
+    button->SetFontList(GetFontList());
 
-  return new views::MdTextButton(listener, text);
+  return button;
 }
 
 // static
