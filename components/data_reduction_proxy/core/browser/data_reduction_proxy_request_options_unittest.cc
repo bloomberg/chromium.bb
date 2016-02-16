@@ -355,4 +355,40 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
   }
 }
 
+TEST_F(DataReductionProxyRequestOptionsTest, GetSessionKeyFromRequestHeaders) {
+  const struct {
+    std::string chrome_proxy_header_key;
+    std::string chrome_proxy_header_value;
+    std::string expected_session_key;
+  } tests[] = {
+      {"chrome-proxy", "something=something_else, s=123, key=value", "123"},
+      {"chrome-proxy", "something=something_else, s= 123  456 , key=value",
+       "123  456"},
+      {"chrome-proxy", "something=something_else, s=123456,    key=value",
+       "123456"},
+      {"chrome-proxy", "something=something else, s=123456,    key=value",
+       "123456"},
+      {"chrome-proxy", "something=something else, s=123456  ", "123456"},
+      {"chrome-proxy", "something=something_else, s=, key=value", ""},
+      {"chrome-proxy", "something=something_else, key=value", ""},
+      {"chrome-proxy", "s=123", "123"},
+      {"chrome-proxy", " s = 123 ", "123"},
+      {"some_other_header", "s=123", ""},
+  };
+
+  for (const auto& test : tests) {
+    net::HttpRequestHeaders request_headers;
+    request_headers.SetHeader("some_random_header_before", "some_random_key");
+    request_headers.SetHeader(test.chrome_proxy_header_key,
+                              test.chrome_proxy_header_value);
+    request_headers.SetHeader("some_random_header_after", "some_random_key");
+
+    std::string session_key =
+        request_options()->GetSessionKeyFromRequestHeaders(request_headers);
+    EXPECT_EQ(test.expected_session_key, session_key)
+        << test.chrome_proxy_header_key << ":"
+        << test.chrome_proxy_header_value;
+  }
+}
+
 }  // namespace data_reduction_proxy

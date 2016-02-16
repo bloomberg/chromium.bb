@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -328,6 +329,33 @@ void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
     headers.push_back(FormatOption(kExperimentsOption, experiment));
 
   header_value_ = base::JoinString(headers, ", ");
+}
+
+std::string DataReductionProxyRequestOptions::GetSessionKeyFromRequestHeaders(
+    const net::HttpRequestHeaders& request_headers) const {
+  std::string chrome_proxy_header_value;
+  base::StringPairs kv_pairs;
+  // Return if the request does not have request headers or if they can't be
+  // parsed into key-value pairs.
+  if (!request_headers.GetHeader(chrome_proxy_header(),
+                                 &chrome_proxy_header_value) ||
+      !base::SplitStringIntoKeyValuePairs(chrome_proxy_header_value,
+                                          '=',  // Key-value delimiter
+                                          ',',  // Key-value pair delimiter
+                                          &kv_pairs)) {
+    return "";
+  }
+
+  for (const auto& kv_pair : kv_pairs) {
+    // Delete leading and trailing white space characters from the key before
+    // comparing.
+    if (base::TrimWhitespaceASCII(kv_pair.first, base::TRIM_ALL) ==
+        kSecureSessionHeaderOption) {
+      return base::TrimWhitespaceASCII(kv_pair.second, base::TRIM_ALL)
+          .as_string();
+    }
+  }
+  return "";
 }
 
 }  // namespace data_reduction_proxy

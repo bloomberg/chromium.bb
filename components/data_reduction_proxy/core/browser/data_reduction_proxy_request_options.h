@@ -112,6 +112,10 @@ class DataReductionProxyRequestOptions {
   // Invalidates the secure session credentials.
   void Invalidate();
 
+  // Parses |request_headers| and returns the value of the session key.
+  std::string GetSessionKeyFromRequestHeaders(
+      const net::HttpRequestHeaders& request_headers) const;
+
  protected:
   void SetHeader(net::HttpRequestHeaders* headers);
 

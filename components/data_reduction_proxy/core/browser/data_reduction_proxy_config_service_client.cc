@@ -29,6 +29,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/proxy/proxy_server.h"
@@ -105,6 +106,26 @@ GURL AddApiKeyToUrl(const GURL& url) {
 
 void RecordAuthExpiredHistogram(bool auth_expired) {
   UMA_HISTOGRAM_BOOLEAN(kUMAConfigServiceAuthExpired, auth_expired);
+}
+
+// Records whether the session key used in the request matches the current
+// sesssion key.
+void RecordAuthExpiredSessionKey(bool matches) {
+  // This enum must remain synchronized with the
+  // DataReductionProxyConfigServiceAuthExpiredSessionKey enum in
+  // metrics/histograms/histograms.xml.
+  enum AuthExpiredSessionKey {
+    AUTH_EXPIRED_SESSION_KEY_MISMATCH = 0,
+    AUTH_EXPIRED_SESSION_KEY_MATCH = 1,
+    AUTH_EXPIRED_SESSION_KEY_BOUNDARY = 2
+  };
+
+  AuthExpiredSessionKey state = matches ? AUTH_EXPIRED_SESSION_KEY_MATCH
+                                        : AUTH_EXPIRED_SESSION_KEY_MISMATCH;
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "DataReductionProxy.ClientConfig.AuthExpiredSessionKey", state,
+      AUTH_EXPIRED_SESSION_KEY_BOUNDARY);
 }
 
 }  // namespace
@@ -209,6 +230,7 @@ void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
 }
 
 bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
+    const net::HttpRequestHeaders& request_headers,
     const net::HttpResponseHeaders* response_headers,
     const net::HostPortPair& proxy_server) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -216,6 +238,20 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
   if (config_->IsDataReductionProxy(proxy_server, nullptr)) {
     if (response_headers->response_code() ==
         net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+      std::string session_key =
+          request_options_->GetSessionKeyFromRequestHeaders(request_headers);
+
+      std::string current_session_key = request_options_->GetSecureSession();
+
+      // If the session key used in the request is different from the current
+      // session key, then the current session key does not need to be
+      // invalidated.
+      if (session_key != current_session_key) {
+        RecordAuthExpiredSessionKey(false);
+        return true;
+      }
+      RecordAuthExpiredSessionKey(true);
+
       // The default backoff logic is to increment the failure count (and
       // increase the backoff time) with each response failure to the remote
       // config service, and to decrement the failure count (and decrease the
