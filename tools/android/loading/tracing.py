@@ -7,6 +7,7 @@
 import bisect
 import itertools
 import logging
+import operator
 
 import devtools_monitor
 
@@ -40,11 +41,10 @@ class TracingTrack(devtools_monitor.Track):
 
     if connection:
       connection.SyncRequestNoResponse('Tracing.start', params)
-    self._events = []
 
-    self._event_msec_index = None
-    self._event_lists = None
+    self._events = []
     self._base_msec = None
+    self._interval_tree = None
 
   def Handle(self, method, event):
     for e in event['params']['value']:
@@ -52,10 +52,9 @@ class TracingTrack(devtools_monitor.Track):
       self._events.append(event)
       if self._base_msec is None or event.start_msec < self._base_msec:
         self._base_msec = event.start_msec
-    # Just invalidate our indices rather than trying to be fancy and
-    # incrementally update.
-    self._event_msec_index = None
-    self._event_lists = None
+    # Invalidate our index rather than trying to be fancy and incrementally
+    # update.
+    self._interval_tree = None
 
   def GetFirstEventMillis(self):
     """Find the canonical start time for this track.
@@ -80,18 +79,9 @@ class TracingTrack(devtools_monitor.Track):
       sample and counter) events are never included. Event end times are
       exclusive, so that an event ending at the usec parameter will not be
       returned.
-      TODO(mattcary): currently live objects are included. If this is too big we
-      may break that out into a separate index.
     """
     self._IndexEvents()
-    idx = bisect.bisect_right(self._event_msec_index, msec) - 1
-    if idx < 0:
-      return []
-    events = self._event_lists[idx]
-    assert events.start_msec <= msec
-    if not events or events.end_msec < msec:
-      return []
-    return events.event_list
+    return self._interval_tree.EventsAt(msec)
 
   def ToJsonDict(self):
     return {'events': [e.ToJsonDict() for e in self._events]}
@@ -125,31 +115,30 @@ class TracingTrack(devtools_monitor.Track):
         tracing_track._base_msec = e.start_msec
     return tracing_track
 
+  def _IndexEvents(self, strict=False):
+    if self._interval_tree:
+      return
+    complete_events = []
+    spanning_events = self._SpanningEvents()
+    for event in self._events:
+      if not event.IsIndexable():
+        continue
+      if event.IsComplete():
+        complete_events.append(event)
+        continue
+      matched_event = spanning_events.Match(event, strict)
+      if matched_event is not None:
+        complete_events.append(matched_event)
+    self._interval_tree = _IntervalTree.FromEvents(complete_events)
+
+    if strict and spanning_events.HasPending():
+      raise devtools_monitor.DevToolsConnectionException(
+          'Pending spanning events: %s' %
+          '\n'.join([str(e) for e in spanning_events.PendingEvents()]))
+
   def OverlappingEvents(self, start_msec, end_msec):
-    """Gets the list of events overlapping with an interval.
-
-    Args:
-      start_msec: the start of the range to query, in milliseconds, inclusive.
-      end_msec: the end of the range to query, in milliseconds, inclusive.
-
-    Returns:
-      List of events overlapping with the range. Events are overlapping only if
-      the overlap is strictly larger than 0.
-    """
     self._IndexEvents()
-    low_idx = bisect.bisect_left(self._event_msec_index, start_msec) - 1
-    high_idx = bisect.bisect_right(self._event_msec_index, end_msec)
-    matched_events = set()
-    for i in xrange(max(0, low_idx), high_idx):
-      if self._event_lists[i]:
-        for e in self._event_lists[i].event_list:
-          if e.end_msec is None:
-            continue
-          overlap_duration = max(
-              0, min(end_msec, e.end_msec) - max(start_msec, e.start_msec))
-          if overlap_duration > 0:
-            matched_events.add(e)
-    return list(matched_events)
+    return self._interval_tree.OverlappingEvents(start_msec, end_msec)
 
   def EventsEndingBetween(self, start_msec, end_msec):
     """Gets the list of events ending within an interval.
@@ -165,55 +154,9 @@ class TracingTrack(devtools_monitor.Track):
     return [e for e in overlapping_events
             if start_msec <= e.end_msec <= end_msec]
 
-  def _IndexEvents(self, strict=False):
-    """Computes index for in-flight events.
-
-    Creates a list of timestamps where events start or end, and tracks the
-    current set of in-flight events at the instant after each timestamp. To do
-    this we have to synthesize ending events for complete events, as well as
-    join and track the nesting of async, flow and other spanning events.
-
-    Events such as instant and counter events that aren't indexable are skipped.
-    """
-    if self._event_msec_index is not None:
-      return  # Already indexed.
-
-    if not self._events:
-      raise devtools_monitor.DevToolsConnectionException('No events to index')
-
-    self._event_msec_index = []
-    self._event_lists = []
-    synthetic_events = []
-    for e in self._events:
-      synthetic_events.extend(e.Synthesize())
-    synthetic_events.sort(key=lambda e: e.start_msec)
-    current_events = set()
-    next_idx = 0
-    spanning_events = self._SpanningEvents()
-    while next_idx < len(synthetic_events):
-      current_msec = synthetic_events[next_idx].start_msec
-      while next_idx < len(synthetic_events):
-        event = synthetic_events[next_idx]
-        assert event.IsIndexable()
-        if event.start_msec > current_msec:
-          break
-        matched_event = spanning_events.Match(event, strict)
-        if matched_event is not None:
-          event = matched_event
-        if not event.synthetic and (
-            event.end_msec is None or event.end_msec >= current_msec):
-          current_events.add(event)
-        next_idx += 1
-      current_events -= set([
-          e for e in current_events
-          if e.end_msec is not None and e.end_msec <= current_msec])
-      self._event_msec_index.append(current_msec)
-      self._event_lists.append(self._EventList(current_events))
-
-    if strict and spanning_events.HasPending():
-      raise devtools_monitor.DevToolsConnectionException(
-          'Pending spanning events: %s' %
-          '\n'.join([str(e) for e in spanning_events.PendingEvents()]))
+  def _GetEvents(self):
+    self._IndexEvents()
+    return self._interval_tree.GetEvents()
 
   class _SpanningEvents(object):
     def __init__(self):
@@ -315,31 +258,6 @@ class TracingTrack(devtools_monitor.Track):
       start.SetClose(event)
       return start
 
-  class _EventList(object):
-    def __init__(self, events):
-      self._events = [e for e in events]
-      if self._events:
-        self._start_msec = min(e.start_msec for e in self._events)
-        # Event end times may be changed after this list is created so the end
-        # can't be cached.
-      else:
-        self._start_msec = self._end_msec = None
-
-    @property
-    def event_list(self):
-      return self._events
-
-    @property
-    def start_msec(self):
-      return self._start_msec
-
-    @property
-    def end_msec(self):
-      return max(e.end_msec for e in self._events)
-
-    def __nonzero__(self):
-      return bool(self._events)
-
 
 class Event(object):
   """Wraps a tracing event."""
@@ -411,6 +329,9 @@ class Event(object):
         'M'             # Metadata
         ]
 
+  def IsComplete(self):
+    return self.type == 'X'
+
   def Synthesize(self):
     """Expand into synthetic events.
 
@@ -421,7 +342,7 @@ class Event(object):
     """
     if not self.IsIndexable():
       return []
-    if self.type == 'X':
+    if self.IsComplete():
       # Tracing event timestamps are microseconds!
       return [self, Event({'ts': self.end_msec * 1000}, synthetic=True)]
     return [self]
@@ -455,3 +376,81 @@ class Event(object):
   @classmethod
   def FromJsonDict(cls, json_dict):
     return Event(json_dict)
+
+
+class _IntervalTree(object):
+  """Simple interval tree. This is not an optimal one, as the split is done with
+  an equal number of events on each side, according to start time.
+  """
+  _TRESHOLD = 100
+  def __init__(self, start, end, events):
+    """Builds an interval tree.
+
+    Args:
+      start: start timestamp of this node, in ms.
+      end: end timestamp covered by this node, in ms.
+      events: Iterable of objects having start_msec and end_msec fields. Has to
+              be sorted by start_msec.
+    """
+    self.start = start
+    self.end = end
+    self._events = events
+    self._left = self._right = None
+    if len(self._events) > self._TRESHOLD:
+      self._Divide()
+
+  @classmethod
+  def FromEvents(cls, events):
+    """Returns an IntervalTree instance from a list of events."""
+    filtered_events = [e for e in events
+                       if e.start_msec is not None and e.end_msec is not None]
+    filtered_events.sort(key=operator.attrgetter('start_msec'))
+    start = min(event.start_msec for event in filtered_events)
+    end = max(event.end_msec for event in filtered_events)
+    return _IntervalTree(start, end, filtered_events)
+
+  def OverlappingEvents(self, start, end):
+    if min(end, self.end) - max(start, self.start) <= 0:
+      return set()
+    elif self._IsLeaf():
+      result = set()
+      for event in self._events:
+        if self._Overlaps(event, start, end):
+          result.add(event)
+      return result
+    else:
+      return (self._left.OverlappingEvents(start, end)
+              | self._right.OverlappingEvents(start, end))
+
+  def EventsAt(self, timestamp):
+    result = set()
+    if self._IsLeaf():
+      for event in self._events:
+        if event.start_msec <= timestamp < event.end_msec:
+          result.add(event)
+    else:
+      if self._left.start <= timestamp < self._left.end:
+        result |= self._left.EventsAt(timestamp)
+      if self._right.start <= timestamp < self._right.end:
+        result |= self._right.EventsAt(timestamp)
+    return result
+
+  def GetEvents(self):
+    return self._events
+
+  def _Divide(self):
+    middle = len(self._events) / 2
+    left_events = self._events[:middle]
+    right_events = self._events[middle:]
+    left_end = max(e.end_msec for e in left_events)
+    right_start = min(e.start_msec for e in right_events)
+    self._left = _IntervalTree(self.start, left_end, left_events)
+    self._right = _IntervalTree(right_start, self.end, right_events)
+
+  def _IsLeaf(self):
+    return self._left is None
+
+  @classmethod
+  def _Overlaps(cls, event, start, end):
+    return (min(end, event.end_msec) - max(start, event.start_msec) > 0
+            or start <= event.start_msec < end)  # For instant events.

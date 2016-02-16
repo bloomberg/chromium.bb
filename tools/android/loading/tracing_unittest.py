@@ -2,13 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import copy
 import logging
+import operator
 import unittest
 
 import devtools_monitor
 
-from tracing import (Event, TracingTrack)
+from tracing import (Event, TracingTrack, _IntervalTree)
 
 
 class TracingTrackTestCase(unittest.TestCase):
@@ -34,7 +36,12 @@ class TracingTrackTestCase(unittest.TestCase):
       {'ts': 12, 'ph': 'X', 'dur': 3, 'tid': 1, 'args': {'name': 'E'}}]
 
   def setUp(self):
+    self.tree_threshold = _IntervalTree._TRESHOLD
+    _IntervalTree._TRESHOLD = 2  # Expose more edge cases in the tree.
     self.track = TracingTrack(None)
+
+  def tearDown(self):
+    _IntervalTree._TRESHOLD = self.tree_threshold
 
   def EventToMicroseconds(self, event):
     result = copy.deepcopy(event)
@@ -255,6 +262,68 @@ class TracingTrackTestCase(unittest.TestCase):
     self.assertEquals(4, len(tracing_track.GetEvents()))
     tracing_track = self.track.TracingTrackForThread(42)
     self.assertEquals(0, len(tracing_track.GetEvents()))
+
+
+class IntervalTreeTestCase(unittest.TestCase):
+  class FakeEvent(object):
+    def __init__(self, start_msec, end_msec):
+      self.start_msec = start_msec
+      self.end_msec = end_msec
+
+    def __eq__(self, o):
+      return self.start_msec == o.start_msec and self.end_msec == o.end_msec
+
+  _COUNT = 1000
+
+  def testCreateTree(self):
+    events = [self.FakeEvent(100 * i, 100 * (i + 1))
+              for i in range(self._COUNT)]
+    tree = _IntervalTree.FromEvents(events)
+    self.assertEquals(0, tree.start)
+    self.assertEquals(100 * self._COUNT, tree.end)
+    self.assertFalse(tree._IsLeaf())
+
+  def testEventsAt(self):
+    events = ([self.FakeEvent(100 * i, 100 * (i + 1))
+               for i in range(self._COUNT)]
+              + [self.FakeEvent(100 * i + 50, 100 * i + 150)
+                 for i in range(self._COUNT)])
+    tree = _IntervalTree.FromEvents(events)
+    self.assertEquals(0, tree.start)
+    self.assertEquals(100 * self._COUNT + 50, tree.end)
+    self.assertFalse(tree._IsLeaf())
+    for i in range(self._COUNT):
+      self.assertEquals(2, len(tree.EventsAt(100 * i + 75)))
+    # Add instant events, check that they are excluded.
+    events += [self.FakeEvent(100 * i + 75, 100 * i + 75)
+               for i in range(self._COUNT)]
+    tree = _IntervalTree.FromEvents(events)
+    self.assertEquals(3 * self._COUNT, len(tree._events))
+    for i in range(self._COUNT):
+      self.assertEquals(2, len(tree.EventsAt(100 * i + 75)))
+
+  def testOverlappingEvents(self):
+    events = ([self.FakeEvent(100 * i, 100 * (i + 1))
+               for i in range(self._COUNT)]
+              + [self.FakeEvent(100 * i + 50, 100 * i + 150)
+                 for i in range(self._COUNT)])
+    tree = _IntervalTree.FromEvents(events)
+    self.assertEquals(0, tree.start)
+    self.assertEquals(100 * self._COUNT + 50, tree.end)
+    self.assertFalse(tree._IsLeaf())
+    # 400 -> 500, 450 -> 550, 500 -> 600
+    self.assertEquals(3, len(tree.OverlappingEvents(450, 550)))
+    overlapping = sorted(
+        tree.OverlappingEvents(450, 550), key=operator.attrgetter('start_msec'))
+    self.assertEquals(self.FakeEvent(400, 500), overlapping[0])
+    self.assertEquals(self.FakeEvent(450, 550), overlapping[1])
+    self.assertEquals(self.FakeEvent(500, 600), overlapping[2])
+    self.assertEquals(8, len(tree.OverlappingEvents(450, 800)))
+    # Add instant events, check that they are included.
+    events += [self.FakeEvent(500, 500) for i in range(10)]
+    tree = _IntervalTree.FromEvents(events)
+    self.assertEquals(3 + 10, len(tree.OverlappingEvents(450, 550)))
+    self.assertEquals(8 + 10, len(tree.OverlappingEvents(450, 800)))
 
 
 if __name__ == '__main__':
