@@ -690,6 +690,7 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
     string.pushRange(suffixString.data(), suffixString.size());
 
     SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(start, end);
+    int remainingLength = 0;
     unsigned next = 0;
     bool needMoreContext = false;
     while (!it.atEnd()) {
@@ -697,18 +698,24 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
         // iterate to get chunks until the searchFunction returns a non-zero
         // value.
         if (!inTextSecurityMode) {
-            it.copyTextTo(&string);
+            int runOffset = 0;
+            do {
+                runOffset += it.copyTextTo(&string, runOffset, string.capacity());
+                // TODO(xiaochengh): The following line takes O(string.size()) time,
+                // which makes quadratic overall running time in the worst case.
+                // Should improve it in some way.
+                next = searchFunction(string.data(), string.size(), string.size() - suffixLength, MayHaveMoreContext, needMoreContext);
+            } while (!next && runOffset < it.length());
+            if (next) {
+                remainingLength = it.length() - runOffset;
+                break;
+            }
         } else {
             // Treat bullets used in the text security mode as regular
             // characters when looking for boundaries
             string.pushCharacters('x', it.length());
+            next = 0;
         }
-        // TODO(xiaochengh): The following line takes O(string.size()) time,
-        // which makes the while loop take quadratic time in the worst case.
-        // Should improve it in some way.
-        next = searchFunction(string.data(), string.size(), string.size() - suffixLength, MayHaveMoreContext, needMoreContext);
-        if (next)
-            break;
         it.advance();
     }
     if (needMoreContext) {
@@ -724,9 +731,10 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
         return createVisiblePosition(it.atEnd() ? it.startPosition() : pos);
 
     Node* node = it.startContainer();
-    if (node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) {
+    int boundaryOffset = remainingLength + next;
+    if (node->isTextNode() && boundaryOffset <= node->maxCharacterOffset()) {
         // The next variable contains a usable index into a text node
-        return createVisiblePosition(PositionTemplate<Strategy>(node, next));
+        return createVisiblePosition(PositionTemplate<Strategy>(node, boundaryOffset));
     }
 
     // Use the character iterator to translate the next value into a DOM
@@ -783,22 +791,26 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
         // it.
         bool inTextSecurityMode = it.isInTextSecurityMode();
         if (!inTextSecurityMode) {
-            it.copyTextTo(&string);
+            int runOffset = 0;
+            do {
+                runOffset += it.copyTextTo(&string, runOffset, string.capacity());
+                next = searchFunction(string.data(), string.size(), offset, MayHaveMoreContext, needMoreContext);
+                if (!needMoreContext) {
+                    // When the search does not need more context, skip all examined
+                    // characters except the last one, in case it is a boundary.
+                    offset = string.size();
+                    U16_BACK_1(string.data(), 0, offset);
+                }
+            } while (next == string.size() && runOffset < it.length());
+            if (next != string.size())
+                break;
         } else {
             // Treat bullets used in the text security mode as regular
             // characters when looking for boundaries
             string.pushCharacters('x', it.length());
+            next = string.size();
         }
-        next = searchFunction(string.data(), string.size(), offset, MayHaveMoreContext, needMoreContext);
-        if (next != string.size())
-            break;
         it.advance();
-        if (!needMoreContext) {
-            // When the search does not need more context, skip all examined
-            // characters except the last one, in case it is a boundary.
-            offset = string.size();
-            U16_BACK_1(string.data(), 0, offset);
-        }
     }
     if (needMoreContext) {
         // The last search returned the end of the buffer and asked for more

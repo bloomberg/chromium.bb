@@ -18,6 +18,7 @@ public:
     void clear() { m_size = 0; }
     size_t size() const { return m_size; }
     bool isEmpty() const { return m_size == 0; }
+    size_t capacity() const { return m_buffer.capacity(); }
     const UChar& operator[](size_t index) const { ASSERT(index < m_size); return data()[index]; }
     virtual const UChar* data() const = 0;
 
@@ -39,7 +40,6 @@ protected:
     virtual UChar* calcDestination(size_t length) = 0;
     virtual void shiftData(size_t oldCapacity);
 
-    size_t capacity() const { return m_buffer.capacity(); }
     const UChar* bufferBegin() const { return m_buffer.begin(); }
     const UChar* bufferEnd() const { return m_buffer.end(); }
     UChar* bufferBegin() { return m_buffer.begin(); }

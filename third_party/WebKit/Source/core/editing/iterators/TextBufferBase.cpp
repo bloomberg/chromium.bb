@@ -8,6 +8,7 @@ namespace blink {
 
 TextBufferBase::TextBufferBase()
 {
+    m_buffer.reserveCapacity(1024);
     m_buffer.resize(capacity());
 }
 
