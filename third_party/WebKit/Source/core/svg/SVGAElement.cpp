@@ -198,9 +198,8 @@ bool SVGAElement::isKeyboardFocusable() const
 {
     if (isFocusable() && Element::supportsFocus())
         return SVGElement::isKeyboardFocusable();
-
-    if (isLink())
-        return document().frameHost()->chromeClient().tabsToLinks();
+    if (isLink() && !document().frameHost()->chromeClient().tabsToLinks())
+        return false;
     return SVGElement::isKeyboardFocusable();
 }
 
