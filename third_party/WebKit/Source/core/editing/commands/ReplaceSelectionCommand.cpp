@@ -847,7 +847,7 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes, Edi
     }
 }
 
-void ReplaceSelectionCommand::mergeEndIfNeeded()
+void ReplaceSelectionCommand::mergeEndIfNeeded(EditingState* editingState)
 {
     if (!m_shouldMergeEnd)
         return;
@@ -878,7 +878,9 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
         destination = createVisiblePosition(positionBeforeNode(placeholder.get()));
     }
 
-    moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination);
+    moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination, editingState);
+    if (editingState->isAborted())
+        return;
 
     // Merging forward will remove m_endOfInsertedContent from the document.
     if (mergeForward) {
@@ -1257,7 +1259,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 
         // FIXME: Maintain positions for the start and end of inserted content instead of keeping nodes.  The nodes are
         // only ever used to create positions where inserted content starts/ends.
-        moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination);
+        moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination, editingState);
+        if (editingState->isAborted())
+            return;
         m_startOfInsertedContent = mostForwardCaretPosition(endingSelection().visibleStart().deepEquivalent());
         if (m_endOfInsertedContent.isOrphan())
             m_endOfInsertedContent = mostBackwardCaretPosition(endingSelection().visibleEnd().deepEquivalent());
@@ -1292,7 +1296,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
             lastPositionToSelect = mostForwardCaretPosition(next.deepEquivalent());
         }
     } else {
-        mergeEndIfNeeded();
+        mergeEndIfNeeded(editingState);
+        if (editingState->isAborted())
+            return;
     }
 
     if (HTMLQuoteElement* mailBlockquote = toHTMLQuoteElement(enclosingNodeOfType(positionAtStartOfInsertedContent().deepEquivalent(), isMailPasteAsQuotationHTMLBlockQuoteElement)))

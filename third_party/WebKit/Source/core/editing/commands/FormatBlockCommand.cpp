@@ -66,7 +66,7 @@ void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection
     m_didApply = true;
 }
 
-void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockElement, EditingState*)
+void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockElement, EditingState* editingState)
 {
     Element* refElement = enclosingBlockFlowElement(createVisiblePosition(end));
     Element* root = rootEditableElementOf(start);
@@ -92,13 +92,17 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
         // Create a new blockquote and insert it as a child of the root editable element. We accomplish
         // this by splitting all parents of the current paragraph up to that point.
         blockElement = createBlockElement();
-        insertNodeBefore(blockElement, nodeAfterInsertionPosition);
+        insertNodeBefore(blockElement, nodeAfterInsertionPosition, editingState);
+        if (editingState->isAborted())
+            return;
     }
 
     Position lastParagraphInBlockNode = blockElement->lastChild() ? positionAfterNode(blockElement->lastChild()) : Position();
     bool wasEndOfParagraph = isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode));
 
-    moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), blockElement.get(), outerBlock.get());
+    moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), blockElement.get(), outerBlock.get(), editingState);
+    if (editingState->isAborted())
+        return;
 
     // Copy the inline style of the original block element to the newly created block-style element.
     if (outerBlock.get() != nodeAfterInsertionPosition.get() && toHTMLElement(nodeAfterInsertionPosition.get())->hasAttribute(styleAttr))

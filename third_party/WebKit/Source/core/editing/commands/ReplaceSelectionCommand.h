@@ -89,7 +89,7 @@ private:
     bool shouldMergeEnd(bool selectionEndWasEndOfParagraph);
     bool shouldMerge(const VisiblePosition&, const VisiblePosition&);
 
-    void mergeEndIfNeeded();
+    void mergeEndIfNeeded(EditingState*);
 
     void removeUnrenderedTextNodesAtEnds(InsertedNodes&);
 

@@ -56,7 +56,7 @@ private:
     bool selectionHasListOfType(const VisibleSelection&, const HTMLQualifiedName&);
     PassRefPtrWillBeRawPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtrWillBeRawPtr<HTMLElement>, EditingState*);
     bool doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection, EditingState*);
-    void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode);
+    void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode, EditingState*);
     void listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag, EditingState*);
     void moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition&, PassRefPtrWillBeRawPtr<HTMLLIElement>, EditingState*);
 

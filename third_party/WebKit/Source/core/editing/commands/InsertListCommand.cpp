@@ -310,7 +310,9 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             return true;
         }
 
-        unlistifyParagraph(endingSelection().visibleStart(), listElement.get(), listChildNode);
+        unlistifyParagraph(endingSelection().visibleStart(), listElement.get(), listChildNode, editingState);
+        if (editingState->isAborted())
+            return false;
     }
 
     if (!listChildNode || switchListType || forceCreateList)
@@ -319,7 +321,7 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
     return true;
 }
 
-void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listElement, Node* listChildNode)
+void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listElement, Node* listChildNode, EditingState* editingState)
 {
     // Since, unlistify paragraph inserts nodes into parent and removes node
     // from parent, if parent of |listElement| should be editable.
@@ -351,7 +353,9 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     // so that we don't create an orphaned list child.
     if (enclosingList(listElement)) {
         elementToInsert = HTMLLIElement::create(document());
-        appendNode(placeholder, elementToInsert);
+        appendNode(placeholder, elementToInsert, editingState);
+        if (editingState->isAborted())
+            return;
     }
 
     if (nextListChild && previousListChild) {
@@ -363,7 +367,9 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // listChildNode below in moveParagraphs, previousListChild will be removed along with it if it is
         // unrendered. But we ought to remove nextListChild too, if it is unrendered.
         splitElement(listElement, splitTreeToNode(nextListChild, listElement));
-        insertNodeBefore(elementToInsert, listElement);
+        insertNodeBefore(elementToInsert, listElement, editingState);
+        if (editingState->isAborted())
+            return;
     } else if (nextListChild || listChildNode->parentNode() != listElement) {
         // Just because listChildNode has no previousListChild doesn't mean there isn't any content
         // in listNode that comes before listChildNode, as listChildNode could have ancestors
@@ -371,13 +377,15 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // where we're about to move listChildNode to.
         if (listChildNode->parentNode() != listElement)
             splitElement(listElement, splitTreeToNode(listChildNode, listElement).get());
-        insertNodeBefore(elementToInsert, listElement);
+        insertNodeBefore(elementToInsert, listElement, editingState);
+        if (editingState->isAborted())
+            return;
     } else {
         insertNodeAfter(elementToInsert, listElement);
     }
 
     VisiblePosition insertionPoint = createVisiblePosition(positionBeforeNode(placeholder.get()));
-    moveParagraphs(start, end, insertionPoint, ASSERT_NO_EDITING_ABORT, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);
+    moveParagraphs(start, end, insertionPoint, editingState, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);
 }
 
 static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const VisiblePosition& adjacentPos, const HTMLQualifiedName& listTag)
