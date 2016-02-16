@@ -284,3 +284,62 @@ bool ExpandStringLiteral(Scope* scope,
   }
   return true;
 }
+
+size_t EditDistance(const base::StringPiece& s1,
+                    const base::StringPiece& s2,
+                    size_t max_edit_distance) {
+  // The algorithm implemented below is the "classic"
+  // dynamic-programming algorithm for computing the Levenshtein
+  // distance, which is described here:
+  //
+  //   http://en.wikipedia.org/wiki/Levenshtein_distance
+  //
+  // Although the algorithm is typically described using an m x n
+  // array, only one row plus one element are used at a time, so this
+  // implementation just keeps one vector for the row.  To update one entry,
+  // only the entries to the left, top, and top-left are needed.  The left
+  // entry is in row[x-1], the top entry is what's in row[x] from the last
+  // iteration, and the top-left entry is stored in previous.
+  size_t m = s1.size();
+  size_t n = s2.size();
+
+  std::vector<size_t> row(n + 1);
+  for (size_t i = 1; i <= n; ++i)
+    row[i] = i;
+
+  for (size_t y = 1; y <= m; ++y) {
+    row[0] = y;
+    size_t best_this_row = row[0];
+
+    size_t previous = y - 1;
+    for (size_t x = 1; x <= n; ++x) {
+      size_t old_row = row[x];
+      row[x] = std::min(previous + (s1[y - 1] == s2[x - 1] ? 0u : 1u),
+                        std::min(row[x - 1], row[x]) + 1u);
+      previous = old_row;
+      best_this_row = std::min(best_this_row, row[x]);
+    }
+
+    if (max_edit_distance && best_this_row > max_edit_distance)
+      return max_edit_distance + 1;
+  }
+
+  return row[n];
+}
+
+base::StringPiece SpellcheckString(
+    const base::StringPiece& text,
+    const std::vector<base::StringPiece>& words) {
+  const size_t kMaxValidEditDistance = 3u;
+
+  size_t min_distance = kMaxValidEditDistance + 1u;
+  base::StringPiece result;
+  for (base::StringPiece word : words) {
+    size_t distance = EditDistance(word, text, kMaxValidEditDistance);
+    if (distance < min_distance) {
+      min_distance = distance;
+      result = word;
+    }
+  }
+  return result;
+}

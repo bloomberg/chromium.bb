@@ -16,6 +16,7 @@
 #include "tools/gn/runtime_deps.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/string_utils.h"
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/switches.h"
 #include "tools/gn/variables.h"
@@ -176,85 +177,83 @@ int RunHelp(const std::vector<std::string>& args) {
     what = args[0];
   }
 
+  std::vector<base::StringPiece> all_help_topics;
+
   // Check commands.
   const commands::CommandInfoMap& command_map = commands::GetCommands();
-  commands::CommandInfoMap::const_iterator found_command =
-      command_map.find(what);
+  auto found_command = command_map.find(what);
   if (found_command != command_map.end()) {
     PrintLongHelp(found_command->second.help);
     return 0;
   }
+  for (const auto& entry : command_map)
+    all_help_topics.push_back(entry.first);
 
   // Check functions.
   const functions::FunctionInfoMap& function_map = functions::GetFunctions();
-  functions::FunctionInfoMap::const_iterator found_function =
-      function_map.find(what);
+  auto found_function = function_map.find(what);
   if (found_function != function_map.end()) {
     PrintLongHelp(found_function->second.help);
     return 0;
   }
+  for (const auto& entry : function_map)
+    all_help_topics.push_back(entry.first);
 
   // Builtin variables.
   const variables::VariableInfoMap& builtin_vars =
       variables::GetBuiltinVariables();
-  variables::VariableInfoMap::const_iterator found_builtin_var =
-      builtin_vars.find(what);
+  auto found_builtin_var = builtin_vars.find(what);
   if (found_builtin_var != builtin_vars.end()) {
     PrintLongHelp(found_builtin_var->second.help);
     return 0;
   }
+  for (const auto& entry : builtin_vars)
+    all_help_topics.push_back(entry.first);
 
   // Target variables.
   const variables::VariableInfoMap& target_vars =
       variables::GetTargetVariables();
-  variables::VariableInfoMap::const_iterator found_target_var =
-      target_vars.find(what);
+  auto found_target_var = target_vars.find(what);
   if (found_target_var != target_vars.end()) {
     PrintLongHelp(found_target_var->second.help);
     return 0;
   }
+  for (const auto& entry : target_vars)
+    all_help_topics.push_back(entry.first);
 
   // Random other topics.
-  if (what == "all") {
-    PrintAllHelp();
-    return 0;
-  }
-  if (what == "buildargs") {
-    PrintLongHelp(kBuildArgs_Help);
-    return 0;
-  }
-  if (what == "dotfile") {
-    PrintLongHelp(kDotfile_Help);
-    return 0;
-  }
-  if (what == "grammar") {
-    PrintLongHelp(kGrammar_Help);
-    return 0;
-  }
-  if (what == "input_conversion") {
+  std::map<std::string, std::function<void()>> random_topics;
+  random_topics["all"] = PrintAllHelp;
+  random_topics["buildargs"] = [=]() { PrintLongHelp(kBuildArgs_Help); };
+  random_topics["dotfile"] = [=]() { PrintLongHelp(kDotfile_Help); };
+  random_topics["grammar"] = [=]() { PrintLongHelp(kGrammar_Help); };
+  random_topics["input_conversion"] = [=]() {
     PrintLongHelp(kInputConversion_Help);
-    return 0;
-  }
-  if (what == "label_pattern") {
-    PrintLongHelp(kLabelPattern_Help);
-    return 0;
-  }
-  if (what == "runtime_deps") {
-    PrintLongHelp(kRuntimeDeps_Help);
-    return 0;
-  }
-  if (what == "source_expansion") {
+  };
+  random_topics["label_pattern"] = [=]() { PrintLongHelp(kLabelPattern_Help); };
+  random_topics["runtime_deps"] = [=]() { PrintLongHelp(kRuntimeDeps_Help); };
+  random_topics["source_expansion"] = [=]() {
     PrintLongHelp(kSourceExpansion_Help);
+  };
+  random_topics["switches"] = PrintSwitchHelp;
+  auto found_random_topic = random_topics.find(what);
+  if (found_random_topic != random_topics.end()) {
+    found_random_topic->second();
     return 0;
   }
-  if (what == "switches") {
-    PrintSwitchHelp();
-    return 0;
-  }
+  for (const auto& entry : random_topics)
+    all_help_topics.push_back(entry.first);
 
   // No help on this.
   Err(Location(), "No help on \"" + what + "\".").PrintToStdout();
-  RunHelp(std::vector<std::string>());
+  base::StringPiece suggestion = SpellcheckString(what, all_help_topics);
+  if (suggestion.empty()) {
+    OutputString("Run `gn help` for a list of available topics.\n",
+                 DECORATION_NONE);
+  } else {
+    OutputString("Did you mean `gn help " + suggestion.as_string() + "`?\n",
+                 DECORATION_NONE);
+  }
   return 1;
 }
 
