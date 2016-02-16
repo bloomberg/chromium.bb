@@ -21,15 +21,9 @@
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
 
-#if defined(__OBJC__)
 @class NSHTTPCookie;
 @class NSHTTPCookieStorage;
 @class NSArray;
-#else
-class NSHTTPCookie;
-class NSHTTPCookieStorage;
-class NSArray;
-#endif
 
 namespace net {
 
