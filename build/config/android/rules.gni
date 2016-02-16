@@ -953,17 +953,25 @@ template("java_binary") {
 #   }
 template("junit_binary") {
   set_sources_assignment_filter([])
+  testonly = true
 
-  java_binary(target_name) {
+  _java_binary_target_name = "${target_name}__java_binary"
+  _test_runner_target_name = "${target_name}__test_runner_script"
+
+  test_runner_script(_test_runner_target_name) {
+    test_name = invoker.target_name
+    test_suite = invoker.target_name
+    test_type = "junit"
+  }
+
+  java_binary(_java_binary_target_name) {
     deps = []
+    jar_name = invoker.target_name
     forward_variables_from(invoker, "*")
+    testonly = true
     bypass_platform_checks = true
     main_class = "org.chromium.testing.local.JunitTestMain"
-    wrapper_script_args = [
-      "-test-jars",
-      "$target_name.jar",
-    ]
-    testonly = true
+    wrapper_script_name = "$target_name"
 
     deps += [
       "//testing/android/junit:junit_test_support",
@@ -971,6 +979,12 @@ template("junit_binary") {
       "//third_party/mockito:mockito_java",
       "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
       "//third_party/robolectric:robolectric_java",
+    ]
+  }
+  group(target_name) {
+    public_deps = [
+      ":$_java_binary_target_name",
+      ":$_test_runner_target_name",
     ]
   }
 }

@@ -3130,8 +3130,10 @@
             'src_paths': [
               'android/junit/',
             ],
+            'test_type': 'junit',
           },
           'includes': [
+            '../build/android/test_runner.gypi',
             '../build/host_jar.gypi',
           ],
         },

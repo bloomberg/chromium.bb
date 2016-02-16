@@ -27,7 +27,7 @@ class JavaTestRunner(object):
     """Runs junit tests from |self._test_suite|."""
     with tempfile.NamedTemporaryFile() as json_file:
       java_script = os.path.join(
-          constants.GetOutDirectory(), 'bin', self._test_suite)
+          constants.GetOutDirectory(), 'bin', 'helper', self._test_suite)
       command = [java_script,
                  '-test-jars', self._test_suite + '.jar',
                  '-json-results-file', json_file.name]

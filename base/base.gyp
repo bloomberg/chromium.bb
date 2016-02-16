@@ -1545,13 +1545,17 @@
             '../testing/android/junit/junit_test.gyp:junit_test_support',
           ],
           'variables': {
-             'main_class': 'org.chromium.testing.local.JunitTestMain',
-             'src_paths': [
-               '../base/android/junit/',
-               '../base/test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java',
-             ],
-           },
-          'includes': [ '../build/host_jar.gypi' ],
+            'main_class': 'org.chromium.testing.local.JunitTestMain',
+            'src_paths': [
+              '../base/android/junit/',
+              '../base/test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java',
+            ],
+            'test_type': 'junit',
+          },
+          'includes': [
+            '../build/android/test_runner.gypi',
+            '../build/host_jar.gypi',
+          ],
         },
         {
           # GN: //base:base_javatests

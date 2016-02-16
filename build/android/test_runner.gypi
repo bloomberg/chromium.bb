@@ -28,6 +28,15 @@
 #   'includes': ['path/to/this/gypi/file'],
 # }
 #
+# {
+#   'target_name': 'junit_test',
+#   'type': 'none',
+#   'variables': {
+#     'test_type': 'junit',  # string
+#   },
+#   'includes': ['path/to/this/gypi/file'],
+# }
+#
 
 {
   'variables': {
@@ -54,6 +63,10 @@
             ],
           }],
         ],
+      }],
+      ['test_type == "junit"', {
+        'test_runner_args': ['--test-suite', '<(_target_name)'],
+        'script_name': 'run_<(_target_name)',
       }],
       ['additional_apks != []', {
         'test_runner_args': ['--additional-apk-list', '>(additional_apks)'],
