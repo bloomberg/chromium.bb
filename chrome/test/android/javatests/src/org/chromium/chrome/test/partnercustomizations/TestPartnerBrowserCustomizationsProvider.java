@@ -16,8 +16,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.chromium.chrome.test.util.TestHttpServerClient;
-
 /**
  * PartnerBrowserCustomizationsProvider example for testing.
  * Note: if you move or rename this class, make sure you have also updated AndroidManifest.xml.
@@ -25,8 +23,7 @@ import org.chromium.chrome.test.util.TestHttpServerClient;
 public class TestPartnerBrowserCustomizationsProvider extends ContentProvider {
     protected String mTag = TestPartnerBrowserCustomizationsProvider.class.getSimpleName();
 
-    public static final String HOMEPAGE_URI =
-            TestHttpServerClient.getUrl("chrome/test/data/simple.html");
+    public static final String HOMEPAGE_URI = "http://127.0.0.1:8000/foo.html";
     public static final String INCOGNITO_MODE_DISABLED_KEY = "disableincognitomode";
     public static final String BOOKMARKS_EDITING_DISABLED_KEY = "disablebookmarksediting";
 

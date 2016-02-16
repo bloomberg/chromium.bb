@@ -40,7 +40,7 @@ public class OpenTabsTest extends SyncTestBase {
 
     private static final String OPEN_TABS_TYPE = "Sessions";
 
-    // TestHttpServerClient is preferred here but it can't be used. The test server
+    // EmbeddedTestServer is preferred here but it can't be used. The test server
     // serves pages on localhost and Chrome doesn't sync localhost URLs as typed URLs.
     // This type of URL requires no external data connection or resources.
     private static final String URL = "data:text,OpenTabsTestURL";
