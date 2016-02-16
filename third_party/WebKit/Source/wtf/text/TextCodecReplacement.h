@@ -20,7 +20,7 @@ public:
 private:
     String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
 
-    bool m_sentEOF;
+    bool m_replacementErrorReturned;
 };
 
 } // namespace WTF
