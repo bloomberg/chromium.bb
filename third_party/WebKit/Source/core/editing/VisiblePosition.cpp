@@ -97,17 +97,6 @@ VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTreeWithAffi
     return VisiblePositionInFlatTree::create(positionWithAffinity);
 }
 
-VisiblePosition createVisiblePositionInDOMTree(const Position& position, TextAffinity affinity)
-{
-    return createVisiblePosition(position, affinity);
-}
-
-VisiblePosition createVisiblePositionInDOMTree(const PositionInFlatTree& position, TextAffinity affinity)
-{
-    const VisiblePositionInFlatTree visiblePosition = createVisiblePosition(position);
-    return createVisiblePosition(toPositionInDOMTree(visiblePosition.deepEquivalent()), affinity);
-}
-
 #ifndef NDEBUG
 
 template<typename Strategy>

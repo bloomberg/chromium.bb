@@ -121,11 +121,6 @@ CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
 CORE_EXPORT VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTree&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTreeWithAffinity&);
 
-// TODO(yosin) Once we have flat tree version of VisibleUnits, we should not
-// use |createVisiblePositionInDOMTree()|.
-VisiblePosition createVisiblePositionInDOMTree(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
-VisiblePosition createVisiblePositionInDOMTree(const PositionInFlatTree&, TextAffinity = VP_DEFAULT_AFFINITY);
-
 } // namespace blink
 
 #ifndef NDEBUG
