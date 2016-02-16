@@ -61,7 +61,7 @@ private:
     // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once RefPtrWillBeMember<>
     // supports const types.
     RefPtrWillBeMember<CSSImageGeneratorValue> m_imageGeneratorValue;
-    bool m_fixedSize;
+    const bool m_fixedSize;
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleGeneratedImage, isGeneratedImage());
