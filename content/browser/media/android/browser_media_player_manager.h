@@ -135,6 +135,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   WebContents* web_contents() const { return web_contents_; }
 
+  // Adds a given player to the list.  Not private to allow embedders
+  // to extend the manager and still utilize the base player management.
+  void AddPlayer(media::MediaPlayerAndroid* player, int delegate_id);
+
   // Removes the player with the specified id.
   void DestroyPlayer(int player_id);
 
@@ -169,9 +173,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   bool Send(IPC::Message* msg);
 
  private:
-  // Adds a given player to the list.
-  void AddPlayer(media::MediaPlayerAndroid* player);
-
   // Constructs a MediaPlayerAndroid object.
   media::MediaPlayerAndroid* CreateMediaPlayer(
       const MediaPlayerHostMsg_Initialize_Params& media_player_params,

@@ -543,9 +543,7 @@ void BrowserMediaPlayerManager::OnInitialize(
   if (!player)
     return;
 
-  player_id_to_delegate_id_map_[media_player_params.player_id] =
-      media_player_params.delegate_id;
-  AddPlayer(player);
+  AddPlayer(player, media_player_params.delegate_id);
 }
 
 void BrowserMediaPlayerManager::OnStart(int player_id) {
@@ -612,9 +610,12 @@ bool BrowserMediaPlayerManager::IsPlayingRemotely(int player_id) {
   return false;
 }
 
-void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
+void BrowserMediaPlayerManager::AddPlayer(
+    MediaPlayerAndroid* player, int delegate_id) {
   DCHECK(!GetPlayer(player->player_id()));
   players_.push_back(player);
+  player_id_to_delegate_id_map_[player->player_id()] =
+      delegate_id;
 }
 
 void BrowserMediaPlayerManager::DestroyPlayer(int player_id) {
