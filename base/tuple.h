@@ -200,7 +200,7 @@ inline void DispatchToMethodImpl(const ObjT& obj,
                                  Method method,
                                  const Tuple<Ts...>& arg,
                                  IndexSequence<Ns...>) {
-  (obj->*method)(base::internal::UnwrapTraits<Ts>::Unwrap(get<Ns>(arg))...);
+  (obj->*method)(internal::Unwrap(get<Ns>(arg))...);
 }
 
 template <typename ObjT, typename Method, typename... Ts>
@@ -216,7 +216,7 @@ template <typename Function, typename... Ts, size_t... Ns>
 inline void DispatchToFunctionImpl(Function function,
                                    const Tuple<Ts...>& arg,
                                    IndexSequence<Ns...>) {
-  (*function)(base::internal::UnwrapTraits<Ts>::Unwrap(get<Ns>(arg))...);
+  (*function)(internal::Unwrap(get<Ns>(arg))...);
 }
 
 template <typename Function, typename... Ts>
@@ -238,8 +238,7 @@ inline void DispatchToMethodImpl(const ObjT& obj,
                                  Tuple<OutTs...>* out,
                                  IndexSequence<InNs...>,
                                  IndexSequence<OutNs...>) {
-  (obj->*method)(base::internal::UnwrapTraits<InTs>::Unwrap(get<InNs>(in))...,
-                 &get<OutNs>(*out)...);
+  (obj->*method)(internal::Unwrap(get<InNs>(in))..., &get<OutNs>(*out)...);
 }
 
 template <typename ObjT, typename Method, typename... InTs, typename... OutTs>

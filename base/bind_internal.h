@@ -331,19 +331,16 @@ struct InvokeHelper<true, ReturnType, Runnable> {
 // Invoker<>
 //
 // See description at the top of the file.
-template <typename BoundIndices,
-          typename StorageType, typename Unwrappers,
+template <typename BoundIndices, typename StorageType,
           typename InvokeHelperType, typename UnboundForwardRunType>
 struct Invoker;
 
 template <size_t... bound_indices,
           typename StorageType,
-          typename... Unwrappers,
           typename InvokeHelperType,
           typename R,
           typename... UnboundForwardArgs>
-struct Invoker<IndexSequence<bound_indices...>,
-               StorageType, TypeList<Unwrappers...>,
+struct Invoker<IndexSequence<bound_indices...>, StorageType,
                InvokeHelperType, R(UnboundForwardArgs...)> {
   static R Run(BindStateBase* base,
                UnboundForwardArgs... unbound_args) {
@@ -353,7 +350,7 @@ struct Invoker<IndexSequence<bound_indices...>,
     // InvokeHelper<>::MakeItSo() call below.
     return InvokeHelperType::MakeItSo(
         storage->runnable_,
-        Unwrappers::Unwrap(get<bound_indices>(storage->bound_args_))...,
+        Unwrap(get<bound_indices>(storage->bound_args_))...,
         CallbackForward(unbound_args)...);
   }
 };
@@ -389,7 +386,6 @@ struct BindState<Runnable, R(Args...), BoundArgs...> final
       IsWeakMethod<HasIsMethodTag<Runnable>::value, BoundArgs...>;
 
   using BoundIndices = MakeIndexSequence<sizeof...(BoundArgs)>;
-  using Unwrappers = TypeList<UnwrapTraits<BoundArgs>...>;
   using UnboundForwardArgs = DropTypeListItem<
       sizeof...(BoundArgs),
       TypeList<typename CallbackParamTraits<Args>::ForwardType...>>;
@@ -399,7 +395,7 @@ struct BindState<Runnable, R(Args...), BoundArgs...> final
   using UnboundArgs = DropTypeListItem<sizeof...(BoundArgs), TypeList<Args...>>;
 
  public:
-  using InvokerType = Invoker<BoundIndices, StorageType, Unwrappers,
+  using InvokerType = Invoker<BoundIndices, StorageType,
                               InvokeHelperType, UnboundForwardRunType>;
   using UnboundRunType = MakeFunctionType<R, UnboundArgs>;
 
