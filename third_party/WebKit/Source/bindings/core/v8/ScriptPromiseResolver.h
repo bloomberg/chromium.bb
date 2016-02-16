@@ -46,10 +46,10 @@ public:
     {
         // This assertion fails if:
         //  - promise() is called at least once and
-        //  - this resolver is destructed before it is resolved, rejected, the
-        //    V8 isolate is terminated or the associated ExecutionContext is
-        //    stopped.
-        ASSERT(m_state == ResolvedOrRejected || !m_isPromiseCalled || !scriptState()->contextIsValid() || !executionContext() || executionContext()->activeDOMObjectsAreStopped());
+        //  - this resolver is destructed before it is resolved, rejected,
+        //    detached, the V8 isolate is terminated or the associated
+        //    ExecutionContext is stopped.
+        ASSERT(m_state == Detached || !m_isPromiseCalled || !scriptState()->contextIsValid() || !executionContext() || executionContext()->activeDOMObjectsAreStopped());
     }
 #endif
 
@@ -87,7 +87,13 @@ public:
     // ActiveDOMObject implementation.
     void suspend() override;
     void resume() override;
-    void stop() override;
+    void stop() override { detach(); }
+
+    // Calling this function makes the resolver release its internal resources.
+    // That means the associated promise will never be resolved or rejected
+    // unless it's already been resolved or rejected.
+    // Do not call this function unless you truly need the behavior.
+    void detach();
 
     // Once this function is called this resolver stays alive while the
     // promise is pending and the associated ExecutionContext isn't stopped.
@@ -106,7 +112,7 @@ private:
         Pending,
         Resolving,
         Rejecting,
-        ResolvedOrRejected,
+        Detached,
     };
 
     template<typename T>
@@ -132,7 +138,6 @@ private:
 
     void resolveOrRejectImmediately();
     void onTimerFired(Timer<ScriptPromiseResolver>*);
-    void clear();
 
     ResolutionState m_state;
     const RefPtr<ScriptState> m_scriptState;
