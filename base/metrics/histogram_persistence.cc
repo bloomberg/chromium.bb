@@ -46,6 +46,9 @@ enum CreateHistogramResultType {
   // Histogram was of unknown type.
   CREATE_HISTOGRAM_UNKNOWN_TYPE,
 
+  // Instance has detected a corrupt allocator (recorded only once).
+  CREATE_HISTOGRAM_ALLOCATOR_NEWLY_CORRUPT,
+
   // Always keep this at the end.
   CREATE_HISTOGRAM_MAX
 };
@@ -342,6 +345,15 @@ HistogramBase* AllocatePersistentHistogram(
   if (!allocator)
     return nullptr;
 
+  // If the allocator is corrupt, don't waste time trying anything else.
+  // This also allows differentiating on the dashboard between allocations
+  // failed due to a corrupt allocator and the number of process instances
+  // with one, the latter being idicated by "newly corrupt", below.
+  if (allocator->IsCorrupt()) {
+    RecordCreateHistogramResult(CREATE_HISTOGRAM_ALLOCATOR_CORRUPT);
+    return nullptr;
+  }
+
   size_t bucket_count = bucket_ranges->bucket_count();
   // An overflow such as this, perhaps as the result of a milicious actor,
   // could lead to writing beyond the allocation boundary and into other
@@ -400,6 +412,7 @@ HistogramBase* AllocatePersistentHistogram(
 
   CreateHistogramResultType result;
   if (allocator->IsCorrupt()) {
+    RecordCreateHistogramResult(CREATE_HISTOGRAM_ALLOCATOR_NEWLY_CORRUPT);
     result = CREATE_HISTOGRAM_ALLOCATOR_CORRUPT;
   } else if (allocator->IsFull()) {
     result = CREATE_HISTOGRAM_ALLOCATOR_FULL;

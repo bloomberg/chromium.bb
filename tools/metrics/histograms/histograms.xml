@@ -60501,15 +60501,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="CreatePersistentHistogramResult" type="int">
-  <int value="0" label="Histogram successfully created in persistent space."/>
+  <int value="0" label="Success: Histogram created in persistent space."/>
   <int value="1" label="Error: Invalid metadata pointer. (coding error)"/>
   <int value="2" label="Error: Invalid metdata."/>
   <int value="3" label="Error: Invalid 'ranges' array."/>
   <int value="4" label="Error: Invalid 'counts' array."/>
-  <int value="5" label="Error: Allocator is corrupt."/>
-  <int value="6" label="Error: Allocator is full."/>
-  <int value="7" label="Error: Allocator failed (unknown error)."/>
+  <int value="5" label="Failed: Allocator is corrupt."/>
+  <int value="6" label="Failed: Allocator is full."/>
+  <int value="7" label="Failed: Allocator failed (unknown error)."/>
   <int value="8" label="Error: Unknown histogram type."/>
+  <int value="9" label="Error: Allocator has become corrupted."/>
 </enum>
 
 <enum name="CredentialFilteredType" type="int">
