@@ -296,6 +296,11 @@ def main():
                       help='Web page replay archive to load job\'s urls from.')
   parser.add_argument('--wpr-record', default=False, action='store_true',
                       help='Record web page replay archive.')
+  parser.add_argument('--disable-wpr-script-injection', default=False,
+                      action='store_true',
+                      help='Disable WPR default script injection such as ' +
+                          'overriding javascript\'s Math.random() and Date() ' +
+                          'with deterministic implementations.')
   args = parser.parse_args()
 
   if not os.path.isdir(args.output):
@@ -317,9 +322,8 @@ def main():
     local_cache_directory_path = tempfile.mkdtemp(suffix='.cache')
     _UnzipDirectoryContent(local_cache_archive_path, local_cache_directory_path)
 
-  with device_setup.WprHost(device,
-                            args.wpr_archive,
-                            args.wpr_record) as additional_flags:
+  with device_setup.WprHost(device, args.wpr_archive, args.wpr_record,
+      args.disable_wpr_script_injection) as additional_flags:
     pages_loaded = 0
     for _ in xrange(args.repeat):
       for url in job_urls:

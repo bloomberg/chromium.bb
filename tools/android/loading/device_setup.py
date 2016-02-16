@@ -115,7 +115,8 @@ def _SetUpDevice(device, package_info):
 
 
 @contextlib.contextmanager
-def WprHost(device, wpr_archive_path, record=False):
+def WprHost(device, wpr_archive_path, record=False,
+            disable_script_injection=False):
   """Launches web page replay host.
 
   Args:
@@ -139,6 +140,11 @@ def WprHost(device, wpr_archive_path, record=False):
       os.remove(wpr_archive_path)
   else:
     assert os.path.exists(wpr_archive_path)
+
+  if disable_script_injection:
+    # Remove default WPR injected scripts like deterministic.js which
+    # overrides Math.random.
+    wpr_server_args.extend(['--inject_scripts', ''])
 
   # Deploy certification authority to the device.
   temp_certificate_dir = tempfile.mkdtemp()
