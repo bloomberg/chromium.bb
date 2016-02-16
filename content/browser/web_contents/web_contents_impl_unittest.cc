@@ -3319,6 +3319,7 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
 TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   TestWebContentsObserver observer(contents());
   TestRenderFrameHost* rfh = contents()->GetMainFrame();
+  rfh->InitializeRenderFrameIfNeeded();
 
   SkColor transparent = SK_ColorTRANSPARENT;
 

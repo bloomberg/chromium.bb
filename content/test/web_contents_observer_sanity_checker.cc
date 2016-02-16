@@ -317,11 +317,9 @@ bool WebContentsObserverSanityChecker::OnMessageReceived(
   // FrameHostMsg_RenderProcessGone is special internal IPC message that
   // should not be leaking outside of RenderFrameHost.
   CHECK(message.type() != FrameHostMsg_RenderProcessGone::ID);
+  CHECK(render_frame_host->IsRenderFrameLive());
 
-#if !defined(OS_MACOSX)
-// TODO(avi): Disabled because of http://crbug.com/445054
   AssertRenderFrameExists(render_frame_host);
-#endif
   return false;
 }
 

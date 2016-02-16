@@ -438,6 +438,10 @@ bool RenderWidgetHostImpl::IsLoading() const {
 }
 
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
+  // Only process messages if the RenderWidget is alive.
+  if (!renderer_initialized())
+    return false;
+
   if (owner_delegate_ && owner_delegate_->OnMessageReceived(msg))
     return true;
 

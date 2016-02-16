@@ -75,6 +75,7 @@ MockRenderProcessHost* TestRenderFrameHost::GetProcess() {
 
 void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
   if (!render_view_host()->IsRenderViewLive()) {
+    render_view_host()->GetProcess()->Init();
     RenderViewHostTester::For(render_view_host())->CreateTestRenderView(
         base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, -1, false);
   }

@@ -463,6 +463,10 @@ bool RenderFrameHostImpl::Send(IPC::Message* message) {
 }
 
 bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
+  // Only process messages if the RenderFrame is alive.
+  if (!render_frame_created_)
+    return false;
+
   // Filter out most IPC messages if this frame is swapped out.
   // We still want to handle certain ACKs to keep our state consistent.
   if (is_swapped_out()) {

@@ -150,7 +150,9 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                            RenderProcessHost* process,
                            int32_t routing_id)
-      : RenderWidgetHostImpl(delegate, process, routing_id, false) {}
+      : RenderWidgetHostImpl(delegate, process, routing_id, false) {
+    set_renderer_initialized(true);
+  }
 
   MOCK_METHOD0(Focus, void());
   MOCK_METHOD0(Blur, void());
@@ -754,6 +756,7 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
+  process_host->Init();
 
   // Owned by its |cocoa_view()|.
   int32_t routing_id = process_host->GetNextRoutingID();
@@ -808,6 +811,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   MockRenderWidgetHostImpl* host =
       new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+  process_host->sink().ClearMessages();
 
   // Send an initial wheel event with NSEventPhaseBegan to the view.
   NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan), 0);
@@ -849,6 +853,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   MockRenderWidgetHostImpl* host =
       new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+  process_host->sink().ClearMessages();
 
   // Add a delegate to the view.
   base::scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(
@@ -896,6 +901,7 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
+  process_host->Init();
   int32_t routing_id = process_host->GetNextRoutingID();
 
   // Owned by its |cocoa_view()|.
@@ -938,6 +944,7 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
+  process_host->Init();
   MockRenderWidgetHostDelegate delegate;
   int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
@@ -1020,6 +1027,7 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   MockRenderWidgetHostImpl* host =
       new MockRenderWidgetHostImpl(&delegate, process_host_, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+  process_host_->sink().ClearMessages();
 
   // We'll use this IPC message to ack events.
   InputEventAck ack(blink::WebInputEvent::GesturePinchUpdate,

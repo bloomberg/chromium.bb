@@ -42,6 +42,8 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   web_app_info.description = description;
   web_app_info.app_url = url;
 
+  content::RenderFrameHostTester::For(main_rfh())
+      ->InitializeRenderFrameIfNeeded();
   RenderViewHostTester::TestOnMessageReceived(
       rvh(), ChromeViewHostMsg_DidGetWebApplicationInfo(0, web_app_info));
   scoped_ptr<web_app::ShortcutInfo> info =

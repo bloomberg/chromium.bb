@@ -28,9 +28,12 @@ DeclarativeContentConditionTrackerTest::
 
 scoped_ptr<content::WebContents>
 DeclarativeContentConditionTrackerTest::MakeTab() {
-  return make_scoped_ptr(content::WebContentsTester::CreateTestWebContents(
-      profile_.get(),
-      nullptr));
+  scoped_ptr<content::WebContents> tab(
+      content::WebContentsTester::CreateTestWebContents(profile_.get(),
+                                                        nullptr));
+  content::RenderFrameHostTester::For(tab->GetMainFrame())
+      ->InitializeRenderFrameIfNeeded();
+  return tab;
 }
 
 content::MockRenderProcessHost*
