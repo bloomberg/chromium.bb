@@ -97,7 +97,7 @@ protected:
     //
     // TODO(yosin): EditingState arguments for the following functions should
     // not be optional.
-    void appendNode(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> parent, EditingState* = ASSERT_NO_EDITING_ABORT);
+    void appendNode(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> parent, EditingState*);
     void applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand>, EditingState* = ASSERT_NO_EDITING_ABORT);
     void applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand>, const VisibleSelection&, EditingState* = ASSERT_NO_EDITING_ABORT);
     void applyStyle(const EditingStyle*, EditingState*, EditAction = EditActionChangeAttributes);
@@ -146,9 +146,9 @@ protected:
     void deleteInsignificantText(const Position& start, const Position& end);
     void deleteInsignificantTextDownstream(const Position&);
 
-    PassRefPtrWillBeRawPtr<HTMLBRElement> appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element>);
+    PassRefPtrWillBeRawPtr<HTMLBRElement> appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element>, EditingState*);
     PassRefPtrWillBeRawPtr<HTMLBRElement> insertBlockPlaceholder(const Position&);
-    PassRefPtrWillBeRawPtr<HTMLBRElement> addBlockPlaceholderIfNeeded(Element*);
+    PassRefPtrWillBeRawPtr<HTMLBRElement> addBlockPlaceholderIfNeeded(Element*, EditingState*);
     void removePlaceholderAt(const Position&);
 
     PassRefPtrWillBeRawPtr<HTMLElement> insertNewDefaultParagraphElementAt(const Position&);

@@ -235,7 +235,9 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     }
 
     // Make sure the cloned block quote renders.
-    addBlockPlaceholderIfNeeded(clonedBlockquote.get());
+    addBlockPlaceholderIfNeeded(clonedBlockquote.get(), editingState);
+    if (editingState->isAborted())
+        return;
 
     // Put the selection right before the break.
     setEndingSelection(VisibleSelection(positionBeforeNode(breakElement.get()), TextAffinity::Downstream, endingSelection().isDirectional()));

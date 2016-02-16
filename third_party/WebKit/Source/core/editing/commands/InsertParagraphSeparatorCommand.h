@@ -49,7 +49,7 @@ private:
     void calculateStyleBeforeInsertion(const Position&);
     void applyStyleAfterInsertion(Element* originalEnclosingBlock, EditingState*);
     void getAncestorsInsideBlock(const Node* insertionNode, Element* outerBlock, WillBeHeapVector<RefPtrWillBeMember<Element>>& ancestors);
-    PassRefPtrWillBeRawPtr<Element> cloneHierarchyUnderNewBlock(const WillBeHeapVector<RefPtrWillBeMember<Element>>& ancestors, PassRefPtrWillBeRawPtr<Element> blockToInsert);
+    PassRefPtrWillBeRawPtr<Element> cloneHierarchyUnderNewBlock(const WillBeHeapVector<RefPtrWillBeMember<Element>>& ancestors, PassRefPtrWillBeRawPtr<Element> blockToInsert, EditingState*);
 
     bool shouldUseDefaultParagraphElement(Element*) const;
 

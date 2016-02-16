@@ -49,9 +49,13 @@ void CreateLinkCommand::doApply(EditingState* editingState)
         if (editingState->isAborted())
             return;
     } else {
-        insertNodeAt(anchorElement.get(), endingSelection().start());
+        insertNodeAt(anchorElement.get(), endingSelection().start(), editingState);
+        if (editingState->isAborted())
+            return;
         RefPtrWillBeRawPtr<Text> textNode = Text::create(document(), m_url);
-        appendNode(textNode.get(), anchorElement.get());
+        appendNode(textNode.get(), anchorElement.get(), editingState);
+        if (editingState->isAborted())
+            return;
         setEndingSelection(VisibleSelection(positionInParentBeforeNode(*anchorElement), positionInParentAfterNode(*anchorElement), TextAffinity::Downstream, endingSelection().isDirectional()));
     }
 }

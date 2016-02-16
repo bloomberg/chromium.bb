@@ -114,9 +114,13 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
     Position start = mostForwardCaretPosition(startOfSelection.deepEquivalent());
     if (isAtUnsplittableElement(start)) {
         RefPtrWillBeRawPtr<HTMLElement> blockquote = createBlockElement();
-        insertNodeAt(blockquote, start);
+        insertNodeAt(blockquote, start, editingState);
+        if (editingState->isAborted())
+            return;
         RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
-        appendNode(placeholder, blockquote);
+        appendNode(placeholder, blockquote, editingState);
+        if (editingState->isAborted())
+            return;
         setEndingSelection(VisibleSelection(positionBeforeNode(placeholder.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
         return;
     }

@@ -419,7 +419,9 @@ bool TypingCommand::makeEditableRootEmpty(EditingState* editingState)
             return false;
     }
 
-    addBlockPlaceholderIfNeeded(root);
+    addBlockPlaceholderIfNeeded(root, editingState);
+    if (editingState->isAborted())
+        return false;
     setEndingSelection(VisibleSelection(firstPositionInNode(root), TextAffinity::Downstream, endingSelection().isDirectional()));
 
     return true;

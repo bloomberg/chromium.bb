@@ -876,7 +876,7 @@ void CompositeEditCommand::deleteInsignificantTextDownstream(const Position& pos
     deleteInsignificantText(pos, end);
 }
 
-PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element> container)
+PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element> container, EditingState* editingState)
 {
     if (!container)
         return nullptr;
@@ -887,7 +887,9 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::appendBlockPlacehold
     ASSERT(container->layoutObject());
 
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
-    appendNode(placeholder, container);
+    appendNode(placeholder, container, editingState);
+    if (editingState->isAborted())
+        return nullptr;
     return placeholder.release();
 }
 
@@ -904,7 +906,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::insertBlockPlacehold
     return placeholder.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* container)
+PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* container, EditingState* editingState)
 {
     if (!container)
         return nullptr;
@@ -919,7 +921,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderI
     // any unrendered blocks
     LayoutBlockFlow* block = toLayoutBlockFlow(layoutObject);
     if (block->size().height() == 0 || (block->isListItem() && toLayoutListItem(block)->isEmpty()))
-        return appendBlockPlaceholder(container);
+        return appendBlockPlaceholder(container, editingState);
 
     return nullptr;
 }
@@ -1418,7 +1420,9 @@ bool CompositeEditCommand::breakOutOfEmptyListItem(EditingState* editingState)
             return false;
     }
 
-    appendBlockPlaceholder(newBlock);
+    appendBlockPlaceholder(newBlock, editingState);
+    if (editingState->isAborted())
+        return false;
     setEndingSelection(VisibleSelection(firstPositionInNode(newBlock.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
 
     style->prepareToApplyAt(endingSelection().start());
