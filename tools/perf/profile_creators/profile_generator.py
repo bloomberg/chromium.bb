@@ -109,14 +109,7 @@ class ProfileGenerator(object):
     if options.browser_options.profile_dir:
       return (options.browser_options.profile_dir, False)
 
-    out_dir = os.path.abspath(os.path.join(
-        tempfile.gettempdir(), self._profile_name, self._profile_name))
-
-    # Never reuse a generated profile, since it might be for a different version
-    # of Chrome.
-    if os.path.exists(out_dir):
-      assert os.path.isdir(out_dir)
-      shutil.rmtree(out_dir)
+    out_dir = tempfile.mkdtemp(prefix=self._profile_name)
 
     self.Create(options, out_dir)
     return (out_dir, True)
