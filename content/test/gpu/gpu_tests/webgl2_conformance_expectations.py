@@ -239,6 +239,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         '-with-canvas-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
 
+    # Win / AMD.
+    self.Flaky('deqp/functional/gles3/clipping.html',
+        ['win', 'amd'], bug=491419)
+    self.Flaky('deqp/functional/gles3/samplerobject.html',
+        ['win', 'amd'], bug=491419)
+
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
