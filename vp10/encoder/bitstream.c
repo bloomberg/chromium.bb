@@ -26,6 +26,9 @@
 #include "vp10/common/pred_common.h"
 #include "vp10/common/seg_common.h"
 #include "vp10/common/tile_common.h"
+#if CONFIG_CLPF
+#include "vp10/common/clpf.h"
+#endif
 
 #include "vp10/encoder/cost.h"
 #include "vp10/encoder/bitstream.h"
@@ -838,6 +841,13 @@ static void encode_loopfilter(struct loopfilter *lf,
   }
 }
 
+#if CONFIG_CLPF
+static void encode_clpf(const VP10_COMMON *cm,
+                        struct vpx_write_bit_buffer *wb) {
+  vpx_wb_write_literal(wb, cm->clpf, 1);
+}
+#endif
+
 static void write_delta_q(struct vpx_write_bit_buffer *wb, int delta_q) {
   if (delta_q != 0) {
     vpx_wb_write_bit(wb, 1);
@@ -1297,6 +1307,9 @@ static void write_uncompressed_header(VP10_COMP *cpi,
   vpx_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);
 
   encode_loopfilter(&cm->lf, wb);
+#if CONFIG_CLPF
+  encode_clpf(cm, wb);
+#endif
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
 #if CONFIG_MISC_FIXES

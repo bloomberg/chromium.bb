@@ -36,6 +36,9 @@
 #include "vp10/common/reconinter.h"
 #include "vp10/common/seg_common.h"
 #include "vp10/common/tile_common.h"
+#if CONFIG_CLPF
+#include "vp10/common/clpf.h"
+#endif
 
 #include "vp10/decoder/decodeframe.h"
 #include "vp10/decoder/detokenize.h"
@@ -1094,6 +1097,12 @@ static void setup_loopfilter(struct loopfilter *lf,
   }
 }
 
+#if CONFIG_CLPF
+static void setup_clpf(VP10_COMMON *cm, struct vpx_read_bit_buffer *rb) {
+  cm->clpf = vpx_rb_read_literal(rb, 1);
+}
+#endif
+
 static INLINE int read_delta_q(struct vpx_read_bit_buffer *rb) {
   return vpx_rb_read_bit(rb)
              ? vpx_rb_read_inv_signed_literal(rb, CONFIG_MISC_FIXES ? 6 : 4)
@@ -1543,6 +1552,10 @@ static const uint8_t *decode_tiles(VP10Decoder *pbi, const uint8_t *data,
     lf_data->stop = cm->mi_rows;
     winterface->execute(&pbi->lf_worker);
   }
+#if CONFIG_CLPF
+  if (cm->clpf && !cm->skip_loop_filter)
+    vp10_clpf_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
+#endif
 
   // Get last tile data.
   tile_data = pbi->tile_data + tile_cols * tile_rows - 1;
@@ -2026,6 +2039,9 @@ static size_t read_uncompressed_header(VP10Decoder *pbi,
     vp10_setup_past_independence(cm);
 
   setup_loopfilter(&cm->lf, rb);
+#if CONFIG_CLPF
+  setup_clpf(cm, rb);
+#endif
   setup_quantization(cm, rb);
 #if CONFIG_VPX_HIGHBITDEPTH
   xd->bd = (int)cm->bit_depth;

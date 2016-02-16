@@ -60,6 +60,8 @@ VP10_COMMON_SRCS-yes += common/scan.c
 VP10_COMMON_SRCS-yes += common/scan.h
 VP10_COMMON_SRCS-yes += common/vp10_fwd_txfm.h
 VP10_COMMON_SRCS-yes += common/vp10_fwd_txfm.c
+VP10_COMMON_SRCS-yes += common/clpf.c
+VP10_COMMON_SRCS-yes += common/clpf.h
 
 ifneq ($(CONFIG_VPX_HIGHBITDEPTH),yes)
 VP10_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/itrans4_dspr2.c

@@ -142,6 +142,10 @@ typedef struct VP10Common {
   int use_highbitdepth;  // Marks if we need to use 16bit frame buffers.
 #endif
 
+#if CONFIG_CLPF
+  int clpf;
+#endif
+
   YV12_BUFFER_CONFIG *frame_to_show;
   RefCntBuffer *prev_frame;
 
