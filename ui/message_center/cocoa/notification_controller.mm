@@ -576,6 +576,7 @@
     titleFrame.origin.y += delta;
     messageFrame.origin.y += delta;
     contextMessageFrame.origin.y += delta;
+    settingsButtonFrame.origin.y += delta;
     listFrame.origin.y += delta;
     progressBarFrame.origin.y += delta;
   }
@@ -646,6 +647,7 @@
   titleFrame.origin.y += NSHeight(frame);
   messageFrame.origin.y += NSHeight(frame);
   contextMessageFrame.origin.y += NSHeight(frame);
+  settingsButtonFrame.origin.y += NSHeight(frame);
   listFrame.origin.y += NSHeight(frame);
   progressBarFrame.origin.y += NSHeight(frame);
 
@@ -658,6 +660,7 @@
     titleFrame.origin.y += bottomAdjust;
     messageFrame.origin.y += bottomAdjust;
     contextMessageFrame.origin.y += bottomAdjust;
+    settingsButtonFrame.origin.y += bottomAdjust;
     listFrame.origin.y += bottomAdjust;
     progressBarFrame.origin.y += bottomAdjust;
   }
