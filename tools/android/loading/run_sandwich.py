@@ -86,15 +86,13 @@ def _ReadUrlsFromJobDescription(job_name):
   raise Exception('Job description does not define a list named "urls"')
 
 
-def _SaveChromeTrace(events, directory, subdirectory):
+def _SaveChromeTrace(events, target_directory):
   """Saves the trace events, ignores IO errors.
 
   Args:
     events: a dict as returned by TracingTrack.ToJsonDict()
-    directory: directory name contining all traces
-    subdirectory: directory name to create this particular trace in
+    target_directory: Directory path where trace is created.
   """
-  target_directory = os.path.join(directory, subdirectory)
   filename = os.path.join(target_directory, 'trace.json')
   try:
     os.makedirs(target_directory)
@@ -288,7 +286,7 @@ def main():
   parser.add_argument('--repeat', default=1, type=int,
                       help='How many times to run the job')
   parser.add_argument('--cache-op',
-                      choices=['clear', 'save', 'push'],
+                      choices=['clear', 'save', 'push', 'reload'],
                       default='clear',
                       help='Configures cache operation to do before launching '
                           +'Chrome. (Default is clear).')
@@ -329,26 +327,37 @@ def main():
 
   with device_setup.WprHost(device, args.wpr_archive, args.wpr_record,
       args.disable_wpr_script_injection) as additional_flags:
+    def _RunNavigation(url, clear_cache, trace_id):
+      with device_setup.DeviceConnection(
+          device=device,
+          additional_flags=additional_flags) as connection:
+        if clear_cache:
+          connection.ClearCache()
+        page_track.PageTrack(connection)
+        tracing_track = tracing.TracingTrack(connection,
+            categories=pull_sandwich_metrics.CATEGORIES)
+        connection.SetUpMonitoring()
+        connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
+        connection.StartMonitoring()
+        if trace_id != None:
+          trace_target_directory = os.path.join(args.output, str(trace_id))
+          _SaveChromeTrace(tracing_track.ToJsonDict(), trace_target_directory)
+
     for _ in xrange(args.repeat):
       for url in job_urls:
-        if args.cache_op == 'push':
+        clear_cache = False
+        if args.cache_op == 'clear':
+          clear_cache = True
+        elif args.cache_op == 'push':
           device.KillAll(_CHROME_PACKAGE, quiet=True)
           _PushBrowserCache(device, local_cache_directory_path)
-        with device_setup.DeviceConnection(
-            device=device,
-            additional_flags=additional_flags) as connection:
-          if (not run_infos['urls'] and args.cache_op == 'save' or
-              args.cache_op == 'clear'):
-            connection.ClearCache()
-          page_track.PageTrack(connection)
-          tracing_track = tracing.TracingTrack(connection,
-              categories=pull_sandwich_metrics.CATEGORIES)
-          connection.SetUpMonitoring()
-          connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
-          connection.StartMonitoring()
-          _SaveChromeTrace(tracing_track.ToJsonDict(), args.output,
-              str(len(run_infos['urls'])))
-          run_infos['urls'].append(url)
+        elif args.cache_op == 'reload':
+          _RunNavigation(url, clear_cache=True, trace_id=None)
+        elif args.cache_op == 'save':
+          clear_cache = not run_infos['urls']
+        _RunNavigation(url, clear_cache=clear_cache,
+                       trace_id=len(run_infos['urls']))
+        run_infos['urls'].append(url)
 
   if local_cache_directory_path:
     shutil.rmtree(local_cache_directory_path)
