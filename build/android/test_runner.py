@@ -973,6 +973,7 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
   command = args.command
 
   ProcessCommonOptions(args)
+  logging.info('command: %s', ' '.join(sys.argv))
 
   if args.enable_platform_mode:
     return RunTestsInPlatformMode(args)

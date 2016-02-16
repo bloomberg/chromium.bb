@@ -94,14 +94,12 @@ def Dump(jar_path):
   """
 
   with tempfile.NamedTemporaryFile() as proguard_output:
-    cmd_helper.RunCmd(['java', '-jar',
-                       _PROGUARD_PATH,
-                       '-injars', jar_path,
-                       '-dontshrink',
-                       '-dontoptimize',
-                       '-dontobfuscate',
-                       '-dontpreverify',
-                       '-dump', proguard_output.name])
+    cmd_helper.GetCmdStatusAndOutput([
+        'java',
+        '-jar', _PROGUARD_PATH,
+        '-injars', jar_path,
+        '-dontshrink', '-dontoptimize', '-dontobfuscate', '-dontpreverify',
+        '-dump', proguard_output.name])
     return Parse(proguard_output)
 
 class _AnnotationElement(object):

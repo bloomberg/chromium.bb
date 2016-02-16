@@ -37,7 +37,6 @@ def main():
     test_runner_args.extend([arg, ResolvePath(path)])
 
   test_runner_cmd = [test_runner_path] + test_runner_args + sys.argv[1:]
-  print ' '.join(test_runner_cmd)
   return subprocess.call(test_runner_cmd)
 
 if __name__ == '__main__':

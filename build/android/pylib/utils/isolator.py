@@ -105,7 +105,8 @@ class Isolator(object):
     for k, v in config_variables.iteritems():
       isolate_cmd.extend(['--config-variable', k, v])
 
-    if cmd_helper.RunCmd(isolate_cmd):
+    exit_code, _ = cmd_helper.GetCmdStatusAndOutput(isolate_cmd)
+    if exit_code:
       raise Exception('isolate command failed: %s' % ' '.join(isolate_cmd))
 
   def VerifyHardlinks(self):
