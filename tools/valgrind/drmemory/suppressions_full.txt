@@ -1897,8 +1897,6 @@ KERNEL32.dll!WriteFile
 *!base::File::WriteAtCurrentPos
 *!sessions::SessionBackend::AppendCommandsToFile
 *!sessions::SessionBackend::AppendCommands
-*!base::internal::InvokeHelper<>::MakeItSo
-*!base::internal::Invoker<>::Run
 
 UNADDRESSABLE ACCESS
 name=bug_505734
