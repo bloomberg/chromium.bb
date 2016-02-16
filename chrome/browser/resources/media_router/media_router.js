@@ -57,10 +57,8 @@ cr.define('media_router', function() {
 
     // Pressing the ESC key closes the dialog.
     document.addEventListener('keydown', function(e) {
-      if (e.keyCode == KEYCODE_ESC) {
-        container.maybeReportUserFirstAction(
-            media_router.MediaRouterUserAction.CLOSE);
-      }
+      if (e.keyCode == KEYCODE_ESC)
+        onCloseDialogEvent();
     });
   }
 
