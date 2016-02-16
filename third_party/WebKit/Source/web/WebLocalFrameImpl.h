@@ -76,10 +76,6 @@ template <typename T> class WebVector;
 class WebLocalFrameImpl final : public WebFrameImplBase, public WebLocalFrame {
 public:
     // WebFrame methods:
-    bool isWebLocalFrame() const override;
-    WebLocalFrame* toWebLocalFrame() override;
-    bool isWebRemoteFrame() const override;
-    WebRemoteFrame* toWebRemoteFrame() override;
     void close() override;
     WebString uniqueName() const override;
     WebString assignedName() const override;
@@ -356,6 +352,13 @@ private:
 
     WebLocalFrameImpl(WebTreeScopeType, WebFrameClient*);
     WebLocalFrameImpl(WebRemoteFrame*, WebFrameClient*);
+
+    // Inherited from WebFrame, but intentionally hidden: it never makes sense
+    // to call these on a WebLocalFrameImpl.
+    bool isWebLocalFrame() const override;
+    WebLocalFrame* toWebLocalFrame() override;
+    bool isWebRemoteFrame() const override;
+    WebRemoteFrame* toWebRemoteFrame() override;
 
     // Sets the local core frame and registers destruction observers.
     void setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame>);

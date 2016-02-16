@@ -27,10 +27,6 @@ public:
     ~WebRemoteFrameImpl() override;
 
     // WebFrame methods:
-    bool isWebLocalFrame() const override;
-    WebLocalFrame* toWebLocalFrame() override;
-    bool isWebRemoteFrame() const override;
-    WebRemoteFrame* toWebRemoteFrame() override;
     void close() override;
     WebString uniqueName() const override;
     WebString assignedName() const override;
@@ -181,6 +177,13 @@ public:
 
 private:
     WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
+
+    // Inherited from WebFrame, but intentionally hidden: it never makes sense
+    // to call these on a WebRemoteFrameImpl.
+    bool isWebLocalFrame() const override;
+    WebLocalFrame* toWebLocalFrame() override;
+    bool isWebRemoteFrame() const override;
+    WebRemoteFrame* toWebRemoteFrame() override;
 
     OwnPtrWillBeMember<RemoteFrameClientImpl> m_frameClient;
     RefPtrWillBeMember<RemoteFrame> m_frame;

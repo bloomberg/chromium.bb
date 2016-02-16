@@ -5509,9 +5509,8 @@ void RenderFrameImpl::NavigateInternal(
                                     : false;
 
       // Load the request.
-      frame_->toWebLocalFrame()->load(request, load_type,
-                                      item_for_history_navigation,
-                                      history_load_type, is_client_redirect);
+      frame_->load(request, load_type, item_for_history_navigation,
+                   history_load_type, is_client_redirect);
     }
   }
 

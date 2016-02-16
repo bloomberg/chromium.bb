@@ -5160,7 +5160,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange)
     EXPECT_EQ(1U, document->markers().markersInRange(selectionRange, DocumentMarker::Spelling).size());
 
     frame->replaceMisspelledRange("welcome");
-    EXPECT_EQ("_welcome_.", WebFrameContentDumper::dumpFrameTreeAsText(frame->toWebLocalFrame(), std::numeric_limits<size_t>::max()).utf8());
+    EXPECT_EQ("_welcome_.", WebFrameContentDumper::dumpFrameTreeAsText(frame, std::numeric_limits<size_t>::max()).utf8());
 }
 
 TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers)

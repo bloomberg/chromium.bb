@@ -268,7 +268,7 @@ bool RenderFrameProxy::Send(IPC::Message* message) {
 }
 
 void RenderFrameProxy::OnDeleteProxy() {
-  DCHECK(web_frame_->isWebRemoteFrame());
+  DCHECK(web_frame_);
   web_frame_->detach();
 }
 

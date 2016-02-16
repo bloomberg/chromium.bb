@@ -57,6 +57,13 @@ public:
 
 protected:
     explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) { }
+
+    // Inherited from WebFrame, but intentionally hidden: it never makes sense
+    // to call these on a WebRemoteFrame.
+    bool isWebLocalFrame() const override = 0;
+    WebLocalFrame* toWebLocalFrame() override = 0;
+    bool isWebRemoteFrame() const override = 0;
+    WebRemoteFrame* toWebRemoteFrame() override = 0;
 };
 
 } // namespace blink

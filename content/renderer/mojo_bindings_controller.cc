@@ -37,8 +37,7 @@ MojoBindingsController::~MojoBindingsController() {
 
 void MojoBindingsController::CreateContextState() {
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
-  blink::WebLocalFrame* frame =
-      render_frame()->GetWebFrame()->toWebLocalFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   MojoContextStateData* data = new MojoContextStateData;
