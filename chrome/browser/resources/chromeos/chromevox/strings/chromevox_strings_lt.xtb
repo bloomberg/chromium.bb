@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Eilutės antraštė:</translation>
 <translation id="2002895034995108595">Nustatyti dabartinį klavišų žemėlapį iš naujo</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{atidaromasis laužtinis skliaustas}one{# atidaromasis laužtinis skliaustas}few{# atidaromieji laužtiniai skliaustai}many{# left brackets}other{# atidaromųjų laužtinių skliaustų}}</translation>
+<translation id="2010555995361223825">„ChromeVox“ meniu</translation>
 <translation id="2045490512405922022">nepažymėta</translation>
 <translation id="20601713649439366">Nėra ankstesnės matematinės išraiškos.</translation>
 <translation id="207477615537953741">Semantinis interpretavimas išjungtas</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{kabliataškis}one{# kabliataškis}few{# kabliataškiai}many{# semicolons}other{# kabliataškių}}</translation>
 <translation id="5411891038905756502">Nėra ankstesnės perėjimo vietos.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ženklas mažiau}one{# ženklas mažiau}few{# ženklai mažiau}many{# less than signs}other{# ženklų mažiau}}</translation>
+<translation id="5444587279251314700">(aktyvus)</translation>
 <translation id="5455441614648621694">Papildomas</translation>
 <translation id="5485036206801896268">Nėra ankstesnio grafinio vaizdo.</translation>
 <translation id="5486947920110100234">Nėra kitos perėjimo vietos.</translation>

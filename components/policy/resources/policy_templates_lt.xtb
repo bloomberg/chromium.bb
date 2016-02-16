@@ -525,11 +525,6 @@
       Jei šis nustatymas išjungtas, tinklalapiuose nebus galima naudoti „JavaScript“ ir naudotojas negalės pakeisti to nustatymo.
 
       Jei šis nustatymas įgalintas ar nenustatytas, tinklalapiuose bus galima naudoti „JavaScript“, bet naudotojas galės pakeisti tą nustatymą.</translation>
-<translation id="2747783890942882652">Konfigūruojamas reikiamas prieglobos domeno pavadinimas, kuris bus nustatytas nuotolinės prieigos priegloboms, ir neleidžiama naudotojams jo keisti.
-
-          Jei šis nustatymas įgalintas, prieglobas galima bendrinti tik naudojant nurodytu domeno pavadinimu užregistruotas paskyras.
-
-          Jei šis nustatymas neleidžiamas arba nenustatytas, tada prieglobas galima bendrinti naudojant bet kurią paskyrą.</translation>
 <translation id="2757054304033424106">Leidžiami įdiegti plėtinių / programų tipai</translation>
 <translation id="2759224876420453487">Tvarkyti naudotojo elgseną kelių profilių seanse</translation>
 <translation id="2761483219396643566">Neveikos įspėjimo delsa, kai naudojama akumuliatoriaus energija</translation>
@@ -1994,6 +1989,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Nenustačius šios politikos „<ph name="PRODUCT_NAME" />“ bus naudojama numatytoji 5 000 milisekundžių vertė.</translation>
 <translation id="7841880500990419427">Minimalios versijos numatytasis TLS</translation>
 <translation id="7842869978353666042">„Google“ disko parinkčių konfigūravimas</translation>
+<translation id="7843525027689416831">Nurodomos žymos, kurios turėtų būti pritaikytos, kai paleidžiama „<ph name="PRODUCT_NAME" />“. Nurodytos žymos pritaikomos tik prisijungimo ekrane. Naudojant šią politiką išsiųstos žymos nepertraukia naudotojų sesijų.</translation>
 <translation id="7848840259379156480">Įdiegus „<ph name="PRODUCT_FRAME_NAME" />“ leidžiama sukonfigūruoti numatytąjį HTML teikėją.
       Pagal numatytuosius nustatymus teikti leidžiama prieglobos naršyklei, bet jūs savo nuožiūra šios nuostatos galite nepaisyti ir nustatyti, kad pagal numatytuosius nustatymus „<ph name="PRODUCT_FRAME_NAME" />“ pateiktų HTML puslapius.</translation>
 <translation id="7882585827992171421">Ši politika taikoma tik mažmeninės prekybos režimu.

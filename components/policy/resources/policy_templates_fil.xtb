@@ -524,11 +524,6 @@
       Kung hindi pinagana ang setting na ito, hindi makakagamit ng JavaScript ang mga web page at hindi mababago ng user ang setting na iyon.
 
       Kung pinagana o hindi nakatakda ang setting na ito, makakagamit ng JavaScript ang mga web page ngunit mababago ng user ang setting na iyon.</translation>
-<translation id="2747783890942882652">Kino-configure ang kinakailangang domain name ng host na itatalaga sa mga host ng malayuang pag-access at pinipigilan ang mga user na palitan ito.
-
-          Kung pinapagana ang setting na ito, maibabahagi lang ang mga host gamit ang mga account na nakarehistro sa tinukoy na domain name.
-
-          Kung hindi pinapagana ang setting o kung hindi ito nakatakda, maibabahagi ang mga host gamit ang anumang account.</translation>
 <translation id="2757054304033424106">Mga uri ng mga extension/apps na pinapayagang ma-install</translation>
 <translation id="2759224876420453487">Kokontrolin ang pag-uugali ng user sa isang session na multiprofile</translation>
 <translation id="2761483219396643566">Delay ng babala bago mag-idle kapag gumagamit ng baterya</translation>
@@ -1979,6 +1974,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Ang pag-iiwan sa patakarang ito na hindi nakatakda ay magdudulot na gagamitin ng <ph name="PRODUCT_NAME" /> ang default na value na 5000 millisecond.</translation>
 <translation id="7841880500990419427">Minimum na bersyon ng TLB na babalikan</translation>
 <translation id="7842869978353666042">I-configure ang mga pagpipilian sa Google Drive</translation>
+<translation id="7843525027689416831">Tinutukoy ang mga flag na dapat ilapat sa <ph name="PRODUCT_NAME" /> kapag nagsimula ito. Inilalapat ang mga flag sa screen ng pag-log in lang. Ang mga flag na sine-set sa pamamagitan ng patakarang ito ay hindi nalilipat sa mga session ng user.</translation>
 <translation id="7848840259379156480">Pinapayagan kang i-configure ang default na taga-render ng HTML kapag na-install ang <ph name="PRODUCT_FRAME_NAME" />. Ang default na setting ay upang payagan ang browser ng host na gawin ang pag-render, ngunit maaari mong i-override ito at i-render ng <ph name="PRODUCT_FRAME_NAME" /> ang mga pahina ng HTML bilang default.</translation>
 <translation id="7882585827992171421">Sa retail mode lamang aktibo ang patakarang ito.
 

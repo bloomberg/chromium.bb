@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Glava vrstice:</translation>
 <translation id="2002895034995108595">Ponastavi trenutno razporeditev tipk</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{oglati oklepaj}one{# oglati oklepaj}two{# oglata oklepaja}few{# oglati oklepaji}other{# oglatih oklepajev}}</translation>
+<translation id="2010555995361223825">ChromeVoxovi meniji</translation>
 <translation id="2045490512405922022">ni potrjeno</translation>
 <translation id="20601713649439366">Ni prejšnjega matematičnega izraza.</translation>
 <translation id="207477615537953741">Semantični način je izklopljen</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{podpičje}one{# podpičje}two{# podpičji}few{# podpičja}other{# podpičij}}</translation>
 <translation id="5411891038905756502">Ni prejšnje točke skoka.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak za manj}one{# znak za manj}two{# znaka za manj}few{# znaki za manj}other{# znakov za manj}}</translation>
+<translation id="5444587279251314700">(aktivno)</translation>
 <translation id="5455441614648621694">Dopolnilno</translation>
 <translation id="5485036206801896268">Ni prejšnje grafike.</translation>
 <translation id="5486947920110100234">Ni naslednje točke skoka.</translation>

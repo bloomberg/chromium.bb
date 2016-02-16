@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Pengepala baris:</translation>
 <translation id="2002895034995108595">Tetapkan semula peta kekunci semasa</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{tanda kurung kiri}other{# tanda kurung kiri}}</translation>
+<translation id="2010555995361223825">Menu ChromeVox</translation>
 <translation id="2045490512405922022">tidak ditandai</translation>
 <translation id="20601713649439366">Tiada ungkapan matematik sebelumnya.</translation>
 <translation id="207477615537953741">Semantik dimatikan</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{koma bertitik}other{# koma bertitik}}</translation>
 <translation id="5411891038905756502">Tiada titik langkau terdahulu.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kurang daripada}other{# tanda kurang daripada}}</translation>
+<translation id="5444587279251314700">(aktif)</translation>
 <translation id="5455441614648621694">Percuma</translation>
 <translation id="5485036206801896268">Tiada grafik terdahulu.</translation>
 <translation id="5486947920110100234">Tiada titik langkau seterusnya.</translation>

@@ -51,6 +51,7 @@
 <translation id="252373100621549798">Neznámý displej</translation>
 <translation id="2532589005999780174">Režim vysokého kontrastu</translation>
 <translation id="2562916301614567480">Soukromá síť</translation>
+<translation id="2661637000095600270">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy. Kliknutím odešlete zpětnou vazbu.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: Připojování...</translation>
 <translation id="2700058918926273959">Relace skončí za <ph name="SESSION_TIME_REMAINING" />. Poté budete odhlášeni.</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
@@ -232,6 +233,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="8878886163241303700">Rozšíření obrazovky</translation>
 <translation id="8938800817013097409">Zařízení USB Type-C (pravý zadní port)</translation>
 <translation id="8940956008527784070">Slabá baterie (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="9008540565042607572">Drahý monitore, nějak to mezi námi nefunguje. (Monitor není podporován. Kliknutím odešlete zpětnou vazbu.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon je používán.</translation>
 <translation id="9089416786594320554">Metody zadávání dat</translation>

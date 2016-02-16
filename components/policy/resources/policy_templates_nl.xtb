@@ -519,11 +519,6 @@
       Als deze instelling is uitgeschakeld, kunnen webpagina's JavaScript niet gebruiken en kan de gebruiker die instelling niet wijzigen.
 
       Als deze instelling is ingeschakeld of niet wordt ingesteld, kunnen webpagina's JavaScript gebruiken, maar kan de gebruiker die instelling wijzigen.</translation>
-<translation id="2747783890942882652">Hiermee configureer je de vereiste domeinnaam die wordt opgelegd aan hosts voor externe toegang en voorkom je dat gebruikers deze wijzigen.
-
-          Als deze instelling is ingeschakeld, kunnen hosts alleen worden gedeeld met accounts die zijn geregistreerd op de opgegeven domeinnaam.
-
-          Als deze instelling is uitgeschakeld of niet is ingesteld, kunnen hosts worden gedeeld met elk account.</translation>
 <translation id="2757054304033424106">Typen extensies/apps die mogen worden geïnstalleerd</translation>
 <translation id="2759224876420453487">Het gebruikersgedrag beheren in een multiprofielsessie</translation>
 <translation id="2761483219396643566">Inactieve waarschuwingsvertraging wanneer op de accu wordt gewerkt</translation>
@@ -1972,6 +1967,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de standaardwaarde van 5000 milliseconden.</translation>
 <translation id="7841880500990419427">Minimale TLS-versie om op terug te vallen</translation>
 <translation id="7842869978353666042">Opties voor Google Drive configureren</translation>
+<translation id="7843525027689416831">Hiermee worden de markeringen gespecificeerd die bij het starten moeten worden toegepast op <ph name="PRODUCT_NAME" />. De opgegeven markeringen worden alleen toegepast op het inlogscherm. Markeringen die worden ingesteld via dit beleid, worden niet doorgevoerd in gebruikerssessies.</translation>
 <translation id="7848840259379156480">Hiermee kun je de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME" /> is geïnstalleerd.
           De standaardinstelling is om de hostbrowser de rendering te laten regelen, maar
           je kunt dit aanpassen en <ph name="PRODUCT_FRAME_NAME" /> HTML-pagina's standaard laten renderen.</translation>

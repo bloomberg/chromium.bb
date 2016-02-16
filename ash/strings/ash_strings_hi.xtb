@@ -52,6 +52,7 @@
 <translation id="252373100621549798">अज्ञात डिस्प्ले</translation>
 <translation id="2532589005999780174">उच्च कंट्रास्ट मोड</translation>
 <translation id="2562916301614567480">निजी नेटवर्क</translation>
+<translation id="2661637000095600270">प्रदर्शनों को मिरर नहीं किया जा सका क्योंकि कोई भी समर्थित रिज़ॉल्यूशन नहीं मिला. इसके बजाय विस्तारित डेस्कटॉप मोड में चला गया है. फ़ीडबैक रिपोर्ट भेजने के लिए क्लिक करें.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: कनेक्ट हो रहा है...</translation>
 <translation id="2700058918926273959">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है. आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
@@ -234,6 +235,7 @@
 <translation id="8878886163241303700">स्क्रीन का विस्तार करना</translation>
 <translation id="8938800817013097409">USB-C डिवाइस (पीछे की ओर दायां पोर्ट)</translation>
 <translation id="8940956008527784070">बैटरी कम (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Dear Monitor, it's not working out between us. (वह मॉनीटर समर्थित नहीं है. फ़ीडबैक रिपोर्ट भेजने के लिए क्लिक करें.)</translation>
 <translation id="9074739597929991885">ब्लूटूथ</translation>
 <translation id="9080206825613744995">माइक्रोफ़ोन का उपयोग हो रहा है.</translation>
 <translation id="9089416786594320554">इनपुट पद्धतियां</translation>

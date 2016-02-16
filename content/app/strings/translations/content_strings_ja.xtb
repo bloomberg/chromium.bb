@@ -7,6 +7,7 @@
 <translation id="1088086359088493902">秒</translation>
 <translation id="1171774979989969504">メール アドレスを入力してください。</translation>
 <translation id="1188858454923323853">捕捉</translation>
+<translation id="1206619573307042055">マーキー</translation>
 <translation id="1235745349614807883">最近の検索履歴を消去</translation>
 <translation id="1342835525016946179">記事</translation>
 <translation id="1359897965706325498">バナー</translation>
@@ -42,6 +43,8 @@
 <translation id="2942448076852699108">ハイライト表示されたコンテンツ</translation>
 <translation id="3040011195152428237">リンク</translation>
 <translation id="3075154866155599887">有効な値を入力してください。フィールドの入力が不完全か、日付が無効です。</translation>
+<translation id="3078740164268491126">表</translation>
+<translation id="3086746722712840547">注記</translation>
 <translation id="310520048233152454">URL を入力してください。</translation>
 <translation id="3450233048674729344">値は <ph name="MAXIMUM" /> 以下にする必要があります。</translation>
 <translation id="3486220673238053218">定義</translation>
@@ -55,11 +58,14 @@
 <translation id="4103419683916926126">ミリ秒</translation>
 <translation id="4201051445878709314">前の月を表示</translation>
 <translation id="4202807286478387388">ジャンプ</translation>
+<translation id="421884353938374759">色の選択</translation>
 <translation id="4360991593054037559">有効な値を入力してください。有効な値として最も近いのは <ph name="VALID_VALUE_LOW" /> と <ph name="VALID_VALUE_HIGHER" /> です。</translation>
 <translation id="4522570452068850558">詳細</translation>
 <translation id="4597532268155981612">フォーム</translation>
+<translation id="4661075872484491155">ツリー</translation>
 <translation id="4664250907885839816">「<ph name="ATSIGN" />」に続く文字列に記号「<ph name="INVALIDCHARACTER" />」を使用しないでください。</translation>
 <translation id="4763480195061959176">動画</translation>
+<translation id="479989351350248267">検索</translation>
 <translation id="4812940957355064477">数字を入力してください。</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> 件選択</translation>
 <translation id="49969490063480558">「<ph name="ATSIGN" />」に続く文字列を入力してください。「<ph name="INVALIDADDRESS" />」は完全なメール アドレスではありません。</translation>
@@ -72,12 +78,12 @@
 <translation id="5468998798572797635">全画面表示を終了</translation>
 <translation id="5476505524087279545">チェックを外す</translation>
 <translation id="5546461542133609677">ミュートを解除</translation>
+<translation id="561939826962581046">日時</translation>
 <translation id="5641012560118721995">再生を一時停止</translation>
 <translation id="5843503607508392247">その他...</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5944544982112848342">2048 (高)</translation>
 <translation id="5966707198760109579">週</translation>
-<translation id="598301471034819706">アドレス</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6101327004457443354">音声トラックのミュートを解除</translation>
 <translation id="6119846243427417423">アクティブにする</translation>
@@ -86,6 +92,7 @@
 <translation id="6398862346408813489">月選択パネルを表示</translation>
 <translation id="6404546809543547843">オーディオ再生バー</translation>
 <translation id="658823671542763450">全画面表示</translation>
+<translation id="6637586476836377253">ログ</translation>
 <translation id="6643016212128521049">クリア</translation>
 <translation id="6663448176199120256">最近の検索</translation>
 <translation id="668171684555832681">その他...</translation>
@@ -100,6 +107,7 @@
 <translation id="7263440858009898357">リスト内の項目を選択してください。</translation>
 <translation id="7364796246159120393">ファイルを選択</translation>
 <translation id="739024184232394898">その他...</translation>
+<translation id="7491962110804786152">タブ</translation>
 <translation id="7673697353781729403">時間</translation>
 <translation id="7720026100085573005">残り時間</translation>
 <translation id="7740016676195725605">クローズド キャプションの表示を終了</translation>

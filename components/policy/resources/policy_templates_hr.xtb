@@ -469,11 +469,6 @@
       Ako je ova postavka onemogućena, web-stranice ne mogu upotrebljavati JavaScript i korisnik ne može promijeniti tu postavku.
 
       Ako je ova postavka omogućena ili nije postavljena, web-stranice mogu upotrebljavati JavaScript, no korisnik može promijeniti tu postavku.</translation>
-<translation id="2747783890942882652">Konfigurira traženi naziv domene hosta koji će biti nametnut hostovima daljinskog pristupa i sprječava korisnike da ga promijene.
-
-          Ako je ta postavka omogućena, hostovi se mogu dijeliti samo putem računa koji su registrirani na domeni navedenog naziva.
-
-          Ako je ta postavka onemogućena ili nije postavljena, hostovi se mogu dijeliti putem bilo kojeg računa.</translation>
 <translation id="2757054304033424106">Vrste proširenja/aplikacija koje se smiju instalirati</translation>
 <translation id="2759224876420453487">Kontroliraj ponašanje korisnika u sesiji višestrukih profila</translation>
 <translation id="2761483219396643566">Odgoda upozorenja o neaktivnosti dok uređaj nije priključen na struju</translation>
@@ -1749,6 +1744,7 @@
       Ako se to pravilo ne postavi, <ph name="PRODUCT_NAME" /> upotrebljavat će zadanu vrijednost od 5000 milisekundi.</translation>
 <translation id="7841880500990419427">Minimalna verzija TLS-a za pričuvnu upotrebu</translation>
 <translation id="7842869978353666042">Konfiguracija opcije Google diska</translation>
+<translation id="7843525027689416831">Određuje oznake koje se trebaju primijeniti na <ph name="PRODUCT_NAME" /> prilikom pokretanja. Navedene oznake primjenjuju se samo na zaslonu za prijavu. Oznake postavljene ovim pravilom ne primjenjuju se na korisničke sesije.</translation>
 <translation id="7848840259379156480">Omogućuje konfiguriranje zadanog alata za prikazivanje HTML-a kad je <ph name="PRODUCT_FRAME_NAME" /> instaliran. Zadana postavka je dopuštanje pregledniku hosta da obavi prikazivanje, no ovu postavku možete zaobići i kao zadano postaviti <ph name="PRODUCT_FRAME_NAME" /> da prikazuje HTML stranice.</translation>
 <translation id="7882585827992171421">To je pravilo aktivno samo u prodajnom načinu.
 

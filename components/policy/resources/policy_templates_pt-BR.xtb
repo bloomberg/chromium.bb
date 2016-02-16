@@ -453,11 +453,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta configuração for desativada, as páginas da Web não poderão usar JavaScript, e o usuário não poderá alterá-la.
 
       Se esta configuração for ativada ou não for definida, as páginas da Web poderão usar JavaScript, mas o usuário poderá alterá-la.</translation>
-<translation id="2747783890942882652">Configura o nome de domínio de host obrigatório que será imposto aos hosts de acesso remoto e impede os usuários de alterá-lo.
-
-          Se esta configuração for ativada, os hosts só poderão ser compartilhados usando contas registradas no nome de domínio especificado.
-
-          Se esta configuração for desativada ou não for definida, os hosts poderão ser compartilhados usando qualquer conta.</translation>
 <translation id="2757054304033424106">Tipos de extensões/aplicativos que podem ser instalados</translation>
 <translation id="2759224876420453487">Controla o comportamento do usuário em uma sessão de diversos perfis</translation>
 <translation id="2761483219396643566">Intervalo da advertência de inatividade no funcionamento com energia da bateria</translation>
@@ -1724,6 +1719,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> usa o valor padrão de 5.000 milissegundos.</translation>
 <translation id="7841880500990419427">Versão TLS mínima para substituição</translation>
 <translation id="7842869978353666042">Configurar opções do Google Drive</translation>
+<translation id="7843525027689416831">Especifica as sinalizações que devem ser aplicadas a <ph name="PRODUCT_NAME" /> quando ele é iniciado. As sinalizações especificadas são aplicadas apenas na tela de login. As sinalizações definidas por esta política não se propagam para as sessões do usuário.</translation>
 <translation id="7848840259379156480">Permite configurar o renderizador padrão de HTML, quando o <ph name="PRODUCT_FRAME_NAME" /> estiver instalado. A configuração padrão é permitir que o navegador do host faça a renderização, mas você pode, opcionalmente, substituí-la e fazer com que o <ph name="PRODUCT_FRAME_NAME" /> renderize páginas HTML por padrão.</translation>
 <translation id="7882585827992171421">Esta política só fica ativada em modo de varejo.
 

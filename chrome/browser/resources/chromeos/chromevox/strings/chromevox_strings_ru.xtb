@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Заголовок строки:</translation>
 <translation id="2002895034995108595">Сбросить раскладку</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{открывающая квадратная скобка}one{# открывающая квадратная скобка}few{# открывающие квадратные скобки}many{# открывающих квадратных скобок}other{# left brackets}}</translation>
+<translation id="2010555995361223825">Меню ChromeVox</translation>
 <translation id="2045490512405922022">не установлен</translation>
 <translation id="20601713649439366">Предыдущего математического выражения нет.</translation>
 <translation id="207477615537953741">Семантический метод отключен.</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{точка с запятой}one{# точка с запятой}few{# точки с запятой}many{# точек с запятой}other{# semicolons}}</translation>
 <translation id="5411891038905756502">Предыдущей точки перехода нет.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак "меньше"}one{# знак "меньше"}few{# знака "меньше"}many{# знаков "меньше"}other{# less than signs}}</translation>
+<translation id="5444587279251314700">(активна)</translation>
 <translation id="5455441614648621694">Дополнительно</translation>
 <translation id="5485036206801896268">Предыдущей диаграммы нет.</translation>
 <translation id="5486947920110100234">Следующей точки перехода нет.</translation>

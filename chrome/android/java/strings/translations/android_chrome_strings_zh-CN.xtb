@@ -31,6 +31,11 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好！</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
+<translation id="1390350022570422499">Chrome 现在可以通过蓝牙寻找并向您显示附近的网页。
+
+当您的设备处于解锁状态时，Chrome 会检测附近的网页。接下来，相关 Google 服务会处理这些网页，以提高网页搜索结果的质量。
+
+您可以在 Chrome 隐私设置中管理实物网。</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“不跟踪”</translation>
 <translation id="1409879593029778104">系统已阻止下载 <ph name="FILE_NAME" />，因为文件已存在。</translation>
@@ -45,7 +50,6 @@
 <translation id="1546112724822176246">没看到您的设备？<ph name="BEGIN_LINK" />寻求帮助<ph name="END_LINK" />。</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自动检测编码</translation>
-<translation id="1568822834048182062">系统会将您保存的书签、历史记录、密码和其他设置同步到您的 Google 帐户。</translation>
 <translation id="1592483623187843893">书签已离线保存</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
@@ -96,6 +100,7 @@
 <translation id="2316129865977710310">不用了，谢谢</translation>
 <translation id="2319528413610359757">面向《<ph name="PUBLISHER" />》的读者</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
+<translation id="2329597144923131178">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="2343328333327081434">正在安装…</translation>
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -199,6 +204,7 @@
 <translation id="3992315671621218278">保存链接</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4035611068038188272">书签目前占用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> 的空间。</translation>
+<translation id="403659016947612156">附近有实物网网页</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
 <translation id="4056223980640387499">棕色调</translation>
 <translation id="4059119910594077751">触摸“返回”按钮即可退出全屏模式。</translation>
@@ -250,7 +256,6 @@
 <translation id="4726963856048758366">已清空存储空间</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">上次同步时间：<ph name="WHEN" /></translation>
-<translation id="4761374747761474835">请选择帐户，以便获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="4773299976671772492">已停止</translation>
 <translation id="4797039098279997504">触摸即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
@@ -269,8 +274,10 @@
 <translation id="497421865427891073">前进</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="5000922062037820727">已阻止（推荐）</translation>
+<translation id="5014582685689328551">使用 Chrome 来浏览这些网页</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">不是<ph name="NOT_YOU_USER_NAME" />？</translation>
+<translation id="5026827350461471197">这样做会将已同步的数据从所有设备上清除，但一些可能会反映浏览习惯的设置不会遭到清除。</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5063480226653192405">使用情况</translation>
@@ -294,6 +301,7 @@
 <translation id="5233638681132016545">打开新的标签页</translation>
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="5275558766013849309">标签页将与最近用过的应用一起显示。</translation>
+<translation id="5301954838959518834">知道了</translation>
 <translation id="5302048478445481009">语言</translation>
 <translation id="5304593522240415983">此字段不能为空</translation>
 <translation id="5308933389783727448">搜索保存的网页</translation>
@@ -496,6 +504,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐户</translation>
 <translation id="7690588279513156836">加载原始网站</translation>
+<translation id="771135159654932189">查看附近的实物网网址</translation>
 <translation id="7735023902678907596">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件和保存的所有网页均会保留下来。
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商以及您访问的网站仍然能看到您的浏览活动。</translation>
@@ -584,12 +593,14 @@
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帐户</translation>
 <translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>
+<translation id="8931159598799892500">Chrome + 实物网</translation>
 <translation id="8934455786738644694">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="8941248009481596111">您与此网站建立的是私密连接。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
 <translation id="8987061207681586800">定制自己专属的 Chrome</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
+<translation id="9020607083536754075">关闭当前的标签页，并返回到之前的应用</translation>
 <translation id="9050666287014529139">密码</translation>
 <translation id="9060538597317784206">在 Play 商店中查看“<ph name="APP_NAME" />”应用。评分：<ph name="APP_RATING" />。</translation>
 <translation id="9063523880881406963">关闭“请求切换到桌面版网站”</translation>

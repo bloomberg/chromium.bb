@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">అడ్డు వరుస శీర్షిక:</translation>
 <translation id="2002895034995108595">ప్రస్తుత కీమ్యాప్‌ను రీసెట్ చేయి</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{ఎడమ కుండలీకరణ గుర్తు}other{# ఎడమ కుండలీకరణ గుర్తులు}}</translation>
+<translation id="2010555995361223825">ChromeVox మెనులు</translation>
 <translation id="2045490512405922022">ఎంచుకోబడలేదు</translation>
 <translation id="20601713649439366">మునుపటి గణిత వ్యక్తీకరణ లేదు.</translation>
 <translation id="207477615537953741">అర్థ వివరణలు ఆపివేయబడ్డాయి</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{సెమీకోలన్ గుర్తు}other{# సెమీకోలన్ గుర్తులు}}</translation>
 <translation id="5411891038905756502">మునుపటి జంప్ పాయింట్ లేదు.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{న్యూన గుర్తు}other{# న్యూన గుర్తులు}}</translation>
+<translation id="5444587279251314700">(సక్రియంగా ఉంది)</translation>
 <translation id="5455441614648621694">బహుమానపూర్వకం</translation>
 <translation id="5485036206801896268">మునుపటి గ్రాఫిక్ లేదు.</translation>
 <translation id="5486947920110100234">తదుపరి జంప్ పాయింట్ లేదు.</translation>

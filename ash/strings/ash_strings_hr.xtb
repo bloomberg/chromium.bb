@@ -52,6 +52,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="252373100621549798">Nepoznati zaslon</translation>
 <translation id="2532589005999780174">Način visokog kontrasta</translation>
 <translation id="2562916301614567480">Privatna mreža</translation>
+<translation id="2661637000095600270">Emitiranje zaslona nije uspjelo jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina. Kliknite da biste poslali izvješće s povratnim informacijama.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: povezivanje...</translation>
 <translation id="2700058918926273959">Sesija će završiti za <ph name="SESSION_TIME_REMAINING" />. Odjavit ćete se.</translation>
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
@@ -235,6 +236,7 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="8878886163241303700">Produljenje zaslona</translation>
 <translation id="8938800817013097409">USB-C uređaj (desni priključak sa stražnje strane)</translation>
 <translation id="8940956008527784070">Baterija je skoro prazna (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Dragi monitoru, naša veza neće uspjeti. (Taj monitor nije podržan. Kliknite da biste poslali izvješće s povratnim informacijama.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Upotrebljava se mikrofon.</translation>
 <translation id="9089416786594320554">Načini unosa</translation>

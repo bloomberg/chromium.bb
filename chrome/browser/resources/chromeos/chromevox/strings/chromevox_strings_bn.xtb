@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">সারি শিরোলেখ:</translation>
 <translation id="2002895034995108595">বর্তমান কীম্যাপ পুনরায় সেট করুন</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{বাম বন্ধনী}one{#টি বাম বন্ধনী}other{#টি বাম বন্ধনী}}</translation>
+<translation id="2010555995361223825">ChromeVox মেনুগুলি</translation>
 <translation id="2045490512405922022">চেক লাগানো হয়নি</translation>
 <translation id="20601713649439366">এর পূর্বে কোনো গাণিতিক অভিব্যক্তি নেই৷</translation>
 <translation id="207477615537953741">শব্দার্থিক বন্ধ আছে</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{সেমিকোলন}one{#টি সেমিকোলন}other{#টি সেমিকোলন}}</translation>
 <translation id="5411891038905756502">কোনো পূর্ববর্তী জাম্প বিন্দু নেই৷</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ক্ষুদ্রতম}one{#টি ক্ষুদ্রতম চিহ্ন}other{#টি ক্ষুদ্রতম চিহ্ন}}</translation>
+<translation id="5444587279251314700">(সক্রিয়)</translation>
 <translation id="5455441614648621694">পরিপূরক</translation>
 <translation id="5485036206801896268">কোনো পূর্ববর্তী গ্রাফিক নেই৷</translation>
 <translation id="5486947920110100234">কোনো পরবর্তী জাম্প বিন্দু নেই৷</translation>

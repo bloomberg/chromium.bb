@@ -52,6 +52,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="252373100621549798">Tuntematon näyttö</translation>
 <translation id="2532589005999780174">Suuri kontrasti -tila</translation>
 <translation id="2562916301614567480">Yksityinen verkko</translation>
+<translation id="2661637000095600270">Näytön peilaaminen epäonnistui, sillä tuettuja resoluutioita ei löytynyt. Laajennettu työpöytä otettiin tämän vuoksi käyttöön. Lähetä palautetta klikkaamalla.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: Yhdistetään…</translation>
 <translation id="2700058918926273959">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />. Sinut kirjataan ulos.</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
@@ -232,6 +233,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="8878886163241303700">Laajennettu näyttö</translation>
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
 <translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="9008540565042607572">Rakkahin näyttö, suhteemme ei toimi. (Näyttöä ei tueta. Lähetä palautetta klikkaamalla.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofoni on käytössä.</translation>
 <translation id="9089416786594320554">Syöttötavat</translation>

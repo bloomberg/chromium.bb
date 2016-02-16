@@ -450,11 +450,6 @@
       如果停用此设置，网页就无法使用 JavaScript，用户也无法更改该设置。
 
       如果启用或不设定此设置，网页就可以使用 JavaScript，但用户可以更改该设置。</translation>
-<translation id="2747783890942882652">根据需要，为远程访问主机配置相应的主机域名，并禁止用户更改此设置。
-
-          如果启用该设置，那么只有使用在指定域名上注册的帐户才可以分享主机。
-
-          如果停用或未设置该设置，那么使用任何帐户都可以分享主机。</translation>
 <translation id="2757054304033424106">允许安装的扩展程序/应用的类型</translation>
 <translation id="2759224876420453487">控制多用户配置会话中的用户行为</translation>
 <translation id="2761483219396643566">使用电池供电时的闲置警告延迟时间</translation>
@@ -1724,6 +1719,7 @@
       如果未设置此政策，<ph name="PRODUCT_NAME" /> 将使用默认值（即5000毫秒）。</translation>
 <translation id="7841880500990419427">要回退到的最低 TLS 版本</translation>
 <translation id="7842869978353666042">配置 Google 云端硬盘选项</translation>
+<translation id="7843525027689416831">指定应在 <ph name="PRODUCT_NAME" /> 启动时应用于它的选项。指定的选项仅会应用于登录屏幕。通过此政策设置的选项不会反映在用户会话中。</translation>
 <translation id="7848840259379156480">可让您配置安装“<ph name="PRODUCT_FRAME_NAME" />”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME" />”呈现 HTML 页面。</translation>
 <translation id="7882585827992171421">此策略仅在零售模式下有效。
 

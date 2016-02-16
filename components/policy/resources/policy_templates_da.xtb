@@ -469,11 +469,6 @@
       Hvis denne indstilling er deaktiveret, kan websider ikke anvende JavaScript, og brugeren kan ikke ændre denne indstilling.
 
       Hvis denne indstilling er deaktiveret eller ikke angivet, kan websider anvende JavaScript, men brugeren kan ændre denne indstilling.</translation>
-<translation id="2747783890942882652">Konfigurerer det påkrævede domænenavn, der pålægges værter med fjernadgang, og forhindrer brugere i at ændre det.
-
-          Hvis denne indstilling er aktiveret, kan værter kun deles ved brug af konti, der er registreret på det angivne domænenavn.
-
-          Hvis indstillingen er deaktiveret eller ikke angivet, kan værter deles med hvilken som helst konto.</translation>
 <translation id="2757054304033424106">Typer af udvidelser/apps, der må installeres</translation>
 <translation id="2759224876420453487">Kontrollér brugeradfærden i en multiprofilsession</translation>
 <translation id="2761483219396643566">Advarsel om inaktivitetsforsinkelse, når batteriet anvendes</translation>
@@ -1782,6 +1777,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis du ikke angiver denne politik, vil <ph name="PRODUCT_NAME" /> anvende standardværdien på 5000 millisekunder.</translation>
 <translation id="7841880500990419427">Minimumsversion af TLS som backup</translation>
 <translation id="7842869978353666042">Konfigurer indstillinger for Google Drev</translation>
+<translation id="7843525027689416831">Angiver de markeringer, der skal anvendes for <ph name="PRODUCT_NAME" /> ved opstart. De angivne markeringer anvendes kun på loginskærmen. Markeringer, der angives via denne politik, oveføres ikke til brugersessioner.</translation>
 <translation id="7848840259379156480">Giver dig mulighed for at konfigurere din standardgengivelse af HTML, når <ph name="PRODUCT_FRAME_NAME" /> er installeret. Standardindstillingen er, at værtsbrowseren foretager gengivelsen, men du har mulighed for at tilsidesætte denne og få <ph name="PRODUCT_FRAME_NAME" /> til at gengive HTML-sider som standard.</translation>
 <translation id="7882585827992171421">Denne politik er kun aktiv i detailtilstand.
 

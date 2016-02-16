@@ -127,7 +127,6 @@
 <translation id="5859963531214966875">Chromium 的后续版本将不再支持此 Linux 系统。</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
-<translation id="5909170354645388250">未在 Chromium 中使用。该占位符用于在同步中保留资源映射。要求使用一个参数：$1。</translation>
 <translation id="5942225298871134766">Chromium 将通过<ph name="SAVED_PASSWORD_LINK" />存储此密码，并会在您下次需要时自动填充此密码。</translation>
 <translation id="5942520288919337908">“<ph name="EXTENSION_NAME" />”已添加到 Chromium。</translation>
 <translation id="59625444380784159">通讯录中的详细信息有助于您在Chromium中更快速地填写表单。</translation>

@@ -526,11 +526,6 @@
       Ak je toto nastavenie zakázané, webové stránky nebudú môcť používať jazyk JavaScript a používateľ toto nastavenie nebude môcť zmeniť.
 
       Ak toto pravidlo ponecháte nenastavené, webové stránky budú môcť používať jazyk JavaScript, ale používateľ bude môcť toto nastavenie zmeniť.</translation>
-<translation id="2747783890942882652">Konfiguruje povinný názov domény hostiteľa, ktorý bude uvedený pri hostiteľoch vzdialeného prístupu, a bráni používateľom, aby ho zmenili.
-
-          Ak je toto nastavenie povolené, hostitelia môžu byť zdieľaní iba prostredníctvom účtov zaregistrovaných v danom názve domény.
-
-          Ak je toto nastavenie zakázané alebo nie je nastavené, hostiteľov je možné zdieľať prostredníctvom ľubovoľného účtu.</translation>
 <translation id="2757054304033424106">Typy rozšírení/aplikácií, ktorých inštalácia je povolená</translation>
 <translation id="2759224876420453487">Ovládať správanie používateľa v relácii viacerých profilov</translation>
 <translation id="2761483219396643566">Oneskorenie upozornenia na nečinnosť pri napájaní z batérie</translation>
@@ -1978,6 +1973,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> použije predvolenú hodnotu 5 000 milisekúnd.</translation>
 <translation id="7841880500990419427">Minimálna záložná verzia protokolu TLS</translation>
 <translation id="7842869978353666042">Konfigurácia možností služby Disk Google</translation>
+<translation id="7843525027689416831">Určuje príznaky, ktoré sa použijú pri spúšťaní prehliadača <ph name="PRODUCT_NAME" />. Určené príznaky budú použité iba na prihlasovacej obrazovke. Príznaky nastavené prostredníctvom tohto pravidla sa neprenesú do relácií používateľov.</translation>
 <translation id="7848840259379156480">Umožňuje konfigurovať vykresľovací modul HTML počas inštalácie doplnku <ph name="PRODUCT_FRAME_NAME" />. V predvolenom nastavení môže vykresľovanie vykonávať hostiteľský prehliadač, toto nastavenie však môžete prekonať a namiesto toho vykresľovať stránky HTML pomocou doplnku <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="7882585827992171421">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 

@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Antet de rând:</translation>
 <translation id="2002895034995108595">Resetați harta actuală a tastelor</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{paranteză pătrată stânga}few{# paranteze pătrate stânga}other{# de paranteze pătrate stânga}}</translation>
+<translation id="2010555995361223825">Meniuri ChromeVox</translation>
 <translation id="2045490512405922022">nebifată</translation>
 <translation id="20601713649439366">Nu există o expresie matematică anterioară.</translation>
 <translation id="207477615537953741">Interpretare semantică dezactivată</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{semn punct și virgulă}few{# semne punct și virgulă}other{# de semne punct și virgulă}}</translation>
 <translation id="5411891038905756502">Nu există un punct de accesare directă anterior.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{semn mai mic}few{# semne mai mic}other{# de semne mai mic}}</translation>
+<translation id="5444587279251314700">(activă)</translation>
 <translation id="5455441614648621694">Complementar</translation>
 <translation id="5485036206801896268">Nu există un grafic anterior.</translation>
 <translation id="5486947920110100234">Nu există un punct de accesare directă următor.</translation>

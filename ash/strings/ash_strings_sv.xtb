@@ -52,6 +52,7 @@
 <translation id="252373100621549798">Okänd visning</translation>
 <translation id="2532589005999780174">Högkontrastläge</translation>
 <translation id="2562916301614567480">Privat nätverk</translation>
+<translation id="2661637000095600270">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället. Klicka här om du vill skicka en feedbackrapport.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: ansluter ...</translation>
 <translation id="2700058918926273959">Sessionen upphör om <ph name="SESSION_TIME_REMAINING" />. Du kommer att loggas ut.</translation>
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
@@ -233,6 +234,7 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="8878886163241303700">Utökad skärm</translation>
 <translation id="8938800817013097409">USB-C-enhet (högra porten på baksidan)</translation>
 <translation id="8940956008527784070">Låg batterinivå (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="9008540565042607572">Det fungerar inte riktigt med den här bildskärmen. (Den här bildskärmen stöds inte. Klicka här om du vill skicka en feedbackrapport.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofonen används.</translation>
 <translation id="9089416786594320554">Inmatningsmetoder</translation>

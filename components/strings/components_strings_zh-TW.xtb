@@ -4,7 +4,9 @@
 <translation id="1015255576907412255">如需詳細資訊，請與您的系統管理員聯絡。</translation>
 <translation id="1015730422737071372">提供其他詳細資訊</translation>
 <translation id="1032854598605920125">順時針旋轉</translation>
+<translation id="1038842779957582377">不明名稱</translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
+<translation id="10614374240317010">永不儲存</translation>
 <translation id="1064422015032085147">代管這個網頁的伺服器可能已超載或正在進行維護。
     為了避免產生過多的流量，導致情況惡化，
     目前系統已暫時禁止傳送要求至這個網址。</translation>
@@ -36,7 +38,7 @@
 <translation id="1227224963052638717">不明政策。</translation>
 <translation id="1227633850867390598">隱藏政策值</translation>
 <translation id="1228893227497259893">實體識別碼錯誤</translation>
-<translation id="1241381048229838873">顯示所有書籤</translation>
+<translation id="1254117744268754948">選擇資料夾</translation>
 <translation id="1270699273812232624">允許項目</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="1339601241726513588">註冊網域：</translation>
@@ -90,15 +92,18 @@
 <translation id="2025623846716345241">確認重新載入</translation>
 <translation id="2030481566774242610">您要找的是 <ph name="LINK" /> 嗎？</translation>
 <translation id="2053553514270667976">郵遞區號</translation>
+<translation id="2065985942032347596">需要驗證</translation>
 <translation id="20817612488360358">雖然系統 Proxy 設定已設為使用，不過也指定了明確 Proxy 設定。</translation>
 <translation id="2089090684895656482">摘要資訊</translation>
 <translation id="2094505752054353250">網域不符</translation>
 <translation id="2096368010154057602">省</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由於政策被「<ph name="POLICY_NAME" />」覆寫了，因此遭到略過。</translation>
+<translation id="2122434088511736194">桌面搜尋會使用預設的搜尋引擎 (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />) 進行搜尋。</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">行動版書籤</translation>
 <translation id="2148716181193084225">今天</translation>
+<translation id="2149973817440762519">編輯書籤</translation>
 <translation id="2153530520610387456">請依序前往
       <ph name="BEGIN_BOLD" />
       [開始] &gt; [控制台] &gt; [網路和網際網路] &gt; [網路和共用中心] &gt; [疑難排解問題] (位於視窗底部) &gt; [網際網路連線]。
@@ -113,10 +118,12 @@
 <translation id="225207911366869382">這個政策值已遭汰換。</translation>
 <translation id="2262243747453050782">HTTP 錯誤</translation>
 <translation id="2279770628980885996">伺服器嘗試處理要求時遇到意外狀況。</translation>
+<translation id="2282186295770469712">管理搜尋設定</translation>
 <translation id="2282872951544483773">無法使用的實驗性功能</translation>
 <translation id="2292556288342944218">您的網際網路存取權遭到封鎖</translation>
 <translation id="229702904922032456">根憑證或中繼憑證已過期。</translation>
 <translation id="230155334948463882">新信用卡？</translation>
+<translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供使用者名稱和密碼。</translation>
 <translation id="2328300916057834155">已忽略索引「<ph name="ENTRY_INDEX" />」的無效書籤</translation>
 <translation id="2354001756790975382">其他書籤</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -156,7 +163,9 @@
 <translation id="277499241957683684">沒有裝置紀錄</translation>
 <translation id="2784949926578158345">連線已重設。</translation>
 <translation id="2824775600643448204">網址與搜尋列</translation>
+<translation id="2826760142808435982">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="2835170189407361413">清除表單</translation>
+<translation id="2837049386027881519">必須使用較舊版的 TLS 或 SSL 通訊協定重試連線。這通常表示伺服器所使用的軟體非常老舊，而且可能產生其他安全問題。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 疑似使用偽造的伺服器憑證。</translation>
 <translation id="2855922900409897335">驗證您的 <ph name="CREDIT_CARD" /></translation>
 <translation id="2897655920961181107">您所要求的通訊埠不安全，已遭到封鎖。</translation>
@@ -166,6 +175,7 @@
 <translation id="2941952326391522266">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證來自 <ph name="DOMAIN2" /> 網域。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="2948083400971632585">您可以在設定頁面停用任何為連線設置的 Proxy。</translation>
 <translation id="2950186680359523359">伺服器已中斷連線，並且未傳送任何資料。</translation>
+<translation id="2955913368246107853">關閉搜尋列</translation>
 <translation id="2957518517523241247">請依序前往
       <ph name="BEGIN_BOLD" />
       [開始] &gt; [控制台] &gt; [網路連線] &gt; [新增連線精靈]
@@ -179,6 +189,7 @@
 <translation id="3005723025932146533">顯示儲存的複本</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX" />」：<ph name="ERROR" /></translation>
 <translation id="3024663005179499861">政策類型有誤</translation>
+<translation id="3041612393474885105">憑證資訊</translation>
 <translation id="3093245981617870298">您處於離線狀態。</translation>
 <translation id="3105172416063519923">資產 ID：</translation>
 <translation id="3109728660330352905">您未獲得授權，無法瀏覽這個網頁。</translation>
@@ -199,6 +210,7 @@
 <translation id="3225919329040284222">伺服器呈現的憑證與內建的預期條件不符。我們在系統中針對特定高安全性的網站內建了這些預期條件，目的在於保護您的資料安全無虞。</translation>
 <translation id="3226128629678568754">按下重新載入按鈕，重新提交載入網頁所需的資料。</translation>
 <translation id="3228969707346345236">網頁已經是<ph name="LANGUAGE" />，翻譯作業失敗。</translation>
+<translation id="3254409185687681395">把此頁加入書籤</translation>
 <translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
 <translation id="3286538390144397061">立即重新啟動</translation>
 <translation id="333371639341676808">防止此網頁產生其他對話方塊。</translation>
@@ -219,6 +231,7 @@
 <translation id="3452404311384756672">擷取間隔：</translation>
 <translation id="3462200631372590220">隱藏詳細資料</translation>
 <translation id="3516765099410062445">在已登入的裝置中顯示紀錄項目。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
+<translation id="3527085408025491307">資料夾</translation>
 <translation id="3528171143076753409">伺服器憑證授權不可靠。</translation>
 <translation id="3539171420378717834">在這個裝置上保留這張信用卡的複本</translation>
 <translation id="3542684924769048008">選擇密碼：</translation>
@@ -229,11 +242,15 @@
 <translation id="3586931643579894722">隱藏詳細資訊</translation>
 <translation id="3587482841069643663">[全部]</translation>
 <translation id="3608308818141211642">用戶端和伺服器不支援通用 SSL 通訊協定版本或加密套件。這可能是因為系統判定伺服器所需的 RC4 不安全。</translation>
+<translation id="3609138628363401169">伺服器並不支援 TLS 重新交涉擴充功能。</translation>
+<translation id="362276910939193118">顯示完整記錄</translation>
 <translation id="3623476034248543066">顯示政策值</translation>
 <translation id="3648607100222897006">這些實驗性功能隨時都有可能變動、中斷或消失。我們完全無法保證啟用這些實驗性功能會導致何種後果，您的瀏覽器說不定會突然自己燒掉。當然這只是玩笑話，不過您的瀏覽器可能真的會刪除您的所有資料，或是意外洩漏您的安全性和隱私權設定。只要您啟用了任何實驗性功能，這個瀏覽器的所有使用者都會啟用該功能。使用時請務必小心謹慎。</translation>
 <translation id="3650584904733503804">驗證成功</translation>
 <translation id="3651020361689274926">您所要求的資源已不存在，且未設定任何自動網址導向，這通常表示該資源已永久移除。</translation>
 <translation id="3658742229777143148">修訂版本</translation>
+<translation id="3681007416295224113">憑證資訊</translation>
+<translation id="3693415264595406141">密碼：</translation>
 <translation id="3704609568417268905"><ph name="TIME" />，<ph name="BOOKMARKED" />，<ph name="TITLE" />，<ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">載入中…</translation>
 <translation id="3712624925041724820">授權已用盡</translation>
@@ -242,6 +259,7 @@
 <translation id="3748412725338508953">重新導向次數過多。</translation>
 <translation id="375403751935624634">伺服器錯誤，翻譯作業失敗。</translation>
 <translation id="3759461132968374835">最近沒有收到當機資訊。當機回報功能停用時發生的當機不會列在這裡。</translation>
+<translation id="3788090790273268753">這個網站的憑證將於 2016 年到期，且憑證鏈結包含使用 SHA-1 進行簽署的憑證。</translation>
 <translation id="382518646247711829">如果您使用 Proxy 伺服器...</translation>
 <translation id="3828924085048779000">通關密語欄位不得留空。</translation>
 <translation id="385051799172605136">返回</translation>
@@ -282,9 +300,11 @@
 <translation id="4269787794583293679">(沒有使用者名稱)</translation>
 <translation id="4278390842282768270">允許</translation>
 <translation id="4300246636397505754">家長建議</translation>
+<translation id="4304224509867189079">登入</translation>
 <translation id="4325863107915753736">找不到文章</translation>
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE" />」值。</translation>
 <translation id="4377125064752653719">您嘗試前往 <ph name="DOMAIN" />，但是發行者已撤銷伺服器提供的憑證。在這種情況下，請勿信任伺服器提供的安全性憑證，因為您的連線對象可能是攻擊者的電腦。</translation>
+<translation id="4381091992796011497">使用者名稱：</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> 至 <ph name="END_DATE" /></translation>
 <translation id="4405141258442788789">作業逾時。</translation>
@@ -297,14 +317,17 @@
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4535734014498033861">Proxy 伺服器連線失敗</translation>
 <translation id="4587425331216688090">要從 Chrome 中移除地址嗎？</translation>
+<translation id="4592951414987517459">您的 <ph name="DOMAIN" /> 連線使用新型加密套件進行加密。</translation>
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
 <translation id="4668929960204016307">，</translation>
 <translation id="467662567472608290">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證含有錯誤。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="4697214168136963651">系統已封鎖 <ph name="URL" /></translation>
+<translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的連線已中斷</translation>
 <translation id="4726672564094551039">重新載入政策</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可執行檔的路徑</translation>
+<translation id="4756388243121344051">記錄(&amp;H)</translation>
 <translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="477518548916168453">伺服器不支援處理這項要求所需的功能。</translation>
@@ -335,6 +358,7 @@
 <translation id="5122371513570456792">找到 <ph name="NUMBER_OF_RESULTS" /> 個與「<ph name="SEARCH_STRING" />」相符的<ph name="SEARCH_RESULTS" />。</translation>
 <translation id="5141240743006678641">使用您的 Google 憑證對已同步處理的密碼進行加密</translation>
 <translation id="5145883236150621069">政策回應中存在錯誤代碼</translation>
+<translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="5172758083709347301">本機</translation>
 <translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE" />嗎？請回報此錯誤</translation>
 <translation id="5190835502935405962">書籤列</translation>
@@ -346,6 +370,7 @@
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5308689395849655368">當機報告功能已停用。</translation>
 <translation id="5317780077021120954">儲存</translation>
+<translation id="5327248766486351172">名稱</translation>
 <translation id="536296301121032821">無法儲存政策設定</translation>
 <translation id="540969355065856584">這個伺服器無法證明所屬網域為 <ph name="DOMAIN" />；其安全性憑證目前無效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線所致。</translation>
 <translation id="5421136146218899937">清除瀏覽資料...</translation>
@@ -355,6 +380,7 @@
 <translation id="5447330194051379405">顯示所有儲存的網頁</translation>
 <translation id="5452270690849572955">找不到 <ph name="HOST_NAME" /> 網頁</translation>
 <translation id="5455374756549232013">政策時間戳記有誤</translation>
+<translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> 個，共 <ph name="TOTAL_MATCHCOUNT" /> 個</translation>
 <translation id="5470861586879999274">重做編輯(&amp;R)</translation>
 <translation id="5492298309214877701">這個位於公司、機構或學校內部網路的網站使用的網址與某個外部網站相同。
     <ph name="LINE_BREAK" />
@@ -374,9 +400,14 @@
 <translation id="5631439013527180824">裝置管理符記無效</translation>
 <translation id="5650551054760837876">找不到搜尋結果。</translation>
 <translation id="5677928146339483299">已封鎖</translation>
+<translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
 <translation id="5720705177508910913">目前使用者</translation>
+<translation id="5785756445106461925">此外，這個網頁含有其他不安全的資源。其他人可能會在資源傳輸期間檢視這些資源，攻擊者也可能會修改這些資源，進而變更網頁外觀。</translation>
+<translation id="5810442152076338065">您的 <ph name="DOMAIN" /> 連線使用過舊的加密套件進行加密。</translation>
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
+<translation id="5857090052475505287">新資料夾</translation>
 <translation id="5869405914158311789">無法連上這個網站</translation>
+<translation id="5869522115854928033">已儲存的密碼</translation>
 <translation id="5872918882028971132">家長建議</translation>
 <translation id="5900623698597156974">TLS 1.0 候補可與伺服器進行交握，但我們已不再接受 TLS 1.0 候補。請更新伺服器，讓伺服器正確實作版本交涉 (建議更新至支援 TLS 1.2)。</translation>
 <translation id="59107663811261420">這個商家的 Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
@@ -415,9 +446,11 @@
 <translation id="6337534724793800597">依名稱篩選政策</translation>
 <translation id="6342069812937806050">剛剛</translation>
 <translation id="6355080345576803305">公開工作階段覆寫</translation>
+<translation id="6358450015545214790">我需要進一步資訊</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
 <translation id="6391832066170725637">找不到檔案或目錄。</translation>
 <translation id="641480858134062906">無法載入 <ph name="URL" /></translation>
+<translation id="6417515091412812850">無法檢查憑證是否已遭撤銷。</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="6451458296329894277">確認重新提交表單</translation>
@@ -438,6 +471,7 @@
 <translation id="6637478299472506933">下載失敗</translation>
 <translation id="6644283850729428850">這項政策已遭取代。</translation>
 <translation id="6646897916597483132">請輸入信用卡正面的四位數信用卡安全碼</translation>
+<translation id="6656103420185847513">編輯資料夾</translation>
 <translation id="6660210980321319655">已自動回報 (<ph name="CRASH_TIME" />)</translation>
 <translation id="6671697161687535275">要從 Chromium 中移除表單填寫建議嗎？</translation>
 <translation id="6710213216561001401">返回</translation>
@@ -485,6 +519,7 @@
 <translation id="7208899522964477531">在 <ph name="SITE_NAME" /> 上搜尋 <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合安全性標準。</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>
+<translation id="7219179957768738017">這個連線使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7225807090967870017">版本 ID</translation>
 <translation id="725866823122871198">您電腦的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
 <translation id="7265986070661382626">您目前無法造訪 <ph name="SITE" />，因為這個網站<ph name="BEGIN_LINK" />使用憑證固定功能<ph name="END_LINK" />。網路錯誤和攻擊行為通常是暫時性的，所以這個網頁可能稍後就能正常使用。</translation>
@@ -504,6 +539,7 @@
 <translation id="7419106976560586862">設定檔路徑</translation>
 <translation id="7424977062513257142">這個網頁上的嵌入式網頁顯示：</translation>
 <translation id="7441627299479586546">政策主體有誤</translation>
+<translation id="7445762425076701745">您所連線的伺服器身分無法完全驗證，該伺服器所使用的名稱僅在您的網路中有效，無法驗證外部憑證授權單位的擁有權。即使某些憑證授權單位會核發這些憑證，不過無法就此確保您所連上的網站是正確的，而不會遭到網路攻擊。</translation>
 <translation id="7450732239874446337">網路 IO 已暫停。</translation>
 <translation id="7481312909269577407">下一頁</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
@@ -542,12 +578,14 @@
 <translation id="778579833039460630">沒有收到資料</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> 的網頁可能暫時無法使用或已永久移至新網址。</translation>
+<translation id="7800304661137206267">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="MAC" /> 訊息驗證及 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
 <translation id="7825436071901023927">通訊埠 <ph name="SITE" /> 不安全</translation>
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
 <translation id="790025292736025802">找不到 <ph name="URL" /></translation>
+<translation id="7912024687060120840">在以下資料夾中：</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">伺服器憑證尚未生效。</translation>
 <translation id="7951415247503192394">(32 位元)</translation>
@@ -583,6 +621,7 @@
       然後按一下
       [確定]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />。</translation>
 <translation id="8289355894181816810">如果您不確定這代表什麼意思，請與網路管理員聯絡。</translation>
+<translation id="8293206222192510085">新增書籤</translation>
 <translation id="8294431847097064396">來源</translation>
 <translation id="8308427013383895095">網路連線發生問題，翻譯作業失敗。</translation>
 <translation id="8311778656528046050">您確定要重新載入這個網頁？</translation>
@@ -601,11 +640,14 @@
 <translation id="8550022383519221471">您的網域無法使用同步處理服務</translation>
 <translation id="8553075262323480129">無法判定網頁的語言，翻譯作業失敗。</translation>
 <translation id="8559762987265718583">您裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
+<translation id="856992080682148">這個網站的憑證將於 2017 年 (或之後) 到期，且憑證鏈結包含使用 SHA-1 進行簽署的憑證。</translation>
 <translation id="8571890674111243710">正在將網頁翻譯成<ph name="LANGUAGE" />...</translation>
+<translation id="859285277496340001">憑證未指定負責檢查其本身是否已遭到撤銷的機制。</translation>
 <translation id="8629916158020966496">企業註冊驗證檢查程序完成後，您才能開始瀏覽網際網路。
     如要排解連線問題，您仍可使用這裡所列的診斷工具。</translation>
 <translation id="8647750283161643317">全部重設為預設值</translation>
 <translation id="8680787084697685621">帳戶登入詳細資料已過期。</translation>
+<translation id="8703575177326907206">您到 <ph name="DOMAIN" /> 的連線未加密。</translation>
 <translation id="8713130696108419660">初始簽名錯誤</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
@@ -636,10 +678,12 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="8988760548304185580">請輸入有效期限和信用卡背面的三位數信用卡安全碼</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
+<translation id="9001074447101275817"><ph name="DOMAIN" /> Proxy 要求提供使用者名稱和密碼。</translation>
 <translation id="9013589315497579992">SSL 用戶端授權憑證錯誤。</translation>
 <translation id="901974403500617787">這些設定會套用至整個系統，只有以下使用者可設定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020142588544155172">伺服器拒絕連線。</translation>
 <translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE" /></translation>
+<translation id="9039213469156557790">此外，這個網頁含有其他不安全的資源。其他人可能會在資源傳輸期間檢視這些資源，攻擊者也可能會修改這些資源，進而變更網頁行為。</translation>
 <translation id="9049981332609050619">您嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證無效。</translation>
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> 頁面無法正常運作</translation>
@@ -656,6 +700,7 @@
 <translation id="933612690413056017">無法連上網際網路</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">清除表單</translation>
+<translation id="939736085109172342">新增資料夾</translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="988159990683914416">開發人員版本</translation>
 </translationbundle>

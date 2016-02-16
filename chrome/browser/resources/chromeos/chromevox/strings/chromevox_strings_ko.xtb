@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">행 헤더:</translation>
 <translation id="2002895034995108595">현재 키맵 재설정</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{왼쪽 꺾음 괄호}other{왼쪽 꺾음 괄호 #개}}</translation>
+<translation id="2010555995361223825">ChromeVox 메뉴</translation>
 <translation id="2045490512405922022">선택 안함</translation>
 <translation id="20601713649439366">이전 수식이 없습니다.</translation>
 <translation id="207477615537953741">의미 해석 사용 안함</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{세미콜론}other{세미콜론 #개}}</translation>
 <translation id="5411891038905756502">이전 점프 지점이 없습니다.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{작음 부호}other{작음 부호 #개}}</translation>
+<translation id="5444587279251314700">(활성)</translation>
 <translation id="5455441614648621694">상호 보완</translation>
 <translation id="5485036206801896268">이전 그래픽이 없습니다.</translation>
 <translation id="5486947920110100234">다음 점프 지점이 없습니다.</translation>

@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Заглавље реда:</translation>
 <translation id="2002895034995108595">Ресетуј актуелну мапу тастера</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{лева угласта заграда}one{# лева угласта заграда}few{# леве угласте заграде}other{# левих угластих заграда}}</translation>
+<translation id="2010555995361223825">ChromeVox менији</translation>
 <translation id="2045490512405922022">није означено</translation>
 <translation id="20601713649439366">Нема претходног математичког израза.</translation>
 <translation id="207477615537953741">Семантичко тумачење је искључено</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{тачка и зарез}one{# тачка и зарез}few{# тачке и зареза}other{# тачака и зареза}}</translation>
 <translation id="5411891038905756502">Нема претходне тачке преласка.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак „мање од“}one{# знак „мање од“}few{# знака „мање од“}other{# знакова „мање од“}}</translation>
+<translation id="5444587279251314700">(активна)</translation>
 <translation id="5455441614648621694">Комплементарно</translation>
 <translation id="5485036206801896268">Нема претходне слике.</translation>
 <translation id="5486947920110100234">Нема следеће тачке преласка.</translation>

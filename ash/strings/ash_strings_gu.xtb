@@ -52,6 +52,7 @@
 <translation id="252373100621549798">અજ્ઞાત પ્રદર્શન</translation>
 <translation id="2532589005999780174">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
 <translation id="2562916301614567480">ખાનગી નેટવર્ક</translation>
+<translation id="2661637000095600270">કોઈ સમર્થિત રિઝોલ્યુશન્સ મળ્યાં ન હોવાથી, પ્રદર્શનોને પ્રતિબિંબિત કરી શકાયાં નથી. તેના બદલે વિસ્તૃત ડેસ્કટૉપમાં દાખલ થયું. પ્રતિસાદ રિપોર્ટ મોકલવા માટે ક્લિક કરો.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: કનેક્ટ કરી રહ્યું છે...</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે. તમને સાઇન આઉટ કરવામાં આવશે.</translation>
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
@@ -234,6 +235,7 @@
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
 <translation id="8938800817013097409">USB-C ઉપકરણ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">પ્રિય મોનિટર, તે અમારી વચ્ચે કાર્ય કરી રહ્યું નથી. (તે મોનિટર સમર્થિત નથી. પ્રતિસાદ રિપોર્ટ મોકલવા માટે ક્લિક કરો.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">માઇકોફોન ઉપયોગમાં છે.</translation>
 <translation id="9089416786594320554">ઇનપુટ પદ્ધતિઓ</translation>

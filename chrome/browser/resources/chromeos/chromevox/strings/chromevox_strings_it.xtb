@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Intestazione di riga:</translation>
 <translation id="2002895034995108595">Reimposta mappa di chiavi corrente</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{parentesi quadra di apertura}other{# parentesi quadre di apertura}}</translation>
+<translation id="2010555995361223825">Menu ChromeVox</translation>
 <translation id="2045490512405922022">non selezionata</translation>
 <translation id="20601713649439366">Nessuna espressione matematica precedente.</translation>
 <translation id="207477615537953741">Semantica disattivata</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{punto e virgola}other{# punti e virgola}}</translation>
 <translation id="5411891038905756502">Nessun passaggio precedente.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{simbolo di minore}other{# simboli di minore}}</translation>
+<translation id="5444587279251314700">(attiva)</translation>
 <translation id="5455441614648621694">Complementare</translation>
 <translation id="5485036206801896268">Nessuna immagine precedente.</translation>
 <translation id="5486947920110100234">Nessun passaggio successivo.</translation>

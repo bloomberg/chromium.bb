@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Κεφαλίδα γραμμής:</translation>
 <translation id="2002895034995108595">Επαναφορά των τρεχουσών αντιστοιχίσεων πλήκτρων</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{αριστερή αγκύλη}other{# αριστερές αγκύλες}}</translation>
+<translation id="2010555995361223825">Μενού ChromeVox</translation>
 <translation id="2045490512405922022">μη επιλεγμένο</translation>
 <translation id="20601713649439366">Δεν υπάρχει προηγούμενη μαθηματική έκφραση.</translation>
 <translation id="207477615537953741">Σημασιολογική ερμηνεία ανενεργή</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{ερωτηματικό}other{# ερωτηματικά}}</translation>
 <translation id="5411891038905756502">Δεν υπάρχει προηγούμενο σημείο μετάβασης.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{σύμβολο "μικρότερο από"}other{# σύμβολα "μικρότερο από"}}</translation>
+<translation id="5444587279251314700">(ενεργή)</translation>
 <translation id="5455441614648621694">Συμπληρωματικό</translation>
 <translation id="5485036206801896268">Δεν υπάρχει προηγούμενο γραφικό.</translation>
 <translation id="5486947920110100234">Δεν υπάρχει επόμενο σημείο μετάβασης.</translation>

@@ -525,11 +525,6 @@
       Jika tetapan ini dilumpuhkan, halaman web tidak dapat menggunakan JavaScript dan pengguna tidak boleh mengubah tetapan tersebut.
 
       Jika tetapan ini didayakan atau tidak ditetapkan, halaman web boleh menggunakan JavaScript tetapi pengguna boleh mengubah tetapan tersebut.</translation>
-<translation id="2747783890942882652">Mengkonfigurasi nama domain hos yang diperlukan, yang akan dikenakan pada hos akses jauh dan menghalang pengguna daripada menukarnya.
-
-          Jika tetapan ini didayakan, maka hos boleh dikongsi hanya dengan menggunakan akaun yang didaftarkan pada nama domain yang dinyatakan.
-
-          Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka hos boleh dikongsi dengan menggunakan mana-mana akaun.</translation>
 <translation id="2757054304033424106">Jenis sambungan/apl yang boleh dipasang</translation>
 <translation id="2759224876420453487">Kawal kelakuan pengguna dalam sesi berbilang profil</translation>
 <translation id="2761483219396643566">Kelewatan amaran melahu apabila dijalankan dengan kuasa bateri</translation>
@@ -1983,6 +1978,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Membiarkan dasar ini tanpa ditetapkan akan membuat <ph name="PRODUCT_NAME" /> menggunakan nilai lalai 5,000 milisaat.</translation>
 <translation id="7841880500990419427">Versi TLS minimum untuk jatuh balik ke</translation>
 <translation id="7842869978353666042">Konfigurasi pilihan Google Drive</translation>
+<translation id="7843525027689416831">Menetapkan bendera yang harus digunakan pada <ph name="PRODUCT_NAME" /> semasa bermula. Bendera yang ditetapkan akan digunakan pada skrin log masuk sahaja. Bendera yang ditetapkan melalui dasar ini tidak disebarkan ke dalam sesi pengguna.</translation>
 <translation id="7848840259379156480">Membenarkan anda untuk mengkonfigurasi pemapar HTML lalai apabila <ph name="PRODUCT_FRAME_NAME" /> dipasang.
       Tetapan lalai adalah untuk membenarkan hos penyemak imbas melakukan paparan, tetapi anda
       boleh memilih untuk membatalkan ini dan mengaturkan supaya <ph name="PRODUCT_FRAME_NAME" /> memaparkan halaman HTML secara lalai.</translation>

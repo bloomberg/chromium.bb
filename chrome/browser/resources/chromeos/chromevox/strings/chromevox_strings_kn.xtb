@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">ಸಾಲಿನ ಶಿರೋನಾಮೆ:</translation>
 <translation id="2002895034995108595">ಪ್ರಸ್ತುತ ಕೀಮ್ಯಾಪ್ ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{ಎಡ ಆವರಣ}one{# ಎಡ ಆವರಣಗಳು}other{# ಎಡ ಆವರಣಗಳು}}</translation>
+<translation id="2010555995361223825">ChromeVox ಮೆನುಗಳು</translation>
 <translation id="2045490512405922022">ಗುರುತಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="20601713649439366">ಯಾವುದೇ ಹಿಂದಿನ ಗಣಿತ ಅಭಿವ್ಯಕ್ತಿ ಇಲ್ಲ.</translation>
 <translation id="207477615537953741">ಶಬ್ದಾರ್ಥಗಳು ಆಫ್ ಆಗಿದೆ</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{ಅಲ್ಪವಿರಾಮ ಚಿಹ್ನೆ}one{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}other{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="5411891038905756502">ಯಾವುದೇ ಹಿಂದಿನ ಅಂಶವಿಲ್ಲ.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ಕಡಿಮೆ ಸೂಚಕ}one{# ಕಡಿಮೆ ಸೂಚಕ ಚಿಹ್ನೆಗಳು}other{# ಕಡಿಮೆ ಸೂಚಕ ಚಿಹ್ನೆಗಳು}}</translation>
+<translation id="5444587279251314700">(ಸಕ್ರಿಯವಾಗಿದೆ)</translation>
 <translation id="5455441614648621694">ಪೂರಕವಾಗಿ</translation>
 <translation id="5485036206801896268">ಹಿಂದಿನ ಗ್ರಾಫಿಕ್‌ಯಿಲ್ಲ.</translation>
 <translation id="5486947920110100234">ಯಾವುದೇ ಮುಂದಿನ ಅಂಶವಿಲ್ಲ.</translation>

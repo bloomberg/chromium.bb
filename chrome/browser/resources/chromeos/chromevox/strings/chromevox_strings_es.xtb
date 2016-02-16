@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Encabezado de fila:</translation>
 <translation id="2002895034995108595">Restablecer mapa de teclado actual</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{corchete de apertura}other{# corchetes de apertura}}</translation>
+<translation id="2010555995361223825">Menús de ChromeVox</translation>
 <translation id="2045490512405922022">sin seleccionar</translation>
 <translation id="20601713649439366">No hay expresiones matemáticas anteriores.</translation>
 <translation id="207477615537953741">Semántica desactivada</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{punto y coma}other{# puntos y comas}}</translation>
 <translation id="5411891038905756502">No hay ningún punto de salto anterior.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{menor que}other{# signos menor que}}</translation>
+<translation id="5444587279251314700">(activa)</translation>
 <translation id="5455441614648621694">Complementario</translation>
 <translation id="5485036206801896268">No hay ningún gráfico anterior.</translation>
 <translation id="5486947920110100234">No hay ningún punto de salto posterior.</translation>

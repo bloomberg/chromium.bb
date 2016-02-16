@@ -31,6 +31,11 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1389974829397082527">Der er ingen bogmærker her</translation>
+<translation id="1390350022570422499">Chrome kan nu finde og vise dig websider i nærheden via Bluetooth.
+
+Chrome scanner efter sider i nærheden, når din enhed er låst op. Disse sider går gennem en Google-tjeneste for at forbedre kvaliteten af sideresultaterne.
+
+Du kan kontrollere Fysisk web i indstillingerne for beskyttelse af personlige oplysninger i Chrome.</translation>
 <translation id="1404122904123200417">Integreret i <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Do Not Track"</translation>
 <translation id="1409879593029778104">Download af <ph name="FILE_NAME" /> blev forhindret, fordi filen allerede findes.</translation>
@@ -45,7 +50,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1546112724822176246">Kan du ikke se din enhed? <ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
 <translation id="1557201757634521564">Registrer kodning automatisk</translation>
-<translation id="1568822834048182062">Dine bogmærker, din historik og dine andre indstillinger synkroniseres med din Google-konto.</translation>
 <translation id="1592483623187843893">Bogmærket blev gemt offline</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
@@ -96,6 +100,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="2319528413610359757">Til læserne af <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Træk i skyderen, indtil du kan læse dette uden problemer. Når du trykker to gange på et afsnit, skal teksten som minimum være på denne størrelse.</translation>
+<translation id="2329597144923131178">Log ind for at hente bogmærker, historik, adgangskoder og andre indstillinger på alle dine enheder.</translation>
 <translation id="2343328333327081434">Installerer…</translation>
 <translation id="2351097562818989364">Dine oversættelsesindstillinger er nulstillet.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
@@ -199,6 +204,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3992315671621218278">Gem link</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4035611068038188272">Bogmærker fylder i øjeblikket <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
+<translation id="403659016947612156">Der er Fysisk web-sider i nærheden</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Tryk på tilbageknappen for at afslutte fuld skærm.</translation>
@@ -250,7 +256,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4726963856048758366">Lagerpladsen er ryddet</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="4738836084190194332">Seneste synkronisering: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">Vælg en konto for at få adgang til bogmærker, historik og andre indstillinger på alle dine enheder.</translation>
 <translation id="4773299976671772492">Stoppet</translation>
 <translation id="4797039098279997504">Tryk for at gå tilbage til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Navn på kort</translation>
@@ -269,8 +274,10 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="497421865427891073">Gå fremad</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="5000922062037820727">Blokeret (anbefales)</translation>
+<translation id="5014582685689328551">Brug Chrome til at gennemse dem</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Er du ikke <ph name="NOT_YOU_USER_NAME" />?</translation>
+<translation id="5026827350461471197">Dette rydder synkroniserede data fra alle enheder. Nogle indstillinger, der kan afspejle dine søgevaner, ryddes ikke.</translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
 <translation id="5063480226653192405">Forbrug</translation>
@@ -294,6 +301,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="5271967389191913893">Enheden kan ikke åbne det indhold, der skal downloades.</translation>
 <translation id="5275558766013849309">Faner findes sammen med de seneste apps.</translation>
+<translation id="5301954838959518834">OK, det er forstået</translation>
 <translation id="5302048478445481009">Sprog</translation>
 <translation id="5304593522240415983">Dette felt må ikke være tomt</translation>
 <translation id="5308933389783727448">Søg efter gemte sider</translation>
@@ -496,6 +504,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7665369617277396874">Tilføj konto</translation>
 <translation id="7690588279513156836">Indlæs originalen</translation>
+<translation id="771135159654932189">Se, hvad der er i nærheden</translation>
 <translation id="7735023902678907596">De sider, du besøger på inkognitofaner, gemmes ikke i browserhistorik, cookielager eller søgehistorik, efter du har lukket alle dine inkognitofaner. Dog gemmes alle de filer, du downloader, og de sider, du gemmer.
 
 Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger for din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
@@ -584,12 +593,14 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på oplysninger om forældre.</translation>
+<translation id="8931159598799892500">Chrome og Fysisk web</translation>
 <translation id="8934455786738644694">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
 <translation id="8941248009481596111">Din forbindelse til dette website er privat.</translation>
 <translation id="8941729603749328384">www.eksempel.com</translation>
 <translation id="8959122750345127698">Navigationen er ikke mulig: <ph name="URL" /></translation>
 <translation id="8987061207681586800">Gør Chrome til dit eget</translation>
 <translation id="9019902583201351841">Administreret af dine forældre</translation>
+<translation id="9020607083536754075">Luk den aktuelle fane, og vend tilbage til forrige app</translation>
 <translation id="9050666287014529139">Adgangssætning</translation>
 <translation id="9060538597317784206">Se appen <ph name="APP_NAME" /> i Google Play Butik. Klassificering: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Slå anmodning om computerversionen af websitet fra</translation>

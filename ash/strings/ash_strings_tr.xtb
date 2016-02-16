@@ -52,6 +52,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="252373100621549798">Bilinmeyen Görünüm</translation>
 <translation id="2532589005999780174">Yüksek kontrast modu</translation>
 <translation id="2562916301614567480">Özel Ağ</translation>
+<translation id="2661637000095600270">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor. Geri bildirim raporu göndermek için tıklayın.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: Bağlanıyor...</translation>
 <translation id="2700058918926273959">Oturumun süresi <ph name="SESSION_TIME_REMAINING" /> içinde bitiyor. Süre dolduğunda oturumunuz kapatılacaktır.</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
@@ -236,6 +237,7 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="8878886163241303700">Genişletilmiş ekran</translation>
 <translation id="8938800817013097409">USB-C cihaz (arkadaki sağ bağlantı noktası)</translation>
 <translation id="8940956008527784070">Pil gücü az (%<ph name="PERCENTAGE" />)</translation>
+<translation id="9008540565042607572">Sevgili Monitör, aramızdaki bu ilişki yürümüyor. (Bu monitör desteklenmiyor. Geri bildirim raporu göndermek için tıklayın.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon kullanımda.</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>

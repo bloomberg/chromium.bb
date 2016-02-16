@@ -476,11 +476,6 @@
 
       Se a definição estiver desativada, as páginas Web não podem utilizar o JavaScript e o utilizador não pode alterá-la.
       Se a definição estiver ativada ou por definir, as páginas Web podem utilizar o JavaScript, mas o utilizador pode alterá-la.</translation>
-<translation id="2747783890942882652">Configura o nome de domínio do anfitrião necessário que será imposto em anfitriões de acesso remoto e evita que os utilizadores o alterem.
-
-          Se esta definição estiver ativada, os anfitriões apenas podem ser partilhados com contas registadas no nome de domínio especificado.
-
-          Se esta definição estiver desativada ou não estiver definida, os anfitriões podem ser partilhados utilizando qualquer conta.</translation>
 <translation id="2757054304033424106">Tipos de extensões/aplicações com permissão para serem instaladas</translation>
 <translation id="2759224876420453487">Controlar o comportamento dos utilizadores numa sessão multiperfil</translation>
 <translation id="2761483219396643566">Atraso do aviso de inatividade quando o dispositivo está a utilizar a energia da bateria</translation>
@@ -1760,6 +1755,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for definida, o <ph name="PRODUCT_NAME" /> utilizará o valor predefinido de 5000 milissegundos.</translation>
 <translation id="7841880500990419427">Versão TLS mínima como alternativa</translation>
 <translation id="7842869978353666042">Configurar as opções do Google Drive</translation>
+<translation id="7843525027689416831">Especifica os sinalizadores que devem ser aplicados ao <ph name="PRODUCT_NAME" /> quando este inicia. Os sinalizadores especificados são aplicados apenas no ecrã de início de sessão. Os sinalizadores definidos através desta política não se propagam para as sessões de utilizador.</translation>
 <translation id="7848840259379156480">Permite-lhe configurar o processador de HTML predefinido quando é instalado o <ph name="PRODUCT_FRAME_NAME" />. A predefinição é permitir que o navegador anfitrião efetue o pro, mas, se pretender, pode substituir esta predefinição e fazer com que o <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por predefinição.</translation>
 <translation id="7882585827992171421">Esta política está ativa apenas no modo de retalho.
 

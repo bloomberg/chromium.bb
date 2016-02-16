@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">የረድፍ ራስጌ፦</translation>
 <translation id="2002895034995108595">የአሁኑን የቁልፍ አደራደር ዳግም አስጀምር</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{የግራ ማዕዘን ቅንፍ}one{# የግራ ማዕዘን ቅንፎች}other{# የግራ ማዕዘን ቅንፎች}}</translation>
+<translation id="2010555995361223825">የChromeVox ምናሌዎች</translation>
 <translation id="2045490512405922022">ምልክት አልተደረገበትም</translation>
 <translation id="20601713649439366">ምንም ቀዳሚ የሒሳብ ሐረግ የለም።</translation>
 <translation id="207477615537953741">ስነ ፍቺ ጠፍቷል</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{ድርብ ሰረዝ}one{# ድርብ ሰረዞች}other{# ድርብ ሰረዞች}}</translation>
 <translation id="5411891038905756502">ምንም ቀዳሚ የመዝለያ ነጥብ የለም።</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ያንሳል}one{# የያንሳል ምልክቶች}other{# የያንሳል ምልክቶች}}</translation>
+<translation id="5444587279251314700">(ገቢር)</translation>
 <translation id="5455441614648621694">ማሟያ</translation>
 <translation id="5485036206801896268">ምንም ቀዳሚ ስዕላዊ የለም።</translation>
 <translation id="5486947920110100234">ምንም ቀጣይ የመዝለያ ነጥብ የለም።</translation>

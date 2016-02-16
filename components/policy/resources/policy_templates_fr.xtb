@@ -528,11 +528,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si vous désactivez ce paramètre, les pages Web ne peuvent pas utiliser JavaScript et l'utilisateur n'est pas en mesure de le modifier.
 
       Si vous activez ce paramètre ou si vous ne le définissez pas, les pages Web peuvent utiliser JavaScript, mais l'utilisateur n'est pas en mesure de le modifier.</translation>
-<translation id="2747783890942882652">Configure le nom de domaine hôte obligatoire pour les hôtes d'accès à distance et empêche les utilisateurs de le modifier.
-
-          En cas d'activation de ce paramètre, le partage des hôtes n'est possible que si les comptes utilisés sont enregistrés auprès du nom de domaine spécifié.
-
-          En cas de désactivation ou de non-configuration de ce paramètre, le partage des hôtes est possible avec tous les comptes.</translation>
 <translation id="2757054304033424106">Types d'extensions ou d'applications autorisés à être installés</translation>
 <translation id="2759224876420453487">Contrôler le comportement de l'utilisateur lors d'une session à plusieurs profils</translation>
 <translation id="2761483219396643566">Délai d'inactivité avant l'affichage d'un avertissement (en cas d'utilisation de la batterie)</translation>
@@ -1993,6 +1988,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       En l'absence de définition de cette règle, la valeur par défaut de 5 000 millisecondes est utilisée dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7841880500990419427">Version minimale de TLS à utiliser en remplacement</translation>
 <translation id="7842869978353666042">Configurer les options Google Drive</translation>
+<translation id="7843525027689416831">Spécifie les indicateurs à appliquer à <ph name="PRODUCT_NAME" /> au démarrage. Ceux-ci ne sont appliqués que sur l'écran de connexion. Les indicateurs définis par cette règle ne se propagent pas dans les sessions utilisateur.</translation>
 <translation id="7848840259379156480">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME" /> est installé.
       Le paramétrage par défaut de cette stratégie autorise le navigateur hôte à effectuer le rendu. Toutefois, vous pouvez
       remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME" /> assure le rendu des pages HTML pages par défaut.</translation>

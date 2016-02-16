@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Cabeçalho de linha:</translation>
 <translation id="2002895034995108595">Redefinir keymap atual</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{colchete esquerdo}one{# colchetes esquerdos}other{# colchetes esquerdos}}</translation>
+<translation id="2010555995361223825">Menus do ChromeVox</translation>
 <translation id="2045490512405922022">não selecionada</translation>
 <translation id="20601713649439366">Nenhuma expressão matemática anterior.</translation>
 <translation id="207477615537953741">Interpretação semântica desativada</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{sinal de ponto-e-vírgula}one{# sinais de ponto-e-vírgula}other{# sinais de ponto-e-vírgula}}</translation>
 <translation id="5411891038905756502">No previous jump point.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{sinal de menor que}one{# sinais de menor que}other{# sinais de menor que}}</translation>
+<translation id="5444587279251314700">(ativo)</translation>
 <translation id="5455441614648621694">Complementar</translation>
 <translation id="5485036206801896268">Nenhum gráfico anterior.</translation>
 <translation id="5486947920110100234">Nenhum ponto de salto a seguir.</translation>

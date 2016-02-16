@@ -52,6 +52,7 @@
 <translation id="252373100621549798">תצוגה לא ידועה</translation>
 <translation id="2532589005999780174">מצב ניגודיות גבוהה</translation>
 <translation id="2562916301614567480">רשת פרטית</translation>
+<translation id="2661637000095600270">לא ניתן היה לשקף תצוגה מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב. לחץ כדי לשלוח דוח משוב.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: מתחבר...</translation>
 <translation id="2700058918926273959">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />. תנותק מהחשבון.</translation>
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
@@ -234,6 +235,7 @@
 <translation id="8878886163241303700">מסך מתרחב</translation>
 <translation id="8938800817013097409">‏מכשיר עם יציאת USB-C (יציאה ימנית מאחור)</translation>
 <translation id="8940956008527784070">‏סוללה חלשה (‎<ph name="PERCENTAGE" />%‎)</translation>
+<translation id="9008540565042607572">צג יקר, זה לא עובד בינינו. (הצג אינו נתמך. לחץ כדי לשלוח דוח משוב).</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">המיקרופון נמצא בשימוש.</translation>
 <translation id="9089416786594320554">שיטות קלט</translation>

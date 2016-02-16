@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Header ng row:</translation>
 <translation id="2002895034995108595">I-reset ang kasalukuyang keymap</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{kaliwang bracket}one{# kaliwang bracket}other{# na kaliwang bracket}}</translation>
+<translation id="2010555995361223825">Mga Menu ng ChromeVox</translation>
 <translation id="2045490512405922022">hindi nilagyan ng check</translation>
 <translation id="20601713649439366">Walang nakaraang math expression.</translation>
 <translation id="207477615537953741">Naka-off ang semantics</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{semicolon}one{# semicolon}other{# na semicolon}}</translation>
 <translation id="5411891038905756502">Walang nakaraang jump point.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{less than}one{# less than sign}other{# na less than sign}}</translation>
+<translation id="5444587279251314700">(aktibo)</translation>
 <translation id="5455441614648621694">Complementary</translation>
 <translation id="5485036206801896268">Walang nakaraang graphic.</translation>
 <translation id="5486947920110100234">Walang susunod na jump point.</translation>

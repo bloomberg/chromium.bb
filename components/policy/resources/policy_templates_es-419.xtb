@@ -458,11 +458,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si esta configuración está inhabilitada, las páginas web no podrán usar JavaScript y el usuario no podrá cambiar esa configuración.
 
       Si esta configuración está habilitada o no está establecida, las páginas web podrán usar JavaScript pero el usuario podrá cambiar esa configuración.</translation>
-<translation id="2747783890942882652">Configura el nombre de dominio de host requerido que se impondrá a los hosts de acceso remoto y que evitará que los usuarios lo cambien.
-
-          Si esta configuración está habilitada, los hosts pueden compartirse solamente utilizando cuentas registradas en el nombre de dominio especificado.
-
-          Si esta configuración está inhabilitada o no está establecida, los hosts pueden compartirse utilizando cualquier cuenta.</translation>
 <translation id="2757054304033424106">Tipos de extensiones o aplicaciones que se pueden instalar</translation>
 <translation id="2759224876420453487">Controlar el comportamiento del usuario en una sesión de varios perfiles</translation>
 <translation id="2761483219396643566">Demora para la advertencia de inactividad cuando el dispositivo está funcionando a batería</translation>
@@ -1733,6 +1728,7 @@ desactivarlo).</translation>
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS para resguardo</translation>
 <translation id="7842869978353666042">Opciones de configuración de Google Drive</translation>
+<translation id="7843525027689416831">Especifica las marcas que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las marcas especificadas se aplican solo en la pantalla de acceso. Las marcas establecidas mediante esta política no se propagan a las sesiones de usuario.</translation>
 <translation id="7848840259379156480">Te permite configurar el procesador de HTML predeterminado cuando <ph name="PRODUCT_FRAME_NAME" /> está instalado. La configuración predeterminada permite al navegador del host realizar el procesamiento, pero tú puedes omitirlo de manera opcional y tener las páginas HTML del procesador del <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada.</translation>
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo de venta.
 

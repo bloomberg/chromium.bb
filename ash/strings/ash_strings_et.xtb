@@ -52,6 +52,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="252373100621549798">Tundmatu ekraan</translation>
 <translation id="2532589005999780174">Suure kontrastsusega režiim</translation>
 <translation id="2562916301614567480">Privaatvõrk</translation>
+<translation id="2661637000095600270">Kuvasid ei saanud peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölauarežiimi. Tagasiside aruande saatmiseks klõpsake.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: ühendamine ...</translation>
 <translation id="2700058918926273959">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />. Teid logitakse välja.</translation>
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
@@ -235,6 +236,7 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="8878886163241303700">Ekraani laiendamine</translation>
 <translation id="8938800817013097409">C-tüüpi USB-seade (parempoolne port taga)</translation>
 <translation id="8940956008527784070">Aku tühjeneb (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Monitor, kahjuks ei tule meie koostööst midagi välja. (Seda monitori ei toetata. Tagasiside aruande saatmiseks klõpsake.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon on kasutusel.</translation>
 <translation id="9089416786594320554">Sisestusviisid</translation>

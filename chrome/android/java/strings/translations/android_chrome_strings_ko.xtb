@@ -31,6 +31,11 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />님, 안녕하세요.</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1389974829397082527">이 폴더에는 북마크가 없습니다.</translation>
+<translation id="1390350022570422499">현재 Chrome에서 블루투스를 사용하여 주변 웹페이지를 찾아 표시할 수 있습니다.
+
+Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔합니다. 이 페이지는 페이지 결과의 품질을 높이기 위해 Google 서비스를 거칩니다.
+
+Chrome 개인정보 보호 설정에서 피지컬 웹을 제어할 수 있습니다.</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" />에 포함됨</translation>
 <translation id="1406000523432664303">'추적 안함'</translation>
 <translation id="1409879593029778104">파일이 이미 존재하여 <ph name="FILE_NAME" /> 다운로드가 중지되었습니다.</translation>
@@ -45,7 +50,6 @@
 <translation id="1546112724822176246">기기가 표시되지 않나요? <ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="1553358976309200471">Chrome 업데이트</translation>
 <translation id="1557201757634521564">인코딩 자동 감지</translation>
-<translation id="1568822834048182062">북마크, 방문 기록, 비밀번호, 기타 설정이 Google 계정에 동기화됩니다.</translation>
 <translation id="1592483623187843893">북마크가 오프라인에 저장되었습니다.</translation>
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
@@ -96,6 +100,7 @@
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="2319528413610359757"><ph name="PUBLISHER" /> 독자용</translation>
 <translation id="2321958826496381788">편하게 읽을 수 있을 때까지 슬라이더를 드래그하세요. 단락을 두 번 탭하면 텍스트가 이 이상의 크기로 표시됩니다.</translation>
+<translation id="2329597144923131178">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="2343328333327081434">설치 중...</translation>
 <translation id="2351097562818989364">번역 설정이 재설정되었습니다.</translation>
 <translation id="2359808026110333948">계속</translation>
@@ -199,6 +204,7 @@
 <translation id="3992315671621218278">링크 저장</translation>
 <translation id="4002066346123236978">제목</translation>
 <translation id="4035611068038188272">현재 북마크의 크기는 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />입니다.</translation>
+<translation id="403659016947612156">주변에 피지컬 웹페이지가 있습니다</translation>
 <translation id="4042870126885713738">웹 주소가 확인되지 않거나 연결되지 않는 경우 추천 주소 표시</translation>
 <translation id="4056223980640387499">세피아</translation>
 <translation id="4059119910594077751">전체화면을 종료하려면 뒤로 버튼을 터치하세요.</translation>
@@ -250,7 +256,6 @@
 <translation id="4726963856048758366">저장 공간 확보 완료</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4738836084190194332">마지막 동기화 시간: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">계정을 선택하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="4773299976671772492">중지됨</translation>
 <translation id="4797039098279997504">터치하여 <ph name="URL_OF_THE_CURRENT_TAB" />(으)로 돌아가기</translation>
 <translation id="4807098396393229769">카드 명의</translation>
@@ -269,8 +274,10 @@
 <translation id="497421865427891073">앞으로 이동</translation>
 <translation id="4996978546172906250">공유 방법</translation>
 <translation id="5000922062037820727">차단(권장)</translation>
+<translation id="5014582685689328551">Chrome을 사용하여 탐색합니다</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205"><ph name="NOT_YOU_USER_NAME" />님이 아닌가요?</translation>
+<translation id="5026827350461471197">모든 기기에서 동기화된 데이터를 삭제합니다. 인터넷 사용 습관이 반영될 수 있는 일부 설정은 삭제되지 않습니다.</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보</translation>
 <translation id="5063480226653192405">사용</translation>
@@ -294,6 +301,7 @@
 <translation id="5233638681132016545">새 탭</translation>
 <translation id="5271967389191913893">기기에서 다운로드하려는 콘텐츠를 열 수 없습니다.</translation>
 <translation id="5275558766013849309">탭은 최근 앱과 함께 보유할 수 있습니다.</translation>
+<translation id="5301954838959518834">확인</translation>
 <translation id="5302048478445481009">언어</translation>
 <translation id="5304593522240415983">필수 입력란입니다.</translation>
 <translation id="5308933389783727448">저장된 페이지 검색</translation>
@@ -302,7 +310,7 @@
 <translation id="5323972449344932352">Chrome 실행</translation>
 <translation id="5324858694974489420">자녀 보호 설정</translation>
 <translation id="5327248766486351172">이름</translation>
-<translation id="5335200807405507442">프리패치 페이지 리소스</translation>
+<translation id="5335200807405507442">페이지 리소스 프리패치</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> 삭제됨</translation>
 <translation id="5345083863238459644">위치 정보 액세스 또한 <ph name="BEGIN_LINK" />이 기기에서 사용 중지되었습니다<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">보내지 않기</translation>
@@ -496,6 +504,7 @@
 <translation id="7658239707568436148">취소</translation>
 <translation id="7665369617277396874">계정 추가</translation>
 <translation id="7690588279513156836">원본 로드</translation>
+<translation id="771135159654932189">주변 URL 보기</translation>
 <translation id="7735023902678907596">시크릿 탭을 모두 닫으면 시크릿 탭에서 본 페이지는 브라우저 방문 기록, 쿠키 저장소 또는 방문 기록 어디에도 흔적이 남지 않습니다. 단, 다운로드한 파일이나 저장한 페이지는 유지됩니다.
 
 하지만 완전하게 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(IPS), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
@@ -584,12 +593,14 @@
 <translation id="8909135823018751308">공유…</translation>
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="8920114477895755567">부모님의 세부정보를 기다리는 중</translation>
+<translation id="8931159598799892500">Chrome + 피지컬 웹</translation>
 <translation id="8934455786738644694">전체화면을 종료하려면 상단에서 드래그하여 뒤로 버튼을 터치하세요.</translation>
 <translation id="8941248009481596111">이 사이트에 대한 연결은 비공개입니다.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>
 <translation id="8987061207681586800">나만의 Chrome 만들기</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
+<translation id="9020607083536754075">현재 탭을 닫고 이전 앱으로 돌아가기</translation>
 <translation id="9050666287014529139">암호</translation>
 <translation id="9060538597317784206">Play 스토어에서 <ph name="APP_NAME" /> 앱을 봅니다.  등급은 <ph name="APP_RATING" />입니다.</translation>
 <translation id="9063523880881406963">데스크톱 버전으로 보기 사용 중지</translation>

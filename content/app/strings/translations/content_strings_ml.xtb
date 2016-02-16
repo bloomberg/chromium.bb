@@ -7,6 +7,7 @@
 <translation id="1088086359088493902">സെക്കൻഡ്</translation>
 <translation id="1171774979989969504">ദയവായി ഒരു ഇമെയില്‍ വിലാസം നല്‍കുക.</translation>
 <translation id="1188858454923323853">കോംപ്ലിമെന്ററി</translation>
+<translation id="1206619573307042055">മാർക്യൂ</translation>
 <translation id="1235745349614807883">അടുത്തിടെയുള്ള തിരയലുകള്‍ മായ്ക്കുക</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="1359897965706325498">ബാനർ</translation>
@@ -42,6 +43,8 @@
 <translation id="2942448076852699108">ഹൈലൈറ്റുചെയ്‌തിരിക്കുന്ന ഉള്ളടക്കം</translation>
 <translation id="3040011195152428237">ലിങ്ക്</translation>
 <translation id="3075154866155599887">ഒരു സാധുതയുള്ള മൂല്യം നൽകുക. ഫീൽഡ് പൂർണ്ണമല്ല അല്ലെങ്കിൽ അസാധുവായ തീയതിയിലുള്ളതാണ്.</translation>
+<translation id="3078740164268491126">പട്ടിക</translation>
+<translation id="3086746722712840547">note</translation>
 <translation id="310520048233152454">ദയവായി ഒരു URL നല്‍കുക.</translation>
 <translation id="3450233048674729344">മൂല്യം <ph name="MAXIMUM" /> എന്നതില്‍ കുറവോ സമമോ ആയിരിക്കണം.</translation>
 <translation id="3486220673238053218">നിർവചനം</translation>
@@ -55,11 +58,14 @@
 <translation id="4103419683916926126">മില്ലിസെക്കൻഡ്</translation>
 <translation id="4201051445878709314">മുൻ മാസം കാണിക്കുക</translation>
 <translation id="4202807286478387388">jump</translation>
+<translation id="421884353938374759">വർണ്ണ പിക്കർ</translation>
 <translation id="4360991593054037559">സാധുവായ മൂല്യം നൽകുക. സാധുവായ ഏറ്റവുമടുത്ത രണ്ട് മൂല്യങ്ങൾ <ph name="VALID_VALUE_LOW" />, <ph name="VALID_VALUE_HIGHER" /> എന്നിവയാണ്.</translation>
 <translation id="4522570452068850558">വിശദാംശങ്ങള്‍‌</translation>
 <translation id="4597532268155981612">ഫോം</translation>
+<translation id="4661075872484491155">ട്രീ</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' എന്നതിനുശേഷം വരുന്ന ഭാഗത്തിൽ '<ph name="INVALIDCHARACTER" />' ചിഹ്നം ഉണ്ടാകരുത്.</translation>
 <translation id="4763480195061959176">വീഡിയോ</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">ഒരു നമ്പർ നൽകുക.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> തിരഞ്ഞെടുത്തു</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS" />' അപൂർണ്ണമാണ്.</translation>
@@ -72,12 +78,12 @@
 <translation id="5468998798572797635">പൂർണ്ണ സ്‌ക്രീനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="5476505524087279545">അണ്‍ചെക്ക് ചെയ്യുക</translation>
 <translation id="5546461542133609677">ശബ്‌ദമുള്ളതാക്കുക</translation>
+<translation id="561939826962581046">സമയം</translation>
 <translation id="5641012560118721995">പ്ലേബാക്ക് താൽക്കാലികമായി നിർത്തുക</translation>
 <translation id="5843503607508392247">മറ്റുള്ളവ...</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
 <translation id="5944544982112848342">2048 (High Grade)</translation>
 <translation id="5966707198760109579">ആഴ്‌ച</translation>
-<translation id="598301471034819706">വിലാസം</translation>
 <translation id="6015796118275082299">വര്‍ഷം</translation>
 <translation id="6101327004457443354">ഓഡിയോ ട്രാക്ക് ശബ്‌ദമുള്ളതാക്കുക</translation>
 <translation id="6119846243427417423">ആക്റ്റിവേറ്റ് ചെയ്യുക</translation>
@@ -86,6 +92,7 @@
 <translation id="6398862346408813489">മാസം തിരഞ്ഞെടുക്കുന്ന പാനൽ കാണിക്കുക</translation>
 <translation id="6404546809543547843">ഓഡിയോ സമയ സ്‌ക്രബർ</translation>
 <translation id="658823671542763450">പൂർണ്ണ സ്‌ക്രീനിലേക്ക് പോവുക</translation>
+<translation id="6637586476836377253">ലോഗ്</translation>
 <translation id="6643016212128521049">മായ്‌ക്കുക</translation>
 <translation id="6663448176199120256">സമീപകാല തിരയലുകള്‍</translation>
 <translation id="668171684555832681">മറ്റുള്ളവ...</translation>
@@ -100,6 +107,7 @@
 <translation id="7263440858009898357">പട്ടികയിലെ ഒരു ഇനം ദയവായി തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7364796246159120393">ഫയല്‍ തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="739024184232394898">മറ്റുള്ളവ...</translation>
+<translation id="7491962110804786152">ടാബ്</translation>
 <translation id="7673697353781729403">മണിക്കൂര്‍‌</translation>
 <translation id="7720026100085573005">അവശേഷിക്കുന്ന സമയം</translation>
 <translation id="7740016676195725605">അടച്ച അടിക്കുറിപ്പുകൾ പ്രദർശിപ്പിക്കുന്നത് നിർത്തുക</translation>

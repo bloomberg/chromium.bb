@@ -52,6 +52,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="252373100621549798">Onbekend display</translation>
 <translation id="2532589005999780174">Modus voor hoog contrast</translation>
 <translation id="2562916301614567480">Privénetwerk</translation>
+<translation id="2661637000095600270">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd. Klik om een feedbackrapport te verzenden.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: verbinden...</translation>
 <translation id="2700058918926273959">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />. Je wordt uitgelogd.</translation>
 <translation id="2727977024730340865">Aangesloten op een laag-vermogen-lader. Opladen van de batterij mogelijk niet betrouwbaar.</translation>
@@ -235,6 +236,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
 <translation id="8938800817013097409">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="8940956008527784070">Accu is bijna leeg (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Het lijkt erop dat dit niet werkt. Het beeldscherm wordt niet ondersteund. Klik om een feedbackrapport te verzenden.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Microfoon wordt gebruikt.</translation>
 <translation id="9089416786594320554">Invoermethoden</translation>

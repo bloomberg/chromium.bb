@@ -464,11 +464,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wird diese Einstellung deaktiviert, können Webseiten kein JavaScript verwenden und der Nutzer kann diese Einstellung nicht ändern.
 
       Ist diese Einstellung aktiviert oder nicht definiert, können Webseiten JavaScript verwenden, wobei der Nutzer diese Einstellung jedoch ändern kann.</translation>
-<translation id="2747783890942882652">Konfiguriert den erforderlichen Domain-Namen der Hosts für den Remote-Zugriff und verhindert, dass dieser von Nutzern geändert werden kann.
-
-          Wenn diese Einstellung aktiviert ist, können Hosts nur über Konten gemeinsam genutzt werden, die unter dem angegebenen Domain-Namen registriert sind.
-
-          Ist diese Einstellung deaktiviert oder nicht festgelegt, können Hosts über alle Konten gemeinsam genutzt werden.</translation>
 <translation id="2757054304033424106">Typen von Erweiterungen bzw. Apps, die installiert werden können</translation>
 <translation id="2759224876420453487">Nutzerverhalten in Mehrfachprofil-Sitzung steuern</translation>
 <translation id="2761483219396643566">Inaktivitätsspanne bis zur Warnung im Akkubetrieb</translation>
@@ -1740,6 +1735,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Bei Festlegung dieser Richtlinie verwendet <ph name="PRODUCT_NAME" /> den Standardwert von 5.000 Millisekunden.</translation>
 <translation id="7841880500990419427">TLS-Mindestversion für Fallback</translation>
 <translation id="7842869978353666042">Optionen von Google Drive konfigurieren</translation>
+<translation id="7843525027689416831">Hiermit werden die Parameter angegeben, die beim Starten von <ph name="PRODUCT_NAME" /> angewendet werden sollen. Diese werden nur auf der Anmeldeseite verwendet. Über diese Richtlinie festgelegte Parameter haben keine Auswirkungen auf Nutzersitzungen.</translation>
 <translation id="7848840259379156480">Mit dieser Richtlinie können Sie die Standardanwendung für die HTML-Darstellung konfigurieren, wenn <ph name="PRODUCT_FRAME_NAME" /> installiert ist. Bei der Standardeinstellung übernimmt der Host-Browser die Darstellung. Sie können dies jedoch wahlweise außer Kraft setzen und festlegen, dass HTML-Seiten standardmäßig mithilfe von <ph name="PRODUCT_FRAME_NAME" /> angezeigt werden sollen.</translation>
 <translation id="7882585827992171421">Diese Richtlinie ist nur im Händlermodus aktiv.
 

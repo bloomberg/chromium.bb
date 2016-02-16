@@ -52,6 +52,7 @@
 <translation id="252373100621549798">شاشة عرض غير معروفة</translation>
 <translation id="2532589005999780174">وضع التباين العالي</translation>
 <translation id="2562916301614567480">الشبكة الخاصة</translation>
+<translation id="2661637000095600270">تعذر إجراء النسخ المطابق لشاشات العرض نظرًا لعدم وجود درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك. انقر لإرسال تقرير بالتعليقات.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: جارٍ التوصيل...</translation>
 <translation id="2700058918926273959">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />. وسيتم إخراجك.</translation>
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
@@ -232,6 +233,7 @@
 <translation id="8878886163241303700">توسيع الشاشة</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
 <translation id="8940956008527784070">طاقة البطارية منخفضة (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">تعذر التواصل مع الشاشة. (هذه الشاشة غير متوافقة. انقر لإرسال تقرير بالتعليقات).</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9080206825613744995">الميكروفون قيد الاستخدام</translation>
 <translation id="9089416786594320554">أساليب الإدخال</translation>

@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Radrubrik:</translation>
 <translation id="2002895034995108595">Återställ aktuell tangentuppsättning</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{vänster hakparentes}other{# vänster-hakparenteser}}</translation>
+<translation id="2010555995361223825">ChromeVox-menyer</translation>
 <translation id="2045490512405922022">inte markerad</translation>
 <translation id="20601713649439366">Det finns inget föregående matematiskt uttryck.</translation>
 <translation id="207477615537953741">Semantisk tolkning inaktiverad</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{semikolon}other{# semikolon}}</translation>
 <translation id="5411891038905756502">Det finns inga tidigare punkter att hoppa till.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mindre än-tecken}other{# mindre än-tecken}}</translation>
+<translation id="5444587279251314700">(aktiv)</translation>
 <translation id="5455441614648621694">Kompletterande</translation>
 <translation id="5485036206801896268">Det finns ingen föregående bild.</translation>
 <translation id="5486947920110100234">Det finns inga punkter att hoppa till.</translation>

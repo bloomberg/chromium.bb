@@ -469,11 +469,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si aquesta opció es desactiva, les pàgines web no podran utilitzar JavaScript i l'usuari no podrà canviar aquesta configuració.
 
       Si s'activa aquesta opció o no es defineix, les pàgines web podran fer servir JavaScript però l'usuari podrà canviar aquesta opció.</translation>
-<translation id="2747783890942882652">Configura el domini d'amfitrió necessari que s'imposarà als amfitrions d'accés remot i que impedeix que els usuaris el canviïn.
-
-          Si activeu aquest paràmetre, els amfitrions només es podran compartir amb comptes registrats al nom de domini especificat.
-
-          Si desactiveu aquest paràmetre o si no el definiu, els amfitrions es podran compartir amb qualsevol compte.</translation>
 <translation id="2757054304033424106">Tipus d'extensions i d'aplicacions que es poden instal·lar</translation>
 <translation id="2759224876420453487">Controla el comportament de l'usuari en una sessió de perfils múltiples</translation>
 <translation id="2761483219396643566">Retard d'advertiment d'inactivitat quan s'utilitza la bateria</translation>
@@ -1757,6 +1752,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no es defineix, <ph name="PRODUCT_NAME" /> utilitzarà el valor predeterminat de 5.000 mil·lisegons.</translation>
 <translation id="7841880500990419427">Versió TLS mínima alternativa</translation>
 <translation id="7842869978353666042">Opcions de configuració de Google Drive</translation>
+<translation id="7843525027689416831">Especifica les opcions que s'han d'aplicar a <ph name="PRODUCT_NAME" /> quan s'inicia. Les opcions especificades només s'apliquen a la pantalla d'inici de sessió. Les opcions definides mitjançant aquesta política no es propaguen a les sessions de l'usuari.</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME" /> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME" /> renderitzi les pàgines HTML de manera predeterminada.</translation>
 <translation id="7882585827992171421">Aquesta política només està activa en mode de venda.
 

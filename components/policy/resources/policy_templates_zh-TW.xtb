@@ -466,11 +466,6 @@
       如果這項設定已停用，所有的網頁都無法使用 JavaScript，使用者也無法變更這項設定。
 
       如果這項設定已啟用或並未指定，網頁就能使用 JavaScript，但使用者可以變更這項設定。</translation>
-<translation id="2747783890942882652">設定系統所要對遠端存取主機強加的所需主機網域名稱，並且防止使用者變更這項設定。
-
-          如果您啟用這項設定，則只有在使用已註冊特定網域名稱的帳戶時才能共用主機。
-
-          如果您停用這項設定或並未進行設置，則可使用任何帳戶共用主機。</translation>
 <translation id="2757054304033424106">允許安裝的擴充功能/應用程式類型</translation>
 <translation id="2759224876420453487">控制使用者在多重設定檔工作階段中的行為</translation>
 <translation id="2761483219396643566">在電池供電環境下執行時的閒置警告延遲時間</translation>
@@ -1747,6 +1742,7 @@
       如未設定這項政策，<ph name="PRODUCT_NAME" /> 將會套用 5000 毫秒的預設值。</translation>
 <translation id="7841880500990419427">備用的最低 TLS 版本</translation>
 <translation id="7842869978353666042">設定 Google 雲端硬碟選項</translation>
+<translation id="7843525027689416831">指定要在 <ph name="PRODUCT_NAME" /> 啟動時套用的設定。系統僅會在進入登入畫面時套用指定的設定。透過這個政策所指定的設定不會反映在使用者工作階段中。</translation>
 <translation id="7848840259379156480">允許您在安裝 <ph name="PRODUCT_FRAME_NAME" /> 之後設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME" /> 轉譯 HTML 網頁。</translation>
 <translation id="7882585827992171421">這項政策僅在零售模式下有效。
 

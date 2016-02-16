@@ -31,6 +31,11 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="138361230106469022">Kamusta, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1389974829397082527">Walang mga bookmark dito</translation>
+<translation id="1390350022570422499">Ang Chrome ay maaari na ngayong maghanap at magpakita sa iyo ng mga kalapit na web page gamit ang Bluetooth.
+
+Mag-ii-scan ang Chrome ng mga kalapit na page kapag naka-unlock ang iyong device. Dadaan ang mga page na ito sa isang serbisyo ng Google upang pahusayin ang kalidad ng mga resultang page.
+
+Maaari mong kontrolin ang Pisikal na Web sa mga setting ng privacy ng Chrome.</translation>
 <translation id="1404122904123200417">Naka-embed sa <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Huwag Subaybayan”</translation>
 <translation id="1409879593029778104">Pinigilan ang pag-download sa <ph name="FILE_NAME" /> dahil may ganitong file na sa kasalukuyan.</translation>
@@ -45,7 +50,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1546112724822176246">Hindi mo ba nakikita ang iyong device? <ph name="BEGIN_LINK" />Humingi ng tulong<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
 <translation id="1557201757634521564">Awtomatikong i-detect ang pag-e-encode</translation>
-<translation id="1568822834048182062">Isi-sync ang iyong mga bookmark, history password at iba mga setting sa iyong Google Account.</translation>
 <translation id="1592483623187843893">Na-save offline ang bookmark</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Pigilan ang pahinang ito sa paggawa ng mga karagdagang dialog</translation>
@@ -96,6 +100,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="2319528413610359757">Para sa mga mambabasa ng <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">I-drag ang slider hanggang sa mabasa mo ito nang kumportable. Dapat ay halos ganito kalaki ang text pagkatapos mag-double tap sa isang talata.</translation>
+<translation id="2329597144923131178">Mag-sign in upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device.</translation>
 <translation id="2343328333327081434">Ini-install…</translation>
 <translation id="2351097562818989364">Na-reset ang iyong mga setting sa pag-translate.</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
@@ -199,6 +204,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="3992315671621218278">I-save ang link</translation>
 <translation id="4002066346123236978">Pamagat</translation>
 <translation id="4035611068038188272">Kasalukuyang gumagamit ang mga bookmark ng <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
+<translation id="403659016947612156">May mga kalapit na page ng Pisikal na Web</translation>
 <translation id="4042870126885713738">Magpakita ng mga suhestyon kapag hindi ma-resolve ang isang website o kung hindi makakonekta</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Pindutin ang button na bumalik upang lumabas sa fullscreen.</translation>
@@ -250,7 +256,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4726963856048758366">Na-clear na ang storage</translation>
 <translation id="473775607612524610">Mag-update</translation>
 <translation id="4738836084190194332">Huling na-sync: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">Pumili ng isang account upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device.</translation>
 <translation id="4773299976671772492">Inihinto</translation>
 <translation id="4797039098279997504">Pindutin upang bumalik sa <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Pangalang makikita sa card</translation>
@@ -269,8 +274,10 @@ Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-si
 <translation id="497421865427891073">Sumulong</translation>
 <translation id="4996978546172906250">Ibahagi gamit ang</translation>
 <translation id="5000922062037820727">Naka-block (inirerekomenda)</translation>
+<translation id="5014582685689328551">Gamitin ang Chrome para i-browse ang mga iyon</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Hindi si <ph name="NOT_YOU_USER_NAME" />?</translation>
+<translation id="5026827350461471197">Kini-clear nito ang naka-sync na data mula sa lahat ng device. Hindi iki-clear ang ilang setting na maaaring magpakita ng mga kaugalian sa pagba-browse.</translation>
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Paggamit</translation>
@@ -294,6 +301,7 @@ Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-si
 <translation id="5233638681132016545">Bagong tab</translation>
 <translation id="5271967389191913893">Hindi mabuksan ng device ang content na ida-download.</translation>
 <translation id="5275558766013849309">Magsasama-sama ang mga tab at kamakailang app.</translation>
+<translation id="5301954838959518834">OK, nakuha ko na</translation>
 <translation id="5302048478445481009">Wika</translation>
 <translation id="5304593522240415983">Hindi maaaring maging blangko ang field na ito</translation>
 <translation id="5308933389783727448">Maghanap sa naka-save na page</translation>
@@ -496,6 +504,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7665369617277396874">Magdagdag ng account</translation>
 <translation id="7690588279513156836">I-load ang orihinal</translation>
+<translation id="771135159654932189">Tingnan kung anong nasa malapit</translation>
 <translation id="7735023902678907596">Hindi mananatili ang mga titingnan mong page sa mga tab na incognito sa history, cookie store o history ng paghahanap ng iyong browser kapag nasara mo na ang lahat ng iyong tab na incognito. Hindi mawawala ang anumang mga na-download na file o na-save na page.
 
 Gayunpaman, hindi ka invisible. Kahit na gumamit ka ng tab na incognito, hindi pa rin maitatago ang iyong pagba-browse sa iyong employer, iyong internet service provider o sa mga bibisitahin mong website.</translation>
@@ -584,12 +593,14 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="8909135823018751308">Ibahagi…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Hinihintay ang mga detalye ng mga magulang.</translation>
+<translation id="8931159598799892500">Chrome + Pisikal na Web</translation>
 <translation id="8934455786738644694">I-drag mula sa itaas at pindutin ang button na bumalik upang lumabas sa fullscreen.</translation>
 <translation id="8941248009481596111">Pribado ang iyong koneksyon sa site na ito.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Hindi gumagana ang navigation: <ph name="URL" /></translation>
 <translation id="8987061207681586800">I-personalize ang iyong Chrome</translation>
 <translation id="9019902583201351841">Pinamamahalaan ng iyong mga magulang</translation>
+<translation id="9020607083536754075">Isara ang kasalukuyang tab at bumalik sa nakaraang app</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9060538597317784206">Tingnan ang app na <ph name="APP_NAME" /> sa Play Store.  Rating: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">I-off ang Hilingin ang site sa desktop</translation>

@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Záhlaví řádku:</translation>
 <translation id="2002895034995108595">Resetovat aktuální mapu kláves</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{levá hranatá závorka}few{# levé hranaté závorky}many{# left brackets}other{# levých hranatých závorek}}</translation>
+<translation id="2010555995361223825">Nabídky ChromeVox</translation>
 <translation id="2045490512405922022">nezaškrtnuto</translation>
 <translation id="20601713649439366">Žádný předchozí matematický výraz není.</translation>
 <translation id="207477615537953741">Sémantika je vypnuta</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{středník}few{# středníky}many{# semicolons}other{# středníků}}</translation>
 <translation id="5411891038905756502">Žádný předchozí bod skoku.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{je menší než}few{# znaky je menší než}many{# less than signs}other{# znaků je menší než}}</translation>
+<translation id="5444587279251314700">(aktivní)</translation>
 <translation id="5455441614648621694">Doplňkové</translation>
 <translation id="5485036206801896268">Žádný předchozí obrázek.</translation>
 <translation id="5486947920110100234">Žádný další bod skoku.</translation>

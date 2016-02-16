@@ -465,11 +465,6 @@
       Jeśli to ustawienie zostanie wyłączone, strony nie będą mogły używać JavaScriptu, a użytkownik nie będzie mógł zmienić tego ustawienia.
 
       Jeśli to ustawienie będzie włączone lub nieustawione, strony będą mogły używać JavaScriptu, ale użytkownik będzie mógł zmienić to ustawienie.</translation>
-<translation id="2747783890942882652">Konfiguruje wymaganą nazwę hosta, która będzie stosowana do hostów zdalnego dostępu, i uniemożliwia użytkownikom jej zmianę.
-
-          Jeśli to ustawienie zostanie włączone, hosty będą mogły być udostępniane tylko z użyciem kont zarejestrowanych w określonej domenie.
-
-          W przypadku wyłączenia lub nieskonfigurowania tego ustawienia hosty będą mogły być udostępniane z użyciem dowolnego konta.</translation>
 <translation id="2757054304033424106">Typy rozszerzeń/aplikacji, które można instalować</translation>
 <translation id="2759224876420453487">Kontrolowanie zachowania użytkownika w sesji wieloprofilowej</translation>
 <translation id="2761483219396643566">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu z baterii</translation>
@@ -1741,6 +1736,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Nieskonfigurowanie tej zasady spowoduje, że <ph name="PRODUCT_NAME" /> będzie używać domyślnej wartości 5000 milisekund.</translation>
 <translation id="7841880500990419427">Najniższa wersja TLS, która zostanie użyta zastępczo</translation>
 <translation id="7842869978353666042">Skonfiguruj opcje Dysku Google</translation>
+<translation id="7843525027689416831">Określa flagi stosowane przy uruchamianiu <ph name="PRODUCT_NAME" />. Wybrane flagi są używane tylko na ekranie logowania. Flagi ustawiane przez tę zasadę nie przechodzą na sesje użytkownika.</translation>
 <translation id="7848840259379156480">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME" />. Ustawieniem domyślnym jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="7882585827992171421">Ta zasada jest aktywna tylko w trybie sklepu.
 

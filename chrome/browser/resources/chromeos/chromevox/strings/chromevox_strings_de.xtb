@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Zeilenüberschrift:</translation>
 <translation id="2002895034995108595">Aktuelle Tastaturbelegung zurücksetzen</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{eckige Klammer links}other{# eckige Klammern links}}</translation>
+<translation id="2010555995361223825">ChromeVox-Menüs</translation>
 <translation id="2045490512405922022">nicht aktiviert</translation>
 <translation id="20601713649439366">Kein vorheriger mathematischer Ausdruck</translation>
 <translation id="207477615537953741">Semantische Interpretation aus</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{Strichpunkt}other{# Strichpunkte}}</translation>
 <translation id="5411891038905756502">Kein vorheriger Ausgangspunkt</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{Kleiner-als-Zeichen}other{# Kleiner-als-Zeichen}}</translation>
+<translation id="5444587279251314700">(aktiv)</translation>
 <translation id="5455441614648621694">Ergänzend</translation>
 <translation id="5485036206801896268">Keine vorherige Grafik</translation>
 <translation id="5486947920110100234">Kein nächster Ausgangspunkt</translation>

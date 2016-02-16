@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">列標題：</translation>
 <translation id="2002895034995108595">重設目前的按鍵對應配置</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{左中括弧}other{# 個左中括弧}}</translation>
+<translation id="2010555995361223825">ChromeVox 選單</translation>
 <translation id="2045490512405922022">未勾選</translation>
 <translation id="20601713649439366">沒有上一個數學運算式。</translation>
 <translation id="207477615537953741">語意轉譯功能已關閉</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{分號}other{# 個分號}}</translation>
 <translation id="5411891038905756502">沒有上一個跳躍點。</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{小於符號}other{# 個小於符號}}</translation>
+<translation id="5444587279251314700">(運作中)</translation>
 <translation id="5455441614648621694">互補</translation>
 <translation id="5485036206801896268">沒有上一個圖形。</translation>
 <translation id="5486947920110100234">沒有下一個跳躍點。</translation>

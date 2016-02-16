@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">வரிசை மேற்தலைப்பு:</translation>
 <translation id="2002895034995108595">நடப்பு விசைவரைபடத்தை மீட்டமை</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{இடது அடைப்புக்குறி}other{# இடது அடைப்புக்குறிகள்}}</translation>
+<translation id="2010555995361223825">ChromeVox மெனுக்கள்</translation>
 <translation id="2045490512405922022">தேர்வுசெய்யப்படவில்லை</translation>
 <translation id="20601713649439366">முந்தைய கணிதக் கோவை இல்லை.</translation>
 <translation id="207477615537953741">பொருள்விளக்கம் முடக்கப்பட்டது</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{அரைப்புள்ளி}other{# அரைப்புள்ளிகள்}}</translation>
 <translation id="5411891038905756502">முந்தைய தாவல் புள்ளி இல்லை.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{குறைவிற்கான குறி}other{# குறைவிற்கான குறிகள்}}</translation>
+<translation id="5444587279251314700">(செயலில்)</translation>
 <translation id="5455441614648621694">ஈடுசெய்தல்</translation>
 <translation id="5485036206801896268">முந்தைய கிராஃபிக் இல்லை.</translation>
 <translation id="5486947920110100234">அடுத்த தாவல் புள்ளி இல்லை.</translation>

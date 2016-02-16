@@ -7,6 +7,7 @@
 <translation id="1088086359088493902">초</translation>
 <translation id="1171774979989969504">이메일 주소를 입력하세요.</translation>
 <translation id="1188858454923323853">상호 보완</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1235745349614807883">최근 검색 삭제</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">배너</translation>
@@ -42,6 +43,8 @@
 <translation id="2942448076852699108">강조표시된 콘텐츠</translation>
 <translation id="3040011195152428237">링크</translation>
 <translation id="3075154866155599887">유효한 값을 입력하세요. 입력을 완료하지 않았거나 날짜가 잘못되었습니다.</translation>
+<translation id="3078740164268491126">표</translation>
+<translation id="3086746722712840547">note</translation>
 <translation id="310520048233152454">URL을 입력하세요.</translation>
 <translation id="3450233048674729344">값은 <ph name="MAXIMUM" /> 이하여야 합니다.</translation>
 <translation id="3486220673238053218">정의</translation>
@@ -55,11 +58,14 @@
 <translation id="4103419683916926126">밀리초</translation>
 <translation id="4201051445878709314">이전 달 표시</translation>
 <translation id="4202807286478387388">건너뛰기</translation>
+<translation id="421884353938374759">color picker</translation>
 <translation id="4360991593054037559">유효한 값을 입력해 주세요. 가장 근접한 유효 값 2개는 <ph name="VALID_VALUE_LOW" /> 및 <ph name="VALID_VALUE_HIGHER" />입니다.</translation>
 <translation id="4522570452068850558">세부정보</translation>
 <translation id="4597532268155981612">양식</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' 다음 부분에 '<ph name="INVALIDCHARACTER" />' 기호가 포함되면 안됩니다.</translation>
 <translation id="4763480195061959176">동영상</translation>
+<translation id="479989351350248267">검색</translation>
 <translation id="4812940957355064477">숫자를 입력하세요.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" />개 선택됨</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' 뒷 부분을 입력해 주세요. '<ph name="INVALIDADDRESS" />'(이)가 완전하지 않습니다.</translation>
@@ -72,12 +78,12 @@
 <translation id="5468998798572797635">전체화면 닫기</translation>
 <translation id="5476505524087279545">선택취소</translation>
 <translation id="5546461542133609677">음소거 해제</translation>
+<translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">재생 일시중지</translation>
 <translation id="5843503607508392247">다른 시간...</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="5944544982112848342">2048(높은 등급)</translation>
 <translation id="5966707198760109579">주</translation>
-<translation id="598301471034819706">주소</translation>
 <translation id="6015796118275082299">연도</translation>
 <translation id="6101327004457443354">오디오 트랙 음소거 해제</translation>
 <translation id="6119846243427417423">활성화</translation>
@@ -86,6 +92,7 @@
 <translation id="6398862346408813489">월 선택 패널 표시</translation>
 <translation id="6404546809543547843">오디오 시간 스크러버</translation>
 <translation id="658823671542763450">전체화면 열기</translation>
+<translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6663448176199120256">최근 수행된 검색</translation>
 <translation id="668171684555832681">기타...</translation>
@@ -100,6 +107,7 @@
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
 <translation id="7364796246159120393">파일 선택</translation>
 <translation id="739024184232394898">다른 주...</translation>
+<translation id="7491962110804786152">tab</translation>
 <translation id="7673697353781729403">시간</translation>
 <translation id="7720026100085573005">남은 시간</translation>
 <translation id="7740016676195725605">캡션 표시 중지</translation>

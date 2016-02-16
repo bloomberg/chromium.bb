@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Nagłówek wiersza:</translation>
 <translation id="2002895034995108595">Zresetuj bieżącą mapę klawiszy</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{lewy nawias kwadratowy}few{# lewe nawiasy kwadratowe}many{# lewych nawiasów kwadratowych}other{# left brackets}}</translation>
+<translation id="2010555995361223825">Menu ChromeVox</translation>
 <translation id="2045490512405922022">niezaznaczone</translation>
 <translation id="20601713649439366">Brak poprzedniego wyrażenia matematycznego.</translation>
 <translation id="207477615537953741">Semantyka wyłączona</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{średnik}few{# średniki}many{# średników}other{# semicolons}}</translation>
 <translation id="5411891038905756502">Brak poprzedniego punktu przejścia.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mniejszy niż}few{# znaki mniejszości}many{# znaków mniejszości}other{# less than signs}}</translation>
+<translation id="5444587279251314700">(aktywna)</translation>
 <translation id="5455441614648621694">Pomocniczy</translation>
 <translation id="5485036206801896268">Brak poprzedniej grafiki.</translation>
 <translation id="5486947920110100234">Brak następnego punktu przejścia.</translation>

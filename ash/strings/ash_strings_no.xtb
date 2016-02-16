@@ -52,6 +52,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="252373100621549798">Ukjent skjerm</translation>
 <translation id="2532589005999780174">Høykontrastmodus</translation>
 <translation id="2562916301614567480">Privat nettverk</translation>
+<translation id="2661637000095600270">Skjermene kunne ikke speiles fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet. Klikk for å sende tilbakemelding.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: kobler til ...</translation>
 <translation id="2700058918926273959">Økten slutter om <ph name="SESSION_TIME_REMAINING" />. Du blir logget av automatisk.</translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
@@ -235,6 +236,7 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="9008540565042607572">Kjære skjerm, det går ikke så bra mellom oss. (Skjermen støttes ikke. Klikk for å sende tilbakemelding.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofonen er i bruk.</translation>
 <translation id="9089416786594320554">Inndatametoder</translation>

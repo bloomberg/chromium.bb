@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">પંક્તિ હેડર:</translation>
 <translation id="2002895034995108595">વર્તમાન કીમેપને ફરીથી સેટ કરો</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{ડાબો મોટો કૌંસ}one{# ડાબા મોટા કૌંસ}other{# ડાબા મોટા કૌંસ}}</translation>
+<translation id="2010555995361223825">ChromeVox મેનૂઝ</translation>
 <translation id="2045490512405922022">ચૅક કરેલું નથી</translation>
 <translation id="20601713649439366">કોઈ પહેલાંની ગણિત પદાવલિ નથી.</translation>
 <translation id="207477615537953741">સિમેન્ટિક્સ બંધ</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{અર્ધવિરામ}one{# અર્ધવિરામ}other{# અર્ધવિરામ}}</translation>
 <translation id="5411891038905756502">પહેલાનું જમ્પ બિંદુ નથી.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{આના કરતાં ઓછું}one{# આના કરતાં ઓછાની નિશાની}other{# આના કરતાં ઓછાની નિશાની}}</translation>
+<translation id="5444587279251314700">(સક્રિય)</translation>
 <translation id="5455441614648621694">પૂરક</translation>
 <translation id="5485036206801896268">પહેલાનું ગ્રાફિક નથી.</translation>
 <translation id="5486947920110100234">આગલું જમ્પ બિંદુ નથી.</translation>

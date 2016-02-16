@@ -520,11 +520,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này tắt, các trang web không thể sử dụng JavaScript và người dùng không thể thay đổi cài đặt đó.
 
       Nếu cài đặt này bật hoặc không được thiết lập, các trang web có thể sử dụng JavaScript nhưng người dùng có thể thay đổi cài đặt đó.</translation>
-<translation id="2747783890942882652">Định cấu hình tên miền máy chủ bắt buộc sẽ được áp đặt trên các máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền này.
-
-          Nếu cài đặt này được bật thì chỉ có thể chia sẻ máy chủ bằng các tài khoản đã đăng ký trên tên miền được chỉ định.
-
-          Nếu cài đặt này bị tắt hoặc không được đặt thì có thể chia sẻ máy chủ bằng bất kỳ tài khoản nào.</translation>
 <translation id="2757054304033424106">Các loại tiện ích/ứng dụng được phép cài đặt</translation>
 <translation id="2759224876420453487">Kiểm soát hoạt động của người dùng trong một phiên đa cấu hình</translation>
 <translation id="2761483219396643566">Thời gian chờ cảnh báo trạng thái không sử dụng khi chạy trên nguồn pin</translation>
@@ -1967,6 +1962,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng giá trị mặc định là 5000 mili giây.</translation>
 <translation id="7841880500990419427">Phiên bản TLS tối thiểu để dự phòng sang</translation>
 <translation id="7842869978353666042">Định cấu hình tùy chọn Google Drive</translation>
+<translation id="7843525027689416831">Chỉ định cờ sẽ được áp dụng cho <ph name="PRODUCT_NAME" /> khi khởi động. Cờ được chỉ định sẽ chỉ được áp dụng trên màn hình đăng nhập. Các cờ được đặt thông qua chính sách này không truyền sang các phiên của người dùng.</translation>
 <translation id="7848840259379156480">Cho phép bạn định cấu hình trình hiển thị HTML mặc định khi <ph name="PRODUCT_FRAME_NAME" /> được cài đặt. Cài đặt mặc định cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu <ph name="PRODUCT_FRAME_NAME" /> hiển thị các trang HTML theo mặc định.</translation>
 <translation id="7882585827992171421">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 

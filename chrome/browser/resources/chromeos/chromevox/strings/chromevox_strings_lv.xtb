@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Rindas virsraksts:</translation>
 <translation id="2002895034995108595">Atiestatīt pašreizējo taustiņu piesaisti</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{atverošā kvadrātiekava}zero{# atverošo kvadrātiekavu}one{# atverošā kvadrātiekava}other{# atverošās kvadrātiekavas}}</translation>
+<translation id="2010555995361223825">ChromeVox izvēlnes</translation>
 <translation id="2045490512405922022">nav atzīmēta</translation>
 <translation id="20601713649439366">Iepriekš nav nevienas matemātiskas izteiksmes.</translation>
 <translation id="207477615537953741">Semantiskā interpretācija izslēgta</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{semikols}zero{# semikolu}one{# semikols}other{# semikoli}}</translation>
 <translation id="5411891038905756502">Iepriekš nav neviena pārejas punkta.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{zīme “mazāks par”}zero{# zīmju “mazāks par”}one{# zīme “mazāks par”}other{# zīmes “mazāks par”}}</translation>
+<translation id="5444587279251314700">(aktīva)</translation>
 <translation id="5455441614648621694">Papildu</translation>
 <translation id="5485036206801896268">Iepriekš nav nevienas grafikas.</translation>
 <translation id="5486947920110100234">Tālāk nav neviena pārejas punkta.</translation>

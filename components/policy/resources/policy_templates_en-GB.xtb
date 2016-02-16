@@ -524,11 +524,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is disabled, web pages cannot use JavaScript and the user cannot change that setting.
 
       If this setting is enabled or not set, web pages can use JavaScript but the user can change that setting.</translation>
-<translation id="2747783890942882652">Configures the required host domain name that will be imposed on remote access hosts and prevents users from changing it.
-
-          If this setting is enabled, then hosts can be shared only using accounts registered on the specified domain name.
-
-          If this setting is disabled or not set, then hosts can be shared using any account.</translation>
 <translation id="2757054304033424106">Types of extensions/apps that are allowed to be installed</translation>
 <translation id="2759224876420453487">Control the user behaviour in a multiprofile session</translation>
 <translation id="2761483219396643566">Idle warning delay when running on battery power</translation>
@@ -1993,6 +1988,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Leaving this policy not set will make <ph name="PRODUCT_NAME" /> use the default value of 5,000 milliseconds.</translation>
 <translation id="7841880500990419427">Minimum TLS version to fallback to</translation>
 <translation id="7842869978353666042">Configure Google Drive options</translation>
+<translation id="7843525027689416831">Specifies the flags that should be applied to <ph name="PRODUCT_NAME" /> when it starts. The specified flags are applied on the login screen only. Flags that are set via this policy do not propagate into user sessions.</translation>
 <translation id="7848840259379156480">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME" /> render HTML pages by default.</translation>

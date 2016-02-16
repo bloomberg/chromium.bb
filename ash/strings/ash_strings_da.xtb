@@ -52,6 +52,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
 <translation id="2562916301614567480">Privat netværk</translation>
+<translation id="2661637000095600270">Skærmene kunne ikke spejles, da der ikke blev fundet nogen understøttede opløsninger. Det udvidede skrivebord blev aktiveret i stedet. Klik for at sende en feedbackrapport.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: Opretter forbindelse...</translation>
 <translation id="2700058918926273959">Sessionen slutter om <ph name="SESSION_TIME_REMAINING" />. Du vil blive logget af.</translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
@@ -235,6 +236,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8878886163241303700">Udvider skærm</translation>
 <translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="9008540565042607572">Kære Skærm. Det fungerer ikke mellem os. (Denne skærm understøttes ikke. Klik for at sende en feedbackrapport).</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofonen er i brug.</translation>
 <translation id="9089416786594320554">Indtastningsmetoder</translation>

@@ -52,6 +52,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="252373100621549798">Pantalla desconocida</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
 <translation id="2562916301614567480">Red privada</translation>
+<translation id="2661637000095600270">No se pudieron reflejar las pantallas porque no se encontraron resoluciones compatibles. En su lugar, se activó el escritorio extendido. Haz clic para enviar un informe de comentarios.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: Conectando...</translation>
 <translation id="2700058918926273959">La sesión terminará en <ph name="SESSION_TIME_REMAINING" /> y se cerrará.</translation>
 <translation id="2727977024730340865">Conexión a un cargador de baja potencia. Es posible que la carga de la batería no sea confiable.</translation>
@@ -234,6 +235,7 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="8878886163241303700">Ampliando pantalla</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (puerto derecho en la parte posterior)</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Este monitor no funciona (no es compatible; haz clic para enviar un informe de comentarios).</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">El micrófono está en uso.</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>

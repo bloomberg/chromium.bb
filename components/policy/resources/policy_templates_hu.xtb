@@ -467,11 +467,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha ez a beállítás ki van kapcsolva, akkor a weboldalak nem használhatnak JavaScriptet, és a felhasználó nem módosíthatja a beállítást.
 
       Ha be van kapcsolva vagy nincs beállítva, akkor a weboldalak használhatnak JavaScriptet, ám a felhasználó módosíthatja a beállítást.</translation>
-<translation id="2747783890942882652">Beállítja a gazdagép szükséges domainnevét, amely a távoli hozzáférésű gazdagépekre lesz alkalmazva, és megakadályozza, hogy a felhasználók megváltoztassák azt.
-
-          Ha a beállítás engedélyezve van, a gazdagépeket csak a megadott domainnévvel regisztrált fiókokkal lehet megosztani.
-
-          Ha a beállítás le van tiltva vagy nincs megadva, a gazdagépeket bármely fiókkal meg lehet osztani.</translation>
 <translation id="2757054304033424106">Telepíthető bővítmény-/alkalmazástípusok</translation>
 <translation id="2759224876420453487">A felhasználói viselkedés szabályozása többprofilos munkamenetben</translation>
 <translation id="2761483219396643566">Tétlenségi figyelmeztetés késleltetése akkumulátorról való működés során</translation>
@@ -1751,6 +1746,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a házirend nincs beállítva, a(z) <ph name="PRODUCT_NAME" /> az alapértelmezett 5000 ezredmásodperces értéket használja.</translation>
 <translation id="7841880500990419427">Minimális TLS-verzió, amelyre vissza lehet térni</translation>
 <translation id="7842869978353666042">A Google Drive beállításainak konfigurálása</translation>
+<translation id="7843525027689416831">Azokat a jelölőket adja meg, amelyeket a(z) <ph name="PRODUCT_NAME" />-ra kell alkalmazni az elindításakor. A megadott jelölők alkalmazása csak a bejelentkezési képernyőn történik. A jelen irányelven keresztül megadott jelölők nem terjednek ki a felhasználói munkamenetekre.</translation>
 <translation id="7848840259379156480">Lehetővé teszi, hogy beállítsa az alapértelmezett HTML-megjelenítőt, ha a <ph name="PRODUCT_FRAME_NAME" /> telepítve van. Az alapértelmezett beállítás az, hogy a gazdagép böngészője végzi a megjelenítést, de opcionálisan ezt felülbírálhatja, és megjelenítheti a HTML oldalakat alapértelmezés szerint a <ph name="PRODUCT_FRAME_NAME" /> segítségével.</translation>
 <translation id="7882585827992171421">Ez a házirend csak kiállító módban aktív.
 

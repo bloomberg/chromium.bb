@@ -31,6 +31,11 @@
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1389974829397082527">Закладок пока нет</translation>
+<translation id="1390350022570422499">С помощью Bluetooth Chrome может находить веб-страницы, связанные с объектами вокруг вас, и показывать их.
+
+Браузер будет искать их, когда ваше устройство разблокировано. Чтобы улучшить работу функции, страницы будут отправляться через сервис Google.
+
+Включить или отключить Интернет вокруг нас можно в разделе "Личные данные" настроек Chrome.</translation>
 <translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Запрет отслеживания</translation>
 <translation id="1409879593029778104">Скачивание файла <ph name="FILE_NAME" /> остановлено, так как он уже существует.</translation>
@@ -45,7 +50,6 @@
 <translation id="1546112724822176246">Не можете найти свое устройство? <ph name="BEGIN_LINK" />Узнайте<ph name="END_LINK" />, как это исправить.</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1557201757634521564">Определять кодировку</translation>
-<translation id="1568822834048182062">Ваши закладки, история, пароли и другие настройки синхронизируются с аккаунтом Google.</translation>
 <translation id="1592483623187843893">Закладка доступна в офлайн-режиме</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
@@ -96,6 +100,7 @@
 <translation id="2316129865977710310">Спасибо, не надо</translation>
 <translation id="2319528413610359757">Читателям издания "<ph name="PUBLISHER" />"</translation>
 <translation id="2321958826496381788">Перемещайте ползунок, пока текст не станет удобным для чтения. После двойного нажатия на абзац текст должен быть такого размера.</translation>
+<translation id="2329597144923131178">Войдите, чтобы синхронизировать закладки, пароли, историю и т. д. на всех устройствах.</translation>
 <translation id="2343328333327081434">Установка…</translation>
 <translation id="2351097562818989364">Настройки перевода сброшены</translation>
 <translation id="2359808026110333948">Далее</translation>
@@ -199,6 +204,7 @@
 <translation id="3992315671621218278">Сохранить ссылку</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="4035611068038188272">Сохраненные закладки занимают <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
+<translation id="403659016947612156">Интернет вокруг нас нашел веб-страницы.</translation>
 <translation id="4042870126885713738">Предлагать альтернативы, если веб-адрес недоступен или с ним не удается установить соединение</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4059119910594077751">Чтобы выйти из полноэкранного режима, нажмите кнопку "Назад".</translation>
@@ -250,7 +256,6 @@
 <translation id="4726963856048758366">Данные удалены</translation>
 <translation id="473775607612524610">Обновление</translation>
 <translation id="4738836084190194332">Последняя синхронизация: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">Выберите аккаунт, чтобы получить доступ к своим вкладкам, истории, закладкам и другим настройкам на любом устройстве.</translation>
 <translation id="4773299976671772492">Остановлено</translation>
 <translation id="4797039098279997504">Нажмите, чтобы вернуться на страницу <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
 <translation id="4807098396393229769">Имя владельца</translation>
@@ -269,8 +274,10 @@
 <translation id="497421865427891073">Вперед</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
+<translation id="5014582685689328551">Откройте их в Chrome.</translation>
 <translation id="5016205925109358554">С засечками</translation>
 <translation id="5017989644593831205">Не <ph name="NOT_YOU_USER_NAME" />?</translation>
+<translation id="5026827350461471197">Синхронизированные данные будут удалены со всех устройств. Некоторая информация о работе в Интернете сохранится.</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
 <translation id="5063480226653192405">Использование</translation>
@@ -294,6 +301,7 @@
 <translation id="5233638681132016545">Новая вкладка</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="5275558766013849309">Каждая вкладка будет отображаться в виде отдельного окна в списке открытых приложений.</translation>
+<translation id="5301954838959518834">ОК</translation>
 <translation id="5302048478445481009">Язык</translation>
 <translation id="5304593522240415983">Это поле нужно заполнить</translation>
 <translation id="5308933389783727448">Искать по сохраненным страницам</translation>
@@ -496,6 +504,7 @@
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
 <translation id="7690588279513156836">Полная версия</translation>
+<translation id="771135159654932189">Узнать, что поблизости</translation>
 <translation id="7735023902678907596">Страницы, открытые в этом окне, не сохранятся в истории браузера или поиска. Они не оставят на компьютере следов, таких как файлы cookie, после того как вы закроете все вкладки инкогнито. Скачанные вами файлы и добавленные закладки будут сохранены.
 
 В режиме инкогнито ваши действия видны системному администратору и интернет-провайдеру, а также доступны сайтам, которые вы посещаете.</translation>
@@ -584,12 +593,14 @@
 <translation id="8909135823018751308">Поделиться...</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8920114477895755567">Недостаточно данных о родителях.</translation>
+<translation id="8931159598799892500">Chrome + Интернет вокруг нас</translation>
 <translation id="8934455786738644694">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
 <translation id="8941248009481596111">Подключение к веб-сайту защищено</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Страница не найдена: <ph name="URL" /></translation>
 <translation id="8987061207681586800">Ваш персональный Chrome</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
+<translation id="9020607083536754075">Закрыть текущую вкладку и вернуться к приложению</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>
 <translation id="9060538597317784206">Перейти к приложению "<ph name="APP_NAME" />" в Play Маркете. Рейтинг: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Выключить полную версию сайта</translation>

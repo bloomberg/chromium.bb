@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Sorfejléc:</translation>
 <translation id="2002895034995108595">Jelenlegi billentyűzetkiosztás visszaállítása</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{szögletes nyitó zárójel}other{# szögletes nyitó zárójel}}</translation>
+<translation id="2010555995361223825">ChromeVox-menük</translation>
 <translation id="2045490512405922022">nincs bejelölve</translation>
 <translation id="20601713649439366">Nincs előző matematikai kifejezés.</translation>
 <translation id="207477615537953741">Szemantikai értelmezés kikapcsolva</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{pontosvessző}other{# pontosvessző}}</translation>
 <translation id="5411891038905756502">Nincs előző ugrópont.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kisebb jel}other{# kisebb jel}}</translation>
+<translation id="5444587279251314700">(aktív)</translation>
 <translation id="5455441614648621694">Kiegészítő</translation>
 <translation id="5485036206801896268">Nincs előző ábra.</translation>
 <translation id="5486947920110100234">Nincs következő ugrópont.</translation>

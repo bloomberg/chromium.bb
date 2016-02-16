@@ -52,6 +52,7 @@
 <translation id="252373100621549798">अज्ञात प्रदर्शन</translation>
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
 <translation id="2562916301614567480">खाजगी नेटवर्क</translation>
+<translation id="2661637000095600270">समर्थित रिझोल्यूशन न आढळल्याने प्रदर्शने मिरर करणे शक्य झाले नाही. आहे. त्याऐवजी विस्तारित केलेला डेस्कटॉप प्रविष्ट केला. एक अभिप्राय अहवाल पाठविण्यासाठी क्लिक करा.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: कनेक्ट करत आहे...</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> मध्ये सत्र समाप्त होते. आपल्याला साइन आउट केले जाईल.</translation>
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
@@ -234,6 +235,7 @@
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">प्रिय मॉनिटर, हे आपल्या दरम्यान कार्य करत नाही. (तो मॉनिटर समर्थित नाही. एक अभिप्राय अहवाल पाठविण्यासाठी क्लिक करा.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">मायक्रोफोन वापरात आहे.</translation>
 <translation id="9089416786594320554">इनपुट पद्धती</translation>

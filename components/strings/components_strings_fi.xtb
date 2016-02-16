@@ -4,7 +4,9 @@
 <translation id="1015255576907412255">Saat lisätietoja ottamalla yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="1015730422737071372">Lisätietoja</translation>
 <translation id="1032854598605920125">Käännä myötäpäivään</translation>
+<translation id="1038842779957582377">tuntematon nimi</translation>
 <translation id="1055184225775184556">K&amp;umoa lisäys</translation>
+<translation id="10614374240317010">Ei tallenneta</translation>
 <translation id="1064422015032085147">Verkkosivua isännöivä palvelin voi olla ylikuormitettu tai huollettavana.
     Jotta liiallinen liikenne ei pahentaisi tilannetta,
     pyynnöt tähän URL-osoitteeseen on estetty tilapäisesti.</translation>
@@ -36,7 +38,7 @@
 <translation id="1227224963052638717">Tuntematon käytäntö.</translation>
 <translation id="1227633850867390598">Piilota arvo</translation>
 <translation id="1228893227497259893">Väärä entiteettitunnus</translation>
-<translation id="1241381048229838873">Näytä kaikki kirjanmerkit</translation>
+<translation id="1254117744268754948">Valitse kansio</translation>
 <translation id="1270699273812232624">Salli kohteet</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="1339601241726513588">Käyttöönoton verkkotunnus:</translation>
@@ -90,15 +92,18 @@
 <translation id="2025623846716345241">Vahvista päivitys</translation>
 <translation id="2030481566774242610">Tarkoititko: <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Postinumero</translation>
+<translation id="2065985942032347596">Käyttöoikeustarkistus pakollinen</translation>
 <translation id="20817612488360358">Järjestelmän välityspalvelinasetukset on määritetty käytettäviksi, mutta erilliset välityspalvelimen asetukset on myös määritetty.</translation>
 <translation id="2089090684895656482">Vähemmän</translation>
 <translation id="2094505752054353250">Verkkotunnukset eivät ole yhteensopivat</translation>
 <translation id="2096368010154057602">Osasto</translation>
 <translation id="2113977810652731515">Kortti</translation>
 <translation id="2114841414352855701">Ei käytetä – käytännön <ph name="POLICY_NAME" /> ohittama.</translation>
+<translation id="2122434088511736194">Työpöytähaku käyttää oletushakukonettasi (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Asiakassovellus</translation>
 <translation id="213826338245044447">Mobiilikirjanmerkit</translation>
 <translation id="2148716181193084225">Tänään</translation>
+<translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
 <translation id="2153530520610387456">Siirry kohtaan
       <ph name="BEGIN_BOLD" />
       Käynnistä &gt; Ohjauspaneeli &gt; Verkko ja Internet &gt; Verkko- ja jakamiskeskus &gt; Tee ongelmien vianmääritys (alalaidassa) &gt; Internet-yhteydet.
@@ -113,10 +118,12 @@
 <translation id="225207911366869382">Tämän käytännön arvo on vanhentunut.</translation>
 <translation id="2262243747453050782">HTTP-virhe</translation>
 <translation id="2279770628980885996">Palvelin kohtasi odottamattoman tilan yrittäessään toteuttaa pyyntöä.</translation>
+<translation id="2282186295770469712">Hallinnoi hakuasetuksia</translation>
 <translation id="2282872951544483773">Ei käytettävissä olevat kokeilut</translation>
 <translation id="2292556288342944218">Internetyhteytesi on estetty</translation>
 <translation id="229702904922032456">Pää- tai keskitason varmenne on vanhentunut.</translation>
 <translation id="230155334948463882">Uusi kortti?</translation>
+<translation id="2317259163369394535"><ph name="DOMAIN" /> pyytää käyttäjänimeä ja salasanaa.</translation>
 <translation id="2328300916057834155">Ohitettiin virheellinen kirjanmerkki kohdassa <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Muut kirjanmerkit</translation>
 <translation id="2359808026110333948">Jatka</translation>
@@ -156,7 +163,9 @@
 <translation id="277499241957683684">Laitetallenne puuttuu</translation>
 <translation id="2784949926578158345">Yhteys katkaistiin.</translation>
 <translation id="2824775600643448204">Osoite- ja hakupalkki</translation>
+<translation id="2826760142808435982">Yhteys on salattu ja todennettu <ph name="CIPHER" />:n avulla ja se käyttää menetelmää <ph name="KX" /> avainvaihtomekanismina.</translation>
 <translation id="2835170189407361413">Tyhjennä lomake</translation>
+<translation id="2837049386027881519">Yhteyden muodostamista täytyi yrittää uudelleen TLS- tai SSL-protokollan vanhemmalla versiolla. Yleensä tämä johtuu siitä, että palvelin käyttää vanhentunutta ohjelmistoa. Palvelimen suojaus ei välttämättä ole ajan tasalla.</translation>
 <translation id="284702764277384724">Sivustolla <ph name="HOST_NAME" /> oleva palvelimen varmenne vaikuttaa väärennökseltä.</translation>
 <translation id="2855922900409897335">Vahvista <ph name="CREDIT_CARD" />.</translation>
 <translation id="2897655920961181107">Pyydetty portti on vaarallinen ja se on estetty.</translation>
@@ -166,6 +175,7 @@
 <translation id="2941952326391522266">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on verkkotunnuksesta <ph name="DOMAIN2" />. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="2948083400971632585">Voit poistaa yhteydelle määritetyt välityspalvelimet käytöstä asetussivulla.</translation>
 <translation id="2950186680359523359">Palvelin katkaisi yhteyden lähettämättä mitään tietoja.</translation>
+<translation id="2955913368246107853">Sulje hakupalkki</translation>
 <translation id="2957518517523241247">Testaa yhteytesi kohdassa
       <ph name="BEGIN_BOLD" />
       Käynnistys &gt; Ohjauspaneeli &gt; Verkkoyhteydet &gt; Luo uusi yhteys.
@@ -178,6 +188,7 @@
 <translation id="3005723025932146533">Näytä tallennettu kopio</translation>
 <translation id="3010559122411665027">Luettelokohde "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Väärä käytäntötyyppi</translation>
+<translation id="3041612393474885105">Varmenteen tiedot</translation>
 <translation id="3093245981617870298">Olet offline-tilassa.</translation>
 <translation id="3105172416063519923">Laitteen tunnus:</translation>
 <translation id="3109728660330352905">Sinulla ei ole oikeutta tarkastella tätä sivua.</translation>
@@ -199,6 +210,7 @@
 <translation id="3225919329040284222">Palvelin esitti varmenteen, joka ei vastaa sisäänrakennettuja odotuksia. Tietyillä tehokkaasti suojatuilla sivustoilla on odotuksia, joilla suojataan käyttäjiä.</translation>
 <translation id="3226128629678568754">Paina päivityspainiketta, niin sivun lataukseen tarvittavat tiedot lähetetään uudelleen.</translation>
 <translation id="3228969707346345236">Käännös epäonnistui, koska sivun kieli on jo <ph name="LANGUAGE" />.</translation>
+<translation id="3254409185687681395">Luo kirjanmerkki tälle sivulle</translation>
 <translation id="3270847123878663523">K&amp;umoa uudelleenjärjestely</translation>
 <translation id="3286538390144397061">Käynnistä uudelleen</translation>
 <translation id="333371639341676808">Estä tätä sivua luomasta muita viestejä.</translation>
@@ -219,6 +231,7 @@
 <translation id="3452404311384756672">Hakuväli:</translation>
 <translation id="3462200631372590220">Piilota lisäasetukset</translation>
 <translation id="3516765099410062445">Näytetään kirjautuneiden laitteiden historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
+<translation id="3527085408025491307">Kansio</translation>
 <translation id="3528171143076753409">Palvelimen varmenne ei ole luotettava.</translation>
 <translation id="3539171420378717834">Säilytä tämän kortin kopio laitteella.</translation>
 <translation id="3542684924769048008">Käytä salasanaa kohteeseen:</translation>
@@ -229,11 +242,15 @@
 <translation id="3586931643579894722">Piilota lisätiedot</translation>
 <translation id="3587482841069643663">Kaikki</translation>
 <translation id="3608308818141211642">Asiakas ja palvelin eivät tue samaa SSL-protokollaversiota tai salaustekniikkaa. Palvelin edellyttää luultavasti RC4:ää, jota ei enää pidetä turvallisena.</translation>
+<translation id="3609138628363401169">Palvelin ei tue TLS-edelleensiirto-laajennusta</translation>
+<translation id="362276910939193118">Näytä koko selaushistoria</translation>
 <translation id="3623476034248543066">Näytä arvo</translation>
 <translation id="3648607100222897006">Nämä kokeelliset ominaisuudet voivat muuttua, rikkoutua tai kadota milloin tahansa. Emme takaa mitä tapahtuu, jos otat kokeiluja käyttöön – selaimesi saattaa jopa syttyä palamaan. Vitsit sikseen: selaimesi voi oikeasti poistaa kaikki tietosi, tai tietosuojasi voi vaarantua arvaamattomilla tavoilla. Kaikki tämän selaimen käyttäjät voivat käyttää käyttöön ottamiasi kokeiluita. Jatka omalla vastuullasi.</translation>
 <translation id="3650584904733503804">Todennus onnistui</translation>
 <translation id="3651020361689274926">Pyydettyä resurssia ei enää ole, ja käytössä on uudelleenohjausosoite. Tämä on luultavasti pysyvää.</translation>
 <translation id="3658742229777143148">Päivitetty versio</translation>
+<translation id="3681007416295224113">Varmenteen tiedot</translation>
+<translation id="3693415264595406141">Salasana:</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Ladataan...</translation>
 <translation id="3712624925041724820">Käyttöluvat ovat lopussa</translation>
@@ -242,6 +259,7 @@
 <translation id="3748412725338508953">Uudelleenohjauksia oli liian monta.</translation>
 <translation id="375403751935624634">Käännös epäonnistui palvelinvirheen vuoksi.</translation>
 <translation id="3759461132968374835">Ei viimeaikaisia kaatumisilmoituksia. Jos selain kaatui kaatumisilmoitusten ollessa pois käytöstä, ilmoituksia ei näytetä täällä.</translation>
+<translation id="3788090790273268753">Tämän sivuston varmenne vanhenee vuonna 2016, ja varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
 <translation id="382518646247711829">Jos käytät välityspalvelinta…</translation>
 <translation id="3828924085048779000">Tunnuslause ei voi olla tyhjä.</translation>
 <translation id="385051799172605136">Edellinen</translation>
@@ -282,9 +300,11 @@
 <translation id="4269787794583293679">(Ei käyttäjänimeä)</translation>
 <translation id="4278390842282768270">Sallittu</translation>
 <translation id="4300246636397505754">Ylätason ehdotukset</translation>
+<translation id="4304224509867189079">Kirjaudu sisään</translation>
 <translation id="4325863107915753736">Artikkelia ei löydy</translation>
 <translation id="4372948949327679948">Odotettu <ph name="VALUE_TYPE" />-arvo.</translation>
 <translation id="4377125064752653719">Yritit yhdistää sivustoon <ph name="DOMAIN" />, mutta varmenteen myöntäjä on kumonnut palvelimen esittämän varmenteen. Palvelimen esittämiin suojaustietoihin ei siis tule luottaa. Saatat olla tekemisissä hakkerin kanssa.</translation>
+<translation id="4381091992796011497">Käyttäjätunnus:</translation>
 <translation id="4394049700291259645">Poista käytöstä</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" />–<ph name="END_DATE" /></translation>
 <translation id="4405141258442788789">Toiminto aikakatkaistiin.</translation>
@@ -297,14 +317,17 @@
 <translation id="4522570452068850558">Tiedot</translation>
 <translation id="4535734014498033861">Välityspalvelinyhteys epäonnistui.</translation>
 <translation id="4587425331216688090">Poistetaanko osoite Chromen tiedoista?</translation>
+<translation id="4592951414987517459">Yhteytesi kohteeseen <ph name="DOMAIN" /> on salattu nykyaikaisella salaustekniikalla.</translation>
 <translation id="4594403342090139922">K&amp;umoa poisto</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne sisältää virheitä. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="4697214168136963651"><ph name="URL" /> estettiin</translation>
+<translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Yhteys keskeytyi</translation>
 <translation id="4726672564094551039">Päivitä käytännöt</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="4744603770635761495">Suoritettavan tiedoston polku</translation>
+<translation id="4756388243121344051">&amp;Historia</translation>
 <translation id="4764776831041365478">Osoitteessa <ph name="URL" /> oleva sivu saattaa olla väliaikaisesti pois käytöstä tai se on voitu siirtää pysyvästi uuteen osoitteeseen.</translation>
 <translation id="4771973620359291008">Tapahtui tuntematon virhe.</translation>
 <translation id="477518548916168453">Palvelin ei tue pyynnön täyttämiseksi tarvittavaa toimintoa.</translation>
@@ -335,6 +358,7 @@
 <translation id="5122371513570456792">Haku <ph name="SEARCH_STRING" /> tuotti <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" />.</translation>
 <translation id="5141240743006678641">Salaa synkronoidut salasanat Google-kirjautumistietojesi avulla</translation>
 <translation id="5145883236150621069">Käytäntövastaus sisältää virhekoodin</translation>
+<translation id="5171045022955879922">Kirjoita hakusanoja tai URL-osoite</translation>
 <translation id="5172758083709347301">Kaikki tietokoneen käyttäjät</translation>
 <translation id="5179510805599951267">Eikö kieli ole <ph name="ORIGINAL_LANGUAGE" />? Ilmoita virheestä</translation>
 <translation id="5190835502935405962">Kirjanmerkkipalkki</translation>
@@ -346,6 +370,7 @@
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5308689395849655368">Kaatumisraportit on poistettu käytöstä.</translation>
 <translation id="5317780077021120954">Tallenna</translation>
+<translation id="5327248766486351172">Nimi</translation>
 <translation id="536296301121032821">Käytännön asetuksien tallentaminen epäonnistui</translation>
 <translation id="540969355065856584">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />, sillä sen suojausvarmenne ei tällä hetkellä ole kelvollinen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="5421136146218899937">Poista selaustiedot...</translation>
@@ -355,6 +380,7 @@
 <translation id="5447330194051379405">Näytä kaikki tallennetut sivut</translation>
 <translation id="5452270690849572955">Tätä sivuston <ph name="HOST_NAME" /> sivua ei löydy.</translation>
 <translation id="5455374756549232013">Virheellinen käytännön aikaleima</translation>
+<translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> / <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="5470861586879999274">&amp;Toista muokkaus</translation>
 <translation id="5492298309214877701">Tällä yrityksen, organisaation tai oppilaitoksen intranetissä olevalla sivustolla on sama URL-osoite kuin ulkoisella verkkosivustolla.
     <ph name="LINE_BREAK" />
@@ -374,9 +400,14 @@
 <translation id="5631439013527180824">Laitteenhallintatunnus on virheellinen</translation>
 <translation id="5650551054760837876">Hakutuloksia ei löytynyt.</translation>
 <translation id="5677928146339483299">Estetty</translation>
+<translation id="5710435578057952990">Tämän sivuston identiteettiä ei ole vahvistettu.</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
+<translation id="5785756445106461925">Tällä sivulla on kuitenkin muita osia, jotka eivät ole suojattuja. Muut voivat tarkastella näitä osia siirron aikana, ja hyökkääjä voi muuttaa sivun ulkoasua muokkaamalla näitä osia.</translation>
+<translation id="5810442152076338065">Yhteytesi kohteeseen <ph name="DOMAIN" /> on salattu vanhentuneella salaustekniikalla.</translation>
 <translation id="5813119285467412249">&amp;Toista lisäys</translation>
+<translation id="5857090052475505287">Uusi kansio</translation>
 <translation id="5869405914158311789">Sivustoon ei saada yhteyttä</translation>
+<translation id="5869522115854928033">Tallennetut salasanat</translation>
 <translation id="5872918882028971132">Ylätason ehdotukset</translation>
 <translation id="5900623698597156974">TLS 1.0 -varatoiminto onnistui kättelemään palvelimen kanssa, mutta emme enää hyväksy TLS 1.0 -varatoimintoja. Palvelin täytyy päivittää, jotta versiontarkistus ja mahdollisesti myös suositeltava TLS 1.2 -tuki voidaan ottaa käyttöön.</translation>
 <translation id="59107663811261420">Google Payments ei tue tämän tyyppisen kortin käyttämistä ostoksien tekemiseen tältä myyjältä. Valitse eri kortti.</translation>
@@ -415,9 +446,11 @@
 <translation id="6337534724793800597">Suodata käytäntöjä nimen mukaan</translation>
 <translation id="6342069812937806050">Valmistui juuri</translation>
 <translation id="6355080345576803305">Julkisen istunnon ohitus</translation>
+<translation id="6358450015545214790">Mitä nämä tarkoittavat?</translation>
 <translation id="6387478394221739770">Oletko kiinnostunut Chromen uusista jännittävistä ominaisuuksista? Kokeile beta-kanavaa osoitteessa chrome.com/beta.</translation>
 <translation id="6391832066170725637">Tiedostoa tai hakemistoa ei löytynyt.</translation>
 <translation id="641480858134062906"><ph name="URL" />-lataus epäonnistui</translation>
+<translation id="6417515091412812850">Ei voida tarkistaa, onko varmenne kumottu.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> kieltäytyi muodostamasta yhteyttä.</translation>
 <translation id="6445051938772793705">Maa</translation>
 <translation id="6451458296329894277">Vahvista lomakkeen uudelleenlähetys</translation>
@@ -438,6 +471,7 @@
 <translation id="6637478299472506933">Lataus epäonnistui</translation>
 <translation id="6644283850729428850">Tämä käytäntö on vanhentunut.</translation>
 <translation id="6646897916597483132">Anna nelinumeroinen CVC luottokortin etupuolelta.</translation>
+<translation id="6656103420185847513">Muokkaa kansiota</translation>
 <translation id="6660210980321319655">Ilmoitus tehtiin automaattisesti <ph name="CRASH_TIME" />.</translation>
 <translation id="6671697161687535275">Poistetaanko lomake-ehdotus Chromiumista?</translation>
 <translation id="6710213216561001401">Edellinen</translation>
@@ -484,6 +518,7 @@
 <translation id="7208899522964477531">Haku sivustosta: <ph name="SITE_NAME" /> termillä: <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ei noudata tietoturvastandardeja.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /> ongelmasta.</translation>
+<translation id="7219179957768738017">Yhteys käyttää protokollaa <ph name="SSL_VERSION" />.</translation>
 <translation id="7225807090967870017">Ohjelmistoversion tunnus</translation>
 <translation id="725866823122871198">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska tietokoneesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
 <translation id="7265986070661382626">Et voi siirtyä sivustoon <ph name="SITE" /> juuri nyt, koska sivusto <ph name="BEGIN_LINK" />käyttää varmenteiden kiinnittämistä<ph name="END_LINK" />. Verkkovirheet ja hyökkäykset ovat yleensä väliaikaisia, joten sivu luultavasti toimii myöhemmin.</translation>
@@ -503,6 +538,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7419106976560586862">Profiilin polku</translation>
 <translation id="7424977062513257142">Viesti tälle verkkosivulle upotetulta sivulta:</translation>
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
+<translation id="7445762425076701745">Palvelimen, johon olet muodostanut yhteyden, identiteettiä ei voi täysin todentaa. Tietokoneesi on yhdistetty palvelimeen sellaisen nimen avulla, joka on kelvollinen vain verkkosi sisällä ja jonka omistajaa ulkopuolinen varmenteen myöntäjä ei pysty todentamaan. Koska jotkin varmenteen myöntäjät kuitenkin myöntävät varmenteita tällaisille nimille, et voi varmistaa, että olet muodostanut yhteyden haluamaasi verkkosivustoon etkä hakkeriin.</translation>
 <translation id="7450732239874446337">Verkon IO jäädytetty.</translation>
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
@@ -541,12 +577,14 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="778579833039460630">Ei tietoja</translation>
 <translation id="7791543448312431591">Lisää</translation>
 <translation id="7793809570500803535">Osoitteessa <ph name="SITE" /> oleva sivu saattaa olla väliaikaisesti pois käytöstä, tai se on voitu siirtää pysyvästi uuteen osoitteeseen.</translation>
+<translation id="7800304661137206267">Tämä yhteys on salattu käyttäen algoritmia <ph name="CIPHER" />, viestit todennetaan menetelmällä <ph name="MAC" /> ja avainvaihtomekanismi on toteutettu menetelmällä <ph name="KX" />.</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7805768142964895445">Tila</translation>
 <translation id="7813600968533626083">Poistetaanko lomake-ehdotus Chromen tiedoista?</translation>
 <translation id="7825436071901023927">Vaarallinen portti <ph name="SITE" /></translation>
 <translation id="7887683347370398519">Tarkista CVC ja yritä uudelleen.</translation>
 <translation id="790025292736025802"><ph name="URL" /> ei löydy</translation>
+<translation id="7912024687060120840">Kansiossa:</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Palvelimen varmenne ei ole vielä voimassa.</translation>
 <translation id="7951415247503192394">(32-bittinen)</translation>
@@ -581,6 +619,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
       <ph name="BEGIN_BOLD" />%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD" />.
       Valitse sitten <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8289355894181816810">Ota yhteyttä verkon ylläpitäjään, jos et tiedä, mitä tämä tarkoittaa.</translation>
+<translation id="8293206222192510085">Lisää kirjanmerkki</translation>
 <translation id="8294431847097064396">Lähde</translation>
 <translation id="8308427013383895095">Käännös epäonnistui, koska verkkoyhteydessä esiintyi ongelmia.</translation>
 <translation id="8311778656528046050">Haluatko varmasti päivittää tämän sivun?</translation>
@@ -599,11 +638,14 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8550022383519221471">Synkronointipalvelu ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="8553075262323480129">Käännös epäonnistui, sillä sivun kieltä ei voitu määrittää.</translation>
 <translation id="8559762987265718583">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska laitteesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
+<translation id="856992080682148">Tämän sivuston varmenne vanhenee vuonna 2017 tai myöhemmin, ja varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
 <translation id="8571890674111243710">Käännetään sivua kielelle <ph name="LANGUAGE" />...</translation>
+<translation id="859285277496340001">Varmenne ei määritä mekanismia, jonka avulla voitaisiin tarkistaa, onko varmenne kumottu.</translation>
 <translation id="8629916158020966496">Internetin selaus on poistettu käytöstä, kunnes yritysversion käyttöönoton vahvistus on valmis.
     Voit silti käyttää näkemääsi diagnostiikkatyökalua yhteysongelmien vianetsintään.</translation>
 <translation id="8647750283161643317">Palauta kaikki oletusarvoon</translation>
 <translation id="8680787084697685621">Tilin kirjautumistiedot ovat vanhentuneet.</translation>
+<translation id="8703575177326907206">Yhteyttäsi verkkotunnukseen <ph name="DOMAIN" /> ei ole salattu.</translation>
 <translation id="8713130696108419660">Virheelliset nimikirjaimet</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8730621377337864115">Valmis</translation>
@@ -634,10 +676,12 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="8988760548304185580">Anna vanhenemispäivä ja kolminumeroinen CVC luottokortin takapuolelta.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
+<translation id="9001074447101275817">Välityspalvelin <ph name="DOMAIN" /> vaatii käyttäjänimen ja salasanan.</translation>
 <translation id="9013589315497579992">Virheellinen SSL-asiakkaan todennusvarmenne.</translation>
 <translation id="901974403500617787">Koko järjestelmään vaikuttavat merkinnät voi tehdä vain omistaja: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Palvelin esti yhteyden.</translation>
 <translation id="9020542370529661692">Sivu on käännetty kielelle <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="9039213469156557790">Tällä sivulla on kuitenkin muita osia, jotka eivät ole suojattuja. Muut voivat tarkastella näitä osia siirron aikana, ja hyökkääjä voi muuttaa sivun käyttäytymistä muokkaamalla näitä osia.</translation>
 <translation id="9049981332609050619">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti virheellisen varmenteen.</translation>
 <translation id="9050666287014529139">Tunnuslause</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" />-sivu ei toimi</translation>
@@ -654,6 +698,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="933612690413056017">Ei internetyhteyttä</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">TYHJENNÄ LOMAKE</translation>
+<translation id="939736085109172342">Uusi kansio</translation>
 <translation id="969892804517981540">Virallinen koontiversio</translation>
 <translation id="988159990683914416">Kehittäjän koontiversio</translation>
 </translationbundle>

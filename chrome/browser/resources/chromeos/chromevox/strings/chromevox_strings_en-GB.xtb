@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Row header:</translation>
 <translation id="2002895034995108595">Reset current keymap</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{left bracket}other{# left brackets}}</translation>
+<translation id="2010555995361223825">ChromeVox Menus</translation>
 <translation id="2045490512405922022">not ticked</translation>
 <translation id="20601713649439366">No previous math expression.</translation>
 <translation id="207477615537953741">Semantics off</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{semicolon}other{# semicolons}}</translation>
 <translation id="5411891038905756502">No previous jump point.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{less than}other{# less than signs}}</translation>
+<translation id="5444587279251314700">(active)</translation>
 <translation id="5455441614648621694">Complementary</translation>
 <translation id="5485036206801896268">No previous graphic.</translation>
 <translation id="5486947920110100234">No next jump point.</translation>

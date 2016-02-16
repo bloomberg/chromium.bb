@@ -523,11 +523,6 @@
       Kui see seade keelatakse, ei saa veebilehed JavaScripti kasutada ja kasutaja ei saa seda seadet muuta.
 
       Kui see seade on lubatud või määramata, saavad veebilehed JavaScripti kasutada, kuid kasutajad saavad seda seadet muuta.</translation>
-<translation id="2747783890942882652">Seadistab nõutud domeeninime kaugjuurdepääsu hostidele ja takistab kasutajatel seda muuta.
-
-          Kui seade on lubatud, siis saab hoste jagada ainult täpselt määratud domeeninimele registreeritud kontodelt.
-
-          Kui seade on keelatud või pole määratud, siis saab hoste jagada mis tahes kontolt.</translation>
 <translation id="2757054304033424106">Laienduste/rakenduste tüübid, mille installimine on lubatud</translation>
 <translation id="2759224876420453487">Kasutaja käitumise kontrollimine multiprofiili seansis</translation>
 <translation id="2761483219396643566">Tegevusetuse hoiatuse viivitus akutoite kasutamisel</translation>
@@ -1966,6 +1961,7 @@
       Kui jätate reegli määramata, siis kasutab toode <ph name="PRODUCT_NAME" /> vaikeväärtust 5000 millisekundit.</translation>
 <translation id="7841880500990419427">Minimaalne TLS-i versioon, millele tagasi minna</translation>
 <translation id="7842869978353666042">Google Drive'i valikute seadistamine</translation>
+<translation id="7843525027689416831">Määrab märgistused, mis tuleb rakendada teenuses <ph name="PRODUCT_NAME" /> selle käivitamisel. Määratud märgistused rakendatakse ainult sisselogimisekraanil. Selle reegliga määratud märgistused ei rakendu kasutaja seanssides.</translation>
 <translation id="7848840259379156480">Võimaldab seadistada HTML-i vaikerenderdusmootori, kui <ph name="PRODUCT_FRAME_NAME" /> on installitud. Vaikeseadena on hostbrauseril lubatud renderdada, kuid võite selle soovi korral alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME" /> HTML-lehti vaikimisi renderdada.</translation>
 <translation id="7882585827992171421">Reegel on aktiivne ainult jaerežiimis.
 

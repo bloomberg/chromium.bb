@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">行标题：</translation>
 <translation id="2002895034995108595">重置当前的按键映射</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{1个左方括号}other{#个左方括号}}</translation>
+<translation id="2010555995361223825">ChromeVox 菜单</translation>
 <translation id="2045490512405922022">未选中</translation>
 <translation id="20601713649439366">不存在上一个数学表达式。</translation>
 <translation id="207477615537953741">关闭语义解释</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{1个分号}other{#个分号}}</translation>
 <translation id="5411891038905756502">不存在上一个跳转点。</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{1个小于号}other{#个小于号}}</translation>
+<translation id="5444587279251314700">（有效）</translation>
 <translation id="5455441614648621694">补充的内容</translation>
 <translation id="5485036206801896268">不存在上一个图形。</translation>
 <translation id="5486947920110100234">不存在下一个跳转点。</translation>

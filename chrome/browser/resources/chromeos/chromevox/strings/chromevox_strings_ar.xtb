@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">عنوان الصف:</translation>
 <translation id="2002895034995108595">إعادة تعيين مخطط المفاتيح الحالي</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{قوس متوسط أيسر واحد}zero{# left brackets}two{قوسان متوسطان أيسران (#)}few{# أقواس متوسطة يسرى}many{# قوسًا متوسطًا أيسرًا}other{# من الأقواس اليسرى}}</translation>
+<translation id="2010555995361223825">‏قوائم ChromeVox</translation>
 <translation id="2045490512405922022">غير محدد</translation>
 <translation id="20601713649439366">ليس هناك تعبير رياضي سابق.</translation>
 <translation id="207477615537953741">تم إيقاف الدلالات</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{فاصلة منقوطة واحدة}zero{# semicolons}two{فاصلتان منقوطتان (#)}few{# فواصل منقوطة}many{# فاصلة منقوطة}other{# من الفواصل المنقوطة}}</translation>
 <translation id="5411891038905756502">ليست هناك نقطة انتقال سابقة.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{علامة أقل من واحدة}zero{# less than signs}two{علامتا أقل من (#)}few{# علامات أقل من}many{# علامة أقل من}other{# من علامات أقل من}}</translation>
+<translation id="5444587279251314700">(نشط)</translation>
 <translation id="5455441614648621694">تكميلي</translation>
 <translation id="5485036206801896268">ليس هناك رسم سابق.</translation>
 <translation id="5486947920110100234">ليست هناك نقطة انتقال تالية.</translation>

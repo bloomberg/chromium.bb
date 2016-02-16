@@ -31,6 +31,11 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="138361230106469022">Xin chào <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1389974829397082527">Không có dấu trang ở đây</translation>
+<translation id="1390350022570422499">Giờ đây Chrome có thể tìm và hiển thị cho bạn các trang web lân cận bằng Bluetooth.
+
+Chrome sẽ quét tìm các trang lân cận khi thiết bị của bạn được mở khóa. Các trang này sẽ được chuyển tới một dịch vụ của Google để cải thiện chất lượng của kết quả trang.
+
+Bạn có thể kiểm soát Web trong cuộc sống trong cài đặt bảo mật của Chrome.</translation>
 <translation id="1404122904123200417">Được nhúng trong <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Không theo dõi”</translation>
 <translation id="1409879593029778104">Đã ngăn tải xuống <ph name="FILE_NAME" /> do tệp này đã tồn tại.</translation>
@@ -45,7 +50,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1546112724822176246">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
 <translation id="1557201757634521564">Tự động phát hiện mã hóa</translation>
-<translation id="1568822834048182062">Dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ được đồng bộ hóa với Tài khoản Google của bạn.</translation>
 <translation id="1592483623187843893">Đã lưu dấu trang ngoại tuyến</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
@@ -96,6 +100,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="2319528413610359757">Dành cho người đọc <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
+<translation id="2329597144923131178">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="2343328333327081434">Đang cài đặt…</translation>
 <translation id="2351097562818989364">Đã đặt lại cài đặt dịch của bạn.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
@@ -199,6 +204,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="3992315671621218278">Lưu liên kết</translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
 <translation id="4035611068038188272">Dấu trang hiện sử dụng <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
+<translation id="403659016947612156">Các trang Web trong cuộc sống ở gần đây</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
 <translation id="4059119910594077751">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
@@ -250,7 +256,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4726963856048758366">Đã xóa bộ nhớ</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="4738836084190194332">Đồng bộ hóa lần cuối: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">Chọn tài khoản để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="4773299976671772492">Đã dừng</translation>
 <translation id="4797039098279997504">Chạm để quay lại <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Tên trên thẻ</translation>
@@ -269,8 +274,10 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="497421865427891073">Đi về phía trước</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
 <translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
+<translation id="5014582685689328551">Sử dụng Chrome để duyệt qua chúng</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Không phải <ph name="NOT_YOU_USER_NAME" />?</translation>
+<translation id="5026827350461471197">Việc này sẽ xóa dữ liệu đã đồng bộ hóa khỏi tất cả các thiết bị. Một số cài đặt có thể phản ánh thói quen duyệt web sẽ không bị xóa.</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Bảo mật</translation>
 <translation id="5063480226653192405">Sử dụng</translation>
@@ -294,6 +301,7 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5233638681132016545">Tab mới</translation>
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
 <translation id="5275558766013849309">Tab sẽ hoạt động cùng với các ứng dụng gần đây.</translation>
+<translation id="5301954838959518834">OK</translation>
 <translation id="5302048478445481009">Ngôn ngữ</translation>
 <translation id="5304593522240415983">Không được để trống trường này</translation>
 <translation id="5308933389783727448">Tìm kiếm các trang đã lưu</translation>
@@ -496,6 +504,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7665369617277396874">Thêm tài khoản</translation>
 <translation id="7690588279513156836">Tải trang web gốc</translation>
+<translation id="771135159654932189">Xem có gì ở gần đây</translation>
 <translation id="7735023902678907596">Trang mà bạn xem ở tab ẩn danh sẽ không lưu lại trong lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả tab ẩn danh của mình. Mọi tệp bạn tải xuống hoặc trang bạn lưu sẽ được giữ nguyên.
 
 Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ không ẩn thao tác duyệt của bạn với chủ lao động, nhà cung cấp dịch vụ Internet hoặc các trang web bạn truy cập.</translation>
@@ -584,12 +593,14 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
+<translation id="8931159598799892500">Chrome + Web trong cuộc sống</translation>
 <translation id="8934455786738644694">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="8941248009481596111">Kết nối của bạn tới trang web này ở chế độ riêng tư.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Không thể tiếp cận điều hướng: <ph name="URL" /></translation>
 <translation id="8987061207681586800">Tùy chỉnh riêng Chrome</translation>
 <translation id="9019902583201351841">Do cha mẹ của bạn quản lý</translation>
+<translation id="9020607083536754075">Đóng tab hiện tại và quay lại ứng dụng trước</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
 <translation id="9060538597317784206">Xem ứng dụng <ph name="APP_NAME" /> trên Cửa hàng Play. Xếp hạng: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Tắt Yêu cầu trang web cho máy tính</translation>

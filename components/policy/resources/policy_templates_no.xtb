@@ -503,11 +503,6 @@
      Hvis denne innstillingen er deaktivert, kan ikke nettsidene bruke JavaScript og brukeren kan ikke endre innstillingen.
 
       Hvis denne innstillingen er aktivert eller ikke angitt, kan nettsider bruke JavaScript, men brukeren kan endre innstillingen.</translation>
-<translation id="2747783890942882652">Konfigurerer det ønskede vertsdomenenavnet som tilordnes verter med ekstern adgang, og forhindrer brukere fra å endre det.
-
-          Hvis denne innstillingen er aktivert, kan verter deles utelukkende ved hjelp av kontoer registrert på det spesifiserte domenenavnet.
-
-          Hvis denne innstillingen er deaktivert eller ikke angitt, kan verter deles med en hvilken som helst konto.</translation>
 <translation id="2757054304033424106">Utvidelser og apper som kan installeres</translation>
 <translation id="2759224876420453487">Kontrollér brukeradferd i flerprofilsøkter</translation>
 <translation id="2761483219396643566">Forsinkelse for advarsel om inaktivitet når enheten kjører på batteristrøm</translation>
@@ -1916,6 +1911,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis du ikke angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> standardverdien på 5 000 millisekunder.</translation>
 <translation id="7841880500990419427">Laveste TLS-versjon som kan brukes som reserve</translation>
 <translation id="7842869978353666042">Konfigurer Google Disk-alternativer</translation>
+<translation id="7843525027689416831">Spesifiserer flaggene som skal gjelde for <ph name="PRODUCT_NAME" /> når det startes opp. De spesifiserte flaggene brukes bare på påloggingsskjermen. Flagg som angis via denne regelen, videreføres ikke til brukerøkter.</translation>
 <translation id="7848840259379156480">Lar deg konfigurere standard HTML-gjengivelse når <ph name="PRODUCT_FRAME_NAME" /> er installert. Standardinnstillingen er å tillate vertsnettleseren å foreta gjengivelsen. Du kan eventuelt overstyre dette og la <ph name="PRODUCT_FRAME_NAME" /> gjengi HTML-sider som standard.</translation>
 <translation id="7882585827992171421">Denne retningslinjen er aktiv bare i detaljistmodus.
 

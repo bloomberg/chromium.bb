@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Zaglavlje retka:</translation>
 <translation id="2002895034995108595">Poništi trenutačnu kartu tipkovnice</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{lijeva zagrada}one{# lijeva zagrada}few{# lijeve zgrade}other{# lijevih zagrada}}</translation>
+<translation id="2010555995361223825">Izbornici ChromeVoxa</translation>
 <translation id="2045490512405922022">nije označeno</translation>
 <translation id="20601713649439366">Nema prethodnog matematičkog izraza.</translation>
 <translation id="207477615537953741">Semantička je interpretacija isključena</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{točka sa zarezom}one{# točka sa zarezom}few{# točke sa zarezom}other{# točaka sa zarezom}}</translation>
 <translation id="5411891038905756502">Nema prethodne točke skoka.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak "manje od"}one{# znak "manje od"}few{# znaka "manje od"}other{# znakova "manje od"}}</translation>
+<translation id="5444587279251314700">(aktivno)</translation>
 <translation id="5455441614648621694">Dopunski</translation>
 <translation id="5485036206801896268">Nema prethodne slike.</translation>
 <translation id="5486947920110100234">Nema sljedeće točke skoka.</translation>

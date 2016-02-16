@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">عنوان ردیف:</translation>
 <translation id="2002895034995108595">بازنشانی نقشه کلید کنونی</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{کروشه چپ}one{# کروشه چپ}other{# کروشه چپ}}</translation>
+<translation id="2010555995361223825">‏منوهای ChromeVox</translation>
 <translation id="2045490512405922022">بدون علامت</translation>
 <translation id="20601713649439366">هیچ رابطه ریاضی قبلی وجود ندارد.</translation>
 <translation id="207477615537953741">تفسیر معنایی خاموش است</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{نقطه ویرگول}one{# نقطه ویرگول}other{# نقطه ویرگول}}</translation>
 <translation id="5411891038905756502">هیچ نقطه پرش قبلی وجود ندارد.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{علامت کوچک‌تر}one{# علامت کوچک‌تر}other{# علامت کوچک‌تر}}</translation>
+<translation id="5444587279251314700">(فعال)</translation>
 <translation id="5455441614648621694">مکمل</translation>
 <translation id="5485036206801896268">گرافیک قبلی وجود ندارد.</translation>
 <translation id="5486947920110100234">نقطه پرش بعدی وجود ندارد.</translation>

@@ -52,6 +52,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="252373100621549798">Nezināms displejs</translation>
 <translation id="2532589005999780174">Augsta kontrasta režīms</translation>
 <translation id="2562916301614567480">Privāts tīkls</translation>
+<translation id="2661637000095600270">Nevarēja spoguļot displejus, jo netika atrasta atbalstīta izšķirtspēja. Tā vietā tika aktivizēts paplašinātās darbvirsmas režīms. Noklikšķiniet, lai nosūtītu atsauksmju ziņojumu.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: notiek savienojuma izveide...</translation>
 <translation id="2700058918926273959">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />. Jūs tiksiet izrakstīts.</translation>
 <translation id="2727977024730340865">Pievienots lādētājs ar mazu strāvas padevi. Akumulatora uzlāde var nebūt uzticama.</translation>
@@ -235,6 +236,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="8878886163241303700">Notiek ekrāna izvēršana</translation>
 <translation id="8938800817013097409">USB-C ierīce (pieslēgvieta aizmugurē pa labi)</translation>
 <translation id="8940956008527784070">Akumulators gandrīz tukšs (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Diemžēl monitoru nevar izmantot (tas netiek atbalstīts). Noklikšķiniet, lai nosūtītu atsauksmju ziņojumu.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Tiek izmantots mikrofons.</translation>
 <translation id="9089416786594320554">Ievades metodes</translation>

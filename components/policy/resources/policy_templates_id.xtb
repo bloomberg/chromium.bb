@@ -469,11 +469,6 @@
       Jika setelan ini dinonaktifkan, laman web tidak dapat menggunakan JavaScript dan pengguna tidak dapat mengubah setelan ini.
 
       Jika setelan ini diaktifkan atau tidak disetel, laman web dapat menggunakan JavaScript, namun pengguna dapat mengubah setelan tersebut.</translation>
-<translation id="2747783890942882652">Mengonfigurasi nama domain hosting yang dibutuhkan yang akan diberlakukan pada hosting akses jarak jauh dan mencegah pengguna mengubahnya.
-
-          Jika setelan ini diaktifkan, maka hosting dapat dibagikan hanya dengan menggunakan akun yang terdaftar pada nama domain yang ditentukan.
-
-          Jika setelan ini dinonaktifkan atau tidak disetel, hosting dapat dibagikan menggunakan akun apa pun.</translation>
 <translation id="2757054304033424106">Ketik ekstensi/aplikasi yang diizinkan untuk dipasang</translation>
 <translation id="2759224876420453487">Mengontrol perilaku pengguna pada sesi multiprofil</translation>
 <translation id="2761483219396643566">Menunda peringatan waktu menganggur saat menggunakan daya baterai</translation>
@@ -1754,6 +1749,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Membiarkan kebijakan ini tidak disetel akan membuat penggunaan <ph name="PRODUCT_NAME" /> menggunakan nilai default 5000 milidetik.</translation>
 <translation id="7841880500990419427">Versi TLS minimum untuk kembali</translation>
 <translation id="7842869978353666042">Konfigurasi opsi Google Drive</translation>
+<translation id="7843525027689416831">Tentukan tanda yang harus diterapkan ke <ph name="PRODUCT_NAME" /> saat dimulai. Tanda yang ditentukan hanya diterapkan di layar masuk. Tanda yang disetel melalui kebijakan ini tidak diterapkan ke dalam sesi pengguna.</translation>
 <translation id="7848840259379156480">Memungkinkan Anda mengonfigurasi pengurai HTML default ketika <ph name="PRODUCT_FRAME_NAME" /> terpasang. Setelan defaultnya adalah mengizinkan browser host melakukan penguraian, tetapi Anda dapat mengganti ini secara opsional dan memerintahkan <ph name="PRODUCT_FRAME_NAME" /> agar mengurai laman HTML jika tidak diubah.</translation>
 <translation id="7882585827992171421">Kebijakan ini hanya aktif dalam mode ritel.
 

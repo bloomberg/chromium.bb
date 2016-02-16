@@ -476,11 +476,6 @@
       Dacă această setare este dezactivată, paginile web nu pot utiliza JavaScript, iar utilizatorii nu pot modifica această setare.
 
       Dacă această setare este activată sau nu este configurată, paginile web pot utiliza JavaScript, dar utilizatorul poate schimba această setare.</translation>
-<translation id="2747783890942882652">Configurează numele de domeniu gazdă care va fi impus gazdelor de acces la distanță și nu le permite utilizatorilor să-l modifice.
-
-          Dacă este activată această setare, atunci se poate permite accesul la gazde numai utilizând conturi înregistrate pe respectivul nume de domeniu.
-
-          Dacă această setare este dezactivată sau neconfigurată, atunci se poate permite accesul la gazde utilizând orice cont.</translation>
 <translation id="2757054304033424106">Tipuri de extensii/aplicații a căror instalare este permisă</translation>
 <translation id="2759224876420453487">Controlează comportamentul utilizatorului în timpul unei sesiuni cu profiluri multiple</translation>
 <translation id="2761483219396643566">Interval de inactivitate la funcționarea pe baterie</translation>
@@ -1771,6 +1766,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă această politică nu este setată, <ph name="PRODUCT_NAME" /> va utiliza valoarea prestabilită de 5000 de milisecunde.</translation>
 <translation id="7841880500990419427">Versiunea minimă TLS la care se revine</translation>
 <translation id="7842869978353666042">Configurați opțiunile pentru Google Drive</translation>
+<translation id="7843525027689416831">Specifică semnalizatoarele de aplicat pentru <ph name="PRODUCT_NAME" /> la pornirea acestuia. Semnalizatoarele specificate se aplică numai pe ecranul de conectare. Semnalizatoarele stabilite prin această politică nu se propagă în sesiunile utilizatorilor.</translation>
 <translation id="7848840259379156480">Îți permite să configurezi motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME" /> este instalat.
       Setarea prestabilită este să permiți browserului gazdă să redea, dar,
       dacă vrei, o poți anula, pentru ca <ph name="PRODUCT_FRAME_NAME" /> să redea paginile HTML în mod prestabilit.</translation>

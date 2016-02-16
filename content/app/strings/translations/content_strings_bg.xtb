@@ -7,6 +7,7 @@
 <translation id="1088086359088493902">Секунди</translation>
 <translation id="1171774979989969504">Моля, въведете имейл адрес.</translation>
 <translation id="1188858454923323853">допълнение</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1235745349614807883">Изчистване на скорошните търсения</translation>
 <translation id="1342835525016946179">статия</translation>
 <translation id="1359897965706325498">банер</translation>
@@ -42,6 +43,8 @@
 <translation id="2942448076852699108">откроено съдържание</translation>
 <translation id="3040011195152428237">връзка</translation>
 <translation id="3075154866155599887">Моля, въведете валидна стойност. Данните в полето са непълни или датата е невалидна.</translation>
+<translation id="3078740164268491126">таблица</translation>
+<translation id="3086746722712840547">забележка</translation>
 <translation id="310520048233152454">Моля, въведете URL адрес.</translation>
 <translation id="3450233048674729344">Стойността трябва да е по-малка или равна на <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниция</translation>
@@ -55,11 +58,14 @@
 <translation id="4103419683916926126">Милисекунди</translation>
 <translation id="4201051445878709314">Показване на предишния месец</translation>
 <translation id="4202807286478387388">преминаване</translation>
+<translation id="421884353938374759">инструмент за избор на цветове</translation>
 <translation id="4360991593054037559">Моля, въведете валидна стойност. Двете най-близки такива са <ph name="VALID_VALUE_LOW" /> и <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4522570452068850558">Подробности</translation>
 <translation id="4597532268155981612">формуляр</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Текстът след „<ph name="ATSIGN" />“ не бива да съдържа символа „<ph name="INVALIDCHARACTER" />“.</translation>
 <translation id="4763480195061959176">видео</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Моля, въведете номер.</translation>
 <translation id="4975562563186953947">Избрани: <ph name="SELECTED_COUNT" /></translation>
 <translation id="49969490063480558">Моля, въведете текст след „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ е непълно.</translation>
@@ -72,12 +78,12 @@
 <translation id="5468998798572797635">изход от цял екран</translation>
 <translation id="5476505524087279545">премахване на отметката</translation>
 <translation id="5546461542133609677">пускане на звука</translation>
+<translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">поставяне на възпроизвеждането на пауза</translation>
 <translation id="5843503607508392247">Други...</translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5944544982112848342">2048 (висока степен на сложност)</translation>
 <translation id="5966707198760109579">Седмица</translation>
-<translation id="598301471034819706">адрес</translation>
 <translation id="6015796118275082299">Година</translation>
 <translation id="6101327004457443354">пускане на аудиозаписа</translation>
 <translation id="6119846243427417423">активиране</translation>
@@ -86,6 +92,7 @@
 <translation id="6398862346408813489">Показване на панела за избиране на месец</translation>
 <translation id="6404546809543547843">времеви плъзгач за аудиозаписа</translation>
 <translation id="658823671542763450">вход за цял екран</translation>
+<translation id="6637586476836377253">регистрационен файл</translation>
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6663448176199120256">Скорошни търсения</translation>
 <translation id="668171684555832681">Друг...</translation>
@@ -100,6 +107,7 @@
 <translation id="7263440858009898357">Моля, изберете елемент в списъка.</translation>
 <translation id="7364796246159120393">Избор на файл</translation>
 <translation id="739024184232394898">Други...</translation>
+<translation id="7491962110804786152">раздел</translation>
 <translation id="7673697353781729403">Часове</translation>
 <translation id="7720026100085573005">оставащо време</translation>
 <translation id="7740016676195725605">спиране на показването на надписите</translation>

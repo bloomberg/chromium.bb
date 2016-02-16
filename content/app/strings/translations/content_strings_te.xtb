@@ -7,6 +7,7 @@
 <translation id="1088086359088493902">సెకన్లు</translation>
 <translation id="1171774979989969504">దయచేసి ఇమెయిల్ చిరునామాను ఎంటర్ చెయ్యండి.</translation>
 <translation id="1188858454923323853">బహుమానపూర్వకం</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1235745349614807883">ఇటీవల శోధనలను క్లియర్ చెయ్యి</translation>
 <translation id="1342835525016946179">కథనం</translation>
 <translation id="1359897965706325498">బ్యానర్</translation>
@@ -42,6 +43,8 @@
 <translation id="2942448076852699108">ప్రముఖంగా చూపిన కంటెంట్</translation>
 <translation id="3040011195152428237">లింక్</translation>
 <translation id="3075154866155599887">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. ఫీల్డ్ అసంపూర్ణంగా ఉంది లేదా చెల్లని తేదీని కలిగి ఉంది.</translation>
+<translation id="3078740164268491126">పట్టిక</translation>
+<translation id="3086746722712840547">note</translation>
 <translation id="310520048233152454">దయచేసి ఒక URLని ఎంటర్ చెయ్యండి.</translation>
 <translation id="3450233048674729344">విలువ ఖచ్చితంగా <ph name="MAXIMUM" /> కంటే తగ్గువగా లేదా సమానంగా ఉండాలి.</translation>
 <translation id="3486220673238053218">నిర్వచనం</translation>
@@ -55,11 +58,14 @@
 <translation id="4103419683916926126">మిల్లీసెకన్లు</translation>
 <translation id="4201051445878709314">మునుపటి నెలను చూపుతుంది</translation>
 <translation id="4202807286478387388">వెళ్ళు</translation>
+<translation id="421884353938374759">రంగు ఎంపిక</translation>
 <translation id="4360991593054037559">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. <ph name="VALID_VALUE_LOW" /> మరియు <ph name="VALID_VALUE_HIGHER" /> అనేవి రెండు సమీప చెల్లుబాటు విలువలు.</translation>
 <translation id="4522570452068850558">వివరాలు</translation>
 <translation id="4597532268155981612">ఫారమ్</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />'కి తర్వాత ఉన్న భాగంలో '<ph name="INVALIDCHARACTER" />' చిహ్నం ఉండకూడదు.</translation>
 <translation id="4763480195061959176">వీడియో</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">దయచేసి సంఖ్యను నమోదు చేయండి.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ఎంచుకోబడ్డాయి</translation>
 <translation id="49969490063480558">దయచేసి '<ph name="ATSIGN" />'కి తర్వాత ఉన్న భాగాన్ని నమోదు చేయండి. '<ph name="INVALIDADDRESS" />' అసంపూర్ణంగా ఉంది.</translation>
@@ -72,12 +78,12 @@
 <translation id="5468998798572797635">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="5476505524087279545">ఎంపిక  చెయ్యబడలేదు</translation>
 <translation id="5546461542133609677">అన్‌మ్యూట్ చేయి</translation>
+<translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">ప్లేబ్యాక్‌ను పాజ్ చేయి</translation>
 <translation id="5843503607508392247">ఇతర...</translation>
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
 <translation id="5944544982112848342">2048 (ఉత్తమ గ్రేడ్)</translation>
 <translation id="5966707198760109579">వారం</translation>
-<translation id="598301471034819706">చిరునామా</translation>
 <translation id="6015796118275082299">సంవత్సరం</translation>
 <translation id="6101327004457443354">ఆడియో ట్రాక్‌ను అన్‌మ్యూట్ చేయి</translation>
 <translation id="6119846243427417423">ఆక్టివేట్ చెయ్యి</translation>
@@ -86,6 +92,7 @@
 <translation id="6398862346408813489">నెల ఎంపిక ప్యానెల్‌ను చూపుతుంది</translation>
 <translation id="6404546809543547843">ఆడియో సమయ స్క్రబ్బర్</translation>
 <translation id="658823671542763450">పూర్తి స్క్రీన్‌లోకి ప్రవేశించు</translation>
+<translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="6663448176199120256">ఇటీవల శోధనలు</translation>
 <translation id="668171684555832681">ఇతర...</translation>
@@ -100,6 +107,7 @@
 <translation id="7263440858009898357">దయచేసి జాబితాలోని ఒక అంశాన్ని ఎంచుకోండి.</translation>
 <translation id="7364796246159120393">ఫైల్‌ను ఎంచుకోండి</translation>
 <translation id="739024184232394898">ఇతర...</translation>
+<translation id="7491962110804786152">tab</translation>
 <translation id="7673697353781729403">గంటలు</translation>
 <translation id="7720026100085573005">మిగిలి ఉన్న సమయం</translation>
 <translation id="7740016676195725605">సంవృత శీర్షికలను ప్రదర్శించడం ఆపివేయి</translation>

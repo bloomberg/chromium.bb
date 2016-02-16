@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">ส่วนหัวของแถว:</translation>
 <translation id="2002895034995108595">รีเซ็ตรูปแบบแป้นปัจจุบัน</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{วงเล็บซ้าย}other{# วงเล็บซ้าย}}</translation>
+<translation id="2010555995361223825">เมนู ChromeVox</translation>
 <translation id="2045490512405922022">ไม่ได้เลือก</translation>
 <translation id="20601713649439366">ไม่มีสูตรคณิตศาสตร์ก่อนหน้า</translation>
 <translation id="207477615537953741">ปิดความหมาย</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{เครื่องหมายอัฒภาค}other{# เครื่องหมายอัฒภาค}}</translation>
 <translation id="5411891038905756502">ไม่มีจุดสำหรับข้ามก่อนหน้า</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{เครื่องหมายน้อยกว่า}other{# เครื่องหมายน้อยกว่า}}</translation>
+<translation id="5444587279251314700">(ใช้งานอยู่)</translation>
 <translation id="5455441614648621694">ส่วนเสริม</translation>
 <translation id="5485036206801896268">ไม่มีกราฟิกก่อนหน้า</translation>
 <translation id="5486947920110100234">ไม่มีจุดสำหรับข้ามถัดไป</translation>

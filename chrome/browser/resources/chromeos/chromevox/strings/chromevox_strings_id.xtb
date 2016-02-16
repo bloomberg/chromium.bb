@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Judul baris:</translation>
 <translation id="2002895034995108595">Setel ulang peta tombol saat ini</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{kurung siku buka}other{# kurung siku buka}}</translation>
+<translation id="2010555995361223825">Menu ChromeVox</translation>
 <translation id="2045490512405922022">tidak dicentang</translation>
 <translation id="20601713649439366">Tidak ada persamaan matematika sebelumnya.</translation>
 <translation id="207477615537953741">Semantik tidak aktif</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{titik koma}other{# titik koma}}</translation>
 <translation id="5411891038905756502">Tidak ada titik lompatan sebelumnya.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kurang dari}other{# tanda kurang dari}}</translation>
+<translation id="5444587279251314700">(aktif)</translation>
 <translation id="5455441614648621694">Komplementer</translation>
 <translation id="5485036206801896268">Tidak ada grafik sebelumnya.</translation>
 <translation id="5486947920110100234">Tidak ada titik lompatan berikutnya.</translation>

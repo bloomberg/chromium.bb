@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">पंक्ति शीर्षलेख:</translation>
 <translation id="2002895034995108595">वर्तमान कुंजीमैप को रीसेट करें</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{बायां कोष्ठक}one{# बाएं कोष्ठक}other{# बाएं कोष्ठक}}</translation>
+<translation id="2010555995361223825">ChromeVox मेनू</translation>
 <translation id="2045490512405922022">चेक नहीं किया गया</translation>
 <translation id="20601713649439366">कोई पिछला गणित का व्यंजक नहीं.</translation>
 <translation id="207477615537953741">शब्दार्थ विज्ञान बंद</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{अर्धविराम}one{# अर्धविराम}other{# अर्धविराम}}</translation>
 <translation id="5411891038905756502">कोई पिछला जंप बिंदु नहीं.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{इससे कम}one{# इससे कम चिह्न}other{# इससे कम चिह्न}}</translation>
+<translation id="5444587279251314700">(सक्रिय)</translation>
 <translation id="5455441614648621694">पूरक</translation>
 <translation id="5485036206801896268">कोई पिछला ग्राफ़िक नहीं.</translation>
 <translation id="5486947920110100234">कोई अगला जंप बिंदु नहीं.</translation>

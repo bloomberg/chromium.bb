@@ -52,6 +52,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="252373100621549798">Neznan prikaz</translation>
 <translation id="2532589005999780174">Visokokontrastni način</translation>
 <translation id="2562916301614567480">Zasebno omrežje</translation>
+<translation id="2661637000095600270">Zaslonov ni bilo mogoče zrcaliti, ker ni bila najdena nobena podprta ločljivost. Uporabljeno je razširjeno namizje. Kliknite, če želite poslati poročilo s povratnimi informacijami.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: vzpostavljanje povezave ...</translation>
 <translation id="2700058918926273959">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />. Odjavljeni boste.</translation>
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
@@ -235,6 +236,7 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="8878886163241303700">Razširjanje zaslona</translation>
 <translation id="8938800817013097409">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="8940956008527784070">Akumulator je skoraj prazen (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="9008540565042607572">Dragi monitor, med nama se ne bo obneslo. (Ta monitor ni podprt. Kliknite, če želite poslati poročilo s povratnimi informacijami.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon je v uporabi.</translation>
 <translation id="9089416786594320554">Načini vnosa</translation>

@@ -526,11 +526,6 @@
       Ja šis iestatījums ir atspējots, tīmekļa lapās nevar lietot valodu JavaScript un lietotājs nevar mainīt šo iestatījumu.
 
       Ja šis iestatījums ir iespējots vai nav iestatīts, tīmekļa lapās var lietot valodu JavaScript, taču lietotājs var mainīt šo iestatījumu.</translation>
-<translation id="2747783890942882652">Konfigurē obligāto domēna nosaukumu, kas tiks izmantots attālās piekļuves saimniekdatoriem, un neļauj lietotājiem to mainīt.
-
-          Ja šis iestatījums ir iespējots, saimniekdatorus var koplietot, izmantojot tikai kontus, kas reģistrēti domēnā ar konkrēto nosaukumu.
-
-          Ja šis iestatījums ir atspējots vai nav iestatīts, saimniekdatorus var koplietot, izmantojot jebkuru kontu.</translation>
 <translation id="2757054304033424106">Paplašinājumu/lietotņu veidi, kurus var instalēt</translation>
 <translation id="2759224876420453487">Noteikt lietotāju rīcību vairākprofilu sesijā</translation>
 <translation id="2761483219396643566">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar akumulatora jaudu</translation>
@@ -1989,6 +1984,7 @@
       Neiestatot šo politiku, <ph name="PRODUCT_NAME" /> izmantos noklusējuma vērtību (5000 milisekundes).</translation>
 <translation id="7841880500990419427">Minimālā TLS versija, uz kuru atkāpties</translation>
 <translation id="7842869978353666042">Pakalpojuma Google disks opciju konfigurēšana</translation>
+<translation id="7843525027689416831">Tiek norādītas atzīmes, kas jāizmanto pārlūkā <ph name="PRODUCT_NAME" />, kad tas tiek startēts. Norādītās atzīmes tiek izmantotas tikai pieteikšanās ekrānā. Šīs politikas ietvaros iestatītās atzīmes netiek izmantotas lietotāju sesijās.</translation>
 <translation id="7848840259379156480">Ļauj konfigurēt noklusējuma HTML renderētāju, ja ir instalēts produkts <ph name="PRODUCT_FRAME_NAME" />.
       Atbilstoši noklusējuma iestatījumam renderēšanu izpilda saimniekdatora pārlūks, taču
       pēc izvēles šo iestatījumu var ignorēt un likt, lai HTML lappuses pēc noklusējuma tiktu renderētas produktā <ph name="PRODUCT_FRAME_NAME" />.</translation>

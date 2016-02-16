@@ -527,11 +527,6 @@
       Bu ayar devre dışı bırakılırsa, Web sayfaları JavaScript'i kullanamaz ve kullanıcı bu ayarı değiştiremez.
 
       Bu ayar etkinleştirilir veya ayarlanmazsa, Web sayfaları JavaScript'i kullanabilir ancak kullanıcı ilgili ayarı değiştirebilir.</translation>
-<translation id="2747783890942882652">Uzaktan erişim ana makinelerinde uygulanacak gerekli ana makine alan adını yapılandırır ve kullanıcıların bunu değiştirmesini önler.
-
-          Bu ayar etkinleştirilirse, ana makineler yalnızca belirtilen alan adında kayıtlı hesaplar kullanılarak paylaşılabilir.
-
-          Bu ayar devre dışı bırakılır veya ayarlanmazsa, ana makine herhangi bir hesap kullanılarak paylaşılabilir.</translation>
 <translation id="2757054304033424106">Yüklenmesine izin verilen uzantı/uygulama türleri</translation>
 <translation id="2759224876420453487">Çok profilli bir oturumda kullanıcı çalışma biçimini kontrol et</translation>
 <translation id="2761483219396643566">Pil gücüyle çalışırken boşta kalma uyarısı gecikmesi</translation>
@@ -1978,6 +1973,7 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmazsa, <ph name="PRODUCT_NAME" /> varsayılan 5000 milisaniye değerini kullanır.</translation>
 <translation id="7841880500990419427">Yedek olarak kullanılacak minimum TLS sürümü</translation>
 <translation id="7842869978353666042">Google Drive seçeneklerini yapılandırma</translation>
+<translation id="7843525027689416831">Başlatıldığında <ph name="PRODUCT_NAME" /> ürününe uygulanacak işaretleri belirtir. Belirtilen işaretler, yalnızca giriş ekranında uygulanır. Bu politika aracılığıyla ayarlanan işaretler, kullanıcı oturumlarına yayılmaz.</translation>
 <translation id="7848840259379156480"><ph name="PRODUCT_FRAME_NAME" /> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırmanıza olanak verir. Varsayılan ayar, oluşturmayı ana makinenin tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bunu geçersiz kılabilir ve HTML sayfalarının varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulmasını sağlayabilirsiniz.</translation>
 <translation id="7882585827992171421">Bu politika yalnızca perakende modunda etkindir.
 

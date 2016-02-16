@@ -31,6 +31,11 @@
 <translation id="138361230106469022">こんにちは、<ph name="FULL_NAME" /> さん</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1389974829397082527">ブックマークはありません</translation>
+<translation id="1390350022570422499">Chrome で、Bluetooth を介して近くのウェブページを検出し表示できるようになりました。
+
+端末のロックが解除されている場合、Chrome では近くのページがスキャンされます。スキャンされたページは Google サービスに送られ、ページ結果の品質向上に使用されます。
+
+Chrome のプライバシー設定でフィジカル ウェブを管理できます。</translation>
 <translation id="1404122904123200417">埋め込み先: <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">「トラッキング拒否」</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> は既に存在しているためダウンロードできませんでした。</translation>
@@ -45,7 +50,6 @@
 <translation id="1546112724822176246">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
 <translation id="1557201757634521564">エンコードを自動検出する</translation>
-<translation id="1568822834048182062">ブックマーク、履歴、パスワード、その他の設定が Google アカウントに同期されます。</translation>
 <translation id="1592483623187843893">ブックマークをオフライン保存しました</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
@@ -96,6 +100,7 @@
 <translation id="2316129865977710310">いいえ</translation>
 <translation id="2319528413610359757"><ph name="PUBLISHER" /> の読者向け</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
+<translation id="2329597144923131178">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="2343328333327081434">インストール中...</translation>
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -199,6 +204,7 @@
 <translation id="3992315671621218278">リンクを保存</translation>
 <translation id="4002066346123236978">タイトル</translation>
 <translation id="4035611068038188272">現在 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> をブックマークに使用しています。</translation>
+<translation id="403659016947612156">フィジカル ウェブのページが近くにあります</translation>
 <translation id="4042870126885713738">ウェブアドレスが解決されない場合や接続を確立できない場合にアドバイスを表示します</translation>
 <translation id="4056223980640387499">セピア</translation>
 <translation id="4059119910594077751">全画面表示を終了するには戻るボタンをタップします。</translation>
@@ -250,7 +256,6 @@
 <translation id="4726963856048758366">ストレージが空きました</translation>
 <translation id="473775607612524610">アップデート</translation>
 <translation id="4738836084190194332">最終同期: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">アカウントを選択すると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="4773299976671772492">停止しました</translation>
 <translation id="4797039098279997504">タップすると <ph name="URL_OF_THE_CURRENT_TAB" /> に戻ります</translation>
 <translation id="4807098396393229769">名義人名</translation>
@@ -269,8 +274,10 @@
 <translation id="497421865427891073">次に進む</translation>
 <translation id="4996978546172906250">共有方法</translation>
 <translation id="5000922062037820727">ブロック（推奨）</translation>
+<translation id="5014582685689328551">Chrome を使用して閲覧可能です</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205"><ph name="NOT_YOU_USER_NAME" /> さんではない場合</translation>
+<translation id="5026827350461471197">この操作を行うと、すべての端末から同期データが消去されます。ただし、閲覧行動を反映している可能性のある一部の設定は消去されません。</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
 <translation id="5063480226653192405">使用状況</translation>
@@ -294,6 +301,7 @@
 <translation id="5233638681132016545">新しいタブ</translation>
 <translation id="5271967389191913893">デバイスでダウンロード コンテンツを開くことができません。</translation>
 <translation id="5275558766013849309">タブは最近使ったアプリと一緒に表示されます。</translation>
+<translation id="5301954838959518834">OK</translation>
 <translation id="5302048478445481009">言語</translation>
 <translation id="5304593522240415983">この項目は必須です</translation>
 <translation id="5308933389783727448">保存したページを検索</translation>
@@ -496,6 +504,7 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>
 <translation id="7690588279513156836">元のサイトを表示</translation>
+<translation id="771135159654932189">近くの URL を表示</translation>
 <translation id="7735023902678907596">シークレット タブで表示したページの記録は、シークレット タブをすべて閉じた後、ブラウザの履歴、Cookie の保存場所、検索履歴から消去されます。ただし、ダウンロードしたファイルや保存したページは保持されます。
 
 すべての場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
@@ -584,12 +593,14 @@
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>
+<translation id="8931159598799892500">Chrome + フィジカル ウェブ</translation>
 <translation id="8934455786738644694">全画面表示を終了するには、上からドラッグして、戻るボタンをタップします。</translation>
 <translation id="8941248009481596111">このサイトへの接続はプライベート接続です。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
 <translation id="8987061207681586800">自分だけの Chrome を</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
+<translation id="9020607083536754075">現在のタブを閉じて前のアプリに戻る</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9060538597317784206">Play ストアで <ph name="APP_NAME" /> アプリを表示。レーティング: <ph name="APP_RATING" /></translation>
 <translation id="9063523880881406963">[PC 版サイトを見る] をオフにします</translation>

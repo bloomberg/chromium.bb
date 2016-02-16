@@ -525,11 +525,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev onemogočena, spletne strani ne morejo uporabljati JavaScripta in uporabnik te vrednosti ne more spremeniti.
 
       Če je ta nastavitev omogočena ali ni nastavljena, lahko spletne strani uporabljajo JavaScript, toda uporabnik lahko to nastavitev spremeni.</translation>
-<translation id="2747783890942882652">Nastavi zahtevano ime domene gostitelja, ki bo veljalo za gostitelje oddaljenega dostopa, in prepreči uporabnikom njegovo spreminjanje.
-
-          Če je ta nastavitev omogočena, so lahko gostitelji v skupni rabi samo z uporabo računov, registriranih na določenem imenu domene.
-
-          Če je ta nastavitev onemogočena ali ni nastavljena, so lahko gostitelji v skupni rabi z uporabo poljubnega računa.</translation>
 <translation id="2757054304033424106">Vrste razširitev/aplikacij, katerih namestitev je dovoljena</translation>
 <translation id="2759224876420453487">Nadzor vedenja uporabnikov v večprofilni seji</translation>
 <translation id="2761483219396643566">Časovni zamik opozorila o nedejavnosti ob napajanju iz akumulatorja</translation>
@@ -1993,6 +1988,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če tega pravilnika ne nastavite, bo <ph name="PRODUCT_NAME" /> uporabil privzeto vrednost 5000 ms.</translation>
 <translation id="7841880500990419427">Najnižja različica TLS-ja za rezervno uporabo</translation>
 <translation id="7842869978353666042">Konfigurira možnosti storitve Google Drive</translation>
+<translation id="7843525027689416831">Določa zastavice, ki naj se uporabijo za <ph name="PRODUCT_NAME" />, ko se zažene. Izbrane zastavice se uporabijo samo na zaslonu za prijavo. Zastavice, nastavljene prek tega pravilnika, se ne prenesejo v uporabniške seje.</translation>
 <translation id="7848840259379156480">Omogoča nastavitev privzetega upodabljalnika HTML-ja, ko je nameščen <ph name="PRODUCT_FRAME_NAME" />. Privzeta nastavitev je, da upodabljanje izvaja gostiteljski brskalnik, vendar lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME" /> privzeto upodablja strani HTML.</translation>
 <translation id="7882585827992171421">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 

@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Koptekst rij:</translation>
 <translation id="2002895034995108595">Huidige toetsenindeling opnieuw instellen</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{vierkante haak links}other{# vierkante haken links}}</translation>
+<translation id="2010555995361223825">ChromeVox-menu's</translation>
 <translation id="2045490512405922022">niet aangevinkt</translation>
 <translation id="20601713649439366">Geen vorige wiskundige uitdrukking.</translation>
 <translation id="207477615537953741">Semantiek uit</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{puntkomma}other{# puntkomma's}}</translation>
 <translation id="5411891038905756502">Geen vorig punt om naar te springen.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kleiner-dan-teken}other{# kleiner-dan-tekens}}</translation>
+<translation id="5444587279251314700">(actief)</translation>
 <translation id="5455441614648621694">Aanvullend</translation>
 <translation id="5485036206801896268">Geen vorige afbeelding.</translation>
 <translation id="5486947920110100234">Geen volgend punt om naar te springen.</translation>

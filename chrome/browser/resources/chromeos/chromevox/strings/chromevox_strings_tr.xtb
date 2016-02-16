@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Satır üst bilgisi:</translation>
 <translation id="2002895034995108595">Geçerli tuş eşleşmesini sıfırla</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{sol köşeli ayraç}other{# sol köşeli ayraç}}</translation>
+<translation id="2010555995361223825">ChromeVox Menüleri</translation>
 <translation id="2045490512405922022">seçili değil</translation>
 <translation id="20601713649439366">Önceki matematik ifadesi yok.</translation>
 <translation id="207477615537953741">Anlamsal yorum kapalı</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{noktalı virgül}other{# noktalı virgül}}</translation>
 <translation id="5411891038905756502">Önceki atlama noktası yok.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{küçüktür işareti}other{# küçüktür işareti}}</translation>
+<translation id="5444587279251314700">(etkin)</translation>
 <translation id="5455441614648621694">Tamamlayıcı</translation>
 <translation id="5485036206801896268">Önceki grafik yok.</translation>
 <translation id="5486947920110100234">Sonraki atlama noktası yok.</translation>

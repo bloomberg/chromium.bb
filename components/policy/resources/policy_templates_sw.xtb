@@ -516,11 +516,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Iwapo mpangilio huu umelemazwa, kurasa za wavuti haziwezi kutumia JavaScript na mtumiaji hawezi kubadilisha mpangilio huo.
 
       Iwapo mpangilio huu umezimwa au la, kurasa za wavuti zinaweza kutumia JavaScript lakini mtumiaji anaweza kubadilisha mpangilio huo.</translation>
-<translation id="2747783890942882652">Inasanidi jina la kikoa linalohitajika litakalolazimishwa kwa wapangishaji wa ufikvu wa mbali na huzuia watumiaji kulibadilisha.
-
-          Ikiwa mpangilio huu utawezeshwa, basi wapangishaji wanaweza kushirikiwa tu kwa kutumia akaunti zilizosajiliwa kwenye jina la kikoa lililobainishwa.
-
-          Ikiwa mpangilio huu utalemazwa au haujawekwa, basi wapangishaji wanaweza kushirikiwa kwa kutumia akaunti yoyote.</translation>
 <translation id="2757054304033424106">Aina za viendelezi/programu zinazoruhusiwa kusakinishwa</translation>
 <translation id="2759224876420453487">Dhibiti tabia ya mtumiaji katika kipindi cha wasifu nyingi</translation>
 <translation id="2761483219396643566">Onyo ya kuchelewa wakati wa kutokuwa na shughuli  wakati wa kuendesha kwa nishati ya betri</translation>
@@ -1960,6 +1955,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Kuacha sera hii bila kuiweka kutafanya <ph name="PRODUCT_NAME" /> itumie thamani chaguo-msingi ya milisekunde 5000.</translation>
 <translation id="7841880500990419427">Kiwango cha chini cha toleo la TLS cha kutumia kama kibadala</translation>
 <translation id="7842869978353666042">Sanidi chaguo za Hifadhi ya Google</translation>
+<translation id="7843525027689416831">Hubainisha alama zinazotakiwa kutumika kwenye <ph name="PRODUCT_NAME" /> inapoanza. Alama zinazobainishwa hutumika kwenye skrini ya kuingia katika akaunti pekee. Alama zilizowekwa kupitia sera hii hazienei ndani ya vipindi vya mtumiaji.</translation>
 <translation id="7848840259379156480">Inakuruhusu kusanidi kionyeshi cha HTML chaguo-msingi wakati <ph name="PRODUCT_FRAME_NAME" /> imesakinishwa.
       Mpangilio chaguo-msingi ni wa kuruhusu kivinjari kipangishi kufanya uonyeshaji, lakini unaweza kufuta kwa hiari hii na kuruhusu <ph name="PRODUCT_FRAME_NAME" /> kuonyesha kurasa za HTML kwa chaguo-msingi.</translation>
 <translation id="7882585827992171421">Sera hii ni amilifu katika modi rejareja tu.

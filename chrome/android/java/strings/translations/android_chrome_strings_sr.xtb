@@ -31,6 +31,11 @@
 <translation id="138361230106469022">Здраво, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1389974829397082527">Овде нема обележивача</translation>
+<translation id="1390350022570422499">Chrome сада може да пронађе и прикаже веб-странице у околини помоћу Bluetooth-а.
+
+Chrome скенира странице у близини када је уређај откључан. Те странице се шаљу Google услузи да би се побољшао квалитет резултата за странице.
+
+Можете да контролишете Интернет око нас у Chrome-овим подешавањима приватности.</translation>
 <translation id="1404122904123200417">Уграђено је у сајт <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Не прати“</translation>
 <translation id="1409879593029778104">Преузимање датотеке <ph name="FILE_NAME" /> је спречено јер она већ постоји.</translation>
@@ -45,7 +50,6 @@
 <translation id="1546112724822176246">Не видите уређај? <ph name="BEGIN_LINK" />Потражите помоћ<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Ажурирај Chrome</translation>
 <translation id="1557201757634521564">Аутоматски откривај кодирање</translation>
-<translation id="1568822834048182062">Обележивачи, историја, лозинке и друга подешавања се синхронизују са Google налогом.</translation>
 <translation id="1592483623187843893">Сачували сте обележивач офлајн</translation>
 <translation id="1620510694547887537">Камеру</translation>
 <translation id="1623104350909869708">Спречи ову страницу да прави додатне дијалоге</translation>
@@ -96,6 +100,7 @@
 <translation id="2316129865977710310">Не, хвала</translation>
 <translation id="2319528413610359757">За читаоце издања <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Превлачите клизач док ово не будете могли лако да прочитате. Када двапут додирнете пасус, текст треба да буде бар оволики.</translation>
+<translation id="2329597144923131178">Пријавите се да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима.</translation>
 <translation id="2343328333327081434">Инсталира се...</translation>
 <translation id="2351097562818989364">Подешавања за превођење су ресетована.</translation>
 <translation id="2359808026110333948">Настави</translation>
@@ -199,6 +204,7 @@
 <translation id="3992315671621218278">Сачувај линк</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4035611068038188272">Обележивачи тренутно заузимају <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
+<translation id="403659016947612156">Странице Интернета око нас су у околини</translation>
 <translation id="4042870126885713738">Приказивање предлога када се веб-адреса не разреши или када није могуће успоставити везу</translation>
 <translation id="4056223980640387499">Сепија</translation>
 <translation id="4059119910594077751">Додирните дугме Назад да бисте изашли из режима целог екрана.</translation>
@@ -250,7 +256,6 @@
 <translation id="4726963856048758366">Меморијски простор је обрисан</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="4738836084190194332">Последња синхронизација: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">Изаберите налог да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима.</translation>
 <translation id="4773299976671772492">Заустављено је</translation>
 <translation id="4797039098279997504">Додирните да бисте се вратили на <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Име и презиме на картици</translation>
@@ -269,8 +274,10 @@
 <translation id="497421865427891073">Кретање унапред</translation>
 <translation id="4996978546172906250">Дељење преко</translation>
 <translation id="5000922062037820727">Блокирано (препоручено)</translation>
+<translation id="5014582685689328551">Користите Chrome да бисте их прегледали</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Нисте <ph name="NOT_YOU_USER_NAME" />?</translation>
+<translation id="5026827350461471197">Ово брише синхронизоване податке са свих уређаја. Нека подешавања која можда одражавају навике прегледања неће бити обрисана.</translation>
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="5040262127954254034">Приватност</translation>
 <translation id="5063480226653192405">Коришћење</translation>
@@ -294,6 +301,7 @@
 <translation id="5233638681132016545">Нова картица</translation>
 <translation id="5271967389191913893">Уређај не може да отвори садржај за преузимање.</translation>
 <translation id="5275558766013849309">Картице ће се приказивати заједно са недавним апликацијама.</translation>
+<translation id="5301954838959518834">Важи</translation>
 <translation id="5302048478445481009">Језик</translation>
 <translation id="5304593522240415983">Ово поље не сме да буде празно</translation>
 <translation id="5308933389783727448">Претражи сачуване странице</translation>
@@ -496,6 +504,7 @@
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7665369617277396874">Додајте налог</translation>
 <translation id="7690588279513156836">Учитај оригинал</translation>
+<translation id="771135159654932189">Прикажи шта је у околини</translation>
 <translation id="7735023902678907596">Странице које прегледате на картицама без архивирања се неће задржавати у историји прегледача, складишту колачића или историји претраге када затворите све картице без архивирања. Сачуваће се све преузете датотеке или сачуване странице.
 
 Међутим, нисте невидљиви. Прелазак у режим без архивирања не сакрива оно што прегледате од послодавца, добављача интернет услуге или веб-сајтова које посећујете.</translation>
@@ -584,12 +593,14 @@
 <translation id="8909135823018751308">Дели...</translation>
 <translation id="8912362522468806198">Google налога</translation>
 <translation id="8920114477895755567">Чекају се детаљи родитеља.</translation>
+<translation id="8931159598799892500">Chrome + Интернет око нас</translation>
 <translation id="8934455786738644694">Превуците од врха екрана и додирните дугме Назад да бисте изашли из режима целог екрана.</translation>
 <translation id="8941248009481596111">Веза са овим сајтом је приватна.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Навигација је недоступна: <ph name="URL" /></translation>
 <translation id="8987061207681586800">Прилагодите Chrome</translation>
 <translation id="9019902583201351841">Овим управљају твоји родитељи</translation>
+<translation id="9020607083536754075">Затвори тренутну картицу и врати се у претходну апликацију</translation>
 <translation id="9050666287014529139">Приступна фраза</translation>
 <translation id="9060538597317784206">Прегледајте апликацију <ph name="APP_NAME" /> у Play продавници. Оцена: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Искључи захтевање верзије сајта за рачунаре</translation>

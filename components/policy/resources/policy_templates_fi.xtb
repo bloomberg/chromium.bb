@@ -465,11 +465,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
       Jos tämä asetus ei ole käytössä, verkkosivut eivät voi käyttää JavaScriptiä eivätkä käyttäjät voi muuttaa asetusta.
 
       Jos tämä asetus on käytössä tai sitä ei ole määritetty, verkkosivut voivat käyttää JavaScriptiä, mutta käyttäjät voivat muuttaa asetusta.</translation>
-<translation id="2747783890942882652">Määrittää vaaditun isäntäverkkotunnuksen nimen, jota etäisäntien tulee käyttää, ja estää käyttäjiä muuttamasta sitä.
-
-          Jos tämä asetus on käytössä, isäntiä voi jakaa vain käyttämällä määritettyyn verkkotunnukseen rekisteröityjä tilejä.
-
-          Jos tämä asetus ei ole käytössä tai sitä ei ole määritetty, isäntiä voi jakaa kaikilla tileillä.</translation>
 <translation id="2757054304033424106">Laajennuksien tai sovelluksien tyypit, joita saa asentaa</translation>
 <translation id="2759224876420453487">Hallinnoi käyttäjän käytöstä moniprofiili-istunnossa</translation>
 <translation id="2761483219396643566">Käyttämättömyysvaroituksen viive käytettäessä laitetta akkuvirralla</translation>
@@ -1750,6 +1745,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytäntöä ei määritetä, <ph name="PRODUCT_NAME" /> käyttää oletusarvoa (5 000 millisekuntia).</translation>
 <translation id="7841880500990419427">TLS:n käytettävä vähimmäisversio</translation>
 <translation id="7842869978353666042">Määritä Google Driven asetukset</translation>
+<translation id="7843525027689416831">Määrittää merkinnät, joita käytetään sovelluksessa <ph name="PRODUCT_NAME" /> sen käynnistyksen yhteydessä. Määritettyjä merkintöjä käytetään vain kirjautumisnäytöllä. Tämän käytännön kautta määritettyjä merkintöjä ei oteta yleisesti käyttöön käyttäjäistunnoissa.</translation>
 <translation id="7848840259379156480">Voit määrittää HTML-osoitteiden oletushahmontajan tuotteen <ph name="PRODUCT_FRAME_NAME" /> ollessa asennettu. Isäntäselain tekee hahmonnuksen oletuksena, mutta voit halutessasi ohittaa tämän asetuksen ja asettaa tuotteen <ph name="PRODUCT_FRAME_NAME" /> hahmontamaan HTML-sivut oletuksena.</translation>
 <translation id="7882585827992171421">Tämä käytäntö toimii vain myyntitilassa.
 

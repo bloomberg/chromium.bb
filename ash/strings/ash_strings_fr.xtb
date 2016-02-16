@@ -52,6 +52,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="252373100621549798">Écran inconnu</translation>
 <translation id="2532589005999780174">Mode Contraste élevé</translation>
 <translation id="2562916301614567480">Réseau privé</translation>
+<translation id="2661637000095600270">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé. Cliquez ici pour envoyer un rapport d'erreur.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" /> : Connexion en cours…</translation>
 <translation id="2700058918926273959">Fin de la session dans <ph name="SESSION_TIME_REMAINING" />. Vous allez être déconnecté.</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
@@ -235,6 +236,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="8878886163241303700">Extension de l'écran</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="9008540565042607572">Moniteur non compatible. Cliquez ici pour envoyer un rapport d'erreur.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Le micro est en cours d'utilisation.</translation>
 <translation id="9089416786594320554">Modes de saisie</translation>

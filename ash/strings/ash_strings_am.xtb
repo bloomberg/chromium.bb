@@ -52,6 +52,7 @@
 <translation id="252373100621549798">ያልታወቀ ማሳያ</translation>
 <translation id="2532589005999780174">ባለከፍተኛ ንፅፅር ሁነታ</translation>
 <translation id="2562916301614567480">የግል አውታረ መረብ</translation>
+<translation id="2661637000095600270">ምንም የሚደገፉ ጥራቶች ስላልተገኙ ማሳያዎችን ማንጸባረቅ አልተቻለም። ይልቁንስ ወደ የተስፋፋ ዴስክቶፕ ሁነታ ተገብቷል። የግብረመልስ ሪፖርት ለመላክ ጠቅ ያድርጉ።</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />፦ በመገናኘት ላይ...</translation>
 <translation id="2700058918926273959">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል። ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="2727977024730340865">አነስተኛ ኃይል ወዳለው ባትሪ መሙያ ተሰክቷል። የባትሪ መሙላት አስተማማኝ ላይሆን ይችላል።</translation>
@@ -235,6 +236,7 @@
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
 <translation id="8938800817013097409">USB-C መሣሪያ (የቀኝ ወደብ ከኋላ በኩል)</translation>
 <translation id="8940956008527784070">ባትሪ ዝቅተኛ ነው (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">ውድ ማሳያ፣ ልንስማማ አልቻልንም። (ያ ማሳያ አይደገፍም። የግብረመልስ ሪፖርት ለመላክ ጠቅ ያድርጉ።)</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>
 <translation id="9080206825613744995">ማይክሮፎን ስራ ላይ ነው።</translation>
 <translation id="9089416786594320554">የግቤት ስልቶች</translation>

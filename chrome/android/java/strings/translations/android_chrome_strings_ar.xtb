@@ -31,6 +31,11 @@
 <translation id="138361230106469022">مرحبًا، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1389974829397082527">ليست هناك إشارات مرجعية هنا</translation>
+<translation id="1390350022570422499">‏يمكن لمتصفح Chrome الآن العثور على صفحات الويب المجاورة وعرضها باستخدام البلوتوث.
+
+سيبحث Chrome عن صفحات الأجهزة المجاورة عند إلغاء قفل جهازك. وستمر هذه الصفحات عبر خدمة Google لتحسين جودة نتائج الصفحات.
+
+يمكنك التحكم في الشبكة المادية في إعدادات الخصوصية في Chrome.</translation>
 <translation id="1404122904123200417">تم التضمين في <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"عدم التعقب"</translation>
 <translation id="1409879593029778104">مُنع تنزيل الملف <ph name="FILE_NAME" /> لأنه موجود بالفعل.</translation>
@@ -45,7 +50,6 @@
 <translation id="1546112724822176246">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
 <translation id="1557201757634521564">الاكتشاف التلقائي للتشفير</translation>
-<translation id="1568822834048182062">‏ستتم مزامنة الإشارات المرجعية والسجل وكلمات المرور وغير ذلك من الإعدادات مع حسابك على Google.</translation>
 <translation id="1592483623187843893">حُفظَت الإشارة المرجعية بلا اتصال</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
@@ -96,6 +100,7 @@
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2319528413610359757">لقراء <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
+<translation id="2329597144923131178">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="2343328333327081434">جارٍ التثبيت...</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
@@ -197,6 +202,7 @@
 <translation id="3992315671621218278">حفظ الرابط</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4035611068038188272">تشغل الإشارات المرجعية حاليًا <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
+<translation id="403659016947612156">صفحات الشبكة المادية مجاورة</translation>
 <translation id="4042870126885713738">عرض اقتراحات عند تعذر فتح عنوان ويب أو تعذر إجراء اتصال</translation>
 <translation id="4056223980640387499">بني داكن</translation>
 <translation id="4059119910594077751">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
@@ -248,7 +254,6 @@
 <translation id="4726963856048758366">تم مسح سعة التخزين</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="4738836084190194332">آخر مزامنة: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">حدد حسابًا للحصول على الإشارات المرجعية والسجل وكلمة المرور والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="4773299976671772492">متوقفة</translation>
 <translation id="4797039098279997504">المس  للعودة إلى <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
@@ -267,8 +272,10 @@
 <translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5000922062037820727">محظور (موصى به)</translation>
+<translation id="5014582685689328551">‏استخدام Chrome لتصفحها</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">ألست <ph name="NOT_YOU_USER_NAME" />؟</translation>
+<translation id="5026827350461471197">يعمل ذلك على محو البيانات التي تمت مزامنتها من جميع الأجهزة. ولن يتم محو بعض الإعدادات التي قد تعكس عادات التصفح.</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
 <translation id="5063480226653192405">الاستخدام</translation>
@@ -292,6 +299,7 @@
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="5275558766013849309">ستوجد علامات التبويب مع التطبيقات الحديثة.</translation>
+<translation id="5301954838959518834">موافق وأعي ذلك</translation>
 <translation id="5302048478445481009">اللغة</translation>
 <translation id="5304593522240415983">لا يمكن ترك هذا الحقل فارغًا</translation>
 <translation id="5308933389783727448">البحث في الصفحات المحفوظة</translation>
@@ -494,6 +502,7 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7665369617277396874">إضافة حساب</translation>
 <translation id="7690588279513156836">تحميل الموقع الأصلي</translation>
+<translation id="771135159654932189">‏الاطلاع على عناوين URL المجاورة</translation>
 <translation id="7735023902678907596">لن تظهر الصفحات التي تشاهدها في علامات تبويب التصفح المتخفي في سجل متصفحك ولا في وحدة تخزين ملفات تعريف الارتباط ولا في سجل البحث بعد إغلاق جميع علامات تبويب التصفح المتخفي. وستُحفظ أي ملفات تم تنزيلها أو أي صفحات تم حفظها.
 
 لكنك لن تكون غير مرئي، فاستخدام وضع التصفح المتخفي لا يخفي تصفحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
@@ -582,12 +591,14 @@
 <translation id="8909135823018751308">مشاركة…</translation>
 <translation id="8912362522468806198">‏حساب Google‏</translation>
 <translation id="8920114477895755567">الانتظار للحصول على تفاصيل الآباء</translation>
+<translation id="8931159598799892500">‏Chrome + الشبكة المادية</translation>
 <translation id="8934455786738644694">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="8941248009481596111">إن اتصالك بهذا الموقع له خصوصية.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>
 <translation id="8987061207681586800">‏تخصيص Chrome كما تريد</translation>
 <translation id="9019902583201351841">يديره والداك</translation>
+<translation id="9020607083536754075">إغلاق علامة التبويب الحالية والرجوع إلى التطبيق السابق</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>
 <translation id="9060538597317784206">‏عرض تطبيق <ph name="APP_NAME" /> في متجر Play.  التقييم: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">إيقاف طلب موقع الويب لسطح المكتب</translation>

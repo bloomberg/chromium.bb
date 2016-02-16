@@ -52,6 +52,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="252373100621549798">Apresentação Desconhecida</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2562916301614567480">Rede Privada</translation>
+<translation id="2661637000095600270">Não foi possível espelhar os ecrãs porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido. Clique para enviar um relatório de comentários.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: A ligar...</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. A sua sessão será terminada.</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
@@ -235,6 +236,7 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8878886163241303700">Ecrã alargado</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
 <translation id="8940956008527784070">Bateria fraca (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Caro Monitor, não está a resultar entre nós. (Esse monitor não é suportado. Clique para enviar um relatório de comentários.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">O microfone está a ser utilizado.</translation>
 <translation id="9089416786594320554">Métodos de introdução</translation>

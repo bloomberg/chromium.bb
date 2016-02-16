@@ -499,11 +499,6 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
       Pokud je toto nastavení deaktivováno, webové stránky nemohou spouštět kód JavaScript a uživatel nemůže toto nastavení změnit.
 
       Pokud je toto nastavení aktivováno nebo není nastaveno na konkrétní hodnotu, webové stránky mohou spouštět kód JavaScript, ale uživatel může toto nastavení změnit.</translation>
-<translation id="2747783890942882652">Slouží ke konfiguraci povinného názvu hostitelské domény, který bude uveden u hostitelů vzdáleného přístupu, a brání uživatelům, aby jej změnili.
-
-          Je-li toto nastavení zapnuto, hostitelé smějí být sdíleni jen prostřednictvím účtů zaregistrovaných v daném názvu domény.
-
-          Je-li toto nastavení vypnuto nebo není-li nastaveno, hostitele lze sdílet prostřednictvím libovolného účtu.</translation>
 <translation id="2757054304033424106">Typy rozšíření nebo aplikací, které mohou být nainstalovány</translation>
 <translation id="2759224876420453487">Řízení chování uživatele v multiprofilové relaci</translation>
 <translation id="2761483219396643566">Prodleva upozornění na nečinnost při napájení z baterie</translation>
@@ -1942,6 +1937,7 @@ Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit
       Pokud tato zásada nebude nastavena, prohlížeč <ph name="PRODUCT_NAME" /> použije výchozí hodnotu 5000 ms.</translation>
 <translation id="7841880500990419427">Nejnižší verze zálohy TLS</translation>
 <translation id="7842869978353666042">Konfigurace možností Disku Google</translation>
+<translation id="7843525027689416831">Udává příznaky, které mají být na prohlížeč <ph name="PRODUCT_NAME" /> použity při spuštění (použijí se pouze na přihlašovací obrazovce). Příznaky nastavené prostřednictvím této zásady nezasahují do uživatelských relací.</translation>
 <translation id="7848840259379156480">Umožňuje konfigurovat modul vykreslení obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME" />.
       Ve výchozím nastavení vykresluje obsah hostitelský prohlížeč, toto nastavení však můžete přepsat a namísto toho vykreslovat stránky HTML pomocí pluginu <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="7882585827992171421">Tato zásada je aktivní pouze v režimu prodeje.

@@ -529,11 +529,6 @@
       Om den här inställningen är inaktiverad kan inte JavaScript användas på webbsidor och inställningen kan inte ändras av användaren.
 
       Om inställningen är aktiverad eller inte inställd kan JavaScript användas på webbsidor, men inställningen kan inte ändras av användaren.</translation>
-<translation id="2747783890942882652">Konfigurerar det obligatoriska domännamnet för värden som används på fjärråtkomstvärdar och förhindrar att användare ändrar det.
-
-          Om inställningen aktiveras kan värdar endast delas via konton som registrerats på det specifika domännamnet.
-
-          Om inställningen inaktiveras eller inte anges kan värdar delas via vilket konto som helst.</translation>
 <translation id="2757054304033424106">Typer av tillägg/appar som får installeras</translation>
 <translation id="2759224876420453487">Styr användarens beteende i en multiprofilsession</translation>
 <translation id="2761483219396643566">Inaktivitetstid när enheten drivs av batteriet</translation>
@@ -1995,6 +1990,7 @@
       Om policyn inte anges använder <ph name="PRODUCT_NAME" /> standardvärdet 5 000 millisekunder.</translation>
 <translation id="7841880500990419427">Lägsta TLS-version som kan användas som alternativ</translation>
 <translation id="7842869978353666042">Konfigurera alternativ för Google Drive</translation>
+<translation id="7843525027689416831">Anger de flaggor som ska användas i <ph name="PRODUCT_NAME" /> när vid start. De angivna flaggorna används bara för inloggningsskärmen. Flaggor som angetts via denna princip påverkar inte användarsessioner.</translation>
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>

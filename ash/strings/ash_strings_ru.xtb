@@ -52,6 +52,7 @@
 <translation id="252373100621549798">Неизвестный дисплей</translation>
 <translation id="2532589005999780174">Режим высокой контрастности</translation>
 <translation id="2562916301614567480">Частная сеть</translation>
+<translation id="2661637000095600270">Не удалось транслировать изображение с одного экрана на другой, поскольку необходимые разрешения не поддерживаются. Включен режим расширенного отображения. Нажмите, чтобы отправить отчет.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: соединение...</translation>
 <translation id="2700058918926273959">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />. После этого будет выполнен выход.</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
@@ -234,6 +235,7 @@
 <translation id="8878886163241303700">Раскрытый экран</translation>
 <translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
 <translation id="8940956008527784070">Низкий заряд батареи (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Монитор не поддерживается. Нажмите, чтобы отправить отчет.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Микрофон используется</translation>
 <translation id="9089416786594320554">Методы ввода</translation>

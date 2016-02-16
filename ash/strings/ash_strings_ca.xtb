@@ -52,6 +52,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="252373100621549798">Pantalla desconeguda</translation>
 <translation id="2532589005999780174">Mode de contrast elevat</translation>
 <translation id="2562916301614567480">Xarxa privada</translation>
+<translation id="2661637000095600270">No s'han pogut reflectir les pantalles perquè no s'ha trobat cap resolució compatible. S'ha entrat al mode d'escriptori ampliat. Feu clic per enviar un informe de suggeriments.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: s'està connectant...</translation>
 <translation id="2700058918926273959">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" /> i es tancarà.</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
@@ -235,6 +236,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>
 <translation id="8938800817013097409">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="8940956008527784070">Bateria baixa (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">Estimat monitor, això no funciona. (El monitor no és compatible. Feu clic per enviar un informe de suggeriments.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">S'està fent servir el micròfon.</translation>
 <translation id="9089416786594320554">Mètodes d'introducció</translation>

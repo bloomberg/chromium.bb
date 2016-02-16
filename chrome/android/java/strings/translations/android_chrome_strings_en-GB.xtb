@@ -31,6 +31,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="138361230106469022">Hi, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1389974829397082527">No bookmarks here</translation>
+<translation id="1390350022570422499">Chrome can now find and show you nearby web pages using Bluetooth. Chrome will scan for nearby pages when your device is unlocked. These pages will go through a Google service to improve the quality of page results. You can control the Physical Web in Chrome privacy settings.</translation>
 <translation id="1404122904123200417">Embedded in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> download prevented because file already exists.</translation>
@@ -45,7 +46,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1546112724822176246">Not seeing your device? <ph name="BEGIN_LINK" />Get help<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1557201757634521564">Auto-detect encoding</translation>
-<translation id="1568822834048182062">Your bookmarks, history, passwords and other settings will be synced to your Google Account.</translation>
 <translation id="1592483623187843893">Bookmark saved offline</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
@@ -96,6 +96,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2316129865977710310">No, thank you</translation>
 <translation id="2319528413610359757">For readers of <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
+<translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="2343328333327081434">Installing…</translation>
 <translation id="2351097562818989364">Your translate settings have been reset.</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -199,6 +200,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3992315671621218278">Save link</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4035611068038188272">Bookmarks are currently taking up <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
+<translation id="403659016947612156">Physical web pages are nearby</translation>
 <translation id="4042870126885713738">Show suggestions when a web address does not resolve or a connection cannot be made</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Touch the back button to exit full screen.</translation>
@@ -250,7 +252,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4726963856048758366">Storage cleared</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="4738836084190194332">Last synced: <ph name="WHEN" /></translation>
-<translation id="4761374747761474835">Select an account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
 <translation id="4773299976671772492">Stopped</translation>
 <translation id="4797039098279997504">Touch to return to <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Name on card</translation>
@@ -269,8 +270,10 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="497421865427891073">go forward</translation>
 <translation id="4996978546172906250">Share via</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
+<translation id="5014582685689328551">Use Chrome to browse them</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Not <ph name="NOT_YOU_USER_NAME" />?</translation>
+<translation id="5026827350461471197">This clears synced data from all devices. Some settings that may reflect browsing habits will not be cleared.</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Usage</translation>
@@ -294,6 +297,7 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5233638681132016545">New tab</translation>
 <translation id="5271967389191913893">Device cannot open the content to be downloaded.</translation>
 <translation id="5275558766013849309">Tabs will live together with recent apps.</translation>
+<translation id="5301954838959518834">OK, got it</translation>
 <translation id="5302048478445481009">Language</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>
 <translation id="5308933389783727448">Search saved pages</translation>
@@ -496,6 +500,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7665369617277396874">Add account</translation>
 <translation id="7690588279513156836">Load original</translation>
+<translation id="771135159654932189">See what's nearby</translation>
 <translation id="7735023902678907596">Pages that you view in incognito tabs won’t stick around in your browser’s history, cookie store or search history after you’ve closed all of your incognito tabs. Any downloaded files or saved pages will be kept.
 
 However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
@@ -582,12 +587,14 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>
+<translation id="8931159598799892500">Chrome + Physical Web</translation>
 <translation id="8934455786738644694">Drag from top and touch the back button to exit full screen.</translation>
 <translation id="8941248009481596111">Your connection to this site is private.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
 <translation id="8987061207681586800">Make Chrome yours</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
+<translation id="9020607083536754075">Close the current tab and return to the previous app</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9060538597317784206">View app <ph name="APP_NAME" /> on the Play Store.  Rating: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Turn off Request desktop site</translation>

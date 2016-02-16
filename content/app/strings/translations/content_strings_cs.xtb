@@ -7,6 +7,7 @@
 <translation id="1088086359088493902">Sekundy</translation>
 <translation id="1171774979989969504">Zadejte prosím e-mailovou adresu.</translation>
 <translation id="1188858454923323853">doplňkové</translation>
+<translation id="1206619573307042055">běžící text</translation>
 <translation id="1235745349614807883">Smazat nedávná vyhledávání</translation>
 <translation id="1342835525016946179">čl</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -42,6 +43,8 @@
 <translation id="2942448076852699108">zvýrazněný obsah</translation>
 <translation id="3040011195152428237">odkaz</translation>
 <translation id="3075154866155599887">Zadejte prosím platnou hodnotu. Pole obsahuje neúplnou hodnotu nebo neplatné datum.</translation>
+<translation id="3078740164268491126">tabulka</translation>
+<translation id="3086746722712840547">pozn</translation>
 <translation id="310520048233152454">Zadejte prosím adresu URL.</translation>
 <translation id="3450233048674729344">Hodnota musí být menší nebo rovna <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definice</translation>
@@ -55,11 +58,14 @@
 <translation id="4103419683916926126">Milisekundy</translation>
 <translation id="4201051445878709314">Zobrazit předchozí měsíc</translation>
 <translation id="4202807286478387388">přejít</translation>
+<translation id="421884353938374759">výběr barev</translation>
 <translation id="4360991593054037559">Zadejte platnou hodnotu. Dvě nejbližší hodnoty jsou <ph name="VALID_VALUE_LOW" /> a <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4597532268155981612">formulář</translation>
+<translation id="4661075872484491155">strom</translation>
 <translation id="4664250907885839816">Část za znakem <ph name="ATSIGN" /> nesmí obsahovat znak <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Zadejte prosím číslo.</translation>
 <translation id="4975562563186953947">Vybráno: <ph name="SELECTED_COUNT" /></translation>
 <translation id="49969490063480558">Zadejte část za znakem <ph name="ATSIGN" />. Adresa <ph name="INVALIDADDRESS" /> není úplná.</translation>
@@ -72,12 +78,12 @@
 <translation id="5468998798572797635">ukončit režim celé obrazovky</translation>
 <translation id="5476505524087279545">odstranit zaškrtnutí</translation>
 <translation id="5546461542133609677">zapnout zvuk</translation>
+<translation id="561939826962581046">čas</translation>
 <translation id="5641012560118721995">pozastavit přehrávání</translation>
 <translation id="5843503607508392247">Jiné…</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5944544982112848342">2048 (vysoká kvalita)</translation>
 <translation id="5966707198760109579">Týden</translation>
-<translation id="598301471034819706">adresa</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6101327004457443354">zapnout zvukovou stopu</translation>
 <translation id="6119846243427417423">aktivovat</translation>
@@ -86,6 +92,7 @@
 <translation id="6398862346408813489">Zobrazit panel pro výběr měsíců</translation>
 <translation id="6404546809543547843">posuvník času zvuku</translation>
 <translation id="658823671542763450">přejít do režimu celé obrazovky</translation>
+<translation id="6637586476836377253">protokol</translation>
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="6663448176199120256">Nedávná vyhledávání</translation>
 <translation id="668171684555832681">Další...</translation>
@@ -100,6 +107,7 @@
 <translation id="7263440858009898357">Vyberte prosím v seznamu některou položku.</translation>
 <translation id="7364796246159120393">Vybrat soubor</translation>
 <translation id="739024184232394898">Jiné…</translation>
+<translation id="7491962110804786152">karta</translation>
 <translation id="7673697353781729403">Hodiny</translation>
 <translation id="7720026100085573005">zbývající čas</translation>
 <translation id="7740016676195725605">ukončit zobrazování titulků</translation>

@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Hlavička riadka:</translation>
 <translation id="2002895034995108595">Obnoviť aktuálnu mapu klávesov</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{ľavá hranatá zátvorka}few{# ľavé hranaté zátvorky}many{# left brackets}other{# ľavých hranatých zátvoriek}}</translation>
+<translation id="2010555995361223825">Ponuky ChromeVox</translation>
 <translation id="2045490512405922022">nezačiarknuté</translation>
 <translation id="20601713649439366">Žiadny predchádzajúci matematický výraz</translation>
 <translation id="207477615537953741">Sémantika je vypnutá</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{bodkočiarka}few{# bodkočiarky}many{# semicolons}other{# bodkočiarok}}</translation>
 <translation id="5411891038905756502">Žiadny predchádzajúci bod preskočenia</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak je menšie ako}few{# znaky je menšie ako}many{# less than signs}other{# znakov je menšie ako}}</translation>
+<translation id="5444587279251314700">(aktívne)</translation>
 <translation id="5455441614648621694">Doplnkové</translation>
 <translation id="5485036206801896268">Žiadna predchádzajúca grafika</translation>
 <translation id="5486947920110100234">Žiadny ďalší bod preskočenia</translation>

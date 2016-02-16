@@ -52,6 +52,7 @@
 <translation id="252373100621549798">หน้าจอที่ไม่รู้จัก</translation>
 <translation id="2532589005999780174">โหมดคอนทราสต์สูง</translation>
 <translation id="2562916301614567480">เครือข่ายส่วนบุคคล</translation>
+<translation id="2661637000095600270">ไม่สามารถมิเรอร์การแสดงผลเนื่องจากไม่พบความละเอียดที่สนับสนุน ได้เข้าสู่โหมดเดสก์ท็อปแบบขยายแทนแล้ว คลิกเพื่อส่งรายงานความคิดเห็น</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: กำลังเชื่อมต่อ...</translation>
 <translation id="2700058918926273959">เซสชันจะสิ้นสุดใน <ph name="SESSION_TIME_REMAINING" /> ระบบจะให้คุณออกจากระบบ</translation>
 <translation id="2727977024730340865">เสียบอยู่กับที่ชาร์จพลังงานต่ำ การชาร์จแบตเตอรี่อาจไม่น่าเชื่อถือ</translation>
@@ -235,6 +236,7 @@
 <translation id="8878886163241303700">กำลังขยายหน้าจอ</translation>
 <translation id="8938800817013097409">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="8940956008527784070">แบตเตอรี่ต่ำ (<ph name="PERCENTAGE" />%)</translation>
+<translation id="9008540565042607572">จอภาพเอ๋ย เราร่วมงานกันไม่ได้ (ระบบไม่สนับสนุนจอภาพนั้น คลิกเพื่อส่งรายงานความคิดเห็น)</translation>
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="9080206825613744995">ใช้ไมโครโฟนอยู่</translation>
 <translation id="9089416786594320554">วิธีการป้อนข้อมูล</translation>

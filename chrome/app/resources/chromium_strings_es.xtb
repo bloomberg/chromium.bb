@@ -129,7 +129,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5859963531214966875">Las próximas versiones de Chromium dejarán de ser compatibles con este sistema Linux.</translation>
 <translation id="5862307444128926510">Te damos la bienvenida a Chromium</translation>
 <translation id="5877064549588274448">Se ha cambiado el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
-<translation id="5909170354645388250">No se utiliza en Chromium. Marcador de posición para mantener sincronizados los mapas de recursos. Se espera un único argumento: $1.</translation>
 <translation id="5942225298871134766">Chromium almacenará esta contraseña en <ph name="SAVED_PASSWORD_LINK" /> y la recordará la próxima vez que la necesites.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> se ha añadido a Chromium.</translation>
 <translation id="59625444380784159">Los detalles de tus contactos pueden ayudar a completar los formularios de forma más rápida en Chromium.</translation>

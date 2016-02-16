@@ -525,11 +525,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se habilita esta opción, las páginas web no podrán utilizar JavaScript y los usuarios no podrán cambiar esta configuración.
 
       Si se habilita esta opción o si no se establece, las páginas web podrán utilizar JavaScript y los usuarios podrán modificar esta configuración.</translation>
-<translation id="2747783890942882652">Permite configurar el nombre de dominio del host obligatorio que se aplicará a los hosts de acceso remoto y evita que los usuarios lo modifiquen.
-
-         Si se habilita esta opción, los hosts solo se podrán compartir con cuentas registradas en el nombre de dominio especificado.
-
-         Si se inhabilita o no se configura esta opción, los hosts se podrán compartir con cualquier cuenta.</translation>
 <translation id="2757054304033424106">Tipos de extensiones o aplicaciones que se pueden instalar</translation>
 <translation id="2759224876420453487">Controlar el comportamiento del usuario en una sesión de varios perfiles</translation>
 <translation id="2761483219396643566">Tiempo de espera de advertencia de inactividad cuando el dispositivo funciona con batería</translation>
@@ -1977,6 +1972,7 @@ Si se asigna el valor false a la política, no se proporcionará información so
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS a la que recurrir</translation>
 <translation id="7842869978353666042">Opciones de configuración de Google Drive</translation>
+<translation id="7843525027689416831">Especifica las opciones que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las opciones especificadas solo se aplican en la pantalla de inicio de sesión. Las opciones establecidas a través de esta política no se propagan a las sesiones del usuario.</translation>
 <translation id="7848840259379156480">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.
       De forma predeterminada, se permite que el navegador del host muestre las páginas HTML,
       pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME" /> muestre las páginas HTML de forma predeterminada.</translation>

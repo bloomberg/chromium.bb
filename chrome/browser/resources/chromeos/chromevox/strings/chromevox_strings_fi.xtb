@@ -86,6 +86,7 @@
 <translation id="1990932729021763163">Rivin otsikko:</translation>
 <translation id="2002895034995108595">Nollaa nykyinen näppäinkartta</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{vasen hakasulje}other{# vasenta hakasuljetta}}</translation>
+<translation id="2010555995361223825">ChromeVox-valikot</translation>
 <translation id="2045490512405922022">ei tarkistettu</translation>
 <translation id="20601713649439366">Ei edeltävää matemaattista lauseketta.</translation>
 <translation id="207477615537953741">Semanttinen on pois käytöstä</translation>
@@ -432,6 +433,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{puolipiste}other{# puolipistettä}}</translation>
 <translation id="5411891038905756502">Ei edellisiä siirtymäkohtia.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{pienemmyys}other{# pienemmyysmerkkiä}}</translation>
+<translation id="5444587279251314700">(aktiivinen)</translation>
 <translation id="5455441614648621694">Täydentävä</translation>
 <translation id="5485036206801896268">Ei edellisiä kuvia.</translation>
 <translation id="5486947920110100234">Ei seuraavia siirtymäkohtia.</translation>
