@@ -21,7 +21,7 @@ with host_paths.SysPath(
   import symbol
 
 
-_RE_ASAN = re.compile(r'(.*?)(#\S*?) (\S*?) \((.*?)\+(.*?)\)')
+_RE_ASAN = re.compile(r'(.*?)(#\S*?)\s+(\S*?)\s+\((.*?)\+(.*?)\)')
 
 def _ParseAsanLogLine(line):
   m = re.match(_RE_ASAN, line)
