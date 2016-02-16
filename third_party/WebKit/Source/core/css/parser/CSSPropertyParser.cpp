@@ -2745,6 +2745,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeGeneratedImage(CSSParserTokenRang
     RefPtrWillBeRawPtr<CSSValue> result = nullptr;
     if (id == CSSValueRadialGradient) {
         result = consumeRadialGradient(args, context.mode(), NonRepeating);
+    } else if (id == CSSValueRepeatingRadialGradient) {
+        result = consumeRadialGradient(args, context.mode(), Repeating);
     } else if (id == CSSValueWebkitLinearGradient) {
         // FIXME: This should send a deprecation message.
         if (context.useCounter())
