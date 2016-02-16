@@ -22,6 +22,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
@@ -428,14 +430,13 @@ TEST_F(SessionServiceTest, LockingWindowRemembersAll) {
   CreateAndWriteSessionWithTwoWindows(
       window2_id, tab1_id, tab2_id, &nav1, &nav2);
 
-  ASSERT_TRUE(service()->profile() != NULL);
-  ASSERT_TRUE(g_browser_process->profile_manager() != NULL);
-  ProfileInfoCache& profile_info =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = profile_info.GetIndexOfProfileWithPath(
-      service()->profile()->GetPath());
-  ASSERT_NE(std::string::npos, profile_index);
-  profile_info.SetProfileSigninRequiredAtIndex(profile_index, true);
+  ASSERT_TRUE(service()->profile());
+  ProfileManager* manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(manager);
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(manager->GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(service()->profile()->GetPath(), &entry));
+  entry->SetIsSigninRequired(true);
 
   service()->WindowClosing(window_id);
   service()->WindowClosed(window_id);

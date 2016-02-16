@@ -26,6 +26,8 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_common_utils.h"
 #include "chrome/browser/sessions/session_data_deleter.h"
@@ -263,12 +265,10 @@ void SessionService::WindowClosing(const SessionID& window_id) {
     if (g_browser_process) {
       ProfileManager* profile_manager = g_browser_process->profile_manager();
       if (profile_manager) {
-        ProfileInfoCache& profile_info =
-            profile_manager->GetProfileInfoCache();
-        size_t profile_index = profile_info.GetIndexOfProfileWithPath(
-            profile()->GetPath());
-        use_pending_close = profile_index != std::string::npos &&
-            profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
+        ProfileAttributesEntry* entry;
+        bool has_entry = profile_manager->GetProfileAttributesStorage().
+            GetProfileAttributesWithPath(profile()->GetPath(), &entry);
+        use_pending_close = has_entry && entry->IsSigninRequired();
       }
     }
   }

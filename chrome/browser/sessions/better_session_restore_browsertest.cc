@@ -140,7 +140,8 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
   FakeBackgroundModeManager()
       : BackgroundModeManager(
             *base::CommandLine::ForCurrentProcess(),
-            &g_browser_process->profile_manager()->GetProfileInfoCache()),
+            &g_browser_process->profile_manager()->
+                GetProfileAttributesStorage()),
         background_mode_active_(false) {}
 
   void SetBackgroundModeActive(bool active) {
