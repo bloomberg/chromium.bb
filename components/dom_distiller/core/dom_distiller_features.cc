@@ -8,35 +8,17 @@
 
 #include "base/command_line.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace dom_distiller {
-namespace {
-const char kFieldTrialName[] = "EnhancedBookmarks";
-}
 
 bool IsEnableDomDistillerSet() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDomDistiller)) {
-    return true;
-  }
-  if (variations::GetVariationParamValue(kFieldTrialName,
-                                         "enable-dom-distiller") == "1") {
-    return true;
-  }
-  return false;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDomDistiller);
 }
 
 bool IsEnableSyncArticlesSet() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSyncArticles)) {
-    return true;
-  }
-  if (variations::GetVariationParamValue(kFieldTrialName,
-                                         "enable-sync-articles") == "1") {
-    return true;
-  }
-  return false;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSyncArticles);
 }
 
 }  // namespace dom_distiller
