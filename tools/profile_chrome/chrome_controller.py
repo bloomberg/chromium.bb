@@ -105,5 +105,11 @@ class ChromeTracingController(controllers.BaseController):
 
     trace_file = self._trace_file.replace('/storage/emulated/0/', '/sdcard/')
     host_file = os.path.join(os.path.curdir, os.path.basename(trace_file))
-    self._device.PullFile(trace_file, host_file)
+    try:
+      self._device.PullFile(trace_file, host_file)
+    except device_errors.AdbCommandFailedError:
+      raise RuntimeError(
+          'Cannot pull the trace file. Have you granted Storage permission to '
+          'the browser? (Android Settings -> Apps -> [the browser app] -> '
+          'Permissions -> Storage)')
     return host_file
