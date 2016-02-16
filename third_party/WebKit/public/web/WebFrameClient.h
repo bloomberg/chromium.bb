@@ -113,19 +113,19 @@ public:
 
     // May return null.
     // WebContentDecryptionModule* may be null if one has not yet been set.
-    virtual WebMediaPlayer* createMediaPlayer(WebLocalFrame*, WebMediaPlayer::LoadType, const WebURL&, WebMediaPlayerClient*, WebMediaPlayerEncryptedMediaClient*, WebContentDecryptionModule*, const WebString& sinkId, WebMediaSession*) { return 0; }
+    virtual WebMediaPlayer* createMediaPlayer(WebMediaPlayer::LoadType, const WebURL&, WebMediaPlayerClient*, WebMediaPlayerEncryptedMediaClient*, WebContentDecryptionModule*, const WebString& sinkId, WebMediaSession*) { return 0; }
 
     // May return null.
     virtual WebMediaSession* createMediaSession() { return 0; }
 
     // May return null.
-    virtual WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) { return 0; }
+    virtual WebApplicationCacheHost* createApplicationCacheHost(WebApplicationCacheHostClient*) { return 0; }
 
     // May return null.
-    virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebLocalFrame* frame) { return 0; }
+    virtual WebServiceWorkerProvider* createServiceWorkerProvider() { return 0; }
 
     // May return null.
-    virtual WebWorkerContentSettingsClientProxy* createWorkerContentSettingsClientProxy(WebLocalFrame* frame) { return 0; }
+    virtual WebWorkerContentSettingsClientProxy* createWorkerContentSettingsClientProxy() { return 0; }
 
     // Create a new WebPopupMenu. In the "createExternalPopupMenu" form, the
     // client is responsible for rendering the contents of the popup menu.

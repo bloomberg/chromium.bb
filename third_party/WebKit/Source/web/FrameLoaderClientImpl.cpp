@@ -822,7 +822,7 @@ PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
 
     HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
     WebString sinkId(HTMLMediaElementAudioOutputDevice::sinkId(htmlMediaElement));
-    return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, loadType, url,
+    return adoptPtr(webFrame->client()->createMediaPlayer(loadType, url,
         client, &encryptedMedia,
         encryptedMedia.contentDecryptionModule(), sinkId, webMediaSession));
 }
@@ -980,7 +980,7 @@ PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerP
 {
     if (!m_webFrame->client())
         return nullptr;
-    return adoptPtr(m_webFrame->client()->createServiceWorkerProvider(m_webFrame));
+    return adoptPtr(m_webFrame->client()->createServiceWorkerProvider());
 }
 
 bool FrameLoaderClientImpl::isControlledByServiceWorker(DocumentLoader& loader)
@@ -1004,7 +1004,7 @@ PassOwnPtr<WebApplicationCacheHost> FrameLoaderClientImpl::createApplicationCach
 {
     if (!m_webFrame->client())
         return nullptr;
-    return adoptPtr(m_webFrame->client()->createApplicationCacheHost(m_webFrame, client));
+    return adoptPtr(m_webFrame->client()->createApplicationCacheHost(client));
 }
 
 void FrameLoaderClientImpl::dispatchDidChangeManifest()

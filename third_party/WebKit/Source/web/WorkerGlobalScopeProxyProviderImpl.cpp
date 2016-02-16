@@ -52,7 +52,7 @@ WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalSc
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
-        provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerContentSettingsClientProxy(webFrame)));
+        provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerContentSettingsClientProxy()));
         // FIXME: call provideServiceWorkerContainerClientToWorker here when we
         // support ServiceWorker in dedicated workers (http://crbug.com/371690)
         return new DedicatedWorkerMessagingProxy(worker, workerClients.release());

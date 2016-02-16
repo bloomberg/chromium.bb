@@ -2451,7 +2451,6 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 }
 
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
-    blink::WebLocalFrame* frame,
     blink::WebMediaPlayer::LoadType load_type,
     const blink::WebURL& url,
     WebMediaPlayerClient* client,
@@ -2470,13 +2469,13 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   if (!web_stream.isNull())
     return CreateWebMediaPlayerForMediaStream(client, sink_id,
-                                              frame->securityOrigin());
+                                              frame_->securityOrigin());
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
   scoped_refptr<media::RestartableAudioRendererSink> audio_renderer_sink =
       render_thread->GetAudioRendererMixerManager()->CreateInput(
-          routing_id_, sink_id.utf8(), frame->securityOrigin());
+          routing_id_, sink_id.utf8(), frame_->securityOrigin());
   media::WebMediaPlayerParams::Context3DCB context_3d_cb =
       base::Bind(&GetSharedMainThreadContext3D);
 
@@ -2532,11 +2531,12 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   }
 #endif  // defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)
 
-  if (!url_index_.get() || url_index_->frame() != frame)
-    url_index_.reset(new media::UrlIndex(frame));
+  if (!url_index_.get() || url_index_->frame() != frame_)
+    url_index_.reset(new media::UrlIndex(frame_));
 
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
-      frame, client, encrypted_client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
+      frame_, client, encrypted_client,
+      GetWebMediaPlayerDelegate()->AsWeakPtr(),
       std::move(media_renderer_factory), GetCdmFactory(), url_index_, params);
 
 #if defined(OS_ANDROID)  // WMPI_CAST
@@ -2556,24 +2556,20 @@ blink::WebMediaSession* RenderFrameImpl::createMediaSession() {
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
-    blink::WebLocalFrame* frame,
     blink::WebApplicationCacheHostClient* client) {
-  if (!frame || !frame->view())
+  if (!frame_ || !frame_->view())
     return NULL;
-  DCHECK_EQ(frame_, frame);
   return new RendererWebApplicationCacheHostImpl(
-      RenderViewImpl::FromWebView(frame->view()), client,
+      RenderViewImpl::FromWebView(frame_->view()), client,
       RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy());
 }
 
 blink::WebWorkerContentSettingsClientProxy*
-RenderFrameImpl::createWorkerContentSettingsClientProxy(
-    blink::WebLocalFrame* frame) {
-  if (!frame || !frame->view())
+RenderFrameImpl::createWorkerContentSettingsClientProxy() {
+  if (!frame_ || !frame_->view())
     return NULL;
-  DCHECK_EQ(frame_, frame);
   return GetContentClient()->renderer()->CreateWorkerContentSettingsClientProxy(
-      this, frame);
+      this, frame_);
 }
 
 WebExternalPopupMenu* RenderFrameImpl::createExternalPopupMenu(
@@ -2606,16 +2602,15 @@ blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebLocalFrame* frame) {
   return &cookie_jar_;
 }
 
-blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
-    blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
+blink::WebServiceWorkerProvider*
+RenderFrameImpl::createServiceWorkerProvider() {
   // At this point we should have non-null data source.
-  DCHECK(frame->dataSource());
+  DCHECK(frame_->dataSource());
   if (!ChildThreadImpl::current())
     return nullptr;  // May be null in some tests.
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
-          DocumentState::FromDataSource(frame->dataSource()));
+          DocumentState::FromDataSource(frame_->dataSource()));
   DCHECK(provider);
   if (!provider->context()) {
     // The context can be null when the frame is sandboxed.

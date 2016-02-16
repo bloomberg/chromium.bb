@@ -413,7 +413,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                  const blink::WebPluginParams& params) override;
   blink::WebMediaPlayer* createMediaPlayer(
-      blink::WebLocalFrame* frame,
       blink::WebMediaPlayer::LoadType load_type,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
@@ -423,16 +422,14 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebMediaSession* media_session) override;
   blink::WebMediaSession* createMediaSession() override;
   blink::WebApplicationCacheHost* createApplicationCacheHost(
-      blink::WebLocalFrame* frame,
       blink::WebApplicationCacheHostClient* client) override;
   blink::WebWorkerContentSettingsClientProxy*
-  createWorkerContentSettingsClientProxy(blink::WebLocalFrame* frame) override;
+  createWorkerContentSettingsClientProxy() override;
   blink::WebExternalPopupMenu* createExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client) override;
   blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame) override;
-  blink::WebServiceWorkerProvider* createServiceWorkerProvider(
-      blink::WebLocalFrame* frame) override;
+  blink::WebServiceWorkerProvider* createServiceWorkerProvider() override;
   void didAccessInitialDocument(blink::WebLocalFrame* frame) override;
   blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,

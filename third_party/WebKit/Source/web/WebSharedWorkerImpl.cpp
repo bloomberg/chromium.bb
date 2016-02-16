@@ -144,7 +144,7 @@ void WebSharedWorkerImpl::initializeLoader()
     loadShadowPage();
 }
 
-WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient* appcacheHostClient)
+WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebApplicationCacheHostClient* appcacheHostClient)
 {
     return m_client->createApplicationCacheHost(appcacheHostClient);
 }
