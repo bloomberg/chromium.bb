@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -67,6 +68,8 @@ final class JavaUrlRequest implements UrlRequest {
     private String mInitialMethod;
     private UploadDataProvider mUploadDataProvider;
     private Executor mUploadExecutor;
+    private AtomicBoolean mUploadProviderClosed = new AtomicBoolean(false);
+
     /**
      * Holds a subset of StatusValues - {@link State#STARTED} can represent
      * {@link Status#SENDING_REQUEST} or {@link Status#WAITING_FOR_RESPONSE}. While the distinction
@@ -409,6 +412,7 @@ final class JavaUrlRequest implements UrlRequest {
     private void enterErrorState(State previousState, final UrlRequestException error) {
         if (mState.compareAndSet(previousState, State.ERROR)) {
             fireDisconnect();
+            fireCloseUploadDataProvider();
             mCallbackAsync.onFailed(mUrlResponseInfo, error);
         }
     }
@@ -492,7 +496,10 @@ final class JavaUrlRequest implements UrlRequest {
                 // TODO(clm) actual redirect handling? post -> get and whatnot?
                 if (responseCode >= 300 && responseCode < 400) {
                     fireRedirectReceived(mUrlResponseInfo.getAllHeaders());
-                } else if (responseCode >= 400) {
+                    return;
+                }
+                fireCloseUploadDataProvider();
+                if (responseCode >= 400) {
                     mResponseChannel = InputStreamChannel.wrap(connection.getErrorStream());
                     mCallbackAsync.onResponseStarted(mUrlResponseInfo);
                 } else {
@@ -501,6 +508,21 @@ final class JavaUrlRequest implements UrlRequest {
                 }
             }
         }));
+    }
+
+    private void fireCloseUploadDataProvider() {
+        if (mUploadDataProvider != null && mUploadProviderClosed.compareAndSet(false, true)) {
+            try {
+                mUploadExecutor.execute(uploadErrorSetting(new CheckedRunnable() {
+                    @Override
+                    public void run() throws Exception {
+                        mUploadDataProvider.close();
+                    }
+                }));
+            } catch (RejectedExecutionException e) {
+                Log.e(TAG, "Exception when closing uploadDataProvider", e);
+            }
+        }
     }
 
     private void fireRedirectReceived(final Map<String, List<String>> headerFields) {
@@ -662,6 +684,7 @@ final class JavaUrlRequest implements UrlRequest {
             case STARTED:
             case READING:
                 fireDisconnect();
+                fireCloseUploadDataProvider();
                 mCallbackAsync.onCanceled(mUrlResponseInfo);
                 break;
             // The rest are all termination cases - we're too late to cancel.

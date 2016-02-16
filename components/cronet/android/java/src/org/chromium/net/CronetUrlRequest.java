@@ -208,7 +208,16 @@ final class CronetUrlRequest implements UrlRequest {
                         throw new IllegalArgumentException(
                                 "Requests with upload data must have a Content-Type.");
                     }
-                    mUploadDataStream.attachToRequest(this, mUrlRequestAdapter);
+                    mStarted = true;
+                    mUploadDataStream.attachToRequest(this, mUrlRequestAdapter, new Runnable() {
+                        @Override
+                        public void run() {
+                            synchronized (mUrlRequestAdapterLock) {
+                                startInternalLocked();
+                            }
+                        }
+                    });
+                    return;
                 }
             } catch (RuntimeException e) {
                 // If there's an exception, cleanup and then throw the
@@ -216,15 +225,20 @@ final class CronetUrlRequest implements UrlRequest {
                 destroyRequestAdapter(false);
                 throw e;
             }
-            if (mDisableCache) {
-                nativeDisableCache(mUrlRequestAdapter);
-            }
             mStarted = true;
-            if (mRequestMetricsAccumulator != null) {
-                mRequestMetricsAccumulator.onRequestStarted();
-            }
-            nativeStart(mUrlRequestAdapter);
+            startInternalLocked();
         }
+    }
+
+    @GuardedBy("mUrlRequestAdapterLock")
+    private void startInternalLocked() {
+        if (mDisableCache) {
+            nativeDisableCache(mUrlRequestAdapter);
+        }
+        if (mRequestMetricsAccumulator != null) {
+            mRequestMetricsAccumulator.onRequestStarted();
+        }
+        nativeStart(mUrlRequestAdapter);
     }
 
     @Override
@@ -317,8 +331,8 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     @VisibleForTesting
-    CronetUploadDataStream getUploadDataStreamForTesting() {
-        return mUploadDataStream;
+    void setOnDestroyedUploadCallbackForTesting(Runnable onDestroyedUploadCallbackForTesting) {
+        mUploadDataStream.setOnDestroyedCallbackForTesting(onDestroyedUploadCallbackForTesting);
     }
 
     /**
@@ -429,7 +443,7 @@ final class CronetUrlRequest implements UrlRequest {
     /**
      * Called when UploadDataProvider encounters an error.
      */
-    void onUploadException(Exception e) {
+    void onUploadException(Throwable e) {
         UrlRequestException uploadError =
                 new UrlRequestException("Exception received from UploadDataProvider", e);
         Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in upload method", e);

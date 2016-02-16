@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -16,13 +17,15 @@ import java.nio.ByteBuffer;
  * <p>An upload is either always chunked, across multiple uploads if the data
  * ends up being sent more than once, or never chunked.
  */
-public abstract class UploadDataProvider {
+public abstract class UploadDataProvider implements Closeable {
     /**
      * If this is a non-chunked upload, returns the length of the upload. Must
      * always return -1 if this is a chunked upload.
+     *
      * @return the length of the upload for non-chunked uploads, -1 otherwise.
+     * @throws IOException if any IOException occurred during the process.
      */
-    public abstract long getLength();
+    public abstract long getLength() throws IOException;
 
     /**
      * Reads upload data into {@code byteBuffer}. Upon completion, the buffer's
@@ -72,4 +75,14 @@ public abstract class UploadDataProvider {
      *         {@link UrlRequestException}.
      */
     public abstract void rewind(UploadDataSink uploadDataSink) throws IOException;
+
+    /**
+     * Called when this UploadDataProvider is no longer needed by a request, so that resources
+     * (like a file) can be explicitly released.
+     *
+     * @throws IOException if any IOException occurred during the process. This will cause the
+     * request to fail if it is not yet complete; otherwise it will be logged.
+     */
+    @Override
+    public void close() throws IOException {}
 }

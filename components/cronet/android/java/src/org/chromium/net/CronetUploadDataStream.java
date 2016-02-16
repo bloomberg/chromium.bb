@@ -4,20 +4,24 @@
 
 package org.chromium.net;
 
+import android.util.Log;
+
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
-import java.util.concurrent.RejectedExecutionException;
+
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * CronetUploadDataStream handles communication between an upload body
  * encapsulated in the embedder's {@link UploadDataSink} and a C++
  * UploadDataStreamAdapter, which it owns. It's attached to a {@link
- * CronetURLRequest}'s during the construction of request's native C++ objects
+ * CronetUrlRequest}'s during the construction of request's native C++ objects
  * on the network thread, though it's created on one of the embedder's threads.
  * It is called by the UploadDataStreamAdapter on the network thread, but calls
  * into the UploadDataSink and the UploadDataStreamAdapter on the Executor
@@ -25,10 +29,11 @@ import java.util.concurrent.RejectedExecutionException;
  */
 @JNINamespace("cronet")
 final class CronetUploadDataStream implements UploadDataSink {
+    private static final String TAG = "CronetUploadDataStream";
     // These are never changed, once a request starts.
     private final Executor mExecutor;
     private final UploadDataProvider mDataProvider;
-    private final long mLength;
+    private long mLength;
     private CronetUrlRequest mRequest;
 
     // Reusable read task, to reduce redundant memory allocation.
@@ -39,19 +44,12 @@ final class CronetUploadDataStream implements UploadDataSink {
                 if (mUploadDataStreamAdapter == 0) {
                     return;
                 }
-                if (mReading) {
-                    throw new IllegalStateException(
-                            "Unexpected readData call. Already reading.");
-                }
-                if (mRewinding) {
-                    throw new IllegalStateException(
-                            "Unexpected readData call. Already rewinding.");
-                }
+                checkState(UserCallback.NOT_IN_CALLBACK);
                 if (mByteBuffer == null) {
                     throw new IllegalStateException(
                             "Unexpected readData call. Buffer is null");
                 }
-                mReading = true;
+                mInWhichUserCallback = UserCallback.READ;
             }
             try {
                 mDataProvider.read(CronetUploadDataStream.this, mByteBuffer);
@@ -74,12 +72,18 @@ final class CronetUploadDataStream implements UploadDataSink {
     // Native adapter object, owned by the CronetUploadDataStream. It's only
     // deleted after the native UploadDataStream object is destroyed. All access
     // to the adapter is synchronized, for safe usage and cleanup.
+    @GuardedBy("mLock")
     private long mUploadDataStreamAdapter = 0;
-
-    private boolean mReading = false;
-    private boolean mRewinding = false;
+    enum UserCallback {
+        READ,
+        REWIND,
+        GET_LENGTH,
+        NOT_IN_CALLBACK,
+    }
+    @GuardedBy("mLock")
+    private UserCallback mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
+    @GuardedBy("mLock")
     private boolean mDestroyAdapterPostponed = false;
-
     private Runnable mOnDestroyedCallbackForTesting;
 
     /**
@@ -87,11 +91,9 @@ final class CronetUploadDataStream implements UploadDataSink {
      * @param dataProvider the UploadDataProvider to read data from.
      * @param executor the Executor to execute UploadDataProvider tasks.
      */
-    public CronetUploadDataStream(UploadDataProvider dataProvider,
-            Executor executor) {
+    public CronetUploadDataStream(UploadDataProvider dataProvider, Executor executor) {
         mExecutor = executor;
         mDataProvider = dataProvider;
-        mLength = mDataProvider.getLength();
     }
 
     /**
@@ -121,15 +123,8 @@ final class CronetUploadDataStream implements UploadDataSink {
                     if (mUploadDataStreamAdapter == 0) {
                         return;
                     }
-                    if (mReading) {
-                        throw new IllegalStateException(
-                                "Unexpected rewind call. Already reading");
-                    }
-                    if (mRewinding) {
-                        throw new IllegalStateException(
-                                "Unexpected rewind call. Already rewinding");
-                    }
-                    mRewinding = true;
+                    checkState(UserCallback.NOT_IN_CALLBACK);
+                    mInWhichUserCallback = UserCallback.REWIND;
                 }
                 try {
                     mDataProvider.rewind(CronetUploadDataStream.this);
@@ -139,6 +134,14 @@ final class CronetUploadDataStream implements UploadDataSink {
             }
         };
         postTaskToExecutor(task);
+    }
+
+    @GuardedBy("mLock")
+    private void checkState(UserCallback mode) {
+        if (mInWhichUserCallback != mode) {
+            throw new IllegalStateException(
+                    "Expected " + mode + ", but was " + mInWhichUserCallback);
+        }
     }
 
     /**
@@ -156,14 +159,13 @@ final class CronetUploadDataStream implements UploadDataSink {
      * Helper method called when an exception occurred. This method resets
      * states and propagates the error to the request.
      */
-    private void onError(Exception exception) {
+    private void onError(Throwable exception) {
         synchronized (mLock) {
-            if (!mReading && !mRewinding) {
+            if (mInWhichUserCallback == UserCallback.NOT_IN_CALLBACK) {
                 throw new IllegalStateException(
-                        "There is no read or rewind in progress.");
+                        "There is no read or rewind or length check in progress.");
             }
-            mReading = false;
-            mRewinding = false;
+            mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
             mByteBuffer = null;
             destroyAdapterIfPostponed();
         }
@@ -178,9 +180,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     @Override
     public void onReadSucceeded(boolean lastChunk) {
         synchronized (mLock) {
-            if (!mReading) {
-                throw new IllegalStateException("Non-existent read succeeded.");
-            }
+            checkState(UserCallback.READ);
             if (lastChunk && mLength >= 0) {
                 throw new IllegalArgumentException(
                         "Non-chunked upload can't have last chunk");
@@ -188,7 +188,7 @@ final class CronetUploadDataStream implements UploadDataSink {
             int bytesRead = mByteBuffer.position();
 
             mByteBuffer = null;
-            mReading = false;
+            mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
 
             destroyAdapterIfPostponed();
             // Request may been canceled already.
@@ -203,9 +203,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     @Override
     public void onReadError(Exception exception) {
         synchronized (mLock) {
-            if (!mReading) {
-                throw new IllegalStateException("Non-existent read failed.");
-            }
+            checkState(UserCallback.READ);
             onError(exception);
         }
     }
@@ -213,11 +211,8 @@ final class CronetUploadDataStream implements UploadDataSink {
     @Override
     public void onRewindSucceeded() {
         synchronized (mLock) {
-            if (!mRewinding) {
-                throw new IllegalStateException(
-                        "Non-existent rewind succeeded.");
-            }
-            mRewinding = false;
+            checkState(UserCallback.REWIND);
+            mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
             // Request may been canceled already.
             if (mUploadDataStreamAdapter == 0) {
                 return;
@@ -229,9 +224,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     @Override
     public void onRewindError(Exception exception) {
         synchronized (mLock) {
-            if (!mRewinding) {
-                throw new IllegalStateException("Non-existent rewind failed.");
-            }
+            checkState(UserCallback.REWIND);
             onError(exception);
         }
     }
@@ -242,7 +235,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     private void postTaskToExecutor(Runnable task) {
         try {
             mExecutor.execute(task);
-        } catch (RejectedExecutionException e) {
+        } catch (Throwable e) {
             // Just fail the request. The request is smart enough to handle the
             // case where it was already canceled by the embedder.
             mRequest.onUploadException(e);
@@ -256,7 +249,7 @@ final class CronetUploadDataStream implements UploadDataSink {
      */
     private void destroyAdapter() {
         synchronized (mLock) {
-            if (mReading) {
+            if (mInWhichUserCallback == UserCallback.READ) {
                 // Wait for the read to complete before destroy the adapter.
                 mDestroyAdapterPostponed = true;
                 return;
@@ -270,6 +263,16 @@ final class CronetUploadDataStream implements UploadDataSink {
                 mOnDestroyedCallbackForTesting.run();
             }
         }
+        postTaskToExecutor(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mDataProvider.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Exception thrown when closing", e);
+                }
+            }
+        });
     }
 
     /**
@@ -279,7 +282,7 @@ final class CronetUploadDataStream implements UploadDataSink {
      */
     private void destroyAdapterIfPostponed() {
         synchronized (mLock) {
-            if (mReading) {
+            if (mInWhichUserCallback == UserCallback.READ) {
                 throw new IllegalStateException(
                         "Method should not be called when read has not completed.");
             }
@@ -296,10 +299,28 @@ final class CronetUploadDataStream implements UploadDataSink {
      * an interface with just this method, to minimize CronetURLRequest's
      * dependencies on each upload stream type.
      */
-    void attachToRequest(CronetUrlRequest request, long requestAdapter) {
+    void attachToRequest(final CronetUrlRequest request, final long requestAdapter,
+            final Runnable afterAttachCallback) {
         mRequest = request;
-        mUploadDataStreamAdapter =
-                nativeAttachUploadDataToRequest(requestAdapter, mLength);
+        postTaskToExecutor(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (mLock) {
+                    mInWhichUserCallback = UserCallback.GET_LENGTH;
+                }
+                try {
+                    mLength = mDataProvider.getLength();
+                } catch (Throwable t) {
+                    onError(t);
+                }
+                synchronized (mLock) {
+                    mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
+                    mUploadDataStreamAdapter =
+                            nativeAttachUploadDataToRequest(requestAdapter, mLength);
+                }
+                afterAttachCallback.run();
+            }
+        });
     }
 
     /**
@@ -308,8 +329,9 @@ final class CronetUploadDataStream implements UploadDataSink {
      * @return the address of the native CronetUploadDataStream object.
      */
     @VisibleForTesting
-    long createUploadDataStreamForTesting() {
+    long createUploadDataStreamForTesting() throws IOException {
         mUploadDataStreamAdapter = nativeCreateAdapterForTesting();
+        mLength = mDataProvider.getLength();
         return nativeCreateUploadDataStreamForTesting(mLength,
                 mUploadDataStreamAdapter);
     }

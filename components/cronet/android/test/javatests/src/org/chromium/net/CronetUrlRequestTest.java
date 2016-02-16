@@ -908,12 +908,13 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.build().start();
         callback.blockForDone();
 
-        assertEquals(0, dataProvider.getLength());
+        assertEquals(0, dataProvider.getUploadedLength());
         assertEquals(0, dataProvider.getNumReadCalls());
         assertEquals(0, dataProvider.getNumRewindCalls());
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("", callback.mResponseAsString);
+        dataProvider.assertClosed();
     }
 
     @SmallTest
@@ -930,8 +931,9 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
-        assertEquals(4, dataProvider.getLength());
+        assertEquals(4, dataProvider.getUploadedLength());
         assertEquals(1, dataProvider.getNumReadCalls());
         assertEquals(0, dataProvider.getNumRewindCalls());
 
@@ -957,8 +959,9 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
-        assertEquals(16, dataProvider.getLength());
+        assertEquals(16, dataProvider.getUploadedLength());
         assertEquals(4, dataProvider.getNumReadCalls());
         assertEquals(0, dataProvider.getNumRewindCalls());
 
@@ -984,8 +987,9 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
-        assertEquals(16, dataProvider.getLength());
+        assertEquals(16, dataProvider.getUploadedLength());
         assertEquals(4, dataProvider.getNumReadCalls());
         assertEquals(0, dataProvider.getNumRewindCalls());
 
@@ -1007,6 +1011,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("POST", callback.mResponseAsString);
@@ -1029,6 +1034,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("PUT", callback.mResponseAsString);
@@ -1049,6 +1055,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         // 1 read call before the rewind, 1 after.
         assertEquals(2, dataProvider.getNumReadCalls());
@@ -1072,6 +1079,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.setUploadDataProvider(dataProvider, callback.getExecutor());
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
+        dataProvider.assertClosed();
         callback.blockForDone();
 
         // 1 read call before the rewind, 1 after.
@@ -1099,12 +1107,40 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertEquals(1, dataProvider.getNumReadCalls());
         assertEquals(0, dataProvider.getNumRewindCalls());
 
         assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
         assertEquals("Sync read failure", callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadLengthFailSync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.setLengthFailure();
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(0, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertEquals("Sync length failure", callback.mError.getCause().getMessage());
         assertEquals(null, callback.mResponseInfo);
     }
 
@@ -1125,6 +1161,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertEquals(1, dataProvider.getNumReadCalls());
         assertEquals(0, dataProvider.getNumRewindCalls());
@@ -1151,6 +1188,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertEquals(1, dataProvider.getNumReadCalls());
         assertEquals(0, dataProvider.getNumRewindCalls());
@@ -1176,6 +1214,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertEquals(1, dataProvider.getNumReadCalls());
         assertEquals(1, dataProvider.getNumRewindCalls());
@@ -1201,6 +1240,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertEquals(1, dataProvider.getNumReadCalls());
         assertEquals(1, dataProvider.getNumRewindCalls());
@@ -1226,6 +1266,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertEquals(1, dataProvider.getNumReadCalls());
         assertEquals(1, dataProvider.getNumRewindCalls());
@@ -1249,10 +1290,11 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.setUploadDataProvider(dataProvider, callback.getExecutor());
         builder.addHeader("Content-Type", "useless/string");
 
-        assertEquals(-1, dataProvider.getLength());
+        assertEquals(-1, dataProvider.getUploadedLength());
 
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         // 1 read call for one data chunk.
         assertEquals(1, dataProvider.getNumReadCalls());
@@ -1276,10 +1318,11 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.setUploadDataProvider(dataProvider, callback.getExecutor());
         builder.addHeader("Content-Type", "useless/string");
 
-        assertEquals(-1, dataProvider.getLength());
+        assertEquals(-1, dataProvider.getUploadedLength());
 
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         // 2 read call for the first two data chunks, and 1 for final chunk.
         assertEquals(3, dataProvider.getNumReadCalls());
@@ -1303,6 +1346,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();
         callback.blockForDone();
+        dataProvider.assertClosed();
 
         assertNull(callback.mResponseInfo);
         if (testingJavaImpl()) {
@@ -1500,9 +1544,8 @@ public class CronetUrlRequestTest extends CronetTestBase {
         builder.setUploadDataProvider(dataProvider, callback.getExecutor());
         builder.addHeader("Content-Type", "useless/string");
         CronetUrlRequest request = (CronetUrlRequest) builder.build();
-        CronetUploadDataStream uploadDataStream = request.getUploadDataStreamForTesting();
         final ConditionVariable uploadDataStreamAdapterDestroyed = new ConditionVariable();
-        uploadDataStream.setOnDestroyedCallbackForTesting(new Runnable() {
+        request.setOnDestroyedUploadCallbackForTesting(new Runnable() {
             @Override
             public void run() {
                 uploadDataStreamAdapterDestroyed.open();

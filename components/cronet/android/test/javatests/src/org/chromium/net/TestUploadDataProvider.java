@@ -4,10 +4,14 @@
 
 package org.chromium.net;
 
+import android.os.ConditionVariable;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An UploadDataProvider implementation used in tests.
@@ -42,6 +46,8 @@ class TestUploadDataProvider extends UploadDataProvider {
 
     private FailMode mRewindFailMode = FailMode.NONE;
 
+    private FailMode mLengthFailMode = FailMode.NONE;
+
     private int mNumReadCalls = 0;
     private int mNumRewindCalls = 0;
 
@@ -52,8 +58,10 @@ class TestUploadDataProvider extends UploadDataProvider {
     // Used to ensure there are no read/rewind requests after a failure.
     private boolean mFailed = false;
 
-    TestUploadDataProvider(SuccessCallbackMode successCallbackMode,
-            Executor executor) {
+    private AtomicBoolean mClosed = new AtomicBoolean(false);
+    private ConditionVariable mAwaitingClose = new ConditionVariable(false);
+
+    TestUploadDataProvider(SuccessCallbackMode successCallbackMode, final Executor executor) {
         mSuccessCallbackMode = successCallbackMode;
         mExecutor = executor;
     }
@@ -71,6 +79,10 @@ class TestUploadDataProvider extends UploadDataProvider {
     public void setReadFailure(int readFailIndex, FailMode readFailMode) {
         mReadFailIndex = readFailIndex;
         mReadFailMode = readFailMode;
+    }
+
+    public void setLengthFailure() {
+        mLengthFailMode = FailMode.THROWN;
     }
 
     public void setRewindFailure(FailMode rewindFailMode) {
@@ -93,7 +105,17 @@ class TestUploadDataProvider extends UploadDataProvider {
      * Returns the cumulative length of all data added by calls to addRead.
      */
     @Override
-    public long getLength() {
+    public long getLength() throws IOException {
+        if (mClosed.get()) {
+            throw new ClosedChannelException();
+        }
+        if (mLengthFailMode == FailMode.THROWN) {
+            throw new IllegalStateException("Sync length failure");
+        }
+        return getUploadedLength();
+    }
+
+    public long getUploadedLength() {
         if (mChunked) {
             return -1;
         }
@@ -109,6 +131,9 @@ class TestUploadDataProvider extends UploadDataProvider {
             final ByteBuffer byteBuffer) throws IOException {
         int currentReadCall = mNumReadCalls;
         ++mNumReadCalls;
+        if (mClosed.get()) {
+            throw new ClosedChannelException();
+        }
         assertIdle();
 
         if (maybeFailRead(currentReadCall, uploadDataSink)) {
@@ -149,6 +174,9 @@ class TestUploadDataProvider extends UploadDataProvider {
 
     public void rewind(final UploadDataSink uploadDataSink) throws IOException {
         ++mNumRewindCalls;
+        if (mClosed.get()) {
+            throw new ClosedChannelException();
+        }
         assertIdle();
 
         if (maybeFailRewind(uploadDataSink)) {
@@ -239,6 +267,21 @@ class TestUploadDataProvider extends UploadDataProvider {
                 return true;
             default:
                 return false;
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (!mClosed.compareAndSet(false, true)) {
+            throw new AssertionError("Closed twice");
+        }
+        mAwaitingClose.open();
+    }
+
+    public void assertClosed() {
+        mAwaitingClose.block();
+        if (!mClosed.get()) {
+            throw new AssertionError("Was not closed");
         }
     }
 }
