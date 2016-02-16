@@ -7,13 +7,8 @@
 
 #include <string>
 
-#if defined(__OBJC__)
 @class UIColor;
 @class UIView;
-#else
-class UIColor;
-class UIView;
-#endif  // __OBJC__
 
 namespace web {
 
