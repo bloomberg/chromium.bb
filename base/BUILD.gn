@@ -20,6 +20,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
+import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
 import("//testing/test.gni")
@@ -979,6 +980,11 @@ component("base") {
     ":build_date",
     ":debugging_flags",
   ]
+
+  # Needed for <atomic> if using newer C++ library than sysroot
+  if (!use_sysroot && (is_android || is_linux)) {
+    libs = [ "atomic" ]
+  }
 
   # Allow more direct string conversions on platforms with native utf8
   # strings

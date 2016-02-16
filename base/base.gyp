@@ -139,6 +139,14 @@
             }],
           ],
         }],
+        ['use_sysroot==0 and (OS == "android" or OS == "linux")', {
+          'link_settings': {
+            'libraries': [
+              # Needed for <atomic> when building with newer C++ library.
+              '-latomic',
+            ],
+          },
+        }],
         ['OS == "win"', {
           # Specify delayload for base.dll.
           'msvs_settings': {

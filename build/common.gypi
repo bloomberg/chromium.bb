@@ -179,6 +179,7 @@
         'branding_path_component%': '<(branding)',
         'host_arch%': '<(host_arch)',
         'target_arch%': '<(target_arch)',
+        'use_sysroot%': '<(use_sysroot)',
 
         # Set to true to instrument the code with function call logger.
         # See src/third_party/cygprofile/cyg-profile.cc for details.
@@ -375,6 +376,7 @@
       'branding_path_component%': '<(branding_path_component)',
       'arm_version%': '<(arm_version)',
       'sysroot%': '<(sysroot)',
+      'use_sysroot%': '<(use_sysroot)',
       'chroot_cmd%': '<(chroot_cmd)',
       'system_libdir%': '<(system_libdir)',
       'order_profiling%': '<(order_profiling)',
@@ -1180,6 +1182,7 @@
     'arm_neon%': '<(arm_neon)',
     'arm_neon_optional%': '<(arm_neon_optional)',
     'sysroot%': '<(sysroot)',
+    'use_sysroot%': '<(use_sysroot)',
     'pkg-config%': '<(pkg-config)',
     'chroot_cmd%': '<(chroot_cmd)',
     'system_libdir%': '<(system_libdir)',
