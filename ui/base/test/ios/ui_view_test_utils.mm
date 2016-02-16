@@ -10,17 +10,6 @@ namespace ui {
 namespace test {
 namespace uiview_utils {
 
-void CancelAlerts() {
-  for (UIWindow* window in [UIApplication sharedApplication].windows) {
-    for (UIView* view in [window subviews]) {
-      if ([view isKindOfClass:[UIAlertView class]]) {
-        UIAlertView* alertView = (UIAlertView*)view;
-        [alertView dismissWithClickedButtonIndex:0 animated:NO];
-      }
-    }
-  }
-}
-
 void ForceViewRendering(UIView* view) {
   DCHECK(view);
   CALayer* layer = view.layer;

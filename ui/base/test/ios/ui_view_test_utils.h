@@ -11,9 +11,6 @@ namespace ui {
 namespace test {
 namespace uiview_utils {
 
-// Cancels any visible UIAlertViews.
-void CancelAlerts();
-
 // Forces rendering of a UIView. This is used in tests to make sure that UIKit
 // optimizations don't have the views return the previous values (such as
 // zoomScale).
