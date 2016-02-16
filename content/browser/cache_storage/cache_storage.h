@@ -152,9 +152,11 @@ class CONTENT_EXPORT CacheStorage {
   void DeleteCacheDidClose(const std::string& cache_name,
                            const BoolAndErrorCallback& callback,
                            const StringVector& ordered_cache_names,
-                           const scoped_refptr<CacheStorageCache>& cache);
+                           const scoped_refptr<CacheStorageCache>& cache,
+                           int64_t cache_size);
   void DeleteCacheDidWriteIndex(const std::string& cache_name,
                                 const BoolAndErrorCallback& callback,
+                                int cache_size,
                                 bool success);
   void DeleteCacheDidCleanUp(const BoolAndErrorCallback& callback,
                              bool success);
@@ -236,6 +238,12 @@ class CONTENT_EXPORT CacheStorage {
   // without having the open the cache again.
   std::map<const CacheStorageCache*, scoped_refptr<CacheStorageCache>>
       preserved_caches_;
+
+  // The quota manager.
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+
+  // The origin that this CacheStorage is associated with.
+  GURL origin_;
 
   base::WeakPtrFactory<CacheStorage> weak_factory_;
 

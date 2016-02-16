@@ -460,6 +460,23 @@ void CacheStorageCache::Size(const SizeCallback& callback) {
   SizeImpl(callback);
 }
 
+void CacheStorageCache::GetSizeThenClose(const SizeCallback& callback) {
+  if (!LazyInitialize()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, 0));
+    return;
+  }
+
+  SizeCallback pending_callback =
+      base::Bind(&CacheStorageCache::PendingSizeCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+
+  scheduler_->ScheduleOperation(
+      base::Bind(&CacheStorageCache::SizeImpl, weak_ptr_factory_.GetWeakPtr(),
+                 base::Bind(&CacheStorageCache::GetSizeThenCloseDidGetSize,
+                            weak_ptr_factory_.GetWeakPtr(), pending_callback)));
+}
+
 CacheStorageCache::CacheStorageCache(
     const GURL& origin,
     const base::FilePath& path,
@@ -1159,6 +1176,11 @@ void CacheStorageCache::SizeImpl(const SizeCallback& callback) {
   int64_t size = backend_state_ == BACKEND_OPEN ? cache_size_ : 0;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::Bind(callback, size));
+}
+
+void CacheStorageCache::GetSizeThenCloseDidGetSize(const SizeCallback& callback,
+                                                   int64_t cache_size) {
+  CloseImpl(base::Bind(callback, cache_size));
 }
 
 void CacheStorageCache::CreateBackend(const ErrorCallback& callback) {

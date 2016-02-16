@@ -404,6 +404,18 @@ TEST_P(CacheStorageManagerTestP, DeleteTwice) {
   EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
 }
 
+TEST_P(CacheStorageManagerTestP, DeleteCacheReducesOriginSize) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  // The quota manager gets updated after the put operation runs its callback so
+  // run the event loop.
+  base::RunLoop().RunUntilIdle();
+  int64_t put_delta = quota_manager_proxy_->last_notified_delta();
+  EXPECT_LT(0, put_delta);
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+  EXPECT_EQ(put_delta, -1 * quota_manager_proxy_->last_notified_delta());
+}
+
 TEST_P(CacheStorageManagerTestP, EmptyKeys) {
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_TRUE(callback_strings_.empty());

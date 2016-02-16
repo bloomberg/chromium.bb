@@ -465,6 +465,8 @@ CacheStorage::CacheStorage(
       origin_path_(path),
       cache_task_runner_(cache_task_runner),
       memory_only_(memory_only),
+      quota_manager_proxy_(quota_manager_proxy),
+      origin_(origin),
       weak_factory_(this) {
   if (memory_only)
     cache_loader_.reset(new MemoryLoader(cache_task_runner_.get(),
@@ -715,14 +717,15 @@ void CacheStorage::HasCacheImpl(const std::string& cache_name,
 
 void CacheStorage::DeleteCacheImpl(const std::string& cache_name,
                                    const BoolAndErrorCallback& callback) {
-  CacheMap::iterator it = cache_map_.find(cache_name);
-  if (it == cache_map_.end()) {
-    callback.Run(false, CACHE_STORAGE_ERROR_NOT_FOUND);
+  scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
+  if (!cache.get()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, false, CACHE_STORAGE_ERROR_NOT_FOUND));
     return;
   }
 
-  base::WeakPtr<CacheStorageCache> cache = it->second;
-  cache_map_.erase(it);
+  CacheMap::iterator map_iter = cache_map_.find(cache_name);
+  cache_map_.erase(map_iter);
 
   // Delete the name from ordered_cache_names_.
   StringVector::iterator iter = std::find(
@@ -730,35 +733,33 @@ void CacheStorage::DeleteCacheImpl(const std::string& cache_name,
   DCHECK(iter != ordered_cache_names_.end());
   ordered_cache_names_.erase(iter);
 
-  base::Closure closure =
-      base::Bind(&CacheStorage::DeleteCacheDidClose, weak_factory_.GetWeakPtr(),
-                 cache_name, callback, ordered_cache_names_,
-                 make_scoped_refptr(cache.get()));
-
-  if (cache) {
-    cache->Close(closure);
-    return;
-  }
-
-  closure.Run();
+  cache->GetSizeThenClose(base::Bind(&CacheStorage::DeleteCacheDidClose,
+                                     weak_factory_.GetWeakPtr(), cache_name,
+                                     callback, ordered_cache_names_, cache));
 }
 
 void CacheStorage::DeleteCacheDidClose(
     const std::string& cache_name,
     const BoolAndErrorCallback& callback,
     const StringVector& ordered_cache_names,
-    const scoped_refptr<CacheStorageCache>& cache /* might be null */) {
+    const scoped_refptr<CacheStorageCache>& cache,
+    int64_t cache_size) {
   cache_loader_->WriteIndex(
       ordered_cache_names,
       base::Bind(&CacheStorage::DeleteCacheDidWriteIndex,
-                 weak_factory_.GetWeakPtr(), cache_name, callback));
+                 weak_factory_.GetWeakPtr(), cache_name, callback, cache_size));
 }
 
 void CacheStorage::DeleteCacheDidWriteIndex(
     const std::string& cache_name,
     const BoolAndErrorCallback& callback,
+    int cache_size,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  quota_manager_proxy_->NotifyStorageModified(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::kStorageTypeTemporary, -1 * cache_size);
 
   cache_loader_->CleanUpDeletedCache(
       cache_name, base::Bind(&CacheStorage::DeleteCacheDidCleanUp,

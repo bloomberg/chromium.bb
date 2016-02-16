@@ -451,6 +451,14 @@ class CacheStorageCacheTest : public testing::Test {
     return callback_size_;
   }
 
+  int64_t GetSizeThenClose() {
+    base::RunLoop run_loop;
+    cache_->GetSizeThenClose(base::Bind(&CacheStorageCacheTest::SizeCallback,
+                                        base::Unretained(this), &run_loop));
+    run_loop.Run();
+    return callback_size_;
+  }
+
   void RequestsCallback(base::RunLoop* run_loop,
                         CacheStorageError error,
                         scoped_ptr<CacheStorageCache::Requests> requests) {
@@ -1034,6 +1042,13 @@ TEST_P(CacheStorageCacheTestP, Size) {
 
   EXPECT_TRUE(Delete(body_request_));
   EXPECT_EQ(0, Size());
+}
+
+TEST_P(CacheStorageCacheTestP, GetSizeThenClose) {
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  int64_t cache_size = Size();
+  EXPECT_EQ(cache_size, GetSizeThenClose());
+  VerifyAllOpsFail();
 }
 
 TEST_P(CacheStorageCacheTestP, OpsFailOnClosedBackendNeverCreated) {

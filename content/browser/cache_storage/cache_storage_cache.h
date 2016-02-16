@@ -114,6 +114,10 @@ class CONTENT_EXPORT CacheStorageCache
   // operations.
   void Size(const SizeCallback& callback);
 
+  // Gets the cache's size, closes the backend, and then runs |callback| with
+  // the cache's size.
+  void GetSizeThenClose(const SizeCallback& callback);
+
   base::FilePath path() const { return path_; }
 
   base::WeakPtr<CacheStorageCache> AsWeakPtr();
@@ -240,6 +244,9 @@ class CONTENT_EXPORT CacheStorageCache
   void CloseImpl(const base::Closure& callback);
 
   void SizeImpl(const SizeCallback& callback);
+
+  void GetSizeThenCloseDidGetSize(const SizeCallback& callback,
+                                  int64_t cache_size);
 
   // Loads the backend and calls the callback with the result (true for
   // success). The callback will always be called. Virtual for tests.
