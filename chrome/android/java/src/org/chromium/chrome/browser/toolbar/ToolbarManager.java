@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -291,6 +292,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         };
 
         mTabObserver = new EmptyTabObserver() {
+            private boolean mIsLoadingNativePage;
+
             @Override
             public void onSSLStateUpdated(Tab tab) {
                 super.onSSLStateUpdated(tab);
@@ -314,8 +317,20 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                if (NativePageFactory.isNativePageUrl(url, tab.isIncognito())) {
+                // Recheck the URL to determine if it is a native page or not.  This was done using
+                // the pending URL in onLoadStarted, but we sanity check the URL here to ensure
+                // the final URL is in the same state.  If the state has changed, update the
+                // progress bar to reflect the correct state.
+                boolean isNativePage = NativePageFactory.isNativePageUrl(url, tab.isIncognito());
+
+                if (isNativePage == mIsLoadingNativePage) return;
+                mIsLoadingNativePage = isNativePage;
+
+                if (mIsLoadingNativePage) {
                     finishLoadProgress(false);
+                } else {
+                    mToolbar.startLoadProgress();
+                    setLoadProgress(tab.getProgress());
                 }
             }
 
@@ -349,7 +364,19 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 updateTabLoadingState(true);
                 mLoadProgressSimulator.cancel();
 
-                if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
+                mIsLoadingNativePage = false;
+
+                NavigationEntry pendingEntry =
+                        tab.getWebContents().getNavigationController().getPendingEntry();
+                // At this point, the URL on the tab is not guaranteed to be correct, so we peek at
+                // the pending URL.  We only use this as a signal for starting the progress bar,
+                // and can not use it for anything security related.
+                if (pendingEntry != null) {
+                    mIsLoadingNativePage = NativePageFactory.isNativePageUrl(
+                            pendingEntry.getUrl(), tab.isIncognito());
+                }
+
+                if (mIsLoadingNativePage) {
                     finishLoadProgress(false);
                 } else {
                     mToolbar.startLoadProgress();
@@ -372,6 +399,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
             @Override
             public void onLoadProgressChanged(Tab tab, int progress) {
+                if (mIsLoadingNativePage) return;
+
                 // TODO(kkimlabs): Investigate using float progress all the way up to Blink.
                 setLoadProgress(progress / 100.0f);
             }
