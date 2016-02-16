@@ -32,9 +32,6 @@ import java.util.List;
  * all input and model events to the proper destination.
  */
 public class StripLayoutHelperManager implements SceneOverlay {
-    // Visibility Constants
-    private static final float TAB_STRIP_HEIGHT_DP = 40.f;
-
     // Caching Variables
     private final RectF mStripFilterArea = new RectF();
 
@@ -63,8 +60,8 @@ public class StripLayoutHelperManager implements SceneOverlay {
     private final StripLayoutHelper mIncognitoHelper;
 
     // UI State
-    private float mWidth;
-    private final float mHeight;
+    private float mWidth;  // in dp units
+    private final float mHeight;  // in dp units
     private int mOrientation;
     private final CompositorButton mModelSelectorButton;
 
@@ -78,8 +75,6 @@ public class StripLayoutHelperManager implements SceneOverlay {
      */
     public StripLayoutHelperManager(Context context, LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost, AreaGestureEventFilter eventFilter) {
-        mHeight = TAB_STRIP_HEIGHT_DP;
-
         mUpdateHost = updateHost;
         mRenderHost = renderHost;
         mTabStripTreeProvider = new TabStripSceneLayer(context);
@@ -100,6 +95,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
         mModelSelectorButton.setY(MODEL_SELECTOR_BUTTON_Y_OFFSET_DP);
 
         Resources res = context.getResources();
+        mHeight = res.getDimension(R.dimen.tab_strip_height) / res.getDisplayMetrics().density;
         mModelSelectorButton.setAccessibilityDescription(
                 res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_standard),
                 res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_incognito));
