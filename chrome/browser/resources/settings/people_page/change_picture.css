@@ -2,37 +2,53 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#availableIcons {
+#container {
   -webkit-margin-start: 16px;
-  margin-top: 16px;
+  align-items: flex-start;
+  padding-top: 16px;
 }
 
 #availableIcons img {
-  border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
   height: 64px;
-  padding: 3px;
+  margin: 8px;
+  padding: 2px;
   width: 64px;
 }
 
+#availableIcons img.bordered-image {
+  border: 1px solid var(--google-grey-500);
+  padding: 1px;
+}
+
 #availableIcons img.iron-selected {
-  border: 2px solid rgb(0, 102, 204);
-  padding: 2px;
+  border: 2px solid var(--google-blue-500);
+  padding: 0;
 }
 
 #previewPane {
   -webkit-margin-end: 10px;
-  -webkit-margin-start: 0;
   flex-shrink: 0;
-  margin-bottom: 0;
-  margin-top: 18px;
   width: 228px;
 }
 
 #previewPane img {
-  border: solid 1px #cacaca;
-  border-radius: 4px;
-  max-height: 220px;
-  max-width: 220px;
-  padding: 3px;
+  display: block;
+  height: 228px;
+  width: 228px;
+}
+
+#discardControlBar {
+  background-color: var(--paper-grey-800);
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+  padding: 8px;
+}
+
+#discardOldImage {
+  background-color: var(--paper-red-500);
+  border-radius: 50%;
+  color: white;
+  display: block;
+  margin: 0 auto 0 auto;
 }

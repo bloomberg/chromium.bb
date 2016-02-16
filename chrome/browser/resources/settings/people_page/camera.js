@@ -21,12 +21,6 @@ var CAPTURE_SIZE = {
   width: 480
 };
 
-/**
- * The image URL is set to this default value before the user has taken a photo.
- * @const
- */
-var DEFAULT_IMAGE_URL = 'chrome://theme/IDR_BUTTON_USER_IMAGE_TAKE_PHOTO';
-
 Polymer({
   is: 'settings-camera',
 
@@ -42,55 +36,6 @@ Polymer({
     cameraActive: {
       type: Boolean,
       observer: 'cameraActiveChanged_',
-    },
-
-    /**
-     * Title of the camera image. Defaults to the 'takePhoto' internationalized
-     * string. Can be 'photoFromCamera' if the user has just taken a photo.
-     * @type {string}
-     */
-    cameraTitle: {
-      type: String,
-      notify: true,
-      value: function() { return this.i18n('takePhoto'); },
-    },
-
-    /**
-     * A preview image suitable for displaying in an icon grid. If it is the
-     * captured image, it has already been flipped.
-     * @type {string}
-     */
-    previewImage: {
-      type: String,
-      notify: true,
-      value: DEFAULT_IMAGE_URL,
-    },
-
-    /**
-     * The data URL of the newly captured image.
-     * @private {string}
-     */
-    imageUrl_: {
-      type: String,
-      value: '',
-    },
-
-    /**
-     * The data URL of the newly captured image flipped over the x axis.
-     * @private {string}
-     */
-    flippedImageUrl_: {
-      type: String,
-      value: '',
-    },
-
-    /**
-     * True when the camera is in live mode (i.e. no still photo selected).
-     * @private {boolean}
-     */
-    cameraLive_: {
-      type: Boolean,
-      value: true,
     },
 
     /**
@@ -182,32 +127,14 @@ Polymer({
   },
 
   /**
-   * Discard current photo and return to the live camera stream.
+   * Flip the live camera stream.
    * @private
    */
   onTapFlipPhoto_: function() {
     this.isFlipped_ = !this.isFlipped_;
-
-    // If there is an existing camera image, (i.e. not a live feed), update the
-    // photo to the flipped one.
-    if (this.imageUrl_) {
-      this.previewImage =
-          this.isFlipped_ ? this.flippedImageUrl_ : this.imageUrl_;
-      this.fire('phototaken', { photoDataUrl: this.previewImage });
-    }
+    this.$.userImageStreamCrop.classList.toggle('flip-x', this.isFlipped_);
 
     // TODO(tommycli): Add announce of accessible message for photo flipping.
-  },
-
-  /**
-   * Discard current photo and return to the live camera stream.
-   * @private
-   */
-  onTapDiscardPhoto_: function() {
-    this.cameraTitle = this.i18n('takePhoto');
-    this.imageUrl_ = '';
-    this.flippedImageUrl_ = '';
-    this.previewImage = DEFAULT_IMAGE_URL;
   },
 
   /**
@@ -227,13 +154,9 @@ Polymer({
         this.$.cameraVideo,
         /** @type {!CanvasRenderingContext2D} */(canvas.getContext('2d')));
 
-    this.cameraTitle = this.i18n('photoFromCamera');
-    this.imageUrl_ = canvas.toDataURL('image/png');
-    this.flippedImageUrl_ = this.flipFrame_(canvas);
-    this.previewImage =
-        this.isFlipped_ ? this.flippedImageUrl_ : this.imageUrl_;
-
-    this.fire('phototaken', { photoDataUrl: this.previewImage });
+    var photoDataUrl = this.isFlipped_ ? this.flipFrame_(canvas) :
+                                         canvas.toDataURL('image/png');
+    this.fire('phototaken', {photoDataUrl: photoDataUrl});
   },
 
   /**
@@ -281,32 +204,6 @@ Polymer({
     ctx.scale(-1.0, 1.0);
     ctx.drawImage(source, 0, 0);
     return canvas.toDataURL('image/png');
-  },
-
-  /**
-   * Class of container block. Used by CSS to show, hide, and style controls.
-   * @param {boolean} cameraActive
-   * @param {string} imageUrl
-   * @param {boolean} online
-   * @param {boolean} isFlipped
-   * @return {string}
-   * @private
-   */
-  containerClass_: function(cameraActive, imageUrl, online, isFlipped) {
-    if (!cameraActive)
-      return '';
-
-    var classList = [];
-    // An empty image URL implies that the user has not already taken a photo,
-    // and therefore the camera feed is live.
-    if (!imageUrl)
-      classList.push('live');
-    if (online)
-      classList.push('online');
-    if (isFlipped)
-      classList.push('flip-x');
-
-    return classList.join(' ');
   },
 });
 

@@ -14,6 +14,17 @@ cr.define('settings_test', function() {
 });
 
 /**
+ * An image element.
+ * @typedef {{
+ *   dataset: {
+ *     type: string,
+ *   },
+ *   src: string,
+ * }}
+ */
+settings.ChangePictureImageElement;
+
+/**
  * @fileoverview
  * 'settings-change-picture' is the settings subpage containing controls to
  * edit a ChromeOS user's picture.
@@ -41,10 +52,10 @@ Polymer({
     /**
      * The currently selected item. This property is bound to the iron-selector
      * and never directly assigned.
-     * @private {Element}
+     * @private {settings.ChangePictureImageElement}
      */
     selectedItem_: {
-      type: Element,
+      type: settings.ChangePictureImageElement,
       notify: settings_test.changePictureOptions.notifyPropertyChangesForTest,
     },
 
@@ -77,6 +88,26 @@ Polymer({
       type: Array,
       value: function() { return []; },
     },
+
+    /**
+     * The fallback image to be selected when the user discards the 'old' image.
+     * This may be null if the user started with the 'old' image.
+     * @private {settings.ChangePictureImageElement}
+     */
+    fallbackImage_: {
+      type: settings.ChangePictureImageElement,
+      value: null,
+    },
+
+    /**
+     * Type of the last selected icon. This is used to jump back to the camera
+     * after the user discards a newly taken photo.
+     * @private {string}
+     */
+    lastSelectedImageType_: {
+      type: String,
+      value: '',
+    },
   },
 
   /** @override */
@@ -101,25 +132,24 @@ Polymer({
           return image.dataset.type == 'default' && image.src == imageUrl;
         });
         assert(index != -1, 'Default image not found: ' + imageUrl);
-        this.$.selector.select(index);
+
+        this.fallbackImage_ = this.$.selector.items[index];
+
+        // If user is currently taking a photo, do not steal the focus.
+        if (!this.selectedItem_ || this.selectedItem_.dataset.type != 'camera')
+          this.$.selector.select(index);
       }.bind(this),
 
       /**
        * Called from C++ to provide the URL of the 'old' image. The 'old'
        * image is any selected non-profile and non-default image. It can be
        * from the camera, a file, or a deprecated default image. When this
-       * method is called for the first time, it is implied to be the selected
-       * image (unless the user just took an image from the camera).
+       * method is called, the old image becomes the selected image.
        * @param {string} imageUrl
        */
       receiveOldImage: function(imageUrl) {
-        var oldImageAlreadyExists = this.oldImageUrl_.length > 0;
         this.oldImageUrl_ = imageUrl;
-
-        var cameraSelected =
-            this.selectedItem_ && this.selectedItem_.dataset.type == 'camera';
-        if (!oldImageAlreadyExists && !cameraSelected)
-          this.$.selector.select(this.$.selector.indexOf(this.$.oldImage));
+        this.$.selector.select(this.$.selector.indexOf(this.$.oldImage));
       }.bind(this),
 
       /**
@@ -129,7 +159,14 @@ Polymer({
        */
       receiveProfileImage: function(imageUrl, selected) {
         this.profileImageUrl_ = imageUrl;
-        if (selected)
+
+        if (!selected)
+          return;
+
+        this.fallbackImage_ = this.$.profileImage;
+
+        // If user is currently taking a photo, do not steal the focus.
+        if (!this.selectedItem_ || this.selectedItem_.dataset.type != 'camera')
           this.$.selector.select(this.$.selector.indexOf(this.$.profileImage));
       }.bind(this),
 
@@ -153,13 +190,12 @@ Polymer({
   },
 
   /**
-   * Handler for when the an image is activated.
-   * @param {!Event} event
+   * Selects an image element.
+   * @param {!settings.ChangePictureImageElement} image
    * @private
    */
-  onImageActivate_: function(event) {
-    var selectedImage = event.detail.item;
-    switch (selectedImage.dataset.type) {
+  selectImage_: function(image) {
+    switch (image.dataset.type) {
       case 'camera':
         // Nothing needs to be done.
         break;
@@ -170,11 +206,22 @@ Polymer({
         settings.ChangePicturePrivateApi.selectOldImage();
         break;
       case 'default':
-        settings.ChangePicturePrivateApi.selectDefaultImage(selectedImage.src);
+        settings.ChangePicturePrivateApi.selectDefaultImage(image.src);
         break;
       default:
         assertNotReached('Selected unknown image type');
     }
+  },
+
+  /**
+   * Handler for when the an image is activated.
+   * @param {!Event} event
+   * @private
+   */
+  onImageActivate_: function(event) {
+    var image = event.detail.item;
+    this.lastSelectedImageType_ = image.dataset.type;
+    this.selectImage_(image);
   },
 
   /**
@@ -189,18 +236,39 @@ Polymer({
   },
 
   /**
+   * Discard currently selected old image. Selects the first default icon.
+   * Returns to the camera stream if the user had just taken a picture.
+   * @private
+   */
+  onTapDiscardOldImage_: function() {
+    this.oldImageUrl_ = '';
+
+    if (this.lastSelectedImageType_ == 'camera')
+      this.$.selector.select(this.$.selector.indexOf(this.$.cameraImage));
+
+    if (this.fallbackImage_ != null) {
+      this.selectImage_(this.fallbackImage_);
+      return;
+    }
+
+    // If the user has not chosen an image since opening the subpage and
+    // discards the current photo, select the first default image.
+    assert(this.defaultImages_.length > 0);
+    settings.ChangePicturePrivateApi.selectDefaultImage(
+        this.defaultImages_[0].url);
+  },
+
+  /**
    * True if there is no old image and the selection icon should be hidden.
    * @param {string} oldImageUrl
    * @return {boolean}
    * @private
    */
-  isOldImageHidden_: function(oldImageUrl) {
-    return oldImageUrl.length == 0;
-  },
+  isOldImageHidden_: function(oldImageUrl) { return oldImageUrl.length == 0; },
 
   /**
    * Return true if the selected icon in the image grid is the camera.
-   * @param {!Element} selectedItem
+   * @param {!settings.ChangePictureImageElement} selectedItem
    * @return {boolean}
    * @private
    */
@@ -208,5 +276,15 @@ Polymer({
     return cameraPresent &&
            selectedItem != undefined &&
            selectedItem.dataset.type == 'camera';
+  },
+
+  /**
+   * Return true if the discard controls should be hidden.
+   * @param {!settings.ChangePictureImageElement} selectedItem
+   * @return {boolean}
+   * @private
+   */
+  isDiscardHidden_: function(selectedItem) {
+    return selectedItem == undefined || selectedItem.dataset.type != 'old';
   },
 });

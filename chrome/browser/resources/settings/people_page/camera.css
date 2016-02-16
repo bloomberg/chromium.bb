@@ -2,51 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/**
- * The container element can have the following classes:
- * .live: camera is in live mode (no photo taken yet/last photo removed).
- * .online: camera is streaming video.
- */
-#container {
-  position: relative;
-}
-
-.preview-box {
-  border: solid 1px #cacaca;
-  border-radius: 4px;
-  height: 220px;
-  padding: 3px;
-  width: 220px;
-}
-
-#previewImage {
-  display: block;
-}
-
-div.live #previewImage {
-  display: none;
-}
-
 #perspectiveBox {
   -webkit-perspective: 600px;
-}
-
-#userImageStreamArea {
-  display: none;
-}
-
-div.live #userImageStreamArea {
-  display: block;
+  height: 228px;
+  width: 228px;
 }
 
 #userImageStreamCrop {
-  height: 220px;
+  height: 228px;
   overflow: hidden;
   position: relative;
-  width: 220px;
+  width: 228px;
 }
 
-div.flip-x #userImageStreamCrop {
+#userImageStreamCrop.flip-x {
   -webkit-transform: rotateY(180deg);
 }
 
@@ -60,51 +29,32 @@ paper-spinner {
 }
 
 #cameraVideo {
-  border: solid 1px #cacaca;
-  height: 220px;
+  height: 228px;
   /* Center image for 4:3 aspect ratio. */
   left: -16.6%;
   position: absolute;
-  visibility: hidden;
 }
 
-div.online #cameraVideo {
-  visibility: visible;
+#cameraControls {
+  background-color: var(--paper-grey-800);
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+  padding: 8px;
 }
 
 #flipPhoto {
-  -webkit-filter: drop-shadow( 2px 2px 2px var(--google-grey-700) );
-  bottom: 24px;
   color: white;
-  position: absolute;
-  right: 8px;
+  float: right;
 }
 
-html[dir=rtl] #flipPhoto {
-  left: 8px;
-  right: auto;
+:host-context([dir=rtl]) #flipPhoto {
+  float: left;
 }
 
-#discardPhoto,
 #takePhoto {
-  border-radius: 50%;
-  bottom: 0;
-  color: white;
-  display: none;
-  left: 0;
-  margin: 16px auto;
-  opacity: 0.8;
-  padding: 8px;
-  position: absolute;
-  right: 0;
-}
-
-div:not(.live) #discardPhoto {
-  background-color: var(--paper-red-500);
-  display: block;
-}
-
-div.live.online #takePhoto {
   background-color: var(--paper-green-500);
+  border-radius: 50%;
+  color: white;
   display: block;
+  margin: 0 auto 0 auto;
 }

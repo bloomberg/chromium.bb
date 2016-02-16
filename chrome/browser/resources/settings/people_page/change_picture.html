@@ -1,5 +1,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://md-settings/people_page/camera.html">
 <link rel="import" href="chrome://md-settings/people_page/change_picture_private_api.html">
@@ -9,13 +11,13 @@
       href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="change_picture.css">
   <template>
-    <div class="settings-box">
+    <div id="container" class="settings-box">
       <div id="availableIcons" class="start">
         <iron-selector id="selector" on-iron-activate="onImageActivate_"
             selected-item="{{selectedItem_}}">
-          <img id="cameraImage" data-type="camera"
-              src="[[cameraImageUrl_]]" alt="[[cameraTitle_]]"
-              hidden="[[!cameraPresent_]]">
+          <img id="cameraImage" class="bordered-image" data-type="camera"
+              src="chrome://theme/IDR_BUTTON_USER_IMAGE_TAKE_PHOTO"
+              alt="[[i18n('takePhoto')]]" hidden="[[!cameraPresent_]]">
           <img id="profileImage" data-type="profile"
               src="[[profileImageUrl_]]"
               alt="[[i18n('profilePhotoLoading')]]">
@@ -29,10 +31,14 @@
       <div id="previewPane">
         <img i18n-values="alt:previewAltText" src="[[selectedItem_.src]]"
             hidden="[[isCameraActive_(cameraPresent_, selectedItem_)]]">
+        <div id="discardControlBar" hidden="[[isDiscardHidden_(selectedItem_)]]">
+          <paper-icon-button id="discardOldImage" tabindex="2" icon="delete"
+              i18n-values="title:discardPhoto" on-tap="onTapDiscardOldImage_">
+          </paper-icon-button>
+        </div>
         <settings-camera
             camera-active="[[isCameraActive_(cameraPresent_, selectedItem_)]]"
-            preview-image="{{cameraImageUrl_}}"
-            camera-title="{{cameraTitle_}}" on-phototaken="onPhotoTaken_">
+            on-phototaken="onPhotoTaken_">
       </div>
     </div>
   </template>
