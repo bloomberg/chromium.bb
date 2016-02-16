@@ -271,6 +271,14 @@
             "group_name": "DontShowAndDontSend"
         }
     ],
+    "ResourcePriorities": [
+        {
+            "group_name": "AllExceptAsyncScripts_11011_1_1_10"
+        },
+        {
+            "group_name": "Control"
+        }
+    ],
     "SafeBrowsingAndroid": [
         {
             "group_name": "Enabled",
