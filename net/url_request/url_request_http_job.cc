@@ -182,8 +182,7 @@ URLRequestHttpJob::URLRequestHttpJob(
     const HttpUserAgentSettings* http_user_agent_settings)
     : URLRequestJob(request, network_delegate),
       priority_(DEFAULT_PRIORITY),
-      response_info_(NULL),
-      response_cookies_save_index_(0),
+      response_info_(nullptr),
       proxy_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
       server_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
       start_callback_(base::Bind(&URLRequestHttpJob::OnStartCompleted,
@@ -192,7 +191,7 @@ URLRequestHttpJob::URLRequestHttpJob(
           base::Bind(&URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
                      base::Unretained(this))),
       read_in_progress_(false),
-      throttling_entry_(NULL),
+      throttling_entry_(nullptr),
       sdch_test_activated_(false),
       sdch_test_control_(false),
       is_cached_content_(false),
@@ -740,101 +739,35 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     return;
   }
 
-  DCHECK(transaction_.get());
+  std::vector<std::string> response_cookies;
+  FetchResponseCookies(&response_cookies);
 
-  const HttpResponseInfo* response_info = transaction_->GetResponseInfo();
-  DCHECK(response_info);
-
-  response_cookies_.clear();
-  response_cookies_save_index_ = 0;
-
-  FetchResponseCookies(&response_cookies_);
-
-  if (!GetResponseHeaders()->GetDateValue(&response_date_))
-    response_date_ = base::Time();
-
-  // Now, loop over the response cookies, and attempt to persist each.
-  SaveNextCookie();
-}
-
-// If the save occurs synchronously, SaveNextCookie will loop and save the next
-// cookie. If the save is deferred, the callback is responsible for continuing
-// to iterate through the cookies.
-// TODO(erikwright): Modify the CookieStore API to indicate via return value
-// whether it completed synchronously or asynchronously.
-// See http://crbug.com/131066.
-void URLRequestHttpJob::SaveNextCookie() {
-  // Used to communicate with the callback. See the implementation of
-  // OnCookieSaved.
-  scoped_refptr<SharedBoolean> callback_pending = new SharedBoolean(false);
-  scoped_refptr<SharedBoolean> save_next_cookie_running =
-      new SharedBoolean(true);
+  base::Time response_date;
+  if (!GetResponseHeaders()->GetDateValue(&response_date))
+    response_date = base::Time();
 
   if (!(request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) &&
-      request_->context()->cookie_store() && response_cookies_.size() > 0) {
+      request_->context()->cookie_store()) {
     CookieOptions options;
     options.set_include_httponly();
-    options.set_server_time(response_date_);
+    options.set_server_time(response_date);
 
     if (network_delegate() &&
         network_delegate()->AreStrictSecureCookiesEnabled()) {
       options.set_enforce_strict_secure();
     }
 
-    CookieStore::SetCookiesCallback callback(base::Bind(
-        &URLRequestHttpJob::OnCookieSaved, weak_factory_.GetWeakPtr(),
-        save_next_cookie_running, callback_pending));
-
-    // Loop through the cookies as long as SetCookieWithOptionsAsync completes
-    // synchronously.
-    while (!callback_pending->data &&
-           response_cookies_save_index_ < response_cookies_.size()) {
-      if (CanSetCookie(
-          response_cookies_[response_cookies_save_index_], &options)) {
-        callback_pending->data = true;
-        request_->context()->cookie_store()->SetCookieWithOptionsAsync(
-            request_->url(), response_cookies_[response_cookies_save_index_],
-            options, callback);
-      }
-      ++response_cookies_save_index_;
+    // Set all cookies, without waiting for them to be set. Any subsequent read
+    // will see the combined result of all cookie operation.
+    for (const std::string& cookie : response_cookies) {
+      if (!CanSetCookie(cookie, &options))
+        continue;
+      request_->context()->cookie_store()->SetCookieWithOptionsAsync(
+          request_->url(), cookie, options, CookieStore::SetCookiesCallback());
     }
   }
 
-  save_next_cookie_running->data = false;
-
-  if (!callback_pending->data) {
-    response_cookies_.clear();
-    response_cookies_save_index_ = 0;
-    NotifyHeadersComplete();
-    return;
-  }
-}
-
-// |save_next_cookie_running| is true when the callback is bound and set to
-// false when SaveNextCookie exits, allowing the callback to determine if the
-// save occurred synchronously or asynchronously.
-// |callback_pending| is false when the callback is invoked and will be set to
-// true by the callback, allowing SaveNextCookie to detect whether the save
-// occurred synchronously.
-// See SaveNextCookie() for more information.
-void URLRequestHttpJob::OnCookieSaved(
-    scoped_refptr<SharedBoolean> save_next_cookie_running,
-    scoped_refptr<SharedBoolean> callback_pending,
-    bool cookie_status) {
-  callback_pending->data = false;
-
-  // If we were called synchronously, return.
-  if (save_next_cookie_running->data) {
-    return;
-  }
-
-  // We were called asynchronously, so trigger the next save.
-  // We may have been canceled within OnSetCookie.
-  if (GetStatus().is_success()) {
-    SaveNextCookie();
-  } else {
-    NotifyCanceled();
-  }
+  NotifyHeadersComplete();
 }
 
 void URLRequestHttpJob::FetchResponseCookies(
@@ -1057,7 +990,6 @@ void URLRequestHttpJob::RestartTransactionWithAuth(
   // These will be reset in OnStartCompleted.
   response_info_ = NULL;
   receive_headers_end_ = base::TimeTicks();
-  response_cookies_.clear();
 
   ResetTimer();
 
@@ -1145,9 +1077,6 @@ bool URLRequestHttpJob::GetResponseCookies(std::vector<std::string>* cookies) {
 
   if (!response_info_)
     return false;
-
-  // TODO(darin): Why are we extracting response cookies again?  Perhaps we
-  // should just leverage response_cookies_.
 
   cookies->clear();
   FetchResponseCookies(cookies);
@@ -1284,7 +1213,6 @@ void URLRequestHttpJob::CancelAuth() {
   // These will be reset in OnStartCompleted.
   response_info_ = NULL;
   receive_headers_end_ = base::TimeTicks::Now();
-  response_cookies_.clear();
 
   ResetTimer();
 
