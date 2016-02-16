@@ -46,8 +46,6 @@
 
     debug('Some tests for .maxLength property.');
     input = document.createElement("input");
-    shouldBe("input.maxLength", "implicitMaxLength");
-    shouldThrow("input.maxLength = -1", '"IndexSizeError: Failed to set the \'maxLength\' property on \'HTMLInputElement\': The value provided (-1) is negative."');
     input.maxLength = 100;
     shouldBe("input.getAttribute('maxlength')", "'100'");
 </script>

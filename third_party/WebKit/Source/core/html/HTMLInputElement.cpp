@@ -103,7 +103,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     : HTMLTextFormControlElement(inputTag, document, form)
     , m_size(defaultSize)
     , m_maxLength(maximumLength)
-    , m_minLength(0)
+    , m_minLength(-1)
     , m_maxResults(-1)
     , m_isChecked(false)
     , m_reflectsCheckedAttribute(true)
@@ -1365,6 +1365,8 @@ const AtomicString& HTMLInputElement::alt() const
 
 int HTMLInputElement::maxLength() const
 {
+    if (!hasAttribute(maxlengthAttr))
+        return -1;
     return m_maxLength;
 }
 
@@ -1679,9 +1681,9 @@ void HTMLInputElement::updatePlaceholderText()
 void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value)
 {
     int maxLength;
-    if (!parseHTMLInteger(value, maxLength))
-        maxLength = maximumLength;
-    if (maxLength < 0 || maxLength > maximumLength)
+    if (!parseHTMLInteger(value, maxLength) || maxLength < 0)
+        maxLength = -1;
+    if (maxLength > maximumLength)
         maxLength = maximumLength;
     int oldMaxLength = m_maxLength;
     m_maxLength = maxLength;
@@ -1693,10 +1695,8 @@ void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value)
 void HTMLInputElement::parseMinLengthAttribute(const AtomicString& value)
 {
     int minLength;
-    if (!parseHTMLInteger(value, minLength))
-        minLength = 0;
-    if (minLength < 0)
-        minLength = 0;
+    if (!parseHTMLInteger(value, minLength) || minLength < 0)
+        minLength = -1;
     m_minLength = minLength;
     setNeedsValidityCheck();
 }
