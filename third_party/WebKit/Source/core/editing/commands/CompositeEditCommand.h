@@ -104,7 +104,7 @@ protected:
     void applyStyle(const EditingStyle*, const Position& start, const Position& end, EditAction = EditActionChangeAttributes);
     void applyStyledElement(PassRefPtrWillBeRawPtr<Element>);
     void removeStyledElement(PassRefPtrWillBeRawPtr<Element>);
-    void deleteSelection(EditingState* = ASSERT_NO_EDITING_ABORT, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = true, bool sanitizeMarkup = true);
+    void deleteSelection(EditingState*, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = true, bool sanitizeMarkup = true);
     void deleteSelection(const VisibleSelection&, EditingState*, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = true, bool sanitizeMarkup = true);
     virtual void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);
     bool isRemovableBlock(const Node*);

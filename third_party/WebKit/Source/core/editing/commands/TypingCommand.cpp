@@ -109,7 +109,9 @@ void TypingCommand::deleteSelection(Document& document, Options options)
         updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
 
         lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
-        lastTypingCommand->deleteSelection(options & SmartDelete);
+        // InputMethodController uses this function to delete composition
+        // selection.  It won't be aborted.
+        lastTypingCommand->deleteSelection(options & SmartDelete, ASSERT_NO_EDITING_ABORT);
         return;
     }
 
@@ -206,11 +208,11 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
     applyTextInsertionCommand(frame.get(), cmd, selectionForInsertion, currentSelection);
 }
 
-void TypingCommand::insertLineBreak(Document& document, Options options)
+void TypingCommand::insertLineBreak(Document& document, Options options, EditingState* editingState)
 {
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
         lastTypingCommand->setShouldRetainAutocorrectionIndicator(options & RetainAutocorrectionIndicator);
-        lastTypingCommand->insertLineBreak();
+        lastTypingCommand->insertLineBreak(editingState);
         return;
     }
 
@@ -267,7 +269,7 @@ void TypingCommand::doApply(EditingState* editingState)
 
     switch (m_commandType) {
     case DeleteSelection:
-        deleteSelection(m_smartDelete);
+        deleteSelection(m_smartDelete, editingState);
         return;
     case DeleteKey:
         deleteKeyPressed(m_granularity, m_killRing, editingState);
@@ -276,7 +278,7 @@ void TypingCommand::doApply(EditingState* editingState)
         forwardDeleteKeyPressed(m_granularity, m_killRing, editingState);
         return;
     case InsertLineBreak:
-        insertLineBreak();
+        insertLineBreak(editingState);
         return;
     case InsertParagraphSeparator:
         insertParagraphSeparator();
@@ -364,12 +366,14 @@ void TypingCommand::insertTextRunWithoutNewlines(const String &text, bool select
     typingAddedToOpenCommand(InsertText);
 }
 
-void TypingCommand::insertLineBreak()
+void TypingCommand::insertLineBreak(EditingState* editingState)
 {
     if (!canAppendNewLineFeedToSelection(endingSelection()))
         return;
 
-    applyCommandToComposite(InsertLineBreakCommand::create(document()));
+    applyCommandToComposite(InsertLineBreakCommand::create(document()), editingState);
+    if (editingState->isAborted())
+        return;
     typingAddedToOpenCommand(InsertLineBreak);
 }
 
@@ -628,9 +632,11 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
     typingAddedToOpenCommand(ForwardDeleteKey);
 }
 
-void TypingCommand::deleteSelection(bool smartDelete)
+void TypingCommand::deleteSelection(bool smartDelete, EditingState* editingState)
 {
-    CompositeEditCommand::deleteSelection(ASSERT_NO_EDITING_ABORT, smartDelete);
+    CompositeEditCommand::deleteSelection(editingState, smartDelete);
+    if (editingState->isAborted())
+        return;
     typingAddedToOpenCommand(DeleteSelection);
 }
 

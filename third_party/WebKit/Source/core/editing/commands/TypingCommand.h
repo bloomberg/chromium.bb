@@ -62,19 +62,19 @@ public:
     static void forwardDeleteKeyPressed(Document&, EditingState*, Options = 0, TextGranularity = CharacterGranularity);
     static void insertText(Document&, const String&, Options, TextCompositionType = TextCompositionNone);
     static void insertText(Document&, const String&, const VisibleSelection&, Options, TextCompositionType = TextCompositionNone);
-    static void insertLineBreak(Document&, Options);
+    static void insertLineBreak(Document&, Options, EditingState*);
     static void insertParagraphSeparator(Document&, Options);
     static void insertParagraphSeparatorInQuotedContent(Document&);
     static void closeTyping(LocalFrame*);
 
     void insertText(const String &text, bool selectInsertedText, EditingState*);
     void insertTextRunWithoutNewlines(const String &text, bool selectInsertedText, EditingState*);
-    void insertLineBreak();
+    void insertLineBreak(EditingState*);
     void insertParagraphSeparatorInQuotedContent();
     void insertParagraphSeparator();
     void deleteKeyPressed(TextGranularity, bool killRing, EditingState*);
     void forwardDeleteKeyPressed(TextGranularity, bool killRing, EditingState*);
-    void deleteSelection(bool smartDelete);
+    void deleteSelection(bool smartDelete, EditingState*);
     void setCompositionType(TextCompositionType type) { m_compositionType = type; }
 
 private:

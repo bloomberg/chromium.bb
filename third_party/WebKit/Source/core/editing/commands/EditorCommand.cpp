@@ -561,8 +561,9 @@ static bool executeInsertLineBreak(LocalFrame& frame, Event* event, EditorComman
         // InsertLineBreak is not implemented in IE or Firefox, so this behavior is only needed for
         // backward compatibility with ourselves, and for consistency with other commands.
         ASSERT(frame.document());
-        TypingCommand::insertLineBreak(*frame.document(), 0);
-        return true;
+        EditingState editingState;
+        TypingCommand::insertLineBreak(*frame.document(), 0, &editingState);
+        return !editingState.isAborted();
     }
     ASSERT_NOT_REACHED();
     return false;

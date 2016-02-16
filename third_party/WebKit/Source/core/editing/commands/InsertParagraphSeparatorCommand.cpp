@@ -160,7 +160,9 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // Delete the current selection.
     if (endingSelection().isRange()) {
         calculateStyleBeforeInsertion(insertionPosition);
-        deleteSelection(ASSERT_NO_EDITING_ABORT, false, true);
+        deleteSelection(editingState, false, true);
+        if (editingState->isAborted())
+            return;
         insertionPosition = endingSelection().start();
         affinity = endingSelection().affinity();
     }
@@ -177,7 +179,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         // FIXME: If the node is hidden, we don't have a canonical position so we will do the wrong thing for tables and <hr>. https://bugs.webkit.org/show_bug.cgi?id=40342
         || (!canonicalPos.isNull() && isDisplayInsideTable(canonicalPos.anchorNode()))
         || (!canonicalPos.isNull() && isHTMLHRElement(*canonicalPos.anchorNode()))) {
-        applyCommandToComposite(InsertLineBreakCommand::create(document()));
+        applyCommandToComposite(InsertLineBreakCommand::create(document()), editingState);
         return;
     }
 

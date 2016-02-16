@@ -830,7 +830,10 @@ bool Editor::insertLineBreak()
     VisiblePosition caret = frame().selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
     ASSERT(frame().document());
-    TypingCommand::insertLineBreak(*frame().document(), 0);
+    EditingState editingState;
+    TypingCommand::insertLineBreak(*frame().document(), 0, &editingState);
+    if (editingState.isAborted())
+        return false;
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
 
     return true;
