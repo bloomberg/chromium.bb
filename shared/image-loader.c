@@ -30,12 +30,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <jpeglib.h>
 #include <png.h>
 #include <pixman.h>
 
 #include "shared/helpers.h"
 #include "image-loader.h"
+
+#ifdef HAVE_JPEG
+#include <jpeglib.h>
+#endif
 
 #ifdef HAVE_WEBP
 #include <webp/decode.h>
@@ -46,6 +49,14 @@ stride_for_width(int width)
 {
 	return width * 4;
 }
+
+static void
+pixman_image_destroy_func(pixman_image_t *image, void *data)
+{
+	free(data);
+}
+
+#ifdef HAVE_JPEG
 
 static void
 swizzle_row(JSAMPLE *row, JDIMENSION width)
@@ -66,12 +77,6 @@ static void
 error_exit(j_common_ptr cinfo)
 {
 	longjmp(cinfo->client_data, 1);
-}
-
-static void
-pixman_image_destroy_func(pixman_image_t *image, void *data)
-{
-	free(data);
 }
 
 static pixman_image_t *
@@ -131,6 +136,17 @@ load_jpeg(FILE *fp)
 
 	return pixman_image;
 }
+
+#else
+
+static pixman_image_t *
+load_jpeg(FILE *fp)
+{
+	fprintf(stderr, "JPEG support disabled at compile-time\n");
+	return NULL;
+}
+
+#endif
 
 static inline int
 multiply_alpha(int alpha, int color)

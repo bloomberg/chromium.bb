@@ -294,6 +294,19 @@ fi
 PKG_CHECK_MODULES(PIXMAN, [pixman-1])
 PKG_CHECK_MODULES(PNG, [libpng])
 
+AC_ARG_WITH([jpeg],
+            AS_HELP_STRING([--without-jpeg],
+                           [Use jpeglib for JPEG decoding support [default=auto]]))
+AS_IF([test "x$with_jpeg" != "xno"],
+      [AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], [have_jpeglib=yes], [have_jpeglib=no])],
+      [have_jpeglib=no])
+AS_IF([test "x$have_jpeglib" = "xyes"],
+      [JPEG_LIBS="-ljpeg"
+       AC_SUBST([JPEG_LIBS])
+       AC_DEFINE([HAVE_JPEG], [1], [Have jpeglib])],
+      [AS_IF([test "x$with_jpeg" = "xyes"],
+             [AC_MSG_ERROR([JPEG support explicitly requested, but jpeglib couldn't be found])])])
+
 AC_ARG_WITH([webp],
             AS_HELP_STRING([--without-webp],
                            [Use libwebp for WebP decoding support [default=auto]]))
@@ -317,15 +330,6 @@ if test x$enable_vaapi_recorder != xno; then
         [AC_DEFINE([BUILD_VAAPI_RECORDER], [1], [Build the vaapi recorder])])
 fi
 AM_CONDITIONAL(ENABLE_VAAPI_RECORDER, test "x$have_libva" = xyes)
-
-
-AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
-if test x$have_jpeglib = xyes; then
-  JPEG_LIBS="-ljpeg"
-else
-  AC_ERROR([libjpeg not found])
-fi
-AC_SUBST(JPEG_LIBS)
 
 PKG_CHECK_MODULES(CAIRO, [cairo])
 
@@ -686,6 +690,7 @@ AC_MSG_RESULT([
 
 	Colord Support			${have_colord}
 	LCMS2 Support			${have_lcms}
+	libjpeg Support			${have_jpeglib}
 	libwebp Support			${have_webp}
 	libunwind Support		${have_libunwind}
 	VA H.264 encoding Support	${have_libva}
