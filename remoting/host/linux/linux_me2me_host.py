@@ -512,7 +512,7 @@ class Desktop:
       self.host_ready = True
       if (ParentProcessLogger.instance() and
           False not in [desktop.host_ready for desktop in g_desktops]):
-        ParentProcessLogger.instance().release_parent()
+        ParentProcessLogger.instance().release_parent(True)
 
     signal.signal(signal.SIGUSR1, sigusr1_handler)
     args.append("--signal-parent")
@@ -682,29 +682,42 @@ class ParentProcessLogger(object):
     ParentProcessLogger.__instance = self
 
   def start_logging(self):
-    """Installs a logging handler that sends log entries to a pipe.
+    """Installs a logging handler that sends log entries to a pipe, prefixed
+    with the string 'MSG:'. This allows them to be distinguished by the parent
+    process from commands sent over the same pipe.
 
     Must be called by the child process.
     """
     self._read_file.close()
     self._logging_handler = logging.StreamHandler(self._write_file)
+    self._logging_handler.setFormatter(logging.Formatter(fmt='MSG:%(message)s'))
     logging.getLogger().addHandler(self._logging_handler)
 
-  def release_parent(self):
+  def release_parent(self, success):
     """Uninstalls logging handler and closes the pipe, releasing the parent.
 
     Must be called by the child process.
+
+    success: If true, write a "host ready" message to the parent process before
+             closing the pipe.
     """
     if self._logging_handler:
       logging.getLogger().removeHandler(self._logging_handler)
       self._logging_handler = None
     if not self._write_file.closed:
+      if success:
+        self._write_file.write("READY\n")
+        self._write_file.flush()
       self._write_file.close()
 
   def wait_for_logs(self):
     """Waits and prints log lines from the daemon until the pipe is closed.
 
     Must be called by the parent process.
+
+    Returns:
+      True if the host started and successfully registered with the directory;
+      false otherwise.
     """
     # If Ctrl-C is pressed, inform the user that the daemon is still running.
     # This signal will cause the read loop below to stop with an EINTR IOError.
@@ -718,25 +731,35 @@ class ParentProcessLogger(object):
     # Install a fallback timeout to release the parent process, in case the
     # daemon never responds (e.g. host crash-looping, daemon killed).
     # This signal will cause the read loop below to stop with an EINTR IOError.
+    #
+    # The value of 120s is chosen to match the heartbeat retry timeout in
+    # hearbeat_sender.cc.
     def sigalrm_handler(signum, frame):
       _ = signum, frame
       print("No response from daemon. It may have crashed, or may still be "
             "running in the background.", file=sys.stderr)
 
     signal.signal(signal.SIGALRM, sigalrm_handler)
-    signal.alarm(30)
+    signal.alarm(120)
 
     self._write_file.close()
 
     # Print lines as they're logged to the pipe until EOF is reached or readline
     # is interrupted by one of the signal handlers above.
+    host_ready = False
     try:
       for line in iter(self._read_file.readline, ''):
-        sys.stderr.write(line)
+        if line[:4] == "MSG:":
+          sys.stderr.write(line[4:])
+        elif line == "READY\n":
+          host_ready = True
+        else:
+          sys.stderr.write("Unrecognized command: " + line)
     except IOError as e:
       if e.errno != errno.EINTR:
         raise
     print("Log file: %s" % os.environ[LOG_FILE_ENV_VAR], file=sys.stderr)
+    return host_ready
 
   @staticmethod
   def instance():
@@ -795,8 +818,10 @@ def daemonize():
       os._exit(0)  # pylint: disable=W0212
   else:
     # Parent process
-    parent_logger.wait_for_logs()
-    os._exit(0)  # pylint: disable=W0212
+    if parent_logger.wait_for_logs():
+      os._exit(0)  # pylint: disable=W0212
+    else:
+      os._exit(1)  # pylint: disable=W0212
 
   logging.info("Daemon process started in the background, logging to '%s'" %
                os.environ[LOG_FILE_ENV_VAR])
@@ -842,7 +867,7 @@ def cleanup():
 
   g_desktops = []
   if ParentProcessLogger.instance():
-    ParentProcessLogger.instance().release_parent()
+    ParentProcessLogger.instance().release_parent(False)
 
 class SignalHandler:
   """Reload the config file on SIGHUP. Since we pass the configuration to the
