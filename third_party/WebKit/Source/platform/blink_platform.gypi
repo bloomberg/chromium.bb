@@ -178,8 +178,6 @@
       'animation/CompositorTransformKeyframe.h',
       'animation/CompositorTransformOperations.cpp',      
       'animation/CompositorTransformOperations.h',      
-      'animation/WebToCCAnimationDelegateAdapter.cpp',   
-      'animation/WebToCCAnimationDelegateAdapter.h',         
       'audio/AudioArray.h',
       'audio/AudioBus.cpp',
       'audio/AudioBus.h',

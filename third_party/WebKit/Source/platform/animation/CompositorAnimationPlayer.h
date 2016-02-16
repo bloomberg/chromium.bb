@@ -7,6 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/animation/animation.h"
+#include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_player.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
@@ -16,10 +18,9 @@ namespace blink {
 class CompositorAnimation;
 class WebCompositorAnimationDelegate;
 class WebLayer;
-class WebToCCAnimationDelegateAdapter;
 
 // A compositor representation for AnimationPlayer.
-class PLATFORM_EXPORT CompositorAnimationPlayer {
+class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
     WTF_MAKE_NONCOPYABLE(CompositorAnimationPlayer);
 public:
     CompositorAnimationPlayer();
@@ -43,8 +44,13 @@ public:
     void abortAnimation(int animationId);
 
 private:
+    // cc::AnimationDelegate implementation.
+    void NotifyAnimationStarted(base::TimeTicks monotonicTime, cc::Animation::TargetProperty, int group) override;
+    void NotifyAnimationFinished(base::TimeTicks monotonicTime, cc::Animation::TargetProperty, int group) override;
+    void NotifyAnimationAborted(base::TimeTicks monotonicTime, cc::Animation::TargetProperty, int group) override;
+
     scoped_refptr<cc::AnimationPlayer> m_animationPlayer;
-    scoped_ptr<WebToCCAnimationDelegateAdapter> m_animationDelegateAdapter;
+    WebCompositorAnimationDelegate* m_delegate;
 };
 
 } // namespace blink

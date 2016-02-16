@@ -6,7 +6,7 @@
 
 #include "cc/animation/animation_id_provider.h"
 #include "platform/animation/CompositorAnimation.h"
-#include "platform/animation/WebToCCAnimationDelegateAdapter.h"
+#include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebLayer.h"
 
 namespace blink {
@@ -27,13 +27,8 @@ cc::AnimationPlayer* CompositorAnimationPlayer::animationPlayer() const
 
 void CompositorAnimationPlayer::setAnimationDelegate(WebCompositorAnimationDelegate* delegate)
 {
-    if (!delegate) {
-        m_animationDelegateAdapter.reset();
-        m_animationPlayer->set_layer_animation_delegate(nullptr);
-        return;
-    }
-    m_animationDelegateAdapter.reset(new WebToCCAnimationDelegateAdapter(delegate));
-    m_animationPlayer->set_layer_animation_delegate(m_animationDelegateAdapter.get());
+    m_delegate = delegate;
+    m_animationPlayer->set_layer_animation_delegate(delegate ? this : nullptr);
 }
 
 void CompositorAnimationPlayer::attachLayer(WebLayer* webLayer)
@@ -70,6 +65,33 @@ void CompositorAnimationPlayer::pauseAnimation(int animationId, double timeOffse
 void CompositorAnimationPlayer::abortAnimation(int animationId)
 {
     m_animationPlayer->AbortAnimation(animationId);
+}
+
+void CompositorAnimationPlayer::NotifyAnimationStarted(
+    base::TimeTicks monotonicTime,
+    cc::Animation::TargetProperty targetProperty,
+    int group)
+{
+    ASSERT(m_delegate);
+    m_delegate->notifyAnimationStarted((monotonicTime - base::TimeTicks()).InSecondsF(), group);
+}
+
+void CompositorAnimationPlayer::NotifyAnimationFinished(
+    base::TimeTicks monotonicTime,
+    cc::Animation::TargetProperty targetProperty,
+    int group)
+{
+    ASSERT(m_delegate);
+    m_delegate->notifyAnimationFinished((monotonicTime - base::TimeTicks()).InSecondsF(), group);
+}
+
+void CompositorAnimationPlayer::NotifyAnimationAborted(
+    base::TimeTicks monotonicTime,
+    cc::Animation::TargetProperty targetProperty,
+    int group)
+{
+    ASSERT(m_delegate);
+    m_delegate->notifyAnimationAborted((monotonicTime - base::TimeTicks()).InSecondsF(), group);
 }
 
 } // namespace blink
