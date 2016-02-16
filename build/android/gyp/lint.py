@@ -64,11 +64,11 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
       else:
         # Issues in class files don't have a line number.
         error = '%s %s: %s [warning]' % (path, message, issue_id)
-      print >> sys.stderr, error
+      print >> sys.stderr, error.encode('utf-8')
       for attr in ['errorLine1', 'errorLine2']:
         error_line = issue.getAttribute(attr)
         if error_line:
-          print >> sys.stderr, error_line
+          print >> sys.stderr, error_line.encode('utf-8')
     return len(issues)
 
   with build_utils.TempDir() as temp_dir:
