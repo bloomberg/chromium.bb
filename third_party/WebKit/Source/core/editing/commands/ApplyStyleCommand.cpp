@@ -1107,7 +1107,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
     // We can't wrap node with the styled element here because new styled element will never be removed if we did.
     // If we modified the child pointer in pushDownInlineStyleAroundNode to point to new style element
     // then we fall into an infinite loop where we keep removing and adding styled element wrapping node.
-    addInlineStyleIfNeeded(newInlineStyle.get(), node, node, editingState, DoNotAddStyledElement);
+    addInlineStyleIfNeeded(newInlineStyle.get(), node, node, editingState);
 }
 
 void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node* targetNode, EditingState* editingState)
@@ -1507,7 +1507,7 @@ void ApplyStyleCommand::addBlockStyle(const StyleChange& styleChange, HTMLElemen
     setNodeAttribute(block, styleAttr, cssText.toAtomicString());
 }
 
-void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWillBeRawPtr<Node> passedStart, PassRefPtrWillBeRawPtr<Node> passedEnd, EditingState* editingState, EAddStyledElement addStyledElement)
+void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWillBeRawPtr<Node> passedStart, PassRefPtrWillBeRawPtr<Node> passedEnd, EditingState* editingState)
 {
     if (!passedStart || !passedEnd || !passedStart->inDocument() || !passedEnd->inDocument())
         return;
@@ -1522,7 +1522,7 @@ void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWi
             return;
     }
 
-    applyInlineStyleChange(start, passedEnd, styleChange, addStyledElement, editingState);
+    applyInlineStyleChange(start, passedEnd, styleChange, DoNotAddStyledElement, editingState);
 }
 
 Position ApplyStyleCommand::positionToComputeInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, RefPtrWillBeMember<HTMLSpanElement>& dummyElement)

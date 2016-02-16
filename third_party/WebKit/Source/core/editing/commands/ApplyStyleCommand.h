@@ -98,9 +98,7 @@ private:
     void fixRangeAndApplyInlineStyle(EditingStyle*, const Position& start, const Position& end, EditingState*);
     void applyInlineStyleToNodeRange(EditingStyle*, PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> pastEndNode, EditingState*);
     void addBlockStyle(const StyleChange&, HTMLElement*);
-    // TODO(tkent): Remove the EAddStyledElement argument. It's always
-    // DoNotAddStyledElement.
-    void addInlineStyleIfNeeded(EditingStyle*, PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, EditingState*, EAddStyledElement = AddStyledElement);
+    void addInlineStyleIfNeeded(EditingStyle*, PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, EditingState*);
     Position positionToComputeInlineStyleChange(PassRefPtrWillBeRawPtr<Node>, RefPtrWillBeMember<HTMLSpanElement>& dummyElement);
     void applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> endNode, StyleChange&, EAddStyledElement, EditingState*);
     void splitTextAtStart(const Position& start, const Position& end);
