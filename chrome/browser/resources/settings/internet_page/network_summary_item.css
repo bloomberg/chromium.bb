@@ -15,11 +15,11 @@
 }
 
 paper-spinner {
-  margin-left: 20px;
+  -webkit-margin-start: 20px;
 }
 
 #deviceEnabledButton {
-  margin-left: 10px;
+  -webkit-margin-start: 10px;
 }
 
 #listDiv {
@@ -28,6 +28,6 @@ paper-spinner {
 }
 
 #networkList {
-  margin: 5px 0 10px 0;
+  margin: 5px 0 10px;
   max-height: 400px;
 }

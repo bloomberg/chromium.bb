@@ -3,7 +3,10 @@
  * found in the LICENSE file. */
 
 #outer {
-  padding: 5px 5px 5px 15px;
+  -webkit-padding-end: 5px;
+  -webkit-padding-start: 15px;
+  padding-bottom: 5px;
+  padding-top: 5px;
 }
 
 #outer:hover:not([dropdown]) {

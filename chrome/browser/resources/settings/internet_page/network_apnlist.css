@@ -11,10 +11,10 @@
 }
 
 #selectDiv select {
-  margin-left: 10px;
+  -webkit-margin-start: 10px;
   padding: 5px;
 }
 
 #otherDiv network-property-list {
-  margin-left: 15px;
+  -webkit-margin-start: 15px;
 }

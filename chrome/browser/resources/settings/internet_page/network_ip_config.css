@@ -7,5 +7,5 @@ paper-checkbox {
 }
 
 network-property-list {
-  margin-left: 28px;
+  -webkit-margin-start: 28px;
 }

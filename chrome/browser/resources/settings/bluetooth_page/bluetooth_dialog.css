@@ -26,9 +26,9 @@
 }
 
 #dialogDeviceList {
+  -webkit-margin-start: 4px;
   height: 210px;
   margin-bottom: 20px;
-  margin-left: 4px;
   overflow-y: auto;
 }
 

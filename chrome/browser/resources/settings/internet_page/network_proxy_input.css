@@ -7,9 +7,9 @@
 }
 
 span {
-  margin-right: 5px;
+  -webkit-margin-end: 5px;
 }
 
 paper-input {
-  margin: -9px 5px 0 5px;
+  margin: -9px 5px 0;
 }
