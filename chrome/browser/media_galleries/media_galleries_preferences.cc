@@ -835,6 +835,9 @@ base::FilePath MediaGalleriesPreferences::LookUpGalleryPathForExtension(
       known_galleries_.find(gallery_id);
   if (it == known_galleries_.end())
     return base::FilePath();
+
+  // This seems wrong: it just returns the absolute path to the device, which
+  // is not necessarily the gallery path.
   return MediaStorageUtil::FindDevicePathById(it->second.device_id);
 }
 
