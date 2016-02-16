@@ -31,7 +31,7 @@ class DefaultMojoMediaClient : public MojoMediaClient {
   VideoRendererSink* CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) final;
   scoped_ptr<CdmFactory> CreateCdmFactory(
-      mojo::shell::mojom::InterfaceProvider* /* service_provider */) final;
+      mojo::shell::mojom::InterfaceProvider* /* interface_provider */) final;
 
  private:
   FakeAudioLogFactory fake_audio_log_factory_;

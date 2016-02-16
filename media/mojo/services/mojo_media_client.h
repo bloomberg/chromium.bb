@@ -44,7 +44,7 @@ class MojoMediaClient {
 
   // Returns the CdmFactory to be used by MojoCdmService.
   virtual scoped_ptr<CdmFactory> CreateCdmFactory(
-      mojo::shell::mojom::InterfaceProvider* service_provider);
+      mojo::shell::mojom::InterfaceProvider* interface_provider);
 
  protected:
   MojoMediaClient();

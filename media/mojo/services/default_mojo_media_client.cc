@@ -62,7 +62,7 @@ VideoRendererSink* DefaultMojoMediaClient::CreateVideoRendererSink(
 }
 
 scoped_ptr<CdmFactory> DefaultMojoMediaClient::CreateCdmFactory(
-    mojo::shell::mojom::InterfaceProvider* /* service_provider */) {
+    mojo::shell::mojom::InterfaceProvider* /* interface_provider */) {
   return make_scoped_ptr(new DefaultCdmFactory());
 }
 

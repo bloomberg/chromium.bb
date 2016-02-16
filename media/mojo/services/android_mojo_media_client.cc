@@ -14,9 +14,9 @@ namespace media {
 namespace {
 
 scoped_ptr<ProvisionFetcher> CreateProvisionFetcher(
-    mojo::shell::mojom::InterfaceProvider* service_provider) {
+    mojo::shell::mojom::InterfaceProvider* interface_provider) {
   interfaces::ProvisionFetcherPtr provision_fetcher_ptr;
-  mojo::GetInterface(service_provider, &provision_fetcher_ptr);
+  mojo::GetInterface(interface_provider, &provision_fetcher_ptr);
   return make_scoped_ptr(
       new MojoProvisionFetcher(std::move(provision_fetcher_ptr)));
 }
@@ -29,9 +29,9 @@ AndroidMojoMediaClient::~AndroidMojoMediaClient() {}
 
 // MojoMediaClient overrides.
 scoped_ptr<CdmFactory> AndroidMojoMediaClient::CreateCdmFactory(
-    mojo::shell::mojom::InterfaceProvider* service_provider) {
+    mojo::shell::mojom::InterfaceProvider* interface_provider) {
   return make_scoped_ptr(new AndroidCdmFactory(
-      base::Bind(&CreateProvisionFetcher, service_provider)));
+      base::Bind(&CreateProvisionFetcher, interface_provider)));
 }
 
 }  // namespace media

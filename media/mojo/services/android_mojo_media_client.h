@@ -17,7 +17,7 @@ class AndroidMojoMediaClient : public MojoMediaClient {
 
   // MojoMediaClient implementation.
   scoped_ptr<CdmFactory> CreateCdmFactory(
-      mojo::shell::mojom::InterfaceProvider* service_provider) final;
+      mojo::shell::mojom::InterfaceProvider* interface_provider) final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AndroidMojoMediaClient);
