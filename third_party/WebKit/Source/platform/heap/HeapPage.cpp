@@ -46,6 +46,7 @@
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Assertions.h"
 #include "wtf/ContainerAnnotations.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
 #include "wtf/PageAllocator.h"
@@ -337,7 +338,7 @@ bool BaseHeap::lazySweepWithDeadline(double deadlineSeconds)
     while (m_firstUnsweptPage) {
         sweepUnsweptPage();
         if (pageCount % deadlineCheckInterval == 0) {
-            if (deadlineSeconds <= Platform::current()->monotonicallyIncreasingTimeSeconds()) {
+            if (deadlineSeconds <= monotonicallyIncreasingTime()) {
                 // Deadline has come.
                 Heap::reportMemoryUsageForTracing();
                 return !m_firstUnsweptPage;

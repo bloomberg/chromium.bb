@@ -134,16 +134,6 @@ v8::Isolate* mainThreadIsolate()
     return V8PerIsolateData::mainThreadIsolate();
 }
 
-static double currentTimeFunction()
-{
-    return Platform::current()->currentTimeSeconds();
-}
-
-static double monotonicallyIncreasingTimeFunction()
-{
-    return Platform::current()->monotonicallyIncreasingTimeSeconds();
-}
-
 static void maxObservedSizeFunction(size_t sizeInMB)
 {
     const size_t supportedMaxSizeInMB = 4 * 1024;
@@ -175,7 +165,7 @@ void initializeWithoutV8(Platform* platform)
     ASSERT(platform);
     Platform::initialize(platform);
 
-    WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction, adjustAmountOfExternalAllocatedMemory);
+    WTF::initialize(adjustAmountOfExternalAllocatedMemory);
     WTF::initializeMainThread(callOnMainThreadFunction);
     Heap::init();
 

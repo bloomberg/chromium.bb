@@ -4,6 +4,7 @@ include_rules = [
     "+base/debug",
     "+base/rand_util.h",
     "+base/strings",
+    "+base/time/time.h",
     "+base/tuple.h",
     "+build",
 ]

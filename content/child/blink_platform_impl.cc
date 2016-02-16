@@ -860,15 +860,6 @@ WebString BlinkPlatformImpl::queryLocalizedString(
       GetContentClient()->GetLocalizedString(message_id), values, NULL);
 }
 
-double BlinkPlatformImpl::currentTimeSeconds() {
-  return base::Time::Now().ToDoubleT();
-}
-
-double BlinkPlatformImpl::monotonicallyIncreasingTimeSeconds() {
-  return base::TimeTicks::Now().ToInternalValue() /
-      static_cast<double>(base::Time::kMicrosecondsPerSecond);
-}
-
 blink::WebThread* BlinkPlatformImpl::compositorThread() const {
   return compositor_thread_;
 }

@@ -32,6 +32,7 @@
 
 #if OS(POSIX)
 
+#include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"

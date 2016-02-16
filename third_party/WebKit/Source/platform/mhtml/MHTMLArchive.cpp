@@ -40,6 +40,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "wtf/Assertions.h"
 #include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"

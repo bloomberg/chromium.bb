@@ -33,6 +33,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
 #include "wtf/WTF.h"
@@ -44,7 +45,7 @@
 #include <cc/blink/web_compositor_support_impl.h>
 #include <string.h>
 
-static double CurrentTime()
+static double dummyCurrentTime()
 {
     return 0.0;
 }
@@ -61,8 +62,8 @@ int main(int argc, char** argv)
     base::CommandLine::Init(argc, argv);
 
     WTF::Partitions::initialize(nullptr);
-    WTF::setAlwaysZeroRandomSourceForTesting();
-    WTF::initialize(CurrentTime, CurrentTime, nullptr);
+    WTF::setTimeFunctionsForTesting(dummyCurrentTime);
+    WTF::initialize(nullptr);
     WTF::initializeMainThread(0);
 
     blink::TestingPlatformSupport::Config platformConfig;

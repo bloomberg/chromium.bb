@@ -54,6 +54,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
 #include "wtf/Atomics.h"
+#include "wtf/CurrentTime.h"
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================

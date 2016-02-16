@@ -16,6 +16,7 @@
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/Functional.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ const int LongTaskImageSizeThreshold = 1000 * 1000; // The max image size we exp
 
 bool isDeadlineNearOrPassed(double deadlineSeconds)
 {
-    return (deadlineSeconds - SlackBeforeDeadline - Platform::current()->monotonicallyIncreasingTimeSeconds() <= 0);
+    return (deadlineSeconds - SlackBeforeDeadline - monotonicallyIncreasingTime() <= 0);
 }
 
 } // anonymous namespace

@@ -8,6 +8,7 @@
 #include "platform/v8_inspector/InjectedScriptManager.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
+#include "wtf/CurrentTime.h"
 #include <v8-profiler.h>
 
 namespace blink {

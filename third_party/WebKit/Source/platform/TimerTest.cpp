@@ -280,11 +280,16 @@ class TimerTest : public testing::Test {
 public:
     void SetUp() override
     {
-        WTF::setMonotonicallyIncreasingTimeFunction(currentTime);
+        m_originalTimeFunction = setTimeFunctionsForTesting(currentTime);
 
         m_runTimes.clear();
         gCurrentTimeSecs = 10.0;
         m_startTime = gCurrentTimeSecs;
+    }
+
+    void TearDown() override
+    {
+        setTimeFunctionsForTesting(m_originalTimeFunction);
     }
 
     void countingTask(Timer<TimerTest>*)
@@ -334,6 +339,7 @@ protected:
 
 private:
     TimerTestPlatform m_platform;
+    TimeFunction m_originalTimeFunction;
 };
 
 TEST_F(TimerTest, StartOneShot_Zero)

@@ -32,7 +32,6 @@
 #define WTF_h
 
 #include "wtf/Compiler.h"
-#include "wtf/CurrentTime.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
@@ -40,7 +39,7 @@ namespace WTF {
 typedef void(*AdjustAmountOfExternalAllocatedMemoryFunction)(int size);
 
 // This function must be called exactly once from the main thread before using anything else in WTF.
-WTF_EXPORT void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction, AdjustAmountOfExternalAllocatedMemoryFunction);
+WTF_EXPORT void initialize(AdjustAmountOfExternalAllocatedMemoryFunction);
 WTF_EXPORT void shutdown();
 WTF_EXPORT bool isShutdown();
 

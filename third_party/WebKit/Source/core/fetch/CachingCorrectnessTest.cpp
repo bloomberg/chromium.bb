@@ -35,8 +35,6 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/network/ResourceRequest.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -71,9 +69,9 @@ private:
 
 class CachingCorrectnessTest : public ::testing::Test {
 protected:
-    void advanceClock(double seconds)
+    static void advanceClock(double seconds)
     {
-        m_proxyPlatform.advanceClock(seconds);
+        s_timeElapsed += seconds;
     }
 
     PassRefPtrWillBeRawPtr<Resource> resourceFromResourceResponse(ResourceResponse response, Resource::Type type = Resource::Raw)
@@ -125,25 +123,10 @@ protected:
     ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 
 private:
-    // A simple platform that mocks out the clock, for cache freshness testing.
-    class ProxyPlatform : public TestingPlatformSupport {
-    public:
-        ProxyPlatform() : m_elapsedSeconds(0.) { }
-
-        void advanceClock(double seconds)
-        {
-            m_elapsedSeconds += seconds;
-        }
-
-    private:
-        // From blink::Platform:
-        double currentTimeSeconds() override
-        {
-            return kOriginalRequestDateAsDouble + m_elapsedSeconds;
-        }
-
-        double m_elapsedSeconds;
-    };
+    static double returnMockTime()
+    {
+        return kOriginalRequestDateAsDouble + s_timeElapsed;
+    }
 
     virtual void SetUp()
     {
@@ -151,6 +134,9 @@ private:
         m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
 
         m_fetcher = ResourceFetcher::create(MockFetchContext::create());
+
+        s_timeElapsed = 0.0;
+        m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
     }
 
     virtual void TearDown()
@@ -159,13 +145,17 @@ private:
 
         // Yield the ownership of the global memory cache back.
         replaceMemoryCacheForTesting(m_globalMemoryCache.release());
-    }
 
-    ProxyPlatform m_proxyPlatform;
+        setTimeFunctionsForTesting(m_originalTimeFunction);
+    }
 
     Persistent<MemoryCache> m_globalMemoryCache;
     Persistent<ResourceFetcher> m_fetcher;
+    TimeFunction m_originalTimeFunction;
+    static double s_timeElapsed;
 };
+
+double CachingCorrectnessTest::s_timeElapsed;
 
 TEST_F(CachingCorrectnessTest, FreshFromLastModified)
 {

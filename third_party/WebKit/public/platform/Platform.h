@@ -382,14 +382,6 @@ public:
     // Returns a value such as "en-US".
     virtual WebString defaultLocale() { return WebString(); }
 
-    // Wall clock time in seconds since the epoch.
-    virtual double currentTimeSeconds() { return 0; }
-
-    // Monotonically increasing time in seconds from an arbitrary fixed point in the past.
-    // This function is expected to return at least millisecond-precision values. For this reason,
-    // it is recommended that the fixed point be no further in the past than the epoch.
-    virtual double monotonicallyIncreasingTimeSeconds() { return 0; }
-
     // Returns an interface to the main thread. Can be null if blink was initialized on a thread without a message loop.
     BLINK_PLATFORM_EXPORT WebThread* mainThread() const;
 

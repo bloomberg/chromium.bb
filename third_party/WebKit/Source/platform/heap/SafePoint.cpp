@@ -5,6 +5,7 @@
 #include "platform/heap/SafePoint.h"
 
 #include "wtf/Atomics.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 

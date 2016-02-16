@@ -396,42 +396,29 @@ TEST_F(TextFinderTest, SequentialMatches)
 
 class TextFinderFakeTimerTest : public TextFinderTest {
 protected:
-    // A simple platform that mocks out the clock.
-    class TimeProxyPlatform : public TestingPlatformSupport {
-    public:
-        TimeProxyPlatform()
-            : m_timeCounter(m_oldPlatform->currentTimeSeconds())
-        {
-        }
+    void SetUp() override
+    {
+        s_timeElapsed = 0.0;
+        m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
+    }
 
-    private:
-        Platform& ensureFallback()
-        {
-            ASSERT(m_oldPlatform);
-            return *m_oldPlatform;
-        }
+    void TearDown() override
+    {
+        setTimeFunctionsForTesting(m_originalTimeFunction);
+    }
 
-        // From blink::Platform:
-        double currentTimeSeconds() override
-        {
-            return ++m_timeCounter;
-        }
+private:
+    static double returnMockTime()
+    {
+        s_timeElapsed += 1.0;
+        return s_timeElapsed;
+    }
 
-        // These two methods allow timers to work correctly.
-        double monotonicallyIncreasingTimeSeconds() override
-        {
-            return ensureFallback().monotonicallyIncreasingTimeSeconds();
-        }
-
-        WebUnitTestSupport* unitTestSupport() override { return ensureFallback().unitTestSupport(); }
-        WebString defaultLocale() override { return ensureFallback().defaultLocale(); }
-        WebCompositorSupport* compositorSupport() override { return ensureFallback().compositorSupport(); }
-
-        double m_timeCounter;
-    };
-
-    TimeProxyPlatform m_proxyTimePlatform;
+    TimeFunction m_originalTimeFunction;
+    static double s_timeElapsed;
 };
+
+double TextFinderFakeTimerTest::s_timeElapsed;
 
 TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts)
 {

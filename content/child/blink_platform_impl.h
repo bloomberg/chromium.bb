@@ -124,8 +124,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   void suddenTerminationChanged(bool enabled) override {}
-  double currentTimeSeconds() override;
-  double monotonicallyIncreasingTimeSeconds() override;
   blink::WebThread* compositorThread() const override;
   blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
