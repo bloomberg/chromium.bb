@@ -872,7 +872,11 @@ bool AUAudioInputStream::IsRunning() {
 }
 
 void AUAudioInputStream::HandleError(OSStatus err) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputErrorMac", err);
+  // Log the latest OSStatus error message and also change the sign of the
+  // error if no callbacks are active. I.e., the sign of the error message
+  // carries one extra level of information.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputErrorMac",
+                              GetInputCallbackIsActive() ? err : (err * -1));
   NOTREACHED() << "error " << GetMacOSStatusErrorString(err)
                << " (" << err << ")";
   if (sink_)
