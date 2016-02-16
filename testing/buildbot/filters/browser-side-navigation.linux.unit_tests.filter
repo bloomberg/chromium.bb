@@ -1,5 +1,6 @@
 -BookmarkTest.DetachedBookmarkBarOnNTP
 -BrowserBookmarkBarTest.StateOnActiveTabChanged
+-BrowserCommandsTest.ViewSource
 -BrowserInstantControllerTest.DefaultSearchProviderChanged
 -BrowserInstantControllerTest.GoogleBaseURLUpdated
 -BrowserViewTest.BrowserViewLayout
@@ -46,6 +47,7 @@
 -SearchTest.ProcessIsolation
 -SearchTest.ProcessIsolation_RendererInitiated
 -SessionsSyncManagerTest.AssociateWindowsDontReloadTabs
+-TabsApiUnitTest.QueryWithHostPermission
 -TabsApiUnitTest.QueryWithoutTabsPermission
 -ToolbarModelTest.GoogleBaseURL
 -ToolbarModelTest.ShouldDisplayURL_QueryExtraction
