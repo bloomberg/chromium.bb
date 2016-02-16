@@ -184,15 +184,12 @@ class CustomButtonTest : public ViewsTestBase {
 
 // Tests that hover state changes correctly when visiblity/enableness changes.
 TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
-  gfx::Point center(10, 10);
-  button()->OnMousePressed(ui::MouseEvent(
-      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+
+  generator.PressLeftButton();
   EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
 
-  button()->OnMouseReleased(ui::MouseEvent(
-      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  generator.ReleaseLeftButton();
   EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
 
   button()->SetEnabled(false);
