@@ -146,6 +146,8 @@ class PageTrackTest(unittest.TestCase):
 
   def testCommandLine(self):
     tmp_dir = tempfile.mkdtemp()
+    with open(os.path.join(tmp_dir, 'run_infos.json'), 'w') as out_file:
+      json.dump({'urls': ['a.com', 'b.com', 'c.org']}, out_file)
     for dirname in ['1', '2', 'whatever']:
       os.mkdir(os.path.join(tmp_dir, dirname))
       with open(os.path.join(tmp_dir, dirname, 'trace.json'), 'w') as out_file:

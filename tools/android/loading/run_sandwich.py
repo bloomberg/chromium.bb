@@ -312,6 +312,11 @@ def main():
   else:
     _CleanPreviousTraces(args.output)
 
+  run_infos = {
+    'cache-op': args.cache_op,
+    'job': args.job,
+    'urls': []
+  }
   job_urls = _ReadUrlsFromJobDescription(args.job)
   device = device_utils.DeviceUtils.HealthyDevices()[0]
   local_cache_archive_path = os.path.join(args.output, 'cache.zip')
@@ -324,7 +329,6 @@ def main():
 
   with device_setup.WprHost(device, args.wpr_archive, args.wpr_record,
       args.disable_wpr_script_injection) as additional_flags:
-    pages_loaded = 0
     for _ in xrange(args.repeat):
       for url in job_urls:
         if args.cache_op == 'push':
@@ -333,7 +337,7 @@ def main():
         with device_setup.DeviceConnection(
             device=device,
             additional_flags=additional_flags) as connection:
-          if (pages_loaded == 0 and args.cache_op == 'save' or
+          if (not run_infos['urls'] and args.cache_op == 'save' or
               args.cache_op == 'clear'):
             connection.ClearCache()
           page_track.PageTrack(connection)
@@ -342,9 +346,9 @@ def main():
           connection.SetUpMonitoring()
           connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
           connection.StartMonitoring()
-          pages_loaded += 1
           _SaveChromeTrace(tracing_track.ToJsonDict(), args.output,
-              str(pages_loaded))
+              str(len(run_infos['urls'])))
+          run_infos['urls'].append(url)
 
   if local_cache_directory_path:
     shutil.rmtree(local_cache_directory_path)
@@ -359,6 +363,9 @@ def main():
     cache_directory_path = _PullBrowserCache(device)
     _ZipDirectoryContent(cache_directory_path, local_cache_archive_path)
     shutil.rmtree(cache_directory_path)
+
+  with open(os.path.join(args.output, 'run_infos.json'), 'w') as file_output:
+    json.dump(run_infos, file_output, indent=2)
 
 
 if __name__ == '__main__':

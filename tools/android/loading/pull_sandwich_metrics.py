@@ -20,6 +20,7 @@ CATEGORIES = ['blink.user_timing', 'disabled-by-default-memory-infra']
 
 _CSV_FIELD_NAMES = [
     'id',
+    'url',
     'total_load',
     'onload',
     'browser_malloc_avg',
@@ -145,6 +146,10 @@ def _PullMetricsFromOutputDirectory(output_directory_path):
     List of dictionaries with all _CSV_FIELD_NAMES's field set.
   """
   assert os.path.isdir(output_directory_path)
+  run_infos = None
+  with open(os.path.join(output_directory_path, 'run_infos.json')) as f:
+    run_infos = json.load(f)
+  assert run_infos
   metrics = []
   for node_name in os.listdir(output_directory_path):
     if not os.path.isdir(os.path.join(output_directory_path, node_name)):
@@ -161,6 +166,7 @@ def _PullMetricsFromOutputDirectory(output_directory_path):
       trace = json.load(trace_file)
       trace_metrics = _PullMetricsFromTrace(trace)
       trace_metrics['id'] = page_id
+      trace_metrics['url'] = run_infos['urls'][page_id]
       metrics.append(trace_metrics)
   assert len(metrics) > 0, ('Looks like \'{}\' was not a sandwich ' +
                             'run directory.').format(output_directory_path)
