@@ -805,13 +805,19 @@ void ForEachMatchingFormFieldCommon(
 
     bool is_initiating_element = (*element == initiating_element);
 
-    // Only autofill empty fields and the field that initiated the filling,
-    // i.e. the field the user is currently editing and interacting with.
+    // Only autofill empty fields (or those with the field's default value
+    // attribute) and the field that initiated the filling, i.e. the field the
+    // user is currently editing and interacting with.
     const WebInputElement* input_element = toWebInputElement(element);
+    CR_DEFINE_STATIC_LOCAL(WebString, kValue, ("value"));
     if (!force_override && !is_initiating_element &&
-        ((IsAutofillableInputElement(input_element) ||
-          IsTextAreaElement(*element)) &&
-         !element->value().isEmpty()))
+        // A text field, with a non-empty value that is NOT the value of the
+        // input field's "value" attribute, is skipped.
+        (IsAutofillableInputElement(input_element) ||
+         IsTextAreaElement(*element)) &&
+        !element->value().isEmpty() &&
+        (!element->hasAttribute(kValue) ||
+         element->getAttribute(kValue) != element->value()))
       continue;
 
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element->isEnabled()) ||

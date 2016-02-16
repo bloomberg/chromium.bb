@@ -73,7 +73,7 @@ struct WebElementDescriptor {
 };
 
 const char kFormHtml[] =
-    "<FORM name='TestForm' action='http://buh.com' method='post'>"
+    "<FORM name='TestForm' action='http://abc.com' method='post'>"
     "  <INPUT type='text' id='firstname'/>"
     "  <INPUT type='text' id='lastname'/>"
     "  <INPUT type='hidden' id='imhidden'/>"
@@ -374,7 +374,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
                                                       &field));
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form_data.name);
-      EXPECT_EQ(GURL("http://buh.com"), form_data.action);
+      EXPECT_EQ(GURL("http://abc.com"), form_data.action);
     }
 
     const std::vector<FormFieldData>& fields = form_data.fields;
@@ -634,7 +634,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-      EXPECT_EQ(GURL("http://buh.com"), form.action);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
     }
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -691,7 +691,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-      EXPECT_EQ(GURL("http://buh.com"), form.action);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
     }
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -752,7 +752,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-      EXPECT_EQ(GURL("http://buh.com"), form.action);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
     }
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -794,7 +794,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form2.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-      EXPECT_EQ(GURL("http://buh.com"), form2.action);
+      EXPECT_EQ(GURL("http://abc.com"), form2.action);
     }
 
     const std::vector<FormFieldData>& fields2 = form2.fields;
@@ -842,7 +842,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-      EXPECT_EQ(GURL("http://buh.com"), form.action);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
     }
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -876,7 +876,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form2.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-      EXPECT_EQ(GURL("http://buh.com"), form2.action);
+      EXPECT_EQ(GURL("http://abc.com"), form2.action);
     }
 
     const std::vector<FormFieldData>& fields2 = form2.fields;
@@ -916,7 +916,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-      EXPECT_EQ(GURL("http://buh.com"), form.action);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
     }
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -950,7 +950,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form2.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-      EXPECT_EQ(GURL("http://buh.com"), form2.action);
+      EXPECT_EQ(GURL("http://abc.com"), form2.action);
     }
 
     const std::vector<FormFieldData>& fields2 = form2.fields;
@@ -1057,7 +1057,10 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[unowned_offset + 2]);
   }
 
-  void TestFillFormNonEmptyField(const char* html, bool unowned) {
+  void TestFillFormNonEmptyField(const char* html,
+                                 bool unowned,
+                                 const char* initial_lastname,
+                                 const char* initial_email) {
     LoadHTML(html);
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
@@ -1081,7 +1084,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-      EXPECT_EQ(GURL("http://buh.com"), form.action);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
     }
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -1097,12 +1100,24 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
     expected.name = ASCIIToUTF16("lastname");
-    expected.value.clear();
+    if (initial_lastname) {
+      expected.label = ASCIIToUTF16(initial_lastname);
+      expected.value = ASCIIToUTF16(initial_lastname);
+    } else {
+      expected.label.clear();
+      expected.value.clear();
+    }
     expected.is_autofilled = false;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
     expected.name = ASCIIToUTF16("email");
-    expected.value.clear();
+    if (initial_email) {
+      expected.label = ASCIIToUTF16(initial_email);
+      expected.value = ASCIIToUTF16(initial_email);
+    } else {
+      expected.label.clear();
+      expected.value.clear();
+    }
     expected.is_autofilled = false;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 
@@ -1129,7 +1144,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
               form2.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-      EXPECT_EQ(GURL("http://buh.com"), form2.action);
+      EXPECT_EQ(GURL("http://abc.com"), form2.action);
     }
 
     const std::vector<FormFieldData>& fields2 = form2.fields;
@@ -1137,16 +1152,19 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     expected.name = ASCIIToUTF16("firstname");
     expected.value = ASCIIToUTF16("Wyatt");
+    expected.label.clear();
     expected.is_autofilled = true;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[0]);
 
     expected.name = ASCIIToUTF16("lastname");
     expected.value = ASCIIToUTF16("Earp");
+    expected.label.clear();
     expected.is_autofilled = true;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[1]);
 
     expected.name = ASCIIToUTF16("email");
     expected.value = ASCIIToUTF16("wyatt@example.com");
+    expected.label.clear();
     expected.is_autofilled = true;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
 
@@ -1194,7 +1212,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_FALSE(form.origin.is_empty());
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-      EXPECT_EQ(GURL("http://buh.com"), form.action);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
     }
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -1295,7 +1313,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_FALSE(form.origin.is_empty());
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-      EXPECT_EQ(GURL("http://buh.com"), form.action);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
     }
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -2561,7 +2579,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormDataAutocomplete) {
 
 TEST_F(FormAutofillTest, FindFormForInputElement) {
   TestFindFormForInputElement(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='John'/>"
       "  <INPUT type='text' id='lastname' value='Smith'/>"
       "  <INPUT type='text' id='email' value='john@example.com'"
@@ -2586,7 +2604,7 @@ TEST_F(FormAutofillTest, FindFormForInputElementForUnownedForm) {
 
 TEST_F(FormAutofillTest, FindFormForTextAreaElement) {
   TestFindFormForTextAreaElement(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='John'/>"
       "  <INPUT type='text' id='lastname' value='Smith'/>"
       "  <INPUT type='text' id='email' value='john@example.com'"
@@ -3726,7 +3744,7 @@ TEST_F(FormAutofillTest, LabelsInferredFromDefinitionListRatherThanDivTable) {
 
 TEST_F(FormAutofillTest, FillFormMaxLength) {
   TestFillFormMaxLength(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' maxlength='5'/>"
       "  <INPUT type='text' id='lastname' maxlength='7'/>"
       "  <INPUT type='text' id='email' maxlength='9'/>"
@@ -3751,7 +3769,7 @@ TEST_F(FormAutofillTest, FillFormMaxLengthForUnownedForm) {
 TEST_F(FormAutofillTest, FillFormNegativeMaxLength) {
   TestFillFormNegativeMaxLength(
       "<HEAD><TITLE>delivery recipient info</TITLE></HEAD>"
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' maxlength='-1'/>"
       "  <INPUT type='text' id='lastname' maxlength='-10'/>"
       "  <INPUT type='text' id='email' maxlength='-13'/>"
@@ -3772,7 +3790,7 @@ TEST_F(FormAutofillTest, FillFormNegativeMaxLengthForUnownedForm) {
 
 TEST_F(FormAutofillTest, FillFormEmptyName) {
   TestFillFormEmptyName(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname'/>"
       "  <INPUT type='text' id='lastname'/>"
       "  <INPUT type='text' id='email'/>"
@@ -3793,7 +3811,7 @@ TEST_F(FormAutofillTest, FillFormEmptyNameForUnownedForm) {
 
 TEST_F(FormAutofillTest, FillFormEmptyFormNames) {
   TestFillFormEmptyFormNames(
-      "<FORM action='http://buh.com' method='post'>"
+      "<FORM action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname'/>"
       "  <INPUT type='text' id='middlename'/>"
       "  <INPUT type='text' id='lastname'/>"
@@ -3953,13 +3971,24 @@ TEST_F(FormAutofillTest, MaxLengthFields) {
 // into should be filled even though it's not technically empty.
 TEST_F(FormAutofillTest, FillFormNonEmptyField) {
   TestFillFormNonEmptyField(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname'/>"
       "  <INPUT type='text' id='lastname'/>"
       "  <INPUT type='text' id='email'/>"
       "  <INPUT type='submit' value='Send'/>"
       "</FORM>",
-      false);
+      false, nullptr, nullptr);
+}
+
+TEST_F(FormAutofillTest, FillFormNonEmptyFieldsWithDefaultValues) {
+  TestFillFormNonEmptyField(
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
+      "  <INPUT type='text' id='firstname' value='Enter first name'/>"
+      "  <INPUT type='text' id='lastname' value='Enter last name'/>"
+      "  <INPUT type='text' id='email' value='Enter email'/>"
+      "  <INPUT type='submit' value='Send'/>"
+      "</FORM>",
+      false, "Enter last name", "Enter email");
 }
 
 TEST_F(FormAutofillTest, FillFormNonEmptyFieldForUnownedForm) {
@@ -3969,12 +3998,12 @@ TEST_F(FormAutofillTest, FillFormNonEmptyFieldForUnownedForm) {
       "<INPUT type='text' id='lastname'/>"
       "<INPUT type='text' id='email'/>"
       "<INPUT type='submit' value='Send'/>",
-      true);
+      true, nullptr, nullptr);
 }
 
 TEST_F(FormAutofillTest, ClearFormWithNode) {
   TestClearFormWithNode(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
       "  <INPUT type='text' id='lastname' value='Earp'/>"
       "  <INPUT type='text' autocomplete='off' id='noAC' value='one'/>"
@@ -4014,7 +4043,7 @@ TEST_F(FormAutofillTest, ClearFormWithNodeForUnownedForm) {
 
 TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOne) {
   TestClearFormWithNodeContainingSelectOne(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
       "  <INPUT type='text' id='lastname' value='Earp'/>"
       "  <SELECT id='state' name='state'>"
@@ -4045,7 +4074,7 @@ TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOneForUnownedForm) {
 
 TEST_F(FormAutofillTest, ClearPreviewedFormWithElement) {
   TestClearPreviewedFormWithElement(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
       "  <INPUT type='text' id='lastname'/>"
       "  <INPUT type='text' id='email'/>"
@@ -4068,7 +4097,7 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithElementForUnownedForm) {
 
 TEST_F(FormAutofillTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
   TestClearPreviewedFormWithNonEmptyInitiatingNode(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='W'/>"
       "  <INPUT type='text' id='lastname'/>"
       "  <INPUT type='text' id='email'/>"
@@ -4092,7 +4121,7 @@ TEST_F(FormAutofillTest,
 
 TEST_F(FormAutofillTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
   TestClearPreviewedFormWithAutofilledInitiatingNode(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='W'/>"
       "  <INPUT type='text' id='lastname'/>"
       "  <INPUT type='text' id='email'/>"
@@ -4117,7 +4146,7 @@ TEST_F(FormAutofillTest,
 // Autofill's "Clear Form" should clear only autofilled fields
 TEST_F(FormAutofillTest, ClearOnlyAutofilledFields) {
   TestClearOnlyAutofilledFields(
-      "<FORM name='TestForm' action='http://buh.com' method='post'>"
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
       "  <INPUT type='text' id='lastname' value='Earp'/>"
       "  <INPUT type='email' id='email' value='wyatt@earp.com'/>"
@@ -4443,23 +4472,23 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
     const bool is_formless_checkout;
   } test_cases[] = {
       // An empty form should not be extracted
-      {"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
        "</FORM>",
        false, true, false},
       // A form with less than three fields with no autocomplete type(s) should
       // not be extracted.
-      {"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
        "  <INPUT type='name' id='firstname'/>"
        "</FORM>",
        false, true, false},
       // A form with less than three fields with at least one autocomplete type
       // should be extracted.
-      {"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
        "  <INPUT type='name' id='firstname' autocomplete='given-name'/>"
        "</FORM>",
        true, true, false},
       // A form with three or more fields should be extracted.
-      {"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
        "  <INPUT type='text' id='firstname'/>"
        "  <INPUT type='text' id='lastname'/>"
        "  <INPUT type='text' id='email'/>"
@@ -4478,12 +4507,12 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
        "<INPUT type='submit' value='Send'/>",
        false, false, false},
       // A form with one field which is password should not be extracted.
-      {"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
        "  <INPUT type='password' id='pw'/>"
        "</FORM>",
        false, true, false},
       // A form with two fields which are passwords should be extracted.
-      {"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
        "  <INPUT type='password' id='pw'/>"
        "  <INPUT type='password' id='new_pw'/>"
        "</FORM>",
