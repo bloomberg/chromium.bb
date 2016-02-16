@@ -448,13 +448,13 @@ Background.prototype = {
 
           this.setCurrentRange(newRange);
 
-          new Output().withSpeechAndBraille(
+          new Output().withRichSpeechAndBraille(
                   this.currentRange_, prevRange, Output.EventType.NAVIGATE)
               .onSpeechEnd(continueReading)
               .go();
         }.bind(this);
 
-        new Output().withSpeechAndBraille(
+        new Output().withRichSpeechAndBraille(
                 this.currentRange_, null, Output.EventType.NAVIGATE)
             .onSpeechEnd(continueReading)
             .go();
@@ -610,7 +610,7 @@ Background.prototype = {
     var prevRange = this.currentRange_;
     this.setCurrentRange(range);
 
-    new Output().withSpeechAndBraille(
+    new Output().withRichSpeechAndBraille(
         range, prevRange, Output.EventType.NAVIGATE)
         .withQueueMode(cvox.QueueMode.FLUSH)
         .go();

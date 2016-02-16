@@ -94,7 +94,7 @@ DesktopAutomationHandler.prototype = {
       return;
 
     var output = new Output();
-    output.withSpeech(
+    output.withRichSpeech(
         ChromeVoxState.instance.currentRange, prevRange, evt.type);
     if (!this.textEditHandler_) {
       output.withBraille(
@@ -178,7 +178,7 @@ DesktopAutomationHandler.prototype = {
       return;
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(evt.target));
-    new Output().withSpeechAndBraille(
+    new Output().withRichSpeechAndBraille(
         ChromeVoxState.instance.currentRange, null, evt.type).go();
   },
 

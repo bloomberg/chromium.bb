@@ -66,17 +66,10 @@ Output = function() {
 
   /**
    * Current global options.
-   * @type {{speech: boolean, braille: boolean}}
+   * @type {{speech: boolean, braille: boolean, auralStyle: boolean}}
    * @private
    */
-  this.formatOptions_ = {speech: true, braille: false};
-
-  /**
-   * Speech properties to apply to the entire output.
-   * @type {!Object<*>}
-   * @private
-   */
-  this.speechProperties_ = {};
+  this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
 
   /**
    * The speech category for the generated speech utterance.
@@ -428,7 +421,8 @@ Output.RULES = {
     },
     heading: {
       enter: '@tag_h+$hierarchicalLevel',
-      speak: '@tag_h+$hierarchicalLevel $nameOrDescendants='
+      speak: '@tag_h+$hierarchicalLevel !relativePitch(hierarchicalLevel)' +
+          ' $nameOrDescendants='
     },
     inlineTextBox: {
       speak: '$name='
@@ -540,6 +534,12 @@ Output.RULES = {
     }
   }
 };
+
+/**
+ * Used to annotate utterances with speech properties.
+ * @constructor
+ */
+Output.SpeechProperties = function() {};
 
 /**
  * Custom actions performed while rendering an output string.
@@ -665,7 +665,20 @@ Output.prototype = {
    * @return {!Output}
    */
   withSpeech: function(range, prevRange, type) {
-    this.formatOptions_ = {speech: true, braille: false};
+    this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
+    this.render_(range, prevRange, type, this.speechBuffer_);
+    return this;
+  },
+
+    /**
+   * Specify ranges for aurally styled speech.
+   * @param {!cursors.Range} range
+   * @param {cursors.Range} prevRange
+   * @param {EventType|Output.EventType} type
+   * @return {!Output}
+   */
+  withRichSpeech: function(range, prevRange, type) {
+    this.formatOptions_ = {speech: true, braille: false, auralStyle: true};
     this.render_(range, prevRange, type, this.speechBuffer_);
     return this;
   },
@@ -678,7 +691,7 @@ Output.prototype = {
    * @return {!Output}
    */
   withBraille: function(range, prevRange, type) {
-    this.formatOptions_ = {speech: false, braille: true};
+    this.formatOptions_ = {speech: false, braille: true, auralStyle: false};
     this.render_(range, prevRange, type, this.brailleBuffer_);
     return this;
   },
@@ -691,7 +704,7 @@ Output.prototype = {
    * @return {!Output}
    */
   withLocation: function(range, prevRange, type) {
-    this.formatOptions_ = {speech: false, braille: false};
+    this.formatOptions_ = {speech: false, braille: false, auralStyle: false};
     this.render_(range, prevRange, type, [] /*unused output*/);
     return this;
   },
@@ -705,6 +718,19 @@ Output.prototype = {
    */
   withSpeechAndBraille: function(range, prevRange, type) {
     this.withSpeech(range, prevRange, type);
+    this.withBraille(range, prevRange, type);
+    return this;
+  },
+
+    /**
+   * Specify the same ranges for aurally styled speech and braille.
+   * @param {!cursors.Range} range
+   * @param {cursors.Range} prevRange
+   * @param {EventType|Output.EventType} type
+   * @return {!Output}
+   */
+  withRichSpeechAndBraille: function(range, prevRange, type) {
+    this.withRichSpeech(range, prevRange, type);
     this.withBraille(range, prevRange, type);
     return this;
   },
@@ -754,7 +780,7 @@ Output.prototype = {
   formatForSpeech: function(formatStr, opt_node) {
     var node = opt_node || null;
 
-    this.formatOptions_ = {speech: true, braille: false};
+    this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
     this.format_(node, formatStr, this.speechBuffer_);
 
     return this;
@@ -771,7 +797,7 @@ Output.prototype = {
   formatForBraille: function(formatStr, opt_node) {
     var node = opt_node || null;
 
-    this.formatOptions_ = {speech: false, braille: true};
+    this.formatOptions_ = {speech: false, braille: true, auralStyle: false};
     this.format_(node, formatStr, this.brailleBuffer_);
 
     return this;
@@ -800,12 +826,15 @@ Output.prototype = {
       Output.flushNextSpeechUtterance_ = false;
     }
 
-    this.speechProperties_.category = this.speechCategory_;
-
     this.speechBuffer_.forEach(function(buff, i, a) {
+      var speechProps = {};
       (function() {
         var scopedBuff = buff;
-        this.speechProperties_['startCallback'] = function() {
+        speechProps =
+            scopedBuff.getSpanInstanceOf(Output.SpeechProperties) || {};
+        speechProps.category = this.speechCategory_;
+
+        speechProps['startCallback'] = function() {
           var actions = scopedBuff.getSpansInstanceOf(Output.Action);
           if (actions) {
             actions.forEach(function(a) {
@@ -816,11 +845,11 @@ Output.prototype = {
       }.bind(this)());
 
       if (this.speechEndCallback_ && i == a.length - 1)
-        this.speechProperties_['endCallback'] = this.speechEndCallback_;
+        speechProps['endCallback'] = this.speechEndCallback_;
       else
-        this.speechProperties_['endCallback'] = null;
+        speechProps['endCallback'] = null;
       cvox.ChromeVox.tts.speak(
-          buff.toString(), queueMode, this.speechProperties_);
+          buff.toString(), queueMode, speechProps);
       queueMode = cvox.QueueMode.QUEUE;
     }.bind(this));
 
@@ -891,6 +920,7 @@ Output.prototype = {
       tokens = [format];
     }
 
+    var speechProps = null;
     tokens.forEach(function(token) {
       // Ignore empty tokens.
       if (!token)
@@ -1001,6 +1031,10 @@ Output.prototype = {
           if (localStorage['useVerboseMode'] == 'false')
             return;
 
+          if (this.formatOptions_.auralStyle) {
+            speechProps = new Output.SpeechProperties();
+            speechProps['relativePitch'] = -0.3;
+          }
           options.annotation.push(token);
           var msg = node.role;
           var info = Output.ROLE_INFO_[node.role];
@@ -1081,6 +1115,10 @@ Output.prototype = {
           }
         }
       } else if (prefix == '@') {
+        if (this.formatOptions_.auralStyle) {
+          speechProps = new Output.SpeechProperties();
+          speechProps['relativePitch'] = -0.2;
+        }
         var isPluralized = (token[0] == '@');
         if (isPluralized)
           token = token.slice(1);
@@ -1136,7 +1174,33 @@ Output.prototype = {
 
         this.append_(buff, msg, options);
       } else if (prefix == '!') {
-        this.speechProperties_[token] = true;
+        speechProps = new Output.SpeechProperties();
+        speechProps[token] = true;
+        if (tree.firstChild) {
+          if (!this.formatOptions_.auralStyle) {
+            speechProps = undefined;
+            return;
+          }
+
+          var value = tree.firstChild.value;
+
+          // Currently, speech params take either attributes or floats.
+          var float = 0;
+          if (float = parseFloat(value))
+            value = float;
+          else
+            value = parseFloat(node[value]) / -10.0;
+          speechProps[token] = value;
+          return;
+        }
+      }
+
+      // Post processing.
+      if (speechProps) {
+        if (buff.length > 0) {
+          buff[buff.length - 1].setSpan(speechProps, 0, 0);
+          speechProps = null;
+        }
       }
     }.bind(this));
   },
@@ -1383,7 +1447,7 @@ Output.prototype = {
     }
 
     if (currentNode != root)
-      throw 'Unbalanced parenthesis.';
+      throw 'Unbalanced parenthesis: ' + inputStr;
 
     return root;
   },
