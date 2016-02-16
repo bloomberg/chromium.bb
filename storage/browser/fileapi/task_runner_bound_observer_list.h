@@ -17,7 +17,7 @@ namespace storage {
 // A wrapper for dispatching method.
 template <class T, class Method, class Params>
 void NotifyWrapper(T obj, Method m, const Params& p) {
-  base::DispatchToMethod(base::internal::UnwrapTraits<T>::Unwrap(obj), m, p);
+  base::DispatchToMethod(obj, m, p);
 }
 
 // An observer list helper to notify on a given task runner.
@@ -69,7 +69,7 @@ class TaskRunnerBoundObserverList {
     for (typename ObserversListMap::const_iterator it = observers_.begin();
          it != observers_.end(); ++it) {
       if (!it->second.get() || it->second->RunsTasksOnCurrentThread()) {
-        base::DispatchToMethod(UnwrapTraits::Unwrap(it->first), method, params);
+        base::DispatchToMethod(it->first, method, params);
         continue;
       }
       it->second->PostTask(
@@ -80,8 +80,6 @@ class TaskRunnerBoundObserverList {
   }
 
  private:
-  typedef base::internal::UnwrapTraits<ObserverStoreType> UnwrapTraits;
-
   ObserversListMap observers_;
 };
 
