@@ -152,21 +152,6 @@ const char kWebContentsAndroidKey[] = "web_contents_android";
 base::LazyInstance<std::vector<WebContentsImpl::CreatedCallback> >
 g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
-static void DidDownloadImage(const WebContents::ImageDownloadCallback& callback,
-                             int id,
-                             const GURL& image_url,
-                             image_downloader::DownloadResultPtr result) {
-  DCHECK(result);
-
-  const std::vector<SkBitmap> images =
-      result->images.To<std::vector<SkBitmap>>();
-  const std::vector<gfx::Size> original_image_sizes =
-      result->original_image_sizes.To<std::vector<gfx::Size>>();
-
-  callback.Run(id, result->http_status_code, image_url, images,
-               original_image_sizes);
-}
-
 void NotifyCacheOnIO(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     const GURL& url,
@@ -376,7 +361,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       audio_stream_monitor_(this),
       virtual_keyboard_requested_(false),
       page_scale_factor_is_one_(true),
-      loading_weak_factory_(this) {
+      loading_weak_factory_(this),
+      weak_factory_(this) {
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
                  base::Unretained(this)));
@@ -2825,12 +2811,14 @@ int WebContentsImpl::DownloadImage(
     // Android), the downloader service will be invalid. Pre-Mojo, this would
     // hang the callback indefinetly since the IPC would be dropped. Now,
     // respond with a 400 HTTP error code to indicate that something went wrong.
+    image_downloader::DownloadResultPtr result =
+        image_downloader::DownloadResult::New();
+    result->http_status_code = 400;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebContents::ImageDownloadCallback::Run,
-                   base::Owned(new ImageDownloadCallback(callback)),
-                   download_id, 400, url, std::vector<SkBitmap>(),
-                   std::vector<gfx::Size>()));
+        base::Bind(&WebContentsImpl::OnDidDownloadImage,
+                   weak_factory_.GetWeakPtr(), callback, download_id, url,
+                   base::Passed(&result)));
     return download_id;
   }
 
@@ -2843,8 +2831,9 @@ int WebContentsImpl::DownloadImage(
   req->bypass_cache = bypass_cache;
 
   mojo_image_downloader->DownloadImage(
-      std::move(req),
-      base::Bind(&DidDownloadImage, callback, download_id, url));
+      std::move(req), base::Bind(&WebContentsImpl::OnDidDownloadImage,
+                                 weak_factory_.GetWeakPtr(), callback,
+                                 download_id, url));
   return download_id;
 }
 
@@ -4624,6 +4613,20 @@ bool WebContentsImpl::GetAllowOtherViews() {
 }
 
 #endif
+
+void WebContentsImpl::OnDidDownloadImage(
+    const ImageDownloadCallback& callback,
+    int id,
+    const GURL& image_url,
+    image_downloader::DownloadResultPtr result) {
+  const std::vector<SkBitmap> images =
+      result->images.To<std::vector<SkBitmap>>();
+  const std::vector<gfx::Size> original_image_sizes =
+      result->original_image_sizes.To<std::vector<gfx::Size>>();
+
+  callback.Run(id, result->http_status_code, image_url, images,
+               original_image_sizes);
+}
 
 void WebContentsImpl::OnDialogClosed(int render_process_id,
                                      int render_frame_id,
