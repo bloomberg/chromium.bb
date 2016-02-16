@@ -27,7 +27,6 @@ from devil.android.sdk import intent
 
 sys.path.append(os.path.join(sys.path[0], '..', '..', 'build', 'android'))
 from pylib import constants
-from pylib import flag_changer
 
 sys.path.append(os.path.join(sys.path[0], '..', '..', 'tools', 'perf'))
 from chrome_telemetry_build import chromium_config
