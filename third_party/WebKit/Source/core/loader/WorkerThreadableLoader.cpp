@@ -59,21 +59,22 @@ static PassOwnPtr<Vector<char>> createVectorFromMemoryRegion(const char* data, u
     return buffer.release();
 }
 
-WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions, BlockingBehavior blockingBehavior)
+WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions, BlockingBehavior blockingBehavior)
     : m_workerGlobalScope(&workerGlobalScope)
     , m_workerClientWrapper(ThreadableLoaderClientWrapper::create(client))
 {
     m_workerClientWrapper->setResourceTimingClient(this);
     if (blockingBehavior == LoadAsynchronously) {
-        m_bridge = new MainThreadAsyncBridge(workerGlobalScope, m_workerClientWrapper, request, options, resourceLoaderOptions, workerGlobalScope.referrerPolicy(), workerGlobalScope.url().strippedForUseAsReferrer());
+        m_bridge = new MainThreadAsyncBridge(workerGlobalScope, m_workerClientWrapper, options, resourceLoaderOptions);
     } else {
-        m_bridge = new MainThreadSyncBridge(workerGlobalScope, m_workerClientWrapper, request, options, resourceLoaderOptions, workerGlobalScope.referrerPolicy(), workerGlobalScope.url().strippedForUseAsReferrer());
+        m_bridge = new MainThreadSyncBridge(workerGlobalScope, m_workerClientWrapper, options, resourceLoaderOptions);
     }
 }
 
 void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& workerGlobalScope, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    RefPtr<WorkerThreadableLoader> loader = adoptRef(new WorkerThreadableLoader(workerGlobalScope, &client, request, options, resourceLoaderOptions, LoadSynchronously));
+    RefPtr<WorkerThreadableLoader> loader = adoptRef(new WorkerThreadableLoader(workerGlobalScope, &client, options, resourceLoaderOptions, LoadSynchronously));
+    loader->start(request);
 }
 
 WorkerThreadableLoader::~WorkerThreadableLoader()
@@ -81,6 +82,12 @@ WorkerThreadableLoader::~WorkerThreadableLoader()
     m_workerClientWrapper->clearResourceTimingClient();
     m_bridge->destroy();
     m_bridge = nullptr;
+}
+
+void WorkerThreadableLoader::start(const ResourceRequest& request)
+{
+    m_bridge->start(request, *m_workerGlobalScope);
+    m_workerClientWrapper->setResourceTimingClient(this);
 }
 
 void WorkerThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
@@ -114,25 +121,35 @@ WorkerThreadableLoader::MainThreadBridgeBase::~MainThreadBridgeBase()
 {
 }
 
-void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadCreateLoader(PassOwnPtr<CrossThreadResourceRequestData> requestData, ThreadableLoaderOptions options, ResourceLoaderOptions resourceLoaderOptions, const ReferrerPolicy referrerPolicy, const String& outgoingReferrer, ExecutionContext* context)
+void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadCreateLoader(ThreadableLoaderOptions options, ResourceLoaderOptions resourceLoaderOptions, ExecutionContext* context)
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
 
+    resourceLoaderOptions.requestInitiatorContext = WorkerContext;
+    m_mainThreadLoader = DocumentThreadableLoader::create(*document, this, options, resourceLoaderOptions);
+    ASSERT(m_mainThreadLoader);
+}
+
+void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadStart(PassOwnPtr<CrossThreadResourceRequestData> requestData, const ReferrerPolicy referrerPolicy, const String& outgoingReferrer)
+{
+    ASSERT(isMainThread());
+    ASSERT(m_mainThreadLoader);
+
     ResourceRequest request(requestData.get());
     if (!request.didSetHTTPReferrer())
         request.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request.url(), outgoingReferrer));
-    resourceLoaderOptions.requestInitiatorContext = WorkerContext;
-    m_mainThreadLoader = DocumentThreadableLoader::create(*document, this, request, options, resourceLoaderOptions);
-    if (!m_mainThreadLoader) {
-        // DocumentThreadableLoader::create may return 0 when the document loader has been already changed.
-        didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "The parent document page has been unloaded."));
-    }
+    m_mainThreadLoader->start(request);
 }
 
-void WorkerThreadableLoader::MainThreadBridgeBase::createLoader(const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions, const ReferrerPolicy& referrerPolicy, const String& outgoingReferrer)
+void WorkerThreadableLoader::MainThreadBridgeBase::createLoaderInMainThread(const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadCreateLoader, this, request, options, resourceLoaderOptions, referrerPolicy, outgoingReferrer));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadCreateLoader, this, options, resourceLoaderOptions));
+}
+
+void WorkerThreadableLoader::MainThreadBridgeBase::startInMainThread(const ResourceRequest& request, const WorkerGlobalScope& workerGlobalScope)
+{
+    loaderProxy()->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadStart, this, request, workerGlobalScope.referrerPolicy(), workerGlobalScope.url().strippedForUseAsReferrer()));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadDestroy(ExecutionContext* context)
@@ -198,65 +215,67 @@ void WorkerThreadableLoader::MainThreadBridgeBase::cancel()
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
-    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didSendData, workerClientWrapper(), bytesSent, totalBytesToBeSent));
+    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didSendData, m_workerClientWrapper, bytesSent, totalBytesToBeSent));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didReceiveResponse, workerClientWrapper(), identifier, response, handle));
+    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didReceiveResponse, m_workerClientWrapper, identifier, response, handle));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didReceiveData(const char* data, unsigned dataLength)
 {
-    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didReceiveData, workerClientWrapper(), createVectorFromMemoryRegion(data, dataLength)));
+    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didReceiveData, m_workerClientWrapper, createVectorFromMemoryRegion(data, dataLength)));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didDownloadData(int dataLength)
 {
-    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didDownloadData, workerClientWrapper(), dataLength));
+    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didDownloadData, m_workerClientWrapper, dataLength));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didReceiveCachedMetadata(const char* data, int dataLength)
 {
-    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didReceiveCachedMetadata, workerClientWrapper(), createVectorFromMemoryRegion(data, dataLength)));
+    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didReceiveCachedMetadata, m_workerClientWrapper, createVectorFromMemoryRegion(data, dataLength)));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didFinishLoading(unsigned long identifier, double finishTime)
 {
-    forwardTaskToWorkerOnLoaderDone(createCrossThreadTask(&ThreadableLoaderClientWrapper::didFinishLoading, workerClientWrapper(), identifier, finishTime));
+    forwardTaskToWorkerOnLoaderDone(createCrossThreadTask(&ThreadableLoaderClientWrapper::didFinishLoading, m_workerClientWrapper, identifier, finishTime));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didFail(const ResourceError& error)
 {
-    forwardTaskToWorkerOnLoaderDone(createCrossThreadTask(&ThreadableLoaderClientWrapper::didFail, workerClientWrapper(), error));
+    forwardTaskToWorkerOnLoaderDone(createCrossThreadTask(&ThreadableLoaderClientWrapper::didFail, m_workerClientWrapper, error));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didFailAccessControlCheck(const ResourceError& error)
 {
-    forwardTaskToWorkerOnLoaderDone(createCrossThreadTask(&ThreadableLoaderClientWrapper::didFailAccessControlCheck, workerClientWrapper(), error));
+    forwardTaskToWorkerOnLoaderDone(createCrossThreadTask(&ThreadableLoaderClientWrapper::didFailAccessControlCheck, m_workerClientWrapper, error));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didFailRedirectCheck()
 {
-    forwardTaskToWorkerOnLoaderDone(createCrossThreadTask(&ThreadableLoaderClientWrapper::didFailRedirectCheck, workerClientWrapper()));
+    forwardTaskToWorkerOnLoaderDone(createCrossThreadTask(&ThreadableLoaderClientWrapper::didFailRedirectCheck, m_workerClientWrapper));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::didReceiveResourceTiming(const ResourceTimingInfo& info)
 {
-    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didReceiveResourceTiming, workerClientWrapper(), info));
+    forwardTaskToWorker(createCrossThreadTask(&ThreadableLoaderClientWrapper::didReceiveResourceTiming, m_workerClientWrapper, info));
 }
 
 WorkerThreadableLoader::MainThreadAsyncBridge::MainThreadAsyncBridge(
     WorkerGlobalScope& workerGlobalScope,
     PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper,
-    const ResourceRequest& request,
     const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resourceLoaderOptions,
-    const ReferrerPolicy referrerPolicy,
-    const String& outgoingReferrer)
+    const ResourceLoaderOptions& resourceLoaderOptions)
     : MainThreadBridgeBase(workerClientWrapper, workerGlobalScope.thread()->workerLoaderProxy())
 {
-    createLoader(request, options, resourceLoaderOptions, referrerPolicy, outgoingReferrer);
+    createLoaderInMainThread(options, resourceLoaderOptions);
+}
+
+void WorkerThreadableLoader::MainThreadAsyncBridge::start(const ResourceRequest& request, const WorkerGlobalScope& workerGlobalScope)
+{
+    startInMainThread(request, workerGlobalScope);
 }
 
 WorkerThreadableLoader::MainThreadAsyncBridge::~MainThreadAsyncBridge()
@@ -276,18 +295,20 @@ void WorkerThreadableLoader::MainThreadAsyncBridge::forwardTaskToWorkerOnLoaderD
 WorkerThreadableLoader::MainThreadSyncBridge::MainThreadSyncBridge(
     WorkerGlobalScope& workerGlobalScope,
     PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper,
-    const ResourceRequest& request,
     const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resourceLoaderOptions,
-    const ReferrerPolicy referrerPolicy,
-    const String& outgoingReferrer)
+    const ResourceLoaderOptions& resourceLoaderOptions)
     : MainThreadBridgeBase(workerClientWrapper, workerGlobalScope.thread()->workerLoaderProxy())
     , m_done(false)
+{
+    createLoaderInMainThread(options, resourceLoaderOptions);
+}
+
+void WorkerThreadableLoader::MainThreadSyncBridge::start(const ResourceRequest& request, const WorkerGlobalScope& workerGlobalScope)
 {
     WaitableEvent* shutdownEvent = workerGlobalScope.thread()->shutdownEvent();
     m_loaderDoneEvent = adoptPtr(new WaitableEvent());
 
-    createLoader(request, options, resourceLoaderOptions, referrerPolicy, outgoingReferrer);
+    startInMainThread(request, workerGlobalScope);
 
     size_t signaledIndex;
     {

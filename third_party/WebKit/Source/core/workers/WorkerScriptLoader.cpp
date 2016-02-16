@@ -100,7 +100,8 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
     // (E.g. see crbug.com/524694 for why we can't easily remove this protect)
     RefPtr<WorkerScriptLoader> protect(this);
     m_needToCancel = true;
-    m_threadableLoader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
+    m_threadableLoader = ThreadableLoader::create(executionContext, this, options, resourceLoaderOptions);
+    m_threadableLoader->start(request);
     if (m_failed)
         notifyFinished();
 }

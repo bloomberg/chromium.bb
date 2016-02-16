@@ -117,10 +117,12 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext, const S
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
-    if (m_client)
-        m_loader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
-    else
+    if (m_client) {
+        m_loader = ThreadableLoader::create(executionContext, this, options, resourceLoaderOptions);
+        m_loader->start(request);
+    } else {
         ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options, resourceLoaderOptions);
+    }
 }
 
 void FileReaderLoader::start(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobData)

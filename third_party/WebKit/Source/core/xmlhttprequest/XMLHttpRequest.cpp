@@ -921,12 +921,9 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
         if (m_upload)
             request.setReportUploadProgress(true);
 
-        // ThreadableLoader::create can return null here, for example if we're no longer attached to a page.
-        // This is true while running onunload handlers.
-        // FIXME: Maybe we need to be able to send XMLHttpRequests from onunload, <http://bugs.webkit.org/show_bug.cgi?id=10904>.
-        // FIXME: Maybe create() can return null for other reasons too?
         ASSERT(!m_loader);
-        m_loader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
+        m_loader = ThreadableLoader::create(executionContext, this, options, resourceLoaderOptions);
+        m_loader->start(request);
 
         return;
     }

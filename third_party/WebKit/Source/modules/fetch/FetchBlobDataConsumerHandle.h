@@ -24,7 +24,7 @@ class MODULES_EXPORT FetchBlobDataConsumerHandle final : public FetchDataConsume
 public:
     class MODULES_EXPORT LoaderFactory : public GarbageCollectedFinalized<LoaderFactory> {
     public:
-        virtual PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) = 0;
+        virtual PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) = 0;
         virtual ~LoaderFactory() { }
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };

@@ -34,6 +34,7 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
+#include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -48,7 +49,6 @@ class ExceptionState;
 class MessageEvent;
 class ResourceResponse;
 class TextResourceDecoder;
-class ThreadableLoader;
 
 class CORE_EXPORT EventSource final : public RefCountedGarbageCollectedEventTargetWithInlineData<EventSource>, private ThreadableLoaderClient, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
@@ -93,7 +93,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void setStateForTest(State state) { m_state = state; }
-    void setRequestInFlightForTest(bool b) { m_requestInFlight = b; }
+    void setThreadableLoaderForTest(PassRefPtr<ThreadableLoader> loader) { m_loader = loader; }
     ThreadableLoaderClient* asThreadableLoaderClientForTest() { return this; }
     unsigned long long reconnectDelayForTest() const { return m_reconnectDelay; }
 
@@ -126,7 +126,6 @@ private:
     Timer<EventSource> m_connectTimer;
     Vector<UChar> m_receiveBuf;
     bool m_discardTrailingNewline;
-    bool m_requestInFlight;
 
     AtomicString m_eventName;
     Vector<UChar> m_data;

@@ -40,15 +40,15 @@
 
 namespace blink {
 
-PassRefPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext& context, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+PassRefPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext& context, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
     ASSERT(client);
 
     if (context.isWorkerGlobalScope()) {
-        return WorkerThreadableLoader::create(toWorkerGlobalScope(context), client, request, options, resourceLoaderOptions);
+        return WorkerThreadableLoader::create(toWorkerGlobalScope(context), client, options, resourceLoaderOptions);
     }
 
-    return DocumentThreadableLoader::create(toDocument(context), client, request, options, resourceLoaderOptions);
+    return DocumentThreadableLoader::create(toDocument(context), client, options, resourceLoaderOptions);
 }
 
 void ThreadableLoader::loadResourceSynchronously(ExecutionContext& context, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)

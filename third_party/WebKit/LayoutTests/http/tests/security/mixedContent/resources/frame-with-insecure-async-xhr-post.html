@@ -1,0 +1,13 @@
+<script>
+var xhr = new XMLHttpRequest();
+xhr.onload = function()
+{
+    window.opener.postMessage('FAIL: XHR succeeded unexpectedly', '*');
+};
+xhr.onerror = function()
+{
+    window.opener.postMessage('DONE', '*');
+};
+xhr.open("POST", "http://127.0.0.1:8000/xmlhttprequest/resources/access-control-allow-lists.php?origin=*", true);
+xhr.send("foo");
+</script>

@@ -70,7 +70,6 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     , m_decoder(TextResourceDecoder::create("text/plain", "UTF-8"))
     , m_connectTimer(this, &EventSource::connectTimerFired)
     , m_discardTrailingNewline(false)
-    , m_requestInFlight(false)
     , m_reconnectDelay(defaultReconnectDelay)
 {
 }
@@ -105,13 +104,13 @@ EventSource* EventSource::create(ExecutionContext* context, const String& url, c
 EventSource::~EventSource()
 {
     ASSERT(m_state == CLOSED);
-    ASSERT(!m_requestInFlight);
+    ASSERT(!m_loader);
 }
 
 void EventSource::scheduleInitialConnect()
 {
     ASSERT(m_state == CONNECTING);
-    ASSERT(!m_requestInFlight);
+    ASSERT(!m_loader);
 
     m_connectTimer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -119,7 +118,7 @@ void EventSource::scheduleInitialConnect()
 void EventSource::connect()
 {
     ASSERT(m_state == CONNECTING);
-    ASSERT(!m_requestInFlight);
+    ASSERT(!m_loader);
     ASSERT(executionContext());
 
     ExecutionContext& executionContext = *this->executionContext();
@@ -150,20 +149,15 @@ void EventSource::connect()
 
     InspectorInstrumentation::willSendEventSourceRequest(&executionContext, this);
     // InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient will be called synchronously.
-    m_loader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
-
-    if (m_loader)
-        m_requestInFlight = true;
+    m_loader = ThreadableLoader::create(executionContext, this, options, resourceLoaderOptions);
+    m_loader->start(request);
 }
 
 void EventSource::networkRequestEnded()
 {
-    if (!m_requestInFlight)
-        return;
-
     InspectorInstrumentation::didFinishEventSourceRequest(executionContext(), this);
 
-    m_requestInFlight = false;
+    m_loader = nullptr;
 
     if (m_state != CLOSED)
         scheduleReconnect();
@@ -199,7 +193,7 @@ EventSource::State EventSource::readyState() const
 void EventSource::close()
 {
     if (m_state == CLOSED) {
-        ASSERT(!m_requestInFlight);
+        ASSERT(!m_loader);
         return;
     }
 
@@ -208,8 +202,10 @@ void EventSource::close()
         m_connectTimer.stop();
     }
 
-    if (m_requestInFlight)
+    if (m_loader) {
         m_loader->cancel();
+        m_loader = nullptr;
+    }
 
     m_state = CLOSED;
 }
@@ -228,7 +224,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
 {
     ASSERT_UNUSED(handle, !handle);
     ASSERT(m_state == CONNECTING);
-    ASSERT(m_requestInFlight);
+    ASSERT(m_loader);
 
     m_eventStreamOrigin = SecurityOrigin::create(response.url())->toString();
     int statusCode = response.httpStatusCode();
@@ -270,7 +266,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
 void EventSource::didReceiveData(const char* data, unsigned length)
 {
     ASSERT(m_state == OPEN);
-    ASSERT(m_requestInFlight);
+    ASSERT(m_loader);
 
     append(m_receiveBuf, m_decoder->decode(data, length));
     parseEventStream();
@@ -279,7 +275,7 @@ void EventSource::didReceiveData(const char* data, unsigned length)
 void EventSource::didFinishLoading(unsigned long, double)
 {
     ASSERT(m_state == OPEN);
-    ASSERT(m_requestInFlight);
+    ASSERT(m_loader);
 
     if (m_receiveBuf.size() > 0 || m_data.size() > 0) {
         parseEventStream();
@@ -296,7 +292,7 @@ void EventSource::didFinishLoading(unsigned long, double)
 void EventSource::didFail(const ResourceError& error)
 {
     ASSERT(m_state != CLOSED);
-    ASSERT(m_requestInFlight);
+    ASSERT(m_loader);
 
     if (error.isCancellation())
         m_state = CLOSED;
@@ -305,6 +301,8 @@ void EventSource::didFail(const ResourceError& error)
 
 void EventSource::didFailAccessControlCheck(const ResourceError& error)
 {
+    ASSERT(m_loader);
+
     String message = "EventSource cannot load " + error.failingURL() + ". " + error.localizedDescription();
     executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 
@@ -313,6 +311,8 @@ void EventSource::didFailAccessControlCheck(const ResourceError& error)
 
 void EventSource::didFailRedirectCheck()
 {
+    ASSERT(m_loader);
+
     abortConnectionAttempt();
 }
 
@@ -429,13 +429,6 @@ void EventSource::parseEventStreamLine(unsigned bufPos, int fieldLength, int lin
 void EventSource::stop()
 {
     close();
-
-    // (Non)Oilpan: In order to make Worker shutdowns clean,
-    // deref the loader. This will in turn deref its
-    // RefPtr<WorkerGlobalScope>.
-    //
-    // Worth doing regardless, it is no longer of use.
-    m_loader = nullptr;
 }
 
 bool EventSource::hasPendingActivity() const

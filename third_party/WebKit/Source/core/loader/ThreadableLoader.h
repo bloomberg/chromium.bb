@@ -133,30 +133,46 @@ public:
     // ThreadableLoaderClient methods may not destroy the ThreadableLoader
     // instance in them.
     static void loadResourceSynchronously(ExecutionContext&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+
+    // This method never returns nullptr.
+    //
+    // This method must always be followed by start() call.
+    // ThreadableLoaderClient methods are never called before start() call.
+    //
+    // The async loading feature is separated into the create() method and
+    // and the start() method in order to:
+    // - reduce work done in a constructor
+    // - not to ask the users to handle failures in the constructor and other
+    //   async failures separately
+    //
     // Loading completes when one of the following methods are called:
     // - didFinishLoading()
     // - didFail()
     // - didFailAccessControlCheck()
     // - didFailRedirectCheck()
-    // After any of these methods is called, no ThreadableLoaderClient method
-    // will be called.
+    // After any of these methods is called, the loader won't call any of the
+    // ThreadableLoaderClient methods.
     //
-    // When ThreadableLoader is destructed, ThreadableLoaderClient methods are
-    // NOT called in response to the destruction synchronously or after
-    // destruction.
+    // When a ThreadableLoader is destructed, any of the
+    // ThreadableLoaderClient methods is NOT called in response to the
+    // destruction either synchronously or after destruction.
     //
     // When ThreadableLoader::cancel() is called,
-    // ThreadableLoaderClient::didFail() is called with ResourceError with
-    // isCancellation() returning true, if any of didFinishLoading() or
-    // didFail.*() methods have not been called yet. (didFail() may be called
-    // with a ResourceError with isCancellation() returning true also for
-    // cancellation happened inside the loader.)
+    // ThreadableLoaderClient::didFail() is called with a ResourceError
+    // with isCancellation() returning true, if any of didFinishLoading()
+    // or didFail.*() methods have not been called yet. (didFail() may be
+    // called with a ResourceError with isCancellation() returning true
+    // also for cancellation happened inside the loader.)
     //
     // ThreadableLoaderClient methods:
     // - may call cancel()
     // - can destroy the ThreadableLoader instance in them (by clearing
     //   RefPtr<ThreadableLoader>).
-    static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+    static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+
+    // The methods on the ThreadableLoaderClient passed on create() call
+    // may be called synchronous to start() call.
+    virtual void start(const ResourceRequest&) = 0;
 
     // A ThreadableLoader may have a timeout specified. It is possible, in some cases, for
     // the timeout to be overridden after the request is sent (for example, XMLHttpRequests

@@ -611,9 +611,8 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         break;
     }
     InspectorInstrumentation::willStartFetch(executionContext(), this);
-    m_loader = ThreadableLoader::create(*executionContext(), this, request, threadableLoaderOptions, resourceLoaderOptions);
-    if (!m_loader)
-        performNetworkError("Can't create ThreadableLoader");
+    m_loader = ThreadableLoader::create(*executionContext(), this, threadableLoaderOptions, resourceLoaderOptions);
+    m_loader->start(request);
 }
 
 // performDataFetch() is almost the same as performHTTPFetch(), except for:
@@ -646,9 +645,8 @@ void FetchManager::Loader::performDataFetch()
     threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
 
     InspectorInstrumentation::willStartFetch(executionContext(), this);
-    m_loader = ThreadableLoader::create(*executionContext(), this, request, threadableLoaderOptions, resourceLoaderOptions);
-    if (!m_loader)
-        performNetworkError("Can't create ThreadableLoader");
+    m_loader = ThreadableLoader::create(*executionContext(), this, threadableLoaderOptions, resourceLoaderOptions);
+    m_loader->start(request);
 }
 
 void FetchManager::Loader::failed(const String& message)

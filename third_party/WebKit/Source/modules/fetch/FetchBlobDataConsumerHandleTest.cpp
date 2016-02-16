@@ -51,7 +51,7 @@ using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
 
 class MockLoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
-    MOCK_METHOD5(create, PassRefPtr<ThreadableLoader>(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&));
+    MOCK_METHOD4(create, PassRefPtr<ThreadableLoader>(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&));
 };
 
 PassRefPtr<BlobDataHandle> createBlobDataHandle(const char* s)
@@ -97,11 +97,11 @@ TEST_F(FetchBlobDataConsumerHandleTest, CreateLoader)
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _, _)).WillOnce(DoAll(
-        SaveArg<2>(&request),
-        SaveArg<3>(&options),
-        SaveArg<4>(&resourceLoaderOptions),
+    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(
+        SaveArg<2>(&options),
+        SaveArg<3>(&resourceLoaderOptions),
         Return(loader.get())));
+    EXPECT_CALL(*loader, start(_)).WillOnce(SaveArg<0>(&request));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*loader, cancel());
 
@@ -141,7 +141,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, CancelLoaderWhenStopped)
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _, _)).WillOnce(Return(loader.get()));
+    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(Return(loader.get()));
+    EXPECT_CALL(*loader, start(_));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*loader, cancel());
     EXPECT_CALL(checkpoint, Call(3));
@@ -169,7 +170,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, CancelLoaderWhenDestinationDetached)
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _, _)).WillOnce(Return(loader.get()));
+    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(Return(loader.get()));
+    EXPECT_CALL(*loader, start(_));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(*loader, cancel());
@@ -203,7 +205,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, ReadTest)
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
+    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
+    EXPECT_CALL(*loader, start(_));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*loader, cancel());
 
@@ -240,7 +243,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, TwoPhaseReadTest)
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
+    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
+    EXPECT_CALL(*loader, start(_));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*loader, cancel());
 
@@ -277,7 +281,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, LoadErrorTest)
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
+    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
+    EXPECT_CALL(*loader, start(_));
     EXPECT_CALL(checkpoint, Call(2));
 
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
@@ -305,7 +310,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, BodyLoadErrorTest)
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
+    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
+    EXPECT_CALL(*loader, start(_));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*loader, cancel());
 

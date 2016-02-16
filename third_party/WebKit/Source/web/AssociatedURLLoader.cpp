@@ -359,7 +359,8 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
 
         Document* webcoreDocument = m_frameImpl->frame()->document();
         ASSERT(webcoreDocument);
-        m_loader = DocumentThreadableLoader::create(*webcoreDocument, m_clientAdapter.get(), webcoreRequest, options, resourceLoaderOptions);
+        m_loader = DocumentThreadableLoader::create(*webcoreDocument, m_clientAdapter.get(), options, resourceLoaderOptions);
+        m_loader->start(webcoreRequest);
     }
 
     if (!m_loader) {

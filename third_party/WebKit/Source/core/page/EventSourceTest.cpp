@@ -14,6 +14,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/events/MessageEvent.h"
+#include "core/loader/MockThreadableLoader.h"
 #include "core/page/EventSourceInit.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,11 +68,11 @@ protected:
         , m_source(EventSource::create(&document(), "https://localhost/", EventSourceInit(), m_exceptionState))
     {
         source()->setStateForTest(EventSource::OPEN);
-        source()->setRequestInFlightForTest(true);
+        source()->setThreadableLoaderForTest(MockThreadableLoader::create());
     }
     ~EventSourceTest() override
     {
-        source()->setRequestInFlightForTest(false);
+        source()->setThreadableLoaderForTest(nullptr);
         source()->close();
 
         // We need this because there is

@@ -57,8 +57,10 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
     USING_FAST_MALLOC(DocumentThreadableLoader);
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        static PassRefPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        static PassRefPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         ~DocumentThreadableLoader() override;
+
+        void start(const ResourceRequest&) override;
 
         void overrideTimeout(unsigned long timeout) override;
 
@@ -72,7 +74,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
             LoadAsynchronously
         };
 
-        DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
         void clear();
 
@@ -198,7 +200,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         const bool m_async;
 
         // Holds the original request context (used for sanity checks).
-        const WebURLRequest::RequestContext m_requestContext;
+        WebURLRequest::RequestContext m_requestContext;
 
         // Holds the original request for fallback in case the Service Worker
         // does not respond.
@@ -220,7 +222,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // because same-origin redirects are not counted here.
         int m_corsRedirectLimit;
 
-        const WebURLRequest::FetchRedirectMode m_redirectMode;
+        WebURLRequest::FetchRedirectMode m_redirectMode;
     };
 
 } // namespace blink

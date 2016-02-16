@@ -61,12 +61,14 @@ class WorkerThreadableLoader final : public ThreadableLoader, private Threadable
     USING_FAST_MALLOC(WorkerThreadableLoader);
 public:
     static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-    static PassRefPtr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+    static PassRefPtr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
     {
-        return adoptRef(new WorkerThreadableLoader(workerGlobalScope, client, request, options, resourceLoaderOptions, LoadAsynchronously));
+        return adoptRef(new WorkerThreadableLoader(workerGlobalScope, client, options, resourceLoaderOptions, LoadAsynchronously));
     }
 
     ~WorkerThreadableLoader() override;
+
+    void start(const ResourceRequest&) override;
 
     void overrideTimeout(unsigned long timeout) override;
 
@@ -101,6 +103,7 @@ private:
     public:
         // All executed on the worker context's thread.
         MainThreadBridgeBase(PassRefPtr<ThreadableLoaderClientWrapper>, PassRefPtr<WorkerLoaderProxy>);
+        virtual void start(const ResourceRequest&, const WorkerGlobalScope&) = 0;
         void overrideTimeout(unsigned long timeoutMilliseconds);
         void cancel();
         void destroy();
@@ -121,16 +124,13 @@ private:
         ~MainThreadBridgeBase() override;
 
         // Posts a task to the main thread to run mainThreadCreateLoader().
-        void createLoader(const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const ReferrerPolicy&, const String&);
+        void createLoaderInMainThread(const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        // Posts a task to the main thread to run mainThreadStart();
+        void startInMainThread(const ResourceRequest&, const WorkerGlobalScope&);
 
         WorkerLoaderProxy* loaderProxy()
         {
             return m_loaderProxy.get();
-        }
-
-        PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper()
-        {
-            return m_workerClientWrapper;
         }
 
     private:
@@ -141,7 +141,8 @@ private:
         virtual void forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask>) = 0;
 
         // All executed on the main thread.
-        void mainThreadCreateLoader(PassOwnPtr<CrossThreadResourceRequestData>, ThreadableLoaderOptions, ResourceLoaderOptions, const ReferrerPolicy, const String& outgoingReferrer, ExecutionContext*);
+        void mainThreadCreateLoader(ThreadableLoaderOptions, ResourceLoaderOptions, ExecutionContext*);
+        void mainThreadStart(PassOwnPtr<CrossThreadResourceRequestData>, const ReferrerPolicy, const String& outgoingReferrer);
         void mainThreadDestroy(ExecutionContext*);
         void mainThreadOverrideTimeout(unsigned long timeoutMilliseconds, ExecutionContext*);
         void mainThreadCancel(ExecutionContext*);
@@ -162,7 +163,8 @@ private:
 
     class MainThreadAsyncBridge final : public MainThreadBridgeBase {
     public:
-        MainThreadAsyncBridge(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const ReferrerPolicy, const String& outgoingReferrer);
+        MainThreadAsyncBridge(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        void start(const ResourceRequest&, const WorkerGlobalScope&) override;
 
     private:
         ~MainThreadAsyncBridge() override;
@@ -173,7 +175,8 @@ private:
 
     class MainThreadSyncBridge final : public MainThreadBridgeBase {
     public:
-        MainThreadSyncBridge(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const ReferrerPolicy, const String& outgoingReferrer);
+        MainThreadSyncBridge(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        void start(const ResourceRequest&, const WorkerGlobalScope&) override;
 
     private:
         ~MainThreadSyncBridge() override;
@@ -190,7 +193,7 @@ private:
         Mutex m_lock;
     };
 
-    WorkerThreadableLoader(WorkerGlobalScope&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
+    WorkerThreadableLoader(WorkerGlobalScope&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
 
     void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 

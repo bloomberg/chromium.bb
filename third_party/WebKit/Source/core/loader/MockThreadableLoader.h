@@ -15,6 +15,7 @@ class MockThreadableLoader : public ThreadableLoader {
 public:
     static PassRefPtr<MockThreadableLoader> create() { return adoptRef(new testing::StrictMock<MockThreadableLoader>); }
 
+    MOCK_METHOD1(start, void(const ResourceRequest&));
     MOCK_METHOD1(overrideTimeout, void(unsigned long));
     MOCK_METHOD0(cancel, void());
 
