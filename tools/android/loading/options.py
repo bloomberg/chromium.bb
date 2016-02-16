@@ -28,6 +28,8 @@ class Options(object):
              'port for devtools websocket connection'),
             ('local_binary', 'out/Release/chrome',
              'chrome binary for local runs'),
+            ('local_noisy', False,
+             'Enable local chrome console output'),
             ('local_profile_dir', '',
              'profile directory to use for local runs'),
             ('no_sandbox', False,

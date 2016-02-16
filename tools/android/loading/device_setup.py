@@ -226,8 +226,10 @@ def DeviceConnection(device, additional_flags=None):
         local_profile_dir = TemporaryDirectory()
 
       new_flags.append('--user-data-dir=%s' % local_profile_dir)
-      host_process = subprocess.Popen([OPTIONS.local_binary] + new_flags,
-                                      shell=False)
+      chrome_out = None if OPTIONS.local_noisy else file('/dev/null', 'w')
+      host_process = subprocess.Popen(
+          [OPTIONS.local_binary] + new_flags,
+          shell=False, stdout=chrome_out, stderr=chrome_out)
     if device:
       time.sleep(2)
     else:

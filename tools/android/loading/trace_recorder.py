@@ -41,7 +41,6 @@ def MonitorUrl(connection, url, clear_cache=False):
   Returns:
     loading_trace.LoadingTrace.
   """
-  logging.warning('Logging %scached %s' % ('un' if clear_cache else '', url))
   page = page_track.PageTrack(connection)
   request = request_track.RequestTrack(connection)
   trace = tracing.TracingTrack(connection)
