@@ -29,8 +29,8 @@ V1 shadow root cannot be created on UA shadow root
 PASS internals.shadowRootType(internals.shadowRoot(input)) is "UserAgentShadowRoot"
 PASS internals.youngestShadowRoot(input) is shadow1
 PASS internals.shadowRootType(shadow1) is "V0ShadowRoot"
-PASS input.attachShadow({mode: "open"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
-PASS input.attachShadow({mode: "closed"}) threw exception InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree..
+PASS input.attachShadow({mode: "open"}) threw exception NotSupportedError: Failed to execute 'attachShadow' on 'Element': This element does not support attachShadow.
+PASS input.attachShadow({mode: "closed"}) threw exception NotSupportedError: Failed to execute 'attachShadow' on 'Element': This element does not support attachShadow.
 PASS successfullyParsed is true
 
 TEST COMPLETE

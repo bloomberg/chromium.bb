@@ -1913,6 +1913,30 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scri
 
     OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementAttachShadow);
 
+    const AtomicString& tagName = localName();
+    bool tagNameIsSupported = isCustomElement()
+        || tagName == HTMLNames::articleTag
+        || tagName == HTMLNames::asideTag
+        || tagName == HTMLNames::blockquoteTag
+        || tagName == HTMLNames::bodyTag
+        || tagName == HTMLNames::divTag
+        || tagName == HTMLNames::footerTag
+        || tagName == HTMLNames::h1Tag
+        || tagName == HTMLNames::h2Tag
+        || tagName == HTMLNames::h3Tag
+        || tagName == HTMLNames::h4Tag
+        || tagName == HTMLNames::h5Tag
+        || tagName == HTMLNames::h6Tag
+        || tagName == HTMLNames::headerTag
+        || tagName == HTMLNames::navTag
+        || tagName == HTMLNames::pTag
+        || tagName == HTMLNames::sectionTag
+        || tagName == HTMLNames::spanTag;
+    if (!tagNameIsSupported) {
+        exceptionState.throwDOMException(NotSupportedError, "This element does not support attachShadow");
+        return nullptr;
+    }
+
     if (shadowRootInitDict.hasMode() && shadowRoot()) {
         exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts a shadow tree.");
         return nullptr;
