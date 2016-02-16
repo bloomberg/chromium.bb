@@ -6,7 +6,7 @@ from telemetry.page import shared_page_state
 from telemetry import story
 
 TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS = 5
-SCROLL_TIMEOUT_IN_SECONDS=120
+SCROLL_TIMEOUT_IN_SECONDS = 120
 
 # TODO(ulan): Remove this once crbug.com/541508 is fixed.
 STARTUP_SCRIPT = '''
@@ -14,32 +14,6 @@ STARTUP_SCRIPT = '''
     window.Worker = undefined;
     window.performance = undefined;'''
 
-def _ScrollAction(action_runner, scroll_amount, delay, repeat):
-  with action_runner.CreateInteraction('Begin'):
-    action_runner.tab.browser.DumpMemory()
-  with action_runner.CreateInteraction('Scrolling'):
-    action_runner.RepeatableBrowserDrivenScroll(
-      y_scroll_distance_ratio=scroll_amount,
-      repeat_delay_ms=delay,
-      repeat_count=repeat,
-      timeout=SCROLL_TIMEOUT_IN_SECONDS)
-  with action_runner.CreateInteraction('End'):
-    action_runner.tab.browser.DumpMemory()
-
-def _WaitAction(action_runner):
-  action_runner.WaitForJavaScriptCondition(
-    'document.body != null && '
-    'document.body.scrollHeight > window.innerHeight && '
-    '!document.body.addEventListener("touchstart", function() {})')
-  action_runner.Wait(TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS)
-  action_runner.ForceGarbageCollection()
-
-def _CreateInfiniteScrollPageClass(base_page_cls):
-  class DerivedSmoothPage(base_page_cls):  # pylint: disable=no-init
-    def RunPageInteractions(self, action_runner):
-      _WaitAction(action_runner)
-      _ScrollAction(action_runner, self.scroll_amount, self.delay, self.repeat)
-  return DerivedSmoothPage
 
 class InfiniteScrollPage(page_module.Page):
   def __init__(self, url, page_set, name, scroll_amount, delay, repeat,
@@ -53,6 +27,35 @@ class InfiniteScrollPage(page_module.Page):
     self.scroll_amount = scroll_amount
     self.delay = delay
     self.repeat = repeat
+
+  def RunPageInteractions(self, action_runner):
+    self._WaitAction(action_runner)
+    self._ScrollAction(action_runner, self.scroll_amount, self.delay,
+                       self.repeat)
+
+  def _ScrollAction(self, action_runner, scroll_amount, delay, repeat):
+    with action_runner.CreateInteraction('Begin'):
+      action_runner.tab.browser.DumpMemory()
+    with action_runner.CreateInteraction('Scrolling'):
+      action_runner.RepeatableBrowserDrivenScroll(
+        y_scroll_distance_ratio=scroll_amount,
+        repeat_delay_ms=delay,
+        repeat_count=repeat,
+        timeout=SCROLL_TIMEOUT_IN_SECONDS)
+    with action_runner.CreateInteraction('End'):
+      action_runner.tab.browser.DumpMemory()
+
+  def _WaitAction(self, action_runner):
+    with action_runner.CreateInteraction('Load'):
+      action_runner.WaitForJavaScriptCondition(
+        'document.body != null && '
+        'document.body.scrollHeight > window.innerHeight && '
+        '!document.body.addEventListener("touchstart", function() {})')
+    with action_runner.CreateInteraction('Wait'):
+      action_runner.Wait(TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS)
+    with action_runner.CreateInteraction('GC'):
+      action_runner.ForceGarbageCollection()
+
 
 class InfiniteScrollPageSet(story.StorySet):
   """ Top pages that can be scrolled for many pages. """
@@ -73,5 +76,5 @@ class InfiniteScrollPageSet(story.StorySet):
          'discourse', SCROLL_PAGE, 10, 30)
     ]
     for (url, name, scroll_amount, delay, repeat) in pages:
-      page_class = _CreateInfiniteScrollPageClass(InfiniteScrollPage)
-      self.AddStory(page_class(url, self, name, scroll_amount, delay, repeat))
+      self.AddStory(
+        InfiniteScrollPage(url, self, name, scroll_amount, delay, repeat))
