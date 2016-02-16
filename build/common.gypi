@@ -3946,6 +3946,13 @@
                       '-Wno-abi',
                     ],
                   }],
+                  ['clang==1', {
+                    'cflags': [
+                      # Disable an incorrect loop optimization.
+                      # See http://llvm.org/bugs/show_bug.cgi?id=26600.
+                      '-mllvm -enable-interleaved-mem-accesses=0',
+                    ],
+                  }],
                   ['clang==1 and arm_arch!="" and OS!="android"', {
                     'cflags': [
                       '-target arm-linux-gnueabihf',
