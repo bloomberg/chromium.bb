@@ -28,12 +28,16 @@ class TracingTrackTestCase(unittest.TestCase):
       {'ts': 15, 'ph': 'D', 'id': 1}]
 
   _EVENTS = [
-      {'ts': 5, 'ph': 'X', 'dur': 1, 'tid': 1, 'args': {'name': 'B'}},
-      {'ts': 3, 'ph': 'X', 'dur': 4, 'tid': 1, 'args': {'name': 'A'}},
-      {'ts': 10, 'ph': 'X', 'dur': 1, 'tid': 2, 'args': {'name': 'C'}},
-      {'ts': 10, 'ph': 'X', 'dur': 2, 'tid': 2, 'args': {'name': 'D'}},
-      {'ts': 13, 'ph': 'X', 'dur': 1, 'tid': 1, 'args': {'name': 'F'}},
-      {'ts': 12, 'ph': 'X', 'dur': 3, 'tid': 1, 'args': {'name': 'E'}}]
+      {'ts': 5, 'ph': 'X', 'dur': 1, 'pid': 2, 'tid': 1, 'args': {'name': 'B'}},
+      {'ts': 3, 'ph': 'X', 'dur': 4, 'pid': 2, 'tid': 1, 'args': {'name': 'A'}},
+      {'ts': 10, 'ph': 'X', 'dur': 1, 'pid': 2, 'tid': 2,
+       'args': {'name': 'C'}},
+      {'ts': 10, 'ph': 'X', 'dur': 2, 'pid': 2, 'tid': 2,
+       'args': {'name': 'D'}},
+      {'ts': 13, 'ph': 'X', 'dur': 1, 'pid': 2, 'tid': 1,
+       'args': {'name': 'F'}},
+      {'ts': 12, 'ph': 'X', 'dur': 3, 'pid': 2, 'tid': 1,
+       'args': {'name': 'E'}}]
 
   def setUp(self):
     self.tree_threshold = _IntervalTree._TRESHOLD
@@ -257,10 +261,10 @@ class TracingTrackTestCase(unittest.TestCase):
     self.track.Handle(
         'Tracing.dataCollected', {'params': {'value': [
             self.EventToMicroseconds(e) for e in self._EVENTS]}})
-    tracing_track = self.track.TracingTrackForThread(1)
+    tracing_track = self.track.TracingTrackForThread((2, 1))
     self.assertTrue(tracing_track is not self.track)
     self.assertEquals(4, len(tracing_track.GetEvents()))
-    tracing_track = self.track.TracingTrackForThread(42)
+    tracing_track = self.track.TracingTrackForThread((2, 42))
     self.assertEquals(0, len(tracing_track.GetEvents()))
 
 

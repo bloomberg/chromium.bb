@@ -25,9 +25,9 @@ class ActivityLens(object):
     """
     self._trace = trace
     events = trace.tracing_track.GetEvents()
-    self._renderer_main_tid = self._GetRendererMainThreadId(events)
+    self._renderer_main_pid_tid = self._GetRendererMainThreadId(events)
     self._tracing = self._trace.tracing_track.TracingTrackForThread(
-        self._renderer_main_tid)
+        self._renderer_main_pid_tid)
 
   @classmethod
   def _GetRendererMainThreadId(cls, events):
@@ -41,28 +41,28 @@ class ActivityLens(object):
       events: [tracing.Event] List of trace events.
 
     Returns:
-      The thread ID (int) of the busiest renderer main thread.
-
+      (PID (int), TID (int)) of the busiest renderer main thread.
     """
-    events_count_per_tid = collections.defaultdict(int)
+    events_count_per_pid_tid = collections.defaultdict(int)
     main_renderer_thread_ids = set()
     for event in events:
       tracing_event = event.tracing_event
+      pid = event.tracing_event['pid']
       tid = event.tracing_event['tid']
-      events_count_per_tid[tid] += 1
+      events_count_per_pid_tid[(pid, tid)] += 1
       if (tracing_event['cat'] == '__metadata'
           and tracing_event['name'] == 'thread_name'
           and event.args['name'] == 'CrRendererMain'):
-        main_renderer_thread_ids.add(tid)
-    tid_events_counts = sorted(events_count_per_tid.items(),
-                               key=operator.itemgetter(1), reverse=True)
-    if (len(tid_events_counts) > 1
-        and tid_events_counts[0][1] < 2 * tid_events_counts[1][1]):
+        main_renderer_thread_ids.add((pid, tid))
+    pid_tid_events_counts = sorted(events_count_per_pid_tid.items(),
+                                   key=operator.itemgetter(1), reverse=True)
+    if (len(pid_tid_events_counts) > 1
+        and pid_tid_events_counts[0][1] < 2 * pid_tid_events_counts[1][1]):
       logging.warning(
           'Several active renderers (%d and %d with %d and %d events).'
-          % (tid_events_counts[0][0], tid_events_counts[1][0],
-             tid_events_counts[0][1], tid_events_counts[1][1]))
-    return tid_events_counts[0][0]
+          % (pid_tid_events_counts[0][0][0], pid_tid_events_counts[1][0][0],
+             pid_tid_events_counts[0][1], pid_tid_events_counts[1][1]))
+    return pid_tid_events_counts[0][0]
 
   def _OverlappingMainRendererThreadEvents(self, start_msec, end_msec):
     return self._tracing.OverlappingEvents(start_msec, end_msec)

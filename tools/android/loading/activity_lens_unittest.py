@@ -28,21 +28,21 @@ class ActivityLensTestCast(unittest.TestCase):
          u'cat': u'__metadata',
          u'name': u'thread_name',
          u'ph': u'M',
-         u'pid': 123,
+         u'pid': 1,
          u'tid': 123,
          u'ts': 0},
         {u'args': {u'name': u'CrRendererMain'},
          u'cat': u'__metadata',
          u'name': u'thread_name',
          u'ph': u'M',
-         u'pid': 1234,
+         u'pid': 1,
          u'tid': first_renderer_tid,
          u'ts': 0},
         {u'args': {u'name': u'CrRendererMain'},
          u'cat': u'__metadata',
          u'name': u'thread_name',
          u'ph': u'M',
-         u'pid': 12345,
+         u'pid': 1,
          u'tid': second_renderer_tid,
          u'ts': 0}]
     raw_events += [
@@ -50,7 +50,7 @@ class ActivityLensTestCast(unittest.TestCase):
          u'cat': u'devtools.timeline,v8',
          u'name': u'FunctionCall',
          u'ph': u'X',
-         u'pid': 32723,
+         u'pid': 1,
          u'tdur': 0,
          u'tid': first_renderer_tid,
          u'ts': 251427174674,
@@ -60,13 +60,25 @@ class ActivityLensTestCast(unittest.TestCase):
          u'cat': u'devtools.timeline,v8',
          u'name': u'FunctionCall',
          u'ph': u'X',
-         u'pid': 1234,
+         u'pid': 1,
          u'tdur': 0,
          u'tid': second_renderer_tid,
          u'ts': 251427174674,
          u'tts': 5107725}] * 150
+    # There are more events from first_renderer_tid when (incorrectly) ignoring
+    # the PID.
+    raw_events += [
+        {u'args': {u'data': {}},
+         u'cat': u'devtools.timeline,v8',
+         u'name': u'FunctionCall',
+         u'ph': u'X',
+         u'pid': 12,
+         u'tdur': 0,
+         u'tid': first_renderer_tid,
+         u'ts': 251427174674,
+         u'tts': 5107725}] * 100
     events = self._EventsFromRawEvents(raw_events)
-    self.assertEquals(second_renderer_tid,
+    self.assertEquals((1, second_renderer_tid),
                       ActivityLens._GetRendererMainThreadId(events))
 
   def testThreadBusiness(self):

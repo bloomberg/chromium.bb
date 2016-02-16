@@ -86,16 +86,19 @@ class TracingTrack(devtools_monitor.Track):
   def ToJsonDict(self):
     return {'events': [e.ToJsonDict() for e in self._events]}
 
-  def TracingTrackForThread(self, tid):
+  def TracingTrackForThread(self, pid_tid):
     """Returns a new TracingTrack with only the events from a given thread.
 
     Args:
-      tid: (int) Thread ID.
+      pid_tid: ((int, int) PID and TID.
 
     Returns:
       A new instance of TracingTrack.
     """
-    events = [e for e in self._events if e.tracing_event['tid'] == tid]
+    (pid, tid) = pid_tid
+    events = [e for e in self._events
+              if (e.tracing_event['pid'] == pid
+                  and e.tracing_event['tid'] == tid)]
     tracing_track = TracingTrack(None)
     tracing_track._events = events
     return tracing_track
