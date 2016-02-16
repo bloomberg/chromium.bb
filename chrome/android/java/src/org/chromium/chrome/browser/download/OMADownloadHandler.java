@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -483,9 +482,8 @@ public class OMADownloadHandler {
                     && !type.equalsIgnoreCase(OMA_DOWNLOAD_DESCRIPTOR_MIME)
                     && !type.equalsIgnoreCase(OMA_DRM_RIGHTS_MIME)) {
                 intent.setDataAndType(uri, type);
-                ResolveInfo resolveInfo = pm.resolveActivity(intent,
-                        PackageManager.MATCH_DEFAULT_ONLY);
-                if (resolveInfo != null) {
+                if (!pm.queryIntentActivities(intent,
+                        PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
                     return type;
                 }
             }
