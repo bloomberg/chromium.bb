@@ -191,6 +191,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     // Implements the ChromePreferences.OnClearBrowsingDataListener interface.
     @Override
     public void onBrowsingDataCleared() {
+        if (getActivity() == null) return;
+
         dismissProgressDialog();
         getActivity().finish();
     }
