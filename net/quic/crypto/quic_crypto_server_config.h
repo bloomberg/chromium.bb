@@ -17,7 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_handshake.h"
@@ -47,11 +47,11 @@ struct QuicCryptoProof;
 // ClientHelloInfo contains information about a client hello message that is
 // only kept for as long as it's being processed.
 struct ClientHelloInfo {
-  ClientHelloInfo(const IPAddressNumber& in_client_ip, QuicWallTime in_now);
+  ClientHelloInfo(const IPAddress& in_client_ip, QuicWallTime in_now);
   ~ClientHelloInfo();
 
   // Inputs to EvaluateClientHello.
-  const IPAddressNumber client_ip;
+  const IPAddress client_ip;
   const QuicWallTime now;
 
   // Outputs from EvaluateClientHello.
@@ -89,7 +89,7 @@ class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
   // its validity.  Can be interpreted by calling ProcessClientHello.
   struct Result {
     Result(const CryptoHandshakeMessage& in_client_hello,
-           IPAddressNumber in_client_ip,
+           IPAddress in_client_ip,
            QuicWallTime in_now);
     ~Result();
 
@@ -221,8 +221,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     once, either under the current call stack, or after the
   //     completion of an asynchronous operation.
   void ValidateClientHello(const CryptoHandshakeMessage& client_hello,
-                           const IPAddressNumber& client_ip,
-                           const IPAddressNumber& server_ip,
+                           const IPAddress& client_ip,
+                           const IPAddress& server_ip,
                            QuicVersion version,
                            const QuicClock* clock,
                            QuicCryptoProof* crypto_proof,
@@ -258,7 +258,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   QuicErrorCode ProcessClientHello(
       const ValidateClientHelloResultCallback::Result& validate_chlo_result,
       QuicConnectionId connection_id,
-      const IPAddressNumber& server_ip,
+      const IPAddress& server_ip,
       const IPEndPoint& client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,
@@ -280,8 +280,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   bool BuildServerConfigUpdateMessage(
       QuicVersion version,
       const SourceAddressTokens& previous_source_address_tokens,
-      const IPAddressNumber& server_ip,
-      const IPAddressNumber& client_ip,
+      const IPAddress& server_ip,
+      const IPAddress& client_ip,
       const QuicClock* clock,
       QuicRandom* rand,
       const QuicCryptoNegotiatedParameters& params,
@@ -447,7 +447,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // whether it can be shown to be fresh (i.e. not a replay). The results are
   // written to |info|.
   void EvaluateClientHello(
-      const IPAddressNumber& server_ip,
+      const IPAddress& server_ip,
       QuicVersion version,
       const uint8_t* primary_orbit,
       scoped_refptr<Config> requested_config,
@@ -479,7 +479,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   std::string NewSourceAddressToken(
       const Config& config,
       const SourceAddressTokens& previous_tokens,
-      const IPAddressNumber& ip,
+      const IPAddress& ip,
       QuicRandom* rand,
       QuicWallTime now,
       const CachedNetworkParameters* cached_network_params) const;
@@ -500,7 +500,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // token contains a CachedNetworkParameters proto.
   HandshakeFailureReason ValidateSourceAddressTokens(
       const SourceAddressTokens& tokens,
-      const IPAddressNumber& ip,
+      const IPAddress& ip,
       QuicWallTime now,
       CachedNetworkParameters* cached_network_params) const;
 
@@ -510,7 +510,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // for failure.
   HandshakeFailureReason ValidateSingleSourceAddressToken(
       const SourceAddressToken& token,
-      const IPAddressNumber& ip,
+      const IPAddress& ip,
       QuicWallTime now) const;
 
   // Returns HANDSHAKE_OK if the source address token in |token| is a timely

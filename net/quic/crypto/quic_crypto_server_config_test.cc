@@ -47,7 +47,7 @@ class QuicCryptoServerConfigPeer {
 
   string NewSourceAddressToken(string config_id,
                                SourceAddressTokens previous_tokens,
-                               const IPAddressNumber& ip,
+                               const IPAddress& ip,
                                QuicRandom* rand,
                                QuicWallTime now,
                                CachedNetworkParameters* cached_network_params) {
@@ -59,7 +59,7 @@ class QuicCryptoServerConfigPeer {
   HandshakeFailureReason ValidateSourceAddressTokens(
       string config_id,
       StringPiece srct,
-      const IPAddressNumber& ip,
+      const IPAddress& ip,
       QuicWallTime now,
       CachedNetworkParameters* cached_network_params) {
     SourceAddressTokens tokens;
@@ -274,7 +274,7 @@ class SourceAddressTokenTest : public ::testing::Test {
  public:
   SourceAddressTokenTest()
       : ip4_(Loopback4()),
-        ip4_dual_(ConvertIPv4NumberToIPv6Number(ip4_)),
+        ip4_dual_(ConvertIPv4ToIPv4MappedIPv6(ip4_)),
         ip6_(Loopback6()),
         original_time_(QuicWallTime::Zero()),
         rand_(QuicRandom::GetInstance()),
@@ -302,36 +302,35 @@ class SourceAddressTokenTest : public ::testing::Test {
         server_.AddConfig(override_config_protobuf_.get(), original_time_));
   }
 
-  string NewSourceAddressToken(string config_id, const IPAddressNumber& ip) {
+  string NewSourceAddressToken(string config_id, const IPAddress& ip) {
     return NewSourceAddressToken(config_id, ip, nullptr);
   }
 
   string NewSourceAddressToken(string config_id,
-                               const IPAddressNumber& ip,
+                               const IPAddress& ip,
                                const SourceAddressTokens& previous_tokens) {
     return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
                                        clock_.WallNow(), nullptr);
   }
 
   string NewSourceAddressToken(string config_id,
-                               const IPAddressNumber& ip,
+                               const IPAddress& ip,
                                CachedNetworkParameters* cached_network_params) {
     SourceAddressTokens previous_tokens;
     return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
                                        clock_.WallNow(), cached_network_params);
   }
 
-  HandshakeFailureReason ValidateSourceAddressTokens(
-      string config_id,
-      StringPiece srct,
-      const IPAddressNumber& ip) {
+  HandshakeFailureReason ValidateSourceAddressTokens(string config_id,
+                                                     StringPiece srct,
+                                                     const IPAddress& ip) {
     return ValidateSourceAddressTokens(config_id, srct, ip, nullptr);
   }
 
   HandshakeFailureReason ValidateSourceAddressTokens(
       string config_id,
       StringPiece srct,
-      const IPAddressNumber& ip,
+      const IPAddress& ip,
       CachedNetworkParameters* cached_network_params) {
     return peer_.ValidateSourceAddressTokens(
         config_id, srct, ip, clock_.WallNow(), cached_network_params);
@@ -340,9 +339,9 @@ class SourceAddressTokenTest : public ::testing::Test {
   const string kPrimary = "<primary>";
   const string kOverride = "Config with custom source address token key";
 
-  IPAddressNumber ip4_;
-  IPAddressNumber ip4_dual_;
-  IPAddressNumber ip6_;
+  IPAddress ip4_;
+  IPAddress ip4_dual_;
+  IPAddress ip6_;
 
   MockClock clock_;
   QuicWallTime original_time_;
@@ -434,9 +433,9 @@ TEST_F(SourceAddressTokenTest, SourceAddressTokenMultipleAddresses) {
 
   // Now create a token which is usable for both addresses.
   SourceAddressToken previous_token;
-  IPAddressNumber ip_address = ip6_;
-  if (ip6_.size() == kIPv4AddressSize) {
-    ip_address = ConvertIPv4NumberToIPv6Number(ip_address);
+  IPAddress ip_address = ip6_;
+  if (ip6_.IsIPv4()) {
+    ip_address = ConvertIPv4ToIPv4MappedIPv6(ip_address);
   }
   previous_token.set_ip(IPAddressToPackedString(ip_address));
   previous_token.set_timestamp(now.ToUNIXSeconds());

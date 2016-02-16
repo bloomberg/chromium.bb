@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "net/base/ip_address.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_client_push_promise_index.h"
@@ -50,7 +51,7 @@ static const QuicStreamId kClientDataStreamId3 = 9;
 static const QuicStreamId kServerDataStreamId1 = 4;
 
 // Returns the test peer IP address.
-IPAddressNumber TestPeerIPAddress();
+IPAddress TestPeerIPAddress();
 
 // Upper limit on versions we support.
 QuicVersion QuicVersionMax();
@@ -59,13 +60,13 @@ QuicVersion QuicVersionMax();
 QuicVersion QuicVersionMin();
 
 // Returns an address for 127.0.0.1.
-IPAddressNumber Loopback4();
+IPAddress Loopback4();
 
 // Returns an address for ::1.
-IPAddressNumber Loopback6();
+IPAddress Loopback6();
 
 // Returns an address for 0.0.0.0.
-IPAddressNumber Any4();
+IPAddress Any4();
 
 void GenerateBody(std::string* body, int length);
 

@@ -228,7 +228,8 @@ class QuicP2PSessionTest : public ::testing::Test {
                                               Perspective perspective) {
     net::QuicChromiumPacketWriter* writer =
         new net::QuicChromiumPacketWriter(socket.get());
-    net::IPAddressNumber ip(net::kIPv4AddressSize, 0);
+    net::IPAddress ip;
+    EXPECT_TRUE(ip.AssignFromIPLiteral("0.0.0.0"));
     scoped_ptr<QuicConnection> quic_connection1(new QuicConnection(
         0, net::IPEndPoint(ip, 0), &quic_helper_, writer,
         true /* owns_writer */, perspective, QuicSupportedVersions()));

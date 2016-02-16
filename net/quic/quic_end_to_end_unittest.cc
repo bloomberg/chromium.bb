@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -166,8 +167,8 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   // Starts the QUIC server listening on a random port.
   void StartServer() {
-    IPAddressNumber ip;
-    CHECK(ParseIPLiteralToNumber("127.0.0.1", &ip));
+    IPAddress ip;
+    CHECK(ip.AssignFromIPLiteral("127.0.0.1"));
     server_address_ = IPEndPoint(ip, 0);
     server_config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);

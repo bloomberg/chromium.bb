@@ -117,7 +117,7 @@ TEST(ProofTest, DISABLED_Verify) {
   scoped_refptr<ProofSource::Chain> chain;
   scoped_refptr<ProofSource::Chain> first_chain;
   string error_details, signature, first_signature, first_cert_sct, cert_sct;
-  IPAddressNumber server_ip;
+  IPAddress server_ip;
 
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
                                false /* no ECDSA */, &first_chain,
@@ -159,7 +159,7 @@ TEST(ProofTest, UseAfterFree) {
   const string hostname = "test.example.com";
   scoped_refptr<ProofSource::Chain> chain;
   string error_details, signature, cert_sct;
-  IPAddressNumber server_ip;
+  IPAddress server_ip;
 
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
                                false /* no ECDSA */, &chain, &signature,

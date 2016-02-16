@@ -9,10 +9,11 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
 
 namespace net {
+
+class IPAddress;
 
 // ProofSource is an interface by which a QUIC server can obtain certificate
 // chains and signatures that prove its identity.
@@ -65,7 +66,7 @@ class NET_EXPORT_PRIVATE ProofSource {
   // |out_leaf_cert_sct| points to the signed timestamp (RFC6962) of the leaf
   // cert.
   // This function may be called concurrently.
-  virtual bool GetProof(const IPAddressNumber& server_ip,
+  virtual bool GetProof(const IPAddress& server_ip,
                         const std::string& hostname,
                         const std::string& server_config,
                         bool ecdsa_ok,

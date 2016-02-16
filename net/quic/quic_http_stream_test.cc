@@ -143,8 +143,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         stream_id_(kClientDataStreamId1),
         maker_(GetParam(), connection_id_, &clock_, kDefaultServerHostName),
         random_generator_(0) {
-    IPAddressNumber ip;
-    CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
+    IPAddress ip;
+    CHECK(ip.AssignFromIPLiteral("192.0.2.33"));
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));

@@ -30,6 +30,9 @@ using testing::Invoke;
 using testing::_;
 
 namespace net {
+
+class IPAddress;
+
 namespace test {
 
 QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed) {
@@ -435,7 +438,7 @@ string HexDumpWithMarks(const char* data,
 
 }  // namespace
 
-IPAddressNumber TestPeerIPAddress() {
+IPAddress TestPeerIPAddress() {
   return Loopback4();
 }
 
@@ -447,21 +450,21 @@ QuicVersion QuicVersionMin() {
   return QuicSupportedVersions().back();
 }
 
-IPAddressNumber Loopback4() {
-  IPAddressNumber addr;
-  CHECK(ParseIPLiteralToNumber("127.0.0.1", &addr));
+IPAddress Loopback4() {
+  IPAddress addr;
+  CHECK(addr.AssignFromIPLiteral("127.0.0.1"));
   return addr;
 }
 
-IPAddressNumber Loopback6() {
-  IPAddressNumber addr;
-  CHECK(ParseIPLiteralToNumber("::1", &addr));
+IPAddress Loopback6() {
+  IPAddress addr;
+  CHECK(addr.AssignFromIPLiteral("::1"));
   return addr;
 }
 
-IPAddressNumber Any4() {
-  IPAddressNumber any4;
-  CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &any4));
+IPAddress Any4() {
+  IPAddress any4;
+  CHECK(any4.AssignFromIPLiteral("0.0.0.0"));
   return any4;
 }
 

@@ -13,8 +13,8 @@ namespace net {
 namespace test {
 
 TEST(QuicSocketAddressCoderTest, EncodeIPv4) {
-  IPAddressNumber ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber("4.31.198.44", &ip));
+  IPAddress ip;
+  ASSERT_TRUE(ip.AssignFromIPLiteral("4.31.198.44"));
   QuicSocketAddressCoder coder(IPEndPoint(ip, 0x1234));
   string serialized = coder.Encode();
   string expected("\x02\x00\x04\x1f\xc6\x2c\x34\x12", 8);
@@ -22,8 +22,8 @@ TEST(QuicSocketAddressCoderTest, EncodeIPv4) {
 }
 
 TEST(QuicSocketAddressCoderTest, EncodeIPv6) {
-  IPAddressNumber ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber("2001:700:300:1800::f", &ip));
+  IPAddress ip;
+  ASSERT_TRUE(ip.AssignFromIPLiteral("2001:700:300:1800::f"));
   QuicSocketAddressCoder coder(IPEndPoint(ip, 0x5678));
   string serialized = coder.Encode();
   string expected(
@@ -110,8 +110,8 @@ TEST(QuicSocketAddressCoderTest, EncodeAndDecode) {
   };
 
   for (size_t i = 0; i < arraysize(test_case); i++) {
-    IPAddressNumber ip;
-    ASSERT_TRUE(ParseIPLiteralToNumber(test_case[i].ip_literal, &ip));
+    IPAddress ip;
+    ASSERT_TRUE(ip.AssignFromIPLiteral(test_case[i].ip_literal));
     QuicSocketAddressCoder encoder(IPEndPoint(ip, test_case[i].port));
     string serialized = encoder.Encode();
 

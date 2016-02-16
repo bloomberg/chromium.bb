@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/quic/p2p/quic_p2p_crypto_stream.h"
 #include "net/quic/p2p/quic_p2p_stream.h"
@@ -30,7 +31,9 @@ QuicP2PSession::QuicP2PSession(const QuicConfig& config,
   // ToString() to format addresses for logging and ToString() is not allowed
   // for empty addresses.
   // TODO(sergeyu): Fix QuicConnection and remove SetSelfAddress() call below.
-  net::IPAddressNumber ip(net::kIPv4AddressSize, 0);
+  net::IPAddress ip;
+  bool success = ip.AssignFromIPLiteral("0.0.0.0");
+  DCHECK(success);
   this->connection()->SetSelfAddress(net::IPEndPoint(ip, 0));
 }
 

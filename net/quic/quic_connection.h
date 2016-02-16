@@ -30,6 +30,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/quic_alarm.h"
@@ -692,9 +693,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool peer_port_changed() const { return peer_port_changed_; }
 
-  const IPAddressNumber& migrating_peer_ip() const {
-    return migrating_peer_ip_;
-  }
+  const IPAddress& migrating_peer_ip() const { return migrating_peer_ip_; }
 
   uint16_t migrating_peer_port() const { return migrating_peer_port_; }
 
@@ -858,7 +857,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   IPEndPoint peer_address_;
 
   // Used to store latest peer IP address for IP address migration.
-  IPAddressNumber migrating_peer_ip_;
+  IPAddress migrating_peer_ip_;
   // Used to store latest peer port to possibly migrate to later.
   uint16_t migrating_peer_port_;
 

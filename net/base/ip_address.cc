@@ -97,4 +97,11 @@ IPAddress ConvertIPv4MappedIPv6ToIPv4(const IPAddress& address) {
   return IPAddress(ConvertIPv4MappedToIPv4(address.bytes()));
 }
 
+bool IPAddressMatchesPrefix(const IPAddress& ip_address,
+                            const IPAddress& ip_prefix,
+                            size_t prefix_length_in_bits) {
+  return IPNumberMatchesPrefix(ip_address.bytes(), ip_prefix.bytes(),
+                               prefix_length_in_bits);
+}
+
 }  // namespace net

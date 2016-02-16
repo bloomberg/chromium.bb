@@ -182,8 +182,7 @@ class ValidatePublicResetPacketPredicate
            packet.public_header.reset_flag &&
            !packet.public_header.version_flag &&
            packet_number_ == packet.rejected_packet_number &&
-           net::test::TestPeerIPAddress() ==
-               packet.client_address.address().bytes() &&
+           net::test::TestPeerIPAddress() == packet.client_address.address() &&
            kTestPort == packet.client_address.port();
   }
 

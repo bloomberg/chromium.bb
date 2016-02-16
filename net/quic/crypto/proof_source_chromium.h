@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
                   const base::FilePath& sct_path);
 
   // ProofSource interface
-  bool GetProof(const IPAddressNumber& server_ip,
+  bool GetProof(const IPAddress& server_ip,
                 const std::string& hostname,
                 const std::string& server_config,
                 bool ecdsa_ok,

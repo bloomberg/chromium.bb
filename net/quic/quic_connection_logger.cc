@@ -15,6 +15,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "net/base/ip_address.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log.h"
@@ -267,9 +268,9 @@ void UpdatePublicResetAddressMismatchHistogram(
 
 // If |address| is an IPv4-mapped IPv6 address, returns ADDRESS_FAMILY_IPV4
 // instead of ADDRESS_FAMILY_IPV6. Othewise, behaves like GetAddressFamily().
-AddressFamily GetRealAddressFamily(const IPAddressNumber& address) {
-  return IsIPv4Mapped(address) ? ADDRESS_FAMILY_IPV4
-                               : GetAddressFamily(address);
+AddressFamily GetRealAddressFamily(const IPAddress& address) {
+  return address.IsIPv4MappedIPv6() ? ADDRESS_FAMILY_IPV4
+                                    : GetAddressFamily(address);
 }
 
 }  // namespace
@@ -459,10 +460,9 @@ void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
                                             const QuicEncryptedPacket& packet) {
   if (local_address_from_self_.GetFamily() == ADDRESS_FAMILY_UNSPECIFIED) {
     local_address_from_self_ = self_address;
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.QuicSession.ConnectionTypeFromSelf",
-        GetRealAddressFamily(self_address.address().bytes()),
-        ADDRESS_FAMILY_LAST);
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionTypeFromSelf",
+                              GetRealAddressFamily(self_address.address()),
+                              ADDRESS_FAMILY_LAST);
   }
 
   previous_received_packet_size_ = last_received_packet_size_;
@@ -661,7 +661,7 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
       local_address_from_shlo_ = IPEndPoint(decoder.ip(), decoder.port());
       UMA_HISTOGRAM_ENUMERATION(
           "Net.QuicSession.ConnectionTypeFromPeer",
-          GetRealAddressFamily(local_address_from_shlo_.address().bytes()),
+          GetRealAddressFamily(local_address_from_shlo_.address()),
           ADDRESS_FAMILY_LAST);
     }
   }

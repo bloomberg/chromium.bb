@@ -113,6 +113,20 @@ NET_EXPORT IPAddress ConvertIPv4ToIPv4MappedIPv6(const IPAddress& address);
 // on IPv4-mapped IPv6 addresses.
 NET_EXPORT IPAddress ConvertIPv4MappedIPv6ToIPv4(const IPAddress& address);
 
+// Compares an IP address to see if it falls within the specified IP block.
+// Returns true if it does, false otherwise.
+//
+// The IP block is given by (|ip_prefix|, |prefix_length_in_bits|) -- any
+// IP address whose |prefix_length_in_bits| most significant bits match
+// |ip_prefix| will be matched.
+//
+// In cases when an IPv4 address is being compared to an IPv6 address prefix
+// and vice versa, the IPv4 addresses will be converted to IPv4-mapped
+// (IPv6) addresses.
+NET_EXPORT bool IPAddressMatchesPrefix(const IPAddress& ip_address,
+                                       const IPAddress& ip_prefix,
+                                       size_t prefix_length_in_bits);
+
 }  // namespace net
 
 #endif  // NET_BASE_IP_ADDRESS_NET_H_
