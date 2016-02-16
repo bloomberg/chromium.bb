@@ -2436,7 +2436,8 @@ void BrowserView::LoadAccelerators() {
   //             investigate, but for now just disable accelerators in this
   //             mode.
 #if defined(MOJO_SHELL_CLIENT)
-  if (content::MojoShellConnection::Get())
+  if (content::MojoShellConnection::Get() &&
+      content::MojoShellConnection::Get()->UsingExternalShell())
     return;
 #endif
 

@@ -57,6 +57,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
 
   // MojoShellConnection:
   mojo::Shell* GetShell() override;
+  bool UsingExternalShell() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
 

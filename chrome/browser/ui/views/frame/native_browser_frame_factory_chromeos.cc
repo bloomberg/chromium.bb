@@ -15,7 +15,8 @@ NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
 #if defined(MOJO_SHELL_CLIENT)
-  if (content::MojoShellConnection::Get())
+  if (content::MojoShellConnection::Get() &&
+      content::MojoShellConnection::Get()->UsingExternalShell())
     return new BrowserFrameMus(browser_frame, browser_view);
 #endif
   return new BrowserFrameAsh(browser_frame, browser_view);

@@ -44,6 +44,10 @@ class CONTENT_EXPORT MojoShellConnection {
   // Returns an Initialized() Shell.
   virtual mojo::Shell* GetShell() = 0;
 
+  // Indicates whether the shell connection is to an external shell (true) or
+  // a shell embedded in the browser process (false).
+  virtual bool UsingExternalShell() const = 0;
+
   // [De]Register an impl of Listener that will be consulted when the wrapped
   // ShellConnection exposes services to inbound connections.
   // Registered listeners are owned by this MojoShellConnection.

@@ -28,7 +28,8 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
 #if defined(MOJO_SHELL_CLIENT)
-  if (content::MojoShellConnection::Get()) {
+  if (content::MojoShellConnection::Get() &&
+      content::MojoShellConnection::Get()->UsingExternalShell()) {
     BrowserNonClientFrameViewMus* frame_view =
         new BrowserNonClientFrameViewMus(frame, browser_view);
     frame_view->Init();

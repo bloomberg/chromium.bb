@@ -89,6 +89,10 @@ mojo::Shell* MojoShellConnectionImpl::GetShell() {
   return shell_connection_.get();
 }
 
+bool MojoShellConnectionImpl::UsingExternalShell() const {
+  return true;
+}
+
 void MojoShellConnectionImpl::AddListener(Listener* listener) {
   DCHECK(std::find(listeners_.begin(), listeners_.end(), listener) ==
          listeners_.end());
