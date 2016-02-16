@@ -126,7 +126,13 @@ ScriptPromise CredentialsContainer::get(ScriptState* scriptState, const Credenti
 
     Vector<KURL> providers;
     if (options.hasFederated() && options.federated().hasProviders()) {
-        for (const auto& string : options.federated().providers()) {
+        // TODO(mkwst): CredentialRequestOptions::federated() needs to return a reference, not a value.
+        // Because it returns a temporary value now, a for loop that directly references the value
+        // generates code that holds a reference to a value that no longer exists by the time the loop
+        // starts looping. In order to avoid this crazyness for the moment, we're making a copy of the
+        // vector. https://crbug.com/587088
+        const Vector<String> providerStrings = options.federated().providers();
+        for (const auto& string : providerStrings) {
             KURL url = KURL(KURL(), string);
             if (url.isValid())
                 providers.append(url);
