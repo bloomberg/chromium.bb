@@ -5433,7 +5433,7 @@ public:
     {
     }
 
-    virtual void didAccessInitialDocument(WebLocalFrame* frame)
+    virtual void didAccessInitialDocument()
     {
         EXPECT_TRUE(!m_didAccessInitialDocument);
         m_didAccessInitialDocument = true;

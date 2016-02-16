@@ -428,9 +428,9 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebExternalPopupMenu* createExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client) override;
-  blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame) override;
+  blink::WebCookieJar* cookieJar() override;
   blink::WebServiceWorkerProvider* createServiceWorkerProvider() override;
-  void didAccessInitialDocument(blink::WebLocalFrame* frame) override;
+  void didAccessInitialDocument() override;
   blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
@@ -441,8 +441,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void frameDetached(blink::WebFrame* frame, DetachType type) override;
   void frameFocused() override;
   void willClose(blink::WebFrame* frame) override;
-  void didChangeName(blink::WebLocalFrame* frame,
-                     const blink::WebString& name) override;
+  void didChangeName(const blink::WebString& name) override;
   void didEnforceStrictMixedContentChecking() override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;

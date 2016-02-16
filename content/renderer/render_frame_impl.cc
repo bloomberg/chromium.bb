@@ -2597,8 +2597,7 @@ WebExternalPopupMenu* RenderFrameImpl::createExternalPopupMenu(
 #endif
 }
 
-blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
+blink::WebCookieJar* RenderFrameImpl::cookieJar() {
   return &cookie_jar_;
 }
 
@@ -2621,14 +2620,13 @@ RenderFrameImpl::createServiceWorkerProvider() {
       provider->context());
 }
 
-void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
+void RenderFrameImpl::didAccessInitialDocument() {
   // If the request hasn't yet committed, notify the browser process that it is
   // no longer safe to show the pending URL of the main frame, since a URL spoof
   // is now possible. (If the request has committed, the browser already knows.)
-  if (!frame->parent()) {
+  if (!frame_->parent()) {
     DocumentState* document_state =
-        DocumentState::FromDataSource(frame->dataSource());
+        DocumentState::FromDataSource(frame_->dataSource());
     NavigationStateImpl* navigation_state =
         static_cast<NavigationStateImpl*>(document_state->navigation_state());
 
@@ -2762,10 +2760,7 @@ void RenderFrameImpl::willClose(blink::WebFrame* frame) {
                     FrameWillClose(frame));
 }
 
-void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
-                                    const blink::WebString& name) {
-  DCHECK_EQ(frame_, frame);
-
+void RenderFrameImpl::didChangeName(const blink::WebString& name) {
   // TODO(alexmos): According to https://crbug.com/169110, sending window.name
   // updates may have performance implications for benchmarks like SunSpider.
   // For now, send these updates only for --site-per-process, which needs to

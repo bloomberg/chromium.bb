@@ -669,7 +669,7 @@ bool FrameLoaderClientImpl::navigateBackForward(int offset) const
 void FrameLoaderClientImpl::didAccessInitialDocument()
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didAccessInitialDocument(m_webFrame);
+        m_webFrame->client()->didAccessInitialDocument();
 }
 
 void FrameLoaderClientImpl::didDisplayInsecureContent()
@@ -882,7 +882,7 @@ WebCookieJar* FrameLoaderClientImpl::cookieJar() const
 {
     if (!m_webFrame->client())
         return 0;
-    return m_webFrame->client()->cookieJar(m_webFrame);
+    return m_webFrame->client()->cookieJar();
 }
 
 bool FrameLoaderClientImpl::willCheckAndDispatchMessageEvent(
@@ -904,7 +904,7 @@ void FrameLoaderClientImpl::didChangeName(const String& name)
 {
     if (!m_webFrame->client())
         return;
-    m_webFrame->client()->didChangeName(m_webFrame, name);
+    m_webFrame->client()->didChangeName(name);
 }
 
 void FrameLoaderClientImpl::didEnforceStrictMixedContentChecking()

@@ -137,7 +137,7 @@ public:
 
     // A frame specific cookie jar.  May return null, in which case
     // WebKitPlatformSupport::cookieJar() will be called to access cookies.
-    virtual WebCookieJar* cookieJar(WebLocalFrame*) { return 0; }
+    virtual WebCookieJar* cookieJar() { return 0; }
 
 
     // General notifications -----------------------------------------------
@@ -148,7 +148,7 @@ public:
     // Indicates that another page has accessed the DOM of the initial empty
     // document of a main frame. After this, it is no longer safe to show a
     // pending navigation's URL, because a URL spoof is possible.
-    virtual void didAccessInitialDocument(WebLocalFrame*) { }
+    virtual void didAccessInitialDocument() { }
 
     // A child frame was created in this frame. This is called when the frame
     // is created and initialized. Takes the name of the new frame, the parent
@@ -176,7 +176,7 @@ public:
     virtual void willClose(WebFrame*) { }
 
     // This frame's name has changed.
-    virtual void didChangeName(WebLocalFrame*, const WebString&) { }
+    virtual void didChangeName(const WebString&) { }
 
     // This frame has been set to enforce strict mixed content checking.
     virtual void didEnforceStrictMixedContentChecking() {}
