@@ -125,6 +125,9 @@ public class OverlayPanelContent {
 
         @Override
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
+            // If either of the required params for the delegate are null, do not call the
+            // delegate and ignore the navigation.
+            if (mExternalNavHandler == null || navigationParams == null) return true;
             // TODO(mdjones): Rather than passing the two navigation params, instead consider
             // passing a boolean to make this API simpler.
             return !mContentDelegate.shouldInterceptNavigation(mExternalNavHandler,
