@@ -60,7 +60,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public void onSaveToClipboard(String text, int clipboardType) {
-        mClipboard.setText(text, text);
+        mClipboard.setText(text);
     }
 
     @Override

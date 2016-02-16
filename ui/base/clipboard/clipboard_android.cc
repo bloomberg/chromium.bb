@@ -116,10 +116,9 @@ void ClipboardMap::CommitToAndroidClipboard() {
     ScopedJavaLocalRef<jstring> str =
         ConvertUTF8ToJavaString(env, map_[kPlainTextFormat].c_str());
     DCHECK(str.obj());
-
     Java_Clipboard_setText(env, clipboard_manager_.obj(), str.obj());
   } else {
-    Java_Clipboard_setText(env, clipboard_manager_.obj(), nullptr);
+    Java_Clipboard_clear(env, clipboard_manager_.obj());
     NOTIMPLEMENTED();
   }
 }
@@ -128,7 +127,7 @@ void ClipboardMap::Clear() {
   JNIEnv* env = AttachCurrentThread();
   base::AutoLock lock(lock_);
   map_.clear();
-  Java_Clipboard_setText(env, clipboard_manager_.obj(), NULL);
+  Java_Clipboard_clear(env, clipboard_manager_.obj());
 }
 
 // Add a key:jstr pair to map, but only if jstr is not null, and also
