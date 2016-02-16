@@ -249,7 +249,22 @@
 // Implementation detail: internal macro to enter and leave a context based on
 // the current scope.
 #define INTERNAL_TRACE_EVENT_SCOPED_CONTEXT(categoryGroup, name, context) \
-    blink::TraceEvent::TraceScopedContext INTERNAL_TRACE_EVENT_UID(scopedTracer)(categoryGroup, name, context)
+    struct INTERNAL_TRACE_EVENT_UID(ScopedContext) { \
+    public: \
+        INTERNAL_TRACE_EVENT_UID(ScopedContext)(uint64_t cid) : m_cid(cid) { \
+            TRACE_EVENT_ENTER_CONTEXT(category_group, name, m_cid); \
+        } \
+        ~INTERNAL_TRACE_EVENT_UID(ScopedContext)() { \
+            TRACE_EVENT_LEAVE_CONTEXT(category_group, name, m_cid); \
+        } \
+    private: \
+        uint64_t m_cid; \
+        INTERNAL_TRACE_EVENT_UID(ScopedContext) \
+            (const INTERNAL_TRACE_EVENT_UID(ScopedContext)&) {}; \
+        void operator=(const INTERNAL_TRACE_EVENT_UID(ScopedContext)&) {}; \
+    }; \
+    INTERNAL_TRACE_EVENT_UID(ScopedContext) \
+    INTERNAL_TRACE_EVENT_UID(scoped_context)(context.data());
 
 // These values must be in sync with base::debug::TraceLog::CategoryGroupEnabledFlags.
 #define ENABLED_FOR_RECORDING (1 << 0)
@@ -666,31 +681,6 @@ private:
     const char* m_categoryGroup;
     const char* m_name;
     IDType m_id;
-};
-
-using TraceContext = TraceID;
-
-class TraceScopedContext {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(TraceScopedContext);
-public:
-    TraceScopedContext(const char* categoryGroup, const char* name, TraceID::DontMangle context)
-        : m_categoryGroup(categoryGroup)
-        , m_name(name)
-        , m_context(context)
-    {
-        TRACE_EVENT_ENTER_CONTEXT(m_categoryGroup, m_name, m_context);
-    }
-
-    ~TraceScopedContext()
-    {
-        TRACE_EVENT_LEAVE_CONTEXT(m_categoryGroup, m_name, m_context);
-    }
-
-private:
-    const char* m_categoryGroup;
-    const char* m_name;
-    TraceID::DontMangle m_context;
 };
 
 } // namespace TraceEvent

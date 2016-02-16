@@ -498,12 +498,17 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
     TRACE_EVENT1(kControlCharacters, kControlCharacters,
                  kControlCharacters, kControlCharacters);
 
+    uint64_t context_id = 0x20151021;
+
     TRACE_EVENT_ENTER_CONTEXT("all", "TRACE_EVENT_ENTER_CONTEXT call",
-                              TRACE_ID_WITH_SCOPE("scope", 0x20151021));
+                              TRACE_ID_WITH_SCOPE("scope", context_id));
     TRACE_EVENT_LEAVE_CONTEXT("all", "TRACE_EVENT_LEAVE_CONTEXT call",
-                              TRACE_ID_WITH_SCOPE("scope", 0x20151021));
+                              TRACE_ID_WITH_SCOPE("scope", context_id));
+    TRACE_EVENT_SCOPED_CONTEXT("disabled-by-default-cat",
+                               "TRACE_EVENT_SCOPED_CONTEXT disabled call",
+                               context_id);
     TRACE_EVENT_SCOPED_CONTEXT("all", "TRACE_EVENT_SCOPED_CONTEXT call",
-                               0x20151021);
+                               context_id);
   }  // Scope close causes TRACE_EVENT0 etc to send their END events.
 
   if (task_complete_event)

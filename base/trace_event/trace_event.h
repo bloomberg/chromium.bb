@@ -350,8 +350,24 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
 // Implementation detail: internal macro to enter and leave a context based on
 // the current scope.
 #define INTERNAL_TRACE_EVENT_SCOPED_CONTEXT(category_group, name, context) \
-  trace_event_internal::TraceScopedContext INTERNAL_TRACE_EVENT_UID(       \
-      scoped_trace)(category_group, name, context)
+  struct INTERNAL_TRACE_EVENT_UID(ScopedContext) {                         \
+   public:                                                                 \
+    INTERNAL_TRACE_EVENT_UID(ScopedContext)(uint64_t cid) : cid_(cid) {    \
+      TRACE_EVENT_ENTER_CONTEXT(category_group, name, cid_);               \
+    }                                                                      \
+    ~INTERNAL_TRACE_EVENT_UID(ScopedContext)() {                           \
+      TRACE_EVENT_LEAVE_CONTEXT(category_group, name, cid_);               \
+    }                                                                      \
+                                                                           \
+   private:                                                                \
+    uint64_t cid_;                                                         \
+    /* Local class friendly DISALLOW_COPY_AND_ASSIGN */                    \
+    INTERNAL_TRACE_EVENT_UID(ScopedContext)                                \
+    (const INTERNAL_TRACE_EVENT_UID(ScopedContext)&) {};                   \
+    void operator=(const INTERNAL_TRACE_EVENT_UID(ScopedContext)&) {};     \
+  };                                                                       \
+  INTERNAL_TRACE_EVENT_UID(ScopedContext)                                  \
+  INTERNAL_TRACE_EVENT_UID(scoped_context)(context.raw_id());
 
 namespace trace_event_internal {
 
@@ -938,28 +954,6 @@ class TraceEventSamplingStateScope {
 
  private:
   const char* previous_state_;
-};
-
-using TraceContext = trace_event_internal::TraceID;
-
-class TraceScopedContext {
- public:
-  TraceScopedContext(const char* category_group,
-                     const char* name,
-                     trace_event_internal::TraceID::DontMangle context)
-      : category_group_(category_group), name_(name), context_(context) {
-    TRACE_EVENT_ENTER_CONTEXT(category_group_, name_, context_);
-  }
-
-  ~TraceScopedContext() {
-    TRACE_EVENT_LEAVE_CONTEXT(category_group_, name_, context_);
-  }
-
- private:
-  const char* category_group_;
-  const char* name_;
-  trace_event_internal::TraceID::DontMangle context_;
-  DISALLOW_COPY_AND_ASSIGN(TraceScopedContext);
 };
 
 }  // namespace trace_event_internal
