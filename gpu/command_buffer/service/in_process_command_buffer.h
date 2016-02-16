@@ -127,7 +127,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool IsGpuChannelLost() override;
   void EnsureWorkVisible() override;
   CommandBufferNamespace GetNamespaceID() const override;
-  uint64_t GetCommandBufferID() const override;
+  CommandBufferId GetCommandBufferID() const override;
   int32_t GetExtraCommandBufferData() const override;
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncRelease(uint64_t release) override;
@@ -219,7 +219,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void CheckSequencedThread();
   void FenceSyncReleaseOnGpuThread(uint64_t release);
   bool WaitFenceSyncOnGpuThread(gpu::CommandBufferNamespace namespace_id,
-                                uint64_t command_buffer_id,
+                                gpu::CommandBufferId command_buffer_id,
                                 uint64_t release);
   void SignalSyncTokenOnGpuThread(const SyncToken& sync_token,
                                   const base::Closure& callback);
@@ -241,7 +241,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void PumpCommands();
   void PerformDelayedWork();
 
-  const uint64_t command_buffer_id_;
+  const CommandBufferId command_buffer_id_;
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):

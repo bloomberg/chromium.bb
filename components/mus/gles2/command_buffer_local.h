@@ -19,6 +19,7 @@
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -88,7 +89,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   bool IsGpuChannelLost() override;
   void EnsureWorkVisible() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
-  uint64_t GetCommandBufferID() const override;
+  gpu::CommandBufferId GetCommandBufferID() const override;
   int32_t GetExtraCommandBufferData() const override;
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncRelease(uint64_t release) override;

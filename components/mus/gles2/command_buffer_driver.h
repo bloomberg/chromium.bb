@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -52,7 +53,7 @@ class CommandBufferDriver : base::NonThreadSafe {
     virtual void UpdateVSyncParameters(int64_t timebase, int64_t interval) = 0;
   };
   CommandBufferDriver(gpu::CommandBufferNamespace command_buffer_namespace,
-                      uint64_t command_buffer_id,
+                      gpu::CommandBufferId command_buffer_id,
                       gfx::AcceleratedWidget widget,
                       scoped_refptr<GpuState> gpu_state);
   ~CommandBufferDriver();
@@ -81,7 +82,7 @@ class CommandBufferDriver : base::NonThreadSafe {
   gpu::CommandBufferNamespace GetNamespaceID() const {
     return command_buffer_namespace_;
   }
-  uint64_t GetCommandBufferID() const { return command_buffer_id_; }
+  gpu::CommandBufferId GetCommandBufferID() const { return command_buffer_id_; }
   gpu::SyncPointOrderData* sync_point_order_data() {
     return sync_point_order_data_.get();
   }
@@ -113,13 +114,13 @@ class CommandBufferDriver : base::NonThreadSafe {
                                const base::TimeDelta interval);
   void OnFenceSyncRelease(uint64_t release);
   bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
-                       uint64_t command_buffer_id,
+                       gpu::CommandBufferId command_buffer_id,
                        uint64_t release);
   void OnParseError();
   void OnContextLost(uint32_t reason);
 
   const gpu::CommandBufferNamespace command_buffer_namespace_;
-  const uint64_t command_buffer_id_;
+  const gpu::CommandBufferId command_buffer_id_;
   gfx::AcceleratedWidget widget_;
   scoped_ptr<Client> client_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;

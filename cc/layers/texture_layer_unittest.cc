@@ -58,7 +58,8 @@ gpu::Mailbox MailboxFromChar(char value) {
 }
 
 gpu::SyncToken SyncTokenFromUInt(uint32_t value) {
-  return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0, 0x123, value);
+  return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0,
+                        gpu::CommandBufferId::FromUnsafeValue(0x123), value);
 }
 
 class MockLayerTreeHost : public LayerTreeHost {
@@ -145,8 +146,14 @@ struct CommonMailboxObjects {
   explicit CommonMailboxObjects(SharedBitmapManager* manager)
       : mailbox_name1_(MailboxFromChar('1')),
         mailbox_name2_(MailboxFromChar('2')),
-        sync_token1_(gpu::CommandBufferNamespace::GPU_IO, 123, 0x234, 1),
-        sync_token2_(gpu::CommandBufferNamespace::GPU_IO, 123, 0x234, 2) {
+        sync_token1_(gpu::CommandBufferNamespace::GPU_IO,
+                     123,
+                     gpu::CommandBufferId::FromUnsafeValue(0x234),
+                     1),
+        sync_token2_(gpu::CommandBufferNamespace::GPU_IO,
+                     123,
+                     gpu::CommandBufferId::FromUnsafeValue(0x234),
+                     2) {
     release_mailbox1_ = base::Bind(&MockMailboxCallback::Release,
                                    base::Unretained(&mock_callback_),
                                    mailbox_name1_);

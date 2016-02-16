@@ -16,6 +16,7 @@
 #include "components/mus/gles2/command_buffer_type_conversions.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
@@ -72,7 +73,7 @@ CommandBufferClientImpl::CommandBufferClientImpl(
     : delegate_(delegate),
       attribs_(attribs),
       client_binding_(this),
-      command_buffer_id_(0),
+      command_buffer_id_(),
       shared_state_(NULL),
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
@@ -124,7 +125,8 @@ bool CommandBufferClientImpl::Initialize() {
 
   DCHECK_EQ(gpu::CommandBufferNamespace::MOJO,
             initialize_result->command_buffer_namespace);
-  command_buffer_id_ = initialize_result->command_buffer_id;
+  command_buffer_id_ = gpu::CommandBufferId::FromUnsafeValue(
+      initialize_result->command_buffer_id);
   capabilities_ = initialize_result->capabilities;
   return true;
 }
@@ -345,7 +347,7 @@ gpu::CommandBufferNamespace CommandBufferClientImpl::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::MOJO;
 }
 
-uint64_t CommandBufferClientImpl::GetCommandBufferID() const {
+gpu::CommandBufferId CommandBufferClientImpl::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 

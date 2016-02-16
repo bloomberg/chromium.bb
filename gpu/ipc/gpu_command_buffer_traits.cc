@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
@@ -95,7 +96,7 @@ bool ParamTraits<gpu::SyncToken>::Read(const base::Pickle* m,
   bool verified_flush = false;
   gpu::CommandBufferNamespace namespace_id =
       gpu::CommandBufferNamespace::INVALID;
-  uint64_t command_buffer_id = 0;
+  gpu::CommandBufferId command_buffer_id;
   uint64_t release_count = 0;
 
   if (!ReadParam(m, iter, &verified_flush) ||
@@ -116,10 +117,9 @@ bool ParamTraits<gpu::SyncToken>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<gpu::SyncToken>::Log(const param_type& p, std::string* l) {
-  *l +=
-      base::StringPrintf("[%d:%llX] %llu", static_cast<int>(p.namespace_id()),
-                         static_cast<unsigned long long>(p.command_buffer_id()),
-                         static_cast<unsigned long long>(p.release_count()));
+  *l += base::StringPrintf(
+      "[%" PRId8 ":%" PRIX64 "] %" PRIu64, p.namespace_id(),
+      p.command_buffer_id().GetUnsafeValue(), p.release_count());
 }
 
 void ParamTraits<gpu::Mailbox>::GetSize(base::PickleSizer* s,

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 
@@ -23,26 +24,16 @@ namespace gpu {
 // See src/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_sync_point.txt for more
 // details.
 struct GPU_EXPORT SyncToken {
-  SyncToken()
-      : verified_flush_(false),
-        namespace_id_(CommandBufferNamespace::INVALID),
-        extra_data_field_(0),
-        command_buffer_id_(0),
-        release_count_(0) {}
+  SyncToken();
 
   SyncToken(CommandBufferNamespace namespace_id,
             int32_t extra_data_field,
-            uint64_t command_buffer_id,
-            uint64_t release_count)
-      : verified_flush_(false),
-        namespace_id_(namespace_id),
-        extra_data_field_(extra_data_field),
-        command_buffer_id_(command_buffer_id),
-        release_count_(release_count) {}
+            CommandBufferId command_buffer_id,
+            uint64_t release_count);
 
   void Set(CommandBufferNamespace namespace_id,
            int32_t extra_data_field,
-           uint64_t command_buffer_id,
+           CommandBufferId command_buffer_id,
            uint64_t release_count) {
     namespace_id_ = namespace_id;
     extra_data_field_ = extra_data_field;
@@ -54,7 +45,7 @@ struct GPU_EXPORT SyncToken {
     verified_flush_ = false;
     namespace_id_ = CommandBufferNamespace::INVALID;
     extra_data_field_ = 0;
-    command_buffer_id_ = 0;
+    command_buffer_id_ = CommandBufferId();
     release_count_ = 0;
   }
 
@@ -74,7 +65,7 @@ struct GPU_EXPORT SyncToken {
 
   bool verified_flush() const { return verified_flush_; }
   CommandBufferNamespace namespace_id() const { return namespace_id_; }
-  uint64_t command_buffer_id() const { return command_buffer_id_; }
+  CommandBufferId command_buffer_id() const { return command_buffer_id_; }
   uint64_t release_count() const { return release_count_; }
 
   // This extra data field can be used by command buffers to add extra
@@ -107,7 +98,7 @@ struct GPU_EXPORT SyncToken {
   bool verified_flush_;
   CommandBufferNamespace namespace_id_;
   int32_t extra_data_field_;
-  uint64_t command_buffer_id_;
+  CommandBufferId command_buffer_id_;
   uint64_t release_count_;
 };
 

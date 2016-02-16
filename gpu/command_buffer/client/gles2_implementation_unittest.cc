@@ -3757,7 +3757,8 @@ TEST_F(GLES2ImplementationTest, InsertFenceSyncCHROMIUM) {
 
 TEST_F(GLES2ImplementationTest, GenSyncTokenCHROMIUM) {
   const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
-  const GLuint64 kCommandBufferId = 234u;
+  const CommandBufferId kCommandBufferId =
+      CommandBufferId::FromUnsafeValue(234u);
   const GLuint64 kFenceSync = 123u;
   GLbyte sync_token_data[GL_SYNC_TOKEN_SIZE_CHROMIUM];
 
@@ -3802,7 +3803,8 @@ TEST_F(GLES2ImplementationTest, GenSyncTokenCHROMIUM) {
 
 TEST_F(GLES2ImplementationTest, GenUnverifiedSyncTokenCHROMIUM) {
   const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
-  const GLuint64 kCommandBufferId = 234u;
+  const CommandBufferId kCommandBufferId =
+      CommandBufferId::FromUnsafeValue(234u);
   const GLuint64 kFenceSync = 123u;
   GLbyte sync_token_data[GL_SYNC_TOKEN_SIZE_CHROMIUM];
 
@@ -3853,7 +3855,8 @@ TEST_F(GLES2ImplementationTest, VerifySyncTokensCHROMIUM) {
       .RetiresOnSaturation();
 
   const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
-  const GLuint64 kCommandBufferId = 234u;
+  const CommandBufferId kCommandBufferId =
+      CommandBufferId::FromUnsafeValue(234u);
   const GLuint64 kFenceSync = 123u;
   gpu::SyncToken sync_token;
   GLbyte* sync_token_datas[] = { sync_token.GetData() };
@@ -3906,7 +3909,8 @@ TEST_F(GLES2ImplementationTest, VerifySyncTokensCHROMIUM_Sequence) {
       .RetiresOnSaturation();
 
   const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
-  const GLuint64 kCommandBufferId = 234u;
+  const CommandBufferId kCommandBufferId =
+      CommandBufferId::FromUnsafeValue(234u);
   const GLuint64 kFenceSync1 = 123u;
   const GLuint64 kFenceSync2 = 234u;
   gpu::SyncToken sync_token1;
@@ -3958,7 +3962,8 @@ TEST_F(GLES2ImplementationTest, VerifySyncTokensCHROMIUM_Sequence) {
 
 TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUM) {
   const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
-  const GLuint64 kCommandBufferId = 234u;
+  const CommandBufferId kCommandBufferId =
+      CommandBufferId::FromUnsafeValue(234u);
   const GLuint64 kFenceSync = 456u;
   GLbyte sync_token[GL_SYNC_TOKEN_SIZE_CHROMIUM];
 
@@ -3978,7 +3983,8 @@ TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUM) {
     cmds::WaitSyncTokenCHROMIUM wait_sync_token;
   };
   Cmds expected;
-  expected.wait_sync_token.Init(kNamespaceId, kCommandBufferId, kFenceSync);
+  expected.wait_sync_token.Init(kNamespaceId, kCommandBufferId.GetUnsafeValue(),
+                                kFenceSync);
 
   gl_->WaitSyncTokenCHROMIUM(sync_token);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -4006,7 +4012,8 @@ TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUMErrors) {
 
   // Unverified sync token should produce INVALID_OPERATION.
   ClearCommands();
-  gpu::SyncToken unverified_sync_token(CommandBufferNamespace::GPU_IO, 0, 0, 0);
+  gpu::SyncToken unverified_sync_token(CommandBufferNamespace::GPU_IO, 0,
+                                       gpu::CommandBufferId(), 0);
   EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(_))
       .WillOnce(testing::Return(false));
   gl_->WaitSyncTokenCHROMIUM(unverified_sync_token.GetConstData());

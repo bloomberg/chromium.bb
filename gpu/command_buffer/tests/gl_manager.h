@@ -132,7 +132,7 @@ class GLManager : private GpuControl {
   bool IsGpuChannelLost() override;
   void EnsureWorkVisible() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
-  uint64_t GetCommandBufferID() const override;
+  CommandBufferId GetCommandBufferID() const override;
   int32_t GetExtraCommandBufferData() const override;
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncRelease(uint64_t release) override;
@@ -148,7 +148,7 @@ class GLManager : private GpuControl {
   void SetupBaseContext();
   void OnFenceSyncRelease(uint64_t release);
   bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
-                       uint64_t command_buffer_id,
+                       gpu::CommandBufferId command_buffer_id,
                        uint64_t release);
 
   SyncPointManager* sync_point_manager_;  // Non-owning.
@@ -169,7 +169,7 @@ class GLManager : private GpuControl {
   bool pause_commands_;
   uint32_t paused_order_num_;
 
-  const uint64_t command_buffer_id_;
+  const CommandBufferId command_buffer_id_;
   uint64_t next_fence_sync_release_;
 
   // Used on Android to virtualize GL for all contexts.

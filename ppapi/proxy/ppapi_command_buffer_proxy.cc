@@ -20,7 +20,7 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
     PluginDispatcher* dispatcher,
     const gpu::Capabilities& capabilities,
     const SerializedHandle& shared_state,
-    uint64_t command_buffer_id)
+    gpu::CommandBufferId command_buffer_id)
     : command_buffer_id_(command_buffer_id),
       capabilities_(capabilities),
       resource_(resource),
@@ -195,7 +195,7 @@ gpu::CommandBufferNamespace PpapiCommandBufferProxy::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::GPU_IO;
 }
 
-uint64_t PpapiCommandBufferProxy::GetCommandBufferID() const {
+gpu::CommandBufferId PpapiCommandBufferProxy::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 

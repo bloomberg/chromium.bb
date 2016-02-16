@@ -59,7 +59,7 @@ Graphics3D::~Graphics3D() {
 bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2,
                       const gpu::Capabilities& capabilities,
                       const SerializedHandle& shared_state,
-                      uint64_t command_buffer_id) {
+                      gpu::CommandBufferId command_buffer_id) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   if (!dispatcher)
     return false;
@@ -177,7 +177,7 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
   HostResource result;
   gpu::Capabilities capabilities;
   ppapi::proxy::SerializedHandle shared_state;
-  uint64_t command_buffer_id = 0;
+  gpu::CommandBufferId command_buffer_id;
   dispatcher->Send(new PpapiHostMsg_PPBGraphics3D_Create(API_ID_PPB_GRAPHICS_3D,
         instance, share_host, attribs, &result, &capabilities, &shared_state,
         &command_buffer_id));
@@ -226,13 +226,14 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 #if !defined(OS_NACL)
-void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
-                                       HostResource share_context,
-                                       const std::vector<int32_t>& attribs,
-                                       HostResource* result,
-                                       gpu::Capabilities* capabilities,
-                                       SerializedHandle* shared_state,
-                                       uint64_t* command_buffer_id) {
+void PPB_Graphics3D_Proxy::OnMsgCreate(
+    PP_Instance instance,
+    HostResource share_context,
+    const std::vector<int32_t>& attribs,
+    HostResource* result,
+    gpu::Capabilities* capabilities,
+    SerializedHandle* shared_state,
+    gpu::CommandBufferId* command_buffer_id) {
   shared_state->set_null_shmem();
   if (attribs.empty() ||
       attribs.back() != PP_GRAPHICS3DATTRIB_NONE ||

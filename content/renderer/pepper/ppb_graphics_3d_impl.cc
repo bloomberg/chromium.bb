@@ -80,7 +80,7 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(
     const int32_t* attrib_list,
     gpu::Capabilities* capabilities,
     base::SharedMemoryHandle* shared_state_handle,
-    uint64_t* command_buffer_id) {
+    gpu::CommandBufferId* command_buffer_id) {
   PPB_Graphics3D_API* share_api = NULL;
   if (share_context) {
     EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
@@ -215,12 +215,11 @@ bool PPB_Graphics3D_Impl::Init(PPB_Graphics3D_API* share_context,
   return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize, share_gles2);
 }
 
-bool PPB_Graphics3D_Impl::InitRaw(
-    PPB_Graphics3D_API* share_context,
-    const int32_t* attrib_list,
-    gpu::Capabilities* capabilities,
-    base::SharedMemoryHandle* shared_state_handle,
-    uint64_t* command_buffer_id) {
+bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
+                                  const int32_t* attrib_list,
+                                  gpu::Capabilities* capabilities,
+                                  base::SharedMemoryHandle* shared_state_handle,
+                                  gpu::CommandBufferId* command_buffer_id) {
   PepperPluginInstanceImpl* plugin_instance =
       HostGlobals::Get()->GetInstance(pp_instance());
   if (!plugin_instance)

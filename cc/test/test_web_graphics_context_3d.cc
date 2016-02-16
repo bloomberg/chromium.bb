@@ -655,8 +655,8 @@ GLuint64 TestWebGraphicsContext3D::insertFenceSync() {
 
 void TestWebGraphicsContext3D::genSyncToken(GLuint64 fence_sync,
                                             GLbyte* sync_token) {
-  gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0, 0,
-                                 fence_sync);
+  gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0,
+                                 gpu::CommandBufferId(), fence_sync);
   sync_token_data.SetVerifyFlush();
   memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
 }

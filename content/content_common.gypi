@@ -370,7 +370,6 @@
       'common/host_discardable_shared_memory_manager.h',
       'common/host_shared_bitmap_manager.cc',
       'common/host_shared_bitmap_manager.h',
-      'common/id_type.h',
       'common/in_process_child_thread_params.cc',
       'common/in_process_child_thread_params.h',
       'common/indexed_db/indexed_db_constants.h',

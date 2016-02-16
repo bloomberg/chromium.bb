@@ -13,6 +13,7 @@
   'sources': [
     'ipc/gpu_command_buffer_traits.cc',
     'ipc/gpu_command_buffer_traits.h',
+    'ipc/id_type_traits.h',
   ],
   'conditions': [
     # This section applies to gpu_ipc_win64, used by the NaCl Win64 helper

@@ -297,7 +297,8 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(&EmptyReleaseCallback));
 
-    gpu::SyncToken next_sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 1,
+    gpu::SyncToken next_sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+                                   gpu::CommandBufferId::FromUnsafeValue(1),
                                    next_fence_sync_);
     next_sync_token.SetVerifyFlush();
     TextureMailbox mailbox(gpu_mailbox, next_sync_token, GL_TEXTURE_2D);

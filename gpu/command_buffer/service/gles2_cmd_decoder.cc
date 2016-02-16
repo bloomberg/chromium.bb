@@ -12670,7 +12670,8 @@ error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
        (c.namespace_id < static_cast<int32_t>(kMaxNamespaceId)))
           ? static_cast<gpu::CommandBufferNamespace>(c.namespace_id)
           : gpu::CommandBufferNamespace::INVALID;
-  const uint64_t command_buffer_id = c.command_buffer_id();
+  const CommandBufferId command_buffer_id =
+      CommandBufferId::FromUnsafeValue(c.command_buffer_id());
   const uint64_t release = c.release_count();
   if (wait_fence_sync_callback_.is_null())
     return error::kNoError;

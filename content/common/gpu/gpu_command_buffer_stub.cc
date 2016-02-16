@@ -156,8 +156,9 @@ DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
   return new DevToolsChannelData(res.release());
 }
 
-uint64_t GetCommandBufferID(int channel_id, int32_t route_id) {
-  return (static_cast<uint64_t>(channel_id) << 32) | route_id;
+gpu::CommandBufferId GetCommandBufferID(int channel_id, int32_t route_id) {
+  return gpu::CommandBufferId::FromUnsafeValue(
+      (static_cast<uint64_t>(channel_id) << 32) | route_id);
 }
 
 gfx::GLSurface::Format GetSurfaceFormatFromAttribute(
@@ -227,8 +228,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
            attrib_parser.bind_generates_resource);
   } else {
     context_group_ = new gpu::gles2::ContextGroup(
-        mailbox_manager,
-        new GpuCommandBufferMemoryTracker(channel, command_buffer_id_),
+        mailbox_manager, new GpuCommandBufferMemoryTracker(
+                             channel, command_buffer_id_.GetUnsafeValue()),
         channel_->gpu_channel_manager()->shader_translator_cache(),
         channel_->gpu_channel_manager()->framebuffer_completeness_cache(), NULL,
         subscription_ref_set, pending_valuebuffer_state,
@@ -914,7 +915,7 @@ void GpuCommandBufferStub::OnCreateVideoEncoder(
 
 void GpuCommandBufferStub::PullTextureUpdates(
     gpu::CommandBufferNamespace namespace_id,
-    uint64_t command_buffer_id,
+    gpu::CommandBufferId command_buffer_id,
     uint32_t release) {
   gpu::gles2::MailboxManager* mailbox_manager =
       context_group_->mailbox_manager();
@@ -981,7 +982,7 @@ void GpuCommandBufferStub::OnFenceSyncRelease(uint64_t release) {
 
 bool GpuCommandBufferStub::OnWaitFenceSync(
     gpu::CommandBufferNamespace namespace_id,
-    uint64_t command_buffer_id,
+    gpu::CommandBufferId command_buffer_id,
     uint64_t release) {
   DCHECK(!waiting_for_sync_point_);
   DCHECK(scheduler_->scheduled());
@@ -1015,7 +1016,7 @@ bool GpuCommandBufferStub::OnWaitFenceSync(
 
 void GpuCommandBufferStub::OnWaitFenceSyncCompleted(
     gpu::CommandBufferNamespace namespace_id,
-    uint64_t command_buffer_id,
+    gpu::CommandBufferId command_buffer_id,
     uint64_t release) {
   DCHECK(waiting_for_sync_point_);
   TRACE_EVENT_ASYNC_END1("gpu", "WaitFenceSync", this, "GpuCommandBufferStub",

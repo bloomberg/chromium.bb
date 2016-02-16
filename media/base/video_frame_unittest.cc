@@ -274,8 +274,8 @@ static void TextureCallback(gpu::SyncToken* called_sync_token,
 // Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
 // destroyed with the default release sync point.
 TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
-  gpu::SyncToken called_sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 1,
-                                   1);
+  gpu::SyncToken called_sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+                                   gpu::CommandBufferId::FromUnsafeValue(1), 1);
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
@@ -321,7 +321,8 @@ TEST(VideoFrame,
   const int kPlanesNum = 3;
   const gpu::CommandBufferNamespace kNamespace =
       gpu::CommandBufferNamespace::GPU_IO;
-  const uint64_t kCommandBufferId = 0x123;
+  const gpu::CommandBufferId kCommandBufferId =
+      gpu::CommandBufferId::FromUnsafeValue(0x123);
   gpu::Mailbox mailbox[kPlanesNum];
   for (int i = 0; i < kPlanesNum; ++i) {
     mailbox[i].name[0] = 50 + 1;

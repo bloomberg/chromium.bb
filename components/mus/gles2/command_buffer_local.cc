@@ -323,7 +323,7 @@ gpu::CommandBufferNamespace CommandBufferLocal::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::MOJO_LOCAL;
 }
 
-uint64_t CommandBufferLocal::GetCommandBufferID() const {
+gpu::CommandBufferId CommandBufferLocal::GetCommandBufferID() const {
   DCHECK(CalledOnValidThread());
   return driver_->GetCommandBufferID();
 }
@@ -421,9 +421,10 @@ void CommandBufferLocal::MakeProgressAndUpdateState() {
 
 void CommandBufferLocal::InitializeOnGpuThread(base::WaitableEvent* event,
                                                bool* result) {
-  driver_.reset(new CommandBufferDriver(gpu::CommandBufferNamespace::MOJO_LOCAL,
-                                        ++g_next_command_buffer_id, widget_,
-                                        gpu_state_));
+  driver_.reset(new CommandBufferDriver(
+      gpu::CommandBufferNamespace::MOJO_LOCAL,
+      gpu::CommandBufferId::FromUnsafeValue(++g_next_command_buffer_id),
+      widget_, gpu_state_));
   const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
   void* memory = nullptr;
   mojo::ScopedSharedBufferHandle duped;

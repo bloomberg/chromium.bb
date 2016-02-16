@@ -20,6 +20,7 @@
 #include "content/common/view_messages.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -31,8 +32,9 @@ namespace content {
 
 namespace {
 
-uint64_t CommandBufferProxyID(int channel_id, int32_t route_id) {
-  return (static_cast<uint64_t>(channel_id) << 32) | route_id;
+gpu::CommandBufferId CommandBufferProxyID(int channel_id, int32_t route_id) {
+  return gpu::CommandBufferId::FromUnsafeValue(
+      (static_cast<uint64_t>(channel_id) << 32) | route_id);
 }
 
 }  // namespace
@@ -538,7 +540,7 @@ gpu::CommandBufferNamespace CommandBufferProxyImpl::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::GPU_IO;
 }
 
-uint64_t CommandBufferProxyImpl::GetCommandBufferID() const {
+gpu::CommandBufferId CommandBufferProxyImpl::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 
@@ -602,8 +604,9 @@ void CommandBufferProxyImpl::SignalSyncToken(const gpu::SyncToken& sync_token,
 bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken* sync_token) {
   // Can only wait on an unverified sync token if it is from the same channel.
-  const uint64_t token_channel = sync_token->command_buffer_id() >> 32;
-  const uint64_t channel = command_buffer_id_ >> 32;
+  const uint64_t token_channel =
+      sync_token->command_buffer_id().GetUnsafeValue() >> 32;
+  const uint64_t channel = command_buffer_id_.GetUnsafeValue() >> 32;
   if (sync_token->namespace_id() != gpu::CommandBufferNamespace::GPU_IO ||
       token_channel != channel) {
     return false;

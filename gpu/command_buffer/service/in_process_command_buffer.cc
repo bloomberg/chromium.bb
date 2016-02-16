@@ -198,7 +198,8 @@ gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
 
 InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
-    : command_buffer_id_(g_next_command_buffer_id.GetNext()),
+    : command_buffer_id_(
+          CommandBufferId::FromUnsafeValue(g_next_command_buffer_id.GetNext())),
       context_lost_(false),
       delayed_work_pending_(false),
       image_factory_(nullptr),
@@ -838,7 +839,7 @@ void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
 
 bool InProcessCommandBuffer::WaitFenceSyncOnGpuThread(
     gpu::CommandBufferNamespace namespace_id,
-    uint64_t command_buffer_id,
+    gpu::CommandBufferId command_buffer_id,
     uint64_t release) {
   gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
   DCHECK(sync_point_manager);
@@ -923,7 +924,7 @@ CommandBufferNamespace InProcessCommandBuffer::GetNamespaceID() const {
   return CommandBufferNamespace::IN_PROCESS;
 }
 
-uint64_t InProcessCommandBuffer::GetCommandBufferID() const {
+CommandBufferId InProcessCommandBuffer::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 

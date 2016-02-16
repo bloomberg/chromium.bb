@@ -53,7 +53,7 @@ CommandBufferDriver::Client::~Client() {}
 
 CommandBufferDriver::CommandBufferDriver(
     gpu::CommandBufferNamespace command_buffer_namespace,
-    uint64_t command_buffer_id,
+    gpu::CommandBufferId command_buffer_id,
     gfx::AcceleratedWidget widget,
     scoped_refptr<GpuState> gpu_state)
     : command_buffer_namespace_(command_buffer_namespace),
@@ -450,7 +450,7 @@ void CommandBufferDriver::OnFenceSyncRelease(uint64_t release) {
 
 bool CommandBufferDriver::OnWaitFenceSync(
     gpu::CommandBufferNamespace namespace_id,
-    uint64_t command_buffer_id,
+    gpu::CommandBufferId command_buffer_id,
     uint64_t release) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsScheduled());

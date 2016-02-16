@@ -9,10 +9,10 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "content/common/id_type.h"
+#include "gpu/command_buffer/common/id_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace gpu {
 
 namespace {
 
@@ -197,4 +197,4 @@ INSTANTIATE_TEST_CASE_P(,
                                           123,
                                           std::numeric_limits<int>::max()));
 
-}  // namespace content
+}  // namespace gpu

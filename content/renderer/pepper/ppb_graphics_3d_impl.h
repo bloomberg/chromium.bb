@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
@@ -28,13 +29,12 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   static PP_Resource Create(PP_Instance instance,
                             PP_Resource share_context,
                             const int32_t* attrib_list);
-  static PP_Resource CreateRaw(
-      PP_Instance instance,
-      PP_Resource share_context,
-      const int32_t* attrib_list,
-      gpu::Capabilities* capabilities,
-      base::SharedMemoryHandle* shared_state_handle,
-      uint64_t* command_buffer_id);
+  static PP_Resource CreateRaw(PP_Instance instance,
+                               PP_Resource share_context,
+                               const int32_t* attrib_list,
+                               gpu::Capabilities* capabilities,
+                               base::SharedMemoryHandle* shared_state_handle,
+                               gpu::CommandBufferId* command_buffer_id);
 
   // PPB_Graphics3D_API trusted implementation.
   PP_Bool SetGetBuffer(int32_t transfer_buffer_id) override;
@@ -83,7 +83,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
                const int32_t* attrib_list,
                gpu::Capabilities* capabilities,
                base::SharedMemoryHandle* shared_state_handle,
-               uint64_t* command_buffer_id);
+               gpu::CommandBufferId* command_buffer_id);
 
   // Notifications received from the GPU process.
   void OnSwapBuffers();

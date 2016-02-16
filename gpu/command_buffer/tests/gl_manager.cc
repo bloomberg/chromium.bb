@@ -125,7 +125,8 @@ GLManager::GLManager()
       context_lost_allowed_(false),
       pause_commands_(false),
       paused_order_num_(0),
-      command_buffer_id_(g_next_command_buffer_id++),
+      command_buffer_id_(
+          CommandBufferId::FromUnsafeValue(g_next_command_buffer_id++)),
       next_fence_sync_release_(1) {
   SetupBaseContext();
 }
@@ -345,7 +346,7 @@ void GLManager::OnFenceSyncRelease(uint64_t release) {
 }
 
 bool GLManager::OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
-                                uint64_t command_buffer_id,
+                                gpu::CommandBufferId command_buffer_id,
                                 uint64_t release) {
   DCHECK(sync_point_client_);
   scoped_refptr<gpu::SyncPointClientState> release_state =
@@ -505,7 +506,7 @@ gpu::CommandBufferNamespace GLManager::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::IN_PROCESS;
 }
 
-uint64_t GLManager::GetCommandBufferID() const {
+CommandBufferId GLManager::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 

@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/gpu_export.h"
@@ -85,8 +86,9 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   typedef error::Error Error;
   typedef base::Callback<void(uint64_t release)> FenceSyncReleaseCallback;
   typedef base::Callback<bool(gpu::CommandBufferNamespace namespace_id,
-                              uint64_t command_buffer_id,
-                              uint64_t release)> WaitFenceSyncCallback;
+                              gpu::CommandBufferId command_buffer_id,
+                              uint64_t release)>
+      WaitFenceSyncCallback;
 
   // The default stencil mask, which has all bits set.  This really should be a
   // GLuint, but we can't #include gl_bindings.h in this file without causing

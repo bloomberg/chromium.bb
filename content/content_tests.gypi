@@ -667,7 +667,6 @@
       'common/gpu/gpu_channel_unittest.cc',
       'common/host_discardable_shared_memory_manager_unittest.cc',
       'common/host_shared_bitmap_manager_unittest.cc',
-      'common/id_type_unittest.cc',
       'common/indexed_db/indexed_db_key_unittest.cc',
       'common/input/event_with_latency_info_unittest.cc',
       'common/input/gesture_event_stream_validator_unittest.cc',

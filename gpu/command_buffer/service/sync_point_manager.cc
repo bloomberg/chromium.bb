@@ -327,12 +327,12 @@ void SyncPointClient::ReleaseFenceSync(uint64_t release) {
 SyncPointClient::SyncPointClient()
     : sync_point_manager_(nullptr),
       namespace_id_(gpu::CommandBufferNamespace::INVALID),
-      client_id_(0) {}
+      client_id_() {}
 
 SyncPointClient::SyncPointClient(SyncPointManager* sync_point_manager,
                                  scoped_refptr<SyncPointOrderData> order_data,
                                  CommandBufferNamespace namespace_id,
-                                 uint64_t client_id)
+                                 CommandBufferId client_id)
     : sync_point_manager_(sync_point_manager),
       client_state_(new SyncPointClientState(order_data)),
       namespace_id_(namespace_id),
@@ -351,7 +351,7 @@ SyncPointManager::~SyncPointManager() {
 scoped_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClient(
     scoped_refptr<SyncPointOrderData> order_data,
     CommandBufferNamespace namespace_id,
-    uint64_t client_id) {
+    CommandBufferId client_id) {
   DCHECK_GE(namespace_id, 0);
   DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_maps_));
   base::AutoLock auto_lock(client_maps_lock_);
@@ -370,7 +370,8 @@ scoped_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClientWaiter() {
 }
 
 scoped_refptr<SyncPointClientState> SyncPointManager::GetSyncPointClientState(
-    CommandBufferNamespace namespace_id, uint64_t client_id) {
+    CommandBufferNamespace namespace_id,
+    CommandBufferId client_id) {
   if (namespace_id >= 0) {
     DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_maps_));
     base::AutoLock auto_lock(client_maps_lock_);
@@ -388,7 +389,8 @@ uint32_t SyncPointManager::GenerateOrderNumber() {
 }
 
 void SyncPointManager::DestroySyncPointClient(
-    CommandBufferNamespace namespace_id, uint64_t client_id) {
+    CommandBufferNamespace namespace_id,
+    CommandBufferId client_id) {
   DCHECK_GE(namespace_id, 0);
   DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_maps_));
 

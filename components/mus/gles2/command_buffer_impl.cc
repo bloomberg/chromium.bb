@@ -189,7 +189,8 @@ void CommandBufferImpl::InitializeOnGpuThread(
         void(mojom::CommandBufferInitializeResultPtr)>& callback) {
   DCHECK(!driver_);
   driver_.reset(new CommandBufferDriver(
-      gpu::CommandBufferNamespace::MOJO, ++g_next_command_buffer_id,
+      gpu::CommandBufferNamespace::MOJO,
+      gpu::CommandBufferId::FromUnsafeValue(++g_next_command_buffer_id),
       gfx::kNullAcceleratedWidget, gpu_state_));
   driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(this)));
   client_ = mojo::MakeProxy(client.PassInterface());
@@ -199,7 +200,8 @@ void CommandBufferImpl::InitializeOnGpuThread(
   if (result) {
     initialize_result = mojom::CommandBufferInitializeResult::New();
     initialize_result->command_buffer_namespace = driver_->GetNamespaceID();
-    initialize_result->command_buffer_id = driver_->GetCommandBufferID();
+    initialize_result->command_buffer_id =
+        driver_->GetCommandBufferID().GetUnsafeValue();
     initialize_result->capabilities = driver_->GetCapabilities();
   }
   gpu_state_->control_task_runner()->PostTask(

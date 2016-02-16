@@ -20,6 +20,7 @@ source_set("ipc_sources") {
   sources = [
     "gpu_command_buffer_traits.cc",
     "gpu_command_buffer_traits.h",
+    "id_type_traits.h",
   ]
 
   configs += [

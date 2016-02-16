@@ -124,7 +124,7 @@ PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(
     const int32_t* attrib_list,
     gpu::Capabilities* capabilities,
     base::SharedMemoryHandle* shared_state,
-    uint64_t* command_buffer_id) {
+    gpu::CommandBufferId* command_buffer_id) {
   return PPB_Graphics3D_Impl::CreateRaw(instance, share_context, attrib_list,
                                         capabilities, shared_state,
                                         command_buffer_id);

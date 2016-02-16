@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_export.h"
@@ -83,7 +84,7 @@ class GPU_EXPORT GpuControl {
   // extra field to identify unverified sync tokens for the implementation of
   // the CanWaitUnverifiedSyncToken() function.
   virtual CommandBufferNamespace GetNamespaceID() const = 0;
-  virtual uint64_t GetCommandBufferID() const = 0;
+  virtual CommandBufferId GetCommandBufferID() const = 0;
   virtual int32_t GetExtraCommandBufferData() const = 0;
 
   // Fence Syncs use release counters at a context level, these fence syncs

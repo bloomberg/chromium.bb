@@ -159,7 +159,8 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
   static const gpu::SyncToken kSyncTokenForMailboxTextureQuad(
-      gpu::CommandBufferNamespace::GPU_IO, 0, 0x123, 30);
+      gpu::CommandBufferNamespace::GPU_IO, 0,
+      gpu::CommandBufferId::FromUnsafeValue(0x123), 30);
   *sync_token_for_mailbox_tebxture = kSyncTokenForMailboxTextureQuad;
 
   ResourceId resource1 = resource_provider->CreateResource(

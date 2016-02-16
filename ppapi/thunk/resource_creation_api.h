@@ -9,6 +9,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
@@ -144,7 +145,7 @@ class ResourceCreationAPI {
       const int32_t* attrib_list,
       gpu::Capabilities* capabilities,
       base::SharedMemoryHandle* shared_state,
-      uint64_t* command_buffer_id) = 0;
+      gpu::CommandBufferId* command_buffer_id) = 0;
   virtual PP_Resource CreateHostResolver(PP_Instance instance) = 0;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateImageData(PP_Instance instance,

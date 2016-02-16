@@ -60,7 +60,7 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
       const int32_t* attrib_list,
       gpu::Capabilities* capabilities,
       base::SharedMemoryHandle* shared_state,
-      uint64_t* command_buffer_id) override;
+      gpu::CommandBufferId* command_buffer_id) override;
   PP_Resource CreateHostResolver(PP_Instance instance) override;
   PP_Resource CreateHostResolverPrivate(PP_Instance instance) override;
   PP_Resource CreateImageData(PP_Instance instance,

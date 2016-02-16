@@ -16,6 +16,7 @@
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -73,7 +74,7 @@ class CommandBufferClientImpl
   bool IsGpuChannelLost() override;
   void EnsureWorkVisible() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
-  uint64_t GetCommandBufferID() const override;
+  gpu::CommandBufferId GetCommandBufferID() const override;
   int32_t GetExtraCommandBufferData() const override;
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncRelease(uint64_t release) override;
@@ -101,7 +102,7 @@ class CommandBufferClientImpl
   mojo::Binding<mus::mojom::CommandBufferClient> client_binding_;
   mus::mojom::CommandBufferPtr command_buffer_;
 
-  uint64_t command_buffer_id_;
+  gpu::CommandBufferId command_buffer_id_;
   gpu::Capabilities capabilities_;
   State last_state_;
   mojo::ScopedSharedBufferHandle shared_state_handle_;

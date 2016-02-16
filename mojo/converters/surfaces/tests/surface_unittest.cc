@@ -15,6 +15,7 @@
 #include "cc/resources/resource_provider.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/transform/transform_type_converters.h"
@@ -381,7 +382,6 @@ TEST(SurfaceLibTest, RenderPass) {
   EXPECT_EQ(y_flipped, round_trip_texture_quad->y_flipped);
 }
 
-
 TEST(SurfaceLibTest, TransferableResource) {
   uint32_t id = 7u;
   cc::ResourceFormat format = cc::BGRA_8888;
@@ -420,7 +420,8 @@ TEST(SurfaceLibTest, TransferableResource) {
 
 TEST(SurfaceLibTest, ReturnedResource) {
   uint32_t id = 5u;
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 1, 24u);
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+                            gpu::CommandBufferId::FromUnsafeValue(1), 24u);
   sync_token.SetVerifyFlush();
   int count = 2;
   bool lost = false;

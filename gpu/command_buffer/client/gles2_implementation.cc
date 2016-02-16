@@ -147,8 +147,9 @@ GLES2Implementation::GLES2Implementation(
 
   share_group_ =
       (share_group ? share_group
-                   : new ShareGroup(bind_generates_resource,
-                                    gpu_control_->GetCommandBufferID()));
+                   : new ShareGroup(
+                         bind_generates_resource,
+                         gpu_control_->GetCommandBufferID().GetUnsafeValue()));
   DCHECK(share_group_->bind_generates_resource() == bind_generates_resource);
 
   memset(&reserved_ids_, 0, sizeof(reserved_ids_));
@@ -5650,7 +5651,8 @@ void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
 
       helper_->WaitSyncTokenCHROMIUM(
           static_cast<GLint>(sync_token_data.namespace_id()),
-          sync_token_data.command_buffer_id(), sync_token_data.release_count());
+          sync_token_data.command_buffer_id().GetUnsafeValue(),
+          sync_token_data.release_count());
     }
   }
 }

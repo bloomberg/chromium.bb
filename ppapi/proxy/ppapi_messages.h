@@ -17,6 +17,7 @@
 #include "base/sync_socket.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
@@ -1015,7 +1016,7 @@ IPC_SYNC_MESSAGE_ROUTED3_4(PpapiHostMsg_PPBGraphics3D_Create,
                            ppapi::HostResource /* result */,
                            gpu::Capabilities /* capabilities */,
                            ppapi::proxy::SerializedHandle /* shared_state */,
-                           uint64_t /* command_buffer_id */)
+                           gpu::CommandBufferId /* command_buffer_id */)
 IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
                            ppapi::HostResource /* context */,
                            int32_t /* transfer_buffer_id */)

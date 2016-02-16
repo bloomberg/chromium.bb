@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ID_TYPE_H_
-#define CONTENT_COMMON_ID_TYPE_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_ID_TYPE_H_
+#define GPU_COMMAND_BUFFER_COMMON_ID_TYPE_H_
 
 #include <stdint.h>
 #include <cstddef>
@@ -28,13 +28,14 @@
 //   IdType32<T> / IdTypeU32<T>: Signed / unsigned 32-bit IDs
 //   IdType64<T> / IdTypeU64<T>: Signed / unsigned 64-bit IDs
 //   IdType<>: For when you need a different underlying type or
-//             a default/invalid value other than zero.
+//             a default/null value other than zero.
 //
 // IdType32<Foo> behaves just like an int32_t in the following aspects:
 // - it can be used as a key in std::map and/or std::unordered_map;
 // - it can be used as an argument to DCHECK_EQ or streamed to LOG(ERROR);
 // - it has the same memory footprint and runtime overhead as int32_t;
 // - it can be copied by memcpy.
+// - it can be used in IPC messages (for now via gpu/ipc/id_type_traits.h)
 //
 // IdType32<Foo> has the following differences from a bare int32_t:
 // - it forces coercions to go through GetUnsafeValue and FromUnsafeValue;
@@ -42,7 +43,7 @@
 // - it ensures initialization to zero and allows checking against
 //   default-initialized values via is_null method.
 
-namespace content {
+namespace gpu {
 
 template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
 class IdType {
@@ -102,6 +103,6 @@ std::ostream& operator<<(
   return stream << id.GetUnsafeValue();
 }
 
-}  // namespace content
+}  // namespace gpu
 
 #endif  // CONTENT_COMMON_ID_TYPE_H_

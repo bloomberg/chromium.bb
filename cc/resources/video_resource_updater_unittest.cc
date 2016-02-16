@@ -182,8 +182,9 @@ class VideoResourceUpdaterTest : public testing::Test {
     gpu::Mailbox mailbox;
     mailbox.name[0] = 51;
 
-    const gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
-                                    0x123, 7);
+    const gpu::SyncToken sync_token(
+        gpu::CommandBufferNamespace::GPU_IO, 0,
+        gpu::CommandBufferId::FromUnsafeValue(0x123), 7);
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapNativeTexture(
             media::PIXEL_FORMAT_ARGB,
@@ -219,8 +220,9 @@ class VideoResourceUpdaterTest : public testing::Test {
     for (int i = 0; i < kPlanesNum; ++i) {
       mailbox[i].name[0] = 50 + 1;
     }
-    const gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
-                                    0x123, 7);
+    const gpu::SyncToken sync_token(
+        gpu::CommandBufferNamespace::GPU_IO, 0,
+        gpu::CommandBufferId::FromUnsafeValue(0x123), 7);
     const unsigned target = GL_TEXTURE_RECTANGLE_ARB;
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapYUV420NativeTextures(

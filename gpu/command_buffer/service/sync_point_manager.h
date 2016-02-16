@@ -9,11 +9,11 @@
 
 #include <functional>
 #include <queue>
+#include <unordered_map>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -21,6 +21,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 
@@ -248,7 +249,7 @@ class GPU_EXPORT SyncPointClient {
   SyncPointClient(SyncPointManager* sync_point_manager,
                   scoped_refptr<SyncPointOrderData> order_data,
                   CommandBufferNamespace namespace_id,
-                  uint64_t client_id);
+                  CommandBufferId client_id);
 
   // Sync point manager is guaranteed to exist in the lifetime of the client.
   SyncPointManager* sync_point_manager_;
@@ -258,7 +259,7 @@ class GPU_EXPORT SyncPointClient {
 
   // Unique namespace/client id pair for this sync point client.
   const CommandBufferNamespace namespace_id_;
-  const uint64_t client_id_;
+  const CommandBufferId client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointClient);
 };
@@ -274,7 +275,7 @@ class GPU_EXPORT SyncPointManager {
   scoped_ptr<SyncPointClient> CreateSyncPointClient(
       scoped_refptr<SyncPointOrderData> order_data,
       CommandBufferNamespace namespace_id,
-      uint64_t client_id);
+      CommandBufferId client_id);
 
   // Creates a sync point client which cannot process order numbers but can only
   // Wait out of order.
@@ -282,17 +283,20 @@ class GPU_EXPORT SyncPointManager {
 
   // Finds the state of an already created sync point client.
   scoped_refptr<SyncPointClientState> GetSyncPointClientState(
-    CommandBufferNamespace namespace_id, uint64_t client_id);
+      CommandBufferNamespace namespace_id,
+      CommandBufferId client_id);
 
  private:
   friend class SyncPointClient;
   friend class SyncPointOrderData;
 
-  typedef base::hash_map<uint64_t, SyncPointClient*> ClientMap;
+  using ClientMap = std::unordered_map<CommandBufferId,
+                                       SyncPointClient*,
+                                       CommandBufferId::Hasher>;
 
   uint32_t GenerateOrderNumber();
   void DestroySyncPointClient(CommandBufferNamespace namespace_id,
-                              uint64_t client_id);
+                              CommandBufferId client_id);
 
   // Order number is global for all clients.
   base::AtomicSequenceNumber global_order_num_;

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -41,7 +42,7 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
   bool Init(gpu::gles2::GLES2Implementation* share_gles2,
             const gpu::Capabilities& capabilities,
             const SerializedHandle& shared_state,
-            uint64_t command_buffer_id);
+            gpu::CommandBufferId command_buffer_id);
 
   // Graphics3DTrusted API. These are not implemented in the proxy.
   PP_Bool SetGetBuffer(int32_t shm_id) override;
@@ -88,7 +89,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                    HostResource* result,
                    gpu::Capabilities* capabilities,
                    SerializedHandle* handle,
-                   uint64_t* command_buffer_id);
+                   gpu::CommandBufferId* command_buffer_id);
   void OnMsgSetGetBuffer(const HostResource& context, int32_t id);
   void OnMsgWaitForTokenInRange(const HostResource& context,
                                 int32_t start,
