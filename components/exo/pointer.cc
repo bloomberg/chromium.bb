@@ -6,13 +6,51 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "components/exo/buffer.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/surface.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/base/cursor/cursors_aura.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 
 namespace exo {
+namespace {
+
+scoped_ptr<Buffer> CreateDefaultCursor(gfx::Point* hotspot) {
+  ui::Cursor cursor(ui::kCursorPointer);
+  cursor.set_device_scale_factor(1.0f);
+
+  SkBitmap bitmap;
+  if (!ui::GetCursorBitmap(cursor, &bitmap, hotspot)) {
+    LOG(ERROR) << "Failed to load default cursor bitmap";
+    return nullptr;
+  }
+
+  DCHECK_EQ(bitmap.colorType(), kBGRA_8888_SkColorType);
+  scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      aura::Env::GetInstance()
+          ->context_factory()
+          ->GetGpuMemoryBufferManager()
+          ->AllocateGpuMemoryBuffer(gfx::SkISizeToSize(bitmap.dimensions()),
+                                    gfx::BufferFormat::BGRA_8888,
+                                    gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+  bool rv = gpu_memory_buffer->Map();
+  DCHECK(rv);
+  int stride = gpu_memory_buffer->stride(0 /* plane */);
+  DCHECK_GT(stride, 0);
+  bitmap.copyPixelsTo(gpu_memory_buffer->memory(0 /* plane */),
+                      stride * bitmap.height(), stride);
+  gpu_memory_buffer->Unmap();
+
+  return make_scoped_ptr(new Buffer(std::move(gpu_memory_buffer)));
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // Pointer, public:
@@ -140,8 +178,21 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
 
   // Update cursor widget to reflect current focus and pointer location.
   if (focus_) {
-    if (!widget_)
+    if (!widget_) {
       CreatePointerWidget();
+
+      // Create default pointer surface. This will be used until a different
+      // pointer surface is set using SetCursor().
+      default_cursor_ = CreateDefaultCursor(&hotspot_);
+      default_surface_.reset(new Surface);
+      surface_ = default_surface_.get();
+      surface_->SetSurfaceDelegate(this);
+      surface_->AddSurfaceObserver(this);
+      widget_->GetNativeWindow()->AddChild(surface_);
+      surface_->Attach(default_cursor_.get());
+      surface_->Commit();
+      surface_->Show();
+    }
     widget_->SetBounds(gfx::Rect(
         focus_->GetBoundsInScreen().origin() + location_.OffsetFromOrigin(),
         gfx::Size(1, 1)));
