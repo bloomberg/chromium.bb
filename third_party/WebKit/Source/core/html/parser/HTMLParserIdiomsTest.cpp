@@ -13,7 +13,7 @@ namespace {
 TEST(HTMLParserIdiomsTest, ParseHTMLListOfFloatingPointNumbers_null)
 {
     Vector<double> numbers = parseHTMLListOfFloatingPointNumbers(nullAtom);
-    EXPECT_EQ(numbers.size(), 0u);
+    EXPECT_EQ(0u, numbers.size());
 }
 
 } // namespace
