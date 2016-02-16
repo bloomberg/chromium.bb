@@ -20,7 +20,7 @@ extra_cq_trybots = [
   {
     "mastername": "tryserver.chromium.mac",
     "buildernames": ["mac_optional_gpu_tests_rel"]
-  }
+  },
   {
     "mastername": "tryserver.chromium.linux",
     "buildernames": ["linux_optional_gpu_tests_rel"]
