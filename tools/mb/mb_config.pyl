@@ -70,8 +70,8 @@
     'gyp_release_bot_android': ['gyp', 'release_bot', 'android'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
     'gyp_release_trybot_x64': ['gyp', 'release_trybot', 'x64'],
-    'gn_release_libfuzzer_asan': ['gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs'],
-    'gn_release_libfuzzer_msan': ['gn', 'release', 'libfuzzer', 'msan', 'proprietary_codecs'],
+    'gn_release_libfuzzer_asan': ['gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa'],
+    'gn_release_libfuzzer_msan': ['gn', 'release', 'libfuzzer', 'msan', 'proprietary_codecs', 'pdf_xfa'],
     'gn_release_drmemory_drfuzz_x86': ['gn', 'release', 'drmemory', 'drfuzz', 'x86', 'proprietary_codecs'],
     'gn_release_drmemory_drfuzz': ['gn', 'release', 'drmemory', 'drfuzz', 'proprietary_codecs'],
     'gyp_valgrind_release_bot': ['gyp', 'valgrind', 'release_bot'],
@@ -389,6 +389,11 @@
     'ozone': {
       'gn_args': 'use_ozone=true',
       'gyp_defines': 'use_ozone=1',
+    },
+
+    'pdf_xfa': {
+      'gn_args': 'pdf_enable_xfa=true',
+      'gyp_defines': 'pdf_enable_xfa=1',
     },
 
     'proprietary_codecs': {
