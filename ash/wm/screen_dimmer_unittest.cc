@@ -63,7 +63,13 @@ TEST_F(ScreenDimmerTest, DimAndUndim) {
   ASSERT_EQ(nullptr, GetDimWindowLayer());
 }
 
-TEST_F(ScreenDimmerTest, ResizeLayer) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Times out on Windows. http://crbug.com/584038
+#define MAYBE_ResizeLayer DISABLED_ResizeLayer
+#else
+#define MAYBE_ResizeLayer ResizeLayer
+#endif
+TEST_F(ScreenDimmerTest, MAYBE_ResizeLayer) {
   // The dimming layer should be initially sized to cover the root window.
   dimmer_->SetDimming(true);
   ui::Layer* dimming_layer = GetDimWindowLayer();

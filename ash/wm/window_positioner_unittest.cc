@@ -68,7 +68,15 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
 
 // Tests that second window inherits first window's maximized state as well as
 // its restore bounds.
-TEST_F(WindowPositionerTest, SecondMaximizedWindowHasProperRestoreSize) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_SecondMaximizedWindowHasProperRestoreSize \
+  DISABLED_SecondMaximizedWindowHasProperRestoreSize
+#else
+#define MAYBE_SecondMaximizedWindowHasProperRestoreSize \
+  SecondMaximizedWindowHasProperRestoreSize
+#endif
+TEST_F(WindowPositionerTest, MAYBE_SecondMaximizedWindowHasProperRestoreSize) {
 #if defined(OS_WIN)
   ash::WindowPositioner::SetMaximizeFirstWindow(true);
 #endif

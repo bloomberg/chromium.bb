@@ -50,7 +50,13 @@ void TestLauncherAlignment(aura::Window* root,
             screen->GetDisplayNearestWindow(root).work_area().ToString());
 }
 
-TEST_F(ShelfWidgetTest, TestAlignment) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_TestAlignment DISABLED_TestAlignment
+#else
+#define MAYBE_TestAlignment TestAlignment
+#endif
+TEST_F(ShelfWidgetTest, MAYBE_TestAlignment) {
   Shelf* shelf = Shelf::ForPrimaryDisplay();
   UpdateDisplay("400x400");
   ASSERT_TRUE(shelf);

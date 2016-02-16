@@ -383,7 +383,13 @@ TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
 
-TEST_F(DesktopBackgroundControllerTest, GetMaxDisplaySize) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_GetMaxDisplaySize DISABLED_GetMaxDisplaySize
+#else
+#define MAYBE_GetMaxDisplaySize GetMaxDisplaySize
+#endif
+TEST_F(DesktopBackgroundControllerTest, MAYBE_GetMaxDisplaySize) {
   // Device scale factor shouldn't affect the native size.
   UpdateDisplay("1000x300*2");
   EXPECT_EQ(
@@ -426,7 +432,7 @@ TEST_F(DesktopBackgroundControllerTest, GetMaxDisplaySize) {
 
 // Test that the wallpaper is always fitted to the native display resolution
 // when the layout is WALLPAPER_LAYOUT_CENTER to prevent blurry images.
-TEST_F(DesktopBackgroundControllerTest, DontSacleWallpaperWithCenterLayout) {
+TEST_F(DesktopBackgroundControllerTest, DontScaleWallpaperWithCenterLayout) {
   // We cannot short-circuit animations for this test.
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);

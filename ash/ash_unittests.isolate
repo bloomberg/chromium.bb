@@ -2,6 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'variables': {
+    'files': [
+      '../testing/test_env.py',
+      '<(PRODUCT_DIR)/ash_test_resources_100_percent.pak',
+      '<(PRODUCT_DIR)/ash_test_resources_200_percent.pak',
+      '<(PRODUCT_DIR)/ash_test_strings.pak',
+      '<(PRODUCT_DIR)/keyboard_resources.pak',
+    ],
+  },
   'conditions': [
     ['use_x11==0', {
       'variables': {
@@ -29,19 +38,6 @@
     ['chromeos==1', {
       'variables': {
         'files': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/ash_test_resources_100_percent.pak',
-          '<(PRODUCT_DIR)/ash_test_resources_200_percent.pak',
-          '<(PRODUCT_DIR)/ash_test_strings.pak',
-          # TODO(msw): Investigate under-specified DEPS (and/or unused pak?):
-          '<(PRODUCT_DIR)/keyboard_resources.pak',
-        ],
-      },
-    }],
-
-    ['chromeos==1', {
-      'variables': {
-        'files': [
           'display/test_data/'
         ],
       },
@@ -50,6 +46,13 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/libosmesa.so',
+        ],
+      },
+    }],
+    ['OS=="win"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/osmesa.dll',
         ],
       },
     }],

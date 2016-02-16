@@ -100,7 +100,7 @@
   },
   "ash_unittests": {
     "label": "//ash:ash_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "audio_unittests": {
     "label": "//media:audio_unittests",

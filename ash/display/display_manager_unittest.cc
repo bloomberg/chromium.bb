@@ -696,7 +696,6 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
 #define MAYBE_TestNativeDisplaysChangedNoInternal \
         TestNativeDisplaysChangedNoInternal
 #endif
-
 TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
@@ -751,7 +750,13 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
   EXPECT_EQ("0,0 100x100", GetDisplayForId(10).bounds().ToString());
 }
 
-TEST_F(DisplayManagerTest, DontRememberBestResolution) {
+#if defined(OS_WIN)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_DontRememberBestResolution DISABLED_DontRememberBestResolution
+#else
+#define MAYBE_DontRememberBestResolution DontRememberBestResolution
+#endif
+TEST_F(DisplayManagerTest, MAYBE_DontRememberBestResolution) {
   int display_id = 1000;
   DisplayInfo native_display_info =
       CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
@@ -807,7 +812,13 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
       display_manager()->GetActiveModeForDisplayId(display_id)));
 }
 
-TEST_F(DisplayManagerTest, ResolutionFallback) {
+#if defined(OS_WIN)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_ResolutionFallback DISABLED_ResolutionFallback
+#else
+#define MAYBE_ResolutionFallback ResolutionFallback
+#endif
+TEST_F(DisplayManagerTest, MAYBE_ResolutionFallback) {
   int display_id = 1000;
   DisplayInfo native_display_info =
       CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
@@ -953,7 +964,13 @@ TEST_F(DisplayManagerTest, Rotate) {
   EXPECT_EQ(gfx::Display::ROTATE_180, post_rotation_info.GetActiveRotation());
 }
 
-TEST_F(DisplayManagerTest, UIScale) {
+#if defined(OS_WIN)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_UIScale DISABLED_UIScale
+#else
+#define MAYBE_UIScale UIScale
+#endif
+TEST_F(DisplayManagerTest, MAYBE_UIScale) {
   test::ScopedDisable125DSFForUIScaling disable;
 
   UpdateDisplay("1280x800");
@@ -1106,7 +1123,13 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
       display_manager()->GetActiveModeForDisplayId(display_id)));
 }
 
-TEST_F(DisplayManagerTest, Use125DSFForUIScaling) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_Use125DSFForUIScaling DISABLED_Use125DSFForUIScaling
+#else
+#define MAYBE_Use125DSFForUIScaling Use125DSFForUIScaling
+#endif
+TEST_F(DisplayManagerTest, MAYBE_Use125DSFForUIScaling) {
   int64_t display_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
   test::ScopedSetInternalDisplayId set_internal(display_id);
 
@@ -1176,11 +1199,11 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
 #if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
 // Ash. http://crbug.com/247916.
-#define MAYBE_UpdateMouseCursorAfterRotateZoom DISABLED_UpdateMouseCursorAfterRotateZoom
+#define MAYBE_UpdateMouseCursorAfterRotateZoom \
+  DISABLED_UpdateMouseCursorAfterRotateZoom
 #else
 #define MAYBE_UpdateMouseCursorAfterRotateZoom UpdateMouseCursorAfterRotateZoom
 #endif
-
 TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
   // Make sure just rotating will not change native location.
   UpdateDisplay("300x200,200x150");

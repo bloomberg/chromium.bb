@@ -607,7 +607,13 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FocusDuringUnminimize) {
 }
 
 // Tests maximized window size during root window resize.
-TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeRootWindowResize) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_MaximizeRootWindowResize DISABLED_MaximizeRootWindowResize
+#else
+#define MAYBE_MaximizeRootWindowResize MaximizeRootWindowResize
+#endif
+TEST_F(WorkspaceLayoutManagerSoloTest, MAYBE_MaximizeRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);

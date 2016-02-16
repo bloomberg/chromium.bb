@@ -23,6 +23,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "ash_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "aura_unittests"
       },
       {
@@ -422,6 +428,8 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_unittests",
+      "ash_shell_with_content",
+      "ash_unittests",
       "aura_unittests",
       "battor_agent",
       "cacheinvalidation_unittests",
@@ -537,6 +545,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "app_shell_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_unittests"
       },
       {
         "swarming": {
@@ -955,6 +969,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "ash_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "aura_unittests"
       },
       {
@@ -1312,6 +1332,8 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_unittests",
+      "ash_shell_with_content",
+      "ash_unittests",
       "aura_unittests",
       "battor_agent",
       "cacheinvalidation_unittests",
@@ -1358,6 +1380,9 @@
       "wm_unittests"
     ],
     "gtest_tests": [
+      {
+        "test": "ash_unittests"
+      },
       {
         "test": "battor_agent_unittests"
       },
@@ -1422,6 +1447,8 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_unittests",
+      "ash_shell_with_content",
+      "ash_unittests",
       "aura_unittests",
       "battor_agent",
       "cacheinvalidation_unittests",

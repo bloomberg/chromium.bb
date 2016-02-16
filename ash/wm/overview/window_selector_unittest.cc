@@ -308,7 +308,13 @@ class WindowSelectorTest : public test::AshTestBase {
 
 // Tests that the text field in the overview menu is repositioned and resized
 // after a screen rotation.
-TEST_F(WindowSelectorTest, OverviewScreenRotation) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_OverviewScreenRotation DISABLED_OverviewScreenRotation
+#else
+#define MAYBE_OverviewScreenRotation OverviewScreenRotation
+#endif
+TEST_F(WindowSelectorTest, MAYBE_OverviewScreenRotation) {
   gfx::Rect bounds(0, 0, 400, 300);
   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
   scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));

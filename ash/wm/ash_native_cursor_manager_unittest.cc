@@ -60,7 +60,13 @@ class MouseEventLocationDelegate : public aura::test::TestWindowDelegate {
 
 typedef test::AshTestBase AshNativeCursorManagerTest;
 
-TEST_F(AshNativeCursorManagerTest, LockCursor) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Times out on Windows. http://crbug.com/584038
+#define MAYBE_LockCursor DISABLED_LockCursor
+#else
+#define MAYBE_LockCursor LockCursor
+#endif
+TEST_F(AshNativeCursorManagerTest, MAYBE_LockCursor) {
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
@@ -135,7 +141,14 @@ TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
 }
 
-TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Times out on Windows. http://crbug.com/584038
+#define MAYBE_SetDeviceScaleFactorAndRotation \
+  DISABLED_SetDeviceScaleFactorAndRotation
+#else
+#define MAYBE_SetDeviceScaleFactorAndRotation SetDeviceScaleFactorAndRotation
+#endif
+TEST_F(AshNativeCursorManagerTest, MAYBE_SetDeviceScaleFactorAndRotation) {
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   UpdateDisplay("800x100*2");
@@ -158,7 +171,13 @@ TEST_F(AshNativeCursorManagerTest, FractionalScale) {
 }
 #endif
 
-TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Times out on Windows. http://crbug.com/584038
+#define MAYBE_UIScaleShouldNotChangeCursor DISABLED_UIScaleShouldNotChangeCursor
+#else
+#define MAYBE_UIScaleShouldNotChangeCursor UIScaleShouldNotChangeCursor
+#endif
+TEST_F(AshNativeCursorManagerTest, MAYBE_UIScaleShouldNotChangeCursor) {
   int64_t display_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
   gfx::Display::SetInternalDisplayId(display_id);
 

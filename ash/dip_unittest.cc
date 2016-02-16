@@ -32,7 +32,13 @@ namespace ash {
 typedef ash::test::AshTestBase DIPTest;
 
 // Test if the WM sets correct work area under different density.
-TEST_F(DIPTest, WorkArea) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_WorkArea DISABLED_WorkArea
+#else
+#define MAYBE_WorkArea WorkArea
+#endif
+TEST_F(DIPTest, MAYBE_WorkArea) {
   UpdateDisplay("1000x900*1.0f");
 
   aura::Window* root = Shell::GetPrimaryRootWindow();
