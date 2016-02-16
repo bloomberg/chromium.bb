@@ -607,7 +607,7 @@ PASS Element interface: attribute localName
 PASS Element interface: attribute tagName 
 PASS Element interface: attribute id 
 PASS Element interface: attribute className 
-FAIL Element interface: attribute classList assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+PASS Element interface: attribute classList 
 PASS Element interface: operation hasAttributes() 
 PASS Element interface: attribute attributes 
 PASS Element interface: operation getAttribute(DOMString) 

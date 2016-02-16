@@ -28,7 +28,7 @@ interface HTMLLinkElement : HTMLElement {
     [Reflect, URL] attribute DOMString href;
     [Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString? crossOrigin;
     [Reflect] attribute DOMString rel;
-    [RuntimeEnabled=LinkPreload] readonly attribute DOMTokenList relList;
+    [RuntimeEnabled=LinkPreload, PutForwards=value] readonly attribute DOMTokenList relList;
     [Reflect] attribute DOMString media;
     [Reflect] attribute DOMString hreflang;
     [Reflect] attribute DOMString type;
