@@ -7,13 +7,13 @@
 }
 
 #arrow-drop-icon::shadow #icon {
-  height: 20px;
-  width: 20px;
+  height: var(--navigation-icon-size);
+  width: var(--navigation-icon-size);
 }
 
 #back-button::shadow #icon {
-  height: 20px;
-  width: 20px;
+  height: var(--navigation-icon-size);
+  width: var(--navigation-icon-size);
 }
 
 #back-button-container {
@@ -52,7 +52,7 @@ paper-icon-button {
 
 paper-toolbar {
   -webkit-padding-start: 8px;
-  height: 52px;
+  height: var(--container-header-height);
 }
 
 paper-toolbar::shadow .toolbar-tools {
@@ -60,18 +60,18 @@ paper-toolbar::shadow .toolbar-tools {
 }
 
 paper-toolbar.cast-mode-list {
-  background-color: rgb(0, 150, 136);
+  background-color: var(--paper-teal-500);
 }
 
 paper-toolbar.filter {
-  background-color: rgb(103, 58, 183);
+  background-color: var(--paper-deep-purple-500);
 }
 
 paper-toolbar.issue {
-  background-color: rgb(219, 68, 55);
+  background-color: var(--google-red-500);
 }
 
 paper-toolbar.route-details,
 paper-toolbar.sink-list {
-  background-color: rgb(33, 150, 243);
+  background-color: var(--paper-blue-500);
 }

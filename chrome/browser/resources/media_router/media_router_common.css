@@ -2,8 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:root {
+  --container-header-height: 52px;
+  --dialog-padding-end: 26px;
+  --dialog-padding-start: 16px;
+  --navigation-icon-size: 20px;
+  --non-navigation-icon-size: 16px;
+  --subtext-color: rgb(150, 150, 150);
+}
+
 .button {
-  color: rgb(33, 150, 243);
+  color: var(--paper-blue-500);
   cursor: pointer;
   text-align: center;
 }

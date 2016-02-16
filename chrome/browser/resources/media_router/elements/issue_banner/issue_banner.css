@@ -22,14 +22,14 @@
 }
 
 #blocking-icon {
-  color: rgb(219, 68, 55);
+  color: var(--google-red-500);
   height: 75px;
   padding-top: 24px;
   width: 75px;
 }
 
 .non-blocking {
-  background-color: rgb(66, 66, 66);
+  background-color: var(--paper-grey-800);
   overflow: hidden;
   padding: 16px;
 }

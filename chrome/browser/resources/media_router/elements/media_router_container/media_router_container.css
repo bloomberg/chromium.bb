@@ -2,20 +2,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:root {
-  --container-header-height: 52px;
-}
-
 .active-sink {
-  color: rgb(33, 150, 243);
+  color: var(--paper-blue-500);
 }
 
 .cast-mode-icon,
 .sink-icon {
   -webkit-padding-end: 12px;
-  -webkit-padding-start: 16px;
-  height: 16px;
-  width: 16px;
+  -webkit-padding-start: var(--dialog-padding-start);
+  height: var(--non-navigation-icon-size);
+  width: var(--non-navigation-icon-size);
 }
 
 #cast-mode-list {
@@ -27,7 +23,6 @@
 #container-header {
   position: fixed;
   width: 100%;
-  z-index: 1;
 }
 
 #device-missing {
@@ -68,14 +63,13 @@
 }
 
 #first-run-cloud-checkbox::shadow #checkboxLabel {
-  -webkit-padding-start: 16px;
+  -webkit-padding-start: var(-dialog-padding-start);
 }
 
 #first-run-flow {
-  background-color: rgb(33, 150, 243);
+  background-color: var(--paper-blue-500);
   padding: 24px 16px 4px 16px;
   position: fixed;
-  z-index: 1;
 }
 
 #first-run-flow a {
@@ -109,7 +103,7 @@
 
 paper-checkbox {
   --paper-checkbox-checked-color: white;
-  --paper-checkbox-checkmark-color: rgb(33, 150, 243);
+  --paper-checkbox-checkmark-color: var(--paper-blue-500);
   --paper-checkbox-unchecked-color: white;
 }
 
@@ -141,8 +135,8 @@ paper-menu {
 }
 
 #share-screen-text {
-  -webkit-padding-start: 16px;
-  color: rgb(150, 150, 150);
+  -webkit-padding-start: var(--dialog-padding-start);
+  color: var(--subtext-color);
   padding-bottom: 4px;
   padding-top: 12px;
 }
@@ -155,16 +149,16 @@ paper-menu {
 
 .sink-domain {
   -webkit-padding-start: 6px;
-  color: rgb(150, 150, 150);
+  color: var(--subtext-color);
 }
 
 .sink-subtext {
-  color: rgb(150, 150, 150);
+  color: var(--subtext-color);
   padding-top: 8px;
 }
 
 .sink-text {
-  -webkit-padding-end: 26px;
+  -webkit-padding-end: var(--dialog-padding-end);
   flex-direction: row;
   line-height: normal;
   overflow: hidden;
