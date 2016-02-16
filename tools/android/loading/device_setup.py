@@ -177,6 +177,7 @@ def WprHost(device, wpr_archive_path, record=False):
     device_cert_util.remove_cert()
     shutil.rmtree(temp_certificate_dir)
 
+
 @contextlib.contextmanager
 def DeviceConnection(device, additional_flags=None):
   """Context for starting recording on a device.
@@ -210,7 +211,8 @@ def DeviceConnection(device, additional_flags=None):
           data='about:blank')
       device.StartActivity(start_intent, blocking=True)
     else:
-      # Run on the host.
+      # Run on the host. We don't care about startup time so will skip the about
+      # page.
       assert os.path.exists(OPTIONS.local_binary)
 
       local_profile_dir = OPTIONS.local_profile_dir
@@ -223,13 +225,15 @@ def DeviceConnection(device, additional_flags=None):
     if device:
       time.sleep(2)
     else:
-      # TODO(blundell): Figure out why a lower sleep time causes an assertion
-      # in request_track.py to fire.
+      # TODO(mattcary): This seems to be related to chrome startup. There should
+      # be a way to ping chrome --- maybe keep trying to connect to the devtools
+      # port?
       time.sleep(10)
-    # If no device, we don't care about chrome startup so skip the about page.
-    with ForwardPort(device, 'tcp:%d' % OPTIONS.devtools_port,
-                     'localabstract:chrome_devtools_remote'):
-      yield devtools_monitor.DevToolsConnection(
-          OPTIONS.devtools_hostname, OPTIONS.devtools_port)
-    if host_process:
-      host_process.kill()
+    try:
+      with ForwardPort(device, 'tcp:%d' % OPTIONS.devtools_port,
+                       'localabstract:chrome_devtools_remote'):
+        yield devtools_monitor.DevToolsConnection(
+            OPTIONS.devtools_hostname, OPTIONS.devtools_port)
+    finally:
+      if host_process:
+        host_process.kill()
