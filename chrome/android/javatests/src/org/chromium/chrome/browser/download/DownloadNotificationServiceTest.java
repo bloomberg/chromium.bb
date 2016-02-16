@@ -73,20 +73,23 @@ public class DownloadNotificationServiceTest extends
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
         Set<String> notifications = new HashSet<String>();
-        notifications.add(new DownloadManagerService.PendingNotification(
-                1, "test1", true).getNotificationString());
-        notifications.add(new DownloadManagerService.PendingNotification(
-                2, "test2", true).getNotificationString());
+        notifications.add(new DownloadNotificationService.PendingNotification(1, "test1", true)
+                .getNotificationString());
+        notifications.add(new DownloadNotificationService.PendingNotification(2, "test2", true)
+                .getNotificationString());
         SharedPreferences sharedPrefs =
                 PreferenceManager.getDefaultSharedPreferences(mockContext);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putStringSet(DownloadManagerService.PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+        editor.putStringSet(
+                DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
         editor.apply();
         startNotificationService();
         assertTrue(getService().isPaused());
         assertEquals(2, getService().getNotificationIds().size());
         assertTrue(getService().getNotificationIds().contains(1));
         assertTrue(getService().getNotificationIds().contains(2));
+        assertFalse(
+                sharedPrefs.contains(DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS));
     }
 
     /**
@@ -96,6 +99,8 @@ public class DownloadNotificationServiceTest extends
     @Feature({"Download"})
     public void testAddingAndCancelingNotifications() {
         setupService();
+        Context mockContext = new AdvancedMockContext(getSystemContext());
+        getService().setContext(mockContext);
         startNotificationService();
         DownloadNotificationService service = bindNotificationService();
         service.notifyDownloadProgress(1, "test", -1, 1L, 1L, true);
@@ -112,6 +117,24 @@ public class DownloadNotificationServiceTest extends
 
         service.cancelNotification(1);
         assertEquals(2, getService().getNotificationIds().size());
-        assertFalse(!getService().getNotificationIds().contains(1));
+        assertFalse(getService().getNotificationIds().contains(1));
+    }
+
+    @SmallTest
+    @Feature({"Download"})
+    public void testParseDownloadNotifications() {
+        String notification = "1,0,test.pdf";
+        DownloadNotificationService.PendingNotification pendingNotification =
+                DownloadNotificationService.PendingNotification.parseFromString(notification);
+        assertEquals(1, pendingNotification.downloadId);
+        assertEquals("test.pdf", pendingNotification.fileName);
+        assertFalse(pendingNotification.isResumable);
+
+        notification = "2,1,test,2.pdf";
+        pendingNotification =
+                DownloadNotificationService.PendingNotification.parseFromString(notification);
+        assertEquals(2, pendingNotification.downloadId);
+        assertEquals("test,2.pdf", pendingNotification.fileName);
+        assertTrue(pendingNotification.isResumable);
     }
 }

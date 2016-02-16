@@ -9,6 +9,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.DownloadInfo;
 
@@ -51,8 +52,8 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 mService = new MockDownloadNotificationService();
-                mService.setContext(
-                        getInstrumentation().getTargetContext().getApplicationContext());
+                mService.setContext(new AdvancedMockContext(
+                        getInstrumentation().getTargetContext().getApplicationContext()));
                 mService.onCreate();
             }
         });

@@ -35,7 +35,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         Pair<DownloadInfo, Long> download = (Pair<DownloadInfo, Long>) actionData;
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);
         manager.openDownloadedContent(download.second);
-        manager.removeProgressNotificationForDownload(download.first.getDownloadId());
+        manager.cancelNotification(download.first.getDownloadId());
     }
 
     @Override

@@ -346,20 +346,16 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         DownloadInfo successful = Builder.fromDownloadInfo(getDownloadInfo())
                 .setIsSuccessful(true).build();
 
-        // First the progress notification should be removed and then
-        // a new successful notification should be added.
-        notifier.expect(MethodID.CANCEL_DOWNLOAD_ID, successful.getDownloadId())
-                .andThen(MethodID.DOWNLOAD_SUCCESSFUL, successful);
+        notifier.expect(MethodID.DOWNLOAD_SUCCESSFUL, successful);
 
         dService.onDownloadCompleted(successful);
         notifier.waitTillExpectedCallsComplete();
         snackbarController.waitForSnackbarControllerToFinish(true);
 
-        // Now check that a cancel works.
+        // Now check that a download failure works.
         DownloadInfo failure = Builder.fromDownloadInfo(getDownloadInfo())
                 .setIsSuccessful(false).build();
-        notifier.expect(MethodID.CANCEL_DOWNLOAD_ID, failure.getDownloadId())
-                .andThen(MethodID.DOWNLOAD_FAILED, failure);
+        notifier.expect(MethodID.DOWNLOAD_FAILED, failure);
         dService.onDownloadCompleted(failure);
         notifier.waitTillExpectedCallsComplete();
         snackbarController.waitForSnackbarControllerToFinish(false);
@@ -369,7 +365,6 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         successful = Builder.fromDownloadInfo(progress)
                 .setIsSuccessful(true).build();
         notifier.expect(MethodID.DOWNLOAD_PROGRESS, progress)
-                .andThen(MethodID.CANCEL_DOWNLOAD_ID, progress.getDownloadId())
                 .andThen(MethodID.DOWNLOAD_SUCCESSFUL, successful);
         dService.onDownloadUpdated(progress);
         Thread.sleep(DELAY_BETWEEN_CALLS);
@@ -421,13 +416,6 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
         notifier.waitTillExpectedCallsComplete();
         assertTrue("All downloads should be updated.", matchSet.mMatches.isEmpty());
-
-        // Check if notifications are removed when clearPendingNotifications is called.
-        dService.clearPendingDownloadNotifications();
-        Set<String> downloads = dService.getStoredDownloadInfo(
-                PreferenceManager.getDefaultSharedPreferences(getTestContext()),
-                DownloadManagerService.PENDING_DOWNLOAD_NOTIFICATIONS);
-        assertTrue("All downloads should be removed.", downloads.isEmpty());
     }
 
     /**
@@ -449,7 +437,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         final MockOMADownloadHandler handler = new MockOMADownloadHandler(getTestContext());
         dService.setOMADownloadHandler(handler);
         dService.addOMADownloadToSharedPrefs(String.valueOf(downloadId) + "," + INSTALL_NOTIFY_URI);
-        dService.clearPendingDownloadNotifications();
+        dService.clearPendingOMADownloads();
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -572,23 +560,5 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
                         .setMimeType("application/pdf")
                         .setHasUserGesture(true)
                         .build()));
-    }
-
-    @SmallTest
-    @Feature({"Download"})
-    public void testParseDownloadNotifications() {
-        String notification = "1,0,test.pdf";
-        DownloadManagerService.PendingNotification pendingNotification =
-                DownloadManagerService.PendingNotification.parseFromString(notification);
-        assertEquals(1, pendingNotification.downloadId);
-        assertEquals("test.pdf", pendingNotification.fileName);
-        assertFalse(pendingNotification.isResumable);
-
-        notification = "2,1,test,2.pdf";
-        pendingNotification =
-                DownloadManagerService.PendingNotification.parseFromString(notification);
-        assertEquals(2, pendingNotification.downloadId);
-        assertEquals("test,2.pdf", pendingNotification.fileName);
-        assertTrue(pendingNotification.isResumable);
     }
 }
