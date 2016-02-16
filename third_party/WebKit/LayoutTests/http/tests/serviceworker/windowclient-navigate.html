@@ -4,74 +4,137 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/get-host-info.js"></script>
 <script src="resources/test-helpers.js"></script>
+<body>
 <script>
 
-var scope = 'resources/blank.html?windowclient-navigate';
-var script_url = 'resources/windowclient-navigate-worker.js';
-var client_frame;
-var worker;
-var test;
+const SCOPE = 'resources/blank.html';
+const SCRIPT_URL = 'resources/windowclient-navigate-worker.js';
+const CROSS_ORIGIN_URL = get_host_info()['HTTP_REMOTE_ORIGIN'] +
+    '/serviceworker/resources/blank.html';
 
-var current_index = 0;
-var test_list = [
-  { url : 'blank.html' },
-  { url : '' },
-  { url : 'blank.html', init : 'uncontrolled/blank.html' },
-  { url : get_host_info()['HTTP_REMOTE_ORIGIN'] +
-      '/serviceworker/resources/blank.html' },
-  { url : 'http://[example].com' },
-  { url : 'view-source://example.com' },
-  { url : 'file:///' },
-  { url : 'about:blank' },
-  { url : 'about:crash' }
-];
+navigate_test({
+    description: 'normal test',
+    dest_url: 'blank.html?navigate',
+    expected: normalizeURL(SCOPE) + '?navigate',
+  });
 
-var expected = [
-  location.origin + '/serviceworker/resources/blank.html',
-  location.origin + '/serviceworker/' + script_url,
-  'TypeError',
-  null,
-  'TypeError',
-  'TypeError',
-  'TypeError',
-  'TypeError',
-  'TypeError'
-];
+navigate_test({
+    description: 'blank url test',
+    dest_url: '',
+    expected: normalizeURL(SCRIPT_URL)
+  });
 
-var actual = [];
+navigate_test({
+    description: 'in scope but not controlled test on installing worker',
+    dest_url: 'blank.html?navigate',
+    expected: 'TypeError',
+    wait_state: 'installing',
+  });
 
-async_test(function(t) {
-  test = t;
-  return service_worker_unregister_and_register(test, script_url, scope)
-    .then(function(registration) {
-        worker = registration.installing;
-        return wait_for_state(test, worker, 'activated');
-      })
-    .then(function() {
-        var channel = new MessageChannel();
-        channel.port1.onmessage = test.step_func(function(e) {
-            on_message(e, channel.port1);
-          });
-        worker.postMessage({ port : channel.port2 }, [channel.port2]);
-      })
-    .catch(unreached_rejection(t));
-}, 'WindowClient.navigate() test');
+navigate_test({
+    description: 'in scope but not controlled test on active worker',
+    dest_url: 'blank.html?navigate',
+    expected: 'TypeError',
+    should_be_reload: false,
+  });
 
-function on_message(e, port) {
-  var message = e.data;
+navigate_test({
+    description: 'out scope test',
+    src_url: 'out_scope/blank.html',
+    dest_url: 'blank.html?navigate',
+    expected: 'TypeError',
+  });
 
-  message == 'ready' || actual.push(message);
-  if (expected.length == actual.length) {
-    assert_array_equals(actual, expected);
-    service_worker_unregister_and_done(test, scope);
-  } else {
-    client_frame && client_frame.remove();
-    var init_url = test_list[current_index].init || scope;
-    with_iframe(init_url).then(function(f) {
-        client_frame = f;
-        port.postMessage(test_list[current_index++].url);
-      });
-  }
+navigate_test({
+    description: 'cross orgin url test',
+    dest_url: CROSS_ORIGIN_URL,
+    expected: null
+  });
+
+navigate_test({
+    description: 'invalid url(http://[example.com]) test',
+    dest_url: 'http://[example].com',
+    expected: 'TypeError'
+  });
+
+navigate_test({
+    description: 'invalid url(view-source://example.com) test',
+    dest_url: 'view-source://example.com',
+    expected: 'TypeError'
+  });
+
+navigate_test({
+    description: 'invalid url(file:///) test',
+    dest_url: 'file:///',
+    expected: 'TypeError'
+  });
+
+navigate_test({
+    description: 'invalid url(about:blank) test',
+    dest_url: 'about:blank',
+    expected: 'TypeError'
+  });
+
+function navigate_test(override_parameters) {
+  // default parameters
+  var parameters = {
+    description: null,
+    src_url: SCOPE,
+    dest_url: null,
+    expected: null,
+    wait_state: 'activated',
+    scope: SCOPE,
+    should_be_reload: true
+  };
+
+  for (key in override_parameters)
+    parameters[key] = override_parameters[key];
+
+  promise_test(function(test) {
+    var service_worker;
+    var client_frame;
+    var script_url = SCRIPT_URL;
+
+    // For in-scope-but-not-controlled test on installing worker,
+    // if the wait_state is "installing", then append the query to script_url.
+    if (parameters.wait_state == 'installing')
+      script_url += '?' + parameters.wait_state;
+
+    return with_iframe(parameters.src_url)
+      .then(function(frame) {
+          client_frame = frame;
+          return service_worker_unregister_and_register(
+              test, script_url, parameters.scope);
+        })
+      .then(function(registration) {
+          service_worker = registration.installing;
+          return wait_for_state(test, service_worker, parameters.wait_state);
+        })
+      .then(function(state) {
+          if (parameters.should_be_reload) {
+            client_frame.remove();
+            return with_iframe(parameters.src_url);
+          }
+          return client_frame;
+        })
+      .then(function(frame) {
+          client_frame = frame;
+          return new Promise(function(resolve) {
+              var channel = new MessageChannel();
+              channel.port1.onmessage = test.step_func(resolve);
+              service_worker.postMessage({
+                  port: channel.port2,
+                  url: parameters.dest_url
+                }, [channel.port2]);
+            });
+        })
+      .then(function(response) {
+          client_frame && client_frame.remove()
+          assert_equals(response.data, parameters.expected);
+          return service_worker_unregister_and_done(test, parameters.scope);
+        })
+  }, parameters.description);
 }
 
 </script>
+</body>
