@@ -81,12 +81,9 @@ bool NetworkLocationProvider::PositionCache::MakeKey(
   const size_t kCharsPerMacAddress = 6 * 3 + 1;  // e.g. "11:22:33:44:55:66|"
   key->reserve(wifi_data.access_point_data.size() * kCharsPerMacAddress);
   const base::string16 separator(base::ASCIIToUTF16("|"));
-  for (WifiData::AccessPointDataSet::const_iterator iter =
-       wifi_data.access_point_data.begin();
-       iter != wifi_data.access_point_data.end();
-       iter++) {
+  for (const auto& access_point_data : wifi_data.access_point_data) {
     *key += separator;
-    *key += iter->mac_address;
+    *key += access_point_data.mac_address;
     *key += separator;
   }
   // If the key is the empty string, return false, as we don't want to cache a

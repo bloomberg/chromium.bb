@@ -151,15 +151,13 @@ bool WifiDataProviderChromeOs::GetAccessPointData(
       GetWifiAccessPoints(&access_points, &age_ms)) {
     return false;
   }
-  for (chromeos::WifiAccessPointVector::const_iterator i
-           = access_points.begin();
-       i != access_points.end(); ++i) {
+  for (const auto& access_point : access_points) {
     AccessPointData ap_data;
-    ap_data.mac_address = base::ASCIIToUTF16(i->mac_address);
-    ap_data.radio_signal_strength = i->signal_strength;
-    ap_data.channel = i->channel;
-    ap_data.signal_to_noise = i->signal_to_noise;
-    ap_data.ssid = base::UTF8ToUTF16(i->ssid);
+    ap_data.mac_address = base::ASCIIToUTF16(access_point.mac_address);
+    ap_data.radio_signal_strength = access_point.signal_strength;
+    ap_data.channel = access_point.channel;
+    ap_data.signal_to_noise = access_point.signal_to_noise;
+    ap_data.ssid = base::UTF8ToUTF16(access_point.ssid);
     result->insert(ap_data);
   }
   // If the age is significantly longer than our long polling time, assume the
