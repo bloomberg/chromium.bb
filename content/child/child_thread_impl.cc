@@ -367,14 +367,7 @@ void ChildThreadImpl::Init(const Options& options) {
   IPC::Logging::GetInstance();
 #endif
 
-#if USE_ATTACHMENT_BROKER
-  // The only reason a global would already exist is if the thread is being run
-  // in the browser process because of a command line switch.
-  if (!IPC::AttachmentBroker::GetGlobal()) {
-    attachment_broker_.reset(
-        IPC::AttachmentBrokerUnprivileged::CreateBroker().release());
-  }
-#endif
+  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
 
   channel_ =
       IPC::SyncChannel::Create(this, ChildProcess::current()->io_task_runner(),
@@ -460,8 +453,9 @@ void ChildThreadImpl::Init(const Options& options) {
   }
 
   ConnectChannel(options.use_mojo_channel);
-  if (attachment_broker_)
-    attachment_broker_->DesignateBrokerCommunicationChannel(channel_.get());
+  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
+  if (broker && !broker->IsPrivilegedBroker())
+    broker->RegisterBrokerCommunicationChannel(channel_.get());
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =
@@ -496,6 +490,10 @@ ChildThreadImpl::~ChildThreadImpl() {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
+
+  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
+  if (broker && !broker->IsPrivilegedBroker())
+    broker->DeregisterBrokerCommunicationChannel(channel_.get());
 
   channel_->RemoveFilter(histogram_message_filter_.get());
   channel_->RemoveFilter(sync_message_filter_.get());

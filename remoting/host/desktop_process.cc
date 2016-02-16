@@ -82,6 +82,9 @@ void DesktopProcess::OnChannelConnected(int32_t peer_pid) {
 
 void DesktopProcess::OnChannelError() {
   // Shutdown the desktop process.
+  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
+  if (broker && !broker->IsPrivilegedBroker())
+    broker->DeregisterBrokerCommunicationChannel(daemon_channel_.get());
   daemon_channel_.reset();
   if (desktop_agent_.get()) {
     desktop_agent_->Stop();
@@ -141,14 +144,10 @@ bool DesktopProcess::Start(
       IPC::ChannelProxy::Create(daemon_channel_name_, IPC::Channel::MODE_CLIENT,
                                 this, io_task_runner.get());
 
-  // Attachment broker may be already created in tests.
-  if (!IPC::AttachmentBroker::GetGlobal())
-    attachment_broker_ = IPC::AttachmentBrokerUnprivileged::CreateBroker();
-
-  if (attachment_broker_) {
-    attachment_broker_->DesignateBrokerCommunicationChannel(
-        daemon_channel_.get());
-  }
+  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
+  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
+  if (broker && !broker->IsPrivilegedBroker())
+    broker->RegisterBrokerCommunicationChannel(daemon_channel_.get());
 
   // Pass |desktop_pipe| to the daemon.
   daemon_channel_->Send(
