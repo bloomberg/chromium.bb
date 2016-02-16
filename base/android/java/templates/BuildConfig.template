@@ -2,24 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.base.multidex;
+package org.chromium.base;
 
 /**
- *  Multidex configuration. Generated on a per-target basis.
+ *  Build configuration. Generated on a per-target basis.
  */
-class ChromiumMultiDex {
+public class BuildConfig {
 
     /** Whether multidex is enabled for this target.
      *
      *  This has to be a function instead of a static final boolean s.t. the initial false value
      *  doesn't get optimized into {@link ChromiumMultiDexInstaller} at base_java compile time.
      */
-    static boolean isMultidexEnabled() {
+    public static boolean isMultidexEnabled() {
 #if defined(ENABLE_MULTIDEX)
         return true;
 #else
         return false;
 #endif
     }
+
+#if defined(NDEBUG)
+    public static boolean sIsDebug = true;
+#else
+    public static boolean sIsDebug = false;
+#endif
 
 }

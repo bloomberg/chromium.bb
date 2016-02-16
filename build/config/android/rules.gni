@@ -1528,10 +1528,10 @@ template("android_apk") {
   }
 
   if (!defined(invoker.apk_under_test)) {
-    java_cpp_template("${_template_name}__multidex_config_java") {
-      package_name = "org/chromium/base/multidex"
+    java_cpp_template("${_template_name}__build_config_java") {
+      package_name = "org/chromium/base"
       sources = [
-        "//base/android/java/templates/ChromiumMultiDex.template",
+        "//base/android/java/templates/BuildConfig.template",
       ]
 
       defines = []
@@ -1539,7 +1539,7 @@ template("android_apk") {
         defines += [ "ENABLE_MULTIDEX" ]
       }
     }
-    _srcjar_deps += [ ":${_template_name}__multidex_config_java" ]
+    _srcjar_deps += [ ":${_template_name}__build_config_java" ]
   }
 
   java_target = "${_template_name}__java"

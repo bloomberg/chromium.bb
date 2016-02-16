@@ -122,11 +122,11 @@
     'native_libraries_template_data_dir': '<(intermediate_dir)/native_libraries/',
     'native_libraries_template_data_file': '<(native_libraries_template_data_dir)/native_libraries_array.h',
     'native_libraries_template_version_file': '<(native_libraries_template_data_dir)/native_libraries_version.h',
-    'generate_multidex_config%': 0,
-    'multidex_config_template': '<(DEPTH)/base/android/java/templates/ChromiumMultiDex.template',
-    'multidex_config_java_dir': '<(intermediate_dir)/multidex_config/',
-    'multidex_config_java_file': '<(multidex_config_java_dir)/ChromiumMultiDex.java',
-    'multidex_config_java_stamp': '<(intermediate_dir)/multidex_config_java.stamp',
+    'generate_build_config%': 0,
+    'build_config_template': '<(DEPTH)/base/android/java/templates/BuildConfig.template',
+    'build_config_java_dir': '<(intermediate_dir)/build_config/',
+    'build_config_java_file': '<(build_config_java_dir)/BuildConfig.java',
+    'build_config_java_stamp': '<(intermediate_dir)/build_config_java.stamp',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
     'lint_stamp': '<(intermediate_dir)/lint.stamp',
     'lint_result': '<(intermediate_dir)/lint_result.xml',
@@ -272,7 +272,7 @@
           'tested_apk_obfuscated_jar_path': '<(obfuscated_jar_path)',
           'tested_apk_dex_path': '<(dex_path)',
           'tested_apk_is_multidex': '<(enable_multidex)',
-          'tested_apk_generated_multidex_config': '>(generate_multidex_config)',
+          'tested_apk_generated_multidex_config': '>(generate_build_config)',
         }
       }]
     ],
@@ -803,20 +803,20 @@
     }],
   ],
   'target_conditions': [
-    ['generate_multidex_config == 1 and tested_apk_generated_multidex_config == 0', {
+    ['generate_build_config == 1 and tested_apk_generated_multidex_config == 0', {
       'variables': {
-        'generated_src_dirs': ['<(multidex_config_java_dir)'],
+        'generated_src_dirs': ['<(build_config_java_dir)'],
       },
       'actions': [
         {
           'action_name': 'configure_multidex_for_<(_target_name)',
           'inputs': [
             '<(DEPTH)/build/android/gyp/configure_multidex.py',
-            '<(multidex_config_template)',
+            '<(build_config_template)',
           ],
           'outputs': [
             '<(multidex_configuration_path)',
-            '<(multidex_config_java_stamp)',
+            '<(build_config_java_stamp)',
           ],
           'variables': {
             'additional_multidex_config_options': [],
@@ -832,9 +832,9 @@
             '--configuration-name', '<(CONFIGURATION_NAME)',
             '--enabled-configurations', '<(enabled_configurations)',
             '--multidex-configuration-path', '<(multidex_configuration_path)',
-            '--multidex-config-java-template', '<(multidex_config_template)',
-            '--multidex-config-java-file', '<(multidex_config_java_file)',
-            '--multidex-config-java-stamp', '<(multidex_config_java_stamp)',
+            '--multidex-config-java-template', '<(build_config_template)',
+            '--multidex-config-java-file', '<(build_config_java_file)',
+            '--multidex-config-java-stamp', '<(build_config_java_stamp)',
             '>@(additional_multidex_config_options)',
           ],
         },
@@ -985,8 +985,8 @@
         }],
       ],
       'target_conditions': [
-        ['generate_multidex_config == 1 and tested_apk_generated_multidex_config == 0', {
-          'inputs': [ '<(multidex_config_java_stamp)' ],
+        ['generate_build_config == 1 and tested_apk_generated_multidex_config == 0', {
+          'inputs': [ '<(build_config_java_stamp)' ],
         }],
       ],
       'outputs': [
