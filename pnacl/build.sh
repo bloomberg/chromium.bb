@@ -310,7 +310,11 @@ llvm-sb-configure() {
   case ${arch} in
     i686)
       targets=x86
-      subzero_targets=X8632
+      # Since LLVM is built only once to cover both x86-32 and x86-64, and
+      # Subzero is built as part of that, we need to enable both targets in the
+      # pnacl-sz.nexe build.  TODO(stichnot): Fix this and make smaller Subzero
+      # translator binaries.
+      subzero_targets=X8632,X8664
       ;;
     x86_64)
       targets=x86
