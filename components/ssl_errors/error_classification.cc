@@ -67,37 +67,6 @@ void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
   }
 }
 
-// Returns the Levenshtein distance between |str1| and |str2|.
-// Which is the minimum number of single-character edits (i.e. insertions,
-// deletions or substitutions) required to change one word into the other.
-// https://en.wikipedia.org/wiki/Levenshtein_distance
-size_t GetLevenshteinDistance(const std::string& str1,
-                              const std::string& str2) {
-  if (str1 == str2)
-    return 0;
-  if (str1.size() == 0)
-    return str2.size();
-  if (str2.size() == 0)
-    return str1.size();
-  std::vector<size_t> kFirstRow(str2.size() + 1, 0);
-  std::vector<size_t> kSecondRow(str2.size() + 1, 0);
-
-  for (size_t i = 0; i < kFirstRow.size(); ++i)
-    kFirstRow[i] = i;
-  for (size_t i = 0; i < str1.size(); ++i) {
-    kSecondRow[0] = i + 1;
-    for (size_t j = 0; j < str2.size(); ++j) {
-      int cost = str1[i] == str2[j] ? 0 : 1;
-      kSecondRow[j + 1] =
-          std::min(std::min(kSecondRow[j] + 1, kFirstRow[j + 1] + 1),
-                   kFirstRow[j] + cost);
-    }
-    for (size_t j = 0; j < kFirstRow.size(); j++)
-      kFirstRow[j] = kSecondRow[j];
-  }
-  return kSecondRow[str2.size()];
-}
-
 std::vector<HostnameTokens> GetTokenizedDNSNames(
     const std::vector<std::string>& dns_names) {
   std::vector<HostnameTokens> dns_name_tokens;
@@ -313,6 +282,37 @@ bool AnyNamesUnderName(const std::vector<HostnameTokens>& potential_children,
       return true;
   }
   return false;
+}
+
+// Returns the Levenshtein distance between |str1| and |str2|.
+// Which is the minimum number of single-character edits (i.e. insertions,
+// deletions or substitutions) required to change one word into the other.
+// https://en.wikipedia.org/wiki/Levenshtein_distance
+size_t GetLevenshteinDistance(const std::string& str1,
+                              const std::string& str2) {
+  if (str1 == str2)
+    return 0;
+  if (str1.size() == 0)
+    return str2.size();
+  if (str2.size() == 0)
+    return str1.size();
+  std::vector<size_t> kFirstRow(str2.size() + 1, 0);
+  std::vector<size_t> kSecondRow(str2.size() + 1, 0);
+
+  for (size_t i = 0; i < kFirstRow.size(); ++i)
+    kFirstRow[i] = i;
+  for (size_t i = 0; i < str1.size(); ++i) {
+    kSecondRow[0] = i + 1;
+    for (size_t j = 0; j < str2.size(); ++j) {
+      int cost = str1[i] == str2[j] ? 0 : 1;
+      kSecondRow[j + 1] =
+          std::min(std::min(kSecondRow[j] + 1, kFirstRow[j + 1] + 1),
+                   kFirstRow[j] + cost);
+    }
+    for (size_t j = 0; j < kFirstRow.size(); j++)
+      kFirstRow[j] = kSecondRow[j];
+  }
+  return kSecondRow[str2.size()];
 }
 
 bool IsSubDomainOutsideWildcard(const GURL& request_url,

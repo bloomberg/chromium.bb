@@ -153,3 +153,28 @@ TEST_F(SSLErrorClassificationTest, TestPrivateURL) {
   EXPECT_TRUE(ssl_errors::IsHostnameNonUniqueOrDotless("172.17.108.108"));
   EXPECT_TRUE(ssl_errors::IsHostnameNonUniqueOrDotless("foo.blah"));
 }
+
+TEST(ErrorClassification, LevenshteinDistance) {
+  EXPECT_EQ(0u, ssl_errors::GetLevenshteinDistance("banana", "banana"));
+
+  EXPECT_EQ(2u, ssl_errors::GetLevenshteinDistance("ab", "ba"));
+  EXPECT_EQ(2u, ssl_errors::GetLevenshteinDistance("ba", "ab"));
+
+  EXPECT_EQ(2u, ssl_errors::GetLevenshteinDistance("ananas", "banana"));
+  EXPECT_EQ(2u, ssl_errors::GetLevenshteinDistance("banana", "ananas"));
+
+  EXPECT_EQ(2u, ssl_errors::GetLevenshteinDistance("unclear", "nuclear"));
+  EXPECT_EQ(2u, ssl_errors::GetLevenshteinDistance("nuclear", "unclear"));
+
+  EXPECT_EQ(3u, ssl_errors::GetLevenshteinDistance("chrome", "chromium"));
+  EXPECT_EQ(3u, ssl_errors::GetLevenshteinDistance("chromium", "chrome"));
+
+  EXPECT_EQ(4u, ssl_errors::GetLevenshteinDistance("", "abcd"));
+  EXPECT_EQ(4u, ssl_errors::GetLevenshteinDistance("abcd", ""));
+
+  EXPECT_EQ(4u, ssl_errors::GetLevenshteinDistance("xxx", "xxxxxxx"));
+  EXPECT_EQ(4u, ssl_errors::GetLevenshteinDistance("xxxxxxx", "xxx"));
+
+  EXPECT_EQ(7u, ssl_errors::GetLevenshteinDistance("yyy", "xxxxxxx"));
+  EXPECT_EQ(7u, ssl_errors::GetLevenshteinDistance("xxxxxxx", "yyy"));
+}
