@@ -136,7 +136,7 @@ void TypingCommand::deleteKeyPressed(Document& document, Options options, TextGr
     TypingCommand::create(document, DeleteKey, "", options, granularity)->apply();
 }
 
-void TypingCommand::forwardDeleteKeyPressed(Document& document, Options options, TextGranularity granularity)
+void TypingCommand::forwardDeleteKeyPressed(Document& document, EditingState* editingState, Options options, TextGranularity granularity)
 {
     // FIXME: Forward delete in TextEdit appears to open and close a new typing command.
     if (granularity == CharacterGranularity) {
@@ -144,7 +144,7 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document, Options options,
         if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
             updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
             lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
-            lastTypingCommand->forwardDeleteKeyPressed(granularity, options & KillRing);
+            lastTypingCommand->forwardDeleteKeyPressed(granularity, options & KillRing, editingState);
             return;
         }
     }
@@ -273,7 +273,7 @@ void TypingCommand::doApply(EditingState* editingState)
         deleteKeyPressed(m_granularity, m_killRing, editingState);
         return;
     case ForwardDeleteKey:
-        forwardDeleteKeyPressed(m_granularity, m_killRing);
+        forwardDeleteKeyPressed(m_granularity, m_killRing, editingState);
         return;
     case InsertLineBreak:
         insertLineBreak();
@@ -536,7 +536,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
     typingAddedToOpenCommand(DeleteKey);
 }
 
-void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool killRing)
+void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool killRing, EditingState* editingState)
 {
     LocalFrame* frame = document().frame();
     if (!frame)
@@ -621,7 +621,9 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
     // Make undo select what was deleted on Mac alone
     if (frame->editor().behavior().shouldUndoOfDeleteSelectText())
         setStartingSelection(selectionAfterUndo);
-    CompositeEditCommand::deleteSelection(selectionToDelete, ASSERT_NO_EDITING_ABORT, m_smartDelete);
+    CompositeEditCommand::deleteSelection(selectionToDelete, editingState, m_smartDelete);
+    if (editingState->isAborted())
+        return;
     setSmartDelete(false);
     typingAddedToOpenCommand(ForwardDeleteKey);
 }

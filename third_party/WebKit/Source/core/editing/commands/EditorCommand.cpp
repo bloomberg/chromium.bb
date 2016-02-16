@@ -490,6 +490,7 @@ static bool executeFormatBlock(LocalFrame& frame, Event*, EditorCommandSource, c
 
 static bool executeForwardDelete(LocalFrame& frame, Event*, EditorCommandSource source, const String&)
 {
+    EditingState editingState;
     switch (source) {
     case CommandFromMenuOrKeyBinding:
         frame.editor().deleteWithDirection(DirectionForward, CharacterGranularity, false, true);
@@ -499,7 +500,9 @@ static bool executeForwardDelete(LocalFrame& frame, Event*, EditorCommandSource 
         // ForwardDelete is not implemented in IE or Firefox, so this behavior is only needed for
         // backward compatibility with ourselves, and for consistency with Delete.
         ASSERT(frame.document());
-        TypingCommand::forwardDeleteKeyPressed(*frame.document());
+        TypingCommand::forwardDeleteKeyPressed(*frame.document(), &editingState);
+        if (editingState.isAborted())
+            return false;
         return true;
     }
     ASSERT_NOT_REACHED();

@@ -291,6 +291,7 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
     if (!canEdit())
         return false;
 
+    EditingState editingState;
     if (frame().selection().isRange()) {
         if (isTypingAction) {
             ASSERT(frame().document());
@@ -312,7 +313,9 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
         case DirectionForward:
         case DirectionRight:
             ASSERT(frame().document());
-            TypingCommand::forwardDeleteKeyPressed(*frame().document(), options, granularity);
+            TypingCommand::forwardDeleteKeyPressed(*frame().document(), &editingState, options, granularity);
+            if (editingState.isAborted())
+                return false;
             break;
         case DirectionBackward:
         case DirectionLeft:

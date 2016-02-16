@@ -162,13 +162,16 @@ void DeleteSelectionCommand::setStartingSelectionOnSmartDelete(const Position& s
     setStartingSelection(VisibleSelection(newBase, newExtent, startingSelection().isDirectional()));
 }
 
-void DeleteSelectionCommand::initializePositionData()
+void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
 {
     Position start, end;
     initializeStartEnd(start, end);
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
-    ASSERT(isEditablePosition(start, ContentIsEditable, DoNotUpdateStyle));
+    if (!isEditablePosition(start, ContentIsEditable, DoNotUpdateStyle)) {
+        editingState->abort();
+        return;
+    }
     if (!isEditablePosition(end, ContentIsEditable, DoNotUpdateStyle)) {
         Node* highestRoot = highestEditableRoot(start);
         ASSERT(highestRoot);
@@ -857,7 +860,9 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
 
 
     // set up our state
-    initializePositionData();
+    initializePositionData(editingState);
+    if (editingState->isAborted())
+        return;
 
     bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(previousPositionOf(createVisiblePosition(m_upstreamStart)));
 
