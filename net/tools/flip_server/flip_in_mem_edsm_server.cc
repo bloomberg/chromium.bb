@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/lock.h"
-#include "net/tools/balsa/split.h"
 #include "net/tools/flip_server/acceptor_thread.h"
 #include "net/tools/flip_server/constants.h"
 #include "net/tools/flip_server/flip_config.h"

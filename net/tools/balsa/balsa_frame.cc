@@ -28,7 +28,6 @@
 #include "net/tools/balsa/balsa_visitor_interface.h"
 #include "net/tools/balsa/buffer_interface.h"
 #include "net/tools/balsa/simple_buffer.h"
-#include "net/tools/balsa/split.h"
 #include "net/tools/balsa/string_piece_utils.h"
 
 #if defined(COMPILER_MSVC)

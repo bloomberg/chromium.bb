@@ -783,8 +783,6 @@
         'tools/balsa/noop_balsa_visitor.h',
         'tools/balsa/simple_buffer.cc',
         'tools/balsa/simple_buffer.h',
-        'tools/balsa/split.cc',
-        'tools/balsa/split.h',
         'tools/balsa/string_piece_utils.h',
         'tools/quic/spdy_balsa_utils.cc',
         'tools/quic/spdy_balsa_utils.h',
