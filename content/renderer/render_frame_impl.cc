@@ -2872,18 +2872,13 @@ blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame() {
   return render_view_->history_controller()->GetItemForNewChildFrame(this);
 }
 
-void RenderFrameImpl::willSendSubmitEvent(blink::WebLocalFrame* frame,
-                                          const blink::WebFormElement& form) {
-  DCHECK_EQ(frame_, frame);
-
+void RenderFrameImpl::willSendSubmitEvent(const blink::WebFormElement& form) {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WillSendSubmitEvent(form));
 }
 
-void RenderFrameImpl::willSubmitForm(blink::WebLocalFrame* frame,
-                                     const blink::WebFormElement& form) {
-  DCHECK_EQ(frame_, frame);
+void RenderFrameImpl::willSubmitForm(const blink::WebFormElement& form) {
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame->provisionalDataSource());
+      DocumentState::FromDataSource(frame_->provisionalDataSource());
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
   InternalDocumentStateData* internal_data =

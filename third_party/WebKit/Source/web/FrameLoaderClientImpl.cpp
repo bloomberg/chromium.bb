@@ -608,19 +608,19 @@ bool FrameLoaderClientImpl::hasPendingNavigation()
     if (!m_webFrame->client())
         return false;
 
-    return m_webFrame->client()->hasPendingNavigation(m_webFrame);
+    return m_webFrame->client()->hasPendingNavigation();
 }
 
 void FrameLoaderClientImpl::dispatchWillSendSubmitEvent(HTMLFormElement* form)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->willSendSubmitEvent(m_webFrame, WebFormElement(form));
+        m_webFrame->client()->willSendSubmitEvent(WebFormElement(form));
 }
 
 void FrameLoaderClientImpl::dispatchWillSubmitForm(HTMLFormElement* form)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->willSubmitForm(m_webFrame, WebFormElement(form));
+        m_webFrame->client()->willSubmitForm(WebFormElement(form));
 }
 
 void FrameLoaderClientImpl::didStartLoading(LoadStartType loadStartType)

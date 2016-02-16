@@ -466,10 +466,8 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebNavigationPolicy decidePolicyForNavigation(
       const NavigationPolicyInfo& info) override;
   blink::WebHistoryItem historyItemForNewChildFrame() override;
-  void willSendSubmitEvent(blink::WebLocalFrame* frame,
-                           const blink::WebFormElement& form) override;
-  void willSubmitForm(blink::WebLocalFrame* frame,
-                      const blink::WebFormElement& form) override;
+  void willSendSubmitEvent(const blink::WebFormElement& form) override;
+  void willSubmitForm(const blink::WebFormElement& form) override;
   void didCreateDataSource(blink::WebLocalFrame* frame,
                            blink::WebDataSource* datasource) override;
   void didStartProvisionalLoad(blink::WebLocalFrame* frame,

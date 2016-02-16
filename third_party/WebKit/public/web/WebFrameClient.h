@@ -249,7 +249,7 @@ public:
     virtual WebHistoryItem historyItemForNewChildFrame() { return WebHistoryItem(); }
 
     // Whether the client is handling a navigation request.
-    virtual bool hasPendingNavigation(WebLocalFrame*) { return false; }
+    virtual bool hasPendingNavigation() { return false; }
 
     // Navigational notifications ------------------------------------------
 
@@ -264,10 +264,10 @@ public:
 
     // A form submission has been requested, but the page's submit event handler
     // hasn't yet had a chance to run (and possibly alter/interrupt the submit.)
-    virtual void willSendSubmitEvent(WebLocalFrame*, const WebFormElement&) { }
+    virtual void willSendSubmitEvent(const WebFormElement&) { }
 
     // A form submission is about to occur.
-    virtual void willSubmitForm(WebLocalFrame*, const WebFormElement&) { }
+    virtual void willSubmitForm(const WebFormElement&) { }
 
     // A datasource has been created for a new navigation.  The given
     // datasource will become the provisional datasource for the frame.
