@@ -69,6 +69,9 @@ def GetDefaultWaterfall(build_config):
     return None
   b_type = build_config['build_type']
 
+  # Build types that, absent other cues, go on the internal waterfall.
+  INTERNAL_TYPES = (constants.PRE_CQ_LAUNCHER_TYPE, constants.TOOLCHAIN_TYPE)
+
   if config_lib.IsCanaryType(b_type):
     # If this is a canary build, it may fall on different waterfalls:
     # - If we're building for a release branch, it belongs on a release
@@ -83,7 +86,7 @@ def GetDefaultWaterfall(build_config):
     # 'internal' status.
     return (constants.WATERFALL_INTERNAL if build_config['internal'] else
             constants.WATERFALL_EXTERNAL)
-  elif config_lib.IsPFQType(b_type) or b_type == constants.PRE_CQ_LAUNCHER_TYPE:
+  elif config_lib.IsPFQType(b_type) or b_type in INTERNAL_TYPES:
     # These builder types belong on the internal waterfall.
     return constants.WATERFALL_INTERNAL
   else:
@@ -2010,6 +2013,7 @@ def GetConfig():
 
   site_config.Add(
       'master-toolchain-release', _release,
+      build_type=constants.TOOLCHAIN_TYPE,
       boards=[],
       description='Toolchain master (all others are slaves).',
       master=True,

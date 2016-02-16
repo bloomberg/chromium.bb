@@ -714,7 +714,8 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
     for build_name, config in self.all_configs.iteritems():
       if config.build_type == constants.PFQ_TYPE:
         expected = 20 * 60
-      elif config.build_type == constants.CANARY_TYPE:
+      elif (config.build_type == constants.CANARY_TYPE or
+            config.build_type == constants.TOOLCHAIN_TYPE):
         if not chromeos_config.IS_RELEASE_BRANCH:
           expected = (7 * 60 + 50) * 60
         else:

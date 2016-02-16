@@ -406,6 +406,9 @@ CANARY_TYPE = 'canary'
 # Generate payloads for an already built build/version.
 PAYLOADS_TYPE = 'payloads'
 
+# Similar behavior to canary, but used to validate toolchain changes.
+TOOLCHAIN_TYPE = 'toolchain'
+
 BRANCH_UTIL_CONFIG = 'branch-util'
 
 # Special build type for Chroot builders.  These builds focus on building
@@ -425,6 +428,7 @@ VALID_BUILD_TYPES = (
     PFQ_TYPE,
     PRE_CQ_LAUNCHER_TYPE,
     PAYLOADS_TYPE,
+    TOOLCHAIN_TYPE,
 )
 
 # The default list of pre-cq configs to use.

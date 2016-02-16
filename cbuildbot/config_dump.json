@@ -10918,6 +10918,7 @@
         "afdo_use": false,
         "boards": [],
         "branch_util_test": true,
+        "build_type": "toolchain",
         "description": "Toolchain master (all others are slaves).",
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
