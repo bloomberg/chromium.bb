@@ -381,9 +381,9 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
     if ((!ancestorToStopAt || container) && shouldUseTransformFromContainer(container)) {
         TransformationMatrix t;
         getTransformFromContainer(container, LayoutSize(), t);
-        geometryMap.push(this, t, false, false, false, true, offsetForFixedPosition);
+        geometryMap.push(this, t, HasTransform, offsetForFixedPosition);
     } else {
-        geometryMap.push(this, offset, false, false, false, false, offsetForFixedPosition);
+        geometryMap.push(this, offset, 0, offsetForFixedPosition);
     }
 
     return container;

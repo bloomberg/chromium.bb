@@ -72,8 +72,8 @@ public:
 
     // Push geometry info between this layoutObject and some ancestor. The ancestor must be its container() or some
     // stacking context between the layoutObject and its container.
-    void push(const LayoutObject*, const LayoutSize&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
-    void push(const LayoutObject*, const TransformationMatrix&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
+    void push(const LayoutObject*, const LayoutSize&, GeometryInfoFlags = 0, LayoutSize offsetForFixedPosition = LayoutSize());
+    void push(const LayoutObject*, const TransformationMatrix&, GeometryInfoFlags = 0, LayoutSize offsetForFixedPosition = LayoutSize());
 
 private:
     void popMappingsToAncestor(const LayoutBoxModelObject*);

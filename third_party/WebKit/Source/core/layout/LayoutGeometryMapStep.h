@@ -36,6 +36,14 @@ namespace blink {
 
 class LayoutObject;
 
+enum GeometryInfoFlag {
+    AccumulatingTransform = 1 << 0,
+    IsNonUniform = 1 << 1, // Mapping depends on the input point, e.g. because of CSS columns.
+    IsFixedPosition = 1 << 2,
+    HasTransform = 1 << 3,
+};
+typedef unsigned GeometryInfoFlags;
+
 // Stores data about how to map from one layoutObject to its container.
 struct LayoutGeometryMapStep {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -43,29 +51,20 @@ struct LayoutGeometryMapStep {
         : m_layoutObject(o.m_layoutObject)
         , m_offset(o.m_offset)
         , m_offsetForFixedPosition(o.m_offsetForFixedPosition)
-        , m_accumulatingTransform(o.m_accumulatingTransform)
-        , m_isNonUniform(o.m_isNonUniform)
-        , m_isFixedPosition(o.m_isFixedPosition)
-        , m_hasTransform(o.m_hasTransform)
+        , m_flags(o.m_flags)
     {
         ASSERT(!o.m_transform);
     }
-    LayoutGeometryMapStep(const LayoutObject* layoutObject, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
+    LayoutGeometryMapStep(const LayoutObject* layoutObject, GeometryInfoFlags flags)
         : m_layoutObject(layoutObject)
-        , m_accumulatingTransform(accumulatingTransform)
-        , m_isNonUniform(isNonUniform)
-        , m_isFixedPosition(isFixedPosition)
-        , m_hasTransform(hasTransform)
+        , m_flags(flags)
     {
     }
     const LayoutObject* m_layoutObject;
     LayoutSize m_offset;
     OwnPtr<TransformationMatrix> m_transform; // Includes offset if non-null.
     LayoutSize m_offsetForFixedPosition;
-    bool m_accumulatingTransform;
-    bool m_isNonUniform; // Mapping depends on the input point, e.g. because of CSS columns.
-    bool m_isFixedPosition;
-    bool m_hasTransform;
+    GeometryInfoFlags m_flags;
 };
 
 } // namespace blink

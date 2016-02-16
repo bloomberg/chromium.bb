@@ -82,9 +82,9 @@ void LayoutGeometryMap::mapToAncestor(TransformState& transformState, const Layo
         // If this box has a transform, it acts as a fixed position container
         // for fixed descendants, which prevents the propagation of 'fixed'
         // unless the layer itself is also fixed position.
-        if (i && currentStep.m_hasTransform && !currentStep.m_isFixedPosition)
+        if (i && currentStep.m_flags & HasTransform && !(currentStep.m_flags & IsFixedPosition))
             inFixed = false;
-        else if (currentStep.m_isFixedPosition)
+        else if (currentStep.m_flags & IsFixedPosition)
             inFixed = true;
 
         ASSERT(!i == isTopmostLayoutView(currentStep.m_layoutObject));
@@ -94,7 +94,7 @@ void LayoutGeometryMap::mapToAncestor(TransformState& transformState, const Layo
             if (!ancestor && currentStep.m_transform)
                 transformState.applyTransform(*currentStep.m_transform.get());
         } else {
-            TransformState::TransformAccumulation accumulate = currentStep.m_accumulatingTransform ? TransformState::AccumulateTransform : TransformState::FlattenTransform;
+            TransformState::TransformAccumulation accumulate = currentStep.m_flags & AccumulatingTransform ? TransformState::AccumulateTransform : TransformState::FlattenTransform;
             if (currentStep.m_transform)
                 transformState.applyTransform(*currentStep.m_transform.get(), accumulate);
             else
@@ -121,7 +121,7 @@ void LayoutGeometryMap::dumpSteps() const
             m_mapping[i].m_layoutObject->debugName().ascii().data(),
             m_mapping[i].m_offset.width().toInt(),
             m_mapping[i].m_offset.height().toInt());
-        if (m_mapping[i].m_hasTransform)
+        if (m_mapping[i].m_flags & HasTransform)
             fprintf(stderr, " hasTransform");
         fprintf(stderr, "\n");
     }
@@ -211,14 +211,14 @@ void LayoutGeometryMap::pushMappingsToAncestor(const PaintLayer* layer, const Pa
 
         TemporaryChange<size_t> positionChange(m_insertionPosition, m_mapping.size());
         bool accumulatingTransform = layer->layoutObject()->style()->preserves3D() || ancestorLayer->layoutObject()->style()->preserves3D();
-        push(layoutObject, toLayoutSize(layerOffset), accumulatingTransform, /*isNonUniform*/ false, /*isFixedPosition*/ false, /*hasTransform*/ false);
+        push(layoutObject, toLayoutSize(layerOffset), accumulatingTransform ? AccumulatingTransform : 0);
         return;
     }
     const LayoutBoxModelObject* ancestorLayoutObject = ancestorLayer ? ancestorLayer->layoutObject() : 0;
     pushMappingsToAncestor(layoutObject, ancestorLayoutObject);
 }
 
-void LayoutGeometryMap::push(const LayoutObject* layoutObject, const LayoutSize& offsetFromContainer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
+void LayoutGeometryMap::push(const LayoutObject* layoutObject, const LayoutSize& offsetFromContainer, GeometryInfoFlags flags, LayoutSize offsetForFixedPosition)
 {
     LAYOUT_GEOMETRY_MAP_LOG("LayoutGeometryMap::push %p %d,%d isNonUniform=%d\n", layoutObject, offsetFromContainer.width().toInt(), offsetFromContainer.height().toInt(), isNonUniform);
 
@@ -226,7 +226,7 @@ void LayoutGeometryMap::push(const LayoutObject* layoutObject, const LayoutSize&
     ASSERT(!layoutObject->isLayoutView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
     ASSERT(offsetForFixedPosition.isZero() || layoutObject->isLayoutView());
 
-    m_mapping.insert(m_insertionPosition, LayoutGeometryMapStep(layoutObject, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
+    m_mapping.insert(m_insertionPosition, LayoutGeometryMapStep(layoutObject, flags));
 
     LayoutGeometryMapStep& step = m_mapping[m_insertionPosition];
     step.m_offset = offsetFromContainer;
@@ -235,13 +235,13 @@ void LayoutGeometryMap::push(const LayoutObject* layoutObject, const LayoutSize&
     stepInserted(step);
 }
 
-void LayoutGeometryMap::push(const LayoutObject* layoutObject, const TransformationMatrix& t, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
+void LayoutGeometryMap::push(const LayoutObject* layoutObject, const TransformationMatrix& t, GeometryInfoFlags flags, LayoutSize offsetForFixedPosition)
 {
     ASSERT(m_insertionPosition != kNotFound);
     ASSERT(!layoutObject->isLayoutView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
     ASSERT(offsetForFixedPosition.isZero() || layoutObject->isLayoutView());
 
-    m_mapping.insert(m_insertionPosition, LayoutGeometryMapStep(layoutObject, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
+    m_mapping.insert(m_insertionPosition, LayoutGeometryMapStep(layoutObject, flags));
 
     LayoutGeometryMapStep& step = m_mapping[m_insertionPosition];
     step.m_offsetForFixedPosition = offsetForFixedPosition;
@@ -274,13 +274,13 @@ void LayoutGeometryMap::stepInserted(const LayoutGeometryMapStep& step)
 {
     m_accumulatedOffset += step.m_offset;
 
-    if (step.m_isNonUniform)
+    if (step.m_flags & IsNonUniform)
         ++m_nonUniformStepsCount;
 
     if (step.m_transform)
         ++m_transformedStepsCount;
 
-    if (step.m_isFixedPosition)
+    if (step.m_flags & IsFixedPosition)
         ++m_fixedStepsCount;
 }
 
@@ -288,7 +288,7 @@ void LayoutGeometryMap::stepRemoved(const LayoutGeometryMapStep& step)
 {
     m_accumulatedOffset -= step.m_offset;
 
-    if (step.m_isNonUniform) {
+    if (step.m_flags & IsNonUniform) {
         ASSERT(m_nonUniformStepsCount);
         --m_nonUniformStepsCount;
     }
@@ -298,7 +298,7 @@ void LayoutGeometryMap::stepRemoved(const LayoutGeometryMapStep& step)
         --m_transformedStepsCount;
     }
 
-    if (step.m_isFixedPosition) {
+    if (step.m_flags & IsFixedPosition) {
         ASSERT(m_fixedStepsCount);
         --m_fixedStepsCount;
     }
