@@ -22,6 +22,7 @@
 #include "modules/fetch/Response.h"
 #include "platform/HTTPNames.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 
@@ -31,7 +32,7 @@ namespace {
 
 void checkCacheQueryOptions(const CacheQueryOptions& options, ExecutionContext* context)
 {
-    if (options.ignoreSearch())
+    if (!RuntimeEnabledFeatures::cacheIgnoreSearchOptionEnabled() && options.ignoreSearch())
         context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreSearch' option yet. See http://crbug.com/520784"));
     if (options.ignoreMethod())
         context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreMethod' option yet. See http://crbug.com/482256"));
@@ -464,7 +465,7 @@ ScriptPromise Cache::keys(ScriptState* scriptState, const RequestInfo& request, 
 WebServiceWorkerCache::QueryParams Cache::toWebQueryParams(const CacheQueryOptions& options)
 {
     WebServiceWorkerCache::QueryParams webQueryParams;
-    webQueryParams.ignoreSearch = options.ignoreSearch();
+    webQueryParams.ignoreSearch = options.ignoreSearch() && RuntimeEnabledFeatures::cacheIgnoreSearchOptionEnabled();
     webQueryParams.ignoreMethod = options.ignoreMethod();
     webQueryParams.ignoreVary = options.ignoreVary();
     webQueryParams.cacheName = options.cacheName();

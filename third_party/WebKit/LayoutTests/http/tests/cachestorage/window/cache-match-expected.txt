@@ -1,5 +1,3 @@
-CONSOLE WARNING: Cache.match() does not support 'ignoreSearch' option yet. See http://crbug.com/520784
-CONSOLE WARNING: Cache.match() does not support 'ignoreSearch' option yet. See http://crbug.com/520784
 This is a testharness.js-based test.
 PASS Cache.match with no matching entries 
 PASS Cache.match with URL 

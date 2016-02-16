@@ -76,9 +76,11 @@ class CONTENT_EXPORT CacheStorageCache
   void Match(scoped_ptr<ServiceWorkerFetchRequest> request,
              const ResponseCallback& callback);
 
-  // Returns CACHE_STORAGE_OK and all responses in this cache. If there are no
-  // responses, returns CACHE_STORAGE_OK and an empty vector.
-  void MatchAll(const ResponsesCallback& callback);
+  // Returns CACHE_STORAGE_OK and matched responses in this cache. If there are
+  // no responses, returns CACHE_STORAGE_OK and an empty vector.
+  void MatchAll(scoped_ptr<ServiceWorkerFetchRequest> request,
+                const CacheStorageCacheQueryParams& match_params,
+                const ResponsesCallback& callback);
 
   // Runs given batch operations. This corresponds to the Batch Cache Operations
   // algorithm in the spec.
@@ -173,9 +175,9 @@ class CONTENT_EXPORT CacheStorageCache
                             scoped_ptr<CacheMetadata> headers);
 
   // MatchAll callbacks
-  void MatchAllImpl(const ResponsesCallback& callback);
+  void MatchAllImpl(scoped_ptr<MatchAllContext> context);
   void MatchAllDidOpenAllEntries(
-      const ResponsesCallback& callback,
+      scoped_ptr<MatchAllContext> context,
       scoped_ptr<OpenAllEntriesContext> entries_context,
       CacheStorageError error);
   void MatchAllProcessNextEntry(scoped_ptr<MatchAllContext> context,

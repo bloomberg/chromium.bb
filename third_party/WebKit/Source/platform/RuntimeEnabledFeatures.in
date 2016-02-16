@@ -29,6 +29,7 @@ AudioOutputDevices status=stable
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
 BackgroundSync status=stable
+CacheIgnoreSearchOption status=experimental
 ClientHints status=stable
 ColumnFill status=experimental
 CompositedSelectionUpdate

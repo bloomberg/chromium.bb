@@ -144,6 +144,12 @@ bool VaryMatches(const ServiceWorkerHeaderMap& request,
   return true;
 }
 
+GURL RemoveQueryParam(const GURL& url) {
+  url::Replacements<char> replacements;
+  replacements.ClearQuery();
+  return url.ReplaceComponents(replacements);
+}
+
 void ReadMetadata(disk_cache::Entry* entry, const MetadataCallback& callback) {
   DCHECK(entry);
 
@@ -207,11 +213,19 @@ struct CacheStorageCache::OpenAllEntriesContext {
 
 // The state needed to pass between CacheStorageCache::MatchAll callbacks.
 struct CacheStorageCache::MatchAllContext {
-  explicit MatchAllContext(const CacheStorageCache::ResponsesCallback& callback)
-      : original_callback(callback),
+  MatchAllContext(scoped_ptr<ServiceWorkerFetchRequest> request,
+                  const CacheStorageCacheQueryParams& match_params,
+                  const ResponsesCallback& callback)
+      : request(std::move(request)),
+        options(match_params),
+        original_callback(callback),
         out_responses(new Responses),
         out_blob_data_handles(new BlobDataHandles) {}
   ~MatchAllContext() {}
+
+  scoped_ptr<ServiceWorkerFetchRequest> request;
+
+  CacheStorageCacheQueryParams options;
 
   // The callback passed to the MatchAll() function.
   ResponsesCallback original_callback;
@@ -315,7 +329,10 @@ void CacheStorageCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
                  base::Passed(std::move(request)), pending_callback));
 }
 
-void CacheStorageCache::MatchAll(const ResponsesCallback& callback) {
+void CacheStorageCache::MatchAll(
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& match_params,
+    const ResponsesCallback& callback) {
   if (!LazyInitialize()) {
     callback.Run(CACHE_STORAGE_ERROR_STORAGE, scoped_ptr<Responses>(),
                  scoped_ptr<BlobDataHandles>());
@@ -325,9 +342,12 @@ void CacheStorageCache::MatchAll(const ResponsesCallback& callback) {
   ResponsesCallback pending_callback =
       base::Bind(&CacheStorageCache::PendingResponsesCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback);
+
+  scoped_ptr<MatchAllContext> context(
+      new MatchAllContext(std::move(request), match_params, pending_callback));
   scheduler_->ScheduleOperation(base::Bind(&CacheStorageCache::MatchAllImpl,
                                            weak_ptr_factory_.GetWeakPtr(),
-                                           pending_callback));
+                                           base::Passed(std::move(context))));
 }
 
 void CacheStorageCache::BatchOperation(
@@ -621,28 +641,30 @@ void CacheStorageCache::MatchDidReadMetadata(
                std::move(blob_data_handle));
 }
 
-void CacheStorageCache::MatchAllImpl(const ResponsesCallback& callback) {
+void CacheStorageCache::MatchAllImpl(scoped_ptr<MatchAllContext> context) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
-    callback.Run(CACHE_STORAGE_ERROR_STORAGE, scoped_ptr<Responses>(),
-                 scoped_ptr<BlobDataHandles>());
+    context->original_callback.Run(CACHE_STORAGE_ERROR_STORAGE,
+                                   scoped_ptr<Responses>(),
+                                   scoped_ptr<BlobDataHandles>());
     return;
   }
 
   OpenAllEntries(base::Bind(&CacheStorageCache::MatchAllDidOpenAllEntries,
-                            weak_ptr_factory_.GetWeakPtr(), callback));
+                            weak_ptr_factory_.GetWeakPtr(),
+                            base::Passed(std::move(context))));
 }
 
 void CacheStorageCache::MatchAllDidOpenAllEntries(
-    const ResponsesCallback& callback,
+    scoped_ptr<MatchAllContext> context,
     scoped_ptr<OpenAllEntriesContext> entries_context,
     CacheStorageError error) {
   if (error != CACHE_STORAGE_OK) {
-    callback.Run(error, scoped_ptr<Responses>(), scoped_ptr<BlobDataHandles>());
+    context->original_callback.Run(error, scoped_ptr<Responses>(),
+                                   scoped_ptr<BlobDataHandles>());
     return;
   }
 
-  scoped_ptr<MatchAllContext> context(new MatchAllContext(callback));
   context->entries_context.swap(entries_context);
   Entries::iterator iter = context->entries_context->entries.begin();
   MatchAllProcessNextEntry(std::move(context), iter);
@@ -657,6 +679,17 @@ void CacheStorageCache::MatchAllProcessNextEntry(
                                    std::move(context->out_responses),
                                    std::move(context->out_blob_data_handles));
     return;
+  }
+
+  if (context->options.ignore_search) {
+    DCHECK(context->request);
+    disk_cache::Entry* entry(*iter);
+    if (RemoveQueryParam(context->request->url) !=
+        RemoveQueryParam(GURL(entry->GetKey()))) {
+      // In this case, we don't need to read data.
+      MatchAllProcessNextEntry(std::move(context), iter + 1);
+      return;
+    }
   }
 
   ReadMetadata(*iter, base::Bind(&CacheStorageCache::MatchAllDidReadMetadata,

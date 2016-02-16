@@ -70,7 +70,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
             'search parameters of request.');
         });
   },
-  'Cache.matchAll with ignoreSearch option (request with search parameter)');
+  'Cache.matchAll with ignoreSearch option (request with search parameters)');
 
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.cat.request.url + '#mouse')
