@@ -7,24 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 
-@class AccountAvatarFetcherManager;
-@class CredentialItemView;
-
-namespace base {
-class Timer;
-}  // namespace base
-
 // Manages the view that informs the user they're being automatically signed in.
-@interface AutoSigninViewController : BasePasswordsContentViewController {
- @private
-  base::scoped_nsobject<CredentialItemView> credentialView_;
-  base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager_;
-  scoped_ptr<base::Timer> timer_;
-}
+@interface AutoSigninViewController : BasePasswordsContentViewController
 - (instancetype)initWithDelegate:(id<BasePasswordsContentViewDelegate>)delegate;
 @end
 

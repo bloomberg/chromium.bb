@@ -12,9 +12,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
-#import "chrome/browser/ui/cocoa/passwords/credential_item_view.h"
+#import "chrome/browser/ui/cocoa/passwords/credential_item_button.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,7 +26,11 @@ namespace {
 const int kAutoSigninToastTimeoutSeconds = 3;
 }  // namespace
 
-@interface AutoSigninViewController ()<CredentialItemDelegate>
+@interface AutoSigninViewController () {
+  base::scoped_nsobject<CredentialItemButton> credentialView_;
+  base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager_;
+  scoped_ptr<base::Timer> timer_;
+}
 - (instancetype)
 initWithAvatarManager:(AccountAvatarFetcherManager*)avatarManager
              delegate:(id<BasePasswordsContentViewDelegate>)delegate;
@@ -47,13 +52,6 @@ initWithAvatarManager:(AccountAvatarFetcherManager*)avatarManager
              delegate:(id<BasePasswordsContentViewDelegate>)delegate {
   if ((self = [super initWithDelegate:delegate])) {
     avatarManager_.reset([avatarManager retain]);
-    credentialView_.reset([[CredentialItemView alloc]
-        initWithPasswordForm:delegate.model->pending_password()
-              credentialType:password_manager::CredentialType::
-                                 CREDENTIAL_TYPE_PASSWORD
-                       style:password_manager_mac::CredentialItemStyle::
-                                 AUTO_SIGNIN
-                    delegate:self]);
     timer_.reset(new base::Timer(false, false));
     __block AutoSigninViewController* weakSelf = self;
     timer_->Start(FROM_HERE,
@@ -67,19 +65,28 @@ initWithAvatarManager:(AccountAvatarFetcherManager*)avatarManager
   return self;
 }
 
-- (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemView*)view {
-  [avatarManager_ fetchAvatar:avatarURL forView:view];
-}
-
 - (void)loadView {
-  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
-  const CGFloat kPadding = kFramePadding;
-  [view setFrameSize:NSMakeSize(
-                         2 * kPadding + NSWidth([credentialView_ frame]),
-                         2 * kPadding + NSHeight([credentialView_ frame]))];
-  [view addSubview:credentialView_];
-  [credentialView_ setFrameOrigin:NSMakePoint(kPadding, kPadding)];
-  [self setView:view];
+  credentialView_.reset([[CredentialItemButton alloc]
+        initWithFrame:NSZeroRect
+      backgroundColor:[NSColor textBackgroundColor]
+           hoverColor:[NSColor textBackgroundColor]]);
+  [credentialView_ setTarget:self];
+  [credentialView_ setTrackingEnabled:FALSE];
+  base::string16 name = GetCredentialLabelsForAccountChooser(
+                            self.delegate.model->pending_password())
+                            .first;
+  [credentialView_ setTitle:l10n_util::GetNSStringF(
+                                IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE, name)];
+  [credentialView_ setImage:[CredentialItemButton defaultAvatar]];
+  if (self.delegate.model->pending_password().icon_url.is_valid()) {
+    [avatarManager_ fetchAvatar:self.delegate.model->pending_password().icon_url
+                        forView:credentialView_];
+  }
+  [credentialView_ sizeToFit];
+  NSRect frame = [credentialView_ frame];
+  frame.size.height += 2 * kVerticalAvatarMargin;
+  [credentialView_ setFrame:frame];
+  [self setView:credentialView_];
 }
 
 @end

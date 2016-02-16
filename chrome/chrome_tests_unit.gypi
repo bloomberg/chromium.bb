@@ -1288,7 +1288,6 @@
       'browser/ui/cocoa/passwords/base_passwords_controller_test.h',
       'browser/ui/cocoa/passwords/base_passwords_controller_test.mm',
       'browser/ui/cocoa/passwords/confirmation_password_saved_view_controller_unittest.mm',
-      'browser/ui/cocoa/passwords/credential_item_view_unittest.mm',
       'browser/ui/cocoa/passwords/manage_passwords_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/passwords_bubble_cocoa_unittest.mm',
       'browser/ui/cocoa/passwords/passwords_bubble_controller_unittest.mm',

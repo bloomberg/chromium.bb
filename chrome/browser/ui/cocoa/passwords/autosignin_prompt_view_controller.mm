@@ -14,16 +14,17 @@
 #include "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 
-@interface AutoSigninPromptViewController()
+@interface AutoSigninPromptViewController () {
+  NSButton* _okButton;
+  NSButton* _turnOffButton;
+  HyperlinkTextView* _contentText;
+}
 - (void)onOkClicked:(id)sender;
 - (void)onTurnOffClicked:(id)sender;
 @end
 
 @implementation AutoSigninPromptViewController
 @synthesize bridge = _bridge;
-NSButton* _okButton;
-NSButton* _turnOffButton;
-HyperlinkTextView* _contentText;
 
 - (instancetype)initWithBridge:(PasswordPromptBridgeInterface*)bridge {
   DCHECK(bridge);

@@ -4,10 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/passwords/autosignin_prompt_view_controller.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
+#include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

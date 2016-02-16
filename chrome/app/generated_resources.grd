@@ -14241,11 +14241,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Enables hover feature by holding your finger just over the screen to experience a mouseover event.
       </message>
 
-      <!-- Credential management account chooser -->
-      <message name="IDS_CREDENTIAL_MANAGEMENT_ACCOUNT_CHOOSER_NO_THANKS" desc="Text of the button to dismiss the account chooser.">
-        No thanks
-      </message>
-
       <message name="IDS_ALLOW_INSECURE_LOCALHOST" desc="Name of the 'Allow insecure localhost' flag.">
         Allow invalid certificates for resources loaded from localhost.
       </message>

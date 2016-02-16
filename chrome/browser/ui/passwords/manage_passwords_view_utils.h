@@ -30,6 +30,11 @@ extern const int kAvatarImageSize;
 // Crops and scales |image_skia| to the desired size for an account avatar.
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia image_skia);
 
+// Returns the upper and lower label to be displayed in the account chooser UI
+// for |form|.
+std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
+    const autofill::PasswordForm& form);
+
 // Sets the formatted |title| in the Save Password bubble or the Update Password
 // bubble (depending on |dialog_type|). If the registry controlled domain of
 // |user_visible_url| (i.e. the one seen in the omnibox) differs from the

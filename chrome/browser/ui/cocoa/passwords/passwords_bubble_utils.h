@@ -17,12 +17,13 @@
 
 const CGFloat kDesiredBubbleWidth = 370;
 const CGFloat kFramePadding = 16;
+const CGFloat kDesiredRowWidth = kDesiredBubbleWidth - 2 * kFramePadding;
 const CGFloat kItemLabelSpacing = 10;
 const CGFloat kRelatedControlHorizontalPadding = 2;
 const CGFloat kRelatedControlVerticalSpacing = 8;
-const CGFloat kUnrelatedControlVerticalPadding = 15;
-const CGFloat kDesiredRowWidth = kDesiredBubbleWidth - 2 * kFramePadding;
 const CGFloat kTitleTextInset = 2;
+const CGFloat kUnrelatedControlVerticalPadding = 15;
+const CGFloat kVerticalAvatarMargin = 8;
 
 // Returns a font for password bubbles.
 NSFont* LabelFont();

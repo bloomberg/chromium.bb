@@ -36,7 +36,7 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 
 }  // namespace
 
-const int kAvatarImageSize = 40;
+const int kAvatarImageSize = 32;
 
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia skia_image) {
   gfx::Size size = skia_image.size();
@@ -50,6 +50,22 @@ gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia skia_image) {
       skia_image,
       skia::ImageOperations::RESIZE_BEST,
       gfx::Size(kAvatarImageSize, kAvatarImageSize));
+}
+
+std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
+    const autofill::PasswordForm& form) {
+  const base::string16& upper_string =
+      form.display_name.empty() ? form.username_value : form.display_name;
+  base::string16 lower_string;
+  if (form.federation_url.is_empty()) {
+    if (!form.display_name.empty())
+      lower_string = form.username_value;
+  } else {
+    lower_string = l10n_util::GetStringFUTF16(
+        IDS_PASSWORDS_VIA_FEDERATION,
+        base::UTF8ToUTF16(form.federation_url.host()));
+  }
+  return std::make_pair(upper_string, lower_string);
 }
 
 void GetSavePasswordDialogTitleTextAndLinkRange(

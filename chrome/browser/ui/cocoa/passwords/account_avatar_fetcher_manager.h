@@ -12,7 +12,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 class AccountAvatarFetcherBridge;
-@class CredentialItemView;
+@class CredentialItemButton;
 class GURL;
 
 // Handles retrieving avatar images for credential items.
@@ -26,7 +26,7 @@ class GURL;
         (scoped_refptr<net::URLRequestContextGetter>)requestContext;
 
 // Retrieves the image located at |avatarURL| and updates |view| if successful.
-- (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemView*)view;
+- (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemButton*)view;
 
 @end
 

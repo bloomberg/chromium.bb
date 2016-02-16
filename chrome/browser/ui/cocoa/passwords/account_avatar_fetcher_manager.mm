@@ -6,8 +6,9 @@
 
 #include <utility>
 
+#include "base/mac/foundation_util.h"
 #include "base/memory/weak_ptr.h"
-#import "chrome/browser/ui/cocoa/passwords/credential_item_view.h"
+#import "chrome/browser/ui/cocoa/passwords/credential_item_button.h"
 #include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "ui/gfx/image/image_skia.h"
@@ -18,7 +19,7 @@ class AccountAvatarFetcherBridge;
 @interface AccountAvatarFetcherManager()
 - (void)updateAvatar:(NSImage*)image
           fromBridge:(AccountAvatarFetcherBridge*)bridge
-             forView:(CredentialItemView*)view;
+             forView:(CredentialItemButton*)view;
 @end
 
 class AccountAvatarFetcherBridge
@@ -26,7 +27,7 @@ class AccountAvatarFetcherBridge
       public base::SupportsWeakPtr<AccountAvatarFetcherBridge> {
  public:
   AccountAvatarFetcherBridge(AccountAvatarFetcherManager* manager,
-                             CredentialItemView* view);
+                             CredentialItemButton* view);
   virtual ~AccountAvatarFetcherBridge();
 
   // AccountAvatarFetcherDelegate:
@@ -34,14 +35,13 @@ class AccountAvatarFetcherBridge
 
  private:
   AccountAvatarFetcherManager* manager_;
-  CredentialItemView* view_;
+  CredentialItemButton* view_;
 };
 
 AccountAvatarFetcherBridge::AccountAvatarFetcherBridge(
     AccountAvatarFetcherManager* manager,
-    CredentialItemView* view)
-    : manager_(manager), view_(view) {
-}
+    CredentialItemButton* view)
+    : manager_(manager), view_(view) {}
 
 AccountAvatarFetcherBridge::~AccountAvatarFetcherBridge() = default;
 
@@ -66,7 +66,7 @@ void AccountAvatarFetcherBridge::UpdateAvatar(const gfx::ImageSkia& image) {
   fetcher->Start(requestContext_.get());
 }
 
-- (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemView*)view {
+- (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemButton*)view {
   scoped_ptr<AccountAvatarFetcherBridge> bridge(
       new AccountAvatarFetcherBridge(self, view));
   AccountAvatarFetcher* fetcher =
@@ -77,8 +77,8 @@ void AccountAvatarFetcherBridge::UpdateAvatar(const gfx::ImageSkia& image) {
 
 - (void)updateAvatar:(NSImage*)image
           fromBridge:(AccountAvatarFetcherBridge*)bridge
-             forView:(CredentialItemView*)view {
-  [view updateAvatar:image];
+             forView:(CredentialItemButton*)view {
+  [view setImage:image];
   auto it = std::find(bridges_.begin(), bridges_.end(), bridge);
   if (it != bridges_.end())
     bridges_.erase(it);
