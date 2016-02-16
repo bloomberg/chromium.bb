@@ -150,8 +150,8 @@
           'sources': [
             '<@(sessions_core_sources)',
 
-            'sessions/ios/ios_live_tab.cc',
             'sessions/ios/ios_live_tab.h',
+            'sessions/ios/ios_live_tab.mm',
             'sessions/ios/ios_serialized_navigation_builder.h',
             'sessions/ios/ios_serialized_navigation_builder.mm',
             'sessions/ios/ios_serialized_navigation_driver.cc',

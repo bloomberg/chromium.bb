@@ -42,8 +42,8 @@ if (!is_ios) {
 } else {
   source_set("sessions") {
     sources = [
-      "ios/ios_live_tab.cc",
       "ios/ios_live_tab.h",
+      "ios/ios_live_tab.mm",
       "ios/ios_serialized_navigation_builder.h",
       "ios/ios_serialized_navigation_builder.mm",
       "ios/ios_serialized_navigation_driver.cc",

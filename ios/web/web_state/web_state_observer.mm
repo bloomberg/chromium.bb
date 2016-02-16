@@ -15,8 +15,7 @@ WebStateObserver::WebStateObserver(WebState* web_state) : web_state_(nullptr) {
   Observe(web_state);
 }
 
-WebStateObserver::WebStateObserver() : web_state_(nullptr) {
-}
+WebStateObserver::WebStateObserver() : web_state_(nullptr) {}
 
 WebStateObserver::~WebStateObserver() {
   if (web_state_)

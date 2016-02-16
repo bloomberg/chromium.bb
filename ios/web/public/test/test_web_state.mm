@@ -8,8 +8,8 @@
 
 namespace web {
 
-TestWebState::TestWebState() : trust_level_(kAbsolute), content_is_html_(true) {
-}
+TestWebState::TestWebState()
+    : trust_level_(kAbsolute), content_is_html_(true) {}
 
 TestWebState::~TestWebState() = default;
 

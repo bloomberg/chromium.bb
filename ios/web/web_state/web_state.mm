@@ -15,10 +15,8 @@ WebState::OpenURLParams::OpenURLParams(const GURL& url,
       referrer(referrer),
       disposition(disposition),
       transition(transition),
-      is_renderer_initiated(is_renderer_initiated) {
-}
+      is_renderer_initiated(is_renderer_initiated) {}
 
-WebState::OpenURLParams::~OpenURLParams() {
-}
+WebState::OpenURLParams::~OpenURLParams() {}
 
 }  // namespace web
