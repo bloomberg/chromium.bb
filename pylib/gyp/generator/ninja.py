@@ -767,15 +767,17 @@ class NinjaWriter(object):
   def WriteMacBundleResources(self, resources, bundle_depends):
     """Writes ninja edges for 'mac_bundle_resources'."""
     xcassets = []
+
+    extra_env = self.xcode_settings.GetPerTargetSettings()
+    env = self.GetSortedXcodeEnv(additional_settings=extra_env)
+    env = self.ComputeExportEnvString(env)
+    isBinary = self.xcode_settings.IsBinaryOutputFormat(self.config_name)
+
     for output, res in gyp.xcode_emulation.GetMacBundleResources(
         generator_default_variables['PRODUCT_DIR'],
         self.xcode_settings, map(self.GypPathToNinja, resources)):
       output = self.ExpandSpecial(output)
       if os.path.splitext(output)[-1] != '.xcassets':
-        isBinary = self.xcode_settings.IsBinaryOutputFormat(self.config_name)
-        extra_env = self.xcode_settings.GetPerTargetSettings()
-        env = self.GetSortedXcodeEnv(additional_settings=extra_env)
-        env = self.ComputeExportEnvString(env)
         self.ninja.build(output, 'mac_tool', res,
                          variables=[('mactool_cmd', 'copy-bundle-resource'), \
                                     ('env', env), ('binary', isBinary)])
