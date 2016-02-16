@@ -145,9 +145,11 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::WaitingToCancelOnCompositor:
         m_runState = RunState::PostAnimationCleanup;
-
         // Get serviced the next time compositor updates are allowed.
-        scrollableArea()->registerForAnimation();
+        if (scrollableArea())
+            scrollableArea()->registerForAnimation();
+        else
+            resetAnimationState();
     }
 }
 
