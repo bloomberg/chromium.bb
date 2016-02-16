@@ -83,14 +83,6 @@ class CONTENT_EXPORT MultipartResponseDelegate {
     loader_ = NULL;
   }
 
-  // Returns the lower and higher content ranges from an individual multipart
-  // in a multipart response.
-  // Returns true on success.
-  static bool ReadContentRanges(const blink::WebURLResponse& response,
-                                int64_t* content_range_lower_bound,
-                                int64_t* content_range_upper_bound,
-                                int64_t* content_range_instance_size);
-
  private:
   friend class MultipartResponseDelegateTester;  // For unittests.
 
