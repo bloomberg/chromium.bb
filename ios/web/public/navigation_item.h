@@ -14,11 +14,7 @@
 
 class GURL;
 
-#if defined(__OBJC__)
 @class NSDictionary;
-#else
-class NSDictionary;
-#endif  // __OBJC__
 
 namespace web {
 struct FaviconStatus;
