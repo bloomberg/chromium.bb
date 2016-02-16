@@ -36,6 +36,13 @@ class Options(object):
              'pass --no-sandbox to browser (local run only; see also '
              'https://chromium.googlesource.com/chromium/src/+/master/'
              'docs/linux_suid_sandbox_development.md)'),
+            ('devices_file', _SRC_DIR + '/third_party/WebKit/Source/devtools'
+             '/front_end/emulated_devices/module.json', 'File containing a'
+             ' list of emulated devices characteristics.'),
+            ('emulate_device', '', 'Name of the device to emulate. Must be '
+             'present in --devices_file, or empty for no emulation.'),
+            ('emulate_network', '', 'Type of network emulation. Empty for no'
+             ' emulation.')
           ]
 
 
