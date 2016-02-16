@@ -12,7 +12,7 @@ namespace content {
 
 class GpuProcess : public ChildProcess {
  public:
-  GpuProcess();
+  explicit GpuProcess(base::ThreadPriority io_thread_priority);
   ~GpuProcess() override;
 
  private:

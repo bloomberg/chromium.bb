@@ -33,6 +33,7 @@ class CONTENT_EXPORT ChildProcess {
   // Child processes should have an object that derives from this class.
   // Normally you would immediately call set_main_thread after construction.
   ChildProcess();
+  explicit ChildProcess(base::ThreadPriority io_thread_priority);
   virtual ~ChildProcess();
 
   // May be NULL if the main thread hasn't been set explicitly.

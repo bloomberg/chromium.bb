@@ -6,8 +6,8 @@
 
 namespace content {
 
-GpuProcess::GpuProcess() {
-}
+GpuProcess::GpuProcess(base::ThreadPriority io_thread_priority)
+    : ChildProcess(io_thread_priority) {}
 
 GpuProcess::~GpuProcess() {
 }

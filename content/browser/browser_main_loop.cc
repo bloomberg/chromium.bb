@@ -884,7 +884,7 @@ int BrowserMainLoop::CreateThreads() {
             "Thread", "BrowserThread::IO");
         thread_to_start = &io_thread_;
         options = io_message_loop_options;
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
         // Up the priority of the |io_thread_| as some of its IPCs relate to
         // display tasks.
         options.priority = base::ThreadPriority::DISPLAY;

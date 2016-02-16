@@ -39,15 +39,19 @@ InProcessGpuThread::~InProcessGpuThread() {
 }
 
 void InProcessGpuThread::Init() {
+  base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL;
+
+#if defined(OS_ANDROID)
   // Call AttachCurrentThreadWithName, before any other AttachCurrentThread()
   // calls. The latter causes Java VM to assign Thread-??? to the thread name.
   // Please note calls to AttachCurrentThreadWithName after AttachCurrentThread
   // will not change the thread name kept in Java VM.
-#if defined(OS_ANDROID)
   base::android::AttachCurrentThreadWithName(thread_name());
+  // Up the priority of the |io_thread_| on Android.
+  io_thread_priority = base::ThreadPriority::DISPLAY;
 #endif
 
-  gpu_process_ = new GpuProcess();
+  gpu_process_ = new GpuProcess(io_thread_priority);
 
   // The process object takes ownership of the thread object, so do not
   // save and delete the pointer.

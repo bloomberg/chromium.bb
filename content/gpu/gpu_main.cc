@@ -394,7 +394,12 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu::SyncPointManager sync_point_manager(false);
 
-  GpuProcess gpu_process;
+  base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  io_thread_priority = base::ThreadPriority::DISPLAY;
+#endif
+
+  GpuProcess gpu_process(io_thread_priority);
 
   GpuChildThread* child_thread = new GpuChildThread(
       watchdog_thread.get(), dead_on_arrival, gpu_info, deferred_messages.Get(),

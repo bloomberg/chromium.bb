@@ -34,7 +34,9 @@ base::LazyInstance<base::ThreadLocalPointer<ChildProcess> > g_lazy_tls =
     LAZY_INSTANCE_INITIALIZER;
 }
 
-ChildProcess::ChildProcess()
+ChildProcess::ChildProcess() : ChildProcess(base::ThreadPriority::NORMAL) {}
+
+ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority)
     : ref_count_(0),
       shutdown_event_(true, false),
       io_thread_("Chrome_ChildIOThread") {
@@ -45,7 +47,10 @@ ChildProcess::ChildProcess()
 
   // We can't recover from failing to start the IO thread.
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  thread_options.priority = io_thread_priority;
 #if defined(OS_ANDROID)
+  // TODO(reveman): Remove this in favor of setting it explicitly for each type
+  // of process.
   thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
   CHECK(io_thread_.StartWithOptions(thread_options));
