@@ -300,6 +300,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
+    # Mac AMD
+    self.Fail('deqp/functional/gles3/clipping.html',
+        ['mac', 'amd'], bug=483282)
+
     # Linux only.
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
