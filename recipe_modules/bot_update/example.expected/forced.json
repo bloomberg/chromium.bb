@@ -4,12 +4,6 @@
       "python",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
-      "--master",
-      "experimental",
-      "--builder",
-      "Experimental Builder",
-      "--slave",
-      "somehost",
       "--spec",
       "cache_dir = None\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'src', 'url': 'svn://svn.chromium.org/chrome/trunk/src'}]",
       "--root",
@@ -21,8 +15,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@HEAD",
-      "--force"
+      "src@HEAD"
     ],
     "cwd": "[SLAVE_BUILD]",
     "env": {

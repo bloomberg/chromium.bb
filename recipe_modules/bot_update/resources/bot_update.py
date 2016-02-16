@@ -73,18 +73,17 @@ ROOT_DIR = path.dirname(BUILD_DIR)
 
 DEPOT_TOOLS_DIR = path.abspath(path.join(THIS_DIR, '..', '..', '..'))
 
-BUILD_INTERNAL_DIR = check_dir(
-    'build_internal', [
-        path.join(ROOT_DIR, 'build_internal'),
-        path.join(ROOT_DIR,      # .recipe_deps
-                  path.pardir,   # slave
-                  path.pardir,   # scripts
-                  path.pardir),  # build_internal
-    ])
-
-
 CHROMIUM_GIT_HOST = 'https://chromium.googlesource.com'
 CHROMIUM_SRC_URL = CHROMIUM_GIT_HOST + '/chromium/src.git'
+
+RECOGNIZED_PATHS = {
+    '/chrome/trunk/src':
+        CHROMIUM_SRC_URL,
+    '/chrome/trunk/src/tools/cros.DEPS':
+        CHROMIUM_GIT_HOST + '/chromium/src/tools/cros.DEPS.git',
+    '/chrome-internal/trunk/src-internal':
+        'https://chrome-internal.googlesource.com/chrome/src-internal.git',
+}
 
 # Official builds use buildspecs, so this is a special case.
 BUILDSPEC_TYPE = collections.namedtuple('buildspec',
@@ -168,39 +167,8 @@ GOT_REVISION_MAPPINGS = {
 
 
 BOT_UPDATE_MESSAGE = """
-What is the "Bot Update" step?
-==============================
-
-This step ensures that the source checkout on the bot (e.g. Chromium's src/ and
-its dependencies) is checked out in a consistent state. This means that all of
-the necessary repositories are checked out, no extra repositories are checked
-out, and no locally modified files are present.
-
-These actions used to be taken care of by the "gclient revert" and "update"
-steps. However, those steps are known to be buggy and occasionally flaky. This
-step has two main advantages over them:
-  * it only operates in Git, so the logic can be clearer and cleaner; and
-  * it is a slave-side script, so its behavior can be modified without
-    restarting the master.
-
-Why Git, you ask? Because that is the direction that the Chromium project is
-heading. This step is an integral part of the transition from using the SVN repo
-at chrome/trunk/src to using the Git repo src.git. Please pardon the dust while
-we fully convert everything to Git. This message will get out of your way
-eventually, and the waterfall will be a happier place because of it.
-
-This step can be activated or deactivated independently on every builder on
-every master. When it is active, the "gclient revert" and "update" steps become
-no-ops. When it is inactive, it prints this message, cleans up after itself, and
-lets everything else continue as though nothing has changed. Eventually, when
-everything is stable enough, this step will replace them entirely.
-
-Debugging information:
+Bot Update Debugging information:
 (master/builder/slave may be unspecified on recipes)
-master: %(master)s
-builder: %(builder)s
-slave: %(slave)s
-forced by recipes: %(recipe)s
 CURRENT_DIR: %(CURRENT_DIR)s
 BUILDER_DIR: %(BUILDER_DIR)s
 SLAVE_DIR: %(SLAVE_DIR)s
@@ -208,20 +176,7 @@ THIS_DIR: %(THIS_DIR)s
 SCRIPTS_DIR: %(SCRIPTS_DIR)s
 BUILD_DIR: %(BUILD_DIR)s
 ROOT_DIR: %(ROOT_DIR)s
-DEPOT_TOOLS_DIR: %(DEPOT_TOOLS_DIR)s
-bot_update.py is:"""
-
-ACTIVATED_MESSAGE = """ACTIVE.
-The bot will perform a Git checkout in this step.
-The "gclient revert" and "update" steps are no-ops.
-
-"""
-
-NOT_ACTIVATED_MESSAGE = """INACTIVE.
-This step does nothing. You actually want to look at the "update" step.
-
-"""
-
+DEPOT_TOOLS_DIR: %(DEPOT_TOOLS_DIR)s"""
 
 GCLIENT_TEMPLATE = """solutions = %(solutions)s
 
@@ -231,137 +186,14 @@ cache_dir = r%(cache_dir)s
 """
 
 
-internal_data = {}
-if BUILD_INTERNAL_DIR:
-  local_vars = {}
-  try:
-    execfile(os.path.join(
-        BUILD_INTERNAL_DIR, 'scripts', 'slave', 'bot_update_cfg.py'),
-        local_vars)
-  except Exception:
-    # Same as if BUILD_INTERNAL_DIR didn't exist in the first place.
-    print 'Warning: unable to read internal configuration file.'
-    print 'If this is an internal bot, this step may be erroneously inactive.'
-  internal_data = local_vars
-
-RECOGNIZED_PATHS = {
-    # If SVN path matches key, the entire URL is rewritten to the Git url.
-    '/chrome/trunk/src':
-        CHROMIUM_SRC_URL,
-    '/chrome/trunk/src/tools/cros.DEPS':
-        CHROMIUM_GIT_HOST + '/chromium/src/tools/cros.DEPS.git',
-}
-RECOGNIZED_PATHS.update(internal_data.get('RECOGNIZED_PATHS', {}))
-
-ENABLED_MASTERS = [
-    'bot_update.always_on',
-    'chromium.android',
-    'chromium.angle',
-    'chromium.chrome',
-    'chromium.chromedriver',
-    'chromium.chromiumos',
-    'chromium',
-    'chromium.fyi',
-    'chromium.goma',
-    'chromium.gpu',
-    'chromium.gpu.fyi',
-    'chromium.infra',
-    'chromium.infra.cron',
-    'chromium.linux',
-    'chromium.lkgr',
-    'chromium.mac',
-    'chromium.memory',
-    'chromium.memory.fyi',
-    'chromium.perf',
-    'chromium.perf.fyi',
-    'chromium.swarm',
-    'chromium.webkit',
-    'chromium.webrtc',
-    'chromium.webrtc.fyi',
-    'chromium.win',
-    'client.catapult',
-    'client.drmemory',
-    'client.mojo',
-    'client.nacl',
-    'client.nacl.ports',
-    'client.nacl.sdk',
-    'client.nacl.toolchain',
-    'client.pdfium',
-    'client.skia',
-    'client.skia.fyi',
-    'client.v8',
-    'client.v8.branches',
-    'client.v8.fyi',
-    'client.webrtc',
-    'client.webrtc.fyi',
-    'tryserver.blink',
-    'tryserver.client.catapult',
-    'tryserver.client.mojo',
-    'tryserver.chromium.android',
-    'tryserver.chromium.angle',
-    'tryserver.chromium.linux',
-    'tryserver.chromium.mac',
-    'tryserver.chromium.perf',
-    'tryserver.chromium.win',
-    'tryserver.infra',
-    'tryserver.nacl',
-    'tryserver.v8',
-    'tryserver.webrtc',
-]
-ENABLED_MASTERS += internal_data.get('ENABLED_MASTERS', [])
-
-ENABLED_BUILDERS = {
-    'client.dart.fyi': [
-        'v8-linux-release',
-        'v8-mac-release',
-        'v8-win-release',
-    ],
-    'client.dynamorio': [
-        'linux-v8-dr',
-    ],
-}
-ENABLED_BUILDERS.update(internal_data.get('ENABLED_BUILDERS', {}))
-
-ENABLED_SLAVES = {}
-ENABLED_SLAVES.update(internal_data.get('ENABLED_SLAVES', {}))
-
-# Disabled filters get run AFTER enabled filters, so for example if a builder
-# config is enabled, but a bot on that builder is disabled, that bot will
-# be disabled.
-DISABLED_BUILDERS = {}
-DISABLED_BUILDERS.update(internal_data.get('DISABLED_BUILDERS', {}))
-
-DISABLED_SLAVES = {}
-DISABLED_SLAVES.update(internal_data.get('DISABLED_SLAVES', {}))
-
-# These masters work only in Git, meaning for got_revision, always output
-# a git hash rather than a SVN rev.
-GIT_MASTERS = [
-    'client.v8',
-    'client.v8.branches',
-    'tryserver.v8',
-]
-GIT_MASTERS += internal_data.get('GIT_MASTERS', [])
-
-
 # How many times to try before giving up.
 ATTEMPTS = 5
 
-# Find deps2git
-DEPS2GIT_DIR_PATH = path.join(SCRIPTS_DIR, 'tools', 'deps2git')
-DEPS2GIT_PATH = path.join(DEPS2GIT_DIR_PATH, 'deps2git.py')
-S2G_INTERNAL_PATH = path.join(SCRIPTS_DIR, 'tools', 'deps2git_internal',
-                              'svn_to_git_internal.py')
 GIT_CACHE_PATH = path.join(DEPOT_TOOLS_DIR, 'git_cache.py')
 
 # Find the patch tool.
 if sys.platform.startswith('win'):
-  if not BUILD_INTERNAL_DIR:
-    print 'Warning: could not find patch tool because there is no '
-    print 'build_internal present.'
-    PATCH_TOOL = None
-  else:
-    PATCH_TOOL = path.join(BUILD_INTERNAL_DIR, 'tools', 'patch.EXE')
+  PATCH_TOOL = path.join(THIS_DIR, 'patch.EXE')
 else:
   PATCH_TOOL = '/usr/bin/patch'
 
@@ -390,11 +222,6 @@ class SVNRevisionNotFound(Exception):
 
 
 class InvalidDiff(Exception):
-  pass
-
-
-class Inactive(Exception):
-  """Not really an exception, just used to exit early cleanly."""
   pass
 
 
@@ -524,34 +351,6 @@ def get_gclient_spec(solutions, target_os, target_os_only, git_cache_dir):
       'target_os': ('\ntarget_os=%s' % target_os) if target_os else '',
       'target_os_only': '\ntarget_os_only=%s' % target_os_only
   }
-
-
-def check_enabled(master, builder, slave):
-  if master in ENABLED_MASTERS:
-    return True
-  builder_list = ENABLED_BUILDERS.get(master)
-  if builder_list and builder in builder_list:
-    return True
-  slave_list = ENABLED_SLAVES.get(master)
-  if slave_list and slave in slave_list:
-    return True
-  return False
-
-
-def check_disabled(master, builder, slave):
-  """Returns True if disabled, False if not disabled."""
-  builder_list = DISABLED_BUILDERS.get(master)
-  if builder_list and builder in builder_list:
-    return True
-  slave_list = DISABLED_SLAVES.get(master)
-  if slave_list and slave in slave_list:
-    return True
-  return False
-
-
-def check_valid_host(master, builder, slave):
-  return (check_enabled(master, builder, slave)
-          and not check_disabled(master, builder, slave))
 
 
 def maybe_ignore_revision(revision, buildspec):
@@ -781,17 +580,6 @@ def get_commit_message_footer(message, key):
   return get_commit_message_footer_map(message).get(key)
 
 
-def get_svn_rev(git_hash, dir_name):
-  log = git('log', '-1', git_hash, cwd=dir_name)
-  git_svn_id = get_commit_message_footer(log, GIT_SVN_ID_FOOTER_KEY)
-  if not git_svn_id:
-    return None
-  m = GIT_SVN_ID_RE.match(git_svn_id)
-  if not m:
-    return None
-  return int(m.group(2))
-
-
 def get_git_hash(revision, branch, sln_dir):
   """We want to search for the SVN revision on the git-svn branch.
 
@@ -805,59 +593,6 @@ def get_git_hash(revision, branch, sln_dir):
     return result
   raise SVNRevisionNotFound('We can\'t resolve svn r%s into a git hash in %s' %
                             (revision, sln_dir))
-
-
-def _last_commit_for_file(filename, repo_base):
-  cmd = ['log', '--format=%H', '--max-count=1', '--', filename]
-  return git(*cmd, cwd=repo_base).strip()
-
-
-def need_to_run_deps2git(repo_base, deps_file, deps_git_file):
-  """Checks to see if we need to run deps2git.
-
-  Returns True if there was a DEPS change after the last .DEPS.git update
-  or if DEPS has local modifications.
-  """
-  # See if DEPS is dirty
-  deps_file_status = git(
-      'status', '--porcelain', deps_file, cwd=repo_base).strip()
-  if deps_file_status and deps_file_status.startswith('M '):
-    return True
-
-  last_known_deps_ref = _last_commit_for_file(deps_file, repo_base)
-  last_known_deps_git_ref = _last_commit_for_file(deps_git_file, repo_base)
-  merge_base_ref = git('merge-base', last_known_deps_ref,
-                       last_known_deps_git_ref, cwd=repo_base).strip()
-
-  # If the merge base of the last DEPS and last .DEPS.git file is not
-  # equivilent to the hash of the last DEPS file, that means the DEPS file
-  # was committed after the last .DEPS.git file.
-  return last_known_deps_ref != merge_base_ref
-
-
-def ensure_deps2git(solution, shallow, git_cache_dir):
-  repo_base = path.join(os.getcwd(), solution['name'])
-  deps_file = path.join(repo_base, 'DEPS')
-  deps_git_file = path.join(repo_base, '.DEPS.git')
-  if (not git('ls-files', 'DEPS', cwd=repo_base).strip() or
-      not git('ls-files', '.DEPS.git', cwd=repo_base).strip()):
-    return
-
-  print 'Checking if %s is newer than %s' % (deps_file, deps_git_file)
-  if not need_to_run_deps2git(repo_base, deps_file, deps_git_file):
-    return
-
-  print '===DEPS file modified, need to run deps2git==='
-  cmd = [sys.executable, DEPS2GIT_PATH,
-         '--workspace', os.getcwd(),
-         '--cache_dir', git_cache_dir,
-         '--deps', deps_file,
-         '--out', deps_git_file]
-  if 'chrome-internal.googlesource' in solution['url']:
-    cmd.extend(['--extra-rules', S2G_INTERNAL_PATH])
-  if shallow:
-    cmd.append('--shallow')
-  call(*cmd)
 
 
 def emit_log_lines(name, lines):
@@ -925,6 +660,7 @@ def force_revision(folder_name, revision):
     ref = branch if branch.startswith('refs/') else 'origin/%s' % branch
     git('checkout', '--force', ref, cwd=folder_name)
 
+
 def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
   build_dir = os.getcwd()
   # Before we do anything, break all git_cache locks.
@@ -985,16 +721,6 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
         else:
           raise
         remove(sln_dir)
-      except SVNRevisionNotFound:
-        tries_left -= 1
-        if tries_left > 0:
-          # If we don't have the correct revision, wait and try again.
-          print 'We can\'t find revision %s.' % revision
-          print 'The svn to git replicator is probably falling behind.'
-          print 'waiting 5 seconds and trying again...'
-          time.sleep(5)
-        else:
-          raise
 
     git('clean', '-dff', cwd=sln_dir)
 
@@ -1003,16 +729,6 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
                     cwd=sln_dir).strip()
     first_solution = False
   return git_ref
-
-
-def _download(url):
-  """Fetch url and return content, with retries for flake."""
-  for attempt in xrange(ATTEMPTS):
-    try:
-      return urllib2.urlopen(url).read()
-    except Exception:
-      if attempt == ATTEMPTS - 1:
-        raise
 
 
 def parse_diff(diff):
@@ -1224,12 +940,8 @@ def get_commit_position(git_path, revision='HEAD'):
   return None
 
 
-def parse_got_revision(gclient_output, got_revision_mapping, use_svn_revs):
-  """Translate git gclient revision mapping to build properties.
-
-  If use_svn_revs is True, then translate git hashes in the revision mapping
-  to svn revision numbers.
-  """
+def parse_got_revision(gclient_output, got_revision_mapping):
+  """Translate git gclient revision mapping to build properties."""
   properties = {}
   solutions_output = {
       # Make sure path always ends with a single slash.
@@ -1249,12 +961,7 @@ def parse_got_revision(gclient_output, got_revision_mapping, use_svn_revs):
       # Since we are using .DEPS.git, everything had better be git.
       assert solution_output.get('scm') == 'git'
       git_revision = git('rev-parse', 'HEAD', cwd=dir_name).strip()
-      if use_svn_revs:
-        revision = get_svn_rev(git_revision, dir_name)
-        if not revision:
-          revision = git_revision
-      else:
-        revision = git_revision
+      revision = git_revision
       commit_position = get_commit_position(dir_name)
 
     properties[property_name] = revision
@@ -1286,7 +993,6 @@ def ensure_deps_revisions(deps_url_mapping, solutions, revisions):
                                    revisions)
     if not revision:
       continue
-    # TODO(hinoka): Catch SVNRevisionNotFound error maybe?
     git('fetch', 'origin', cwd=deps_name)
     force_revision(deps_name, revision)
 
@@ -1322,11 +1028,6 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                              revision_mapping, git_ref, apply_issue_email_file,
                              apply_issue_key_file, whitelist=[target])
         already_patched.append(target)
-
-  if not buildspec:
-    # Run deps2git if there is a DEPS change after the last .DEPS.git commit.
-    for solution in solutions:
-      ensure_deps2git(solution, shallow, git_cache_dir)
 
   # Ensure our build/ directory is set up with the correct .gclient file.
   gclient_configure(solutions, target_os, target_os_only, git_cache_dir)
@@ -1431,8 +1132,6 @@ def parse_args():
                    help='--private-key-file option passthrough for '
                         'apply_patch.py.')
   parse.add_option('--patch_url', help='Optional URL to SVN patch.')
-  parse.add_option('--root', dest='patch_root',
-                   help='DEPRECATED: Use --patch_root.')
   parse.add_option('--patch_root', help='Directory to patch on top of.')
   parse.add_option('--rietveld_server',
                    default='codereview.chromium.org',
@@ -1441,10 +1140,6 @@ def parse_args():
                    help='Gerrit repository to pull the ref from.')
   parse.add_option('--gerrit_ref', help='Gerrit ref to apply.')
   parse.add_option('--specs', help='Gcilent spec.')
-  parse.add_option('--master', help='Master name.')
-  parse.add_option('-f', '--force', action='store_true',
-                   help='Bypass check to see if we want to be run. '
-                        'Should ONLY be used locally or by smart recipes.')
   parse.add_option('--revision_mapping',
                    help='{"path/to/repo/": "property_name"}')
   parse.add_option('--revision_mapping_file',
@@ -1460,11 +1155,6 @@ def parse_args():
                         'set to <branch>:<revision>.')
   parse.add_option('--output_manifest', action='store_true',
                    help=('Add manifest json to the json output.'))
-  parse.add_option('--slave_name', default=socket.getfqdn().split('.')[0],
-                   help='Hostname of the current machine, '
-                   'used for determining whether or not to activate.')
-  parse.add_option('--builder_name', help='Name of the builder, '
-                   'used for determining whether or not to activate.')
   parse.add_option('--build_dir', default=os.getcwd())
   parse.add_option('--flag_file', default=path.join(os.getcwd(),
                                                     'update.flag'))
@@ -1526,25 +1216,17 @@ def parse_args():
   return options, args
 
 
-def prepare(options, git_slns, active):
+def prepare(options, git_slns):
   """Prepares the target folder before we checkout."""
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
-  # If we're active now, but the flag file doesn't exist (we weren't active
-  # last run) or vice versa, blow away all checkouts.
-  if bool(active) != bool(check_flag(options.flag_file)):
-    ensure_no_checkout(dir_names, '*')
   if options.output_json:
     # Make sure we tell recipes that we didn't run if the script exits here.
-    emit_json(options.output_json, did_run=active)
-  if active:
-    if options.clobber:
-      ensure_no_checkout(dir_names, '*')
-    else:
-      ensure_no_checkout(dir_names, '.svn')
-    emit_flag(options.flag_file)
+    emit_json(options.output_json, did_run=True)
+  if options.clobber:
+    ensure_no_checkout(dir_names, '*')
   else:
-    delete_flag(options.flag_file)
-    raise Inactive  # This is caught in main() and we exit cleanly.
+    ensure_no_checkout(dir_names, '.svn')
+  emit_flag(options.flag_file)
 
   # Do a shallow checkout if the disk is less than 100GB.
   total_disk_space, free_disk_space = get_total_disk_space()
@@ -1571,7 +1253,7 @@ def prepare(options, git_slns, active):
   return revisions, step_text
 
 
-def checkout(options, git_slns, specs, buildspec, master,
+def checkout(options, git_slns, specs, buildspec,
              svn_root, revisions, step_text):
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
@@ -1633,9 +1315,6 @@ def checkout(options, git_slns, specs, buildspec, master,
       print '@@@STEP_TEXT@%s PATCH FAILED@@@' % step_text
     raise
 
-  # Revision is an svn revision, unless it's a git master.
-  use_svn_rev = master not in GIT_MASTERS
-
   # Take care of got_revisions outputs.
   revision_mapping = dict(GOT_REVISION_MAPPINGS.get(svn_root, {}))
   if options.revision_mapping:
@@ -1647,8 +1326,7 @@ def checkout(options, git_slns, specs, buildspec, master,
   if not revision_mapping:
     revision_mapping[first_sln] = 'got_revision'
 
-  got_revisions = parse_got_revision(gclient_output, revision_mapping,
-                                     use_svn_rev)
+  got_revisions = parse_got_revision(gclient_output, revision_mapping)
 
   if not got_revisions:
     # TODO(hinoka): We should probably bail out here, but in the interest
@@ -1673,22 +1351,9 @@ def checkout(options, git_slns, specs, buildspec, master,
     emit_properties(got_revisions)
 
 
-def print_help_text(force, output_json, active, master, builder, slave):
+def print_help_text(master, builder, slave):
   """Print helpful messages to tell devs whats going on."""
-  if force and output_json:
-    recipe_force = 'Forced on by recipes'
-  elif active and output_json:
-    recipe_force = 'Off by recipes, but forced on by bot update'
-  elif not active and output_json:
-    recipe_force = 'Forced off by recipes'
-  else:
-    recipe_force = 'N/A. Was not called by recipes'
-
   print BOT_UPDATE_MESSAGE % {
-    'master': master or 'Not specified',
-    'builder': builder or 'Not specified',
-    'slave': slave or 'Not specified',
-    'recipe': recipe_force,
     'CURRENT_DIR': CURRENT_DIR,
     'BUILDER_DIR': BUILDER_DIR,
     'SLAVE_DIR': SLAVE_DIR,
@@ -1698,7 +1363,6 @@ def print_help_text(force, output_json, active, master, builder, slave):
     'ROOT_DIR': ROOT_DIR,
     'DEPOT_TOOLS_DIR': DEPOT_TOOLS_DIR,
   },
-  print ACTIVATED_MESSAGE if active else NOT_ACTIVATED_MESSAGE
 
 
 def main():
@@ -1708,12 +1372,8 @@ def main():
   slave = options.slave_name
   master = options.master
 
-  # Check if this script should activate or not.
-  active = check_valid_host(master, builder, slave) or options.force or False
-
-  # Print a helpful message to tell developers whats going on with this step.
-  print_help_text(
-      options.force, options.output_json, active, master, builder, slave)
+  # Prints some debugging information.
+  print_help_text(master, builder, slave)
 
   # Parse, munipulate, and print the gclient solutions.
   specs = {}
@@ -1726,13 +1386,10 @@ def main():
 
   try:
     # Dun dun dun, the main part of bot_update.
-    revisions, step_text = prepare(options, git_slns, active)
-    checkout(options, git_slns, specs, buildspec, master, svn_root, revisions,
+    revisions, step_text = prepare(options, git_slns)
+    checkout(options, git_slns, specs, buildspec, svn_root, revisions,
              step_text)
 
-  except Inactive:
-    # Not active, should count as passing.
-    pass
   except PatchFailed as e:
     emit_flag(options.flag_file)
     # Return a specific non-zero exit code for patch failure (because it is
