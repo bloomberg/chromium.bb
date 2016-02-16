@@ -5463,6 +5463,11 @@
                 # all builders are running Xcode 7. crbug.com/499809
                 '-Wno-nullability-completeness',
               ],
+              'OTHER_CPLUSPLUSFLAGS': [
+                '$(inherited)',
+                # TODO(ios): Remove once Xcode's libc++ has LLVM r256325
+                '-isystem <!(cd <(DEPTH) && pwd -P)/third_party/llvm-build/Release+Asserts/include/c++/v1',
+              ],
             }],
 
             # Limit the valid architectures depending on "target_subarch".
