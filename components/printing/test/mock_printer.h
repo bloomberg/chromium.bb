@@ -121,8 +121,6 @@ class MockPrinter {
 
   // Specifies dots per inch.
   double dpi_;
-  double max_shrink_;
-  double min_shrink_;
 
   // Desired apparent dpi on paper.
   int desired_dpi_;

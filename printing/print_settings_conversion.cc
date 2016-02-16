@@ -227,8 +227,6 @@ void PrintSettingsToJobSettingsDebug(const PrintSettings& settings,
   // common public constants. So just serialize in "debug" section.
   base::DictionaryValue* debug = new base::DictionaryValue;
   job_settings->Set("debug", debug);
-  debug->SetDouble("minShrink", settings.min_shrink());
-  debug->SetDouble("maxShrink", settings.max_shrink());
   debug->SetInteger("desiredDpi", settings.desired_dpi());
   debug->SetInteger("dpi", settings.dpi());
   debug->SetInteger("deviceUnitsPerInch", settings.device_units_per_inch());
