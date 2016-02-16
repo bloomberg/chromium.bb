@@ -27,6 +27,7 @@
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -720,7 +721,17 @@ bool LaunchDefaultAppsSettingsModernDialog() {
         L"windows.immersivecontrolpanel_cw5n1h2txyewy"
         L"!microsoft.windows.immersivecontrolpanel",
         L"page=SettingsPageAppsDefaults", AO_NONE, &pid);
-    return SUCCEEDED(hr);
+    if (SUCCEEDED(hr)) {
+      hr = activator->ActivateApplication(
+          L"windows.immersivecontrolpanel_cw5n1h2txyewy"
+          L"!microsoft.windows.immersivecontrolpanel",
+          L"page=SettingsPageAppsDefaults"
+          L"&target=SystemSettings_DefaultApps_Browser", AO_NONE, &pid);
+    }
+    if (SUCCEEDED(hr))
+      return true;
+    UMA_HISTOGRAM_SPARSE_SLOWLY("DefaultBrowser.ActivateSettings.ErrorHresult",
+                                hr);
   }
   return false;
 }

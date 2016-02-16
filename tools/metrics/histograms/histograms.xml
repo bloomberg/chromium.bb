@@ -7181,6 +7181,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DefaultBrowser.ActivateSettings.ErrorHresult" enum="Hresult">
+  <owner>pmonette@chromium.org</owner>
+  <owner>grt@chromium.org</owner>
+  <summary>
+    The HRESULT from ActivateApplication when opening the Win10+ settings page
+    fails.
+  </summary>
+</histogram>
+
 <histogram name="DefaultBrowser.AsyncSetAsDefault.Duration" units="ms">
   <obsolete>
     Deprecated 2015/11. Renamed to DefaultBrowser.SetDefaultAsyncDuration.
@@ -68522,6 +68531,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-2147023436" label="ERROR_TIMEOUT"/>
   <int value="-2147023179" label="RPC_S_UNKNOWN_IF"/>
   <int value="-2147023174" label="RPC_S_SERVER_UNAVAILABLE"/>
+  <int value="-2147009295" label="ERROR_INSTALL_PACKAGE_NOT_FOUND"/>
   <int value="-2146959355" label="CO_E_SERVER_EXEC_FAILURE"/>
 </enum>
 
