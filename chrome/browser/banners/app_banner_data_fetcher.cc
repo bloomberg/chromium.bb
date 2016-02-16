@@ -294,8 +294,12 @@ void AppBannerDataFetcher::OnDidGetManifest(
     return;
   }
 
+  // Since the manifest is valid, one of short name or name must be non-null.
+  // Prefer name if it isn't null.
   web_app_data_ = manifest;
-  app_title_ = web_app_data_.name.string();
+  app_title_ = (web_app_data_.name.is_null())
+                   ? web_app_data_.short_name.string()
+                   : web_app_data_.name.string();
 
   if (IsWebAppInstalled(web_contents->GetBrowserContext(),
                         manifest.start_url) &&

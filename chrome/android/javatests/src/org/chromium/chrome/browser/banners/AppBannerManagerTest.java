@@ -67,7 +67,12 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     private static final String WEB_APP_PATH =
             "/chrome/test/data/banners/manifest_test_page.html";
 
+    private static final String WEB_APP_SHORT_TITLE_PATH =
+            "/chrome/test/data/banners/manifest_short_name_only_test_page.html";
+
     private static final String WEB_APP_TITLE = "Manifest test app";
+
+    private static final String WEB_APP_SHORT_TITLE = "Manifest";
 
     private static final String INSTALL_ACTION = "INSTALL_ACTION";
 
@@ -303,6 +308,35 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
+    public void triggerWebAppBanner(String url, String expectedTitle) throws Exception {
+        // Visit the site in a new tab.
+        loadUrlInNewTab("about:blank");
+        new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(url);
+
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                AppBannerManager manager =
+                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                return !manager.isFetcherActiveForTesting();
+            }
+        });
+        waitUntilNoInfoBarsExist();
+
+        // Indicate a day has passed, then revisit the page to show the banner.
+        AppBannerManager.setTimeDeltaForTesting(1);
+        new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(url);
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                AppBannerManager manager =
+                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                return !manager.isFetcherActiveForTesting();
+            }
+        });
+        waitUntilAppBannerInfoBarAppears(expectedTitle);
+    }
+
     @SmallTest
     @Feature({"AppBanners"})
     public void testFullNativeInstallPathwayFromId() throws Exception {
@@ -431,32 +465,13 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"AppBanners"})
     public void testWebAppBannerAppears() throws Exception {
-        // Visit the site in a new tab.
-        loadUrlInNewTab("about:blank");
-        new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mWebAppUrl);
+        triggerWebAppBanner(mWebAppUrl, WEB_APP_TITLE);
+    }
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                AppBannerManager manager =
-                        getActivity().getActivityTab().getAppBannerManagerForTesting();
-                return !manager.isFetcherActiveForTesting();
-            }
-        });
-        waitUntilNoInfoBarsExist();
-
-        // Indicate a day has passed, then revisit the page to show the banner.
-        AppBannerManager.setTimeDeltaForTesting(1);
-        new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mWebAppUrl);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                AppBannerManager manager =
-                        getActivity().getActivityTab().getAppBannerManagerForTesting();
-                return !manager.isFetcherActiveForTesting();
-            }
-        });
-        waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);
+    @SmallTest
+    @Feature({"AppBanners"})
+    public void testBannerFallsBackToShortName() throws Exception {
+        triggerWebAppBanner(mTestServer.getURL(WEB_APP_SHORT_TITLE_PATH), WEB_APP_SHORT_TITLE);
     }
 
     @SmallTest
