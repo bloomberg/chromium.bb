@@ -91,8 +91,8 @@ void WorkQueue::AssignSetIndex(size_t work_queue_set_index) {
 bool WorkQueue::ShouldRunBefore(const WorkQueue* other_queue) const {
   DCHECK(!work_queue_.empty());
   DCHECK(!other_queue->work_queue_.empty());
-  EnqueueOrder enqueue_order;
-  EnqueueOrder other_enqueue_order;
+  EnqueueOrder enqueue_order = 0;
+  EnqueueOrder other_enqueue_order = 0;
   bool have_task = GetFrontTaskEnqueueOrder(&enqueue_order);
   bool have_other_task =
       other_queue->GetFrontTaskEnqueueOrder(&other_enqueue_order);
