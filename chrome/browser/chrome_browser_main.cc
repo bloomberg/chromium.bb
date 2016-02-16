@@ -543,8 +543,7 @@ void LaunchDevToolsHandlerIfNeeded(const base::CommandLine& command_line) {
     int port;
     if (base::StringToInt(port_str, &port) && port >= 0 && port < 65535) {
       g_browser_process->CreateDevToolsHttpProtocolHandler(
-          chrome::HOST_DESKTOP_TYPE_NATIVE, "127.0.0.1",
-          static_cast<uint16_t>(port));
+          "127.0.0.1", static_cast<uint16_t>(port));
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
     }

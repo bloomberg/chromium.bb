@@ -182,10 +182,8 @@ class BrowserProcess {
 
   virtual GpuModeManager* gpu_mode_manager() = 0;
 
-  virtual void CreateDevToolsHttpProtocolHandler(
-      chrome::HostDesktopType host_desktop_type,
-      const std::string& ip,
-      uint16_t port) = 0;
+  virtual void CreateDevToolsHttpProtocolHandler(const std::string& ip,
+                                                 uint16_t port) = 0;
 
   virtual unsigned int AddRefModule() = 0;
   virtual unsigned int ReleaseModule() = 0;

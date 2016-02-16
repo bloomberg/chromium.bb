@@ -676,7 +676,6 @@ GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
 }
 
 void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
-    chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
     uint16_t port) {
   DCHECK(CalledOnValidThread());
@@ -684,8 +683,7 @@ void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
   // StartupBrowserCreator::LaunchBrowser can be run multiple times when browser
   // is started with several profiles or existing browser process is reused.
   if (!remote_debugging_server_.get()) {
-    remote_debugging_server_.reset(
-        new RemoteDebuggingServer(host_desktop_type, ip, port));
+    remote_debugging_server_.reset(new RemoteDebuggingServer(ip, port));
   }
 #endif
 }

@@ -153,10 +153,8 @@ void RemoteDebuggingServer::EnableTetheringForDebug() {
   g_tethering_enabled.Get() = true;
 }
 
-RemoteDebuggingServer::RemoteDebuggingServer(
-    chrome::HostDesktopType host_desktop_type,
-    const std::string& ip,
-    uint16_t port) {
+RemoteDebuggingServer::RemoteDebuggingServer(const std::string& ip,
+                                             uint16_t port) {
   base::FilePath output_dir;
   if (!port) {
     // The client requested an ephemeral port. Must write the selected

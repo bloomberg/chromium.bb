@@ -89,10 +89,8 @@ class TestingBrowserProcess : public BrowserProcess {
   NotificationUIManager* notification_ui_manager() override;
   message_center::MessageCenter* message_center() override;
   IntranetRedirectDetector* intranet_redirect_detector() override;
-  void CreateDevToolsHttpProtocolHandler(
-      chrome::HostDesktopType host_desktop_type,
-      const std::string& ip,
-      uint16_t port) override;
+  void CreateDevToolsHttpProtocolHandler(const std::string& ip,
+                                         uint16_t port) override;
   unsigned int AddRefModule() override;
   unsigned int ReleaseModule() override;
   bool IsShuttingDown() override;

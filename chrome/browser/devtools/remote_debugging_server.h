@@ -21,9 +21,7 @@ class RemoteDebuggingServer {
  public:
   static void EnableTetheringForDebug();
 
-  RemoteDebuggingServer(chrome::HostDesktopType host_desktop_type,
-                        const std::string& ip,
-                        uint16_t port);
+  RemoteDebuggingServer(const std::string& ip, uint16_t port);
 
   virtual ~RemoteDebuggingServer();
 

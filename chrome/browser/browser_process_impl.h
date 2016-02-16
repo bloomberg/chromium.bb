@@ -109,10 +109,8 @@ class BrowserProcessImpl : public BrowserProcess,
   IconManager* icon_manager() override;
   GLStringManager* gl_string_manager() override;
   GpuModeManager* gpu_mode_manager() override;
-  void CreateDevToolsHttpProtocolHandler(
-      chrome::HostDesktopType host_desktop_type,
-      const std::string& ip,
-      uint16_t port) override;
+  void CreateDevToolsHttpProtocolHandler(const std::string& ip,
+                                         uint16_t port) override;
   unsigned int AddRefModule() override;
   unsigned int ReleaseModule() override;
   bool IsShuttingDown() override;
