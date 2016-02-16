@@ -24,19 +24,12 @@
 class GURL;
 class SkBitmap;
 
-#if defined(__OBJC__)
 @class CRWJSInjectionReceiver;
 @protocol CRWScrollableContent;
 @protocol CRWWebViewProxy;
 typedef id<CRWWebViewProxy> CRWWebViewProxyType;
 @class UIView;
 typedef UIView<CRWScrollableContent> CRWContentView;
-#else
-class CRWJSInjectionReceiver;
-typedef void CRWContentView;
-typedef void* CRWWebViewProxyType;
-class UIView;
-#endif  // defined(__OBJC__)
 
 namespace base {
 class DictionaryValue;
