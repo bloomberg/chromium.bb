@@ -171,6 +171,11 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         adjustStyleForFirstLetter(style);
 
         adjustStyleForDisplay(style, parentStyle, element ? &element->document() : 0);
+
+        // Paint containment forces a block formatting context, so we must coerce from inline.
+        // https://drafts.csswg.org/css-containment/#containment-paint
+        if (style.containsPaint() && style.display() == INLINE)
+            style.setDisplay(BLOCK);
     } else {
         adjustStyleForFirstLetter(style);
     }

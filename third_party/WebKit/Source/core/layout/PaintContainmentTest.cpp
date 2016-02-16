@@ -44,10 +44,11 @@ TEST_F(PaintContainmentTest, InlinePaintContainment)
     setBodyInnerHTML("<div><span id='test' style='contain: paint'>Foo</span></div>");
     Element* span = document().getElementById(AtomicString("test"));
     ASSERT(span);
+    // The inline should have been coerced into a block in StyleAdjuster.
     LayoutObject* obj = span->layoutObject();
-    ASSERT(obj && obj->isInline());
-    LayoutInline& layoutInline = toLayoutInline(*obj);
-    checkIsClippingStackingContextAndContainer(layoutInline);
+    ASSERT(obj && obj->isLayoutBlock());
+    LayoutBlock& layoutBlock = toLayoutBlock(*obj);
+    checkIsClippingStackingContextAndContainer(layoutBlock);
 }
 
 } // namespace blink
