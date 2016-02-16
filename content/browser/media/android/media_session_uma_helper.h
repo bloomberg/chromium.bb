@@ -24,6 +24,7 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
     SystemPermanent = 1,
     UI = 2,
     CONTENT = 3,
+    SystemTransientDuck = 4,
     Count // Leave at the end.
   };
 

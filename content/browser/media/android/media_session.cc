@@ -136,6 +136,12 @@ void MediaSession::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   OnResumeInternal(SuspendType::SYSTEM);
 }
 
+void MediaSession::RecordSessionDuck(JNIEnv* env,
+                                     const JavaParamRef<jobject>& obj) {
+  uma_helper_.RecordSessionSuspended(
+      MediaSessionSuspendedSource::SystemTransientDuck);
+}
+
 void MediaSession::OnPlayerPaused(MediaSessionObserver* observer,
                                   int player_id) {
   // If a playback is completed, BrowserMediaPlayerManager will call

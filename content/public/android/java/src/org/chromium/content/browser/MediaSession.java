@@ -82,6 +82,7 @@ public class MediaSession implements AudioManager.OnAudioFocusChangeListener {
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 mIsDucking = true;
+                nativeRecordSessionDuck(mNativeMediaSession);
                 nativeOnSetVolumeMultiplier(mNativeMediaSession, DUCKING_VOLUME_MULTIPLIER);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
@@ -98,4 +99,5 @@ public class MediaSession implements AudioManager.OnAudioFocusChangeListener {
     private native void nativeOnResume(long nativeMediaSession);
     private native void nativeOnSetVolumeMultiplier(
             long nativeMediaSession, double volumeMultiplier);
+    private native void nativeRecordSessionDuck(long nativeMediaSession);
 }

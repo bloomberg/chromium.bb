@@ -72322,6 +72322,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="System Permanent"/>
   <int value="2" label="UI"/>
   <int value="3" label="CONTENT"/>
+  <int value="4" label="System Transient Duck"/>
 </enum>
 
 <enum name="MediaStreamRequestResult" type="int">

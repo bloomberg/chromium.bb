@@ -77,6 +77,11 @@ class CONTENT_EXPORT MediaSession
   // Called by Java through JNI.
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
+  // Called when the Android system requests the MediaSession to duck.
+  // Called by Java through JNI.
+  void RecordSessionDuck(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject> &obj);
+
   // Called when a player is paused in the content.
   // If the paused player is the last player, we suspend the MediaSession.
   // Otherwise, the paused player will be removed from the MediaSession.
