@@ -11,11 +11,6 @@ from profile_chrome import controllers_unittest
 
 class ChromeControllerTest(controllers_unittest.BaseControllerTest):
   def testGetCategories(self):
-    # Not supported on stable yet.
-    # TODO(skyostil): Remove this once category queries roll into stable.
-    if self.browser == 'stable':
-      return
-
     categories = \
         chrome_controller.ChromeTracingController.GetCategories(
             self.device, self.package_info)
