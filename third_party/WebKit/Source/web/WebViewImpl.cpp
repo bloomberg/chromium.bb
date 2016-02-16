@@ -1661,7 +1661,9 @@ PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client)
     ASSERT(!m_pagePopup);
 
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypePage);
-    ASSERT(popupWidget);
+    // createPopupMenu returns nullptr if this renderer process is about to die.
+    if (!popupWidget)
+        return nullptr;
     m_pagePopup = toWebPagePopupImpl(popupWidget);
     if (!m_pagePopup->initialize(this, client)) {
         m_pagePopup->closePopup();
