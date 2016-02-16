@@ -44,6 +44,9 @@ const char* const kPublicSessionWhitelist[] = {
     "ceehlgckkmkaoggdnjhibffkphfnphmg",  // Libdata login
     "fnhgfoccpcjdnjcobejogdnlnidceemb",  // OverDrive
 
+    // Education:
+    "cmeclblmdmffdgpdlifgepjddoplmmal",  //  Imagine Learning
+
     // Retail mode:
     "bjfeaefhaooblkndnoabbkkkenknkemb",  // 500 px demo
     "ehcabepphndocfmgbdkbjibfodelmpbb",  // Angry Birds demo
