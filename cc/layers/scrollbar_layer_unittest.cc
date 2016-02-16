@@ -158,12 +158,17 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<PaintedScrollbarLayerImpl*>(
           layer_impl_tree_root->children()[1].get());
+  layer_impl_tree_root->layer_tree_impl()->BuildPropertyTreesForTesting();
+  ScrollTree& scroll_tree =
+      layer_impl_tree_root->layer_tree_impl()->property_trees()->scroll_tree;
+  ScrollNode* scroll_node =
+      scroll_tree.Node(scrollbar_layer_impl->scroll_tree_index());
 
   // When the scrollbar is not an overlay scrollbar, the scroll should be
   // responded to on the main thread as the compositor does not yet implement
   // scrollbar scrolling.
-  InputHandler::ScrollStatus status =
-      scrollbar_layer_impl->TryScroll(gfx::PointF(), InputHandler::GESTURE);
+  InputHandler::ScrollStatus status = layer_tree_host_->host_impl()->TryScroll(
+      gfx::PointF(), InputHandler::GESTURE, scroll_tree, scroll_node);
   EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kScrollbarScrolling,
             status.main_thread_scrolling_reasons);
@@ -176,11 +181,15 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
       false, 0, 0);
   scrollbar_layer_impl = static_cast<PaintedScrollbarLayerImpl*>(
       layer_impl_tree_root->children()[1].get());
+  layer_impl_tree_root->layer_tree_impl()->BuildPropertyTreesForTesting();
+  scroll_tree =
+      layer_impl_tree_root->layer_tree_impl()->property_trees()->scroll_tree;
+  scroll_node = scroll_tree.Node(scrollbar_layer_impl->scroll_tree_index());
 
   // The user shouldn't be able to drag an overlay scrollbar and the scroll
   // may be handled in the compositor.
-  status =
-      scrollbar_layer_impl->TryScroll(gfx::PointF(), InputHandler::GESTURE);
+  status = layer_tree_host_->host_impl()->TryScroll(
+      gfx::PointF(), InputHandler::GESTURE, scroll_tree, scroll_node);
   EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
             status.main_thread_scrolling_reasons);

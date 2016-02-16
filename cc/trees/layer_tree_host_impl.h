@@ -603,6 +603,11 @@ class CC_EXPORT LayerTreeHostImpl
                : task_runner_provider_->MainThreadTaskRunner();
   }
 
+  InputHandler::ScrollStatus TryScroll(const gfx::PointF& screen_space_point,
+                                       InputHandler::ScrollInputType type,
+                                       const ScrollTree& scroll_tree,
+                                       ScrollNode* scroll_node) const;
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,

@@ -10076,11 +10076,13 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   property_tree_root->data.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
   property_tree_root->data.contains_non_fast_scrollable_region = false;
+  property_tree_root->data.transform_id = kRootPropertyTreeNodeId;
 
   // The node owned by root1
   ScrollNode scroll_root1;
   scroll_root1.id = 1;
   scroll_root1.owner_id = root1->id();
+  scroll_root1.data.transform_id = root1->transform_tree_index();
   expected_scroll_tree.Insert(scroll_root1, 0);
 
   // The node owned by parent2
@@ -10094,6 +10096,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent2.data.bounds = parent2->bounds();
   scroll_parent2.data.max_scroll_offset_affected_by_page_scale = true;
   scroll_parent2.data.is_inner_viewport_scroll_layer = true;
+  scroll_parent2.data.transform_id = parent2->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent2, 1);
 
   // The node owned by child6
@@ -10102,6 +10105,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_child6.owner_id = child6->id();
   scroll_child6.data.main_thread_scrolling_reasons =
       child6->main_thread_scrolling_reasons();
+  scroll_child6.data.should_flatten = true;
+  scroll_child6.data.transform_id = child6->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child6, 2);
 
   // The node owned by child7, child7 also owns a transform node
@@ -10109,8 +10114,9 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_child7.id = 4;
   scroll_child7.owner_id = child7->id();
   scroll_child7.data.scrollable = true;
-  scroll_parent2.data.scroll_clip_layer_bounds = parent3->bounds();
-  scroll_parent2.data.bounds = child7->bounds();
+  scroll_child7.data.scroll_clip_layer_bounds = parent3->bounds();
+  scroll_child7.data.bounds = child7->bounds();
+  scroll_child7.data.transform_id = child7->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child7, 1);
 
   // The node owned by grand_child11, grand_child11 also owns a transform node
@@ -10118,6 +10124,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_grand_child11.id = 5;
   scroll_grand_child11.owner_id = grand_child11->id();
   scroll_grand_child11.data.scrollable = true;
+  scroll_grand_child11.data.transform_id =
+      grand_child11->transform_tree_index();
   expected_scroll_tree.Insert(scroll_grand_child11, 4);
 
   // The node owned by parent5
@@ -10126,6 +10134,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent5.owner_id = parent5->id();
   scroll_parent5.data.contains_non_fast_scrollable_region = true;
   scroll_parent5.data.bounds = gfx::Size(10, 10);
+  scroll_parent5.data.should_flatten = true;
+  scroll_parent5.data.transform_id = parent5->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent5, 1);
 
   expected_scroll_tree.set_needs_update(false);

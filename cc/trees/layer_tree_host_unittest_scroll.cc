@@ -1049,8 +1049,14 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     impl->active_tree()->property_trees()->needs_rebuild = true;
     impl->active_tree()->BuildPropertyTreesForTesting();
 
-    InputHandler::ScrollStatus status = scroll_layer->TryScroll(
-        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE);
+    ScrollTree& scroll_tree =
+        impl->active_tree()->property_trees()->scroll_tree;
+    ScrollNode* scroll_node =
+        scroll_tree.Node(scroll_layer->scroll_tree_index());
+
+    InputHandler::ScrollStatus status =
+        impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE,
+                        scroll_tree, scroll_node);
 
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
@@ -1060,8 +1066,10 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     scroll_layer->SetBounds(root->bounds());
     impl->active_tree()->property_trees()->needs_rebuild = true;
     impl->active_tree()->BuildPropertyTreesForTesting();
-    status = scroll_layer->TryScroll(
-        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE);
+    scroll_tree = impl->active_tree()->property_trees()->scroll_tree;
+    scroll_node = scroll_tree.Node(scroll_layer->scroll_tree_index());
+    status = impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE,
+                             scroll_tree, scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
               status.main_thread_scrolling_reasons);
@@ -1070,8 +1078,10 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     scroll_layer->SetBounds(gfx::Size());
     impl->active_tree()->property_trees()->needs_rebuild = true;
     impl->active_tree()->BuildPropertyTreesForTesting();
-    status = scroll_layer->TryScroll(
-        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE);
+    scroll_tree = impl->active_tree()->property_trees()->scroll_tree;
+    scroll_node = scroll_tree.Node(scroll_layer->scroll_tree_index());
+    status = impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE,
+                             scroll_tree, scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
               status.main_thread_scrolling_reasons);
@@ -1105,18 +1115,23 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
 
+    ScrollTree& scroll_tree =
+        impl->active_tree()->property_trees()->scroll_tree;
+    ScrollNode* scroll_node =
+        scroll_tree.Node(scroll_layer->scroll_tree_index());
+
     // Verify that the scroll layer's scroll offset is taken into account when
     // checking whether the screen space point is inside the non-fast
     // scrollable region.
 
-    InputHandler::ScrollStatus status = scroll_layer->TryScroll(
-        gfx::PointF(1.f, 1.f), InputHandler::GESTURE);
+    InputHandler::ScrollStatus status = impl->TryScroll(
+        gfx::PointF(1.f, 1.f), InputHandler::GESTURE, scroll_tree, scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
               status.main_thread_scrolling_reasons);
 
-    status = scroll_layer->TryScroll(
-        gfx::PointF(21.f, 21.f), InputHandler::GESTURE);
+    status = impl->TryScroll(gfx::PointF(21.f, 21.f), InputHandler::GESTURE,
+                             scroll_tree, scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);
@@ -1148,14 +1163,22 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
     LayerImpl* inner_scroll_layer = impl->InnerViewportScrollLayer();
     LayerImpl* outer_scroll_layer = impl->OuterViewportScrollLayer();
 
-    InputHandler::ScrollStatus status = inner_scroll_layer->TryScroll(
-        gfx::PointF(1.f, 1.f), InputHandler::GESTURE);
+    ScrollTree& scroll_tree =
+        impl->active_tree()->property_trees()->scroll_tree;
+    ScrollNode* inner_scroll_node =
+        scroll_tree.Node(inner_scroll_layer->scroll_tree_index());
+    ScrollNode* outer_scroll_node =
+        scroll_tree.Node(outer_scroll_layer->scroll_tree_index());
+
+    InputHandler::ScrollStatus status =
+        impl->TryScroll(gfx::PointF(1.f, 1.f), InputHandler::GESTURE,
+                        scroll_tree, inner_scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kEventHandlers,
               status.main_thread_scrolling_reasons);
 
-    status = outer_scroll_layer->TryScroll(gfx::PointF(1.f, 1.f),
-                                           InputHandler::GESTURE);
+    status = impl->TryScroll(gfx::PointF(1.f, 1.f), InputHandler::GESTURE,
+                             scroll_tree, outer_scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);

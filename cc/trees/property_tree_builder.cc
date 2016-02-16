@@ -698,6 +698,11 @@ void AddScrollNodeIfNeeded(
         layer == data_from_ancestor.outer_viewport_scroll_layer;
 
     node.data.bounds = layer->bounds();
+    node.data.offset_to_transform_parent = layer->offset_to_transform_parent();
+    node.data.should_flatten =
+        layer->should_flatten_transform_from_property_tree();
+    node.data.transform_id =
+        data_for_children->transform_tree_parent->transform_tree_index();
 
     data_for_children->scroll_tree_parent =
         data_for_children->scroll_tree->Insert(node, parent_id);

@@ -102,6 +102,9 @@ message ScrollNodeData {
   optional bool max_scroll_offset_affected_by_page_scale = 6;
   optional bool is_inner_viewport_scroll_layer = 7;
   optional bool is_outer_viewport_scroll_layer = 8;
+  optional Vector2dF offset_to_transform_parent = 9;
+  optional bool should_flatten = 10;
+  optional int64 transform_id = 11;
 }
 
 // This defines the proto used for all types of struct TreeNode.

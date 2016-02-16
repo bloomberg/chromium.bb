@@ -531,10 +531,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return touch_event_handler_region_;
   }
 
-  InputHandler::ScrollStatus TryScroll(
-      const gfx::PointF& screen_space_point,
-      InputHandler::ScrollInputType type) const;
-
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return double_sided_; }
 
