@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
@@ -27,7 +27,7 @@ class PrefRegistrySyncable;
 // This class manages the installation of shortcuts for platform apps.
 class AppShortcutManager : public KeyedService,
                            public extensions::ExtensionRegistryObserver,
-                           public ProfileInfoCacheObserver {
+                           public ProfileAttributesStorage::Observer {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -48,7 +48,7 @@ class AppShortcutManager : public KeyedService,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 
-  // ProfileInfoCacheObserver.
+  // ProfileAttributesStorage::Observer.
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
  private:

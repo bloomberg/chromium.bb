@@ -14,6 +14,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -154,8 +156,9 @@ bool ExtensionAppShimHandler::Delegate::ProfileExistsForPath(
   // Check for the profile name in the profile info cache to ensure that we
   // never access any directory that isn't a known profile.
   base::FilePath full_path = profile_manager->user_data_dir().Append(path);
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  return cache.GetIndexOfProfileWithPath(full_path) != std::string::npos;
+  ProfileAttributesEntry* entry;
+  return profile_manager->GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(full_path, &entry);
 }
 
 Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(
