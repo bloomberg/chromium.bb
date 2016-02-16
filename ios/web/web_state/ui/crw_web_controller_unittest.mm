@@ -1256,9 +1256,6 @@ class WebControllerKeyboardTest
  protected:
   void SetUp() override {
     web::WebTestWithUIWebViewWebController::SetUp();
-    // Close any outstanding alert boxes.
-    ui::test::uiview_utils::CancelAlerts();
-
     // Sets up the listener for keyboard activation/deactivation notifications.
     keyboardListener_.reset([[KeyboardAppearanceListener alloc] init]);
   }
