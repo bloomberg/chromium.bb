@@ -807,3 +807,34 @@ mojo_system_impl.dll!mojo::edk::Channel::Message::RewriteHandles
 mojo_system_impl.dll!mojo::edk::NodeController::OnRelayPortsMessage
 mojo_system_impl.dll!mojo::edk::NodeChannel::OnChannelMessage
 mojo_system_impl.dll!mojo::edk::Channel::OnReadComplete
+
+HANDLE LEAK
+name=bug_586996_a
+...
+net.dll!disk_cache::MappedFile::Init
+net.dll!disk_cache::BlockFiles::OpenBlockFile
+net.dll!disk_cache::BlockFiles::Init
+net.dll!disk_cache::BackendImpl::SyncInit
+net.dll!disk_cache::BackendIO::ExecuteBackendOperation
+
+HANDLE LEAK
+name=bug_586996_b
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+KERNEL32.dll!DuplicateHandle
+ipc.dll!IPC::AttachmentBrokerPrivilegedWin::DuplicateWinHandle
+ipc.dll!IPC::AttachmentBrokerPrivilegedWin::OnDuplicateWinHandle
+ipc.dll!IPC::AttachmentBrokerPrivilegedWin::OnMessageReceived
+ipc.dll!IPC::internal::ChannelReader::HandleTranslatedMessage
+ipc.dll!IPC::internal::ChannelReader::TranslateInputData
+ipc.dll!IPC::internal::ChannelReader::AsyncReadComplete
+ipc.dll!IPC::ChannelWin::OnIOCompleted
+
+UNINITIALIZED READ
+name=bug_586997
+system call NtWriteFile parameter #5
+KERNELBASE.dll!WriteFile
+KERNEL32.dll!WriteFile
+base.dll!base::File::WriteAtCurrentPos
+sessions_content.dll!sessions::SessionBackend::AppendCommandsToFile
+sessions_content.dll!sessions::SessionBackend::AppendCommands
