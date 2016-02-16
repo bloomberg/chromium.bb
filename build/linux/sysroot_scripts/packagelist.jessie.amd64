@@ -166,6 +166,8 @@ main/p/pulseaudio/libpulse-mainloop-glib0_5.0-13_amd64.deb
 main/s/speech-dispatcher/libspeechd2_0.8-7_amd64.deb
 main/s/speech-dispatcher/libspeechd-dev_0.8-7_amd64.deb
 main/s/speech-dispatcher/speech-dispatcher_0.8-7_amd64.deb
+main/s/systemd/libudev1_215-17+deb8u3_amd64.deb
+main/s/systemd/libudev-dev_215-17+deb8u3_amd64.deb
 main/x/x11proto-composite/x11proto-composite-dev_0.4.2-2_all.deb
 main/x/x11proto-core/x11proto-core-dev_7.0.26-1_all.deb
 main/x/x11proto-damage/x11proto-damage-dev_1.2.1-2_all.deb

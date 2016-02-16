@@ -561,6 +561,7 @@ UploadSysrootAll() {
 #
 CheckForDebianGPGKeyring() {
   if [ ! -e "$KEYRING_FILE" ]; then
+    echo "KEYRING_FILE not found: ${KEYRING_FILE}"
     echo "Debian GPG keys missing. Install the debian-archive-keyring package."
     exit 1
   fi

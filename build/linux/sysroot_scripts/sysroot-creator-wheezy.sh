@@ -3,13 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-SCRIPT_DIR=$(dirname $0)
+SCRIPT_DIR=$(cd $(dirname $0) && pwd)
 
 DISTRO=debian
 DIST=wheezy
 APT_REPO=http://http.us.debian.org/debian
 REPO_BASEDIR="${APT_REPO}/dists/${DIST}"
-KEYRING_FILE=/usr/share/keyrings/debian-archive-keyring.gpg
+KEYRING_FILE=${SCRIPT_DIR}/debian-archive-wheezy-stable.gpg
+
 
 # Sysroot packages: these are the packages needed to build chrome.
 # NOTE: When DEBIAN_PACKAGES is modified, the packagelist files must be updated
@@ -125,6 +126,8 @@ DEBIAN_PACKAGES="\
   libstdc++6
   libstdc++6-4.6-dev
   libtasn1-3
+  libudev-dev
+  libudev0
   libx11-6
   libx11-dev
   libx11-xcb1
@@ -185,5 +188,6 @@ DEBIAN_PACKAGES="\
 
 DEBIAN_PACKAGES_X86="libquadmath0 libdrm-intel1"
 DEBIAN_PACKAGES_ARM="libdrm-omap1"
+DEBIAN_PACKAGES_AMD64=""
 
 . ${SCRIPT_DIR}/sysroot-creator.sh

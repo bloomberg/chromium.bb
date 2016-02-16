@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-SCRIPT_DIR=$(dirname $0)
+SCRIPT_DIR=$(cd $(dirname $0) && pwd)
 
 DISTRO=debian
 DIST=jessie
@@ -138,6 +138,8 @@ DEBIAN_PACKAGES="\
   libstdc++6
   libstdc++-4.8-dev
   libtasn1-6
+  libudev-dev
+  libudev1
   libx11-6
   libx11-dev
   libx11-xcb1
