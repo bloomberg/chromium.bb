@@ -38,7 +38,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=540900)
     self.Flaky('conformance/textures/image/tex-image-and-sub-image-2d-' +
                'with-image-rgb-rgb-unsigned_byte.html',
-        bug=586183)
+        ['win', 'linux', 'mac', 'chromeos'], bug=586183)
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
@@ -198,6 +198,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'], bug=478572)
     self.Fail('deqp/data/gles2/shaders/linkage.html',
         ['android'], bug=478572)
+    self.Fail('conformance/textures/image/tex-image-and-sub-image-2d-' +
+              'with-image-rgb-rgb-unsigned_byte.html',
+        ['android'], bug=586183)
     # The following WebView crashes are causing problems with further
     # tests in the suite, so skip them for now.
     self.Skip('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
