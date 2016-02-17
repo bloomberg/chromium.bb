@@ -499,7 +499,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void didNavigateWithinPage(blink::WebLocalFrame* frame,
                              const blink::WebHistoryItem& item,
                              blink::WebHistoryCommitType commit_type) override;
-  void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) override;
+  void didUpdateCurrentHistoryItem() override;
   void didChangeThemeColor() override;
   void dispatchLoad() override;
   void requestNotificationPermission(
@@ -523,11 +523,9 @@ class CONTENT_EXPORT RenderFrameImpl
                        unsigned identifier,
                        blink::WebURLRequest& request,
                        const blink::WebURLResponse& redirect_response) override;
-  void didReceiveResponse(blink::WebLocalFrame* frame,
-                          unsigned identifier,
+  void didReceiveResponse(unsigned identifier,
                           const blink::WebURLResponse& response) override;
   void didLoadResourceFromMemoryCache(
-      blink::WebLocalFrame* frame,
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response) override;
   void didDisplayInsecureContent() override;
@@ -596,7 +594,7 @@ class CONTENT_EXPORT RenderFrameImpl
       int start_offset,
       const blink::WebAXObject& end_object,
       int end_offset) override;
-  void didChangeManifest(blink::WebLocalFrame*) override;
+  void didChangeManifest() override;
   bool enterFullscreen() override;
   bool exitFullscreen() override;
   blink::WebPermissionClient* permissionClient() override;

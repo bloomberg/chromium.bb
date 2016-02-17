@@ -3531,8 +3531,7 @@ void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
   didCommitProvisionalLoad(frame, item, commit_type);
 }
 
-void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
+void RenderFrameImpl::didUpdateCurrentHistoryItem() {
   render_view_->StartNavStateSyncTimerIfNecessary(this);
 }
 
@@ -3904,24 +3903,22 @@ void RenderFrameImpl::willSendRequest(
 }
 
 void RenderFrameImpl::didReceiveResponse(
-    blink::WebLocalFrame* frame,
     unsigned identifier,
     const blink::WebURLResponse& response) {
-  DCHECK_EQ(frame_, frame);
   // Only do this for responses that correspond to a provisional data source
   // of the top-most frame.  If we have a provisional data source, then we
   // can't have any sub-resources yet, so we know that this response must
   // correspond to a frame load.
-  if (!frame->provisionalDataSource() || frame->parent())
+  if (!frame_->provisionalDataSource() || frame_->parent())
     return;
 
   // If we are in view source mode, then just let the user see the source of
   // the server's error page.
-  if (frame->isViewSourceModeEnabled())
+  if (frame_->isViewSourceModeEnabled())
     return;
 
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame->provisionalDataSource());
+      DocumentState::FromDataSource(frame_->provisionalDataSource());
   int http_status_code = response.httpStatusCode();
 
   // Record page load flags.
@@ -3948,10 +3945,8 @@ void RenderFrameImpl::didReceiveResponse(
 }
 
 void RenderFrameImpl::didLoadResourceFromMemoryCache(
-    blink::WebLocalFrame* frame,
     const blink::WebURLRequest& request,
     const blink::WebURLResponse& response) {
-  DCHECK_EQ(frame_, frame);
   // The recipients of this message have no use for data: URLs: they don't
   // affect the page's insecure content list and are not in the disk cache. To
   // prevent large (1M+) data: URLs from crashing in the IPC system, we simply
@@ -4292,9 +4287,7 @@ void RenderFrameImpl::handleAccessibilityFindInPageResult(
   }
 }
 
-void RenderFrameImpl::didChangeManifest(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
-
+void RenderFrameImpl::didChangeManifest() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeManifest());
 }
 

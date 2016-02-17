@@ -327,10 +327,10 @@ public:
     // Called upon update to scroll position, document state, and other
     // non-navigational events related to the data held by WebHistoryItem.
     // WARNING: This method may be called very frequently.
-    virtual void didUpdateCurrentHistoryItem(WebLocalFrame*) { }
+    virtual void didUpdateCurrentHistoryItem() { }
 
     // The frame's manifest has changed.
-    virtual void didChangeManifest(WebLocalFrame*) { }
+    virtual void didChangeManifest() { }
 
     // The frame's theme color has changed.
     virtual void didChangeThemeColor() { }
@@ -426,11 +426,10 @@ public:
 
     // Response headers have been received for the resource request given
     // by identifier.
-    virtual void didReceiveResponse(
-        WebLocalFrame*, unsigned identifier, const WebURLResponse&) { }
+    virtual void didReceiveResponse(unsigned identifier, const WebURLResponse&) { }
 
     virtual void didChangeResourcePriority(
-        WebLocalFrame* webFrame, unsigned identifier, const WebURLRequest::Priority& priority, int) { }
+        unsigned identifier, const WebURLRequest::Priority& priority, int) { }
 
     // The resource request given by identifier succeeded.
     virtual void didFinishResourceLoad(
@@ -438,7 +437,7 @@ public:
 
     // The specified request was satified from WebCore's memory cache.
     virtual void didLoadResourceFromMemoryCache(
-        WebLocalFrame*, const WebURLRequest&, const WebURLResponse&) { }
+        const WebURLRequest&, const WebURLResponse&) { }
 
     // This frame has displayed inactive content (such as an image) from an
     // insecure source.  Inactive content cannot spread to other frames.
@@ -453,7 +452,7 @@ public:
     virtual void didDetectXSS(const WebURL&, bool didBlockEntirePage) { }
 
     // A PingLoader was created, and a request dispatched to a URL.
-    virtual void didDispatchPingLoader(WebLocalFrame*, const WebURL&) { }
+    virtual void didDispatchPingLoader(const WebURL&) { }
 
     // This frame has displayed inactive content (such as an image) from
     // a connection with certificate errors.

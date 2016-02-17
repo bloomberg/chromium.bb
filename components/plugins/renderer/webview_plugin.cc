@@ -316,10 +316,9 @@ void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame) {
               delegate_->GetV8Handle(isolate));
 }
 
-void WebViewPlugin::didReceiveResponse(WebLocalFrame* frame,
-                                       unsigned identifier,
+void WebViewPlugin::didReceiveResponse(unsigned identifier,
                                        const WebURLResponse& response) {
-  WebFrameClient::didReceiveResponse(frame, identifier, response);
+  WebFrameClient::didReceiveResponse(identifier, response);
 }
 
 void WebViewPlugin::OnDestruct() {

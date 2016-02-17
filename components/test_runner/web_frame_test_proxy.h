@@ -189,12 +189,11 @@ class WebFrameTestProxy : public Base {
     Base::didDetectXSS(insecure_url, did_block_entire_page);
   }
 
-  virtual void didDispatchPingLoader(blink::WebLocalFrame* frame,
-                                     const blink::WebURL& url) {
+  virtual void didDispatchPingLoader(const blink::WebURL& url) {
     // This is not implemented in RenderFrameImpl, so need to explicitly call
     // into the base proxy.
-    base_proxy_->DidDispatchPingLoader(frame, url);
-    Base::didDispatchPingLoader(frame, url);
+    base_proxy_->DidDispatchPingLoader(url);
+    Base::didDispatchPingLoader(url);
   }
 
   virtual void didCreateDataSource(blink::WebLocalFrame* frame,
@@ -210,24 +209,22 @@ class WebFrameTestProxy : public Base {
     base_proxy_->WillSendRequest(frame, identifier, request, redirect_response);
   }
 
-  virtual void didReceiveResponse(blink::WebLocalFrame* frame,
-                                  unsigned identifier,
+  virtual void didReceiveResponse(unsigned identifier,
                                   const blink::WebURLResponse& response) {
-    base_proxy_->DidReceiveResponse(frame, identifier, response);
-    Base::didReceiveResponse(frame, identifier, response);
+    base_proxy_->DidReceiveResponse(identifier, response);
+    Base::didReceiveResponse(identifier, response);
   }
 
   virtual void didChangeResourcePriority(
-      blink::WebLocalFrame* frame,
       unsigned identifier,
       const blink::WebURLRequest::Priority& priority,
       int intra_priority_value) {
     // This is not implemented in RenderFrameImpl, so need to explicitly call
     // into the base proxy.
     base_proxy_->DidChangeResourcePriority(
-        frame, identifier, priority, intra_priority_value);
+        identifier, priority, intra_priority_value);
     Base::didChangeResourcePriority(
-        frame, identifier, priority, intra_priority_value);
+        identifier, priority, intra_priority_value);
   }
 
   virtual void didFinishResourceLoad(blink::WebLocalFrame* frame,

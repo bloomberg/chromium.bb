@@ -218,7 +218,7 @@ void FrameLoaderClientImpl::didChangeScrollOffset()
 void FrameLoaderClientImpl::didUpdateCurrentHistoryItem()
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didUpdateCurrentHistoryItem(m_webFrame);
+        m_webFrame->client()->didUpdateCurrentHistoryItem();
 }
 
 // TODO(dglazkov): Can this be plumbing be streamlined out?
@@ -405,14 +405,14 @@ void FrameLoaderClientImpl::dispatchDidReceiveResponse(DocumentLoader* loader,
 {
     if (m_webFrame->client()) {
         WrappedResourceResponse webresp(response);
-        m_webFrame->client()->didReceiveResponse(m_webFrame, identifier, webresp);
+        m_webFrame->client()->didReceiveResponse(identifier, webresp);
     }
 }
 
 void FrameLoaderClientImpl::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority priority, int intraPriorityValue)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didChangeResourcePriority(m_webFrame, identifier, static_cast<WebURLRequest::Priority>(priority), intraPriorityValue);
+        m_webFrame->client()->didChangeResourcePriority(identifier, static_cast<WebURLRequest::Priority>(priority), intraPriorityValue);
 }
 
 // Called when a particular resource load completes
@@ -441,7 +441,7 @@ void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad(bool documentIsEmpty)
 void FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didLoadResourceFromMemoryCache(m_webFrame, WrappedResourceRequest(request), WrappedResourceResponse(response));
+        m_webFrame->client()->didLoadResourceFromMemoryCache(WrappedResourceRequest(request), WrappedResourceResponse(response));
 }
 
 void FrameLoaderClientImpl::dispatchDidHandleOnloadEvents()
@@ -693,7 +693,7 @@ void FrameLoaderClientImpl::didDetectXSS(const KURL& insecureURL, bool didBlockE
 void FrameLoaderClientImpl::didDispatchPingLoader(const KURL& url)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didDispatchPingLoader(m_webFrame, url);
+        m_webFrame->client()->didDispatchPingLoader(url);
 }
 
 void FrameLoaderClientImpl::didDisplayContentWithCertificateErrors(const KURL& url, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo)
@@ -1010,7 +1010,7 @@ PassOwnPtr<WebApplicationCacheHost> FrameLoaderClientImpl::createApplicationCach
 void FrameLoaderClientImpl::dispatchDidChangeManifest()
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didChangeManifest(m_webFrame);
+        m_webFrame->client()->didChangeManifest();
 }
 
 unsigned FrameLoaderClientImpl::backForwardLength()

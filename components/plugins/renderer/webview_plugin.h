@@ -139,8 +139,7 @@ class WebViewPlugin : public blink::WebPlugin,
   // different parameters. We only care about implementing the WebPlugin
   // version, so we implement this method and call the default in WebFrameClient
   // (which does nothing) to correctly overload it.
-  void didReceiveResponse(blink::WebLocalFrame* frame,
-                          unsigned identifier,
+  void didReceiveResponse(unsigned identifier,
                           const blink::WebURLResponse& response) override;
 
  private:

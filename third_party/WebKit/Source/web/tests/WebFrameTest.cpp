@@ -6701,7 +6701,7 @@ TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnHiddenFrames)
 class ManifestChangeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     ManifestChangeWebFrameClient() : m_manifestChangeCount(0) { }
-    void didChangeManifest(WebLocalFrame*) override
+    void didChangeManifest() override
     {
         ++m_manifestChangeCount;
     }

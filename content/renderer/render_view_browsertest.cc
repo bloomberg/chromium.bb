@@ -2296,7 +2296,7 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
                        RequestNavigationParams());
 
   // Emulate a 4xx/5xx main resource response with an empty body.
-  main_frame->didReceiveResponse(web_frame, 1, response);
+  main_frame->didReceiveResponse(1, response);
   main_frame->didFinishDocumentLoad(web_frame, true);
 
   // The error page itself is loaded asynchronously.

@@ -1036,8 +1036,7 @@ void WebTestProxyBase::DidDetectXSS(const blink::WebURL& insecure_url,
     delegate_->PrintMessage("didDetectXSS\n");
 }
 
-void WebTestProxyBase::DidDispatchPingLoader(blink::WebLocalFrame* frame,
-                                             const blink::WebURL& url) {
+void WebTestProxyBase::DidDispatchPingLoader(const blink::WebURL& url) {
   if (test_interfaces_->GetTestRunner()->shouldDumpPingLoaderCallbacks())
     delegate_->PrintMessage(std::string("PingLoader dispatched to '") +
                             URLDescription(url).c_str() + "'.\n");
@@ -1120,7 +1119,6 @@ void WebTestProxyBase::WillSendRequest(
 }
 
 void WebTestProxyBase::DidReceiveResponse(
-    blink::WebLocalFrame* frame,
     unsigned identifier,
     const blink::WebURLResponse& response) {
   if (test_interfaces_->GetTestRunner()->shouldDumpResourceLoadCallbacks()) {
@@ -1148,7 +1146,6 @@ void WebTestProxyBase::DidReceiveResponse(
 }
 
 void WebTestProxyBase::DidChangeResourcePriority(
-    blink::WebLocalFrame* frame,
     unsigned identifier,
     const blink::WebURLRequest::Priority& priority,
     int intra_priority_value) {
