@@ -59,7 +59,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagePasswordsUIController);
 ManagePasswordsUIController::ManagePasswordsUIController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      should_pop_up_bubble_(false) {
+      bubble_status_(NOT_SHOWN) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
   password_manager::PasswordStore* password_store =
@@ -82,7 +82,8 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
     if (stats && show_threshold > 0 && stats->dismissal_count >= show_threshold)
       show_bubble = false;
   }
-  base::AutoReset<bool> resetter(&should_pop_up_bubble_, show_bubble);
+  if (show_bubble)
+    bubble_status_ = SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -90,7 +91,7 @@ void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
   DestroyAccountChooser();
   passwords_data_.OnUpdatePassword(std::move(form_manager));
-  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
+  bubble_status_ = SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -122,7 +123,7 @@ void ManagePasswordsUIController::OnAutoSignin(
   DCHECK(!local_forms.empty());
   DestroyAccountChooser();
   passwords_data_.OnAutoSignin(std::move(local_forms));
-  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
+  bubble_status_ = SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -141,7 +142,7 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
     scoped_ptr<PasswordFormManager> form_manager) {
   DestroyAccountChooser();
   passwords_data_.OnAutomaticPasswordSave(std::move(form_manager));
-  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
+  bubble_status_ = SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -171,12 +172,15 @@ void ManagePasswordsUIController::OnLoginsChanged(
 
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
-  if (should_pop_up_bubble_) {
+  if (bubble_status_ == SHOULD_POP_UP) {
     DCHECK(!dialog_controller_);
     // We must display the icon before showing the bubble, as the bubble would
     // be otherwise unanchored.
     icon->SetState(GetState());
     ShowBubbleWithoutUserInteraction();
+    // If the bubble appeared then the status is updated in OnBubbleShown().
+    if (bubble_status_ == SHOULD_POP_UP)
+      bubble_status_ = NOT_SHOWN;
   } else {
     password_manager::ui::State state = GetState();
     // The dialog should hide the icon.
@@ -236,10 +240,11 @@ ManagePasswordsUIController::GetCurrentInteractionStats() const {
 }
 
 void ManagePasswordsUIController::OnBubbleShown() {
-  should_pop_up_bubble_ = false;
+  bubble_status_ = SHOWN;
 }
 
 void ManagePasswordsUIController::OnBubbleHidden() {
+  bubble_status_ = NOT_SHOWN;
   if (GetState() == password_manager::ui::CONFIRMATION_STATE ||
       GetState() == password_manager::ui::AUTO_SIGNIN_STATE) {
     passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
@@ -388,12 +393,12 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
   if (details.is_in_page)
     return;
 
-  // Don't do anything if a redirect occurs. It is possible that the user was
-  // not able to interact with the password bubble.
-  if (ui::PageTransitionIsRedirect(params.transition))
+  // It is possible that the user was not able to interact with the password
+  // bubble.
+  if (bubble_status_ == SHOWN)
     return;
 
-  // Otherwise, reset the password manager and the timer.
+  // Otherwise, reset the password manager.
   DestroyAccountChooser();
   passwords_data_.OnInactive();
   UpdateBubbleAndIconVisibility();
@@ -404,7 +409,7 @@ void ManagePasswordsUIController::WasHidden() {
 }
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
-  DCHECK(should_pop_up_bubble_);
+  DCHECK(IsAutomaticallyOpeningBubble());
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser || browser->toolbar_model()->input_in_progress())
     return;

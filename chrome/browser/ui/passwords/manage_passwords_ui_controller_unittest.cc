@@ -385,32 +385,34 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordBlacklisted) {
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
-TEST_F(ManagePasswordsUIControllerTest, RedirectNavigations) {
-  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
-      CreateFormManager());
-  controller()->OnPasswordSubmitted(std::move(test_form_manager));
-  ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
-
-  // Fake-redirect. We expect the bubble's state to persist so a user reasonably
-  // have been able to interact with the bubble. This happens on
-  // `accounts.google.com`, for instance.
-  content::FrameNavigateParams params;
-  params.transition = ui::PAGE_TRANSITION_SERVER_REDIRECT;
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(), params);
-
-  ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
-}
-
 TEST_F(ManagePasswordsUIControllerTest, NormalNavigations) {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 
-  // Fake-navigate. We expect the bubble's state to be reset.
+  // Fake-navigate. We expect the bubble's state to persist so a user reasonably
+  // has been able to interact with the bubble. This happens on
+  // `accounts.google.com`, for instance.
   controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
                                      content::FrameNavigateParams());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            controller()->GetState());
+  ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
+}
 
+TEST_F(ManagePasswordsUIControllerTest, NormalNavigationsClosedBubble) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+  controller()->SavePassword();
+  controller()->OnBubbleHidden();
+  ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
+
+  // Fake-navigate. There is no bubble, reset the state.
+  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                     content::FrameNavigateParams());
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 }
 
@@ -653,6 +655,7 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterNavigation) {
   EXPECT_CALL(dialog_prompt(), ShowAutoSigninPrompt());
   controller()->OnPromptEnableAutoSignin();
 
+  // The dialog should survive any navigation.
   EXPECT_CALL(dialog_prompt(), ControllerGone()).Times(0);
   content::FrameNavigateParams params;
   params.transition = ui::PAGE_TRANSITION_LINK;
@@ -709,17 +712,4 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordUpdated) {
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
   controller()->UpdatePassword(autofill::PasswordForm());
   ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
-}
-
-TEST_F(ManagePasswordsUIControllerTest, NavigationWhenUpdateBubbleActive) {
-  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
-      CreateFormManager());
-  controller()->OnUpdatePasswordSubmitted(std::move(test_form_manager));
-  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
-            controller()->GetState());
-  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                     content::FrameNavigateParams());
-  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
-  // The following line shouldn't crash browser.
-  controller()->OnNoInteractionOnUpdate();
 }
