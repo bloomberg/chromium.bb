@@ -92,6 +92,7 @@ class DevToolsConnection(object):
     self._ws = self._Connect(hostname, port)
     self._event_listeners = {}
     self._domain_listeners = {}
+    self._scoped_states = {}
     self._domains_to_enable = set()
     self._tearing_down_tracing = False
     self._set_up = False
@@ -129,6 +130,30 @@ class DevToolsConnection(object):
         del(self._event_listeners[key])
       if key in self._domain_listeners:
         del(self._domain_listeners[key])
+
+  def SetScopedState(self, method, params, default_params, enable_domain):
+    """Changes state at the beginning the monitoring and resets it at the end.
+
+    |method| is called with |params| at the beginning of the monitoring. After
+    the monitoring completes, the state is reset by calling |method| with
+    |default_params|.
+
+    Args:
+      method: (str) Method.
+      params: (dict) Parameters to set when the monitoring starts.
+      default_params: (dict) Parameters to reset the state at the end.
+      enable_domain: (bool) True if enabling the domain is required.
+    """
+    if enable_domain:
+      if '.' in method:
+        domain = method[:method.index('.')]
+        assert domain, 'No valid domain'
+        self._domains_to_enable.add(domain)
+    scoped_state_value = (params, default_params)
+    if self._scoped_states.has_key(method):
+      assert self._scoped_states[method] == scoped_state_value
+    else:
+      self._scoped_states[method] = scoped_state_value
 
   def SyncRequest(self, method, params=None):
     """Issues a synchronous request to the DevTools server.
@@ -186,6 +211,9 @@ class DevToolsConnection(object):
         self.SyncRequestNoResponse('%s.enable' % domain)
         # Tracing setup must be done by the tracing track to control filtering
         # and output.
+    for scoped_state in self._scoped_states:
+      self.SyncRequestNoResponse(scoped_state,
+                                 self._scoped_states[scoped_state][0])
     self._tearing_down_tracing = False
     self._set_up = True
 
@@ -218,6 +246,9 @@ class DevToolsConnection(object):
       self.SyncRequestNoResponse(self.TRACING_END_METHOD)
       self._tearing_down_tracing = True
       self._Dispatch(kind='Tracing', timeout=self.TRACING_TIMEOUT)
+    for scoped_state in self._scoped_states:
+      self.SyncRequestNoResponse(scoped_state,
+                                 self._scoped_states[scoped_state][1])
     for domain in self._domains_to_enable:
       if domain != self.TRACING_DOMAIN:
         self.SyncRequest('%s.disable' % domain)
@@ -225,6 +256,7 @@ class DevToolsConnection(object):
     self._domains_to_enable.clear()
     self._domain_listeners.clear()
     self._event_listeners.clear()
+    self._scoped_states.clear()
 
   def _OnDataReceived(self, msg):
     if 'method' not in msg:

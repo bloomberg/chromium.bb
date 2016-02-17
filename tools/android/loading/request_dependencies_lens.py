@@ -8,6 +8,7 @@ When executed as a script, loads a trace and outputs the dependencies.
 """
 
 import collections
+import copy
 import logging
 import operator
 
@@ -18,6 +19,7 @@ import request_track
 class RequestDependencyLens(object):
   """Analyses and infers request dependencies."""
   DEPENDENCIES = ('redirect', 'parser', 'script', 'inferred', 'other')
+  CALLFRAMES_KEY = 'callFrames'
   def __init__(self, trace):
     """Initializes an instance of RequestDependencyLens.
 
@@ -89,6 +91,30 @@ class RequestDependencyLens(object):
     initiating_request = self._FindBestMatchingInitiator(request, candidates)
     return (initiating_request, request, 'parser')
 
+  def _FlattenScriptStack(self, stack):
+    """Recursively collapses the stack of asynchronous callstacks.
+
+    A stack has a list of call frames and optionnally a "parent" stack.
+    This function recursively folds the parent stacks into the root stack by
+    concatening all the call frames.
+
+    Args:
+      stack: (dict) the stack that must be flattened
+
+    Returns:
+      A stack with no parent, which is a dictionary with a single "callFrames"
+      key, and no "parent" key.
+    """
+    PARENT_KEY = 'parent'
+    if not PARENT_KEY in stack:
+      return stack
+    stack[self.CALLFRAMES_KEY] += stack[PARENT_KEY][self.CALLFRAMES_KEY]
+    if not PARENT_KEY in stack[PARENT_KEY]:
+      stack.pop(PARENT_KEY)
+    else:
+      stack[PARENT_KEY] = stack[PARENT_KEY][PARENT_KEY]
+    return self._FlattenScriptStack(stack)
+
   def _GetInitiatingRequestScript(self, request):
     STACK_KEY = 'stack'
     if not STACK_KEY in request.initiator:
@@ -96,7 +122,10 @@ class RequestDependencyLens(object):
       return None
     initiating_request = None
     timestamp = request.timing.request_time
-    call_frames = request.initiator[STACK_KEY]['callFrames']
+    # Deep copy the initiator's stack to avoid mutating the input request.
+    stack = self._FlattenScriptStack(
+        copy.deepcopy(request.initiator[STACK_KEY]))
+    call_frames = stack[self.CALLFRAMES_KEY]
     for frame in call_frames:
       url = frame['url']
       candidates = self._FindMatchingRequests(url, timestamp)

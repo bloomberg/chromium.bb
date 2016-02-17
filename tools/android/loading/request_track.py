@@ -273,6 +273,10 @@ class RequestTrack(devtools_monitor.Track):
     if connection:  # Optional for testing.
       for method in RequestTrack._METHOD_TO_HANDLER:
         self._connection.RegisterListener(method, self)
+      # Enable asynchronous callstacks to get full javascript callstacks in
+      # initiators
+      self._connection.SetScopedState('Debugger.setAsyncCallStackDepth',
+                                      {'maxDepth': 4}, {'maxDepth': 0}, True)
     # responseReceived message are sometimes duplicated. Records the message to
     # detect this.
     self._request_id_to_response_received = {}

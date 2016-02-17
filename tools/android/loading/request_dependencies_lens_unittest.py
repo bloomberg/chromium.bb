@@ -83,6 +83,24 @@ class RequestDependencyLensTestCase(unittest.TestCase):
         deps[0],
         self._JS_REQUEST.request_id, self._JS_REQUEST_2.request_id, 'script')
 
+  def testAsyncScriptDependency(self):
+    JS_REQUEST_WITH_ASYNC_STACK = Request.FromJsonDict(
+        {'url': 'http://bla.com/cat.js', 'request_id': '1234.14',
+         'initiator': {
+             'type': 'script',
+             'stack': {'callFrames': [],
+                       'parent': {'callFrames': [
+                                      {'url': 'http://bla.com/nyancat.js'}]}}},
+         'timestamp': 10, 'timing': TimingFromDict({})})
+    loading_trace = test_utils.LoadingTraceFromEvents(
+        [self._JS_REQUEST, JS_REQUEST_WITH_ASYNC_STACK])
+    request_dependencies_lens = RequestDependencyLens(loading_trace)
+    deps = request_dependencies_lens.GetRequestDependencies()
+    self.assertEquals(1, len(deps))
+    self._AssertDependencyIs(
+        deps[0], self._JS_REQUEST.request_id,
+        JS_REQUEST_WITH_ASYNC_STACK.request_id, 'script')
+
   def testParserDependency(self):
     loading_trace = test_utils.LoadingTraceFromEvents(
         [self._REQUEST, self._JS_REQUEST])
