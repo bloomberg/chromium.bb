@@ -6,11 +6,11 @@
 {
   'targets': [
     {
-      'target_name': 'iron-list-extracted',
+      'target_name': 'paper-drawer-panel-extracted',
       'dependencies': [
-        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
+        '../iron-media-query/compiled_resources2.gyp:iron-media-query-extracted',
         '../iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
-        '../iron-scroll-target-behavior/compiled_resources2.gyp:iron-scroll-target-behavior-extracted',
+        '../iron-selector/compiled_resources2.gyp:iron-selector-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

@@ -6,10 +6,11 @@
 {
   'targets': [
     {
-      'target_name': 'paper-ripple-extracted',
-      'dependencies': [
-        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-      ],
+      'target_name': 'paper-material-shared-styles-extracted',
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paper-material-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
   ],

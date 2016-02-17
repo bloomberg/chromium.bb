@@ -6,9 +6,16 @@
 {
   'targets': [
     {
-      'target_name': 'paper-ripple-extracted',
+      'target_name': 'metadata-extracted',
       'dependencies': [
-        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
+        'paper-checkbox-extracted',
+      ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paper-checkbox-extracted',
+      'dependencies': [
+        '../paper-behaviors/compiled_resources2.gyp:paper-checked-element-behavior-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

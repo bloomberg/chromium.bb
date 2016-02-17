@@ -6,10 +6,15 @@
 {
   'targets': [
     {
-      'target_name': 'paper-ripple-extracted',
-      'dependencies': [
-        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-      ],
+      'target_name': 'iron-test-helpers-extracted',
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'mock-interactions-extracted',
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'test-helpers-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
   ],

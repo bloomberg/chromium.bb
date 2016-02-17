@@ -6,11 +6,9 @@
 {
   'targets': [
     {
-      'target_name': 'iron-list-extracted',
+      'target_name': 'iron-iconset-svg-extracted',
       'dependencies': [
-        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-        '../iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
-        '../iron-scroll-target-behavior/compiled_resources2.gyp:iron-scroll-target-behavior-extracted',
+        '../iron-meta/compiled_resources2.gyp:iron-meta-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

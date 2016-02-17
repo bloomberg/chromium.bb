@@ -6,11 +6,11 @@
 {
   'targets': [
     {
-      'target_name': 'iron-list-extracted',
+      'target_name': 'paper-radio-group-extracted',
       'dependencies': [
         '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-        '../iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
-        '../iron-scroll-target-behavior/compiled_resources2.gyp:iron-scroll-target-behavior-extracted',
+        '../iron-selector/compiled_resources2.gyp:iron-selectable-extracted',
+        '../paper-radio-button/compiled_resources2.gyp:paper-radio-button-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

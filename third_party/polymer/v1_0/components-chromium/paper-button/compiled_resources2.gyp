@@ -6,11 +6,11 @@
 {
   'targets': [
     {
-      'target_name': 'iron-list-extracted',
+      'target_name': 'paper-button-extracted',
       'dependencies': [
-        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-        '../iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
-        '../iron-scroll-target-behavior/compiled_resources2.gyp:iron-scroll-target-behavior-extracted',
+        '../paper-behaviors/compiled_resources2.gyp:paper-button-behavior-extracted',
+        '../paper-material/compiled_resources2.gyp:paper-material-extracted',
+        '../paper-ripple/compiled_resources2.gyp:paper-ripple-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

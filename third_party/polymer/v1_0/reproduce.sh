@@ -22,6 +22,7 @@ check_dep "which npm" "npm" "visiting https://nodejs.org/en/"
 check_dep "which bower" "bower" "npm install -g bower"
 check_dep "which crisper" "crisper" "npm install -g crisper"
 check_dep "which rsync" "rsync" "apt-get install rsync"
+check_dep "python -c 'import bs4'" "bs4" "apt-get install python-bs4"
 
 set -e
 
@@ -97,3 +98,5 @@ if [[ ! -z "${new}${deleted}" ]]; then
 fi
 
 python create_components_summary.py > components_summary.txt
+
+./generate_gyp.sh

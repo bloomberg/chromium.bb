@@ -6,33 +6,41 @@
 {
   'targets': [
     {
-      'target_name': 'paper-button-behavior-extracted',
+      'target_name': 'all-imports-extracted',
+      'dependencies': [
+        'paper-icon-item-extracted',
+        'paper-item-body-extracted',
+        'paper-item-extracted',
+      ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paper-icon-item-extracted',
+      'dependencies': [
+        'paper-item-behavior-extracted',
+      ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paper-item-behavior-extracted',
       'dependencies': [
         '../iron-behaviors/compiled_resources2.gyp:iron-button-state-extracted',
-        'paper-ripple-behavior-extracted',
+        '../iron-behaviors/compiled_resources2.gyp:iron-control-state-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'paper-checked-element-behavior-extracted',
-      'dependencies': [
-        '../iron-checked-element-behavior/compiled_resources2.gyp:iron-checked-element-behavior-extracted',
-        'paper-inky-focus-behavior-extracted',
-      ],
+      'target_name': 'paper-item-body-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'paper-inky-focus-behavior-extracted',
-      'dependencies': [
-        '../iron-behaviors/compiled_resources2.gyp:iron-button-state-extracted',
-        'paper-ripple-behavior-extracted',
-      ],
+      'target_name': 'paper-item-shared-styles-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'paper-ripple-behavior-extracted',
+      'target_name': 'paper-item-extracted',
       'dependencies': [
-        '../paper-ripple/compiled_resources2.gyp:paper-ripple-extracted',
+        'paper-item-behavior-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

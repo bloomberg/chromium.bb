@@ -6,11 +6,12 @@
 {
   'targets': [
     {
-      'target_name': 'paper-ripple-extracted',
-      'dependencies': [
-        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-      ],
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+      'target_name': 'iron-flex-layout-extracted',
+      'includes': ['../../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'iron-shadow-flex-layout-extracted',
+      'includes': ['../../../../../closure_compiler/compile_js2.gypi'],
     },
   ],
 }

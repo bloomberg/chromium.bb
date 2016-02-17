@@ -6,11 +6,10 @@
 {
   'targets': [
     {
-      'target_name': 'iron-list-extracted',
+      'target_name': 'paper-dialog-extracted',
       'dependencies': [
-        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-        '../iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
-        '../iron-scroll-target-behavior/compiled_resources2.gyp:iron-scroll-target-behavior-extracted',
+        '../neon-animation/compiled_resources2.gyp:neon-animation-runner-behavior-extracted',
+        '../paper-dialog-behavior/compiled_resources2.gyp:paper-dialog-behavior-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
