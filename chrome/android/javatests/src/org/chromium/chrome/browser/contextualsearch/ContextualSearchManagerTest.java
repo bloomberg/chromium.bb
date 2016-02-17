@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -114,27 +115,22 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
         mManager = getActivity().getContextualSearchManager();
 
-        if (mManager != null) {
-            mPanel = mManager.getContextualSearchPanel();
+        assertNotNull(mManager);
+        mPanel = mManager.getContextualSearchPanel();
 
-            mSelectionController = mManager.getSelectionController();
-            mPolicy = mManager.getContextualSearchPolicy();
-            mPolicy.overrideDecidedStateForTesting(true);
-            resetCounters();
+        mSelectionController = mManager.getSelectionController();
+        mPolicy = mManager.getContextualSearchPolicy();
+        mPolicy.overrideDecidedStateForTesting(true);
+        resetCounters();
 
-            mFakeServer = new ContextualSearchFakeServer(
-                    mPolicy,
-                    this,
-                    mManager,
-                    mManager.getOverlayContentDelegate(),
-                    new OverlayContentProgressObserver(),
-                    getActivity());
+        mFakeServer = new ContextualSearchFakeServer(mPolicy, this, mManager,
+                mManager.getOverlayContentDelegate(), new OverlayContentProgressObserver(),
+                getActivity());
 
-            mPanel.setOverlayPanelContentFactory(mFakeServer);
-            mManager.setNetworkCommunicator(mFakeServer);
+        mPanel.setOverlayPanelContentFactory(mFakeServer);
+        mManager.setNetworkCommunicator(mFakeServer);
 
-            registerFakeSearches();
-        }
+        registerFakeSearches();
 
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
         filter.addCategory(Intent.CATEGORY_BROWSABLE);
@@ -256,6 +252,22 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         ContextualSearchFakeServer.FakeTapSearch search = mFakeServer.getFakeTapSearch(nodeId);
         search.simulate();
         assertLoadedSearchTermMatches(search.getSearchTerm());
+        waitForPanelToPeek();
+    }
+
+    /**
+     * Simulates a tap-triggered search that has been limited by tap-limits.
+     *
+     * @param nodeId The id of the node to be tapped.
+     * @throws InterruptedException
+     * @throws TimeoutException
+     */
+    private void simulateLimitedTapSearch(String nodeId)
+            throws InterruptedException, TimeoutException {
+        ContextualSearchFakeServer.FakeTapSearch search = mFakeServer.getFakeTapSearch(nodeId);
+        search.simulate();
+        assertLoadedNoUrl();
+        // Tap-limited behavior is to not resolve or preload, but will still do a literal search.
         waitForPanelToPeek();
     }
 
@@ -494,22 +506,21 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     private void assertLoadedSearchTermMatches(String searchTerm) {
         boolean doesMatch = false;
-        String message = "but there was no loaded URL!";
-        if (mFakeServer != null) {
-            doesMatch = mFakeServer.getLoadedUrl().contains("q=" + searchTerm);
-            message = "in URL: " + mFakeServer.getLoadedUrl();
-        }
-        assertTrue("Expected to find searchTerm " + searchTerm + ", " + message, doesMatch);
+        String loadedUrl = mFakeServer.getLoadedUrl();
+        doesMatch = loadedUrl != null && loadedUrl.contains("q=" + searchTerm);
+        String message = loadedUrl == null ? "but there was no loaded URL!"
+                                           : "in URL: " + loadedUrl;
+        assertTrue("Expected to find searchTerm '" + searchTerm + "', " + message, doesMatch);
     }
 
     private void assertContainsParameters(String searchTerm, String alternateTerm) {
-        assertTrue(mFakeServer == null || mFakeServer.getSearchTermRequested() == null
+        assertTrue(mFakeServer.getSearchTermRequested() == null
                 || mFakeServer.getLoadedUrl().contains(searchTerm)
-                && mFakeServer.getLoadedUrl().contains(alternateTerm));
+                        && mFakeServer.getLoadedUrl().contains(alternateTerm));
     }
 
     private void assertContainsNoParameters() {
-        assertTrue(mFakeServer == null || mFakeServer.getLoadedUrl() == null);
+        assertTrue(mFakeServer.getLoadedUrl() == null);
     }
 
     private void assertSearchTermRequested() {
@@ -533,11 +544,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     private void assertLoadedNoUrl() {
         assertTrue("Requested a search or preload when none was expected!",
-                (mFakeServer == null || mFakeServer.getLoadedUrl() == null));
+                mFakeServer.getLoadedUrl() == null);
     }
 
     private void assertLoadedLowPriorityUrl() {
-        if (mFakeServer == null) return;
         String message = "Expected a low priority search request URL, but got "
                 + (mFakeServer.getLoadedUrl() != null ? mFakeServer.getLoadedUrl() : "null");
         assertTrue(message, mFakeServer.getLoadedUrl() != null
@@ -548,7 +558,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     private void assertLoadedNormalPriorityUrl() {
-        if (mFakeServer == null) return;
         String message = "Expected a normal priority search request URL, but got "
                 + (mFakeServer.getLoadedUrl() != null ? mFakeServer.getLoadedUrl() : "null");
         assertTrue(message, mFakeServer.getLoadedUrl() != null
@@ -852,32 +861,31 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Simple sequence useful for checking if a Search Term Resolution request is sent.
-     * Resets the fake server and clicks near to cause a search, then clicks far to let the panel
-     * drop down (taking us back to the same state).
-     */
-    private void clickToTriggerSearchTermResolution()
-            throws InterruptedException, TimeoutException {
-        mFakeServer.reset();
-        clickWordNode("states");
-        clickNode("states-far");
-        waitForPanelToCloseAndSelectionDissolved();
-    }
-
-    /**
      * Simple sequence useful for checking if a Search Request is prefetched.
-     * Resets the fake server and clicks near to cause a search, fakes a server response to
-     * trigger a prefetch, then clicks far to let the panel drop down
-     * which takes us back to the starting state except the the fake server knows
+     * Resets the fake server and clicks near to cause a search, then closes the panel,
+     * which takes us back to the starting state except that the fake server knows
      * if a prefetch occurred.
      */
     private void clickToTriggerPrefetch() throws InterruptedException, TimeoutException {
         mFakeServer.reset();
-        clickWordNode("states");
-        assertSearchTermRequested();
-        fakeResponse(false, 200, "States", "display-text", "alternate-term", false);
+        simulateTapSearch("search");
         waitForPanelToPeek();
-        clickNode("states-far");
+        closePanel();
+        waitForPanelToCloseAndSelectionDissolved();
+    }
+
+    /**
+     * Simple sequence useful for checking that a search is not prefetched because it has
+     * hit the tap limit.
+     * Resets the fake server and clicks near to cause a search, then closes the panel,
+     * which takes us back to the starting state except that the fake server knows
+     * if a prefetch occurred.
+     */
+    private void clickToTriggerLimitedPrefetch() throws InterruptedException, TimeoutException {
+        mFakeServer.reset();
+        simulateLimitedTapSearch("search");
+        waitForPanelToPeek();
+        closePanel();
         waitForPanelToCloseAndSelectionDissolved();
     }
 
@@ -917,6 +925,19 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             public void run() {
                 // TODO(donnd): provide better time and x,y data to make this more broadly useful.
                 mPanel.handleBarClick(0, 0, 0);
+            }
+        });
+    }
+
+    /**
+     * Force the Panel to close.
+     * @throws InterruptedException
+     */
+    private void closePanel() throws InterruptedException {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mPanel.closePanel(StateChangeReason.UNKNOWN, false);
             }
         });
     }
@@ -1488,27 +1509,31 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Tests that taps can be resolve-limited for decided users.
+     * Tests that taps can be resolve and prefetch limited for decided users.
      */
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testTapResolveLimitForDecided() throws InterruptedException, TimeoutException {
-        mPolicy.setTapResolveLimitForDecidedForTesting(2);
-        clickToTriggerSearchTermResolution();
+    public void testTapLimitForDecided() throws InterruptedException, TimeoutException {
+        mPolicy.setTapLimitForDecidedForTesting(2);
+        clickToTriggerPrefetch();
         assertSearchTermRequested();
-        clickToTriggerSearchTermResolution();
+        assertLoadedLowPriorityUrl();
+        clickToTriggerPrefetch();
         assertSearchTermRequested();
-        // 3rd click should not resolve.
-        clickToTriggerSearchTermResolution();
+        assertLoadedLowPriorityUrl();
+        // 3rd click should not resolve or prefetch.
+        clickToTriggerLimitedPrefetch();
         assertSearchTermNotRequested();
+        assertLoadedNoUrl();
 
         // Expanding the panel should reset the limit.
         clickToExpandAndClosePanel();
 
-        // Click should resolve again.
-        clickToTriggerSearchTermResolution();
+        // Click should resolve and prefetch again.
+        clickToTriggerPrefetch();
         assertSearchTermRequested();
+        assertLoadedLowPriorityUrl();
     }
 
     /**
@@ -1517,73 +1542,27 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testTapResolveLimitForUndecided() throws InterruptedException, TimeoutException {
-        mPolicy.setTapResolveLimitForUndecidedForTesting(2);
+    public void testTapLimitForUndecided() throws InterruptedException, TimeoutException {
+        mPolicy.setTapLimitForUndecidedForTesting(2);
         mPolicy.overrideDecidedStateForTesting(false);
 
-        clickToTriggerSearchTermResolution();
+        clickToTriggerPrefetch();
         assertSearchTermRequested();
-        clickToTriggerSearchTermResolution();
+        assertLoadedLowPriorityUrl();
+        clickToTriggerPrefetch();
         assertSearchTermRequested();
-        // 3rd click should not resolve.
-        clickToTriggerSearchTermResolution();
+        assertLoadedLowPriorityUrl();
+        // 3rd click should not resolve or prefetch.
+        clickToTriggerLimitedPrefetch();
         assertSearchTermNotRequested();
+        assertLoadedNoUrl();
 
         // Expanding the panel should reset the limit.
         clickToExpandAndClosePanel();
 
-        // Click should resolve again.
-        clickToTriggerSearchTermResolution();
+        // Click should resolve and prefetch again.
+        clickToTriggerPrefetch();
         assertSearchTermRequested();
-    }
-
-    /**
-     * Tests that taps can be preload-limited for decided users.
-     */
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testTapPrefetchLimitForDecided() throws InterruptedException, TimeoutException {
-        mPolicy.setTapPrefetchLimitForDecidedForTesting(2);
-        clickToTriggerPrefetch();
-        assertLoadedLowPriorityUrl();
-        clickToTriggerPrefetch();
-        assertLoadedLowPriorityUrl();
-        // 3rd click should not preload.
-        clickToTriggerPrefetch();
-        assertLoadedNoUrl();
-
-        // Expanding the panel should reset the limit.
-        clickToExpandAndClosePanel();
-
-        // Click should preload again.
-        clickToTriggerPrefetch();
-        assertLoadedLowPriorityUrl();
-    }
-
-    /**
-     * Tests that taps can be preload-limited for undecided users.
-     */
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testTapPrefetchLimitForUndecided() throws InterruptedException, TimeoutException {
-        mPolicy.setTapPrefetchLimitForUndecidedForTesting(2);
-        mPolicy.overrideDecidedStateForTesting(false);
-
-        clickToTriggerPrefetch();
-        assertLoadedLowPriorityUrl();
-        clickToTriggerPrefetch();
-        assertLoadedLowPriorityUrl();
-        // 3rd click should not preload.
-        clickToTriggerPrefetch();
-        assertLoadedNoUrl();
-
-        // Expanding the panel should reset the limit.
-        clickToExpandAndClosePanel();
-
-        // Click should preload again.
-        clickToTriggerPrefetch();
         assertLoadedLowPriorityUrl();
     }
 
@@ -1993,12 +1972,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapALot() throws InterruptedException, TimeoutException {
-        mPolicy.setTapPrefetchLimitForDecidedForTesting(200);
-        mPolicy.setTapResolveLimitForDecidedForTesting(200);
-        mPolicy.setTapPrefetchLimitForUndecidedForTesting(200);
-        mPolicy.setTapResolveLimitForUndecidedForTesting(200);
+        mPolicy.setTapLimitForDecidedForTesting(200);
+        mPolicy.setTapLimitForUndecidedForTesting(200);
         for (int i = 0; i < 50; i++) {
-            clickToTriggerSearchTermResolution();
+            clickToTriggerPrefetch();
             waitForSelectionDissolved();
             assertSearchTermRequested();
         }
