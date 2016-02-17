@@ -280,7 +280,7 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
             var frame = callFrames[i];
             var script = frame.location().script();
             var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
-            var isFramework = WebInspector.BlackboxSupport.isBlackboxedURL(script.sourceURL);
+            var isFramework = WebInspector.blackboxManager.isBlackboxedRawLocation(frame.location());
             if (options.dropFrameworkCallFrames && isFramework)
                 continue;
             var url;
