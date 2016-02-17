@@ -68,16 +68,31 @@ ActiveScriptController* ActiveScriptController::GetForWebContents(
 
 void ActiveScriptController::OnActiveTabPermissionGranted(
     const Extension* extension) {
-  RunPendingForExtension(extension);
+  if (WantsToRun(extension))
+    OnClicked(extension);
 }
 
 void ActiveScriptController::OnClicked(const Extension* extension) {
-  DCHECK(ContainsKey(pending_scripts_, extension->id()));
-  RunPendingForExtension(extension);
+  DCHECK(ContainsKey(pending_scripts_, extension->id()) ||
+         web_request_blocked_.count(extension->id()) != 0);
+
+  // Clicking to run the extension counts as granting it permission to run on
+  // the given tab.
+  // The extension may already have active tab at this point, but granting
+  // it twice is essentially a no-op.
+  TabHelper::FromWebContents(web_contents())
+      ->active_tab_permission_granter()
+      ->GrantIfRequested(extension);
+
+  RunPendingScriptsForExtension(extension);
+  web_request_blocked_.erase(extension->id());
+
+  // The extension ran, so we need to tell the ExtensionActionAPI that we no
+  // longer want to act.
+  NotifyChange(extension);
 }
 
 void ActiveScriptController::OnWebRequestBlocked(const Extension* extension) {
-  // TODO(devlin): Call this.
   web_request_blocked_.insert(extension->id());
 }
 
@@ -153,7 +168,7 @@ void ActiveScriptController::RequestScriptInjection(
   was_used_on_page_ = true;
 }
 
-void ActiveScriptController::RunPendingForExtension(
+void ActiveScriptController::RunPendingScriptsForExtension(
     const Extension* extension) {
   DCHECK(extension);
 
@@ -177,20 +192,9 @@ void ActiveScriptController::RunPendingForExtension(
   iter->second.swap(scripts);
   pending_scripts_.erase(extension->id());
 
-  // Clicking to run the extension counts as granting it permission to run on
-  // the given tab.
-  // The extension may already have active tab at this point, but granting
-  // it twice is essentially a no-op.
-  TabHelper::FromWebContents(web_contents())->
-      active_tab_permission_granter()->GrantIfRequested(extension);
-
   // Run all pending injections for the given extension.
   for (PendingScript& pending_script : scripts)
     pending_script.permit_script.Run();
-
-  // The extension ran, so we need to update the ExtensionActionAPI that we no
-  // longer want to act.
-  NotifyChange(extension);
 }
 
 void ActiveScriptController::OnRequestScriptInjectionPermission(

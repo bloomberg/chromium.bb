@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
+#include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature.h"
@@ -506,9 +508,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  ActiveTabPermissionGranter* granter =
-      TabHelper::FromWebContents(web_contents)->active_tab_permission_granter();
-  ASSERT_TRUE(granter);
+  ActiveScriptController* controller =
+      ActiveScriptController::GetForWebContents(web_contents);
+  ASSERT_TRUE(controller);
 
   int port = embedded_test_server()->port();
   const std::string kXhrPath = "simple.html";
@@ -521,18 +523,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
   // Grant activeTab permission, and perform another XHR. The extension should
   // receive the event.
-  // TODO(devlin): Use the ActiveScriptController instead when it's fully wired
-  // up for webRequest.
-  granter->GrantIfRequested(extension);
+  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST,
+            controller->GetBlockedActions(extension));
+  controller->OnClicked(extension);
+  EXPECT_EQ(BLOCKED_ACTION_NONE, controller->GetBlockedActions(extension));
   PerformXhrInPage(web_contents, kHost, port, kXhrPath);
   EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
 
   // If we revoke the extension's tab permissions, it should no longer receive
   // webRequest events.
+  ActiveTabPermissionGranter* granter =
+      TabHelper::FromWebContents(web_contents)->active_tab_permission_granter();
+  ASSERT_TRUE(granter);
   granter->RevokeForTesting();
   base::RunLoop().RunUntilIdle();
   PerformXhrInPage(web_contents, kHost, port, kXhrPath);
   EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST,
+            controller->GetBlockedActions(extension));
 }
 
 }  // namespace extensions

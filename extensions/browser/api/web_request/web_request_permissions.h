@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 class GURL;
 
@@ -36,7 +37,7 @@ class WebRequestPermissions {
 
   // |host_permission_check| controls how permissions are checked with regard to
   // |url|.
-  static bool CanExtensionAccessURL(
+  static extensions::PermissionsData::AccessType CanExtensionAccessURL(
       const extensions::InfoMap* extension_info_map,
       const std::string& extension_id,
       const GURL& url,

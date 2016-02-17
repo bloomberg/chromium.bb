@@ -1352,12 +1352,19 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
             render_process_id, render_frame_id, &frame_data)) {
       tab_id = frame_data.tab_id;
     }
-    if (!is_web_view_guest &&
-        !WebRequestPermissions::CanExtensionAccessURL(
-            extension_info_map, listener.extension_id, url, tab_id,
-            crosses_incognito,
-            WebRequestPermissions::REQUIRE_HOST_PERMISSION)) {
-      continue;
+    if (!is_web_view_guest) {
+      PermissionsData::AccessType access =
+          WebRequestPermissions::CanExtensionAccessURL(
+              extension_info_map, listener.extension_id, url, tab_id,
+              crosses_incognito,
+              WebRequestPermissions::REQUIRE_HOST_PERMISSION);
+      if (access != PermissionsData::ACCESS_ALLOWED) {
+        if (access == PermissionsData::ACCESS_WITHHELD) {
+          web_request_event_router_delegate_->NotifyWebRequestWithheld(
+              render_process_id, render_frame_id, listener.extension_id);
+        }
+        continue;
+      }
     }
 
     bool blocking_listener =

@@ -14,6 +14,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
@@ -24,6 +25,7 @@ using content::ResourceRequestInfo;
 using content::ResourceType;
 using extensions::Extension;
 using extensions::Manifest;
+using extensions::PermissionsData;
 using extension_test_util::LoadManifestUnchecked;
 
 class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
@@ -154,24 +156,30 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
   scoped_ptr<net::URLRequest> request(context.CreateRequest(
       GURL("http://example.com"), net::DEFAULT_PRIORITY, NULL));
 
-  EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_.get(), permissionless_extension_->id(),
-      request->url(),
-      -1,  // No tab id.
-      false /*crosses_incognito*/, WebRequestPermissions::DO_NOT_CHECK_HOST));
-  EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_.get(), permissionless_extension_->id(),
-      request->url(),
-      -1,  // No tab id.
-      false /*crosses_incognito*/,
-      WebRequestPermissions::REQUIRE_HOST_PERMISSION));
-  EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_.get(), com_extension_->id(), request->url(),
-      -1,  // No tab id.
-      false /*crosses_incognito*/,
-      WebRequestPermissions::REQUIRE_HOST_PERMISSION));
-  EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_.get(), com_extension_->id(), request->url(),
-      -1,  // No tab id.
-      false /*crosses_incognito*/, WebRequestPermissions::REQUIRE_ALL_URLS));
+  EXPECT_EQ(PermissionsData::ACCESS_ALLOWED,
+            WebRequestPermissions::CanExtensionAccessURL(
+                extension_info_map_.get(), permissionless_extension_->id(),
+                request->url(),
+                -1,  // No tab id.
+                false /*crosses_incognito*/,
+                WebRequestPermissions::DO_NOT_CHECK_HOST));
+  EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+            WebRequestPermissions::CanExtensionAccessURL(
+                extension_info_map_.get(), permissionless_extension_->id(),
+                request->url(),
+                -1,  // No tab id.
+                false /*crosses_incognito*/,
+                WebRequestPermissions::REQUIRE_HOST_PERMISSION));
+  EXPECT_EQ(PermissionsData::ACCESS_ALLOWED,
+            WebRequestPermissions::CanExtensionAccessURL(
+                extension_info_map_.get(), com_extension_->id(), request->url(),
+                -1,  // No tab id.
+                false /*crosses_incognito*/,
+                WebRequestPermissions::REQUIRE_HOST_PERMISSION));
+  EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+            WebRequestPermissions::CanExtensionAccessURL(
+                extension_info_map_.get(), com_extension_->id(), request->url(),
+                -1,  // No tab id.
+                false /*crosses_incognito*/,
+                WebRequestPermissions::REQUIRE_ALL_URLS));
 }

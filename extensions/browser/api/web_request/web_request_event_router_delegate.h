@@ -54,6 +54,12 @@ class WebRequestEventRouterDelegate {
                                     scoped_ptr<base::DictionaryValue> details) {
   }
 
+  // Notifies that a webRequest event that normally would be forwarded to a
+  // listener was instead blocked because of withheld permissions.
+  virtual void NotifyWebRequestWithheld(int render_process_id,
+                                        int render_frame_id,
+                                        const std::string& extension_id) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestEventRouterDelegate);
 };

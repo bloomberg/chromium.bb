@@ -27,6 +27,9 @@ class ChromeExtensionWebRequestEventRouterDelegate
                             const GURL& url,
                             const std::string& api_call,
                             scoped_ptr<base::DictionaryValue> details) override;
+  void NotifyWebRequestWithheld(int render_process_id,
+                                int render_frame_id,
+                                const std::string& extension_id) override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_CHROME_EXTENSION_WEB_REQUEST_EVENT_ROUTER_DELEGATE_H_

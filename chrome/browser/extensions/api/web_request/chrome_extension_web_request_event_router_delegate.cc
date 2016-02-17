@@ -4,14 +4,18 @@
 
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 
+#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_event_details.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/url_request/url_request.h"
 
 namespace keys = extension_web_request_api_constants;
@@ -28,6 +32,35 @@ void ExtractExtraRequestDetailsInternal(const net::URLRequest* request,
 
   ExtensionRendererState::GetInstance()->GetTabAndWindowId(info, tab_id,
                                                            window_id);
+}
+
+void NotifyWebRequestWithheldOnUI(int render_process_id,
+                                  int render_frame_id,
+                                  const std::string& extension_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Track down the ActiveScriptController and the extension. Since this is
+  // asynchronous, we could hit a null anywhere along the path.
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!rfh)
+    return;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  extensions::ActiveScriptController* controller =
+      extensions::ActiveScriptController::GetForWebContents(web_contents);
+  if (!controller)
+    return;
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext())
+          ->enabled_extensions()
+          .GetByID(extension_id);
+  if (!extension)
+    return;
+
+  controller->OnWebRequestBlocked(extension);
 }
 
 }  // namespace
@@ -85,4 +118,15 @@ ChromeExtensionWebRequestEventRouterDelegate::OnGetMatchingListenersImplCheck(
   if (filter_tab_id != -1 && tab_id != filter_tab_id)
     return true;
   return (filter_window_id != -1 && window_id != filter_window_id);
+}
+
+void ChromeExtensionWebRequestEventRouterDelegate::NotifyWebRequestWithheld(
+    int render_process_id,
+    int render_frame_id,
+    const std::string& extension_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&NotifyWebRequestWithheldOnUI, render_process_id,
+                 render_frame_id, extension_id));
 }

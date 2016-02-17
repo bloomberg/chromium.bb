@@ -117,7 +117,7 @@ class ActiveScriptController : public content::WebContentsObserver,
                               const base::Closure& callback);
 
   // Runs any pending injections for the corresponding extension.
-  void RunPendingForExtension(const Extension* extension);
+  void RunPendingScriptsForExtension(const Extension* extension);
 
   // Handle the RequestScriptInjectionPermission message.
   void OnRequestScriptInjectionPermission(const std::string& extension_id,
