@@ -262,6 +262,11 @@ double KeyframeEffect::calculateTimeToEffectChange(bool forwards, double localTi
     }
 }
 
+void KeyframeEffect::notifySampledEffectRemovedFromAnimationStack()
+{
+    m_sampledEffect = nullptr;
+}
+
 #if !ENABLE(OILPAN)
 void KeyframeEffect::notifyElementDestroyed()
 {

@@ -28,7 +28,7 @@ public:
 
     PropertyHandle property() const final { return m_property; }
     virtual void interpolate(int iteration, double fraction);
-    bool dependsOnUnderlyingValue() const;
+    bool dependsOnUnderlyingValue() const final;
     virtual void apply(InterpolationEnvironment&) const { ASSERT_NOT_REACHED(); }
     static void applyStack(const ActiveInterpolations&, InterpolationEnvironment&);
 

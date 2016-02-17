@@ -101,7 +101,7 @@ ActiveInterpolationsMap AnimationStack::activeInterpolations(AnimationStack* ani
         HeapVector<Member<SampledEffect>>& sampledEffects = animationStack->m_sampledEffects;
         // std::sort doesn't work with OwnPtrs
         nonCopyingSort(sampledEffects.begin(), sampledEffects.end(), compareSampledEffects);
-        animationStack->removeClearedSampledEffects();
+        animationStack->removeRedundantSampledEffects();
         for (const auto& sampledEffect : sampledEffects) {
             if (sampledEffect->priority() != priority || (suppressedAnimations && sampledEffect->effect() && suppressedAnimations->contains(sampledEffect->effect()->animation())))
                 continue;
@@ -115,14 +115,25 @@ ActiveInterpolationsMap AnimationStack::activeInterpolations(AnimationStack* ani
     return result;
 }
 
-void AnimationStack::removeClearedSampledEffects()
+void AnimationStack::removeRedundantSampledEffects()
 {
-    size_t dest = 0;
-    for (auto& sampledEffect : m_sampledEffects) {
-        if (sampledEffect->effect())
-            m_sampledEffects[dest++].swap(sampledEffect);
+    HashSet<PropertyHandle> replacedProperties;
+    for (size_t i = m_sampledEffects.size(); i--;) {
+        SampledEffect& sampledEffect = *m_sampledEffects[i];
+        if (sampledEffect.willNeverChange()) {
+            sampledEffect.removeReplacedInterpolations(replacedProperties);
+            sampledEffect.updateReplacedProperties(replacedProperties);
+        }
     }
-    m_sampledEffects.shrink(dest);
+
+    size_t newSize = 0;
+    for (auto& sampledEffect : m_sampledEffects) {
+        if (!sampledEffect->interpolations().isEmpty())
+            m_sampledEffects[newSize++].swap(sampledEffect);
+        else if (sampledEffect->effect())
+            sampledEffect->effect()->notifySampledEffectRemovedFromAnimationStack();
+    }
+    m_sampledEffects.shrink(newSize);
 }
 
 DEFINE_TRACE(AnimationStack)

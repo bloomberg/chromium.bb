@@ -26,6 +26,7 @@ public:
     virtual bool isLegacyStyleInterpolation() const { return false; }
 
     virtual PropertyHandle property() const = 0;
+    virtual bool dependsOnUnderlyingValue() const { return false; }
 
 protected:
     const OwnPtr<InterpolableValue> m_start;
