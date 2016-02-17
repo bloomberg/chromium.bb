@@ -18,18 +18,11 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
 bool IsSmartLockBrandingEnabled(Profile* profile) {
   const ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service);
-}
-
-bool IsSyncingSettings(Profile* profile) {
-  const ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  return (sync_service && sync_service->IsFirstSetupComplete() &&
-          sync_service->IsSyncActive() &&
-          sync_service->GetActiveDataTypes().Has(syncer::PREFERENCES));
 }
 
 }  // namespace

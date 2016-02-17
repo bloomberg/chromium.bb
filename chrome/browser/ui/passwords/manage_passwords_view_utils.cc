@@ -9,9 +9,12 @@
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/url_formatter/elide_url.h"
 #include "grit/components_strings.h"
@@ -168,4 +171,12 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
   return form.username_value.empty()
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
              : form.username_value;
+}
+
+bool IsSyncingSettings(Profile* profile) {
+  const ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  return (sync_service && sync_service->IsFirstSetupComplete() &&
+          sync_service->IsSyncActive() &&
+          sync_service->GetActiveDataTypes().Has(syncer::PREFERENCES));
 }

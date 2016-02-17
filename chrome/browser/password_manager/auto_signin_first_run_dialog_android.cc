@@ -35,10 +35,12 @@ AutoSigninFirstRunDialogAndroid::~AutoSigninFirstRunDialogAndroid() {
 
 void AutoSigninFirstRunDialogAndroid::ShowDialog() {
   JNIEnv* env = AttachCurrentThread();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+
   bool is_smartlock_branding_enabled =
       password_bubble_experiment::IsSmartLockBrandingEnabled(
-          ProfileSyncServiceFactory::GetForProfile(
-              Profile::FromBrowserContext(web_contents_->GetBrowserContext())));
+          ProfileSyncServiceFactory::GetForProfile(profile));
   base::string16 explanation;
   gfx::Range explanation_link_range = gfx::Range();
   GetBrandedTextAndLinkRange(
@@ -49,7 +51,9 @@ void AutoSigninFirstRunDialogAndroid::ShowDialog() {
   gfx::NativeWindow native_window = web_contents_->GetTopLevelNativeWindow();
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_global;
   base::string16 message = l10n_util::GetStringUTF16(
-      IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_FIRST_RUN_TITLE);
+      IsSyncingSettings(profile)
+          ? IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES
+          : IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE);
   base::string16 ok_button_text =
       l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK);
   base::string16 turn_off_button_text =
