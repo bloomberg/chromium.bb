@@ -463,6 +463,12 @@ executable("ash_shell_with_content") {
     "//content/public/app:both",
   ]
 
+  data_deps = [
+    "//ash/strings:ash_test_strings",
+    "//ash/resources:ash_test_resources_100_percent",
+    "//ash/resources:ash_test_resources_200_percent",
+  ]
+
   if (is_win) {
     configs -= [ "//build/config/win:console" ]
     configs += [ "//build/config/win:windowed" ]

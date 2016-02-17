@@ -30,6 +30,7 @@ source_set("lib") {
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//components/user_manager",
+    "//device/bluetooth",
     "//mash/wm/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
@@ -39,6 +40,7 @@ source_set("lib") {
     "//skia",
     "//ui/aura",
     "//ui/events",
+    "//ui/events/devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/keyboard:mojom",
@@ -51,12 +53,14 @@ source_set("lib") {
     "//ui/views/mus:for_mojo_application",
   ]
 
+  data_deps = [
+    "//ash/strings:ash_test_strings",
+    "//ash/resources:ash_test_resources_100_percent",
+    "//ash/resources:ash_test_resources_200_percent",
+  ]
+
   if (is_chromeos) {
-    deps += [
-      "//chromeos",
-      "//device/bluetooth",
-      "//ui/events/devices",
-    ]
+    deps += [ "//chromeos" ]
   }
 }
 

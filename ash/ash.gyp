@@ -802,8 +802,6 @@
       'shell/content/client/shell_main_delegate.h',
       'shell/content/shell_content_state_impl.cc',
       'shell/content/shell_content_state_impl.h',
-      'shell/content/shell_main_parts.cc',
-      'shell/content/shell_main_parts.h',
     ],
     'ash_unittests_sources': [
       'accelerators/accelerator_commands_unittest.cc',

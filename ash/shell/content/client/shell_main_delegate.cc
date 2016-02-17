@@ -6,7 +6,10 @@
 
 #include "ash/shell/content/client/shell_content_browser_client.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "content/public/common/content_switches.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace ash {
@@ -29,6 +32,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
 void ShellMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
+  ui::InitializeInputMethodForTesting();
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
@@ -37,8 +41,21 @@ content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+  // Load ash resources and en-US strings; not 'common' (Chrome) resources.
+  // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
+  base::FilePath path;
+  PathService::Get(base::DIR_MODULE, &path);
+  base::FilePath ash_test_strings =
+      path.Append(FILE_PATH_LITERAL("ash_test_strings.pak"));
+  base::FilePath ash_test_resources_100 =
+      path.Append(FILE_PATH_LITERAL("ash_test_resources_100_percent.pak"));
+  base::FilePath ash_test_resources_200 =
+      path.Append(FILE_PATH_LITERAL("ash_test_resources_200_percent.pak"));
+
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
+  rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
 }
 
 }  // namespace shell

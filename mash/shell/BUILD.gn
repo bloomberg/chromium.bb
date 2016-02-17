@@ -28,16 +28,13 @@ mojo_native_application("shell") {
   ]
 
   data_deps = [
+    "//ash/mus",
     "//mash/browser_driver",
     "//mash/quick_launch",
     "//mash/shelf",
     "//mash/wallpaper",
     "//mash/wm",
   ]
-
-  if (use_ash) {
-    data_deps += [ "//ash/mus" ]
-  }
 }
 
 mojo_application_manifest("manifest") {

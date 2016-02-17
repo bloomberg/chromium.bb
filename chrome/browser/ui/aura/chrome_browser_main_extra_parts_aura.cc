@@ -27,7 +27,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/input_method_initializer.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/linux_ui/linux_ui.h"

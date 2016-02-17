@@ -15,6 +15,8 @@
 #include "ash/shell_init_params.h"
 #include "ash/shell_window_ids.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -143,8 +145,7 @@ class AshInit {
  public:
   AshInit() : worker_pool_(new base::SequencedWorkerPool(2, "AshWorkerPool")) {
     ui::RegisterPathProvider();
-    ui::ResourceBundle::InitSharedInstanceWithLocale(
-        "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+    InitializeResourceBundle();
   }
 
   ~AshInit() { worker_pool_->Shutdown(); }
@@ -186,6 +187,26 @@ class AshInit {
 
     ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
     SetupWallpaper(SkColorSetARGB(255, 0, 255, 0));
+  }
+
+  void InitializeResourceBundle() {
+    // Load ash resources and en-US strings; not 'common' (Chrome) resources.
+    // TODO(msw): Do not load 'test' resources (include sys lang; rename paks?).
+    // TODO(msw): Use the ResourceProvider interface to load these pak files.
+    // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
+    base::FilePath path;
+    PathService::Get(base::DIR_MODULE, &path);
+    base::FilePath ash_test_strings =
+        path.Append(FILE_PATH_LITERAL("ash_test_strings.pak"));
+    base::FilePath ash_test_resources_100 =
+        path.Append(FILE_PATH_LITERAL("ash_test_resources_100_percent.pak"));
+    base::FilePath ash_test_resources_200 =
+        path.Append(FILE_PATH_LITERAL("ash_test_resources_200_percent.pak"));
+
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
+    rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
   }
 
   void SetupWallpaper(SkColor color) {
