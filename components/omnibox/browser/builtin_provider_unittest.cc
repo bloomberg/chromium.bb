@@ -327,3 +327,78 @@ TEST_F(BuiltinProviderTest, Subpages) {
 
   RunTest(settings_subpage_cases, arraysize(settings_subpage_cases));
 }
+
+TEST_F(BuiltinProviderTest, Inlining) {
+  const base::string16 kAbout = ASCIIToUTF16(url::kAboutScheme);
+  const base::string16 kEmbedder = ASCIIToUTF16(kEmbedderAboutScheme);
+  const base::string16 kSep = ASCIIToUTF16(url::kStandardSchemeSeparator);
+  const base::string16 kHostM = ASCIIToUTF16(kHostMedia);
+  const base::string16 kHostB = ASCIIToUTF16(kHostBar);
+
+  struct InliningTestData {
+    const base::string16 input;
+    const base::string16 expected_inline_autocompletion;
+  } cases[] = {
+    // Typing along "about://media" should not yield an inline autocompletion
+    // until the completion is unique.  We don't bother checking every single
+    // character before the first "m" is typed.
+    {kAbout.substr(0,2),                  base::string16()},
+    {kAbout,                              base::string16()},
+    {kAbout + kSep,                       base::string16()},
+    {kAbout + kSep + kHostM.substr(0, 1), base::string16()},
+    {kAbout + kSep + kHostM.substr(0, 2), base::string16()},
+    {kAbout + kSep + kHostM.substr(0, 3), kHostM.substr(3)},
+    {kAbout + kSep + kHostM.substr(0, 4), kHostM.substr(4)},
+
+    // Ditto with "chrome://media".
+    {kEmbedder.substr(0,2),                  base::string16()},
+    {kEmbedder,                              base::string16()},
+    {kEmbedder + kSep,                       base::string16()},
+    {kEmbedder + kSep + kHostM.substr(0, 1), base::string16()},
+    {kEmbedder + kSep + kHostM.substr(0, 2), base::string16()},
+    {kEmbedder + kSep + kHostM.substr(0, 3), kHostM.substr(3)},
+    {kEmbedder + kSep + kHostM.substr(0, 4), kHostM.substr(4)},
+
+    // The same rules should apply to "about://bar" and "chrome://bar".
+    // At the "a" from "bar" in "about://bar", Chrome should be willing to
+    // start inlining.  (Before that it conflicts with about:blank.)  At
+    // the "b" from "bar" in "chrome://bar", Chrome should be willing to
+    // start inlining.  (There is no chrome://blank page.)
+    {kAbout + kSep + kHostB.substr(0, 1),    base::string16()},
+    {kAbout + kSep + kHostB.substr(0, 2),    kHostB.substr(2)},
+    {kAbout + kSep + kHostB.substr(0, 3),    kHostB.substr(3)},
+    {kEmbedder + kSep + kHostB.substr(0, 1), kHostB.substr(1)},
+    {kEmbedder + kSep + kHostB.substr(0, 2), kHostB.substr(2)},
+    {kEmbedder + kSep + kHostB.substr(0, 3), kHostB.substr(3)},
+
+    // Typing something non-match after an inline autocompletion should stop
+    // the inline autocompletion from appearing.
+    {kAbout + kSep + kHostB.substr(0, 2) + ASCIIToUTF16("/"), base::string16()},
+    {kAbout + kSep + kHostB.substr(0, 2) + ASCIIToUTF16("a"), base::string16()},
+    {kAbout + kSep + kHostB.substr(0, 2) + ASCIIToUTF16("+"), base::string16()},
+  };
+
+  ACMatches matches;
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf(
+        "case %" PRIuS ": %s", i, base::UTF16ToUTF8(cases[i].input).c_str()));
+    const AutocompleteInput input(
+        cases[i].input, base::string16::npos, std::string(), GURL(),
+        metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
+        false, TestSchemeClassifier());
+    provider_->Start(input, false);
+    EXPECT_TRUE(provider_->done());
+    matches = provider_->matches();
+    if (cases[i].expected_inline_autocompletion.empty()) {
+      // If we're not expecting an inline autocompletion, make sure that no
+      // matches are allowed_to_be_default.
+      for (size_t j = 0; j < matches.size(); ++j)
+        EXPECT_FALSE(matches[j].allowed_to_be_default_match);
+    } else {
+      ASSERT_FALSE(matches.empty());
+      EXPECT_TRUE(matches[0].allowed_to_be_default_match);
+      EXPECT_EQ(cases[i].expected_inline_autocompletion,
+                matches[0].inline_autocompletion);
+    }
+  }
+}

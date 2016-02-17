@@ -64,6 +64,9 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   } else {
     // Match input about: or |embedderAbout| URL input against builtin URLs.
     GURL url = url_formatter::FixupURL(base::UTF16ToUTF8(text), std::string());
+    const bool text_ends_with_slash =
+        base::EndsWith(text, base::ASCIIToUTF16("/"),
+                       base::CompareCase::SENSITIVE);
     // BuiltinProvider doesn't know how to suggest valid ?query or #fragment
     // extensions to builtin URLs.
     if (url.SchemeIs(
@@ -77,9 +80,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
                            base::CompareCase::INSENSITIVE_ASCII) &&
           base::StartsWith(blank_host, host,
                            base::CompareCase::INSENSITIVE_ASCII) &&
-          (url.path().length() <= 1) &&
-          !base::EndsWith(text, base::ASCIIToUTF16("/"),
-                          base::CompareCase::SENSITIVE)) {
+          (url.path().length() <= 1) && !text_ends_with_slash) {
         ACMatchClassifications styles;
         styles.push_back(ACMatchClassification(0, kMatch));
         base::string16 match = base::ASCIIToUTF16(url::kAboutBlankURL);
@@ -104,7 +105,17 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
           base::string16 match_string = embedderAbout + *i;
           if (match_string.length() > match_length)
             styles.push_back(ACMatchClassification(match_length, kUrl));
-          AddMatch(match_string, match_string.substr(match_length), styles);
+          // FixupURL() may have dropped a trailing slash on the user's input.
+          // Ensure that in that case, we don't inline autocomplete unless the
+          // autocompletion restores the slash.  This prevents us from e.g.
+          // trying to add a 'y' to an input like "chrome://histor/".
+          base::string16 inline_autocompletion(
+              match_string.substr(match_length));
+          if (text_ends_with_slash && !base::StartsWith(
+              match_string.substr(match_length), base::ASCIIToUTF16("/"),
+              base::CompareCase::INSENSITIVE_ASCII))
+            inline_autocompletion = base::string16();
+          AddMatch(match_string, inline_autocompletion, styles);
         }
       }
     }
@@ -113,7 +124,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   for (size_t i = 0; i < matches_.size(); ++i)
     matches_[i].relevance = kRelevance + matches_.size() - (i + 1);
   if (!HistoryProvider::PreventInlineAutocomplete(input) &&
-      (matches_.size() == 1)) {
+      (matches_.size() == 1) && !matches_[0].inline_autocompletion.empty()) {
     // If there's only one possible completion of the user's input and
     // allowing completions is okay, give the match a high enough score to
     // allow it to beat url-what-you-typed and be inlined.
