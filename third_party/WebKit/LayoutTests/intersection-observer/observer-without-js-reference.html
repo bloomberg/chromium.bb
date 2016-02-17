@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script src="../resources/gc.js"></script>
+<div style="width:100%; height:700px;"></div>
+<div id="target" style="background-color: green; width:100px; height:100px"></div>
+<div style="width:100%; height:700px;"></div>
+
+<script>
+  jsTestIsAsync = true;
+  description("IntersectionObserver continues to produce notifications when it has no javascript references.");
+  var target = document.getElementById("target");
+  var entries = [];
+  new IntersectionObserver(function(changes) {
+      entries.push(...changes);
+  }).observe(target);
+  gc();
+  document.scrollingElement.scrollTop = 300;
+  requestAnimationFrame(function () {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 1);
+      finishJSTest();
+    });
+  });
+</script>

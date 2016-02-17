@@ -51,6 +51,7 @@ public:
     void disconnect();
     void removeObservation(IntersectionObservation&);
     bool hasEntries() const { return m_entries.size(); }
+    const HeapHashSet<WeakMember<IntersectionObservation>>& observations() const { return m_observations; }
 
     DECLARE_TRACE();
 

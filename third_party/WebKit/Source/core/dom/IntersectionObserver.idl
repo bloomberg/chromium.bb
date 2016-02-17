@@ -9,6 +9,7 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
 // https://github.com/slightlyoff/IntersectionObserver
 [
     CustomConstructor(IntersectionObserverCallback callback, IntersectionObserverInit options),
+    Custom=VisitDOMWrapper,
     GarbageCollected,
     RuntimeEnabled=IntersectionObserver,
 ] interface IntersectionObserver {
