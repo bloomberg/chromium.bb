@@ -61,11 +61,9 @@ class IOSChromeUnitTestSuiteInitializer
 }  // namespace
 
 IOSChromeUnitTestSuite::IOSChromeUnitTestSuite(int argc, char** argv)
-    : base::TestSuite(argc, argv) {
-}
+    : base::TestSuite(argc, argv) {}
 
-IOSChromeUnitTestSuite::~IOSChromeUnitTestSuite() {
-}
+IOSChromeUnitTestSuite::~IOSChromeUnitTestSuite() {}
 
 void IOSChromeUnitTestSuite::Initialize() {
   // Add an additional listener to do the extra initialization for unit tests.

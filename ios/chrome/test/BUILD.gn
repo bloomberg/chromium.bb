@@ -7,15 +7,15 @@ source_set("test") {
   sources = [
     "block_cleanup_test.h",
     "block_cleanup_test.mm",
-    "ios_chrome_scoped_testing_chrome_browser_provider.cc",
     "ios_chrome_scoped_testing_chrome_browser_provider.h",
+    "ios_chrome_scoped_testing_chrome_browser_provider.mm",
     "ios_chrome_scoped_testing_local_state.cc",
     "ios_chrome_scoped_testing_local_state.h",
-    "ios_chrome_unit_test_suite.cc",
     "ios_chrome_unit_test_suite.h",
+    "ios_chrome_unit_test_suite.mm",
     "run_all_unittests.cc",
-    "testing_application_context.cc",
     "testing_application_context.h",
+    "testing_application_context.mm",
   ]
 
   deps = [

@@ -70,8 +70,8 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   explicit SyncSessionsClientImpl(ios::ChromeBrowserState* browser_state)
       : browser_state_(browser_state),
         window_delegates_getter_(
-            ios::GetChromeBrowserProvider()
-                ->CreateSyncedWindowDelegatesGetter(browser_state)) {}
+            ios::GetChromeBrowserProvider()->CreateSyncedWindowDelegatesGetter(
+                browser_state)) {}
 
   ~SyncSessionsClientImpl() override {}
 

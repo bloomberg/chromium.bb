@@ -27,8 +27,7 @@ void RunFaviconCallbackIfNotCanceled(
 FaviconClientImpl::FaviconClientImpl(ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {}
 
-FaviconClientImpl::~FaviconClientImpl() {
-}
+FaviconClientImpl::~FaviconClientImpl() {}
 
 bool FaviconClientImpl::IsNativeApplicationURL(const GURL& url) {
   return url.SchemeIs(kChromeUIScheme);

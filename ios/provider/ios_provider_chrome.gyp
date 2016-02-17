@@ -13,8 +13,8 @@
       'sources': [
         '../public/provider/chrome/browser/browser_constants.cc',
         '../public/provider/chrome/browser/browser_constants.h',
-        '../public/provider/chrome/browser/chrome_browser_provider.cc',
         '../public/provider/chrome/browser/chrome_browser_provider.h',
+        '../public/provider/chrome/browser/chrome_browser_provider.mm',
         '../public/provider/chrome/browser/geolocation_updater_provider.h',
         '../public/provider/chrome/browser/geolocation_updater_provider.mm',
         '../public/provider/chrome/browser/signin/chrome_identity.h',
@@ -50,8 +50,8 @@
       'sources': [
         '../public/provider/chrome/browser/test_chrome_browser_provider.h',
         '../public/provider/chrome/browser/test_chrome_browser_provider.mm',
-        '../public/provider/chrome/browser/test_chrome_provider_initializer.cc',
         '../public/provider/chrome/browser/test_chrome_provider_initializer.h',
+        '../public/provider/chrome/browser/test_chrome_provider_initializer.mm',
         '../public/provider/chrome/browser/test_updatable_resource_provider.h',
         '../public/provider/chrome/browser/test_updatable_resource_provider.mm',
       ],

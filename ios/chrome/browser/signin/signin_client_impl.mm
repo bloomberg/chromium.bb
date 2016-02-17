@@ -53,8 +53,7 @@ void SigninClientImpl::Shutdown() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
-void SigninClientImpl::DoFinalInit() {
-}
+void SigninClientImpl::DoFinalInit() {}
 
 // static
 bool SigninClientImpl::AllowsSigninCookies(
