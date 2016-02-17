@@ -173,6 +173,13 @@ component("core") {
     ":svg",
   ]
 
+  if (is_win && is_debug) {
+    # Incremental linking doesn't work on this target in debug mode, even
+    # with symbol_level=1.
+    configs -= [ "//build/config/win:default_incremental_linking" ]
+    configs += [ "//build/config/win:no_incremental_linking" ]
+  }
+
   public_configs = [
     ":core_include_dirs",
     ":link_core_modules_separately",
