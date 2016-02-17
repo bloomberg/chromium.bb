@@ -424,17 +424,8 @@ mode_random_replace(struct hmi_controller *hmi_ctrl,
 
 	wl_list_for_each(application_layer, layer_list, link) {
 		layers[layer_idx] = application_layer;
-		ivi_layout_interface->layer_set_render_order(layers[layer_idx]->ivilayer,
-							NULL, 0);
 		layer_idx++;
 	}
-
-	/*
-	 * This commit change is needed because ivisurface can not belongs to several layers
-	 * at the same time. So ivisurfaces shall be removed from layers once and then set them
-	 * to layers randomly.
-	 */
-	ivi_layout_interface->commit_changes();
 
 	for (i = 0; i < surface_length; i++) {
 		ivisurf = pp_surface[i];
