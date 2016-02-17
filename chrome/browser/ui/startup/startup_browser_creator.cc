@@ -370,21 +370,8 @@ bool StartupBrowserCreator::LaunchBrowser(
     const std::vector<GURL> urls_to_launch =
         GetURLsFromCommandLine(command_line, cur_dir, profile,
                                &show_desktop_search_redirection_infobar_);
-    chrome::HostDesktopType host_desktop_type =
-        chrome::HOST_DESKTOP_TYPE_NATIVE;
-
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
-    // We want to maintain only one type of instance for now, either ASH
-    // or desktop.
-    // TODO(shrikant): Remove this code once we decide on running both desktop
-    // and ASH instances side by side.
-    if (ash::Shell::HasInstance())
-      host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
-#endif
-
-    const bool launched = lwp.Launch(profile, urls_to_launch,
-                               in_synchronous_profile_launch_,
-                               host_desktop_type);
+    const bool launched =
+        lwp.Launch(profile, urls_to_launch, in_synchronous_profile_launch_);
     in_synchronous_profile_launch_ = false;
     if (!launched) {
       LOG(ERROR) << "launch error";

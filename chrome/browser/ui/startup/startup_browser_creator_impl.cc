@@ -63,7 +63,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/session_crashed_bubble.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
@@ -308,8 +307,7 @@ StartupBrowserCreatorImpl::~StartupBrowserCreatorImpl() {
 
 bool StartupBrowserCreatorImpl::Launch(Profile* profile,
                                        const std::vector<GURL>& urls_to_open,
-                                       bool process_startup,
-                                       chrome::HostDesktopType desktop_type) {
+                                       bool process_startup) {
   UMA_HISTOGRAM_COUNTS_100("Startup.BrowserLaunchURLCount",
       static_cast<base::HistogramBase::Sample>(urls_to_open.size()));
   RecordRapporOnStartupURLs(urls_to_open);
@@ -353,7 +351,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     RecordLaunchModeHistogram(urls_to_open.empty() ?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
 
-    ProcessLaunchURLs(process_startup, urls_to_open, desktop_type);
+    ProcessLaunchURLs(process_startup, urls_to_open);
 
     if (command_line_.HasSwitch(switches::kInstallChromeApp)) {
       install_chrome_app::InstallChromeApp(
@@ -505,8 +503,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
 
 void StartupBrowserCreatorImpl::ProcessLaunchURLs(
     bool process_startup,
-    const std::vector<GURL>& urls_to_open,
-    chrome::HostDesktopType desktop_type) {
+    const std::vector<GURL>& urls_to_open) {
   // Don't open any browser windows if we're starting up in "background mode".
   if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow))
     return;
@@ -523,7 +520,7 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
   }
 #endif
 
-  if (process_startup && ProcessStartupURLs(urls_to_open, desktop_type)) {
+  if (process_startup && ProcessStartupURLs(urls_to_open)) {
     // ProcessStartupURLs processed the urls, nothing else to do.
     return;
   }
@@ -550,7 +547,7 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
       }
 
       // Open user-specified URLs like pinned tabs and startup tabs.
-      Browser* browser = ProcessSpecifiedURLs(urls_to_open, desktop_type);
+      Browser* browser = ProcessSpecifiedURLs(urls_to_open);
       if (browser) {
         AddInfoBarsIfNecessary(browser, is_process_startup);
         return;
@@ -569,15 +566,13 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
   }
   // This will launch a browser; prevent session restore.
   StartupBrowserCreator::in_synchronous_profile_launch_ = true;
-  browser =
-      OpenURLsInBrowser(browser, process_startup, adjusted_urls, desktop_type);
+  browser = OpenURLsInBrowser(browser, process_startup, adjusted_urls);
   StartupBrowserCreator::in_synchronous_profile_launch_ = false;
   AddInfoBarsIfNecessary(browser, is_process_startup);
 }
 
 bool StartupBrowserCreatorImpl::ProcessStartupURLs(
-    const std::vector<GURL>& urls_to_open,
-    chrome::HostDesktopType desktop_type) {
+    const std::vector<GURL>& urls_to_open) {
   VLOG(1) << "StartupBrowserCreatorImpl::ProcessStartupURLs";
   SessionStartupPref pref =
       StartupBrowserCreator::GetSessionStartupPref(command_line_, profile_);
@@ -636,7 +631,7 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
     return true;
   }
 
-  Browser* browser = ProcessSpecifiedURLs(urls_to_open, desktop_type);
+  Browser* browser = ProcessSpecifiedURLs(urls_to_open);
   if (!browser)
     return false;
 
@@ -655,8 +650,7 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
 }
 
 Browser* StartupBrowserCreatorImpl::ProcessSpecifiedURLs(
-    const std::vector<GURL>& urls_to_open,
-    chrome::HostDesktopType desktop_type) {
+    const std::vector<GURL>& urls_to_open) {
   SessionStartupPref pref =
       StartupBrowserCreator::GetSessionStartupPref(command_line_, profile_);
   StartupTabs tabs;
@@ -696,7 +690,7 @@ Browser* StartupBrowserCreatorImpl::ProcessSpecifiedURLs(
   if (tabs.empty())
     return NULL;
 
-  Browser* browser = OpenTabsInBrowser(NULL, true, tabs, desktop_type);
+  Browser* browser = OpenTabsInBrowser(NULL, true, tabs);
   return browser;
 }
 
@@ -723,18 +717,15 @@ void StartupBrowserCreatorImpl::AddUniqueURLs(const std::vector<GURL>& urls,
 Browser* StartupBrowserCreatorImpl::OpenURLsInBrowser(
     Browser* browser,
     bool process_startup,
-    const std::vector<GURL>& urls,
-    chrome::HostDesktopType desktop_type) {
+    const std::vector<GURL>& urls) {
   StartupTabs tabs;
   UrlsToTabs(urls, &tabs);
-  return OpenTabsInBrowser(browser, process_startup, tabs, desktop_type);
+  return OpenTabsInBrowser(browser, process_startup, tabs);
 }
 
-Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
-    Browser* browser,
-    bool process_startup,
-    const StartupTabs& tabs,
-    chrome::HostDesktopType desktop_type) {
+Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
+                                                      bool process_startup,
+                                                      const StartupTabs& tabs) {
   DCHECK(!tabs.empty());
 
   // If we don't yet have a profile, try to use the one we're given from
