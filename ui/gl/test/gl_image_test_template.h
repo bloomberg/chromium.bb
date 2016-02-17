@@ -51,6 +51,58 @@ std::string PrependFragmentSamplerType(unsigned target,
   return shader_string;
 }
 
+struct ProgramAndShaders {
+  GLuint program;
+  GLuint vertex_shader;
+  GLuint fragment_shader;
+};
+
+// Creates a shader that reads from a texture.
+// Returns the newly created programs and shaders.
+void SetUpVertexAndFragmentShader(GLenum target, ProgramAndShaders* pas) {
+  // clang-format off
+  const char kVertexShader[] = STRINGIZE(
+    attribute vec2 a_position;
+    varying vec2 v_texCoord;
+    void main() {
+      gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
+      v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;
+    }
+  );
+  const char kFragmentShader[] = STRINGIZE(
+    uniform SamplerType a_texture;
+    varying vec2 v_texCoord;
+    void main() {
+      gl_FragColor = TextureLookup(a_texture, v_texCoord);
+    }
+  );
+  const char kShaderFloatPrecision[] = STRINGIZE(
+    precision mediump float;
+  );
+  // clang-format on
+
+  GLuint vertex_shader =
+      gfx::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
+  bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+  GLuint fragment_shader = gfx::GLHelper::LoadShader(
+      GL_FRAGMENT_SHADER,
+      base::StringPrintf(
+          "%s\n%s", is_gles ? kShaderFloatPrecision : "",
+          PrependFragmentSamplerType(target, kFragmentShader).c_str())
+          .c_str());
+  GLuint program = gfx::GLHelper::SetupProgram(vertex_shader, fragment_shader);
+  EXPECT_NE(program, 0u);
+  glUseProgram(program);
+
+  GLint sampler_location = glGetUniformLocation(program, "a_texture");
+  ASSERT_NE(sampler_location, -1);
+  glUniform1i(sampler_location, 0);
+
+  pas->program = program;
+  pas->vertex_shader = vertex_shader;
+  pas->fragment_shader = fragment_shader;
+}
+
 }  // namespace
 
 template <typename GLImageTestDelegate>
@@ -111,6 +163,51 @@ TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
 REGISTER_TYPED_TEST_CASE_P(GLImageTest, CreateAndDestroy);
 
 template <typename GLImageTestDelegate>
+class GLImageZeroInitializeTest : public GLImageTest<GLImageTestDelegate> {};
+
+// This test verifies that if an uninitialized image is bound to a texture, the
+// result is zero-initialized.
+TYPED_TEST_CASE_P(GLImageZeroInitializeTest);
+
+// TODO(erikchen): Enable this test when it actually passes on Mac.
+// https://crbug.com/584760.
+TYPED_TEST_P(GLImageZeroInitializeTest, DISABLED_ZeroInitialize) {
+  const gfx::Size image_size(256, 256);
+  scoped_refptr<gl::GLImage> image = this->delegate_.CreateImage(image_size);
+  GLenum target = this->delegate_.GetTextureTarget();
+  GLuint uninitialized_texture = GLTestHelper::CreateTexture(target);
+
+  glBindTexture(target, uninitialized_texture);
+  ASSERT_TRUE(image->BindTexImage(target));
+  GLuint framebuffer =
+      GLTestHelper::SetupFramebuffer(image_size.width(), image_size.height());
+  ASSERT_TRUE(framebuffer);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer);
+  glViewport(0, 0, image_size.width(), image_size.height());
+  GLuint vertex_buffer = gfx::GLHelper::SetupQuadVertexBuffer();
+
+  ProgramAndShaders pas;
+  SetUpVertexAndFragmentShader(target, &pas);
+  gfx::GLHelper::DrawQuad(vertex_buffer);
+
+  const uint8_t zero_color[] = {0, 0, 0, 0};
+  GLTestHelper::CheckPixels(0, 0, image_size.width(), image_size.height(),
+                            zero_color);
+
+  glDeleteProgram(pas.program);
+  glDeleteShader(pas.vertex_shader);
+  glDeleteShader(pas.fragment_shader);
+  glDeleteBuffersARB(1, &vertex_buffer);
+  glDeleteFramebuffersEXT(1, &framebuffer);
+
+  image->ReleaseTexImage(target);
+  image->Destroy(true);
+  glDeleteTextures(1, &uninitialized_texture);
+}
+
+REGISTER_TYPED_TEST_CASE_P(GLImageZeroInitializeTest, DISABLED_ZeroInitialize);
+
+template <typename GLImageTestDelegate>
 class GLImageCopyTest : public GLImageTest<GLImageTestDelegate> {};
 
 TYPED_TEST_CASE_P(GLImageCopyTest);
@@ -154,43 +251,8 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
 
   EXPECT_TRUE(rv);
 
-  // clang-format off
-  const char kVertexShader[] = STRINGIZE(
-    attribute vec2 a_position;
-    varying vec2 v_texCoord;
-    void main() {
-      gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
-      v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;
-    }
-  );
-  const char kFragmentShader[] = STRINGIZE(
-    uniform SamplerType a_texture;
-    varying vec2 v_texCoord;
-    void main() {
-      gl_FragColor = TextureLookup(a_texture, v_texCoord);
-    }
-  );
-  const char kShaderFloatPrecision[] = STRINGIZE(
-    precision mediump float;
-  );
-  // clang-format on
-
-  GLuint vertex_shader =
-      gfx::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
-  bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
-  GLuint fragment_shader = gfx::GLHelper::LoadShader(
-      GL_FRAGMENT_SHADER,
-      base::StringPrintf(
-          "%s\n%s", is_gles ? kShaderFloatPrecision : "",
-          PrependFragmentSamplerType(target, kFragmentShader).c_str())
-          .c_str());
-  GLuint program = gfx::GLHelper::SetupProgram(vertex_shader, fragment_shader);
-  EXPECT_NE(program, 0u);
-  glUseProgram(program);
-
-  GLint sampler_location = glGetUniformLocation(program, "a_texture");
-  ASSERT_NE(sampler_location, -1);
-  glUniform1i(sampler_location, 0);
+  ProgramAndShaders pas;
+  SetUpVertexAndFragmentShader(target, &pas);
 
   GLuint vertex_buffer = gfx::GLHelper::SetupQuadVertexBuffer();
   // Draw |texture| to viewport and read back pixels to check expectations.
@@ -200,9 +262,9 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
                             image_color);
 
   // Clean up.
-  glDeleteProgram(program);
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
+  glDeleteProgram(pas.program);
+  glDeleteShader(pas.vertex_shader);
+  glDeleteShader(pas.fragment_shader);
   glDeleteBuffersARB(1, &vertex_buffer);
   glDeleteTextures(1, &texture);
   glDeleteFramebuffersEXT(1, &framebuffer);

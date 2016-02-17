@@ -17,6 +17,16 @@ namespace {
 template <gfx::BufferFormat format>
 class GLImageIOSurfaceTestDelegate {
  public:
+  scoped_refptr<GLImage> CreateImage(const gfx::Size& size) const {
+    scoped_refptr<GLImageIOSurface> image(new GLImageIOSurface(
+        size, GLImageIOSurface::GetInternalFormatForTesting(format)));
+    IOSurfaceRef surface_ref = gfx::CreateIOSurface(size, format);
+    bool rv =
+        image->Initialize(surface_ref, gfx::GenericSharedMemoryId(1), format);
+    EXPECT_TRUE(rv);
+    return image;
+  }
+
   scoped_refptr<GLImage> CreateSolidColorImage(const gfx::Size& size,
                                                const uint8_t color[4]) const {
     scoped_refptr<GLImageIOSurface> image(new GLImageIOSurface(
@@ -50,6 +60,14 @@ using GLImageTestTypes = testing::Types<
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::YUV_420_BIPLANAR>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface, GLImageTest, GLImageTestTypes);
+
+using GLImageIOSurfaceTestTypes =
+    testing::Types<GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
+                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>>;
+
+INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
+                              GLImageZeroInitializeTest,
+                              GLImageIOSurfaceTestTypes);
 
 INSTANTIATE_TYPED_TEST_CASE_P(
     GLImageIOSurface,
