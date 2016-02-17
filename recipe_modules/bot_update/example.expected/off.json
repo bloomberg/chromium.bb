@@ -21,8 +21,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@HEAD",
-      "--no_shallow"
+      "src@HEAD"
     ],
     "cwd": "[SLAVE_BUILD]",
     "env": {

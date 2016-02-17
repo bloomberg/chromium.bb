@@ -8,6 +8,12 @@
 from recipe_engine import recipe_api
 
 
+# This is just for testing, to indicate if a master is using a Git scheduler
+# or not.
+SVN_MASTERS = (
+    'experimental.svn',
+)
+
 
 def jsonish_to_python(spec, is_top=False):
   """Turn a json spec into a python parsable object.
@@ -61,10 +67,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
   def properties(self):
       return self._properties
 
-  # Note: force is ignored.
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
-                      force=True, patch_root=None, no_shallow=False,
+                      force=False, patch_root=None, no_shallow=False,
                       with_branch_heads=False, refs=None,
                       patch_project_roots=None, patch_oauth2=False,
                       output_manifest=True, clobber=False,
@@ -74,6 +79,11 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # data bot_update needs is already configured into the gclient spec.
     cfg = gclient_config or self.m.gclient.c
     spec_string = jsonish_to_python(cfg.as_jsonish(), True)
+
+    # Used by bot_update to determine if we want to run or not.
+    master = self.m.properties['mastername']
+    builder = self.m.properties['buildername']
+    slave = self.m.properties['slavename']
 
     # Construct our bot_update command.  This basically be inclusive of
     # everything required for bot_update to know:
@@ -126,13 +136,18 @@ class BotUpdateApi(recipe_api.RecipeApi):
       rev_map = self.m.gclient.c.got_revision_mapping.as_jsonish()
 
     flags = [
-        # 1. What do we want to check out (spec/root/rev/rev_map).
+        # 1. Do we want to run? (master/builder/slave).
+        ['--master', master],
+        ['--builder', builder],
+        ['--slave', slave],
+
+        # 2. What do we want to check out (spec/root/rev/rev_map).
         ['--spec', spec_string],
         ['--root', root],
         ['--revision_mapping_file', self.m.json.input(rev_map)],
         ['--git-cache-dir', self.m.path['git_cache']],
 
-        # 2. How to find the patch, if any (issue/patchset/patch_url).
+        # 3. How to find the patch, if any (issue/patchset/patch_url).
         ['--issue', issue],
         ['--patchset', patchset],
         ['--patch_url', patch_url],
@@ -142,7 +157,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--apply_issue_email_file', email_file],
         ['--apply_issue_key_file', key_file],
 
-        # 3. Hookups to JSON output back into recipes.
+        # 4. Hookups to JSON output back into recipes.
         ['--output_json', self.m.json.output()],]
 
 
@@ -182,6 +197,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     if clobber:
       cmd.append('--clobber')
+    if force:
+      cmd.append('--force')
     if no_shallow:
       cmd.append('--no_shallow')
     if output_manifest:
@@ -190,9 +207,11 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--with_branch_heads')
 
     # Inject Json output for testing.
+    git_mode = self.m.properties.get('mastername') not in SVN_MASTERS
     first_sln = cfg.solutions[0].name
     step_test_data = lambda: self.test_api.output_json(
-        root, first_sln, rev_map, self.m.properties.get('fail_patch', False),
+        master, builder, slave, root, first_sln, rev_map, git_mode, force,
+        self.m.properties.get('fail_patch', False),
         output_manifest=output_manifest, fixed_revisions=fixed_revisions)
 
     # Add suffixes to the step name, if specified.
