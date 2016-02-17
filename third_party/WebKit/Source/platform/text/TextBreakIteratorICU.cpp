@@ -27,8 +27,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 #include <unicode/rbbi.h>
 #include <unicode/ubrk.h>
