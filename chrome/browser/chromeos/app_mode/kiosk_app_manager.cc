@@ -345,7 +345,8 @@ bool KioskAppManager::IsAutoLaunchEnabled() const {
 }
 
 std::string KioskAppManager::GetAutoLaunchAppRequiredPlatformVersion() const {
-  if (!IsAutoLaunchEnabled())
+  // Bail out if there is no auto launched app with zero delay.
+  if (!IsAutoLaunchEnabled() || !GetAutoLaunchDelay().is_zero())
     return std::string();
 
   const KioskAppData* data = GetAppData(GetAutoLaunchApp());
@@ -789,6 +790,15 @@ void KioskAppManager::GetCrxUnpackDir(base::FilePath* unpack_dir) {
   base::FilePath temp_dir;
   base::GetTempDir(&temp_dir);
   *unpack_dir = temp_dir.AppendASCII(kCrxUnpackDir);
+}
+
+base::TimeDelta KioskAppManager::GetAutoLaunchDelay() const {
+  int delay;
+  if (!CrosSettings::Get()->GetInteger(
+          kAccountsPrefDeviceLocalAccountAutoLoginDelay, &delay)) {
+    return base::TimeDelta();  // Default delay is 0ms.
+  }
+  return base::TimeDelta::FromMilliseconds(delay);
 }
 
 }  // namespace chromeos

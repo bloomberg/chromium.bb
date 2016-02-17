@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -137,7 +138,8 @@ class KioskAppManager : public KioskAppDataDelegate,
   // Enable auto launch setter.
   void SetEnableAutoLaunch(bool value);
 
-  // Returns the cached required platform version of the auto launch kiosk app.
+  // Returns the cached required platform version of the auto launch with
+  // zero delay kiosk app.
   std::string GetAutoLaunchAppRequiredPlatformVersion() const;
 
   // Adds/removes a kiosk app by id. When removed, all locally cached data
@@ -292,6 +294,9 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   void GetCrxCacheDir(base::FilePath* cache_dir);
   void GetCrxUnpackDir(base::FilePath* unpack_dir);
+
+  // Returns the auto launch delay.
+  base::TimeDelta GetAutoLaunchDelay() const;
 
   // True if machine ownership is already established.
   bool ownership_established_;

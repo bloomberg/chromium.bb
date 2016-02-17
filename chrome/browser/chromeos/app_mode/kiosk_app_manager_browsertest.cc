@@ -863,6 +863,14 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest,
   EXPECT_TRUE(manager()->IsAutoLaunchEnabled());
   EXPECT_EQ(kRequiredPlatformVersion,
             manager()->GetAutoLaunchAppRequiredPlatformVersion());
+
+  // No require platform version if auto launched app has a non-zero delay set.
+  settings_helper_.SetInteger(kAccountsPrefDeviceLocalAccountAutoLoginDelay, 1);
+  EXPECT_EQ("", manager()->GetAutoLaunchAppRequiredPlatformVersion());
+
+  settings_helper_.SetInteger(kAccountsPrefDeviceLocalAccountAutoLoginDelay, 0);
+  EXPECT_EQ(kRequiredPlatformVersion,
+            manager()->GetAutoLaunchAppRequiredPlatformVersion());
 }
 
 }  // namespace chromeos
