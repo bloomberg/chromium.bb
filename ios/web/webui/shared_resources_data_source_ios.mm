@@ -37,11 +37,9 @@ int PathToIDR(const std::string& path) {
 
 }  // namespace
 
-SharedResourcesDataSourceIOS::SharedResourcesDataSourceIOS() {
-}
+SharedResourcesDataSourceIOS::SharedResourcesDataSourceIOS() {}
 
-SharedResourcesDataSourceIOS::~SharedResourcesDataSourceIOS() {
-}
+SharedResourcesDataSourceIOS::~SharedResourcesDataSourceIOS() {}
 
 std::string SharedResourcesDataSourceIOS::GetSource() const {
   return kWebUIResourcesHost;

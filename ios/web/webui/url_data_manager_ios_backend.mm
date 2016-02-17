@@ -187,11 +187,10 @@ class URLRequestChromeJob : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestChromeJob);
 };
 
-URLRequestChromeJob::URLRequestChromeJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    BrowserState* browser_state,
-    bool is_incognito)
+URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
+                                         net::NetworkDelegate* network_delegate,
+                                         BrowserState* browser_state,
+                                         bool is_incognito)
     : net::URLRequestJob(request, network_delegate),
       data_offset_(0),
       pending_buf_size_(0),
@@ -215,10 +214,7 @@ URLRequestChromeJob::~URLRequestChromeJob() {
 }
 
 void URLRequestChromeJob::Start() {
-  TRACE_EVENT_ASYNC_BEGIN1("browser",
-                           "DataManager:Request",
-                           this,
-                           "URL",
+  TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
                            request_->url().possibly_invalid_spec());
 
   if (!request_)
@@ -357,8 +353,7 @@ class ChromeProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // |is_incognito| should be set for incognito profiles.
-  ChromeProtocolHandler(BrowserState* browser_state,
-                        bool is_incognito)
+  ChromeProtocolHandler(BrowserState* browser_state, bool is_incognito)
       : browser_state_(browser_state), is_incognito_(is_incognito) {}
   ~ChromeProtocolHandler() override {}
 
@@ -367,8 +362,8 @@ class ChromeProtocolHandler
       net::NetworkDelegate* network_delegate) const override {
     DCHECK(request);
 
-    return new URLRequestChromeJob(
-        request, network_delegate, browser_state_, is_incognito_);
+    return new URLRequestChromeJob(request, network_delegate, browser_state_,
+                                   is_incognito_);
   }
 
   bool IsSafeRedirectTarget(const GURL& location) const override {
@@ -395,8 +390,7 @@ URLDataManagerIOSBackend::URLDataManagerIOSBackend() : next_request_id_(0) {
 
 URLDataManagerIOSBackend::~URLDataManagerIOSBackend() {
   for (DataSourceMap::iterator i = data_sources_.begin();
-       i != data_sources_.end();
-       ++i) {
+       i != data_sources_.end(); ++i) {
     i->second->backend_ = NULL;
   }
   data_sources_.clear();
@@ -424,8 +418,7 @@ void URLDataManagerIOSBackend::AddDataSource(URLDataSourceIOSImpl* source) {
 
 bool URLDataManagerIOSBackend::HasPendingJob(URLRequestChromeJob* job) const {
   for (PendingRequestMap::const_iterator i = pending_requests_.begin();
-       i != pending_requests_.end();
-       ++i) {
+       i != pending_requests_.end(); ++i) {
     if (i->second == job)
       return true;
   }
@@ -469,17 +462,12 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
       web::WebThread::UnsafeGetMessageLoopForThread(web::WebThread::UI);
   target_message_loop->PostTask(
       FROM_HERE,
-      base::Bind(&GetMimeTypeOnUI,
-                 scoped_refptr<URLDataSourceIOSImpl>(source),
-                 path,
-                 job->weak_factory_.GetWeakPtr()));
+      base::Bind(&GetMimeTypeOnUI, scoped_refptr<URLDataSourceIOSImpl>(source),
+                 path, job->weak_factory_.GetWeakPtr()));
 
   target_message_loop->PostTask(
-      FROM_HERE,
-      base::Bind(&URLDataManagerIOSBackend::CallStartRequest,
-                 make_scoped_refptr(source),
-                 path,
-                 request_id));
+      FROM_HERE, base::Bind(&URLDataManagerIOSBackend::CallStartRequest,
+                            make_scoped_refptr(source), path, request_id));
   return true;
 }
 
@@ -515,8 +503,7 @@ void URLDataManagerIOSBackend::RemoveRequest(URLRequestChromeJob* job) {
   // If/when the source sends the data that was requested, the data will just
   // be thrown away.
   for (PendingRequestMap::iterator i = pending_requests_.begin();
-       i != pending_requests_.end();
-       ++i) {
+       i != pending_requests_.end(); ++i) {
     if (i->second == job) {
       pending_requests_.erase(i);
       return;

@@ -64,8 +64,7 @@ BrowserURLRewriterImpl::BrowserURLRewriterImpl() {
   AddURLRewriter(&HandleViewSource);
 }
 
-BrowserURLRewriterImpl::~BrowserURLRewriterImpl() {
-}
+BrowserURLRewriterImpl::~BrowserURLRewriterImpl() {}
 
 void BrowserURLRewriterImpl::AddURLRewriter(URLRewriter rewriter) {
   DCHECK(rewriter);

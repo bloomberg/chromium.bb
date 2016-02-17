@@ -62,11 +62,9 @@ WebUIIOSDataSourceImpl::WebUIIOSDataSourceImpl(const std::string& source_name)
       default_resource_(-1),
       deny_xframe_options_(true),
       disable_set_font_strings_(false),
-      replace_existing_source_(true) {
-}
+      replace_existing_source_(true) {}
 
-WebUIIOSDataSourceImpl::~WebUIIOSDataSourceImpl() {
-}
+WebUIIOSDataSourceImpl::~WebUIIOSDataSourceImpl() {}
 
 void WebUIIOSDataSourceImpl::AddString(const std::string& name,
                                        const base::string16& value) {
