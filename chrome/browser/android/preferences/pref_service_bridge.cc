@@ -571,7 +571,11 @@ static void ClearBrowsingData(JNIEnv* env,
       case FORM_DATA:
         remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
         break;
-      default:
+      case BOOKMARKS:
+        // Bookmarks are deleted separately on the Java side.
+        NOTREACHED();
+        break;
+      case NUM_TYPES:
         NOTREACHED();
     }
   }

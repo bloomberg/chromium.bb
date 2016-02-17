@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
 import org.chromium.chrome.browser.signin.SigninManager;
 
+import java.util.EnumSet;
+
 /**
  * Modal dialog for clearing sync data. This allows the user to clear browsing data as well as
  * other synced data types like bookmarks.
@@ -48,6 +50,12 @@ public class ClearSyncDataPreferences extends ClearBrowsingDataPreferences {
 
         showProgressDialog();
 
+        // Bookmarks will be deleted locally, and not passed on to the native side.
+        final EnumSet<DialogOption> selectedOptions = getSelectedOptions();
+        final boolean shouldDeleteBookmarks =
+                selectedOptions.contains(DialogOption.CLEAR_BOOKMARKS_DATA);
+        selectedOptions.remove(DialogOption.CLEAR_BOOKMARKS_DATA);
+
         // Clear bookmarks first and then clear browsing data. Clear browsing data will remove
         // the progress dialog.
         // TODO(shashishekhar) We should not need an async task here, since bookmarks operations
@@ -56,7 +64,7 @@ public class ClearSyncDataPreferences extends ClearBrowsingDataPreferences {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... arg0) {
-                if (getSelectedOptions().contains(DialogOption.CLEAR_BOOKMARKS_DATA)) {
+                if (shouldDeleteBookmarks) {
                     ChromeBrowserProviderClient.removeAllUserBookmarks(mApplicationContext);
                 }
                 return null;
@@ -64,9 +72,9 @@ public class ClearSyncDataPreferences extends ClearBrowsingDataPreferences {
 
             @Override
             protected void onPostExecute(Void result) {
-                clearBrowsingData();
+                clearBrowsingData(selectedOptions);
 
-                if (getSelectedOptions().contains(DialogOption.CLEAR_BOOKMARKS_DATA)) {
+                if (shouldDeleteBookmarks) {
                     // onPostExecute is back in the UI thread.
                     SigninManager.get(mApplicationContext).clearLastSignedInUser();
                 }

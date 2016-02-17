@@ -142,8 +142,11 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         return selected;
     }
 
-    protected final void clearBrowsingData() {
-        EnumSet<DialogOption> options = getSelectedOptions();
+    /**
+     * Requests the browsing data corresponding to the given dialog options to be deleted.
+     * @param options The dialog options whose corresponding data should be deleted.
+     */
+    protected final void clearBrowsingData(EnumSet<DialogOption> options) {
         int[] dataTypes = new int[options.size()];
 
         int i = 0;
@@ -287,7 +290,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      */
     protected void onOptionSelected() {
         showProgressDialog();
-        clearBrowsingData();
+        clearBrowsingData(getSelectedOptions());
     }
 
     protected final void showProgressDialog() {

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.privacy;
 
+import android.preference.CheckBoxPreference;
+import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.MediumTest;
 
@@ -22,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Peforms integration tests with ClearBrowsingDataPreferences.
+ * Performs integration tests with ClearBrowsingDataPreferences.
  */
 public class ClearBrowsingDataPreferencesTest
         extends ChromeActivityTestCaseBase<ChromeActivity> {
@@ -38,6 +40,9 @@ public class ClearBrowsingDataPreferencesTest
         startMainActivityOnBlankPage();
     }
 
+    /**
+     * Tests that web apps are cleared when the "cookies and site data" option is selected.
+     */
     @MediumTest
     public void testClearingSiteDataClearsWebapps() throws Exception {
         WebappRegistry.registerWebapp(getActivity(), "first");
@@ -57,7 +62,7 @@ public class ClearBrowsingDataPreferencesTest
         mCallbackCalled = false;
 
         final Preferences preferences =
-                startPreferences(TestClearBrowsingDataPreferences.class.getName());
+                startPreferences(CookiesClearBrowsingDataPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -95,16 +100,87 @@ public class ClearBrowsingDataPreferencesTest
     }
 
     /**
+     * Tests that a fragment with all options preselected indeed has all checkboxes checked
+     * on startup, and that deletion with all checkboxes checked completes successfully.
+     */
+    @MediumTest
+    public void testClearingEverything() throws Exception {
+        final Preferences preferences =
+                startPreferences(ClearEverythingBrowsingDataPreferences.class.getName());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
+                PreferenceScreen screen = fragment.getPreferenceScreen();
+
+                for (int i = 0; i < screen.getPreferenceCount(); ++i) {
+                    Preference pref = screen.getPreference(i);
+                    if (!(pref instanceof CheckBoxPreference)) {
+                        continue;
+                    }
+                    CheckBoxPreference checkbox = (CheckBoxPreference) pref;
+                    assertTrue(checkbox.isChecked());
+                }
+
+                ButtonPreference clearButton = (ButtonPreference) screen.findPreference(
+                        ClearBrowsingDataPreferences.PREF_CLEAR_BUTTON);
+                assertTrue(clearButton.isEnabled());
+                clearButton.getOnPreferenceClickListener().onPreferenceClick(clearButton);
+            }
+        });
+
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
+                return fragment.getProgressDialog() == null;
+            }
+        });
+    }
+
+    /**
      * A testing version of ClearBrowsingDataPreferences that preselects the cookies option.
      * Must be public, as ChromeActivityTestCaseBase.startPreferences references it by name.
      */
-    public static class TestClearBrowsingDataPreferences extends ClearBrowsingDataPreferences {
+    public static class CookiesClearBrowsingDataPreferences extends ClearBrowsingDataPreferences {
         private static final EnumSet<DialogOption> DEFAULT_OPTIONS = EnumSet.of(
                 ClearBrowsingDataPreferences.DialogOption.CLEAR_COOKIES_AND_SITE_DATA);
 
         @Override
         protected boolean isOptionSelectedByDefault(DialogOption option) {
             return DEFAULT_OPTIONS.contains(option);
+        }
+    }
+
+    /**
+     * A testing version of ClearBrowsingDataPreferences that includes all possible options,
+     * and preselects all of them. Must be public, as ChromeActivityTestCaseBase.startPreferences
+     * references it by name.
+     */
+    public static class ClearEverythingBrowsingDataPreferences
+            extends ClearBrowsingDataPreferences {
+        @Override
+        protected void onOptionSelected() {
+            // All options should be selected.
+            EnumSet<DialogOption> options = getSelectedOptions();
+            assertEquals(EnumSet.allOf(DialogOption.class), options);
+
+            // Bookmarks currently must be handled on the Java side, and not passed to C++.
+            options.remove(DialogOption.CLEAR_BOOKMARKS_DATA);
+            clearBrowsingData(options);
+        }
+
+        @Override
+        protected DialogOption[] getDialogOptions() {
+            return DialogOption.values();
+        }
+
+        @Override
+        protected boolean isOptionSelectedByDefault(DialogOption option) {
+            return true;
         }
     }
 }
