@@ -27,7 +27,6 @@ void MediaStreamDevicePermissionContext::RequestPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
-    bool user_gesture,
     const BrowserPermissionCallback& callback) {
   NOTREACHED() << "RequestPermission is not implemented";
   callback.Run(CONTENT_SETTING_BLOCK);

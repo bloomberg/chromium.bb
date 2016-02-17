@@ -133,8 +133,7 @@ class GeolocationPermissionContextTests
 
   void RequestGeolocationPermission(content::WebContents* web_contents,
                                     const PermissionRequestID& id,
-                                    const GURL& requesting_frame,
-                                    bool user_gesture);
+                                    const GURL& requesting_frame);
 
   void PermissionResponse(const PermissionRequestID& id,
                           ContentSetting content_setting);
@@ -194,10 +193,9 @@ PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
 void GeolocationPermissionContextTests::RequestGeolocationPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    bool user_gesture) {
+    const GURL& requesting_frame) {
   geolocation_permission_context_->RequestPermission(
-      web_contents, id, requesting_frame, user_gesture,
+      web_contents, id, requesting_frame,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
                  base::Unretained(this), id));
   content::RunAllBlockingPoolTasksUntilIdle();
@@ -406,8 +404,7 @@ TEST_F(GeolocationPermissionContextTests, SinglePermissionBubble) {
   BubbleManagerDocumentLoadCompleted();
 
   EXPECT_EQ(0U, GetNumberOfPrompts());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   ASSERT_EQ(1U, GetNumberOfPrompts());
 }
 
@@ -418,8 +415,7 @@ TEST_F(GeolocationPermissionContextTests,
   BubbleManagerDocumentLoadCompleted();
 
   EXPECT_EQ(0U, GetNumberOfPrompts());
-  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame,
-                               true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   ASSERT_EQ(0U, GetNumberOfPrompts());
 }
 
@@ -428,8 +424,7 @@ TEST_F(GeolocationPermissionContextTests, SinglePermissionInfobar) {
   GURL requesting_frame("https://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
   infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate =
@@ -447,8 +442,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   NavigateAndCommit(requesting_frame);
   MockLocationSettings::SetLocationStatus(true, true);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   ConfirmInfoBarDelegate* infobar_delegate_0 =
       infobar_service()->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
@@ -459,8 +453,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   Reload();
   MockLocationSettings::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 }
 
@@ -469,8 +462,7 @@ TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsEnabled) {
   NavigateAndCommit(requesting_frame);
   MockLocationSettings::SetLocationStatus(true, true);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   ConfirmInfoBarDelegate* infobar_delegate =
       infobar_service()->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
@@ -485,8 +477,7 @@ TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsDisabled) {
   NavigateAndCommit(requesting_frame);
   MockLocationSettings::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 }
 #endif
@@ -509,9 +500,9 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
 
   // Request permission for two frames.
   RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_0, true);
+      web_contents(), RequestID(0), requesting_frame_0);
   RequestGeolocationPermission(
-      web_contents(), RequestID(1), requesting_frame_1, true);
+      web_contents(), RequestID(1), requesting_frame_1);
   // Ensure only one infobar is created.
   ASSERT_EQ(1U, GetNumberOfPrompts());
   base::string16 text_0 = GetPromptText();
@@ -567,13 +558,7 @@ TEST_F(GeolocationPermissionContextTests, HashIsIgnored) {
 
   // Check permission is requested.
   ASSERT_EQ(0U, GetNumberOfPrompts());
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  const bool user_gesture = false;
-#else
-  const bool user_gesture = true;
-#endif
-  RequestGeolocationPermission(web_contents(), RequestID(0), url_a,
-                               user_gesture);
+  RequestGeolocationPermission(web_contents(), RequestID(0), url_a);
   ASSERT_EQ(1U, GetNumberOfPrompts());
 
   // Change the hash, we'll still be on the same page.
@@ -609,8 +594,7 @@ TEST_F(GeolocationPermissionContextTests, MAYBE_PermissionForFileScheme) {
 
   // Check permission is requested.
   ASSERT_EQ(0U, GetNumberOfPrompts());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, GetNumberOfPrompts());
 
   // Accept the frame.
@@ -638,10 +622,8 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   ASSERT_EQ(0U, GetNumberOfPrompts());
 
   // Request permission for two frames.
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), frame_0, true);
-  RequestGeolocationPermission(
-      web_contents(), RequestID(1), frame_1, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), frame_0);
+  RequestGeolocationPermission(web_contents(), RequestID(1), frame_1);
 
   // Get the first permission request text.
   ASSERT_EQ(1U, GetNumberOfPrompts());
@@ -683,8 +665,7 @@ TEST_F(GeolocationPermissionContextTests, InvalidURL) {
 
   // Nothing should be displayed.
   EXPECT_EQ(0U, GetNumberOfPrompts());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(0U, GetNumberOfPrompts());
   CheckPermissionMessageSent(0, false);
 }
@@ -708,12 +689,11 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
 #endif
 
   // Request permission in all three tabs.
+  RequestGeolocationPermission(web_contents(), RequestID(0), url_a);
   RequestGeolocationPermission(
-      web_contents(), RequestID(0), url_a, true);
+      extra_tabs_[0].get(), RequestIDForTab(0, 0), url_b);
   RequestGeolocationPermission(
-      extra_tabs_[0].get(), RequestIDForTab(0, 0), url_b, true);
-  RequestGeolocationPermission(
-      extra_tabs_[1].get(), RequestIDForTab(1, 0), url_a, true);
+      extra_tabs_[1].get(), RequestIDForTab(1, 0), url_a);
   ASSERT_EQ(1U, GetNumberOfPrompts());  // For A0.
 #if !BUILDFLAG(ANDROID_JAVA_UI)
   ASSERT_EQ(1U, GetBubblesQueueSize(manager_b));
@@ -766,12 +746,11 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
 
   // Request permission in both tabs; the extra tab will have two permission
   // requests from two origins.
+  RequestGeolocationPermission(web_contents(), RequestID(0), url_a);
   RequestGeolocationPermission(
-      web_contents(), RequestID(0), url_a, true);
+      extra_tabs_[0].get(), RequestIDForTab(0, 0), url_a);
   RequestGeolocationPermission(
-      extra_tabs_[0].get(), RequestIDForTab(0, 0), url_a, true);
-  RequestGeolocationPermission(
-      extra_tabs_[0].get(), RequestIDForTab(0, 1), url_b, true);
+      extra_tabs_[0].get(), RequestIDForTab(0, 1), url_b);
 #if !BUILDFLAG(ANDROID_JAVA_UI)
   ASSERT_EQ(1U, GetBubblesQueueSize(manager_a0));
   ASSERT_EQ(1U, GetBubblesQueueSize(manager_a1));
@@ -840,9 +819,9 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
 
   // Request permission for two frames.
   RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_0, false);
+      web_contents(), RequestID(0), requesting_frame_0);
   RequestGeolocationPermission(
-      web_contents(), RequestID(1), requesting_frame_1, false);
+      web_contents(), RequestID(1), requesting_frame_1);
 
   // Ensure only one prompt is created.
   ASSERT_EQ(1U, GetNumberOfPrompts());
@@ -883,8 +862,7 @@ TEST_F(GeolocationPermissionContextTests, LastUsageAudited) {
                               CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
             0);
   ASSERT_EQ(0U, GetNumberOfPrompts());
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, false);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   ASSERT_EQ(1U, GetNumberOfPrompts());
 
   AcceptPrompt();
@@ -898,8 +876,7 @@ TEST_F(GeolocationPermissionContextTests, LastUsageAudited) {
             10);
 
   test_clock->Advance(base::TimeDelta::FromSeconds(3));
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame, false);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
 
   // Permission has been used three seconds later.
   EXPECT_EQ(map->GetLastUsage(requesting_frame.GetOrigin(),
@@ -937,9 +914,9 @@ TEST_F(GeolocationPermissionContextTests, LastUsageAuditedMultipleFrames) {
 
   // Request permission for two frames.
   RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_0, false);
+      web_contents(), RequestID(0), requesting_frame_0);
   RequestGeolocationPermission(
-      web_contents(), RequestID(1), requesting_frame_1, false);
+      web_contents(), RequestID(1), requesting_frame_1);
 
   // Ensure only one infobar is created.
   ASSERT_EQ(1U, GetNumberOfPrompts());
@@ -987,7 +964,7 @@ TEST_F(GeolocationPermissionContextTests, LastUsageAuditedMultipleFrames) {
 
   test_clock->Advance(base::TimeDelta::FromSeconds(2));
   RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_0, false);
+      web_contents(), RequestID(0), requesting_frame_0);
 
   // Verify that requesting permission in one frame doesn't update other where
   // it is the embedder.

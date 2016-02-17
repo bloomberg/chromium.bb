@@ -45,7 +45,6 @@ class ProtectedMediaIdentifierPermissionContext
   void RequestPermission(content::WebContents* web_contents,
                          const PermissionRequestID& id,
                          const GURL& requesting_origin,
-                         bool user_gesture,
                          const BrowserPermissionCallback& callback) override;
 #endif  // defined(OS_CHROMEOS)
   ContentSetting GetPermissionStatus(

@@ -144,7 +144,6 @@ void NotificationPermissionContext::DecidePermission(
     const PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -171,8 +170,7 @@ void NotificationPermissionContext::DecidePermission(
   }
 
   PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
-                                          embedding_origin, user_gesture,
-                                          callback);
+                                          embedding_origin, callback);
 }
 
 // Unlike other permission types, granting a notification for a given origin

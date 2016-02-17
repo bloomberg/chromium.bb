@@ -254,7 +254,7 @@ int PermissionManager::RequestPermissions(
     PermissionContextBase* context = PermissionContext::Get(
         profile_, permission);
     context->RequestPermission(
-        web_contents, request, requesting_origin, user_gesture,
+        web_contents, request, requesting_origin,
         base::Bind(&ContentSettingToPermissionStatusCallbackWrapper,
             base::Bind(&PermissionManager::OnPermissionsRequestResponseStatus,
                 weak_ptr_factory_.GetWeakPtr(), request_id, i)));

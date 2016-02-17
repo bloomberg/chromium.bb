@@ -28,15 +28,14 @@ void GeolocationPermissionContext::DecidePermission(
     const PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   bool permission_set;
   bool new_permission;
   if (extensions_context_.DecidePermission(
-      web_contents, id, id.request_id(), requesting_origin, user_gesture,
-      callback, &permission_set, &new_permission)) {
+      web_contents, id, id.request_id(), requesting_origin, callback,
+      &permission_set, &new_permission)) {
     if (permission_set) {
       ContentSetting content_setting =
           new_permission ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
@@ -54,7 +53,6 @@ void GeolocationPermissionContext::DecidePermission(
                                           id,
                                           requesting_origin,
                                           embedding_origin,
-                                          user_gesture,
                                           callback);
 }
 

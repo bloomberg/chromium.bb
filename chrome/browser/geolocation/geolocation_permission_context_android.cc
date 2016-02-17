@@ -32,7 +32,6 @@ void GeolocationPermissionContextAndroid::RequestPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame_origin,
-    bool user_gesture,
     const BrowserPermissionCallback& callback) {
   if (!location_settings_->CanSitesRequestLocationPermission(web_contents)) {
     PermissionDecided(id, requesting_frame_origin,
@@ -62,7 +61,7 @@ void GeolocationPermissionContextAndroid::RequestPermission(
   }
 
   GeolocationPermissionContext::RequestPermission(
-      web_contents, id, requesting_frame_origin, user_gesture, callback);
+      web_contents, id, requesting_frame_origin, callback);
 }
 
 void GeolocationPermissionContextAndroid::CancelPermissionRequest(

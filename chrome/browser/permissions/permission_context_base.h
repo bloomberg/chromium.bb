@@ -75,7 +75,6 @@ class PermissionContextBase : public KeyedService {
   virtual void RequestPermission(content::WebContents* web_contents,
                                  const PermissionRequestID& id,
                                  const GURL& requesting_frame,
-                                 bool user_gesture,
                                  const BrowserPermissionCallback& callback);
 
   // Returns whether the permission has been granted, denied...
@@ -105,7 +104,6 @@ class PermissionContextBase : public KeyedService {
                                 const PermissionRequestID& id,
                                 const GURL& requesting_origin,
                                 const GURL& embedding_origin,
-                                bool user_gesture,
                                 const BrowserPermissionCallback& callback);
 
   // Called when permission is granted without interactively asking the user.

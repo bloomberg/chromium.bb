@@ -152,8 +152,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetRoutingID(),
         -1);
     permission_context.RequestPermission(
-        web_contents(),
-        id, url, true,
+        web_contents(), id, url,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 
@@ -177,8 +176,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetRoutingID(),
         -1);
     permission_context.RequestPermission(
-        web_contents(),
-        id, url, true,
+        web_contents(), id, url,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 
@@ -204,8 +202,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetRoutingID(),
         -1);
     permission_context.RequestPermission(
-        web_contents(),
-        id, url, true,
+        web_contents(), id, url,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 
@@ -229,8 +226,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetRoutingID(),
         -1);
     permission_context.RequestPermission(
-        web_contents(),
-        id, url, true,
+        web_contents(), id, url,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 
@@ -287,11 +283,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetRoutingID(), 1);
 
     permission_context.RequestPermission(
-        web_contents(), id0, url, true,
+        web_contents(), id0, url,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
     permission_context.RequestPermission(
-        web_contents(), id1, url, true,
+        web_contents(), id1, url,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 

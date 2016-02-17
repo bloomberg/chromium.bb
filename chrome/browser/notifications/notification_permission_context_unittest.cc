@@ -140,7 +140,7 @@ TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
             permission_context.last_permission_set_setting());
 
   permission_context.RequestPermission(
-      web_contents(), id, url, true /* user_gesture */, base::Bind(&DoNothing));
+      web_contents(), id, url, base::Bind(&DoNothing));
 
   // Should be blocked after 1-2 seconds, but the timer is reset whenever the
   // tab is not visible, so these 500ms never add up to >= 1 second.
@@ -217,10 +217,8 @@ TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
             permission_context.last_permission_set_setting());
 
   permission_context.RequestPermission(web_contents(), id0, url,
-                                       true /* user_gesture */,
                                        base::Bind(&DoNothing));
   permission_context.RequestPermission(web_contents(), id1, url,
-                                       true /* user_gesture */,
                                        base::Bind(&DoNothing));
 
   EXPECT_EQ(0, permission_context.permission_set_count());

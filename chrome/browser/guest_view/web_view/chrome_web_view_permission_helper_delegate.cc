@@ -175,11 +175,9 @@ void ChromeWebViewPermissionHelperDelegate::OnPointerLockPermissionResponse(
 void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
-    bool user_gesture,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
   request_info.SetString(guest_view::kUrl, requesting_frame.spec());
-  request_info.SetBoolean(guest_view::kUserGesture, user_gesture);
 
   // It is safe to hold an unretained pointer to
   // ChromeWebViewPermissionHelperDelegate because this callback is called from
@@ -188,7 +186,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
       permission_callback =
           base::Bind(&ChromeWebViewPermissionHelperDelegate::
                          OnGeolocationPermissionResponse,
-                     weak_factory_.GetWeakPtr(), bridge_id, user_gesture,
+                     weak_factory_.GetWeakPtr(), bridge_id,
                      base::Bind(&CallbackContentSettingWrapper, callback));
   int request_id = web_view_permission_helper()->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
@@ -200,7 +198,6 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
 
 void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
     int bridge_id,
-    bool user_gesture,
     const base::Callback<void(ContentSetting)>& callback,
     bool allow,
     const std::string& user_input) {
@@ -235,7 +232,6 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
           request_id,
           web_view_guest()->embedder_web_contents()
           ->GetLastCommittedURL().GetOrigin(),
-          user_gesture,
           callback);
 }
 
