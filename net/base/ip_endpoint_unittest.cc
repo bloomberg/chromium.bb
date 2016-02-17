@@ -198,12 +198,6 @@ TEST_F(IPEndPointTest, ToString) {
     EXPECT_EQ(tests[index].host_normalized + ":" + base::UintToString(port),
               result);
   }
-
-  // ToString() shouldn't crash on invalid addresses.
-  IPAddress invalid_address;
-  IPEndPoint invalid_endpoint(invalid_address, 8080);
-  EXPECT_EQ("", invalid_endpoint.ToString());
-  EXPECT_EQ("", invalid_endpoint.ToStringWithoutPort());
 }
 
 }  // namespace
