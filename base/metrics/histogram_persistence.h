@@ -25,7 +25,9 @@ BASE_EXPORT HistogramBase* GetCreateHistogramResultHistogram();
 // process may access the histograms created by other processes if it has a
 // handle on its memory segment. This takes ownership of the object and
 // should not be changed without great care as it is likely that there will
-// be pointers to data held in that space.
+// be pointers to data held in that space. It should be called as soon as
+// possible during startup to capture as many histograms as possible and
+// while operating single-threaded so there are no race-conditions.
 BASE_EXPORT void SetPersistentHistogramMemoryAllocator(
     PersistentMemoryAllocator* allocator);
 BASE_EXPORT PersistentMemoryAllocator* GetPersistentHistogramMemoryAllocator();
@@ -35,7 +37,7 @@ BASE_EXPORT PersistentMemoryAllocator* GetPersistentHistogramMemoryAllocator();
 // within persistent memory segments which can then be extracted and used
 // in other ways.
 BASE_EXPORT PersistentMemoryAllocator*
-ReleasePersistentHistogramMemoryAllocator();
+ReleasePersistentHistogramMemoryAllocatorForTesting();
 
 // Recreate a Histogram from data held in persistent memory. Though this
 // object will be local to the current process, the sample data will be

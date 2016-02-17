@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <climits>
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -21,35 +21,40 @@
 #include "base/metrics/sample_vector.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
-#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
-class HistogramTest : public testing::Test {
+// Test parameter indicates if a persistent memory allocator should be used
+// for histogram allocation. False will allocate histograms from the process
+// heap.
+class HistogramTest : public testing::TestWithParam<bool> {
  protected:
-  const int32_t kAllocatorMemorySize = 64 << 10;  // 64 KiB
+  const int32_t kAllocatorMemorySize = 4 << 20;  // 4 MiB
 
-  HistogramTest() {}
+  HistogramTest() : use_persistent_histogram_allocator_(GetParam()) {}
 
   void SetUp() override {
     // Each test will have a clean state (no Histogram / BucketRanges
     // registered).
     InitializeStatisticsRecorder();
-    // By getting the results-histogram before any persistent allocator
-    // is attached, that histogram is guaranteed not to be stored in
-    // any persistent memory segment (which simplifies some tests).
-    GetCreateHistogramResultHistogram();
+    if (use_persistent_histogram_allocator_)
+      CreatePersistentMemoryAllocator();
   }
 
   void TearDown() override {
+    if (allocator_) {
+      ASSERT_FALSE(allocator_->IsFull());
+      ASSERT_FALSE(allocator_->IsCorrupt());
+    }
     UninitializeStatisticsRecorder();
     DestroyPersistentMemoryAllocator();
   }
 
   void InitializeStatisticsRecorder() {
+    StatisticsRecorder::ResetForTesting();
     statistics_recorder_ = new StatisticsRecorder();
   }
 
@@ -59,10 +64,15 @@ class HistogramTest : public testing::Test {
   }
 
   void CreatePersistentMemoryAllocator() {
+    // By getting the results-histogram before any persistent allocator
+    // is attached, that histogram is guaranteed not to be stored in
+    // any persistent memory segment (which simplifies some tests).
+    GetCreateHistogramResultHistogram();
+
     if (!allocator_memory_)
       allocator_memory_.reset(new char[kAllocatorMemorySize]);
 
-    SetPersistentHistogramMemoryAllocator(nullptr);
+    delete ReleasePersistentHistogramMemoryAllocatorForTesting();
     memset(allocator_memory_.get(), 0, kAllocatorMemorySize);
     SetPersistentHistogramMemoryAllocator(
         new PersistentMemoryAllocator(
@@ -73,19 +83,26 @@ class HistogramTest : public testing::Test {
 
   void DestroyPersistentMemoryAllocator() {
     allocator_ = nullptr;
-    SetPersistentHistogramMemoryAllocator(nullptr);
+    delete ReleasePersistentHistogramMemoryAllocatorForTesting();
   }
 
-  StatisticsRecorder* statistics_recorder_;
+  const bool use_persistent_histogram_allocator_;
+
+  StatisticsRecorder* statistics_recorder_ = nullptr;
   scoped_ptr<char[]> allocator_memory_;
-  PersistentMemoryAllocator* allocator_;
+  PersistentMemoryAllocator* allocator_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistogramTest);
 };
 
+// Run all HistogramTest cases with both heap and persistent memory.
+INSTANTIATE_TEST_CASE_P(HeapAndPersistent, HistogramTest,
+                        testing::Bool());
+
+
 // Check for basic syntax and use.
-TEST_F(HistogramTest, BasicTest) {
+TEST_P(HistogramTest, BasicTest) {
   // Try basic construction
   HistogramBase* histogram = Histogram::FactoryGet(
       "TestHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
@@ -109,9 +126,11 @@ TEST_F(HistogramTest, BasicTest) {
   LOCAL_HISTOGRAM_ENUMERATION("Test6Histogram", 129, 130);
 }
 
-// Check for basic syntax and use.
-TEST_F(HistogramTest, PersistentTest) {
-  CreatePersistentMemoryAllocator();
+// Check for basic syntax and use with persistent allocator.
+TEST_P(HistogramTest, PersistentTest) {
+  if (!use_persistent_histogram_allocator_)
+    return;
+
   PersistentMemoryAllocator::MemoryInfo meminfo0;
   allocator_->GetMemoryInfo(&meminfo0);
 
@@ -197,7 +216,15 @@ TEST_F(HistogramTest, PersistentTest) {
 
 // Check that the macro correctly matches histograms by name and records their
 // data together.
-TEST_F(HistogramTest, NameMatchTest) {
+TEST_P(HistogramTest, NameMatchTest) {
+  // Macros that create hitograms have an internal static variable which will
+  // continue to point to those from the very first run of this method even
+  // during subsequent runs.
+  static bool already_run = false;
+  if (already_run)
+    return;
+  already_run = true;
+
   LOCAL_HISTOGRAM_PERCENTAGE("DuplicatedHistogram", 10);
   LOCAL_HISTOGRAM_PERCENTAGE("DuplicatedHistogram", 10);
   HistogramBase* histogram = LinearHistogram::FactoryGet(
@@ -208,7 +235,7 @@ TEST_F(HistogramTest, NameMatchTest) {
   EXPECT_EQ(2, samples->GetCount(10));
 }
 
-TEST_F(HistogramTest, ExponentialRangesTest) {
+TEST_P(HistogramTest, ExponentialRangesTest) {
   // Check that we got a nice exponential when there was enough room.
   BucketRanges ranges(9);
   Histogram::InitializeBucketRanges(1, 64, &ranges);
@@ -253,7 +280,7 @@ TEST_F(HistogramTest, ExponentialRangesTest) {
   EXPECT_TRUE(ranges2.Equals(histogram2->bucket_ranges()));
 }
 
-TEST_F(HistogramTest, LinearRangesTest) {
+TEST_P(HistogramTest, LinearRangesTest) {
   BucketRanges ranges(9);
   LinearHistogram::InitializeBucketRanges(1, 7, &ranges);
   // Gets a nice linear set of bucket ranges.
@@ -281,7 +308,7 @@ TEST_F(HistogramTest, LinearRangesTest) {
   EXPECT_TRUE(ranges2.Equals(histogram2->bucket_ranges()));
 }
 
-TEST_F(HistogramTest, ArrayToCustomRangesTest) {
+TEST_P(HistogramTest, ArrayToCustomRangesTest) {
   const HistogramBase::Sample ranges[3] = {5, 10, 20};
   std::vector<HistogramBase::Sample> ranges_vec =
       CustomHistogram::ArrayToCustomRanges(ranges, 3);
@@ -294,7 +321,7 @@ TEST_F(HistogramTest, ArrayToCustomRangesTest) {
   EXPECT_EQ(21, ranges_vec[5]);
 }
 
-TEST_F(HistogramTest, CustomHistogramTest) {
+TEST_P(HistogramTest, CustomHistogramTest) {
   // A well prepared custom ranges.
   std::vector<HistogramBase::Sample> custom_ranges;
   custom_ranges.push_back(1);
@@ -340,7 +367,7 @@ TEST_F(HistogramTest, CustomHistogramTest) {
   EXPECT_EQ(HistogramBase::kSampleType_MAX, ranges->range(3));
 }
 
-TEST_F(HistogramTest, CustomHistogramWithOnly2Buckets) {
+TEST_P(HistogramTest, CustomHistogramWithOnly2Buckets) {
   // This test exploits the fact that the CustomHistogram can have 2 buckets,
   // while the base class Histogram is *supposed* to have at least 3 buckets.
   // We should probably change the restriction on the base class (or not inherit
@@ -359,7 +386,7 @@ TEST_F(HistogramTest, CustomHistogramWithOnly2Buckets) {
   EXPECT_EQ(HistogramBase::kSampleType_MAX, ranges->range(2));
 }
 
-TEST_F(HistogramTest, AddCountTest) {
+TEST_P(HistogramTest, AddCountTest) {
   const size_t kBucketCount = 50;
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("AddCountHistogram", 10, 100, kBucketCount,
@@ -382,7 +409,7 @@ TEST_F(HistogramTest, AddCountTest) {
   EXPECT_EQ(38, samples2->GetCount(30));
 }
 
-TEST_F(HistogramTest, AddCount_LargeValuesDontOverflow) {
+TEST_P(HistogramTest, AddCount_LargeValuesDontOverflow) {
   const size_t kBucketCount = 50;
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("AddCountHistogram", 10, 1000000000, kBucketCount,
@@ -407,7 +434,7 @@ TEST_F(HistogramTest, AddCount_LargeValuesDontOverflow) {
 }
 
 // Make sure histogram handles out-of-bounds data gracefully.
-TEST_F(HistogramTest, BoundsTest) {
+TEST_P(HistogramTest, BoundsTest) {
   const size_t kBucketCount = 50;
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("Bounded", 10, 100, kBucketCount,
@@ -455,7 +482,7 @@ TEST_F(HistogramTest, BoundsTest) {
 }
 
 // Check to be sure samples land as expected is "correct" buckets.
-TEST_F(HistogramTest, BucketPlacementTest) {
+TEST_P(HistogramTest, BucketPlacementTest) {
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
@@ -474,7 +501,7 @@ TEST_F(HistogramTest, BucketPlacementTest) {
     EXPECT_EQ(i + 1, samples->GetCountAtIndex(i));
 }
 
-TEST_F(HistogramTest, CorruptSampleCounts) {
+TEST_P(HistogramTest, CorruptSampleCounts) {
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
@@ -501,7 +528,7 @@ TEST_F(HistogramTest, CorruptSampleCounts) {
             histogram->FindCorruption(*snapshot));
 }
 
-TEST_F(HistogramTest, CorruptBucketBounds) {
+TEST_P(HistogramTest, CorruptBucketBounds) {
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
@@ -536,7 +563,7 @@ TEST_F(HistogramTest, CorruptBucketBounds) {
   bucket_ranges->set_range(4, bucket_ranges->range(4) + 1);
 }
 
-TEST_F(HistogramTest, HistogramSerializeInfo) {
+TEST_P(HistogramTest, HistogramSerializeInfo) {
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("Histogram", 1, 64, 8,
                             HistogramBase::kIPCSerializationSourceFlag));
@@ -555,7 +582,8 @@ TEST_F(HistogramTest, HistogramSerializeInfo) {
 
   int flag;
   EXPECT_TRUE(iter.ReadInt(&flag));
-  EXPECT_EQ(HistogramBase::kIPCSerializationSourceFlag, flag);
+  EXPECT_EQ(HistogramBase::kIPCSerializationSourceFlag,
+            flag & ~HistogramBase::kIsPersistent);
 
   int min;
   EXPECT_TRUE(iter.ReadInt(&min));
@@ -577,7 +605,7 @@ TEST_F(HistogramTest, HistogramSerializeInfo) {
   EXPECT_FALSE(iter.SkipBytes(1));
 }
 
-TEST_F(HistogramTest, CustomHistogramSerializeInfo) {
+TEST_P(HistogramTest, CustomHistogramSerializeInfo) {
   std::vector<int> custom_ranges;
   custom_ranges.push_back(10);
   custom_ranges.push_back(100);
@@ -611,7 +639,7 @@ TEST_F(HistogramTest, CustomHistogramSerializeInfo) {
   EXPECT_FALSE(iter.SkipBytes(1));
 }
 
-TEST_F(HistogramTest, BadConstruction) {
+TEST_P(HistogramTest, BadConstruction) {
   HistogramBase* histogram = Histogram::FactoryGet(
       "BadConstruction", 0, 100, 8, HistogramBase::kNoFlags);
   EXPECT_TRUE(histogram->HasConstructionArguments(1, 100, 8));
@@ -637,9 +665,10 @@ TEST_F(HistogramTest, BadConstruction) {
   EXPECT_EQ(NULL, bad_histogram);
 }
 
-TEST_F(HistogramTest, FactoryTime) {
+TEST_P(HistogramTest, FactoryTime) {
   const int kTestCreateCount = 1 << 14;  // Must be power-of-2.
   const int kTestLookupCount = 100000;
+  const int kTestAddCount = 1000000;
 
   // Create all histogram names in advance for accurate timing below.
   std::vector<std::string> histogram_names;
@@ -657,10 +686,10 @@ TEST_F(HistogramTest, FactoryTime) {
   TimeDelta create_ticks = TimeTicks::Now() - create_start;
   int64_t create_ms = create_ticks.InMilliseconds();
 
-  LOG(INFO) << kTestCreateCount << " histogram creations took " << create_ms
-            << "ms or about "
-            << (create_ms * 1000000) / kTestCreateCount
-            << "ns each.";
+  VLOG(1) << kTestCreateCount << " histogram creations took " << create_ms
+          << "ms or about "
+          << (create_ms * 1000000) / kTestCreateCount
+          << "ns each.";
 
   // Calculate cost of looking up existing histograms.
   TimeTicks lookup_start = TimeTicks::Now();
@@ -677,10 +706,25 @@ TEST_F(HistogramTest, FactoryTime) {
   TimeDelta lookup_ticks = TimeTicks::Now() - lookup_start;
   int64_t lookup_ms = lookup_ticks.InMilliseconds();
 
-  LOG(INFO) << kTestLookupCount << " histogram lookups took " << lookup_ms
-            << "ms or about "
-            << (lookup_ms * 1000000) / kTestLookupCount
-            << "ns each.";
+  VLOG(1) << kTestLookupCount << " histogram lookups took " << lookup_ms
+          << "ms or about "
+          << (lookup_ms * 1000000) / kTestLookupCount
+          << "ns each.";
+
+  // Calculate cost of accessing histograms.
+  HistogramBase* histogram = Histogram::FactoryGet(
+      histogram_names[0], 0, 100, 10, HistogramBase::kNoFlags);
+  ASSERT_TRUE(histogram);
+  TimeTicks add_start = TimeTicks::Now();
+  for (int i = 0; i < kTestAddCount; ++i)
+    histogram->Add(i & 127);
+  TimeDelta add_ticks = TimeTicks::Now() - add_start;
+  int64_t add_ms = add_ticks.InMilliseconds();
+
+  VLOG(1) << kTestAddCount << " histogram adds took " << add_ms
+          << "ms or about "
+          << (add_ms * 1000000) / kTestAddCount
+          << "ns each.";
 }
 
 #if GTEST_HAS_DEATH_TEST

@@ -135,6 +135,12 @@ HistogramBase* GetCreateHistogramResultHistogram() {
     static bool initialized = false;
     if (!initialized) {
       initialized = true;
+      if (g_allocator) {
+        DLOG(WARNING) << "Creating the results-histogram inside persistent"
+                      << " memory can cause future allocations to crash if"
+                      << " that memory is ever released (for testing).";
+      }
+
       histogram_pointer = LinearHistogram::FactoryGet(
           "UMA.CreatePersistentHistogram.Result",
           1, CREATE_HISTOGRAM_MAX, CREATE_HISTOGRAM_MAX + 1,
@@ -159,13 +165,7 @@ void SetPersistentHistogramMemoryAllocator(
   // Releasing or changing an allocator is extremely dangerous because it
   // likely has histograms stored within it. If the backing memory is also
   // also released, future accesses to those histograms will seg-fault.
-  // It's not a fatal CHECK() because tests do this knowing that all
-  // such persistent histograms have already been forgotten.
-  if (g_allocator) {
-    LOG(WARNING) << "Active PersistentMemoryAllocator has been released."
-                 << " Some existing histogram pointers may be invalid.";
-    delete g_allocator;
-  }
+  CHECK(!g_allocator);
   g_allocator = allocator;
 }
 
@@ -173,8 +173,29 @@ PersistentMemoryAllocator* GetPersistentHistogramMemoryAllocator() {
   return g_allocator;
 }
 
-PersistentMemoryAllocator* ReleasePersistentHistogramMemoryAllocator() {
+PersistentMemoryAllocator*
+ReleasePersistentHistogramMemoryAllocatorForTesting() {
   PersistentMemoryAllocator* allocator = g_allocator;
+  if (!allocator)
+    return nullptr;
+
+  // Before releasing the memory, it's necessary to have the Statistics-
+  // Recorder forget about the histograms contained therein; otherwise,
+  // some operations will try to access them and the released memory.
+  PersistentMemoryAllocator::Iterator iter;
+  PersistentMemoryAllocator::Reference ref;
+  uint32_t type_id;
+  allocator->CreateIterator(&iter);
+  while ((ref = allocator->GetNextIterable(&iter, &type_id)) != 0) {
+    if (type_id == kTypeIdHistogram) {
+      PersistentHistogramData* histogram_data =
+          allocator->GetAsObject<PersistentHistogramData>(
+              ref, kTypeIdHistogram);
+      DCHECK(histogram_data);
+      StatisticsRecorder::ForgetHistogramForTesting(histogram_data->name);
+    }
+  }
+
   g_allocator = nullptr;
   return allocator;
 };

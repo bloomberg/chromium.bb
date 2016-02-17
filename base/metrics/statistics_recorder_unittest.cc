@@ -31,7 +31,7 @@ class StatisticsRecorderTest : public testing::Test {
 
   void TearDown() override {
     UninitializeStatisticsRecorder();
-    SetPersistentHistogramMemoryAllocator(nullptr);
+    delete ReleasePersistentHistogramMemoryAllocatorForTesting();
   }
 
   void InitializeStatisticsRecorder() {

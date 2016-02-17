@@ -287,6 +287,32 @@ HistogramBase* StatisticsRecorder::FindHistogram(const std::string& name) {
 }
 
 // static
+StatisticsRecorder::HistogramIterator StatisticsRecorder::begin(
+    bool include_persistent) {
+  return HistogramIterator(histograms_->begin(), include_persistent);
+}
+
+// static
+StatisticsRecorder::HistogramIterator StatisticsRecorder::end() {
+  return HistogramIterator(histograms_->end(), true);
+}
+
+// static
+void StatisticsRecorder::GetSnapshot(const std::string& query,
+                                     Histograms* snapshot) {
+  if (lock_ == NULL)
+    return;
+  base::AutoLock auto_lock(*lock_);
+  if (histograms_ == NULL)
+    return;
+
+  for (const auto& entry : *histograms_) {
+    if (entry.second->histogram_name().find(query) != std::string::npos)
+      snapshot->push_back(entry.second);
+  }
+}
+
+// static
 bool StatisticsRecorder::SetCallback(
     const std::string& name,
     const StatisticsRecorder::OnSampleCallback& cb) {
@@ -343,29 +369,15 @@ StatisticsRecorder::OnSampleCallback StatisticsRecorder::FindCallback(
 }
 
 // static
-StatisticsRecorder::HistogramIterator StatisticsRecorder::begin(
-    bool include_persistent) {
-  return HistogramIterator(histograms_->begin(), include_persistent);
+void StatisticsRecorder::ResetForTesting() {
+  // Just call the private version that is used also by the destructor.
+  Reset();
 }
 
 // static
-StatisticsRecorder::HistogramIterator StatisticsRecorder::end() {
-  return HistogramIterator(histograms_->end(), true);
-}
-
-// static
-void StatisticsRecorder::GetSnapshot(const std::string& query,
-                                     Histograms* snapshot) {
-  if (lock_ == NULL)
-    return;
-  base::AutoLock auto_lock(*lock_);
-  if (histograms_ == NULL)
-    return;
-
-  for (const auto& entry : *histograms_) {
-    if (entry.second->histogram_name().find(query) != std::string::npos)
-      snapshot->push_back(entry.second);
-  }
+void StatisticsRecorder::ForgetHistogramForTesting(base::StringPiece name) {
+  if (histograms_)
+    histograms_->erase(HashMetricName(name.as_string()));
 }
 
 // This singleton instance should be started during the single threaded portion
@@ -391,17 +403,19 @@ StatisticsRecorder::StatisticsRecorder() {
     AtExitManager::RegisterCallback(&DumpHistogramsToVlog, this);
 }
 
-// static
-void StatisticsRecorder::DumpHistogramsToVlog(void* instance) {
-  std::string output;
-  StatisticsRecorder::WriteGraph(std::string(), &output);
-  VLOG(1) << output;
-}
-
 StatisticsRecorder::~StatisticsRecorder() {
   DCHECK(histograms_ && ranges_ && lock_);
 
-  // Clean up.
+  // Global clean up.
+  Reset();
+}
+
+// static
+void StatisticsRecorder::Reset() {
+  // If there's no lock then there is nothing to reset.
+  if (!lock_)
+    return;
+
   scoped_ptr<HistogramMap> histograms_deleter;
   scoped_ptr<CallbackMap> callbacks_deleter;
   scoped_ptr<RangesMap> ranges_deleter;
@@ -417,6 +431,13 @@ StatisticsRecorder::~StatisticsRecorder() {
     ranges_ = NULL;
   }
   // We are going to leak the histograms and the ranges.
+}
+
+// static
+void StatisticsRecorder::DumpHistogramsToVlog(void* instance) {
+  std::string output;
+  StatisticsRecorder::WriteGraph(std::string(), &output);
+  VLOG(1) << output;
 }
 
 
