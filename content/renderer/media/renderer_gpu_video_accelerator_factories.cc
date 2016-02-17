@@ -225,6 +225,8 @@ RendererGpuVideoAcceleratorFactories::VideoFrameOutputFormat() {
     return media::PIXEL_FORMAT_UNKNOWN;
   cc::ContextProvider::ScopedContextLock lock(context_provider_);
   auto capabilities = context_provider_->ContextCapabilities();
+  if (capabilities.gpu.image_ycbcr_420v)
+    return media::PIXEL_FORMAT_NV12;
   if (capabilities.gpu.image_ycbcr_422)
     return media::PIXEL_FORMAT_UYVY;
   if (capabilities.gpu.texture_rg)
