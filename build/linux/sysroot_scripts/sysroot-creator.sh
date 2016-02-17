@@ -268,7 +268,9 @@ HacksAndPatchesAmd64() {
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig scripts"
-  mv ${INSTALL_ROOT}/usr/lib/x86_64-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/lib/
+  mkdir -p ${INSTALL_ROOT}/usr/lib/pkgconfig
+  mv ${INSTALL_ROOT}/usr/lib/x86_64-linux-gnu/pkgconfig/* \
+      ${INSTALL_ROOT}/usr/lib/pkgconfig
 
   SubBanner "Adding an additional ld.conf include"
   LD_SO_HACK_CONF="${INSTALL_ROOT}/etc/ld.so.conf.d/zz_hack.conf"
@@ -291,7 +293,9 @@ HacksAndPatchesI386() {
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig scripts"
-  mv ${INSTALL_ROOT}/usr/lib/i386-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/lib/
+  mkdir -p ${INSTALL_ROOT}/usr/lib/pkgconfig
+  mv ${INSTALL_ROOT}/usr/lib/i386-linux-gnu/pkgconfig/* \
+    ${INSTALL_ROOT}/usr/lib/pkgconfig
 
   SubBanner "Adding an additional ld.conf include"
   LD_SO_HACK_CONF="${INSTALL_ROOT}/etc/ld.so.conf.d/zz_hack.conf"
@@ -314,8 +318,9 @@ HacksAndPatchesARM() {
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig files"
-  mv ${INSTALL_ROOT}/usr/lib/arm-linux-gnueabihf/pkgconfig \
-      ${INSTALL_ROOT}/usr/lib/
+  mkdir -p ${INSTALL_ROOT}/usr/lib/pkgconfig
+  mv ${INSTALL_ROOT}/usr/lib/arm-linux-gnueabihf/pkgconfig/* \
+      ${INSTALL_ROOT}/usr/lib/pkgconfig
 }
 
 
@@ -333,8 +338,9 @@ HacksAndPatchesMips() {
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig files"
-  mv ${INSTALL_ROOT}/usr/lib/mipsel-linux-gnu/pkgconfig \
-      ${INSTALL_ROOT}/usr/lib/
+  mkdir -p ${INSTALL_ROOT}/usr/lib/pkgconfig
+  mv ${INSTALL_ROOT}/usr/lib/mipsel-linux-gnu/pkgconfig/* \
+      ${INSTALL_ROOT}/usr/lib/pkgconfig
 }
 
 
@@ -369,7 +375,7 @@ InstallIntoSysroot() {
 
   done
 
-  # Prune /usr/share, leaving only pkg-config
+  # Prune /usr/share, leaving only pkgconfig
   for name in ${INSTALL_ROOT}/usr/share/*; do
     if [ "${name}" != "${INSTALL_ROOT}/usr/share/pkgconfig" ]; then
       rm -r ${name}
