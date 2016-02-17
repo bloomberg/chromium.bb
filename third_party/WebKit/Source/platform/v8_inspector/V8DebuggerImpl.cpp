@@ -436,15 +436,10 @@ bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newCo
     // Compile error.
     case 1:
         {
-            RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError::CompileError> compileError =
-                protocol::TypeBuilder::Debugger::SetScriptSourceError::CompileError::create()
+            errorData = protocol::TypeBuilder::Debugger::SetScriptSourceError::create()
                     .setMessage(toWTFStringWithTypeCheck(resultTuple->Get(2)))
                     .setLineNumber(resultTuple->Get(3)->ToInteger(m_isolate)->Value())
                     .setColumnNumber(resultTuple->Get(4)->ToInteger(m_isolate)->Value());
-
-            *error = toWTFStringWithTypeCheck(resultTuple->Get(1));
-            errorData = protocol::TypeBuilder::Debugger::SetScriptSourceError::create();
-            errorData->setCompileError(compileError);
             return false;
         }
     }

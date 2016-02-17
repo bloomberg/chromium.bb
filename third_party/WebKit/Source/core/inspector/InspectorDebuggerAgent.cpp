@@ -147,9 +147,9 @@ void InspectorDebuggerAgent::canSetScriptSource(ErrorString* errorString, bool* 
     m_v8DebuggerAgent->canSetScriptSource(errorString, outResult);
 }
 
-void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& inScriptId, const String& inScriptSource, const bool* inPreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& optOutCallFrames, protocol::TypeBuilder::OptOutput<bool>* optOutStackChanged, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace)
+void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString, const String& inScriptId, const String& inScriptSource, const bool* inPreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& optOutCallFrames, protocol::TypeBuilder::OptOutput<bool>* optOutStackChanged, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>& optOutCompileError)
 {
-    m_v8DebuggerAgent->setScriptSource(errorString, errorData, inScriptId, inScriptSource, inPreview, optOutCallFrames, optOutStackChanged, optOutAsyncStackTrace);
+    m_v8DebuggerAgent->setScriptSource(errorString, inScriptId, inScriptSource, inPreview, optOutCallFrames, optOutStackChanged, optOutAsyncStackTrace, optOutCompileError);
 }
 
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& inCallFrameId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& outCallFrames, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace)

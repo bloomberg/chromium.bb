@@ -78,18 +78,6 @@ $code    sendIfActive(jsonMessage, ErrorString(), PassRefPtr<JSONValue>());
 }
 """)
 
-callback_failure_method = (
-"""void Dispatcher::$agentName::$callbackName::sendFailure(const ErrorString& error, $parameter)
-{
-    ASSERT(error.length());
-    RefPtr<JSONValue> errorDataValue;
-    if (error) {
-        errorDataValue = $argument;
-    }
-    sendIfActive(nullptr, error, errorDataValue.release());
-}
-""")
-
 
 frontend_h = (
 """#ifndef Frontend_h

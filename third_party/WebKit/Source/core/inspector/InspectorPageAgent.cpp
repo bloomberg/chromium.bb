@@ -727,14 +727,14 @@ PassRefPtr<protocol::TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectFo
 PassRefPtr<protocol::TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame)
 {
     RefPtr<protocol::TypeBuilder::Page::Frame> frameObject = buildObjectForFrame(frame);
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResourceTree::Resources>> subresources = protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResourceTree::Resources>::create();
+    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResource>> subresources = protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResource>::create();
     RefPtr<protocol::TypeBuilder::Page::FrameResourceTree> result = protocol::TypeBuilder::Page::FrameResourceTree::create()
         .setFrame(frameObject)
         .setResources(subresources);
 
     WillBeHeapVector<RawPtrWillBeMember<Resource>> allResources = cachedResourcesForFrame(frame, true);
     for (Resource* cachedResource : allResources) {
-        RefPtr<protocol::TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = protocol::TypeBuilder::Page::FrameResourceTree::Resources::create()
+        RefPtr<protocol::TypeBuilder::Page::FrameResource> resourceObject = protocol::TypeBuilder::Page::FrameResource::create()
             .setUrl(urlWithoutFragment(cachedResource->url()).string())
             .setType(cachedResourceTypeJson(*cachedResource))
             .setMimeType(cachedResource->response().mimeType());
@@ -747,7 +747,7 @@ PassRefPtr<protocol::TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::b
 
     WillBeHeapVector<RawPtrWillBeMember<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
     for (Document* import : allImports) {
-        RefPtr<protocol::TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = protocol::TypeBuilder::Page::FrameResourceTree::Resources::create()
+        RefPtr<protocol::TypeBuilder::Page::FrameResource> resourceObject = protocol::TypeBuilder::Page::FrameResource::create()
             .setUrl(urlWithoutFragment(import->url()).string())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
             .setMimeType(import->suggestedMIMEType());

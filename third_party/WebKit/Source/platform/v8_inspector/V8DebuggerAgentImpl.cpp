@@ -605,11 +605,11 @@ void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String& scri
         *error = "No script for id: " + scriptId;
 }
 
-void V8DebuggerAgentImpl::setScriptSource(ErrorString* error, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<CallFrame>>& newCallFrames, protocol::TypeBuilder::OptOutput<bool>* stackChanged, RefPtr<StackTrace>& asyncStackTrace)
+void V8DebuggerAgentImpl::setScriptSource(ErrorString* error, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<CallFrame>>& newCallFrames, protocol::TypeBuilder::OptOutput<bool>* stackChanged, RefPtr<StackTrace>& asyncStackTrace, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>& optOutCompileError)
 {
     if (!checkEnabled(error))
         return;
-    if (!debugger().setScriptSource(scriptId, newContent, asBool(preview), error, errorData, &m_currentCallStack, stackChanged))
+    if (!debugger().setScriptSource(scriptId, newContent, asBool(preview), error, optOutCompileError, &m_currentCallStack, stackChanged))
         return;
 
     newCallFrames = currentCallFrames();

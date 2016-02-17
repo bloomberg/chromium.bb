@@ -50,12 +50,6 @@ TYPE_NAME_FIX_MAP = {
 TYPES_WITH_RUNTIME_CAST_SET = frozenset(["Runtime.RemoteObject", "Runtime.PropertyDescriptor", "Runtime.InternalPropertyDescriptor",
                                          "Debugger.FunctionDetails", "Debugger.GeneratorObjectDetails", "Debugger.CollectionEntry", "Debugger.CallFrame", "Debugger.Location"])
 
-TYPES_WITH_OPEN_FIELD_LIST_SET = frozenset([
-                                            # InspectorStyleSheet not only creates this property but wants to read it and modify it.
-                                            "CSS.CSSProperty",
-                                            # InspectorResourceAgent needs to update mime-type.
-                                            "Network.Response"])
-
 cmdline_parser = optparse.OptionParser()
 cmdline_parser.add_option("--output_dir")
 
@@ -943,17 +937,8 @@ class TypeBindings:
                                 helper.write_doc(writer)
                                 class_name = fixed_type_name.class_name
 
-                                is_open_type = (context_domain_name + "." + class_name) in TYPES_WITH_OPEN_FIELD_LIST_SET
-
                                 fixed_type_name.output_comment(writer)
-                                writer.newline("class PLATFORM_EXPORT ")
-                                writer.append(class_name)
-                                writer.append(" : public ")
-                                if is_open_type:
-                                    writer.append("JSONObject")
-                                else:
-                                    writer.append("JSONObjectBase")
-                                writer.append(" {\n")
+                                writer.newline("class PLATFORM_EXPORT %s : public JSONObjectBase {\n" % class_name)
                                 writer.newline("public:\n")
                                 ad_hoc_type_writer = writer.insert_writer("    ")
 
@@ -1060,8 +1045,6 @@ class TypeBindings:
                                     writer.newline("    static void assertCorrectValue(JSONValue* value);\n")
                                     writer.append("#endif  // %s\n" % VALIDATOR_IFDEF_NAME)
 
-                                    closed_field_set = (context_domain_name + "." + class_name) not in TYPES_WITH_OPEN_FIELD_LIST_SET
-
                                     validator_writer = generate_context.validator_writer
 
                                     validator_writer.newline("void %s%s::assertCorrectValue(JSONValue* value)\n" % (helper.full_name_prefix_for_impl, class_name))
@@ -1078,8 +1061,7 @@ class TypeBindings:
                                         validator_writer.newline("        %s(%s->value.get());\n" % (prop_data.param_type_binding.get_validator_call_text(), it_name))
                                         validator_writer.newline("    }\n")
 
-                                    if closed_field_set:
-                                        validator_writer.newline("    int foundPropertiesCount = %s;\n" % len(resolve_data.main_properties))
+                                    validator_writer.newline("    int foundPropertiesCount = %s;\n" % len(resolve_data.main_properties))
 
                                     for prop_data in resolve_data.optional_properties:
                                         validator_writer.newline("    {\n")
@@ -1088,29 +1070,16 @@ class TypeBindings:
                                         validator_writer.newline("        %s = object->find(\"%s\");\n" % (it_name, prop_data.p["name"]))
                                         validator_writer.newline("        if (%s != object->end()) {\n" % it_name)
                                         validator_writer.newline("            %s(%s->value.get());\n" % (prop_data.param_type_binding.get_validator_call_text(), it_name))
-                                        if closed_field_set:
-                                            validator_writer.newline("            ++foundPropertiesCount;\n")
+                                        validator_writer.newline("            ++foundPropertiesCount;\n")
                                         validator_writer.newline("        }\n")
                                         validator_writer.newline("    }\n")
 
-                                    if closed_field_set:
-                                        validator_writer.newline("    if (foundPropertiesCount != object->size()) {\n")
-                                        validator_writer.newline("      FATAL(\"Unexpected properties in object: %s\\n\", object->toJSONString().ascii().data());\n")
-                                        validator_writer.newline("    }\n")
+                                    validator_writer.newline("    if (foundPropertiesCount != object->size()) {\n")
+                                    validator_writer.newline("      FATAL(\"Unexpected properties in object: %s\\n\", object->toJSONString().ascii().data());\n")
+                                    validator_writer.newline("    }\n")
                                     validator_writer.newline("}\n")
 
                                     validator_writer.newline("\n\n")
-
-                                if is_open_type:
-                                    cpp_writer = generate_context.cpp_writer
-                                    writer.append("\n")
-                                    writer.newline("    // Property names for type generated as open.\n")
-                                    for prop_data in resolve_data.main_properties + resolve_data.optional_properties:
-                                        prop_name = prop_data.p["name"]
-                                        prop_field_name = Capitalizer.lower_camel_case_to_upper(prop_name)
-                                        writer.newline("    static const char %s[];\n" % (prop_field_name))
-                                        cpp_writer.newline("const char %s%s::%s[] = \"%s\";\n" % (helper.full_name_prefix_for_impl, class_name, prop_field_name, prop_name))
-
 
                                 writer.newline("};\n\n")
 
@@ -1506,7 +1475,6 @@ class Templates:
     backend_method = string.Template(CodeGeneratorStrings.backend_method)
     frontend_method = string.Template(CodeGeneratorStrings.frontend_method)
     callback_main_methods = string.Template(CodeGeneratorStrings.callback_main_methods)
-    callback_failure_method = string.Template(CodeGeneratorStrings.callback_failure_method)
     frontend_h = string.Template(file_header_ + CodeGeneratorStrings.frontend_h)
     backend_h = string.Template(file_header_ + CodeGeneratorStrings.backend_h)
     backend_cpp = string.Template(file_header_ + CodeGeneratorStrings.backend_cpp)
@@ -1718,16 +1686,6 @@ class Generator:
         send_response_call_params_list = ["error"]
         request_message_param = ""
         normal_response_cook_text = ""
-        error_type_binding = None
-        if "error" in json_command:
-            json_error = json_command["error"]
-            error_type_binding = Generator.resolve_type_and_generate_ad_hoc(json_error, json_command_name + "Error", json_command_name, domain_name, ad_hoc_type_writer, agent_interface_name + "::")
-            error_type_model = error_type_binding.get_type_model().get_optional()
-            error_annotated_type = error_type_model.get_command_return_pass_model().get_output_parameter_type()
-            agent_call_param_list.append("%serrorData" % error_type_model.get_command_return_pass_model().get_output_argument_prefix())
-            backend_agent_interface_list.append(", %s errorData" % error_annotated_type)
-            method_in_code += "    %s errorData;\n" % error_type_model.get_command_return_pass_model().get_return_var_type()
-            send_response_call_params_list.append("errorData")
 
         if "parameters" in json_command:
             json_params = json_command["parameters"]
@@ -1784,22 +1742,7 @@ class Generator:
             callback_writer.newline("public:\n")
             callback_writer.newline("    " + callback_name + "(PassRefPtr<DispatcherImpl>, int sessionId, int id);\n")
             callback_writer.newline("    PLATFORM_EXPORT void sendSuccess(" + ", ".join(decl_parameter_list) + ");\n")
-            error_part_writer = callback_writer.insert_writer("")
             callback_writer.newline("};\n")
-
-            if error_type_binding:
-                annotated_type = error_type_model.get_input_param_type_text()
-                error_part_writer.newline("    void sendFailure(const ErrorString&, %s);\n" % annotated_type)
-                error_part_writer.newline("    using CallbackBase::sendFailure;\n")
-
-                assigment_value = error_type_model.get_event_setter_expression_pattern() % "errorData"
-                assigment_value = error_type_binding.reduce_to_raw_type().get_constructor_pattern() % assigment_value
-
-                Generator.backend_method_implementation_list.append(Templates.callback_failure_method.substitute(None,
-                    agentName=agent_interface_name,
-                    callbackName=callback_name,
-                    parameter=annotated_type + " errorData",
-                    argument=assigment_value))
 
             ad_hoc_type_output.append(callback_output)
 

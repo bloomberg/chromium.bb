@@ -130,20 +130,16 @@ function test()
     
             var patched = originalText.replace("a + b", "a # b");
 
-            return { command: "Debugger.setScriptSource", params: { scriptId: scriptId, scriptSource: patched }, errorHandler: errorCallbackSetScriptSource2 };
+            return { command: "Debugger.setScriptSource", params: { scriptId: scriptId, scriptSource: patched }, callback: errorCallbackSetScriptSource2 };
         }
 
-        function errorCallbackSetScriptSource2(error) {
-            logEqualsCheck(error.code, -32000);
-            var errorData = error.data;
-            logCheck("Has error reported", !!errorData);
-            if (errorData) {
-                var compileError = errorData.compileError;
-                logCheck("Reported error is a compile error", !!compileError);
-                if (compileError) {
-                    logEqualsCheck(compileError.lineNumber, 2);
-                }
-            } 
+        function errorCallbackSetScriptSource2(result) {
+            var compileError = result.compileError;
+            logCheck("Has error reported", !!compileError);
+            logCheck("Reported error is a compile error", !!compileError);
+            if (compileError) {
+                logEqualsCheck(compileError.lineNumber, 2);
+            }
             return next;
         }
     }
