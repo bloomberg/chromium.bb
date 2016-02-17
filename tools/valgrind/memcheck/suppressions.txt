@@ -3524,3 +3524,16 @@
    fun:_ZN5blink15LayoutBlockFlow11layoutBlockEb
    fun:_ZN5blink11LayoutBlock6layoutEv
 }
+{
+   bug_587544
+   Memcheck:Leak
+   ...
+   fun:_ZN7content28ShellURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN7content21ChromeAppCacheService20InitializeOnIOThreadERKN4base8FilePathEPNS_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN7storage20SpecialStoragePolicyEE
+}
+{
+   bug_587544_b
+   Memcheck:Leak
+   ...
+   fun:_ZN4base4BindIMN7content21ChromeAppCacheServiceEFvRKNS_8FilePathEPNS1_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN7storage20SpecialStoragePolicyEEEJPS2_S3_S7_SB_IS9_ESE_EEENS_8CallbackINS_8internal22MakeUnboundRunTypeImplIT_JDpT0_EE4TypeEEESM_DpOSN_
+}
