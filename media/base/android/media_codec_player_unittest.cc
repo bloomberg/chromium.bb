@@ -1898,7 +1898,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_VideoConfigChangeWhilePlaying) {
             manager_.render_stat_[DemuxerStream::VIDEO].num_values());
 }
 
-TEST_F(MediaCodecPlayerTest, AVVideoConfigChangeWhilePlaying) {
+// https://crbug.com/587195
+TEST_F(MediaCodecPlayerTest, DISABLED_AVVideoConfigChangeWhilePlaying) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that A/V playback continues after video config change.
@@ -2134,7 +2135,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVAudioEndsAcrossVideoConfigChange) {
   EXPECT_EQ(video_duration, manager_.pts_stat_.max());
 }
 
-TEST_F(MediaCodecPlayerTest, AVVideoEndsAcrossAudioConfigChange) {
+// https://crbug.com/587195
+TEST_F(MediaCodecPlayerTest, DISABLED_AVVideoEndsAcrossAudioConfigChange) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that video can end while audio config change processing.
