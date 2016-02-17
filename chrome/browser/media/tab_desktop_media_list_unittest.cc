@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -147,6 +148,7 @@ class TabDesktopMediaListTest : public testing::Test {
   }
 
   void SetUp() override {
+    rvh_test_enabler_.reset(new content::RenderViewHostTestEnabler());
     // Create a new temporary directory, and store the path.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
@@ -184,6 +186,7 @@ class TabDesktopMediaListTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     chromeos::WallpaperManager::Shutdown();
 #endif
+    rvh_test_enabler_.reset();
   }
 
   void CreateDefaultList() {
@@ -232,6 +235,7 @@ class TabDesktopMediaListTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
 
+  scoped_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
   Profile* profile_;
   scoped_ptr<Browser> browser_;
   std::vector<scoped_ptr<WebContents>> contents_array_;
