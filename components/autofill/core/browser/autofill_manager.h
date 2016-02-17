@@ -39,9 +39,6 @@
 #define ENABLE_FORM_DEBUG_DUMP
 #endif
 
-class ChromeUIWebViewWebTest;
-class ChromeWKWebViewWebTest;
-
 namespace gfx {
 class Rect;
 class RectF;
