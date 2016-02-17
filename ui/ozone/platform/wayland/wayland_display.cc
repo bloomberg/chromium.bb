@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/wayland_display.h"
 
+#include <xdg-shell-unstable-v5-client-protocol.h>
+
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"

@@ -5,10 +5,18 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_OBJECT_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_OBJECT_H_
 
-#include <wayland-client.h>
-#include <xdg-shell-unstable-v5-client-protocol.h>
+#include <wayland-client-core.h>
 
 #include "base/memory/scoped_ptr.h"
+
+struct wl_buffer;
+struct wl_compositor;
+struct wl_registry;
+struct wl_shm;
+struct wl_shm_pool;
+struct wl_surface;
+struct xdg_shell;
+struct xdg_surface;
 
 namespace wl {
 
@@ -17,56 +25,56 @@ struct ObjectTraits;
 
 template <>
 struct ObjectTraits<wl_buffer> {
-  static constexpr const wl_interface* interface = &wl_buffer_interface;
-  static constexpr void (*deleter)(wl_buffer*) = &wl_buffer_destroy;
+  static const wl_interface* interface;
+  static void (*deleter)(wl_buffer*);
 };
 
 template <>
 struct ObjectTraits<wl_compositor> {
-  static constexpr const wl_interface* interface = &wl_compositor_interface;
-  static constexpr void (*deleter)(wl_compositor*) = &wl_compositor_destroy;
+  static const wl_interface* interface;
+  static void (*deleter)(wl_compositor*);
 };
 
 template <>
 struct ObjectTraits<wl_display> {
-  static constexpr const wl_interface* interface = &wl_display_interface;
-  static constexpr void (*deleter)(wl_display*) = &wl_display_disconnect;
+  static const wl_interface* interface;
+  static void (*deleter)(wl_display*);
 };
 
 template <>
 struct ObjectTraits<wl_registry> {
-  static constexpr const wl_interface* interface = &wl_registry_interface;
-  static constexpr void (*deleter)(wl_registry*) = &wl_registry_destroy;
+  static const wl_interface* interface;
+  static void (*deleter)(wl_registry*);
 };
 
 template <>
 struct ObjectTraits<wl_shm> {
-  static constexpr const wl_interface* interface = &wl_shm_interface;
-  static constexpr void (*deleter)(wl_shm*) = &wl_shm_destroy;
+  static const wl_interface* interface;
+  static void (*deleter)(wl_shm*);
 };
 
 template <>
 struct ObjectTraits<wl_shm_pool> {
-  static constexpr const wl_interface* interface = &wl_shm_pool_interface;
-  static constexpr void (*deleter)(wl_shm_pool*) = &wl_shm_pool_destroy;
+  static const wl_interface* interface;
+  static void (*deleter)(wl_shm_pool*);
 };
 
 template <>
 struct ObjectTraits<wl_surface> {
-  static constexpr const wl_interface* interface = &wl_surface_interface;
-  static constexpr void (*deleter)(wl_surface*) = &wl_surface_destroy;
+  static const wl_interface* interface;
+  static void (*deleter)(wl_surface*);
 };
 
 template <>
 struct ObjectTraits<xdg_shell> {
-  static constexpr const wl_interface* interface = &xdg_shell_interface;
-  static constexpr void (*deleter)(xdg_shell*) = &xdg_shell_destroy;
+  static const wl_interface* interface;
+  static void (*deleter)(xdg_shell*);
 };
 
 template <>
 struct ObjectTraits<xdg_surface> {
-  static constexpr const wl_interface* interface = &xdg_surface_interface;
-  static constexpr void (*deleter)(xdg_surface*) = &xdg_surface_destroy;
+  static const wl_interface* interface;
+  static void (*deleter)(xdg_surface*);
 };
 
 struct Deleter {

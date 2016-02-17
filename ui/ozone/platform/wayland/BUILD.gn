@@ -10,6 +10,7 @@ source_set("wayland") {
     "ozone_platform_wayland.h",
     "wayland_display.cc",
     "wayland_display.h",
+    "wayland_object.cc",
     "wayland_object.h",
     "wayland_surface_factory.cc",
     "wayland_surface_factory.h",

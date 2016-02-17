@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
+#include <xdg-shell-unstable-v5-client-protocol.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/ozone/platform/wayland/wayland_display.h"
 #include "ui/platform_window/platform_window_delegate.h"
