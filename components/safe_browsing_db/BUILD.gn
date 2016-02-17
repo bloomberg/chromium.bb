@@ -79,10 +79,10 @@ source_set("prefix_set") {
   ]
 }
 
-source_set("v4_protocol_manager") {
+source_set("v4_get_hash_protocol_manager") {
   sources = [
-    "v4_protocol_manager.cc",
-    "v4_protocol_manager.h",
+    "v4_get_hash_protocol_manager.cc",
+    "v4_get_hash_protocol_manager.h",
   ]
   deps = [
     ":proto",
@@ -164,13 +164,13 @@ source_set("unit_tests") {
   sources = [
     "prefix_set_unittest.cc",
     "util_unittest.cc",
-    "v4_protocol_manager_unittest.cc",
+    "v4_get_hash_protocol_manager_unittest.cc",
   ]
   deps = [
     ":prefix_set",
     ":proto",
     ":util",
-    ":v4_protocol_manager",
+    ":v4_get_hash_protocol_manager",
     "//base",
     "//net",
     "//net:test_support",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing_db/v4_protocol_manager.h"
+#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 
 #include <utility>
 
@@ -68,46 +68,48 @@ void RecordParseGetHashResult(ParseResultType result_type) {
 
 namespace safe_browsing {
 
-const char kUmaV4ResponseMetricName[] =
+const char kUmaV4HashResponseMetricName[] =
     "SafeBrowsing.GetV4HashHttpResponseOrErrorCode";
 
 // The URL prefix where browser fetches hashes from the server.
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 
-// The default SBProtocolManagerFactory.
-class V4ProtocolManagerFactoryImpl : public V4ProtocolManagerFactory {
+// The default V4GetHashProtocolManagerFactory.
+class V4GetHashProtocolManagerFactoryImpl
+    : public V4GetHashProtocolManagerFactory {
  public:
-  V4ProtocolManagerFactoryImpl() {}
-  ~V4ProtocolManagerFactoryImpl() override {}
-  V4ProtocolManager* CreateProtocolManager(
+  V4GetHashProtocolManagerFactoryImpl() {}
+  ~V4GetHashProtocolManagerFactoryImpl() override {}
+  V4GetHashProtocolManager* CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config) override {
-    return new V4ProtocolManager(request_context_getter, config);
+      const V4GetHashProtocolConfig& config) override {
+    return new V4GetHashProtocolManager(request_context_getter, config);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(V4ProtocolManagerFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(V4GetHashProtocolManagerFactoryImpl);
 };
 
-// V4ProtocolManager implementation --------------------------------
+// V4GetHashProtocolManager implementation --------------------------------
 
 // static
-V4ProtocolManagerFactory* V4ProtocolManager::factory_ = NULL;
+V4GetHashProtocolManagerFactory* V4GetHashProtocolManager::factory_ = NULL;
 
 // static
-V4ProtocolManager* V4ProtocolManager::Create(
+V4GetHashProtocolManager* V4GetHashProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
-    const V4ProtocolConfig& config) {
+    const V4GetHashProtocolConfig& config) {
   if (!factory_)
-    factory_ = new V4ProtocolManagerFactoryImpl();
+    factory_ = new V4GetHashProtocolManagerFactoryImpl();
   return factory_->CreateProtocolManager(request_context_getter, config);
 }
 
 // static
 // Backoff interval is MIN(((2^(n-1))*15 minutes) * (RAND + 1), 24 hours) where
 // n is the number of consecutive errors.
-base::TimeDelta V4ProtocolManager::GetNextBackOffInterval(size_t* error_count,
-                                                          size_t* multiplier) {
+base::TimeDelta V4GetHashProtocolManager::GetNextBackOffInterval(
+    size_t* error_count,
+    size_t* multiplier) {
   DCHECK(multiplier && error_count);
   (*error_count)++;
   if (*error_count > 1 && *error_count < 9) {
@@ -126,14 +128,14 @@ base::TimeDelta V4ProtocolManager::GetNextBackOffInterval(size_t* error_count,
     return day;
 }
 
-void V4ProtocolManager::ResetGetHashErrors() {
+void V4GetHashProtocolManager::ResetGetHashErrors() {
   gethash_error_count_ = 0;
   gethash_back_off_mult_ = 1;
 }
 
-V4ProtocolManager::V4ProtocolManager(
+V4GetHashProtocolManager::V4GetHashProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
-    const V4ProtocolConfig& config)
+    const V4GetHashProtocolConfig& config)
     : gethash_error_count_(0),
       gethash_back_off_mult_(1),
       next_gethash_time_(Time::FromDoubleT(0)),
@@ -146,12 +148,12 @@ V4ProtocolManager::V4ProtocolManager(
 }
 
 // static
-void V4ProtocolManager::RecordGetHashResult(ResultType result_type) {
+void V4GetHashProtocolManager::RecordGetHashResult(ResultType result_type) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.GetV4HashResult", result_type,
                             GET_HASH_RESULT_MAX);
 }
 
-void V4ProtocolManager::RecordHttpResponseOrErrorCode(
+void V4GetHashProtocolManager::RecordHttpResponseOrErrorCode(
     const char* metric_name,
     const net::URLRequestStatus& status,
     int response_code) {
@@ -159,14 +161,14 @@ void V4ProtocolManager::RecordHttpResponseOrErrorCode(
       metric_name, status.is_success() ? response_code : status.error());
 }
 
-V4ProtocolManager::~V4ProtocolManager() {
+V4GetHashProtocolManager::~V4GetHashProtocolManager() {
   // Delete in-progress SafeBrowsing requests.
   STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
                                       hash_requests_.end());
   hash_requests_.clear();
 }
 
-std::string V4ProtocolManager::GetHashRequest(
+std::string V4GetHashProtocolManager::GetHashRequest(
     const std::vector<SBPrefix>& prefixes,
     const std::vector<PlatformType>& platforms,
     ThreatType threat_type) {
@@ -192,7 +194,7 @@ std::string V4ProtocolManager::GetHashRequest(
   return req_base64;
 }
 
-bool V4ProtocolManager::ParseHashResponse(
+bool V4GetHashProtocolManager::ParseHashResponse(
     const std::string& data,
     std::vector<SBFullHashResult>* full_hashes,
     base::TimeDelta* negative_cache_duration) {
@@ -281,7 +283,7 @@ bool V4ProtocolManager::ParseHashResponse(
   return true;
 }
 
-void V4ProtocolManager::GetFullHashes(
+void V4GetHashProtocolManager::GetFullHashes(
     const std::vector<SBPrefix>& prefixes,
     const std::vector<PlatformType>& platforms,
     ThreatType threat_type,
@@ -316,7 +318,7 @@ void V4ProtocolManager::GetFullHashes(
   fetcher->Start();
 }
 
-void V4ProtocolManager::GetFullHashesWithApis(
+void V4GetHashProtocolManager::GetFullHashesWithApis(
     const std::vector<SBPrefix>& prefixes,
     FullHashCallback callback) {
   std::vector<PlatformType> platform = {CHROME_PLATFORM};
@@ -326,7 +328,8 @@ void V4ProtocolManager::GetFullHashesWithApis(
 // net::URLFetcherDelegate implementation ----------------------------------
 
 // SafeBrowsing request responses are handled here.
-void V4ProtocolManager::OnURLFetchComplete(const net::URLFetcher* source) {
+void V4GetHashProtocolManager::OnURLFetchComplete(
+    const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
 
   HashRequests::iterator it = hash_requests_.find(source);
@@ -338,7 +341,7 @@ void V4ProtocolManager::OnURLFetchComplete(const net::URLFetcher* source) {
 
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
-  RecordHttpResponseOrErrorCode(kUmaV4ResponseMetricName, status,
+  RecordHttpResponseOrErrorCode(kUmaV4HashResponseMetricName, status,
                                 response_code);
 
   const FullHashCallback& callback = it->second;
@@ -375,33 +378,36 @@ void V4ProtocolManager::OnURLFetchComplete(const net::URLFetcher* source) {
   hash_requests_.erase(it);
 }
 
-void V4ProtocolManager::HandleGetHashError(const Time& now) {
+void V4GetHashProtocolManager::HandleGetHashError(const Time& now) {
   DCHECK(CalledOnValidThread());
-  base::TimeDelta next = GetNextBackOffInterval(&gethash_error_count_,
-                                                &gethash_back_off_mult_);
+  base::TimeDelta next =
+      GetNextBackOffInterval(&gethash_error_count_, &gethash_back_off_mult_);
   next_gethash_time_ = now + next;
 }
 
 // The API hash call uses the pver4 Safe Browsing server.
-GURL V4ProtocolManager::GetHashUrl(const std::string& request_base64) const {
-  std::string url = ComposePver4Url(kSbV4UrlPrefix, "encodedFullHashes",
-      request_base64, client_name_, version_, key_param_);
+GURL V4GetHashProtocolManager::GetHashUrl(
+    const std::string& request_base64) const {
+  std::string url =
+      ComposePver4Url(kSbV4UrlPrefix, "encodedFullHashes", request_base64,
+                      client_name_, version_, key_param_);
   return GURL(url);
 }
 
 // static
-std::string V4ProtocolManager::ComposePver4Url(const std::string& prefix,
+std::string V4GetHashProtocolManager::ComposePver4Url(
+    const std::string& prefix,
     const std::string& method,
     const std::string& request_base64,
     const std::string& client_id,
     const std::string& version,
     const std::string& key_param) {
-  DCHECK(!prefix.empty() && !method.empty() &&
-         !client_id.empty() && !version.empty());
-  std::string url = base::StringPrintf(
-      "%s/%s/%s?alt=proto&client_id=%s&client_version=%s",
-      prefix.c_str(), method.c_str(), request_base64.c_str(),
-      client_id.c_str(), version.c_str());
+  DCHECK(!prefix.empty() && !method.empty() && !client_id.empty() &&
+         !version.empty());
+  std::string url =
+      base::StringPrintf("%s/%s/%s?alt=proto&client_id=%s&client_version=%s",
+                         prefix.c_str(), method.c_str(), request_base64.c_str(),
+                         client_id.c_str(), version.c_str());
   if (!key_param.empty()) {
     base::StringAppendF(&url, "&key=%s",
                         net::EscapeQueryParamValue(key_param, true).c_str());

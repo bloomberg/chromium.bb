@@ -24,8 +24,8 @@
         'safe_browsing_db/prefix_set.cc',
         'safe_browsing_db/util.h',
         'safe_browsing_db/util.cc',
-        'safe_browsing_db/v4_protocol_manager.h',
-        'safe_browsing_db/v4_protocol_manager.cc',
+        'safe_browsing_db/v4_get_hash_protocol_manager.h',
+        'safe_browsing_db/v4_get_hash_protocol_manager.cc',
       ],
       'include_dirs': [
         '..',

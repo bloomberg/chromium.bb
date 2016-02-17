@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_BROWSING_DB_V4_PROTOCOL_MANAGER_H_
-#define COMPONENTS_SAFE_BROWSING_DB_V4_PROTOCOL_MANAGER_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_V4_GET_HASH_PROTOCOL_MANAGER_H_
+#define COMPONENTS_SAFE_BROWSING_DB_V4_GET_HASH_PROTOCOL_MANAGER_H_
 
 // A class that implements Chrome's interface with the SafeBrowsing V4 protocol.
 //
-// The V4ProtocolManager handles formatting and making requests of, and handling
-// responses from, Google's SafeBrowsing servers.
+// The V4GetHashProtocolManager handles formatting and making requests of, and
+// handling responses from, Google's SafeBrowsing servers. The purpose of this
+// class is to get full hash matches from the SB server for the given set of
+// hash prefixes.
 
 #include <string>
 #include <vector>
@@ -33,17 +35,17 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 
-// Config passed to the constructor of a V4ProtocolManager.
-struct V4ProtocolConfig {
+// Config passed to the constructor of a V4GetHashProtocolManager.
+struct V4GetHashProtocolConfig {
   std::string client_name;
   std::string version;
   std::string key_param;
 };
 
-class V4ProtocolManagerFactory;
+class V4GetHashProtocolManagerFactory;
 
-class V4ProtocolManager : public net::URLFetcherDelegate,
-                          public base::NonThreadSafe {
+class V4GetHashProtocolManager : public net::URLFetcherDelegate,
+                                 public base::NonThreadSafe {
  public:
   // FullHashCallback is invoked when GetFullHashes completes.
   // Parameters:
@@ -54,18 +56,18 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
                               const base::TimeDelta&)>
       FullHashCallback;
 
-  ~V4ProtocolManager() override;
+  ~V4GetHashProtocolManager() override;
 
   // Makes the passed |factory| the factory used to instantiate
-  // a V4ProtocolManager. Useful for tests.
-  static void RegisterFactory(V4ProtocolManagerFactory* factory) {
+  // a V4GetHashProtocolManager. Useful for tests.
+  static void RegisterFactory(V4GetHashProtocolManagerFactory* factory) {
     factory_ = factory;
   }
 
   // Create an instance of the safe browsing v4 protocol manager.
-  static V4ProtocolManager* Create(
+  static V4GetHashProtocolManager* Create(
       net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config);
+      const V4GetHashProtocolConfig& config);
 
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -124,34 +126,35 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
                                             int response_code);
 
  protected:
-  // Constructs a V4ProtocolManager that issues
+  // Constructs a V4GetHashProtocolManager that issues
   // network requests using |request_context_getter|.
-  V4ProtocolManager(net::URLRequestContextGetter* request_context_getter,
-                    const V4ProtocolConfig& config);
+  V4GetHashProtocolManager(net::URLRequestContextGetter* request_context_getter,
+                           const V4GetHashProtocolConfig& config);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest, TestGetHashUrl);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
+                           TestGetHashUrl);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestGetHashRequest);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestParseHashResponse);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestParseHashResponseWrongThreatEntryType);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestParseHashResponseSocialEngineeringThreatType);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestParseHashResponseNonPermissionMetadata);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestParseHashResponseInconsistentThreatTypes);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestGetHashBackOffTimes);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestGetHashErrorHandlingOK);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestGetHashErrorHandlingNetwork);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestGetHashErrorHandlingResponseCode);
-  friend class V4ProtocolManagerFactoryImpl;
+  friend class V4GetHashProtocolManagerFactoryImpl;
 
   // Generates GetHashWithApis Pver4 request URL for retrieving full hashes.
   // |request_base64| is the serialized FindFullHashesRequest protocol buffer
@@ -200,9 +203,9 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
   // Map of GetHash requests to parameters which created it.
   typedef base::hash_map<const net::URLFetcher*, FullHashCallback> HashRequests;
 
-  // The factory that controls the creation of V4ProtocolManager.
+  // The factory that controls the creation of V4GetHashProtocolManager.
   // This is used by tests.
-  static V4ProtocolManagerFactory* factory_;
+  static V4GetHashProtocolManagerFactory* factory_;
 
   // Current active request (in case we need to cancel) for updates or chunks
   // from the SafeBrowsing service. We can only have one of these outstanding
@@ -238,22 +241,22 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
   // ID for URLFetchers for testing.
   int url_fetcher_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(V4ProtocolManager);
+  DISALLOW_COPY_AND_ASSIGN(V4GetHashProtocolManager);
 };
 
-// Interface of a factory to create V4ProtocolManager.  Useful for tests.
-class V4ProtocolManagerFactory {
+// Interface of a factory to create V4GetHashProtocolManager.  Useful for tests.
+class V4GetHashProtocolManagerFactory {
  public:
-  V4ProtocolManagerFactory() {}
-  virtual ~V4ProtocolManagerFactory() {}
-  virtual V4ProtocolManager* CreateProtocolManager(
+  V4GetHashProtocolManagerFactory() {}
+  virtual ~V4GetHashProtocolManagerFactory() {}
+  virtual V4GetHashProtocolManager* CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config) = 0;
+      const V4GetHashProtocolConfig& config) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(V4ProtocolManagerFactory);
+  DISALLOW_COPY_AND_ASSIGN(V4GetHashProtocolManagerFactory);
 };
 
 }  // namespace safe_browsing
 
-#endif  // COMPONENTS_SAFE_BROWSING_DB_V4_PROTOCOL_MANAGER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_V4_GET_HASH_PROTOCOL_MANAGER_H_
