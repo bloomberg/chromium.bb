@@ -71,9 +71,6 @@ namespace safe_browsing {
 const char kUmaV4HashResponseMetricName[] =
     "SafeBrowsing.GetV4HashHttpResponseOrErrorCode";
 
-// The URL prefix where browser fetches hashes from the server.
-const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
-
 // The default V4GetHashProtocolManagerFactory.
 class V4GetHashProtocolManagerFactoryImpl
     : public V4GetHashProtocolManagerFactory {
