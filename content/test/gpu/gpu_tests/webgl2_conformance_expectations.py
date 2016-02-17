@@ -321,7 +321,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
 
     self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
-        ['linux', 'debug'], bug=483282)
+        ['linux'], bug=483282)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
