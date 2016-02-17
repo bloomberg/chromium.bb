@@ -3517,3 +3517,10 @@
    Memcheck:Uninitialized
    fun:_ZNK5blink12LayoutObject29invalidatePaintUsingContainerERKNS_20LayoutBoxModelObjectERKNS_10LayoutRectENS_23PaintInvalidationReasonE
 }
+{
+   bug_587283_b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN5blink15LayoutBlockFlow11layoutBlockEb
+   fun:_ZN5blink11LayoutBlock6layoutEv
+}
