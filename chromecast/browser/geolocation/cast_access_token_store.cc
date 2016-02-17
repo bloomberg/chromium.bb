@@ -26,11 +26,11 @@ void CastAccessTokenStore::GetRequestContextGetterOnUIThread() {
 }
 
 void CastAccessTokenStore::RespondOnOriginatingThread() {
-  base::ResetAndReturn(&callback_).Run(access_token_set_, request_context_);
+  base::ResetAndReturn(&callback_).Run(access_token_map_, request_context_);
 }
 
 void CastAccessTokenStore::LoadAccessTokens(
-    const LoadAccessTokensCallbackType& callback) {
+    const LoadAccessTokensCallback& callback) {
   callback_ = callback;
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::UI,
@@ -42,8 +42,8 @@ void CastAccessTokenStore::LoadAccessTokens(
 
 void CastAccessTokenStore::SaveAccessToken(
     const GURL& server_url, const base::string16& access_token) {
-  if (access_token_set_[server_url] != access_token) {
-    access_token_set_[server_url] = access_token;
+  if (access_token_map_[server_url] != access_token) {
+    access_token_map_[server_url] = access_token;
   }
 }
 

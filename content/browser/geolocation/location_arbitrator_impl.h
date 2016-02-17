@@ -69,7 +69,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   // |providers_| or deleted on error (e.g. it fails to start).
   void RegisterProvider(LocationProvider* provider);
   void OnAccessTokenStoresLoaded(
-      AccessTokenStore::AccessTokenSet access_token_store,
+      AccessTokenStore::AccessTokenMap access_token_map,
       net::URLRequestContextGetter* context_getter);
   void DoStartProviders();
 

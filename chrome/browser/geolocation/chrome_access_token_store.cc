@@ -41,11 +41,9 @@ bool IsUnsupportedNetworkProviderUrl(const GURL& url) {
 // calls back to the originator on the originating thread.
 class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
  public:
-  TokenLoadingJob(
-      const AccessTokenStore::LoadAccessTokensCallbackType& callback)
-      : callback_(callback),
-        system_request_context_(NULL) {
-  }
+  explicit TokenLoadingJob(
+      const AccessTokenStore::LoadAccessTokensCallback& callback)
+      : callback_(callback), system_request_context_(NULL) {}
 
   void Run() {
     BrowserThread::PostTaskAndReply(
@@ -78,7 +76,7 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
           providers_to_remove.push_back(it.key());
           continue;
         }
-        it.value().GetAsString(&access_token_set_[url]);
+        it.value().GetAsString(&access_token_map_[url]);
       }
       for (size_t i = 0; i < providers_to_remove.size(); ++i) {
         token_dictionary->RemoveWithoutPathExpansion(
@@ -90,11 +88,11 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
   }
 
   void RespondOnOriginatingThread() {
-    callback_.Run(access_token_set_, system_request_context_);
+    callback_.Run(access_token_map_, system_request_context_);
   }
 
-  AccessTokenStore::LoadAccessTokensCallbackType callback_;
-  AccessTokenStore::AccessTokenSet access_token_set_;
+  AccessTokenStore::LoadAccessTokensCallback callback_;
+  AccessTokenStore::AccessTokenMap access_token_map_;
   net::URLRequestContextGetter* system_request_context_;
 };
 
@@ -107,7 +105,7 @@ void ChromeAccessTokenStore::RegisterPrefs(PrefRegistrySimple* registry) {
 ChromeAccessTokenStore::ChromeAccessTokenStore() {}
 
 void ChromeAccessTokenStore::LoadAccessTokens(
-    const LoadAccessTokensCallbackType& callback) {
+    const LoadAccessTokensCallback& callback) {
   scoped_refptr<TokenLoadingJob> job(new TokenLoadingJob(callback));
   job->Run();
 }

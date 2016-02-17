@@ -173,8 +173,8 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_FALSE(gps());
   arbitrator_->StartProviders(false);
 
-  EXPECT_TRUE(access_token_store_->access_token_set_.empty());
-  EXPECT_TRUE(access_token_store_->access_token_set_.empty());
+  EXPECT_TRUE(access_token_store_->access_token_map_.empty());
+  EXPECT_TRUE(access_token_store_->access_token_map_.empty());
 
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());

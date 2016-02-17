@@ -22,18 +22,18 @@ class FakeAccessTokenStore : public AccessTokenStore {
 
   // AccessTokenStore
   MOCK_METHOD1(LoadAccessTokens,
-               void(const LoadAccessTokensCallbackType& callback));
+               void(const LoadAccessTokensCallback& callback));
   MOCK_METHOD2(SaveAccessToken,
                void(const GURL& server_url,
                     const base::string16& access_token));
 
-  void DefaultLoadAccessTokens(const LoadAccessTokensCallbackType& callback);
+  void DefaultLoadAccessTokens(const LoadAccessTokensCallback& callback);
 
   void DefaultSaveAccessToken(const GURL& server_url,
                               const base::string16& access_token);
 
-  AccessTokenSet access_token_set_;
-  LoadAccessTokensCallbackType callback_;
+  AccessTokenMap access_token_map_;
+  LoadAccessTokensCallback callback_;
 
  protected:
   // Protected instead of private so we can have NiceMocks.

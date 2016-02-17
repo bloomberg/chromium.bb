@@ -18,7 +18,7 @@ class ChromeAccessTokenStore : public content::AccessTokenStore {
 
   ChromeAccessTokenStore();
 
-  void LoadAccessTokens(const LoadAccessTokensCallbackType& request) override;
+  void LoadAccessTokens(const LoadAccessTokensCallback& request) override;
 
  private:
   ~ChromeAccessTokenStore() override;

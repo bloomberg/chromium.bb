@@ -24,10 +24,10 @@ class ShellAccessTokenStore : public content::AccessTokenStore {
 
   void GetRequestContextOnUIThread(
       content::ShellBrowserContext* shell_browser_context);
-  void RespondOnOriginatingThread(const LoadAccessTokensCallbackType& callback);
+  void RespondOnOriginatingThread(const LoadAccessTokensCallback& callback);
 
   // AccessTokenStore
-  void LoadAccessTokens(const LoadAccessTokensCallbackType& callback) override;
+  void LoadAccessTokens(const LoadAccessTokensCallback& callback) override;
 
   void SaveAccessToken(const GURL& server_url,
                        const base::string16& access_token) override;

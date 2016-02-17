@@ -33,18 +33,16 @@ namespace content {
 class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore> {
  public:
   // Map of server URLs to associated access token.
-  typedef std::map<GURL, base::string16> AccessTokenSet;
-  typedef base::Callback<void(AccessTokenSet, net::URLRequestContextGetter*)>
-      LoadAccessTokensCallbackType;
+  typedef std::map<GURL, base::string16> AccessTokenMap;
+  typedef base::Callback<void(AccessTokenMap, net::URLRequestContextGetter*)>
+      LoadAccessTokensCallback;
 
   // |callback| will be invoked once per LoadAccessTokens call, after existing
   // access tokens have been loaded from persistent store. As a convenience the
   // URLRequestContextGetter is also supplied as an argument in |callback|, as
   // in Chrome the call to obtain this must also be performed on the UI thread
   // so it is efficient to piggyback it onto this request.
-  // Takes ownership of |callback|.
-  virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& callback) = 0;
+  virtual void LoadAccessTokens(const LoadAccessTokensCallback& callback) = 0;
 
   virtual void SaveAccessToken(
       const GURL& server_url, const base::string16& access_token) = 0;

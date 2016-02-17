@@ -36,7 +36,7 @@ class GeolocationAccessTokenStoreTest
       const base::string16* token_to_set);
 
   void OnAccessTokenStoresLoaded(
-      AccessTokenStore::AccessTokenSet access_token_set,
+      AccessTokenStore::AccessTokenMap access_token_map,
       net::URLRequestContextGetter* context_getter);
 
   scoped_refptr<AccessTokenStore> token_store_;
@@ -47,7 +47,7 @@ class GeolocationAccessTokenStoreTest
 
 void StartTestStepFromClientThread(
     scoped_refptr<AccessTokenStore>* store,
-    const AccessTokenStore::LoadAccessTokensCallbackType& callback) {
+    const AccessTokenStore::LoadAccessTokensCallback& callback) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId));
   if (store->get() == NULL)
     (*store) = new ChromeAccessTokenStore();
@@ -55,7 +55,7 @@ void StartTestStepFromClientThread(
 }
 
 struct TokenLoadClientForTest {
-  void NotReachedCallback(AccessTokenStore::AccessTokenSet /*tokens*/,
+  void NotReachedCallback(AccessTokenStore::AccessTokenMap /*tokens*/,
                           net::URLRequestContextGetter* /*context_getter*/) {
     NOTREACHED() << "This request should have been canceled before callback";
   }
@@ -80,18 +80,18 @@ void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
 }
 
 void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
-    AccessTokenStore::AccessTokenSet access_token_set,
+    AccessTokenStore::AccessTokenMap access_token_map,
     net::URLRequestContextGetter* context_getter) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId))
       << "Callback from token factory should be from the same thread as the "
          "LoadAccessTokenStores request was made on";
   DCHECK(context_getter);
-  AccessTokenStore::AccessTokenSet::const_iterator item =
-      access_token_set.find(ref_url_);
+  AccessTokenStore::AccessTokenMap::const_iterator item =
+      access_token_map.find(ref_url_);
   if (!token_to_expect_) {
-    EXPECT_TRUE(item == access_token_set.end());
+    EXPECT_TRUE(item == access_token_map.end());
   } else {
-    EXPECT_FALSE(item == access_token_set.end());
+    EXPECT_FALSE(item == access_token_map.end());
     EXPECT_EQ(*token_to_expect_, item->second);
   }
 

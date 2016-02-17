@@ -33,11 +33,11 @@ void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
   }
 
   net::URLRequestContextGetter* context_getter = NULL;
-  callback_.Run(access_token_set_, context_getter);
+  callback_.Run(access_token_map_, context_getter);
 }
 
 void FakeAccessTokenStore::DefaultLoadAccessTokens(
-    const LoadAccessTokensCallbackType& callback) {
+    const LoadAccessTokensCallback& callback) {
   originating_task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
   callback_ = callback;
 }
@@ -45,7 +45,7 @@ void FakeAccessTokenStore::DefaultLoadAccessTokens(
 void FakeAccessTokenStore::DefaultSaveAccessToken(
     const GURL& server_url, const base::string16& access_token) {
   DCHECK(server_url.is_valid());
-  access_token_set_[server_url] = access_token;
+  access_token_map_[server_url] = access_token;
 }
 
 FakeAccessTokenStore::~FakeAccessTokenStore() {}

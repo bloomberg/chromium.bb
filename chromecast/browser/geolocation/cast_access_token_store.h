@@ -25,7 +25,7 @@ class CastAccessTokenStore : public content::AccessTokenStore {
   ~CastAccessTokenStore() override;
 
   // AccessTokenStore implementation:
-  void LoadAccessTokens(const LoadAccessTokensCallbackType& callback) override;
+  void LoadAccessTokens(const LoadAccessTokensCallback& callback) override;
   void SaveAccessToken(
       const GURL& server_url, const base::string16& access_token) override;
 
@@ -34,8 +34,8 @@ class CastAccessTokenStore : public content::AccessTokenStore {
 
   content::BrowserContext* const browser_context_;
   net::URLRequestContextGetter* request_context_;
-  AccessTokenSet access_token_set_;
-  LoadAccessTokensCallbackType callback_;
+  AccessTokenMap access_token_map_;
+  LoadAccessTokensCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAccessTokenStore);
 };

@@ -22,7 +22,7 @@ ShellAccessTokenStore::~ShellAccessTokenStore() {
 }
 
 void ShellAccessTokenStore::LoadAccessTokens(
-    const LoadAccessTokensCallbackType& callback) {
+    const LoadAccessTokensCallback& callback) {
   BrowserThread::PostTaskAndReply(
       BrowserThread::UI,
       FROM_HERE,
@@ -40,12 +40,12 @@ void ShellAccessTokenStore::GetRequestContextOnUIThread(
 }
 
 void ShellAccessTokenStore::RespondOnOriginatingThread(
-    const LoadAccessTokensCallbackType& callback) {
+    const LoadAccessTokensCallback& callback) {
   // Since content_shell is a test executable, rather than an end user program,
   // we provide a dummy access_token set to avoid hitting the server.
-  AccessTokenSet access_token_set;
-  access_token_set[GURL()] = base::ASCIIToUTF16("chromium_content_shell");
-  callback.Run(access_token_set, system_request_context_.get());
+  AccessTokenMap access_token_map;
+  access_token_map[GURL()] = base::ASCIIToUTF16("chromium_content_shell");
+  callback.Run(access_token_map, system_request_context_.get());
   system_request_context_ = NULL;
 }
 

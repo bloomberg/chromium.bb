@@ -93,7 +93,7 @@ void LocationArbitratorImpl::StopProviders() {
 }
 
 void LocationArbitratorImpl::OnAccessTokenStoresLoaded(
-    AccessTokenStore::AccessTokenSet access_token_set,
+    AccessTokenStore::AccessTokenMap access_token_map,
     net::URLRequestContextGetter* context_getter) {
   if (!is_running_ || !providers_.empty()) {
     // A second StartProviders() call may have arrived before the first
@@ -101,9 +101,9 @@ void LocationArbitratorImpl::OnAccessTokenStoresLoaded(
     return;
   }
   // If there are no access tokens, boot strap it with the default server URL.
-  if (access_token_set.empty())
-    access_token_set[DefaultNetworkProviderURL()];
-  for (const auto& entry : access_token_set) {
+  if (access_token_map.empty())
+    access_token_map[DefaultNetworkProviderURL()];
+  for (const auto& entry : access_token_map) {
     RegisterProvider(NewNetworkLocationProvider(
         GetAccessTokenStore(), context_getter, entry.first, entry.second));
   }
