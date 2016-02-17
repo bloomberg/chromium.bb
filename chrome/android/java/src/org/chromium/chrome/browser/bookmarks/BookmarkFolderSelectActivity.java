@@ -113,7 +113,7 @@ public class BookmarkFolderSelectActivity extends BookmarkActivityBase implement
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         BookmarkUtils.setTaskDescriptionInDocumentMode(this,
-                getString(R.string.enhanced_bookmark_choose_folder));
+                getString(R.string.bookmark_choose_folder));
         mModel = new BookmarkModel();
         mModel.addObserver(mBookmarkModelObserver);
         List<String> stringList = getIntent().getStringArrayListExtra(INTENT_BOOKMARKS_TO_MOVE);
@@ -137,8 +137,8 @@ public class BookmarkFolderSelectActivity extends BookmarkActivityBase implement
                     .getParentId();
         }
 
-        setContentView(R.layout.eb_folder_select_activity);
-        mBookmarkIdsList = (ListView) findViewById(R.id.eb_folder_list);
+        setContentView(R.layout.bookmark_folder_select_activity);
+        mBookmarkIdsList = (ListView) findViewById(R.id.bookmark_folder_list);
         mBookmarkIdsList.setOnItemClickListener(this);
         mBookmarkIdsAdapter = new FolderListAdapter(this);
         mBookmarkIdsList.setAdapter(mBookmarkIdsAdapter);
@@ -158,7 +158,7 @@ public class BookmarkFolderSelectActivity extends BookmarkActivityBase implement
 
         if (!mIsCreatingFolder) {
             entryList.add(new FolderListEntry(null, 0,
-                    getString(R.string.enhanced_bookmark_add_folder), false,
+                    getString(R.string.bookmark_add_folder), false,
                     FolderListEntry.TYPE_NEW_FOLDER));
         }
 
@@ -268,7 +268,7 @@ public class BookmarkFolderSelectActivity extends BookmarkActivityBase implement
 
         public FolderListAdapter(Context context) {
             mBasePadding = context.getResources()
-                    .getDimensionPixelSize(R.dimen.enhanced_bookmark_folder_item_left);
+                    .getDimensionPixelSize(R.dimen.bookmark_folder_item_left);
             mPaddingIncrement = mBasePadding * 2;
         }
 
@@ -309,7 +309,7 @@ public class BookmarkFolderSelectActivity extends BookmarkActivityBase implement
             }
             if (convertView == null) {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.eb_folder_select_item, parent, false);
+                        R.layout.bookmark_folder_select_item, parent, false);
             }
             TextView textView = (TextView) convertView;
             textView.setText(entry.mTitle);
@@ -332,17 +332,17 @@ public class BookmarkFolderSelectActivity extends BookmarkActivityBase implement
         private void setUpIcons(FolderListEntry entry, TextView textView) {
             int iconId = 0;
             if (entry.mType == FolderListEntry.TYPE_NORMAL) {
-                iconId = R.drawable.eb_folder;
+                iconId = R.drawable.bookmark_folder;
             } else if (entry.mType == FolderListEntry.TYPE_NEW_FOLDER) {
                 // For new folder, start_icon is different.
-                iconId = R.drawable.eb_add_folder;
+                iconId = R.drawable.bookmark_add_folder;
             }
 
             Drawable drawableStart = TintedDrawable.constructTintedDrawable(textView.getResources(),
                     iconId);
             // Selected entry has an end_icon, a blue check mark.
             Drawable drawableEnd = entry.mIsSelected ? ApiCompatibilityUtils.getDrawable(
-                    textView.getResources(), R.drawable.eb_check_blue) : null;
+                    textView.getResources(), R.drawable.bookmark_check_blue) : null;
             ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(textView,
                     drawableStart, null, drawableEnd, null);
         }

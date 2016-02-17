@@ -56,7 +56,7 @@ public class BookmarkModel extends BookmarksBridge {
     /**
      * Observer that listens to delete event. This interface is used by undo controllers to know
      * which bookmarks were deleted. Note this observer only listens to events that go through
-     * enhanced bookmark model.
+     * bookmark model.
      */
     public interface BookmarkDeleteObserver {
 
@@ -89,7 +89,7 @@ public class BookmarkModel extends BookmarksBridge {
     private OfflinePageModelObserver mOfflinePageModelObserver;
 
     /**
-     * Initialize enhanced bookmark model for last used non-incognito profile.
+     * Initialize bookmark model for last used non-incognito profile.
      */
     public BookmarkModel() {
         this(Profile.getLastUsedProfile().getOriginalProfile());
@@ -142,7 +142,7 @@ public class BookmarkModel extends BookmarksBridge {
     }
 
     /**
-     * Add an observer that listens to delete events that go through enhanced bookmark model.
+     * Add an observer that listens to delete events that go through the bookmark model.
      * @param observer The observer to add.
      */
     public void addDeleteObserver(BookmarkDeleteObserver observer) {
@@ -215,15 +215,15 @@ public class BookmarkModel extends BookmarksBridge {
     public void addBookmarkAsync(BookmarkId parent, int index, String title, String url,
                                  WebContents webContents, final AddBookmarkCallback callback) {
         url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-        final BookmarkId enhancedId = addBookmark(parent, index, title, url);
+        final BookmarkId bookmarkId = addBookmark(parent, index, title, url);
 
         // If there is no need to save offline page, return now.
         if (mOfflinePageBridge == null || webContents == null) {
-            callback.onBookmarkAdded(enhancedId, AddBookmarkCallback.SKIPPED);
+            callback.onBookmarkAdded(bookmarkId, AddBookmarkCallback.SKIPPED);
             return;
         }
 
-        saveOfflinePage(enhancedId, webContents, callback);
+        saveOfflinePage(bookmarkId, webContents, callback);
     }
 
     /**

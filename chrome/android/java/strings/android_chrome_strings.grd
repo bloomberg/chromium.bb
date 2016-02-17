@@ -1855,76 +1855,76 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_BOOKMARKS_FOLDER_EMPTY" desc="Text explaining that the currently selected bookmarks folder is empty.">
         No bookmarks here
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_SIGN_IN_PROMO_TITLE" desc="Promo title encouraging the user to sign in to Chrome to improve their bookmarks experience. It means that after signing-in, bookmarks will become synced across devices and possible to search.">
+      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_TITLE" desc="Promo title encouraging the user to sign in to Chrome to improve their bookmarks experience. It means that after signing-in, bookmarks will become synced across devices and possible to search.">
         Sync your bookmarks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_SIGN_IN_PROMO_DESCRIPTION" desc="Description for enhanced bookmark UI sign-in promotion.">
+      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_DESCRIPTION" desc="Description for bookmark UI sign-in promotion.">
         To get your bookmarks on all your devices, sign in to Chrome
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_SIGN_IN_PROMO_NO_THANKS" desc="Text for the decline button in the enhanced bookmark UI">
+      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_NO_THANKS" desc="Text for the decline button in the bookmark UI">
         No, thanks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_SIGN_IN_PROMO_SIGN_IN" desc="Text for the sign-in button in promotion in the enhanced bookmark UI">
+      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_SIGN_IN" desc="Text for the sign-in button in promotion in the bookmark UI">
         Sign in
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED" desc="Message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_PAGE_SAVED" desc="Message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
         Bookmarked
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED_FOLDER" desc="Message shown after user adds a new bookmark. Also specifies in which folder the bookmark was added. [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_PAGE_SAVED_FOLDER" desc="Message shown after user adds a new bookmark. Also specifies in which folder the bookmark was added. [CHAR-LIMIT=32]">
         Bookmarked to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=24]">
+      <message name="IDS_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the bookmarks UI [CHAR-LIMIT=24]">
         All bookmarks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_DRAWER_FOLDERS" desc="Title for the list of folders in the drawer view. [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_DRAWER_FOLDERS" desc="Title for the list of folders in the drawer view. [CHAR-LIMIT=32]">
         Folders
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_DRAWER_FILTER_OFFLINE_PAGES" desc="Menu item for showing all bookmarks with an offline pages [CHAR-LIMIT=24]">
+      <message name="IDS_BOOKMARK_DRAWER_FILTER_OFFLINE_PAGES" desc="Menu item for showing all bookmarks with an offline pages [CHAR-LIMIT=24]">
         Saved offline
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_ALL_ITEMS" desc="Title bar text for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_TITLE_BAR_ALL_ITEMS" desc="Title bar text for showing all bookmark items in the bookmarks UI [CHAR-LIMIT=32]">
         Bookmarks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_FILTER_OFFLINE_PAGES" desc="Title bar text for showing all save pages with offline copy in the enhanced bookmarks UI. [CHAR-LIMIT=24]">
+      <message name="IDS_BOOKMARK_TITLE_BAR_FILTER_OFFLINE_PAGES" desc="Title bar text for showing all save pages with offline copy in the bookmarks UI. [CHAR-LIMIT=24]">
         Saved offline
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_PARENT_FOLDER" desc="Header text for title of parent folder of the bookmark [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_PARENT_FOLDER" desc="Header text for title of parent folder of the bookmark [CHAR-LIMIT=32]">
         Parent folder
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ITEM_SELECT" desc="Menu item text for selecting a bookmark [CHAR-LIMIT=24]">
+      <message name="IDS_BOOKMARK_ITEM_SELECT" desc="Menu item text for selecting a bookmark [CHAR-LIMIT=24]">
         Select
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ITEM_EDIT" desc="Menu item text for showing bookmark editing page [CHAR-LIMIT=24]">
+      <message name="IDS_BOOKMARK_ITEM_EDIT" desc="Menu item text for showing bookmark editing page [CHAR-LIMIT=24]">
         Edit
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ITEM_MOVE" desc="Menu item for moving a bookmark to a new folder [CHAR-LIMIT=24]">
+      <message name="IDS_BOOKMARK_ITEM_MOVE" desc="Menu item for moving a bookmark to a new folder [CHAR-LIMIT=24]">
         Move
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ITEM_DELETE" desc="Menu item text for deleting a bookmark [CHAR-LIMIT=24]">
+      <message name="IDS_BOOKMARK_ITEM_DELETE" desc="Menu item text for deleting a bookmark [CHAR-LIMIT=24]">
         Delete
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ADD_FOLDER" desc="Title for button to add a new bookmark folder [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_ADD_FOLDER" desc="Title for button to add a new bookmark folder [CHAR-LIMIT=32]">
         New folder…
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_CHOOSE_FOLDER" desc="Title for the dialog that moves bookmarks to another folder [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_CHOOSE_FOLDER" desc="Title for the dialog that moves bookmarks to another folder [CHAR-LIMIT=32]">
         Choose folder
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_EDIT_FOLDER" desc="Button text for editing current folder action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_ACTION_BAR_EDIT_FOLDER" desc="Button text for editing current folder action on the bookmark action bar [CHAR-LIMIT=32]">
         Edit folder
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_MOVE" desc="Button text for bookmark move action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_ACTION_BAR_MOVE" desc="Button text for bookmark move action on the bookmark action bar [CHAR-LIMIT=32]">
         Move bookmarks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_DELETE" desc="Button text for bookmark delete action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_ACTION_BAR_DELETE" desc="Button text for bookmark delete action on the bookmark action bar [CHAR-LIMIT=32]">
         Delete bookmarks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_CLOSE" desc="Button text for closing the current enhanced bookmark dialog on the enhanced bookmark action bar [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_ACTION_BAR_CLOSE" desc="Button text for closing the current bookmark dialog on the bookmark action bar [CHAR-LIMIT=32]">
         Close dialog
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_SEARCH" desc="Button text for bookmark search action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_ACTION_BAR_SEARCH" desc="Button text for bookmark search action on the bookmark action bar [CHAR-LIMIT=32]">
         Search bookmarks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_NO_RESULT" desc="Text explaining that no bookmarks are found to match a search query">
+      <message name="IDS_BOOKMARK_NO_RESULT" desc="Text explaining that no bookmarks are found to match a search query">
         No bookmarks found
       </message>
       <message name="IDS_EDIT_BOOKMARK" desc='The string prompting the user to edit the content of a bookmark. [CHAR-LIMIT=30]'>
@@ -1960,10 +1960,10 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_BOOKMARK_MISSING_URL" desc="Error message appearing when a user tries to create a bookmark without a url. [CHAR-LIMIT=32]">
         URL required
       </message>
-      <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DRAWER_TOGGLE_BTN_OPEN" desc="Content description for the button to show the navigation drawer.">
+      <message name="IDS_ACCESSIBILITY_BOOKMARK_DRAWER_TOGGLE_BTN_OPEN" desc="Content description for the button to show the navigation drawer.">
         Open navigation drawer
       </message>
-      <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DRAWER_TOGGLE_BTN_CLOSE" desc="Content description for the button to close the navigation drawer.">
+      <message name="IDS_ACCESSIBILITY_BOOKMARK_DRAWER_TOGGLE_BTN_CLOSE" desc="Content description for the button to close the navigation drawer.">
         Close navigation drawer
       </message>
 
@@ -2195,19 +2195,19 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ACCESSIBILITY_BOOKMARK_WIDGET_THUMB_LAUNCH_CHROME" desc="Content description for the button in the bookmark widget that launches Chrome.">
         Launch Chrome
       </message>
-      <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected bookmarks.">
+      <message name="IDS_ACCESSIBILITY_BOOKMARK_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected bookmarks.">
         Cancel selection
       </message>
-      <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_MORE_INFO" desc="Content description for the button that shows option menu for a bookmark.">
+      <message name="IDS_ACCESSIBILITY_BOOKMARK_MORE_INFO" desc="Content description for the button that shows option menu for a bookmark.">
         Options
       </message>
-      <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DETAIL_CLOSE_BTN" desc="Content description for the close button that allows users to close the edit bookmark dialog.">
+      <message name="IDS_ACCESSIBILITY_BOOKMARK_DETAIL_CLOSE_BTN" desc="Content description for the close button that allows users to close the edit bookmark dialog.">
         Close dialog
       </message>
-      <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DETAIL_DELETE_BTN" desc="Content description for the delete button that allows users to delete the current bookmark.">
+      <message name="IDS_ACCESSIBILITY_BOOKMARK_DETAIL_DELETE_BTN" desc="Content description for the delete button that allows users to delete the current bookmark.">
         Delete bookmark
       </message>
-      <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DETAIL_SAVE_BTN" desc="Content description for the save button that allows users to save the edited bookmark.">
+      <message name="IDS_ACCESSIBILITY_BOOKMARK_DETAIL_SAVE_BTN" desc="Content description for the save button that allows users to save the edited bookmark.">
         Save bookmark
       </message>
 

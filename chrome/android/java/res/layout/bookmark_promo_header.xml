@@ -5,7 +5,6 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
 -->
-<!-- TODO(kkimlabs): Generalize and unify with eb_promo_header.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -14,18 +13,20 @@
     android:padding="16dp" >
 
     <TextView
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/offline_pages_storage_space_title"
+        android:text="@string/bookmark_sign_in_promo_title"
         android:textColor="@color/default_text_color"
         android:textSize="16sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/storage_header_message"
+        android:id="@+id/description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:text="@string/bookmark_sign_in_promo_description"
         android:textColor="@color/default_text_color"
         android:textSize="14sp" />
 
@@ -38,14 +39,24 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/storage_header_button"
+            android:id="@+id/no_thanks"
             style="@style/ButtonCompatBorderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/offline_pages_free_up_space_title"
+            android:text="@string/bookmark_sign_in_promo_no_thanks"
             android:textAllCaps="true"
             android:textColor="@color/light_active_color"
             android:textSize="15sp" />
+
+        <org.chromium.ui.widget.ButtonCompat
+            android:id="@+id/sign_in"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bookmark_sign_in_promo_sign_in"
+            android:textAllCaps="true"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            chrome:buttonColor="@color/light_active_color" />
     </LinearLayout>
 
 </LinearLayout>

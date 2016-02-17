@@ -18,7 +18,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 import java.util.List;
 
 /**
- * Container for all bookmark items shown in enhanced bookmark manager.
+ * Container for all bookmark items shown in bookmark manager.
  */
 public class BookmarkRecyclerView extends RecyclerView implements BookmarkUIObserver {
 
@@ -43,7 +43,7 @@ public class BookmarkRecyclerView extends RecyclerView implements BookmarkUIObse
     }
 
     /**
-     * Constructs a new instance of enhanced bookmark recycler view.
+     * Constructs a new instance of bookmark recycler view.
      */
     public BookmarkRecyclerView(Context context, AttributeSet attrs) {
         super(context, attrs);

@@ -268,7 +268,7 @@ public class AccountFirstRunView extends FrameLayout
     /**
      * Changes the visuals slightly for when this view appears in the recent tabs page instead of
      * in first run. For example, the title text is changed as well as the button style.
-     * This is currently used in the Recent Tabs Promo and the Enhanced Bookmark page.
+     * This is currently used in the Recent Tabs Promo and the bookmarks page.
      */
     public void configureForRecentTabsOrBookmarksPage() {
         mHorizontalModeEnabled = false;

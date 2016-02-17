@@ -278,12 +278,12 @@ by a child template that "extends" this file.
             android:exported="true">
         </activity>
         <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkActivity"
-            android:theme="@style/EnhancedBookmarkDialog"
+            android:theme="@style/BookmarkDialog"
             android:windowSoftInputMode="stateAlwaysHidden"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
         </activity>
         <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddActivity"
-            android:theme="@style/EnhancedBookmarkDialogWhite"
+            android:theme="@style/BookmarkDialogWhite"
             android:windowSoftInputMode="stateHidden"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
             <intent-filter>
@@ -292,22 +292,22 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
         <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkEditActivity"
-            android:theme="@style/EnhancedBookmarkDialogWhite"
+            android:theme="@style/BookmarkDialogWhite"
             android:windowSoftInputMode="stateHidden"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
         </activity>
         <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddEditFolderActivity"
-            android:theme="@style/EnhancedBookmarkDialogWhite"
+            android:theme="@style/BookmarkDialogWhite"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
         </activity>
         <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkFolderSelectActivity"
-            android:theme="@style/EnhancedBookmarkDialogWhite"
+            android:theme="@style/BookmarkDialogWhite"
             android:windowSoftInputMode="stateAlwaysHidden"
-            android:label="@string/enhanced_bookmark_choose_folder"
+            android:label="@string/bookmark_choose_folder"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
         </activity>
         <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkSigninActivity"
-            android:theme="@style/EnhancedBookmarkDialogWhite"
+            android:theme="@style/BookmarkDialogWhite"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
         </activity>
 

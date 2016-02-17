@@ -106,14 +106,13 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
      */
     private void showMenu(View view) {
         if (mPopupMenu == null) {
-            mPopupMenu = new ListPopupWindow(getContext(), null, 0,
-                    R.style.EnhancedBookmarkMenuStyle);
+            mPopupMenu = new ListPopupWindow(getContext(), null, 0, R.style.BookmarkMenuStyle);
             mPopupMenu.setAdapter(new ArrayAdapter<String>(
-                    getContext(), R.layout.eb_popup_item, new String[] {
-                            getContext().getString(R.string.enhanced_bookmark_item_select),
-                            getContext().getString(R.string.enhanced_bookmark_item_edit),
-                            getContext().getString(R.string.enhanced_bookmark_item_move),
-                            getContext().getString(R.string.enhanced_bookmark_item_delete)}) {
+                    getContext(), R.layout.bookmark_popup_item, new String[] {
+                            getContext().getString(R.string.bookmark_item_select),
+                            getContext().getString(R.string.bookmark_item_edit),
+                            getContext().getString(R.string.bookmark_item_move),
+                            getContext().getString(R.string.bookmark_item_delete)}) {
                 private static final int MOVE_POSITION = 2;
 
                 @Override
@@ -140,7 +139,7 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
             });
             mPopupMenu.setAnchorView(view);
             mPopupMenu.setWidth(getResources().getDimensionPixelSize(
-                            R.dimen.enhanced_bookmark_item_popup_width));
+                            R.dimen.bookmark_item_popup_width));
             mPopupMenu.setVerticalOffset(-view.getHeight());
             mPopupMenu.setModal(true);
             mPopupMenu.setOnItemClickListener(new OnItemClickListener() {

@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
 
 /**
- * A row view that shows bookmark info in the enhanced bookmarks UI.
+ * A row view that shows bookmark info in the bookmarks UI.
  */
 public class BookmarkBookmarkRow extends BookmarkRow implements LargeIconCallback {
 
@@ -39,16 +39,12 @@ public class BookmarkBookmarkRow extends BookmarkRow implements LargeIconCallbac
      */
     public BookmarkBookmarkRow(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mCornerRadius = getResources().getDimensionPixelSize(
-                R.dimen.enhanced_bookmark_item_corner_radius);
-        mMinIconSize = (int) getResources().getDimension(
-                R.dimen.enhanced_bookmark_item_min_icon_size);
-        mDisplayedIconSize = getResources().getDimensionPixelSize(
-                R.dimen.enhanced_bookmark_item_icon_size);
-        int textSize = getResources().getDimensionPixelSize(
-                R.dimen.enhanced_bookmark_item_icon_text_size);
+        mCornerRadius = getResources().getDimensionPixelSize(R.dimen.bookmark_item_corner_radius);
+        mMinIconSize = (int) getResources().getDimension(R.dimen.bookmark_item_min_icon_size);
+        mDisplayedIconSize = getResources().getDimensionPixelSize(R.dimen.bookmark_item_icon_size);
+        int textSize = getResources().getDimensionPixelSize(R.dimen.bookmark_item_icon_text_size);
         int iconColor = ApiCompatibilityUtils.getColor(getResources(),
-                R.color.enhanced_bookmark_icon_background_color);
+                R.color.bookmark_icon_background_color);
         mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize , mDisplayedIconSize,
                 mCornerRadius, iconColor, textSize);
     }

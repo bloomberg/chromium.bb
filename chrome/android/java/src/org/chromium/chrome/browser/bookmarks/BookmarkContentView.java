@@ -43,18 +43,18 @@ public class BookmarkContentView extends RelativeLayout implements
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mItemsContainer = (BookmarkRecyclerView) findViewById(R.id.eb_items_container);
-        TextView emptyView = (TextView) findViewById(R.id.eb_empty_view);
+        mItemsContainer = (BookmarkRecyclerView) findViewById(R.id.bookmark_items_container);
+        TextView emptyView = (TextView) findViewById(R.id.bookmark_empty_view);
         emptyView.setText(OfflinePageUtils.getStringId(R.string.bookmarks_folder_empty));
         mItemsContainer.setEmptyView(emptyView);
-        mActionBar = (BookmarkActionBar) findViewById(R.id.eb_action_bar);
-        mLoadingView = (LoadingView) findViewById(R.id.eb_initial_loading_view);
+        mActionBar = (BookmarkActionBar) findViewById(R.id.bookmark_action_bar);
+        mLoadingView = (LoadingView) findViewById(R.id.bookmark_initial_loading_view);
         FadingShadowView shadow = (FadingShadowView) findViewById(R.id.shadow);
         if (DeviceFormFactor.isLargeTablet(getContext())) {
             shadow.setVisibility(View.GONE);
         } else {
             shadow.init(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.enhanced_bookmark_app_bar_shadow_color), FadingShadow.POSITION_TOP);
+                    R.color.bookmark_app_bar_shadow_color), FadingShadow.POSITION_TOP);
         }
     }
 

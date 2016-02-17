@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Observer interface to get notification for UI mode changes, bookmark changes, and other related
- * event that affects UI. All enhanced bookmark UI components are expected to implement this and
+ * event that affects UI. All bookmark UI components are expected to implement this and
  * update themselves correctly on each event.
  */
 interface BookmarkUIObserver {

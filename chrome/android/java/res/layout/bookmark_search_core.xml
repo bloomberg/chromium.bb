@@ -11,12 +11,12 @@
         android:layout_height="?attr/actionBarSize" >
 
         <EditText
-            android:id="@+id/eb_search_text"
+            android:id="@+id/bookmark_search_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@null"
             android:gravity="center_vertical"
-            android:hint="@string/enhanced_bookmark_action_bar_search"
+            android:hint="@string/bookmark_action_bar_search"
             android:imeOptions="flagNoExtractUi|actionSearch"
             android:inputType="textNoSuggestions"
             android:singleLine="true"
@@ -37,7 +37,7 @@
         android:outAnimation="@android:anim/fade_out" >
 
         <ListView
-            android:id="@+id/eb_history_list"
+            android:id="@+id/bookmark_history_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:divider="@null"
@@ -51,22 +51,22 @@
             android:outAnimation="@android:anim/fade_out" >
 
             <ListView
-                android:id="@+id/eb_result_list"
+                android:id="@+id/bookmark_result_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:divider="@null"
                 android:dividerHeight="0dp" />
 
             <TextView
-                android:id="@+id/eb_search_empty_view"
+                android:id="@+id/bookmark_search_empty_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="3dp"
-                android:drawableTop="@drawable/eb_logo_large"
+                android:drawableTop="@drawable/bookmark_logo_large"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="@string/enhanced_bookmark_no_result"
+                android:text="@string/bookmark_no_result"
                 android:textColor="#5B5B5B"
                 android:textSize="16sp" />
         </ViewSwitcher>

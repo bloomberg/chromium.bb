@@ -4,5 +4,5 @@
      found in the LICENSE file. -->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/EnhancedBookmarkDrawerItemStyle"
+    style="@style/BookmarkDrawerItemStyle"
     android:textColor="?android:attr/textColorSecondary" />

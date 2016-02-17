@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import java.util.Locale;
 
 /**
- * Shows an undo bar when the user modifies enhanced bookmarks,
+ * Shows an undo bar when the user modifies bookmarks,
  * allowing them to undo their changes.
  * TODO(danduong): Add move undo
  */
@@ -30,7 +30,7 @@ public class BookmarkUndoController extends BookmarkModelObserver implements
     /**
      * Creates an instance of {@link BookmarkUndoController}.
      * @param context The {@link Context} in which snackbar is shown.
-     * @param model The enhanced bookmark model.
+     * @param model The bookmark model.
      * @param snackbarManager SnackManager passed from activity.
      */
     public BookmarkUndoController(Context context, BookmarkModel model,

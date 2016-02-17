@@ -31,7 +31,7 @@ public class BookmarkPage implements NativePage, BookmarkStateChangeListener {
     private String mCurrentUrl;
 
     /**
-     * Create a new instance of an enhanced bookmark page.
+     * Create a new instance of the bookmarks page.
      * @param activity The activity to get context and manage fragments.
      * @param tab The tab to load urls.
      */

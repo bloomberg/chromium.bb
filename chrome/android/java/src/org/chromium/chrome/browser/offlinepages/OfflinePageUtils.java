@@ -83,17 +83,17 @@ public class OfflinePageUtils {
         if (OfflinePageBridge.getFeatureMode() != FeatureMode.ENABLED_AS_SAVED_PAGES) {
             return stringResId;
         }
-        if (stringResId == R.string.enhanced_bookmark_action_bar_delete) {
+        if (stringResId == R.string.bookmark_action_bar_delete) {
             return R.string.offline_pages_action_bar_delete;
-        } else if (stringResId == R.string.enhanced_bookmark_action_bar_move) {
+        } else if (stringResId == R.string.bookmark_action_bar_move) {
             return R.string.offline_pages_action_bar_move;
-        } else if (stringResId == R.string.enhanced_bookmark_action_bar_search) {
+        } else if (stringResId == R.string.bookmark_action_bar_search) {
             return R.string.offline_pages_action_bar_search;
         } else if (stringResId == R.string.edit_bookmark) {
             return R.string.offline_pages_edit_item;
-        } else if (stringResId == R.string.enhanced_bookmark_drawer_all_items) {
+        } else if (stringResId == R.string.bookmark_drawer_all_items) {
             return R.string.offline_pages_all_items;
-        } else if (stringResId == R.string.enhanced_bookmark_title_bar_all_items) {
+        } else if (stringResId == R.string.bookmark_title_bar_all_items) {
             return R.string.offline_pages_all_items;
         } else if (stringResId == R.string.bookmarks) {
             return R.string.offline_pages_saved_pages;
@@ -269,7 +269,7 @@ public class OfflinePageUtils {
     public static void showEditSnackbar(final ChromeActivity activity,
             final SnackbarController snackbarController) {
         int buttonType = EDIT_BUTTON;
-        int actionTextId = R.string.enhanced_bookmark_item_edit;
+        int actionTextId = R.string.bookmark_item_edit;
         showOfflineSnackbar(activity, snackbarController, buttonType, actionTextId);
     }
 

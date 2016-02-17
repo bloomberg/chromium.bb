@@ -5,10 +5,10 @@
      found in the LICENSE file.
 -->
 
-<view class="org.chromium.chrome.browser.bookmarks.BookmarkFolderRow"
+<view class="org.chromium.chrome.browser.bookmarks.BookmarkBookmarkRow"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="48dp" >
+    android:layout_height="wrap_content" >
 
-    <include layout="@layout/eb_row_content" />
+    <include layout="@layout/bookmark_row_content" />
 </view>

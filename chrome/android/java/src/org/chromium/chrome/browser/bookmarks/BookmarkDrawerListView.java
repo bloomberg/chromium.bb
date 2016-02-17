@@ -20,7 +20,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 import java.util.List;
 
 /**
- * Main drawer list view of Enhanced Bookmark UI. It is responsible for presenting different viewing
+ * Main drawer list view of bookmark UI. It is responsible for presenting different viewing
  * modes and let users to choose.
  */
 @SuppressLint("Instantiatable")
@@ -92,7 +92,7 @@ class BookmarkDrawerListView extends ListView implements BookmarkUIObserver {
     public void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
         mDelegate = delegate;
         delegate.getModel().addObserver(mBookmarkModelObserver);
-        mAdapter.setEnhancedBookmarkUIDelegate(delegate);
+        mAdapter.setBookmarkUIDelegate(delegate);
         delegate.addUIObserver(this);
     }
 

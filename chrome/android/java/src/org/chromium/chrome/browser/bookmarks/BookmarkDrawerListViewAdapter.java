@@ -168,7 +168,7 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
         mBottomSection.clear();
     }
 
-    void setEnhancedBookmarkUIDelegate(BookmarkDelegate delegate) {
+    void setBookmarkUIDelegate(BookmarkDelegate delegate) {
         mDelegate = delegate;
     }
 
@@ -299,13 +299,13 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
             final int itemViewType = getItemViewType(position);
             if (itemViewType == VIEW_TYPE_ITEM) {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.eb_drawer_item, parent, false);
+                        R.layout.bookmark_drawer_item, parent, false);
             } else if (itemViewType == VIEW_TYPE_DIVIDER) {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.eb_divider, parent, false);
+                        R.layout.bookmark_divider, parent, false);
             } else if (itemViewType == VIEW_TYPE_TITLE) {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.eb_drawer_title, parent, false);
+                        R.layout.bookmark_drawer_title, parent, false);
             } else {
                 assert false : "Invalid item view type.";
             }
@@ -315,7 +315,7 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
 
         if (item.mType == TYPE_FOLDERS_TITLE) {
             String title = convertView.getContext().getResources().getString(
-                    R.string.enhanced_bookmark_drawer_folders);
+                    R.string.bookmark_drawer_folders);
             ((TextView) convertView).setText(title);
             return convertView;
         }
@@ -328,18 +328,18 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
         switch (item.mType) {
             case TYPE_ALL_ITEMS:
                 title = listItemView.getContext().getResources().getString(
-                        OfflinePageUtils.getStringId(R.string.enhanced_bookmark_drawer_all_items));
+                        OfflinePageUtils.getStringId(R.string.bookmark_drawer_all_items));
                 iconDrawableId = R.drawable.btn_star;
                 break;
             case TYPE_FOLDER:
                 title = mDelegate.getModel().getBookmarkById(item.mFolderId).getTitle();
                 if (mManagedAndPartnerFolderIds != null
                         && mManagedAndPartnerFolderIds.contains(item.mFolderId)) {
-                    iconDrawableId = R.drawable.eb_managed;
+                    iconDrawableId = R.drawable.bookmark_managed;
                 } else if (item.mFolderId.equals(mMobileNodeId)
                         || item.mFolderId.equals(mOthersNodeId)
                         || item.mFolderId.equals(mDesktopNodeId)) {
-                    iconDrawableId = R.drawable.eb_folder;
+                    iconDrawableId = R.drawable.bookmark_folder;
                 } else {
                     iconDrawableId = 0;
                 }
@@ -347,8 +347,8 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
             case TYPE_FILTER:
                 assert item.mFilter == BookmarkFilter.OFFLINE_PAGES;
                 title = listItemView.getContext().getResources().getString(
-                        R.string.enhanced_bookmark_drawer_filter_offline_pages);
-                iconDrawableId = R.drawable.eb_filter_offline_pages;
+                        R.string.bookmark_drawer_filter_offline_pages);
+                iconDrawableId = R.drawable.bookmark_filter_offline_pages;
                 break;
             default:
                 title = "";

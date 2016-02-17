@@ -8,7 +8,7 @@
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:minHeight="@dimen/enhanced_bookmark_minimum_dialog_size_tablet"
+    android:minHeight="@dimen/bookmark_minimum_dialog_size_tablet"
     android:orientation="vertical" >
 
     <android.support.v7.widget.Toolbar
@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="4dp"
         android:layout_marginBottom="-4dp"
-        android:background="@drawable/eb_title_bar_shadow" />
+        android:background="@drawable/bookmark_title_bar_shadow" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -53,8 +53,8 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
-                android:text="@string/enhanced_bookmark_parent_folder"
-                android:textColor="@color/enhanced_bookmark_detail_section"
+                android:text="@string/bookmark_parent_folder"
+                android:textColor="@color/bookmark_detail_section"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 

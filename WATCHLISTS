@@ -340,11 +340,6 @@
                   'media/cdm/|' \
                   'third_party/widevine/cdm/'
     },
-    'enhanced_bookmarks_android': {
-      'filepath': 'chrome/android/java/src/org/chromium/'\
-                    'chrome/browser/enhancedbookmarks/|'\
-                  'chrome/android/java/res/layout/eb*.xml'
-    },
     'events': {
       'filepath': 'ui/events/',
     },

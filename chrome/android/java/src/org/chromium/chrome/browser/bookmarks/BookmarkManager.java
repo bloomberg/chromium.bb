@@ -118,15 +118,15 @@ public class BookmarkManager implements BookmarkDelegate {
         mIsDialogUi = isDialogUi;
 
         mBookmarkModel = new BookmarkModel();
-        mMainView = (ViewGroup) mActivity.getLayoutInflater().inflate(R.layout.eb_main, null);
-        mDrawer = (DrawerLayout) mMainView.findViewById(R.id.eb_drawer_layout);
+        mMainView = (ViewGroup) mActivity.getLayoutInflater().inflate(R.layout.bookmark_main, null);
+        mDrawer = (DrawerLayout) mMainView.findViewById(R.id.bookmark_drawer_layout);
         mDrawerListView = (BookmarkDrawerListView) mMainView.findViewById(
-                R.id.eb_drawer_list);
-        mContentView = (BookmarkContentView) mMainView.findViewById(R.id.eb_content_view);
-        mViewSwitcher = (ViewSwitcher) mMainView.findViewById(R.id.eb_view_switcher);
+                R.id.bookmark_drawer_list);
+        mContentView = (BookmarkContentView) mMainView.findViewById(R.id.bookmark_content_view);
+        mViewSwitcher = (ViewSwitcher) mMainView.findViewById(R.id.bookmark_view_switcher);
         mUndoController = new BookmarkUndoController(activity, mBookmarkModel,
                 ((SnackbarManageable) activity).getSnackbarManager());
-        mSearchView = (BookmarkSearchView) getView().findViewById(R.id.eb_search_view);
+        mSearchView = (BookmarkSearchView) getView().findViewById(R.id.bookmark_search_view);
         mBookmarkModel.addObserver(mBookmarkModelObserver);
         initializeToLoadingState();
         mBookmarkModel.runAfterBookmarkModelLoaded(mModelLoadedRunnable);

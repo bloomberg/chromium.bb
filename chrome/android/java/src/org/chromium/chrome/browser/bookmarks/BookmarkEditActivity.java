@@ -119,7 +119,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
             return;
         }
 
-        setContentView(R.layout.eb_edit);
+        setContentView(R.layout.bookmark_edit);
         mTitleEditText = (EmptyAlertEditText) findViewById(R.id.title_text);
         mFolderTextView = (TextView) findViewById(R.id.folder_text);
         mUrlEditText = (EmptyAlertEditText) findViewById(R.id.url_text);
@@ -178,7 +178,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        mDeleteButton = menu.add(R.string.enhanced_bookmark_action_bar_delete)
+        mDeleteButton = menu.add(R.string.bookmark_action_bar_delete)
                 .setIcon(TintedDrawable.constructTintedDrawable(
                         getResources(), R.drawable.btn_trash))
                 .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);

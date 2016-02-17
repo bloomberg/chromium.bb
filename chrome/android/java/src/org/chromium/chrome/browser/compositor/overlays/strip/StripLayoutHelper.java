@@ -189,7 +189,7 @@ public class StripLayoutHelper {
 
         // Create tab menu
         mTabMenu = new ListPopupWindow(mContext);
-        mTabMenu.setAdapter(new ArrayAdapter<String>(mContext, R.layout.eb_popup_item,
+        mTabMenu.setAdapter(new ArrayAdapter<String>(mContext, R.layout.bookmark_popup_item,
                 new String[] {
                         mContext.getString(!mIncognito ? R.string.menu_close_all_tabs
                                                        : R.string.menu_close_all_incognito_tabs)}));

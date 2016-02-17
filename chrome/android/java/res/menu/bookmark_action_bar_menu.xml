@@ -9,8 +9,8 @@
     <group android:id="@+id/normal_menu_group" >
         <item
             android:id="@+id/edit_menu_id"
-            android:icon="@drawable/eb_edit_normal"
-            android:title="@string/enhanced_bookmark_action_bar_edit_folder"
+            android:icon="@drawable/bookmark_edit_normal"
+            android:title="@string/bookmark_action_bar_edit_folder"
             android:visible="false"
             chrome:showAsAction="ifRoom"/>
         <item
@@ -22,7 +22,7 @@
         <item
             android:id="@+id/close_menu_id"
             android:icon="@drawable/btn_close"
-            android:title="@string/enhanced_bookmark_action_bar_close"
+            android:title="@string/bookmark_action_bar_close"
             chrome:showAsAction="ifRoom"/>
     </group>
     <group
@@ -30,17 +30,17 @@
         android:visible="false" >
         <item
             android:id="@+id/selection_mode_edit_menu_id"
-            android:icon="@drawable/eb_edit_active"
+            android:icon="@drawable/bookmark_edit_active"
             android:title="@null"
             chrome:showAsAction="ifRoom"/>
         <item
             android:id="@+id/selection_mode_move_menu_id"
-            android:icon="@drawable/eb_move_active"
+            android:icon="@drawable/bookmark_move_active"
             android:title="@null"
             chrome:showAsAction="ifRoom"/>
         <item
             android:id="@+id/selection_mode_delete_menu_id"
-            android:icon="@drawable/eb_delete_white"
+            android:icon="@drawable/bookmark_delete_white"
             android:title="@null"
             chrome:showAsAction="ifRoom"/>
     </group>

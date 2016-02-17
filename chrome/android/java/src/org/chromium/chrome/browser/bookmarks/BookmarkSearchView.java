@@ -66,20 +66,20 @@ public class BookmarkSearchView extends LinearLayout implements OnItemClickListe
         }
 
         void showHistory() {
-            if (getCurrentView().getId() == R.id.eb_history_list) return;
+            if (getCurrentView().getId() == R.id.bookmark_history_list) return;
             showNext();
         }
 
         void showResult() {
-            if (getCurrentView().getId() == R.id.eb_history_list) showNext();
-            if (mResultEmptySwitcher.getCurrentView().getId() == R.id.eb_search_empty_view) {
+            if (getCurrentView().getId() == R.id.bookmark_history_list) showNext();
+            if (mResultEmptySwitcher.getCurrentView().getId() == R.id.bookmark_search_empty_view) {
                 mResultEmptySwitcher.showNext();
             }
         }
 
         void showEmpty() {
-            if (getCurrentView().getId() == R.id.eb_history_list) showNext();
-            if (mResultEmptySwitcher.getCurrentView().getId() == R.id.eb_result_list) {
+            if (getCurrentView().getId() == R.id.bookmark_history_list) showNext();
+            if (mResultEmptySwitcher.getCurrentView().getId() == R.id.bookmark_result_list) {
                 mResultEmptySwitcher.showNext();
             }
         }
@@ -128,13 +128,13 @@ public class BookmarkSearchView extends LinearLayout implements OnItemClickListe
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mSearchText = (EditText) findViewById(R.id.eb_search_text);
-        mResultList = (ListView) findViewById(R.id.eb_result_list);
-        mHistoryList = (ListView) findViewById(R.id.eb_history_list);
+        mSearchText = (EditText) findViewById(R.id.bookmark_search_text);
+        mResultList = (ListView) findViewById(R.id.bookmark_result_list);
+        mHistoryList = (ListView) findViewById(R.id.bookmark_history_list);
         mHistoryResultSwitcher = (HistoryResultSwitcher) findViewById(R.id.history_result_switcher);
 
         Toolbar searchBar = (Toolbar) findViewById(R.id.search_bar);
-        searchBar.setNavigationIcon(R.drawable.eb_back_normal);
+        searchBar.setNavigationIcon(R.drawable.bookmark_back_normal);
         searchBar.setNavigationContentDescription(R.string.accessibility_toolbar_btn_back);
         searchBar.setNavigationOnClickListener(new OnClickListener() {
             @Override
@@ -395,7 +395,7 @@ public class BookmarkSearchView extends LinearLayout implements OnItemClickListe
             final BookmarkMatch bookmarkMatch = getItem(position);
             if (convertView == null) {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.eb_search_row, parent, false);
+                        R.layout.bookmark_search_row, parent, false);
             }
             final BookmarkSearchRow row = (BookmarkSearchRow) convertView;
             row.onBookmarkDelegateInitialized(mDelegate);

@@ -19,7 +19,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 /**
  * The activity that displays the bookmark UI on the phone. It keeps a {@link BookmarkManager}
  * inside of it and creates a snackbar manager. This activity should only be shown on phones; on
- * tablet the enhanced bookmark UI is shown inside of a tab (see {@link BookmarkPage}).
+ * tablet the bookmark UI is shown inside of a tab (see {@link BookmarkPage}).
  */
 public class BookmarkActivity extends BookmarkActivityBase implements SnackbarManageable {
 
@@ -43,7 +43,7 @@ public class BookmarkActivity extends BookmarkActivityBase implements SnackbarMa
                 this, getString(OfflinePageUtils.getStringId(R.string.bookmarks)));
 
         // Hack to work around inferred theme false lint error: http://crbug.com/445633
-        assert (R.layout.eb_main_content != 0);
+        assert (R.layout.bookmark_main_content != 0);
     }
 
     @Override

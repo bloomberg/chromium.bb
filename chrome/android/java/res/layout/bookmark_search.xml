@@ -5,12 +5,12 @@
 
 <org.chromium.chrome.browser.bookmarks.BookmarkSearchView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/eb_search_view"
+    android:id="@+id/bookmark_search_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
     android:orientation="vertical" >
 
-    <include layout="@layout/eb_search_core" />
+    <include layout="@layout/bookmark_search_core" />
 
 </org.chromium.chrome.browser.bookmarks.BookmarkSearchView>

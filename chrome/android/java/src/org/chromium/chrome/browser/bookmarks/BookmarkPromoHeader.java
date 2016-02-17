@@ -23,7 +23,7 @@ import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 
 /**
- * Class that manages all the logic and UI behind the signin promo header in the enhanced bookmark
+ * Class that manages all the logic and UI behind the signin promo header in the bookmark
  * content UI. The header is shown only on certain situations, (e.g., not signed in).
  */
 class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
@@ -99,7 +99,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
      */
     ViewHolder createHolder(ViewGroup parent) {
         ViewGroup promoHeader = (ViewGroup) LayoutInflater.from(mContext)
-                .inflate(R.layout.eb_promo_header, parent, false);
+                .inflate(R.layout.bookmark_promo_header, parent, false);
 
         promoHeader.findViewById(R.id.no_thanks).setOnClickListener(new OnClickListener() {
             @Override

@@ -42,7 +42,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
- * A class holding static util functions for enhanced bookmark.
+ * A class holding static util functions for bookmark.
  */
 public class BookmarkUtils {
     private static final String PREF_LAST_USED_URL = "enhanced_bookmark_last_used_url";
@@ -52,7 +52,7 @@ public class BookmarkUtils {
      * If the tab has already been bookmarked, start {@link BookmarkEditActivity} for the
      * bookmark. If not, add the bookmark to bookmarkmodel, and show a snackbar notifying the user.
      * @param idToAdd The bookmark ID if the tab has already been bookmarked.
-     * @param bookmarkModel The enhanced bookmark model.
+     * @param bookmarkModel The bookmark model.
      * @param tab The tab to add or edit a bookmark.
      * @param snackbarManager The SnackbarManager used to show the snackbar.
      * @param activity Current activity.
@@ -101,7 +101,7 @@ public class BookmarkUtils {
      * Saves an offline copy for the specified tab that is bookmarked. A snackbar will be shown to
      * notify the user.
      * @param id The bookmark ID for the tab.
-     * @param bookmarkModel The enhanced bookmark model.
+     * @param bookmarkModel The bookmark model.
      * @param tab The bookmarked tab to save an offline copy.
      * @param snackbarManager The SnackbarManager used to show the snackbar.
      * @param activity Current activity.
@@ -138,21 +138,19 @@ public class BookmarkUtils {
             SnackbarController snackbarController = createSnackbarControllerForEditButton(
                     bookmarkModel, activity, bookmarkId);
             if (getLastUsedParent(activity) == null) {
-                snackbar = Snackbar.make(activity.getString(R.string.enhanced_bookmark_page_saved),
+                snackbar = Snackbar.make(activity.getString(R.string.bookmark_page_saved),
                         snackbarController, Snackbar.TYPE_ACTION);
             } else {
                 snackbar = Snackbar.make(folderName, snackbarController, Snackbar.TYPE_ACTION)
-                        .setTemplateText(activity.getString(
-                                R.string.enhanced_bookmark_page_saved_folder));
+                        .setTemplateText(activity.getString(R.string.bookmark_page_saved_folder));
             }
             snackbar = snackbar.setSingleLine(false)
-                    .setAction(activity.getString(R.string.enhanced_bookmark_item_edit),
-                            webContents);
+                    .setAction(activity.getString(R.string.bookmark_item_edit), webContents);
         } else {
             SnackbarController snackbarController = null;
             int messageId;
             String suffix = null;
-            int buttonId = R.string.enhanced_bookmark_item_edit;
+            int buttonId = R.string.bookmark_item_edit;
 
             if (saveResult == AddBookmarkCallback.SKIPPED) {
                 messageId = OfflinePageUtils.getStringId(
@@ -309,7 +307,7 @@ public class BookmarkUtils {
     }
 
     /**
-     * Shows enhanced bookmark main UI.
+     * Shows bookmark main UI.
      */
     public static void showBookmarkManager(Activity activity) {
         String url = getFirstUrlToLoad(activity);
@@ -403,7 +401,7 @@ public class BookmarkUtils {
 
     /**
      * Opens a bookmark depending on connection status and reports UMA.
-     * @param model Enhanced bookmarks model to manage the bookmark.
+     * @param model Bookmarks model to manage the bookmark.
      * @param activity Activity requesting to open the bookmark.
      * @param bookmarkId ID of the bookmark to be opened.
      * @param launchLocation Location from which the bookmark is being opened.
@@ -452,7 +450,7 @@ public class BookmarkUtils {
     }
 
     /**
-     * Closes the EnhancedBookmark Activity on Phone. Does nothing on tablet.
+     * Closes the {@link BookmarkActivity} on Phone. Does nothing on tablet.
      */
     public static void finishActivityOnPhone(Context context) {
         if (context instanceof BookmarkActivity) {

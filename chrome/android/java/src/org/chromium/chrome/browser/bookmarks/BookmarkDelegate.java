@@ -104,7 +104,7 @@ interface BookmarkDelegate {
     DrawerLayout getDrawerLayout();
 
     /**
-     * Closes the EnhancedBookmark UI (if on phone) and opens the given bookmark.
+     * Closes the Bookmark UI (if on phone) and opens the given bookmark.
      * @param bookmark       bookmark to open.
      * @param launchLocation The UI location where user tried to open bookmark. It is one of
      *                       {@link BookmarkLaunchLocation} values
@@ -122,22 +122,22 @@ interface BookmarkDelegate {
     void closeSearchUI();
 
     /**
-     * Add an observer to enhanced bookmark UI changes.
+     * Add an observer to bookmark UI changes.
      */
     void addUIObserver(BookmarkUIObserver observer);
 
     /**
-     * Remove an observer of enhanced bookmark UI changes.
+     * Remove an observer of bookmark UI changes.
      */
     void removeUIObserver(BookmarkUIObserver observer);
 
     /**
-     * @return Enhanced bookmark data model associated with this UI.
+     * @return Bookmark data model associated with this UI.
      */
     BookmarkModel getModel();
 
     /**
-     * @return Current UIState of Enhanced Bookmark main UI. If no mode is stored,
+     * @return Current UIState of bookmark main UI. If no mode is stored,
      *         {@link BookmarkUIState#STATE_LOADING} is returned.
      */
     int getCurrentState();

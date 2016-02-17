@@ -4,6 +4,6 @@
      found in the LICENSE file. -->
 
 <org.chromium.chrome.browser.bookmarks.BookmarkDrawerListItemView xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/EnhancedBookmarkDrawerItemStyle"
-    android:textColor="@color/eb_drawer_text_color"
-    android:background="@drawable/eb_drawer_item_background" />
+    style="@style/BookmarkDrawerItemStyle"
+    android:textColor="@color/bookmark_drawer_text_color"
+    android:background="@drawable/bookmark_drawer_item_background" />

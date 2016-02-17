@@ -25,7 +25,7 @@ class BookmarkDrawerListItemView extends AppCompatTextView {
             setCompoundDrawablePadding(0);
         } else {
             setCompoundDrawablePadding(getResources().getDimensionPixelSize(
-                    R.dimen.enhanced_bookmark_drawer_drawable_padding));
+                    R.dimen.bookmark_drawer_drawable_padding));
         }
 
         Drawable drawable = TintedDrawable.constructTintedDrawable(getResources(), iconDrawableId);

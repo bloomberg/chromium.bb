@@ -9,7 +9,7 @@
     android:orientation="horizontal" >
 
     <org.chromium.chrome.browser.bookmarks.BookmarkDrawerListView
-        android:id="@+id/eb_drawer_list"
+        android:id="@+id/bookmark_drawer_list"
         android:layout_width="256dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
@@ -19,15 +19,15 @@
         android:dividerHeight="0dp" />
 
     <ViewSwitcher
-        android:id="@+id/eb_view_switcher"
+        android:id="@+id/bookmark_view_switcher"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:inAnimation="@android:anim/fade_in"
         android:outAnimation="@android:anim/fade_out" >
 
-        <include layout="@layout/eb_main_content" />
+        <include layout="@layout/bookmark_main_content" />
 
-        <include layout="@layout/eb_search" />
+        <include layout="@layout/bookmark_search" />
     </ViewSwitcher>
 
 </LinearLayout>

@@ -39,7 +39,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Tests for the enhanced bookmark manager.
+ * Tests for the bookmark manager.
  */
 public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
@@ -106,7 +106,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         try {
             loadedCallback.waitForCallback(0);
         } catch (TimeoutException e) {
-            Assert.fail("Enhanced Bookmark model did not load: Timeout.");
+            Assert.fail("bookmark model did not load: Timeout.");
         }
     }
 
@@ -114,14 +114,14 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         if (DeviceFormFactor.isTablet(getActivity())) {
             loadUrl(UrlConstants.BOOKMARKS_URL);
             mItemsContainer = (BookmarkRecyclerView) getActivity().findViewById(
-                    R.id.eb_items_container);
+                    R.id.bookmark_items_container);
         } else {
             // phone
             BookmarkActivity activity = ActivityUtils.waitForActivity(getInstrumentation(),
                     BookmarkActivity.class, new MenuUtils.MenuActivityTrigger(
                             getInstrumentation(), getActivity(), R.id.all_bookmarks_menu_id));
             mItemsContainer = (BookmarkRecyclerView) activity.findViewById(
-                    R.id.eb_items_container);
+                    R.id.bookmark_items_container);
         }
     }
 
@@ -129,7 +129,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         if (DeviceFormFactor.isTablet(getActivity())) {
             loadUrl(url);
             mItemsContainer = (BookmarkRecyclerView) getActivity().findViewById(
-                    R.id.eb_items_container);
+                    R.id.bookmark_items_container);
         } else {
             // phone
             BookmarkActivity activity = ActivityUtils.waitForActivity(getInstrumentation(),
@@ -143,7 +143,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                         }
                     });
             mItemsContainer = (BookmarkRecyclerView) activity.findViewById(
-                    R.id.eb_items_container);
+                    R.id.bookmark_items_container);
         }
     }
 

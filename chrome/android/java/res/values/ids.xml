@@ -8,7 +8,7 @@
 
 <resources>
     <item name="background_drawable" type="id"/>
-    <item name="eb_page" type="id"/>
+    <item name="bookmark_page" type="id"/>
     <item name="foreground_drawable" type="id"/>
     <item name="fre_pager" type="id"/>
     <item name="menu_item_enter_anim_id" type="id" />

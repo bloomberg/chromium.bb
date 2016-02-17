@@ -30,7 +30,7 @@ public class BookmarkItemHighlightView extends View implements Checkable {
         Drawable clickDrawable = context.obtainStyledAttributes(new int[] {
                 android.R.attr.selectableItemBackground }).getDrawable(0);
         Drawable longClickDrawable = ApiCompatibilityUtils.getDrawable(context.getResources(),
-                R.drawable.eb_item_highlight);
+                R.drawable.bookmark_item_highlight);
         LayerDrawable ld = new LayerDrawable(new Drawable[] {clickDrawable, longClickDrawable});
         setBackground(ld);
     }

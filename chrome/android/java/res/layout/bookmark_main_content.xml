@@ -5,16 +5,16 @@
 
 <org.chromium.chrome.browser.bookmarks.BookmarkContentView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/eb_content_view"
+    android:id="@+id/bookmark_content_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
     <org.chromium.chrome.browser.bookmarks.BookmarkRecyclerView
-        android:id="@+id/eb_items_container"
+        android:id="@+id/bookmark_items_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
-        android:layout_below="@+id/eb_action_bar"
+        android:layout_below="@+id/bookmark_action_bar"
         android:background="@android:color/white"
         android:paddingBottom="8dp"
         android:paddingTop="8dp"
@@ -23,12 +23,12 @@
         android:scrollbarStyle="outsideOverlay" />
 
     <TextView
-        android:id="@+id/eb_empty_view"
+        android:id="@+id/bookmark_empty_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:drawablePadding="3dp"
-        android:drawableTop="@drawable/eb_logo_large"
+        android:drawableTop="@drawable/bookmark_logo_large"
         android:gravity="center"
         android:padding="16dp"
         android:textColor="#5B5B5B"
@@ -36,18 +36,18 @@
         android:visibility="gone" />
 
     <org.chromium.chrome.browser.widget.LoadingView
-        android:id="@+id/eb_initial_loading_view"
+        android:id="@+id/bookmark_initial_loading_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:visibility="gone" />
 
     <org.chromium.chrome.browser.bookmarks.BookmarkActionBar
-        android:id="@id/eb_action_bar"
+        android:id="@id/bookmark_action_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:layout_alignParentTop="true"
-        android:background="@color/enhanced_bookmark_appbar_background" >
+        android:background="@color/bookmark_appbar_background" >
 
         <org.chromium.chrome.browser.widget.NumberRollView
             android:id="@+id/selection_mode_number"
@@ -79,5 +79,5 @@
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:layout_below="@id/eb_action_bar" />
+        android:layout_below="@id/bookmark_action_bar" />
 </org.chromium.chrome.browser.bookmarks.BookmarkContentView>

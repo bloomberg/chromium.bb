@@ -56,7 +56,7 @@
             android:layout_height="match_parent"
             android:visibility="gone"
             android:background="@null"
-            android:contentDescription="@string/accessibility_enhanced_bookmark_more_info"
+            android:contentDescription="@string/accessibility_bookmark_more_info"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:src="@drawable/btn_menu"

@@ -4,6 +4,6 @@
      found in the LICENSE file. -->
 
 <resources>
-    <!-- Enhanced bookmark UI colors -->
-    <color name="enhanced_bookmark_appbar_background">@android:color/white</color>
+    <!-- Bookmark UI colors -->
+    <color name="bookmark_appbar_background">@android:color/white</color>
 </resources>

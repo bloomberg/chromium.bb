@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.bookmarks;
 
 /**
- * Possible filters for the enhanced bookmarks.
+ * Possible filters for the bookmarks.
  */
 enum BookmarkFilter {
     OFFLINE_PAGES("OFFLINE_PAGES");

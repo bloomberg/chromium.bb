@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Tests for {@link BookmarkModel}, the data layer of Enhanced Bookmarks.
+ * Tests for {@link BookmarkModel}, the data layer of bookmarks.
  */
 public class BookmarkModelTest extends NativeLibraryTestBase {
     private static final int TIMEOUT_MS = 5000;

@@ -117,7 +117,7 @@ public class BookmarkAddEditFolderActivity extends BookmarkActivityBase
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         BookmarkUtils.setTaskDescriptionInDocumentMode(this,
-                getString(R.string.enhanced_bookmark_action_bar_edit_folder));
+                getString(R.string.bookmark_action_bar_edit_folder));
         mModel = new BookmarkModel();
         mModel.addObserver(mBookmarkModelObserver);
         mIsAddMode = getIntent().getBooleanExtra(INTENT_IS_ADD_MODE, false);
@@ -132,7 +132,7 @@ public class BookmarkAddEditFolderActivity extends BookmarkActivityBase
             mFolderId = BookmarkId.getBookmarkIdFromString(
                     getIntent().getStringExtra(INTENT_BOOKMARK_ID));
         }
-        setContentView(R.layout.eb_add_edit_folder_activity);
+        setContentView(R.layout.bookmark_add_edit_folder_activity);
 
         mParentTextView = (TextView) findViewById(R.id.parent_folder);
         mFolderTitle = (EmptyAlertEditText) findViewById(R.id.folder_title);
@@ -175,10 +175,10 @@ public class BookmarkAddEditFolderActivity extends BookmarkActivityBase
     public boolean onCreateOptionsMenu(Menu menu) {
         if (mIsAddMode) {
             mSaveButton = menu.add(R.string.save)
-                    .setIcon(R.drawable.eb_check_gray)
+                    .setIcon(R.drawable.bookmark_check_gray)
                     .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         } else {
-            mDeleteButton = menu.add(R.string.enhanced_bookmark_action_bar_delete)
+            mDeleteButton = menu.add(R.string.bookmark_action_bar_delete)
                     .setIcon(TintedDrawable.constructTintedDrawable(
                             getResources(), R.drawable.btn_trash))
                     .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);

@@ -27,7 +27,7 @@ import org.chromium.components.bookmarks.BookmarkType;
 import java.util.List;
 
 /**
- * Main action bar of Enhanced Bookmark UI. It is responsible for displaying title and buttons
+ * Main action bar of bookmark UI. It is responsible for displaying title and buttons
  * associated with the current context.
  */
 public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
@@ -53,23 +53,21 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
     public BookmarkActionBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         setNavigationOnClickListener(this);
-        inflateMenu(R.menu.eb_action_bar_menu);
+        inflateMenu(R.menu.bookmark_action_bar_menu);
         setOnMenuItemClickListener(this);
 
         getMenu()
                 .findItem(R.id.search_menu_id)
-                .setTitle(OfflinePageUtils.getStringId(
-                        R.string.enhanced_bookmark_action_bar_search));
+                .setTitle(OfflinePageUtils.getStringId(R.string.bookmark_action_bar_search));
         getMenu()
                 .findItem(R.id.selection_mode_edit_menu_id)
                 .setTitle(OfflinePageUtils.getStringId(R.string.edit_bookmark));
         getMenu()
                 .findItem(R.id.selection_mode_move_menu_id)
-                .setTitle(OfflinePageUtils.getStringId(R.string.enhanced_bookmark_action_bar_move));
+                .setTitle(OfflinePageUtils.getStringId(R.string.bookmark_action_bar_move));
         getMenu()
                 .findItem(R.id.selection_mode_delete_menu_id)
-                .setTitle(OfflinePageUtils.getStringId(
-                        R.string.enhanced_bookmark_action_bar_delete));
+                .setTitle(OfflinePageUtils.getStringId(R.string.bookmark_action_bar_delete));
     }
 
     @Override
@@ -161,12 +159,12 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
             case NAVIGATION_BUTTON_NONE:
                 break;
             case NAVIGATION_BUTTON_BACK:
-                iconResId = R.drawable.eb_back_normal;
+                iconResId = R.drawable.bookmark_back_normal;
                 contentDescriptionId = R.string.accessibility_toolbar_btn_back;
                 break;
             case NAVIGATION_BUTTON_SELECTION_BACK:
-                iconResId = R.drawable.eb_cancel_active;
-                contentDescriptionId = R.string.accessibility_enhanced_bookmark_cancel_selection;
+                iconResId = R.drawable.bookmark_cancel_active;
+                contentDescriptionId = R.string.accessibility_bookmark_cancel_selection;
                 break;
             default:
                 assert false : "Incorrect navigationButton argument";
@@ -188,8 +186,8 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
         // is constructing, so we will need to construct every time we re-show this button.
         mActionBarDrawerToggle = new ActionBarDrawerToggle((Activity) getContext(),
                 mDelegate.getDrawerLayout(), this,
-                R.string.accessibility_enhanced_bookmark_drawer_toggle_btn_open,
-                R.string.accessibility_enhanced_bookmark_drawer_toggle_btn_close);
+                R.string.accessibility_bookmark_drawer_toggle_btn_open,
+                R.string.accessibility_bookmark_drawer_toggle_btn_close);
         mDelegate.getDrawerLayout().setDrawerListener(mActionBarDrawerToggle);
         mActionBarDrawerToggle.syncState();
     }
@@ -250,7 +248,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
     @Override
     public void onFilterStateSet(BookmarkFilter filter) {
         assert filter == BookmarkFilter.OFFLINE_PAGES;
-        setTitle(R.string.enhanced_bookmark_title_bar_filter_offline_pages);
+        setTitle(R.string.bookmark_title_bar_filter_offline_pages);
         setNavigationButton(NAVIGATION_BUTTON_MENU);
         getMenu().findItem(R.id.edit_menu_id).setVisible(false);
     }
@@ -288,7 +286,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
             getMenu().setGroupVisible(R.id.normal_menu_group, true);
             getMenu().setGroupVisible(R.id.selection_mode_menu_group, false);
             setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.enhanced_bookmark_appbar_background));
+                    R.color.bookmark_appbar_background));
 
             numberRollView.setVisibility(View.GONE);
             numberRollView.setNumber(0, false);
@@ -298,6 +296,6 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
     }
 
     private int getTitleForAllItems() {
-        return OfflinePageUtils.getStringId(R.string.enhanced_bookmark_title_bar_all_items);
+        return OfflinePageUtils.getStringId(R.string.bookmark_title_bar_all_items);
     }
 }

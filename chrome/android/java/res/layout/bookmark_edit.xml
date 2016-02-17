@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="4dp"
         android:layout_marginBottom="-4dp"
-        android:background="@drawable/eb_title_bar_shadow" />
+        android:background="@drawable/bookmark_title_bar_shadow" />
 
     <ScrollView
         android:layout_width="match_parent"
