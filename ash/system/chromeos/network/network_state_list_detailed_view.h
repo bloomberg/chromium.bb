@@ -57,9 +57,6 @@ class NetworkStateListDetailedView
   DetailedViewType GetViewType() const override;
   void Update() override;
 
-  // Called by the WiFi Scanning Throbber when pressed.
-  bool ThrobberPressed(views::View* sender, const ui::Event& event);
-
  protected:
   // Overridden from ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

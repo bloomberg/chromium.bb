@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "ash/ash_constants.h"
@@ -337,7 +338,8 @@ void NetworkStateListDetailedView::Init() {
   network_list_view_->set_container(scroll_content());
   Update();
 
-  CallRequestScan();
+  if (list_type_ != LIST_TYPE_VPN)
+    CallRequestScan();
 }
 
 NetworkDetailedView::DetailedViewType
@@ -386,14 +388,6 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   } else {
     NOTREACHED();
   }
-}
-
-bool NetworkStateListDetailedView::ThrobberPressed(views::View* sender,
-                                                   const ui::Event& event) {
-  if (sender != scanning_throbber_)
-    return false;
-  ToggleInfoBubble();
-  return true;
 }
 
 void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
@@ -479,10 +473,13 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
   info_throbber_container->SetLayoutManager(info_throbber_layout);
   footer()->AddView(info_throbber_container, true /* add_separator */);
 
-  // Place the throbber behind the info icon so that the icon receives
-  // click / touch events. The info icon is hidden when the throbber is active.
-  scanning_throbber_ = new ScanningThrobber();
-  info_throbber_container->AddChildView(scanning_throbber_);
+  if (list_type_ != LIST_TYPE_VPN) {
+    // Place the throbber behind the info icon so that the icon receives
+    // click / touch events. The info icon is hidden when the throbber is
+    // active.
+    scanning_throbber_ = new ScanningThrobber();
+    info_throbber_container->AddChildView(scanning_throbber_);
+  }
 
   info_icon_ = new InfoIcon(this);
   info_icon_->SetTooltipText(
@@ -554,24 +551,26 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
   if (proxy_settings_)
     proxy_settings_->SetEnabled(handler->DefaultNetwork() != nullptr);
 
-  // Update Wifi Scanning throbber.
-  bool scanning =
-      NetworkHandler::Get()->network_state_handler()->GetScanningByType(
-          NetworkTypePattern::WiFi());
-  if (scanning != wifi_scanning_) {
-    wifi_scanning_ = scanning;
-    if (scanning) {
-      info_icon_->SetVisible(false);
-      scanning_throbber_->SetVisible(true);
-      scanning_throbber_->Start();
-      scanning_throbber_->SetTooltipText(
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
-    } else {
-      scanning_throbber_->Stop();
-      scanning_throbber_->SetVisible(false);
-      scanning_throbber_->SetTooltipText(
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
-      info_icon_->SetVisible(true);
+  if (list_type_ != LIST_TYPE_VPN) {
+    // Update Wifi Scanning throbber.
+    bool scanning =
+        NetworkHandler::Get()->network_state_handler()->GetScanningByType(
+            NetworkTypePattern::WiFi());
+    if (scanning != wifi_scanning_) {
+      wifi_scanning_ = scanning;
+      if (scanning && list_type_ != LIST_TYPE_VPN) {
+        info_icon_->SetVisible(false);
+        scanning_throbber_->SetVisible(true);
+        scanning_throbber_->Start();
+        scanning_throbber_->SetTooltipText(l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
+      } else {
+        scanning_throbber_->Stop();
+        scanning_throbber_->SetVisible(false);
+        scanning_throbber_->SetTooltipText(
+            l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
+        info_icon_->SetVisible(true);
+      }
     }
   }
 
