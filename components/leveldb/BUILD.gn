@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,33 +7,31 @@ import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("lib") {
   sources = [
-    "directory_impl.cc",
-    "directory_impl.h",
-    "file_impl.cc",
-    "file_impl.h",
-    "file_system_app.cc",
-    "file_system_app.h",
-    "file_system_impl.cc",
-    "file_system_impl.h",
-    "lock_table.cc",
-    "lock_table.h",
+    "env_mojo.cc",
+    "env_mojo.h",
+    "leveldb_app.cc",
+    "leveldb_app.h",
+    "leveldb_database_impl.cc",
+    "leveldb_database_impl.h",
+    "leveldb_file_thread.cc",
+    "leveldb_file_thread.h",
     "util.cc",
     "util.h",
   ]
 
   deps = [
-    "//base",
     "//components/filesystem/public/interfaces",
+    "//components/leveldb/public/interfaces",
     "//mojo/common",
-    "//mojo/common:common_base",
+    "//mojo/message_pump",
     "//mojo/platform_handle",
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
-    "//url",
+    "//third_party/leveldatabase",
   ]
 }
 
-mojo_native_application("filesystem") {
+mojo_native_application("leveldb") {
   sources = [
     "main.cc",
   ]
@@ -41,7 +39,6 @@ mojo_native_application("filesystem") {
   deps = [
     ":lib",
     ":manifest",
-    "//base",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/platform_handle:for_shared_library",
@@ -52,25 +49,23 @@ mojo_native_application("filesystem") {
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "filesystem"
+  application_name = "leveldb"
   source = "manifest.json"
 }
 
 mojo_native_application("apptests") {
-  output_name = "filesystem_apptests"
+  output_name = "leveldb_apptests"
 
   testonly = true
 
   sources = [
-    "directory_impl_unittest.cc",
-    "file_impl_unittest.cc",
-    "files_test_base.cc",
-    "files_test_base.h",
+    "leveldb_apptest.cc",
   ]
 
   deps = [
     "//base",
     "//components/filesystem/public/interfaces",
+    "//components/leveldb/public/interfaces",
     "//mojo/common",
     "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings",
@@ -78,6 +73,7 @@ mojo_native_application("apptests") {
   ]
 
   data_deps = [
-    ":filesystem",
+    ":leveldb",
+    "//components/filesystem:filesystem",
   ]
 }

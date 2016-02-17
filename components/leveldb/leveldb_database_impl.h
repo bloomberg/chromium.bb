@@ -1,0 +1,60 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_
+#define COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
+
+namespace leveldb {
+
+class MojoEnv;
+
+// The backing to a database object that we pass to our called.
+class LevelDBDatabaseImpl : public LevelDBDatabase {
+ public:
+  LevelDBDatabaseImpl(mojo::InterfaceRequest<LevelDBDatabase> request,
+                      scoped_ptr<MojoEnv> environment,
+                      scoped_ptr<leveldb::DB> db);
+  ~LevelDBDatabaseImpl() override;
+
+  // Overridden from LevelDBDatabase:
+  void Put(mojo::Array<uint8_t> key,
+           mojo::Array<uint8_t> value,
+           const PutCallback& callback) override;
+  void Delete(mojo::Array<uint8_t> key,
+              const DeleteCallback& callback) override;
+  void Write(mojo::Array<BatchedOperationPtr> operations,
+             const WriteCallback& callback) override;
+  void Get(mojo::Array<uint8_t> key, const GetCallback& callback) override;
+  void GetSnapshot(const GetSnapshotCallback& callback) override;
+  void ReleaseSnapshot(uint64_t snapshot_id) override;
+  void GetFromSnapshot(uint64_t snapshot_id,
+                       mojo::Array<uint8_t> key,
+                       const GetCallback& callback) override;
+
+ private:
+  mojo::StrongBinding<LevelDBDatabase> binding_;
+  scoped_ptr<MojoEnv> environment_;
+  scoped_ptr<leveldb::DB> db_;
+
+  std::map<uint64_t, const Snapshot*> snapshot_map_;
+
+  // TODO(erg): If we have an existing iterator which depends on a snapshot,
+  // and delete the snapshot from the client side, that shouldn't delete the
+  // snapshot maybe? At worse it's a DDoS if there's multiple users of the
+  // system, but this maybe should be fixed...
+
+  std::map<uint64_t, Iterator*> iterator_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(LevelDBDatabaseImpl);
+};
+
+}  // namespace leveldb
+
+#endif  // COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_

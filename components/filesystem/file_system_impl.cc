@@ -47,10 +47,12 @@ const char kUserDataDir[] = "user-data-dir";
 
 FileSystemImpl::FileSystemImpl(FileSystemApp* app,
                                mojo::Connection* connection,
-                               mojo::InterfaceRequest<FileSystem> request)
+                               mojo::InterfaceRequest<FileSystem> request,
+                               LockTable* lock_table)
     : app_(app),
       remote_application_url_(connection->GetRemoteApplicationURL()),
-      binding_(this, std::move(request)) {}
+      binding_(this, std::move(request)),
+      lock_table_(lock_table) {}
 
 FileSystemImpl::~FileSystemImpl() {
 }
@@ -87,8 +89,8 @@ void FileSystemImpl::OpenFileSystem(const mojo::String& file_system,
   }
 
   if (!path.empty()) {
-    DirectoryImpl* dir_impl =
-        new DirectoryImpl(std::move(directory), path, std::move(temp_dir));
+    DirectoryImpl* dir_impl = new DirectoryImpl(
+        std::move(directory), path, std::move(temp_dir), lock_table_);
     app_->RegisterDirectoryToClient(dir_impl, std::move(client));
     callback.Run(FileError::OK);
   } else {

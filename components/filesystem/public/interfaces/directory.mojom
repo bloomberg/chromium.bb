@@ -29,6 +29,11 @@ interface Directory {
   OpenFile(string path, File&? file, uint32 open_flags)
       => (FileError error);
 
+  // Opens the file specified by |path| with the given |open_flags|. Returns a
+  // native file descriptor wrapped in a MojoHandle.
+  OpenFileHandle(string path, uint32 open_flags)
+      => (FileError error, handle file_handle);
+
   // Opens the directory specified by |path|. |directory| is optional, so that
   // this may be used as a simple "mkdir()" with |kOpenFlagCreate|.
   OpenDirectory(string path,
@@ -51,6 +56,10 @@ interface Directory {
   // Opens a file descriptor on this directory and calls
   // fsync()/FlushFileBuffers().
   Flush() => (FileError error);
+
+  // Gets information about this file. On success, |file_information| is
+  // non-null and will contain this information.
+  StatFile(string path) => (FileError error, FileInformation? file_information);
 
   // Reads the contents of an entire file.
   ReadEntireFile(string path) => (FileError error, array<uint8> data);

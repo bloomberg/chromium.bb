@@ -16,15 +16,20 @@
 #include "components/filesystem/file_impl.h"
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/platform_handle/platform_handle_functions.h"
+
+using mojo::ScopedHandle;
 
 namespace filesystem {
 
 DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                              base::FilePath directory_path,
-                             scoped_ptr<base::ScopedTempDir> temp_dir)
+                             scoped_ptr<base::ScopedTempDir> temp_dir,
+                             LockTable* lock_table)
     : binding_(this, std::move(request)),
       directory_path_(directory_path),
-      temp_dir_(std::move(temp_dir)) {}
+      temp_dir_(std::move(temp_dir)),
+      lock_table_(lock_table) {}
 
 DirectoryImpl::~DirectoryImpl() {
 }
@@ -90,9 +95,56 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
   }
 
   if (file.is_pending()) {
-    new FileImpl(std::move(file), std::move(base_file));
+    new FileImpl(std::move(file), path, std::move(base_file), lock_table_);
   }
   callback.Run(FileError::OK);
+}
+
+void DirectoryImpl::OpenFileHandle(const mojo::String& raw_path,
+                                   uint32_t open_flags,
+                                   const OpenFileHandleCallback& callback) {
+  base::FilePath path;
+  FileError error = ValidatePath(raw_path, directory_path_, &path);
+  if (error != FileError::OK) {
+    callback.Run(error, ScopedHandle());
+    return;
+  }
+
+#if defined(OS_WIN)
+  // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
+  if (base::DirectoryExists(path))
+    open_flags |= base::File::FLAG_BACKUP_SEMANTICS;
+#endif  // OS_WIN
+
+  base::File base_file(path, open_flags);
+  if (!base_file.IsValid()) {
+    callback.Run(GetError(base_file), ScopedHandle());
+    return;
+  }
+
+  base::File::Info info;
+  if (!base_file.GetInfo(&info)) {
+    callback.Run(FileError::FAILED, ScopedHandle());
+    return;
+  }
+
+  if (info.is_directory) {
+    // We must not return directories as files. In the file abstraction, we can
+    // fetch raw file descriptors over mojo pipes, and passing a file
+    // descriptor to a directory is a sandbox escape on Windows.
+    callback.Run(FileError::NOT_A_FILE, ScopedHandle());
+    return;
+  }
+
+  MojoHandle mojo_handle;
+  MojoResult create_result = MojoCreatePlatformHandleWrapper(
+      base_file.TakePlatformFile(), &mojo_handle);
+  if (create_result != MOJO_RESULT_OK) {
+    callback.Run(FileError::FAILED, ScopedHandle());
+    return;
+  }
+
+  callback.Run(FileError::OK, ScopedHandle(mojo::Handle(mojo_handle)));
 }
 
 void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
@@ -128,7 +180,7 @@ void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
 
   if (directory.is_pending())
     new DirectoryImpl(std::move(directory), path,
-                      scoped_ptr<base::ScopedTempDir>());
+                      scoped_ptr<base::ScopedTempDir>(), lock_table_);
   callback.Run(FileError::OK);
 }
 
@@ -214,6 +266,30 @@ void DirectoryImpl::Flush(const FlushCallback& callback) {
   }
 
   callback.Run(FileError::OK);
+}
+
+void DirectoryImpl::StatFile(const mojo::String& raw_path,
+                             const StatFileCallback& callback) {
+  base::FilePath path;
+  FileError error = ValidatePath(raw_path, directory_path_, &path);
+  if (error != FileError::OK) {
+    callback.Run(error, nullptr);
+    return;
+  }
+
+  base::File base_file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!base_file.IsValid()) {
+    callback.Run(GetError(base_file), nullptr);
+    return;
+  }
+
+  base::File::Info info;
+  if (!base_file.GetInfo(&info)) {
+    callback.Run(FileError::FAILED, nullptr);
+    return;
+  }
+
+  callback.Run(FileError::OK, MakeFileInformation(info));
 }
 
 void DirectoryImpl::ReadEntireFile(const mojo::String& raw_path,

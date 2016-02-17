@@ -21,13 +21,16 @@ class ScopedTempDir;
 
 namespace filesystem {
 
+class LockTable;
+
 class DirectoryImpl : public Directory {
  public:
   // Set |temp_dir| only if there's a temporary directory that should be deleted
   // when this object is destroyed.
   DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                 base::FilePath directory_path,
-                scoped_ptr<base::ScopedTempDir> temp_dir);
+                scoped_ptr<base::ScopedTempDir> temp_dir,
+                LockTable* lock_table);
   ~DirectoryImpl() override;
 
   void set_connection_error_handler(const mojo::Closure& error_handler) {
@@ -40,6 +43,9 @@ class DirectoryImpl : public Directory {
                 mojo::InterfaceRequest<File> file,
                 uint32_t open_flags,
                 const OpenFileCallback& callback) override;
+  void OpenFileHandle(const mojo::String& path,
+                      uint32_t open_flags,
+                      const OpenFileHandleCallback& callback) override;
   void OpenDirectory(const mojo::String& path,
                      mojo::InterfaceRequest<Directory> directory,
                      uint32_t open_flags,
@@ -55,6 +61,8 @@ class DirectoryImpl : public Directory {
   void IsWritable(const mojo::String& path,
                   const IsWritableCallback& callback) override;
   void Flush(const FlushCallback& callback) override;
+  void StatFile(const mojo::String& path,
+                const StatFileCallback& callback) override;
   void ReadEntireFile(const mojo::String& path,
                       const ReadEntireFileCallback& callback) override;
   void WriteFile(const mojo::String& path,
@@ -65,6 +73,7 @@ class DirectoryImpl : public Directory {
   mojo::StrongBinding<Directory> binding_;
   base::FilePath directory_path_;
   scoped_ptr<base::ScopedTempDir> temp_dir_;
+  LockTable* lock_table_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryImpl);
 };

@@ -13,7 +13,8 @@
 
 namespace filesystem {
 
-FileSystemApp::FileSystemApp() : shell_(nullptr), in_shutdown_(false) {}
+FileSystemApp::FileSystemApp()
+    : shell_(nullptr), lock_table_(new LockTable), in_shutdown_(false) {}
 
 FileSystemApp::~FileSystemApp() {}
 
@@ -58,7 +59,7 @@ bool FileSystemApp::ShellConnectionLost() {
 // |InterfaceFactory<Files>| implementation:
 void FileSystemApp::Create(mojo::Connection* connection,
                            mojo::InterfaceRequest<FileSystem> request) {
-  new FileSystemImpl(this, connection, std::move(request));
+  new FileSystemImpl(this, connection, std::move(request), lock_table_.get());
 }
 
 void FileSystemApp::OnDirectoryConnectionError(DirectoryImpl* directory) {

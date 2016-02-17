@@ -156,9 +156,9 @@ class ChromiumEnv : public leveldb::Env,
  protected:
   ChromiumEnv(const std::string& name, bool make_backup);
 
- private:
   static const char* FileErrorString(base::File::Error error);
 
+ private:
   virtual void RecordErrorAt(MethodID method) const;
   virtual void RecordOSError(MethodID method,
                              base::File::Error error) const;

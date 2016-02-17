@@ -1,0 +1,66 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module leveldb;
+
+import "components/filesystem/public/interfaces/directory.mojom";
+
+enum DatabaseError {
+  OK,
+  NOT_FOUND,
+  CORRUPTION,
+  NOT_SUPPORTED,
+  INVALID_ARGUMENT,
+  IO_ERROR
+};
+
+enum BatchOperationType {
+  PUT_KEY,
+  DELETE_KEY
+};
+
+struct BatchedOperation {
+  BatchOperationType type;
+  array<uint8> key;
+  array<uint8>? value;
+};
+
+// Service which hands out databases.
+interface LevelDBService {
+  // TODO(erg): What options do we want to export? All? None?
+  Open(filesystem.Directory directory,
+       string dbname,
+       LevelDBDatabase& database) => (DatabaseError status);
+};
+
+// A leveldb database.
+interface LevelDBDatabase {
+  // Basic Interface -------------------------------------------------------
+
+  // Sets the database entry for "key" to "value". Returns OK on success.
+  Put(array<uint8> key, array<uint8> value) => (DatabaseError status);
+
+  // Remove the database entry (if any) for "key".  Returns OK on
+  // success, and a non-OK status on error.  It is not an error if "key"
+  // did not exist in the database.
+  Delete(array<uint8> key) => (DatabaseError status);
+
+  // Atomically performs all |operations|.
+  Write(array<BatchedOperation> operations) => (DatabaseError status);
+
+  Get(array<uint8> key) => (DatabaseError status, array<uint8> value);
+
+  // Snapshots -------------------------------------------------------------
+
+  // Returns a handle to the current database state.
+  GetSnapshot() => (uint64 snapshot_id);
+
+  // Releases a previously acquired snapshot.
+  ReleaseSnapshot(uint64 snapshot_id);
+
+  // If |key| exists at the time |snapshot_id| was taken, return OK and the
+  // value. Otherwise return NOT_FOUND.
+  GetFromSnapshot(uint64 snapshot_id, array<uint8> key)
+      => (DatabaseError status, array<uint8> value);
+};

@@ -1,0 +1,5 @@
+{
+  "url": "mojo://leveldb/",
+  "name": "LevelDB Service",
+  "capabilities": { }
+}

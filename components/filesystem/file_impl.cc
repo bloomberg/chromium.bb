@@ -13,6 +13,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "components/filesystem/lock_table.h"
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
@@ -24,22 +25,49 @@ using base::Time;
 using mojo::ScopedHandle;
 
 namespace filesystem {
+namespace {
 
 const size_t kMaxReadSize = 1 * 1024 * 1024;  // 1 MB.
 
+}  // namespace
+
 FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
                    const base::FilePath& path,
-                   uint32_t flags)
-    : binding_(this, std::move(request)), file_(path, flags) {
+                   uint32_t flags,
+                   LockTable* lock_table)
+    : binding_(this, std::move(request)),
+      file_(path, flags),
+      path_(path),
+      lock_table_(lock_table) {
   DCHECK(file_.IsValid());
 }
 
-FileImpl::FileImpl(mojo::InterfaceRequest<File> request, base::File file)
-    : binding_(this, std::move(request)), file_(std::move(file)) {
+FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
+                   const base::FilePath& path,
+                   base::File file,
+                   LockTable* lock_table)
+    : binding_(this, std::move(request)),
+      file_(std::move(file)),
+      path_(path),
+      lock_table_(lock_table) {
   DCHECK(file_.IsValid());
 }
 
 FileImpl::~FileImpl() {
+  if (file_.IsValid())
+    lock_table_->RemoveFromLockTable(path_);
+}
+
+bool FileImpl::IsValid() const {
+  return file_.IsValid();
+}
+
+base::File::Error FileImpl::RawLockFile() {
+  return file_.Lock();
+}
+
+base::File::Error FileImpl::RawUnlockFile() {
+  return file_.Unlock();
 }
 
 void FileImpl::Close(const CloseCallback& callback) {
@@ -48,6 +76,7 @@ void FileImpl::Close(const CloseCallback& callback) {
     return;
   }
 
+  lock_table_->RemoveFromLockTable(path_);
   file_.Close();
   callback.Run(FileError::OK);
 }
@@ -268,7 +297,7 @@ void FileImpl::Dup(mojo::InterfaceRequest<File> file,
   }
 
   if (file.is_pending())
-    new FileImpl(std::move(file), std::move(new_file));
+    new FileImpl(std::move(file), path_, std::move(new_file), lock_table_);
   callback.Run(FileError::OK);
 }
 
@@ -280,6 +309,15 @@ void FileImpl::Flush(const FlushCallback& callback) {
 
   bool ret = file_.Flush();
   callback.Run(ret ? FileError::OK : FileError::FAILED);
+}
+
+void FileImpl::Lock(const LockCallback& callback) {
+  callback.Run(static_cast<filesystem::FileError>(lock_table_->LockFile(this)));
+}
+
+void FileImpl::Unlock(const UnlockCallback& callback) {
+  callback.Run(
+      static_cast<filesystem::FileError>(lock_table_->UnlockFile(this)));
 }
 
 void FileImpl::AsHandle(const AsHandleCallback& callback) {

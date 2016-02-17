@@ -688,5 +688,97 @@ TEST_F(FileImplTest, AsHandle) {
   }
 }
 
+TEST_F(FileImplTest, SimpleLockUnlock) {
+  DirectoryPtr directory;
+  GetTemporaryRoot(&directory);
+  FileError error;
+
+  // Create my_file.
+  FilePtr file;
+  error = FileError::FAILED;
+  directory->OpenFile("my_file", GetProxy(&file),
+                      kFlagRead | kFlagWrite | kFlagCreate, Capture(&error));
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  EXPECT_EQ(FileError::OK, error);
+
+  // Lock the file.
+  error = FileError::FAILED;
+  file->Lock(Capture(&error));
+  ASSERT_TRUE(file.WaitForIncomingResponse());
+  EXPECT_EQ(FileError::OK, error);
+
+  // Unlock the file.
+  error = FileError::FAILED;
+  file->Unlock(Capture(&error));
+  ASSERT_TRUE(file.WaitForIncomingResponse());
+  EXPECT_EQ(FileError::OK, error);
+}
+
+TEST_F(FileImplTest, CantDoubleLock) {
+  DirectoryPtr directory;
+  GetTemporaryRoot(&directory);
+  FileError error;
+
+  // Create my_file.
+  FilePtr file;
+  error = FileError::FAILED;
+  directory->OpenFile("my_file", GetProxy(&file),
+                      kFlagRead | kFlagWrite | kFlagCreate, Capture(&error));
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  EXPECT_EQ(FileError::OK, error);
+
+  // Lock the file.
+  error = FileError::FAILED;
+  file->Lock(Capture(&error));
+  ASSERT_TRUE(file.WaitForIncomingResponse());
+  EXPECT_EQ(FileError::OK, error);
+
+  // Lock the file again.
+  error = FileError::OK;
+  file->Lock(Capture(&error));
+  ASSERT_TRUE(file.WaitForIncomingResponse());
+  EXPECT_EQ(FileError::FAILED, error);
+}
+
+TEST_F(FileImplTest, ClosingFileClearsLock) {
+  DirectoryPtr directory;
+  GetTemporaryRoot(&directory);
+  FileError error;
+
+  {
+    // Create my_file.
+    FilePtr file;
+    error = FileError::FAILED;
+    directory->OpenFile("my_file", GetProxy(&file),
+                        kFlagRead | kFlagWrite | kFlagOpenAlways,
+                        Capture(&error));
+    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    EXPECT_EQ(FileError::OK, error);
+
+    // Lock the file.
+    error = FileError::FAILED;
+    file->Lock(Capture(&error));
+    ASSERT_TRUE(file.WaitForIncomingResponse());
+    EXPECT_EQ(FileError::OK, error);
+  }
+
+  {
+    // Open the file again.
+    FilePtr file;
+    error = FileError::FAILED;
+    directory->OpenFile("my_file", GetProxy(&file),
+                        kFlagRead | kFlagWrite | kFlagOpenAlways,
+                        Capture(&error));
+    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    EXPECT_EQ(FileError::OK, error);
+
+    // The file shouldn't be locked (and we check by trying to lock it).
+    error = FileError::FAILED;
+    file->Lock(Capture(&error));
+    ASSERT_TRUE(file.WaitForIncomingResponse());
+    EXPECT_EQ(FileError::OK, error);
+  }
+}
+
 }  // namespace
 }  // namespace filesystem

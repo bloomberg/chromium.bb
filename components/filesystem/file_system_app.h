@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/file_system_impl.h"
+#include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -61,6 +62,8 @@ class FileSystemApp : public mojo::ShellClient,
 
   mojo::Shell* shell_;
   mojo::TracingImpl tracing_;
+
+  scoped_ptr<LockTable> lock_table_;
 
   // Set to true when our shell connection is closed. On connection error, we
   // then broadcast a notification to all FileSystemClients that they should
