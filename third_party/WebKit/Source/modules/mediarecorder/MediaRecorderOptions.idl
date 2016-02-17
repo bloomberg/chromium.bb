@@ -8,7 +8,7 @@ dictionary MediaRecorderOptions {
     DOMString mimeType;  // Encoding mimeType.
 
     // TODO(mcasas): Consider changing the following options to signed: https://github.com/w3c/mediacapture-record/issues/48, and/or using [EnforceRange]/[Clamp].
-    unsigned long audioBitsPerSecond = 0;
-    unsigned long videoBitsPerSecond = 0;
-    unsigned long bitsPerSecond = 0;
+    unsigned long audioBitsPerSecond;
+    unsigned long videoBitsPerSecond;
+    unsigned long bitsPerSecond;
 };

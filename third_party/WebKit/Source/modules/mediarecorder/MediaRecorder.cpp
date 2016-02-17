@@ -52,34 +52,33 @@ String stateToString(MediaRecorder::State state)
 // This method throws NotSupportedError.
 void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState, ExecutionContext* context, const MediaRecorderOptions& options, MediaStream* stream, int* audioBitsPerSecond, int* videoBitsPerSecond)
 {
+    const bool useVideo = !stream->getVideoTracks().isEmpty();
+    const bool useAudio = !stream->getAudioTracks().isEmpty();
+
     // Clamp incoming values into a signed integer's range.
     // TODO(mcasas): This section would no be needed if the bit rates are signed or double, see https://github.com/w3c/mediacapture-record/issues/48.
     const unsigned kMaxIntAsUnsigned = std::numeric_limits<int>::max();
 
-    ASSERT(options.bitsPerSecond() >= 0);
-    ASSERT(options.bitsPerSecond() < kMaxIntAsUnsigned);
-    const int overallBps = std::min(options.bitsPerSecond(), kMaxIntAsUnsigned);
-
-    // If options.hasBitsPerSecond() is not present, assert than the individual |{video,audio}BitsPerSecond| are smaller than the maximum.
-    ASSERT(!options.hasBitsPerSecond() || options.videoBitsPerSecond() < kMaxIntAsUnsigned);
-    int videoBps = std::min(options.videoBitsPerSecond(), kMaxIntAsUnsigned);
-
-    ASSERT(!options.hasBitsPerSecond() || options.audioBitsPerSecond() < kMaxIntAsUnsigned);
-    int audioBps = std::min(options.audioBitsPerSecond(), kMaxIntAsUnsigned);
-
-    const bool useVideo = !stream->getVideoTracks().isEmpty();
-    const bool useAudio = !stream->getAudioTracks().isEmpty();
+    int overallBps = 0;
+    if (options.hasBitsPerSecond())
+        overallBps = std::min(options.bitsPerSecond(), kMaxIntAsUnsigned);
+    int videoBps = 0;
+    if (options.hasVideoBitsPerSecond() && useVideo)
+        videoBps = std::min(options.videoBitsPerSecond(), kMaxIntAsUnsigned);
+    int audioBps = 0;
+    if (options.hasAudioBitsPerSecond() && useAudio)
+        audioBps = std::min(options.audioBitsPerSecond(), kMaxIntAsUnsigned);
 
     if (useAudio) {
         // |overallBps| overrides the specific audio and video bit rates.
-        if (overallBps) {
+        if (options.hasBitsPerSecond()) {
             if (useVideo)
                 audioBps = overallBps / 10;
             else
                 audioBps = overallBps;
         }
         // Limit audio bitrate values if set explicitly or calculated.
-        if (audioBps) {
+        if (options.hasAudioBitsPerSecond() || options.hasBitsPerSecond()) {
             if (audioBps > kLargestAutoAllocatedOpusBitRate) {
                 context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Clamping calculated audio bitrate (" + String::number(audioBps) + "bps) to the maximum (" + String::number(kLargestAutoAllocatedOpusBitRate) + "bps)"));
                 audioBps = kLargestAutoAllocatedOpusBitRate;
@@ -89,21 +88,24 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState, ExecutionCont
                 context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Clamping calculated audio bitrate (" + String::number(audioBps) + "bps) to the minimum (" + String::number(kSmallestPossibleOpusBitRate) + "bps)"));
                 audioBps = kSmallestPossibleOpusBitRate;
             }
+        } else {
+            ASSERT(!audioBps);
         }
-    } else {
-        audioBps = 0;
     }
+
     if (useVideo) {
         // Allocate the remaining |overallBps|, if any, to video.
-        if (overallBps)
+        if (options.hasBitsPerSecond())
             videoBps = overallBps - audioBps;
-        // Clamp the video bit rate if the user has set it explicitly or has used the overall bitrate.
-        if ((options.videoBitsPerSecond() > 0 || overallBps > 0) && (videoBps < kSmallestPossibleVpxBitRate)) {
-            context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Clamping calculated video bitrate (" + String::number(videoBps) + "bps) to the minimum (" + String::number(kSmallestPossibleVpxBitRate) + "bps)"));
-            videoBps = kSmallestPossibleVpxBitRate;
+        // Clamp the video bit rate. Avoid clamping if the user has not set it explicitly.
+        if (options.hasVideoBitsPerSecond() || options.hasBitsPerSecond()) {
+            if (videoBps < kSmallestPossibleVpxBitRate) {
+                context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Clamping calculated video bitrate (" + String::number(videoBps) + "bps) to the minimum (" + String::number(kSmallestPossibleVpxBitRate) + "bps)"));
+                videoBps = kSmallestPossibleVpxBitRate;
+            }
+        } else {
+            ASSERT(!videoBps);
         }
-    } else {
-        videoBps = 0;
     }
 
     *videoBitsPerSecond = videoBps;
