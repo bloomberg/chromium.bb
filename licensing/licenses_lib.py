@@ -179,15 +179,15 @@ SHARED_LICENSE_TMPL = os.path.join(
 
 
 # This is called directly by src/repohooks/pre-upload.py
-def GetLicenseTypesFromEbuild(ebuild_path):
-  """Returns a list of license types from the ebuild file.
+def GetLicenseTypesFromEbuild(ebuild_contents):
+  """Returns a list of license types from an ebuild.
 
   This function does not always return the correct list, but it is
   faster than using portageq for not having to access chroot. It is
   intended to be used for tasks such as presubmission checks.
 
   Args:
-    ebuild_path: ebuild to read.
+    ebuild_contents: contents of ebuild.
 
   Returns:
     list of licenses read from ebuild.
@@ -212,7 +212,7 @@ inherit() {
      done
   done
 }
-source %(ebuild)s"""
+%(ebuild)s"""
 
   # TODO: the overlay_list hard-coded here should be changed to look
   # at the current overlay, and then the master overlays. E.g. for an
@@ -220,7 +220,7 @@ source %(ebuild)s"""
   # first, and then look at portage-stable and chromiumos, which are
   # listed as masters in overlay-parrot/metadata/layout.conf.
   tmpl_env = {
-      'ebuild': ebuild_path,
+      'ebuild': ebuild_contents,
       'overlay_list': '%s %s' % (
           os.path.join(constants.SOURCE_ROOT,
                        'src/third_party/chromiumos-overlay'),
