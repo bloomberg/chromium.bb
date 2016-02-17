@@ -49,8 +49,6 @@ class ShellApplicationDelegate
 
   void StartWindowManager();
   void StartSystemUI();
-  void StartWallpaper();
-  void StartShelf();
   void StartBrowserDriver();
   void StartQuickLaunch();
 

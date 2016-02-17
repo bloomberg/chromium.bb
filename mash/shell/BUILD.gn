@@ -31,8 +31,6 @@ mojo_native_application("shell") {
     "//ash/mus",
     "//mash/browser_driver",
     "//mash/quick_launch",
-    "//mash/shelf",
-    "//mash/wallpaper",
     "//mash/wm",
   ]
 }

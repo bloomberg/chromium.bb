@@ -9,12 +9,6 @@
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
-namespace {
-
-const char kUseAshSysui[] = "use-ash-sysui";
-
-}  // namespace
-
 namespace mash {
 namespace shell {
 
@@ -79,27 +73,8 @@ void ShellApplicationDelegate::StartWindowManager() {
 }
 
 void ShellApplicationDelegate::StartSystemUI() {
-  static bool use_ash =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kUseAshSysui);
-  if (use_ash) {
-    StartRestartableService("mojo:ash_sysui",
-                            base::Bind(&ShellApplicationDelegate::StartSystemUI,
-                                       base::Unretained(this)));
-  } else {
-    StartWallpaper();
-    StartShelf();
-  }
-}
-
-void ShellApplicationDelegate::StartWallpaper() {
-  StartRestartableService("mojo:wallpaper",
-                          base::Bind(&ShellApplicationDelegate::StartWallpaper,
-                                     base::Unretained(this)));
-}
-
-void ShellApplicationDelegate::StartShelf() {
-  StartRestartableService("mojo:shelf",
-                          base::Bind(&ShellApplicationDelegate::StartShelf,
+  StartRestartableService("mojo:ash_sysui",
+                          base::Bind(&ShellApplicationDelegate::StartSystemUI,
                                      base::Unretained(this)));
 }
 
