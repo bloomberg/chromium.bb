@@ -3,6 +3,7 @@ include_rules = [
   "+cc",
   "-cc/blink",
   "-content",
+  "+third_party/libwebp",
   "+third_party/skia",
   "+ui/gfx",
   "+ui/gl",

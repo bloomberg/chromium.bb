@@ -38,6 +38,7 @@ source_set("blimp_client") {
     "//cc",
     "//gpu/skia_bindings",
     "//net",
+    "//third_party/libwebp",
     "//ui/gfx/geometry",
     "//url:url",
   ]
@@ -76,6 +77,8 @@ source_set("feature") {
     "feature/compositor/blimp_layer_tree_settings.h",
     "feature/compositor/blimp_output_surface.cc",
     "feature/compositor/blimp_output_surface.h",
+    "feature/compositor/decoding_image_generator.cc",
+    "feature/compositor/decoding_image_generator.h",
     "feature/navigation_feature.cc",
     "feature/navigation_feature.h",
     "feature/render_widget_feature.cc",

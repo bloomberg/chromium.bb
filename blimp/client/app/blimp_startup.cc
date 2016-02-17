@@ -10,8 +10,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "blimp/client/app/blimp_discardable_memory_allocator.h"
+#include "blimp/client/feature/compositor/decoding_image_generator.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/gl/gl_surface.h"
+
+class SkImageGenerator;
 
 namespace {
 base::LazyInstance<scoped_ptr<base::MessageLoopForUI>> g_main_message_loop =
@@ -19,7 +22,12 @@ base::LazyInstance<scoped_ptr<base::MessageLoopForUI>> g_main_message_loop =
 
 base::LazyInstance<blimp::client::BlimpDiscardableMemoryAllocator>
     g_discardable_memory_allocator = LAZY_INSTANCE_INITIALIZER;
+
+SkImageGenerator* CreateImageGenerator(SkData* data) {
+  return blimp::client::DecodingImageGenerator::create(data);
 }
+
+}  // namespace
 
 namespace blimp {
 namespace client {
@@ -54,6 +62,7 @@ bool InitializeMainMessageLoop() {
   if (!gfx::GLSurface::InitializeOneOff())
     return false;
   SkGraphics::Init();
+  SkGraphics::SetImageGeneratorFromEncodedFactory(CreateImageGenerator);
   g_main_message_loop.Get().reset(new base::MessageLoopForUI);
   return true;
 }

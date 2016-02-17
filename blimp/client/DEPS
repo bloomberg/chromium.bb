@@ -8,6 +8,7 @@ include_rules = [
   "+jni",
   "+net/base",
   "+skia",
+  "+third_party/libwebp",
   "+third_party/skia",
   "+third_party/WebKit/public/web/WebInputEvent.h",
   "+ui/events",

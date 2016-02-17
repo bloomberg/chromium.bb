@@ -11,6 +11,8 @@ component("blimp_common") {
     "compositor/blimp_image_serialization_processor.h",
     "compositor/blimp_task_graph_runner.cc",
     "compositor/blimp_task_graph_runner.h",
+    "compositor/webp_decoder.cc",
+    "compositor/webp_decoder.h",
     "create_blimp_message.cc",
     "create_blimp_message.h",
     "protocol_version.h",
@@ -23,6 +25,7 @@ component("blimp_common") {
     "//blimp/common/proto",
     "//cc",
     "//skia",
+    "//third_party/libwebp",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
