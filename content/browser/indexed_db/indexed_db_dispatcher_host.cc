@@ -278,7 +278,6 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(
   ::IndexedDBDatabaseMetadata metadata;
   metadata.id = web_metadata.id;
   metadata.name = web_metadata.name;
-  metadata.version = web_metadata.version;
   metadata.int_version = web_metadata.int_version;
   metadata.max_object_store_id = web_metadata.max_object_store_id;
 

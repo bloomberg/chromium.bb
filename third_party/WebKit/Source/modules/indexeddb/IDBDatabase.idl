@@ -32,8 +32,7 @@
     GarbageCollected,
 ] interface IDBDatabase : EventTarget {
     readonly attribute DOMString name;
-    // TODO(jsbell): DOMString version is non-standard, to support databases created with old API.
-    readonly attribute (unsigned long long or DOMString) version;
+    readonly attribute unsigned long long version;
     [Measure] readonly attribute DOMStringList objectStoreNames;
 
     [RaisesException] IDBObjectStore createObjectStore(DOMString name, optional IDBObjectStoreParameters options);

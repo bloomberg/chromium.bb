@@ -71,7 +71,6 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
   IndexedDBDatabaseMetadata();
   IndexedDBDatabaseMetadata(const base::string16& name,
                             int64_t id,
-                            const base::string16& version,
                             int64_t int_version,
                             int64_t max_object_store_id);
   IndexedDBDatabaseMetadata(const IndexedDBDatabaseMetadata& other);
@@ -80,7 +79,6 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
 
   base::string16 name;
   int64_t id;
-  base::string16 version;
   int64_t int_version;
   int64_t max_object_store_id;
 

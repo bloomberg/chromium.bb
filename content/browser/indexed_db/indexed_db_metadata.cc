@@ -55,12 +55,10 @@ IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata()
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
     const base::string16& name,
     int64_t id,
-    const base::string16& version,
     int64_t int_version,
     int64_t max_object_store_id)
     : name(name),
       id(id),
-      version(version),
       int_version(int_version),
       max_object_store_id(max_object_store_id) {}
 

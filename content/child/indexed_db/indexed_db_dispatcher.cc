@@ -87,7 +87,6 @@ WebIDBMetadata IndexedDBDispatcher::ConvertMetadata(
   WebIDBMetadata web_metadata;
   web_metadata.id = idb_metadata.id;
   web_metadata.name = idb_metadata.name;
-  web_metadata.version = idb_metadata.version;
   web_metadata.intVersion = idb_metadata.int_version;
   web_metadata.maxObjectStoreId = idb_metadata.max_object_store_id;
   web_metadata.objectStores =

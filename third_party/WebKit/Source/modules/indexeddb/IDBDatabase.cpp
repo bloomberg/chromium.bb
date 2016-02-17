@@ -168,14 +168,6 @@ PassRefPtrWillBeRawPtr<DOMStringList> IDBDatabase::objectStoreNames() const
     return objectStoreNames.release();
 }
 
-void IDBDatabase::version(UnsignedLongLongOrString& result) const
-{
-    if (m_metadata.intVersion == IDBDatabaseMetadata::NoIntVersion)
-        result.setString(m_metadata.version);
-    else
-        result.setUnsignedLongLong(m_metadata.intVersion);
-}
-
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::createObjectStore");
@@ -359,7 +351,7 @@ void IDBDatabase::closeConnection()
     EventQueue* eventQueue = executionContext()->eventQueue();
     // Remove any pending versionchange events scheduled to fire on this
     // connection. They would have been scheduled by the backend when another
-    // connection called setVersion, but the frontend connection is being
+    // connection attempted an upgrade, but the frontend connection is being
     // closed before they could fire.
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
         bool removed = eventQueue->cancelEvent(m_enqueuedEvents[i].get());

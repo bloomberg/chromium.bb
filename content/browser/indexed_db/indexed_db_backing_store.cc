@@ -1255,20 +1255,6 @@ leveldb::Status IndexedDBBackingStore::GetIDBDatabaseMetaData(
   if (!*found)
     return leveldb::Status::OK();
 
-  s = GetString(db_.get(),
-                DatabaseMetaDataKey::Encode(metadata->id,
-                                            DatabaseMetaDataKey::USER_VERSION),
-                &metadata->version,
-                found);
-  if (!s.ok()) {
-    INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
-    return s;
-  }
-  if (!*found) {
-    INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
-    return InternalInconsistencyStatus();
-  }
-
   s = GetVarInt(db_.get(),
                 DatabaseMetaDataKey::Encode(
                     metadata->id, DatabaseMetaDataKey::USER_INT_VERSION),
@@ -1343,7 +1329,6 @@ WARN_UNUSED_RESULT static leveldb::Status GetNewDatabaseId(
 
 leveldb::Status IndexedDBBackingStore::CreateIDBDatabaseMetaData(
     const base::string16& name,
-    const base::string16& version,
     int64_t int_version,
     int64_t* row_id) {
   // TODO(jsbell): Don't persist metadata if open fails. http://crbug.com/395472
@@ -1361,10 +1346,6 @@ leveldb::Status IndexedDBBackingStore::CreateIDBDatabaseMetaData(
   PutInt(transaction.get(),
          DatabaseNameKey::Encode(origin_identifier_, name),
          *row_id);
-  PutString(
-      transaction.get(),
-      DatabaseMetaDataKey::Encode(*row_id, DatabaseMetaDataKey::USER_VERSION),
-      version);
   PutVarInt(transaction.get(),
             DatabaseMetaDataKey::Encode(*row_id,
                                         DatabaseMetaDataKey::USER_INT_VERSION),

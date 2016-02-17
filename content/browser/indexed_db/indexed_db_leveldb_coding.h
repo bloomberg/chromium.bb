@@ -237,7 +237,7 @@ class DatabaseMetaDataKey {
   enum MetaDataType {
     ORIGIN_NAME = 0,
     DATABASE_NAME = 1,
-    USER_VERSION = 2,
+    USER_VERSION = 2,  // Obsolete
     MAX_OBJECT_STORE_ID = 3,
     USER_INT_VERSION = 4,
     BLOB_KEY_GENERATOR_CURRENT_NUMBER = 5,

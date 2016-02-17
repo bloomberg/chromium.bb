@@ -410,7 +410,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
       bool* success) WARN_UNUSED_RESULT;
   virtual leveldb::Status CreateIDBDatabaseMetaData(
       const base::string16& name,
-      const base::string16& version,
       int64_t int_version,
       int64_t* row_id);
   virtual bool UpdateIDBDatabaseIntVersion(

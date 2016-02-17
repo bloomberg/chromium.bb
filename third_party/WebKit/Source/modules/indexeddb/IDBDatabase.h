@@ -72,7 +72,7 @@ public:
 
     // Implement the IDL
     const String& name() const { return m_metadata.name; }
-    void version(UnsignedLongLongOrString& result) const;
+    unsigned long long version() const { return m_metadata.intVersion; }
     PassRefPtrWillBeRawPtr<DOMStringList> objectStoreNames() const;
 
     IDBObjectStore* createObjectStore(const String& name, const IDBObjectStoreParameters& options, ExceptionState& exceptionState) { return createObjectStore(name, IDBKeyPath(options.keyPath()), options.autoIncrement(), exceptionState); }

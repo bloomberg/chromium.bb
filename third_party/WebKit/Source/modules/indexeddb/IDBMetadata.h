@@ -94,10 +94,9 @@ struct IDBDatabaseMetadata {
     {
     }
 
-    IDBDatabaseMetadata(const String& name, int64_t id, const String& version, int64_t intVersion, int64_t maxObjectStoreId)
+    IDBDatabaseMetadata(const String& name, int64_t id, int64_t intVersion, int64_t maxObjectStoreId)
         : name(name)
         , id(id)
-        , version(version)
         , intVersion(intVersion)
         , maxObjectStoreId(maxObjectStoreId)
     {
@@ -107,7 +106,6 @@ struct IDBDatabaseMetadata {
 
     String name;
     int64_t id;
-    String version;
     int64_t intVersion;
     int64_t maxObjectStoreId;
 

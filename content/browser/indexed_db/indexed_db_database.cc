@@ -143,10 +143,6 @@ scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
     return NULL;
 }
 
-namespace {
-const base::string16::value_type kNoStringVersion[] = {0};
-}
-
 IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
                                      IndexedDBBackingStore* backing_store,
                                      IndexedDBFactory* factory,
@@ -154,7 +150,6 @@ IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
     : backing_store_(backing_store),
       metadata_(name,
                 kInvalidId,
-                kNoStringVersion,
                 IndexedDBDatabaseMetadata::NO_INT_VERSION,
                 kInvalidId),
       identifier_(unique_identifier),
@@ -221,7 +216,7 @@ leveldb::Status IndexedDBDatabase::OpenInternal() {
                                            &metadata_.object_stores);
 
   return backing_store_->CreateIDBDatabaseMetaData(
-      metadata_.name, metadata_.version, metadata_.int_version, &metadata_.id);
+      metadata_.name, metadata_.int_version, &metadata_.id);
 }
 
 IndexedDBDatabase::~IndexedDBDatabase() {
@@ -1539,10 +1534,8 @@ void IndexedDBDatabase::VersionChangeOperation(
   transaction->ScheduleAbortTask(
       base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation,
                  this,
-                 metadata_.version,
                  metadata_.int_version));
   metadata_.int_version = version;
-  metadata_.version = kNoStringVersion;
 
   DCHECK(!pending_second_half_open_);
   pending_second_half_open_.reset(
@@ -1730,7 +1723,6 @@ void IndexedDBDatabase::OpenConnection(
   // We infer that the database didn't exist from its lack of either type of
   // version.
   bool is_new_database =
-      metadata_.version == kNoStringVersion &&
       metadata_.int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION;
 
   if (connection.version == IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION) {
@@ -1873,7 +1865,6 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
     return;
   }
   int64_t old_version = metadata_.int_version;
-  metadata_.version = kNoStringVersion;
   metadata_.id = kInvalidId;
   metadata_.int_version = IndexedDBDatabaseMetadata::NO_INT_VERSION;
   metadata_.object_stores.clear();
@@ -1965,12 +1956,10 @@ void IndexedDBDatabase::DeleteObjectStoreAbortOperation(
 }
 
 void IndexedDBDatabase::VersionChangeAbortOperation(
-    const base::string16& previous_version,
     int64_t previous_int_version,
     IndexedDBTransaction* transaction) {
   DCHECK(!transaction);
   IDB_TRACE("IndexedDBDatabase::VersionChangeAbortOperation");
-  metadata_.version = previous_version;
   metadata_.int_version = previous_int_version;
 }
 

@@ -958,7 +958,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
 
   {
     leveldb::Status s = backing_store_->CreateIDBDatabaseMetaData(
-        database_name, version, int_version, &database_id);
+        database_name, int_version, &database_id);
     EXPECT_TRUE(s.ok());
     EXPECT_GT(database_id, 0);
 
@@ -1001,7 +1001,6 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
     EXPECT_TRUE(found);
 
     // database.name is not filled in by the implementation.
-    EXPECT_EQ(version, database.version);
     EXPECT_EQ(int_version, database.int_version);
     EXPECT_EQ(database_id, database.id);
 
@@ -1025,8 +1024,6 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
 }
 
 TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
-  const base::string16 string_version(ASCIIToUTF16("string_version"));
-
   const base::string16 db1_name(ASCIIToUTF16("db1"));
   const int64_t db1_version = 1LL;
   int64_t db1_id;
@@ -1037,13 +1034,12 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
   const int64_t db2_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
   int64_t db2_id;
 
-  leveldb::Status s = backing_store_->CreateIDBDatabaseMetaData(
-      db1_name, string_version, db1_version, &db1_id);
+  leveldb::Status s =
+      backing_store_->CreateIDBDatabaseMetaData(db1_name, db1_version, &db1_id);
   EXPECT_TRUE(s.ok());
   EXPECT_GT(db1_id, 0LL);
 
-  s = backing_store_->CreateIDBDatabaseMetaData(
-      db2_name, string_version, db2_version, &db2_id);
+  s = backing_store_->CreateIDBDatabaseMetaData(db2_name, db2_version, &db2_id);
   EXPECT_TRUE(s.ok());
   EXPECT_GT(db2_id, db1_id);
 

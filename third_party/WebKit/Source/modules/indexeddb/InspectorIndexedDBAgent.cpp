@@ -343,7 +343,6 @@ public:
         RefPtr<DatabaseWithObjectStores> result = DatabaseWithObjectStores::create()
             .setName(databaseMetadata.name)
             .setIntVersion(databaseMetadata.intVersion)
-            .setVersion(databaseMetadata.version)
             .setObjectStores(objectStores);
 
         m_requestCallback->sendSuccess(result);
