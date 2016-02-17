@@ -69,7 +69,7 @@ int  ffs(int v) {
 char *optarg;  /* global argument pointer */
 int optind = 0;  /* global argv index */
 
-int getopt(int argc, char *argv[], char *optstring) {
+int getopt(int argc, char *argv[], const char *optstring) {
   char c, *cp;
   static char *next = NULL;
   if (optind == 0)

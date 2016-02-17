@@ -140,7 +140,7 @@ EXTERN_C_BEGIN
 
 /* arguments processing */
 int ffs(int x);
-int getopt(int argc, char *argv[], char *optstring);
+int getopt(int argc, char *argv[], const char *optstring);
 extern char *optarg;  /* global argument pointer */
 extern int optind;   /* global argv index */
 
