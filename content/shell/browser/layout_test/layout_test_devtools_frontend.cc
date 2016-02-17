@@ -9,7 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
-#include "content/shell/browser/blink_test_controller.h"
+#include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/filename_util.h"
 

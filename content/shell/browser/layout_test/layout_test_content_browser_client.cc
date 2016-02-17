@@ -8,13 +8,18 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigator_connect_context.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
+#include "content/shell/browser/layout_test/layout_test_browser_main_parts.h"
 #include "content/shell/browser/layout_test/layout_test_message_filter.h"
 #include "content/shell/browser/layout_test/layout_test_navigator_connect_service_factory.h"
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
+#include "content/shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/common/shell_messages.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 
 namespace content {
@@ -63,6 +68,33 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
       partition->GetURLRequestContext()));
 
   host->Send(new ShellViewMsg_SetWebKitSourceDir(GetWebKitRootDirFilePath()));
+}
+
+void LayoutTestContentBrowserClient::OverrideWebkitPrefs(
+    RenderViewHost* render_view_host,
+    WebPreferences* prefs) {
+  BlinkTestController::Get()->OverrideWebkitPrefs(prefs);
+}
+
+void LayoutTestContentBrowserClient::ResourceDispatcherHostCreated() {
+  set_resource_dispatcher_host_delegate(
+      make_scoped_ptr(new LayoutTestResourceDispatcherHostDelegate));
+  ResourceDispatcherHost::Get()->SetDelegate(
+      resource_dispatcher_host_delegate());
+}
+
+void LayoutTestContentBrowserClient::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line,
+    int child_process_id) {
+  command_line->AppendSwitch(switches::kRunLayoutTest);
+  ShellContentBrowserClient::AppendExtraCommandLineSwitches(command_line,
+                                                            child_process_id);
+}
+
+BrowserMainParts* LayoutTestContentBrowserClient::CreateBrowserMainParts(
+    const MainFunctionParams& parameters) {
+  set_browser_main_parts(new LayoutTestBrowserMainParts(parameters));
+  return shell_browser_main_parts();
 }
 
 PlatformNotificationService*

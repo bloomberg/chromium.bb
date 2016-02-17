@@ -27,6 +27,13 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
 
   // ContentBrowserClient overrides.
   void RenderProcessWillLaunch(RenderProcessHost* host) override;
+  void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+                           WebPreferences* prefs) override;
+  void ResourceDispatcherHostCreated() override;
+  void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
+                                      int child_process_id) override;
+  BrowserMainParts* CreateBrowserMainParts(
+      const MainFunctionParams& parameters) override;
 
   PlatformNotificationService* GetPlatformNotificationService() override;
   void GetAdditionalNavigatorConnectServices(

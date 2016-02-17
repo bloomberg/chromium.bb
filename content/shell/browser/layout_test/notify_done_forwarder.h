@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_BROWSER_NOTIFY_DONE_FORWARDER_H_
-#define CONTENT_SHELL_BROWSER_NOTIFY_DONE_FORWARDER_H_
+#ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_NOTIFY_DONE_FORWARDER_H_
+#define CONTENT_SHELL_BROWSER_LAYOUT_TEST_NOTIFY_DONE_FORWARDER_H_
 
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,4 +31,4 @@ class NotifyDoneForwarder : public WebContentsObserver,
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_BROWSER_NOTIFY_DONE_FORWARDER_H_
+#endif  // CONTENT_SHELL_BROWSER_LAYOUT_TEST_NOTIFY_DONE_FORWARDER_H_

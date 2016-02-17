@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "content/shell/browser/blink_test_controller.h"
+#include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "net/base/filename_util.h"
 
 #if defined(OS_WIN)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_BROWSER_BLINK_TEST_CONTROLLER_H_
-#define CONTENT_SHELL_BROWSER_BLINK_TEST_CONTROLLER_H_
+#ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_BLINK_TEST_CONTROLLER_H_
+#define CONTENT_SHELL_BROWSER_LAYOUT_TEST_BLINK_TEST_CONTROLLER_H_
 
 #include <map>
 #include <ostream>
@@ -257,4 +257,4 @@ class BlinkTestController : public base::NonThreadSafe,
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_BROWSER_BLINK_TEST_CONTROLLER_H_
+#endif  // CONTENT_SHELL_BROWSER_LAYOUT_TEST_BLINK_TEST_CONTROLLER_H_

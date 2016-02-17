@@ -22,7 +22,7 @@
 #include "components/test_runner/test_info_extractor.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/url_constants.h"
-#include "content/shell/browser/blink_test_controller.h"
+#include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"

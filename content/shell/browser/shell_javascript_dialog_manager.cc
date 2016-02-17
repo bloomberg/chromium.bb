@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
-#include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/browser/shell_javascript_dialog.h"
 #include "content/shell/common/shell_switches.h"
 

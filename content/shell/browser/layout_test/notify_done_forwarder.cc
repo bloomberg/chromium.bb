@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/browser/notify_done_forwarder.h"
+#include "content/shell/browser/layout_test/notify_done_forwarder.h"
 
-#include "content/shell/browser/blink_test_controller.h"
+#include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/common/shell_messages.h"
 
 namespace content {
