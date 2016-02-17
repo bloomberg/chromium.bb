@@ -94,10 +94,8 @@ void HTMLSlotElement::appendDistributedNodesFrom(const HTMLSlotElement& other)
 {
     size_t index = m_distributedNodes.size();
     m_distributedNodes.appendVector(other.m_distributedNodes);
-    for (const auto& it : other.m_distributedIndices) {
-        const Node* node = it.key;
-        m_distributedIndices.set(node, index++);
-    }
+    for (const auto& node : other.m_distributedNodes)
+        m_distributedIndices.set(node.get(), index++);
 }
 
 void HTMLSlotElement::clearDistribution()
