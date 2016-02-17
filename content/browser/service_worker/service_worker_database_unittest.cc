@@ -18,6 +18,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -70,6 +71,7 @@ void VerifyRegistrationData(const RegistrationData& expected,
   EXPECT_EQ(expected.resources_total_size_bytes,
             actual.resources_total_size_bytes);
   EXPECT_EQ(expected.foreign_fetch_scopes, actual.foreign_fetch_scopes);
+  EXPECT_EQ(expected.foreign_fetch_origins, actual.foreign_fetch_origins);
 }
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
@@ -758,6 +760,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   data.version_id = 200;
   data.resources_total_size_bytes = 10 + 11;
   data.foreign_fetch_scopes.push_back(URL(origin, "/foo"));
+  data.foreign_fetch_origins.push_back(
+      url::Origin(GURL("https://chromium.org")));
 
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, URL(origin, "/resource1"), 10));
@@ -787,6 +791,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   updated_data.version_id = data.version_id + 1;
   updated_data.resources_total_size_bytes = 12 + 13;
   updated_data.foreign_fetch_scopes.clear();
+  updated_data.foreign_fetch_origins.push_back(
+      url::Origin(GURL("https://example.com")));
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(3, URL(origin, "/resource3"), 12));
   resources2.push_back(CreateResource(4, URL(origin, "/resource4"), 13));

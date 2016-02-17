@@ -33,13 +33,13 @@
 #include "content/public/common/service_registry.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 // Windows headers will redefine SendMessage.
 #ifdef SendMessage
 #undef SendMessage
 #endif
-
-class GURL;
 
 namespace net {
 class HttpResponseInfo;
@@ -144,6 +144,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
   void set_foreign_fetch_scopes(const std::vector<GURL>& scopes) {
     foreign_fetch_scopes_ = scopes;
+  }
+
+  const std::vector<url::Origin>& foreign_fetch_origins() const {
+    return foreign_fetch_origins_;
+  }
+  void set_foreign_fetch_origins(const std::vector<url::Origin>& origins) {
+    foreign_fetch_origins_ = origins;
   }
 
   // This sets the new status and also run status change callbacks
@@ -565,7 +572,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                              const std::string& client_uuid,
                              const ServiceWorkerClientInfo& client);
 
-  void OnRegisterForeignFetchScopes(const std::vector<GURL>& sub_scopes);
+  void OnRegisterForeignFetchScopes(const std::vector<GURL>& sub_scopes,
+                                    const std::vector<url::Origin>& origins);
 
   void DidEnsureLiveRegistrationForStartWorker(
       const StatusCallback& callback,
@@ -648,6 +656,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const GURL script_url_;
   const GURL scope_;
   std::vector<GURL> foreign_fetch_scopes_;
+  std::vector<url::Origin> foreign_fetch_origins_;
 
   Status status_ = NEW;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;

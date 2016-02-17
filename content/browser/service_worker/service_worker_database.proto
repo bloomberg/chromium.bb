@@ -27,6 +27,7 @@ message ServiceWorkerRegistrationData {
   optional uint64 resources_total_size_bytes = 8;
 
   repeated string foreign_fetch_scope = 9;
+  repeated string foreign_fetch_origin = 10;
 }
 
 message ServiceWorkerResourceRecord {

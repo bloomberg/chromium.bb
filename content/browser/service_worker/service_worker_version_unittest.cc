@@ -1064,43 +1064,69 @@ TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
   EXPECT_EQ(0, helper_->mock_render_process_host()->bad_msg_count());
 
-  // Invalid URL, should kill worker (but in tests will only increase bad
+  GURL valid_scope_1("http://www.example.com/test/subscope");
+  GURL valid_scope_2("http://www.example.com/test/othersubscope");
+  std::vector<GURL> valid_scopes;
+  valid_scopes.push_back(valid_scope_1);
+  valid_scopes.push_back(valid_scope_2);
+
+  std::vector<url::Origin> all_origins;
+  url::Origin valid_origin(GURL("https://chromium.org/"));
+  std::vector<url::Origin> valid_origin_list(1, valid_origin);
+
+  // Invalid subscope, should kill worker (but in tests will only increase bad
   // message count).
-  version_->OnRegisterForeignFetchScopes(std::vector<GURL>(1, GURL()));
+  version_->OnRegisterForeignFetchScopes(std::vector<GURL>(1, GURL()),
+                                         valid_origin_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, helper_->mock_render_process_host()->bad_msg_count());
   EXPECT_EQ(0u, version_->foreign_fetch_scopes_.size());
+  EXPECT_EQ(0u, version_->foreign_fetch_origins_.size());
 
-  // URL outside the scope of the worker.
+  // Subscope outside the scope of the worker.
   version_->OnRegisterForeignFetchScopes(
-      std::vector<GURL>(1, GURL("http://www.example.com/wrong")));
+      std::vector<GURL>(1, GURL("http://www.example.com/wrong")),
+      valid_origin_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, helper_->mock_render_process_host()->bad_msg_count());
   EXPECT_EQ(0u, version_->foreign_fetch_scopes_.size());
+  EXPECT_EQ(0u, version_->foreign_fetch_origins_.size());
 
-  // URL on wrong origin.
+  // Subscope on wrong origin.
   version_->OnRegisterForeignFetchScopes(
-      std::vector<GURL>(1, GURL("http://example.com/test/")));
+      std::vector<GURL>(1, GURL("http://example.com/test/")),
+      valid_origin_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, helper_->mock_render_process_host()->bad_msg_count());
   EXPECT_EQ(0u, version_->foreign_fetch_scopes_.size());
+  EXPECT_EQ(0u, version_->foreign_fetch_origins_.size());
 
-  // Valid URL 1.
-  GURL valid_scope_1("http://www.example.com/test/subscope");
-  version_->OnRegisterForeignFetchScopes(std::vector<GURL>(1, valid_scope_1));
+  // Invalid origin.
+  version_->OnRegisterForeignFetchScopes(
+      valid_scopes, std::vector<url::Origin>(1, url::Origin()));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, helper_->mock_render_process_host()->bad_msg_count());
+  EXPECT_EQ(4, helper_->mock_render_process_host()->bad_msg_count());
+  EXPECT_EQ(0u, version_->foreign_fetch_scopes_.size());
+  EXPECT_EQ(0u, version_->foreign_fetch_origins_.size());
+
+  // Valid subscope, no origins.
+  version_->OnRegisterForeignFetchScopes(std::vector<GURL>(1, valid_scope_1),
+                                         all_origins);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(4, helper_->mock_render_process_host()->bad_msg_count());
   EXPECT_EQ(1u, version_->foreign_fetch_scopes_.size());
   EXPECT_EQ(valid_scope_1, version_->foreign_fetch_scopes_[0]);
+  EXPECT_EQ(0u, version_->foreign_fetch_origins_.size());
 
-  // Valid URL 2.
-  GURL valid_scope_2("http://www.example.com/test/subscope");
-  version_->OnRegisterForeignFetchScopes(std::vector<GURL>(1, valid_scope_2));
+  // Valid subscope, explicit origins.
+  version_->OnRegisterForeignFetchScopes(valid_scopes, valid_origin_list);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, helper_->mock_render_process_host()->bad_msg_count());
+  EXPECT_EQ(4, helper_->mock_render_process_host()->bad_msg_count());
   EXPECT_EQ(2u, version_->foreign_fetch_scopes_.size());
   EXPECT_EQ(valid_scope_1, version_->foreign_fetch_scopes_[0]);
   EXPECT_EQ(valid_scope_2, version_->foreign_fetch_scopes_[1]);
+  EXPECT_EQ(1u, version_->foreign_fetch_origins_.size());
+  EXPECT_EQ(valid_origin, version_->foreign_fetch_origins_[0]);
 }
 
 TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {

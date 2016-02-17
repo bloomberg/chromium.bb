@@ -25,6 +25,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "url/origin.h"
 
 // LevelDB database schema
 // =======================
@@ -1193,6 +1194,15 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     }
     out->foreign_fetch_scopes.push_back(sub_scope_url);
   }
+  for (int i = 0; i < data.foreign_fetch_origin_size(); ++i) {
+    url::Origin parsed_origin(GURL(data.foreign_fetch_origin(i)));
+    if (parsed_origin.unique()) {
+      DLOG(ERROR) << "Foreign fetch origin '" << data.foreign_fetch_origin(i)
+                  << "' is not valid.";
+      return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+    }
+    out->foreign_fetch_origins.push_back(parsed_origin);
+  }
 
   return ServiceWorkerDatabase::STATUS_OK;
 }
@@ -1224,6 +1234,8 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
         << "'.";
     data.add_foreign_fetch_scope(url.spec());
   }
+  for (const url::Origin& origin : registration.foreign_fetch_origins)
+    data.add_foreign_fetch_origin(origin.Serialize());
 
   std::string value;
   bool success = data.SerializeToString(&value);

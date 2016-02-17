@@ -21,6 +21,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace leveldb {
 class DB;
@@ -68,6 +69,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     bool has_fetch_handler;
     base::Time last_update_check;
     std::vector<GURL> foreign_fetch_scopes;
+    std::vector<url::Origin> foreign_fetch_origins;
 
     // Not populated until ServiceWorkerStorage::StoreRegistration is called.
     int64_t resources_total_size_bytes;

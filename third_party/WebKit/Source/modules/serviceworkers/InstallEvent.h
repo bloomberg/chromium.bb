@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class USVStringOrUSVStringSequence;
+
 class MODULES_EXPORT InstallEvent : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 
@@ -21,7 +23,7 @@ public:
 
     ~InstallEvent() override;
 
-    void registerForeignFetchScopes(ExecutionContext*, const Vector<String>& subScopes, ExceptionState&);
+    void registerForeignFetchScopes(ExecutionContext*, const Vector<String>& subScopes, const USVStringOrUSVStringSequence& origins, ExceptionState&);
 
     const AtomicString& interfaceName() const override;
 

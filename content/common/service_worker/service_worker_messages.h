@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -323,8 +324,9 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClaimClients,
 
 // Informs the browser of new foreign fetch subscopes this worker wants to
 // handle. Should only be sent while an install event is being handled.
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_RegisterForeignFetchScopes,
-                    std::vector<GURL> /* sub_scopes */)
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_RegisterForeignFetchScopes,
+                    std::vector<GURL> /* sub_scopes */,
+                    std::vector<url::Origin> /* origins */)
 
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.

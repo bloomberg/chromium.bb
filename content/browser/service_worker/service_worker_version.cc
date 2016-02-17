@@ -1272,7 +1272,8 @@ void ServiceWorkerVersion::OnPongFromWorker() {
 }
 
 void ServiceWorkerVersion::OnRegisterForeignFetchScopes(
-    const std::vector<GURL>& sub_scopes) {
+    const std::vector<GURL>& sub_scopes,
+    const std::vector<url::Origin>& origins) {
   DCHECK(status() == INSTALLING || status() == REDUNDANT) << status();
   // Renderer should have already verified all these urls are inside the
   // worker's scope, but verify again here on the browser process side.
@@ -1290,8 +1291,18 @@ void ServiceWorkerVersion::OnRegisterForeignFetchScopes(
       return;
     }
   }
-  foreign_fetch_scopes_.insert(foreign_fetch_scopes_.end(), sub_scopes.begin(),
-                               sub_scopes.end());
+  for (const url::Origin& url : origins) {
+    if (url.unique()) {
+      DVLOG(1) << "Received unexpected unique origin from renderer process.";
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&KillEmbeddedWorkerProcess, embedded_worker_->process_id(),
+                     RESULT_CODE_KILLED_BAD_MESSAGE));
+      return;
+    }
+  }
+  set_foreign_fetch_scopes(sub_scopes);
+  set_foreign_fetch_origins(origins);
 }
 
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(

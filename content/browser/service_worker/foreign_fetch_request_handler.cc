@@ -180,7 +180,14 @@ void ForeignFetchRequestHandler::DidFindRegistration(
     }
   }
 
-  if (!scope_matches) {
+  const url::Origin& request_origin = job->request()->initiator();
+  bool origin_matches = active_version->foreign_fetch_origins().empty();
+  for (const url::Origin& origin : active_version->foreign_fetch_origins()) {
+    if (request_origin.IsSameOriginWith(origin))
+      origin_matches = true;
+  }
+
+  if (!scope_matches || !origin_matches) {
     job->FallbackToNetwork();
     return;
   }

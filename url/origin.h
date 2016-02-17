@@ -118,6 +118,9 @@ class URL_EXPORT Origin {
   // Two Origins are "same-origin" if their schemes, hosts, and ports are exact
   // matches; and neither is unique.
   bool IsSameOriginWith(const Origin& other) const;
+  bool operator==(const Origin& other) const {
+    return IsSameOriginWith(other);
+  }
 
   // Allows Origin to be used as a key in STL (for example, a std::set or
   // std::map).

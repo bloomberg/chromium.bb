@@ -4,11 +4,15 @@
 <script src="resources/test-helpers.js"></script>
 <body>
 <script>
-var worker = 'resources/foreign-fetch-worker.js';
+function worker_for_origins(origins) {
+  var worker = 'resources/foreign-fetch-worker.js?';
+  return worker + encodeURIComponent(JSON.stringify(origins));
+}
 
 promise_test(t => {
     var scope = 'resources/foreign-fetch/scope';
-    return service_worker_unregister_and_register(t, worker, scope)
+    return service_worker_unregister_and_register(
+        t, worker_for_origins('*'), scope)
       .then(r => {
           add_completion_callback(() => r.unregister());
           return wait_for_state(t, r.installing, 'activated');
@@ -22,6 +26,51 @@ promise_test(t => {
       .then(response_text => {
           assert_equals(response_text, 'Foreign Fetch');
         });
-  }, 'Service Worker intercepts fetches in scope.');
+  }, 'Service Worker intercepts fetches in scope with wildcard origin.');
+
+promise_test(t => {
+    var scope = 'resources/foreign-fetch/scope/match-origin';
+    return service_worker_unregister_and_register(
+        t, worker_for_origins(location.origin), scope)
+      .then(r => {
+          add_completion_callback(() => r.unregister());
+          return wait_for_state(t, r.installing, 'activated');
+        })
+      .then(() => fetch(scope + '/intercept/foo'))
+      .then(response => response.text())
+      .then(response_text => {
+          assert_equals(response_text, 'Foreign Fetch');
+        });
+  }, 'Service Worker intercepts fetches in scope with explicit origin.');
+
+promise_test(t => {
+    var scope = 'resources/foreign-fetch/scope/nomatch-origin';
+    return service_worker_unregister_and_register(
+        t, worker_for_origins('https://example.com'), scope)
+      .then(r => {
+          add_completion_callback(() => r.unregister());
+          return wait_for_state(t, r.installing, 'activated');
+        })
+      .then(() => fetch(scope + '/intercept/foo'))
+      .then(response => {
+          assert_equals(response.status, 404);
+        });
+  }, 'Service Worker doesn\'t intercept fetches with non matching origin.');
+
+promise_test(t => {
+    var scope = 'resources/foreign-fetch/scope/origin-list';
+    return service_worker_unregister_and_register(
+        t, worker_for_origins([location.origin, 'https://example.com']), scope)
+      .then(r => {
+          add_completion_callback(() => r.unregister());
+          return wait_for_state(t, r.installing, 'activated');
+        })
+      .then(() => fetch(scope + '/intercept/foo'))
+      .then(response => response.text())
+      .then(response_text => {
+          assert_equals(response_text, 'Foreign Fetch');
+        });
+  }, 'Service Worker intercepts fetches in scope with explicit origin list.');
+
 </script>
 </body>

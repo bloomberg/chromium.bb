@@ -8,5 +8,5 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=ForeignFetch,
 ] interface InstallEvent : ExtendableEvent {
-  [CallWith=ExecutionContext, RaisesException] void registerForeignFetchScopes(sequence<USVString> subScopes);
+  [CallWith=ExecutionContext, RaisesException] void registerForeignFetchScopes(sequence<USVString> subScopes, (USVString or sequence<USVString>) origins);
 };

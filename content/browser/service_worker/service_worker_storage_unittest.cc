@@ -599,6 +599,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const int64_t kRegistrationId = 0;
   const int64_t kVersionId = 0;
   const GURL kForeignFetchScope("http://www.test.not/scope/ff/");
+  const url::Origin kForeignFetchOrigin(GURL("https://example.com/"));
   const base::Time kToday = base::Time::Now();
   const base::Time kYesterday = kToday - base::TimeDelta::FromDays(1);
 
@@ -634,6 +635,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   live_version->script_cache_map()->SetResources(resources);
   live_version->set_foreign_fetch_scopes(
       std::vector<GURL>(1, kForeignFetchScope));
+  live_version->set_foreign_fetch_origins(
+      std::vector<url::Origin>(1, kForeignFetchOrigin));
   live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(SERVICE_WORKER_OK,
@@ -727,6 +730,11 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
       1u, found_registration->waiting_version()->foreign_fetch_scopes().size());
   EXPECT_EQ(kForeignFetchScope,
             found_registration->waiting_version()->foreign_fetch_scopes()[0]);
+  EXPECT_EQ(
+      1u,
+      found_registration->waiting_version()->foreign_fetch_origins().size());
+  EXPECT_EQ(kForeignFetchOrigin,
+            found_registration->waiting_version()->foreign_fetch_origins()[0]);
 
   // Update to active and update the last check time.
   scoped_refptr<ServiceWorkerVersion> temp_version =

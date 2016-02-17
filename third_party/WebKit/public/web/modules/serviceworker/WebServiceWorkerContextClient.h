@@ -197,7 +197,7 @@ public:
 
     // Called when the worker wants to register subscopes to handle via foreign
     // fetch. Will only be called while an install event is in progress.
-    virtual void registerForeignFetchScopes(const WebVector<WebURL>& subScopes) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void registerForeignFetchScopes(const WebVector<WebURL>& subScopes, const WebVector<WebSecurityOrigin>& origins) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink
