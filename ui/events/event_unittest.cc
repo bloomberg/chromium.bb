@@ -624,7 +624,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
   }
 }
 
-TEST(EventTest, PointerEventDetailsTouch) {
+TEST(EventTest, PointerDetailsTouch) {
   ui::TouchEvent touch_event_plain(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0,
                                    ui::EventTimeForNow());
 
@@ -649,16 +649,11 @@ TEST(EventTest, PointerEventDetailsTouch) {
   EXPECT_EQ(0.0f, touch_event_with_details.pointer_details().tilt_y);
 
   ui::TouchEvent touch_event_copy(touch_event_with_details);
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
-            touch_event_copy.pointer_details().pointer_type);
-  EXPECT_EQ(10.0f, touch_event_copy.pointer_details().radius_x);
-  EXPECT_EQ(5.0f, touch_event_copy.pointer_details().radius_y);
-  EXPECT_EQ(15.0f, touch_event_copy.pointer_details().force);
-  EXPECT_EQ(0.0f, touch_event_copy.pointer_details().tilt_x);
-  EXPECT_EQ(0.0f, touch_event_copy.pointer_details().tilt_y);
+  EXPECT_EQ(touch_event_with_details.pointer_details(),
+            touch_event_copy.pointer_details());
 }
 
-TEST(EventTest, PointerEventDetailsMouse) {
+TEST(EventTest, PointerDetailsMouse) {
   ui::MouseEvent mouse_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
                              gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
 
@@ -671,16 +666,10 @@ TEST(EventTest, PointerEventDetailsMouse) {
   EXPECT_EQ(0.0f, mouse_event.pointer_details().tilt_y);
 
   ui::MouseEvent mouse_event_copy(mouse_event);
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_MOUSE,
-            mouse_event_copy.pointer_details().pointer_type);
-  EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().radius_x);
-  EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().radius_y);
-  EXPECT_TRUE(std::isnan(mouse_event_copy.pointer_details().force));
-  EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().tilt_x);
-  EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().tilt_y);
+  EXPECT_EQ(mouse_event.pointer_details(), mouse_event_copy.pointer_details());
 }
 
-TEST(EventTest, PointerEventDetailsStylus) {
+TEST(EventTest, PointerDetailsStylus) {
   ui::MouseEvent stylus_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
                               gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
   ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
@@ -700,16 +689,11 @@ TEST(EventTest, PointerEventDetailsStylus) {
   EXPECT_EQ(0.0f, stylus_event.pointer_details().radius_y);
 
   ui::MouseEvent stylus_event_copy(stylus_event);
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
-            stylus_event_copy.pointer_details().pointer_type);
-  EXPECT_EQ(21.0f, stylus_event_copy.pointer_details().force);
-  EXPECT_EQ(45.0f, stylus_event_copy.pointer_details().tilt_x);
-  EXPECT_EQ(-45.0f, stylus_event_copy.pointer_details().tilt_y);
-  EXPECT_EQ(0.0f, stylus_event_copy.pointer_details().radius_x);
-  EXPECT_EQ(0.0f, stylus_event_copy.pointer_details().radius_y);
+  EXPECT_EQ(stylus_event.pointer_details(),
+            stylus_event_copy.pointer_details());
 }
 
-TEST(EventTest, PointerEventDetailsCustomTouch) {
+TEST(EventTest, PointerDetailsCustomTouch) {
   ui::TouchEvent touch_event(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0,
                              ui::EventTimeForNow());
 
@@ -738,13 +722,7 @@ TEST(EventTest, PointerEventDetailsCustomTouch) {
   EXPECT_EQ(6.0f, touch_event.pointer_details().radius_y);
 
   ui::TouchEvent touch_event_copy(touch_event);
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
-            touch_event.pointer_details().pointer_type);
-  EXPECT_EQ(21.0f, touch_event.pointer_details().force);
-  EXPECT_EQ(45.0f, touch_event.pointer_details().tilt_x);
-  EXPECT_EQ(-45.0f, touch_event.pointer_details().tilt_y);
-  EXPECT_EQ(5.0f, touch_event.pointer_details().radius_x);
-  EXPECT_EQ(6.0f, touch_event.pointer_details().radius_y);
+  EXPECT_EQ(touch_event.pointer_details(), touch_event_copy.pointer_details());
 }
 
 TEST(EventTest, PointerEventType) {
@@ -800,7 +778,7 @@ TEST(EventTest, PointerEventId) {
   }
 }
 
-TEST(EventTest, PointerEventDetailsPointer) {
+TEST(EventTest, PointerDetailsPointer) {
   const float kRadiusX = 10.0f;
   const float kRadiusY = 5.0f;
   const float kForce = 15.0f;
