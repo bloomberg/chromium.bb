@@ -190,6 +190,10 @@ class DataReductionProxyConfig
   // the URLRequestContext.
   bool ShouldEnableLoFiMode(const net::URLRequest& request);
 
+  // Returns true if the data saver has been enabled by the user, and the data
+  // saver proxy is reachable.
+  bool enabled_by_user_and_reachable() const;
+
  protected:
   // Virtualized for mocking. Records UMA containing the result of requesting
   // the secure proxy check.

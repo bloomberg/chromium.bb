@@ -9,6 +9,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "net/base/load_timing_info.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -68,9 +69,12 @@ DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
         request->response_info().headers.get();
     if (response_headers) {
       net::HttpRequestHeaders request_headers;
+      net::LoadTimingInfo load_timing_info;
+      request->GetLoadTimingInfo(&load_timing_info);
       if (request->GetFullRequestHeaders(&request_headers)) {
         should_retry = config_service_client_->ShouldRetryDueToAuthFailure(
-            request_headers, response_headers, request->proxy_server());
+            request_headers, response_headers, request->proxy_server(),
+            load_timing_info);
       }
     }
   }

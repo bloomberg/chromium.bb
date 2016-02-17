@@ -655,6 +655,98 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
   EXPECT_FALSE(other_proxy_info.is_direct());
 }
 
+// Verifies that requests that were not proxied through data saver proxy due to
+// missing config are recorded properly.
+TEST_F(DataReductionProxyNetworkDelegateTest, HTTPRequests) {
+  const struct {
+    std::string url;
+    bool enabled_by_user;
+    bool use_direct_proxy;
+    bool expect_histogram;
+  } tests[] = {
+      {
+          // Request should not be logged because data saver is disabled.
+          "http://www.example.com/", false, true, false,
+      },
+      {
+          "http://www.example.com/", true, true, true,
+      },
+      {
+          "http://www.example.com/", true, false, true,
+      },
+      {
+          "http://www.example.com/", false, false, false,
+      },
+      {
+          "https://www.example.com/", false, true, false,
+      },
+      {
+          // Request should not be logged because request is HTTPS.
+          "https://www.example.com/", true, true, false,
+      },
+      {
+          // Request to localhost should not be logged.
+          "http://127.0.0.1/", true, true, false,
+      },
+      {
+          // Special use IPv4 address for testing purposes (RFC 5735).
+          "http://198.51.100.1/", true, true, true,
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    base::HistogramTester histogram_tester;
+    GURL url(tests[i].url);
+
+    net::ProxyInfo data_reduction_proxy_info;
+
+    std::string data_reduction_proxy;
+    if (!tests[i].use_direct_proxy) {
+      base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
+      data_reduction_proxy_info.UsePacString(
+          "PROXY " +
+          net::ProxyServer::FromURI(params()->DefaultOrigin(),
+                                    net::ProxyServer::SCHEME_HTTP)
+              .host_port_pair()
+              .ToString() +
+          "; DIRECT");
+    }
+    EXPECT_EQ(tests[i].use_direct_proxy, data_reduction_proxy_info.is_empty());
+
+    net::ProxyConfig data_reduction_proxy_config;
+    if (tests[i].use_direct_proxy) {
+      data_reduction_proxy_config = net::ProxyConfig::CreateDirect();
+
+    } else {
+      data_reduction_proxy_config.proxy_rules().ParseFromString(
+          "http=" + data_reduction_proxy + ",direct://;");
+      data_reduction_proxy_config.set_id(1);
+    }
+    config()->SetStateForTest(tests[i].enabled_by_user /* enabled */,
+                              false /* at_startup */);
+
+    net::ProxyRetryInfoMap empty_proxy_retry_info;
+
+    net::ProxyInfo direct_proxy_info;
+    direct_proxy_info.UseDirect();
+    EXPECT_TRUE(direct_proxy_info.is_direct());
+
+    net::ProxyInfo result;
+    result.Use(direct_proxy_info);
+    OnResolveProxyHandler(url, net::LOAD_NORMAL, data_reduction_proxy_config,
+                          empty_proxy_retry_info, config(), &result);
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.ConfigService.HTTPRequests",
+        tests[i].expect_histogram ? 1 : 0);
+
+    if (tests[i].expect_histogram) {
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.ConfigService.HTTPRequests",
+          tests[i].use_direct_proxy ? 0 : 1, 1);
+    }
+  }
+}
+
 // Notify network delegate with a NULL request.
 TEST_F(DataReductionProxyNetworkDelegateTest, NullRequest) {
   net::HttpRequestHeaders headers;

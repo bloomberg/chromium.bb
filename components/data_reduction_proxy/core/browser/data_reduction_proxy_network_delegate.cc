@@ -18,6 +18,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_info.h"
@@ -353,16 +354,24 @@ void OnResolveProxyHandler(const GURL& url,
   DCHECK(result->is_empty() || result->is_direct() ||
          !config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
                                        NULL));
-  if (data_reduction_proxy_config.is_valid() &&
-      result->proxy_server().is_direct() &&
-      result->proxy_list().size() == 1 &&
+  bool data_saver_proxy_used = true;
+  if (result->proxy_server().is_direct() && result->proxy_list().size() == 1 &&
       !url.SchemeIsWSOrWSS()) {
-    net::ProxyInfo data_reduction_proxy_info;
-    data_reduction_proxy_config.proxy_rules().Apply(
-        url, &data_reduction_proxy_info);
-    data_reduction_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
-    if (!data_reduction_proxy_info.proxy_server().is_direct())
-      result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
+    if (data_reduction_proxy_config.is_valid()) {
+      net::ProxyInfo data_reduction_proxy_info;
+      data_reduction_proxy_config.proxy_rules().Apply(
+          url, &data_reduction_proxy_info);
+      data_reduction_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
+      if (!data_reduction_proxy_info.proxy_server().is_direct())
+        result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
+    } else {
+      data_saver_proxy_used = false;
+    }
+    if (config->enabled_by_user_and_reachable() && url.SchemeIsHTTPOrHTTPS() &&
+        !url.SchemeIsCryptographic() && !net::IsLocalhost(url.host())) {
+      UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.ConfigService.HTTPRequests",
+                            data_saver_proxy_used);
+    }
   }
 }
 

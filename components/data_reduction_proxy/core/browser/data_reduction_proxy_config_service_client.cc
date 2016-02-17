@@ -27,6 +27,7 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -232,7 +233,8 @@ void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
 bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
     const net::HttpRequestHeaders& request_headers,
     const net::HttpResponseHeaders* response_headers,
-    const net::HostPortPair& proxy_server) {
+    const net::HostPortPair& proxy_server,
+    const net::LoadTimingInfo& load_timing_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(response_headers);
   if (config_->IsDataReductionProxy(proxy_server, nullptr)) {
@@ -269,6 +271,13 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
       previous_request_failed_authentication_ = true;
       InvalidateConfig();
       RetrieveConfig();
+
+      if (!load_timing_info.request_start.is_null()) {
+        UMA_HISTOGRAM_TIMES(
+            "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty",
+            base::TimeTicks::Now() - load_timing_info.request_start);
+      }
+
       return true;
     }
 

@@ -31,6 +31,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
+#include "net/url_request/url_request_context_storage.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -106,20 +107,27 @@ std::string EncodeConfig(const ClientConfig& config) {
 
 class DataReductionProxyConfigServiceClientTest : public testing::Test {
  protected:
-  DataReductionProxyConfigServiceClientTest() : context_(true) {}
+  DataReductionProxyConfigServiceClientTest() {
+    context_.reset(new net::TestURLRequestContext(true));
+    context_storage_.reset(new net::URLRequestContextStorage(context_.get()));
+    mock_socket_factory_.reset(new net::MockClientSocketFactory());
+  }
 
-  void SetUp() override {
+  void Init(bool use_mock_client_socket_factory) {
+    if (!use_mock_client_socket_factory)
+      mock_socket_factory_.reset(nullptr);
     test_context_ =
         DataReductionProxyTestContext::Builder()
             .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
-            .WithURLRequestContext(&context_)
-            .WithMockClientSocketFactory(&mock_socket_factory_)
+            .WithURLRequestContext(context_.get())
+            .WithMockClientSocketFactory(mock_socket_factory_.get())
             .WithTestConfigurator()
             .WithMockRequestOptions()
             .WithTestConfigClient()
             .Build();
-    context_.set_client_socket_factory(&mock_socket_factory_);
-    context_.Init();
+    context_->set_client_socket_factory(mock_socket_factory_.get());
+    test_context_->AttachToURLRequestContext(context_storage_.get());
+    context_->Init();
     ResetBackoffEntryReleaseTime();
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());
     test_context_->test_config_client()->SetEnabled(true);
@@ -130,6 +138,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
     delegate_.reset(
         new DataReductionProxyDelegate(request_options(), config()));
+
+    ASSERT_NE(nullptr, context_->network_delegate());
 
     // Set up the various test ClientConfigs.
     ClientConfig config =
@@ -241,7 +251,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     socket_data_providers_.push_back(
         (make_scoped_ptr(new net::StaticSocketDataProvider(
             success_reads_, arraysize(success_reads_), nullptr, 0))));
-    mock_socket_factory_.AddSocketDataProvider(
+    mock_socket_factory_->AddSocketDataProvider(
         socket_data_providers_.back().get());
   }
 
@@ -250,7 +260,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         (make_scoped_ptr(new net::StaticSocketDataProvider(
             previous_success_reads_, arraysize(previous_success_reads_),
             nullptr, 0))));
-    mock_socket_factory_.AddSocketDataProvider(
+    mock_socket_factory_->AddSocketDataProvider(
         socket_data_providers_.back().get());
   }
 
@@ -258,7 +268,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     socket_data_providers_.push_back(
         (make_scoped_ptr(new net::StaticSocketDataProvider(
             not_found_reads_, arraysize(not_found_reads_), nullptr, 0))));
-    mock_socket_factory_.AddSocketDataProvider(
+    mock_socket_factory_->AddSocketDataProvider(
         socket_data_providers_.back().get());
   }
 
@@ -285,10 +295,14 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   const std::string& loaded_config() const { return loaded_config_; }
 
+  net::TestURLRequestContext* test_url_request_context() const {
+    return context_.get();
+  }
+
  private:
   base::MessageLoopForIO message_loop_;
-  net::TestURLRequestContext context_;
-  net::MockClientSocketFactory mock_socket_factory_;
+  scoped_ptr<net::TestURLRequestContext> context_;
+  scoped_ptr<net::MockClientSocketFactory> mock_socket_factory_;
 
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxyRequestOptions> request_options_;
@@ -315,11 +329,14 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   net::MockRead previous_success_reads_[3];
   net::MockRead not_found_reads_[2];
 
+  scoped_ptr<net::URLRequestContextStorage> context_storage_;
+
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfigServiceClientTest);
 };
 
 // Tests the interaction of client config with dev rollout and QUIC field trial.
 TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
+  Init(true);
   const struct {
     bool enable_dev;
     bool enable_quic;
@@ -413,6 +430,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
 
 // Tests that backoff values increases with every time config cannot be fetched.
 TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
+  Init(true);
   // Use a local/static config.
   base::HistogramTester histogram_tester;
   AddMockFailure();
@@ -446,6 +464,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
 
 // Tests that the config is read successfully on the first attempt.
 TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
+  Init(true);
   AddMockSuccess();
   SetDataReductionProxyEnabled(true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
@@ -458,6 +477,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
 // Tests that the config is read successfully on the second attempt.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        RemoteConfigSuccessAfterFailure) {
+  Init(true);
   base::HistogramTester histogram_tester;
 
   AddMockFailure();
@@ -491,6 +511,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 
 // Verifies that the config is fetched successfully after IP address changes.
 TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
+  Init(true);
   SetDataReductionProxyEnabled(true);
   config_client()->RetrieveConfig();
 
@@ -524,6 +545,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
 // Verifies that fetching the remote config has no effect if the config client
 // is disabled.
 TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
+  Init(true);
   config_client()->SetEnabled(false);
   SetDataReductionProxyEnabled(true);
   config_client()->RetrieveConfig();
@@ -550,10 +572,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
 // Verifies the correctness of AuthFailure when the session key in the request
 // headers matches the currrent session key.
 TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
+  Init(true);
   net::HttpRequestHeaders request_headers;
   request_headers.SetHeader(
       "chrome-proxy", "something=something_else, s=" +
                           std::string(kOldSuccessSessionKey) + ", key=value");
+
   base::HistogramTester histogram_tester;
   AddMockPreviousSuccess();
   AddMockSuccess();
@@ -578,8 +602,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
       kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP);
   // Calling ShouldRetryDueToAuthFailure should trigger fetching of remote
   // config.
+  net::LoadTimingInfo load_timing_info;
+  load_timing_info.request_start =
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1);
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
-      request_headers, parsed.get(), origin.host_port_pair()));
+      request_headers, parsed.get(), origin.host_port_pair(),
+      load_timing_info));
   EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
   // Persisted config on pref should be cleared.
   EXPECT_TRUE(persisted_config().empty());
@@ -588,6 +616,9 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.ConfigService.AuthExpired", true, 1);
   RunUntilIdle();
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty", 1);
+
   // Second remote config should be fetched.
   VerifyRemoteSuccess();
 
@@ -602,12 +633,15 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   // Calling ShouldRetryDueToAuthFailure should trigger fetching of remote
   // config.
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
-      request_headers, parsed.get(), origin.host_port_pair()));
+      request_headers, parsed.get(), origin.host_port_pair(),
+      load_timing_info));
   EXPECT_EQ(2, config_client()->GetBackoffErrorCount());
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.ConfigService.AuthExpired", false, 2);
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.ConfigService.AuthExpired", true, 2);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty", 2);
   RunUntilIdle();
   // Third remote config should be fetched.
   VerifyRemoteSuccessWithOldConfig();
@@ -621,6 +655,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
 // headers do not match the currrent session key.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        AuthFailureWithRequestHeaders) {
+  Init(true);
   net::HttpRequestHeaders request_headers;
   const char kSessionKeyRequestHeaders[] = "123";
   ASSERT_NE(kOldSuccessSessionKey, kSessionKeyRequestHeaders);
@@ -650,8 +685,13 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   // Calling ShouldRetryDueToAuthFailure should not trigger fetching of remote
   // config since the session key in the request headers do not match the
   // current session key, but the request should be retried.
+  net::LoadTimingInfo load_timing_info;
+  load_timing_info.request_start =
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1);
+
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
-      request_headers, parsed.get(), origin.host_port_pair()));
+      request_headers, parsed.get(), origin.host_port_pair(),
+      load_timing_info));
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
   // Persisted config on pref should be cleared.
   EXPECT_FALSE(persisted_config().empty());
@@ -667,9 +707,66 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
       0 /* AUTH_EXPIRED_SESSION_KEY_MISMATCH */, 1);
 }
 
+// Verifies that requests that were not proxied through data saver proxy due to
+// missing config are recorded properly.
+TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
+  Init(false);
+  const struct {
+    std::string url;
+    bool enabled_by_user;
+    bool expect_histogram;
+  } tests[] = {
+      {
+          // Request should not be logged because data saver is disabled.
+          "http://www.example.com/", false, false,
+      },
+      {
+          "http://www.example.com/", true, true,
+      },
+      {
+          "https://www.example.com/", false, false,
+      },
+      {
+          // Request should not be logged because request is HTTPS.
+          "https://www.example.com/", true, false,
+      },
+      {
+          // Request to localhost should not be logged.
+          "http://127.0.0.1/", true, false,
+      },
+      {
+          // Special use IPv4 address for testing purposes (RFC 5735).
+          "http://198.51.100.1/", true, true,
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    base::HistogramTester histogram_tester;
+    SetDataReductionProxyEnabled(tests[i].enabled_by_user);
+
+    net::TestDelegate test_delegate;
+
+    scoped_ptr<net::URLRequest> request(
+        test_url_request_context()->CreateRequest(GURL(tests[i].url), net::IDLE,
+                                                  &test_delegate));
+    request->Start();
+    RunUntilIdle();
+
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.ConfigService.HTTPRequests",
+        tests[i].expect_histogram ? 1 : 0);
+
+    if (tests[i].expect_histogram) {
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.ConfigService.HTTPRequests", 0, 1);
+    }
+  }
+}
+
 // Tests that remote config can be applied after the serialized config has been
 // applied.
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
+  Init(true);
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true);
@@ -688,6 +785,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
 // retrieved successfully.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        ApplySerializedConfigAfterReceipt) {
+  Init(true);
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true);
@@ -709,6 +807,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // Tests that a local serialized config can be applied successfully if remote
 // config has not been fetched so far.
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
+  Init(true);
   SetDataReductionProxyEnabled(true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());

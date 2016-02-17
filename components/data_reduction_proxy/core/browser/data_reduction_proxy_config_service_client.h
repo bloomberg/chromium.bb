@@ -26,6 +26,7 @@ namespace net {
 class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+struct LoadTimingInfo;
 class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
@@ -93,7 +94,8 @@ class DataReductionProxyConfigServiceClient
   bool ShouldRetryDueToAuthFailure(
       const net::HttpRequestHeaders& request_headers,
       const net::HttpResponseHeaders* response_headers,
-      const net::HostPortPair& proxy_server);
+      const net::HostPortPair& proxy_server,
+      const net::LoadTimingInfo& load_timing_info);
 
  protected:
   // Retrieves the backoff entry object being used to throttle request failures.

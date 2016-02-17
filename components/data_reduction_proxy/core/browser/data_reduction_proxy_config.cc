@@ -835,6 +835,11 @@ bool DataReductionProxyConfig::ShouldEnableLoFiMode(
   return enable_lofi;
 }
 
+bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return enabled_by_user_ && !unreachable_;
+}
+
 bool DataReductionProxyConfig::ShouldEnableLoFiModeInternal(
     const net::NetworkQualityEstimator* network_quality_estimator) {
   DCHECK(thread_checker_.CalledOnValidThread());

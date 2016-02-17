@@ -6564,6 +6564,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty"
+    units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Time from when the request starts to the time when the auth failure is
+    received from the data saver proxy.
+
+    Recorded every time an auth failure is received from the data saver proxy.
+  </summary>
+</histogram>
+
 <histogram
     name="DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess">
   <owner>bengr@chromium.org</owner>
@@ -6593,6 +6605,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Count per HttpResponseCode when attempting to retrieve the Data Reduction
     Proxy configuration from the Data Reduction Proxy API.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.ConfigService.HTTPRequests"
+    enum="DataReductionProxyConfigServiceHTTPRequests">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Upper bound on the count of HTTP requests that did or did not go through the
+    data saver proxy.
+
+    An HTTP request may not go through data saver proxy if the config was
+    unavailable, local bypass rules or server side bypasses. If data saver is
+    turned on, this metric is recorded every time proxy is resolved for an HTTP
+    request.
   </summary>
 </histogram>
 
@@ -60897,6 +60924,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Current session key matches the key in the request"/>
 </enum>
 
+<enum name="DataReductionProxyConfigServiceHTTPRequests" type="int">
+  <int value="0" label="Request went through data saver proxy"/>
+  <int value="1" label="Request did not go through data saver proxy"/>
+</enum>
+
 <enum name="DataReductionProxyEnabledState" type="int">
   <int value="0" label="Off-to-On"/>
   <int value="1" label="On-to-Off"/>
@@ -83498,7 +83530,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="DataReductionProxyBypassedBytes" separator=".">
   <suffix name="SSL" label="Bypass due to SSL"/>
   <suffix name="LocalBypassRules"
-      label="Bypass due to client-side bypass rules"/>
+      label="Bypass due to client-side bypass rules or because the proxy
+             config was missing at the client"/>
   <suffix name="ManagedProxyConfig"
       label="Deprecated 1/9/2014 (M-41). Bypass due to a managed config"/>
   <suffix name="ProxyOverridden"
