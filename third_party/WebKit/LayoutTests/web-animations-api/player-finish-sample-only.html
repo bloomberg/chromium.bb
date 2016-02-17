@@ -65,12 +65,14 @@ function animate() {
     playerMiddle.onfinish = onFinishMiddle;
     playerMiddle.finish();
     playerMiddle.currentTime = 0;
+    playerMiddle.pause();
 
     playerBottom = document.getElementById('bottom').animate(keyframes, 70.0);
     playerBottom.name = 'playerBottom';
     playerBottom.onfinish = onFinishBottom;
     playerBottom.currentTime = 80.0;
     playerBottom.currentTime = 0;
+    playerBottom.pause();
 
     playerTop = document.getElementById('top').animate(keyframes, 90.0);
     playerTop.name = 'playerTop';
