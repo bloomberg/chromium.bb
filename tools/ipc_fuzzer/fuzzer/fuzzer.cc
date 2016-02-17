@@ -1193,6 +1193,18 @@ struct FuzzTraits<gfx::Vector2dF> {
   }
 };
 
+template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
+struct FuzzTraits<gpu::IdType<TypeMarker, WrappedType, kInvalidValue>> {
+  using param_type = gpu::IdType<TypeMarker, WrappedType, kInvalidValue>;
+  static bool Fuzz(param_type* id, Fuzzer* fuzzer) {
+    WrappedType raw_value = id->GetUnsafeValue();
+    if (!FuzzParam(&raw_value, fuzzer))
+      return false;
+    *id = param_type::FromUnsafeValue(raw_value);
+    return true;
+  }
+};
+
 template <>
 struct FuzzTraits<gpu::Mailbox> {
   static bool Fuzz(gpu::Mailbox* p, Fuzzer* fuzzer) {
@@ -1208,7 +1220,7 @@ struct FuzzTraits<gpu::SyncToken> {
     gpu::CommandBufferNamespace namespace_id =
         gpu::CommandBufferNamespace::INVALID;
     int32_t extra_data_field = 0;
-    uint64_t command_buffer_id = 0;
+    gpu::CommandBufferId command_buffer_id;
     uint64_t release_count = 0;
 
     if (!FuzzParam(&verified_flush, fuzzer))
