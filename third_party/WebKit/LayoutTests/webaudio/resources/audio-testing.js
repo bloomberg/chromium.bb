@@ -609,7 +609,7 @@ var Should = (function () {
     // Result:
     // "PASS One is 1 within a relative error of 0.1."
     // "FAIL One is not 1 within a relative error of 0.1: 2"
-    ShouldModel.prototype.beCloseTo = function (value, errorThreshold, precision) {
+    ShouldModel.prototype.beCloseTo = function (value, errorThreshold) {
         var type = typeof value;
         this._assert(type === 'number', 'value should be number for', value);
 
@@ -618,12 +618,12 @@ var Should = (function () {
         if (value) {
             var relativeError = Math.abs(this.target - value) / Math.abs(value);
             if (relativeError <= errorThreshold) {
-                this._testPassed("is " + value.toPrecision(precision) +
+                this._testPassed("is " + value.toPrecision(this.PRINT_PRECISION) +
                     " within a relative error of " + errorThreshold);
             } else {
                 // Include actual relative error so the failed test case can be updated with the actual
                 // relative error, if appropriate.
-                this._testFailed("is not " + value.toPrecision(precision) +
+                this._testFailed("is not " + value.toPrecision(this.PRINT_PRECISION) +
                     " within a relative error of " + errorThreshold +
                     ": " + this.target + " with relative error " + relativeError
                 );
@@ -631,12 +631,12 @@ var Should = (function () {
         } else {
             var absoluteError = Math.abs(this.target - value);
             if (absoluteError <= errorThreshold) {
-                this._testPassed("is " + value.toPrecision(precision) +
+                this._testPassed("is " + value.toPrecision(this.PRINT_PRECISION) +
                     " within an absolute error of " + errorThreshold);
             } else {
                 // Include actual absolute error so the failed test case can be updated with the
                 // actual error, if appropriate.
-                this._testFailed("is not " + value.toPrecision(precision) +
+                this._testFailed("is not " + value.toPrecision(this.PRINT_PRECISION) +
                     " within an absolute error of " + errorThreshold +
                     ": " + this.target + " with absolute error " + absoluteError
                 );
