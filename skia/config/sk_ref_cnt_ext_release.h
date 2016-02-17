@@ -15,5 +15,13 @@ public:
   void deref() const { SkRefCntBase::unref(); }
 };
 
+namespace WTF {
+  inline void adopted(const SkRefCnt* object) {}
+  inline void requireAdoption(const SkRefCnt* object) {}
+};
+
+using WTF::adopted;
+using WTF::requireAdoption;
+
 #endif
 

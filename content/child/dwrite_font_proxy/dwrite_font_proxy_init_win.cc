@@ -14,7 +14,9 @@
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 #include "content/child/font_warmup_win.h"
 #include "skia/ext/fontmgr_default_win.h"
+#include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
+#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
 namespace mswr = Microsoft::WRL;
@@ -58,24 +60,6 @@ void CreateDirectWriteFactory(IDWriteFactory** factory) {
       reinterpret_cast<IUnknown**>(factory))));
 }
 
-HRESULT STDMETHODCALLTYPE StubFontCollection(IDWriteFactory* factory,
-                                             IDWriteFontCollection** col,
-                                             BOOL checkUpdates) {
-  DCHECK(g_font_collection);
-  g_font_collection.CopyTo(col);
-  return S_OK;
-}
-
-// Copied from content/common/font_warmup_win.cc
-void PatchDWriteFactory(IDWriteFactory* factory) {
-  const unsigned int kGetSystemFontCollectionVTableIndex = 3;
-
-  PROC* vtable = *reinterpret_cast<PROC**>(factory);
-  PROC* function_ptr = &vtable[kGetSystemFontCollectionVTableIndex];
-  void* stub_function = &StubFontCollection;
-  base::win::ModifyCode(function_ptr, &stub_function, sizeof(PROC));
-}
-
 // Needed as a function for Bind()
 IPC::Sender* GetSenderOverride() {
   return g_sender_override;
@@ -99,11 +83,14 @@ void InitializeDWriteFontProxy(
     }
   }
 
-  PatchDWriteFactory(factory.Get());
+  skia::RefPtr<SkFontMgr> skia_font_manager = skia::AdoptRef(
+      SkFontMgr_New_DirectWrite(factory.Get(), g_font_collection.Get()));
+  blink::WebFontRendering::setSkiaFontManager(skia_font_manager.get());
 
-  blink::WebFontRendering::setDirectWriteFactory(factory.Get());
-  SkFontMgr* skia_font_manager = SkFontMgr_New_DirectWrite(factory.Get());
-  SetDefaultSkiaFactory(skia_font_manager);
+  // Add an extra ref for SetDefaultSkiaFactory, which keeps a ref but doesn't
+  // addref.
+  skia_font_manager->ref();
+  SetDefaultSkiaFactory(skia_font_manager.get());
 }
 
 void UninitializeDWriteFontProxy() {
