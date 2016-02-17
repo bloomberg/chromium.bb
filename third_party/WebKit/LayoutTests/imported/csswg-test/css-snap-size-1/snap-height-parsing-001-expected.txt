@@ -1,0 +1,16 @@
+This is a testharness.js-based test.
+FAIL initial value assert_equals: expected (string) "0px" but got (undefined) undefined
+FAIL snap-height: 20px 60 assert_equals: expected (string) "20px 60" but got (undefined) undefined
+FAIL snap-height should inherit assert_equals: expected (string) "20px 60" but got (undefined) undefined
+FAIL snap-height: initial assert_equals: expected (string) "0px" but got (undefined) undefined
+FAIL snap-height: initial; snap-height: inherit assert_equals: expected (string) "20px 60" but got (undefined) undefined
+FAIL snap-height: 40px assert_equals: expected (string) "40px" but got (undefined) undefined
+FAIL snap-height: 0 assert_equals: expected (string) "0px" but got (undefined) undefined
+FAIL snap-height: 1 assert_equals: expected (string) "20px 60" but got (undefined) undefined
+FAIL snap-height: -1px assert_equals: expected (string) "20px 60" but got (undefined) undefined
+FAIL snap-height: 40px -1 assert_equals: expected (string) "20px 60" but got (undefined) undefined
+FAIL snap-height: 40px 0 assert_equals: expected (string) "20px 60" but got (undefined) undefined
+FAIL snap-height: 40px 101 assert_equals: expected (string) "20px 60" but got (undefined) undefined
+FAIL Computed value must be the absolute length Cannot read property 'slice' of undefined
+Harness: the test ran to completion.
+

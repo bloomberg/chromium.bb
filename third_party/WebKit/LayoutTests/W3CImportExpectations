@@ -36,6 +36,8 @@ imported/csswg-test/css-regions-1 [ Skip ]
 imported/csswg-test/css-ruby-1 [ Skip ]
 ## Owners: bjonesbe@adobe.com
 # imported/csswg-test/css-shapes-1 [ Pass ]
+## Owners: kojii@chromium.org
+# imported/csswg-test/css-snap-size-1 [ Pass ]
 imported/csswg-test/css-speech-1 [ Skip ]
 imported/csswg-test/css-style-attr-1 [ Skip ]
 imported/csswg-test/css-syntax-3 [ Skip ]
