@@ -12723,6 +12723,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ExtensionFrameMapCacheHit" units="Boolean">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    True if the cache of the extension frame map was hit during access on the IO
+    thread.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ExtensionHostMonitoring.MaxActiveLoading">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>

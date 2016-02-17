@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -261,14 +262,18 @@ bool ExtensionApiFrameIdMap::GetCachedFrameDataOnIO(int render_process_id,
   base::AutoLock lock(frame_data_map_lock_);
   FrameDataMap::const_iterator frame_id_iter = frame_data_map_.find(
       RenderFrameIdKey(render_process_id, frame_routing_id));
+  bool found = false;
   if (frame_id_iter != frame_data_map_.end()) {
     // This is very likely to happen because CacheFrameId() is called as soon
     // as the frame is created.
     *frame_data_out = frame_id_iter->second;
-    return true;
+    found = true;
   }
 
-  return false;
+  // TODO(devlin): Depending on how the data looks, this may be removable after
+  // a few cycles. Check back in M52 to see if it's still needed.
+  UMA_HISTOGRAM_BOOLEAN("Extensions.ExtensionFrameMapCacheHit", found);
+  return found;
 }
 
 void ExtensionApiFrameIdMap::CacheFrameData(content::RenderFrameHost* rfh) {
