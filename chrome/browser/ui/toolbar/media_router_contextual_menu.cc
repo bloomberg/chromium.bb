@@ -96,9 +96,9 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
   const char kAboutPageUrl[] =
       "https://www.google.com/chrome/devices/chromecast/";
   const char kCastHelpCenterPageUrl[] =
-      "https://support.google.com/chromecast#topic=3058948";
+      "https://support.google.com/chromecast/topic/3447927";
   const char kCastLearnMorePageUrl[] =
-      "https://www.google.com/chrome/devices/chromecast/learn.html";
+      "https://support.google.com/chromecast/answer/2998338";
 
 #if defined(GOOGLE_CHROME_BUILD)
   PrefService* pref_service;
