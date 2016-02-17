@@ -28,9 +28,20 @@
           <img id="oldImage" data-type="old"
               src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
           <template is="dom-repeat" items="[[defaultImages_]]">
-            <img data-type="default" src="[[item.url]]" alt="[[item.title]]">
+            <img data-type="default" data-default-image-index$="[[index]]"
+                src="[[item.url]]" alt="[[item.title]]">
           </template>
         </iron-selector>
+        <template is="dom-if" if="[[isAuthorCreditShown_(selectedItem_)]]">
+          <div id="authorCredit">
+            [[i18n('authorCredit')]]
+            [[getAuthorName_(selectedItem_, defaultImages_)]]
+            <a href="[[getAuthorWebsite_(selectedItem_, defaultImages_)]]"
+                target="_blank">
+              [[getAuthorWebsite_(selectedItem_, defaultImages_)]]
+            </a>
+          </div>
+        </template>
       </div>
       <div id="previewPane">
         <img i18n-values="alt:previewAltText" src="[[selectedItem_.src]]"

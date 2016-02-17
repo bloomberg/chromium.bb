@@ -18,6 +18,7 @@ cr.define('settings_test', function() {
  * @typedef {{
  *   dataset: {
  *     type: string,
+ *     defaultImageIndex: ?number,
  *   },
  *   src: string,
  * }}
@@ -262,17 +263,16 @@ Polymer({
   },
 
   /**
-   * True if there is no old image and the selection icon should be hidden.
    * @param {string} oldImageUrl
-   * @return {boolean}
+   * @return {boolean} True if there is no old image and the old image icon
+   *     should be hidden.
    * @private
    */
   isOldImageHidden_: function(oldImageUrl) { return oldImageUrl.length == 0; },
 
   /**
-   * Return true if the selected icon in the image grid is the camera.
-   * @param {!settings.ChangePictureImageElement} selectedItem
-   * @return {boolean}
+   * @param {settings.ChangePictureImageElement} selectedItem
+   * @return {boolean} True if the camera is selected in the image grid.
    * @private
    */
   isCameraActive_: function(cameraPresent, selectedItem) {
@@ -282,12 +282,50 @@ Polymer({
   },
 
   /**
-   * Return true if the discard controls should be hidden.
-   * @param {!settings.ChangePictureImageElement} selectedItem
-   * @return {boolean}
+   * @param {settings.ChangePictureImageElement} selectedItem
+   * @return {boolean} True if the discard controls should be hidden.
    * @private
    */
   isDiscardHidden_: function(selectedItem) {
     return selectedItem == undefined || selectedItem.dataset.type != 'old';
+  },
+
+  /**
+   * @param {settings.ChangePictureImageElement} selectedItem
+   * @return {boolean} True if the author credit text is shown.
+   * @private
+   */
+  isAuthorCreditShown_: function(selectedItem) {
+    return selectedItem && selectedItem.dataset.type == 'default';
+  },
+
+  /**
+   * @param {!settings.ChangePictureImageElement} selectedItem
+   * @param {!Array<!settings.DefaultImage>} defaultImages
+   * @return {string} The author name for the selected default image. An empty
+   *     string is returned if there is no valid author name.
+   * @private
+   */
+  getAuthorName_: function(selectedItem, defaultImages) {
+    if (!this.isAuthorCreditShown_(selectedItem))
+      return '';
+
+    assert(selectedItem.dataset.defaultImageIndex < defaultImages.length);
+    return defaultImages[selectedItem.dataset.defaultImageIndex].author;
+  },
+
+  /**
+   * @param {!settings.ChangePictureImageElement} selectedItem
+   * @param {!Array<!settings.DefaultImage>} defaultImages
+   * @return {string} The author website for the selected default image. An
+   *     empty string is returned if there is no valid author name.
+   * @private
+   */
+  getAuthorWebsite_: function(selectedItem, defaultImages) {
+    if (!this.isAuthorCreditShown_(selectedItem))
+      return '';
+
+    assert(selectedItem.dataset.defaultImageIndex < defaultImages.length);
+    return defaultImages[selectedItem.dataset.defaultImageIndex].website;
   },
 });

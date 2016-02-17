@@ -40,6 +40,11 @@
   padding: 16px;
 }
 
+#authorCredit,
+#authorCredit a {
+  color: var(--paper-grey-500);
+}
+
 #previewPane {
   -webkit-margin-end: 10px;
   flex-shrink: 0;
