@@ -212,8 +212,9 @@ void WindowSelectorItem::RecomputeWindowTransforms() {
   UpdateCloseButtonLayout(OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
 }
 
-void WindowSelectorItem::SendFocusAlert() const {
-  window_label_button_view_->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+void WindowSelectorItem::SendAccessibleSelectionEvent() {
+  window_label_button_view_->NotifyAccessibilityEvent(
+      ui::AX_EVENT_SELECTION, true);
 }
 
 void WindowSelectorItem::SetDimmed(bool dimmed) {

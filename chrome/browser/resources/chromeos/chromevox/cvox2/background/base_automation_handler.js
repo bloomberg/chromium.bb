@@ -35,6 +35,7 @@ BaseAutomationHandler = function(node) {
     loadComplete: this.onLoadComplete,
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
+    selection: this.onEventDefault,
     scrollPositionChanged: this.onScrollPositionChanged,
     textChanged: this.onTextChanged,
     textSelectionChanged: this.onTextSelectionChanged,

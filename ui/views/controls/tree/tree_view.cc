@@ -250,9 +250,8 @@ void TreeView::SetSelectedNode(TreeModelNode* model_node) {
     controller_->OnTreeViewSelectionChanged(this);
 
   if (changed) {
-    // TODO(dmazzoni): Decide if EVENT_SELECTION_CHANGED is a better choice for
-    // sub-item selection event.
-    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
   }
 }
 

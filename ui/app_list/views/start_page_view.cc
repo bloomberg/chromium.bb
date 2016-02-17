@@ -86,7 +86,7 @@ class CustomLauncherPageBackgroundView : public views::View {
     selected_ = selected;
     SetVisible(selected);
     if (selected)
-      NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+      NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
   }
 
   bool selected() { return selected_; }

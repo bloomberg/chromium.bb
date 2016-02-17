@@ -88,7 +88,7 @@ class SearchBoxImageButton : public views::ImageButton {
     selected_ = selected;
     SchedulePaint();
     if (selected)
-      NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+      NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
   }
 
   bool OnKeyPressed(const ui::KeyEvent& event) override {

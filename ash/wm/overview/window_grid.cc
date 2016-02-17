@@ -391,7 +391,7 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
     if (selected_index_ >= removed_index && selected_index_ != 0)
       selected_index_--;
     if (send_focus_alert)
-      SelectedWindow()->SendFocusAlert();
+      SelectedWindow()->SendAccessibleSelectionEvent();
   }
 
   PositionWindows(true);
@@ -490,7 +490,7 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
     InitSelectionWidget(direction);
   // Send an a11y alert so that if ChromeVox is enabled, the item label is
   // read.
-  SelectedWindow()->SendFocusAlert();
+  SelectedWindow()->SendAccessibleSelectionEvent();
   // The selection widget is moved to the newly selected item in the same
   // grid.
   MoveSelectionWidgetToTarget(animate);

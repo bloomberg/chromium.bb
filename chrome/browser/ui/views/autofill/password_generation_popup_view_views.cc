@@ -205,7 +205,7 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
     return;
 
   if (controller_->password_selected())
-    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
 
   password_view_->set_background(
       views::Background::CreateSolidBackground(
