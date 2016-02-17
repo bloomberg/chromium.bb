@@ -12,6 +12,7 @@ div.box {
 
 <script>
 var receivedEvents = [];
+var preventDefaultOnPointerDown = false;
 
 function testReceivedEvents(expectedEvents, testLabel) {
   test(function() {
@@ -28,6 +29,8 @@ function init() {
     targetDiv.addEventListener(eventName, function(event) {
       receivedEvents.push(event.type + " " + event.button + "," + event.buttons);
       if (event.type.startsWith("mouse"))
+        event.preventDefault();
+      if (event.type == "pointerdown" && preventDefaultOnPointerDown)
         event.preventDefault();
     });
   });
@@ -109,6 +112,23 @@ function runTests() {
     "pointermove 2,1", "mouseup 2,1",
     "pointerup 0,0", "mouseup 0,0",
   ], "Off-the-page button changes");
+
+  preventDefaultOnPointerDown = true;
+  eventSender.mouseDown(0);
+  preventDefaultOnPointerDown = false;
+  eventSender.mouseDown(1);
+  eventSender.mouseUp(1);
+  eventSender.mouseUp(0);
+  eventSender.mouseDown(0);
+  eventSender.mouseUp(0);
+  testReceivedEvents([
+    "pointerdown 0,1",
+    "pointermove 1,5",
+    "pointermove 1,1",
+    "pointerup 0,0",
+    "pointerdown 0,1", "mousedown 0,1",
+    "pointerup 0,0", "mouseup 0,0"
+  ], "LM button with perevetDefault on pointerdown");
 }
 
 function run() {

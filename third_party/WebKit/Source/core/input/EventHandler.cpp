@@ -1322,7 +1322,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
 
     // TODO(crbug/545647): This state should reset with pointercancel too.
     m_pointerEventManager.conditionallyEnableMouseEventForPointerTypeMouse(
-        PlatformEvent::NoModifiers);
+        mouseEvent.modifiers());
 
     bool contextMenuEvent = mouseEvent.button() == RightButton;
 #if OS(MACOSX)
