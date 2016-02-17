@@ -369,6 +369,12 @@ public:
     // Classes inserting anonymous LayoutObjects in the tree are expected to
     // check for the anonymous wrapper case with:
     //                    beforeChild->parent() != this
+    //
+    // The usage of |child/parent/sibling| in this comment actually means
+    // |child/parent/sibling| in a flat tree because a layout tree is generated
+    // from a structure of a flat tree if Shadow DOM is used.
+    // See LayoutTreeBuilderTraversal and FlatTreeTraversal.
+    //
     // See LayoutTable::addChild and LayoutBlock::addChild.
     // TODO(jchaffraix): |newChild| cannot be nullptr and should be a reference.
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr);
