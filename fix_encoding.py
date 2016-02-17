@@ -171,7 +171,7 @@ class WinUnicodeOutputBase(object):
     try:
       for line in lines:
         self.write(line)
-    except Exception, e:
+    except Exception as e:
       complain('%s.writelines: %r' % (self.name, e))
       raise
 
@@ -230,7 +230,7 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
         if not remaining:
           break
         text = text[int(n.value):]
-    except Exception, e:
+    except Exception as e:
       complain('%s.write: %r' % (self.name, e))
       raise
 
@@ -253,7 +253,7 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
   def flush(self):
     try:
       self._stream.flush()
-    except Exception, e:
+    except Exception as e:
       complain('%s.flush: %r from %r' % (self.name, e, self._stream))
       raise
 
@@ -263,7 +263,7 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
         # Replace characters that cannot be printed instead of failing.
         text = text.encode(self.encoding, 'replace')
       self._stream.write(text)
-    except Exception, e:
+    except Exception as e:
       complain('%s.write: %r' % (self.name, e))
       raise
 
@@ -348,7 +348,7 @@ def fix_win_console(encoding):
     # TODO(maruel): Do sys.stdin with ReadConsoleW(). Albeit the limitation is
     # "It doesn't appear to be possible to read Unicode characters in UTF-8
     # mode" and this appears to be a limitation of cmd.exe.
-  except Exception, e:
+  except Exception as e:
     complain('exception %r while fixing up sys.stdout and sys.stderr' % e)
   return True
 
