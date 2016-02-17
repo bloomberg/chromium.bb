@@ -20,8 +20,11 @@ LoginStateNotificationBlockerChromeOS::LoginStateNotificationBlockerChromeOS(
       locked_(false),
       observing_(true) {
   // This class is created in the ctor of NotificationUIManager which is created
-  // when a notification is created, so ash::Shell should be initialized.
-  ash::Shell::GetInstance()->AddShellObserver(this);
+  // when a notification is created, so ash::Shell should be initialized, except
+  // when running as a mus client (ash::Shell is not initialized when that is
+  // the case).
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->AddShellObserver(this);
 
   // LoginState may not exist in some tests.
   if (chromeos::LoginState::IsInitialized())
@@ -65,7 +68,8 @@ void LoginStateNotificationBlockerChromeOS::OnLockStateChanged(bool locked) {
 }
 
 void LoginStateNotificationBlockerChromeOS::OnAppTerminating() {
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->RemoveShellObserver(this);
   chromeos::UserAddingScreen::Get()->RemoveObserver(this);
   observing_ = false;
 }

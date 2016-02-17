@@ -11,10 +11,16 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/window_event_dispatcher.h"
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/public/common/mojo_shell_connection.h"
+#endif
+
 namespace chrome {
 
 bool ShouldOpenAshOnStartup() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(MOJO_SHELL_CLIENT)
+  return !content::MojoShellConnection::Get();
+#elif defined(OS_CHROMEOS)
   return true;
 #else
   return false;

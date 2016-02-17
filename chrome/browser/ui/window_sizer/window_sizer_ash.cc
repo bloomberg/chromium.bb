@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "ui/aura/window.h"
@@ -15,6 +16,8 @@
 
 bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
                                       ui::WindowShowState* show_state) const {
+  if (!chrome::ShouldOpenAshOnStartup())
+    return false;
   if (!browser_ ||
       browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
     return false;

@@ -188,6 +188,13 @@ void InitializeNetworkPortalDetector() {
   }
 }
 
+bool IsRunningAsMusClient() {
+#if defined(MOJO_SHELL_CLIENT)
+  return !!content::MojoShellConnection::Get();
+#endif
+  return false;
+}
+
 }  // namespace
 
 namespace internal {
@@ -378,7 +385,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 #if defined(MOJO_SHELL_CLIENT)
-  if (content::MojoShellConnection::Get()) {
+  if (IsRunningAsMusClient()) {
     interface_factory_.reset(new ChromeInterfaceFactory);
     content::MojoShellConnection::Get()->AddListener(interface_factory_.get());
   }
@@ -473,10 +480,16 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   media::SoundsManager::Create();
 
-  // Initialize magnification manager before ash tray is created. And this must
-  // be placed after UserManager::SessionStarted();
-  AccessibilityManager::Initialize();
-  MagnificationManager::Initialize();
+  if (!IsRunningAsMusClient()) {
+    // Initialize magnification manager before ash tray is created. And this
+    // must be placed after UserManager::SessionStarted();
+    // TODO(sad): These components expects the ash::Shell instance to be
+    // created. However, when running as a mus-client, an ash::Shell instance is
+    // not created. These accessibility services should instead be exposed as
+    // separate services. crbug.com/557401
+    AccessibilityManager::Initialize();
+    MagnificationManager::Initialize();
+  }
 
   wallpaper::WallpaperManagerBase::SetPathIds(
       chrome::DIR_USER_DATA,
@@ -707,21 +720,25 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   system::InputDeviceSettings::Get()->InitTouchDevicesStatusFromLocalPrefs();
 
-  // These are dependent on the ash::Shell singleton already having been
-  // initialized.
-  // TODO(oshima): Remove ash dependency in PowerButtonObserver.
-  // crbug.com/408832.
-  power_button_observer_.reset(new PowerButtonObserver);
-  data_promo_notification_.reset(new DataPromoNotification());
+  if (!IsRunningAsMusClient()) {
+    // These are dependent on the ash::Shell singleton already having been
+    // initialized. Consequently, these cannot be used when running as a mus
+    // client.
+    // TODO(oshima): Remove ash dependency in PowerButtonObserver.
+    // crbug.com/408832.
+    power_button_observer_.reset(new PowerButtonObserver);
+    data_promo_notification_.reset(new DataPromoNotification());
 
-  keyboard_event_rewriters_.reset(new EventRewriterController());
-  keyboard_event_rewriters_->AddEventRewriter(
-      scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
-  keyboard_event_rewriters_->AddEventRewriter(
-      scoped_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
-  keyboard_event_rewriters_->AddEventRewriter(scoped_ptr<ui::EventRewriter>(
-      new EventRewriter(ash::Shell::GetInstance()->sticky_keys_controller())));
-  keyboard_event_rewriters_->Init();
+    keyboard_event_rewriters_.reset(new EventRewriterController());
+    keyboard_event_rewriters_->AddEventRewriter(
+        scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
+    keyboard_event_rewriters_->AddEventRewriter(
+        scoped_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
+    keyboard_event_rewriters_->AddEventRewriter(
+        scoped_ptr<ui::EventRewriter>(new EventRewriter(
+            ash::Shell::GetInstance()->sticky_keys_controller())));
+    keyboard_event_rewriters_->Init();
+  }
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
