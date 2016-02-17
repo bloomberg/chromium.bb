@@ -28,6 +28,7 @@ public:
 
     ~AnimationPlayerEvent() override;
 
+    double currentTime(bool& isNull) const;
     double currentTime() const;
     double timelineTime() const;
 

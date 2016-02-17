@@ -109,6 +109,7 @@ public:
     bool finishedInternal() const { return m_finished; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(finish);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(cancel);
 
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
@@ -248,6 +249,8 @@ private:
     // ScriptedAnimationController. This object remains active until the
     // event is actually dispatched.
     RefPtrWillBeMember<Event> m_pendingFinishedEvent;
+
+    RefPtrWillBeMember<Event> m_pendingCancelledEvent;
 
     enum CompositorAction {
         None,

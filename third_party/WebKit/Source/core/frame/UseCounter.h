@@ -1083,6 +1083,8 @@ public:
         HTMLMediaElementInDocument = 1230,
         HTMLMediaElementControlsAttribute = 1231,
         SVGZoomEvent = 1232,
+        V8Animation_Oncancel_AttributeGetter = 1233,
+        V8Animation_Oncancel_AttributeSetter = 1234,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

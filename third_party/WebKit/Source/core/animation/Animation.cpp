@@ -827,7 +827,14 @@ bool Animation::update(TimingUpdateReason reason)
     if ((idle || limited()) && !m_finished) {
         if (reason == TimingUpdateForAnimationFrame && (idle || hasStartTime())) {
             if (idle) {
-                // TODO(dstockwell): Fire the cancel event.
+                const AtomicString& eventType = EventTypeNames::cancel;
+                if (executionContext() && hasEventListeners(eventType)) {
+                    double eventCurrentTime = nullValue();
+                    m_pendingCancelledEvent = AnimationPlayerEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
+                    m_pendingCancelledEvent->setTarget(this);
+                    m_pendingCancelledEvent->setCurrentTarget(this);
+                    m_timeline->document()->enqueueAnimationFrameEvent(m_pendingCancelledEvent);
+                }
             } else {
                 const AtomicString& eventType = EventTypeNames::finish;
                 if (executionContext() && hasEventListeners(eventType)) {
@@ -1096,6 +1103,7 @@ DEFINE_TRACE(Animation)
     visitor->trace(m_content);
     visitor->trace(m_timeline);
     visitor->trace(m_pendingFinishedEvent);
+    visitor->trace(m_pendingCancelledEvent);
     visitor->trace(m_finishedPromise);
     visitor->trace(m_readyPromise);
     RefCountedGarbageCollectedEventTargetWithInlineData<Animation>::trace(visitor);

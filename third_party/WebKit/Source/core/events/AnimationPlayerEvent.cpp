@@ -34,6 +34,13 @@ AnimationPlayerEvent::~AnimationPlayerEvent()
 {
 }
 
+double AnimationPlayerEvent::currentTime(bool& isNull) const
+{
+    double result = currentTime();
+    isNull = std::isnan(result);
+    return result;
+}
+
 double AnimationPlayerEvent::currentTime() const
 {
     return m_currentTime;
