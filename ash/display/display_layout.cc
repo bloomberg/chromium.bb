@@ -175,6 +175,15 @@ std::string DisplayLayout::ToString() const {
                             default_unified ? ", default_unified" : "");
 }
 
+scoped_ptr<DisplayLayout> DisplayLayout::Copy() const {
+  scoped_ptr<DisplayLayout> copy(new DisplayLayout);
+  copy->placement = placement;
+  copy->mirrored = mirrored;
+  copy->default_unified = default_unified;
+  copy->primary_id = primary_id;
+  return copy;
+}
+
 // static
 void DisplayLayout::RegisterJSONConverter(
     base::JSONValueConverter<DisplayLayout>* converter) {

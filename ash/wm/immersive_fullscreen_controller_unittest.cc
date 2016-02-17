@@ -503,10 +503,8 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
 
   // Set up initial state.
   UpdateDisplay("800x600,800x600");
-  ash::DisplayLayout display_layout(
-      test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 0));
   ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      display_layout);
+      test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 0));
 
   SetEnabled(true);
   ASSERT_TRUE(controller()->IsEnabled());

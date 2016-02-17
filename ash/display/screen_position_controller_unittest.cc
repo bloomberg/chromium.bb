@@ -42,11 +42,13 @@ namespace test {
 namespace {
 
 void SetSecondaryDisplayLayout(DisplayPlacement::Position position) {
-  DisplayLayout layout =
-      Shell::GetInstance()->display_manager()->GetCurrentDisplayLayout();
-  layout.placement.position = position;
-  Shell::GetInstance()->display_manager()->
-      SetLayoutForCurrentDisplays(layout);
+  scoped_ptr<DisplayLayout> layout(Shell::GetInstance()
+                                       ->display_manager()
+                                       ->GetCurrentDisplayLayout()
+                                       .Copy());
+  layout->placement.position = position;
+  Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
+      std::move(layout));
 }
 
 ScreenPositionController* GetScreenPositionController() {

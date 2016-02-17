@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/display_layout.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 
@@ -20,18 +21,15 @@ class ASH_EXPORT DisplayLayoutStore {
   DisplayLayoutStore();
   ~DisplayLayoutStore();
 
-  const DisplayLayout& default_display_layout() const {
-    return default_display_layout_;
-  }
-  void SetDefaultDisplayLayout(const DisplayLayout& layout);
+  void SetDefaultDisplayLayout(scoped_ptr<DisplayLayout> layout);
 
   // Registeres the display layout info for the specified display(s).
   void RegisterLayoutForDisplayIdList(const DisplayIdList& list,
-                                      const DisplayLayout& layout);
+                                      scoped_ptr<DisplayLayout> layout);
 
   // If no layout is registered, it creatas new layout using
   // |default_display_layout_|.
-  DisplayLayout GetRegisteredDisplayLayout(const DisplayIdList& list);
+  const DisplayLayout& GetRegisteredDisplayLayout(const DisplayIdList& list);
 
   // Update the multi display state in the display layout for
   // |display_list|.  This creates new display layout if no layout is
@@ -42,13 +40,13 @@ class ASH_EXPORT DisplayLayoutStore {
 
  private:
   // Creates new layout for display list from |default_display_layout_|.
-  DisplayLayout CreateDefaultDisplayLayout(const DisplayIdList& display_list);
+  DisplayLayout* CreateDefaultDisplayLayout(const DisplayIdList& display_list);
 
   // The default display layout.
-  DisplayLayout default_display_layout_;
+  scoped_ptr<DisplayLayout> default_display_layout_;
 
   // Display layout per list of devices.
-  std::map<DisplayIdList, DisplayLayout> layouts_;
+  std::map<DisplayIdList, scoped_ptr<DisplayLayout>> layouts_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutStore);
 };

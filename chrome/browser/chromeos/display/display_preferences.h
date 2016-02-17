@@ -12,7 +12,7 @@
 class PrefRegistrySimple;
 
 namespace ash {
-struct DisplayLayout;
+class DisplayLayout;
 }
 
 namespace gfx {

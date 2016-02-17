@@ -542,10 +542,9 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   // Create two screen vertical layout.
   UpdateDisplay("600x1000,600x1000");
   // Layout the secondary display to the bottom of the primary.
-  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::BOTTOM, 0));
   ASSERT_GT(gfx::Screen::GetScreen()->GetNumDisplays(), 1);
-  Shell::GetInstance()->display_manager()->
-      SetLayoutForCurrentDisplays(layout);
+  Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
+      test::CreateDisplayLayout(DisplayPlacement::BOTTOM, 0));
 
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 1000, 201, 310)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 1000 + 20);

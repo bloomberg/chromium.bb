@@ -95,10 +95,12 @@ void SwapPrimaryDisplay();
 
 // Creates the dislpay layout from position and offset for the current
 // display list. If you simply want to create a new layout that is
-// independent of current displays, simply create a new DisplayLayout
-// and set display id fields (primary, ids in placement) manually.
-DisplayLayout CreateDisplayLayout(DisplayPlacement::Position position,
-                                  int offset);
+// independent of current displays, use DisplayLayoutBuilder or simply
+// create a new DisplayLayout and set display id fields (primary, ids
+// in placement) manually.
+scoped_ptr<DisplayLayout> CreateDisplayLayout(
+    DisplayPlacement::Position position,
+    int offset);
 
 }  // namespace test
 }  // namespace ash

@@ -211,19 +211,15 @@ void DisplayManager::RefreshFontParams() {
 #endif  // OS_CHROMEOS
 }
 
-DisplayLayout DisplayManager::GetCurrentDisplayLayout() const {
+const DisplayLayout& DisplayManager::GetCurrentDisplayLayout() const {
   DCHECK_LE(2U, num_connected_displays());
-  if (num_connected_displays() == 2) {
+  if (num_connected_displays() > 1) {
     DisplayIdList list = GetCurrentDisplayIdList();
     return layout_store_->GetRegisteredDisplayLayout(list);
-  } else if (num_connected_displays() > 2) {
-    // Return fixed horizontal layout for >= 3 displays.
-    return DisplayLayout();
   }
-  NOTREACHED() << "DisplayLayout is requested for single display";
+  LOG(ERROR) << "DisplayLayout is requested for single display";
   // On release build, just fallback to default instead of blowing up.
-  DisplayLayout layout =
-      layout_store_->default_display_layout();
+  static DisplayLayout layout;
   layout.primary_id = active_display_list_[0].id();
   return layout;
 }
@@ -248,32 +244,33 @@ DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
   }
 }
 
-void DisplayManager::SetLayoutForCurrentDisplays(const DisplayLayout& layout) {
+void DisplayManager::SetLayoutForCurrentDisplays(
+    scoped_ptr<DisplayLayout> layout) {
   if (GetNumDisplays() != 2)
     return;
   const DisplayIdList list = GetCurrentDisplayIdList();
 
-  DCHECK_NE(gfx::Display::kInvalidDisplayID, layout.primary_id);
+  DCHECK_NE(gfx::Display::kInvalidDisplayID, layout->primary_id);
 
-  DCHECK_NE(layout.placement.display_id, gfx::Display::kInvalidDisplayID);
+  DCHECK_NE(layout->placement.display_id, gfx::Display::kInvalidDisplayID);
 
-  DCHECK((list[0] == layout.placement.display_id &&
-          list[1] == layout.placement.parent_display_id) ||
-         (list[1] == layout.placement.display_id &&
-          list[0] == layout.placement.parent_display_id));
+  DCHECK((list[0] == layout->placement.display_id &&
+          list[1] == layout->placement.parent_display_id) ||
+         (list[1] == layout->placement.display_id &&
+          list[0] == layout->placement.parent_display_id));
 
-  DisplayLayout current_layout =
+  const DisplayLayout& current_layout =
       layout_store_->GetRegisteredDisplayLayout(list);
 
-  if (layout.placement.position == current_layout.placement.position &&
-      layout.placement.offset == current_layout.placement.offset &&
-      layout.placement.display_id == current_layout.placement.display_id &&
-      layout.placement.parent_display_id ==
+  if (layout->placement.position == current_layout.placement.position &&
+      layout->placement.offset == current_layout.placement.offset &&
+      layout->placement.display_id == current_layout.placement.display_id &&
+      layout->placement.parent_display_id ==
           current_layout.placement.parent_display_id) {
     return;
   }
 
-  layout_store_->RegisterLayoutForDisplayIdList(list, layout);
+  layout_store_->RegisterLayoutForDisplayIdList(list, std::move(layout));
   if (delegate_)
     delegate_->PreDisplayConfigurationChange(false);
 
@@ -631,7 +628,8 @@ void DisplayManager::OnNativeDisplaysChanged(
       new_display_info_list.size() > 1) {
     DisplayIdList list = CreateDisplayIdList(new_display_info_list[0].id(),
                                              new_display_info_list[1].id());
-    DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(list);
+    const DisplayLayout& layout =
+        layout_store_->GetRegisteredDisplayLayout(list);
     // Mirror mode is set by DisplayConfigurator on the device.
     // Emulate it when running on linux desktop.
     if (layout.mirrored)
@@ -668,7 +666,8 @@ void DisplayManager::UpdateDisplaysWith(
   if (new_display_info_list.size() > 1) {
     DisplayIdList list = CreateDisplayIdList(new_display_info_list[0].id(),
                                              new_display_info_list[1].id());
-    DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(list);
+    const DisplayLayout& layout =
+        layout_store_->GetRegisteredDisplayLayout(list);
     current_default_multi_display_mode_ =
         (layout.default_unified && unified_desktop_enabled_) ? UNIFIED
                                                              : EXTENDED;
@@ -868,7 +867,7 @@ const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
 const gfx::Display& DisplayManager::GetPrimaryDisplayCandidate() const {
   if (GetNumDisplays() != 2)
     return active_display_list_[0];
-  DisplayLayout layout =
+  const DisplayLayout& layout =
       layout_store_->GetRegisteredDisplayLayout(GetCurrentDisplayIdList());
   return GetDisplayForId(layout.primary_id);
 }
@@ -1316,7 +1315,7 @@ bool DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
     return true;
   }
 
-  DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(
+  const DisplayLayout& layout = layout_store_->GetRegisteredDisplayLayout(
       CreateDisplayIdList(display_list->at(0).id(), display_list->at(1).id()));
 
   // Ignore if a user has a old format (should be extremely rare)

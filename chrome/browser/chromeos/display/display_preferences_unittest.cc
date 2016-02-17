@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/display/display_layout_builder.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
@@ -270,17 +271,15 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   display_manager->SetLayoutForCurrentDisplays(
       ash::test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 10));
-  ash::DisplayLayout layout = display_manager->GetCurrentDisplayLayout();
+  const ash::DisplayLayout& layout = display_manager->GetCurrentDisplayLayout();
   EXPECT_EQ(ash::DisplayPlacement::TOP, layout.placement.position);
   EXPECT_EQ(10, layout.placement.offset);
 
-  ash::DisplayLayout dummy_layout;
-  dummy_layout.primary_id = id1;
-  dummy_layout.placement =
-      ash::DisplayPlacement(ash::DisplayPlacement::LEFT, 20);
-  dummy_layout.placement.display_id = dummy_id;
-  dummy_layout.placement.parent_display_id = id1;
-  StoreDisplayLayoutPrefForTest(id1, dummy_id, dummy_layout);
+  ash::DisplayLayoutBuilder dummy_layout_builder(id1);
+  dummy_layout_builder.SetSecondaryPlacement(dummy_id,
+                                             ash::DisplayPlacement::LEFT, 20);
+  scoped_ptr<ash::DisplayLayout> dummy_layout(dummy_layout_builder.Build());
+  StoreDisplayLayoutPrefForTest(id1, dummy_id, *dummy_layout);
 
   // Can't switch to a display that does not exist.
   window_tree_host_manager->SetPrimaryDisplayId(dummy_id);
@@ -304,8 +303,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   ash::DisplayLayout stored_layout;
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*layout_value,
                                                    &stored_layout));
-  EXPECT_EQ(dummy_layout.placement.position, stored_layout.placement.position);
-  EXPECT_EQ(dummy_layout.placement.offset, stored_layout.placement.offset);
+  EXPECT_EQ(dummy_layout->placement.position, stored_layout.placement.position);
+  EXPECT_EQ(dummy_layout->placement.offset, stored_layout.placement.offset);
 
   bool mirrored = true;
   EXPECT_TRUE(layout_value->GetBoolean(kMirroredKey, &mirrored));
@@ -573,10 +572,8 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
 
   // Updating layout with primary swapped should save the correct value.
   {
-    ash::DisplayLayout layout =
-        ash::test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 10);
     ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-        layout);
+        ash::test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 10));
     const base::DictionaryValue* new_value = nullptr;
     EXPECT_TRUE(displays->GetDictionary(key, &new_value));
     ash::DisplayLayout stored_layout;

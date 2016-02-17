@@ -11,7 +11,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;
@@ -59,7 +60,8 @@ struct ASH_EXPORT DisplayPlacement {
   std::string ToString() const;
 };
 
-struct ASH_EXPORT DisplayLayout {
+class ASH_EXPORT DisplayLayout final {
+ public:
   DisplayLayout();
   ~DisplayLayout();
 
@@ -84,6 +86,11 @@ struct ASH_EXPORT DisplayLayout {
   // Returns string representation of the layout for debugging/testing.
   // This includes "unified" only if the unified desktop feature is enabled.
   std::string ToString() const;
+
+  scoped_ptr<DisplayLayout> Copy() const;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisplayLayout);
 };
 
 }  // namespace ash

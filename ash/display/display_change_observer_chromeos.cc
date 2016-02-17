@@ -158,10 +158,10 @@ ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
     return ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
   DisplayIdList list = CreateDisplayIdList(display_states[0]->display_id(),
                                            display_states[1]->display_id());
-  DisplayLayout layout = Shell::GetInstance()
-                             ->display_manager()
-                             ->layout_store()
-                             ->GetRegisteredDisplayLayout(list);
+  const DisplayLayout& layout = Shell::GetInstance()
+                                    ->display_manager()
+                                    ->layout_store()
+                                    ->GetRegisteredDisplayLayout(list);
   return layout.mirrored ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR :
                            ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
 }

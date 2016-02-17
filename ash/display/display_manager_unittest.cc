@@ -7,6 +7,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
+#include "ash/display/display_layout_builder.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_util.h"
 #include "ash/display/mirror_window_controller.h"
@@ -1625,11 +1626,11 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
   // This is a workdaround to force the display manager to forget
   // the mirroing layout.
   DisplayIdList list = CreateDisplayIdList(1, 2);
-  DisplayLayout layout =
-      display_manager()->layout_store()->GetRegisteredDisplayLayout(list);
-  layout.mirrored = false;
-  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(list,
-                                                                    layout);
+  DisplayLayoutBuilder builder(
+      display_manager()->layout_store()->GetRegisteredDisplayLayout(list));
+  builder.SetMirrored(false);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list, builder.Build());
 
   // Exit from hardware mirroring.
   d2.SetBounds(gfx::Rect(0, 500, 500, 500));
@@ -1649,11 +1650,11 @@ TEST_F(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
 
   UpdateDisplay("400x500,300x200");
   DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
-  DisplayLayout layout =
-      display_manager()->layout_store()->GetRegisteredDisplayLayout(list);
-  layout.default_unified = false;
-  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(list,
-                                                                    layout);
+  DisplayLayoutBuilder builder(
+      display_manager()->layout_store()->GetRegisteredDisplayLayout(list));
+  builder.SetDefaultUnified(false);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list, builder.Build());
   display_manager()->SetUnifiedDesktopEnabled(true);
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
 }
@@ -2045,27 +2046,22 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
   int64_t id1 = 10001;
   int64_t id2 = 10002;
   ASSERT_TRUE(CompareDisplayIds(id1, id2));
-  ash::DisplayLayout good;
-  good.primary_id = id1;
-  good.placement = DisplayPlacement(DisplayPlacement::LEFT, 0);
-  good.placement.display_id = id2;
-  good.placement.parent_display_id = id1;
+  DisplayLayoutBuilder good_builder(id1);
+  good_builder.SetSecondaryPlacement(id2, DisplayPlacement::LEFT, 0);
+  scoped_ptr<DisplayLayout> good(good_builder.Build());
 
   DisplayIdList good_list = CreateDisplayIdList(id1, id2);
-  layout_store->RegisterLayoutForDisplayIdList(good_list, good);
+  layout_store->RegisterLayoutForDisplayIdList(good_list, good->Copy());
 
-  DisplayLayout bad;
-  bad.placement = DisplayPlacement(DisplayPlacement::BOTTOM, 0);
-  bad.primary_id = id1;
-  good.placement.display_id = id2;
-  good.placement.parent_display_id = id1;
+  DisplayLayoutBuilder bad(id1);
+  bad.SetSecondaryPlacement(id2, DisplayPlacement::BOTTOM, 0);
 
   DisplayIdList bad_list(2);
   bad_list[0] = id2;
   bad_list[1] = id1;
-  layout_store->RegisterLayoutForDisplayIdList(bad_list, bad);
+  layout_store->RegisterLayoutForDisplayIdList(bad_list, bad.Build());
 
-  EXPECT_EQ(good.ToString(),
+  EXPECT_EQ(good->ToString(),
             layout_store->GetRegisteredDisplayLayout(good_list).ToString());
 }
 
@@ -2073,14 +2069,14 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   int64_t id1 = 10001;
   int64_t id2 = 10002;
 
-  DisplayLayout old_layout;
-  old_layout.placement = DisplayPlacement(DisplayPlacement::BOTTOM, 0);
-  old_layout.primary_id = id1;
+  scoped_ptr<DisplayLayout> old_layout(new DisplayLayout);
+  old_layout->placement = DisplayPlacement(DisplayPlacement::BOTTOM, 0);
+  old_layout->primary_id = id1;
 
   DisplayLayoutStore* layout_store = display_manager()->layout_store();
   DisplayIdList list = CreateDisplayIdList(id1, id2);
-  layout_store->RegisterLayoutForDisplayIdList(list, old_layout);
-  DisplayLayout stored = layout_store->GetRegisteredDisplayLayout(list);
+  layout_store->RegisterLayoutForDisplayIdList(list, std::move(old_layout));
+  const DisplayLayout& stored = layout_store->GetRegisteredDisplayLayout(list);
 
   EXPECT_EQ(id1, stored.placement.parent_display_id);
   EXPECT_EQ(id2, stored.placement.display_id);

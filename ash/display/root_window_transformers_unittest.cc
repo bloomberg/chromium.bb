@@ -192,9 +192,8 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
-  DisplayLayout display_layout(
+  display_manager->SetLayoutForCurrentDisplays(
       test::CreateDisplayLayout(DisplayPlacement::BOTTOM, 50));
-  display_manager->SetLayoutForCurrentDisplays(display_layout);
   EXPECT_EQ("50,120 150x200",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
 

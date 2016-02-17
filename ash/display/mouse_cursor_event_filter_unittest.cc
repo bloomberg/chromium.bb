@@ -44,8 +44,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
 
   ASSERT_EQ(DisplayPlacement::RIGHT, Shell::GetInstance()
                                          ->display_manager()
-                                         ->layout_store()
-                                         ->default_display_layout()
+                                         ->GetCurrentDisplayLayout()
                                          .placement.position);
 
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 11)));

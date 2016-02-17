@@ -44,8 +44,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::RIGHT, 0));
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  scoped_ptr<DisplayLayout> layout(
+      test::CreateDisplayLayout(DisplayPlacement::RIGHT, 0));
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
 
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
@@ -60,8 +61,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
   // Move 2nd display downwards a bit.
-  layout.placement.offset = 5;
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  layout->placement.offset = 5;
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   // This is same as before because the 2nd display's y is above
   // the indicator's x.
@@ -78,8 +79,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
 
   // Move it down further so that the shared edge is shorter than
   // minimum hole size (160).
-  layout.placement.offset = 200;
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  layout->placement.offset = 200;
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
   EXPECT_EQ(gfx::Rect(359, 200, 1, 160),
@@ -94,8 +95,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
   // Now move 2nd display upwards
-  layout.placement.offset = -5;
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  layout->placement.offset = -5;
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
   EXPECT_EQ(gfx::Rect(359, 16, 1, 344),
@@ -122,8 +123,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::LEFT, 0));
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  scoped_ptr<DisplayLayout> layout(
+      test::CreateDisplayLayout(DisplayPlacement::LEFT, 0));
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
   EXPECT_EQ(gfx::Rect(0, 16, 1, 344),
@@ -137,8 +139,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
   EXPECT_EQ(gfx::Rect(0, 0, 1, 360),
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
-  layout.placement.offset = 250;
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  layout->placement.offset = 250;
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
   EXPECT_EQ(gfx::Rect(0, 250, 1, 110),
@@ -162,8 +164,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::TOP, 0));
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  scoped_ptr<DisplayLayout> layout(
+      test::CreateDisplayLayout(DisplayPlacement::TOP, 0));
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
   EXPECT_EQ(gfx::Rect(0, 0, 360, 1),
@@ -177,8 +180,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ(gfx::Rect(0, 0, 360, 1),
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
-  layout.placement.offset = 250;
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  layout->placement.offset = 250;
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
   EXPECT_EQ(gfx::Rect(250, 0, 110, 1),
@@ -192,9 +195,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ(gfx::Rect(250, 0, 110, 1),
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
-  layout.placement.position = DisplayPlacement::BOTTOM;
-  layout.placement.offset = 0;
-  display_manager->SetLayoutForCurrentDisplays(layout);
+  layout->placement.position = DisplayPlacement::BOTTOM;
+  layout->placement.offset = 0;
+  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
   EXPECT_EQ(gfx::Rect(0, 359, 360, 1),

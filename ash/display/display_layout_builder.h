@@ -1,0 +1,48 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_DISPLAY_DISPLAY_LAYOUT_BUILDER_H_
+#define ASH_DISPLAY_DISPLAY_LAYOUT_BUILDER_H_
+
+#include "ash/display/display_layout.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace ash {
+
+class DisplayLayout;
+
+// A utility class to create a DisplayLayout instance.
+class ASH_EXPORT DisplayLayoutBuilder final {
+ public:
+  // Creates a builder that uses a copy of the |layout| as a source.
+  explicit DisplayLayoutBuilder(const DisplayLayout& layout);
+
+  // Ccreates a builder with the primary display id.
+  explicit DisplayLayoutBuilder(int64_t primary_id);
+
+  ~DisplayLayoutBuilder();
+
+  DisplayLayoutBuilder& SetDefaultUnified(bool default_unified);
+
+  DisplayLayoutBuilder& SetMirrored(bool mirrored);
+
+  // Sets the display placement for the secondary display.
+  DisplayLayoutBuilder& SetSecondaryPlacement(
+      int64_t secondary_id,
+      DisplayPlacement::Position position,
+      int offset);
+
+  // Returns the DisplayLayout. After this call, the builder becomes invalid.
+  scoped_ptr<DisplayLayout> Build();
+
+ private:
+  scoped_ptr<DisplayLayout> layout_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayLayoutBuilder);
+};
+
+}  // namespace ash
+
+#endif  // ASH_DISPLAY_DISPLAY_LAYOUT_BUILDER_H_

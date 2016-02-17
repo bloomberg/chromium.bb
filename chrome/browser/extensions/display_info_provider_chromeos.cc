@@ -160,16 +160,16 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
                          int64_t primary_display_id,
                          const gfx::Rect& target_display_bounds,
                          int64_t target_display_id) {
-  ash::DisplayLayout layout;
-  layout.placement =
+  scoped_ptr<ash::DisplayLayout> layout(new ash::DisplayLayout);
+  layout->placement =
       GetPlacementForRectangles(primary_display_bounds, target_display_bounds);
-  layout.primary_id = primary_display_id;
-  layout.placement.display_id = target_display_id;
-  layout.placement.parent_display_id = primary_display_id;
+  layout->primary_id = primary_display_id;
+  layout->placement.display_id = target_display_id;
+  layout->placement.parent_display_id = primary_display_id;
 
   ash::Shell::GetInstance()
       ->display_configuration_controller()
-      ->SetDisplayLayout(layout, false /* user_action */);
+      ->SetDisplayLayout(std::move(layout), false /* user_action */);
 }
 
 // Validates that parameters passed to the SetInfo function are valid for the

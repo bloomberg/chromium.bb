@@ -133,15 +133,14 @@ class ASH_EXPORT DisplayManager
   void RefreshFontParams();
 
   // Returns the display layout used for current displays.
-  DisplayLayout GetCurrentDisplayLayout() const;
+  const DisplayLayout& GetCurrentDisplayLayout() const;
 
   // Returns the current display list.
   DisplayIdList GetCurrentDisplayIdList() const;
 
   // Sets the layout for the current display pair. The |layout| specifies
-  // the locaion of the secondary display relative to the primary.
-  void SetLayoutForCurrentDisplays(
-      const DisplayLayout& layout_relative_to_primary);
+  // the locaion of the displays relative to their parents.
+  void SetLayoutForCurrentDisplays(scoped_ptr<DisplayLayout> layout);
 
   // Returns display for given |id|;
   const gfx::Display& GetDisplayForId(int64_t id) const;

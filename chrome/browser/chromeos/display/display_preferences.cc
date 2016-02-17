@@ -117,8 +117,8 @@ void LoadDisplayLayouts() {
       prefs::kSecondaryDisplays);
   for (base::DictionaryValue::Iterator it(*layouts);
        !it.IsAtEnd(); it.Advance()) {
-    ash::DisplayLayout layout;
-    if (!ash::DisplayLayout::ConvertFromValue(it.value(), &layout)) {
+    scoped_ptr<ash::DisplayLayout> layout(new ash::DisplayLayout);
+    if (!ash::DisplayLayout::ConvertFromValue(it.value(), layout.get())) {
       LOG(WARNING) << "Invalid preference value for " << it.key();
       continue;
     }
@@ -135,7 +135,7 @@ void LoadDisplayLayouts() {
         continue;
       }
       ash::DisplayIdList list = ash::CreateDisplayIdList(id1, id2);
-      layout_store->RegisterLayoutForDisplayIdList(list, layout);
+      layout_store->RegisterLayoutForDisplayIdList(list, std::move(layout));
     }
   }
 }
@@ -236,7 +236,7 @@ void StoreCurrentDisplayLayoutPrefs() {
   }
 
   ash::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
-  ash::DisplayLayout display_layout =
+  const ash::DisplayLayout& display_layout =
       display_manager->layout_store()->GetRegisteredDisplayLayout(list);
   StoreDisplayLayoutPref(list, display_layout);
 }

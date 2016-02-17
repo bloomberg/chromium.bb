@@ -143,9 +143,8 @@ TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
   UpdateDisplay("300x400,400x500");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  DisplayLayout layout(test::CreateDisplayLayout(DisplayPlacement::TOP, 0));
-  Shell::GetInstance()->display_manager()->
-      SetLayoutForCurrentDisplays(layout);
+  Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
+      test::CreateDisplayLayout(DisplayPlacement::TOP, 0));
   EXPECT_EQ("0,-500 400x500", root_windows[1]->GetBoundsInScreen().ToString());
 
   scoped_ptr<aura::Window> window1(
