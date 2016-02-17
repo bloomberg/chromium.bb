@@ -66719,6 +66719,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1229" label="HTMLMediaElement"/>
   <int value="1230" label="HTMLMediaElementInDocument"/>
   <int value="1231" label="HTMLMediaElementControlsAttribute"/>
+  <int value="1232" label="SVGZoomEvent"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

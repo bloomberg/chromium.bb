@@ -1082,6 +1082,7 @@ public:
         HTMLMediaElement = 1229,
         HTMLMediaElementInDocument = 1230,
         HTMLMediaElementControlsAttribute = 1231,
+        SVGZoomEvent = 1232,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

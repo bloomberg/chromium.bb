@@ -31,14 +31,14 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/EventListener.h"
-#include "core/frame/LocalFrame.h"
-#include "core/page/FrameTree.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/svg/LayoutSVGModelObject.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
+#include "core/page/FrameTree.h"
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGNumberTearOff.h"
@@ -201,16 +201,18 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
         bool setListener = true;
 
         // Only handle events if we're the outermost <svg> element
-        if (name == HTMLNames::onunloadAttr)
+        if (name == HTMLNames::onunloadAttr) {
             document().setWindowAttributeEventListener(EventTypeNames::unload, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-        else if (name == HTMLNames::onresizeAttr)
+        } else if (name == HTMLNames::onresizeAttr) {
             document().setWindowAttributeEventListener(EventTypeNames::resize, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-        else if (name == HTMLNames::onscrollAttr)
+        } else if (name == HTMLNames::onscrollAttr) {
             document().setWindowAttributeEventListener(EventTypeNames::scroll, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-        else if (name == SVGNames::onzoomAttr)
+        } else if (name == SVGNames::onzoomAttr) {
+            Deprecation::countDeprecation(document(), UseCounter::SVGZoomEvent);
             document().setWindowAttributeEventListener(EventTypeNames::zoom, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-        else
+        } else {
             setListener = false;
+        }
 
         if (setListener)
             return;

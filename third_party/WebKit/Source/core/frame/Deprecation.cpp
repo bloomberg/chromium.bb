@@ -342,6 +342,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::ObjectObserve:
         return willBeRemoved("'Object.observe'", 50, "6147094632988672");
 
+    case UseCounter::SVGZoomEvent:
+        return willBeRemoved("'SVGZoomEvent'", 52, "5760883808534528");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
