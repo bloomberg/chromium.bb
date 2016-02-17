@@ -63,7 +63,9 @@ class MojoSequentialFile : public leveldb::SequentialFile {
   ~MojoSequentialFile() override {}
 
   Status Read(size_t n, Slice* result, char* scratch) override {
-    int bytes_read = file_.ReadAtCurrentPosNoBestEffort(scratch, n);
+    int bytes_read = file_.ReadAtCurrentPosNoBestEffort(
+        scratch,
+        static_cast<int>(n));
     if (bytes_read == -1) {
       base::File::Error error = LastFileError();
       return MakeIOError(filename_, base::File::ErrorToString(error),
@@ -102,7 +104,7 @@ class MojoRandomAccessFile : public leveldb::RandomAccessFile {
               Slice* result,
               char* scratch) const override {
     Status s;
-    int r = file_.Read(offset, scratch, n);
+    int r = file_.Read(offset, scratch, static_cast<int>(n));
     *result = Slice(scratch, (r < 0) ? 0 : r);
     if (r < 0) {
       // An error: return a non-ok status
@@ -142,7 +144,8 @@ class MojoWritableFile : public leveldb::WritableFile {
   ~MojoWritableFile() override {}
 
   leveldb::Status Append(const leveldb::Slice& data) override {
-    size_t bytes_written = file_.WriteAtCurrentPos(data.data(), data.size());
+    size_t bytes_written = file_.WriteAtCurrentPos(
+        data.data(), static_cast<int>(data.size()));
     if (bytes_written != data.size()) {
       base::File::Error error = LastFileError();
       return MakeIOError(filename_, base::File::ErrorToString(error),
