@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mash/quick_launch/quick_launch_application.h"
+
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,8 +31,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                       public views::TextfieldController {
  public:
   QuickLaunchUI(mojo::Shell* shell)
-      : shell_(shell),
-        prompt_(new views::Textfield) {
+      : shell_(shell), prompt_(new views::Textfield) {
     set_background(views::Background::CreateStandardPanelBackground());
     prompt_->set_controller(this);
     AddChildView(prompt_);
@@ -84,36 +85,25 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(QuickLaunchUI);
 };
 
-class QuickLaunchApplicationDelegate : public mojo::ShellClient {
- public:
-  QuickLaunchApplicationDelegate() {}
-  ~QuickLaunchApplicationDelegate() override {}
+QuickLaunchApplication::QuickLaunchApplication() {}
+QuickLaunchApplication::~QuickLaunchApplication() {}
 
- private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Shell* shell, const std::string& url,
-                  uint32_t id) override {
-    tracing_.Initialize(shell, url);
+void QuickLaunchApplication::Initialize(mojo::Shell* shell,
+                                        const std::string& url,
+                                        uint32_t id) {
+  tracing_.Initialize(shell, url);
 
-    aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
-    views::WindowManagerConnection::Create(shell);
+  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
+  views::WindowManagerConnection::Create(shell);
 
-    views::Widget* window = views::Widget::CreateWindowWithBounds(
-        new QuickLaunchUI(shell), gfx::Rect(10, 640, 0, 0));
-    window->Show();
-  }
+  views::Widget* window = views::Widget::CreateWindowWithBounds(
+      new QuickLaunchUI(shell), gfx::Rect(10, 640, 0, 0));
+  window->Show();
+}
 
-  mojo::TracingImpl tracing_;
-  scoped_ptr<views::AuraInit> aura_init_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuickLaunchApplicationDelegate);
-};
+bool QuickLaunchApplication::AcceptConnection(mojo::Connection* connection) {
+  return true;
+}
 
 }  // namespace quick_launch
 }  // namespace mash
-
-MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(
-      new mash::quick_launch::QuickLaunchApplicationDelegate);
-  return runner.Run(shell_handle);
-}

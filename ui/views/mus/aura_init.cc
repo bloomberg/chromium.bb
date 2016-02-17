@@ -77,8 +77,7 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
     return;
   resource_provider::ResourceLoader resource_loader(
       shell, GetResourcePaths(resource_file_));
-  if (!resource_loader.BlockUntilLoaded())
-    return;
+  CHECK(resource_loader.BlockUntilLoaded());
   CHECK(resource_loader.loaded());
   ui::RegisterPathProvider();
   base::File pak_file = resource_loader.ReleaseFile(resource_file_);
