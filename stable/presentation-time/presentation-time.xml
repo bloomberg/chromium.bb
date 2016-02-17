@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="presentation_timing">
+<protocol name="presentation_time">
 <!-- wrap:70 -->
 
   <copyright>
@@ -25,7 +25,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="presentation" version="1">
+  <interface name="wp_presentation" version="1">
     <description summary="timed presentation related wl_surface requests">
 
 <!-- Introduction -->
@@ -85,7 +85,7 @@
 
       <arg name="surface" type="object" interface="wl_surface"
            summary="target surface"/>
-      <arg name="callback" type="new_id" interface="presentation_feedback"
+      <arg name="callback" type="new_id" interface="wp_presentation_feedback"
            summary="new feedback object"/>
     </request>
 
@@ -129,7 +129,7 @@
 
   </interface>
 
-  <interface name="presentation_feedback" version="1">
+  <interface name="wp_presentation_feedback" version="1">
     <description summary="presentation time feedback event">
       A presentation_feedback object returns an indication that a
       wl_surface content update has become visible to the user.
