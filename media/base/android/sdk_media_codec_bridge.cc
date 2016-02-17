@@ -334,6 +334,23 @@ AudioCodecBridge::AudioCodecBridge(const std::string& mime)
     // audio encoding yet.
     : SdkMediaCodecBridge(mime, false, MEDIA_CODEC_DECODER) {}
 
+bool AudioCodecBridge::ConfigureAndStart(const AudioDecoderConfig& config,
+                                         bool play_audio,
+                                         jobject media_crypto) {
+  const int channel_count =
+      ChannelLayoutToChannelCount(config.channel_layout());
+  const int64_t codec_delay_ns = base::Time::kNanosecondsPerSecond *
+                                 config.codec_delay() /
+                                 config.samples_per_second();
+  const int64_t seek_preroll_ns =
+      1000LL * config.seek_preroll().InMicroseconds();
+
+  return ConfigureAndStart(config.codec(), config.samples_per_second(),
+                           channel_count, config.extra_data().data(),
+                           config.extra_data().size(), codec_delay_ns,
+                           seek_preroll_ns, play_audio, media_crypto);
+}
+
 bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
                                          int sample_rate,
                                          int channel_count,
@@ -343,7 +360,14 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
                                          int64_t seek_preroll_ns,
                                          bool play_audio,
                                          jobject media_crypto) {
-  JNIEnv* env = AttachCurrentThread();
+  DVLOG(2) << __FUNCTION__ << ": "
+           << " codec:" << GetCodecName(codec)
+           << " samples_per_second:" << sample_rate
+           << " channel_count:" << channel_count
+           << " codec_delay_ns:" << codec_delay_ns
+           << " seek_preroll_ns:" << seek_preroll_ns
+           << " extra data size:" << extra_data_size
+           << " play audio:" << play_audio << " media_crypto:" << media_crypto;
 
   if (!media_codec())
     return false;
@@ -351,6 +375,8 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
   std::string codec_string = AudioCodecToAndroidMimeType(codec);
   if (codec_string.empty())
     return false;
+
+  JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, codec_string);

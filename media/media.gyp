@@ -1946,6 +1946,7 @@
             '../ui/gl/gl.gyp:gl',
             '../url/url.gyp:url_lib',
             'media_android_jni_headers',
+            'shared_memory_support',
           ],
           'include_dirs': [
             # Needed by media_drm_bridge.cc.

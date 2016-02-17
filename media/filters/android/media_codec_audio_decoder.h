@@ -10,13 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/media_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -53,10 +51,15 @@ namespace media {
 // Because both dequeuing and enqueuing of an input buffer can fail, the
 // implementation puts the input |DecoderBuffer|s and the corresponding decode
 // callbacks into an input queue. The decoder has a timer that periodically
-// tries to send the front buffer from the input queue to the MediaCodec. In
-// the case of success the element is removed from the queue, the decode
-// callback is fired and the decoding process advances. The same timer tries to
-// dequeue an output buffer.
+// fires the decoding cycle that has two steps. The first step tries to send the
+// front buffer from the input queue to the MediaCodec. In the case of success
+// the element is removed from the queue, the decode callback is fired and the
+// decoding process advances. The second step tries to dequeue an output buffer,
+// and uses it in the case of success.
+//
+// The failures in both steps are normal and they happen periodically since
+// both input and output buffers become available at unpredictable moments. The
+// timer is here to repeat the dequeueing attempts.
 //
 // Although one can specify a delay in the MediaCodec's dequeue operations,
 // this implementation follows the simple logic which is similar to
@@ -94,7 +97,7 @@ namespace media {
 //                 |                          |             |
 //              [Error]                    [Ready]       [Error]
 
-class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
+class MediaCodecAudioDecoder : public AudioDecoder {
  public:
   explicit MediaCodecAudioDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -121,6 +124,13 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
     STATE_ERROR,
   };
 
+  // Information about dequeued input buffer.
+  struct InputBufferInfo {
+    int buf_index;    // The codec input buffers are referred to by this index.
+    bool is_pending;  // True if we tried to enqueue this buffer before.
+    InputBufferInfo(int i, bool p) : buf_index(i), is_pending(p) {}
+  };
+
   // Information about the MediaCodec's output buffer.
   struct OutputBufferInfo {
     int buf_index;  // The codec output buffers are referred to by this index.
@@ -143,6 +153,24 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
   // Returns true if any input was processed.
   bool QueueInput();
 
+  // A helper method for QueueInput(). Dequeues an empty input buffer from the
+  // codec and returns the information about it. OutputBufferInfo.buf_index is
+  // the index of the dequeued buffer or -1 if the codec is busy or an error
+  // occured.  OutputBufferInfo.is_pending is set to true if we tried to enqueue
+  // this buffer before. In this case the buffer is already filled with data.
+  // In the case of an error sets STATE_ERROR.
+  InputBufferInfo DequeueInputBuffer();
+
+  // A helper method for QueueInput(). Fills an input buffer referred to by
+  // |input_info| with data and enqueues it to the codec. Returns true if
+  // succeeded or false if an error occurs or there is no good CDM key.
+  // May set STATE_DRAINING, STATE_WAITING_FOR_KEY or STATE_ERROR.
+  bool EnqueueInputBuffer(const InputBufferInfo& input_info);
+
+  // Calls DecodeCB with |decode_status| for every frame in |input_queue| and
+  // then clears it.
+  void ClearInputQueue(Status decode_status);
+
   // Dequeues all output buffers from MediaCodec that are immediately available.
   // Returns true if any output buffer was received from MediaCodec.
   bool DequeueOutput();
@@ -154,16 +182,14 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
   // Helper method to change the state.
   void SetState(State new_state);
 
-  // The following helper methods ConfigureMediaCodec(), OnDecodedFrame(),
-  // OnOutputFormatChanged() are specific to the stream (audio/video), but
-  // others seem to apply to any MediaCodec decoder.
+  // Helper method for DequeueOutput(), processes end of stream.
+  void OnDecodedEos(const OutputBufferInfo& out);
+
+  // The following helper methods OnDecodedFrame() and OnOutputFormatChanged()
+  // are specific to the stream (audio/video), but others seem to apply to any
+  // MediaCodec decoder.
   // TODO(timav): refactor the common part out and use it here and in AVDA
   // (http://crbug.com/583082).
-
-  // Configures MediaCodec with |config|. Returns valid MediaCodec pointer if
-  // succeeded or null if configuration failed.
-  scoped_ptr<MediaCodecBridge> ConfigureMediaCodec(
-      const AudioDecoderConfig& config);
 
   // Processes the output buffer after it comes from MediaCodec.
   void OnDecodedFrame(const OutputBufferInfo& out);
@@ -205,9 +231,6 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
   // Such buffer appears in MEDIA_CODEC_NO_KEY processing. The -1 value means
   // there is no such buffer.
   int pending_input_buf_index_;
-
-  // Weak pointer factory must be the last member variable.
-  base::WeakPtrFactory<MediaCodecAudioDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecAudioDecoder);
 };

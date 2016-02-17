@@ -102,7 +102,16 @@ class MEDIA_EXPORT AudioCodecBridge : public SdkMediaCodecBridge {
   // See MediaCodecUtil::IsKnownUnaccelerated().
   static bool IsKnownUnaccelerated(const AudioCodec& codec);
 
-  // Start the audio codec bridge.
+  // Start the audio codec bridge. If |play_audio| is true this method creates
+  // Android AudioTrack object for the actual audio playback
+  // (http://developer.android.com/reference/android/media/AudioTrack.html).
+  bool ConfigureAndStart(const AudioDecoderConfig& config,
+                         bool play_audio,
+                         jobject media_crypto);
+
+  // An overloaded variant used by AudioDecoderJob and AudioMediaCodecDecoder.
+  // TODO(timav): Modify the above mentioned classes to pass parameters as
+  // AudioDecoderConfig and remove this method.
   bool ConfigureAndStart(const AudioCodec& codec,
                          int sample_rate,
                          int channel_count,
