@@ -97,6 +97,11 @@ void OnWhitelistSanitizationError(const base::FilePath& whitelist,
   LOG(WARNING) << "Invalid whitelist " << whitelist.value() << ": " << error;
 }
 
+void DeleteFileOnTaskRunner(const base::FilePath& path) {
+  if (!base::DeleteFile(path, true))
+    DPLOG(ERROR) << "Couldn't delete " << path.value();
+}
+
 void OnWhitelistSanitizationResult(
     const std::string& crx_id,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -164,8 +169,7 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
 
       RecordUncleanUninstall();
 
-      if (!base::DeleteFile(path, true))
-        DPLOG(ERROR) << "Couldn't delete " << path.value();
+      DeleteFileOnTaskRunner(path);
     }
   }
 
@@ -195,8 +199,7 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
 
       RecordUncleanUninstall();
 
-      if (!base::DeleteFile(path, true))
-        DPLOG(ERROR) << "Couldn't delete " << path.value();
+      DeleteFileOnTaskRunner(path);
     }
   }
 }
@@ -385,8 +388,9 @@ bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
   bool result = cus_->UnregisterComponent(crx_id);
   DCHECK(result);
 
-  result = base::DeleteFile(GetSanitizedWhitelistPath(crx_id), false);
-  DCHECK(result);
+  cus_->GetSequencedTaskRunner()->PostTask(
+    FROM_HERE,
+    base::Bind(&DeleteFileOnTaskRunner, GetSanitizedWhitelistPath(crx_id)));
 
   return removed;
 }
