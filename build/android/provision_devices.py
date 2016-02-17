@@ -21,6 +21,11 @@ import subprocess
 import sys
 import time
 
+# Import _strptime before threaded code. datetime.datetime.strptime is
+# threadsafe except for the initial import of the _strptime module.
+# See crbug.com/584730 and https://bugs.python.org/issue7980.
+import _strptime  # pylint: disable=unused-import
+
 import devil_chromium
 from devil import devil_env
 from devil.android import battery_utils
