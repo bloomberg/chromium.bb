@@ -34,8 +34,9 @@ EMEApp.prototype.createPlayer = function() {
   var videoPlayer = PlayerUtils.createPlayer(this.video_, this.testConfig_);
   if (!videoPlayer) {
     Utils.timeLog('Cannot create a media player.');
-    return;
+    return Promise.reject('Cannot create a media player.');
   }
+
   Utils.timeLog('Using ' + videoPlayer.constructor.name);
   if (this.testConfig_.runFPS)
     FPSObserver.observe(this.video_);

@@ -158,6 +158,7 @@
               player = p;
               play(player.video, testConfig.playTwice);
           }).catch(function(error) {
+              Utils.timeLog(error);
               Utils.failTest('Unable to play video.');
           });
     }
