@@ -66739,6 +66739,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1230" label="HTMLMediaElementInDocument"/>
   <int value="1231" label="HTMLMediaElementControlsAttribute"/>
   <int value="1232" label="SVGZoomEvent"/>
+  <int value="1233" label="V8Animation_Oncancel_AttributeGetter"/>
+  <int value="1234" label="V8Animation_Oncancel_AttributeSetter"/>
+  <int value="1235" label="V8HTMLCommentInExternalScript"/>
+  <int value="1236" label="V8HTMLComment"/>
+  <int value="1237" label="V8SloppyModeBlockScopedFunctionRedefinition"/>
+  <int value="1238" label="V8ForInInitializer"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -108,6 +108,18 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
     case v8::Isolate::kPromiseDefer:
         blinkFeature = UseCounter::V8PromiseDefer;
         break;
+    case v8::Isolate::kHtmlCommentInExternalScript:
+        blinkFeature = UseCounter::V8HTMLCommentInExternalScript;
+        break;
+    case v8::Isolate::kHtmlComment:
+        blinkFeature = UseCounter::V8HTMLComment;
+        break;
+    case v8::Isolate::kSloppyModeBlockScopedFunctionRedefinition:
+        blinkFeature = UseCounter::V8SloppyModeBlockScopedFunctionRedefinition;
+        break;
+    case v8::Isolate::kForInInitializer:
+        blinkFeature = UseCounter::V8ForInInitializer;
+        break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.

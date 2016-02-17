@@ -1085,6 +1085,10 @@ public:
         SVGZoomEvent = 1232,
         V8Animation_Oncancel_AttributeGetter = 1233,
         V8Animation_Oncancel_AttributeSetter = 1234,
+        V8HTMLCommentInExternalScript = 1235,
+        V8HTMLComment = 1236,
+        V8SloppyModeBlockScopedFunctionRedefinition = 1237,
+        V8ForInInitializer = 1238,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
