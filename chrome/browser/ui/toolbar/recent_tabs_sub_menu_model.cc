@@ -309,8 +309,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
             base::UserMetricsAction("WrenchMenu_OpenRecentTabFromLocal"));
         UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu",
                                   LOCAL_SESSION_TAB, LIMIT_RECENT_TAB_ACTION);
-        service->RestoreEntryById(context, item.tab_id,
-                                  browser_->host_desktop_type(), disposition);
+        service->RestoreEntryById(context, item.tab_id, disposition);
       }
     } else {  // Restore tab of session from other devices.
       sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
@@ -340,7 +339,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
       UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu", RESTORE_WINDOW,
                                 LIMIT_RECENT_TAB_ACTION);
       service->RestoreEntryById(context, local_window_items_[window_items_idx],
-                                browser_->host_desktop_type(), disposition);
+                                disposition);
     }
   }
   UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.OpenRecentTab",

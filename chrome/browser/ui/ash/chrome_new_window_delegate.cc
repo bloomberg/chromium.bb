@@ -22,7 +22,7 @@ namespace {
 void RestoreTabUsingProfile(Profile* profile) {
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile);
-  service->RestoreMostRecentEntry(NULL, chrome::HOST_DESKTOP_TYPE_ASH);
+  service->RestoreMostRecentEntry(nullptr);
 }
 
 // Returns the browser for the active window, if any.

@@ -19,7 +19,6 @@ IOSChromeTabRestoreServiceClient::~IOSChromeTabRestoreServiceClient() {}
 
 sessions::LiveTabContext*
 IOSChromeTabRestoreServiceClient::CreateLiveTabContext(
-    int host_desktop_type,
     const std::string& app_name) {
   return ios::GetChromeBrowserProvider()->GetLiveTabContextProvider()->Create(
       browser_state_);
@@ -35,8 +34,7 @@ IOSChromeTabRestoreServiceClient::FindLiveTabContextForTab(
 
 sessions::LiveTabContext*
 IOSChromeTabRestoreServiceClient::FindLiveTabContextWithID(
-    SessionID::id_type desired_id,
-    int host_desktop_type) {
+    SessionID::id_type desired_id) {
   return ios::GetChromeBrowserProvider()
       ->GetLiveTabContextProvider()
       ->FindContextWithID(desired_id);

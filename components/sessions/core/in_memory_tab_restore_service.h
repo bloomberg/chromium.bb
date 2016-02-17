@@ -40,13 +40,12 @@ class SESSIONS_EXPORT InMemoryTabRestoreService : public TabRestoreService {
   void BrowserClosed(LiveTabContext* context) override;
   void ClearEntries() override;
   const Entries& entries() const override;
-  std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context,
-                                               int host_desktop_type) override;
+  std::vector<LiveTab*> RestoreMostRecentEntry(
+      LiveTabContext* context) override;
   Tab* RemoveTabEntryById(SessionID::id_type id) override;
   std::vector<LiveTab*> RestoreEntryById(
       LiveTabContext* context,
       SessionID::id_type id,
-      int host_desktop_type,
       WindowOpenDisposition disposition) override;
   void LoadTabsFromLastSession() override;
   bool IsLoaded() const override;

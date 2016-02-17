@@ -77,12 +77,10 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   void BrowserClosed(LiveTabContext* context);
   void ClearEntries();
   const Entries& entries() const;
-  std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context,
-                                               int host_desktop_type);
+  std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context);
   Tab* RemoveTabEntryById(SessionID::id_type id);
   std::vector<LiveTab*> RestoreEntryById(LiveTabContext* context,
                                          SessionID::id_type id,
-                                         int host_desktop_type,
                                          WindowOpenDisposition disposition);
 
   // Notifies observers the tabs have changed.
@@ -122,16 +120,13 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
 
   // This is a helper function for RestoreEntryById() for restoring a single
   // tab. If |context| is NULL, this creates a new window for the entry. This
-  // returns the LiveTabContext into which the tab was restored.
-  // |disposition| will be respected, but if it is UNKNOWN then the tab's
-  // original attributes will be respected instead. If a new
-  // LiveTabContext needs to be created for this tab,
-  // |host_desktop_type| will be passed to
-  // TabRestoreServiceClient::CreateLiveTabContext(). If present,
-  // |live_tab| will be populated with the LiveTab of the restored tab.
+  // returns the LiveTabContext into which the tab was restored. |disposition|
+  // will be respected, but if it is UNKNOWN then the tab's original attributes
+  // will be respected instead. If a new LiveTabContext needs to be created for
+  // this tab, If present, |live_tab| will be populated with the LiveTab of the
+  // restored tab.
   LiveTabContext* RestoreTab(const Tab& tab,
                              LiveTabContext* context,
-                             int host_desktop_type,
                              WindowOpenDisposition disposition,
                              LiveTab** live_tab);
 

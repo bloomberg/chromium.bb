@@ -853,7 +853,7 @@ void GlobalMenuBarX11::OnHistoryItemActivated(DbusmenuMenuitem* sender,
       TabRestoreServiceFactory::GetForProfile(profile_);
   if (item->session_id && service) {
     service->RestoreEntryById(browser_->live_tab_context(), item->session_id,
-                              browser_->host_desktop_type(), UNKNOWN);
+                              UNKNOWN);
   } else {
     DCHECK(item->url.is_valid());
     browser_->OpenURL(content::OpenURLParams(

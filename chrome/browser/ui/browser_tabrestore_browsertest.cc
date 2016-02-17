@@ -129,8 +129,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
 
   // Restore tabs using that delegated restore service.
   content::DOMMessageQueue queue;
-  service->RestoreMostRecentEntry(
-      context, browser->host_desktop_type());
+  service->RestoreMostRecentEntry(context);
   AwaitTabsReady(&queue, 2);
 
   // There should be 3 restored tabs in the new browser.

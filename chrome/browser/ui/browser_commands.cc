@@ -364,12 +364,11 @@ Browser* OpenEmptyWindow(Profile* profile) {
   return browser;
 }
 
-void OpenWindowWithRestoredTabs(Profile* profile,
-                                HostDesktopType host_desktop_type) {
+void OpenWindowWithRestoredTabs(Profile* profile) {
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile);
   if (service)
-    service->RestoreMostRecentEntry(NULL, host_desktop_type);
+    service->RestoreMostRecentEntry(nullptr);
 }
 
 void OpenURLOffTheRecord(Profile* profile,

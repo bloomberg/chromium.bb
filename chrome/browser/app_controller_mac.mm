@@ -1072,9 +1072,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       CreateBrowser(lastProfile->GetOffTheRecordProfile());
       break;
     case IDC_RESTORE_TAB:
-      // There is only the native desktop on Mac.
-      chrome::OpenWindowWithRestoredTabs(lastProfile,
-                                         chrome::HOST_DESKTOP_TYPE_NATIVE);
+      chrome::OpenWindowWithRestoredTabs(lastProfile);
       break;
     case IDC_OPEN_FILE:
       chrome::ExecuteCommand(CreateBrowser(lastProfile), IDC_OPEN_FILE);

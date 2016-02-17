@@ -51,9 +51,8 @@ const TabRestoreService::Entries& InMemoryTabRestoreService::entries() const {
 }
 
 std::vector<LiveTab*> InMemoryTabRestoreService::RestoreMostRecentEntry(
-    LiveTabContext* context,
-    int host_desktop_type) {
-  return helper_.RestoreMostRecentEntry(context, host_desktop_type);
+    LiveTabContext* context) {
+  return helper_.RestoreMostRecentEntry(context);
 }
 
 TabRestoreService::Tab* InMemoryTabRestoreService::RemoveTabEntryById(
@@ -64,9 +63,8 @@ TabRestoreService::Tab* InMemoryTabRestoreService::RemoveTabEntryById(
 std::vector<LiveTab*> InMemoryTabRestoreService::RestoreEntryById(
     LiveTabContext* context,
     SessionID::id_type id,
-    int host_desktop_type,
     WindowOpenDisposition disposition) {
-  return helper_.RestoreEntryById(context, id, host_desktop_type, disposition);
+  return helper_.RestoreEntryById(context, id, disposition);
 }
 
 void InMemoryTabRestoreService::LoadTabsFromLastSession() {

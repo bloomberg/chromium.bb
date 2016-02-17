@@ -446,7 +446,6 @@ bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
 bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(GetProfile());
-  chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
   sessions::TabRestoreService::Entries entries = tab_restore_service->entries();
 
   if (entries.empty()) {
@@ -459,7 +458,7 @@ bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
       BrowserLiveTabContext::FindContextForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<sessions::LiveTab*> restored_tabs =
-      tab_restore_service->RestoreMostRecentEntry(context, host_desktop_type);
+      tab_restore_service->RestoreMostRecentEntry(context);
   DCHECK(restored_tabs.size());
 
   sessions::ContentLiveTab* first_tab =
@@ -477,7 +476,6 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
                                                   Browser* browser) {
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(GetProfile());
-  chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
   sessions::TabRestoreService::Entries entries = tab_restore_service->entries();
 
   if (entries.empty()) {
@@ -501,8 +499,7 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
       BrowserLiveTabContext::FindContextForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<sessions::LiveTab*> restored_tabs =
-      tab_restore_service->RestoreEntryById(context, session_id.id(),
-                                            host_desktop_type, UNKNOWN);
+      tab_restore_service->RestoreEntryById(context, session_id.id(), UNKNOWN);
   // If the ID is invalid, restored_tabs will be empty.
   if (!restored_tabs.size()) {
     SetInvalidIdError(session_id.ToString());

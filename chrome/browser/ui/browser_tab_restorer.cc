@@ -108,8 +108,7 @@ void RestoreTab(Browser* browser) {
     return;
 
   if (service->IsLoaded()) {
-    service->RestoreMostRecentEntry(browser->live_tab_context(),
-                                    browser->host_desktop_type());
+    service->RestoreMostRecentEntry(browser->live_tab_context());
     return;
   }
 

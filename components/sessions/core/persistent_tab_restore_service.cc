@@ -948,9 +948,8 @@ const TabRestoreService::Entries& PersistentTabRestoreService::entries() const {
 }
 
 std::vector<LiveTab*> PersistentTabRestoreService::RestoreMostRecentEntry(
-    LiveTabContext* context,
-    int host_desktop_type) {
-  return helper_.RestoreMostRecentEntry(context, host_desktop_type);
+    LiveTabContext* context) {
+  return helper_.RestoreMostRecentEntry(context);
 }
 
 TabRestoreService::Tab* PersistentTabRestoreService::RemoveTabEntryById(
@@ -961,9 +960,8 @@ TabRestoreService::Tab* PersistentTabRestoreService::RemoveTabEntryById(
 std::vector<LiveTab*> PersistentTabRestoreService::RestoreEntryById(
     LiveTabContext* context,
     SessionID::id_type id,
-    int host_desktop_type,
     WindowOpenDisposition disposition) {
-  return helper_.RestoreEntryById(context, id, host_desktop_type, disposition);
+  return helper_.RestoreEntryById(context, id, disposition);
 }
 
 bool PersistentTabRestoreService::IsLoaded() const {

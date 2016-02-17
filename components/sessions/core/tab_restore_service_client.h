@@ -36,27 +36,19 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
  public:
   virtual ~TabRestoreServiceClient();
 
-  // Creates a LiveTabContext instance that is associated with
-  // |host_desktop_type| and |app_name|. May return nullptr (e.g., if the
-  // embedder does not support LiveTabContext functionality).
-  // Note that |host_desktop_type| is opaque to the component; the only values
-  // that will be passed here are those that have been passed *in* to the
-  // component from the embedder via TabRestoreService.
-  virtual LiveTabContext* CreateLiveTabContext(int host_desktop_type,
-                                               const std::string& app_name) = 0;
+  // Creates a LiveTabContext instance that is associated with |app_name|. May
+  // return nullptr (e.g., if the embedder does not support LiveTabContext
+  // functionality).
+  virtual LiveTabContext* CreateLiveTabContext(const std::string& app_name) = 0;
 
   // Returns the LiveTabContext instance that is associated with
   // |tab|, or null if there is no such instance.
   virtual LiveTabContext* FindLiveTabContextForTab(const LiveTab* tab) = 0;
 
-  // Returns the LiveTabContext instance that is associated with
-  // |desired_id| and |host_desktop_type|, or null if there is no such instance.
-  // Note that |host_desktop_type| is opaque to the component; the only values
-  // that will be passed here are those that have been passed *in* to the
-  // component from the embedder via TabRestoreService.
+  // Returns the LiveTabContext instance that is associated with |desired_id|,
+  // or null if there is no such instance.
   virtual LiveTabContext* FindLiveTabContextWithID(
-      SessionID::id_type desired_id,
-      int host_desktop_type) = 0;
+      SessionID::id_type desired_id) = 0;
 
   // Returns whether a given URL should be tracked for restoring.
   virtual bool ShouldTrackURLForRestore(const GURL& url) = 0;

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -48,8 +47,7 @@ using content::Referrer;
     Browser* browser = chrome::FindTabbedBrowser(bridge_->profile(), false);
     BrowserLiveTabContext* context =
         browser ? browser->live_tab_context() : NULL;
-    service->RestoreEntryById(context, node->session_id,
-        chrome::HOST_DESKTOP_TYPE_NATIVE, UNKNOWN);
+    service->RestoreEntryById(context, node->session_id, UNKNOWN);
   } else {
     DCHECK(node->url.is_valid());
     WindowOpenDisposition disposition =

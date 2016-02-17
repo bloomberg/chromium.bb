@@ -20,13 +20,11 @@ class ChromeTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
  private:
   // TabRestoreServiceClient:
   sessions::LiveTabContext* CreateLiveTabContext(
-      int host_desktop_type,
       const std::string& app_name) override;
   sessions::LiveTabContext* FindLiveTabContextForTab(
       const sessions::LiveTab* tab) override;
   sessions::LiveTabContext* FindLiveTabContextWithID(
-      SessionID::id_type desired_id,
-      int host_desktop_type) override;
+      SessionID::id_type desired_id) override;
   bool ShouldTrackURLForRestore(const GURL& url) override;
   std::string GetExtensionAppIDForTab(sessions::LiveTab* tab) override;
   base::SequencedWorkerPool* GetBlockingPool() override;

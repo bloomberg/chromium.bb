@@ -537,8 +537,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
       TabRestoreServiceFactory::GetForProfile(browser()->profile());
   service->ClearEntries();
 
-  chrome::HostDesktopType host_desktop_type = browser()->host_desktop_type();
-
   browser()->window()->Close();
 
   // Expect a window with three tabs.
@@ -560,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
       timestamp = tab.navigations[0].timestamp();
       http_status_code = tab.navigations[0].http_status_code();
       std::vector<sessions::LiveTab*> content =
-          service->RestoreEntryById(NULL, tab.id, host_desktop_type, UNKNOWN);
+          service->RestoreEntryById(NULL, tab.id, UNKNOWN);
       ASSERT_EQ(1U, content.size());
       sessions::ContentLiveTab* live_tab =
           static_cast<sessions::ContentLiveTab*>(content[0]);
@@ -611,8 +609,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_WindowWithOneTab) {
   service->ClearEntries();
   EXPECT_EQ(0U, service->entries().size());
 
-  chrome::HostDesktopType host_desktop_type = browser()->host_desktop_type();
-
   // Close the window.
   browser()->window()->Close();
 
@@ -625,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_WindowWithOneTab) {
 
   // Restore the tab.
   std::vector<sessions::LiveTab*> content =
-      service->RestoreEntryById(NULL, tab->id, host_desktop_type, UNKNOWN);
+      service->RestoreEntryById(NULL, tab->id, UNKNOWN);
   ASSERT_EQ(1U, content.size());
   ASSERT_TRUE(content[0]);
   EXPECT_EQ(url, static_cast<sessions::ContentLiveTab*>(content[0])

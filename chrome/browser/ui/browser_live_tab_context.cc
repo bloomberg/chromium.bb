@@ -105,7 +105,6 @@ void BrowserLiveTabContext::CloseTab() {
 // static
 sessions::LiveTabContext* BrowserLiveTabContext::Create(
     Profile* profile,
-    chrome::HostDesktopType host_desktop_type,
     const std::string& app_name) {
   Browser* browser;
   if (app_name.empty()) {
@@ -130,10 +129,7 @@ sessions::LiveTabContext* BrowserLiveTabContext::FindContextForWebContents(
 
 // static
 sessions::LiveTabContext* BrowserLiveTabContext::FindContextWithID(
-    SessionID::id_type desired_id,
-    chrome::HostDesktopType host_desktop_type) {
+    SessionID::id_type desired_id) {
   Browser* browser = chrome::FindBrowserWithID(desired_id);
-  return (browser && browser->host_desktop_type() == host_desktop_type)
-             ? browser->live_tab_context()
-             : NULL;
+  return browser ? browser->live_tab_context() : nullptr;
 }
