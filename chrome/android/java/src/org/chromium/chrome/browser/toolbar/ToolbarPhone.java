@@ -1372,10 +1372,12 @@ public class ToolbarPhone extends ToolbarLayout
         assert mTextureCaptureMode != textureMode;
         mTextureCaptureMode = textureMode;
         if (mTextureCaptureMode) {
+            mToolbarShadow.setVisibility(VISIBLE);
             mPreTextureCaptureAlpha = getAlpha();
             setAlpha(1);
         } else {
             setAlpha(mPreTextureCaptureAlpha);
+            updateShadowVisibility(mIsInTabSwitcherMode);
             mPreTextureCaptureAlpha = 1f;
         }
     }
