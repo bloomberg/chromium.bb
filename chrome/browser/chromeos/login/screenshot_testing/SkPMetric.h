@@ -11,8 +11,6 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_SKPMETRIC_H_
 
 #include "chrome/browser/chromeos/login/screenshot_testing/SkImageDiffer.h"
-#include "third_party/skia/include/core/SkTArray.h"
-#include "third_party/skia/include/core/SkTDArray.h"
 
 /**
  * An image differ that uses the pdiff image metric to compare images.
