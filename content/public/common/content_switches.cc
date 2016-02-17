@@ -403,6 +403,10 @@ const char kEnableNetworkInformation[]      = "enable-network-information";
 const char kEnableNonValidatingReloadOnRefreshContent[] =
     "enable-non-validating-reload-on-refresh-content";
 
+// Enables action button icons for the Web Notification API.
+const char kEnableNotificationActionIcons[] =
+    "enable-notification-action-icons";
+
 // Enables partial raster. Enabling this switch also enables the use of
 // persistent gpu memory buffers.
 const char kEnablePartialRaster[] = "enable-partial-raster";

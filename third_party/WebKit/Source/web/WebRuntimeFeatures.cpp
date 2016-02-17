@@ -175,6 +175,11 @@ void WebRuntimeFeatures::enableMediaSource(bool enable)
     RuntimeEnabledFeatures::setMediaSourceEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableNotificationActionIcons(bool enable)
+{
+    RuntimeEnabledFeatures::setNotificationActionIconsEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableNotificationConstructor(bool enable)
 {
     RuntimeEnabledFeatures::setNotificationConstructorEnabled(enable);

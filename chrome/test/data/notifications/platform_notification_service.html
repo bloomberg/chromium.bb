@@ -60,6 +60,9 @@
           requireInteraction: true,
           data: [
             { property: 'value' }
+          ],
+          actions: [
+            { action: 'actionId', title: 'actionTitle', icon: 'icon.png' }
           ]
         });
       }
@@ -97,6 +100,17 @@
             body: 'Contents',
             icon: URL.createObjectURL(blob)
           });
+        });
+      }
+
+      // Displays a persistent notification with action buttons.
+      function DisplayPersistentNotificationWithActionButtons() {
+        DisplayPersistentNotification('action_button_click', {
+          body: 'Contents',
+          actions: [
+            { action: 'actionId1', title: 'actionTitle1', icon: 'icon.png' },
+            { action: 'actionId2', title: 'actionTitle2', icon: 'icon.png' }
+          ]
         });
       }
 

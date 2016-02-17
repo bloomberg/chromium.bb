@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -19,10 +20,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -44,6 +45,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   ~PlatformNotificationServiceBrowserTest() override {}
 
   // InProcessBrowserTest overrides.
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUp() override;
   void SetUpOnMainThread() override;
   void TearDown() override;
@@ -101,6 +103,13 @@ PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
       // The test server has a base directory that doesn't exist in the
       // filesystem.
       test_page_url_(std::string("/") + kTestFileName) {}
+
+void PlatformNotificationServiceBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kEnableNotificationActionIcons);
+
+  InProcessBrowserTest::SetUpCommandLine(command_line);
+}
 
 void PlatformNotificationServiceBrowserTest::SetUp() {
   ui_manager_.reset(new StubNotificationUIManager);
@@ -239,6 +248,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_FALSE(default_notification.renotify());
   EXPECT_FALSE(default_notification.silent());
   EXPECT_FALSE(default_notification.never_timeout());
+  EXPECT_EQ(0u, default_notification.buttons().size());
 
   // Verifies that the notification's default timestamp is set in the last 30
   // seconds. This number has no significance, but it needs to be significantly
@@ -261,14 +271,19 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ("Contents", base::UTF16ToUTF8(all_options_notification.message()));
   EXPECT_EQ("replace-id", all_options_notification.tag());
   EXPECT_FALSE(all_options_notification.icon().IsEmpty());
+  EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
+  EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());
   EXPECT_TRUE(all_options_notification.renotify());
   EXPECT_TRUE(all_options_notification.silent());
   EXPECT_TRUE(all_options_notification.never_timeout());
   EXPECT_DOUBLE_EQ(kNotificationTimestamp,
                    all_options_notification.timestamp().ToJsTime());
-
-  EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
-  EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());
+  EXPECT_EQ(1u, all_options_notification.buttons().size());
+  EXPECT_EQ("actionTitle",
+            base::UTF16ToUTF8(all_options_notification.buttons()[0].title));
+  EXPECT_FALSE(all_options_notification.buttons()[0].icon.IsEmpty());
+  EXPECT_EQ(kIconWidth, all_options_notification.buttons()[0].icon.Width());
+  EXPECT_EQ(kIconHeight, all_options_notification.buttons()[0].icon.Height());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
@@ -276,8 +291,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
   std::string script_result;
-  ASSERT_TRUE(
-      RunScript("DisplayPersistentAllOptionsNotification()", &script_result));
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification('Some title', {})",
+                        &script_result));
   EXPECT_EQ("ok", script_result);
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
@@ -445,4 +460,28 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ("Blob Title", base::UTF16ToUTF8(notification.title()));
   EXPECT_EQ(kIconWidth, notification.icon().Width());
   EXPECT_EQ(kIconHeight, notification.icon().Height());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       DisplayPersistentNotificationWithActionButtons) {
+  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotificationWithActionButtons()",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  ASSERT_EQ(2u, notification.buttons().size());
+  EXPECT_EQ("actionTitle1", base::UTF16ToUTF8(notification.buttons()[0].title));
+  EXPECT_EQ("actionTitle2", base::UTF16ToUTF8(notification.buttons()[1].title));
+
+  notification.delegate()->ButtonClick(0);
+  ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
+  EXPECT_EQ("action_button_click actionId1", script_result);
+
+  notification.delegate()->ButtonClick(1);
+  ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
+  EXPECT_EQ("action_button_click actionId2", script_result);
 }

@@ -124,6 +124,7 @@ extern const char kEnableMemoryBenchmarking[];
 CONTENT_EXPORT extern const char kEnableMojoShellConnection[];
 CONTENT_EXPORT extern const char kEnableNetworkInformation[];
 CONTENT_EXPORT extern const char kEnableNonValidatingReloadOnRefreshContent[];
+CONTENT_EXPORT extern const char kEnableNotificationActionIcons[];
 CONTENT_EXPORT extern const char kEnablePartialRaster[];
 CONTENT_EXPORT extern const char kEnablePinch[];
 CONTENT_EXPORT extern const char kEnablePluginPlaceholderTesting[];
