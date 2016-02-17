@@ -82,6 +82,7 @@ void NavigateToSingletonTab(Browser* browser, const GURL& url) {
 // is created.
 void ShowHelpImpl(Browser* browser,
                   Profile* profile,
+                  HostDesktopType host_desktop_type,
                   HelpSource source) {
   content::RecordAction(UserMetricsAction("ShowHelpTab"));
 #if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
@@ -103,7 +104,8 @@ void ShowHelpImpl(Browser* browser,
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  AppLaunchParams params(profile, extension, CURRENT_TAB, app_launch_source);
+  AppLaunchParams params(profile, extension, CURRENT_TAB, host_desktop_type,
+                         app_launch_source);
   OpenApplication(params);
 #else
   GURL url;
@@ -203,11 +205,14 @@ void ShowConflicts(Browser* browser) {
 }
 
 void ShowHelp(Browser* browser, HelpSource source) {
-  ShowHelpImpl(browser, browser->profile(), source);
+  ShowHelpImpl(
+      browser, browser->profile(), browser->host_desktop_type(), source);
 }
 
-void ShowHelpForProfile(Profile* profile, HelpSource source) {
-  ShowHelpImpl(NULL, profile, source);
+void ShowHelpForProfile(Profile* profile,
+                        HostDesktopType host_desktop_type,
+                        HelpSource source) {
+  ShowHelpImpl(NULL, profile, host_desktop_type, source);
 }
 
 void ShowPolicy(Browser* browser) {

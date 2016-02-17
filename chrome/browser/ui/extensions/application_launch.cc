@@ -55,7 +55,7 @@ using extensions::ExtensionRegistry;
 
 namespace {
 
-// Shows the app list for |desktop_type| and returns the app list's window.
+// Shows the app list and returns the app list's window.
 gfx::NativeWindow ShowAppListAndGetNativeWindow() {
   AppListService* app_list_service = AppListService::Get();
   app_list_service->Show();

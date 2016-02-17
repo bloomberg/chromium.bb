@@ -10,6 +10,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
 
@@ -54,6 +55,7 @@ void ShowFeedbackPage(Browser* browser,
 
 void ShowHelp(Browser* browser, HelpSource source);
 void ShowHelpForProfile(Profile* profile,
+                        HostDesktopType host_desktop_type,
                         HelpSource source);
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);
