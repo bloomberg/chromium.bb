@@ -11,8 +11,6 @@ AM_CPPFLAGS =					\
 
 AM_CFLAGS = $(GCC_CFLAGS)
 
-AM_DISTCHECK_CONFIGURE_FLAGS = --enable-fatal-warnings
-
 aclocaldir = $(datadir)/aclocal
 dist_aclocal_DATA = wayland-scanner.m4
 
