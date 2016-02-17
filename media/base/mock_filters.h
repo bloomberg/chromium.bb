@@ -98,6 +98,7 @@ class MockVideoDecoder : public VideoDecoder {
                             const DecodeCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));
   MOCK_CONST_METHOD0(HasAlpha, bool());
+  MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);

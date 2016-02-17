@@ -71,7 +71,7 @@ std::string MockVideoDecoder::GetDisplayName() const {
 }
 
 MockVideoDecoder::MockVideoDecoder() {
-  EXPECT_CALL(*this, HasAlpha()).WillRepeatedly(Return(false));
+  ON_CALL(*this, CanReadWithoutStalling()).WillByDefault(Return(true));
 }
 
 std::string MockAudioDecoder::GetDisplayName() const {
