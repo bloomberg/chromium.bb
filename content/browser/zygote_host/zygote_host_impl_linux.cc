@@ -5,11 +5,14 @@
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 
 #include "base/allocator/allocator_extension.h"
+#include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/process/kill.h"
 #include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_switches.h"
+#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 
 namespace content {
@@ -20,7 +23,8 @@ ZygoteHost* ZygoteHost::GetInstance() {
 }
 
 ZygoteHostImpl::ZygoteHostImpl()
-    : use_suid_sandbox_for_adj_oom_score_(false),
+    : should_use_namespace_sandbox_(true),
+      use_suid_sandbox_for_adj_oom_score_(false),
       sandbox_binary_(),
       zygote_pids_lock_(),
       zygote_pids_() {}
@@ -34,6 +38,32 @@ ZygoteHostImpl* ZygoteHostImpl::GetInstance() {
 
 void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   sandbox_binary_ = sandbox_cmd;
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kNoSandbox) ||
+      command_line.HasSwitch(switches::kDisableNamespaceSandbox) ||
+      !sandbox::Credentials::CanCreateProcessInNewUserNS()) {
+    should_use_namespace_sandbox_ = false;
+  }
+
+  const bool using_namespace_sandbox = ShouldUseNamespaceSandbox();
+  // A non empty sandbox_cmd means we want a SUID sandbox.
+  const bool using_suid_sandbox =
+      sandbox_binary_.empty() && !using_namespace_sandbox;
+
+  // Use the SUID sandbox for adjusting OOM scores when we are using the setuid
+  // sandbox. This is needed beacuse the processes are non-dumpable, so
+  // /proc/pid/oom_score_adj can only be written by root.
+  use_suid_sandbox_for_adj_oom_score_ = using_suid_sandbox;
+
+#if defined(OS_CHROMEOS)
+  // Chrome OS has a kernel patch that restricts oom_score_adj. See
+  // crbug.com/576409 for details.
+  if (!sandbox_binary_.empty()) {
+    use_suid_sandbox_for_adj_oom_score_ = true;
+  }
+#endif
 }
 
 void ZygoteHostImpl::AddZygotePid(pid_t pid) {
@@ -56,6 +86,10 @@ void ZygoteHostImpl::SetRendererSandboxStatus(int status) {
 
 int ZygoteHostImpl::GetRendererSandboxStatus() const {
   return renderer_sandbox_status_;
+}
+
+bool ZygoteHostImpl::ShouldUseNamespaceSandbox() {
+  return should_use_namespace_sandbox_;
 }
 
 #if !defined(OS_OPENBSD)

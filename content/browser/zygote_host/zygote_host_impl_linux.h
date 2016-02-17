@@ -37,6 +37,8 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   // Returns whether or not this pid is the pid of a zygote.
   bool IsZygotePid(pid_t pid) override;
 
+  bool ShouldUseNamespaceSandbox();
+
   void SetRendererSandboxStatus(int status);
   int GetRendererSandboxStatus() const override;
   void AdjustRendererOOMScore(base::ProcessHandle process_handle,
@@ -49,6 +51,7 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   ~ZygoteHostImpl() override;
 
   int renderer_sandbox_status_;
+  bool should_use_namespace_sandbox_;
   bool use_suid_sandbox_for_adj_oom_score_;
   std::string sandbox_binary_;
   // This lock protects the |zygote_pids_| set.

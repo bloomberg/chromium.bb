@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -22,7 +23,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "ui/gfx/switches.h"
@@ -61,7 +61,6 @@ ZygoteCommunication::ZygoteCommunication()
       child_tracking_lock_(),
       sandbox_status_(0),
       have_read_sandbox_status_word_(false),
-      use_suid_sandbox_for_adj_oom_score_(false),
       init_(false) {}
 
 ZygoteCommunication::~ZygoteCommunication() {}
@@ -295,24 +294,12 @@ void ZygoteCommunication::Init() {
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(&cmd_line, -1);
 
-  const bool using_namespace_sandbox = ShouldUseNamespaceSandbox();
+  const bool using_namespace_sandbox =
+      ZygoteHostImpl::GetInstance()->ShouldUseNamespaceSandbox();
   // A non empty sandbox_cmd means we want a SUID sandbox.
   const bool using_suid_sandbox =
       !ZygoteHostImpl::GetInstance()->SandboxCommand().empty() &&
       !using_namespace_sandbox;
-  // Use the SUID sandbox for adjusting OOM scores when we are using the setuid
-  // or namespace sandbox. This is needed beacuse the processes are
-  // non-dumpable, so /proc/pid/oom_score_adj can only be written by root.
-  use_suid_sandbox_for_adj_oom_score_ = using_suid_sandbox;
-
-#if defined(OS_CHROMEOS)
-  // Chrome OS has a kernel patch that restricts oom_score_adj. See
-  // crbug.com/576409 for details.
-  if (!ZygoteHostImpl::GetInstance()->SandboxCommand().empty() &&
-      using_namespace_sandbox) {
-    use_suid_sandbox_for_adj_oom_score_ = true;
-  }
-#endif
 
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
@@ -432,24 +419,6 @@ base::TerminationStatus ZygoteCommunication::GetTerminationStatus(
     ZygoteChildDied(handle);
   }
   return static_cast<base::TerminationStatus>(status);
-}
-
-bool ZygoteCommunication::ShouldUseNamespaceSandbox() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kNoSandbox)) {
-    return false;
-  }
-
-  if (command_line.HasSwitch(switches::kDisableNamespaceSandbox)) {
-    return false;
-  }
-
-  if (!sandbox::Credentials::CanCreateProcessInNewUserNS()) {
-    return false;
-  }
-
-  return true;
 }
 
 int ZygoteCommunication::GetSandboxStatus() {
