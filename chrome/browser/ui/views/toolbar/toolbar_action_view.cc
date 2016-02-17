@@ -110,8 +110,8 @@ void ToolbarActionView::OnMouseEntered(const ui::MouseEvent& event) {
   views::MenuButton::OnMouseEntered(event);
 }
 
-bool ToolbarActionView::ShouldEnterPushedState(const ui::Event& event) {
-  return views::MenuButton::ShouldEnterPushedState(event) &&
+bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
+  return views::MenuButton::IsTriggerableEvent(event) &&
          (base::TimeTicks::Now() - popup_closed_time_).InMilliseconds() >
              views::kMinimumMsBetweenButtonClicks;
 }
@@ -160,8 +160,9 @@ void ToolbarActionView::UpdateState() {
   SchedulePaint();
 }
 
-void ToolbarActionView::OnMenuButtonClicked(views::View* sender,
-                                            const gfx::Point& point) {
+void ToolbarActionView::OnMenuButtonClicked(views::MenuButton* sender,
+                                            const gfx::Point& point,
+                                            const ui::Event* event) {
   if (!view_controller_->IsEnabled(GetCurrentWebContents())) {
     // We should only get a button pressed event with a non-enabled action if
     // the left-click behavior should open the menu.

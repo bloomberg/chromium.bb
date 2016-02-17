@@ -41,7 +41,9 @@ class ChevronMenuButton : public views::MenuButton,
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   // Shows the overflow menu.
   void ShowOverflowMenu(bool for_drop);

@@ -316,18 +316,13 @@ class BookmarkFolderButton : public views::MenuButton {
     return !tooltip->empty();
   }
 
-  bool IsTriggerableEvent(const ui::Event& e) override {
-    // Left clicks and taps should show the menu contents and right clicks
-    // should show the context menu. They should not trigger the opening of
-    // underlying urls.
-    if (e.type() == ui::ET_GESTURE_TAP ||
-        (e.IsMouseEvent() && (e.flags() &
-             (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON))))
-      return false;
-
-    if (e.IsMouseEvent())
-      return ui::DispositionFromEventFlags(e.flags()) != CURRENT_TAB;
-    return false;
+  bool IsTriggerableEventType(const ui::Event& e) override {
+    // Bookmark folders handle normal menu button events (i.e., left click) as
+    // well as clicks to open bookmarks in new tabs that would otherwise be
+    // ignored.
+    return views::MenuButton::IsTriggerableEventType(e) ||
+           (e.IsMouseEvent() &&
+                ui::DispositionFromEventFlags(e.flags()) != CURRENT_TAB);
   }
 
  private:
@@ -1399,7 +1394,7 @@ bool BookmarkBarView::CanStartDragForView(views::View* sender,
         if (node && node->is_folder()) {
           views::MenuButton* menu_button =
               static_cast<views::MenuButton*>(sender);
-          menu_button->Activate();
+          menu_button->Activate(nullptr);
           return false;
         }
         break;
@@ -1409,8 +1404,9 @@ bool BookmarkBarView::CanStartDragForView(views::View* sender,
   return true;
 }
 
-void BookmarkBarView::OnMenuButtonClicked(views::View* view,
-                                          const gfx::Point& point) {
+void BookmarkBarView::OnMenuButtonClicked(views::MenuButton* view,
+                                          const gfx::Point& point,
+                                          const ui::Event* event) {
   const BookmarkNode* node;
 
   int start_index = 0;

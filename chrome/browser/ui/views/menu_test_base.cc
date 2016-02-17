@@ -73,8 +73,9 @@ gfx::Size MenuTestBase::GetPreferredSize() const {
   return button_->GetPreferredSize();
 }
 
-void MenuTestBase::OnMenuButtonClicked(views::View* source,
-                                       const gfx::Point& point) {
+void MenuTestBase::OnMenuButtonClicked(views::MenuButton* source,
+                                       const gfx::Point& point,
+                                       const ui::Event* event) {
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());

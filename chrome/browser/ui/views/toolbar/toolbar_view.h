@@ -104,8 +104,9 @@ class ToolbarView : public views::AccessiblePaneView,
   void GetAccessibleState(ui::AXViewState* state) override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::View* source,
-                           const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   // LocationBarView::Delegate:
   content::WebContents* GetWebContents() override;

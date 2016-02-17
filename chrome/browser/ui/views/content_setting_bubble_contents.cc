@@ -448,22 +448,21 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
 }
 
 void ContentSettingBubbleContents::OnMenuButtonClicked(
-    views::View* source,
-    const gfx::Point& point) {
-    MediaMenuPartsMap::iterator j(media_menus_.find(
-        static_cast<views::MenuButton*>(source)));
-    DCHECK(j != media_menus_.end());
-    menu_runner_.reset(new views::MenuRunner(j->second->menu_model.get(),
-                                             views::MenuRunner::HAS_MNEMONICS));
+    views::MenuButton* source,
+    const gfx::Point& point,
+    const ui::Event* event) {
+  MediaMenuPartsMap::iterator j(
+      media_menus_.find(static_cast<views::MenuButton*>(source)));
+  DCHECK(j != media_menus_.end());
+  menu_runner_.reset(new views::MenuRunner(j->second->menu_model.get(),
+                                           views::MenuRunner::HAS_MNEMONICS));
 
-    gfx::Point screen_location;
-    views::View::ConvertPointToScreen(j->first, &screen_location);
-    ignore_result(
-        menu_runner_->RunMenuAt(source->GetWidget(),
-                                j->first,
-                                gfx::Rect(screen_location, j->first->size()),
-                                views::MENU_ANCHOR_TOPLEFT,
-                                ui::MENU_SOURCE_NONE));
+  gfx::Point screen_location;
+  views::View::ConvertPointToScreen(j->first, &screen_location);
+  ignore_result(menu_runner_->RunMenuAt(
+      source->GetWidget(), j->first,
+      gfx::Rect(screen_location, j->first->size()), views::MENU_ANCHOR_TOPLEFT,
+      ui::MENU_SOURCE_NONE));
 }
 
 void ContentSettingBubbleContents::UpdateMenuButtonSizes() {

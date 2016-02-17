@@ -111,7 +111,9 @@ class TestMenuButtonListener : public MenuButtonListener {
       : last_source_(nullptr), last_source_state_(Button::STATE_NORMAL) {}
   ~TestMenuButtonListener() override {}
 
-  void OnMenuButtonClicked(View* source, const gfx::Point& /*point*/) override {
+  void OnMenuButtonClicked(MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override {
     last_source_ = source;
     CustomButton* custom_button = CustomButton::AsCustomButton(source);
     DCHECK(custom_button);
@@ -249,7 +251,9 @@ class TestShowSiblingButtonListener : public MenuButtonListener {
   TestShowSiblingButtonListener() {}
   ~TestShowSiblingButtonListener() override {}
 
-  void OnMenuButtonClicked(View* source, const gfx::Point& point) override {
+  void OnMenuButtonClicked(MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override {
     // The MenuButton itself doesn't set the PRESSED state during Activate() or
     // OnMenuButtonClicked(). That should be handled by the MenuController or,
     // if no menu is shown, the listener.

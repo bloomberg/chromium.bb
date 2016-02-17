@@ -687,8 +687,9 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
     provider_->SetNotifierEnabled((*iter)->notifier(), (*iter)->checked());
 }
 
-void NotifierSettingsView::OnMenuButtonClicked(views::View* source,
-                                               const gfx::Point& point) {
+void NotifierSettingsView::OnMenuButtonClicked(views::MenuButton* source,
+                                               const gfx::Point& point,
+                                               const ui::Event* event) {
   notifier_group_menu_model_.reset(new NotifierGroupMenuModel(provider_));
   notifier_group_menu_runner_.reset(new views::MenuRunner(
       notifier_group_menu_model_.get(), views::MenuRunner::CONTEXT_MENU));

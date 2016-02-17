@@ -1188,8 +1188,9 @@ void AutofillDialogViews::OnPerformAction(views::Combobox* combobox) {
   ValidateGroup(*GroupForSection(section), VALIDATE_EDIT);
 }
 
-void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
-                                              const gfx::Point& point) {
+void AutofillDialogViews::OnMenuButtonClicked(views::MenuButton* source,
+                                              const gfx::Point& point,
+                                              const ui::Event* event) {
   DCHECK_EQ(kSuggestedButtonClassName, source->GetClassName());
 
   DetailsGroup* group = NULL;

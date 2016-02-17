@@ -136,8 +136,9 @@ class AutofillDialogViews : public AutofillDialogView,
   void OnPerformAction(views::Combobox* combobox) override;
 
   // views::MenuButtonListener implementation.
-  void OnMenuButtonClicked(views::View* source,
-                           const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
  protected:
   // Exposed for testing.

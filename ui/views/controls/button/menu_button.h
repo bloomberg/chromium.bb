@@ -61,8 +61,15 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   const gfx::Point& menu_offset() const { return menu_offset_; }
   void set_menu_offset(int x, int y) { menu_offset_.SetPoint(x, y); }
 
-  // Activate the button (called when the button is pressed).
-  bool Activate();
+  // Activate the button (called when the button is pressed). |event| is the
+  // event triggering the activation, if any.
+  bool Activate(const ui::Event* event);
+
+  // Returns true if the event is of the proper type to potentially trigger an
+  // action. Since MenuButtons have properties other than event type (like
+  // last menu open time) to determine if an event is valid to activate the
+  // menu, this is distinct from IsTriggerableEvent().
+  virtual bool IsTriggerableEventType(const ui::Event& event);
 
   // Overridden from View:
   gfx::Size GetPreferredSize() const override;
@@ -76,7 +83,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void GetAccessibleState(ui::AXViewState* state) override;
 
  protected:
@@ -87,8 +93,10 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   gfx::Rect GetChildAreaBounds() override;
 
   // Overridden from CustomButton:
+  bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void StateChanged() override;
+  void NotifyClick(const ui::Event& event) override;
 
   // Offset of the associated menu position.
   gfx::Point menu_offset_;

@@ -45,7 +45,9 @@ class PermissionMenuButton : public views::MenuButton,
 
  private:
   // Overridden from views::MenuButtonListener.
-  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   PermissionMenuModel* menu_model_;  // Owned by |PermissionSelectorView|.
   scoped_ptr<views::MenuRunner> menu_runner_;
@@ -90,8 +92,9 @@ void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
       ui::NativeTheme::kColorId_LabelDisabledColor));
 }
 
-void PermissionMenuButton::OnMenuButtonClicked(View* source,
-                                               const gfx::Point& point) {
+void PermissionMenuButton::OnMenuButtonClicked(views::MenuButton* source,
+                                               const gfx::Point& point,
+                                               const ui::Event* event) {
   menu_runner_.reset(
       new views::MenuRunner(menu_model_, views::MenuRunner::HAS_MNEMONICS));
 

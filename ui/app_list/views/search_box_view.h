@@ -106,7 +106,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from views::MenuButtonListener:
-  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   // Overridden from SearchBoxModelObserver:
   void IconChanged() override;

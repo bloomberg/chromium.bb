@@ -83,7 +83,9 @@ class PermissionCombobox : public views::MenuButton,
   void GetAccessibleState(ui::AXViewState* state) override;
 
   // MenuButtonListener:
-  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   // Callback when a permission's setting is changed.
   void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission);
@@ -118,8 +120,9 @@ void PermissionCombobox::GetAccessibleState(ui::AXViewState* state) {
   state->value = GetText();
 }
 
-void PermissionCombobox::OnMenuButtonClicked(View* source,
-                                             const gfx::Point& point) {
+void PermissionCombobox::OnMenuButtonClicked(views::MenuButton* source,
+                                             const gfx::Point& point,
+                                             const ui::Event* event) {
   menu_runner_.reset(
       new views::MenuRunner(model_.get(), views::MenuRunner::HAS_MNEMONICS));
 

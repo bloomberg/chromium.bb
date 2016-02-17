@@ -206,7 +206,7 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
   int old_execute_action_count = controller.execute_action_count();
   {
     OpenMenuListener menu_listener(&view);
-    view.Activate();
+    view.Activate(nullptr);
     EXPECT_TRUE(menu_listener.opened_menu());
     EXPECT_EQ(old_execute_action_count, controller.execute_action_count());
   }

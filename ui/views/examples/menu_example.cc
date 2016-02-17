@@ -65,7 +65,9 @@ class ExampleMenuButton : public MenuButton, public MenuButtonListener {
 
  private:
   // MenuButtonListener:
-  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
+  void OnMenuButtonClicked(MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   ui::SimpleMenuModel* GetMenuModel();
 
@@ -183,8 +185,9 @@ ExampleMenuButton::ExampleMenuButton(const base::string16& test)
 ExampleMenuButton::~ExampleMenuButton() {
 }
 
-void ExampleMenuButton::OnMenuButtonClicked(View* source,
-                                            const gfx::Point& point) {
+void ExampleMenuButton::OnMenuButtonClicked(MenuButton* source,
+                                            const gfx::Point& point,
+                                            const ui::Event* event) {
   menu_runner_.reset(new MenuRunner(GetMenuModel(), MenuRunner::HAS_MNEMONICS));
 
   if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),

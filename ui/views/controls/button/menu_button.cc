@@ -90,7 +90,7 @@ MenuButton::~MenuButton() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-bool MenuButton::Activate() {
+bool MenuButton::Activate(const ui::Event* event) {
   if (listener_) {
     gfx::Rect lb = GetLocalBounds();
 
@@ -128,7 +128,7 @@ bool MenuButton::Activate() {
 
     if (ink_drop_delegate())
       ink_drop_delegate()->OnAction(InkDropState::QUICK_ACTION);
-    listener_->OnMenuButtonClicked(this, menu_position);
+    listener_->OnMenuButtonClicked(this, menu_position, event);
 
     if (destroyed) {
       // The menu was deleted while showing. Don't attempt any processing.
@@ -145,6 +145,25 @@ bool MenuButton::Activate() {
     return false;
   }
   return true;
+}
+
+bool MenuButton::IsTriggerableEventType(const ui::Event& event) {
+  if (event.IsMouseEvent()) {
+    const ui::MouseEvent& mouseev = static_cast<const ui::MouseEvent&>(event);
+    // Active on left mouse button only, to prevent a menu from being activated
+    // when a right-click would also activate a context menu.
+    if (!mouseev.IsOnlyLeftMouseButton())
+      return false;
+    // If dragging is supported activate on release, otherwise activate on
+    // pressed.
+    ui::EventType active_on =
+        GetDragOperations(mouseev.location()) == ui::DragDropTypes::DRAG_NONE
+            ? ui::ET_MOUSE_PRESSED
+            : ui::ET_MOUSE_RELEASED;
+    return event.type() == active_on;
+  }
+
+  return event.type() == ui::ET_GESTURE_TAP;
 }
 
 void MenuButton::OnPaint(gfx::Canvas* canvas) {
@@ -177,11 +196,10 @@ const char* MenuButton::GetClassName() const {
 bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
   if (request_focus_on_press())
     RequestFocus();
-  if (state() != STATE_DISABLED && ShouldEnterPushedState(event) &&
-      HitTestPoint(event.location())) {
-    TimeDelta delta = TimeTicks::Now() - menu_closed_time_;
-    if (delta.InMilliseconds() > kMinimumMsBetweenButtonClicks)
-      return Activate();
+  if (state() != STATE_DISABLED && HitTestPoint(event.location()) &&
+      IsTriggerableEventType(event)) {
+    if (IsTriggerableEvent(event))
+      return Activate(&event);
     if (ink_drop_delegate())
       ink_drop_delegate()->OnAction(InkDropState::ACTION_PENDING);
   }
@@ -189,9 +207,9 @@ bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
-  if (state() != STATE_DISABLED && ShouldEnterPushedState(event) &&
+  if (state() != STATE_DISABLED && IsTriggerableEvent(event) &&
       HitTestPoint(event.location()) && !InDrag()) {
-    Activate();
+    Activate(&event);
   } else {
     if (ink_drop_delegate())
       ink_drop_delegate()->OnAction(InkDropState::HIDDEN);
@@ -216,7 +234,7 @@ void MenuButton::OnMouseMoved(const ui::MouseEvent& event) {
 
 void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
   if (state() != STATE_DISABLED) {
-    if (ShouldEnterPushedState(*event) && !Activate()) {
+    if (IsTriggerableEvent(*event) && !Activate(event)) {
       // When |Activate()| returns |false|, it means the click was handled by
       // a button listener and has handled the gesture event. So, there is no
       // need to further process the gesture event here. However, if the
@@ -251,7 +269,7 @@ bool MenuButton::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {
       // WARNING: we may have been deleted by the time Activate returns.
-      Activate();
+      Activate(&event);
       // This is to prevent the keyboard event from being dispatched twice.  If
       // the keyboard event is not handled, we pass it to the default handler
       // which dispatches the event back to us causing the menu to get displayed
@@ -269,13 +287,6 @@ bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
   // you press space and clicks it when you release space.  For a MenuButton
   // we always activate the menu on key press.
   return false;
-}
-
-bool MenuButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  // CustomButton::AcceleratorPressed ends up in NotifyClick, which doesn't work
-  // for menu buttons.
-  Activate();
-  return true;
 }
 
 void MenuButton::GetAccessibleState(ui::AXViewState* state) {
@@ -310,23 +321,19 @@ gfx::Rect MenuButton::GetChildAreaBounds() {
   return gfx::Rect(s);
 }
 
-bool MenuButton::ShouldEnterPushedState(const ui::Event& event) {
-  if (event.IsMouseEvent()) {
-    const ui::MouseEvent& mouseev = static_cast<const ui::MouseEvent&>(event);
-    // Active on left mouse button only, to prevent a menu from being activated
-    // when a right-click would also activate a context menu.
-    if (!mouseev.IsOnlyLeftMouseButton())
-      return false;
-    // If dragging is supported activate on release, otherwise activate on
-    // pressed.
-    ui::EventType active_on =
-        GetDragOperations(mouseev.location()) == ui::DragDropTypes::DRAG_NONE
-            ? ui::ET_MOUSE_PRESSED
-            : ui::ET_MOUSE_RELEASED;
-    return event.type() == active_on;
-  }
+bool MenuButton::IsTriggerableEvent(const ui::Event& event) {
+  if (!IsTriggerableEventType(event))
+    return false;
 
-  return event.type() == ui::ET_GESTURE_TAP;
+  TimeDelta delta = TimeTicks::Now() - menu_closed_time_;
+  if (delta.InMilliseconds() < kMinimumMsBetweenButtonClicks)
+    return false;  // Not enough time since the menu closed.
+
+  return true;
+}
+
+bool MenuButton::ShouldEnterPushedState(const ui::Event& event) {
+  return IsTriggerableEventType(event);
 }
 
 void MenuButton::StateChanged() {
@@ -342,6 +349,12 @@ void MenuButton::StateChanged() {
   } else {
     LabelButton::StateChanged();
   }
+}
+
+void MenuButton::NotifyClick(const ui::Event& event) {
+  // We don't forward events to the normal button listener, instead using the
+  // MenuButtonListener.
+  Activate(&event);
 }
 
 void MenuButton::IncrementPressedLocked() {

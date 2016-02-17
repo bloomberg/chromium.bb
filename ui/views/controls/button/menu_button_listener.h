@@ -11,15 +11,24 @@ namespace gfx {
 class Point;
 }
 
-namespace views {
+namespace ui {
+class Event;
+}
 
-class View;
+namespace views {
+class MenuButton;
 
 // An interface implemented by an object to let it know that a menu button was
 // clicked.
 class VIEWS_EXPORT MenuButtonListener {
  public:
-  virtual void OnMenuButtonClicked(View* source, const gfx::Point& point) = 0;
+  // Notifies that the MenuButton has been clicked. |point| is the default
+  // point to display the menu, and |event| is the event causing the click, if
+  // any. (Note: "Clicked" refers to any activation, including e.g. accelerators
+  // and key events).
+  virtual void OnMenuButtonClicked(MenuButton* source,
+                                   const gfx::Point& point,
+                                   const ui::Event* event) = 0;
 
  protected:
   virtual ~MenuButtonListener() {}

@@ -424,8 +424,9 @@ int ChevronMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-void ChevronMenuButton::OnMenuButtonClicked(views::View* source,
-                                            const gfx::Point& point) {
+void ChevronMenuButton::OnMenuButtonClicked(views::MenuButton* source,
+                                            const gfx::Point& point,
+                                            const ui::Event* event) {
   DCHECK_EQ(this, source);
   // The menu could already be open if a user dragged an item over it but
   // ultimately dropped elsewhere (as in that case the menu will close on a

@@ -90,8 +90,9 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::View* source,
-                           const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   // Helper to get the preferred width of the media menu.
   void UpdateMenuButtonSizes();

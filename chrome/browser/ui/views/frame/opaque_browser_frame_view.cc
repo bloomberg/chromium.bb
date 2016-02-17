@@ -305,8 +305,9 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
   }
 }
 
-void OpaqueBrowserFrameView::OnMenuButtonClicked(views::View* source,
-                                                 const gfx::Point& point) {
+void OpaqueBrowserFrameView::OnMenuButtonClicked(views::MenuButton* source,
+                                                 const gfx::Point& point,
+                                                 const ui::Event* event) {
 #if defined(OS_LINUX)
   views::MenuRunner menu_runner(frame()->GetSystemMenuModel(),
                                 views::MenuRunner::HAS_MNEMONICS);

@@ -404,7 +404,9 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
     NOTREACHED();
 }
 
-void SearchBoxView::OnMenuButtonClicked(View* source, const gfx::Point& point) {
+void SearchBoxView::OnMenuButtonClicked(views::MenuButton* source,
+                                        const gfx::Point& point,
+                                        const ui::Event* event) {
   if (!menu_)
     menu_.reset(new AppListMenuViews(view_delegate_));
 

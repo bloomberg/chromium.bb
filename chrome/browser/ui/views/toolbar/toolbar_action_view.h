@@ -75,7 +75,7 @@ class ToolbarActionView : public views::MenuButton,
   void GetAccessibleState(ui::AXViewState* state) override;
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
-  bool ShouldEnterPushedState(const ui::Event& event) override;
+  bool IsTriggerableEvent(const ui::Event& event) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
@@ -84,8 +84,9 @@ class ToolbarActionView : public views::MenuButton,
   void UpdateState() override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::View* sender,
-                           const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   ToolbarActionViewController* view_controller() {
     return view_controller_;

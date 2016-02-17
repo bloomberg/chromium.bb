@@ -150,8 +150,9 @@ bool AvatarMenuButton::DoesIntersectRect(const views::View* target,
 }
 
 // views::MenuButtonListener implementation
-void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
-                                           const gfx::Point& point) {
+void AvatarMenuButton::OnMenuButtonClicked(views::MenuButton* source,
+                                           const gfx::Point& point,
+                                           const ui::Event* event) {
   if (enabled_)
     chrome::ShowAvatarMenu(browser_view_->browser());
 }

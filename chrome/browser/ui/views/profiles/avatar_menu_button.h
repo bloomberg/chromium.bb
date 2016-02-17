@@ -63,8 +63,9 @@ class AvatarMenuButton : public views::MenuButton,
                          const gfx::Rect& rect) const override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::View* source,
-                           const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
 
   BrowserView* browser_view_;
   bool enabled_;
