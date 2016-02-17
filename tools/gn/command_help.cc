@@ -222,17 +222,17 @@ int RunHelp(const std::vector<std::string>& args) {
     all_help_topics.push_back(entry.first);
 
   // Random other topics.
-  std::map<std::string, std::function<void()>> random_topics;
+  std::map<std::string, void(*)()> random_topics;
   random_topics["all"] = PrintAllHelp;
-  random_topics["buildargs"] = [=]() { PrintLongHelp(kBuildArgs_Help); };
-  random_topics["dotfile"] = [=]() { PrintLongHelp(kDotfile_Help); };
-  random_topics["grammar"] = [=]() { PrintLongHelp(kGrammar_Help); };
-  random_topics["input_conversion"] = [=]() {
+  random_topics["buildargs"] = []() { PrintLongHelp(kBuildArgs_Help); };
+  random_topics["dotfile"] = []() { PrintLongHelp(kDotfile_Help); };
+  random_topics["grammar"] = []() { PrintLongHelp(kGrammar_Help); };
+  random_topics["input_conversion"] = []() {
     PrintLongHelp(kInputConversion_Help);
   };
-  random_topics["label_pattern"] = [=]() { PrintLongHelp(kLabelPattern_Help); };
-  random_topics["runtime_deps"] = [=]() { PrintLongHelp(kRuntimeDeps_Help); };
-  random_topics["source_expansion"] = [=]() {
+  random_topics["label_pattern"] = []() { PrintLongHelp(kLabelPattern_Help); };
+  random_topics["runtime_deps"] = []() { PrintLongHelp(kRuntimeDeps_Help); };
+  random_topics["source_expansion"] = []() {
     PrintLongHelp(kSourceExpansion_Help);
   };
   random_topics["switches"] = PrintSwitchHelp;
