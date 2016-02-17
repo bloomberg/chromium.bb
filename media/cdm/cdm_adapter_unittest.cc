@@ -14,6 +14,7 @@
 #include "media/base/media_keys.h"
 #include "media/cdm/cdm_adapter.h"
 #include "media/cdm/external_clear_key_test_helper.h"
+#include "media/cdm/simple_cdm_allocator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,9 +81,10 @@ class CdmAdapterTest : public testing::Test {
   void InitializeAndExpect(base::FilePath library_path,
                            ExpectedResult expected_result) {
     CdmConfig cdm_config;  // default settings of false are sufficient.
+    scoped_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
 
     CdmAdapter::Create(
-        helper_.KeySystemName(), library_path, cdm_config,
+        helper_.KeySystemName(), library_path, cdm_config, std::move(allocator),
         base::Bind(&CdmAdapterTest::OnSessionMessage, base::Unretained(this)),
         base::Bind(&CdmAdapterTest::OnSessionClosed, base::Unretained(this)),
         base::Bind(&CdmAdapterTest::OnLegacySessionError,

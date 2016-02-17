@@ -7,10 +7,22 @@
 
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "media/cdm/api/content_decryption_module.h"
 
+#if !defined(USE_PPAPI_CDM_ADAPTER)
+#include "base/memory/ref_counted.h"
+#include "media/base/media_export.h"
+#include "ui/gfx/geometry/size.h"
+#define MEDIA_CDM_EXPORT MEDIA_EXPORT
+#else
+#define MEDIA_CDM_EXPORT
+#endif
+
 namespace media {
+
+class VideoFrame;
 
 class DecryptedBlockImpl : public cdm::DecryptedBlock {
  public:
@@ -30,10 +42,11 @@ class DecryptedBlockImpl : public cdm::DecryptedBlock {
   DISALLOW_COPY_AND_ASSIGN(DecryptedBlockImpl);
 };
 
-class VideoFrameImpl : public cdm::VideoFrame {
+class MEDIA_CDM_EXPORT VideoFrameImpl
+    : NON_EXPORTED_BASE(public cdm::VideoFrame) {
  public:
   VideoFrameImpl();
-  ~VideoFrameImpl() final;
+  ~VideoFrameImpl() override;
 
   // cdm::VideoFrame implementation.
   void SetFormat(cdm::VideoFormat format) final;
@@ -49,7 +62,21 @@ class VideoFrameImpl : public cdm::VideoFrame {
   void SetTimestamp(int64_t timestamp) final;
   int64_t Timestamp() const final;
 
- private:
+#if !defined(USE_PPAPI_CDM_ADAPTER)
+  // Create a media::VideoFrame based on the data contained in this object.
+  // |natural_size| is the visible portion of the video frame, and is
+  // provided separately as it comes from the configuration, not the CDM.
+  // The returned object will own |frame_buffer_| and will be responsible for
+  // calling Destroy() on it when the data is no longer needed.
+  // Preconditions:
+  // - |this| needs to be properly initialized.
+  // Postconditions:
+  // - |frame_buffer_| will be NULL (now owned by returned media::VideoFrame).
+  virtual scoped_refptr<media::VideoFrame> TransformToVideoFrame(
+      gfx::Size natural_size) = 0;
+#endif
+
+ protected:
   // The video buffer format.
   cdm::VideoFormat format_;
 
@@ -70,6 +97,7 @@ class VideoFrameImpl : public cdm::VideoFrame {
   // Presentation timestamp in microseconds.
   int64_t timestamp_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(VideoFrameImpl);
 };
 
