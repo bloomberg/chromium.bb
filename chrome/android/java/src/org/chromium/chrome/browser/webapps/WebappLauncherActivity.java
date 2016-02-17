@@ -38,10 +38,15 @@ public class WebappLauncherActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        WebappInfo webappInfo = WebappInfo.create(getIntent());
+        if (webappInfo == null) {
+            super.onCreate(null);
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            return;
+        }
 
+        super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        WebappInfo webappInfo = WebappInfo.create(intent);
         String webappId = webappInfo.id();
         String webappUrl = webappInfo.uri().toString();
         int webappSource = webappInfo.source();
