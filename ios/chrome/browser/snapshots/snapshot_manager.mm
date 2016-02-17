@@ -68,13 +68,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
       CGContextSaveGState(context);
       CGContextTranslateCTM(context, 0, overlay.yOffset);
       if (useDrawViewHierarchy) {
-        CGRect overlayRect = overlay.view.bounds;
-        // TODO(crbug.com/421213): The 0 check is needed for a UIKit crash on
-        // iOS 7. This can be removed once iOS 7 is dropped.
-        if (overlayRect.size.width > 0 && overlayRect.size.height > 0) {
-          [overlay.view drawViewHierarchyInRect:overlay.view.bounds
-                             afterScreenUpdates:YES];
-        }
+        [overlay.view drawViewHierarchyInRect:overlay.view.bounds
+                           afterScreenUpdates:YES];
       } else {
         [[overlay.view layer] renderInContext:context];
       }
