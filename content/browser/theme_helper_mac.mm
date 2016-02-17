@@ -10,6 +10,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -18,24 +19,10 @@
 #include "content/public/common/content_switches.h"
 
 using content::RenderProcessHost;
+using content::RenderProcessHostImpl;
 using content::ThemeHelperMac;
 
 namespace {
-
-bool GetScrollAnimationEnabled() {
-  bool enabled = false;
-  id value = nil;
-  if (base::mac::IsOSMountainLionOrLater()) {
-    value = [[NSUserDefaults standardUserDefaults]
-        objectForKey:@"NSScrollAnimationEnabled"];
-  } else {
-    value = [[NSUserDefaults standardUserDefaults]
-        objectForKey:@"AppleScrollAnimationEnabled"];
-  }
-  if (value)
-    enabled = [value boolValue];
-  return enabled;
-}
 
 blink::WebScrollbarButtonsPlacement GetButtonPlacement() {
   NSString* scrollbar_variant = [[NSUserDefaults standardUserDefaults]
@@ -64,7 +51,6 @@ void FillScrollbarThemeParams(ViewMsg_UpdateScrollbarTheme_Params* params) {
       [defaults boolForKey:@"AppleScrollerPagingBehavior"];
   params->preferred_scroller_style =
       ThemeHelperMac::GetPreferredScrollerStyle();
-  params->scroll_animation_enabled = GetScrollAnimationEnabled();
   params->button_placement = GetButtonPlacement();
 }
 
@@ -177,7 +163,10 @@ ViewMsg_SystemColorsChanged* CreateSystemColorsChangedMessage() {
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();
        it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_UpdateScrollbarTheme(params));
+    RenderProcessHostImpl* rphi =
+        static_cast<RenderProcessHostImpl*>(it.GetCurrentValue());
+    rphi->RecomputeAndUpdateWebKitPreferences();
+    rphi->Send(new ViewMsg_UpdateScrollbarTheme(params));
   }
 }
 
@@ -219,9 +208,11 @@ void ThemeHelperMac::Observe(int type,
   FillScrollbarThemeParams(&params);
   params.redraw = false;
 
-  RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
-  rph->Send(new ViewMsg_UpdateScrollbarTheme(params));
-  rph->Send(CreateSystemColorsChangedMessage());
+  RenderProcessHostImpl* rphi =
+      Source<content::RenderProcessHostImpl>(source).ptr();
+  rphi->RecomputeAndUpdateWebKitPreferences();
+  rphi->Send(new ViewMsg_UpdateScrollbarTheme(params));
+  rphi->Send(CreateSystemColorsChangedMessage());
 }
 
 }  // namespace content

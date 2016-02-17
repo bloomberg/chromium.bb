@@ -113,6 +113,8 @@
         'animation/animation_container_element.h',
         'animation/animation_container_observer.h',
         'animation/animation_delegate.h',
+        'animation/animation_mac.mm',
+        'animation/animation_win.cc',
         'animation/linear_animation.cc',
         'animation/linear_animation.h',
         'animation/multi_animation.cc',

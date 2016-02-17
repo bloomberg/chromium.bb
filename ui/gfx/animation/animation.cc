@@ -10,10 +10,6 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace gfx {
 
 Animation::Animation(base::TimeDelta timer_interval)
@@ -92,21 +88,21 @@ void Animation::SetContainer(AnimationContainer* container) {
     container_->Start(this);
 }
 
+#if !defined(OS_WIN)
 // static
 bool Animation::ShouldRenderRichAnimation() {
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    BOOL result;
-    // Get "Turn off all unnecessary animations" value.
-    if (::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0)) {
-      return !!result;
-    }
-  }
-  return !::GetSystemMetrics(SM_REMOTESESSION);
-#else
+  // Defined in platform specific file for Windows.
   return true;
-#endif
 }
+#endif
+
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+// static
+bool Animation::ScrollAnimationsEnabledBySystem() {
+  // Defined in platform specific files for Windows and OSX.
+  return true;
+}
+#endif
 
 bool Animation::ShouldSendCanceledFromStop() {
   return false;

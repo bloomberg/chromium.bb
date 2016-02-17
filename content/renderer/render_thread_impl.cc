@@ -1981,7 +1981,7 @@ void RenderThreadImpl::OnUpdateScrollbarTheme(
   blink::WebScrollbarTheme::updateScrollbarsWithNSDefaults(
       params.initial_button_delay, params.autoscroll_button_delay,
       params.preferred_scroller_style, params.redraw,
-      params.scroll_animation_enabled, params.button_placement);
+      params.button_placement);
 }
 
 void RenderThreadImpl::OnSystemColorsChanged(

@@ -64,6 +64,11 @@ class GFX_EXPORT Animation : public AnimationContainerElement {
   // to give guidance for heavy animations such as "start download" arrow.
   static bool ShouldRenderRichAnimation();
 
+  // Determines on a per-platform basis whether scroll animations (e.g. produced
+  // by home/end key) should be enabled. Should only be called from the browser
+  // process.
+  static bool ScrollAnimationsEnabledBySystem();
+
  protected:
   // Invoked from Start to allow subclasses to prepare for the animation.
   virtual void AnimationStarted() {}

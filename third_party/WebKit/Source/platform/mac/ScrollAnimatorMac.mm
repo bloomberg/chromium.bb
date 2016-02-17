@@ -728,12 +728,9 @@ void ScrollAnimatorMac::dispose()
 
 ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
 {
-    bool scrollAnimationEnabledForSystem = static_cast<ScrollbarThemeMacCommon&>(
-                                               ScrollbarTheme::theme())
-                                               .scrollAnimationEnabledForSystem();
     m_haveScrolledSincePageLoad = true;
 
-    if (!scrollAnimationEnabledForSystem || !m_scrollableArea->scrollAnimatorEnabled())
+    if (!m_scrollableArea->scrollAnimatorEnabled())
         return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
 
     if (granularity == ScrollByPixel || granularity == ScrollByPrecisePixel)

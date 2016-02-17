@@ -2640,20 +2640,7 @@ void RenderProcessHostImpl::OnCloseACK(int old_route_id) {
 }
 
 void RenderProcessHostImpl::OnGpuSwitched() {
-  // We are updating all widgets including swapped out ones.
-  scoped_ptr<RenderWidgetHostIterator> widgets(
-      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
-  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
-    RenderViewHost* rvh = RenderViewHost::From(widget);
-    if (!rvh)
-      continue;
-
-    // Skip widgets in other processes.
-    if (rvh->GetProcess()->GetID() != GetID())
-      continue;
-
-    rvh->OnWebkitPreferencesChanged();
-  }
+  RecomputeAndUpdateWebKitPreferences();
 }
 
 #if defined(ENABLE_WEBRTC)
@@ -2795,6 +2782,23 @@ void RenderProcessHostImpl::GetAudioOutputControllers(
 
 BluetoothDispatcherHost* RenderProcessHostImpl::GetBluetoothDispatcherHost() {
   return bluetooth_dispatcher_host_.get();
+}
+
+void RenderProcessHostImpl::RecomputeAndUpdateWebKitPreferences() {
+  // We are updating all widgets including swapped out ones.
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
+    RenderViewHost* rvh = RenderViewHost::From(widget);
+    if (!rvh)
+      continue;
+
+    // Skip widgets in other processes.
+    if (rvh->GetProcess()->GetID() != GetID())
+      continue;
+
+    rvh->OnWebkitPreferencesChanged();
+  }
 }
 
 }  // namespace content

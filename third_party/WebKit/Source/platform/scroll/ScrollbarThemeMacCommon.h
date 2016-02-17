@@ -41,7 +41,7 @@ public:
 
     void registerScrollbar(ScrollbarThemeClient&) override;
     void unregisterScrollbar(ScrollbarThemeClient&) override;
-    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, WebScrollbarButtonsPlacement);
+    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, WebScrollbarButtonsPlacement);
 
     bool supportsControlTints() const override { return true; }
 

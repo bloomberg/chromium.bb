@@ -49,12 +49,11 @@ public:
     // |autoscrollButtonDelay| is the current value of NSScrollerButtonPeriod from NSUserDefaults.
     // |preferredScrollerStyle| is the current value of +[NSScroller preferredScrollerStyle].
     // |redraw| is true if the update requires a redraw to include the change.
-    // |scrollAnimationEnabled| is the current value of NSScrollAnimationEnabled or AppleScrollAnimationEnabled from NSUserDefaults.
     // |buttonPlacement| is the current value of AppleScrollBarVariant
     BLINK_EXPORT static void updateScrollbarsWithNSDefaults(
         float initialButtonDelay, float autoscrollButtonDelay,
         ScrollerStyle preferredScrollerStyle, bool redraw,
-        bool scrollAnimationEnabled, WebScrollbarButtonsPlacement);
+        WebScrollbarButtonsPlacement);
 };
 
 } // namespace blink

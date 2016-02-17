@@ -553,7 +553,6 @@ IPC_STRUCT_BEGIN(ViewMsg_UpdateScrollbarTheme_Params)
   IPC_STRUCT_MEMBER(bool, jump_on_track_click)
   IPC_STRUCT_MEMBER(blink::ScrollerStyle, preferred_scroller_style)
   IPC_STRUCT_MEMBER(bool, redraw)
-  IPC_STRUCT_MEMBER(bool, scroll_animation_enabled)
   IPC_STRUCT_MEMBER(blink::WebScrollbarButtonsPlacement, button_placement)
 IPC_STRUCT_END()
 #endif
