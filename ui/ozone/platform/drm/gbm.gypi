@@ -113,6 +113,8 @@
         'gpu/hardware_display_plane_manager.h',
         'gpu/hardware_display_plane_manager_legacy.cc',
         'gpu/hardware_display_plane_manager_legacy.h',
+        'gpu/inter_thread_messaging_proxy.cc',
+        'gpu/inter_thread_messaging_proxy.h',
         'gpu/overlay_plane.cc',
         'gpu/overlay_plane.h',
         'gpu/page_flip_request.cc',

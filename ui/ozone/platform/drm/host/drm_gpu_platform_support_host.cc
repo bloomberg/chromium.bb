@@ -30,9 +30,9 @@ class CursorIPC : public DrmCursorProxy {
   // DrmCursorProxy implementation.
   void CursorSet(gfx::AcceleratedWidget window,
                  const std::vector<SkBitmap>& bitmaps,
-                 gfx::Point point,
+                 const gfx::Point& point,
                  int frame_delay_ms) override;
-  void Move(gfx::AcceleratedWidget window, gfx::Point point) override;
+  void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override;
 
  private:
   bool IsConnected();
@@ -56,12 +56,12 @@ bool CursorIPC::IsConnected() {
 
 void CursorIPC::CursorSet(gfx::AcceleratedWidget window,
                           const std::vector<SkBitmap>& bitmaps,
-                          gfx::Point point,
+                          const gfx::Point& point,
                           int frame_delay_ms) {
   Send(new OzoneGpuMsg_CursorSet(window, bitmaps, point, frame_delay_ms));
 }
 
-void CursorIPC::Move(gfx::AcceleratedWidget window, gfx::Point point) {
+void CursorIPC::Move(gfx::AcceleratedWidget window, const gfx::Point& point) {
   Send(new OzoneGpuMsg_CursorMove(window, point));
 }
 
@@ -224,8 +224,9 @@ bool DrmGpuPlatformSupportHost::GpuRelinquishDisplayControl() {
   return Send(new OzoneGpuMsg_RelinquishDisplayControl());
 }
 
-bool DrmGpuPlatformSupportHost::GpuAddGraphicsDevice(const base::FilePath& path,
-                                                     base::FileDescriptor fd) {
+bool DrmGpuPlatformSupportHost::GpuAddGraphicsDevice(
+    const base::FilePath& path,
+    const base::FileDescriptor& fd) {
   return Send(new OzoneGpuMsg_AddGraphicsDevice(path, fd));
 }
 
@@ -270,8 +271,8 @@ bool DrmGpuPlatformSupportHost::GpuCheckOverlayCapabilities(
 // DrmDisplayHost
 bool DrmGpuPlatformSupportHost::GpuConfigureNativeDisplay(
     int64_t display_id,
-    ui::DisplayMode_Params display_mode,
-    gfx::Point point) {
+    const ui::DisplayMode_Params& display_mode,
+    const gfx::Point& point) {
   return Send(
       new OzoneGpuMsg_ConfigureNativeDisplay(display_id, display_mode, point));
 }
@@ -306,7 +307,7 @@ bool DrmGpuPlatformSupportHost::GpuCreateWindow(gfx::AcceleratedWidget widget) {
 
 bool DrmGpuPlatformSupportHost::GpuWindowBoundsChanged(
     gfx::AcceleratedWidget widget,
-    gfx::Rect bounds) {
+    const gfx::Rect& bounds) {
   return Send(new OzoneGpuMsg_WindowBoundsChanged(widget, bounds));
 }
 

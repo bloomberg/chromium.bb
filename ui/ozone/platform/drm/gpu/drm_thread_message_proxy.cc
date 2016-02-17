@@ -13,10 +13,13 @@
 
 namespace ui {
 
-DrmThreadMessageProxy::DrmThreadMessageProxy(DrmThread* drm_thread)
-    : drm_thread_(drm_thread), weak_ptr_factory_(this) {}
+DrmThreadMessageProxy::DrmThreadMessageProxy() : weak_ptr_factory_(this) {}
 
 DrmThreadMessageProxy::~DrmThreadMessageProxy() {}
+
+void DrmThreadMessageProxy::SetDrmThread(DrmThread* thread) {
+  drm_thread_ = thread;
+}
 
 void DrmThreadMessageProxy::OnFilterAdded(IPC::Sender* sender) {
   sender_ = sender;

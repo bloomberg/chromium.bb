@@ -28,10 +28,10 @@ class DrmCursorProxy {
   // Sets the cursor |bitmaps| on |window| at |point| with |frame_delay_ms|.
   virtual void CursorSet(gfx::AcceleratedWidget window,
                          const std::vector<SkBitmap>& bitmaps,
-                         gfx::Point point,
+                         const gfx::Point& point,
                          int frame_delay_ms) = 0;
   // Moves the cursor in |window| to |point|
-  virtual void Move(gfx::AcceleratedWidget window, gfx::Point point) = 0;
+  virtual void Move(gfx::AcceleratedWidget window, const gfx::Point& point) = 0;
 };
 
 // DrmCursor manages all cursor state and semantics.
@@ -77,9 +77,9 @@ class DrmCursor : public CursorDelegateEvdev {
   // Lock-testing helpers.
   void CursorSetLockTested(gfx::AcceleratedWidget window,
                            const std::vector<SkBitmap>& bitmaps,
-                           gfx::Point point,
+                           const gfx::Point& point,
                            int frame_delay_ms);
-  void MoveLockTested(gfx::AcceleratedWidget window, gfx::Point point);
+  void MoveLockTested(gfx::AcceleratedWidget window, const gfx::Point& point);
 
   // The mutex synchronizing this object.
   base::Lock lock_;

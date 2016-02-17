@@ -37,7 +37,7 @@ class GpuThreadAdapter {
   virtual bool GpuRefreshNativeDisplays() = 0;
   virtual bool GpuRelinquishDisplayControl() = 0;
   virtual bool GpuAddGraphicsDevice(const base::FilePath& path,
-                                    base::FileDescriptor fd) = 0;
+                                    const base::FileDescriptor& fd) = 0;
   virtual bool GpuRemoveGraphicsDevice(const base::FilePath& path) = 0;
 
   // Methods for DrmOverlayManager.
@@ -51,9 +51,10 @@ class GpuThreadAdapter {
       const std::vector<OverlayCheck_Params>& new_params) = 0;
 
   // Services needed by DrmDisplayHost
-  virtual bool GpuConfigureNativeDisplay(int64_t display_id,
-                                         ui::DisplayMode_Params display_mode,
-                                         gfx::Point point) = 0;
+  virtual bool GpuConfigureNativeDisplay(
+      int64_t display_id,
+      const ui::DisplayMode_Params& display_mode,
+      const gfx::Point& point) = 0;
   virtual bool GpuDisableNativeDisplay(int64_t display_id) = 0;
   virtual bool GpuGetHDCPState(int64_t display_id) = 0;
   virtual bool GpuSetHDCPState(int64_t display_id, ui::HDCPState state) = 0;
@@ -64,7 +65,7 @@ class GpuThreadAdapter {
   virtual bool GpuDestroyWindow(gfx::AcceleratedWidget widget) = 0;
   virtual bool GpuCreateWindow(gfx::AcceleratedWidget widget) = 0;
   virtual bool GpuWindowBoundsChanged(gfx::AcceleratedWidget widget,
-                                      gfx::Rect bounds) = 0;
+                                      const gfx::Rect& bounds) = 0;
 };
 
 }  // namespace ui

@@ -9,6 +9,8 @@
 #include <gbm.h>
 #include <stdlib.h>
 #include <xf86drm.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -71,6 +73,12 @@ class GlApiLoader {
 
   DISALLOW_COPY_AND_ASSIGN(GlApiLoader);
 };
+
+// Returns true if we should operate in Mus mode.
+bool RunningInsideMus() {
+  // TODO(rjkroege): Implement.
+  return false;
+}
 
 class OzonePlatformGbm : public OzonePlatform {
  public:
@@ -138,25 +146,51 @@ class OzonePlatformGbm : public OzonePlatform {
     event_factory_ozone_.reset(new EventFactoryEvdev(
         cursor_.get(), device_manager_.get(),
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
-    gpu_platform_support_host_.reset(
-        new DrmGpuPlatformSupportHost(cursor_.get()));
-    display_manager_.reset(new DrmDisplayHostManager(
-        gpu_platform_support_host_.get(), device_manager_.get(),
-        event_factory_ozone_->input_controller()));
+
+    GpuThreadAdapter* adapter;
+    if (RunningInsideMus()) {
+      NOTIMPLEMENTED();
+      adapter = 0;
+    } else {
+      gpu_platform_support_host_.reset(
+          new DrmGpuPlatformSupportHost(cursor_.get()));
+      adapter = gpu_platform_support_host_.get();
+    }
+
+    display_manager_.reset(
+        new DrmDisplayHostManager(adapter, device_manager_.get(),
+                                  event_factory_ozone_->input_controller()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    overlay_manager_.reset(new DrmOverlayManager(
-        gpu_platform_support_host_.get(), window_manager_.get()));
+    overlay_manager_.reset(
+        new DrmOverlayManager(adapter, window_manager_.get()));
+
+    if (RunningInsideMus()) {
+      NOTIMPLEMENTED();
+    }
   }
 
   void InitializeGPU() override {
-    gl_api_loader_.reset(new GlApiLoader());
+    InterThreadMessagingProxy* itmp;
+    if (RunningInsideMus()) {
+      NOTIMPLEMENTED();
+      itmp = 0;
+    } else {
+      gl_api_loader_.reset(new GlApiLoader());
+      scoped_refptr<DrmThreadMessageProxy> message_proxy(
+          new DrmThreadMessageProxy());
+      itmp = message_proxy.get();
+      gpu_platform_support_.reset(new DrmGpuPlatformSupport(message_proxy));
+    }
+
     // NOTE: Can't start the thread here since this is called before sandbox
-    // initialization.
+    // initialization in multi-process Chrome. In mus, we start the DRM thread.
     drm_thread_.reset(new DrmThreadProxy());
+    drm_thread_->BindThreadIntoMessagingProxy(itmp);
 
     surface_factory_.reset(new GbmSurfaceFactory(drm_thread_.get()));
-    gpu_platform_support_.reset(
-        new DrmGpuPlatformSupport(drm_thread_->CreateDrmThreadMessageProxy()));
+    if (RunningInsideMus()) {
+      NOTIMPLEMENTED();
+    }
   }
 
  private:

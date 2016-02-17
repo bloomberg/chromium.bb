@@ -63,7 +63,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   bool GpuRefreshNativeDisplays() override;
   bool GpuRelinquishDisplayControl() override;
   bool GpuAddGraphicsDevice(const base::FilePath& path,
-                            base::FileDescriptor fd) override;
+                            const base::FileDescriptor& fd) override;
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
 
   // Methods needed for DrmOverlayManager.
@@ -78,8 +78,8 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
   // Services needed by DrmDisplayHost
   bool GpuConfigureNativeDisplay(int64_t display_id,
-                                 ui::DisplayMode_Params display_mode,
-                                 gfx::Point point) override;
+                                 const ui::DisplayMode_Params& display_mode,
+                                 const gfx::Point& point) override;
   bool GpuDisableNativeDisplay(int64_t display_id) override;
   bool GpuGetHDCPState(int64_t display_id) override;
   bool GpuSetHDCPState(int64_t display_id, ui::HDCPState state) override;
@@ -90,7 +90,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   bool GpuDestroyWindow(gfx::AcceleratedWidget widget) override;
   bool GpuCreateWindow(gfx::AcceleratedWidget widget) override;
   bool GpuWindowBoundsChanged(gfx::AcceleratedWidget widget,
-                              gfx::Rect bounds) override;
+                              const gfx::Rect& bounds) override;
 
  private:
   bool OnMessageReceivedForDrmDisplayHostManager(const IPC::Message& message);

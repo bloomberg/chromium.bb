@@ -12,8 +12,8 @@
 
 namespace ui {
 
-class DrmThreadMessageProxy;
 class DrmWindowProxy;
+class InterThreadMessagingProxy;
 
 // Mediates the communication between GPU main/IO threads and the DRM thread. It
 // serves proxy objects that are safe to call on the GPU threads. The proxy
@@ -23,7 +23,7 @@ class DrmThreadProxy {
   explicit DrmThreadProxy();
   ~DrmThreadProxy();
 
-  scoped_refptr<DrmThreadMessageProxy> CreateDrmThreadMessageProxy();
+  void BindThreadIntoMessagingProxy(InterThreadMessagingProxy* messaging_proxy);
 
   scoped_ptr<DrmWindowProxy> CreateDrmWindowProxy(
       gfx::AcceleratedWidget widget);

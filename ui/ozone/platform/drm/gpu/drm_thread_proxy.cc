@@ -16,9 +16,9 @@ DrmThreadProxy::DrmThreadProxy() {}
 
 DrmThreadProxy::~DrmThreadProxy() {}
 
-scoped_refptr<DrmThreadMessageProxy>
-DrmThreadProxy::CreateDrmThreadMessageProxy() {
-  return make_scoped_refptr(new DrmThreadMessageProxy(&drm_thread_));
+void DrmThreadProxy::BindThreadIntoMessagingProxy(
+    InterThreadMessagingProxy* messaging_proxy) {
+  messaging_proxy->SetDrmThread(&drm_thread_);
 }
 
 scoped_ptr<DrmWindowProxy> DrmThreadProxy::CreateDrmWindowProxy(
