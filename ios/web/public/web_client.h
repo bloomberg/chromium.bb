@@ -20,13 +20,8 @@ class RefCountedStaticMemory;
 
 class GURL;
 
-#ifdef __OBJC__
 @class UIWebView;
 @class NSString;
-#else
-class UIWebView;
-class NSString;
-#endif
 
 namespace web {
 
