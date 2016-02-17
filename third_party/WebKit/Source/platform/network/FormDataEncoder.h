@@ -34,7 +34,7 @@ namespace blink {
 class PLATFORM_EXPORT FormDataEncoder {
     STATIC_ONLY(FormDataEncoder);
 public:
-    static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, const String& charset, const String& defaultCharset);
+    static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, const WTF::TextEncoding& fallbackEncoding);
 
     // Helper functions used by HTMLFormElement for multi-part form data
     static Vector<char> generateUniqueBoundaryString();

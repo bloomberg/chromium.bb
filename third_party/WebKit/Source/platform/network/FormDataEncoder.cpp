@@ -73,30 +73,23 @@ static void appendQuotedString(Vector<char>& buffer, const CString& string)
     }
 }
 
-WTF::TextEncoding FormDataEncoder::encodingFromAcceptCharset(const String& acceptCharset, const String& charset, const String& defaultCharset)
+WTF::TextEncoding FormDataEncoder::encodingFromAcceptCharset(const String& acceptCharset, const WTF::TextEncoding& fallbackEncoding)
 {
+    ASSERT(fallbackEncoding.isValid());
+
     String normalizedAcceptCharset = acceptCharset;
     normalizedAcceptCharset.replace(',', ' ');
 
     Vector<String> charsets;
     normalizedAcceptCharset.split(' ', charsets);
 
-    WTF::TextEncoding encoding;
-
-    Vector<String>::const_iterator end = charsets.end();
-    for (Vector<String>::const_iterator it = charsets.begin(); it != end; ++it) {
-        if ((encoding = WTF::TextEncoding(*it)).isValid())
+    for (const String& name : charsets) {
+        WTF::TextEncoding encoding(name);
+        if (encoding.isValid())
             return encoding;
     }
 
-    if (charset.isEmpty()) {
-        if (defaultCharset.isEmpty())
-            return WTF::UTF8Encoding();
-
-        return defaultCharset;
-    }
-
-    return charset;
+    return fallbackEncoding;
 }
 
 Vector<char> FormDataEncoder::generateUniqueBoundaryString()
