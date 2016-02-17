@@ -118,6 +118,12 @@ class SafeBrowsingDatabaseManager
   // error occurs.  This method must be called on the IO thread.
   virtual bool MatchInclusionWhitelistUrl(const GURL& url) = 0;
 
+  // Check if |str|, a lowercase DLL file name, matches any of the full-length
+  // hashes from the module whitelist.  Returns true if there was a match and
+  // false otherwise.  To make sure we are conservative we will return true if
+  // an error occurs.  This method must be called on the IO thread.
+  virtual bool MatchModuleWhitelistString(const std::string& str) = 0;
+
   // Check if the CSD malware IP matching kill switch is turned on.
   virtual bool IsMalwareKillSwitchOn() = 0;
 

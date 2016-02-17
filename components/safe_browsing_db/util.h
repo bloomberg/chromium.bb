@@ -100,9 +100,10 @@ extern const char kIPBlacklist[];
 extern const char kUnwantedUrlList[];
 // SafeBrowsing off-domain inclusion whitelist list name.
 extern const char kInclusionWhitelist[];
+// SafeBrowsing module whitelist list name.
+extern const char kModuleWhitelist[];
 // This array must contain all Safe Browsing lists.
-extern const char* kAllLists[9];
-
+extern const char* kAllLists[10];
 
 enum ListType {
   INVALID = -1,
@@ -126,8 +127,9 @@ enum ListType {
   // See above comment.  Leave 15 available.
   INCLUSIONWHITELIST = 16,
   // See above comment.  Leave 17 available.
+  MODULEWHITELIST = 18,
+  // See above comment. Leave 19 available.
 };
-
 
 inline bool SBFullHashEqual(const SBFullHash& a, const SBFullHash& b) {
   return !memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash));

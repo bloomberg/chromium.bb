@@ -94,6 +94,7 @@ ListType GetHashSeverestThreatListType(
         case CSDWHITELIST:             // Falls through.
         case DOWNLOADWHITELIST:        // Falls through.
         case INCLUSIONWHITELIST:       // Falls through.
+        case MODULEWHITELIST:          // Falls through.
         case EXTENSIONBLACKLIST:       // Falls through.
         case IPBLACKLIST:
           if (index)
@@ -139,6 +140,7 @@ ListType GetUrlSeverestThreatListType(
       case CSDWHITELIST:             // Falls through.
       case DOWNLOADWHITELIST:        // Falls through.
       case INCLUSIONWHITELIST:       // Falls through.
+      case MODULEWHITELIST:          // Falls through.
       case EXTENSIONBLACKLIST:       // Falls through.
       case IPBLACKLIST:
         return threat;
@@ -268,6 +270,7 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
       enable_extension_blacklist_(false),
       enable_ip_blacklist_(false),
       enable_unwanted_software_blacklist_(true),
+      enable_module_whitelist_(true),
       update_in_progress_(false),
       database_update_in_progress_(false),
       closing_database_(false),
@@ -431,6 +434,15 @@ bool LocalSafeBrowsingDatabaseManager::MatchInclusionWhitelistUrl(
   if (!enabled_ || !MakeDatabaseAvailable())
     return true;
   return database_->ContainsInclusionWhitelistedUrl(url);
+}
+
+bool LocalSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
+    const std::string& str) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!enabled_ || !enable_module_whitelist_ || !MakeDatabaseAvailable()) {
+    return true;
+  }
+  return database_->ContainsModuleWhitelistedString(str);
 }
 
 bool LocalSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
@@ -780,7 +792,7 @@ SafeBrowsingDatabase* LocalSafeBrowsingDatabaseManager::GetDatabase() {
       safe_browsing_task_runner_, enable_download_protection_,
       enable_csd_whitelist_, enable_download_whitelist_,
       enable_extension_blacklist_, enable_ip_blacklist_,
-      enable_unwanted_software_blacklist_);
+      enable_unwanted_software_blacklist_, enable_module_whitelist_);
 
   database->Init(SafeBrowsingService::GetBaseFilename());
   {

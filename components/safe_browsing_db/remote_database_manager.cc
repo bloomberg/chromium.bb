@@ -207,6 +207,12 @@ bool RemoteSafeBrowsingDatabaseManager::MatchInclusionWhitelistUrl(
   return true;
 }
 
+bool RemoteSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
+    const std::string& str) {
+  NOTREACHED();
+  return true;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
   NOTREACHED();
   return true;

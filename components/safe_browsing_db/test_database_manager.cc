@@ -93,6 +93,12 @@ bool TestSafeBrowsingDatabaseManager::MatchInclusionWhitelistUrl(
   return true;
 }
 
+bool TestSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
+    const std::string& str) {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 bool TestSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
   NOTIMPLEMENTED();
   return false;

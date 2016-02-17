@@ -253,6 +253,9 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
   bool ContainsInclusionWhitelistedUrl(const GURL& url) override {
     return true;
   }
+  bool ContainsModuleWhitelistedString(const std::string& str) override {
+    return true;
+  }
   bool ContainsExtensionPrefixes(const std::vector<SBPrefix>& prefixes,
                                  std::vector<SBPrefix>* prefix_hits) override {
     return false;
@@ -377,7 +380,8 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
       bool enable_download_whitelist,
       bool enable_extension_blacklist,
       bool enable_ip_blacklist,
-      bool enabled_unwanted_software_list) override {
+      bool enabled_unwanted_software_list,
+      bool enable_module_whitelist) override {
     db_ = new TestSafeBrowsingDatabase();
     return db_;
   }
