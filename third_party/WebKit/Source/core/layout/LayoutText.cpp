@@ -1674,139 +1674,15 @@ int LayoutText::previousOffset(int current) const
     return result;
 }
 
-#if OS(POSIX)
-
-#define HANGUL_CHOSEONG_START (0x1100)
-#define HANGUL_CHOSEONG_END (0x115F)
-#define HANGUL_JUNGSEONG_START (0x1160)
-#define HANGUL_JUNGSEONG_END (0x11A2)
-#define HANGUL_JONGSEONG_START (0x11A8)
-#define HANGUL_JONGSEONG_END (0x11F9)
-#define HANGUL_SYLLABLE_START (0xAC00)
-#define HANGUL_SYLLABLE_END (0xD7AF)
-#define HANGUL_JONGSEONG_COUNT (28)
-
-enum HangulState {
-    HangulStateL,
-    HangulStateV,
-    HangulStateT,
-    HangulStateLV,
-    HangulStateLVT,
-    HangulStateBreak
-};
-
-inline bool isHangulLVT(UChar32 character)
-{
-    return (character - HANGUL_SYLLABLE_START) % HANGUL_JONGSEONG_COUNT;
-}
-
-inline bool isMark(UChar32 c)
-{
-    int8_t charType = u_charType(c);
-    return charType == U_NON_SPACING_MARK || charType == U_ENCLOSING_MARK || charType == U_COMBINING_SPACING_MARK;
-}
-
-inline bool isRegionalIndicator(UChar32 c)
-{
-    // National flag emoji each consists of a pair of regional indicator symbols.
-    return 0x1F1E6 <= c && c <= 0x1F1FF;
-}
-
-#endif
-
 int LayoutText::previousOffsetForBackwardDeletion(int current) const
 {
-#if OS(POSIX)
-    ASSERT(m_text);
-    StringImpl& text = *m_text.impl();
-    UChar32 character;
-    bool sawRegionalIndicator = false;
-    while (current > 0) {
-        if (U16_IS_TRAIL(text[--current]))
-            --current;
-        if (current < 0)
-            break;
-
-        UChar32 character = text.characterStartingAt(current);
-
-        if (sawRegionalIndicator) {
-            // We don't check if the pair of regional indicator symbols before current position can actually be combined
-            // into a flag, and just delete it. This may not agree with how the pair is rendered in edge cases,
-            // but is good enough in practice.
-            if (isRegionalIndicator(character))
-                break;
-            // Don't delete a preceding character that isn't a regional indicator symbol.
-            U16_FWD_1_UNSAFE(text, current);
-        }
-
-        // We don't combine characters in Armenian ... Limbu range for backward deletion.
-        if ((character >= 0x0530) && (character < 0x1950))
-            break;
-
-        if (isRegionalIndicator(character)) {
-            sawRegionalIndicator = true;
-            continue;
-        }
-
-        if (!isMark(character) && (character != 0xFF9E) && (character != 0xFF9F))
-            break;
-    }
-
-    if (current <= 0)
-        return current;
-
-    // Hangul
-    character = text.characterStartingAt(current);
-    if (((character >= HANGUL_CHOSEONG_START) && (character <= HANGUL_JONGSEONG_END)) || ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END))) {
-        HangulState state;
-
-        if (character < HANGUL_JUNGSEONG_START)
-            state = HangulStateL;
-        else if (character < HANGUL_JONGSEONG_START)
-            state = HangulStateV;
-        else if (character < HANGUL_SYLLABLE_START)
-            state = HangulStateT;
-        else
-            state = isHangulLVT(character) ? HangulStateLVT : HangulStateLV;
-
-        while (current > 0 && ((character = text.characterStartingAt(current - 1)) >= HANGUL_CHOSEONG_START) && (character <= HANGUL_SYLLABLE_END) && ((character <= HANGUL_JONGSEONG_END) || (character >= HANGUL_SYLLABLE_START))) {
-            switch (state) {
-            case HangulStateV:
-                if (character <= HANGUL_CHOSEONG_END)
-                    state = HangulStateL;
-                else if ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END) && !isHangulLVT(character))
-                    state = HangulStateLV;
-                else if (character > HANGUL_JUNGSEONG_END)
-                    state = HangulStateBreak;
-                break;
-            case HangulStateT:
-                if ((character >= HANGUL_JUNGSEONG_START) && (character <= HANGUL_JUNGSEONG_END))
-                    state = HangulStateV;
-                else if ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END))
-                    state = (isHangulLVT(character) ? HangulStateLVT : HangulStateLV);
-                else if (character < HANGUL_JUNGSEONG_START)
-                    state = HangulStateBreak;
-                break;
-            default:
-                state = (character < HANGUL_JUNGSEONG_START) ? HangulStateL : HangulStateBreak;
-                break;
-            }
-            if (state == HangulStateBreak)
-                break;
-
-            --current;
-        }
-    }
-
-    return current;
-#else
-    // Platforms other than Unix-like delete by one code point.
+    // Delete by one code point. Ideally we should delete grapheme where that
+    // makes sense. https://crbug.com/587241
     if (U16_IS_TRAIL(m_text[--current]))
         --current;
     if (current < 0)
         current = 0;
     return current;
-#endif
 }
 
 int LayoutText::nextOffset(int current) const
