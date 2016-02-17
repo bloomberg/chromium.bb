@@ -299,6 +299,12 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     config = self._run.config
     build_root = self._build_root
 
+    logging.info('Build re-executions have finished. Chromite source '
+                 'will not be modified for remainder of run.')
+    logging.info("config['important']=%s", config['important'])
+    logging.PrintBuildbotStepText(
+        "config['important']=%s" % config['important'])
+
     # Flat list of all child config boards. Since child configs
     # are not allowed to have children, it is not necessary to search
     # deeper than one generation.
