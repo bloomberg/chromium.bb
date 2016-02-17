@@ -40,8 +40,9 @@ class ServiceWorkerVersions;
 // incumbent script is detected. The incumbent script is progressively compared
 // with the new script as it is read from network. Once a change is detected,
 // everything that matched is copied to disk, and from then on the script is
-// written as it continues to be read from network. If the scripts were
-// identical, the job fails so the worker can be discarded.
+// written as it continues to be read from network. If the scripts are
+// identical, the resulting ServiceWorkerScriptCacheMap's main script status is
+// set to kIdenticalScriptError.
 class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
     : public net::URLRequestJob,
       public net::URLRequest::Delegate {
@@ -54,6 +55,10 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
                                int extra_load_flags,
                                int64_t resource_id,
                                int64_t incumbent_resource_id);
+
+  // The error code used when update fails because the new
+  // script is byte-by-byte identical to the incumbent script.
+  const static net::Error kIdenticalScriptError;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,

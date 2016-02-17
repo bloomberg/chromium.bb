@@ -290,7 +290,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
   void OnStartWorker(int embedded_worker_id,
                      int64_t service_worker_version_id,
                      const GURL& scope,
-                     const GURL& script_url) override {
+                     const GURL& script_url,
+                     bool pause_after_download) override {
     switch (mode_) {
       case StartMode::STALL:
         break;  // Do nothing.
@@ -298,8 +299,9 @@ class MessageReceiverDisallowStart : public MessageReceiver {
         OnStopWorker(embedded_worker_id);
         break;
       case StartMode::SUCCEED:
-        MessageReceiver::OnStartWorker(
-            embedded_worker_id, service_worker_version_id, scope, script_url);
+        MessageReceiver::OnStartWorker(embedded_worker_id,
+                                       service_worker_version_id, scope,
+                                       script_url, pause_after_download);
         break;
     }
   }

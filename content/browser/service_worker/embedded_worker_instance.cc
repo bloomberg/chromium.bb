@@ -328,6 +328,11 @@ class EmbeddedWorkerInstance::StartTask {
   DISALLOW_COPY_AND_ASSIGN(StartTask);
 };
 
+bool EmbeddedWorkerInstance::Listener::OnMessageReceived(
+    const IPC::Message& message) {
+  return false;
+}
+
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   DCHECK(status_ == STOPPING || status_ == STOPPED) << status_;
   devtools_proxy_.reset();
@@ -339,7 +344,8 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
 void EmbeddedWorkerInstance::Start(int64_t service_worker_version_id,
                                    const GURL& scope,
                                    const GURL& script_url,
-                                   const StatusCallback& callback) {
+                                   const StatusCallback& callback,
+                                   bool pause_after_download) {
   if (!context_) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     // |this| may be destroyed by the callback.
@@ -365,6 +371,7 @@ void EmbeddedWorkerInstance::Start(int64_t service_worker_version_id,
   params->script_url = script_url;
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   params->wait_for_debugger = false;
+  params->pause_after_download = pause_after_download;
   params->v8_cache_options = GetV8CacheOptions();
 
   inflight_start_task_.reset(new StartTask(this));
@@ -410,6 +417,13 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
   return registry_->Send(process_id(),
                          new EmbeddedWorkerContextMsg_MessageToWorker(
                              thread_id_, embedded_worker_id_, message));
+}
+
+void EmbeddedWorkerInstance::ResumeAfterDownload() {
+  if (process_id() == ChildProcessHost::kInvalidUniqueID || status_ != STARTING)
+    return;
+  registry_->Send(process_id(), new EmbeddedWorkerMsg_ResumeAfterDownload(
+                                    embedded_worker_id_));
 }
 
 ServiceRegistry* EmbeddedWorkerInstance::GetServiceRegistry() {

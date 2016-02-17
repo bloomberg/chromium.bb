@@ -379,6 +379,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     scoped_refptr<ServiceWorkerVersion> new_version =
         new ServiceWorkerVersion(registration_.get(), script_url_,
                                  NextVersionId(), context()->AsWeakPtr());
+    new_version->set_pause_after_download(true);
     CreateHostForVersion(helper_->mock_render_process_id(), provider_id,
                          new_version);
 

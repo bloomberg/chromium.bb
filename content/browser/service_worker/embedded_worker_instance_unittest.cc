@@ -118,13 +118,15 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
   void OnStartWorker(int embedded_worker_id,
                      int64_t service_worker_version_id,
                      const GURL& scope,
-                     const GURL& script_url) override {
+                     const GURL& script_url,
+                     bool pause_after_download) override {
     if (force_stall_in_start_) {
       // Do nothing to simulate a stall in the worker process.
       return;
     }
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, service_worker_version_id, scope, script_url);
+    EmbeddedWorkerTestHelper::OnStartWorker(embedded_worker_id,
+                                            service_worker_version_id, scope,
+                                            script_url, pause_after_download);
   }
 
   void set_force_stall_in_start(bool force_stall_in_start) {
@@ -469,6 +471,34 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
 
   // Tear down the worker.
   worker->Stop();
+}
+
+TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
+  const int64_t version_id = 55L;
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  worker->AddListener(this);
+
+  // Run the start worker sequence until pause after download.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  worker->Start(version_id, scope, url, base::Bind(&SaveStatusAndCall, &status,
+                                                   base::Bind(base::DoNothing)),
+                true /* pause_after_download */);
+  base::RunLoop().RunUntilIdle();
+
+  // Make the worker stopping and attempt to send a resume after download
+  // message.
+  worker->Stop();
+  worker->ResumeAfterDownload();
+  base::RunLoop().RunUntilIdle();
+
+  // The resume after download message should not have been sent.
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+  EXPECT_FALSE(ipc_sink()->GetFirstMessageMatching(
+      EmbeddedWorkerMsg_ResumeAfterDownload::ID));
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {

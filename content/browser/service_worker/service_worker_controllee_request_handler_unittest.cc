@@ -47,7 +47,8 @@ class FailureHelper : public EmbeddedWorkerTestHelper {
   void OnStartWorker(int embedded_worker_id,
                      int64_t service_worker_version_id,
                      const GURL& scope,
-                     const GURL& script_url) override {
+                     const GURL& script_url,
+                     bool pause_after_download) override {
     SimulateWorkerStopped(embedded_worker_id);
   }
 };

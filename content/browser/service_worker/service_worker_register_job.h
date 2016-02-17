@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTER_JOB_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTER_JOB_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -34,7 +35,8 @@ class ServiceWorkerStorage;
 //  - waiting for older ServiceWorkerVersions to deactivate
 //  - designating the new version to be the 'active' version
 //  - updating storage
-class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
+class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
+                                 public EmbeddedWorkerInstance::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const std::string& status_message,
@@ -133,6 +135,9 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   void AddRegistrationToMatchingProviderHosts(
       ServiceWorkerRegistration* registration);
+
+  // EmbeddedWorkerInstance::Listener implementation:
+  void OnScriptLoaded() override;
 
   // The ServiceWorkerContextCore object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
