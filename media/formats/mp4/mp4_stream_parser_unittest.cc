@@ -197,14 +197,14 @@ class MP4StreamParserTest : public testing::Test {
 TEST_F(MP4StreamParserTest, UnalignedAppend) {
   // Test small, non-segment-aligned appends (small enough to exercise
   // incremental append system)
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401f"));
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
   EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
   ParseMP4File("bear-1280x720-av_frag.mp4", 512);
 }
 
 TEST_F(MP4StreamParserTest, BytewiseAppend) {
   // Ensure no incremental errors occur when parsing
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401f"));
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
   EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
   ParseMP4File("bear-1280x720-av_frag.mp4", 1);
 }
@@ -212,14 +212,14 @@ TEST_F(MP4StreamParserTest, BytewiseAppend) {
 TEST_F(MP4StreamParserTest, MultiFragmentAppend) {
   // Large size ensures multiple fragments are appended in one call (size is
   // larger than this particular test file)
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401f"));
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
   EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
   ParseMP4File("bear-1280x720-av_frag.mp4", 768432);
 }
 
 TEST_F(MP4StreamParserTest, Flush) {
   // Flush while reading sample data, then start a new stream.
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401f")).Times(2);
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F")).Times(2);
   EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2")).Times(2);
   InitializeParser();
 
@@ -233,7 +233,7 @@ TEST_F(MP4StreamParserTest, Flush) {
 }
 
 TEST_F(MP4StreamParserTest, Reinitialization) {
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401f")).Times(2);
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F")).Times(2);
   EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2")).Times(2);
   InitializeParser();
 
@@ -259,7 +259,7 @@ TEST_F(MP4StreamParserTest, MPEG2_AAC_LC) {
 
 // Test that a moov box is not always required after Flush() is called.
 TEST_F(MP4StreamParserTest, NoMoovAfterFlush) {
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401f"));
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
   EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
   InitializeParser();
 
@@ -296,7 +296,7 @@ TEST_F(MP4StreamParserTest, MissingSampleAuxInfo) {
 // Test a file where all video samples start with an Access Unit
 // Delimiter (AUD) NALU.
 TEST_F(MP4StreamParserTest, VideoSamplesStartWithAUDs) {
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.4d4028"));
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.4D4028"));
   ParseMP4File("bear-1280x720-av_with-aud-nalus_frag.mp4", 512);
 }
 
@@ -316,7 +316,7 @@ TEST_F(MP4StreamParserTest, CENC) {
 
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401f"));
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
 
@@ -326,7 +326,7 @@ TEST_F(MP4StreamParserTest, NaturalSizeWithoutPASP) {
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-640x360-non_square_pixel-without_pasp.mp4");
 
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401e"));
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001E"));
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
   EXPECT_EQ(gfx::Size(639, 360), video_decoder_config_.natural_size());
 }
@@ -337,7 +337,7 @@ TEST_F(MP4StreamParserTest, NaturalSizeWithPASP) {
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-640x360-non_square_pixel-with_pasp.mp4");
 
-  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.6401e"));
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001E"));
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
   EXPECT_EQ(gfx::Size(639, 360), video_decoder_config_.natural_size());
 }

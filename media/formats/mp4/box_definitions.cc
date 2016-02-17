@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/formats/mp4/avc.h"
@@ -431,10 +432,8 @@ bool AVCDecoderConfigurationRecord::ParseInternal(
     RCHECK(sps_list[i].size() > 4);
 
     if (media_log.get()) {
-      MEDIA_LOG(INFO, media_log) << "Video codec: avc1." << std::hex
-                                 << static_cast<int>(sps_list[i][1])
-                                 << static_cast<int>(sps_list[i][2])
-                                 << static_cast<int>(sps_list[i][3]);
+      MEDIA_LOG(INFO, media_log) << "Video codec: avc1."
+                                 << base::HexEncode(sps_list[i].data() + 1, 3);
     }
   }
 
