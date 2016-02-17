@@ -16310,6 +16310,20 @@
             "-chrome_internal"
         ]
     },
+    "samus-cheets-android-pfq": {
+        "_template": "android-pfq",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "samus-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "samus-cheets-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [

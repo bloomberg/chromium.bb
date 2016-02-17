@@ -520,6 +520,7 @@ _brillo_boards = frozenset([
 
 _cheets_boards = frozenset([
     'cyan-cheets',
+    'samus-cheets',
     'veyron_minnie-cheets',
 ])
 
