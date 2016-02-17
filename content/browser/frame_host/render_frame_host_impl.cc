@@ -614,7 +614,7 @@ void RenderFrameHostImpl::AccessibilitySetSelection(int anchor_object_id,
                                                     int focus_object_id,
                                                     int focus_offset) {
   Send(new AccessibilityMsg_SetSelection(routing_id_,
-                                         focus_object_id,
+                                         anchor_object_id,
                                          anchor_offset,
                                          focus_object_id,
                                          focus_offset));
