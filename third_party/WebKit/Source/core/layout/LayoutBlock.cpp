@@ -105,23 +105,9 @@ static TrackedContainerMap* gPositionedContainerMap = nullptr;
 // for every layout (see the comment above about why).
 static TrackedDescendantsMap* gPercentHeightDescendantsMap = nullptr;
 
-struct ScrollInfo {
-    ScrollInfo() : autoHorizontalScrollBarChanged(false), autoVerticalScrollBarChanged(false) {}
-    DoubleSize scrollOffset;
-    bool autoHorizontalScrollBarChanged;
-    bool autoVerticalScrollBarChanged;
-    bool hasOffset() const { return scrollOffset != DoubleSize(); }
-    bool scrollBarsChanged() const { return autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged; }
-    void merge(const ScrollInfo& other)
-    {
-        // We always keep the first scrollOffset we saw for this block, so don't copy that field.
-        autoHorizontalScrollBarChanged |= other.autoHorizontalScrollBarChanged;
-        autoVerticalScrollBarChanged |= other.autoVerticalScrollBarChanged;
-    }
-};
-typedef WTF::HashMap<LayoutBlock*, ScrollInfo> DelayedUpdateScrollInfoMap;
+typedef WTF::HashSet<LayoutBlock*> DelayedUpdateScrollInfoSet;
 static int gDelayUpdateScrollInfo = 0;
-static DelayedUpdateScrollInfoMap* gDelayedUpdateScrollInfoMap = nullptr;
+static DelayedUpdateScrollInfoSet* gDelayedUpdateScrollInfoSet = nullptr;
 
 LayoutBlock::LayoutBlock(ContainerNode* node)
     : LayoutBox(node)
@@ -207,8 +193,8 @@ void LayoutBlock::willBeDestroyed()
 
     m_lineBoxes.deleteLineBoxes();
 
-    if (UNLIKELY(gDelayedUpdateScrollInfoMap != 0))
-        gDelayedUpdateScrollInfoMap->remove(this);
+    if (UNLIKELY(gDelayedUpdateScrollInfoSet != 0))
+        gDelayedUpdateScrollInfoSet->remove(this);
 
     if (TextAutosizer* textAutosizer = document().textAutosizer())
         textAutosizer->destroy(this);
@@ -841,10 +827,10 @@ bool LayoutBlock::isSelfCollapsingBlock() const
 void LayoutBlock::startDelayUpdateScrollInfo()
 {
     if (gDelayUpdateScrollInfo == 0) {
-        ASSERT(!gDelayedUpdateScrollInfoMap);
-        gDelayedUpdateScrollInfoMap = new DelayedUpdateScrollInfoMap;
+        ASSERT(!gDelayedUpdateScrollInfoSet);
+        gDelayedUpdateScrollInfoSet = new DelayedUpdateScrollInfoSet;
     }
-    ASSERT(gDelayedUpdateScrollInfoMap);
+    ASSERT(gDelayedUpdateScrollInfoSet);
     ++gDelayUpdateScrollInfo;
 }
 
@@ -853,17 +839,14 @@ void LayoutBlock::finishDelayUpdateScrollInfo()
     --gDelayUpdateScrollInfo;
     ASSERT(gDelayUpdateScrollInfo >= 0);
     if (gDelayUpdateScrollInfo == 0) {
-        ASSERT(gDelayedUpdateScrollInfoMap);
+        ASSERT(gDelayedUpdateScrollInfoSet);
 
-        OwnPtr<DelayedUpdateScrollInfoMap> infoMap(adoptPtr(gDelayedUpdateScrollInfoMap));
-        gDelayedUpdateScrollInfoMap = nullptr;
+        OwnPtr<DelayedUpdateScrollInfoSet> infoSet(adoptPtr(gDelayedUpdateScrollInfoSet));
+        gDelayedUpdateScrollInfoSet = nullptr;
 
-        for (auto block : *infoMap) {
-            if (block.key->hasOverflowClip()) {
-                PaintLayerScrollableArea* scrollableArea = block.key->layer()->scrollableArea();
-                ScrollInfo& scrollInfo = block.value;
-                scrollableArea->updateScrollDimensions(scrollInfo.scrollOffset, scrollInfo.autoHorizontalScrollBarChanged, scrollInfo.autoVerticalScrollBarChanged);
-                scrollableArea->finalizeScrollDimensions(scrollInfo.scrollOffset, scrollInfo.autoHorizontalScrollBarChanged, scrollInfo.autoVerticalScrollBarChanged);
+        for (auto* block : *infoSet) {
+            if (block->hasOverflowClip()) {
+                block->layer()->scrollableArea()->updateAfterLayout();
             }
         }
     }
@@ -881,15 +864,10 @@ void LayoutBlock::updateScrollInfoAfterLayout()
             return;
         }
 
-        if (gDelayUpdateScrollInfo) {
-            ScrollInfo scrollInfo;
-            layer()->scrollableArea()->updateScrollDimensions(scrollInfo.scrollOffset, scrollInfo.autoHorizontalScrollBarChanged, scrollInfo.autoVerticalScrollBarChanged);
-            DelayedUpdateScrollInfoMap::AddResult scrollInfoIterator = gDelayedUpdateScrollInfoMap->add(this, scrollInfo);
-            if (!scrollInfoIterator.isNewEntry)
-                scrollInfoIterator.storedValue->value.merge(scrollInfo);
-        } else {
+        if (gDelayUpdateScrollInfo)
+            gDelayedUpdateScrollInfoSet->add(this);
+        else
             layer()->scrollableArea()->updateAfterLayout();
-        }
     }
 }
 

@@ -732,6 +732,11 @@ void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child)
     m_intrinsicSizeAlongMainAxis.set(&child, mainSize);
 }
 
+void LayoutFlexibleBox::clearCachedMainSizeForChild(const LayoutBox& child)
+{
+    m_intrinsicSizeAlongMainAxis.remove(&child);
+}
+
 LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child, ChildLayoutType childLayoutType)
 {
     child.clearOverrideSize();
