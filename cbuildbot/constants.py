@@ -258,11 +258,13 @@ ANDROID_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
 ANDROID_BUILD_TARGETS = {
     'ARM': 'linux-cheets_arm-userdebug',
     'X86': 'linux-cheets_x86-userdebug',
+    'CTS': 'linux-cts',
 }
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
+    'CTS': 'googlestorage_acl_cts.txt',
 }
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')

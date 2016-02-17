@@ -82,7 +82,7 @@ def IsBuildIdValid(bucket_url, build_branch, build_id):
     # Look for a zipfile ending in the build_id number.
     try:
       for zipfile in gs_context.List(subpath_dir):
-        if zipfile.url.endswith('-%s.zip' % (build_id)):
+        if zipfile.url.endswith('.zip'):
           break
     except gs.GSNoSuchKey:
       logging.warn(
@@ -201,7 +201,7 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
 
     # Copy all zip files from android_dir to arc_dir, setting ACLs.
     for zipfile in gs_context.List(android_dir):
-      if zipfile.url.endswith('-%s.zip' % (build_id)):
+      if zipfile.url.endswith('.zip'):
         zipname = os.path.basename(zipfile.url)
         arc_path = os.path.join(arc_dir, zipname)
         acl = acls[build]

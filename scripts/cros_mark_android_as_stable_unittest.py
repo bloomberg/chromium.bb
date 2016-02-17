@@ -69,17 +69,22 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
     self.arm_acl_data = '-g google.com:READ'
     self.x86_acl_data = '-g google.com:WRITE'
+    self.cts_acl_data = '-g google.com:WRITE'
     self.arm_acl = os.path.join(self.mock_android_dir,
                                 'googlestorage_arm_acl.txt')
     self.x86_acl = os.path.join(self.mock_android_dir,
                                 'googlestorage_x86_acl.txt')
+    self.cts_acl = os.path.join(self.mock_android_dir,
+                                'googlestorage_cts_acl.txt')
     self.acls = {
         'ARM': self.arm_acl,
         'X86': self.x86_acl,
+        'CTS': self.cts_acl,
     }
 
     osutils.WriteFile(self.arm_acl, self.arm_acl_data, makedirs=True)
     osutils.WriteFile(self.x86_acl, self.x86_acl_data, makedirs=True)
+    osutils.WriteFile(self.cts_acl, self.cts_acl_data, makedirs=True)
 
     self.bucket_url = 'gs://u'
     self.build_branch = 'x'
@@ -92,6 +97,10 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
             self.partial_new_version
         ],
         'X86': [self.old_version, self.old2_version, self.new_version],
+        'CTS': [
+            self.old_version, self.old2_version, self.new_version,
+            self.partial_new_version
+        ],
     }
     for build_type, builds in builds.iteritems():
       url = self.makeSrcTargetUrl(constants.ANDROID_BUILD_TARGETS[build_type])
@@ -104,12 +113,15 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.new_subpaths = {
         'ARM': 'linux-cheets_arm-userdebug100',
         'X86': 'linux-cheets_x86-userdebug100',
+        'CTS': 'linux-cts100',
     }
 
     self.setupMockBuild(constants.ANDROID_BUILD_TARGETS['ARM'],
                         self.partial_new_version)
     self.setupMockBuild(constants.ANDROID_BUILD_TARGETS['X86'],
                         self.partial_new_version, False)
+    self.setupMockBuild(constants.ANDROID_BUILD_TARGETS['CTS'],
+                        self.partial_new_version)
 
     for target in constants.ANDROID_BUILD_TARGETS.itervalues():
       self.setupMockBuild(target, self.not_new_version, False)
@@ -172,9 +184,10 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                           self.build_branch,
                                                           self.old_version)
     self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 2)
+    self.assertEquals(len(subpaths), 3)
     self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug25')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug25')
+    self.assertEquals(subpaths['CTS'], 'linux-cts25')
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(self.bucket_url,
                                                           self.build_branch,
@@ -207,9 +220,10 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         self.bucket_url, self.build_branch)
     self.assertEqual(version, self.new_version)
     self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 2)
+    self.assertEquals(len(subpaths), 3)
     self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug100')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug100')
+    self.assertEquals(subpaths['CTS'], 'linux-cts100')
 
   def testCopyToArcBucket(self):
     """Test copying of images to ARC bucket."""
