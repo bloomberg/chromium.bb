@@ -60,15 +60,19 @@ bool ParseSmapsHeader(const char* header_line,
   region->protection_flags = 0;
   if (protection_flags[0] == 'r') {
     region->protection_flags |=
-        base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsRead;
+      base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsRead;
   }
   if (protection_flags[1] == 'w') {
     region->protection_flags |=
-        base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsWrite;
+      base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsWrite;
   }
   if (protection_flags[2] == 'x') {
     region->protection_flags |=
-        base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsExec;
+      base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsExec;
+  }
+  if (protection_flags[3] == 's') {
+    region->protection_flags |=
+      base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsMayshare;
   }
 
   region->mapped_file = mapped_file;

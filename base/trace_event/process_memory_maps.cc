@@ -15,6 +15,7 @@ namespace trace_event {
 const uint32_t ProcessMemoryMaps::VMRegion::kProtectionFlagsRead = 4;
 const uint32_t ProcessMemoryMaps::VMRegion::kProtectionFlagsWrite = 2;
 const uint32_t ProcessMemoryMaps::VMRegion::kProtectionFlagsExec = 1;
+const uint32_t ProcessMemoryMaps::VMRegion::kProtectionFlagsMayshare = 128;
 
 ProcessMemoryMaps::VMRegion::VMRegion()
     : start_address(0),
