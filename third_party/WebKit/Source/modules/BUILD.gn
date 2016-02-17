@@ -11,7 +11,9 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 visibility = [ "//third_party/WebKit/Source/*" ]
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules
-source_set("modules") {
+component("modules") {
+  output_name = "blink_modules"
+
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/*" ]
 
@@ -40,6 +42,8 @@ source_set("modules") {
     "//third_party/WebKit/Source:inside_blink",
   ]
 
+  defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
+
   deps = [
     ":make_modules_generated",
     "//third_party/WebKit/Source/core",
@@ -47,6 +51,9 @@ source_set("modules") {
     "//third_party/sqlite",
     "//third_party/zlib",
   ]
+
+  public_configs =
+      [ "//third_party/WebKit/Source/core:link_core_modules_separately" ]
 
   if (is_win) {
     cflags = [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.

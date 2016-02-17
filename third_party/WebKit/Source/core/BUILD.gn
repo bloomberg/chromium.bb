@@ -34,6 +34,27 @@ if (is_debug || !is_win || !is_official_build) {
 # Core targets also get wexit time destructors.
 core_config_add += [ "//build/config/compiler:wexit_time_destructors" ]
 
+# Config for code that builds as part of core.
+config("config") {
+  defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
+  configs = [ ":link_core_modules_separately" ]
+
+  cflags = []
+  if (is_win) {
+    # Suppress __declspec(dllexport)/extern conflict (C4910).
+    cflags += [ "/wd4910" ]
+  }
+}
+core_config_add += [ ":config" ]
+
+# Config for linking core and modules separately in component builds.
+# Required for CoreExport.h and ModulesExport.h.
+config("link_core_modules_separately") {
+  if (is_component_build) {
+    defines = [ "LINK_CORE_MODULES_SEPARATELY=1" ]
+  }
+}
+
 config("core_include_dirs") {
   include_dirs = [
     "..",
@@ -125,7 +146,9 @@ source_set("prerequisites") {
 # and only forward some of them.
 #
 # GYP version: WebKit/Source/core/core.gyp:webcore
-source_set("core") {
+component("core") {
+  output_name = "blink_core"
+
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/*" ]
 
@@ -150,7 +173,10 @@ source_set("core") {
     ":svg",
   ]
 
-  public_configs = [ ":core_include_dirs" ]
+  public_configs = [
+    ":core_include_dirs",
+    ":link_core_modules_separately",
+  ]
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_dom
@@ -283,7 +309,6 @@ source_set("testing") {
 
   deps = [
     ":core",
-    ":core_generated",
     ":generated_testing_idls",
     "//third_party/WebKit/Source/wtf:test_support",
   ]
