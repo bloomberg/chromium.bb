@@ -6,8 +6,7 @@
 
 namespace chrome {
 
-ImmersiveModeController* CreateImmersiveModeController(
-    chrome::HostDesktopType host_desktop_type) {
+ImmersiveModeController* CreateImmersiveModeController() {
   return new ImmersiveModeControllerStub();
 }
 

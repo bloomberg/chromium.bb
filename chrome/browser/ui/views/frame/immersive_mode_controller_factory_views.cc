@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_stub.h"
 
 #if defined(USE_ASH)
@@ -11,14 +10,12 @@
 
 namespace chrome {
 
-ImmersiveModeController* CreateImmersiveModeController(
-    chrome::HostDesktopType host_desktop_type) {
+ImmersiveModeController* CreateImmersiveModeController() {
 #if defined(USE_ASH)
-  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
-    return new ImmersiveModeControllerAsh();
-#endif
-
+  return new ImmersiveModeControllerAsh();
+#else
   return new ImmersiveModeControllerStub();
+#endif  // USE_ASH
 }
 
 }  // namespace chrome
