@@ -295,6 +295,44 @@ TEST(ImageDecodeControllerTest, ImageKeyHighQualityDropToLowIfNearlyIdentity2) {
   EXPECT_EQ(100u * 100u * 4u, key.target_bytes());
 }
 
+TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRect) {
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  DrawImage draw_image(
+      image.get(), SkIRect::MakeXYWH(25, 35, image->width(), image->height()),
+      SkSize::Make(1.f, 1.f), quality, has_perspective, is_decomposable);
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(75, key.target_size().width());
+  EXPECT_EQ(65, key.target_size().height());
+  EXPECT_EQ(gfx::Rect(25, 35, 75, 65), key.src_rect());
+  EXPECT_EQ(75u * 65u * 4u, key.target_bytes());
+}
+
+TEST(ImageDecodeControllerTest, ImageRectDoesNotContainSrcRectWithScale) {
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  DrawImage draw_image(
+      image.get(), SkIRect::MakeXYWH(20, 30, image->width(), image->height()),
+      SkSize::Make(0.5f, 0.5f), quality, has_perspective, is_decomposable);
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(kHigh_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(40, key.target_size().width());
+  EXPECT_EQ(35, key.target_size().height());
+  EXPECT_EQ(gfx::Rect(20, 30, 80, 70), key.src_rect());
+  EXPECT_EQ(40u * 35u * 4u, key.target_bytes());
+}
+
 TEST(ImageDecodeControllerTest, GetTaskForImageSameImage) {
   ImageDecodeController controller;
   skia::RefPtr<SkImage> image = CreateImage(100, 100);
@@ -650,6 +688,48 @@ TEST(ImageDecodeControllerTest, GetDecodedImageForDraw) {
   controller.UnrefImage(draw_image);
 }
 
+TEST(ImageDecodeControllerTest, GetDecodedImageForDrawWithNonContainedSrcRect) {
+  ImageDecodeController controller;
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  uint64_t prepare_tiles_id = 1;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(
+      image.get(), SkIRect::MakeXYWH(20, 30, image->width(), image->height()),
+      SkSize::Make(0.5f, 0.5f), quality, has_perspective, is_decomposable);
+  scoped_refptr<ImageDecodeTask> task;
+  bool need_unref =
+      controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+
+  task->WillSchedule();
+  task->ScheduleOnOriginThread(nullptr);
+  task->DidSchedule();
+
+  task->RunOnWorkerThread();
+
+  task->WillComplete();
+  task->CompleteOnOriginThread(nullptr);
+  task->DidComplete();
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_EQ(40, decoded_draw_image.image()->width());
+  EXPECT_EQ(35, decoded_draw_image.image()->height());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().width());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
+  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
 TEST(ImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
   ImageDecodeController controller;
   bool has_perspective = false;
@@ -829,6 +909,31 @@ TEST(ImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()),
       SkSize::Make(0.f, 0.f), quality, has_perspective, is_decomposable);
+
+  scoped_refptr<ImageDecodeTask> task;
+  bool need_unref =
+      controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
+  EXPECT_FALSE(task);
+  EXPECT_FALSE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_FALSE(decoded_draw_image.image());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+}
+
+TEST(ImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
+  ImageDecodeController controller;
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  uint64_t prepare_tiles_id = 1;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(
+      image.get(), SkIRect::MakeXYWH(150, 150, image->width(), image->height()),
+      SkSize::Make(1.f, 1.f), quality, has_perspective, is_decomposable);
 
   scoped_refptr<ImageDecodeTask> task;
   bool need_unref =
