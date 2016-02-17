@@ -221,12 +221,12 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #endif
 
-#if defined(USE_ASH)
-#include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
 #endif
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/aura/chrome_browser_main_extra_parts_aura.h"
+#if defined(USE_ASH)
+#include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 #endif
 
 #if defined(USE_X11)
@@ -780,17 +780,17 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   // Construct additional browser parts. Stages are called in the order in
   // which they are added.
 #if defined(TOOLKIT_VIEWS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsViewsLinux());
+#else
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
+#endif
 #endif
 
 // TODO(oshima): Athena on chrome currently requires USE_ASH to build.
 // We should reduce the dependency as much as possible.
 #if defined(USE_ASH)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
-#endif
-
-#if defined(USE_AURA)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
 #endif
 
 #if defined(USE_X11)

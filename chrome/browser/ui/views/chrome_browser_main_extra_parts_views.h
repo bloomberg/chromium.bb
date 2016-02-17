@@ -26,6 +26,7 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
 
   // Overridden from ChromeBrowserMainExtraParts:
   void ToolkitInitialized() override;
+  void PreCreateThreads() override;
 
  private:
   scoped_ptr<views::ViewsDelegate> views_delegate_;

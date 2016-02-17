@@ -654,8 +654,6 @@
       'browser/ui/aura/accessibility/ax_root_obj_wrapper.h',
       'browser/ui/aura/accessibility/ax_tree_source_aura.cc',
       'browser/ui/aura/accessibility/ax_tree_source_aura.h',
-      'browser/ui/aura/chrome_browser_main_extra_parts_aura.cc',
-      'browser/ui/aura/chrome_browser_main_extra_parts_aura.h',
       'browser/ui/aura/native_window_tracker_aura.cc',
       'browser/ui/aura/native_window_tracker_aura.h',
       'browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.cc',
@@ -2123,6 +2121,8 @@
     'chrome_browser_ui_views_non_chromeos_sources': [
       'browser/ui/external_protocol_dialog_delegate.cc',
       'browser/ui/external_protocol_dialog_delegate.h',
+      'browser/ui/views/chrome_browser_main_extra_parts_views_linux.cc',
+      'browser/ui/views/chrome_browser_main_extra_parts_views_linux.h',
       'browser/ui/views/external_protocol_dialog.cc',
       'browser/ui/views/external_protocol_dialog.h',
       'browser/ui/views/frame/opaque_browser_frame_view.cc',
