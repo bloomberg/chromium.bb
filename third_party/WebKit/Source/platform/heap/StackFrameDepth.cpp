@@ -56,7 +56,8 @@ void StackFrameDepth::enableStackLimit()
     s_isUsingFallbackStackSize = false;
 #endif
 
-    // Windows and OSX platforms will always return a non-zero estimate.
+    // All supported platforms will currently return a non-zero estimate,
+    // except if ASan is enabled.
     size_t stackSize = getUnderestimatedStackSize();
     if (!stackSize) {
         s_stackFrameLimit = getFallbackStackLimit();
@@ -86,7 +87,7 @@ size_t StackFrameDepth::getUnderestimatedStackSize()
 #if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
     // pthread_getattr_np() can fail if the thread is not invoked by
     // pthread_create() (e.g., the main thread of webkit_unit_tests).
-    // In this case, this method returns 0 and the caller must handle it.
+    // If so, a conservative size estimate is returned.
 
     pthread_attr_t attr;
     int error;
@@ -108,7 +109,12 @@ size_t StackFrameDepth::getUnderestimatedStackSize()
     pthread_attr_destroy(&attr);
 #endif
 
-    return 0;
+    // Return a 512k stack size, (conservatively) assuming the following:
+    //  - that size is much lower than the pthreads default (x86 pthreads has a 2M default.)
+    //  - no one is running Blink with an RLIMIT_STACK override, let alone as
+    //    low as 512k.
+    //
+    return 512 * 1024;
 #elif OS(MACOSX)
     // pthread_get_stacksize_np() returns too low a value for the main thread on
     // OSX 10.9, http://mail.openjdk.java.net/pipermail/hotspot-dev/2013-October/011369.html
