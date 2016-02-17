@@ -130,7 +130,6 @@ public:
         FormElement = 84,
         DemotedFormElement = 85,
         SVGAnimationElement = 90,
-        KeyboardEventKeyLocation = 91,
         LineClamp = 96,
         SubFrameBeforeUnloadRegistered = 97,
         SubFrameBeforeUnloadFired = 98,

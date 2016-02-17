@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'KeyboardEvent.keyLocation' is deprecated and will be removed in M50, around April 2016. Please use 'KeyboardEvent.location' instead. See https://www.chromestatus.com/features/4997403308457984 for more details.
 This tests the constructor for the KeyboardEvent DOM class.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -79,10 +78,6 @@ PASS new KeyboardEvent('eventType', { location: KeyboardEvent.DOM_KEY_LOCATION_S
 PASS new KeyboardEvent('eventType', { location: KeyboardEvent.DOM_KEY_LOCATION_LEFT }).location is KeyboardEvent.DOM_KEY_LOCATION_LEFT
 PASS new KeyboardEvent('eventType', { location: 4294967294 }).location is 4294967294
 PASS new KeyboardEvent('eventType', { location: 4294967295 }).location is 4294967295
-PASS new KeyboardEvent('eventType', { keyLocation: 0 }).keyLocation is 0
-PASS new KeyboardEvent('eventType', { keyLocation: 1 }).keyLocation is 1
-PASS new KeyboardEvent('eventType', { keyLocation: 1 }).location is 1
-PASS new KeyboardEvent('eventType', { location: 1 }).keyLocation is 1
 PASS new KeyboardEvent('eventType', { location: 9007199254740991 }).location is 4294967295
 PASS new KeyboardEvent('eventType', { location: 18446744073709551615 }).location is KeyboardEvent.DOM_KEY_LOCATION_STANDARD
 PASS new KeyboardEvent('eventType', { location: 12345678901234567890 }).location is 3944679424

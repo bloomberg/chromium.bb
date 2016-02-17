@@ -142,10 +142,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::PrefixedStorageInfo:
         return replacedBy("'window.webkitStorageInfo'", "'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage'");
 
-    // Keyboard Event (DOM Level 3)
-    case UseCounter::KeyboardEventKeyLocation:
-        return replacedWillBeRemoved("'KeyboardEvent.keyLocation'", "'KeyboardEvent.location'", 50, "4997403308457984");
-
     case UseCounter::ConsoleMarkTimeline:
         return replacedBy("'console.markTimeline'", "'console.timeStamp'");
 

@@ -60,5 +60,4 @@
 
     // Non-standard APIs
     [Measure] readonly attribute DOMString keyIdentifier;
-    [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation] readonly attribute unsigned long keyLocation;
 };

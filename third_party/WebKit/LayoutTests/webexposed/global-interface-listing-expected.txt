@@ -3178,7 +3178,6 @@ interface KeyboardEvent : UIEvent
     getter key
     getter keyCode
     getter keyIdentifier
-    getter keyLocation
     getter location
     getter metaKey
     getter repeat

@@ -116,12 +116,6 @@ shouldBe("new KeyboardEvent('eventType', { location: KeyboardEvent.DOM_KEY_LOCAT
 shouldBe("new KeyboardEvent('eventType', { location: 4294967294 }).location", "4294967294");
 shouldBe("new KeyboardEvent('eventType', { location: 4294967295 }).location", "4294967295");
 
-// test for deprecated 'keyLocation'.
-shouldBe("new KeyboardEvent('eventType', { keyLocation: 0 }).keyLocation", "0");
-shouldBe("new KeyboardEvent('eventType', { keyLocation: 1 }).keyLocation", "1");
-shouldBe("new KeyboardEvent('eventType', { keyLocation: 1 }).location", "1");
-shouldBe("new KeyboardEvent('eventType', { location: 1 }).keyLocation", "1");
-
 // numbers out of the unsigned long range.
 // 2^{53}-1, the largest number that can be exactly represented by double.
 shouldBe("new KeyboardEvent('eventType', { location: 9007199254740991 }).location", "4294967295");
