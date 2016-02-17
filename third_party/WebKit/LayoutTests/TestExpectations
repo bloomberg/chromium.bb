@@ -1370,3 +1370,5 @@ crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 crbug.com/583675 fast/dom/shadow/scoped-events-by-ua-stopped.html [ Failure ]
 
 crbug.com/585724 fast/js/JSON-parse.html [ NeedsManualRebaseline ]
+
+crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
