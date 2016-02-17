@@ -156,7 +156,9 @@ def main(args):
   if options.emma_device_jar:
     input_paths.append(options.emma_device_jar)
 
-  input_strings = [options.android_abi, options.native_lib_placeholders]
+  input_strings = [options.android_abi,
+                   options.native_lib_placeholders,
+                   options.uncompress_shared_libraries]
 
   _assets = _ExpandPaths(options.assets)
   _uncompressed_assets = _ExpandPaths(options.uncompressed_assets)
