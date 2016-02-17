@@ -1141,7 +1141,12 @@ void WebMediaPlayerImpl::ScheduleSuspend() {
 
 void WebMediaPlayerImpl::Suspend() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  CHECK(!suspended_);
+
+  // Since Pipeline::IsRunning() may be set on the media thread there are cases
+  // where two suspends might be issued concurrently.
+  if (suspended_)
+    return;
+
   suspended_ = true;
   suspending_ = true;
   pipeline_.Suspend(
