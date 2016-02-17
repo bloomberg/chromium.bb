@@ -38,6 +38,7 @@
 #include "core/fileapi/FileList.h"
 #include "core/frame/FrameHost.h"
 #include "core/html/FormData.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/forms/ButtonInputType.h"
@@ -699,6 +700,8 @@ bool InputType::supportsReadOnly() const
 
 String InputType::defaultToolTip() const
 {
+    if (element().form() && element().form()->noValidate())
+        return String();
     return validationMessage().first;
 }
 
