@@ -29,6 +29,7 @@ class ArcNotificationManager : public ArcService,
 
   // ArcBridgeService::Observer implementation:
   void OnNotificationsInstanceReady() override;
+  void OnNotificationsInstanceClosed() override;
 
   // NotificationsHost implementation:
   void OnNotificationPosted(ArcNotificationDataPtr data) override;

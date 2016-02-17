@@ -22,14 +22,17 @@ ArcNotificationManager::~ArcNotificationManager() {
 }
 
 void ArcNotificationManager::OnNotificationsInstanceReady() {
-  NotificationsInstance* notifications_instance =
-      arc_bridge_service()->notifications_instance();
+  auto notifications_instance = arc_bridge_service()->notifications_instance();
   if (!notifications_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;
   }
 
   notifications_instance->Init(binding_.CreateInterfacePtrAndBind());
+}
+
+void ArcNotificationManager::OnNotificationsInstanceClosed() {
+  // TODO(yoshiki): Handle this.
 }
 
 void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
@@ -65,11 +68,19 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
     return;
   }
 
-  scoped_ptr<ArcNotificationItem> item(items_.take_and_erase(it));
+  items_.erase(it);
 
-  arc_bridge_service()
-      ->notifications_instance()
-      ->SendNotificationEventToAndroid(key, ArcNotificationEvent::CLOSED);
+  auto notifications_instance = arc_bridge_service()->notifications_instance();
+
+  // On shutdown, the ARC channel may quit earlier then notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "ARC Notification (key: " << key
+            << ") is closed, but the ARC channel has already gone.";
+    return;
+  }
+
+  notifications_instance->SendNotificationEventToAndroid(
+      key, ArcNotificationEvent::CLOSED);
 }
 
 void ArcNotificationManager::SendNotificationClickedOnChrome(
@@ -80,9 +91,17 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
     return;
   }
 
-  arc_bridge_service()
-      ->notifications_instance()
-      ->SendNotificationEventToAndroid(key, ArcNotificationEvent::BODY_CLICKED);
+  auto notifications_instance = arc_bridge_service()->notifications_instance();
+
+  // On shutdown, the ARC channel may quit earlier then notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "ARC Notification (key: " << key
+            << ") is clicked, but the ARC channel has already gone.";
+    return;
+  }
+
+  notifications_instance->SendNotificationEventToAndroid(
+      key, ArcNotificationEvent::BODY_CLICKED);
 }
 
 void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
@@ -90,6 +109,15 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
   if (!items_.contains(key)) {
     VLOG(3) << "Chrome requests to fire a click event on notification (key: "
             << key << "), but it is gone.";
+    return;
+  }
+
+  auto notifications_instance = arc_bridge_service()->notifications_instance();
+
+  // On shutdown, the ARC channel may quit earlier then notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "ARC Notification (key: " << key
+            << ")'s button is clicked, but the ARC channel has already gone.";
     return;
   }
 
@@ -116,8 +144,7 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
       return;
   }
 
-  arc_bridge_service()
-      ->notifications_instance()->SendNotificationEventToAndroid(key, command);
+  notifications_instance->SendNotificationEventToAndroid(key, command);
 }
 
 }  // namespace arc
