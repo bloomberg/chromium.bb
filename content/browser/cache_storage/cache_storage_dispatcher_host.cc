@@ -45,6 +45,8 @@ blink::WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
       return blink::WebServiceWorkerCacheErrorNotFound;
     case CACHE_STORAGE_ERROR_QUOTA_EXCEEDED:
       return blink::WebServiceWorkerCacheErrorQuotaExceeded;
+    case CACHE_STORAGE_ERROR_CACHE_NAME_NOT_FOUND:
+      return blink::WebServiceWorkerCacheErrorCacheNameNotFound;
   }
   NOTREACHED();
   return blink::WebServiceWorkerCacheErrorNotImplemented;

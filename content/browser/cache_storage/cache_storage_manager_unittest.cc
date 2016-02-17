@@ -463,7 +463,7 @@ TEST_P(CacheStorageManagerTestP, StorageMatchNoCache) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_FALSE(StorageMatch(origin1_, "bar", GURL("http://example.com/foo")));
-  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
+  EXPECT_EQ(CACHE_STORAGE_ERROR_CACHE_NAME_NOT_FOUND, callback_error_);
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExists) {

@@ -785,7 +785,7 @@ void CacheStorage::MatchCacheImpl(
   scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
 
   if (!cache.get()) {
-    callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND,
+    callback.Run(CACHE_STORAGE_ERROR_CACHE_NAME_NOT_FOUND,
                  scoped_ptr<ServiceWorkerResponse>(),
                  scoped_ptr<storage::BlobDataHandle>());
     return;
