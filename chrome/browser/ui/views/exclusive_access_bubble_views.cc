@@ -48,7 +48,7 @@ namespace {
 // Space between the site info label and the buttons / link.
 const int kMiddlePaddingPx = 30;
 
-const int kOuterPaddingHorizPx = 24;
+const int kOuterPaddingHorizPx = 40;
 const int kOuterPaddingVertPx = 8;
 
 // Partially-transparent background color. Only used with
@@ -260,11 +260,8 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   SetFocusable(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  ui::ResourceBundle::FontStyle font_style =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
-          ? ui::ResourceBundle::SmallFont
-          : ui::ResourceBundle::MediumFont;
-  const gfx::FontList& font_list = rb.GetFontList(font_style);
+  const gfx::FontList& font_list =
+      rb.GetFontList(ui::ResourceBundle::MediumFont);
 
   if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
     message_label_ = new views::Label(base::string16(), font_list);
