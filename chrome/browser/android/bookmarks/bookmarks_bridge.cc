@@ -795,10 +795,6 @@ base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->GetTitle(node);
 
-  if (node == bookmark_model_->bookmark_bar_node()) {
-    return l10n_util::GetStringUTF16(IDS_ENHANCED_BOOKMARK_BAR_FOLDER_NAME);
-  }
-
   return node->GetTitle();
 }
 
