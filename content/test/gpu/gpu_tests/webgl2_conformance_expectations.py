@@ -126,6 +126,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         '-with-webgl-canvas-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['win'], bug=483282)
 
+    self.Flaky('deqp/functional/gles3/buffercopy.html', ['win'], bug=587601)
+
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
         ['win'], bug=483282)
