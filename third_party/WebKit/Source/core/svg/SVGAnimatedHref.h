@@ -9,37 +9,26 @@
 
 namespace blink {
 
-// This is an "access wrapper" for the 'href' attribute. It holds one object
-// for 'href' in the null/default NS and one for 'href' in the XLink NS. The
-// internal objects are the ones added to an SVGElement's property map and
-// hence any updates/synchronization/etc via the "attribute DOM" (setAttribute
-// and friends) will operate on the internal objects, while users of 'href'
-// will be using this interface (which essentially just selects one of the
-// internal objects and forwards the operation to it.)
+// This is an "access wrapper" for the 'href' attribute. The object
+// itself holds the value for 'href' in the null/default NS and wraps
+// one for 'href' in the XLink NS. Both objects are added to an
+// SVGElement's property map and hence any updates/synchronization/etc
+// via the "attribute DOM" (setAttribute and friends) will operate on
+// the independent objects, while users of an 'href' value will be
+// using this interface (which essentially just selects either itself
+// or the wrapped object and forwards the operation to it.)
 class SVGAnimatedHref final : public SVGAnimatedString {
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedHref> create(SVGElement* contextElement);
 
-    SVGString* baseValue() { return backingHref()->baseValue(); }
-    SVGString* currentValue() { return backingHref()->currentValue(); }
-    const SVGString* currentValue() const { return backingHref()->currentValue(); }
-
-    // None of the below should be called on this interface.
-    SVGPropertyBase* currentValueBase() override;
-    const SVGPropertyBase& baseValueBase() const override;
-    bool isAnimating() const override;
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() override;
-    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
-    void animationEnded() override;
-    SVGParsingError setBaseValueAsString(const String&) override;
-    bool needsSynchronizeAttribute() override;
-    void synchronizeAttribute() override;
+    SVGString* currentValue();
+    const SVGString* currentValue() const;
 
     String baseVal() override;
     void setBaseVal(const String&, ExceptionState&) override;
     String animVal() override;
 
-    bool isSpecified() const { return m_href->isSpecified() || m_xlinkHref->isSpecified(); }
+    bool isSpecified() const { return SVGAnimatedString::isSpecified() || m_xlinkHref->isSpecified(); }
 
     static bool isKnownAttribute(const QualifiedName&);
     void addToPropertyMap(SVGElement*);
@@ -49,9 +38,10 @@ public:
 private:
     explicit SVGAnimatedHref(SVGElement* contextElement);
 
-    SVGAnimatedString* backingHref() const;
+    SVGAnimatedString* backingString();
+    const SVGAnimatedString* backingString() const;
+    bool useXLink() const;
 
-    RefPtrWillBeMember<SVGAnimatedString> m_href;
     RefPtrWillBeMember<SVGAnimatedString> m_xlinkHref;
 };
 
