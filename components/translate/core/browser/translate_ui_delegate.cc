@@ -222,7 +222,7 @@ void TranslateUIDelegate::RevertTranslation() {
 }
 
 void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
-  if (!translate_driver_->IsOffTheRecord()) {
+  if (explicitly_closed && !translate_driver_->IsOffTheRecord()) {
     const std::string& language = GetOriginalLanguageCode();
     prefs_->ResetTranslationAcceptedCount(language);
     prefs_->IncrementTranslationDeniedCount(language);
@@ -234,13 +234,14 @@ void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   // when getting a LANGUAGE_DETERMINED from the page, which happens when a load
   // stops. That could happen multiple times, including after the user already
   // declined the translation.)
-  if (translate_manager_) {
+  if (explicitly_closed && translate_manager_) {
     translate_manager_->GetLanguageState().set_translation_declined(true);
     UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
   }
 
-  if (!explicitly_closed)
+  if (!explicitly_closed) {
     UMA_HISTOGRAM_BOOLEAN(kDeclineTranslateDismissUI, true);
+  }
 }
 
 bool TranslateUIDelegate::IsLanguageBlocked() {

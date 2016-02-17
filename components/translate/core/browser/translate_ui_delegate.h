@@ -88,6 +88,15 @@ class TranslateUIDelegate {
   void RevertTranslation();
 
   // Processes when the user declines translation.
+  // The function name is not accurate. It only means the user did not take
+  // affirmative action after the translation ui show up. The user either
+  // actively decline the translation or ignore the prompt of translation.
+  //   Pass |explicitly_closed| as true if user explicityly decline the
+  //     translation.
+  //   Pass |explicitly_closed| as false if the translation UI is dismissed
+  //     implicit by some user actions which ignore the translation UI,
+  //     such as switch to a new tab/window or navigate to another page by
+  //     click a link.
   void TranslationDeclined(bool explicitly_closed);
 
   // Returns true if the current language is blocked.

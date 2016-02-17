@@ -7,77 +7,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/language_state.h"
-#include "components/translate/core/browser/translate_driver.h"
+#include "components/translate/core/browser/mock_translate_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using translate::testing::MockTranslateDriver;
+
 namespace translate {
-
-namespace {
-
-const std::string kHtmlMimeType = "text/html";
-
-class MockTranslateDriver : public TranslateDriver {
- public:
-  MockTranslateDriver()
-      : on_is_page_translated_changed_called_(false),
-        on_translate_enabled_changed_called_(false),
-        language_state_(this) {
-  }
-
-  void Reset() {
-    on_is_page_translated_changed_called_ = false;
-    on_translate_enabled_changed_called_ = false;
-  }
-
-  virtual ~MockTranslateDriver() {}
-
-  void OnIsPageTranslatedChanged() override {
-    on_is_page_translated_changed_called_ = true;
-  }
-
-  void OnTranslateEnabledChanged() override {
-    on_translate_enabled_changed_called_ = true;
-  }
-
-  bool IsLinkNavigation() override { return false; }
-
-  void TranslatePage(int page_seq_no,
-                     const std::string& translate_script,
-                     const std::string& source_lang,
-                     const std::string& target_lang) override {}
-
-  void RevertTranslation(int page_seq_no) override {}
-
-  bool IsOffTheRecord() override { return false; }
-
-  const std::string& GetContentsMimeType() override { return kHtmlMimeType; }
-
-  const GURL& GetLastCommittedURL() override { return GURL::EmptyGURL(); }
-
-  const GURL& GetVisibleURL() override { return GURL::EmptyGURL(); }
-
-  bool HasCurrentPage() override { return true; }
-
-  void OpenUrlInNewTab(const GURL& url) override {}
-
-  bool on_is_page_translated_changed_called() const {
-    return on_is_page_translated_changed_called_;
-  }
-
-  bool on_translate_enabled_changed_called() const {
-    return on_translate_enabled_changed_called_;
-  }
-
- private:
-  bool on_is_page_translated_changed_called_;
-  bool on_translate_enabled_changed_called_;
-  LanguageState language_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTranslateDriver);
-};
-
-}  // namespace
 
 TEST(LanguageStateTest, IsPageTranslated) {
   scoped_ptr<MockTranslateDriver> driver(

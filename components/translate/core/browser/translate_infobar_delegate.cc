@@ -141,7 +141,7 @@ void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
-  ui_delegate_.TranslationDeclined(false);
+  ui_delegate_.TranslationDeclined(true);
 }
 
 bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
