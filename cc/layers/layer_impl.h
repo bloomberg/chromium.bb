@@ -573,7 +573,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void SetStackingOrderChanged(bool stacking_order_changed);
 
-  bool LayerPropertyChanged() const { return layer_property_changed_; }
+  bool LayerPropertyChanged() const;
 
   void ResetAllChangeTrackingForSubtree();
 

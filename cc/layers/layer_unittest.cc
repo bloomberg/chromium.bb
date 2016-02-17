@@ -893,30 +893,39 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
   scoped_refptr<Layer> root = Layer::Create(layer_settings_);
   scoped_refptr<Layer> child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child2 = Layer::Create(layer_settings_);
   scoped_refptr<Layer> grand_child = Layer::Create(layer_settings_);
   scoped_refptr<Layer> dummy_layer1 = Layer::Create(layer_settings_);
   scoped_refptr<Layer> dummy_layer2 = Layer::Create(layer_settings_);
 
   layer_tree_host_->SetRootLayer(root);
   root->AddChild(child);
+  root->AddChild(child2);
   child->AddChild(grand_child);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
+  child->SetForceRenderSurface(true);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
+  child2->SetScrollParent(grand_child.get());
   SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
   scoped_ptr<LayerImpl> root_impl =
       LayerImpl::Create(host_impl_.active_tree(), 1);
   scoped_ptr<LayerImpl> child_impl =
       LayerImpl::Create(host_impl_.active_tree(), 2);
-  scoped_ptr<LayerImpl> grand_child_impl =
+  scoped_ptr<LayerImpl> child2_impl =
       LayerImpl::Create(host_impl_.active_tree(), 3);
-  scoped_ptr<LayerImpl> dummy_layer1_impl =
+  scoped_ptr<LayerImpl> grand_child_impl =
       LayerImpl::Create(host_impl_.active_tree(), 4);
-  scoped_ptr<LayerImpl> dummy_layer2_impl =
+  scoped_ptr<LayerImpl> dummy_layer1_impl =
       LayerImpl::Create(host_impl_.active_tree(), 5);
+  scoped_ptr<LayerImpl> dummy_layer2_impl =
+      LayerImpl::Create(host_impl_.active_tree(), 6);
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMaskLayer(dummy_layer1.get()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
       dummy_layer1->PushPropertiesTo(dummy_layer1_impl.get()));
 
@@ -925,6 +934,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
@@ -932,6 +942,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
@@ -939,6 +950,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
       dummy_layer2->PushPropertiesTo(dummy_layer2_impl.get()));
 
@@ -947,6 +959,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
@@ -954,6 +967,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
       dummy_layer2->PushPropertiesTo(dummy_layer2_impl.get()));
 
@@ -962,6 +976,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
@@ -969,10 +984,68 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBlendMode(arbitrary_blend_mode));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  // Should be a different size than previous call, to ensure it marks tree
+  // changed.
+  gfx::Size arbitrary_size = gfx::Size(111, 222);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  root->SetPosition(arbitrary_point_f);
+  TransformNode* node = layer_tree_host_->property_trees()->transform_tree.Node(
+      root->transform_tree_index());
+  EXPECT_TRUE(node->data.transform_changed);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get());
+      layer_tree_host_->property_trees()->transform_tree.ResetChangeTracking());
+  EXPECT_FALSE(node->data.transform_changed);
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  child->SetPosition(arbitrary_point_f);
+  node = layer_tree_host_->property_trees()->transform_tree.Node(
+      child->transform_tree_index());
+  EXPECT_TRUE(node->data.transform_changed);
+  // child2 is not in the subtree of child, but its scroll parent is. So, its
+  // to_screen will be effected by change in position of child2.
+  layer_tree_host_->property_trees()->transform_tree.UpdateTransforms(
+      child2->transform_tree_index());
+  node = layer_tree_host_->property_trees()->transform_tree.Node(
+      child2->transform_tree_index());
+  EXPECT_TRUE(node->data.transform_changed);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      child->PushPropertiesTo(child_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get());
+      layer_tree_host_->property_trees()->transform_tree.ResetChangeTracking());
+  node = layer_tree_host_->property_trees()->transform_tree.Node(
+      child->transform_tree_index());
+  EXPECT_FALSE(node->data.transform_changed);
+
+  gfx::Point3F arbitrary_point_3f = gfx::Point3F(0.125f, 0.25f, 0.f);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  root->SetTransformOrigin(arbitrary_point_3f);
+  node = layer_tree_host_->property_trees()->transform_tree.Node(
+      root->transform_tree_index());
+  EXPECT_TRUE(node->data.transform_changed);
 }
 
 TEST_F(LayerTest, AddAndRemoveChild) {

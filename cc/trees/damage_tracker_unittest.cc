@@ -394,6 +394,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   // Then, test the actual layer movement.
   ClearDamageForAllSurfaces(root.get());
   child->SetPosition(gfx::PointF(200.f, 230.f));
+  child->NoteLayerPropertyChanged();
   EmulateDrawingOneFrame(root.get());
 
   // Expect damage to be the combination of the previous one and the new one.
@@ -417,6 +418,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   child->SetTransformOrigin(gfx::Point3F(
       child->bounds().width() * 0.5f, child->bounds().height() * 0.5f, 0.f));
   child->SetPosition(gfx::PointF(85.f, 85.f));
+  child->NoteLayerPropertyChanged();
   EmulateDrawingOneFrame(root.get());
 
   // Sanity check that the layer actually moved to (85, 85), damaging its old
@@ -905,11 +907,16 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
 
   scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithTwoSurfaces();
   LayerImpl* child1 = root->children()[0].get();
+  LayerImpl* grand_child1 = child1->children()[0].get();
+  LayerImpl* grand_child2 = child1->children()[1].get();
   gfx::Rect child_damage_rect;
   gfx::Rect root_damage_rect;
 
   ClearDamageForAllSurfaces(root.get());
   child1->SetPosition(gfx::PointF(50.f, 50.f));
+  child1->NoteLayerPropertyChanged();
+  grand_child1->NoteLayerPropertyChanged();
+  grand_child2->NoteLayerPropertyChanged();
   EmulateDrawingOneFrame(root.get());
   child_damage_rect =
           child1->render_surface()->damage_tracker()->current_damage_rect();
@@ -1088,6 +1095,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
   ClearDamageForAllSurfaces(root.get());
   gfx::Rect old_content_rect = child1->render_surface()->content_rect();
   grand_child1->SetPosition(gfx::PointF(195.f, 205.f));
+  grand_child1->NoteLayerPropertyChanged();
   EmulateDrawingOneFrame(root.get());
   ASSERT_EQ(old_content_rect.width(),
             child1->render_surface()->content_rect().width());

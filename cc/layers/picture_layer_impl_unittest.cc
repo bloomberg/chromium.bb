@@ -3961,6 +3961,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Full occlusion.
   layer1->SetPosition(gfx::PointF());
+  layer1->NoteLayerPropertyChanged();
 
   RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
@@ -4068,6 +4069,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Full occlusion.
   layer1->SetPosition(gfx::PointF());
+  layer1->NoteLayerPropertyChanged();
 
   RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));

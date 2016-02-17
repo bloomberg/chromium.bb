@@ -366,6 +366,8 @@ void Layer::SetBounds(const gfx::Size& size) {
   if (!layer_tree_host_)
     return;
 
+  if (masks_to_bounds())
+    SetSubtreePropertyChanged();
   SetNeedsCommit();
 }
 
@@ -636,6 +638,7 @@ void Layer::SetPosition(const gfx::PointF& position) {
   if (!layer_tree_host_)
     return;
 
+  SetSubtreePropertyChanged();
   if (TransformNode* transform_node =
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index())) {
@@ -643,6 +646,7 @@ void Layer::SetPosition(const gfx::PointF& position) {
       transform_node->data.update_post_local_transform(position,
                                                        transform_origin());
       transform_node->data.needs_local_transform_update = true;
+      transform_node->data.transform_changed = true;
       layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
       SetNeedsCommitNoRebuild();
       return;
@@ -721,6 +725,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   if (!layer_tree_host_)
     return;
 
+  SetSubtreePropertyChanged();
   if (TransformNode* transform_node =
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index())) {
@@ -729,6 +734,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
       transform_node->data.update_post_local_transform(position(),
                                                        transform_origin);
       transform_node->data.needs_local_transform_update = true;
+      transform_node->data.transform_changed = true;
       layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
       SetNeedsCommitNoRebuild();
       return;

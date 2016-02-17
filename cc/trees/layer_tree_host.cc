@@ -484,6 +484,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread();
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
+  property_trees_.transform_tree.ResetChangeTracking();
 }
 
 void LayerTreeHost::WillCommit() {

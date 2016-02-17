@@ -693,6 +693,17 @@ void LayerImpl::SetStackingOrderChanged(bool stacking_order_changed) {
   }
 }
 
+bool LayerImpl::LayerPropertyChanged() const {
+  if (layer_property_changed_)
+    return true;
+  TransformNode* node =
+      layer_tree_impl()->property_trees()->transform_tree.Node(
+          transform_tree_index());
+  if (node && node->data.transform_changed)
+    return true;
+  return false;
+}
+
 void LayerImpl::NoteLayerPropertyChanged() {
   layer_property_changed_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
@@ -735,6 +746,11 @@ const char* LayerImpl::LayerTypeAsString() const {
 
 void LayerImpl::ResetAllChangeTrackingForSubtree() {
   layer_property_changed_ = false;
+  if (TransformNode* transform_node =
+          layer_tree_impl_->property_trees()->transform_tree.Node(
+              transform_tree_index())) {
+    transform_node->data.transform_changed = false;
+  }
 
   update_rect_.SetRect(0, 0, 0, 0);
   damage_rect_.SetRect(0, 0, 0, 0);
@@ -930,9 +946,7 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
 
   layer_tree_impl()->DidUpdateScrollState(id());
 
-  if (masks_to_bounds())
-    NoteLayerPropertyChangedForSubtree();
-  else
+  if (!masks_to_bounds())
     NoteLayerPropertyChanged();
 }
 
@@ -1034,7 +1048,6 @@ void LayerImpl::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   if (transform_origin_ == transform_origin)
     return;
   transform_origin_ = transform_origin;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetBackgroundColor(SkColor background_color) {
@@ -1211,7 +1224,6 @@ void LayerImpl::SetPosition(const gfx::PointF& position) {
     return;
 
   position_ = position;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetShouldFlattenTransform(bool flatten) {

@@ -3273,6 +3273,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
 
   // Ensure visible_layer_rect for layer is not empty
   layer->SetPosition(gfx::PointF());
+  layer->NoteLayerPropertyChanged();
 
   EXPECT_FALSE(layer->will_draw_called());
   EXPECT_FALSE(layer->did_draw_called());
@@ -6599,6 +6600,10 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   // expected swap rect: vertically flipped, with origin at bottom left corner.
   layer_tree_host_impl->active_tree()->root_layer()->children()[0]->SetPosition(
       gfx::PointF());
+  layer_tree_host_impl->active_tree()
+      ->root_layer()
+      ->children()[0]
+      ->NoteLayerPropertyChanged();
   layer_tree_host_impl->active_tree()->property_trees()->needs_rebuild = true;
   layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));

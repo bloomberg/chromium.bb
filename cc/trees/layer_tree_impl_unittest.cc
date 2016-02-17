@@ -2017,6 +2017,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   // inside the test_layer.
   test_layer = host_impl().active_tree()->root_layer()->children()[0].get();
   test_layer->SetPosition(gfx::PointF(10.f, 10.f));
+  test_layer->NoteLayerPropertyChanged();
   expected_screen_space_transform.MakeIdentity();
   expected_screen_space_transform.Translate(10.f, 10.f);
 

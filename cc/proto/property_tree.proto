@@ -18,6 +18,7 @@ package cc.proto;
 // cc/trees/property_tree.h
 
 // Proto for struct TransformNodeData.
+// NEXT ID: 41
 message TranformNodeData {
   optional Transform pre_local = 1;
   optional Transform local = 2;
@@ -48,6 +49,7 @@ message TranformNodeData {
   optional bool affected_by_outer_viewport_bounds_delta_x = 26;
   optional bool affected_by_outer_viewport_bounds_delta_y = 27;
   optional bool in_subtree_of_page_scale_layer = 28;
+  optional bool transform_changed = 40;
   optional float post_local_scale_factor = 29;
   optional float local_maximum_animation_target_scale = 30;
   optional float local_starting_animation_scale = 31;
@@ -63,6 +65,7 @@ message TranformNodeData {
 }
 
 // Proto for struct ClipNodeData.
+// NEXT ID: 12
 message ClipNodeData {
   optional RectF clip = 1;
   optional RectF combined_clip_in_target_space = 2;
@@ -79,6 +82,7 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
+// NEXT ID: 11
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
@@ -93,6 +97,7 @@ message EffectNodeData {
 }
 
 // Proto for struct ScrollNodeData
+// NEXT ID: 9
 message ScrollNodeData {
   optional bool scrollable = 1;
   optional int32 main_thread_scrolling_reasons = 2;

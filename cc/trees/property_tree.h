@@ -135,6 +135,9 @@ struct CC_EXPORT TransformNodeData {
   // layer scale factor should include the page scale factor.
   bool in_subtree_of_page_scale_layer : 1;
 
+  // We need to track changes to to_screen transform to compute the damage rect.
+  bool transform_changed : 1;
+
   // TODO(vollick): will be moved when accelerated effects are implemented.
   float post_local_scale_factor;
 
@@ -388,6 +391,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // aligned with respect to one another.
   bool Are2DAxisAligned(int source_id, int dest_id) const;
 
+  void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);
 
@@ -477,6 +481,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                                  TransformNode* parent_node);
   void UndoSnapping(TransformNode* node);
   void UpdateSnapping(TransformNode* node);
+  void UpdateTransformChanged(TransformNode* node,
+                              TransformNode* parent_node,
+                              TransformNode* source_node);
   void UpdateNodeAndAncestorsHaveIntegerTranslations(
       TransformNode* node,
       TransformNode* parent_node);
