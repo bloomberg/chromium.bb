@@ -309,12 +309,8 @@ static HTMLInputElement* asFileInput(Node* node)
 }
 
 // This can return null if an empty document is loaded.
-static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& p)
+static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& point)
 {
-    LocalFrame* frame = documentUnderMouse->frame();
-    float zoomFactor = frame ? frame->pageZoomFactor() : 1;
-    LayoutPoint point = roundedLayoutPoint(FloatPoint(p.x() * zoomFactor, p.y() * zoomFactor));
-
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(request, point);
     documentUnderMouse->layoutView()->hitTest(result);
