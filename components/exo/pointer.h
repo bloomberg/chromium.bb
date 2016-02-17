@@ -23,7 +23,6 @@ class Widget;
 }
 
 namespace exo {
-class Buffer;
 class PointerDelegate;
 class Surface;
 
@@ -78,10 +77,6 @@ class Pointer : public ui::EventHandler,
 
   // The position of the pointer surface relative to the pointer location.
   gfx::Point hotspot_;
-
-  // The default cursor surface.
-  scoped_ptr<Surface> default_surface_;
-  scoped_ptr<Buffer> default_cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(Pointer);
 };
