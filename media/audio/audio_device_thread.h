@@ -60,8 +60,9 @@ class MEDIA_EXPORT AudioDeviceThread {
     // The variables are 'const' since values are calculated/set in the
     // constructor and must never change.
     const AudioParameters audio_parameters_;
-    const int samples_per_ms_;
-    const int bytes_per_ms_;
+    const double samples_per_ms_;
+    const double bytes_per_ms_;
+    const uint32_t bytes_per_frame_;
 
     base::SharedMemory shared_memory_;
     const int memory_length_;

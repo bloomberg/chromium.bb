@@ -4,6 +4,8 @@
 
 #include "media/base/audio_renderer_mixer_input.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "media/base/audio_renderer_mixer.h"
@@ -165,8 +167,13 @@ OutputDeviceStatus AudioRendererMixerInput::GetDeviceStatus() {
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
                                              base::TimeDelta buffer_delay) {
-  int frames_filled = callback_->Render(
-      audio_bus, static_cast<int>(buffer_delay.InMillisecondsF() + 0.5), 0);
+  // TODO(chcunningham): Delete this conversion and change ProvideInput to more
+  // precisely describe delay as a count of frames delayed instead of TimeDelta.
+  // See http://crbug.com/587522.
+  uint32_t frames_delayed = std::round(buffer_delay.InMicroseconds() /
+                                       params_.GetMicrosecondsPerFrame());
+
+  int frames_filled = callback_->Render(audio_bus, frames_delayed, 0);
 
   // AudioConverter expects unfilled frames to be zeroed.
   if (frames_filled < audio_bus->frames()) {

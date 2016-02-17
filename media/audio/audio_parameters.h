@@ -125,6 +125,12 @@ class MEDIA_EXPORT AudioParameters {
   // Returns the number of bytes representing a frame of audio.
   int GetBytesPerFrame() const;
 
+  // Returns the number of microseconds per frame of audio. Intentionally
+  // reported as a double to surface of partial microseconds per frame, which
+  // is common for many sample rates. Failing to account for these nanoseconds
+  // can lead to audio/video sync drift.
+  double GetMicrosecondsPerFrame() const;
+
   // Returns the duration of this buffer as calculated from frames_per_buffer()
   // and sample_rate().
   base::TimeDelta GetBufferDuration() const;

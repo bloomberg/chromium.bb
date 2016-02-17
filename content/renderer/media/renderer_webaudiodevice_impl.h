@@ -45,7 +45,7 @@ class RendererWebAudioDeviceImpl
 
   // AudioRendererSink::RenderCallback implementation.
   int Render(media::AudioBus* dest,
-             uint32_t audio_delay_milliseconds,
+             uint32_t frames_delayed,
              uint32_t frames_skipped) override;
 
   void OnRenderError() override;

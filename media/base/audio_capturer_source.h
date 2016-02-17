@@ -23,6 +23,8 @@ class AudioCapturerSource
   class CaptureCallback {
    public:
     // Callback to deliver the captured data from the OS.
+    // TODO(chcunningham): Update delay argument to use frames instead of
+    // milliseconds to prevent loss of precision. See http://crbug.com/587291.
     virtual void Capture(const AudioBus* audio_source,
                          int audio_delay_milliseconds,
                          double volume,

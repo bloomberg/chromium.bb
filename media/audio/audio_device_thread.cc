@@ -210,21 +210,23 @@ void AudioDeviceThread::Thread::Run() {
 
 // AudioDeviceThread::Callback implementation
 
-AudioDeviceThread::Callback::Callback(
-    const AudioParameters& audio_parameters,
-    base::SharedMemoryHandle memory,
-    int memory_length,
-    int total_segments)
+AudioDeviceThread::Callback::Callback(const AudioParameters& audio_parameters,
+                                      base::SharedMemoryHandle memory,
+                                      int memory_length,
+                                      int total_segments)
     : audio_parameters_(audio_parameters),
-      samples_per_ms_(audio_parameters.sample_rate() / 1000),
+      samples_per_ms_(static_cast<double>(audio_parameters.sample_rate()) /
+                      base::Time::kMillisecondsPerSecond),
       bytes_per_ms_(audio_parameters.channels() *
                     (audio_parameters_.bits_per_sample() / 8) *
                     samples_per_ms_),
+      bytes_per_frame_(audio_parameters.GetBytesPerFrame()),
       shared_memory_(memory, false),
       memory_length_(memory_length),
       total_segments_(total_segments) {
-  CHECK_NE(bytes_per_ms_, 0);  // Catch division by zero early.
-  CHECK_NE(samples_per_ms_, 0);
+  CHECK_NE(bytes_per_ms_, 0.0);  // Catch division by zero early.
+  CHECK_NE(samples_per_ms_, 0.0);
+  CHECK_NE(bytes_per_frame_, 0u);
   CHECK_GT(total_segments_, 0);
   CHECK_EQ(memory_length_ % total_segments_, 0);
   segment_length_ = memory_length_ / total_segments_;

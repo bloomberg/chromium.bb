@@ -4,6 +4,8 @@
 
 #include "media/audio/audio_output_stream_sink.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -83,8 +85,10 @@ int AudioOutputStreamSink::OnMoreData(AudioBus* dest,
   if (!active_render_callback_)
     return 0;
 
-  return active_render_callback_->Render(
-      dest, total_bytes_delay * 1000.0 / active_params_.GetBytesPerSecond(), 0);
+  uint32_t frames_delayed = std::round(static_cast<double>(total_bytes_delay) /
+                                       active_params_.GetBytesPerFrame());
+
+  return active_render_callback_->Render(dest, frames_delayed, frames_skipped);
 }
 
 void AudioOutputStreamSink::OnError(AudioOutputStream* stream) {

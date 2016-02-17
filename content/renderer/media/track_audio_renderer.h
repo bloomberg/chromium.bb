@@ -105,7 +105,7 @@ class CONTENT_EXPORT TrackAudioRenderer
   // Render() is called on the AudioOutputDevice thread and OnRenderError()
   // on the IO thread.
   int Render(media::AudioBus* audio_bus,
-             uint32_t audio_delay_milliseconds,
+             uint32_t frames_delayed,
              uint32_t frames_skipped) override;
   void OnRenderError() override;
 

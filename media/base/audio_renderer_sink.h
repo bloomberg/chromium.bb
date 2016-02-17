@@ -39,7 +39,7 @@ class AudioRendererSink
     // number of frames filled. |frames_skipped| contains the number of frames
     // the consumer has skipped, if any.
     virtual int Render(AudioBus* dest,
-                       uint32_t audio_delay_milliseconds,
+                       uint32_t frames_delayed,
                        uint32_t frames_skipped) = 0;
 
     // Signals an error has occurred.

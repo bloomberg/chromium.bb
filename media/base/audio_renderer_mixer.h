@@ -58,7 +58,7 @@ class MEDIA_EXPORT AudioRendererMixer
 
   // AudioRendererSink::RenderCallback implementation.
   int Render(AudioBus* audio_bus,
-             uint32_t audio_delay_milliseconds,
+             uint32_t frames_delayed,
              uint32_t frames_skipped) override;
   void OnRenderError() override;
 

@@ -4,6 +4,8 @@
 
 #include "media/base/audio_renderer_mixer.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -117,7 +119,7 @@ OutputDevice* AudioRendererMixer::GetOutputDevice() {
 }
 
 int AudioRendererMixer::Render(AudioBus* audio_bus,
-                               uint32_t audio_delay_milliseconds,
+                               uint32_t frames_delayed,
                                uint32_t frames_skipped) {
   base::AutoLock auto_lock(lock_);
 
@@ -132,8 +134,13 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
     playing_ = false;
   }
 
-  master_converter_.ConvertWithDelay(
-      base::TimeDelta::FromMilliseconds(audio_delay_milliseconds), audio_bus);
+  // TODO(chcunningham): Delete this conversion and change ConvertWith delay to
+  // expect a count of frames delayed instead of TimeDelta (less precise).
+  // See http://crbug.com/587522.
+  base::TimeDelta audio_delay = base::TimeDelta::FromMicroseconds(
+      std::round(frames_delayed * output_params_.GetMicrosecondsPerFrame()));
+
+  master_converter_.ConvertWithDelay(audio_delay, audio_bus);
   return audio_bus->frames();
 }
 

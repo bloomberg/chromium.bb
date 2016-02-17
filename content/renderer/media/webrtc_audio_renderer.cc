@@ -423,12 +423,20 @@ media::OutputDeviceStatus WebRtcAudioRenderer::GetDeviceStatus() {
 }
 
 int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
-                                uint32_t audio_delay_milliseconds,
+                                uint32_t frames_delayed,
                                 uint32_t frames_skipped) {
   DCHECK(audio_renderer_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   if (!source_)
     return 0;
+
+  // TODO(grunell): Converting from frames to milliseconds will potentially lose
+  // hundreds of microseconds which may cause audio video drift. Update
+  // this class and all usage of render delay msec -> frames (possibly even
+  // using a double type for frames). See http://crbug.com/586540
+  uint32_t audio_delay_milliseconds = static_cast<double>(frames_delayed) *
+                                      base::Time::kMillisecondsPerSecond /
+                                      sink_params_.sample_rate();
 
   DVLOG(2) << "WebRtcAudioRenderer::Render()";
   DVLOG(2) << "audio_delay_milliseconds: " << audio_delay_milliseconds;
@@ -481,6 +489,8 @@ void WebRtcAudioRenderer::SourceCallback(
            << audio_bus->frames() << ")";
 
   int output_delay_milliseconds = audio_delay_milliseconds_;
+  // TODO(grunell): This integer division by sample_rate will cause loss of
+  // partial milliseconds, and may cause avsync drift. http://crbug.com/586540
   output_delay_milliseconds += fifo_frame_delay *
                                base::Time::kMillisecondsPerSecond /
                                sink_params_.sample_rate();

@@ -77,6 +77,10 @@ int AudioParameters::GetBytesPerFrame() const {
   return channels_ * bits_per_sample_ / 8;
 }
 
+double AudioParameters::GetMicrosecondsPerFrame() const {
+  return static_cast<double>(base::Time::kMicrosecondsPerSecond) / sample_rate_;
+}
+
 base::TimeDelta AudioParameters::GetBufferDuration() const {
   return base::TimeDelta::FromMicroseconds(static_cast<int64_t>(
       frames_per_buffer_ * base::Time::kMicrosecondsPerSecond /

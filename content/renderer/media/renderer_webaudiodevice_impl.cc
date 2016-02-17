@@ -100,7 +100,7 @@ double RendererWebAudioDeviceImpl::sampleRate() {
 }
 
 int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
-                                       uint32_t audio_delay_milliseconds,
+                                       uint32_t frames_delayed,
                                        uint32_t frames_skipped) {
 #if defined(OS_ANDROID)
   if (is_first_buffer_after_silence_) {

@@ -634,13 +634,13 @@ bool AudioRendererImpl::IsBeforeStartTime(
 }
 
 int AudioRendererImpl::Render(AudioBus* audio_bus,
-                              uint32_t audio_delay_milliseconds,
+                              uint32_t frames_delayed,
                               uint32_t frames_skipped) {
-  const int requested_frames = audio_bus->frames();
-  base::TimeDelta playback_delay = base::TimeDelta::FromMilliseconds(
-      audio_delay_milliseconds);
-  const int delay_frames = static_cast<int>(playback_delay.InSecondsF() *
-                                            audio_parameters_.sample_rate());
+  const int frames_requested = audio_bus->frames();
+  DVLOG(4) << __FUNCTION__ << " frames_delayed:" << frames_delayed
+           << " frames_skipped:" << frames_skipped
+           << " frames_requested:" << frames_requested;
+
   int frames_written = 0;
   {
     base::AutoLock auto_lock(lock_);
@@ -648,27 +648,27 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
 
     if (!stop_rendering_time_.is_null()) {
       audio_clock_->CompensateForSuspendedWrites(
-          last_render_time_ - stop_rendering_time_, delay_frames);
+          last_render_time_ - stop_rendering_time_, frames_delayed);
       stop_rendering_time_ = base::TimeTicks();
     }
 
     // Ensure Stop() hasn't destroyed our |algorithm_| on the pipeline thread.
     if (!algorithm_) {
-      audio_clock_->WroteAudio(
-          0, requested_frames, delay_frames, playback_rate_);
+      audio_clock_->WroteAudio(0, frames_requested, frames_delayed,
+                               playback_rate_);
       return 0;
     }
 
     if (playback_rate_ == 0) {
-      audio_clock_->WroteAudio(
-          0, requested_frames, delay_frames, playback_rate_);
+      audio_clock_->WroteAudio(0, frames_requested, frames_delayed,
+                               playback_rate_);
       return 0;
     }
 
     // Mute audio by returning 0 when not playing.
     if (state_ != kPlaying) {
-      audio_clock_->WroteAudio(
-          0, requested_frames, delay_frames, playback_rate_);
+      audio_clock_->WroteAudio(0, frames_requested, frames_delayed,
+                               playback_rate_);
       return 0;
     }
 
@@ -688,15 +688,15 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
         frames_written =
             std::min(static_cast<int>(play_delay.InSecondsF() *
                                       audio_parameters_.sample_rate()),
-                     requested_frames);
+                     frames_requested);
         audio_bus->ZeroFramesPartial(0, frames_written);
       }
 
       // If there's any space left, actually render the audio; this is where the
       // aural magic happens.
-      if (frames_written < requested_frames) {
+      if (frames_written < frames_requested) {
         frames_written += algorithm_->FillBuffer(
-            audio_bus, frames_written, requested_frames - frames_written,
+            audio_bus, frames_written, frames_requested - frames_written,
             playback_rate_);
       }
     }
@@ -727,7 +727,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
       if (received_end_of_stream_) {
         if (ended_timestamp_ == kInfiniteDuration())
           ended_timestamp_ = audio_clock_->back_timestamp();
-        frames_after_end_of_stream = requested_frames;
+        frames_after_end_of_stream = frames_requested;
       } else if (state_ == kPlaying &&
                  buffering_state_ != BUFFERING_HAVE_NOTHING) {
         algorithm_->IncreaseQueueCapacity();
@@ -736,9 +736,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     }
 
     audio_clock_->WroteAudio(frames_written + frames_after_end_of_stream,
-                             requested_frames,
-                             delay_frames,
-                             playback_rate_);
+                             frames_requested, frames_delayed, playback_rate_);
 
     if (CanRead_Locked()) {
       task_runner_->PostTask(FROM_HERE,
@@ -753,7 +751,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     }
   }
 
-  DCHECK_LE(frames_written, requested_frames);
+  DCHECK_LE(frames_written, frames_requested);
   return frames_written;
 }
 

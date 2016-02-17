@@ -56,6 +56,9 @@ static int kChannels = ChannelLayoutToChannelCount(kChannelLayout);
 // Use a different output sample rate so the AudioBufferConverter is invoked.
 static int kInputSamplesPerSecond = 5000;
 static int kOutputSamplesPerSecond = 10000;
+static double kOutputMicrosPerFrame =
+    static_cast<double>(base::Time::kMicrosecondsPerSecond) /
+    kOutputSamplesPerSecond;
 
 ACTION_P(EnterPendingDecoderInitStateAction, test) {
   test->EnterPendingDecoderInitState(arg2);
@@ -298,16 +301,16 @@ class AudioRendererImplTest : public ::testing::Test {
   // buffer. Returns true if and only if all of |requested_frames| were able
   // to be consumed.
   bool ConsumeBufferedData(OutputFrames requested_frames,
-                           base::TimeDelta delay) {
+                           uint32_t delay_frames) {
     scoped_ptr<AudioBus> bus =
         AudioBus::Create(kChannels, requested_frames.value);
     int frames_read = 0;
-    EXPECT_TRUE(sink_->Render(bus.get(), delay.InMilliseconds(), &frames_read));
+    EXPECT_TRUE(sink_->Render(bus.get(), delay_frames, &frames_read));
     return frames_read == requested_frames.value;
   }
 
   bool ConsumeBufferedData(OutputFrames requested_frames) {
-    return ConsumeBufferedData(requested_frames, base::TimeDelta());
+    return ConsumeBufferedData(requested_frames, 0);
   }
 
   base::TimeTicks ConvertMediaTime(base::TimeDelta timestamp,
@@ -870,9 +873,12 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
   EXPECT_FALSE(is_time_moving);
 
   // Consume some buffered data with a small delay.
-  base::TimeDelta delay_time = base::TimeDelta::FromMilliseconds(50);
+  uint32_t delay_frames = 500;
+  base::TimeDelta delay_time = base::TimeDelta::FromMicroseconds(
+      std::round(delay_frames * kOutputMicrosPerFrame));
+
   frames_to_consume.value = frames_buffered().value / 16;
-  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, delay_time));
+  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, delay_frames));
 
   // Verify time is adjusted for the current delay.
   current_time = tick_clock_->NowTicks() + delay_time;
