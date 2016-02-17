@@ -904,6 +904,12 @@ source_set("browser") {
     }
   }
 
+  if (is_linux || is_win) {
+    sources += rebase_path(gypi_values.chrome_browser_non_mac_desktop_sources,
+                           ".",
+                           "//chrome")
+  }
+
   if (is_desktop_linux) {
     sources += rebase_path(gypi_values.chrome_browser_linux_desktop_sources,
                            ".",

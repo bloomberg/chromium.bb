@@ -390,6 +390,8 @@
       'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_test_util.h',
       'browser/renderer_context_menu/spelling_menu_observer_browsertest.cc',
+      'browser/renderer_context_menu/mock_render_view_context_menu.cc',
+      'browser/renderer_context_menu/mock_render_view_context_menu.h',
       'browser/renderer_host/chrome_resource_dispatcher_host_delegate_browsertest.cc',
       'browser/renderer_host/render_process_host_chrome_browsertest.cc',
       'browser/repost_form_warning_browsertest.cc',
@@ -641,6 +643,10 @@
     'chrome_browser_tests_views_non_mac_sources': [
       # This assumes the AppListService is views-based.
       'browser/ui/app_list/app_list_service_views_browsertest.cc',
+
+      # This test is for the spelling options submenu that's only for Windows,
+      # ChromeOS, and Linux.
+      'browser/renderer_context_menu/spelling_options_submenu_observer_browsertest.cc',
 
       # TODO(tapted): Move these to chrome_browser_tests_views_sources when the
       # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of

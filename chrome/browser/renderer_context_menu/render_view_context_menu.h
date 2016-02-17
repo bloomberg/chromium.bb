@@ -29,7 +29,7 @@
 class PrintPreviewContextMenuObserver;
 class Profile;
 class SpellingMenuObserver;
-class SpellCheckerSubMenuObserver;
+class SpellingOptionsSubMenuObserver;
 
 namespace content {
 class RenderFrameHost;
@@ -128,6 +128,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendRotationItems();
   void AppendEditableItems();
   void AppendLanguageSettings();
+  void AppendSpellingSuggestionItems();
   void AppendSearchProvider();
 #if defined(ENABLE_EXTENSIONS)
   void AppendAllExtensionItems();
@@ -135,7 +136,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 #endif
   void AppendPrintPreviewItems();
   void AppendSearchWebForImageItems();
-  void AppendSpellingSuggestionsSubMenu();
   void AppendProtocolHandlerSubMenu();
   void AppendPasswordItems();
 
@@ -174,8 +174,15 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   ProtocolHandlerRegistry* protocol_handler_registry_;
 
-  // An observer that handles spelling-menu items.
-  scoped_ptr<SpellingMenuObserver> spelling_menu_observer_;
+  // An observer that handles spelling suggestions, "Add to dictionary", and
+  // "Ask Google for suggestions" items.
+  scoped_ptr<SpellingMenuObserver> spelling_suggestions_menu_observer_;
+
+#if !defined(OS_MACOSX)
+  // An observer that handles the submenu for showing spelling options. This
+  // submenu lets users select the spelling language, for example.
+  scoped_ptr<SpellingOptionsSubMenuObserver> spelling_options_submenu_observer_;
+#endif
 
 #if defined(ENABLE_PRINT_PREVIEW)
   // An observer that disables menu items when print preview is active.

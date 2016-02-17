@@ -121,6 +121,10 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/text_elider.h"
 
+#if !defined(USE_BROWSER_SPELLCHECKER)
+#include "chrome/browser/renderer_context_menu/spelling_options_submenu_observer.h"
+#endif
+
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #endif
@@ -272,9 +276,10 @@ const struct UmaEnumCommandIdPair {
     {70, -1, IDC_CONTENT_CONTEXT_OPENLINKINPROFILE},
     {71, -1, IDC_OPEN_LINK_IN_PROFILE_FIRST},
     {72, -1, IDC_CONTENT_CONTEXT_GENERATEPASSWORD},
+    {73, -1, IDC_SPELLCHECK_MULTI_LINGUAL},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {73, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {74, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -1182,10 +1187,9 @@ void RenderViewContextMenu::AppendSearchProvider() {
 }
 
 void RenderViewContextMenu::AppendEditableItems() {
-  const bool use_spellcheck_and_search = !chrome::IsRunningInForcedAppMode();
-
-  if (use_spellcheck_and_search)
-    AppendSpellingSuggestionsSubMenu();
+  const bool use_spelling = !chrome::IsRunningInForcedAppMode();
+  if (use_spelling)
+    AppendSpellingSuggestionItems();
 
 // 'Undo' and 'Redo' for text input with no suggestions and no text selected.
 // We make an exception for OS X as context clicking will select the closest
@@ -1222,18 +1226,30 @@ void RenderViewContextMenu::AppendEditableItems() {
 }
 
 void RenderViewContextMenu::AppendLanguageSettings() {
-  const bool use_spellcheck_and_search = !chrome::IsRunningInForcedAppMode();
+  const bool use_spelling = !chrome::IsRunningInForcedAppMode();
+  if (!use_spelling)
+    return;
 
-  if (use_spellcheck_and_search)
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
-                                    IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
+#if defined(OS_MACOSX)
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
+                                  IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
+#else
+  if (!spelling_options_submenu_observer_) {
+    const int kLanguageRadioGroup = 1;
+    spelling_options_submenu_observer_.reset(
+        new SpellingOptionsSubMenuObserver(this, this, kLanguageRadioGroup));
+  }
+
+  spelling_options_submenu_observer_->InitMenu(params_);
+  observers_.AddObserver(spelling_options_submenu_observer_.get());
+#endif
 }
 
-void RenderViewContextMenu::AppendSpellingSuggestionsSubMenu() {
-  if (!spelling_menu_observer_.get())
-    spelling_menu_observer_.reset(new SpellingMenuObserver(this));
-  observers_.AddObserver(spelling_menu_observer_.get());
-  spelling_menu_observer_->InitMenu(params_);
+void RenderViewContextMenu::AppendSpellingSuggestionItems() {
+  if (!spelling_suggestions_menu_observer_)
+    spelling_suggestions_menu_observer_.reset(new SpellingMenuObserver(this));
+  observers_.AddObserver(spelling_suggestions_menu_observer_.get());
+  spelling_suggestions_menu_observer_->InitMenu(params_);
 }
 
 void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {

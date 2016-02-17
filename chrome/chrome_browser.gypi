@@ -1048,6 +1048,11 @@
       'browser/browser_process_platform_part_base.cc',
       'browser/browser_process_platform_part_base.h',
     ],
+    # Desktop Linux, ChromeOS, and Windows.
+    'chrome_browser_non_mac_desktop_sources': [
+      'browser/renderer_context_menu/spelling_options_submenu_observer.h',
+      'browser/renderer_context_menu/spelling_options_submenu_observer.cc',
+    ],
     # Desktop linux, doesn't count ChromeOS.
     'chrome_browser_linux_desktop_sources': [
       'browser/first_run/upgrade_util.cc',
@@ -3917,6 +3922,9 @@
               ],
             }],
           ],
+        }],
+        ['OS=="linux" or OS=="win"', {
+            'sources': [ '<@(chrome_browser_non_mac_desktop_sources)' ],
         }],
         ['desktop_linux==1', {
           'sources': [ '<@(chrome_browser_linux_desktop_sources)' ],

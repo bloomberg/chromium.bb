@@ -13,6 +13,10 @@ class RenderViewHost;
 class WebContents;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 // An interface that controls a RenderViewContextMenu instance from observers.
 // This interface is designed mainly for controlling the instance while showing
 // so we can add a context-menu item that takes long time to create its text,

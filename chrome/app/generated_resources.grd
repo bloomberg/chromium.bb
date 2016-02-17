@@ -723,9 +723,6 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD" desc="The name of the Save Password command in the content area context menu">
             Save password
           </message>
-          <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
-            &amp;Language settings...
-          </message>
           <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="The name of the Generate Password command in the content area context menu">
             Generate password
           </message>
@@ -950,9 +947,6 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD" desc="In Title Case: The name of the Save Password command in the content area context menu">
             Save Password
           </message>
-          <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
-            &amp;Language Settings...
-          </message>
           <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="In Title Case: The name of the Generate Password command in the content area context menu">
             Generate Password
           </message>
@@ -989,6 +983,27 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_VISIT_DESKTOP_WARNING_SHOW_DISMISS" desc="Label for checkbox dismissing show of teleportation warning dialog.">
           Got it, don't show me again.
+        </message>
+      </if>
+
+      <!-- Spelling submenu -->
+      <if expr="is_macosx">
+        <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
+          &amp;Language Settings...
+        </message>
+      </if>
+      <if expr="not is_macosx">
+        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the menu item that shows the submenu for spellcheck options">
+          &amp;Spellcheck...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the menu item that opens spellcheck settings in a new tab">
+          &amp;Settings...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MULTI_LINGUAL" desc="The name of the menu item that enables spellcheck in all languages">
+          &amp;All languages
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
+          &amp;Check the spelling of text fields
         </message>
       </if>
 
