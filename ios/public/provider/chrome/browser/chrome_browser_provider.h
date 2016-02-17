@@ -39,17 +39,9 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// TODO(ios): Determine the best way to interface with Obj-C code through
-// the ChromeBrowserProvider. crbug/298181
-#ifdef __OBJC__
 @class UIView;
 @protocol InfoBarViewProtocol;
 typedef UIView<InfoBarViewProtocol>* InfoBarViewPlaceholder;
-#else
-class InfoBarViewPlaceholderClass;
-typedef InfoBarViewPlaceholderClass* InfoBarViewPlaceholder;
-class UIView;
-#endif
 
 namespace ios {
 
