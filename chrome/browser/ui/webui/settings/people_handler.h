@@ -20,6 +20,11 @@
 #include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+#if defined(OS_CHROMEOS)
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#endif
+
 class LoginUIService;
 class ProfileSyncService;
 class SigninManagerBase;
@@ -40,6 +45,9 @@ class PeopleHandler : public content::WebUIMessageHandler,
                       public SyncStartupTracker::Observer,
                       public LoginUIService::LoginUI,
                       public sync_driver::SyncServiceObserver,
+#if defined(OS_CHROMEOS)
+                      public content::NotificationObserver,
+#endif
                       public ProfileInfoCacheObserver {
  public:
   explicit PeopleHandler(Profile* profile);
@@ -65,6 +73,13 @@ class PeopleHandler : public content::WebUIMessageHandler,
 
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
+
+#if defined(OS_CHROMEOS)
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+#endif
 
   // ProfileInfoCacheObserver implementation.
   void OnProfileNameChanged(const base::FilePath& profile_path,
@@ -197,6 +212,11 @@ class PeopleHandler : public content::WebUIMessageHandler,
 
   // Used to listen for pref changes to allow or disallow signin.
   PrefChangeRegistrar profile_pref_registrar_;
+
+#if defined(OS_CHROMEOS)
+  // Used to listen to ChromeOS user image changes.
+  content::NotificationRegistrar registrar_;
+#endif
 
   // Manages observer lifetime.
   ScopedObserver<ProfileSyncService, PeopleHandler> sync_service_observer_;

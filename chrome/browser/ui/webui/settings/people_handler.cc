@@ -58,11 +58,13 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
 #else
 #include "components/signin/core/browser/signin_manager.h"
 #endif
@@ -220,6 +222,11 @@ PeopleHandler::PeopleHandler(Profile* profile)
     sync_service_observer_.Add(sync_service);
 
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+
+#if defined(OS_CHROMEOS)
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+                 content::NotificationService::AllSources());
+#endif
 }
 
 PeopleHandler::~PeopleHandler() {
@@ -788,6 +795,20 @@ void PeopleHandler::GoogleSignedOut(const std::string& /* account_id */,
 void PeopleHandler::OnStateChanged() {
   UpdateSyncState();
 }
+
+#if defined(OS_CHROMEOS)
+void PeopleHandler::Observe(int type,
+                            const content::NotificationSource& source,
+                            const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED:
+      HandleGetProfileInfo(nullptr);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+#endif
 
 void PeopleHandler::OnProfileNameChanged(
     const base::FilePath& /* profile_path */,
