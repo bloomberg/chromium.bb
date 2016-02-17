@@ -4,7 +4,7 @@
 
 // https://www.w3.org/TR/mediacapture-fromelement/#the-canvascapturemediastream
 [
-    RuntimeEnabled=MediaCaptureFromElement
+    RuntimeEnabled=MediaCaptureFromCanvas
 ] interface CanvasCaptureMediaStreamTrack : MediaStreamTrack {
     readonly attribute HTMLCanvasElement canvas;
     void requestFrame ();

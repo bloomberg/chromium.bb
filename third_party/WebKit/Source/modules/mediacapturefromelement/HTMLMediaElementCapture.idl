@@ -5,7 +5,7 @@
 // https://w3c.github.io/mediacapture-fromelement/#html-media-element-media-capture-extensions
 
 [
-    RuntimeEnabled=MediaCaptureFromElement
+    RuntimeEnabled=MediaCaptureFromVideo
 ] partial interface HTMLMediaElement {
     [RaisesException] MediaStream captureStream();
     // TODO(mcasas): Implement captureStreamUntilEnded() http://crbug.com/575495.
