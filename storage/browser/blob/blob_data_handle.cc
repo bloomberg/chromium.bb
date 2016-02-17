@@ -109,10 +109,12 @@ BlobDataHandle::BlobDataHandle(const BlobDataHandle& other) {
 }
 
 BlobDataHandle::~BlobDataHandle() {
-  BlobDataHandleShared* raw = shared_.get();
-  raw->AddRef();
-  shared_ = nullptr;
-  io_task_runner_->ReleaseSoon(FROM_HERE, raw);
+  if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+    BlobDataHandleShared* raw = shared_.get();
+    raw->AddRef();
+    shared_ = nullptr;
+    io_task_runner_->ReleaseSoon(FROM_HERE, raw);
+  }
 }
 
 scoped_ptr<BlobDataSnapshot> BlobDataHandle::CreateSnapshot() const {
