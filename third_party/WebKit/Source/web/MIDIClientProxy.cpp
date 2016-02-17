@@ -47,7 +47,7 @@ void MIDIClientProxy::requestPermission(MIDIAccessInitializer* initializer, cons
     if (m_client) {
         m_client->requestPermission(
             WebMIDIPermissionRequest(initializer),
-            WebMIDIOptions(options.hasSysex() ? WebMIDIOptions::SysexPermission::WithSysex : WebMIDIOptions::SysexPermission::WithoutSysex));
+            WebMIDIOptions(options.hasSysex() && options.sysex() ? WebMIDIOptions::SysexPermission::WithSysex : WebMIDIOptions::SysexPermission::WithoutSysex));
     } else {
         initializer->resolvePermission(false);
     }

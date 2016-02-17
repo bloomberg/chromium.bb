@@ -102,7 +102,7 @@ void MIDIAccessInitializer::didStartSession(bool success, const String& error, c
 {
     ASSERT(m_accessor);
     if (success) {
-        resolve(MIDIAccess::create(m_accessor.release(), m_options.hasSysex(), m_portDescriptors, executionContext()));
+        resolve(MIDIAccess::create(m_accessor.release(), m_options.hasSysex() && m_options.sysex(), m_portDescriptors, executionContext()));
     } else {
         // The spec says the name is one of
         //  - SecurityError

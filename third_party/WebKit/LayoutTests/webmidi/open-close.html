@@ -2,11 +2,14 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="../http/tests/resources/permissions-helper.js"></script>
 <script src="state-check-utils.js"></script>
 </head>
 <body>
 <script>
 description("Tests MIDIPort.open and MIDIPort.close.");
+
+shouldBeDefined("PermissionsHelper.setPermission");
 
 function runTests(port) {
     return Promise.resolve().then(checkStateTransition.bind(undefined, {
@@ -47,8 +50,11 @@ function errorAccessCallback(error) {
 
 window.jsTestIsAsync = true;
 
-// Test MIDIPort state transition by open() and close().
-navigator.requestMIDIAccess().then(successAccessCallback, errorAccessCallback);
+// Set default permission behavior that grants non-sysex requests.
+PermissionsHelper.setPermission('midi', 'granted').then(function() {
+    // Test MIDIPort state transition by open() and close().
+    navigator.requestMIDIAccess().then(successAccessCallback, errorAccessCallback);
+});
 
 </script>
 </body>

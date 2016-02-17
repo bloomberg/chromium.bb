@@ -148,7 +148,9 @@ void LayoutTestMessageFilter::OnSetPermission(const std::string& name,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::PermissionType type;
-  if (name == "midi-sysex") {
+  if (name == "midi") {
+    type = PermissionType::MIDI;
+  } else if (name == "midi-sysex") {
     type = PermissionType::MIDI_SYSEX;
   } else if (name == "push-messaging") {
     type = PermissionType::PUSH_MESSAGING;

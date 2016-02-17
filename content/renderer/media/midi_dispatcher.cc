@@ -27,9 +27,6 @@ MidiDispatcher::~MidiDispatcher() {}
 
 void MidiDispatcher::requestPermission(const WebMIDIPermissionRequest& request,
                                        const WebMIDIOptions& options) {
-  if (options.sysex == WebMIDIOptions::SysexPermission::WithoutSysex)
-    return WebMIDIPermissionRequest(request).setIsAllowed(true);
-
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
         mojo::GetProxy(&permission_service_));
@@ -38,8 +35,13 @@ void MidiDispatcher::requestPermission(const WebMIDIPermissionRequest& request,
   int permission_request_id =
       requests_.Add(new WebMIDIPermissionRequest(request));
 
+  PermissionName permission_name =
+      (options.sysex == WebMIDIOptions::SysexPermission::WithSysex)
+          ? PermissionName::MIDI_SYSEX
+          : PermissionName::MIDI;
+
   permission_service_->RequestPermission(
-      PermissionName::MIDI_SYSEX, request.securityOrigin().toString().utf8(),
+      permission_name, request.securityOrigin().toString().utf8(),
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&MidiDispatcher::OnPermissionSet, base::Unretained(this),
                  permission_request_id));

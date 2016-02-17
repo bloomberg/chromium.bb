@@ -2,10 +2,13 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="../http/tests/resources/permissions-helper.js"></script>
 </head>
 <body>
 <script>
 description("Tests navigator.requestMIDIAccess.");
+
+shouldBeDefined("PermissionsHelper.setPermission");
 
 var access;
 var input;
@@ -152,8 +155,11 @@ function errorCallback2(error) {
 
 window.jsTestIsAsync = true;
 
-// Test basic access, with no System Exclusive.
-navigator.requestMIDIAccess().then(successCallback1, errorCallback1);
+// Set default permission behavior that grants non-sysex requests.
+PermissionsHelper.setPermission('midi', 'granted').then(function() {
+    // Test basic access, with no System Exclusive.
+    navigator.requestMIDIAccess().then(successCallback1, errorCallback1);
+});
 
 </script>
 </body>

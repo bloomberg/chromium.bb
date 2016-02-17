@@ -79,7 +79,8 @@ bool PermissionDispatcher::IsObservable(blink::WebPermissionType type) {
   return type == blink::WebPermissionTypeGeolocation ||
          type == blink::WebPermissionTypeNotifications ||
          type == blink::WebPermissionTypePushNotifications ||
-         type == blink::WebPermissionTypeMidiSysEx;
+         type == blink::WebPermissionTypeMidiSysEx ||
+         type == blink::WebPermissionTypeMidi;
 }
 
 PermissionDispatcher::PermissionDispatcher(ServiceRegistry* service_registry)
