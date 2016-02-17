@@ -82,7 +82,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
     // alone when sizing).
     int thickness = m_theme.scrollbarThickness(controlSize);
     if (m_hostWindow)
-        thickness = m_hostWindow->windowToViewport(FloatRect(0, 0, thickness, 0)).width();
+        thickness = m_hostWindow->windowToViewportScalar(thickness);
     Widget::setFrameRect(IntRect(0, 0, thickness, thickness));
 
     m_currentPos = scrollableAreaCurrentPos();
@@ -483,7 +483,7 @@ int Scrollbar::scrollbarThickness() const
     int thickness = orientation() == HorizontalScrollbar ? height() : width();
     if (!thickness || !m_hostWindow)
         return thickness;
-    return m_hostWindow->windowToViewport(FloatRect(0, 0, m_theme.scrollbarThickness(controlSize()), 0)).width();
+    return m_hostWindow->windowToViewportScalar(m_theme.scrollbarThickness(controlSize()));
 }
 
 

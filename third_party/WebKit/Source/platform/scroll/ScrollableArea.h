@@ -73,7 +73,7 @@ class PLATFORM_EXPORT ScrollableArea {
 #endif
     WTF_MAKE_NONCOPYABLE(ScrollableArea);
 public:
-    static int pixelsPerLineStep();
+    static int pixelsPerLineStep(HostWindow*);
     static float minFractionToStepWhenPaging();
     static int maxOverlapBetweenPages();
 

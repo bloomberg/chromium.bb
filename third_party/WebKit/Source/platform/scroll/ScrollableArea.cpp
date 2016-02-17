@@ -60,9 +60,11 @@ struct SameSizeAsScrollableArea {
 
 static_assert(sizeof(ScrollableArea) == sizeof(SameSizeAsScrollableArea), "ScrollableArea should stay small");
 
-int ScrollableArea::pixelsPerLineStep()
+int ScrollableArea::pixelsPerLineStep(HostWindow* host)
 {
-    return kPixelsPerLineStep;
+    if (!host)
+        return kPixelsPerLineStep;
+    return host->windowToViewportScalar(kPixelsPerLineStep);
 }
 
 float ScrollableArea::minFractionToStepWhenPaging()
@@ -566,7 +568,7 @@ DoublePoint ScrollableArea::clampScrollPosition(const DoublePoint& scrollPositio
 
 int ScrollableArea::lineStep(ScrollbarOrientation) const
 {
-    return pixelsPerLineStep();
+    return pixelsPerLineStep(hostWindow());
 }
 
 int ScrollableArea::pageStep(ScrollbarOrientation orientation) const
@@ -586,6 +588,8 @@ int ScrollableArea::documentStep(ScrollbarOrientation orientation) const
 
 float ScrollableArea::pixelStep(ScrollbarOrientation) const
 {
+    if (HostWindow* window = hostWindow())
+        return window->windowToViewportScalar(1);
     return 1;
 }
 

@@ -520,12 +520,13 @@ IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport) const
     return screenRect;
 }
 
-FloatRect ChromeClientImpl::windowToViewport(const FloatRect& rectInWindow) const
+float ChromeClientImpl::windowToViewportScalar(const float scalarValue) const
 {
-    WebFloatRect viewportRect(rectInWindow);
-    if (m_webView->client())
-        m_webView->client()->convertWindowToViewport(&viewportRect);
-    return viewportRect;
+    if (!m_webView->client())
+        return scalarValue;
+    WebFloatRect viewportRect(0, 0, scalarValue, 0);
+    m_webView->client()->convertWindowToViewport(&viewportRect);
+    return viewportRect.width;
 }
 
 WebScreenInfo ChromeClientImpl::screenInfo() const

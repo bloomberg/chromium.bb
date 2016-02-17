@@ -159,20 +159,21 @@ bool hasOffscreenRect(Node* node, WebFocusType type)
     // exposed after we scroll. Adjust the viewport to post-scrolling position.
     // If the container has overflow:hidden, we cannot scroll, so we do not pass direction
     // and we do not adjust for scrolling.
+    int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frameView->hostWindow());
     switch (type) {
     case WebFocusTypeLeft:
-        containerViewportRect.setX(containerViewportRect.x() - ScrollableArea::pixelsPerLineStep());
-        containerViewportRect.setWidth(containerViewportRect.width() + ScrollableArea::pixelsPerLineStep());
+        containerViewportRect.setX(containerViewportRect.x() - pixelsPerLineStep);
+        containerViewportRect.setWidth(containerViewportRect.width() + pixelsPerLineStep);
         break;
     case WebFocusTypeRight:
-        containerViewportRect.setWidth(containerViewportRect.width() + ScrollableArea::pixelsPerLineStep());
+        containerViewportRect.setWidth(containerViewportRect.width() + pixelsPerLineStep);
         break;
     case WebFocusTypeUp:
-        containerViewportRect.setY(containerViewportRect.y() - ScrollableArea::pixelsPerLineStep());
-        containerViewportRect.setHeight(containerViewportRect.height() + ScrollableArea::pixelsPerLineStep());
+        containerViewportRect.setY(containerViewportRect.y() - pixelsPerLineStep);
+        containerViewportRect.setHeight(containerViewportRect.height() + pixelsPerLineStep);
         break;
     case WebFocusTypeDown:
-        containerViewportRect.setHeight(containerViewportRect.height() + ScrollableArea::pixelsPerLineStep());
+        containerViewportRect.setHeight(containerViewportRect.height() + pixelsPerLineStep);
         break;
     default:
         break;
@@ -196,18 +197,19 @@ bool scrollInDirection(LocalFrame* frame, WebFocusType type)
     if (frame && canScrollInDirection(frame->document(), type)) {
         int dx = 0;
         int dy = 0;
+        int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frame->view()->hostWindow());
         switch (type) {
         case WebFocusTypeLeft:
-            dx = - ScrollableArea::pixelsPerLineStep();
+            dx = - pixelsPerLineStep;
             break;
         case WebFocusTypeRight:
-            dx = ScrollableArea::pixelsPerLineStep();
+            dx = pixelsPerLineStep;
             break;
         case WebFocusTypeUp:
-            dy = - ScrollableArea::pixelsPerLineStep();
+            dy = - pixelsPerLineStep;
             break;
         case WebFocusTypeDown:
-            dy = ScrollableArea::pixelsPerLineStep();
+            dy = pixelsPerLineStep;
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -233,21 +235,23 @@ bool scrollInDirection(Node* container, WebFocusType type)
         int dx = 0;
         int dy = 0;
         // TODO(leviw): Why are these values truncated (toInt) instead of rounding?
+        FrameView* frameView = container->document().view();
+        int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frameView ? frameView->hostWindow() : nullptr);
         switch (type) {
         case WebFocusTypeLeft:
-            dx = - std::min(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollLeft().toInt());
+            dx = - std::min(pixelsPerLineStep, container->layoutBox()->scrollLeft().toInt());
             break;
         case WebFocusTypeRight:
             ASSERT(container->layoutBox()->scrollWidth() > (container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth()));
-            dx = std::min(ScrollableArea::pixelsPerLineStep(),
+            dx = std::min(pixelsPerLineStep,
                 (container->layoutBox()->scrollWidth() - (container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth())).toInt());
             break;
         case WebFocusTypeUp:
-            dy = - std::min(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollTop().toInt());
+            dy = - std::min(pixelsPerLineStep, container->layoutBox()->scrollTop().toInt());
             break;
         case WebFocusTypeDown:
             ASSERT(container->layoutBox()->scrollHeight() - (container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight()));
-            dy = std::min(ScrollableArea::pixelsPerLineStep(),
+            dy = std::min(pixelsPerLineStep,
                 (container->layoutBox()->scrollHeight() - (container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight())).toInt());
             break;
         default:

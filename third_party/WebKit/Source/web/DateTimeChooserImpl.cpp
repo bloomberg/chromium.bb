@@ -128,7 +128,7 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
     addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
     addProperty("anchorRectInScreen", m_parameters.anchorRectInScreen, data);
-    float scaleFactor = m_chromeClient->windowToViewport(FloatRect(0, 0, 1.0f, 0)).width();
+    float scaleFactor = m_chromeClient->windowToViewportScalar(1.0f);
     addProperty("zoomFactor", zoomFactor() / scaleFactor, data);
     addProperty("min", valueToDateTimeString(m_parameters.minimum, m_parameters.type), data);
     addProperty("max", valueToDateTimeString(m_parameters.maximum, m_parameters.type), data);

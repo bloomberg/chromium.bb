@@ -50,8 +50,8 @@ public:
     // Converts the rect from the viewport coordinates to screen coordinates.
     virtual IntRect viewportToScreen(const IntRect&) const = 0;
 
-    // Converts the rect from the window coordinates to the viewport coordinates.
-    virtual FloatRect windowToViewport(const FloatRect&) const = 0;
+    // Converts the scalar value from the window coordinates to the viewport scale.
+    virtual float windowToViewportScalar(const float) const = 0;
 
     virtual void scheduleAnimation(Widget*) = 0;
 };
