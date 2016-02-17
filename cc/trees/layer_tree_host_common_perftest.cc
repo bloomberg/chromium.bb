@@ -110,7 +110,7 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
     LayerImplList update_list;
     PropertyTrees property_trees;
     bool verify_property_trees = false;
-    bool use_property_trees = true;
+    bool use_property_trees = false;
     active_tree->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         active_tree->root_layer(), active_tree->DrawViewportSize(),
