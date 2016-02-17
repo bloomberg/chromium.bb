@@ -1,25 +1,18 @@
 Name: LZMA SDK
 Short Name: lzma
 URL: http://www.7-zip.org/sdk.html
-Version: 9.20
+Version: 15.14
+Date: 2015-12-31
+License: Public Domain
 Security Critical: yes
-License: Public domain
 
 Description:
-This contains a part of LZMA SDK 9.20.
+This contains a part of LZMA SDK 15.14.
 
+Local Modifications:
 Only the C code required to open 7z archive files and uncompress LZMA
-compression has been included. The project files have been rewritten to use
-proper file paths and generate a static lib.
+compression has been included.
 
-The patch in chromium.patch was applied to CpuArch.c to fix compile error on
-32bit Linux (when compiled with -fPIC).
-
-2013-06-14: The patch was updated to fix register corruption that can occur on
-64-bit platforms.
-
-2013-07-17: The patch was updated to fix register clobbering that occurred on
-Mac builds (but in principle can occur anywhere).
-
-An #include <stdlib.h> needs to be added to CpuArch.h to avoid a warning on
-Win32.
+The patch in chromium.patch was applied to CpuArch.c to fix register corruption
+that can occur on 64-bit platforms and register clobbering that occurred on Mac
+builds (but in principle can occur anywhere).

@@ -163,11 +163,10 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
   // Extra parentheses are needed here to avoid the most vexing parse.
   LzmaFileAllocator fileAllocator((base::FilePath(location)));
 
-  for (unsigned int i = 0; i < db.db.NumFiles; i++) {
+  for (unsigned int i = 0; i < db.NumFiles; i++) {
     DWORD written;
     size_t offset;
     size_t outSizeProcessed;
-    CSzFileItem *f = db.db.Files + i;
 
     if ((ret = SzArEx_Extract(&db, &lookStream.s, i, &blockIndex, &outBuffer,
                               &outBufferSize, &offset, &outSizeProcessed,
@@ -194,7 +193,7 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
       *output_file = file_path.value();
 
     // If archive entry is directory create it and move on to the next entry.
-    if (f->IsDir) {
+    if (SzArEx_IsDir(&db, i)) {
       CreateDirectory(file_path);
       continue;
     }
@@ -219,9 +218,9 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
       break;
     }
 
-    if (f->MTimeDefined) {
+    if (SzBitWithVals_Check(&db.MTime, i)) {
       if (!SetFileTime(hFile, NULL, NULL,
-                       (const FILETIME *)&(f->MTime))) {
+                       (const FILETIME *) (&db.MTime.Vals[i]))) {
         ret = GetLastError();
         CloseHandle(hFile);
         LOG(ERROR) << L"Error returned by SetFileTime: " << ret;

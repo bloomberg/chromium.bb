@@ -12,10 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/win/scoped_handle.h"
-
-extern "C" {
-#include "third_party/lzma_sdk/Types.h"
-}
+#include "third_party/lzma_sdk/7zTypes.h"
 
 // File mapping memory management class which supports multiple allocations in
 // series, but not in parallel. It creates a unique temporary file within
