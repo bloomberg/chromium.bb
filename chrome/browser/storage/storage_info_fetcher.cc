@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "storage/browser/quota/quota_manager.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

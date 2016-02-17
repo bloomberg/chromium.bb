@@ -6,7 +6,11 @@
 #define CHROME_BROWSER_STORAGE_STORAGE_INFO_FETCHER_H_
 
 #include "base/memory/ref_counted.h"
-#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_callbacks.h"
+
+namespace storage {
+class QuotaManager;
+}
 
 class Profile;
 
