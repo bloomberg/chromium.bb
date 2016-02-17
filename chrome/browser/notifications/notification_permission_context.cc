@@ -4,7 +4,8 @@
 
 #include "chrome/browser/notifications/notification_permission_context.h"
 
-#include <queue>
+#include <algorithm>
+#include <deque>
 
 #include "base/callback.h"
 #include "base/location.h"
@@ -38,7 +39,11 @@ class VisibilityTimerTabHelper
   // duration of at least |visible_delay|.
   void PostTaskAfterVisibleDelay(const tracked_objects::Location& from_here,
                                  const base::Closure& task,
-                                 base::TimeDelta visible_delay);
+                                 base::TimeDelta visible_delay,
+                                 const PermissionRequestID& id);
+
+  // Deletes any earlier task(s) that match |id|.
+  void CancelTask(const PermissionRequestID& id);
 
   // WebContentsObserver:
   void WasShown() override;
@@ -52,7 +57,24 @@ class VisibilityTimerTabHelper
   void RunTask(const base::Closure& task);
 
   bool is_visible_;
-  std::queue<scoped_ptr<base::Timer>> task_queue_;
+
+  struct Task {
+    Task(const PermissionRequestID& id, scoped_ptr<base::Timer> timer)
+        : id(id), timer(std::move(timer)) {}
+
+    Task& operator=(Task&& other) {
+      id = other.id;
+      timer = std::move(other.timer);
+      return *this;
+    }
+
+    PermissionRequestID id;
+    scoped_ptr<base::Timer> timer;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Task);
+  };
+  std::deque<Task> task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(VisibilityTimerTabHelper);
 };
@@ -78,46 +100,59 @@ VisibilityTimerTabHelper::VisibilityTimerTabHelper(
 void VisibilityTimerTabHelper::PostTaskAfterVisibleDelay(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
-    base::TimeDelta visible_delay) {
+    base::TimeDelta visible_delay,
+    const PermissionRequestID& id) {
+  if (web_contents()->IsBeingDestroyed())
+    return;
+
   // Safe to use Unretained, as destroying this will destroy task_queue_, hence
   // cancelling all timers.
-  task_queue_.push(make_scoped_ptr(new base::Timer(
+  scoped_ptr<base::Timer> timer(new base::Timer(
       from_here, visible_delay, base::Bind(&VisibilityTimerTabHelper::RunTask,
                                            base::Unretained(this), task),
-      false /* is_repeating */)));
-  DCHECK(!task_queue_.back()->IsRunning());
+      false /* is_repeating */));
+  DCHECK(!timer->IsRunning());
+
+  task_queue_.emplace_back(id, std::move(timer));
+
   if (is_visible_ && task_queue_.size() == 1)
-    task_queue_.front()->Reset();
+    task_queue_.front().timer->Reset();
+}
+
+void VisibilityTimerTabHelper::CancelTask(const PermissionRequestID& id) {
+  bool deleting_front = task_queue_.front().id == id;
+
+  task_queue_.erase(
+      std::remove_if(task_queue_.begin(), task_queue_.end(),
+                     [id](const Task& task) { return task.id == id; }),
+      task_queue_.end());
+
+  if (!task_queue_.empty() && is_visible_ && deleting_front)
+    task_queue_.front().timer->Reset();
 }
 
 void VisibilityTimerTabHelper::WasShown() {
   if (!is_visible_ && !task_queue_.empty())
-    task_queue_.front()->Reset();
+    task_queue_.front().timer->Reset();
   is_visible_ = true;
 }
 
 void VisibilityTimerTabHelper::WasHidden() {
   if (is_visible_ && !task_queue_.empty())
-    task_queue_.front()->Stop();
+    task_queue_.front().timer->Stop();
   is_visible_ = false;
 }
 
 void VisibilityTimerTabHelper::WebContentsDestroyed() {
-  // Delete ourselves, to avoid running tasks after WebContents is destroyed.
-  web_contents()->RemoveUserData(UserDataKey());
-  // |this| has been deleted now.
+  task_queue_.clear();
 }
 
 void VisibilityTimerTabHelper::RunTask(const base::Closure& task) {
   DCHECK(is_visible_);
   task.Run();
-  task_queue_.pop();
-  if (!task_queue_.empty()) {
-    task_queue_.front()->Reset();
-    return;
-  }
-  web_contents()->RemoveUserData(UserDataKey());
-  // |this| has been deleted now.
+  task_queue_.pop_front();
+  if (!task_queue_.empty())
+    task_queue_.front().timer->Reset();
 }
 
 }  // namespace
@@ -137,6 +172,16 @@ void NotificationPermissionContext::ResetPermission(
     const GURL& embedder_origin) {
   DesktopNotificationProfileUtil::ClearSetting(
       profile(), ContentSettingsPattern::FromURLNoWildcard(requesting_origin));
+}
+
+void NotificationPermissionContext::CancelPermissionRequest(
+    content::WebContents* web_contents,
+    const PermissionRequestID& id) {
+  if (profile()->IsOffTheRecord()) {
+    VisibilityTimerTabHelper::FromWebContents(web_contents)->CancelTask(id);
+  } else {
+    PermissionContextBase::CancelPermissionRequest(web_contents, id);
+  }
 }
 
 void NotificationPermissionContext::DecidePermission(
@@ -165,7 +210,7 @@ void NotificationPermissionContext::DecidePermission(
                        weak_factory_ui_thread_.GetWeakPtr(), id,
                        requesting_origin, embedding_origin, callback,
                        true /* persist */, CONTENT_SETTING_BLOCK),
-            base::TimeDelta::FromSecondsD(delay_seconds));
+            base::TimeDelta::FromSecondsD(delay_seconds), id);
     return;
   }
 

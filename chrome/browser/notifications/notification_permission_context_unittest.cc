@@ -10,13 +10,17 @@
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/permission_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/permission_status.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -24,6 +28,7 @@
 namespace {
 
 void DoNothing(ContentSetting content_setting) {}
+void DoNothing2(content::PermissionStatus status) {}
 
 class TestNotificationPermissionContext : public NotificationPermissionContext {
  public:
@@ -70,7 +75,28 @@ class TestNotificationPermissionContext : public NotificationPermissionContext {
 };
 
 class NotificationPermissionContextTest
-    : public ChromeRenderViewHostTestHarness {};
+    : public ChromeRenderViewHostTestHarness {
+ public:
+  scoped_refptr<base::TestMockTimeTaskRunner> SwitchToMockTime() {
+    old_task_runner_ = base::MessageLoop::current()->task_runner();
+    scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
+        new base::TestMockTimeTaskRunner(base::Time::Now(),
+                                         base::TimeTicks::Now()));
+    base::MessageLoop::current()->SetTaskRunner(task_runner);
+    return task_runner;
+  }
+
+  void TearDown() override {
+    if (old_task_runner_) {
+      base::MessageLoop::current()->SetTaskRunner(old_task_runner_);
+      old_task_runner_ = nullptr;
+    }
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> old_task_runner_;
+};
 
 }  // namespace
 
@@ -127,12 +153,7 @@ TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
                                web_contents()->GetMainFrame()->GetRoutingID(),
                                -1);
 
-  scoped_refptr<base::SingleThreadTaskRunner> old_task_runner(
-      base::MessageLoop::current()->task_runner());
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
-      new base::TestMockTimeTaskRunner(base::Time::Now(),
-                                       base::TimeTicks::Now()));
-  base::MessageLoop::current()->SetTaskRunner(task_runner);
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(SwitchToMockTime());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -185,8 +206,39 @@ TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
             permission_context.last_permission_set_setting());
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             permission_context.GetContentSettingFromMap(url, url));
+}
 
-  base::MessageLoop::current()->SetTaskRunner(old_task_runner);
+// Tests that navigating cancels incognito permission requests without crashing.
+TEST_F(NotificationPermissionContextTest, TestCancelledIncognitoRequest) {
+  TestNotificationPermissionContext permission_context(
+      profile()->GetOffTheRecordProfile());
+  GURL url("https://www.example.com");
+  NavigateAndCommit(url);
+
+  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
+                               web_contents()->GetMainFrame()->GetRoutingID(),
+                               -1);
+
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(SwitchToMockTime());
+
+  content::PermissionManager* permission_manager =
+      PermissionManagerFactory::GetForProfile(
+          profile()->GetOffTheRecordProfile());
+
+  // Request and cancel the permission via PermissionManager. That way if
+  // https://crbug.com/586944 regresses, then as well as the EXPECT_EQs below
+  // failing, PermissionManager::OnPermissionsRequestResponseStatus will crash.
+  int request_id = permission_manager->RequestPermission(
+      content::PermissionType::NOTIFICATIONS, web_contents()->GetMainFrame(),
+      url.GetOrigin(), true /* user_gesture */, base::Bind(&DoNothing2));
+
+  permission_manager->CancelPermissionRequest(request_id);
+
+  task_runner->FastForwardBy(base::TimeDelta::FromDays(1));
+
+  EXPECT_EQ(0, permission_context.permission_set_count());
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            permission_context.GetContentSettingFromMap(url, url));
 }
 
 // Tests how multiple parallel permission requests get auto-denied in incognito.
@@ -204,12 +256,7 @@ TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
                                 web_contents()->GetMainFrame()->GetRoutingID(),
                                 1);
 
-  scoped_refptr<base::SingleThreadTaskRunner> old_task_runner(
-      base::MessageLoop::current()->task_runner());
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
-      new base::TestMockTimeTaskRunner(base::Time::Now(),
-                                       base::TimeTicks::Now()));
-  base::MessageLoop::current()->SetTaskRunner(task_runner);
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(SwitchToMockTime());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -250,6 +297,4 @@ TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
             permission_context.last_permission_set_setting());
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             permission_context.GetContentSettingFromMap(url, url));
-
-  base::MessageLoop::current()->SetTaskRunner(old_task_runner);
 }
