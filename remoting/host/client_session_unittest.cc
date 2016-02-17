@@ -373,37 +373,6 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   }
 }
 
-TEST_F(ClientSessionTest, NoGnubbyAuth) {
-  CreateClientSession();
-  ConnectClientSession();
-  NotifyVideoSize();
-
-  protocol::ExtensionMessage message;
-  message.set_type("gnubby-auth");
-  message.set_data("test");
-
-  // Host should ignore gnubby messages when gnubby is disabled.
-  client_session_->DeliverClientMessage(message);
-}
-
-TEST_F(ClientSessionTest, EnableGnubbyAuth) {
-  CreateClientSession();
-  ConnectClientSession();
-  NotifyVideoSize();
-
-  // Lifetime controlled by object under test.
-  MockGnubbyAuthHandler* gnubby_auth_handler = new MockGnubbyAuthHandler();
-  client_session_->SetGnubbyAuthHandlerForTesting(gnubby_auth_handler);
-
-  // Host should ignore gnubby messages when gnubby is disabled.
-  protocol::ExtensionMessage message;
-  message.set_type("gnubby-auth");
-  message.set_data("test");
-
-  EXPECT_CALL(*gnubby_auth_handler, DeliverClientMessage(_)).Times(1);
-  client_session_->DeliverClientMessage(message);
-}
-
 // Verifies that the client's video pipeline can be reset mid-session.
 TEST_F(ClientSessionTest, ResetVideoPipeline) {
   CreateClientSession();

@@ -14,7 +14,6 @@
 #include "remoting/host/input_injector.h"
 #include "remoting/host/mouse_cursor_monitor_proxy.h"
 #include "remoting/host/screen_controls.h"
-#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/protocol/capability_names.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
@@ -74,11 +73,6 @@ std::string BasicDesktopEnvironment::GetCapabilities() const {
 }
 
 void BasicDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
-}
-
-scoped_ptr<GnubbyAuthHandler> BasicDesktopEnvironment::CreateGnubbyAuthHandler(
-    protocol::ClientStub* client_stub) {
-  return nullptr;
 }
 
 scoped_ptr<webrtc::DesktopCapturer>

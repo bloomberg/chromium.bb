@@ -19,7 +19,6 @@
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/screen_controls.h"
-#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/protocol/capability_names.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
@@ -67,17 +66,6 @@ Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
   // see http://crbug.com/73423. It's safe to enable it here because it works
   // properly under Xvfb.
   desktop_capture_options()->set_use_update_notifications(true);
-}
-
-scoped_ptr<GnubbyAuthHandler> Me2MeDesktopEnvironment::CreateGnubbyAuthHandler(
-    protocol::ClientStub* client_stub) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  if (gnubby_auth_enabled_)
-    return GnubbyAuthHandler::Create(client_stub);
-
-  HOST_LOG << "gnubby auth is not enabled";
-  return nullptr;
 }
 
 bool Me2MeDesktopEnvironment::InitializeSecurity(
@@ -131,10 +119,6 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
   return true;
 }
 
-void Me2MeDesktopEnvironment::SetEnableGnubbyAuth(bool gnubby_auth_enabled) {
-  gnubby_auth_enabled_ = gnubby_auth_enabled;
-}
-
 Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
@@ -160,7 +144,6 @@ scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
                                                curtain_enabled_)) {
     return nullptr;
   }
-  desktop_environment->SetEnableGnubbyAuth(gnubby_auth_enabled_);
 
   return std::move(desktop_environment);
 }
@@ -169,11 +152,6 @@ void Me2MeDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   curtain_enabled_ = enable;
-}
-
-void Me2MeDesktopEnvironmentFactory::SetEnableGnubbyAuth(
-    bool gnubby_auth_enabled) {
-  gnubby_auth_enabled_ = gnubby_auth_enabled;
 }
 
 }  // namespace remoting

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -15,29 +16,42 @@ class FilePath;
 
 namespace remoting {
 
-namespace protocol {
-class ClientStub;
-}  // namespace protocol
-
 // Class responsible for proxying authentication data between a local gnubbyd
 // and the client.
 class GnubbyAuthHandler {
  public:
   virtual ~GnubbyAuthHandler() {}
 
+  // Used to send gnubby extension messages to the client.
+  typedef base::Callback<void(int connection_id, const std::string& data)>
+      SendMessageCallback;
+
   // Creates a platform-specific GnubbyAuthHandler.
+  // All invocations of |callback| are guaranteed to occur before the underlying
+  // GnubbyAuthHandler object is destroyed.  It is not safe to destroy the
+  // GnubbyAuthHandler object within the callback.
   static scoped_ptr<GnubbyAuthHandler> Create(
-      protocol::ClientStub* client_stub);
+      const SendMessageCallback& callback);
 
   // Specify the name of the socket to listen to gnubby requests on.
+  // TODO(joedow): Move this to a linux specific class.  see: crbug.com/587298
   static void SetGnubbySocketName(const base::FilePath& gnubby_socket_name);
 
-  // A message was received from the client.
-  virtual void DeliverClientMessage(const std::string& message) = 0;
+  // Sets the callback used to send messages to the client.
+  virtual void SetSendMessageCallback(const SendMessageCallback& callback) = 0;
 
-  // Send data to client.
-  virtual void DeliverHostDataMessage(int connection_id,
-                                      const std::string& data) const = 0;
+  // Creates the platform specific connection to handle gnubby requests.
+  virtual void CreateGnubbyConnection() = 0;
+
+  // Returns true if |gnubby_connection_id| represents a valid connection.
+  virtual bool IsValidConnectionId(int gnubby_connection_id) const = 0;
+
+  // Sends the gnubby response from the client to the local gnubby agent.
+  virtual void SendClientResponse(int gnubby_connection_id,
+                                  const std::string& response) = 0;
+
+  // Closes the gnubby connection represented by |gnubby_connection_id|.
+  virtual void SendErrorAndCloseConnection(int gnubby_connection_id) = 0;
 };
 
 }  // namespace remoting

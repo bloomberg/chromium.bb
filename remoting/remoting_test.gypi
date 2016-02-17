@@ -290,6 +290,7 @@
         'host/resources_unittest.cc',
         'host/screen_resolution_unittest.cc',
         'host/security_key/gnubby_auth_handler_linux_unittest.cc',
+        'host/security_key/gnubby_extension_session_unittest.cc',
         'host/server_log_entry_host_unittest.cc',
         'host/setup/me2me_native_messaging_host.cc',
         'host/setup/me2me_native_messaging_host.h',

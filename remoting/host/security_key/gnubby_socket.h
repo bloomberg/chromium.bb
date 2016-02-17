@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 
 namespace base {
 class Timer;
@@ -31,7 +31,7 @@ namespace remoting {
 // Class that manages reading requests and sending responses. The socket can
 // only handle receiving one request at a time. It expects to receive no extra
 // bytes over the wire, which is checked by IsRequestTooLarge method.
-class GnubbySocket : public base::NonThreadSafe {
+class GnubbySocket {
  public:
   GnubbySocket(scoped_ptr<net::StreamSocket> socket,
                const base::TimeDelta& timeout,
@@ -81,6 +81,9 @@ class GnubbySocket : public base::NonThreadSafe {
 
   // Resets the socket activity timer.
   void ResetTimer();
+
+  // Ensures GnubbySocket methods are called on the same thread.
+  base::ThreadChecker thread_checker_;
 
   // The socket.
   scoped_ptr<net::StreamSocket> socket_;

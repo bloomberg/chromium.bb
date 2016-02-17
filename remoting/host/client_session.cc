@@ -226,13 +226,6 @@ void ClientSession::DeliverClientMessage(
         reply.set_data(message.data().substr(0, 16));
       connection_->client_stub()->DeliverHostMessage(reply);
       return;
-    } else if (message.type() == "gnubby-auth") {
-      if (gnubby_auth_handler_) {
-        gnubby_auth_handler_->DeliverClientMessage(message.data());
-      } else {
-        HOST_LOG << "gnubby auth is not enabled";
-      }
-      return;
     } else {
       if (extension_manager_->OnExtensionMessage(message))
         return;
@@ -302,10 +295,6 @@ void ClientSession::OnConnectionAuthenticated(
   connection_->set_clipboard_stub(&disable_clipboard_filter_);
   clipboard_echo_filter_.set_host_stub(input_injector_.get());
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
-
-  // Create a GnubbyAuthHandler to proxy gnubbyd messages.
-  gnubby_auth_handler_ = desktop_environment_->CreateGnubbyAuthHandler(
-      connection_->client_stub());
 }
 
 void ClientSession::OnConnectionChannelsConnected(
@@ -459,12 +448,6 @@ void ClientSession::ResetVideoPipeline() {
 
   // Pause capturing if necessary.
   video_stream_->Pause(pause_video_);
-}
-
-void ClientSession::SetGnubbyAuthHandlerForTesting(
-    GnubbyAuthHandler* gnubby_auth_handler) {
-  DCHECK(CalledOnValidThread());
-  gnubby_auth_handler_.reset(gnubby_auth_handler);
 }
 
 scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {

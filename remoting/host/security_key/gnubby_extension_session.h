@@ -1,0 +1,65 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef REMOTING_HOST_SECURITY_KEY_GNUBBY_EXTENSION_SESSION_H_
+#define REMOTING_HOST_SECURITY_KEY_GNUBBY_EXTENSION_SESSION_H_
+
+#include <string>
+
+#include "base/callback.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "remoting/host/host_extension_session.h"
+
+namespace base {
+class DictionaryValue;
+}
+
+namespace remoting {
+
+class GnubbyAuthHandler;
+
+namespace protocol {
+class ClientStub;
+}
+
+// A HostExtensionSession implementation that enables Security Key support.
+class GnubbyExtensionSession : public HostExtensionSession {
+ public:
+  explicit GnubbyExtensionSession(protocol::ClientStub* client_stub);
+  ~GnubbyExtensionSession() override;
+
+  // HostExtensionSession interface.
+  bool OnExtensionMessage(ClientSessionControl* client_session_control,
+                          protocol::ClientStub* client_stub,
+                          const protocol::ExtensionMessage& message) override;
+
+  // Allows the underlying GnubbyAuthHandler to be overridden for unit testing.
+  void SetGnubbyAuthHandlerForTesting(
+      scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler);
+
+ private:
+  // These methods process specific gnubby extension message types.
+  void ProcessControlMessage(base::DictionaryValue* message_data) const;
+  void ProcessDataMessage(base::DictionaryValue* message_data) const;
+  void ProcessErrorMessage(base::DictionaryValue* message_data) const;
+
+  void SendMessageToClient(int connection_id, const std::string& data) const;
+
+  // Ensures GnubbyExtensionSession methods are called on the same thread.
+  base::ThreadChecker thread_checker_;
+
+  // Interface through which messages can be sent to the client.
+  protocol::ClientStub* client_stub_ = nullptr;
+
+  // Handles platform specific gnubby operations.
+  scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(GnubbyExtensionSession);
+};
+
+}  // namespace remoting
+
+#endif  // REMOTING_HOST_SECURITY_KEY_GNUBBY_EXTENSION_SESSION_H_

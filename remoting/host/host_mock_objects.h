@@ -42,16 +42,12 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD0(CreateMouseCursorMonitorPtr, webrtc::MouseCursorMonitor*());
   MOCK_CONST_METHOD0(GetCapabilities, std::string());
   MOCK_METHOD1(SetCapabilities, void(const std::string&));
-  MOCK_METHOD1(CreateGnubbyAuthHandlerPtr, GnubbyAuthHandler*(
-      protocol::ClientStub* client_stub));
 
   // DesktopEnvironment implementation.
   scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
   scoped_ptr<InputInjector> CreateInputInjector() override;
   scoped_ptr<ScreenControls> CreateScreenControls() override;
   scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
-      protocol::ClientStub* client_stub) override;
   scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
       override;
 };
@@ -147,11 +143,19 @@ class MockGnubbyAuthHandler : public GnubbyAuthHandler {
   MockGnubbyAuthHandler();
   ~MockGnubbyAuthHandler() override;
 
-  MOCK_METHOD1(DeliverClientMessage, void(const std::string& message));
-  MOCK_CONST_METHOD2(DeliverHostDataMessage,
-                     void(int connection_id, const std::string& data));
+  MOCK_METHOD0(CreateGnubbyConnection, void());
+  MOCK_CONST_METHOD1(IsValidConnectionId, bool(int connection_id));
+  MOCK_METHOD2(SendClientResponse,
+               void(int connection_id, const std::string& response));
+  MOCK_METHOD1(SendErrorAndCloseConnection, void(int connection_id));
+
+  void SetSendMessageCallback(
+      const GnubbyAuthHandler::SendMessageCallback& callback) override;
+  const GnubbyAuthHandler::SendMessageCallback& GetSendMessageCallback();
 
  private:
+  GnubbyAuthHandler::SendMessageCallback callback_;
+
   DISALLOW_COPY_AND_ASSIGN(MockGnubbyAuthHandler);
 };
 

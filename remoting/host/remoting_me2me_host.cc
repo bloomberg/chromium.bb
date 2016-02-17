@@ -70,6 +70,8 @@
 #include "remoting/host/oauth_token_getter_impl.h"
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/policy_watcher.h"
+#include "remoting/host/security_key/gnubby_auth_handler.h"
+#include "remoting/host/security_key/gnubby_extension.h"
 #include "remoting/host/shutdown_watchdog.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/single_window_desktop_environment.h"
@@ -912,7 +914,6 @@ void HostProcess::StartOnUiThread() {
       InputInjector::SupportsTouchEvents());
 
   desktop_environment_factory_.reset(desktop_environment_factory);
-  desktop_environment_factory_->SetEnableGnubbyAuth(enable_gnubby_auth_);
 
   context_->network_task_runner()->PostTask(
       FROM_HERE,
@@ -1404,9 +1405,6 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
     HOST_LOG << "Policy disables gnubby auth.";
   }
 
-  if (desktop_environment_factory_)
-    desktop_environment_factory_->SetEnableGnubbyAuth(enable_gnubby_auth_);
-
   return true;
 }
 
@@ -1537,6 +1535,10 @@ void HostProcess::StartHost() {
                                  std::move(session_manager), transport_context,
                                  context_->audio_task_runner(),
                                  context_->video_encode_task_runner()));
+
+  if (enable_gnubby_auth_) {
+    host_->AddExtension(make_scoped_ptr(new GnubbyExtension()));
+  }
 
   if (frame_recorder_buffer_size_ > 0) {
     scoped_ptr<VideoFrameRecorderHostExtension> frame_recorder_extension(

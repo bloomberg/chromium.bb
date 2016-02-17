@@ -28,7 +28,6 @@ namespace remoting {
 
 class ClientSessionControl;
 class DesktopSessionProxy;
-class GnubbyAuthHandler;
 class ScreenResolution;
 
 // A variant of desktop environment integrating with the desktop by means of
@@ -56,8 +55,6 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
   scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
-  scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
-      protocol::ClientStub* client_stub) override;
 
  private:
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;

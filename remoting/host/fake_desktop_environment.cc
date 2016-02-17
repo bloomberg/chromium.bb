@@ -8,7 +8,6 @@
 
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/input_injector.h"
-#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
 
@@ -93,11 +92,6 @@ std::string FakeDesktopEnvironment::GetCapabilities() const {
 
 void FakeDesktopEnvironment::SetCapabilities(const std::string& capabilities) {}
 
-scoped_ptr<GnubbyAuthHandler> FakeDesktopEnvironment::CreateGnubbyAuthHandler(
-    protocol::ClientStub* client_stub) {
-  return nullptr;
-}
-
 FakeDesktopEnvironmentFactory::FakeDesktopEnvironmentFactory() {}
 FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() {}
 
@@ -115,8 +109,5 @@ void FakeDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {}
 bool FakeDesktopEnvironmentFactory::SupportsAudioCapture() const {
   return false;
 }
-
-void FakeDesktopEnvironmentFactory::SetEnableGnubbyAuth(bool enable) {}
-
 
 }  // namespace remoting

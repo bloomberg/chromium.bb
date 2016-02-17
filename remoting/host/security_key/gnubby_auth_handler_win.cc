@@ -5,43 +5,16 @@
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
 
 namespace remoting {
 
-namespace {
-
-class GnubbyAuthHandlerWin : public GnubbyAuthHandler {
- private:
-  // GnubbyAuthHandler interface.
-  void DeliverClientMessage(const std::string& message) override;
-  void DeliverHostDataMessage(int connection_id,
-                              const std::string& data) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerWin);
-};
-
-}  // namespace
-
-// static
 scoped_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
-    protocol::ClientStub* client_stub) {
+    const GnubbyAuthHandler::SendMessageCallback& callback) {
   return nullptr;
 }
 
-// static
 void GnubbyAuthHandler::SetGnubbySocketName(
     const base::FilePath& gnubby_socket_name) {
-  NOTIMPLEMENTED();
-}
-
-void GnubbyAuthHandlerWin::DeliverClientMessage(const std::string& message) {
-  NOTIMPLEMENTED();
-}
-
-void GnubbyAuthHandlerWin::DeliverHostDataMessage(
-    int connection_id,
-    const std::string& data) const {
   NOTIMPLEMENTED();
 }
 

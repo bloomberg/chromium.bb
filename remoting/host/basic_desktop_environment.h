@@ -21,8 +21,6 @@ class DesktopCaptureOptions;
 
 namespace remoting {
 
-class GnubbyAuthHandler;
-
 // Used to create audio/video capturers and event executor that work with
 // the local console.
 class BasicDesktopEnvironment : public DesktopEnvironment {
@@ -37,8 +35,6 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
-  scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
-      protocol::ClientStub* client_stub) override;
 
  protected:
   friend class BasicDesktopEnvironmentFactory;

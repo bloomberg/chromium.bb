@@ -39,7 +39,7 @@ GnubbySocket::GnubbySocket(scoped_ptr<net::StreamSocket> socket,
 GnubbySocket::~GnubbySocket() {}
 
 bool GnubbySocket::GetAndClearRequestData(std::string* data_out) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(read_completed_);
 
   if (!read_completed_)
@@ -54,7 +54,7 @@ bool GnubbySocket::GetAndClearRequestData(std::string* data_out) {
 }
 
 void GnubbySocket::SendResponse(const std::string& response_data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!write_buffer_);
 
   std::string response_length_string = GetResponseLengthAsBytes(response_data);
@@ -67,14 +67,14 @@ void GnubbySocket::SendResponse(const std::string& response_data) {
 }
 
 void GnubbySocket::SendSshError() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   SendResponse(std::string(kSshError, arraysize(kSshError)));
 }
 
 void GnubbySocket::StartReadingRequest(
     const base::Closure& request_received_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request_received_callback_.is_null());
 
   request_received_callback_ = request_received_callback;
@@ -82,7 +82,7 @@ void GnubbySocket::StartReadingRequest(
 }
 
 void GnubbySocket::OnDataWritten(int result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(write_buffer_);
 
   if (result < 0) {
@@ -95,7 +95,7 @@ void GnubbySocket::OnDataWritten(int result) {
 }
 
 void GnubbySocket::DoWrite() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(write_buffer_);
 
   if (!write_buffer_->BytesRemaining()) {
@@ -110,7 +110,7 @@ void GnubbySocket::DoWrite() {
 }
 
 void GnubbySocket::OnDataRead(int result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (result <= 0) {
     if (result < 0)
@@ -133,7 +133,7 @@ void GnubbySocket::OnDataRead(int result) {
 }
 
 void GnubbySocket::DoRead() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   int result = socket_->Read(
       read_buffer_.get(), kRequestReadBufferLength,
@@ -143,7 +143,7 @@ void GnubbySocket::DoRead() {
 }
 
 bool GnubbySocket::IsRequestComplete() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (request_data_.size() < kRequestSizeBytes)
     return false;
@@ -151,7 +151,7 @@ bool GnubbySocket::IsRequestComplete() const {
 }
 
 bool GnubbySocket::IsRequestTooLarge() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (request_data_.size() < kRequestSizeBytes)
     return false;

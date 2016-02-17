@@ -19,7 +19,6 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_extension_session_manager.h"
 #include "remoting/host/remote_input_filter.h"
-#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -131,8 +130,6 @@ class ClientSession
   void SetDisableInputs(bool disable_inputs) override;
   void ResetVideoPipeline() override;
 
-  void SetGnubbyAuthHandlerForTesting(GnubbyAuthHandler* gnubby_auth_handler);
-
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
   }
@@ -222,9 +219,6 @@ class ClientSession
 
   // The pairing registry for PIN-less authentication.
   scoped_refptr<protocol::PairingRegistry> pairing_registry_;
-
-  // Used to proxy gnubby auth traffic.
-  scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler_;
 
   // Used to manage extension functionality.
   scoped_ptr<HostExtensionSessionManager> extension_manager_;

@@ -12,14 +12,10 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "net/base/completion_callback.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/host/security_key/gnubby_auth_handler.h"
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
 
 namespace net {
 class UnixDomainServerSocket;
@@ -27,16 +23,11 @@ class UnixDomainServerSocket;
 
 namespace remoting {
 
-namespace protocol {
-class ClientStub;
-}  // namespace protocol
-
 class GnubbySocket;
 
-class GnubbyAuthHandlerLinux : public GnubbyAuthHandler,
-                               public base::NonThreadSafe {
+class GnubbyAuthHandlerLinux : public GnubbyAuthHandler {
  public:
-  explicit GnubbyAuthHandlerLinux(protocol::ClientStub* client_stub);
+  GnubbyAuthHandlerLinux();
   ~GnubbyAuthHandlerLinux() override;
 
   size_t GetActiveSocketsMapSizeForTest() const;
@@ -47,9 +38,12 @@ class GnubbyAuthHandlerLinux : public GnubbyAuthHandler,
   typedef std::map<int, GnubbySocket*> ActiveSockets;
 
   // GnubbyAuthHandler interface.
-  void DeliverClientMessage(const std::string& message) override;
-  void DeliverHostDataMessage(int connection_id,
-                              const std::string& data) const override;
+  void CreateGnubbyConnection() override;
+  bool IsValidConnectionId(int gnubby_connection_id) const override;
+  void SendClientResponse(int gnubby_connection_id,
+                          const std::string& response) override;
+  void SendErrorAndCloseConnection(int gnubby_connection_id) override;
+  void SetSendMessageCallback(const SendMessageCallback& callback) override;
 
   // Starts listening for connection.
   void DoAccept();
@@ -58,31 +52,29 @@ class GnubbyAuthHandlerLinux : public GnubbyAuthHandler,
   void OnAccepted(int result);
 
   // Called when a GnubbySocket has done reading.
-  void OnReadComplete(int connection_id);
+  void OnReadComplete(int gnubby_connection_id);
 
-  // Create socket for authorization.
-  void CreateAuthorizationSocket();
-
-  // Process a gnubby request.
-  void ProcessGnubbyRequest(int connection_id, const std::string& request_data);
-
-  // Gets an active socket iterator for the connection id in |message|.
-  ActiveSockets::iterator GetSocketForMessage(base::DictionaryValue* message);
+  // Gets an active socket iterator for |gnubby_connection_id|.
+  ActiveSockets::const_iterator GetSocketForConnectionId(
+      int gnubby_connection_id) const;
 
   // Send an error and closes an active socket.
-  void SendErrorAndCloseActiveSocket(const ActiveSockets::iterator& iter);
+  void SendErrorAndCloseActiveSocket(const ActiveSockets::const_iterator& iter);
 
   // A request timed out.
-  void RequestTimedOut(int connection_id);
+  void RequestTimedOut(int gnubby_connection_id);
 
-  // Interface through which communication with the client occurs.
-  protocol::ClientStub* client_stub_;
+  // Ensures GnubbyAuthHandlerLinux methods are called on the same thread.
+  base::ThreadChecker thread_checker_;
 
   // Socket used to listen for authorization requests.
   scoped_ptr<net::UnixDomainServerSocket> auth_socket_;
 
   // A temporary holder for an accepted connection.
   scoped_ptr<net::StreamSocket> accept_socket_;
+
+  // Used to pass gnubby extension messages to the client.
+  SendMessageCallback send_message_callback_;
 
   // The last assigned gnubby connection id.
   int last_connection_id_;

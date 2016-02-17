@@ -83,8 +83,6 @@ class FakeDesktopEnvironment
   scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
-  scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
-      protocol::ClientStub* client_stub) override;
 
   base::WeakPtr<FakeInputInjector> last_input_injector() {
     return last_input_injector_;
@@ -115,7 +113,6 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
       base::WeakPtr<ClientSessionControl> client_session_control) override;
   void SetEnableCurtaining(bool enable) override;
   bool SupportsAudioCapture() const override;
-  void SetEnableGnubbyAuth(bool enable) override;
 
   base::WeakPtr<FakeDesktopEnvironment> last_desktop_environment() {
     return last_desktop_environment_;

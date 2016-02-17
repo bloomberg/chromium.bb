@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -20,7 +19,6 @@
 #include "remoting/host/security_key/gnubby_auth_handler_linux.h"
 #include "remoting/host/security_key/gnubby_socket.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/client_stub.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -48,59 +46,37 @@ const unsigned char kRequestData[] = {
 
 }  // namespace
 
-class TestClientStub : public protocol::ClientStub {
- public:
-  TestClientStub() : loop_(new base::RunLoop) {}
-  ~TestClientStub() override {}
-
-  // protocol::ClientStub implementation.
-  void SetCapabilities(const protocol::Capabilities& capabilities) override {}
-
-  void SetPairingResponse(
-      const protocol::PairingResponse& pairing_response) override {}
-
-  void DeliverHostMessage(const protocol::ExtensionMessage& message) override {
-    message_ = message;
-    loop_->Quit();
-  }
-
-  // protocol::ClipboardStub implementation.
-  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override {}
-
-  // protocol::CursorShapeStub implementation.
-  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override {}
-
-  void WaitForDeliverHostMessage() {
-    loop_->Run();
-    loop_.reset(new base::RunLoop);
-  }
-
-  void CheckHostDataMessage(int id, const std::string& data) {
-    std::string connection_id = base::StringPrintf("\"connectionId\":%d", id);
-    std::string data_message = base::StringPrintf("\"data\":%s", data.c_str());
-
-    ASSERT_TRUE(message_.type() == "gnubby-auth" ||
-                message_.type() == "auth-v1");
-    ASSERT_NE(message_.data().find("\"type\":\"data\""), std::string::npos);
-    ASSERT_NE(message_.data().find(connection_id), std::string::npos);
-    ASSERT_NE(message_.data().find(data_message), std::string::npos);
-  }
-
- private:
-  protocol::ExtensionMessage message_;
-  scoped_ptr<base::RunLoop> loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClientStub);
-};
-
 class GnubbyAuthHandlerLinuxTest : public testing::Test {
  public:
-  GnubbyAuthHandlerLinuxTest() {
+  GnubbyAuthHandlerLinuxTest()
+      : run_loop_(new base::RunLoop()), last_connection_id_received_(-1) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     socket_path_ = temp_dir_.path().Append(kSocketFilename);
-    auth_handler_posix_.reset(new GnubbyAuthHandlerLinux(&client_stub_));
-    auth_handler_ = auth_handler_posix_.get();
+
+    send_message_callback_ =
+        base::Bind(&GnubbyAuthHandlerLinuxTest::SendMessageToClient,
+                   base::Unretained(this));
+    auth_handler_linux_.reset(new GnubbyAuthHandlerLinux());
+    auth_handler_ = auth_handler_linux_.get();
+    auth_handler_->SetSendMessageCallback(send_message_callback_);
     auth_handler_->SetGnubbySocketName(socket_path_);
+  }
+
+  void WaitForSendMessageToClient() {
+    run_loop_->Run();
+    run_loop_.reset(new base::RunLoop);
+  }
+
+  void SendMessageToClient(int connection_id, const std::string& data) {
+    last_connection_id_received_ = connection_id;
+    last_message_received_ = data;
+    run_loop_->Quit();
+  }
+
+  void CheckHostDataMessage(int id, const std::string& expected_data) {
+    ASSERT_EQ(id, last_connection_id_received_);
+    ASSERT_EQ(expected_data.length(), last_message_received_.length());
+    ASSERT_EQ(expected_data, last_message_received_);
   }
 
   void WriteRequestData(net::UnixDomainClientSocket* client_socket) {
@@ -125,45 +101,46 @@ class GnubbyAuthHandlerLinuxTest : public testing::Test {
     ASSERT_EQ(request_len, bytes_written);
   }
 
-  void WaitForAndVerifyHostMessage() {
-    client_stub_.WaitForDeliverHostMessage();
-    base::ListValue expected_data;
-    // Skip first four bytes.
+  void WaitForAndVerifyHostMessage(int connection_id) {
+    WaitForSendMessageToClient();
+    std::string expected_data;
+    expected_data.reserve(sizeof(kRequestData) - 4);
+
+    // Skip first four bytes and build up the response string.
     for (size_t i = 4; i < sizeof(kRequestData); ++i) {
-      expected_data.AppendInteger(kRequestData[i]);
+      expected_data.append(1, static_cast<unsigned char>(kRequestData[i]));
     }
 
-    std::string expected_data_json;
-    base::JSONWriter::Write(expected_data, &expected_data_json);
-    client_stub_.CheckHostDataMessage(1, expected_data_json);
+    CheckHostDataMessage(connection_id, expected_data);
   }
 
  protected:
-  // Object under test.
-  scoped_ptr<GnubbyAuthHandlerLinux> auth_handler_posix_;
+  base::MessageLoopForIO message_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
 
-  // GnubbyAuthHandler interface for |auth_handler_posix_|.
+  // Object under test.
+  scoped_ptr<GnubbyAuthHandlerLinux> auth_handler_linux_;
+
+  // GnubbyAuthHandler interface for |auth_handler_linux_|.
   GnubbyAuthHandler* auth_handler_;
 
-  base::MessageLoopForIO message_loop_;
-  TestClientStub client_stub_;
+  GnubbyAuthHandler::SendMessageCallback send_message_callback_;
+
+  int last_connection_id_received_;
+  std::string last_message_received_;
+
   base::ScopedTempDir temp_dir_;
   base::FilePath socket_path_;
   base::Closure accept_callback_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerLinuxTest);
 };
 
-TEST_F(GnubbyAuthHandlerLinuxTest, HostDataMessageDelivered) {
-  auth_handler_->DeliverHostDataMessage(42, "test_msg");
-  client_stub_.WaitForDeliverHostMessage();
-  // Expects a JSON array of the ASCII character codes for "test_msg".
-  client_stub_.CheckHostDataMessage(42, "[116,101,115,116,95,109,115,103]");
-}
-
 TEST_F(GnubbyAuthHandlerLinuxTest, NotClosedAfterRequest) {
-  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
 
-  const char message_json[] = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
-  auth_handler_->DeliverClientMessage(message_json);
+  auth_handler_->CreateGnubbyConnection();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
@@ -173,17 +150,19 @@ TEST_F(GnubbyAuthHandlerLinuxTest, NotClosedAfterRequest) {
 
   // Write the request and verify the response.
   WriteRequestData(&client_socket);
-  WaitForAndVerifyHostMessage();
+  WaitForAndVerifyHostMessage(1);
+
+  // Verify the connection is now valid.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
 
   // Verify that completing a request/response cycle didn't close the socket.
-  ASSERT_EQ(1u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(1u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
 }
 
 TEST_F(GnubbyAuthHandlerLinuxTest, HandleTwoRequests) {
-  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
 
-  const char message_json[] = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
-  auth_handler_->DeliverClientMessage(message_json);
+  auth_handler_->CreateGnubbyConnection();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
@@ -193,42 +172,81 @@ TEST_F(GnubbyAuthHandlerLinuxTest, HandleTwoRequests) {
 
   // Write the request and verify the response.
   WriteRequestData(&client_socket);
-  WaitForAndVerifyHostMessage();
+  WaitForAndVerifyHostMessage(1);
+
+  // Verify the connection is now valid.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
 
   // Repeat the request/response cycle.
   WriteRequestData(&client_socket);
-  WaitForAndVerifyHostMessage();
+  WaitForAndVerifyHostMessage(1);
 
-  // Verify that completing two request/response cycles didn't close the socket.
-  ASSERT_EQ(1u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  // Verify the connection is still valid.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
+
+  // Verify that completing two request/response cycles didn't close the
+  // socket.
+  ASSERT_EQ(1u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+}
+
+TEST_F(GnubbyAuthHandlerLinuxTest, HandleTwoIndependentRequests) {
+  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+
+  auth_handler_->CreateGnubbyConnection();
+
+  net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
+  net::TestCompletionCallback connect_callback;
+
+  int rv = client_socket.Connect(connect_callback.callback());
+  ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
+
+  // Write the request and verify the response.
+  WriteRequestData(&client_socket);
+  WaitForAndVerifyHostMessage(1);
+
+  // Verify the first connection is now valid.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
+
+  // Disconnect and establish a new connection.
+  client_socket.Disconnect();
+  rv = client_socket.Connect(connect_callback.callback());
+  ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
+
+  // Repeat the request/response cycle.
+  WriteRequestData(&client_socket);
+  WaitForAndVerifyHostMessage(2);
+
+  // Verify the second connection is valid and the first is not.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(2));
+  ASSERT_FALSE(auth_handler_->IsValidConnectionId(1));
+
+  // Verify that the initial socket was released properly.
+  ASSERT_EQ(1u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
 }
 
 TEST_F(GnubbyAuthHandlerLinuxTest, DidReadTimeout) {
-  std::string message_json = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
+  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  auth_handler_->CreateGnubbyConnection();
 
-  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
-  auth_handler_->DeliverClientMessage(message_json);
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
   int rv = client_socket.Connect(connect_callback.callback());
   ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
-  auth_handler_posix_->SetRequestTimeoutForTest(base::TimeDelta());
-  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  auth_handler_linux_->SetRequestTimeoutForTest(base::TimeDelta());
+  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
 }
 
 TEST_F(GnubbyAuthHandlerLinuxTest, ClientErrorMessageDelivered) {
-  std::string message_json = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
+  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  auth_handler_->CreateGnubbyConnection();
 
-  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
-  auth_handler_->DeliverClientMessage(message_json);
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
   int rv = client_socket.Connect(connect_callback.callback());
   ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
 
-  std::string error_json = "{\"type\":\"error\",\"connectionId\":1}";
-  auth_handler_->DeliverClientMessage(error_json);
-  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  auth_handler_->SendErrorAndCloseConnection(1);
+  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
 }
 
 }  // namespace remoting
