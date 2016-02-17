@@ -339,6 +339,7 @@ fuzzer_test("v8_script_parser_fuzzer") {
     "//v8:parser_fuzzer",
   ]
   dict = "dicts/js.dict"
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("v8_json_parser_fuzzer") {
