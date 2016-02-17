@@ -92,8 +92,7 @@ class CmaMessageFilterHost
   void NotifyPipeWrite(int media_id, TrackId track_id);
 
   // Audio/Video callbacks.
-  void OnMediaStateChanged(int media_id,
-                           ::media::PipelineStatus status);
+  void OnFlushDone(int media_id);
   void OnTrackStateChanged(int media_id,
                            TrackId track_id,
                            ::media::PipelineStatus status);

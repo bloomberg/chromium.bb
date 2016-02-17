@@ -69,7 +69,7 @@ VideoPipelineImpl::~VideoPipelineImpl() {
   if (!video_decoder_->SetConfig(video_config)) {
     return ::media::PIPELINE_ERROR_INITIALIZATION_FAILED;
   }
-  TransitionToState(kFlushed);
+  set_state(kFlushed);
   return ::media::PIPELINE_OK;
 }
 

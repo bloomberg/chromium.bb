@@ -47,7 +47,7 @@ AudioPipelineImpl::~AudioPipelineImpl() {}
   if (!audio_decoder_->SetConfig(cast_audio_config)) {
     return ::media::PIPELINE_ERROR_INITIALIZATION_FAILED;
   }
-  TransitionToState(kFlushed);
+  set_state(kFlushed);
   return ::media::PIPELINE_OK;
 }
 

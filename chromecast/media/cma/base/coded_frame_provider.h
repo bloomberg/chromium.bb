@@ -39,6 +39,7 @@ class CodedFrameProvider {
   // Invoke callback |flush_cb| when completed.
   // Note: any pending read is cancelled, meaning that any pending |read_cb|
   // callback will not be invoked.
+  // TODO(alokp): Delete this function once CmaRenderer is deprecated.
   virtual void Flush(const base::Closure& flush_cb) = 0;
 
  private:

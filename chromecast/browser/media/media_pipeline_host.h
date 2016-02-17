@@ -66,7 +66,7 @@ class MediaPipelineHost {
                        const std::vector< ::media::VideoDecoderConfig>& configs,
                        const ::media::PipelineStatusCB& status_cb);
   void StartPlayingFrom(base::TimeDelta time);
-  void Flush(const ::media::PipelineStatusCB& status_cb);
+  void Flush(const base::Closure& flush_cb);
   void Stop();
 
   void SetPlaybackRate(double playback_rate);

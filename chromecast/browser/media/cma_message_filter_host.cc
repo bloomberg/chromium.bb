@@ -423,14 +423,12 @@ void CmaMessageFilterHost::Flush(int media_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   MediaPipelineHost* media_pipeline = LookupById(media_id);
   if (!media_pipeline) {
-    Send(new CmaMsg_MediaStateChanged(
-        media_id, ::media::PIPELINE_ERROR_ABORT));
+    Send(new CmaMsg_FlushDone(media_id));
     return;
   }
-  ::media::PipelineStatusCB pipeline_status_cb = ::media::BindToCurrentLoop(
-      base::Bind(&CmaMessageFilterHost::OnMediaStateChanged, weak_this_,
-                 media_id));
-  FORWARD_CALL(media_pipeline, Flush, pipeline_status_cb);
+  base::Closure flush_cb = ::media::BindToCurrentLoop(
+      base::Bind(&CmaMessageFilterHost::OnFlushDone, weak_this_, media_id));
+  FORWARD_CALL(media_pipeline, Flush, flush_cb);
 }
 
 void CmaMessageFilterHost::Stop(int media_id) {
@@ -472,10 +470,9 @@ void CmaMessageFilterHost::NotifyPipeWrite(int media_id, TrackId track_id) {
 
 // *** Browser to renderer messages ***
 
-void CmaMessageFilterHost::OnMediaStateChanged(
-    int media_id, ::media::PipelineStatus status) {
+void CmaMessageFilterHost::OnFlushDone(int media_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  Send(new CmaMsg_MediaStateChanged(media_id, status));
+  Send(new CmaMsg_FlushDone(media_id));
 }
 
 void CmaMessageFilterHost::OnTrackStateChanged(

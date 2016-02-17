@@ -23,6 +23,14 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   MediaPipelineBackendDefault();
   ~MediaPipelineBackendDefault() override;
 
+  bool running() const { return running_; }
+  const AudioDecoderDefault* audio_decoder() const {
+    return audio_decoder_.get();
+  }
+  const VideoDecoderDefault* video_decoder() const {
+    return video_decoder_.get();
+  }
+
   // MediaPipelineBackend implementation:
   AudioDecoder* CreateAudioDecoder() override;
   VideoDecoder* CreateVideoDecoder() override;

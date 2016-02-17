@@ -47,13 +47,9 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
   // time, then start rendering samples.
   bool StartPlayingFrom(base::TimeDelta time,
                         const scoped_refptr<BufferingState>& buffering_state);
+  void Flush(const base::Closure& flush_cb);
 
-  bool StartFlush();
-  void Flush(const ::media::PipelineStatusCB& status_cb);
-  // Resets any pending buffers after the backend has been stopped.
-  void BackendStopped();
-
-  // Tear down the pipeline and release the hardware resources.
+  // Stop feeding the backend.
   void Stop();
 
   virtual void UpdateStatistics() = 0;
@@ -70,6 +66,7 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
   };
 
   State state() const { return state_; }
+  void set_state(State state) { state_ = state; }
   const AvPipelineClient& client() const { return client_; }
 
   virtual void OnUpdateConfig(
@@ -77,7 +74,6 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
       const ::media::AudioDecoderConfig& audio_config,
       const ::media::VideoDecoderConfig& video_config) = 0;
 
-  void TransitionToState(State state);
   // Setting the frame provider must be done in the |kUninitialized| state.
   void SetCodedFrameProvider(scoped_ptr<CodedFrameProvider> frame_provider,
                              size_t max_buffer_size,
@@ -86,7 +82,7 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
   ::media::PipelineStatistics previous_stats_;
 
  private:
-  void OnFlushDone(const ::media::PipelineStatusCB& status_cb);
+  void OnFlushDone();
 
   // MediaPipelineBackend::Decoder::Delegate implementation:
   void OnPushBufferComplete(BufferStatus status) override;
@@ -128,6 +124,9 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
 
   MediaPipelineBackend::Decoder* const decoder_;
   const AvPipelineClient client_;
+
+  // Callback provided to Flush().
+  base::Closure flush_cb_;
 
   // AV pipeline state.
   State state_;

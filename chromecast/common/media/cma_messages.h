@@ -68,9 +68,7 @@ IPC_MESSAGE_CONTROL2(CmaHostMsg_NotifyPipeWrite,
 
 // Messages from the browser to the renderer process.
 
-IPC_MESSAGE_CONTROL2(CmaMsg_MediaStateChanged,
-                     int /* Media pipeline ID */,
-                     media::PipelineStatus /* Status */)
+IPC_MESSAGE_CONTROL1(CmaMsg_FlushDone, int /* Media pipeline ID */)
 IPC_MESSAGE_CONTROL4(CmaMsg_TimeUpdate,
                      int /* Media pipeline ID */,
                      base::TimeDelta /* Media time */,

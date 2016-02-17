@@ -53,6 +53,12 @@ const int kStatisticsUpdatePeriod = 4;
 
 }  // namespace
 
+struct MediaPipelineImpl::FlushTask {
+  bool audio_flushed;
+  bool video_flushed;
+  base::Closure done_cb;
+};
+
 MediaPipelineImpl::MediaPipelineImpl()
     : cdm_(nullptr),
       audio_decoder_(nullptr),
@@ -178,7 +184,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   CMALOG(kLogControl) << __FUNCTION__ << " t0=" << time.InMilliseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(audio_pipeline_ || video_pipeline_);
-  DCHECK(!pending_flush_callbacks_);
+  DCHECK(!pending_flush_task_);
   // When starting, we always enter the "playing" state (not paused).
   paused_ = false;
 
@@ -227,50 +233,40 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   }
 }
 
-void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
+void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(audio_pipeline_ || video_pipeline_);
-  DCHECK(!pending_flush_callbacks_);
+  DCHECK(!pending_flush_task_);
 
   backend_started_ = false;
-
   buffering_controller_->Reset();
 
-  // Flush audio/video pipeline in three phases:
-  // 1. Stop pushing data to backend. This guarentees media pipeline doesn't
-  // push buffers to backend after stopping backend. (b/23751784)
-  if (audio_pipeline_ && !audio_pipeline_->StartFlush()) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
-  }
-  if (video_pipeline_ && !video_pipeline_->StartFlush()) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
-  }
+  // 1. Stop both the audio and video pipeline so that they stop feeding
+  // buffers to the backend while the pipeline is being flushed.
+  if (audio_pipeline_)
+    audio_pipeline_->Stop();
+  if (video_pipeline_)
+    video_pipeline_->Stop();
 
   // 2. Stop the backend, so that the backend won't push their pending buffer,
   // which may be invalidated later, to hardware. (b/25342604)
-  if (!media_pipeline_backend_->Stop()) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
-  }
+  CHECK(media_pipeline_backend_->Stop());
 
   // 3. Flush both the audio and video pipeline. This will flush the frame
   // provider and invalidate all the unreleased buffers.
-  ::media::SerialRunner::Queue bound_fns;
+  pending_flush_task_.reset(new FlushTask);
+  pending_flush_task_->audio_flushed = !audio_pipeline_;
+  pending_flush_task_->video_flushed = !video_pipeline_;
+  pending_flush_task_->done_cb = flush_cb;
   if (audio_pipeline_) {
-    bound_fns.Push(base::Bind(&AudioPipelineImpl::Flush,
-                              base::Unretained(audio_pipeline_.get())));
+    audio_pipeline_->Flush(
+        base::Bind(&MediaPipelineImpl::OnFlushDone, weak_this_, true));
   }
   if (video_pipeline_) {
-    bound_fns.Push(base::Bind(&VideoPipelineImpl::Flush,
-                              base::Unretained(video_pipeline_.get())));
+    video_pipeline_->Flush(
+        base::Bind(&MediaPipelineImpl::OnFlushDone, weak_this_, false));
   }
-  ::media::PipelineStatusCB transition_cb =
-      base::Bind(&MediaPipelineImpl::OnFlushDone, weak_this_, status_cb);
-  pending_flush_callbacks_ =
-      ::media::SerialRunner::Run(bound_fns, transition_cb);
 }
 
 void MediaPipelineImpl::Stop() {
@@ -281,7 +277,7 @@ void MediaPipelineImpl::Stop() {
   // Cancel pending flush callbacks since we are about to stop/shutdown
   // audio/video pipelines. This will ensure A/V Flush won't happen in
   // stopped state.
-  pending_flush_callbacks_.reset();
+  pending_flush_task_.reset();
   backend_started_ = false;
 
   // Stop both the audio and video pipeline.
@@ -325,16 +321,35 @@ void MediaPipelineImpl::SetVolume(float volume) {
     audio_pipeline_->SetVolume(volume);
 }
 
-void MediaPipelineImpl::OnFlushDone(const ::media::PipelineStatusCB& status_cb,
-                                    ::media::PipelineStatus status) {
-  // Clear pending buffers.
-  if (audio_pipeline_)
-    audio_pipeline_->BackendStopped();
-  if (video_pipeline_)
-    video_pipeline_->BackendStopped();
+bool MediaPipelineImpl::HasAudio() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return audio_pipeline_ != nullptr;
+}
 
-  pending_flush_callbacks_.reset();
-  status_cb.Run(status);
+bool MediaPipelineImpl::HasVideo() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return video_pipeline_ != nullptr;
+}
+
+void MediaPipelineImpl::OnFlushDone(bool is_audio_stream) {
+  CMALOG(kLogControl) << __FUNCTION__ << " is_audio_stream=" << is_audio_stream;
+  if (!pending_flush_task_)
+    return;
+
+  if (is_audio_stream) {
+    DCHECK(!pending_flush_task_->audio_flushed);
+    pending_flush_task_->audio_flushed = true;
+  } else {
+    DCHECK(!pending_flush_task_->video_flushed);
+    pending_flush_task_->video_flushed = true;
+  }
+
+  if (pending_flush_task_->audio_flushed &&
+      pending_flush_task_->video_flushed) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  pending_flush_task_->done_cb);
+    pending_flush_task_.reset();
+  }
 }
 
 void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {

@@ -90,7 +90,7 @@ class CmaRenderer : public ::media::Renderer {
                              base::TimeTicks capture_time);
   void OnBufferingNotification(::media::BufferingState state);
 
-  void OnFlushDone(::media::PipelineStatus status);
+  void OnFlushDone();
   void OnError(::media::PipelineStatus status);
 
   // Begin a state transition.

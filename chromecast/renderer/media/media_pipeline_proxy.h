@@ -46,12 +46,12 @@ class MediaPipelineProxy {
                        scoped_ptr<CodedFrameProvider> frame_provider,
                        const ::media::PipelineStatusCB& status_cb);
   void StartPlayingFrom(base::TimeDelta time);
-  void Flush(const ::media::PipelineStatusCB& status_cb);
+  void Flush(const base::Closure& flush_cb);
   void Stop();
   void SetPlaybackRate(double playback_rate);
 
  private:
-  void OnProxyFlushDone(const ::media::PipelineStatusCB& status_cb,
+  void OnProxyFlushDone(const base::Closure& flush_cb,
                         ::media::PipelineStatus status);
 
   base::ThreadChecker thread_checker_;

@@ -445,18 +445,18 @@ void CmaRenderer::OnBufferingNotification(
   buffering_state_cb_.Run(buffering_state);
 }
 
-void CmaRenderer::OnFlushDone(::media::PipelineStatus status) {
+void CmaRenderer::OnFlushDone() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (status != ::media::PIPELINE_OK) {
-    OnError(status);
+
+  if (state_ == kError) {
+    // If OnError was called while the flush was in progress,
+    // |flush_cb_| must be null.
+    DCHECK(flush_cb_.is_null());
     return;
   }
 
   CompleteStateTransition(kFlushed);
-  // If OnError was called while the flush was in progress, |flush_cb_| might
-  // be null.
-  if (!flush_cb_.is_null())
-    base::ResetAndReturn(&flush_cb_).Run();
+  base::ResetAndReturn(&flush_cb_).Run();
 }
 
 void CmaRenderer::OnError(::media::PipelineStatus error) {

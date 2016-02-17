@@ -16,7 +16,6 @@
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
-#include "media/base/serial_runner.h"
 
 namespace media {
 class AudioDecoderConfig;
@@ -56,16 +55,18 @@ class MediaPipelineImpl {
       const VideoPipelineClient& client,
       scoped_ptr<CodedFrameProvider> frame_provider);
   void StartPlayingFrom(base::TimeDelta time);
-  void Flush(const ::media::PipelineStatusCB& status_cb);
+  void Flush(const base::Closure& flush_cb);
   void Stop();
   void SetPlaybackRate(double playback_rate);
   void SetVolume(float volume);
+  bool HasAudio() const;
+  bool HasVideo() const;
 
   void SetCdm(BrowserCdmCast* cdm);
 
  private:
-  void OnFlushDone(const ::media::PipelineStatusCB& status_cb,
-                   ::media::PipelineStatus status);
+  struct FlushTask;
+  void OnFlushDone(bool is_audio_stream);
 
   // Invoked to notify about a change of buffering state.
   void OnBufferingNotification(bool is_buffering);
@@ -87,7 +88,7 @@ class MediaPipelineImpl {
   bool backend_initialized_;
   scoped_ptr<AudioPipelineImpl> audio_pipeline_;
   scoped_ptr<VideoPipelineImpl> video_pipeline_;
-  scoped_ptr<::media::SerialRunner> pending_flush_callbacks_;
+  scoped_ptr<FlushTask> pending_flush_task_;
 
   // Whether or not the backend is currently paused.
   bool paused_;

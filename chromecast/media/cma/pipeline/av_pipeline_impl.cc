@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -61,19 +62,6 @@ AvPipelineImpl::~AvPipelineImpl() {
     media_keys_->UnregisterPlayer(media_keys_callback_id_);
 }
 
-void AvPipelineImpl::TransitionToState(State state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  state_ = state;
-
-  if (state_ == kFlushing) {
-    // Break the feeding loop.
-    enable_feeding_ = false;
-
-    // Remove any pending buffer.
-    pending_buffer_ = nullptr;
-  }
-}
-
 void AvPipelineImpl::SetCodedFrameProvider(
     scoped_ptr<CodedFrameProvider> frame_provider,
     size_t max_buffer_size,
@@ -113,50 +101,46 @@ bool AvPipelineImpl::StartPlayingFrom(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&AvPipelineImpl::FetchBuffer, weak_this_));
 
-  TransitionToState(kPlaying);
+  set_state(kPlaying);
   return true;
 }
 
-bool AvPipelineImpl::StartFlush() {
-  CMALOG(kLogControl) << __FUNCTION__;
-  if (state_ == kError)
-    return false;
-  DCHECK_EQ(state_, kPlaying);
-  TransitionToState(kFlushing);
-  return true;
-}
-
-void AvPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
+void AvPipelineImpl::Flush(const base::Closure& flush_cb) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(state_, kFlushing);
+  DCHECK(flush_cb_.is_null());
 
+  if (state_ == kError) {
+    CMALOG(kLogControl) << __FUNCTION__ << " called while in error state";
+    return;
+  }
+  DCHECK_EQ(state_, kStopped);
+  set_state(kFlushing);
+
+  flush_cb_ = flush_cb;
+  // Remove any pending buffer.
+  pending_buffer_ = nullptr;
+  pushed_buffer_ = nullptr;
   // Remove any frames left in the frame provider.
   pending_read_ = false;
   buffered_time_ = ::media::kNoTimestamp();
   playable_buffered_time_ = ::media::kNoTimestamp();
   non_playable_frames_.clear();
-  frame_provider_->Flush(
-      base::Bind(&AvPipelineImpl::OnFlushDone, weak_this_, status_cb));
+
+  frame_provider_->Flush(base::Bind(&AvPipelineImpl::OnFlushDone, weak_this_));
 }
 
-void AvPipelineImpl::BackendStopped() {
-  CMALOG(kLogControl) << __FUNCTION__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Note: returning to idle state aborts any pending frame push.
-  pushed_buffer_ = nullptr;
-}
-
-void AvPipelineImpl::OnFlushDone(const ::media::PipelineStatusCB& status_cb) {
+void AvPipelineImpl::OnFlushDone() {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ == kError) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
+    // Flush callback is reset on error.
+    DCHECK(flush_cb_.is_null());
     return;
   }
-  TransitionToState(kFlushed);
-  status_cb.Run(::media::PIPELINE_OK);
+  DCHECK_EQ(state_, kFlushing);
+  set_state(kFlushed);
+  base::ResetAndReturn(&flush_cb_).Run();
 }
 
 void AvPipelineImpl::Stop() {
@@ -164,7 +148,7 @@ void AvPipelineImpl::Stop() {
   CMALOG(kLogControl) << __FUNCTION__;
   // Stop feeding the pipeline.
   enable_feeding_ = false;
-  TransitionToState(kStopped);
+  set_state(kStopped);
 }
 
 void AvPipelineImpl::SetCdm(BrowserCdmCast* media_keys) {
@@ -275,8 +259,7 @@ void AvPipelineImpl::OnPushBufferComplete(BufferStatus status) {
   pushed_buffer_ = nullptr;
   if (status == MediaPipelineBackend::kBufferFailed) {
     LOG(WARNING) << "AvPipelineImpl: PushFrame failed";
-    enable_feeding_ = false;
-    state_ = kError;
+    OnDecoderError();
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -289,8 +272,14 @@ void AvPipelineImpl::OnEndOfStream() {
 }
 
 void AvPipelineImpl::OnDecoderError() {
+  enable_feeding_ = false;
+  state_ = kError;
+
   if (!client_.playback_error_cb.is_null())
     client_.playback_error_cb.Run(::media::PIPELINE_ERROR_COULD_NOT_RENDER);
+
+  if (!flush_cb_.is_null())
+    base::ResetAndReturn(&flush_cb_).Run();
 }
 
 void AvPipelineImpl::OnKeyStatusChanged(const std::string& key_id,

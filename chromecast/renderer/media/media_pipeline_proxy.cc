@@ -35,7 +35,7 @@ class MediaPipelineProxyInternal {
   void SetClient(const MediaPipelineClient& client);
   void SetCdm(int render_frame_id, int cdm_id);
   void StartPlayingFrom(const base::TimeDelta& time);
-  void Flush(const ::media::PipelineStatusCB& status_cb);
+  void Flush(const base::Closure& flush_cb);
   void Stop();
   void SetPlaybackRate(double playback_rate);
 
@@ -43,7 +43,7 @@ class MediaPipelineProxyInternal {
   void Shutdown();
 
   // Callbacks for CmaMessageFilterHost::MediaDelegate.
-  void OnStateChanged(::media::PipelineStatus status);
+  void OnFlushDone();
 
   base::ThreadChecker thread_checker_;
 
@@ -51,8 +51,8 @@ class MediaPipelineProxyInternal {
 
   MediaPipelineClient client_;
 
-  // Store the callback for a pending state transition.
-  ::media::PipelineStatusCB status_cb_;
+  // Store the callback for a flush.
+  base::Closure flush_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineProxyInternal);
 };
@@ -90,9 +90,8 @@ void MediaPipelineProxyInternal::SetClient(const MediaPipelineClient& client) {
   client_ = client;
 
   CmaMessageFilterProxy::MediaDelegate delegate;
-  delegate.state_changed_cb =
-      base::Bind(&MediaPipelineProxyInternal::OnStateChanged,
-                 base::Unretained(this));
+  delegate.flush_cb = base::Bind(&MediaPipelineProxyInternal::OnFlushDone,
+                                 base::Unretained(this));
   delegate.client = client;
   bool success = media_channel_proxy_->SetMediaDelegate(delegate);
   CHECK(success);
@@ -107,17 +106,16 @@ void MediaPipelineProxyInternal::SetCdm(int render_frame_id, int cdm_id) {
   LOG_IF(ERROR, !success) << "Failed to send SetCdm=" << cdm_id;
 }
 
-void MediaPipelineProxyInternal::Flush(
-    const ::media::PipelineStatusCB& status_cb) {
+void MediaPipelineProxyInternal::Flush(const base::Closure& flush_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
       new CmaHostMsg_Flush(media_channel_proxy_->GetId())));
   if (!success) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
+    LOG(ERROR) << "Failed to send Flush";
     return;
   }
-  DCHECK(status_cb_.is_null());
-  status_cb_ = status_cb;
+  DCHECK(flush_cb_.is_null());
+  flush_cb_ = flush_cb;
 }
 
 void MediaPipelineProxyInternal::Stop() {
@@ -144,11 +142,10 @@ void MediaPipelineProxyInternal::SetPlaybackRate(double playback_rate) {
           media_channel_proxy_->GetId(), playback_rate)));
 }
 
-void MediaPipelineProxyInternal::OnStateChanged(
-    ::media::PipelineStatus status) {
+void MediaPipelineProxyInternal::OnFlushDone() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!status_cb_.is_null());
-  base::ResetAndReturn(&status_cb_).Run(status);
+  DCHECK(!flush_cb_.is_null());
+  base::ResetAndReturn(&flush_cb_).Run();
 }
 
 // A macro runs current member function on |io_task_runner_| thread.
@@ -232,7 +229,7 @@ void MediaPipelineProxy::StartPlayingFrom(base::TimeDelta time) {
   FORWARD_ON_IO_THREAD(StartPlayingFrom, time);
 }
 
-void MediaPipelineProxy::Flush(const ::media::PipelineStatusCB& status_cb) {
+void MediaPipelineProxy::Flush(const base::Closure& flush_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio_ || has_video_);
 
@@ -246,17 +243,16 @@ void MediaPipelineProxy::Flush(const ::media::PipelineStatusCB& status_cb) {
                               base::Unretained(video_pipeline_.get())));
   }
   ::media::PipelineStatusCB cb =
-      base::Bind(&MediaPipelineProxy::OnProxyFlushDone, weak_this_, status_cb);
+      base::Bind(&MediaPipelineProxy::OnProxyFlushDone, weak_this_, flush_cb);
   pending_flush_callbacks_ = ::media::SerialRunner::Run(bound_fns, cb);
 }
 
-void MediaPipelineProxy::OnProxyFlushDone(
-    const ::media::PipelineStatusCB& status_cb,
-    ::media::PipelineStatus status) {
+void MediaPipelineProxy::OnProxyFlushDone(const base::Closure& flush_cb,
+                                          ::media::PipelineStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(status, ::media::PIPELINE_OK);
   pending_flush_callbacks_.reset();
-  FORWARD_ON_IO_THREAD(Flush, status_cb);
+  FORWARD_ON_IO_THREAD(Flush, flush_cb);
 }
 
 void MediaPipelineProxy::Stop() {

@@ -137,9 +137,9 @@ void MediaPipelineHost::StartPlayingFrom(base::TimeDelta time) {
   media_pipeline_->StartPlayingFrom(time);
 }
 
-void MediaPipelineHost::Flush(const ::media::PipelineStatusCB& status_cb) {
+void MediaPipelineHost::Flush(const base::Closure& flush_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  media_pipeline_->Flush(status_cb);
+  media_pipeline_->Flush(flush_cb);
 }
 
 void MediaPipelineHost::Stop() {
