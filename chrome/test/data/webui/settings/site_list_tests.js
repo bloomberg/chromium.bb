@@ -41,6 +41,49 @@ cr.define('site_list', function() {
       };
 
       /**
+       * An example pref with multiple categories and multiple allow/block
+       * state.
+       */
+      var prefsVarious = {
+        profile: {
+          content_settings: {
+            exceptions: {
+              geolocation: {
+                value: {
+                  'https:\/\/foo.com,https:\/\/foo.com': {
+                    setting: 1,
+                  },
+                  'https:\/\/bar.com,https:\/\/bar.com': {
+                    setting: 2,
+                  },
+                },
+              },
+              notifications: {
+                value: {
+                  'https:\/\/google.com,https:\/\/google.com': {
+                    setting: 2,
+                  },
+                  'https:\/\/bar.com,https:\/\/bar.com': {
+                    setting: 2,
+                  },
+                  'https:\/\/foo.com,https:\/\/foo.com': {
+                    setting: 2,
+                  },
+                },
+              },
+              cookies: {},
+              images: {},
+              javascript: {},
+              popups: {},
+              fullscreen: {},
+              media_stream_mic: {},
+              media_stream_camera: {},
+            },
+          },
+        },
+      };
+
+      /**
        * An example pref with 1 allowed location item.
        */
       var prefsOneEnabled = {
@@ -138,6 +181,24 @@ cr.define('site_list', function() {
         testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
         testElement.categorySubtype = subtype;
         testElement.categoryEnabled = true;
+        testElement.allSites = false;
+        testElement.prefs = prefs;
+        testElement.currentRoute = {
+          page: 'dummy',
+          section: 'privacy',
+          subpage: ['site-settings', 'site-settings-category-location'],
+        };
+      }
+
+      /**
+       * Configures the test element as the all sites category.
+       * @param {dictionary} prefs The prefs to use.
+       */
+      function setupAllSitesCategory(prefs) {
+        testElement.category = -1;
+        testElement.categorySubtype = -1;
+        testElement.categoryEnabled = true;
+        testElement.allSites = true;
         testElement.prefs = prefs;
         testElement.currentRoute = {
           page: 'dummy',
@@ -165,7 +226,7 @@ cr.define('site_list', function() {
         setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
         return CrSettingsPrefs.initialized.then(function() {
           assertEquals(2, testElement.sites_.length);
-          assertEquals('https://foo-allow.com:443', testElement.sites_[0].url);
+          assertEquals('https://bar-allow.com:443', testElement.sites_[0]);
 
           assertTrue(testElement.isAllowList_());
           assertMenuActionHidden(testElement, 'Allow');
@@ -183,7 +244,7 @@ cr.define('site_list', function() {
         setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
         return CrSettingsPrefs.initialized.then(function() {
           assertEquals(2, testElement.sites_.length);
-          assertEquals('https://foo-block.com:443', testElement.sites_[0].url);
+          assertEquals('https://bar-block.com:443', testElement.sites_[0]);
 
           assertFalse(testElement.isAllowList_());
           assertMenuActionHidden(testElement, 'Block');
@@ -202,7 +263,7 @@ cr.define('site_list', function() {
         return CrSettingsPrefs.initialized.then(function() {
           // Validate that the sites_ gets populated from pre-canned prefs.
           assertEquals(2, testElement.sites_.length);
-          assertEquals('https://foo-allow.com:443', testElement.sites_[0].url);
+          assertEquals('https://bar-allow.com:443', testElement.sites_[0]);
           assertEquals(undefined, testElement.selectedOrigin);
 
           // Validate that the sites are shown in UI and can be selected.
@@ -210,7 +271,7 @@ cr.define('site_list', function() {
           var clickable = firstItem.querySelector('.flex paper-item');
           assertNotEquals(undefined, clickable);
           MockInteractions.tap(clickable);
-          assertEquals('https://foo-allow.com:443', testElement.selectedOrigin);
+          assertEquals('https://bar-allow.com:443', testElement.selectedOrigin);
         }.bind(this));
       });
 
@@ -269,6 +330,29 @@ cr.define('site_list', function() {
                               prefsOneDisabled);
         return CrSettingsPrefs.initialized.then(function() {
           assertTrue(testElement.$.category.hidden);
+        }.bind(this));
+      });
+
+      test('All sites category', function() {
+        // Prefs: Multiple and overlapping sites.
+        setupAllSitesCategory(prefsVarious);
+        // Required for firstItem to be found below.
+        Polymer.dom.flush();
+        return CrSettingsPrefs.initialized.then(function() {
+          assertFalse(testElement.$.category.hidden);
+          // Validate that the sites_ gets populated from pre-canned prefs.
+          assertEquals(3, testElement.sites_.length);
+          assertEquals('https://bar.com', testElement.sites_[0]);
+          assertEquals('https://foo.com', testElement.sites_[1]);
+          assertEquals('https://google.com', testElement.sites_[2]);
+          assertEquals(undefined, testElement.selectedOrigin);
+
+          // Validate that the sites are shown in UI and can be selected.
+          var firstItem = testElement.$.listContainer.items[1];
+          var clickable = firstItem.querySelector('.flex paper-item');
+          assertNotEquals(undefined, clickable);
+          MockInteractions.tap(clickable);
+          assertEquals('https://foo.com', testElement.selectedOrigin);
         }.bind(this));
       });
     });

@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="chrome://md-settings/site_settings/all_sites.html">
 <link rel="import" href="chrome://md-settings/site_settings/constants.html">
 <link rel="import" href="chrome://md-settings/site_settings_page/site_settings_page.html">
 
@@ -108,8 +109,17 @@
         </settings-site-settings-page>
       </neon-animatable>
 
+      <neon-animatable id="all-sites">
+        <settings-subheader
+            i18n-values="page-title:siteSettingsCategoryAllSites">
+        </settings-subheader>
+        <all-sites
+            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            current-route="{{currentRoute}}">
+        </all-sites>
+      </neon-animatable>
       <neon-animatable id="site-settings-category-camera">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader i18n-values="page-title:siteSettingsCategoryCamera">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"
@@ -118,7 +128,8 @@
         </site-settings-category>
       </neon-animatable>
       <neon-animatable id="site-settings-category-cookies">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader
+            i18n-values="page-title:siteSettingsCategoryCookies">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"
@@ -127,7 +138,8 @@
         </site-settings-category>
       </neon-animatable>
       <neon-animatable id="site-settings-category-fullscreen">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader
+            i18n-values="page-title:siteSettingsCategoryFullscreen">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"
@@ -136,7 +148,7 @@
         </site-settings-category>
       </neon-animatable>
       <neon-animatable id="site-settings-category-images">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader i18n-values="page-title:siteSettingsCategoryImages">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"
@@ -145,7 +157,8 @@
         </site-settings-category>
       </neon-animatable>
       <neon-animatable id="site-settings-category-location">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader
+            i18n-values="page-title:siteSettingsCategoryLocation">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"
@@ -154,7 +167,8 @@
         </site-settings-category>
       </neon-animatable>
       <neon-animatable id="site-settings-category-javascript">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader
+            i18n-values="page-title:siteSettingsCategoryJavascript">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"
@@ -163,7 +177,8 @@
         </site-settings-category>
       </neon-animatable>
       <neon-animatable id="site-settings-category-microphone">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader
+            i18n-values="page-title:siteSettingsCategoryMicrophone">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"
@@ -172,7 +187,8 @@
         </site-settings-category>
       </neon-animatable>
       <neon-animatable id="site-settings-category-notifications">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader
+            i18n-values="page-title:siteSettingsCategoryNotifications">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"
@@ -181,7 +197,8 @@
         </site-settings-category>
       </neon-animatable>
       <neon-animatable id="site-settings-category-popups">
-        <settings-subheader i18n-values="page-title:siteSettings">
+        <settings-subheader
+            i18n-values="page-title:siteSettingsCategoryPopups">
         </settings-subheader>
         <site-settings-category
             selected-origin="{{originSelected}}" prefs="{{prefs}}"

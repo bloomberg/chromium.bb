@@ -13,9 +13,7 @@ var SiteSettingsBehaviorImpl = {
      * The ID of the category this element is displaying data for.
      * See site_settings/constants.js for possible values.
      */
-    category: {
-      type: Number,
-    },
+    category: Number,
   },
 
   /**
@@ -293,23 +291,6 @@ var SiteSettingsBehaviorImpl = {
         assertNotReached();
         return '';
     }
-  },
-
-  /**
-   * A utility function to compute the category given the description.
-   * @param {string} description The category description to look up.
-   * @return {number} category The category id to return.
-   * @protected
-   */
-  computeCategoryFromDesc: function(description) {
-    for (var type in settings.ContentSettingsTypes) {
-      if (description == this.computeTitleForContentCategory(
-          settings.ContentSettingsTypes[type])) {
-        return settings.ContentSettingsTypes[type];
-      }
-    }
-    assertNotReached();
-    return 0;
   },
 };
 

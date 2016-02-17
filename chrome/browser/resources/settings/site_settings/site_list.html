@@ -18,7 +18,7 @@
   <template>
     <paper-submenu id="category" hidden on-paper-submenu-open="onToggle_"
         on-paper-submenu-close="onToggle_">
-      <paper-item class="menu-trigger">
+      <paper-item class="menu-trigger" hidden$="[[allSites]]">
         <div class="site-header horizontal layout">
           <div class="flex"
               >[[computeSiteListHeader_(sites_, categoryEnabled)]]</div>
@@ -28,11 +28,11 @@
       <paper-menu class="menu-content" id="listContainer">
         <template is="dom-repeat" items="{{sites_}}">
           <div class="site-list horizontal layout center">
-            <iron-icon icon="[[computeSiteIcon_(item.url)]]"
+            <iron-icon icon="[[computeSiteIcon_(item)]]"
                 item-icon></iron-icon>
             <div class="flex"><paper-item
-                 on-tap="onOriginTap_">[[item.url]]</paper-item></div>
-            <paper-menu-button>
+                 on-tap="onOriginTap_">[[item]]</paper-item></div>
+            <paper-menu-button hidden$="[[allSites]]">
               <paper-icon-button icon="menu"
                   class="dropdown-trigger"></paper-icon-button>
               <paper-menu id="actionMenu" class="dropdown-content"

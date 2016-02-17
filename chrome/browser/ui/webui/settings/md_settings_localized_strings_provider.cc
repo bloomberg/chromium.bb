@@ -691,6 +691,8 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("siteSettingsCategoryPageTitle",
                                   IDS_SETTINGS_SITE_SETTINGS_CATEGORY);
+  html_source->AddLocalizedString("siteSettingsCategoryAllSites",
+                                  IDS_SETTINGS_SITE_SETTINGS_ALL_SITES);
   html_source->AddLocalizedString("siteSettingsCategoryCamera",
                                   IDS_SETTINGS_SITE_SETTINGS_CAMERA);
   html_source->AddLocalizedString("siteSettingsCategoryCookies",

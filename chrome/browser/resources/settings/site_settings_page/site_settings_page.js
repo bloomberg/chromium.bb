@@ -51,7 +51,7 @@ Polymer({
 
   ready: function() {
     CrSettingsPrefs.initialized.then(function() {
-      // TODO(finnur): Implement 'All Sites' list.
+      this.addCategory(-1);  // Every category (All Sites).
       this.addCategory(settings.ContentSettingsTypes.COOKIES);
       this.addCategory(settings.ContentSettingsTypes.GEOLOCATION);
       this.addCategory(settings.ContentSettingsTypes.CAMERA);
@@ -69,24 +69,33 @@ Polymer({
    * @param {number} category The category to add.
    */
   addCategory: function(category) {
+    var icon, title, categoryDescription;
+    if (category === -1) {
+      icon = 'list';
+      title = loadTimeData.getString('siteSettingsCategoryAllSites');
+      categoryDescription = '';
+    } else {
+      icon = this.computeIconForContentCategory(category);
+      title = this.computeTitleForContentCategory(category);
+      categoryDescription = this.computeCategoryDesc(
+          category, this.isCategoryAllowed(category), false);
+    }
+
     var root = this.$.list;
     var paperIcon = document.createElement('paper-icon-item');
-    paperIcon.addEventListener('tap', this.onTapCategory.bind(this));
+    paperIcon.addEventListener('tap', this.onTapCategory.bind(this, category));
 
     var ironIcon = document.createElement('iron-icon');
-    ironIcon.setAttribute('icon', this.computeIconForContentCategory(category));
+    ironIcon.setAttribute('icon', icon);
     ironIcon.setAttribute('item-icon', '');
 
     var description = document.createElement('div');
     description.setAttribute('class', 'flex');
-    description.appendChild(
-        document.createTextNode(this.computeTitleForContentCategory(category)));
+    description.appendChild(document.createTextNode(title));
     var setting = document.createElement('div');
     setting.setAttribute('class', 'option-value');
 
-    setting.appendChild(document.createTextNode(
-        this.computeCategoryDesc(
-            category, this.isCategoryAllowed(category), false)));
+    setting.appendChild(document.createTextNode(categoryDescription));
 
     paperIcon.appendChild(ironIcon);
     paperIcon.appendChild(description);
@@ -97,16 +106,24 @@ Polymer({
   /**
    * Handles selection of a single category and navigates to the details for
    * that category.
+   * @param {number} category The category selected by the user.
+   * @param {!Event} event The tap event.
    */
-  onTapCategory: function(event) {
-    var description = event.currentTarget.querySelector('.flex').innerText;
-    this.categorySelected = this.computeCategoryTextId(
-        this.computeCategoryFromDesc(description));
-    this.currentRoute = {
-      page: this.currentRoute.page,
-      section: 'privacy',
-      subpage: ['site-settings', 'site-settings-category-' +
-          this.categorySelected],
-    };
+  onTapCategory: function(category, event) {
+    if (category == -1) {
+      this.currentRoute = {
+        page: this.currentRoute.page,
+        section: 'privacy',
+        subpage: ['site-settings', 'all-sites'],
+      };
+    } else {
+      this.categorySelected = this.computeCategoryTextId(category);
+      this.currentRoute = {
+        page: this.currentRoute.page,
+        section: 'privacy',
+        subpage: ['site-settings', 'site-settings-category-' +
+            this.categorySelected],
+      };
+    }
   },
 });
