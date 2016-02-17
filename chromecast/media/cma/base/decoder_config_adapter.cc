@@ -174,6 +174,10 @@ VideoProfile ToVideoProfile(const ::media::VideoCodecProfile codec_profile) {
       return ::media::kCodecOpus;
     case kCodecFLAC:
       return ::media::kCodecFLAC;
+    case kCodecEAC3:
+      return ::media::kCodecEAC3;
+    case kCodecAC3:
+      return ::media::kCodecAC3;
     default:
       return ::media::kUnknownAudioCodec;
   }

@@ -443,10 +443,6 @@ void BufferFeeder::TestAudioConfigs() {
   audio_decoder->SetConfig(config);
 
   // Next, test required sample formats.
-  config.codec = kCodecPCM_S16BE;
-  EXPECT_TRUE(audio_decoder->SetConfig(config))
-      << "Audio decoder does not accept kCodecPCM_S16BE";
-
   config.codec = kCodecPCM;
   EXPECT_TRUE(audio_decoder->SetConfig(config))
       << "Audio decoder does not accept kCodecPCM";
@@ -470,6 +466,9 @@ void BufferFeeder::TestAudioConfigs() {
 
   // Test optional codecs.
   // TODO(kmackay) Make sure other parts of config are correct for each codec.
+  config.codec = kCodecPCM_S16BE;
+  if (!audio_decoder->SetConfig(config))
+    LOG(INFO) << "Audio decoder does not accept kCodecPCM_S16BE";
   config.codec = kCodecOpus;
   if (!audio_decoder->SetConfig(config))
     LOG(INFO) << "Audio decoder does not accept kCodecOpus";
@@ -479,9 +478,6 @@ void BufferFeeder::TestAudioConfigs() {
   config.codec = kCodecAC3;
   if (!audio_decoder->SetConfig(config))
     LOG(INFO) << "Audio decoder does not accept kCodecAC3";
-  config.codec = kCodecDTS;
-  if (!audio_decoder->SetConfig(config))
-    LOG(INFO) << "Audio decoder does not accept kCodecDTS";
   config.codec = kCodecFLAC;
   if (!audio_decoder->SetConfig(config))
     LOG(INFO) << "Audio decoder does not accept kCodecFLAC";
@@ -922,16 +918,6 @@ TEST_F(AudioVideoPipelineDeviceTest, OpusPlayback_Optional) {
   message_loop->Run();
 }
 
-TEST_F(AudioVideoPipelineDeviceTest, DtsPlayback_Optional) {
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-
-  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
-  ConfigureForAudioOnly("bear.adts");
-  PauseBeforeEos();
-  Start();
-  message_loop->Run();
-}
-
 TEST_F(AudioVideoPipelineDeviceTest, FlacPlayback_Optional) {
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
@@ -1106,17 +1092,6 @@ TEST_F(AudioVideoPipelineDeviceTest, OpusPlayback_WithEffectsStreams_Optional) {
 
   set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   ConfigureForAudioOnly("bear-opus.ogg");
-  PauseBeforeEos();
-  AddEffectsStreams();
-  Start();
-  message_loop->Run();
-}
-
-TEST_F(AudioVideoPipelineDeviceTest, DtsPlayback_WithEffectsStreams_Optional) {
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-
-  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
-  ConfigureForAudioOnly("bear.adts");
   PauseBeforeEos();
   AddEffectsStreams();
   Start();
