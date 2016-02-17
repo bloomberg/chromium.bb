@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MouseDownOnBrowserCaption) {
 }
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 // Test that a mouseleave is not triggered when showing the context menu.
 // If the test is failed, it means that Blink gets the mouseleave event
 // when showing the context menu and it could make the unexpecting

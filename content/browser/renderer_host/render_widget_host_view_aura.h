@@ -497,7 +497,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Returns true if the |event| passed in can be forwarded to the renderer.
   bool CanRendererHandleEvent(const ui::MouseEvent* event,
                               bool mouse_locked,
-                              bool selection_popup);
+                              bool selection_popup) const;
 
   // Returns true when we can do SurfaceHitTesting for the event type.
   bool ShouldRouteEvent(const ui::Event* event) const;
@@ -655,10 +655,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // the LegacyRenderWidgetHostHWND instance again as that would be a futile
   // exercise.
   bool legacy_window_destroyed_;
-
-  // Set to true when a context menu is being displayed. Reset to false when
-  // a mouse leave is received in this context.
-  bool showing_context_menu_;
 
   // Contains a copy of the last context menu request parameters. Only set when
   // we receive a request to show the context menu on a long press.

@@ -474,7 +474,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
 #if defined(OS_WIN)
       legacy_render_widget_host_HWND_(NULL),
       legacy_window_destroyed_(false),
-      showing_context_menu_(false),
 #endif
       has_snapped_to_boundary_(false),
       is_guest_view_hack_(is_guest_view_hack),
@@ -797,12 +796,7 @@ RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() {
 bool RenderWidgetHostViewAura::CanRendererHandleEvent(
     const ui::MouseEvent* event,
     bool mouse_locked,
-    bool selection_popup) {
-#if defined(OS_WIN)
-  bool showing_context_menu = showing_context_menu_;
-  showing_context_menu_ = false;
-#endif
-
+    bool selection_popup) const {
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
     return false;
 
@@ -813,7 +807,7 @@ bool RenderWidgetHostViewAura::CanRendererHandleEvent(
     // Don't forward the mouse leave message which is received when the context
     // menu is displayed by the page. This confuses the page and causes state
     // changes.
-    if (showing_context_menu)
+    if (IsShowingContextMenu())
       return false;
 #endif
     return true;
@@ -2722,7 +2716,6 @@ bool RenderWidgetHostViewAura::OnShowContextMenu(
     *last_context_menu_params_ = params;
     return false;
   }
-  showing_context_menu_ = true;
 #endif
   return true;
 }
