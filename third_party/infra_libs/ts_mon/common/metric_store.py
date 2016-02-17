@@ -63,12 +63,13 @@ class MetricStore(object):
     self._state = state
     self._time_fn = time_fn or time.time
 
-  def get(self, name, fields, default=None):
+  def get(self, name, fields, target_fields, default=None):
     """Fetches the current value for the metric.
 
     Args:
-      name: the metric's name.
-      fields: a normalized field tuple.
+      name (string): the metric's name.
+      fields (tuple): a normalized field tuple.
+      target_fields (dict or None): target fields to override.
       default: the value to return if the metric has no value of this set of
           field values.
     """
@@ -82,12 +83,13 @@ class MetricStore(object):
     """
     raise NotImplementedError
 
-  def set(self, name, fields, value, enforce_ge=False):
+  def set(self, name, fields, target_fields, value, enforce_ge=False):
     """Sets the metric's value.
 
     Args:
       name: the metric's name.
       fields: a normalized field tuple.
+      target_fields (dict or None): target fields to override.
       value: the new value for the metric.
       enforce_ge: if this is True, raise an exception if the new value is
           less than the old value.
@@ -98,12 +100,13 @@ class MetricStore(object):
     """
     raise NotImplementedError
 
-  def incr(self, name, fields, delta, modify_fn=None):
+  def incr(self, name, fields, target_fields, delta, modify_fn=None):
     """Increments the metric's value.
 
     Args:
       name: the metric's name.
       fields: a normalized field tuple.
+      target_fields (dict or None): target fields to override.
       delta: how much to increment the value by.
       modify_fn: this function is called with the original value and the delta
           as its arguments and is expected to return the new value.  The
@@ -144,6 +147,87 @@ class MetricStore(object):
 
     return self._time_fn()
 
+  @staticmethod
+  def _normalize_target_fields(target_fields):
+    """Converts target fields into a hashable tuple.
+
+    Args:
+      target_fields (dict): target fields to override the default target.
+    """
+    if not target_fields:
+      target_fields = {}
+    return tuple(sorted(target_fields.iteritems()))
+
+
+class MetricFieldsValues(object):
+  def __init__(self):
+    # Map normalized fields to single metric values.
+    self._values = {}
+    self._thread_lock = threading.Lock()
+
+  def get_value(self, fields, default=None):
+    return self._values.get(fields, default)
+
+  def set_value(self, fields, value):
+    self._values[fields] = value
+
+  def iteritems(self):
+    # Make a copy of the metric values in case another thread (or this
+    # generator's consumer) modifies them while we're iterating.
+    with self._thread_lock:
+      values = copy.copy(self._values)
+    for fields, value in values.iteritems():
+      yield fields, value
+
+
+class TargetFieldsValues(object):
+  def __init__(self, store):
+    # Map normalized target fields to MetricFieldsValues.
+    self._values = collections.defaultdict(MetricFieldsValues)
+    self._store = store
+    self._thread_lock = threading.Lock()
+
+  def get_target_values(self, target_fields):
+    key = self._store._normalize_target_fields(target_fields)
+    return self._values[key]
+
+  def get_value(self, fields, target_fields, default=None):
+    return self.get_target_values(target_fields).get_value(
+        fields, default)
+
+  def set_value(self, fields, target_fields, value):
+    self.get_target_values(target_fields).set_value(fields, value)
+
+  def iter_targets(self):
+    # Make a copy of the values in case another thread (or this
+    # generator's consumer) modifies them while we're iterating.
+    with self._thread_lock:
+      values = copy.copy(self._values)
+    for target_fields, fields_values in values.iteritems():
+      target = copy.copy(self._store._state.target)
+      target.update({k: v for k, v in target_fields})
+      yield target, fields_values
+
+
+class MetricValues(object):
+  def __init__(self, store, start_time):
+    self._start_time = start_time
+    self._values = TargetFieldsValues(store)
+
+  @property
+  def start_time(self):
+    return self._start_time
+
+  @property
+  def values(self):
+    return self._values
+
+  def get_value(self, fields, target_fields, default=None):
+    return self.values.get_value(fields, target_fields, default)
+
+  def set_value(self, fields, target_fields, value):
+    self.values.set_value(fields, target_fields, value)
+
 
 class InProcessMetricStore(MetricStore):
   """A thread-safe metric store that keeps values in memory."""
@@ -160,8 +244,8 @@ class InProcessMetricStore(MetricStore):
 
     return self._values[name]
 
-  def get(self, name, fields, default=None):
-    return self._entry(name)[1].get(fields, default)
+  def get(self, name, fields, target_fields, default=None):
+    return self._entry(name).get_value(fields, target_fields, default)
 
   def get_all(self):
     # Make a copy of the metric values in case another thread (or this
@@ -169,21 +253,23 @@ class InProcessMetricStore(MetricStore):
     with self._thread_lock:
       values = copy.copy(self._values)
 
-    state = self._state
-    for name, (start_time, fields_values) in values.iteritems():
-      if name in state.metrics:  # pragma: no cover
-        yield state.target, state.metrics[name], start_time, fields_values
+    for name, metric_values in values.iteritems():
+      if name not in self._state.metrics:
+        continue
+      start_time = metric_values.start_time
+      for target, fields_values in metric_values.values.iter_targets():
+        yield target, self._state.metrics[name], start_time, fields_values
 
-  def set(self, name, fields, value, enforce_ge=False):
+  def set(self, name, fields, target_fields, value, enforce_ge=False):
     with self._thread_lock:
       if enforce_ge:
-        old_value = self._entry(name)[1].get(fields, 0)
+        old_value = self._entry(name).get_value(fields, target_fields, 0)
         if value < old_value:
           raise errors.MonitoringDecreasingValueError(name, old_value, value)
 
-      self._entry(name)[1][fields] = value
+      self._entry(name).set_value(fields, target_fields, value)
 
-  def incr(self, name, fields, delta, modify_fn=None):
+  def incr(self, name, fields, target_fields, delta, modify_fn=None):
     if delta < 0:
       raise errors.MonitoringDecreasingValueError(name, None, delta)
 
@@ -191,7 +277,8 @@ class InProcessMetricStore(MetricStore):
       modify_fn = default_modify_fn(name)
 
     with self._thread_lock:
-      self._entry(name)[1][fields] = modify_fn(self.get(name, fields, 0), delta)
+      self._entry(name).set_value(fields, target_fields, modify_fn(
+          self.get(name, fields, target_fields, 0), delta))
 
   def modify_multi(self, modifications):
     # This is only used by DeferredMetricStore on top of MemcacheMetricStore,
@@ -206,4 +293,4 @@ class InProcessMetricStore(MetricStore):
         self._reset(name)
 
   def _reset(self, name):
-    self._values[name] = (self._start_time(name), {})
+    self._values[name] = MetricValues(self, self._start_time(name))

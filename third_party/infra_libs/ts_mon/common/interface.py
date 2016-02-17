@@ -31,6 +31,7 @@ Library usage:
     c.increment()
 """
 
+import datetime
 import logging
 import random
 import threading
@@ -53,12 +54,15 @@ class State(object):
   same configuration.
   """
 
-  def __init__(self):
+  def __init__(self, store_ctor=None, target=None):
+    """Optional arguments are for unit tests."""
+    if store_ctor is None:  # pragma: no branch
+      store_ctor = metric_store.InProcessMetricStore
     # The Monitor object that will be used to send all metrics.
     self.global_monitor = None
     # The Target object that will be paired with all metrics that don't supply
     # their own.
-    self.target = None
+    self.target = target
     # The flush mode being used to control when metrics are pushed.
     self.flush_mode = None
     # The background thread that flushes metrics every
@@ -68,7 +72,9 @@ class State(object):
     # All metrics created by this application.
     self.metrics = {}
     # The MetricStore object that holds the actual metric values.
-    self.store = metric_store.InProcessMetricStore(self)
+    self.store = store_ctor(self)
+    # Cached time of the last flush. Useful mostly in AppEngine apps.
+    self.last_flushed = datetime.datetime.utcfromtimestamp(0)
 
 state = State()
 
@@ -89,6 +95,7 @@ def flush():
       metric.serialize_to(proto, start_time, fields, value, target)
 
   state.global_monitor.send(proto)
+  state.last_flushed = datetime.datetime.utcnow()
 
 
 def register(metric):

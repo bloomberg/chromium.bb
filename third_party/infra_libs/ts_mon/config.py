@@ -157,10 +157,7 @@ def add_argparse_options(parser):
 def process_argparse_options(args):
   """Process command line arguments to initialize the global monitor.
 
-  Also initializes the default target if sufficient arguments are supplied.
-  If they aren't, all created metrics will have to supply their own target.
-  This is generally a bad idea, as many libraries rely on the default target
-  being set up.
+  Also initializes the default target.
 
   Starts a background thread to automatically flush monitoring metrics if not
   disabled by command line arguments.
@@ -168,7 +165,6 @@ def process_argparse_options(args):
   Args:
     args (argparse.Namespace): the result of parsing the command line arguments
   """
-
   # Parse the config file if it exists.
   config = load_machine_config(args.ts_mon_config_file)
   endpoint = config.get('endpoint', '')
@@ -179,25 +175,6 @@ def process_argparse_options(args):
     endpoint = args.ts_mon_endpoint
   if args.ts_mon_credentials is not None:
     credentials = args.ts_mon_credentials
-
-  interface.state.global_monitor = monitors.NullMonitor()
-
-  if endpoint.startswith('file://'):
-    interface.state.global_monitor = monitors.DebugMonitor(
-        endpoint[len('file://'):])
-  elif credentials:
-    if endpoint.startswith('pubsub://'):
-      url = urlparse.urlparse(endpoint)
-      project = url.netloc
-      topic = url.path.strip('/')
-      interface.state.global_monitor = monitors.PubSubMonitor(
-          credentials, project, topic, use_instrumented_http=True)
-    else:
-      logging.error('Monitoring is disabled because the endpoint provided is '
-                    'invalid or not supported: %s', endpoint)
-  else:
-    logging.error('Monitoring is disabled because credentials are not '
-                  'available')
 
   if args.ts_mon_target_type == 'device':
     interface.state.target = targets.DeviceTarget(
@@ -221,6 +198,27 @@ def process_argparse_options(args):
         args.ts_mon_task_region,
         args.ts_mon_task_hostname,
         args.ts_mon_task_number)
+
+  interface.state.global_monitor = monitors.NullMonitor()
+
+  if endpoint.startswith('file://'):
+    interface.state.global_monitor = monitors.DebugMonitor(
+        endpoint[len('file://'):])
+  elif endpoint.startswith('pubsub://'):
+    if credentials:
+      url = urlparse.urlparse(endpoint)
+      project = url.netloc
+      topic = url.path.strip('/')
+      interface.state.global_monitor = monitors.PubSubMonitor(
+          credentials, project, topic, use_instrumented_http=True)
+    else:
+      logging.error('ts_mon monitoring is disabled because credentials are not '
+                    'available')
+  elif endpoint.lower() == 'none':
+    logging.info('ts_mon monitoring has been explicitly disabled')
+  else:
+    logging.error('ts_mon monitoring is disabled because the endpoint provided'
+                  ' is invalid or not supported: %s', endpoint)
 
   interface.state.flush_mode = args.ts_mon_flush
 

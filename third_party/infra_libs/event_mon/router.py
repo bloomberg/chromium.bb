@@ -118,7 +118,7 @@ class _LocalFileRouter(_Router):
       if self._dry_run:
         logging.info('Would have written in %s', self.output_file)
       else:
-        with open(self.output_file, 'w') as f:
+        with open(self.output_file, 'wb') as f:
           f.write(events.SerializeToString())  # pragma: no branch
     except Exception:
       logging.exception('Failed to write in file: %s', self.output_file)
