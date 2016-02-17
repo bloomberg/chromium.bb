@@ -2451,6 +2451,32 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteFront) {
   CheckExpectedBuffers(5, 9, &kDataA);
 }
 
+TEST_F(SourceBufferStreamTest,
+       GarbageCollection_DeleteFront_PreserveSeekedGOP) {
+  // Set memory limit to 15 buffers.
+  SetMemoryLimit(15);
+
+  NewSegmentAppend("0K 10 20 30 40 50K 60 70 80 90");
+  NewSegmentAppend("1000K 1010 1020 1030 1040");
+
+  // GC should be a no-op, since we are just under memory limit.
+  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(DecodeTimestamp(), 0));
+  CheckExpectedRangesByTimestamp("{ [0,100) [1000,1050) }");
+
+  // Seek to the near the end of the first range
+  SeekToTimestampMs(95);
+
+  // We are about to append 7 new buffers and current playback position is at
+  // the end of the last GOP in the first range, so the GC algorithm should be
+  // able to delete some old data from the front, but must not collect the last
+  // GOP in that first range. Neither can it collect the last appended GOP
+  // (which is the entire second range), so GC should return false since it
+  // couldn't collect enough.
+  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
+      DecodeTimestamp::FromMilliseconds(95), 7));
+  CheckExpectedRangesByTimestamp("{ [50,100) [1000,1050) }");
+}
+
 TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteFrontGOPsAtATime) {
   // Set memory limit to 20 buffers.
   SetMemoryLimit(20);

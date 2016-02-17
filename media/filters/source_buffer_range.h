@@ -114,6 +114,8 @@ class SourceBufferRange {
   // Deletes a GOP from the front or back of the range and moves these
   // buffers into |deleted_buffers|. Returns the number of bytes deleted from
   // the range (i.e. the size in bytes of |deleted_buffers|).
+  // This range must NOT be empty when these methods are called.
+  // The GOP being deleted must NOT contain the next buffer position.
   size_t DeleteGOPFromFront(BufferQueue* deleted_buffers);
   size_t DeleteGOPFromBack(BufferQueue* deleted_buffers);
 
@@ -126,6 +128,8 @@ class SourceBufferRange {
       DecodeTimestamp start_timestamp, DecodeTimestamp end_timestamp,
       size_t bytes_to_free, DecodeTimestamp* end_removal_timestamp);
 
+  // Returns true iff the buffered end time of the first GOP in this range is
+  // at or before |media_time|.
   bool FirstGOPEarlierThanMediaTime(DecodeTimestamp media_time) const;
 
   // Indicates whether the GOP at the beginning or end of the range contains the

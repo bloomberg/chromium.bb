@@ -730,7 +730,7 @@ bool SourceBufferStream::GarbageCollectIfNeeded(DecodeTimestamp media_time,
     if (bytes_freed < bytes_to_free) {
       size_t front2 = FreeBuffers(bytes_to_free - bytes_freed,
                                   ranges_.back()->GetEndTimestamp(), false);
-      DVLOG(3) << __FUNCTION__ << " Removed " << front << " bytes from the"
+      DVLOG(3) << __FUNCTION__ << " Removed " << front2 << " bytes from the"
                << " front. ranges_=" << RangesToString(ranges_);
       bytes_freed += front2;
     }
@@ -855,13 +855,24 @@ size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
     } else {
       current_range = ranges_.front();
       DVLOG(5) << "current_range=" << RangeToString(*current_range);
-      if (!current_range->FirstGOPEarlierThanMediaTime(media_time)) {
+
+      // FirstGOPEarlierThanMediaTime() is useful here especially if
+      // |seek_pending_| (such that no range contains next buffer
+      // position).
+      // FirstGOPContainsNextBufferPosition() is useful here especially if
+      // |!seek_pending_| to protect against DeleteGOPFromFront() if
+      // FirstGOPEarlierThanMediaTime() was insufficient alone.
+      if (!current_range->FirstGOPEarlierThanMediaTime(media_time) ||
+          current_range->FirstGOPContainsNextBufferPosition()) {
         // We have removed all data up to the GOP that contains current playback
         // position, we can't delete any further.
         DVLOG(5) << "current_range contains playback position, stopping GC";
         break;
       }
-      DVLOG(4) << "Deleting GOP from front: " << RangeToString(*current_range);
+      DVLOG(4) << "Deleting GOP from front: " << RangeToString(*current_range)
+               << ", media_time: " << media_time.InMicroseconds()
+               << ", current_range->HasNextBufferPosition(): "
+               << current_range->HasNextBufferPosition();
       bytes_deleted = current_range->DeleteGOPFromFront(&buffers);
     }
 
