@@ -67,9 +67,7 @@ scoped_ptr<AttachmentBrokerPrivileged> CreateBroker() {
 // the global broker.
 class AttachmentBrokerMakeOnce {
  public:
-  AttachmentBrokerMakeOnce() {
-    attachment_broker_.reset(CreateBroker().release());
-  }
+  AttachmentBrokerMakeOnce() : attachment_broker_(CreateBroker()) {}
 
  private:
   scoped_ptr<IPC::AttachmentBrokerPrivileged> attachment_broker_;
@@ -126,6 +124,10 @@ void AttachmentBrokerPrivileged::DeregisterCommunicationChannel(
   auto it = std::find(endpoints_.begin(), endpoints_.end(), endpoint);
   if (it != endpoints_.end())
     endpoints_.erase(it);
+}
+
+bool AttachmentBrokerPrivileged::IsPrivilegedBroker() {
+  return true;
 }
 
 Sender* AttachmentBrokerPrivileged::GetSenderWithProcessId(base::ProcessId id) {

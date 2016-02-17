@@ -427,7 +427,7 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
 
     broker_->AddObserver(&observer_, task_runner());
     CreateChannel(&proxy_listener_);
-    broker_->DesignateBrokerCommunicationChannel(channel());
+    broker_->RegisterBrokerCommunicationChannel(channel());
     ASSERT_TRUE(ConnectChannel());
     ASSERT_TRUE(StartClient());
 
@@ -972,7 +972,7 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleChannelProxy) {
   thread->StartWithOptions(options);
 
   CreateChannelProxy(get_proxy_listener(), thread->task_runner().get());
-  get_broker()->DesignateBrokerCommunicationChannel(channel_proxy());
+  get_broker()->RegisterBrokerCommunicationChannel(channel_proxy());
 
   ASSERT_TRUE(StartClient());
 
