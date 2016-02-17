@@ -295,6 +295,7 @@ import java.util.UUID;
 
     @Override
     public String getUrl() {
+        if (isDestroyed()) return null;
         return nativeGetURL(mNativeWebContentsAndroid);
     }
 
