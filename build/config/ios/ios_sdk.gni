@@ -10,7 +10,7 @@ declare_args() {
   use_ios_simulator = target_cpu == "x86" || target_cpu == "x64"
 
   # Version of iOS that we're targeting.
-  ios_deployment_target = "7.0"
+  ios_deployment_target = "9.0"
 
   # The iOS Code signing identity to use
   # TODO(GYP), TODO(sdfresne): Consider having a separate
