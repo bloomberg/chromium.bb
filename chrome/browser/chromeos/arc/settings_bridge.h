@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -68,6 +69,7 @@ class SettingsBridge : public chromeos::system::TimezoneSettings::Observer {
   void SyncAllPrefs() const;
   void SyncFontSize() const;
   void SyncLocale() const;
+  void SyncReportingConsent() const;
   void SyncSpokenFeedbackEnabled() const;
   void SyncTimeZone() const;
   void SyncUse24HourClock() const;
@@ -84,6 +86,9 @@ class SettingsBridge : public chromeos::system::TimezoneSettings::Observer {
 
   // Manages pref observation registration.
   PrefChangeRegistrar registrar_;
+
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      reporting_consent_subscription_;
 
   Delegate* const delegate_;
 

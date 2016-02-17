@@ -9,8 +9,10 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 
+using ::chromeos::CrosSettings;
 using ::chromeos::system::TimezoneSettings;
 
 namespace arc {
@@ -63,12 +65,18 @@ void SettingsBridge::StartObservingSettingsChanges() {
   AddPrefToObserve(prefs::kAccessibilitySpokenFeedbackEnabled);
   AddPrefToObserve(prefs::kUse24HourClock);
 
+  reporting_consent_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      chromeos::kStatsReportingPref,
+      base::Bind(&SettingsBridge::SyncReportingConsent,
+                 base::Unretained(this)));
+
   TimezoneSettings::GetInstance()->AddObserver(this);
 }
 
 void SettingsBridge::SyncAllPrefs() const {
   SyncFontSize();
   SyncLocale();
+  SyncReportingConsent();
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
   SyncUse24HourClock();
@@ -76,6 +84,7 @@ void SettingsBridge::SyncAllPrefs() const {
 
 void SettingsBridge::StopObservingSettingsChanges() {
   registrar_.RemoveAll();
+  reporting_consent_subscription_.reset();
 
   TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
@@ -150,6 +159,15 @@ void SettingsBridge::SyncLocale() const {
   base::DictionaryValue extras;
   extras.SetString("locale", locale);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_LOCALE", extras);
+}
+
+void SettingsBridge::SyncReportingConsent() const {
+  bool consent = false;
+  CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &consent);
+  base::DictionaryValue extras;
+  extras.SetBoolean("reportingConsent", consent);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_REPORTING_CONSENT",
+                        extras);
 }
 
 void SettingsBridge::SyncTimeZone() const {
