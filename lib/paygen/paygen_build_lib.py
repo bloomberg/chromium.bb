@@ -1128,18 +1128,14 @@ class _PaygenBuild(object):
         src_channel, self._build.board, src_version)
 
     # TODO(dgarrett): Remove if block after finishing crbug.com/523122
-    if not urilib.Exists(os.path.join(release_archive_uri, 'stateful.tgz')):
-      logging.warning('Falling back to chromeos-image-archive: %s', payload)
-      try:
-        _, _, source_archive_uri = self._MapToArchive(
-            payload.tgt_image.board, src_version)
-      except ArchiveError as e:
-        raise PayloadTestError(
-            'error mapping source build to images archive: %s' % e)
-      stateful_archive_uri = os.path.join(source_archive_uri, 'stateful.tgz')
-      logging.info('Copying stateful.tgz from %s -> %s',
-                   stateful_archive_uri, release_archive_uri)
-      urilib.Copy(stateful_archive_uri, release_archive_uri)
+    stateful_uri = os.path.join(release_archive_uri, 'stateful.tgz')
+    if not urilib.Exists(stateful_uri):
+      logging.error('%s does not exist.', stateful_uri)
+      logging.error('Full test payload for source version (%s) exists, but '
+                    'stateful.tgz does not. Control file not generated',
+                    src_version)
+      raise PayloadTestError('cannot find source stateful.tgz for testing %s' %
+                             payload)
 
     test = test_params.TestConfig(
         self._archive_board,
