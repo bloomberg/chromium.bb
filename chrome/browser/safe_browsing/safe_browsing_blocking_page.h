@@ -140,8 +140,6 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
 
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            MalwareReportsTransitionDisabled);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
-                           MalwareReportsToggling);
 
   // Checks if we should even show the threat details option. For example, we
   // don't show it in incognito mode.
