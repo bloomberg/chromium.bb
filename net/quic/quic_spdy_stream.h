@@ -147,6 +147,10 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // written to the server.
   void SetPriority(SpdyPriority priority);
 
+  // TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+  void CrashIfInvalid() const;
+  void set_read_in_progress(bool value) { read_in_progress_ = value; }
+
  protected:
   // Called by OnStreamHeadersComplete depending on which type (initial or
   // trailing) headers are expected next.
@@ -162,6 +166,12 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   friend class test::QuicSpdyStreamPeer;
   friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
+
+  // TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+  enum Liveness {
+    ALIVE = 0xCA11AB13,
+    DEAD = 0xDEADBEEF,
+  };
 
   // Returns true if trailers have been fully read and consumed.
   bool FinishedReadingTrailers() const;
@@ -182,6 +192,10 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // Contains a copy of the decompressed trailers until they are consumed
   // via ProcessData or Readv.
   std::string decompressed_trailers_;
+
+  // TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+  Liveness liveness_ = ALIVE;
+  bool read_in_progress_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyStream);
 };

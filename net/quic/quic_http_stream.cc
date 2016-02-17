@@ -556,7 +556,21 @@ int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
 }
 
 int QuicHttpStream::ReadAvailableData(IOBuffer* buf, int buf_len) {
+  // TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+  CHECK(!read_in_progress_);
+  read_in_progress_ = true;
+  stream_->CrashIfInvalid();
+  stream_->set_read_in_progress(read_in_progress_);
+
   int rv = stream_->Read(buf, buf_len);
+  // TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+  CHECK(read_in_progress_);
+  read_in_progress_ = false;
+  stream_->set_read_in_progress(read_in_progress_);
+  // CrashIfInvalid() may not be necessary. See if |stream_| became a nullptr
+  // due to memory corruptions.
+  stream_->CrashIfInvalid();
+
   if (stream_->IsDoneReading()) {
     stream_->SetDelegate(nullptr);
     stream_->OnFinRead();
@@ -566,6 +580,11 @@ int QuicHttpStream::ReadAvailableData(IOBuffer* buf, int buf_len) {
 }
 
 void QuicHttpStream::ResetStream() {
+  // TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+  if (read_in_progress_) {
+    // |stream_| is going away when Read is called. Should never happen??
+    CHECK(false);
+  }
   if (!stream_)
     return;
   closed_stream_received_bytes_ = stream_->stream_bytes_read();

@@ -178,6 +178,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   // SSLInfo from the underlying QuicSession.
   SSLInfo ssl_info_;
 
+  // TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+  bool read_in_progress_ = false;
+
   base::WeakPtrFactory<QuicHttpStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicHttpStream);

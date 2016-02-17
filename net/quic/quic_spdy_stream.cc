@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_spdy_stream.h"
 
+// TODO(rtenneti): Temporary while investigating crbug.com/585591.
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_bug_tracker.h"
@@ -37,6 +39,21 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
 
 QuicSpdyStream::~QuicSpdyStream() {
   spdy_session_->UnregisterStreamPriority(id());
+  // TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+  liveness_ = DEAD;
+  // Get callstack, if the object is going away and we are doing a Read().
+  bool read_in_progress = read_in_progress_;
+  base::debug::Alias(&read_in_progress);
+  CHECK(!read_in_progress);
+}
+
+// TODO(rtenneti): Temporary until crbug.com/585591 is solved.
+void QuicSpdyStream::CrashIfInvalid() const {
+  Liveness liveness = liveness_;
+  if (liveness == ALIVE)
+    return;
+  base::debug::Alias(&liveness);
+  CHECK_EQ(ALIVE, liveness);
 }
 
 void QuicSpdyStream::CloseWriteSide() {
