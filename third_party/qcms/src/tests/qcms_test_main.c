@@ -15,8 +15,9 @@
 extern struct qcms_test_case qcms_test_tetra_clut_rgba_info;
 extern struct qcms_test_case qcms_test_munsell_info;
 extern struct qcms_test_case qcms_test_internal_srgb_info;
+extern struct qcms_test_case qcms_test_ntsc_gamut_info;
 
-struct qcms_test_case qcms_test[3];
+struct qcms_test_case qcms_test[4];
 #define TEST_CASES    (sizeof(qcms_test) / sizeof(qcms_test[0]))
 
 static void initialize_tests()
@@ -24,6 +25,7 @@ static void initialize_tests()
     qcms_test[0] = qcms_test_tetra_clut_rgba_info;
     qcms_test[1] = qcms_test_munsell_info;
     qcms_test[2] = qcms_test_internal_srgb_info;
+    qcms_test[3] = qcms_test_ntsc_gamut_info;
 }
 
 static void list_tests()
