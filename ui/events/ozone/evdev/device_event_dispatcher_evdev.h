@@ -125,8 +125,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
                    int slot,
                    EventType type,
                    const gfx::PointF& location,
-                   const gfx::Vector2dF& radii,
-                   float pressure,
+                   const PointerDetails& pointer_details,
                    const base::TimeDelta& timestamp);
   TouchEventParams(const TouchEventParams& other);
   ~TouchEventParams();
@@ -135,8 +134,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
   int slot;
   EventType type;
   gfx::PointF location;
-  gfx::Vector2dF radii;
-  float pressure;
+  PointerDetails pointer_details;
   base::TimeDelta timestamp;
 };
 

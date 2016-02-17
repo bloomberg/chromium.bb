@@ -116,17 +116,14 @@ TouchEventParams::TouchEventParams(int device_id,
                                    int slot,
                                    EventType type,
                                    const gfx::PointF& location,
-                                   const gfx::Vector2dF& radii,
-                                   float pressure,
+                                   const PointerDetails& details,
                                    const base::TimeDelta& timestamp)
     : device_id(device_id),
       slot(slot),
       type(type),
       location(location),
-      radii(radii),
-      pressure(pressure),
-      timestamp(timestamp) {
-}
+      pointer_details(details),
+      timestamp(timestamp) {}
 
 TouchEventParams::TouchEventParams(const TouchEventParams& other) = default;
 

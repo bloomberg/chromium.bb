@@ -276,8 +276,8 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
 
   float x = params.location.x();
   float y = params.location.y();
-  double radius_x = params.radii.x();
-  double radius_y = params.radii.y();
+  double radius_x = params.pointer_details.radius_x;
+  double radius_y = params.pointer_details.radius_y;
 
   // Transform the event to align touches to the image based on display mode.
   DeviceDataManager::GetInstance()->ApplyTouchTransformer(params.device_id, &x,
@@ -287,16 +287,21 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
                                                           &radius_y);
 
+  PointerDetails details = params.pointer_details;
+  details.radius_x = radius_x;
+  details.radius_y = radius_y;
+
   // params.slot is guaranteed to be < kNumTouchEvdevSlots.
   int touch_id = touch_id_generator_.GetGeneratedID(
       params.device_id * kNumTouchEvdevSlots + params.slot);
-  TouchEvent touch_event(params.type, gfx::Point(),
-                         modifiers_.GetModifierFlags(), touch_id,
-                         params.timestamp, radius_x, radius_y,
-                         /* angle */ 0.f, params.pressure);
+  TouchEvent touch_event(
+      params.type, gfx::Point(), modifiers_.GetModifierFlags(), touch_id,
+      params.timestamp, /* radius_x */ 0.f, /* radius_y */ 0.f,
+      /* angle */ 0.f, /* force */ 0.f);
   touch_event.set_location_f(gfx::PointF(x, y));
   touch_event.set_root_location_f(gfx::PointF(x, y));
   touch_event.set_source_device_id(params.device_id);
+  touch_event.set_pointer_details(details);
   DispatchUiEvent(&touch_event);
 
   if (params.type == ET_TOUCH_RELEASED || params.type == ET_TOUCH_CANCELLED) {
