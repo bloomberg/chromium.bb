@@ -21,8 +21,6 @@ goog.require('__crWeb.message');
 
 /* Beginning of anonymous object. */
 (function() {
-  // TODO(jimblackler): use this namespace as a wrapper for all externally-
-  // visible functions, to be consistent with other JS scripts. crbug.com/380390
   __gCrWeb['core'] = {};
 
   // JavaScript errors are logged on the main application side. The handler is

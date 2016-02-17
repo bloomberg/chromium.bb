@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-#import <UIKit/UIKit.h>
-
 #include <vector>
+#import <Foundation/Foundation.h>
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "ios/web/public/test/web_test_util.h"
 #import "ios/web/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -23,10 +20,12 @@ struct TestScriptAndExpectedValue {
   NSString* expectedValue;
 };
 
-// A mixin class for testing with CRWWKWebViewWebController or
-// CRWUIWebViewWebController.
-template <typename WebTestT>
-class CoreJsTest : public WebTestT {
+}  // namespace
+
+namespace web {
+
+// Test fixture to test core.js.
+class CoreJsTest : public web::WebTestWithWKWebViewWebController {
  protected:
   void ImageTesterHelper(
       NSString* htmlForImage,
@@ -61,39 +60,33 @@ class CoreJsTest : public WebTestT {
     };
     for (size_t i = 0; i < arraysize(testData); i++) {
       TestScriptAndExpectedValue& data = testData[i];
-      WebTestT::LoadHtml(pageContent);
-      NSString* result = WebTestT::RunJavaScript(data.testScript);
+      LoadHtml(pageContent);
+      NSString* result = RunJavaScript(data.testScript);
       EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
           [data.testScript UTF8String];
     }
   }
 };
 
-// Concrete test fixture to test core.js using UIWebView-based web controller.
-typedef CoreJsTest<web::WebTestWithUIWebViewWebController> CoreJSUIWebViewTest;
-
-// Concrete test fixture to test core.js using WKWebView-based web controller.
-typedef CoreJsTest<web::WebTestWithWKWebViewWebController> CoreJSWKWebViewTest;
-
-WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, GetImageUrlAtPoint) {
+TEST_F(CoreJsTest, GetImageUrlAtPoint) {
   NSString* htmlForImage =
       @"<img id='foo' style='width:200;height:200;' src='file:///bogus'/>";
   NSString* expectedValueWhenClickingOnImage =
       @"{\"src\":\"file:///bogus\",\"referrerPolicy\":\"default\"}";
-  this->ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
+  ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
 }
 
-WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, GetImageTitleAtPoint) {
+TEST_F(CoreJsTest, GetImageTitleAtPoint) {
   NSString* htmlForImage =
       @"<img id='foo' title='Hello world!'"
       "style='width:200;height:200;' src='file:///bogus'/>";
   NSString* expectedValueWhenClickingOnImage =
       @"{\"src\":\"file:///bogus\",\"referrerPolicy\":\"default\","
           "\"title\":\"Hello world!\"}";
-  this->ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
+  ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
 }
 
-WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, GetLinkImageUrlAtPoint) {
+TEST_F(CoreJsTest, GetLinkImageUrlAtPoint) {
   NSString* htmlForImage =
       @"<a href='file:///linky'>"
           "<img id='foo' style='width:200;height:200;' src='file:///bogus'/>"
@@ -101,10 +94,10 @@ WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, GetLinkImageUrlAtPoint) {
   NSString* expectedValueWhenClickingOnImage =
       @"{\"src\":\"file:///bogus\",\"referrerPolicy\":\"default\","
           "\"href\":\"file:///linky\"}";
-  this->ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
+  ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
 }
 
-WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, TextAreaStopsProximity) {
+TEST_F(CoreJsTest, TextAreaStopsProximity) {
   NSString* pageContent =
   @"<html><body style='margin-left:10px;margin-top:10px;'>"
   "<div style='width:100px;height:100px;'>"
@@ -132,8 +125,8 @@ WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, TextAreaStopsProximity) {
 
   for (size_t i = 0; i < arraysize(testData); i++) {
     TestScriptAndExpectedValue& data = testData[i];
-    this->LoadHtml(pageContent);
-    NSString* result = this->RunJavaScript(data.testScript);
+    LoadHtml(pageContent);
+    NSString* result = RunJavaScript(data.testScript);
     EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
     [data.testScript UTF8String];
   }
@@ -144,7 +137,7 @@ struct TestDataForPasswordFormDetection {
   NSString* containsPassword;
 };
 
-WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, HasPasswordField) {
+TEST_F(CoreJsTest, HasPasswordField) {
   TestDataForPasswordFormDetection testData[] = {
     // Form without a password field.
     {
@@ -159,14 +152,14 @@ WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, HasPasswordField) {
   };
   for (size_t i = 0; i < arraysize(testData); i++) {
     TestDataForPasswordFormDetection& data = testData[i];
-    this->LoadHtml(data.pageContent);
-    NSString* result = this->RunJavaScript(@"__gCrWeb.hasPasswordField()");
+    LoadHtml(data.pageContent);
+    NSString* result = RunJavaScript(@"__gCrWeb.hasPasswordField()");
     EXPECT_NSEQ(data.containsPassword, result) <<
         " in test " << i << ": " << [data.pageContent UTF8String];
   }
 }
 
-WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, HasPasswordFieldinFrame) {
+TEST_F(CoreJsTest, HasPasswordFieldinFrame) {
   TestDataForPasswordFormDetection data = {
     // Form with a password field in a nested iframe.
     @"<iframe name='pf'></iframe>"
@@ -177,12 +170,12 @@ WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, HasPasswordFieldinFrame) {
     "</script>",
     @"true"
   };
-  this->LoadHtml(data.pageContent);
-  NSString* result = this->RunJavaScript(@"__gCrWeb.hasPasswordField()");
+  LoadHtml(data.pageContent);
+  NSString* result = RunJavaScript(@"__gCrWeb.hasPasswordField()");
   EXPECT_NSEQ(data.containsPassword, result) << [data.pageContent UTF8String];
 }
 
-WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, Stringify) {
+TEST_F(CoreJsTest, Stringify) {
   // TODO(jeanfrancoisg): Test whether __gCrWeb.stringify(undefined) correctly
   //returns undefined.
   TestScriptAndExpectedValue testData[] = {
@@ -237,32 +230,31 @@ WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, Stringify) {
     TestScriptAndExpectedValue& data = testData[i];
     // Load a sample HTML page. As a side-effect, loading HTML via
     // |webController_| will also inject core.js.
-    this->LoadHtml(@"<p>");
-    NSString* result = this->RunJavaScript(data.testScript);
+    LoadHtml(@"<p>");
+    NSString* result = RunJavaScript(data.testScript);
     EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
         [data.testScript UTF8String];
   }
 }
 
 // Tests the javascript of the url of the an image present in the DOM.
-WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, LinkOfImage) {
+TEST_F(CoreJsTest, LinkOfImage) {
   // A page with a large image surrounded by a link.
   static const char image[] =
       "<a href='%s'><img width=400 height=400 src='foo'></img></a>";
 
   // A page with a link to a destination URL.
-  this->LoadHtml(base::StringPrintf(image, "http://destination"));
+  LoadHtml(base::StringPrintf(image, "http://destination"));
   NSString* result =
-      this->RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+      RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
   std::string expected_result =
       R"({"src":"foo","referrerPolicy":"default",)"
       R"("href":"http://destination/"})";
   EXPECT_EQ(expected_result, [result UTF8String]);
 
   // A page with a link with some JavaScript that does not result in a NOP.
-  this->LoadHtml(base::StringPrintf(image,
-                                    "javascript:console.log('whatever')"));
-  result = this->RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+  LoadHtml(base::StringPrintf(image, "javascript:console.log('whatever')"));
+  result = RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
   expected_result =
       R"({"src":"foo","referrerPolicy":"default",)"
       R"("href":"javascript:console.log("})";
@@ -277,8 +269,8 @@ WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, LinkOfImage) {
   for (auto js : nop_javascripts) {
     // A page with a link with some JavaScript that results in a NOP.
     const std::string javascript = std::string("javascript:") + js;
-    this->LoadHtml(base::StringPrintf(image, javascript.c_str()));
-    result = this->RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+    LoadHtml(base::StringPrintf(image, javascript.c_str()));
+    result = RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
     expected_result = R"({"src":"foo","referrerPolicy":"default"})";
 
     // Make sure the returned JSON does not have an 'href' key.
@@ -286,4 +278,4 @@ WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, LinkOfImage) {
   }
 }
 
-}  // namespace
+}  // namespace web

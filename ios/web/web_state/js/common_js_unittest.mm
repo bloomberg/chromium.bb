@@ -3,17 +3,12 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-#import <UIKit/UIKit.h>
+#include <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/web/public/test/web_test_util.h"
 #import "ios/web/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-
-// Unit tests for ios/web/web_state/js/resources/common.js.
 
 namespace {
 
@@ -27,46 +22,41 @@ struct TextFieldTestElement {
   const bool expected_is_text_field;
 };
 
-// A mixin class for testing with CRWWKWebViewWebController or
-// CRWUIWebViewWebController.
-template <typename WebTestT>
-class CommonJsTest : public WebTestT {};
+}  // namespace
 
-// Concrete test fixture to test core.js using UIWebView-based web controller.
-typedef CommonJsTest<web::WebTestWithUIWebViewWebController>
-    CommonJSUIWebViewTest;
+namespace web {
 
-// Concrete test fixture to test core.js using WKWebView-based web controller.
-typedef CommonJsTest<web::WebTestWithWKWebViewWebController>
-    CommonJSWKWebViewTest;
+// Test fixture to test common.js.
+typedef web::WebTestWithWKWebViewWebController CommonJsTest;
 
-WEB_TEST_F(CommonJSUIWebViewTest, CommonJSWKWebViewTest, Foo) {
-  this->LoadHtml(@"<html><body>"
-                  "<input type='text' name='firstname'>"
-                  "<input type='text' name='lastname'>"
-                  "<input type='email' name='email'>"
-                  "<input type='tel' name='phone'>"
-                  "<input type='url' name='blog'>"
-                  "<input type='number' name='expected number of clicks'>"
-                  "<input type='password' name='pwd'>"
-                  "<input type='checkbox' name='vehicle' value='Bike'>"
-                  "<input type='checkbox' name='vehicle' value='Car'>"
-                  "<input type='checkbox' name='vehicle' value='Rocket'>"
-                  "<input type='radio' name='boolean' value='true'>"
-                  "<input type='radio' name='boolean' value='false'>"
-                  "<input type='radio' name='boolean' value='other'>"
-                  "<select name='state'>"
-                  "  <option value='CA'>CA</option>"
-                  "  <option value='MA'>MA</option>"
-                  "</select>"
-                  "<select name='cars' multiple>"
-                  "  <option value='volvo'>Volvo</option>"
-                  "  <option value='saab'>Saab</option>"
-                  "  <option value='opel'>Opel</option>"
-                  "  <option value='audi'>Audi</option>"
-                  "</select>"
-                  "<input type='submit' name='submit' value='Submit'>"
-                  "</body></html>");
+// Tests __gCrWeb.common.isTextField JavaScript API.
+TEST_F(CommonJsTest, IsTestField) {
+  LoadHtml(@"<html><body>"
+            "<input type='text' name='firstname'>"
+            "<input type='text' name='lastname'>"
+            "<input type='email' name='email'>"
+            "<input type='tel' name='phone'>"
+            "<input type='url' name='blog'>"
+            "<input type='number' name='expected number of clicks'>"
+            "<input type='password' name='pwd'>"
+            "<input type='checkbox' name='vehicle' value='Bike'>"
+            "<input type='checkbox' name='vehicle' value='Car'>"
+            "<input type='checkbox' name='vehicle' value='Rocket'>"
+            "<input type='radio' name='boolean' value='true'>"
+            "<input type='radio' name='boolean' value='false'>"
+            "<input type='radio' name='boolean' value='other'>"
+            "<select name='state'>"
+            "  <option value='CA'>CA</option>"
+            "  <option value='MA'>MA</option>"
+            "</select>"
+            "<select name='cars' multiple>"
+            "  <option value='volvo'>Volvo</option>"
+            "  <option value='saab'>Saab</option>"
+            "  <option value='opel'>Opel</option>"
+            "  <option value='audi'>Audi</option>"
+            "</select>"
+            "<input type='submit' name='submit' value='Submit'>"
+            "</body></html>");
 
   static const struct TextFieldTestElement testElements[] = {
       {"firstname", 0, true},
@@ -87,15 +77,14 @@ WEB_TEST_F(CommonJSUIWebViewTest, CommonJSWKWebViewTest, Foo) {
       {"submit", 0, false}};
   for (size_t i = 0; i < arraysize(testElements); ++i) {
     TextFieldTestElement element = testElements[i];
-    NSString* result =
-        this->RunJavaScript(base::SysUTF8ToNSString(base::StringPrintf(
-            "__gCrWeb.common.isTextField("
-            "window.document.getElementsByName('%s')[%u])",
-            element.element_name, element.element_index)));
+    NSString* result = RunJavaScript([NSString
+        stringWithFormat:@"__gCrWeb.common.isTextField("
+                          "window.document.getElementsByName('%s')[%d])",
+                         element.element_name, element.element_index]);
     EXPECT_NSEQ(element.expected_is_text_field ? @"true" : @"false", result)
         << element.element_name << " with index " << element.element_index
         << " isTextField(): " << element.expected_is_text_field;
   }
 }
 
-}  // namespace
+}  // namespace web
