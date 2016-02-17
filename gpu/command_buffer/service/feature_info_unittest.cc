@@ -1320,7 +1320,8 @@ TEST_P(FeatureInfoTest, InitializeCHROMIUM_path_rendering) {
   base::CommandLine command_line(0, NULL);
   command_line.AppendSwitch(switches::kEnableGLPathRendering);
   SetupInitExpectationsWithGLVersionAndCommandLine(
-      "GL_ARB_compatibility GL_NV_path_rendering GL_EXT_direct_state_access",
+      "GL_ARB_compatibility GL_NV_path_rendering GL_EXT_direct_state_access "
+      "GL_NV_framebuffer_mixed_samples",
       "", "4.3", command_line);
   EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_path_rendering"));
@@ -1330,7 +1331,8 @@ TEST_P(FeatureInfoTest, InitializeCHROMIUM_path_rendering2) {
   base::CommandLine command_line(0, NULL);
   command_line.AppendSwitch(switches::kEnableGLPathRendering);
   SetupInitExpectationsWithGLVersionAndCommandLine(
-      "GL_NV_path_rendering", "", "OpenGL ES 3.1", command_line);
+      "GL_NV_path_rendering GL_NV_framebuffer_mixed_samples", "",
+      "OpenGL ES 3.1", command_line);
   EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_path_rendering"));
 }
@@ -1350,6 +1352,17 @@ TEST_P(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering2) {
   command_line.AppendSwitch(switches::kEnableGLPathRendering);
   SetupInitExpectationsWithGLVersionAndCommandLine(
       "GL_ARB_compatibility GL_NV_path_rendering", "", "4.3", command_line);
+  EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_CHROMIUM_path_rendering")));
+}
+
+TEST_P(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering3) {
+  base::CommandLine command_line(0, NULL);
+  command_line.AppendSwitch(switches::kEnableGLPathRendering);
+  // Missing framebuffer mixed samples.
+  SetupInitExpectationsWithGLVersionAndCommandLine(
+      "GL_NV_path_rendering", "", "OpenGL ES 3.1", command_line);
   EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_CHROMIUM_path_rendering")));

@@ -2308,9 +2308,14 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         make_gl_ext_tuple("3.2",
                           "GL_ARB_program_interface_query "
-                          "GL_EXT_direct_state_access GL_NV_path_rendering"),
-        make_gl_ext_tuple("4.5", "GL_NV_path_rendering"),
-        make_gl_ext_tuple("opengl es 3.1", "GL_NV_path_rendering")));
+                          "GL_EXT_direct_state_access GL_NV_path_rendering "
+                          "GL_NV_framebuffer_mixed_samples"),
+        make_gl_ext_tuple("4.5",
+                          "GL_NV_path_rendering "
+                          "GL_NV_framebuffer_mixed_samples"),
+        make_gl_ext_tuple("opengl es 3.1",
+                          "GL_NV_path_rendering "
+                          "GL_NV_framebuffer_mixed_samples")));
 
 class ProgramManagerDualSourceBlendingTest
     : public ProgramManagerWithShaderTest,
