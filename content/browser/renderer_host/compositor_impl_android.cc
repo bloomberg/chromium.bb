@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
@@ -522,7 +523,8 @@ void CompositorImpl::CreateOutputSurface() {
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
-  attrs.alpha = has_transparent_background_;
+  if (base::SysInfo::IsLowEndDevice())
+    attrs.alpha = has_transparent_background_;
 
   pending_swapbuffers_ = 0;
 
