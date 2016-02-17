@@ -203,8 +203,10 @@ MojoShellContext::MojoShellContext() {
   // the url scheme registry is locked.
   scoped_ptr<mojo::shell::PackageManagerImpl> package_manager(
       new mojo::shell::PackageManagerImpl(base::FilePath(), nullptr, nullptr));
+  bool register_mojo_url_schemes = false;
   application_manager_.reset(
-      new mojo::shell::ApplicationManager(std::move(package_manager)));
+      new mojo::shell::ApplicationManager(std::move(package_manager),
+                                          register_mojo_url_schemes));
 
   application_manager_->set_default_loader(
       scoped_ptr<mojo::shell::ApplicationLoader>(new DefaultApplicationLoader));

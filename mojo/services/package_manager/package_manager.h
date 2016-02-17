@@ -55,7 +55,9 @@ class PackageManager : public mojo::ShellClient,
                        public mojom::Resolver,
                        public mojom::ShellResolver {
  public:
-  explicit PackageManager(base::TaskRunner* blocking_pool);
+  // If |register_schemes| is true, mojo: and exe: schemes are registered as
+  // "standard".
+  PackageManager(base::TaskRunner* blocking_pool, bool register_schemes);
   ~PackageManager() override;
 
  private:
