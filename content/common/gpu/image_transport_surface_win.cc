@@ -45,6 +45,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
       return nullptr;
   } else {
     surface = gfx::GLSurface::CreateViewGLSurface(handle.handle);
+    if (!surface)
+      return nullptr;
   }
 
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
