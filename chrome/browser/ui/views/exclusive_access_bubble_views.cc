@@ -139,7 +139,9 @@ InstructionView::InstructionView(const base::string16& text,
 
   key_name_ = new views::View;
   views::BoxLayout* key_name_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kKeyNamePaddingPx, kKeyNamePaddingPx, 0);
+      views::BoxLayout::kHorizontal, kKeyNamePaddingPx, 0, 0);
+  key_name_layout->set_minimum_cross_axis_size(
+      key_name_label_->GetPreferredSize().height() + kKeyNamePaddingPx * 2);
   key_name_->SetLayoutManager(key_name_layout);
   key_name_->AddChildView(key_name_label_);
   // The key name has a border around it.
