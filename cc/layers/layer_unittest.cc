@@ -908,17 +908,17 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   child2->SetScrollParent(grand_child.get());
   SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
   scoped_ptr<LayerImpl> root_impl =
-      LayerImpl::Create(host_impl_.active_tree(), 1);
+      LayerImpl::Create(host_impl_.active_tree(), root->id());
   scoped_ptr<LayerImpl> child_impl =
-      LayerImpl::Create(host_impl_.active_tree(), 2);
+      LayerImpl::Create(host_impl_.active_tree(), child->id());
   scoped_ptr<LayerImpl> child2_impl =
-      LayerImpl::Create(host_impl_.active_tree(), 3);
+      LayerImpl::Create(host_impl_.active_tree(), child2->id());
   scoped_ptr<LayerImpl> grand_child_impl =
-      LayerImpl::Create(host_impl_.active_tree(), 4);
+      LayerImpl::Create(host_impl_.active_tree(), grand_child->id());
   scoped_ptr<LayerImpl> dummy_layer1_impl =
-      LayerImpl::Create(host_impl_.active_tree(), 5);
+      LayerImpl::Create(host_impl_.active_tree(), dummy_layer1->id());
   scoped_ptr<LayerImpl> dummy_layer2_impl =
-      LayerImpl::Create(host_impl_.active_tree(), 6);
+      LayerImpl::Create(host_impl_.active_tree(), dummy_layer2->id());
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMaskLayer(dummy_layer1.get()));
