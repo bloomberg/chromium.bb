@@ -55,8 +55,8 @@ class CORE_EXPORT AnimationStack {
 public:
     AnimationStack();
 
-    void add(SampledEffect* effect) { m_effects.append(effect); }
-    bool isEmpty() const { return m_effects.isEmpty(); }
+    void add(SampledEffect* sampledEffect) { m_sampledEffects.append(sampledEffect); }
+    bool isEmpty() const { return m_sampledEffects.isEmpty(); }
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
 
     using PropertyHandleFilter = bool (*)(const PropertyHandle&);
@@ -66,10 +66,10 @@ public:
     DECLARE_TRACE();
 
 private:
-    void removeClearedEffects();
+    void removeClearedSampledEffects();
 
     // Effects sorted by priority. Lower priority at the start of the list.
-    HeapVector<Member<SampledEffect>> m_effects;
+    HeapVector<Member<SampledEffect>> m_sampledEffects;
 
     friend class AnimationAnimationStackTest;
 };

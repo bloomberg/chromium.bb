@@ -40,11 +40,6 @@ protected:
         timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     }
 
-    const HeapVector<Member<SampledEffect>>& effects()
-    {
-        return element->ensureElementAnimations().animationStack().m_effects;
-    }
-
     EffectModel* makeEffectModel(CSSPropertyID id, PassRefPtr<AnimatableValue> value)
     {
         AnimatableValueKeyframeVector keyframes(2);
