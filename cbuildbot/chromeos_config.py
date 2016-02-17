@@ -408,6 +408,7 @@ _x86_internal_release_boards = frozenset([
     'falco_li',
     'gandof',
     'glados',
+    'glados-cheets',
     'glimmer',
     'gnawty',
     'guado',
@@ -520,6 +521,7 @@ _brillo_boards = frozenset([
 
 _cheets_boards = frozenset([
     'cyan-cheets',
+    'glados-cheets',
     'samus-cheets',
     'veyron_minnie-cheets',
 ])
@@ -560,6 +562,7 @@ _no_unittest_boards = frozenset((
 
 _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'cyan-cheets',
+    'glados-cheets',
     'samus-cheets',
 ))
 
@@ -597,6 +600,7 @@ _waterfall_config_map = {
         'veyron_minnie-cheets-paladin',
 
         # Experimental Canaries (Group)
+        'glados-release-group',
         'storm-release-group',
 
         # Experimental Canaries
@@ -2368,6 +2372,11 @@ def GetConfig():
   )
 
   site_config.Add(
+      'glados-cheets-release', cheets_release,
+      _base_configs['glados-cheets'],
+  )
+
+  site_config.Add(
       'samus-cheets-release', cheets_release,
       _base_configs['samus-cheets'],
   )
@@ -2702,7 +2711,9 @@ def GetConfig():
   _AddGroupConfig(
       'glados', 'glados', (
           'chell',
+          'glados-cheets',
       ),
+      important=False,
   )
 
   # storm-based boards
