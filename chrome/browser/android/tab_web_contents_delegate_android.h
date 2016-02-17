@@ -43,9 +43,8 @@ class TabWebContentsDelegateAndroid
   void RunFileChooser(content::WebContents* web_contents,
                       const content::FileChooserParams& params) override;
   scoped_ptr<content::BluetoothChooser> RunBluetoothChooser(
-      content::WebContents* web_contents,
-      const content::BluetoothChooser::EventHandler& event_handler,
-      const url::Origin& origin) override;
+      content::RenderFrameHost* frame,
+      const content::BluetoothChooser::EventHandler& event_handler) override;
   void CloseContents(content::WebContents* web_contents) override;
   bool ShouldFocusLocationBarByDefault(content::WebContents* source) override;
   blink::WebDisplayMode GetDisplayMode(

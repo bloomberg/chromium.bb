@@ -17,9 +17,8 @@ class Origin;
 // options.
 class BluetoothChooserAndroid : public content::BluetoothChooser {
  public:
-  BluetoothChooserAndroid(content::WebContents* web_contents,
-                          const EventHandler& event_handler,
-                          const url::Origin& origin);
+  BluetoothChooserAndroid(content::RenderFrameHost* frame,
+                          const EventHandler& event_handler);
   ~BluetoothChooserAndroid() override;
 
   // content::BluetoothChooser:

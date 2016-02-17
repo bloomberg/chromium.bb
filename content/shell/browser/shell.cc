@@ -384,14 +384,13 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
 }
 
 scoped_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
-    WebContents* web_contents,
-    const BluetoothChooser::EventHandler& event_handler,
-    const url::Origin& origin) {
+    RenderFrameHost* frame,
+    const BluetoothChooser::EventHandler& event_handler) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRunLayoutTest)) {
-    return BlinkTestController::Get()->RunBluetoothChooser(
-        web_contents, event_handler, origin);
+    return BlinkTestController::Get()->RunBluetoothChooser(frame,
+                                                           event_handler);
   }
   return nullptr;
 }

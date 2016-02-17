@@ -1074,9 +1074,8 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
   if (WebContents* web_contents =
           WebContents::FromRenderFrameHost(render_frame_host)) {
     if (WebContentsDelegate* delegate = web_contents->GetDelegate()) {
-      session->chooser = delegate->RunBluetoothChooser(
-          web_contents, chooser_event_handler,
-          render_frame_host->GetLastCommittedOrigin());
+      session->chooser = delegate->RunBluetoothChooser(render_frame_host,
+                                                       chooser_event_handler);
     }
   }
   if (!session->chooser) {

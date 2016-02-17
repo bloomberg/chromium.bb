@@ -479,9 +479,8 @@ class Browser : public TabStripModelObserver,
       content::WebContents* web_contents,
       int cert_id) override;
   scoped_ptr<content::BluetoothChooser> RunBluetoothChooser(
-      content::WebContents* web_contents,
-      const content::BluetoothChooser::EventHandler& event_handler,
-      const url::Origin& origin) override;
+      content::RenderFrameHost* frame,
+      const content::BluetoothChooser::EventHandler& event_handler) override;
   bool RequestAppBanner(content::WebContents* web_contents) override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }

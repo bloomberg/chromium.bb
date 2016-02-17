@@ -136,9 +136,8 @@ class BlinkTestController : public base::NonThreadSafe,
   void TestFinishedInSecondaryWindow();
   bool IsMainWindow(WebContents* web_contents) const;
   scoped_ptr<BluetoothChooser> RunBluetoothChooser(
-      WebContents* web_contents,
-      const BluetoothChooser::EventHandler& event_handler,
-      const url::Origin& origin);
+      RenderFrameHost* frame,
+      const BluetoothChooser::EventHandler& event_handler);
 
   BlinkTestResultPrinter* printer() { return printer_.get(); }
   void set_printer(BlinkTestResultPrinter* printer) { printer_.reset(printer); }

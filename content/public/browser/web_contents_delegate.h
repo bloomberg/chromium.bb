@@ -40,6 +40,7 @@ class ColorChooser;
 class DownloadItem;
 class JavaScriptDialogManager;
 class PageState;
+class RenderFrameHost;
 class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
@@ -356,9 +357,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Shows a chooser for the user to select a nearby Bluetooth device. The
   // observer must live at least as long as the returned chooser object.
   virtual scoped_ptr<BluetoothChooser> RunBluetoothChooser(
-      WebContents* web_contents,
-      const BluetoothChooser::EventHandler& event_handler,
-      const url::Origin& origin);
+      RenderFrameHost* frame,
+      const BluetoothChooser::EventHandler& event_handler);
 
   // Returns true if the delegate will embed a WebContents-owned fullscreen
   // render widget.  In this case, the delegate may access the widget by calling

@@ -10,6 +10,7 @@
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/render_frame_host.h"
 #include "jni/BluetoothChooserDialog_jni.h"
 #include "ui/android/window_android.h"
 #include "url/origin.h"
@@ -20,11 +21,13 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
 BluetoothChooserAndroid::BluetoothChooserAndroid(
-    content::WebContents* web_contents,
-    const EventHandler& event_handler,
-    const url::Origin& origin)
+    content::RenderFrameHost* frame,
+    const EventHandler& event_handler)
     : event_handler_(event_handler) {
+  const url::Origin origin = frame->GetLastCommittedOrigin();
   DCHECK(!origin.unique());
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame);
   base::android::ScopedJavaLocalRef<jobject> window_android =
       content::ContentViewCore::FromWebContents(
           web_contents)->GetWindowAndroid()->GetJavaObject();

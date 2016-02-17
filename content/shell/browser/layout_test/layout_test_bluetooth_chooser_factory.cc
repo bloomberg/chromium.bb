@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/render_frame_host.h"
 #include "url/origin.h"
 
 namespace content {
@@ -100,9 +101,9 @@ LayoutTestBluetoothChooserFactory::~LayoutTestBluetoothChooserFactory() {
 
 scoped_ptr<BluetoothChooser>
 LayoutTestBluetoothChooserFactory::RunBluetoothChooser(
-    WebContents* web_contents,
-    const BluetoothChooser::EventHandler& event_handler,
-    const url::Origin& origin) {
+    RenderFrameHost* frame,
+    const BluetoothChooser::EventHandler& event_handler) {
+  const url::Origin origin = frame->GetLastCommittedOrigin();
   DCHECK(!origin.unique());
   std::string event = "chooser-opened(";
   event += origin.Serialize();
