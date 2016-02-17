@@ -135,7 +135,14 @@ def InstallDefaultSysroots():
     InstallSysroot(target_arch)
 
 
-def main():
+def main(args):
+  parser = optparse.OptionParser('usage: %prog [OPTIONS]', description=__doc__)
+  parser.add_option('--running-as-hook', action='store_true',
+                    default=False, help='Used when running from gclient hooks.'
+                                        ' Installs default sysroot images.')
+  parser.add_option('--arch', type='choice', choices=valid_archs,
+                    help='Sysroot architecture: %s' % ', '.join(valid_archs))
+  options, _ = parser.parse_args(args)
   if options.running_as_hook and not sys.platform.startswith('linux'):
     return 0
 
@@ -196,7 +203,8 @@ def InstallSysroot(target_arch):
   print 'Downloading %s' % url
   sys.stdout.flush()
   sys.stderr.flush()
-  subprocess.check_call(['curl', '--fail', '-L', url, '-o', tarball])
+  subprocess.check_call(
+      ['curl', '--fail', '--retry', '3', '-L', url, '-o', tarball])
   sha1sum = GetSha1(tarball)
   if sha1sum != tarball_sha1sum:
     raise Error('Tarball sha1sum is wrong.'
@@ -209,11 +217,8 @@ def InstallSysroot(target_arch):
 
 
 if __name__ == '__main__':
-  parser = optparse.OptionParser('usage: %prog [OPTIONS]', description=__doc__)
-  parser.add_option('--running-as-hook', action='store_true',
-                    default=False, help='Used when running from gclient hooks.'
-                                        ' Installs default sysroot images.')
-  parser.add_option('--arch', type='choice', choices=valid_archs,
-                    help='Sysroot architecture: %s' % ', '.join(valid_archs))
-  options, _ = parser.parse_args()
-  sys.exit(main())
+  try:
+    sys.exit(main(sys.argv[1:]))
+  except Error as e:
+    sys.stderr.write(str(e) + '\n')
+    sys.exit(1)
