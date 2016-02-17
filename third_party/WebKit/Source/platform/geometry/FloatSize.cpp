@@ -29,6 +29,7 @@
 #include "platform/FloatConversion.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
+#include "wtf/text/WTFString.h"
 #include <limits>
 #include <math.h>
 
@@ -59,5 +60,12 @@ FloatSize FloatSize::narrowPrecision(double width, double height)
 {
     return FloatSize(narrowPrecisionToFloat(width), narrowPrecisionToFloat(height));
 }
+
+#ifndef NDEBUG
+String FloatSize::toString() const
+{
+    return String::format("%fx%f", width(), height());
+}
+#endif
 
 } // namespace blink

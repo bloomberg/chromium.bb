@@ -29,6 +29,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect.h"
+#include "wtf/text/WTFString.h"
 
 #include <algorithm>
 
@@ -191,6 +192,11 @@ IntRect unionRectEvenIfEmpty(const Vector<IntRect>& rects)
 void IntRect::show() const
 {
     LayoutRect(*this).show();
+}
+
+String IntRect::toString() const
+{
+    return String::format("%s %s", location().toString().ascii().data(), size().toString().ascii().data());
 }
 #endif
 

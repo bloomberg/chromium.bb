@@ -6,6 +6,8 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/LayoutPoint.h"
 
+#include "wtf/text/WTFString.h"
+
 namespace blink {
 
 DoublePoint::DoublePoint(const LayoutPoint& p)
@@ -19,5 +21,11 @@ DoublePoint::DoublePoint(const FloatSize& size)
 {
 }
 
+#ifndef NDEBUG
+String DoublePoint::toString() const
+{
+    return String::format("%f,%f", x(), y());
+}
+#endif
 
 } // namespace blink

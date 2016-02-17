@@ -9,6 +9,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include <algorithm>
 
 namespace blink {
@@ -97,6 +98,10 @@ public:
     {
         return DoublePoint(m_x * scale, m_y * scale);
     }
+
+#ifndef NDEBUG
+    String toString() const;
+#endif
 
 private:
     double m_x, m_y;

@@ -35,6 +35,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/LayoutSize.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
@@ -88,6 +89,10 @@ public:
     {
         return LayoutPoint(m_y, m_x);
     }
+
+#ifndef NDEBUG
+    String toString() const;
+#endif
 
 private:
     LayoutUnit m_x, m_y;
@@ -237,7 +242,6 @@ inline LayoutPoint flooredLayoutPoint(const FloatSize& s)
 {
     return flooredLayoutPoint(FloatPoint(s));
 }
-
 
 } // namespace blink
 

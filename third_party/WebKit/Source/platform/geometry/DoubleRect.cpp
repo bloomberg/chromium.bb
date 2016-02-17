@@ -8,6 +8,8 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 
+#include "wtf/text/WTFString.h"
+
 namespace blink {
 
 DoubleRect::DoubleRect(const IntRect& r) : m_location(r.location()), m_size(r.size())
@@ -53,5 +55,11 @@ void DoubleRect::scale(float sx, float sy)
     m_size.setHeight(height() * sy);
 }
 
+#ifndef NDEBUG
+String DoubleRect::toString() const
+{
+    return String::format("%s %s", location().toString().ascii().data(), size().toString().ascii().data());
+}
+#endif
 
 } // namespace blink

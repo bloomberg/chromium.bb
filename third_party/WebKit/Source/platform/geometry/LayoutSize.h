@@ -37,6 +37,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
@@ -140,6 +141,10 @@ public:
     {
         return LayoutSize(m_width.fraction(), m_height.fraction());
     }
+
+#ifndef NDEBUG
+    String toString() const;
+#endif
 
 private:
     LayoutUnit m_width, m_height;

@@ -31,6 +31,7 @@
 #include "platform/geometry/FloatRectOutsets.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include <iosfwd>
 
@@ -191,6 +192,10 @@ public:
     // Prints the rect to the screen.
     void show() const;
     bool mayNotHaveExactIntRectRepresentation() const;
+#endif
+
+#ifndef NDEBUG
+    String toString() const;
 #endif
 
 private:

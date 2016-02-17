@@ -7,6 +7,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/GeometryTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -110,5 +111,19 @@ TEST(FloatRectTest, SquaredDistanceToTest)
     FloatPoint p24(450, 450);
     EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, r1.squaredDistanceTo(p24), 50000.f);
 }
+
+#ifndef NDEBUG
+TEST(FloatRectTest, ToString)
+{
+    FloatRect emptyRect = FloatRect();
+    EXPECT_EQ(String("0.000000,0.000000 0.000000x0.000000"), emptyRect.toString());
+
+    FloatRect rect(1, 2, 3, 4);
+    EXPECT_EQ(String("1.000000,2.000000 3.000000x4.000000"), rect.toString());
+
+    FloatRect granularRect(1.6f, 2.7f, 3.8f, 4.9f);
+    EXPECT_EQ(String("1.600000,2.700000 3.800000x4.900000"), granularRect.toString());
+}
+#endif
 
 } // namespace blink

@@ -8,6 +8,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -49,6 +50,10 @@ public:
     {
         this->scale(scale, scale);
     }
+
+#ifndef NDEBUG
+    String toString() const;
+#endif
 
 private:
     double m_width, m_height;

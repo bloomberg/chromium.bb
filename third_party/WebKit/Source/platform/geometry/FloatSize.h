@@ -31,6 +31,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
 #include <iosfwd>
 
@@ -133,6 +134,10 @@ public:
 #endif
 
     operator SkSize() const { return SkSize::Make(m_width, m_height); }
+
+#ifndef NDEBUG
+    String toString() const;
+#endif
 
 private:
     float m_width, m_height;

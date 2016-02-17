@@ -31,6 +31,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 #include <iosfwd>
@@ -156,6 +157,10 @@ public:
     SkPoint data() const;
 
     operator SkPoint() const { return SkPoint::Make(m_x, m_y); }
+
+#ifndef NDEBUG
+    String toString() const;
+#endif
 
 private:
     float m_x, m_y;

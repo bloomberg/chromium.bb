@@ -32,6 +32,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -200,6 +201,11 @@ FloatRect unionRect(const Vector<FloatRect>& rects)
 void FloatRect::show() const
 {
     LayoutRect(*this).show();
+}
+
+String FloatRect::toString() const
+{
+    return String::format("%s %s", location().toString().ascii().data(), size().toString().ascii().data());
 }
 #endif
 

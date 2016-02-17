@@ -5,6 +5,8 @@
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/LayoutSize.h"
 
+#include "wtf/text/WTFString.h"
+
 #include <limits>
 #include <math.h>
 
@@ -20,5 +22,12 @@ bool DoubleSize::isZero() const
 {
     return fabs(m_width) < std::numeric_limits<double>::epsilon() && fabs(m_height) < std::numeric_limits<double>::epsilon();
 }
+
+#ifndef NDEBUG
+String DoubleSize::toString() const
+{
+    return String::format("%fx%f", width(), height());
+}
+#endif
 
 } // namespace blink

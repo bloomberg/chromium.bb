@@ -30,6 +30,7 @@
 #include "platform/PlatformExport.h"
 #include "public/platform/WebCommon.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 
 #if OS(MACOSX)
 typedef struct CGSize CGSize;
@@ -124,6 +125,10 @@ public:
     explicit IntSize(const NSSize &); // don't do this implicitly since it's lossy
     operator NSSize() const;
 #endif
+#endif
+
+#ifndef NDEBUG
+    String toString() const;
 #endif
 
 private:

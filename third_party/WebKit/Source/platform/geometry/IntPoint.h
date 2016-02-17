@@ -29,6 +29,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
 #include "wtf/VectorTraits.h"
 
@@ -98,6 +99,10 @@ public:
     explicit IntPoint(const NSPoint&); // don't do this implicitly since it's lossy
     operator NSPoint() const;
 #endif
+#endif
+
+#ifndef NDEBUG
+    String toString() const;
 #endif
 
 private:

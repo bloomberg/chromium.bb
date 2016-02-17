@@ -33,6 +33,7 @@
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatRect.h"
+#include "wtf/text/WTFString.h"
 #include <algorithm>
 #include <stdio.h>
 
@@ -133,6 +134,11 @@ void LayoutRect::show(bool showRawValue) const
         printf("Rect (in raw layout units): [x=%d y=%d maxX=%d maxY=%d]\n", x().rawValue(), y().rawValue(), maxX().rawValue(), maxY().rawValue());
     else
         printf("Rect (in pixels): [x=%lf y=%lf maxX=%lf maxY=%lf]\n", x().toDouble(), y().toDouble(), maxX().toDouble(), maxY().toDouble());
+}
+
+String LayoutRect::toString() const
+{
+    return String::format("%s %s", location().toString().ascii().data(), size().toString().ascii().data());
 }
 #endif
 

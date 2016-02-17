@@ -35,6 +35,7 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRectOutsets.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include <iosfwd>
 
@@ -189,6 +190,7 @@ public:
 #ifndef NDEBUG
     // Prints the rect to the screen.
     void show(bool showRawValue = false) const;
+    String toString() const;
 #endif
 
 private:

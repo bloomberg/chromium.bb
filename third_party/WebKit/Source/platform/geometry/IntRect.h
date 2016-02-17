@@ -29,6 +29,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRectOutsets.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/VectorTraits.h"
 
@@ -181,6 +182,7 @@ public:
 #ifndef NDEBUG
     // Prints the rect to the screen.
     void show() const;
+    String toString() const;
 #endif
 
 private:
