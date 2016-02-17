@@ -15,6 +15,7 @@
 #include "ipc/ipc_listener.h"
 
 namespace IPC {
+class AttachmentBrokerUnprivileged;
 class Channel;
 }
 
@@ -44,6 +45,7 @@ class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
   void OnStopBroker();
 
   base::Process browser_process_;
+  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
   scoped_ptr<IPC::Channel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerListener);

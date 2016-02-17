@@ -82,20 +82,6 @@ void AttachmentBroker::DeregisterCommunicationChannel(Endpoint* endpoint) {
   NOTREACHED();
 }
 
-void AttachmentBroker::RegisterBrokerCommunicationChannel(Endpoint* endpoint) {
-  NOTREACHED();
-}
-
-void AttachmentBroker::DeregisterBrokerCommunicationChannel(
-    Endpoint* endpoint) {
-  NOTREACHED();
-}
-
-bool AttachmentBroker::IsPrivilegedBroker() {
-  NOTREACHED();
-  return false;
-}
-
 void AttachmentBroker::HandleReceivedAttachment(
     const scoped_refptr<BrokerableAttachment>& attachment) {
   {

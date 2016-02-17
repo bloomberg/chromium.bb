@@ -50,7 +50,6 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
   // AttachmentBroker overrides.
   void RegisterCommunicationChannel(Endpoint* endpoint) override;
   void DeregisterCommunicationChannel(Endpoint* endpoint) override;
-  bool IsPrivilegedBroker() override;
 
  protected:
   // Returns the sender whose peer's process id is |id|.
