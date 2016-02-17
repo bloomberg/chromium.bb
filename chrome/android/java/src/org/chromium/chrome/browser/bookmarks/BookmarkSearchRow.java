@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.bookmarks;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkId;
 
 /**

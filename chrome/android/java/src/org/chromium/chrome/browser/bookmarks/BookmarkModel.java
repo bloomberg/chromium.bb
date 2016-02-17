@@ -10,7 +10,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
@@ -30,11 +29,11 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * A class that encapsulates {@link BookmarksBridge} and provides extra features such as undo, large
+ * A class that encapsulates {@link BookmarkBridge} and provides extra features such as undo, large
  * icon fetching, reader mode url redirecting, etc. This class should serve as the single class for
  * the UI to acquire data from the backend.
  */
-public class BookmarkModel extends BookmarksBridge {
+public class BookmarkModel extends BookmarkBridge {
     private static final int FAVICON_MAX_CACHE_SIZE = 10 * 1024 * 1024; // 10MB
 
     /**
@@ -191,7 +190,7 @@ public class BookmarkModel extends BookmarksBridge {
     }
 
     /**
-     * Calls {@link BookmarksBridge#moveBookmark(BookmarkId, BookmarkId, int)} for the given
+     * Calls {@link BookmarkBridge#moveBookmark(BookmarkId, BookmarkId, int)} for the given
      * bookmark list. The bookmarks are appended at the end.
      */
     public void moveBookmarks(List<BookmarkId> bookmarkIds, BookmarkId newParentId) {
@@ -257,7 +256,7 @@ public class BookmarkModel extends BookmarksBridge {
     }
 
     /**
-     * @see org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem#getTitle()
+     * @see org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem#getTitle()
      */
     public String getBookmarkTitle(BookmarkId bookmarkId) {
         return getBookmarkById(bookmarkId).getTitle();

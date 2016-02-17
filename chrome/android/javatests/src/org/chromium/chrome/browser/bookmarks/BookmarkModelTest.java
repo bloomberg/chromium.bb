@@ -12,7 +12,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel.AddBookmarkCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -185,7 +185,7 @@ public class BookmarkModelTest extends NativeLibraryTestBase {
                 expectedChildren);
     }
 
-    // Moved from BookmarksBridgeTest
+    // Moved from BookmarkBridgeTest
     @UiThreadTest
     @SmallTest
     @Feature({"Bookmark"})

@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -119,14 +119,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private MenuDelegatePhone mMenuDelegatePhone;
     private final ToolbarModelImpl mToolbarModel;
     private Profile mCurrentProfile;
-    private BookmarksBridge mBookmarksBridge;
+    private BookmarkBridge mBookmarkBridge;
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private final LocationBar mLocationBar;
     private FindToolbarManager mFindToolbarManager;
     private final AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
 
     private final TabObserver mTabObserver;
-    private final BookmarksBridge.BookmarkModelObserver mBookmarksObserver;
+    private final BookmarkBridge.BookmarkModelObserver mBookmarksObserver;
     private final List<FindToolbarObserver> mFindToolbarObservers;
     private final OverviewModeObserver mOverviewModeObserver;
     private final SceneChangeObserver mSceneChangeObserver;
@@ -472,7 +472,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
         };
 
-        mBookmarksObserver = new BookmarksBridge.BookmarkModelObserver() {
+        mBookmarksObserver = new BookmarkBridge.BookmarkModelObserver() {
             @Override
             public void bookmarkModelChanged() {
                 updateBookmarkButtonStatus();
@@ -601,9 +601,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 for (TabModel model : mTabModelSelector.getModels()) {
                     model.removeObserver(mTabModelObserver);
                 }
-                if (mBookmarksBridge != null) {
-                    mBookmarksBridge.destroy();
-                    mBookmarksBridge = null;
+                if (mBookmarkBridge != null) {
+                    mBookmarkBridge.destroy();
+                    mBookmarkBridge = null;
                 }
                 if (mTemplateUrlObserver != null) {
                     TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
@@ -660,8 +660,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     /**
      * @return The bookmarks bridge.
      */
-    public BookmarksBridge getBookmarksBridge() {
-        return mBookmarksBridge;
+    public BookmarkBridge getBookmarkBridge() {
+        return mBookmarkBridge;
     }
 
     /**
@@ -1015,8 +1015,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         Tab currentTab = mToolbarModel.getTab();
         boolean isBookmarked = currentTab != null
                 && currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-        boolean editingAllowed = currentTab == null || mBookmarksBridge == null
-                || mBookmarksBridge.isEditBookmarksEnabled();
+        boolean editingAllowed = currentTab == null || mBookmarkBridge == null
+                || mBookmarkBridge.isEditBookmarksEnabled();
         mToolbar.updateBookmarkButton(isBookmarked, editingAllowed);
     }
 
@@ -1074,10 +1074,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         Profile profile = mTabModelSelector.getModel(isIncognito).getProfile();
         if (mCurrentProfile != profile) {
-            if (mBookmarksBridge != null) mBookmarksBridge.destroy();
-            mBookmarksBridge = new BookmarksBridge(profile);
-            mBookmarksBridge.addObserver(mBookmarksObserver);
-            mAppMenuPropertiesDelegate.setBookmarksBridge(mBookmarksBridge);
+            if (mBookmarkBridge != null) mBookmarkBridge.destroy();
+            mBookmarkBridge = new BookmarkBridge(profile);
+            mBookmarkBridge.addObserver(mBookmarksObserver);
+            mAppMenuPropertiesDelegate.setBookmarkBridge(mBookmarkBridge);
             mLocationBar.setAutocompleteProfile(profile);
             mCurrentProfile = profile;
         }

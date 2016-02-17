@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.bookmark;
+package org.chromium.chrome.browser.bookmarks;
 
 import android.text.TextUtils;
 import android.util.Pair;
@@ -10,7 +10,6 @@ import android.util.Pair;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.bookmarks.BookmarkMatch;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -22,10 +21,10 @@ import java.util.List;
  * Provides the communication channel for Android to fetch and manipulate the
  * bookmark model stored in native.
  */
-public class BookmarksBridge {
+public class BookmarkBridge {
     private final Profile mProfile;
     private boolean mIsDoingExtensiveChanges;
-    private long mNativeBookmarksBridge;
+    private long mNativeBookmarkBridge;
     private boolean mIsNativeBookmarkModelLoaded;
     private final List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks =
             new ArrayList<DelayedBookmarkCallback>();
@@ -163,19 +162,19 @@ public class BookmarksBridge {
      * Handler to fetch the bookmarks, titles, urls and folder hierarchy.
      * @param profile Profile instance corresponding to the active profile.
      */
-    public BookmarksBridge(Profile profile) {
+    public BookmarkBridge(Profile profile) {
         mProfile = profile;
-        mNativeBookmarksBridge = nativeInit(profile);
-        mIsDoingExtensiveChanges = nativeIsDoingExtensiveChanges(mNativeBookmarksBridge);
+        mNativeBookmarkBridge = nativeInit(profile);
+        mIsDoingExtensiveChanges = nativeIsDoingExtensiveChanges(mNativeBookmarkBridge);
     }
 
     /**
      * Destroys this instance so no further calls can be executed.
      */
     public void destroy() {
-        if (mNativeBookmarksBridge != 0) {
-            nativeDestroy(mNativeBookmarksBridge);
-            mNativeBookmarksBridge = 0;
+        if (mNativeBookmarkBridge != 0) {
+            nativeDestroy(mNativeBookmarkBridge);
+            mNativeBookmarkBridge = 0;
             mIsNativeBookmarkModelLoaded = false;
             mDelayedBookmarkCallbacks.clear();
         }
@@ -188,7 +187,7 @@ public class BookmarksBridge {
      */
     @VisibleForTesting
     public void loadEmptyPartnerBookmarkShimForTesting() {
-        nativeLoadEmptyPartnerBookmarkShimForTesting(mNativeBookmarksBridge);
+        nativeLoadEmptyPartnerBookmarkShimForTesting(mNativeBookmarkBridge);
     }
 
     /**
@@ -243,7 +242,7 @@ public class BookmarksBridge {
      */
     public BookmarkItem getBookmarkById(BookmarkId id) {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeGetBookmarkByID(mNativeBookmarksBridge, id.getId(), id.getType());
+        return nativeGetBookmarkByID(mNativeBookmarkBridge, id.getId(), id.getType());
     }
 
     /**
@@ -252,7 +251,7 @@ public class BookmarksBridge {
     public List<BookmarkId> getPermanentNodeIDs() {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
-        nativeGetPermanentNodeIDs(mNativeBookmarksBridge, result);
+        nativeGetPermanentNodeIDs(mNativeBookmarkBridge, result);
         return result;
     }
 
@@ -262,7 +261,7 @@ public class BookmarksBridge {
     public List<BookmarkId> getTopLevelFolderParentIDs() {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
-        nativeGetTopLevelFolderParentIDs(mNativeBookmarksBridge, result);
+        nativeGetTopLevelFolderParentIDs(mNativeBookmarkBridge, result);
         return result;
     }
 
@@ -275,7 +274,7 @@ public class BookmarksBridge {
     public List<BookmarkId> getTopLevelFolderIDs(boolean getSpecial, boolean getNormal) {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
-        nativeGetTopLevelFolderIDs(mNativeBookmarksBridge, getSpecial, getNormal, result);
+        nativeGetTopLevelFolderIDs(mNativeBookmarkBridge, getSpecial, getNormal, result);
         return result;
     }
 
@@ -293,7 +292,7 @@ public class BookmarksBridge {
     public void getAllFoldersWithDepths(List<BookmarkId> folderList,
             List<Integer> depthList) {
         assert mIsNativeBookmarkModelLoaded;
-        nativeGetAllFoldersWithDepths(mNativeBookmarksBridge, folderList, depthList);
+        nativeGetAllFoldersWithDepths(mNativeBookmarkBridge, folderList, depthList);
     }
 
     /**
@@ -304,7 +303,7 @@ public class BookmarksBridge {
     public void getMoveDestinations(List<BookmarkId> folderList,
             List<Integer> depthList, List<BookmarkId> bookmarksToMove) {
         assert mIsNativeBookmarkModelLoaded;
-        nativeGetAllFoldersWithDepths(mNativeBookmarksBridge, folderList, depthList);
+        nativeGetAllFoldersWithDepths(mNativeBookmarkBridge, folderList, depthList);
         if (bookmarksToMove == null || bookmarksToMove.size() == 0) return;
 
         boolean shouldTrim = false;
@@ -341,7 +340,7 @@ public class BookmarksBridge {
      */
     public BookmarkId getRootFolderId() {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeGetRootFolderId(mNativeBookmarksBridge);
+        return nativeGetRootFolderId(mNativeBookmarkBridge);
     }
 
     /**
@@ -349,7 +348,7 @@ public class BookmarksBridge {
      */
     public BookmarkId getMobileFolderId() {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeGetMobileFolderId(mNativeBookmarksBridge);
+        return nativeGetMobileFolderId(mNativeBookmarkBridge);
     }
 
     /**
@@ -357,7 +356,7 @@ public class BookmarksBridge {
      */
     public BookmarkId getOtherFolderId() {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeGetOtherFolderId(mNativeBookmarksBridge);
+        return nativeGetOtherFolderId(mNativeBookmarkBridge);
     }
 
     /**
@@ -365,7 +364,7 @@ public class BookmarksBridge {
      */
     public BookmarkId getDesktopFolderId() {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeGetDesktopFolderId(mNativeBookmarksBridge);
+        return nativeGetDesktopFolderId(mNativeBookmarkBridge);
     }
 
     /**
@@ -373,7 +372,7 @@ public class BookmarksBridge {
      */
     public int getChildCount(BookmarkId id) {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeGetChildCount(mNativeBookmarksBridge, id.getId(), id.getType());
+        return nativeGetChildCount(mNativeBookmarkBridge, id.getId(), id.getType());
     }
 
     /**
@@ -386,7 +385,7 @@ public class BookmarksBridge {
     public List<BookmarkId> getChildIDs(BookmarkId id, boolean getFolders, boolean getBookmarks) {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
-        nativeGetChildIDs(mNativeBookmarksBridge,
+        nativeGetChildIDs(mNativeBookmarkBridge,
                 id.getId(),
                 id.getType(),
                 getFolders,
@@ -404,7 +403,7 @@ public class BookmarksBridge {
      */
     public BookmarkId getChildAt(BookmarkId folderId, int index) {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeGetChildAt(mNativeBookmarksBridge, folderId.getId(), folderId.getType(),
+        return nativeGetChildAt(mNativeBookmarkBridge, folderId.getId(), folderId.getType(),
                 index);
     }
 
@@ -415,7 +414,7 @@ public class BookmarksBridge {
     public List<BookmarkId> getAllBookmarkIDsOrderedByCreationDate() {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
-        nativeGetAllBookmarkIDsOrderedByCreationDate(mNativeBookmarksBridge, result);
+        nativeGetAllBookmarkIDsOrderedByCreationDate(mNativeBookmarkBridge, result);
         return result;
     }
 
@@ -427,7 +426,7 @@ public class BookmarksBridge {
      */
     public List<BookmarkMatch> searchBookmarks(String query, int maxNumberOfResult) {
         List<BookmarkMatch> bookmarkMatches = new ArrayList<BookmarkMatch>();
-        nativeSearchBookmarks(mNativeBookmarksBridge, bookmarkMatches, query,
+        nativeSearchBookmarks(mNativeBookmarkBridge, bookmarkMatches, query,
                 maxNumberOfResult);
         return bookmarkMatches;
     }
@@ -438,7 +437,7 @@ public class BookmarksBridge {
      */
     public void setBookmarkTitle(BookmarkId id, String title) {
         assert mIsNativeBookmarkModelLoaded;
-        nativeSetBookmarkTitle(mNativeBookmarksBridge, id.getId(), id.getType(), title);
+        nativeSetBookmarkTitle(mNativeBookmarkBridge, id.getId(), id.getType(), title);
     }
 
     /**
@@ -447,7 +446,7 @@ public class BookmarksBridge {
     public void setBookmarkUrl(BookmarkId id, String url) {
         assert mIsNativeBookmarkModelLoaded;
         assert id.getType() == BookmarkType.NORMAL;
-        nativeSetBookmarkUrl(mNativeBookmarksBridge, id.getId(), id.getType(), url);
+        nativeSetBookmarkUrl(mNativeBookmarkBridge, id.getId(), id.getType(), url);
     }
 
     /**
@@ -455,7 +454,7 @@ public class BookmarksBridge {
      */
     public boolean doesBookmarkExist(BookmarkId id) {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeDoesBookmarkExist(mNativeBookmarksBridge, id.getId(), id.getType());
+        return nativeDoesBookmarkExist(mNativeBookmarkBridge, id.getId(), id.getType());
     }
 
     /**
@@ -468,7 +467,7 @@ public class BookmarksBridge {
     public List<BookmarkItem> getBookmarksForFolder(BookmarkId folderId) {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkItem> result = new ArrayList<BookmarkItem>();
-        nativeGetBookmarksForFolder(mNativeBookmarksBridge, folderId, null, result);
+        nativeGetBookmarksForFolder(mNativeBookmarkBridge, folderId, null, result);
         return result;
     }
 
@@ -481,7 +480,7 @@ public class BookmarksBridge {
      */
     public void getBookmarksForFolder(BookmarkId folderId, BookmarksCallback callback) {
         if (mIsNativeBookmarkModelLoaded) {
-            nativeGetBookmarksForFolder(mNativeBookmarksBridge, folderId, callback,
+            nativeGetBookmarksForFolder(mNativeBookmarkBridge, folderId, callback,
                     new ArrayList<BookmarkItem>());
         } else {
             mDelayedBookmarkCallbacks.add(new DelayedBookmarkCallback(folderId, callback,
@@ -496,7 +495,7 @@ public class BookmarksBridge {
      */
     public boolean isFolderVisible(BookmarkId id) {
         assert mIsNativeBookmarkModelLoaded;
-        return nativeIsFolderVisible(mNativeBookmarksBridge, id.getId(), id.getType());
+        return nativeIsFolderVisible(mNativeBookmarkBridge, id.getId(), id.getType());
     }
 
     /**
@@ -508,7 +507,7 @@ public class BookmarksBridge {
      */
     public void getCurrentFolderHierarchy(BookmarkId folderId, BookmarksCallback callback) {
         if (mIsNativeBookmarkModelLoaded) {
-            nativeGetCurrentFolderHierarchy(mNativeBookmarksBridge, folderId, callback,
+            nativeGetCurrentFolderHierarchy(mNativeBookmarkBridge, folderId, callback,
                     new ArrayList<BookmarkItem>());
         } else {
             mDelayedBookmarkCallbacks.add(new DelayedBookmarkCallback(folderId, callback,
@@ -521,7 +520,7 @@ public class BookmarksBridge {
      * @param bookmarkId The ID of the bookmark to be deleted.
      */
     public void deleteBookmark(BookmarkId bookmarkId) {
-        nativeDeleteBookmark(mNativeBookmarksBridge, bookmarkId);
+        nativeDeleteBookmark(mNativeBookmarkBridge, bookmarkId);
     }
 
     /**
@@ -531,7 +530,7 @@ public class BookmarksBridge {
      * @param index The new index for the bookmark.
      */
     public void moveBookmark(BookmarkId bookmarkId, BookmarkId newParentId, int index) {
-        nativeMoveBookmark(mNativeBookmarksBridge, bookmarkId, newParentId, index);
+        nativeMoveBookmark(mNativeBookmarkBridge, bookmarkId, newParentId, index);
     }
 
     /**
@@ -550,7 +549,7 @@ public class BookmarksBridge {
         assert index >= 0;
         assert title != null;
 
-        return nativeAddFolder(mNativeBookmarksBridge, parent, index, title);
+        return nativeAddFolder(mNativeBookmarkBridge, parent, index, title);
     }
 
     /**
@@ -572,14 +571,14 @@ public class BookmarksBridge {
         assert url != null;
 
         if (TextUtils.isEmpty(title)) title = url;
-        return nativeAddBookmark(mNativeBookmarksBridge, parent, index, title, url);
+        return nativeAddBookmark(mNativeBookmarkBridge, parent, index, title, url);
     }
 
     /**
      * Undo the last undoable action on the top of the bookmark undo stack
      */
     public void undo() {
-        nativeUndo(mNativeBookmarksBridge);
+        nativeUndo(mNativeBookmarkBridge);
     }
 
     /**
@@ -587,7 +586,7 @@ public class BookmarksBridge {
      * Note: This only works with BookmarkModel, not partner bookmarks.
      */
     public void startGroupingUndos() {
-        nativeStartGroupingUndos(mNativeBookmarksBridge);
+        nativeStartGroupingUndos(mNativeBookmarkBridge);
     }
 
     /**
@@ -595,11 +594,11 @@ public class BookmarksBridge {
      * Note: This only works with BookmarkModel, not partner bookmarks.
      */
     public void endGroupingUndos() {
-        nativeEndGroupingUndos(mNativeBookmarksBridge);
+        nativeEndGroupingUndos(mNativeBookmarkBridge);
     }
 
     public boolean isEditBookmarksEnabled() {
-        return nativeIsEditBookmarksEnabled(mNativeBookmarksBridge);
+        return nativeIsEditBookmarksEnabled(mNativeBookmarkBridge);
     }
 
     /**
@@ -757,56 +756,56 @@ public class BookmarksBridge {
     }
 
 
-    private native BookmarkItem nativeGetBookmarkByID(long nativeBookmarksBridge, long id,
+    private native BookmarkItem nativeGetBookmarkByID(long nativeBookmarkBridge, long id,
             int type);
-    private native void nativeGetPermanentNodeIDs(long nativeBookmarksBridge,
+    private native void nativeGetPermanentNodeIDs(long nativeBookmarkBridge,
             List<BookmarkId> bookmarksList);
-    private native void nativeGetTopLevelFolderParentIDs(long nativeBookmarksBridge,
+    private native void nativeGetTopLevelFolderParentIDs(long nativeBookmarkBridge,
             List<BookmarkId> bookmarksList);
-    private native void nativeGetTopLevelFolderIDs(long nativeBookmarksBridge, boolean getSpecial,
+    private native void nativeGetTopLevelFolderIDs(long nativeBookmarkBridge, boolean getSpecial,
             boolean getNormal, List<BookmarkId> bookmarksList);
-    private native void nativeGetAllFoldersWithDepths(long nativeBookmarksBridge,
+    private native void nativeGetAllFoldersWithDepths(long nativeBookmarkBridge,
             List<BookmarkId> folderList, List<Integer> depthList);
-    private native BookmarkId nativeGetRootFolderId(long nativeBookmarksBridge);
-    private native BookmarkId nativeGetMobileFolderId(long nativeBookmarksBridge);
-    private native BookmarkId nativeGetOtherFolderId(long nativeBookmarksBridge);
-    private native BookmarkId nativeGetDesktopFolderId(long nativeBookmarksBridge);
-    private native int nativeGetChildCount(long nativeBookmarksBridge, long id, int type);
-    private native void nativeGetChildIDs(long nativeBookmarksBridge, long id, int type,
+    private native BookmarkId nativeGetRootFolderId(long nativeBookmarkBridge);
+    private native BookmarkId nativeGetMobileFolderId(long nativeBookmarkBridge);
+    private native BookmarkId nativeGetOtherFolderId(long nativeBookmarkBridge);
+    private native BookmarkId nativeGetDesktopFolderId(long nativeBookmarkBridge);
+    private native int nativeGetChildCount(long nativeBookmarkBridge, long id, int type);
+    private native void nativeGetChildIDs(long nativeBookmarkBridge, long id, int type,
             boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);
-    private native BookmarkId nativeGetChildAt(long nativeBookmarksBridge, long id, int type,
+    private native BookmarkId nativeGetChildAt(long nativeBookmarkBridge, long id, int type,
             int index);
-    private native void nativeGetAllBookmarkIDsOrderedByCreationDate(long nativeBookmarksBridge,
+    private native void nativeGetAllBookmarkIDsOrderedByCreationDate(long nativeBookmarkBridge,
             List<BookmarkId> result);
-    private native void nativeSetBookmarkTitle(long nativeBookmarksBridge, long id, int type,
+    private native void nativeSetBookmarkTitle(long nativeBookmarkBridge, long id, int type,
             String title);
-    private native void nativeSetBookmarkUrl(long nativeBookmarksBridge, long id, int type,
+    private native void nativeSetBookmarkUrl(long nativeBookmarkBridge, long id, int type,
             String url);
-    private native boolean nativeDoesBookmarkExist(long nativeBookmarksBridge, long id, int type);
-    private native void nativeGetBookmarksForFolder(long nativeBookmarksBridge,
+    private native boolean nativeDoesBookmarkExist(long nativeBookmarkBridge, long id, int type);
+    private native void nativeGetBookmarksForFolder(long nativeBookmarkBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
-    private native boolean nativeIsFolderVisible(long nativeBookmarksBridge, long id, int type);
-    private native void nativeGetCurrentFolderHierarchy(long nativeBookmarksBridge,
+    private native boolean nativeIsFolderVisible(long nativeBookmarkBridge, long id, int type);
+    private native void nativeGetCurrentFolderHierarchy(long nativeBookmarkBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
-    private native BookmarkId nativeAddFolder(long nativeBookmarksBridge, BookmarkId parent,
+    private native BookmarkId nativeAddFolder(long nativeBookmarkBridge, BookmarkId parent,
             int index, String title);
-    private native void nativeDeleteBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId);
-    private native void nativeMoveBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId,
+    private native void nativeDeleteBookmark(long nativeBookmarkBridge, BookmarkId bookmarkId);
+    private native void nativeMoveBookmark(long nativeBookmarkBridge, BookmarkId bookmarkId,
             BookmarkId newParentId, int index);
-    private native BookmarkId nativeAddBookmark(long nativeBookmarksBridge, BookmarkId parent,
+    private native BookmarkId nativeAddBookmark(long nativeBookmarkBridge, BookmarkId parent,
             int index, String title, String url);
-    private native void nativeUndo(long nativeBookmarksBridge);
-    private native void nativeStartGroupingUndos(long nativeBookmarksBridge);
-    private native void nativeEndGroupingUndos(long nativeBookmarksBridge);
-    private native void nativeLoadEmptyPartnerBookmarkShimForTesting(long nativeBookmarksBridge);
-    private native void nativeSearchBookmarks(long nativeBookmarksBridge,
+    private native void nativeUndo(long nativeBookmarkBridge);
+    private native void nativeStartGroupingUndos(long nativeBookmarkBridge);
+    private native void nativeEndGroupingUndos(long nativeBookmarkBridge);
+    private native void nativeLoadEmptyPartnerBookmarkShimForTesting(long nativeBookmarkBridge);
+    private native void nativeSearchBookmarks(long nativeBookmarkBridge,
             List<BookmarkMatch> bookmarkMatches, String query, int maxNumber);
     private native long nativeInit(Profile profile);
-    private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarksBridge);
-    private native void nativeDestroy(long nativeBookmarksBridge);
-    private static native boolean nativeIsEditBookmarksEnabled(long nativeBookmarksBridge);
+    private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarkBridge);
+    private native void nativeDestroy(long nativeBookmarkBridge);
+    private static native boolean nativeIsEditBookmarksEnabled(long nativeBookmarkBridge);
 
     /**
      * Simple object representing the bookmark item.
@@ -889,10 +888,10 @@ public class BookmarksBridge {
         private final BookmarksCallback mCallback;
         private final BookmarkId mFolderId;
         private final int mCallbackMethod;
-        private final BookmarksBridge mHandler;
+        private final BookmarkBridge mHandler;
 
         private DelayedBookmarkCallback(BookmarkId folderId, BookmarksCallback callback,
-                int method, BookmarksBridge handler) {
+                int method, BookmarkBridge handler) {
             mFolderId = folderId;
             mCallback = callback;
             mCallbackMethod = method;

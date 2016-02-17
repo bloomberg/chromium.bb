@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARKS_BRIDGE_H_
-#define CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARKS_BRIDGE_H_
+#ifndef CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARK_BRIDGE_H_
+#define CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARK_BRIDGE_H_
 
 #include <jni.h>
 
@@ -27,13 +27,13 @@ class Profile;
 // The delegate to fetch bookmarks information for the Android native
 // bookmark page. This fetches the bookmarks, title, urls, folder
 // hierarchy.
-class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
+class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
                         public PartnerBookmarksShim::Observer {
  public:
-  BookmarksBridge(JNIEnv* env, jobject obj, jobject j_profile);
+  BookmarkBridge(JNIEnv* env, jobject obj, jobject j_profile);
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
-  static bool RegisterBookmarksBridge(JNIEnv* env);
+  static bool RegisterBookmarkBridge(JNIEnv* env);
 
   bool IsDoingExtensiveChanges(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
@@ -195,7 +195,7 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
   base::string16 GetTitle(const bookmarks::BookmarkNode* node) const;
 
  private:
-  ~BookmarksBridge() override;
+  ~BookmarkBridge() override;
 
   base::android::ScopedJavaLocalRef<jobject> CreateJavaBookmark(
       const bookmarks::BookmarkNode* node);
@@ -266,7 +266,7 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
   // This is owned by profile.
   PartnerBookmarksShim* partner_bookmarks_shim_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarksBridge);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkBridge);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARKS_BRIDGE_H_
+#endif  // CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARK_BRIDGE_H_

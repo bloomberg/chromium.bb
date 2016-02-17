@@ -15,7 +15,7 @@
 #include "chrome/browser/android/background_sync_launcher_android.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
-#include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
+#include "chrome/browser/android/bookmarks/bookmark_bridge.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/bottombar/overlay_panel_content.h"
 #include "chrome/browser/android/browsing_data/browsing_data_counter_bridge.h"
@@ -223,7 +223,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"BackgroundSyncLauncherAndroid",
      BackgroundSyncLauncherAndroid::RegisterLauncher},
     {"BluetoothChooserAndroid", BluetoothChooserAndroid::Register},
-    {"BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge},
+    {"BookmarkBridge", BookmarkBridge::RegisterBookmarkBridge},
     {"BrowsingDataCounterBridge", BrowsingDataCounterBridge::Register},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
     {"CertificateViewer", RegisterCertificateViewer},

@@ -29,8 +29,8 @@ import android.widget.ViewSwitcher;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkSearchRow.SearchHistoryDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.ui.UiUtils;

@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
@@ -38,7 +38,7 @@ public class AppMenuPropertiesDelegate {
 
     protected final ChromeActivity mActivity;
 
-    protected BookmarksBridge mBookmarksBridge;
+    protected BookmarkBridge mBookmarkBridge;
 
     public AppMenuPropertiesDelegate(ChromeActivity activity) {
         mActivity = activity;
@@ -99,7 +99,7 @@ public class AppMenuPropertiesDelegate {
                 loadingStateChanged(currentTab.isLoading());
 
                 MenuItem bookmarkMenuItem = menu.findItem(R.id.bookmark_this_page_id);
-                bookmarkMenuItem.setEnabled(mBookmarksBridge.isEditBookmarksEnabled());
+                bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
                 if (currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
                     bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
                     bookmarkMenuItem.setChecked(true);
@@ -244,9 +244,9 @@ public class AppMenuPropertiesDelegate {
     /**
      * Updates the bookmarks bridge.
      *
-     * @param bookmarksBridge The bookmarks bridge.
+     * @param bookmarkBridge The bookmarks bridge.
      */
-    public void setBookmarksBridge(BookmarksBridge bookmarksBridge) {
-        mBookmarksBridge = bookmarksBridge;
+    public void setBookmarkBridge(BookmarkBridge bookmarkBridge) {
+        mBookmarkBridge = bookmarkBridge;
     }
 }
